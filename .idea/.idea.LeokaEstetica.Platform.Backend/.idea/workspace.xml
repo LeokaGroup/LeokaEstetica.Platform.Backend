@@ -7,6 +7,7 @@
   <component name="ChangeListManager">
     <list default="true" id="8e5e67b3-a7a4-45dc-b558-eeb07bb7dcd3" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.LeokaEstetica.Platform.Backend/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.LeokaEstetica.Platform.Backend/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Backend/LeokaEstetica.Platform.Backend.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Backend/LeokaEstetica.Platform.Backend.csproj" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -16,8 +17,16 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="master" />
+        <entry key="$PROJECT_DIR$" value="test" />
       </map>
+    </option>
+  </component>
+  <component name="GithubProjectSettings">
+    <option name="branchProtectionPatterns">
+      <list>
+        <option value="test" />
+        <option value="develop" />
+      </list>
     </option>
   </component>
   <component name="MarkdownSettingsMigration">
@@ -30,14 +39,15 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "WebServerToolWindowFactoryState": "false",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RunManager" selected=".NET Launch Settings Profile.LeokaEstetica.Platform.Backend">
     <configuration name="LeokaEstetica.Platform.Backend" type="LaunchSettings" factoryName=".NET Launch Settings Profile">
       <option name="LAUNCH_PROFILE_PROJECT_FILE_PATH" value="$PROJECT_DIR$/LeokaEstetica.Platform.Backend/LeokaEstetica.Platform.Backend.csproj" />
@@ -78,8 +88,25 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1663020539056</updated>
-      <workItem from="1663020547490" duration="1232000" />
+      <workItem from="1663020547490" duration="3129000" />
+      <workItem from="1663104630539" duration="599000" />
+      <workItem from="1663184408704" duration="1245000" />
     </task>
+    <task id="LOCAL-00001" summary="Проверка гитигнора.">
+      <created>1663022007062</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1663022007062</updated>
+    </task>
+    <task id="LOCAL-00002" summary="Тестовый коммит.">
+      <created>1663022455717</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1663022455717</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -100,5 +127,8 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
+    <MESSAGE value="Проверка гитигнора." />
+    <MESSAGE value="Тестовый коммит." />
+    <option name="LAST_COMMIT_MESSAGE" value="Тестовый коммит." />
   </component>
 </project>
