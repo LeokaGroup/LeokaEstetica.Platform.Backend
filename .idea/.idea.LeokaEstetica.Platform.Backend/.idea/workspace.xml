@@ -6,7 +6,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="8e5e67b3-a7a4-45dc-b558-eeb07bb7dcd3" name="Changes" comment="Проверка конфигурации в тимсити и на стенде дева.">
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.LeokaEstetica.Platform.Backend/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.LeokaEstetica.Platform.Backend/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Backend/Program.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Backend/Program.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Backend/Properties/launchSettings.json" beforeDir="false" afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Backend/Properties/launchSettings.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -97,7 +99,7 @@
       <workItem from="1663020547490" duration="3129000" />
       <workItem from="1663104630539" duration="599000" />
       <workItem from="1663184408704" duration="3963000" />
-      <workItem from="1663272903357" duration="1856000" />
+      <workItem from="1663272903357" duration="3783000" />
     </task>
     <task id="LOCAL-00001" summary="Проверка гитигнора.">
       <created>1663022007062</created>
@@ -134,7 +136,21 @@
       <option name="project" value="LOCAL" />
       <updated>1663277874840</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="Проверка конфигурации в тимсити и на стенде дева.">
+      <created>1663278620604</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1663278620604</updated>
+    </task>
+    <task id="LOCAL-00007" summary="Проверка конфигурации в тимсити и на стенде дева.">
+      <created>1663279128735</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1663279128735</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
