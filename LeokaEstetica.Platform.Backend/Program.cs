@@ -24,16 +24,27 @@ builder.WebHost
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseDeveloperExceptionPage();
-    // app.UseSwagger();
-    // app.UseSwaggerUI();
-}
+// if (app.Environment.IsDevelopment())
+// {
+//     app.UseDeveloperExceptionPage();
+//     // app.UseSwagger();
+//     // app.UseSwaggerUI();
+// }
+//
+// app.UseHttpsRedirection();
+// app.UseStaticFiles();
+// app.UseAuthentication();
+// app.UseCors("ApiCorsPolicy");
+// app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
+// app.UseSwagger();
+// app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Leoka.Estetica.Platform"));
+// app.Run();
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseAuthentication();
+app.UseRouting();
+app.UseAuthorization();
 app.UseCors("ApiCorsPolicy");
 app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
 app.UseSwagger();
