@@ -17,7 +17,7 @@ builder.Services.AddSwaggerGen(c => { c.SwaggerDoc("v1", new OpenApiInfo { Title
 builder.WebHost
     .UseKestrel()
     .UseContentRoot(Directory.GetCurrentDirectory())
-    .UseUrls("http://*:9991");
+    .UseUrls("http://*:9992");
 
 // builder.Services.AddEndpointsApiExplorer();
 // builder.Services.AddSwaggerGen();
