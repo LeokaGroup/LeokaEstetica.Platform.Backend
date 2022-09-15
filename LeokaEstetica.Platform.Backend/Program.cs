@@ -26,11 +26,16 @@ var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseDeveloperExceptionPage();
+    // app.UseSwagger();
+    // app.UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();
-app.UseAuthorization();
-app.MapControllers();
+app.UseStaticFiles();
+app.UseAuthentication();
+app.UseCors("ApiCorsPolicy");
+app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
+app.UseSwagger();
+app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Leoka.Estetica.Platform"));
 app.Run();
