@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
@@ -59,6 +60,32 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Host
     .UseServiceProviderFactory(new AutofacServiceProviderFactory())
     .ConfigureContainer<ContainerBuilder>(AutoFac.Init);
+
+// Используем Serilog.
+builder.Host.UseSerilog((context, config) =>
+    {
+        try
+        {
+            var connString = configuration.GetConnectionString("LogDevConnection") ?? string.Empty;
+            config.WriteTo.PostgreSQL(connString, "Logs", needAutoCreateTable: true)
+                .MinimumLevel.Information();
+
+            if (!context.HostingEnvironment.IsProduction())
+            {
+                config.WriteTo.Console()
+                    .MinimumLevel.Information();
+            }
+        }
+        
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+    }
+   
+    // .WriteTo.Seq("http://localhost:9992")
+);
 
 var app = builder.Build();
 
