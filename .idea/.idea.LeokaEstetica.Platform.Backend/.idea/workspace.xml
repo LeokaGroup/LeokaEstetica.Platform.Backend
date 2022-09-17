@@ -5,10 +5,17 @@
     <projectFile profileName="LeokaEstetica.Platform.Backend">LeokaEstetica.Platform.Backend/LeokaEstetica.Platform.Backend.csproj</projectFile>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="8e5e67b3-a7a4-45dc-b558-eeb07bb7dcd3" name="Changes" comment="Проверка конфигурации в тимсити и на стенде дева.">
+    <list default="true" id="8e5e67b3-a7a4-45dc-b558-eeb07bb7dcd3" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Core/Attributes/CommonModuleAttribute.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Core/Data/AuthOptions.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Core/Data/PgContext.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Core/Extensions/MappingsExtensions.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Core/LeokaEstetica.Platform.Core.csproj" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Core/Utils/AutoFac.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.LeokaEstetica.Platform.Backend/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.LeokaEstetica.Platform.Backend/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Backend.sln" beforeDir="false" afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Backend.sln" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Backend/LeokaEstetica.Platform.Backend.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Backend/LeokaEstetica.Platform.Backend.csproj" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Backend/Program.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Backend/Program.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Backend/Properties/launchSettings.json" beforeDir="false" afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Backend/Properties/launchSettings.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -30,28 +37,28 @@
       </list>
     </option>
   </component>
-  <component name="HighlightingSettingsPerFile">
-    <setting file="mock://C:/Users/repos/Portfolio/LeokaEstetica.Platform.Backend/LeokaEstetica.Platform.Backend/Program.cs" root0="SKIP_HIGHLIGHTING" />
-  </component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
   </component>
   <component name="ProjectId" id="2EgcCH7tl6ZVULBf0WmbEec44Mb" />
-  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
   <component name="ProjectViewState">
     <option name="autoscrollFromSource" value="true" />
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_ADD_EXTERNAL_FILES": "true",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "WebServerToolWindowFactoryState": "false",
+    "nodejs_package_manager_path": "npm",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RunManager" selected=".NET Launch Settings Profile.LeokaEstetica.Platform.Backend">
     <configuration name="Publish LeokaEstetica.Platform.Backend to folder" type="DotNetFolderPublish" factoryName="Publish to folder">
       <riderPublish configuration="Release" platform="Any CPU" runtime="Portable" target_folder="$PROJECT_DIR$/LeokaEstetica.Platform.Backend/bin/Release/net6.0/publish" target_framework="net6.0" uuid_high="6366806068074006069" uuid_low="-6363868408907714878" />
@@ -99,7 +106,9 @@
       <workItem from="1663020547490" duration="3129000" />
       <workItem from="1663104630539" duration="599000" />
       <workItem from="1663184408704" duration="3963000" />
-      <workItem from="1663272903357" duration="3783000" />
+      <workItem from="1663272903357" duration="4478000" />
+      <workItem from="1663352777489" duration="4352000" />
+      <workItem from="1663418431139" duration="4256000" />
     </task>
     <task id="LOCAL-00001" summary="Проверка гитигнора.">
       <created>1663022007062</created>
@@ -150,7 +159,14 @@
       <option name="project" value="LOCAL" />
       <updated>1663279128735</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="Проверка конфигурации в тимсити и на стенде дева.">
+      <created>1663280597939</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1663280597939</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -170,6 +186,7 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
+    <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
     <MESSAGE value="Проверка гитигнора." />
     <MESSAGE value="Тестовый коммит." />
