@@ -18,15 +18,14 @@ public sealed class LogService : BaseLogService
     /// Метод пишет логи ошибок в базу.
     /// </summary>
     /// <param name="ex">Исключение.</param>
-    /// <param name="dateLog">Дата лога.</param>
     /// <param name="account">Аккаунт пользователя, под которым произошло исключение.</param>
     /// <param name="logLevel">Уровень исключения.</param>
-    public override async Task LogInfoAsync(Exception ex, DateTime dateLog, string account, LogLevelEnum logLevel)
+    public override async Task LogInfoAsync(Exception ex, string account, LogLevelEnum logLevel)
     {
-        await PgContext.Logs.AddAsync(new LogEntity
+        await PgContext.LogInfos.AddAsync(new LogInfoEntity
         {
             ExceptionMessage = ex.Message,
-            DateLog = DateTime.UtcNow,
+            DateCreated = DateTime.UtcNow,
             StackTrace = ex.StackTrace,
             Account = account,
             LogLevel = logLevel

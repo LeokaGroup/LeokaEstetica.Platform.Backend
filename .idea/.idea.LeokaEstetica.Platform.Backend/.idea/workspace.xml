@@ -5,18 +5,13 @@
     <projectFile profileName="LeokaEstetica.Platform.Backend">LeokaEstetica.Platform.Backend/LeokaEstetica.Platform.Backend.csproj</projectFile>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="8e5e67b3-a7a4-45dc-b558-eeb07bb7dcd3" name="Changes" comment="Добавил слой инфраструктуры, добавил автофак и другие базовые для проекта зависимости.">
-      <change afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Logs/Abstractions/BaseLogService.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Logs/AutofacModules/LogsModule.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Logs/LeokaEstetica.Platform.Logs.csproj" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Logs/Services/LogService.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Models/Enums/LogLevelEnum.cs" afterDir="false" />
+    <list default="true" id="8e5e67b3-a7a4-45dc-b558-eeb07bb7dcd3" name="Changes" comment="Удалил лишний код в Program.cs.">
+      <change afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Models/Mappings/Logs/LogInfoConfiguration.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.LeokaEstetica.Platform.Backend/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.LeokaEstetica.Platform.Backend/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Backend.sln" beforeDir="false" afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Backend.sln" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Backend/Program.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Backend/Program.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Core/Data/PgContext.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Core/Data/PgContext.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Core/LeokaEstetica.Platform.Core.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Core/LeokaEstetica.Platform.Core.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Core/Utils/AutoFac.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Core/Utils/AutoFac.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Logs/Abstractions/BaseLogService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Logs/Abstractions/BaseLogService.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Logs/Services/LogService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Logs/Services/LogService.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Models/LeokaEstetica.Platform.Models.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Models/LeokaEstetica.Platform.Models.csproj" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -37,6 +32,9 @@
         <option value="develop" />
       </list>
     </option>
+  </component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="mock://C:/Users/repos/Portfolio/LeokaEstetica.Platform.Backend/LeokaEstetica.Platform.Core/Utils/AutoFac.cs" root0="SKIP_HIGHLIGHTING" />
   </component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
@@ -174,7 +172,21 @@
       <option name="project" value="LOCAL" />
       <updated>1663424779912</updated>
     </task>
-    <option name="localTasksCounter" value="10" />
+    <task id="LOCAL-00010" summary="Добавил сущность для логов, также разные улучшения по архитектуре.">
+      <created>1663454628713</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1663454628713</updated>
+    </task>
+    <task id="LOCAL-00011" summary="Удалил лишний код в Program.cs.">
+      <created>1663454731035</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1663454731035</updated>
+    </task>
+    <option name="localTasksCounter" value="12" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -201,6 +213,8 @@
     <MESSAGE value="Проверка тимсити v.1.0." />
     <MESSAGE value="Проверка конфигурации в тимсити и на стенде дева." />
     <MESSAGE value="Добавил слой инфраструктуры, добавил автофак и другие базовые для проекта зависимости." />
-    <option name="LAST_COMMIT_MESSAGE" value="Добавил слой инфраструктуры, добавил автофак и другие базовые для проекта зависимости." />
+    <MESSAGE value="Добавил сущность для логов, также разные улучшения по архитектуре." />
+    <MESSAGE value="Удалил лишний код в Program.cs." />
+    <option name="LAST_COMMIT_MESSAGE" value="Удалил лишний код в Program.cs." />
   </component>
 </project>

@@ -32,5 +32,5 @@ public class PgContext : DbContext
     /// <summary>
     /// Таблица логов.
     /// </summary>
-    public DbSet<LogEntity> Logs { get; set; }
+    public DbSet<LogInfoEntity> LogInfos { get; set; }
 }

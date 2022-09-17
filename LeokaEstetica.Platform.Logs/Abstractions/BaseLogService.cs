@@ -19,8 +19,7 @@ public abstract class BaseLogService
     /// Метод пишет логи ошибок в базу.
     /// </summary>
     /// <param name="ex">Исключение.</param>
-    /// <param name="dateLog">Дата лога.</param>
     /// <param name="account">Аккаунт пользователя, под которым произошло исключение.</param>
     /// <param name="logLevel">Уровень исключения.</param>
-    public abstract Task LogInfoAsync(Exception ex, DateTime dateLog, string account, LogLevelEnum logLevel);
+    public abstract Task LogInfoAsync(Exception ex, string account, LogLevelEnum logLevel);
 }
