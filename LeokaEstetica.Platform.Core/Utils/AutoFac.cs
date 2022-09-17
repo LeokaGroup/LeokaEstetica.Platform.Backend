@@ -3,9 +3,9 @@ using Autofac;
 using LeokaEstetica.Platform.Core.Attributes;
 using LeokaEstetica.Platform.Core.Data;
 using Microsoft.EntityFrameworkCore;
+using Module = Autofac.Module;
 
 namespace LeokaEstetica.Platform.Core.Utils;
-using Module = Autofac.Module;
 
 /// <summary>
 /// Класс конфигурации и зависимостей автофака.
@@ -50,65 +50,43 @@ public static class AutoFac
     {
         var assemblies1 =
             GetAssembliesFromApplicationBaseDirectory(x =>
-                x.FullName.StartsWith("Leoka.Elementary.Platform.Services"));
+                x.FullName.StartsWith("LeokaEstetica.Platform.Logs"));
 
-        var assemblies2 =
-            GetAssembliesFromApplicationBaseDirectory(x =>
-                x.FullName.StartsWith("Leoka.Elementary.Platform.Mailings"));
+        // var assemblies2 =
+        //     GetAssembliesFromApplicationBaseDirectory(x =>
+        //         x.FullName.StartsWith("Leoka.Elementary.Platform.Mailings"));
 
-        var assemblies3 =
-            GetAssembliesFromApplicationBaseDirectory(x =>
-                x.FullName.StartsWith("Leoka.Elementary.Platform.FTP"));
+        // var assemblies3 =
+        //     GetAssembliesFromApplicationBaseDirectory(x =>
+        //         x.FullName.StartsWith("Leoka.Elementary.Platform.FTP"));
 
-        var assemblies4 =
-            GetAssembliesFromApplicationBaseDirectory(x =>
-                x.FullName.StartsWith("Leoka.Elementary.Platform.Base"));
+        // var assemblies4 =
+        //     GetAssembliesFromApplicationBaseDirectory(x =>
+        //         x.FullName.StartsWith("Leoka.Elementary.Platform.Base"));
 
-        var assemblies5 =
-            GetAssembliesFromApplicationBaseDirectory(x =>
-                x.FullName.StartsWith("Leoka.Elementary.Platform.Integrations"));
+        // var assemblies5 =
+        //     GetAssembliesFromApplicationBaseDirectory(x =>
+        //         x.FullName.StartsWith("Leoka.Elementary.Platform.Integrations"));
 
-        var assemblies6 =
-            GetAssembliesFromApplicationBaseDirectory(x =>
-                x.FullName.StartsWith("Leoka.Elementary.Platform.Commerce"));
+        // var assemblies6 =
+        //     GetAssembliesFromApplicationBaseDirectory(x =>
+        //         x.FullName.StartsWith("Leoka.Elementary.Platform.Commerce"));
 
-        var assemblies7 =
-            GetAssembliesFromApplicationBaseDirectory(x =>
-                x.FullName.StartsWith("Leoka.Elementary.Platform.Messagings"));
+        // var assemblies7 =
+        //     GetAssembliesFromApplicationBaseDirectory(x =>
+        //         x.FullName.StartsWith("Leoka.Elementary.Platform.Messagings"));
 
-        var assemblies8 =
-            GetAssembliesFromApplicationBaseDirectory(x =>
-                x.FullName.StartsWith("Leoka.Elementary.Platform.Configurator"));
+        // var assemblies8 =
+        //     GetAssembliesFromApplicationBaseDirectory(x =>
+        //         x.FullName.StartsWith("Leoka.Elementary.Platform.Configurator"));
 
-        var assemblies9 =
-            GetAssembliesFromApplicationBaseDirectory(x =>
-                x.FullName.StartsWith("Leoka.Elementary.Platform.Access"));
-        
-        var assemblies10 =
-            GetAssembliesFromApplicationBaseDirectory(x =>
-                x.FullName.StartsWith("Leoka.Elementary.Platform.LessonTemplates"));
+        // var assemblies9 =
+        //     GetAssembliesFromApplicationBaseDirectory(x =>
+        //         x.FullName.StartsWith("Leoka.Elementary.Platform.Access"));
 
         b.RegisterAssemblyTypes(assemblies1).AsImplementedInterfaces();
-        b.RegisterAssemblyTypes(assemblies2).AsImplementedInterfaces();
-        b.RegisterAssemblyTypes(assemblies3).AsImplementedInterfaces();
-        b.RegisterAssemblyTypes(assemblies4).AsImplementedInterfaces();
-        b.RegisterAssemblyTypes(assemblies5).AsImplementedInterfaces();
-        b.RegisterAssemblyTypes(assemblies6).AsImplementedInterfaces();
-        b.RegisterAssemblyTypes(assemblies7).AsImplementedInterfaces();
-        b.RegisterAssemblyTypes(assemblies8).AsImplementedInterfaces();
-        b.RegisterAssemblyTypes(assemblies9).AsImplementedInterfaces();
-        b.RegisterAssemblyTypes(assemblies10).AsImplementedInterfaces();
-
-        var assemblies = assemblies1
-            .Union(assemblies2)
-            .Union(assemblies3)
-            .Union(assemblies4)
-            .Union(assemblies5)
-            .Union(assemblies6)
-            .Union(assemblies7)
-            .Union(assemblies8)
-            .Union(assemblies9)
-            .Union(assemblies10);
+        
+        var assemblies = assemblies1;
 
         // RegisterMapper(b);
 
@@ -116,7 +94,7 @@ public static class AutoFac
             from type in assembly.GetTypes()
             where type.IsClass && type.GetCustomAttribute<CommonModuleAttribute>() != null
             select type).ToArray();
-
+        
         foreach (var module in _typeModules)
         {
             if (module is not null)

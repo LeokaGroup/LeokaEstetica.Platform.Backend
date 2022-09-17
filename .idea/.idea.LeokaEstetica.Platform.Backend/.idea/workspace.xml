@@ -6,10 +6,17 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="8e5e67b3-a7a4-45dc-b558-eeb07bb7dcd3" name="Changes" comment="Добавил слой инфраструктуры, добавил автофак и другие базовые для проекта зависимости.">
-      <change afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Models/Entities/Landing/FonEntity.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Models/LeokaEstetica.Platform.Models.csproj" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Logs/Abstractions/BaseLogService.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Logs/AutofacModules/LogsModule.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Logs/LeokaEstetica.Platform.Logs.csproj" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Logs/Services/LogService.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Models/Enums/LogLevelEnum.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.LeokaEstetica.Platform.Backend/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.LeokaEstetica.Platform.Backend/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Backend.sln" beforeDir="false" afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Backend.sln" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Backend/Program.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Backend/Program.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Core/Data/PgContext.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Core/Data/PgContext.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Core/LeokaEstetica.Platform.Core.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Core/LeokaEstetica.Platform.Core.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Core/Utils/AutoFac.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Core/Utils/AutoFac.cs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -19,7 +26,7 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="test" />
+        <entry key="$PROJECT_DIR$" value="develop" />
       </map>
     </option>
   </component>
@@ -43,16 +50,16 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ASKED_ADD_EXTERNAL_FILES": "true",
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "WebServerToolWindowFactoryState": "false",
-    "nodejs_package_manager_path": "npm",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RunManager" selected=".NET Launch Settings Profile.LeokaEstetica.Platform.Backend">
     <configuration name="Publish LeokaEstetica.Platform.Backend to folder" type="DotNetFolderPublish" factoryName="Publish to folder">
       <riderPublish configuration="Release" platform="Any CPU" runtime="Portable" target_folder="$PROJECT_DIR$/LeokaEstetica.Platform.Backend/bin/Release/net6.0/publish" target_framework="net6.0" uuid_high="6366806068074006069" uuid_low="-6363868408907714878" />
