@@ -13,4 +13,8 @@
       <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="6.10.0" />
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\LeokaEstetica.Platform.Models\LeokaEstetica.Platform.Models.csproj" />
+    </ItemGroup>
+
 </Project>
