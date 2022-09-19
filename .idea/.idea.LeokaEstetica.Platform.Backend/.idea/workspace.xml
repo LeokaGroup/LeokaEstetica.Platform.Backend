@@ -5,19 +5,14 @@
     <projectFile profileName="LeokaEstetica.Platform.Backend">LeokaEstetica.Platform.Backend/LeokaEstetica.Platform.Backend.csproj</projectFile>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="8e5e67b3-a7a4-45dc-b558-eeb07bb7dcd3" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Base/LeokaEstetica.Platform.Base.csproj" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Controllers/Controllers/Landing/LandingController.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Controllers/LeokaEstetica.Platform.Controllers.csproj" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Database/LeokaEstetica.Platform.Database.csproj" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Services/AutofacModules/ServicesModule.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Services/LeokaEstetica.Platform.Services.csproj" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Tests/LeokaEstetica.Platform.Tests.csproj" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Tests/UnitTest1.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Tests/Usings.cs" afterDir="false" />
+    <list default="true" id="8e5e67b3-a7a4-45dc-b558-eeb07bb7dcd3" name="Changes" comment="Добавил слой инфраструктуры, добавил автофак и другие базовые для проекта зависимости.">
+      <change afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Base/BaseController.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Controllers/Landing/LandingController.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.LeokaEstetica.Platform.Backend/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.LeokaEstetica.Platform.Backend/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Backend.sln" beforeDir="false" afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Backend.sln" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Backend/LeokaEstetica.Platform.Backend.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Backend/LeokaEstetica.Platform.Backend.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Base/LeokaEstetica.Platform.Base.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Base/LeokaEstetica.Platform.Base.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Controllers/Controllers/Landing/LandingController.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Controllers/LeokaEstetica.Platform.Controllers.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Controllers/LeokaEstetica.Platform.Controllers.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Core/Utils/AutoFac.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Core/Utils/AutoFac.cs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
