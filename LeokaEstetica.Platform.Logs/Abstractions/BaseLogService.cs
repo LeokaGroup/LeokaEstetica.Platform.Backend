@@ -21,5 +21,5 @@ public abstract class BaseLogService
     /// <param name="ex">Исключение.</param>
     /// <param name="account">Аккаунт пользователя, под которым произошло исключение.</param>
     /// <param name="logLevel">Уровень исключения.</param>
-    // public abstract Task LogInfoAsync(Exception ex, string account, LogLevelEnum logLevel);
+    public abstract Task LogInfoAsync(Exception ex, string account, LogLevelEnum logLevel);
 }

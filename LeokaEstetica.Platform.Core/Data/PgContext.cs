@@ -1,6 +1,6 @@
 ﻿using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Models.Entities.Landing;
-// using LeokaEstetica.Platform.Models.Entities.Log;
+using LeokaEstetica.Platform.Models.Entities.Log;
 using Microsoft.EntityFrameworkCore;
 
 namespace LeokaEstetica.Platform.Core.Data;
@@ -32,5 +32,5 @@ public class PgContext : DbContext
     /// <summary>
     /// Таблица логов.
     /// </summary>
-    // public DbSet<LogInfoEntity> LogInfos { get; set; }
+    public DbSet<LogInfoEntity> LogInfos { get; set; }
 }

@@ -63,6 +63,9 @@ builder.Host
     .UseServiceProviderFactory(new AutofacServiceProviderFactory())
     .ConfigureContainer<ContainerBuilder>(AutoFac.Init);
 
+// Нужно для типа timestamp в Postgres.
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
