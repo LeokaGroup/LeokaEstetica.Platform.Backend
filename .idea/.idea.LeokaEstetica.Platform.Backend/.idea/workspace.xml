@@ -5,9 +5,11 @@
     <projectFile profileName="LeokaEstetica.Platform.Backend">LeokaEstetica.Platform.Backend/LeokaEstetica.Platform.Backend.csproj</projectFile>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="8e5e67b3-a7a4-45dc-b558-eeb07bb7dcd3" name="Changes" comment="[#2zaaxuj] Поправил ошибки при логировании, добавил новые столбцы в таблицу логов.">
+    <list default="true" id="8e5e67b3-a7a4-45dc-b558-eeb07bb7dcd3" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Models/Entities/Common/HeaderEntity.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Models/Mappings/Common/HeaderConfiguration.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.LeokaEstetica.Platform.Backend/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.LeokaEstetica.Platform.Backend/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Models/Mappings/Logs/LogInfoConfiguration.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Core/Data/PgContext.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Core/Data/PgContext.cs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -188,7 +190,14 @@
       <option name="project" value="LOCAL" />
       <updated>1663624993578</updated>
     </task>
-    <option name="localTasksCounter" value="13" />
+    <task id="LOCAL-00013" summary="Фикс ошибки с тимсити. Часть сущностей и маппингов была в гитигноре.">
+      <created>1663709234129</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1663709234129</updated>
+    </task>
+    <option name="localTasksCounter" value="14" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -218,25 +227,7 @@
     <MESSAGE value="Добавил сущность для логов, также разные улучшения по архитектуре." />
     <MESSAGE value="Удалил лишний код в Program.cs." />
     <MESSAGE value="Проверка тимсити." />
-    <option name="LAST_COMMIT_MESSAGE" value="Проверка тимсити." />
-  </component>
-  <component name="XDebuggerManager">
-    <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" type="DotNet Breakpoints">
-          <url>file://$PROJECT_DIR$/LeokaEstetica.Platform.Core/Data/PgContext.cs</url>
-          <line>23</line>
-          <properties documentPath="C:\Users\repos\Portfolio\LeokaEstetica.Platform.Backend\LeokaEstetica.Platform.Core\Data\PgContext.cs" initialLine="23" containingFunctionPresentation="method 'OnModelCreating'">
-            <startOffsets>
-              <option value="654" />
-            </startOffsets>
-            <endOffsets>
-              <option value="697" />
-            </endOffsets>
-          </properties>
-          <option name="timeStamp" value="2" />
-        </line-breakpoint>
-      </breakpoints>
-    </breakpoint-manager>
+    <MESSAGE value="Фикс ошибки с тимсити. Часть сущностей и маппингов была в гитигноре." />
+    <option name="LAST_COMMIT_MESSAGE" value="Фикс ошибки с тимсити. Часть сущностей и маппингов была в гитигноре." />
   </component>
 </project>
