@@ -5,19 +5,9 @@
     <projectFile profileName="LeokaEstetica.Platform.Backend">LeokaEstetica.Platform.Backend/LeokaEstetica.Platform.Backend.csproj</projectFile>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="8e5e67b3-a7a4-45dc-b558-eeb07bb7dcd3" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Models/Mappings/Landing/FonConfiguration.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Tests/BaseServiceTest.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Tests/LogsTests/WriteLogInfoTest.cs" afterDir="false" />
+    <list default="true" id="8e5e67b3-a7a4-45dc-b558-eeb07bb7dcd3" name="Changes" comment="[#2zaaxuj] Поправил ошибки при логировании, добавил новые столбцы в таблицу логов.">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.LeokaEstetica.Platform.Backend/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.LeokaEstetica.Platform.Backend/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Backend/Program.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Backend/Program.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Core/Data/PgContext.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Core/Data/PgContext.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Logs/Abstractions/BaseLogService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Logs/Abstractions/BaseLogService.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Logs/Services/LogService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Logs/Services/LogService.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Models/Mappings/Logs/LogInfoConfiguration.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Models/Mappings/Logs/LogInfoConfiguration.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Tests/LeokaEstetica.Platform.Tests.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Tests/LeokaEstetica.Platform.Tests.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Tests/UnitTest1.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Tests/Usings.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Models/Mappings/Logs/LogInfoConfiguration.cs" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -234,17 +224,17 @@
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" type="DotNet Breakpoints">
-          <url>file://$PROJECT_DIR$/LeokaEstetica.Platform.Logs/Services/LogService.cs</url>
-          <line>24</line>
-          <properties documentPath="C:\Users\repos\Portfolio\LeokaEstetica.Platform.Backend\LeokaEstetica.Platform.Logs\Services\LogService.cs" initialLine="24" containingFunctionPresentation="method 'LogInfoAsync'">
+          <url>file://$PROJECT_DIR$/LeokaEstetica.Platform.Core/Data/PgContext.cs</url>
+          <line>23</line>
+          <properties documentPath="C:\Users\repos\Portfolio\LeokaEstetica.Platform.Backend\LeokaEstetica.Platform.Core\Data\PgContext.cs" initialLine="23" containingFunctionPresentation="method 'OnModelCreating'">
             <startOffsets>
-              <option value="811" />
+              <option value="654" />
             </startOffsets>
             <endOffsets>
-              <option value="1073" />
+              <option value="697" />
             </endOffsets>
           </properties>
-          <option name="timeStamp" value="1" />
+          <option name="timeStamp" value="2" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

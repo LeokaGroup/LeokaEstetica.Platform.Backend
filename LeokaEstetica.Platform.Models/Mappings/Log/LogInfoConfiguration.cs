@@ -2,9 +2,9 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace LeokaEstetica.Platform.Models.Mappings.Logs;
+namespace LeokaEstetica.Platform.Models.Mappings.Log;
 
-public partial class FonConfiguration : IEntityTypeConfiguration<LogInfoEntity>
+public partial class LogInfoConfiguration : IEntityTypeConfiguration<LogInfoEntity>
 {
     public void Configure(EntityTypeBuilder<LogInfoEntity> entity)
     {
