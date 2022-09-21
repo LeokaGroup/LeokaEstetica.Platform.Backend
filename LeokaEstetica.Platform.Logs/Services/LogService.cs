@@ -20,17 +20,17 @@ public sealed class LogService : BaseLogService
     /// <param name="ex">Исключение.</param>
     /// <param name="account">Аккаунт пользователя, под которым произошло исключение.</param>
     /// <param name="logLevel">Уровень исключения.</param>
-    public override async Task LogInfoAsync(Exception ex, string account, LogLevelEnum logLevel)
-    {
-        await PgContext.LogInfos.AddAsync(new LogInfoEntity
-        {
-            ExceptionMessage = ex.Message,
-            DateCreated = DateTime.UtcNow,
-            StackTrace = ex.StackTrace,
-            Account = account,
-            LogLevel = logLevel,
-            LogKey = Guid.NewGuid()
-        });
-        await PgContext.SaveChangesAsync();
-    }
+    // public override async Task LogInfoAsync(Exception ex, string account, LogLevelEnum logLevel)
+    // {
+    //     await PgContext.LogInfos.AddAsync(new LogInfoEntity
+    //     {
+    //         ExceptionMessage = ex.Message,
+    //         DateCreated = DateTime.UtcNow,
+    //         StackTrace = ex.StackTrace,
+    //         Account = account,
+    //         LogLevel = logLevel,
+    //         LogKey = Guid.NewGuid()
+    //     });
+    //     await PgContext.SaveChangesAsync();
+    // }
 }
