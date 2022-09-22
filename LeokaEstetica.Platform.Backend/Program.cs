@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using NLog;
+using NLog.Web;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
@@ -37,6 +39,8 @@ if (builder.Environment.IsStaging())
 // }
 
 builder.Services.AddSwaggerGen(c => { c.SwaggerDoc("v1", new OpenApiInfo { Title = "Leoka.Estetica.Platform" }); });
+builder.Logging.ClearProviders();
+builder.Host.UseNLog();
 
 builder.WebHost
     .UseKestrel()
@@ -65,6 +69,9 @@ builder.Host
 
 // Нужно для типа timestamp в Postgres.
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
+// Добавляем NLog.
+var logger = LogManager.Setup().LoadConfigurationFromAppSettings().GetCurrentClassLogger();
 
 var app = builder.Build();
 
