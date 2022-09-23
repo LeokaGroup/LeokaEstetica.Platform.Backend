@@ -9,6 +9,6 @@ public class WriteLogInfoTest : BaseServiceTest
     [Test]
     public async Task WriteLogInfoAsyncTest()
     {
-        await BaseLogService.LogInfoAsync(new ArgumentNullException(), "sierra_93@mail.ru", LogLevelEnum.Error);
+        // await BaseLogService.LogInfoAsync(new ArgumentNullException(), "sierra_93@mail.ru", LogLevelEnum.Error);
     }
 }

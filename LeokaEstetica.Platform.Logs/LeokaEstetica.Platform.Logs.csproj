@@ -10,4 +10,8 @@
         <ProjectReference Include="..\LeokaEstetica.Platform.Core\LeokaEstetica.Platform.Core.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.9" />
+    </ItemGroup>
+
 </Project>

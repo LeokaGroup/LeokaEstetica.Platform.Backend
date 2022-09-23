@@ -71,7 +71,7 @@ builder.Host
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
 // Добавляем NLog.
-var logger = LogManager.Setup().LoadConfigurationFromAppSettings().GetCurrentClassLogger();
+LogManager.Setup().LoadConfigurationFromAppSettings().GetCurrentClassLogger();
 
 var app = builder.Build();
 

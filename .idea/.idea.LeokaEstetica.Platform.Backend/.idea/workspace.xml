@@ -5,11 +5,20 @@
     <projectFile profileName="LeokaEstetica.Platform.Backend">LeokaEstetica.Platform.Backend/LeokaEstetica.Platform.Backend.csproj</projectFile>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="8e5e67b3-a7a4-45dc-b558-eeb07bb7dcd3" name="Changes" comment="[#2zaa4nw] Завел сущность для таблицы фона.">
-      <change afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Backend/NLog.config" afterDir="false" />
+    <list default="true" id="8e5e67b3-a7a4-45dc-b558-eeb07bb7dcd3" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.LeokaEstetica.Platform.Backend/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.LeokaEstetica.Platform.Backend/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Backend/LeokaEstetica.Platform.Backend.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Backend/LeokaEstetica.Platform.Backend.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Backend/NLog.config" beforeDir="false" afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Backend/NLog.config" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Backend/Program.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Backend/Program.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Base/BaseController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Base/BaseController.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Controllers/Landing/LandingController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Controllers/Landing/LandingController.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Controllers/LeokaEstetica.Platform.Controllers.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Controllers/LeokaEstetica.Platform.Controllers.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Logs/Abstractions/BaseLogService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Logs/Abstractions/BaseLogService.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Logs/AutofacModules/LogsModule.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Logs/AutofacModules/LogsModule.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Logs/LeokaEstetica.Platform.Logs.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Logs/LeokaEstetica.Platform.Logs.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Logs/Services/LogService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Logs/Services/LogService.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Tests/BaseServiceTest.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Tests/BaseServiceTest.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Tests/LogsTests/WriteLogInfoTest.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Tests/LogsTests/WriteLogInfoTest.cs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -105,6 +114,7 @@
       <workItem from="1663418431139" duration="5790000" />
       <workItem from="1663621247652" duration="1300000" />
       <workItem from="1663692248195" duration="7365000" />
+      <workItem from="1663958849498" duration="7188000" />
     </task>
     <task id="LOCAL-00001" summary="Проверка гитигнора.">
       <created>1663022007062</created>
@@ -197,7 +207,14 @@
       <option name="project" value="LOCAL" />
       <updated>1663709234129</updated>
     </task>
-    <option name="localTasksCounter" value="14" />
+    <task id="LOCAL-00014" summary="[#2znu49d] Добавил и настроил конфиг NLog.">
+      <created>1663887574277</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1663887574277</updated>
+    </task>
+    <option name="localTasksCounter" value="15" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -228,6 +245,65 @@
     <MESSAGE value="Удалил лишний код в Program.cs." />
     <MESSAGE value="Проверка тимсити." />
     <MESSAGE value="Фикс ошибки с тимсити. Часть сущностей и маппингов была в гитигноре." />
-    <option name="LAST_COMMIT_MESSAGE" value="Фикс ошибки с тимсити. Часть сущностей и маппингов была в гитигноре." />
+    <MESSAGE value="[#2znu49d] Добавил и настроил конфиг NLog." />
+    <option name="LAST_COMMIT_MESSAGE" value="[#2znu49d] Добавил и настроил конфиг NLog." />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="DotNet Breakpoints">
+          <url>file://$PROJECT_DIR$/LeokaEstetica.Platform.Logs/Abstractions/BaseLogService.cs</url>
+          <line>41</line>
+          <properties documentPath="C:\Users\repos\Portfolio\LeokaEstetica.Platform.Backend\LeokaEstetica.Platform.Logs\Abstractions\BaseLogService.cs" initialLine="41" containingFunctionPresentation="method 'LogInfoAsync'">
+            <startOffsets>
+              <option value="1305" />
+            </startOffsets>
+            <endOffsets>
+              <option value="1326" />
+            </endOffsets>
+          </properties>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DotNet Breakpoints">
+          <url>file://$PROJECT_DIR$/LeokaEstetica.Platform.Logs/Abstractions/BaseLogService.cs</url>
+          <line>28</line>
+          <properties documentPath="C:\Users\repos\Portfolio\LeokaEstetica.Platform.Backend\LeokaEstetica.Platform.Logs\Abstractions\BaseLogService.cs" initialLine="28" containingFunctionPresentation="method 'LogInfoAsync'">
+            <startOffsets>
+              <option value="863" />
+            </startOffsets>
+            <endOffsets>
+              <option value="1195" />
+            </endOffsets>
+          </properties>
+          <option name="timeStamp" value="2" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DotNet Breakpoints">
+          <url>file://$PROJECT_DIR$/LeokaEstetica.Platform.Controllers/Landing/LandingController.cs</url>
+          <line>23</line>
+          <properties documentPath="C:\Users\repos\Portfolio\LeokaEstetica.Platform.Backend\LeokaEstetica.Platform.Controllers\Landing\LandingController.cs" initialLine="22" containingFunctionPresentation="method 'Test'">
+            <startOffsets>
+              <option value="599" />
+            </startOffsets>
+            <endOffsets>
+              <option value="633" />
+            </endOffsets>
+          </properties>
+          <option name="timeStamp" value="3" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DotNet Breakpoints">
+          <url>file://$PROJECT_DIR$/LeokaEstetica.Platform.Controllers/Landing/LandingController.cs</url>
+          <line>27</line>
+          <properties documentPath="C:\Users\repos\Portfolio\LeokaEstetica.Platform.Backend\LeokaEstetica.Platform.Controllers\Landing\LandingController.cs" initialLine="26" containingFunctionPresentation="method 'Test'">
+            <startOffsets>
+              <option value="698" />
+            </startOffsets>
+            <endOffsets>
+              <option value="770" />
+            </endOffsets>
+          </properties>
+          <option name="timeStamp" value="4" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
 </project>
