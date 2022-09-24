@@ -1,4 +1,5 @@
 ﻿using LeokaEstetica.Platform.Core.Data;
+using LeokaEstetica.Platform.Models.Entities.Logs;
 using LeokaEstetica.Platform.Models.Enums;
 
 namespace LeokaEstetica.Platform.Logs.Abstractions;
@@ -8,11 +9,11 @@ namespace LeokaEstetica.Platform.Logs.Abstractions;
 /// </summary>
 public abstract class BaseLogService
 {
-    protected readonly PgContext PgContext;
+    private readonly PgContext _pgContext;
     
     protected BaseLogService(PgContext pgContext)
     {
-        PgContext = pgContext;
+        _pgContext = pgContext;
     }
 
     /// <summary>
@@ -21,5 +22,17 @@ public abstract class BaseLogService
     /// <param name="ex">Исключение.</param>
     /// <param name="account">Аккаунт пользователя, под которым произошло исключение.</param>
     /// <param name="logLevel">Уровень исключения.</param>
-    public abstract Task LogInfoAsync(Exception ex, string account, LogLevelEnum logLevel);
+    public async Task LogInfoAsync(Exception ex, string account, LogLevelEnum logLevel)
+    {
+        await _pgContext.LogInfos.AddAsync(new LogInfoEntity
+        {
+            ExceptionMessage = ex.Message,
+            DateCreated = DateTime.UtcNow,
+            StackTrace = ex.StackTrace,
+            Account = account,
+            LogLevel = logLevel,
+            InnerException = ex.InnerException?.ToString()
+        });
+        await _pgContext.SaveChangesAsync();
+    }
 }

@@ -1,4 +1,4 @@
-﻿using LeokaEstetica.Platform.Models.Entities.Log;
+﻿using LeokaEstetica.Platform.Models.Entities.Logs;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -39,6 +39,10 @@ public partial class FonConfiguration : IEntityTypeConfiguration<LogInfoEntity>
             .HasColumnName("LogKey")
             .HasColumnType("uuid")
             .IsRequired();
+        
+        entity.Property(e => e.InnerException)
+            .HasColumnName("InnerException")
+            .HasColumnType("text");
 
         entity.HasIndex(u => u.LogId)
             .HasDatabaseName("LogInfo_pkey")

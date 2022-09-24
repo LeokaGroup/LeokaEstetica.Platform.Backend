@@ -1,6 +1,6 @@
 ﻿using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Models.Entities.Landing;
-using LeokaEstetica.Platform.Models.Entities.Log;
+using LeokaEstetica.Platform.Models.Entities.Logs;
 using Microsoft.EntityFrameworkCore;
 
 namespace LeokaEstetica.Platform.Core.Data;

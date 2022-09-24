@@ -7,7 +7,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Folder Include="Controllers" />
+      <ProjectReference Include="..\LeokaEstetica.Platform.Base\LeokaEstetica.Platform.Base.csproj" />
     </ItemGroup>
 
 </Project>
