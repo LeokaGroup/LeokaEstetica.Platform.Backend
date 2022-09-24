@@ -60,9 +60,9 @@ public static class AutoFac
         //     GetAssembliesFromApplicationBaseDirectory(x =>
         //         x.FullName.StartsWith("Leoka.Elementary.Platform.FTP"));
 
-        // var assemblies4 =
-        //     GetAssembliesFromApplicationBaseDirectory(x =>
-        //         x.FullName.StartsWith("Leoka.Elementary.Platform.Base"));
+        var assemblies4 =
+            GetAssembliesFromApplicationBaseDirectory(x =>
+                x.FullName.StartsWith("LeokaEstetica.Platform.Base"));
 
         // var assemblies5 =
         //     GetAssembliesFromApplicationBaseDirectory(x =>
@@ -86,7 +86,8 @@ public static class AutoFac
 
         b.RegisterAssemblyTypes(assemblies1).AsImplementedInterfaces();
         
-        var assemblies = assemblies1;
+        var assemblies = assemblies1
+            .Union(assemblies4);
 
         // RegisterMapper(b);
 
