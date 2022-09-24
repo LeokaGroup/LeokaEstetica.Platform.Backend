@@ -16,12 +16,12 @@ public partial class HeaderConfiguration : IEntityTypeConfiguration<HeaderEntity
             .HasColumnName("HeaderId")
             .HasColumnType("serial");
 
-        entity.Property(e => e.HeaderMenuItemTitle)
+        entity.Property(e => e.MenuItemTitle)
             .HasColumnName("HeaderMenuItemTitle")
             .HasColumnType("varchar(200)")
             .IsRequired();
 
-        entity.Property(e => e.HeaderMenuItemUrl)
+        entity.Property(e => e.MenuItemUrl)
             .HasColumnName("HeaderMenuItemUrl")
             .HasColumnType("varchar(200)");
         

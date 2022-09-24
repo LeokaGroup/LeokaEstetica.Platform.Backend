@@ -6,20 +6,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="8e5e67b3-a7a4-45dc-b558-eeb07bb7dcd3" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Base/BaseController.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Controllers/Header/HeaderController.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Controllers/Landing/LandingController.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Models/Entities/Logs/LogInfoEntity.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.LeokaEstetica.Platform.Backend/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.LeokaEstetica.Platform.Backend/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Backend/LeokaEstetica.Platform.Backend.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Backend/LeokaEstetica.Platform.Backend.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Base/LeokaEstetica.Platform.Base.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Base/LeokaEstetica.Platform.Base.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Controllers/Controllers/Landing/LandingController.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Controllers/LeokaEstetica.Platform.Controllers.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Controllers/LeokaEstetica.Platform.Controllers.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Core/Data/PgContext.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Core/Data/PgContext.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Logs/Abstractions/BaseLogService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Logs/Abstractions/BaseLogService.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Logs/AutofacModules/LogsModule.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Logs/AutofacModules/LogsModule.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Logs/Services/LogService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Logs/Services/LogService.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Models/Mappings/Logs/LogInfoConfiguration.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Models/Mappings/Logs/LogInfoConfiguration.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Models/Entities/Common/HeaderEntity.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Models/Entities/Common/HeaderEntity.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Models/Mappings/Common/HeaderConfiguration.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Models/Mappings/Common/HeaderConfiguration.cs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -40,10 +29,6 @@
         <option value="develop" />
       </list>
     </option>
-  </component>
-  <component name="HighlightingSettingsPerFile">
-    <setting file="file://$PROJECT_DIR$/LeokaEstetica.Platform.Controllers/Landing/LandingController.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/LeokaEstetica.Platform.Models/Mappings/Logs/LogInfoConfiguration.cs" root0="FORCE_HIGHLIGHTING" />
   </component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />

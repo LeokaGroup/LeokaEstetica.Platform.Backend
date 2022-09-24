@@ -13,12 +13,12 @@ public class HeaderEntity
     /// <summary>
     /// Название пункта меню хидера.
     /// </summary>
-    public string HeaderMenuItemTitle { get; set; }
+    public string MenuItemTitle { get; set; }
 
     /// <summary>
     /// Ссылка на роут.
     /// </summary>
-    public string HeaderMenuItemUrl { get; set; }
+    public string MenuItemUrl { get; set; }
 
     /// <summary>
     /// Позиция в списке.
