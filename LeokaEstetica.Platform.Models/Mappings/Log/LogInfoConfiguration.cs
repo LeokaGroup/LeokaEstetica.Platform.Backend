@@ -1,10 +1,10 @@
-﻿using LeokaEstetica.Platform.Models.Entities.Log;
+﻿using LeokaEstetica.Platform.Models.Entities.Logs;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace LeokaEstetica.Platform.Models.Mappings.Log;
+namespace LeokaEstetica.Platform.Models.Mappings.Logs;
 
-public partial class LogInfoConfiguration : IEntityTypeConfiguration<LogInfoEntity>
+public partial class FonConfiguration : IEntityTypeConfiguration<LogInfoEntity>
 {
     public void Configure(EntityTypeBuilder<LogInfoEntity> entity)
     {
@@ -18,12 +18,11 @@ public partial class LogInfoConfiguration : IEntityTypeConfiguration<LogInfoEnti
 
         entity.Property(e => e.ExceptionMessage)
             .HasColumnName("ExceptionMessage")
-            .HasColumnType("text")
             .IsRequired();
 
         entity.Property(e => e.DateCreated)
             .HasColumnName("DateCreated")
-            .HasColumnType("timestamp with time zone")
+            .HasColumnType("timestamp")
             .IsRequired();
         
         entity.Property(e => e.Account)
@@ -33,17 +32,17 @@ public partial class LogInfoConfiguration : IEntityTypeConfiguration<LogInfoEnti
         
         entity.Property(e => e.StackTrace)
             .HasColumnName("StackTrace")
-            .HasColumnType("text");
+            .HasColumnType("text")
+            .IsRequired();
         
         entity.Property(e => e.LogKey)
             .HasColumnName("LogKey")
             .HasColumnType("uuid")
             .IsRequired();
         
-        entity.Property(e => e.LogLevel)
-            .HasColumnName("LogLevel")
-            .HasColumnType("text")
-            .IsRequired();
+        entity.Property(e => e.InnerException)
+            .HasColumnName("InnerException")
+            .HasColumnType("text");
 
         entity.HasIndex(u => u.LogId)
             .HasDatabaseName("LogInfo_pkey")

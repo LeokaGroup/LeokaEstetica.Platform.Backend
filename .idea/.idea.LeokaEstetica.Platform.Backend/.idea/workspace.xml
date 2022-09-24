@@ -6,10 +6,20 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="8e5e67b3-a7a4-45dc-b558-eeb07bb7dcd3" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Models/Entities/Common/HeaderEntity.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Models/Mappings/Common/HeaderConfiguration.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Base/BaseController.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Controllers/Header/HeaderController.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Controllers/Landing/LandingController.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Models/Entities/Logs/LogInfoEntity.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.LeokaEstetica.Platform.Backend/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.LeokaEstetica.Platform.Backend/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Backend/LeokaEstetica.Platform.Backend.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Backend/LeokaEstetica.Platform.Backend.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Base/LeokaEstetica.Platform.Base.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Base/LeokaEstetica.Platform.Base.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Controllers/Controllers/Landing/LandingController.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Controllers/LeokaEstetica.Platform.Controllers.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Controllers/LeokaEstetica.Platform.Controllers.csproj" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Core/Data/PgContext.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Core/Data/PgContext.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Logs/Abstractions/BaseLogService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Logs/Abstractions/BaseLogService.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Logs/AutofacModules/LogsModule.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Logs/AutofacModules/LogsModule.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Logs/Services/LogService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Logs/Services/LogService.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Models/Mappings/Logs/LogInfoConfiguration.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Models/Mappings/Logs/LogInfoConfiguration.cs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -19,7 +29,7 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="develop" />
+        <entry key="$PROJECT_DIR$" value="feature/2znu49d-add-nlog" />
       </map>
     </option>
   </component>
@@ -30,6 +40,10 @@
         <option value="develop" />
       </list>
     </option>
+  </component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$PROJECT_DIR$/LeokaEstetica.Platform.Controllers/Landing/LandingController.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/LeokaEstetica.Platform.Models/Mappings/Logs/LogInfoConfiguration.cs" root0="FORCE_HIGHLIGHTING" />
   </component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
@@ -104,7 +118,8 @@
       <workItem from="1663352777489" duration="4352000" />
       <workItem from="1663418431139" duration="5790000" />
       <workItem from="1663621247652" duration="1300000" />
-      <workItem from="1663692248195" duration="7365000" />
+      <workItem from="1664016913735" duration="14000" />
+      <workItem from="1664016948455" duration="7338000" />
     </task>
     <task id="LOCAL-00001" summary="Проверка гитигнора.">
       <created>1663022007062</created>
@@ -183,21 +198,7 @@
       <option name="project" value="LOCAL" />
       <updated>1663454731035</updated>
     </task>
-    <task id="LOCAL-00012" summary="Проверка тимсити.">
-      <created>1663624993578</created>
-      <option name="number" value="00012" />
-      <option name="presentableId" value="LOCAL-00012" />
-      <option name="project" value="LOCAL" />
-      <updated>1663624993578</updated>
-    </task>
-    <task id="LOCAL-00013" summary="Фикс ошибки с тимсити. Часть сущностей и маппингов была в гитигноре.">
-      <created>1663709234129</created>
-      <option name="number" value="00013" />
-      <option name="presentableId" value="LOCAL-00013" />
-      <option name="project" value="LOCAL" />
-      <updated>1663709234129</updated>
-    </task>
-    <option name="localTasksCounter" value="14" />
+    <option name="localTasksCounter" value="12" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -226,8 +227,6 @@
     <MESSAGE value="Добавил слой инфраструктуры, добавил автофак и другие базовые для проекта зависимости." />
     <MESSAGE value="Добавил сущность для логов, также разные улучшения по архитектуре." />
     <MESSAGE value="Удалил лишний код в Program.cs." />
-    <MESSAGE value="Проверка тимсити." />
-    <MESSAGE value="Фикс ошибки с тимсити. Часть сущностей и маппингов была в гитигноре." />
-    <option name="LAST_COMMIT_MESSAGE" value="Фикс ошибки с тимсити. Часть сущностей и маппингов была в гитигноре." />
+    <option name="LAST_COMMIT_MESSAGE" value="Удалил лишний код в Program.cs." />
   </component>
 </project>
