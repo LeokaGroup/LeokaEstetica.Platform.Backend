@@ -1,4 +1,6 @@
-﻿namespace LeokaEstetica.Platform.Models.Entities.Common;
+﻿using LeokaEstetica.Platform.Models.Enums;
+
+namespace LeokaEstetica.Platform.Models.Entities.Common;
 
 /// <summary>
 /// Класс сопоставляется с таблицей dbo.Header.
@@ -24,4 +26,9 @@ public class HeaderEntity
     /// Позиция в списке.
     /// </summary>
     public int Position { get; set; }
+
+    /// <summary>
+    /// Тип хидера.
+    /// </summary>
+    public HeaderTypeEnum HeaderType { get; set; }
 }

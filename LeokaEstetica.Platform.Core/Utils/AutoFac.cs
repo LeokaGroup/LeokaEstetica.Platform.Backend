@@ -1,7 +1,9 @@
 ﻿using System.Reflection;
 using Autofac;
+using AutoMapper;
 using LeokaEstetica.Platform.Core.Attributes;
 using LeokaEstetica.Platform.Core.Data;
+using LeokaEstetica.Platform.Core.Mapper;
 using Microsoft.EntityFrameworkCore;
 using Module = Autofac.Module;
 
@@ -89,7 +91,7 @@ public static class AutoFac
         var assemblies = assemblies1
             .Union(assemblies4);
 
-        // RegisterMapper(b);
+        RegisterMapper(b);
 
         _typeModules = (from assembly in assemblies
             from type in assembly.GetTypes()
@@ -119,7 +121,7 @@ public static class AutoFac
 
             RegisterAllAssemblyTypes(_builder);
             RegisterDbContext(_builder);
-            // RegisterMapper(_builder);
+            RegisterMapper(_builder);
             
             _container = _builder.Build();
         }
@@ -139,7 +141,7 @@ public static class AutoFac
 
         RegisterAllAssemblyTypes(_builder);
         RegisterDbContext(_builder);
-        // RegisterMapper(_builder);
+        RegisterMapper(_builder);
 
         return _container.BeginLifetimeScope();
     }
@@ -176,17 +178,19 @@ public static class AutoFac
             .InstancePerLifetimeScope();
     }
 
-    // private static void RegisterMapper(ContainerBuilder builder)
-    // {
-    //     builder.RegisterType<MappingProfile>().As<Profile>();
-    //     builder.Register(c => new MapperConfiguration(cfg =>
-    //     {
-    //         foreach (var profile in c.Resolve<IEnumerable<Profile>>())
-    //         {
-    //             cfg.AddProfile(profile);
-    //         }
-    //     })).AsSelf().SingleInstance();
-    //
-    //     builder.Register(c => c.Resolve<MapperConfiguration>().CreateMapper(c.Resolve)).As<IMapper>().InstancePerLifetimeScope();
-    // }
+    private static void RegisterMapper(ContainerBuilder builder)
+    {
+        builder.RegisterType<MappingProfile>().As<Profile>();
+        builder.Register(c => new MapperConfiguration(cfg =>
+        {
+            foreach (var profile in c.Resolve<IEnumerable<Profile>>())
+            {
+                cfg.AddProfile(profile);
+            }
+        })).AsSelf().SingleInstance();
+    
+        builder.Register(c => c.Resolve<MapperConfiguration>().CreateMapper(c.Resolve))
+            .As<IMapper>()
+            .InstancePerLifetimeScope();
+    }
 }

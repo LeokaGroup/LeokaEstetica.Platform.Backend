@@ -8,10 +8,13 @@ namespace LeokaEstetica.Platform.Logs.Services;
 /// <summary>
 /// Сервис реализует методы логирования.
 /// </summary>
-public sealed class LogService : BaseLogService
+public sealed class LogService : ILogService
 {
-    public LogService(PgContext pgContext) : base(pgContext)
+    private readonly PgContext _pgContext;
+    
+    public LogService(PgContext pgContext)
     {
+        _pgContext = pgContext;
     }
 
     /// <summary>
@@ -20,8 +23,17 @@ public sealed class LogService : BaseLogService
     /// <param name="ex">Исключение.</param>
     /// <param name="account">Аккаунт пользователя, под которым произошло исключение.</param>
     /// <param name="logLevel">Уровень исключения.</param>
-    // public override async Task LogInfoAsync(Exception ex, string account, LogLevelEnum logLevel)
-    // {
-    //    
-    // }
+    public async Task LogInfoAsync(Exception ex, string account, LogLevelEnum logLevel)
+    {
+        await _pgContext.LogInfos.AddAsync(new LogInfoEntity
+        {
+            ExceptionMessage = ex.Message,
+            DateCreated = DateTime.UtcNow,
+            StackTrace = ex.StackTrace,
+            Account = account,
+            LogLevel = logLevel,
+            InnerException = ex.InnerException?.ToString()
+        });
+        await _pgContext.SaveChangesAsync();
+    }
 }
