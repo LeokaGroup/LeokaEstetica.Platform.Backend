@@ -1,6 +1,4 @@
-﻿using LeokaEstetica.Platform.Models.Enums;
-
-namespace LeokaEstetica.Platform.Models.Entities.Logs;
+﻿namespace LeokaEstetica.Platform.Models.Entities.Logs;
 
 /// <summary>
 /// Класс сопоставляется с таблицей Logs.LogInfo.
@@ -40,7 +38,7 @@ public class LogInfoEntity
     /// <summary>
     /// Уровень логирования.
     /// </summary>
-    public LogLevelEnum LogLevel { get; set; }
+    public string LogLevel { get; set; }
 
     /// <summary>
     /// Исключение.

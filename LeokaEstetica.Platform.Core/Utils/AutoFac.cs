@@ -53,42 +53,27 @@ public static class AutoFac
         var assemblies1 =
             GetAssembliesFromApplicationBaseDirectory(x =>
                 x.FullName.StartsWith("LeokaEstetica.Platform.Logs"));
-
-        // var assemblies2 =
-        //     GetAssembliesFromApplicationBaseDirectory(x =>
-        //         x.FullName.StartsWith("Leoka.Elementary.Platform.Mailings"));
-
-        // var assemblies3 =
-        //     GetAssembliesFromApplicationBaseDirectory(x =>
-        //         x.FullName.StartsWith("Leoka.Elementary.Platform.FTP"));
-
-        var assemblies4 =
+        
+        var assemblies2 =
+            GetAssembliesFromApplicationBaseDirectory(x =>
+                x.FullName.StartsWith("LeokaEstetica.Platform.Services"));
+        
+        var assemblies3 =
             GetAssembliesFromApplicationBaseDirectory(x =>
                 x.FullName.StartsWith("LeokaEstetica.Platform.Base"));
-
-        // var assemblies5 =
-        //     GetAssembliesFromApplicationBaseDirectory(x =>
-        //         x.FullName.StartsWith("Leoka.Elementary.Platform.Integrations"));
-
-        // var assemblies6 =
-        //     GetAssembliesFromApplicationBaseDirectory(x =>
-        //         x.FullName.StartsWith("Leoka.Elementary.Platform.Commerce"));
-
-        // var assemblies7 =
-        //     GetAssembliesFromApplicationBaseDirectory(x =>
-        //         x.FullName.StartsWith("Leoka.Elementary.Platform.Messagings"));
-
-        // var assemblies8 =
-        //     GetAssembliesFromApplicationBaseDirectory(x =>
-        //         x.FullName.StartsWith("Leoka.Elementary.Platform.Configurator"));
-
-        // var assemblies9 =
-        //     GetAssembliesFromApplicationBaseDirectory(x =>
-        //         x.FullName.StartsWith("Leoka.Elementary.Platform.Access"));
+        
+        var assemblies4 =
+            GetAssembliesFromApplicationBaseDirectory(x =>
+                x.FullName.StartsWith("LeokaEstetica.Platform.Database"));
 
         b.RegisterAssemblyTypes(assemblies1).AsImplementedInterfaces();
+        b.RegisterAssemblyTypes(assemblies2).AsImplementedInterfaces();
+        b.RegisterAssemblyTypes(assemblies3).AsImplementedInterfaces();
+        b.RegisterAssemblyTypes(assemblies4).AsImplementedInterfaces();
         
         var assemblies = assemblies1
+            .Union(assemblies2)
+            .Union(assemblies3)
             .Union(assemblies4);
 
         RegisterMapper(b);

@@ -31,8 +31,9 @@ public sealed class LogService : ILogService
             DateCreated = DateTime.UtcNow,
             StackTrace = ex.StackTrace,
             Account = account,
-            LogLevel = logLevel,
-            InnerException = ex.InnerException?.ToString()
+            LogLevel = logLevel.ToString(),
+            InnerException = ex.InnerException?.ToString(),
+            LogKey = Guid.NewGuid()
         });
         await _pgContext.SaveChangesAsync();
     }
