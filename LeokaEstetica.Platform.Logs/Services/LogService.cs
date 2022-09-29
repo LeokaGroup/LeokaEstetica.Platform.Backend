@@ -21,17 +21,60 @@ public sealed class LogService : ILogService
     /// Метод пишет логи ошибок в базу.
     /// </summary>
     /// <param name="ex">Исключение.</param>
-    /// <param name="account">Аккаунт пользователя, под которым произошло исключение.</param>
-    /// <param name="logLevel">Уровень исключения.</param>
-    public async Task LogInfoAsync(Exception ex, string account, LogLevelEnum logLevel)
+    public async Task LogErrorAsync(Exception ex)
     {
         await _pgContext.LogInfos.AddAsync(new LogInfoEntity
         {
             ExceptionMessage = ex.Message,
             DateCreated = DateTime.UtcNow,
             StackTrace = ex.StackTrace,
-            Account = account,
-            LogLevel = logLevel.ToString(),
+            LogLevel = LogLevelEnum.Error.ToString(),
+            InnerException = ex.InnerException?.ToString(),
+            LogKey = Guid.NewGuid()
+        });
+        await _pgContext.SaveChangesAsync();
+    }
+
+    public async Task LogInfoAsync(Exception ex)
+    {
+        await _pgContext.LogInfos.AddAsync(new LogInfoEntity
+        {
+            ExceptionMessage = ex.Message,
+            DateCreated = DateTime.UtcNow,
+            StackTrace = ex.StackTrace,
+            LogLevel = LogLevelEnum.Info.ToString(),
+            InnerException = ex.InnerException?.ToString(),
+            LogKey = Guid.NewGuid()
+        });
+        await _pgContext.SaveChangesAsync();
+    }
+
+    public async Task LogCriticalAsync(Exception ex)
+    {
+        await _pgContext.LogInfos.AddAsync(new LogInfoEntity
+        {
+            ExceptionMessage = ex.Message,
+            DateCreated = DateTime.UtcNow,
+            StackTrace = ex.StackTrace,
+            LogLevel = LogLevelEnum.Critical.ToString(),
+            InnerException = ex.InnerException?.ToString(),
+            LogKey = Guid.NewGuid()
+        });
+        await _pgContext.SaveChangesAsync();
+    }
+
+    /// <summary>
+    /// Метод пишет логи ошибок в базу с уровнем Warning.
+    /// </summary>
+    /// <param name="ex">Исключение.</param>
+    public async Task LogWarningAsync(Exception ex)
+    {
+        await _pgContext.LogInfos.AddAsync(new LogInfoEntity
+        {
+            ExceptionMessage = ex.Message,
+            DateCreated = DateTime.UtcNow,
+            StackTrace = ex.StackTrace,
+            LogLevel = LogLevelEnum.Warning.ToString(),
             InnerException = ex.InnerException?.ToString(),
             LogKey = Guid.NewGuid()
         });

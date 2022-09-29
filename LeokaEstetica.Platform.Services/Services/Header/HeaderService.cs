@@ -16,7 +16,7 @@ public sealed class HeaderService : IHeaderService
     private readonly IHeaderRepository _headerRepository;
     private readonly ILogService _logger;
     private readonly IMapper _mapper;
-    
+
     public HeaderService(IHeaderRepository headerRepository, 
         ILogService logger, 
         IMapper mapper)
@@ -33,23 +33,24 @@ public sealed class HeaderService : IHeaderService
     /// <returns>Список элементов для меню хидера.</returns>
     public async Task<IEnumerable<HeaderOutput>> HeaderItemsAsync(HeaderTypeEnum headerType)
     {
-        // Если тип хидера не соответствует нужному типу.
-        if (!headerType.Equals(HeaderTypeEnum.Main))
+        var result = Enumerable.Empty<HeaderOutput>();
+        
+        try
         {
-            await _logger.LogInfoAsync(new EmptyHeaderTypeException(headerType), null, LogLevelEnum.Error);
-            throw new EmptyHeaderTypeException(headerType);
+            // Если тип хидера не соответствует нужному типу.
+            if (!headerType.Equals(HeaderTypeEnum.Main))
+            {
+                throw new EmptyHeaderTypeException(headerType);
+            }
+
+            var items = await _headerRepository.HeaderItemsAsync(headerType);
+            result = _mapper.Map<IEnumerable<HeaderOutput>>(items);   
         }
 
-        var items = await _headerRepository.HeaderItemsAsync(headerType);
-
-        if (!items.Any())
+        catch (Exception ex)
         {
-            var error = "Не найдено элементов для хидера!";
-            await _logger.LogInfoAsync(new ArgumentException(error), null, LogLevelEnum.Error);
-            throw new ArgumentNullException(error);
+            await _logger.LogErrorAsync(ex);
         }
-            
-        var result = _mapper.Map<IEnumerable<HeaderOutput>>(items);
 
         return result;
     }

@@ -7,9 +7,16 @@
   <component name="ChangeListManager">
     <list default="true" id="8e5e67b3-a7a4-45dc-b558-eeb07bb7dcd3" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.LeokaEstetica.Platform.Backend/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.LeokaEstetica.Platform.Backend/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Core/Utils/AutoFac.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Core/Utils/AutoFac.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Database/Repositories/Header/HeaderRepository.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Database/Repositories/Header/HeaderRepository.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Logs/Abstractions/ILogService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Logs/Abstractions/ILogService.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Logs/Services/LogService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Logs/Services/LogService.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Models/Entities/Logs/LogInfoEntity.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Models/Entities/Logs/LogInfoEntity.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Models/Enums/LogLevelEnum.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Models/Enums/LogLevelEnum.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Models/Mappings/Common/HeaderConfiguration.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Models/Mappings/Common/HeaderConfiguration.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Models/Mappings/Log/LogInfoConfiguration.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Models/Mappings/Log/LogInfoConfiguration.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Services/Services/Header/HeaderService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Services/Services/Header/HeaderService.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Tests/LeokaEstetica.Platform.Tests.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Tests/LeokaEstetica.Platform.Tests.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Tests/LogsTests/WriteLogInfoTest.cs" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -107,7 +114,8 @@
       <workItem from="1664016913735" duration="14000" />
       <workItem from="1664016948455" duration="7338000" />
       <workItem from="1664299048823" duration="7969000" />
-      <workItem from="1664378331724" duration="5014000" />
+      <workItem from="1664378331724" duration="6880000" />
+      <workItem from="1664469652529" duration="4202000" />
     </task>
     <task id="LOCAL-00001" summary="Проверка гитигнора.">
       <created>1663022007062</created>
@@ -200,7 +208,14 @@
       <option name="project" value="LOCAL" />
       <updated>1664380770186</updated>
     </task>
-    <option name="localTasksCounter" value="14" />
+    <task id="LOCAL-00014" summary="[#2zacjc3] Поправил ошибки при логировании.">
+      <created>1664389775866</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1664389775866</updated>
+    </task>
+    <option name="localTasksCounter" value="15" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -231,50 +246,12 @@
     <MESSAGE value="Удалил лишний код в Program.cs." />
     <MESSAGE value="Поправил сущность хидера." />
     <MESSAGE value="[#2zacjc3] Добавил получение элементов хидера в зависимости от его типа. Начал тестировать." />
-    <option name="LAST_COMMIT_MESSAGE" value="[#2zacjc3] Добавил получение элементов хидера в зависимости от его типа. Начал тестировать." />
+    <MESSAGE value="[#2zacjc3] Поправил ошибки при логировании." />
+    <option name="LAST_COMMIT_MESSAGE" value="[#2zacjc3] Поправил ошибки при логировании." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
-        <line-breakpoint enabled="true" type="DotNet Breakpoints">
-          <url>file://$PROJECT_DIR$/LeokaEstetica.Platform.Services/Services/Header/HeaderService.cs</url>
-          <line>60</line>
-          <properties documentPath="C:\Users\repos\Portfolio\LeokaEstetica.Platform.Backend\LeokaEstetica.Platform.Services\Services\Header\HeaderService.cs" initialLine="60" containingFunctionPresentation="method 'HeaderItemsAsync'">
-            <startOffsets>
-              <option value="2125" />
-            </startOffsets>
-            <endOffsets>
-              <option value="2182" />
-            </endOffsets>
-          </properties>
-          <option name="timeStamp" value="1" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="DotNet Breakpoints">
-          <url>file://$PROJECT_DIR$/LeokaEstetica.Platform.Services/Services/Header/HeaderService.cs</url>
-          <line>38</line>
-          <properties documentPath="C:\Users\repos\Portfolio\LeokaEstetica.Platform.Backend\LeokaEstetica.Platform.Services\Services\Header\HeaderService.cs" initialLine="38" containingFunctionPresentation="method 'HeaderItemsAsync'">
-            <startOffsets>
-              <option value="1335" />
-            </startOffsets>
-            <endOffsets>
-              <option value="1379" />
-            </endOffsets>
-          </properties>
-          <option name="timeStamp" value="2" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="DotNet Breakpoints">
-          <url>file://$PROJECT_DIR$/LeokaEstetica.Platform.Database/Repositories/Header/HeaderRepository.cs</url>
-          <line>43</line>
-          <properties documentPath="C:\Users\repos\Portfolio\LeokaEstetica.Platform.Backend\LeokaEstetica.Platform.Database\Repositories\Header\HeaderRepository.cs" initialLine="43" containingFunctionPresentation="method 'HeaderItemsAsync'">
-            <startOffsets>
-              <option value="1390" />
-            </startOffsets>
-            <endOffsets>
-              <option value="1447" />
-            </endOffsets>
-          </properties>
-          <option name="timeStamp" value="3" />
-        </line-breakpoint>
         <line-breakpoint enabled="true" type="DotNet Breakpoints">
           <url>file://$PROJECT_DIR$/LeokaEstetica.Platform.Database/Repositories/Header/HeaderRepository.cs</url>
           <line>33</line>
@@ -289,19 +266,6 @@
           <option name="timeStamp" value="4" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="DotNet Breakpoints">
-          <url>file://$PROJECT_DIR$/LeokaEstetica.Platform.Services/Services/Header/HeaderService.cs</url>
-          <line>46</line>
-          <properties documentPath="C:\Users\repos\Portfolio\LeokaEstetica.Platform.Backend\LeokaEstetica.Platform.Services\Services\Header\HeaderService.cs" initialLine="46" containingFunctionPresentation="method 'HeaderItemsAsync'">
-            <startOffsets>
-              <option value="1676" />
-            </startOffsets>
-            <endOffsets>
-              <option value="1693" />
-            </endOffsets>
-          </properties>
-          <option name="timeStamp" value="7" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="DotNet Breakpoints">
           <url>file://$PROJECT_DIR$/LeokaEstetica.Platform.Database/Repositories/Header/HeaderRepository.cs</url>
           <line>38</line>
           <properties documentPath="C:\Users\repos\Portfolio\LeokaEstetica.Platform.Backend\LeokaEstetica.Platform.Database\Repositories\Header\HeaderRepository.cs" initialLine="38" containingFunctionPresentation="method 'HeaderItemsAsync'">
@@ -313,6 +277,32 @@
             </endOffsets>
           </properties>
           <option name="timeStamp" value="8" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DotNet Breakpoints">
+          <url>file://$PROJECT_DIR$/LeokaEstetica.Platform.Services/Services/Header/HeaderService.cs</url>
+          <line>40</line>
+          <properties documentPath="C:\Users\repos\Portfolio\LeokaEstetica.Platform.Backend\LeokaEstetica.Platform.Services\Services\Header\HeaderService.cs" initialLine="40" containingFunctionPresentation="method 'HeaderItemsAsync'">
+            <startOffsets>
+              <option value="1395" />
+            </startOffsets>
+            <endOffsets>
+              <option value="1439" />
+            </endOffsets>
+          </properties>
+          <option name="timeStamp" value="11" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DotNet Breakpoints">
+          <url>file://$PROJECT_DIR$/LeokaEstetica.Platform.Services/Services/Header/HeaderService.cs</url>
+          <line>51</line>
+          <properties documentPath="C:\Users\repos\Portfolio\LeokaEstetica.Platform.Backend\LeokaEstetica.Platform.Services\Services\Header\HeaderService.cs" initialLine="55" containingFunctionPresentation="method 'HeaderItemsAsync'">
+            <startOffsets>
+              <option value="1744" />
+            </startOffsets>
+            <endOffsets>
+              <option value="1776" />
+            </endOffsets>
+          </properties>
+          <option name="timeStamp" value="12" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

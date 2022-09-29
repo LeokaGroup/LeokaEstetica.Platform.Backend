@@ -21,11 +21,6 @@ public class LogInfoEntity
     public DateTime DateCreated { get; set; }
 
     /// <summary>
-    /// Аккаунт пользователя, под которым записали лог.
-    /// </summary>
-    public string Account { get; set; }
-
-    /// <summary>
     /// Трассировка стека.
     /// </summary>
     public string StackTrace { get; set; }

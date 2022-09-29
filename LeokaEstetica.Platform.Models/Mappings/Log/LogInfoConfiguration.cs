@@ -24,12 +24,7 @@ public partial class FonConfiguration : IEntityTypeConfiguration<LogInfoEntity>
             .HasColumnName("DateCreated")
             .HasColumnType("timestamp")
             .IsRequired();
-        
-        entity.Property(e => e.Account)
-            .HasColumnName("Account")
-            .HasColumnType("varchar(100)")
-            .IsRequired();
-        
+
         entity.Property(e => e.StackTrace)
             .HasColumnName("StackTrace")
             .HasColumnType("text")

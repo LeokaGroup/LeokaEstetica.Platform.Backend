@@ -41,7 +41,7 @@ public sealed class HeaderRepository : IHeaderRepository
         
         catch (Exception ex)
         {
-            await _logger.LogInfoAsync(ex, null, LogLevelEnum.Error);
+            await _logger.LogErrorAsync(ex);
             throw;
         }
     }
