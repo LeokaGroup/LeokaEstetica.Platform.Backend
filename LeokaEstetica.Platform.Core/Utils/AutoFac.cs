@@ -1,7 +1,9 @@
 ﻿using System.Reflection;
 using Autofac;
+using AutoMapper;
 using LeokaEstetica.Platform.Core.Attributes;
 using LeokaEstetica.Platform.Core.Data;
+using LeokaEstetica.Platform.Core.Mapper;
 using Microsoft.EntityFrameworkCore;
 using Module = Autofac.Module;
 
@@ -51,45 +53,30 @@ public static class AutoFac
         var assemblies1 =
             GetAssembliesFromApplicationBaseDirectory(x =>
                 x.FullName.StartsWith("LeokaEstetica.Platform.Logs"));
-
-        // var assemblies2 =
-        //     GetAssembliesFromApplicationBaseDirectory(x =>
-        //         x.FullName.StartsWith("Leoka.Elementary.Platform.Mailings"));
-
-        // var assemblies3 =
-        //     GetAssembliesFromApplicationBaseDirectory(x =>
-        //         x.FullName.StartsWith("Leoka.Elementary.Platform.FTP"));
-
-        var assemblies4 =
+        
+        var assemblies2 =
+            GetAssembliesFromApplicationBaseDirectory(x =>
+                x.FullName.StartsWith("LeokaEstetica.Platform.Services"));
+        
+        var assemblies3 =
             GetAssembliesFromApplicationBaseDirectory(x =>
                 x.FullName.StartsWith("LeokaEstetica.Platform.Base"));
-
-        // var assemblies5 =
-        //     GetAssembliesFromApplicationBaseDirectory(x =>
-        //         x.FullName.StartsWith("Leoka.Elementary.Platform.Integrations"));
-
-        // var assemblies6 =
-        //     GetAssembliesFromApplicationBaseDirectory(x =>
-        //         x.FullName.StartsWith("Leoka.Elementary.Platform.Commerce"));
-
-        // var assemblies7 =
-        //     GetAssembliesFromApplicationBaseDirectory(x =>
-        //         x.FullName.StartsWith("Leoka.Elementary.Platform.Messagings"));
-
-        // var assemblies8 =
-        //     GetAssembliesFromApplicationBaseDirectory(x =>
-        //         x.FullName.StartsWith("Leoka.Elementary.Platform.Configurator"));
-
-        // var assemblies9 =
-        //     GetAssembliesFromApplicationBaseDirectory(x =>
-        //         x.FullName.StartsWith("Leoka.Elementary.Platform.Access"));
+        
+        var assemblies4 =
+            GetAssembliesFromApplicationBaseDirectory(x =>
+                x.FullName.StartsWith("LeokaEstetica.Platform.Database"));
 
         b.RegisterAssemblyTypes(assemblies1).AsImplementedInterfaces();
+        b.RegisterAssemblyTypes(assemblies2).AsImplementedInterfaces();
+        b.RegisterAssemblyTypes(assemblies3).AsImplementedInterfaces();
+        b.RegisterAssemblyTypes(assemblies4).AsImplementedInterfaces();
         
         var assemblies = assemblies1
+            .Union(assemblies2)
+            .Union(assemblies3)
             .Union(assemblies4);
 
-        // RegisterMapper(b);
+        RegisterMapper(b);
 
         _typeModules = (from assembly in assemblies
             from type in assembly.GetTypes()
@@ -119,7 +106,7 @@ public static class AutoFac
 
             RegisterAllAssemblyTypes(_builder);
             RegisterDbContext(_builder);
-            // RegisterMapper(_builder);
+            RegisterMapper(_builder);
             
             _container = _builder.Build();
         }
@@ -139,7 +126,7 @@ public static class AutoFac
 
         RegisterAllAssemblyTypes(_builder);
         RegisterDbContext(_builder);
-        // RegisterMapper(_builder);
+        RegisterMapper(_builder);
 
         return _container.BeginLifetimeScope();
     }
@@ -176,17 +163,19 @@ public static class AutoFac
             .InstancePerLifetimeScope();
     }
 
-    // private static void RegisterMapper(ContainerBuilder builder)
-    // {
-    //     builder.RegisterType<MappingProfile>().As<Profile>();
-    //     builder.Register(c => new MapperConfiguration(cfg =>
-    //     {
-    //         foreach (var profile in c.Resolve<IEnumerable<Profile>>())
-    //         {
-    //             cfg.AddProfile(profile);
-    //         }
-    //     })).AsSelf().SingleInstance();
-    //
-    //     builder.Register(c => c.Resolve<MapperConfiguration>().CreateMapper(c.Resolve)).As<IMapper>().InstancePerLifetimeScope();
-    // }
+    private static void RegisterMapper(ContainerBuilder builder)
+    {
+        builder.RegisterType<MappingProfile>().As<Profile>();
+        builder.Register(c => new MapperConfiguration(cfg =>
+        {
+            foreach (var profile in c.Resolve<IEnumerable<Profile>>())
+            {
+                cfg.AddProfile(profile);
+            }
+        })).AsSelf().SingleInstance();
+    
+        builder.Register(c => c.Resolve<MapperConfiguration>().CreateMapper(c.Resolve))
+            .As<IMapper>()
+            .InstancePerLifetimeScope();
+    }
 }

@@ -1,6 +1,4 @@
-﻿using LeokaEstetica.Platform.Models.Enums;
-
-namespace LeokaEstetica.Platform.Models.Entities.Logs;
+﻿namespace LeokaEstetica.Platform.Models.Entities.Logs;
 
 /// <summary>
 /// Класс сопоставляется с таблицей Logs.LogInfo.
@@ -23,11 +21,6 @@ public class LogInfoEntity
     public DateTime DateCreated { get; set; }
 
     /// <summary>
-    /// Аккаунт пользователя, под которым записали лог.
-    /// </summary>
-    public string Account { get; set; }
-
-    /// <summary>
     /// Трассировка стека.
     /// </summary>
     public string StackTrace { get; set; }
@@ -40,7 +33,7 @@ public class LogInfoEntity
     /// <summary>
     /// Уровень логирования.
     /// </summary>
-    public LogLevelEnum LogLevel { get; set; }
+    public string LogLevel { get; set; }
 
     /// <summary>
     /// Исключение.

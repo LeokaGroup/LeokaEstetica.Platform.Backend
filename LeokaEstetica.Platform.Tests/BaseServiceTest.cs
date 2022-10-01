@@ -1,5 +1,4 @@
 ﻿using LeokaEstetica.Platform.Core.Data;
-using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Logs.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -14,7 +13,7 @@ public class BaseServiceTest
     protected string PostgreConfigString { get; set; }
     protected IConfiguration AppConfiguration { get; set; }
     protected PgContext PgContext;
-    protected BaseLogService BaseLogService;
+    protected LogService LogService;
     
     public BaseServiceTest()
     {
@@ -32,6 +31,6 @@ public class BaseServiceTest
         optionsBuilder.UseNpgsql(PostgreConfigString);
         PgContext = new PgContext(optionsBuilder.Options);
 
-        BaseLogService = new LogService(PgContext);
+        LogService = new LogService(PgContext);
     }
 }

@@ -1,5 +1,7 @@
 ﻿using Autofac;
 using LeokaEstetica.Platform.Core.Attributes;
+using LeokaEstetica.Platform.Services.Abstractions.Header;
+using LeokaEstetica.Platform.Services.Services.Header;
 
 namespace LeokaEstetica.Platform.Services.AutofacModules;
 
@@ -10,9 +12,9 @@ public class ServicesModule
     {
         public static void InitModules(ContainerBuilder builder)
         {
-            // Сервис логирования.
-            // builder.RegisterType<LogService>().Named<BaseLogService>("LogService");
-            // builder.RegisterType<LogService>().As<BaseLogService>();
+            // Сервис хидера.
+            builder.RegisterType<HeaderService>().Named<IHeaderService>("HeaderService");
+            builder.RegisterType<HeaderService>().As<IHeaderService>();
         }
     }
 }

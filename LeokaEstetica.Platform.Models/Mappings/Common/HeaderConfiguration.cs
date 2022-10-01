@@ -17,12 +17,12 @@ public partial class HeaderConfiguration : IEntityTypeConfiguration<HeaderEntity
             .HasColumnType("serial");
 
         entity.Property(e => e.MenuItemTitle)
-            .HasColumnName("HeaderMenuItemTitle")
+            .HasColumnName("MenuItemTitle")
             .HasColumnType("varchar(200)")
             .IsRequired();
 
         entity.Property(e => e.MenuItemUrl)
-            .HasColumnName("HeaderMenuItemUrl")
+            .HasColumnName("MenuItemUrl")
             .HasColumnType("varchar(200)");
         
         entity.Property(e => e.Position)
@@ -30,6 +30,11 @@ public partial class HeaderConfiguration : IEntityTypeConfiguration<HeaderEntity
             .HasColumnType("int")
             .IsRequired()
             .HasDefaultValue(0);
+        
+        entity.Property(e => e.HeaderType)
+            .HasColumnName("HeaderType")
+            .HasColumnType("varchar(100)")
+            .IsRequired();
 
         entity.HasIndex(u => u.HeaderId)
             .HasDatabaseName("PK_Header_HeaderId")
