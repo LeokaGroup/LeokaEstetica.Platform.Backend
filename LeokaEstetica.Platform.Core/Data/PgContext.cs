@@ -44,4 +44,9 @@ public class PgContext : DbContext
     /// Таблица предложений платформы.
     /// </summary>
     public DbSet<PlatformOfferEntity> PlatformOffer { get; set; }
+
+    /// <summary>
+    /// Таблица элементов предложений платформы.
+    /// </summary>
+    public DbSet<PlatformOfferItemsEntity> PlatformOfferItems { get; set; }
 }
