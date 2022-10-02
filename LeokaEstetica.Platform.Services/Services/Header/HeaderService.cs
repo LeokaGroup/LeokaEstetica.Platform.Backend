@@ -14,15 +14,12 @@ namespace LeokaEstetica.Platform.Services.Services.Header;
 public sealed class HeaderService : IHeaderService
 {
     private readonly IHeaderRepository _headerRepository;
-    private readonly ILogService _logger;
     private readonly IMapper _mapper;
 
-    public HeaderService(IHeaderRepository headerRepository, 
-        ILogService logger, 
+    public HeaderService(IHeaderRepository headerRepository,
         IMapper mapper)
     {
         _headerRepository = headerRepository;
-        _logger = logger;
         _mapper = mapper;
     }
 
@@ -33,24 +30,14 @@ public sealed class HeaderService : IHeaderService
     /// <returns>Список элементов для меню хидера.</returns>
     public async Task<IEnumerable<HeaderOutput>> HeaderItemsAsync(HeaderTypeEnum headerType)
     {
-        var result = Enumerable.Empty<HeaderOutput>();
-        
-        try
+        // Если тип хидера не соответствует нужному типу.
+        if (!headerType.Equals(HeaderTypeEnum.Main))
         {
-            // Если тип хидера не соответствует нужному типу.
-            if (!headerType.Equals(HeaderTypeEnum.Main))
-            {
-                throw new EmptyHeaderTypeException(headerType);
-            }
-
-            var items = await _headerRepository.HeaderItemsAsync(headerType);
-            result = _mapper.Map<IEnumerable<HeaderOutput>>(items);   
+            throw new EmptyHeaderTypeException(headerType);
         }
 
-        catch (Exception ex)
-        {
-            await _logger.LogErrorAsync(ex);
-        }
+        var items = await _headerRepository.HeaderItemsAsync(headerType);
+        var result = _mapper.Map<IEnumerable<HeaderOutput>>(items);
 
         return result;
     }
