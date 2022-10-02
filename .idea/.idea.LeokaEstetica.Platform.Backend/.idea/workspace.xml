@@ -6,17 +6,17 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="8e5e67b3-a7a4-45dc-b558-eeb07bb7dcd3" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Controllers/Landing/LandingController.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Database/Abstractions/Landing/ILandingRepository.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Database/Repositories/Landing/LandingRepository.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Models/Dto/Output/Landing/LandingStartFonOutput.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Services/Abstractions/Landing/ILandingService.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Services/Services/Landing/LandingService.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.LeokaEstetica.Platform.Backend/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.LeokaEstetica.Platform.Backend/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Database/Repositories/Header/HeaderRepository.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Database/Repositories/Header/HeaderRepository.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Logs/Abstractions/ILogService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Logs/Abstractions/ILogService.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Logs/Services/LogService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Logs/Services/LogService.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Models/Entities/Logs/LogInfoEntity.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Models/Entities/Logs/LogInfoEntity.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Models/Enums/LogLevelEnum.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Models/Enums/LogLevelEnum.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Models/Mappings/Common/HeaderConfiguration.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Models/Mappings/Common/HeaderConfiguration.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Models/Mappings/Log/LogInfoConfiguration.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Models/Mappings/Log/LogInfoConfiguration.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Core/Mapper/MappingProfile.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Core/Mapper/MappingProfile.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Database/AutofacModules/RepositoriesModule.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Database/AutofacModules/RepositoriesModule.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Services/AutofacModules/ServicesModule.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Services/AutofacModules/ServicesModule.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Services/Services/Header/HeaderService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Services/Services/Header/HeaderService.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Tests/LeokaEstetica.Platform.Tests.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Tests/LeokaEstetica.Platform.Tests.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Tests/LogsTests/WriteLogInfoTest.cs" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -279,30 +279,30 @@
           <option name="timeStamp" value="8" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="DotNet Breakpoints">
-          <url>file://$PROJECT_DIR$/LeokaEstetica.Platform.Services/Services/Header/HeaderService.cs</url>
-          <line>40</line>
-          <properties documentPath="C:\Users\repos\Portfolio\LeokaEstetica.Platform.Backend\LeokaEstetica.Platform.Services\Services\Header\HeaderService.cs" initialLine="40" containingFunctionPresentation="method 'HeaderItemsAsync'">
+          <url>file://$PROJECT_DIR$/LeokaEstetica.Platform.Services/Services/Landing/LandingService.cs</url>
+          <line>42</line>
+          <properties documentPath="C:\Users\repos\Portfolio\LeokaEstetica.Platform.Backend\LeokaEstetica.Platform.Services\Services\Landing\LandingService.cs" initialLine="42" containingFunctionPresentation="method 'LandingStartFonAsync'">
             <startOffsets>
-              <option value="1395" />
+              <option value="1284" />
             </startOffsets>
             <endOffsets>
-              <option value="1439" />
+              <option value="1316" />
             </endOffsets>
           </properties>
-          <option name="timeStamp" value="11" />
+          <option name="timeStamp" value="13" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="DotNet Breakpoints">
-          <url>file://$PROJECT_DIR$/LeokaEstetica.Platform.Services/Services/Header/HeaderService.cs</url>
-          <line>51</line>
-          <properties documentPath="C:\Users\repos\Portfolio\LeokaEstetica.Platform.Backend\LeokaEstetica.Platform.Services\Services\Header\HeaderService.cs" initialLine="55" containingFunctionPresentation="method 'HeaderItemsAsync'">
+          <url>file://$PROJECT_DIR$/LeokaEstetica.Platform.Services/Services/Landing/LandingService.cs</url>
+          <line>34</line>
+          <properties documentPath="C:\Users\repos\Portfolio\LeokaEstetica.Platform.Backend\LeokaEstetica.Platform.Services\Services\Landing\LandingService.cs" initialLine="34" containingFunctionPresentation="method 'LandingStartFonAsync'">
             <startOffsets>
-              <option value="1744" />
+              <option value="1061" />
             </startOffsets>
             <endOffsets>
-              <option value="1776" />
+              <option value="1119" />
             </endOffsets>
           </properties>
-          <option name="timeStamp" value="12" />
+          <option name="timeStamp" value="14" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
