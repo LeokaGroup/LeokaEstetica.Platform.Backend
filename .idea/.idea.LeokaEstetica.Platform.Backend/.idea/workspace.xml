@@ -5,19 +5,7 @@
     <projectFile profileName="LeokaEstetica.Platform.Backend">LeokaEstetica.Platform.Backend/LeokaEstetica.Platform.Backend.csproj</projectFile>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="8e5e67b3-a7a4-45dc-b558-eeb07bb7dcd3" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Controllers/Landing/LandingController.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Database/Abstractions/Landing/ILandingRepository.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Database/Repositories/Landing/LandingRepository.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Models/Dto/Output/Landing/LandingStartFonOutput.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Services/Abstractions/Landing/ILandingService.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Services/Services/Landing/LandingService.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.LeokaEstetica.Platform.Backend/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.LeokaEstetica.Platform.Backend/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Core/Mapper/MappingProfile.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Core/Mapper/MappingProfile.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Database/AutofacModules/RepositoriesModule.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Database/AutofacModules/RepositoriesModule.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Services/AutofacModules/ServicesModule.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Services/AutofacModules/ServicesModule.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LeokaEstetica.Platform.Services/Services/Header/HeaderService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LeokaEstetica.Platform.Services/Services/Header/HeaderService.cs" afterDir="false" />
-    </list>
+    <list default="true" id="8e5e67b3-a7a4-45dc-b558-eeb07bb7dcd3" name="Changes" comment="test" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -247,7 +235,8 @@
     <MESSAGE value="Поправил сущность хидера." />
     <MESSAGE value="[#2zacjc3] Добавил получение элементов хидера в зависимости от его типа. Начал тестировать." />
     <MESSAGE value="[#2zacjc3] Поправил ошибки при логировании." />
-    <option name="LAST_COMMIT_MESSAGE" value="[#2zacjc3] Поправил ошибки при логировании." />
+    <MESSAGE value="test" />
+    <option name="LAST_COMMIT_MESSAGE" value="test" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
