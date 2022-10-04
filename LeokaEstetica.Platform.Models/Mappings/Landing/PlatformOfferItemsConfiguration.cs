@@ -18,7 +18,7 @@ public partial class PlatformOfferItemsConfiguration : IEntityTypeConfiguration<
 
         entity.Property(e => e.ItemText)
             .HasColumnName("ItemText")
-            .HasColumnType("varchar(200)")
+            .HasColumnType("varchar(400)")
             .IsRequired();
 
         entity.Property(e => e.ItemIcon)

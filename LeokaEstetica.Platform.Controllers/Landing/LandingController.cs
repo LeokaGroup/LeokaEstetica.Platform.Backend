@@ -25,9 +25,32 @@ public class LandingController : BaseController
     /// <returns>Данные блока.returns>
     [HttpGet]
     [Route("fon/start")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<LandingStartFonOutput>))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
     public async Task<LandingStartFonOutput> LandingStartFonAsync()
     {
         var result = await _landingService.LandingStartFonAsync();
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод получает данные предложений платформы.
+    /// </summary>
+    /// <returns>Данные предложений платформы.</returns>
+    [HttpGet]
+    [Route("offers")]
+    [ProducesResponseType(200, Type = typeof(PlatformOfferOutput))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<PlatformOfferOutput> GetPlatformOffersAsync()
+    {
+        var result = await _landingService.GetPlatformItemsAsync();
 
         return result;
     }

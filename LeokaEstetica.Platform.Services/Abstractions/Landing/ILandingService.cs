@@ -12,4 +12,10 @@ public interface ILandingService
     /// </summary>
     /// <returns>Данные блока.returns>
     Task<LandingStartFonOutput> LandingStartFonAsync();
+
+    /// <summary>
+    /// Метод получает данные для фона предложений платформы.
+    /// </summary>
+    /// <returns>Данные для фона.</returns>
+    Task<PlatformOfferOutput> GetPlatformItemsAsync();
 }

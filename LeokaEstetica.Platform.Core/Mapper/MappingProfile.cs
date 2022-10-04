@@ -15,5 +15,7 @@ public class MappingProfile : Profile
     {
         CreateMap<HeaderEntity, HeaderOutput>();
         CreateMap<FonEntity, LandingStartFonOutput>();
+        CreateMap<PlatformOfferEntity, PlatformOfferOutput>();
+        CreateMap<PlatformOfferItemsEntity, PlatformOfferItemsOutput>();
     }
 }
