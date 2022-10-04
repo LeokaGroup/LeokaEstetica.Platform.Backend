@@ -12,4 +12,16 @@ public interface ILandingRepository
     /// </summary>
     /// <returns>Данные блока.returns>
     Task<FonEntity> LandingStartFonAsync();
+    
+    /// <summary>
+    /// Метод получает данные для фона предложений платформы.
+    /// </summary>
+    /// <returns>Данные для фона.</returns>
+    Task<PlatformOfferEntity> GetPlatformDataAsync();
+    
+    /// <summary>
+    /// Метод получает список элементов для фона предложений платформы.
+    /// </summary>
+    /// <returns>Данные для фона.</returns>
+    Task<IEnumerable<PlatformOfferItemsEntity>> GetPlatformItemsAsync();
 }

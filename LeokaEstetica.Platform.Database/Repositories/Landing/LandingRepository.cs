@@ -26,10 +26,30 @@ public sealed class LandingRepository : ILandingRepository
         var result = await _pgContext.Fons
             .FirstOrDefaultAsync();
 
-        if (result is null)
-        {
-            throw new ArgumentNullException($"Нет данных фона для главного лендинга!");
-        }
+        return result;
+    }
+
+    /// <summary>
+    /// Метод получает данные для фона предложений платформы.
+    /// </summary>
+    /// <returns>Данные для фона.</returns>
+    public async Task<PlatformOfferEntity> GetPlatformDataAsync()
+    {
+        var result = await _pgContext.PlatformOffer
+            .FirstOrDefaultAsync();
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод получает список элементов для фона предложений платформы.
+    /// </summary>
+    /// <returns>Данные для фона.</returns>
+    public async Task<IEnumerable<PlatformOfferItemsEntity>> GetPlatformItemsAsync()
+    {
+        var result = await _pgContext.PlatformOfferItems
+            .OrderBy(o => o.Position)
+            .ToListAsync();
 
         return result;
     }
