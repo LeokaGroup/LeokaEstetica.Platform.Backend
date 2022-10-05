@@ -19,8 +19,8 @@ builder.Services.AddCors(options => options.AddPolicy("ApiCorsPolicy", b =>
         .AllowCredentials();
 }));
 
-builder.Services.AddDbContext<PgContext>(options =>
-    options.UseNpgsql(configuration.GetConnectionString("NpgDevSqlConnection") ?? string.Empty));
+// builder.Services.AddDbContext<PgContext>(options =>
+//     options.UseNpgsql(configuration.GetConnectionString("NpgDevSqlConnection") ?? string.Empty));
 
 // if (builder.Environment.IsDevelopment())
 // {
@@ -76,6 +76,16 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
+    
+    builder.Services.AddDbContext<PgContext>(options =>
+        options.UseNpgsql(configuration.GetConnectionString("NpgDevSqlConnection") ?? string.Empty));
+}
+
+if (app.Environment.IsStaging())
+{
+    app.UseDeveloperExceptionPage();
+    builder.Services.AddDbContext<PgContext>(options =>
+        options.UseNpgsql(configuration.GetConnectionString("NpgTestSqlConnection") ?? string.Empty));
 }
 
 app.UseHttpsRedirection();
