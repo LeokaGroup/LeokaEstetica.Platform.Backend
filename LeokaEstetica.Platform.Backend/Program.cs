@@ -7,7 +7,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 
-var builder = WebApplication.CreateBuilder(args);
+// var builder = WebApplication.CreateBuilder(args);
+var builder = WebApplication.CreateBuilder(new WebApplicationOptions
+{
+    EnvironmentName = Environments.Development
+}); 
 var configuration = builder.Configuration;
 
 builder.Services.AddControllers().AddControllersAsServices();
@@ -22,11 +26,11 @@ builder.Services.AddCors(options => options.AddPolicy("ApiCorsPolicy", b =>
 // builder.Services.AddDbContext<PgContext>(options =>
 //     options.UseNpgsql(configuration.GetConnectionString("NpgDevSqlConnection") ?? string.Empty));
 
-// if (builder.Environment.IsDevelopment())
-// {
-//     builder.Services.AddDbContext<PgContext>(options =>
-//         options.UseNpgsql(configuration.GetConnectionString("NpgDevSqlConnection") ?? string.Empty));
-// }
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddDbContext<PgContext>(options =>
+        options.UseNpgsql(configuration.GetConnectionString("NpgDevSqlConnection") ?? string.Empty));
+}
 //         
 // if (builder.Environment.IsStaging())
 // {
@@ -73,20 +77,10 @@ builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseDeveloperExceptionPage();
-    
-    builder.Services.AddDbContext<PgContext>(options =>
-        options.UseNpgsql(configuration.GetConnectionString("NpgDevSqlConnection") ?? string.Empty));
-}
-
-if (app.Environment.IsStaging())
-{
-    app.UseDeveloperExceptionPage();
-    builder.Services.AddDbContext<PgContext>(options =>
-        options.UseNpgsql(configuration.GetConnectionString("NpgTestSqlConnection") ?? string.Empty));
-}
+// if (app.Environment.IsDevelopment())
+// {
+//     app.UseDeveloperExceptionPage();
+// }
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
