@@ -7,7 +7,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 
-// var builder = WebApplication.CreateBuilder(args);
 var builder = WebApplication.CreateBuilder(new WebApplicationOptions
 {
     EnvironmentName = Environments.Development
@@ -23,25 +22,17 @@ builder.Services.AddCors(options => options.AddPolicy("ApiCorsPolicy", b =>
         .AllowCredentials();
 }));
 
-// builder.Services.AddDbContext<PgContext>(options =>
-//     options.UseNpgsql(configuration.GetConnectionString("NpgDevSqlConnection") ?? string.Empty));
-
 if (builder.Environment.IsDevelopment())
 {
     builder.Services.AddDbContext<PgContext>(options =>
         options.UseNpgsql(configuration.GetConnectionString("NpgDevSqlConnection") ?? string.Empty));
 }
-//         
-// if (builder.Environment.IsStaging())
-// {
-//     builder.Services.AddDbContext<PgContext>(options =>
-//         options.UseNpgsql(configuration.GetConnectionString("NpgTestSqlConnection") ?? string.Empty));
-// }
-        
-// if (builder.Environment.IsProduction())
-// {
-//     
-// }
+      
+if (builder.Environment.IsStaging())
+{
+    builder.Services.AddDbContext<PgContext>(options =>
+        options.UseNpgsql(configuration.GetConnectionString("NpgTestSqlConnection") ?? string.Empty));
+}
 
 builder.Services.AddSwaggerGen(c => { c.SwaggerDoc("v1", new OpenApiInfo { Title = "Leoka.Estetica.Platform" }); });
 
@@ -77,11 +68,6 @@ builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 var app = builder.Build();
 
-// if (app.Environment.IsDevelopment())
-// {
-//     app.UseDeveloperExceptionPage();
-// }
-
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseAuthentication();
@@ -89,6 +75,11 @@ app.UseRouting();
 app.UseAuthorization();
 app.UseCors("ApiCorsPolicy");
 app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
-app.UseSwagger();
-app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Leoka.Estetica.Platform"));
+
+if (builder.Environment.IsDevelopment() || builder.Environment.IsStaging())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Leoka.Estetica.Platform"));
+}
+
 app.Run();
