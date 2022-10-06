@@ -2,8 +2,10 @@
 using LeokaEstetica.Platform.Core.Attributes;
 using LeokaEstetica.Platform.Services.Abstractions.Header;
 using LeokaEstetica.Platform.Services.Abstractions.Landing;
+using LeokaEstetica.Platform.Services.Abstractions.User;
 using LeokaEstetica.Platform.Services.Services.Header;
 using LeokaEstetica.Platform.Services.Services.Landing;
+using LeokaEstetica.Platform.Services.Services.User;
 
 namespace LeokaEstetica.Platform.Services.AutofacModules;
 
@@ -21,6 +23,10 @@ public class ServicesModule
             // Сервис лендингов.
             builder.RegisterType<LandingService>().Named<ILandingService>("LandingService");
             builder.RegisterType<LandingService>().As<ILandingService>();
+            
+            // Сервис пользователя.
+            builder.RegisterType<UserService>().Named<IUserService>("UserService");
+            builder.RegisterType<UserService>().As<IUserService>();
         }
     }
 }

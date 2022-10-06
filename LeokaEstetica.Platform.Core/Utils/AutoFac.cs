@@ -65,16 +65,22 @@ public static class AutoFac
         var assemblies4 =
             GetAssembliesFromApplicationBaseDirectory(x =>
                 x.FullName.StartsWith("LeokaEstetica.Platform.Database"));
+        
+        var assemblies5 =
+            GetAssembliesFromApplicationBaseDirectory(x =>
+                x.FullName.StartsWith("LeokaEstetica.Platform.Access"));
 
         b.RegisterAssemblyTypes(assemblies1).AsImplementedInterfaces();
         b.RegisterAssemblyTypes(assemblies2).AsImplementedInterfaces();
         b.RegisterAssemblyTypes(assemblies3).AsImplementedInterfaces();
         b.RegisterAssemblyTypes(assemblies4).AsImplementedInterfaces();
+        b.RegisterAssemblyTypes(assemblies5).AsImplementedInterfaces();
         
         var assemblies = assemblies1
             .Union(assemblies2)
             .Union(assemblies3)
-            .Union(assemblies4);
+            .Union(assemblies4)
+            .Union(assemblies5);
 
         RegisterMapper(b);
 
@@ -163,17 +169,23 @@ public static class AutoFac
             .InstancePerLifetimeScope();
     }
 
+    /// <summary>
+    /// Метод регистрирует маппер.
+    /// </summary>
+    /// <param name="builder">Билдер контейнера, который наполнять регистрациями.</param>
     private static void RegisterMapper(ContainerBuilder builder)
     {
         builder.RegisterType<MappingProfile>().As<Profile>();
         builder.Register(c => new MapperConfiguration(cfg =>
-        {
-            foreach (var profile in c.Resolve<IEnumerable<Profile>>())
             {
-                cfg.AddProfile(profile);
-            }
-        })).AsSelf().SingleInstance();
-    
+                foreach (var profile in c.Resolve<IEnumerable<Profile>>())
+                {
+                    cfg.AddProfile(profile);
+                }
+            }))
+            .AsSelf()
+            .SingleInstance();
+
         builder.Register(c => c.Resolve<MapperConfiguration>().CreateMapper(c.Resolve))
             .As<IMapper>()
             .InstancePerLifetimeScope();
