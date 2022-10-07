@@ -2,6 +2,7 @@
 using LeokaEstetica.Platform.Models.Entities.Common;
 using LeokaEstetica.Platform.Models.Entities.Landing;
 using LeokaEstetica.Platform.Models.Entities.Logs;
+using LeokaEstetica.Platform.Models.Entities.User;
 using Microsoft.EntityFrameworkCore;
 
 namespace LeokaEstetica.Platform.Core.Data;
@@ -49,4 +50,9 @@ public class PgContext : DbContext
     /// Таблица элементов предложений платформы.
     /// </summary>
     public DbSet<PlatformOfferItemsEntity> PlatformOfferItems { get; set; }
+
+    /// <summary>
+    /// Таблица пользователей.
+    /// </summary>
+    public DbSet<UserEntity> Users { get; set; }
 }
