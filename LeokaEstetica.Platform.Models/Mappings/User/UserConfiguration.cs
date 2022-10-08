@@ -82,7 +82,7 @@ public partial class UserConfiguration : IEntityTypeConfiguration<UserEntity>
         
         entity.Property(e => e.UserCode)
             .HasColumnName("UserCode")
-            .HasColumnType("text")
+            .HasColumnType("uuid")
             .IsRequired();
         
         entity.Property(e => e.ConfirmEmailCode)

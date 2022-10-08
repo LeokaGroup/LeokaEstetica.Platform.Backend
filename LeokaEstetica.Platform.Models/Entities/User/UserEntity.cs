@@ -83,7 +83,7 @@ public class UserEntity
     /// <summary>
     /// PK.
     /// </summary>
-    public string UserCode { get; set; }
+    public Guid UserCode { get; set; }
 
     /// <summary>
     /// Guid для подтверждения почты.

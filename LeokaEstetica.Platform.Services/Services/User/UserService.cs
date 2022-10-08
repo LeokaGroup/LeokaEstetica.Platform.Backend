@@ -40,7 +40,7 @@ public sealed class UserService : IUserService
             {
                 throw new NullReferenceException("Пароль не может быть пустым!");
             }
-            
+
             if (string.IsNullOrEmpty(email))
             {
                 throw new NullReferenceException("Email не может быть пустым!");
@@ -50,23 +50,38 @@ public sealed class UserService : IUserService
             {
                 PasswordHash = HashHelper.HashPassword(password),
                 Email = email,
-                DateRegister = DateTime.UtcNow
+                DateRegister = DateTime.UtcNow,
+                UserCode = Guid.NewGuid()
             };
 
-            var newUser = await _userRepository.SaveUserAsync(user);
+            var userId = await _userRepository.SaveUserAsync(user);
             var result = new UserSignUpOutput();
 
-            if (newUser is not null)
+            if (userId <= 0)
             {
-                result = _mapper.Map<UserSignUpOutput>(newUser);
+                throw new NullReferenceException();
+            }
+
+            // Находим добавленного пользователя.
+            var getUser = await _userRepository.GetUserByUserIdAsync(userId);
+
+            if (getUser is not null)
+            {
+                result = _mapper.Map<UserSignUpOutput>(getUser);
             }
 
             return result;
         }
-        
-        catch (Exception ex)
+
+        catch (NullReferenceException ex)
         {
             await _logger.LogCriticalAsync(ex);
+            throw;
+        }
+
+        catch (Exception ex)
+        {
+            await _logger.LogErrorAsync(ex);
             throw;
         }
     }

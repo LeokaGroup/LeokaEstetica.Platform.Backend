@@ -1,6 +1,7 @@
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Models.Entities.User;
+using Microsoft.EntityFrameworkCore;
 
 namespace LeokaEstetica.Platform.Database.Repositories.User;
 
@@ -20,12 +21,25 @@ public sealed class UserRepository : IUserRepository
     /// Метод сохраняет нового пользователя в базу.
     /// </summary>
     /// <param name="user">Данные пользователя для добавления.</param>
-    /// <returns>Данные пользователя.</returns>
-    public async Task<UserEntity> SaveUserAsync(UserEntity user)
+    /// <returns>Id пользователя.</returns>
+    public async Task<long> SaveUserAsync(UserEntity user)
     {
-        var result = await _pgContext.Users.AddAsync(user);
+        await _pgContext.Users.AddAsync(user);
         await _pgContext.SaveChangesAsync();
 
-        return result.Entity;
+        return user.UserId;
+    }
+
+    /// <summary>
+    /// Метод находит пользователя по его UserId.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Данные пользователя.</returns>
+    public async Task<UserEntity> GetUserByUserIdAsync(long userId)
+    {
+        var result = await _pgContext.Users
+            .FirstOrDefaultAsync(u => u.UserId == userId);
+
+        return result;
     }
 }
