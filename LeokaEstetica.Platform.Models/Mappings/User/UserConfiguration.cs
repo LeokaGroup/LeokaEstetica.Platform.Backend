@@ -38,7 +38,7 @@ public partial class UserConfiguration : IEntityTypeConfiguration<UserEntity>
         
         entity.Property(e => e.DateRegister)
             .HasColumnName("DateRegister")
-            .HasColumnType("timestamp")
+            .HasColumnType("timestamp with timezone")
             .IsRequired();
         
         entity.Property(e => e.Email)
@@ -91,11 +91,11 @@ public partial class UserConfiguration : IEntityTypeConfiguration<UserEntity>
         
         entity.Property(e => e.LockoutEnabledDate)
             .HasColumnName("LockoutEnabledDate")
-            .HasColumnType("timestamp");
+            .HasColumnType("timestamp with timezone");
         
         entity.Property(e => e.LockoutEndDate)
             .HasColumnName("LockoutEndDate")
-            .HasColumnType("timestamp");
+            .HasColumnType("timestamp with timezone");
 
         entity.HasIndex(u => u.UserId)
             .HasDatabaseName("PK_Users_UserId")

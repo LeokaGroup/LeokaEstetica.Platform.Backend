@@ -173,7 +173,7 @@ public static class AutoFac
     /// Метод регистрирует маппер.
     /// </summary>
     /// <param name="builder">Билдер контейнера, который наполнять регистрациями.</param>
-    private static void RegisterMapper(ContainerBuilder builder)
+    public static void RegisterMapper(ContainerBuilder builder)
     {
         builder.RegisterType<MappingProfile>().As<Profile>();
         builder.Register(c => new MapperConfiguration(cfg =>

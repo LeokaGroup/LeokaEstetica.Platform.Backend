@@ -1,5 +1,10 @@
-﻿using LeokaEstetica.Platform.Core.Data;
+﻿using Autofac;
+using AutoMapper;
+using LeokaEstetica.Platform.Core.Data;
+using LeokaEstetica.Platform.Core.Utils;
+using LeokaEstetica.Platform.Database.Repositories.User;
 using LeokaEstetica.Platform.Logs.Services;
+using LeokaEstetica.Platform.Services.Services.User;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 
@@ -14,17 +19,19 @@ public class BaseServiceTest
     protected IConfiguration AppConfiguration { get; set; }
     protected PgContext PgContext;
     protected LogService LogService;
+    protected UserService UserService;
+    protected UserRepository UserRepository;
     
     public BaseServiceTest()
     {
-        var configuration = new ConfigurationBuilder()
-            .SetBasePath(Directory.GetCurrentDirectory())
-            .AddJsonFile("appsettings.json")
-            .Build();
         // Настройка тестовых строк подключения.
-        var builder = new ConfigurationBuilder().AddJsonFile("appsettings.Development.json");
+        var builder = new ConfigurationBuilder().AddJsonFile("appsettings.json");
         AppConfiguration = builder.Build();
         PostgreConfigString = AppConfiguration["ConnectionStrings:NpgDevSqlConnection"] ?? string.Empty;
+        var container = new ContainerBuilder();
+        
+        AutoFac.RegisterMapper(container);
+        var mapper = AutoFac.Resolve<IMapper>();
         
         // Настройка тестовых контекстов.
         var optionsBuilder = new DbContextOptionsBuilder<PgContext>();
@@ -32,5 +39,7 @@ public class BaseServiceTest
         PgContext = new PgContext(optionsBuilder.Options);
 
         LogService = new LogService(PgContext);
+        UserRepository = new UserRepository(PgContext);
+        UserService = new UserService(LogService, UserRepository, mapper);
     }
 }

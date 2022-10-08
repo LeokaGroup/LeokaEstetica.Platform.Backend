@@ -25,8 +25,4 @@
       <ProjectReference Include="..\LeokaEstetica.Platform.Services\LeokaEstetica.Platform.Services.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="LogsTests" />
-    </ItemGroup>
-
 </Project>
