@@ -36,38 +36,25 @@ public sealed class UserService : IUserService
     {
         try
         {
-            if (string.IsNullOrEmpty(password))
-            {
-                throw new NullReferenceException("Пароль не может быть пустым!");
-            }
-
-            if (string.IsNullOrEmpty(email))
-            {
-                throw new NullReferenceException("Email не может быть пустым!");
-            }
-
-            var user = new UserEntity
-            {
-                PasswordHash = HashHelper.HashPassword(password),
-                Email = email,
-                DateRegister = DateTime.UtcNow,
-                UserCode = Guid.NewGuid()
-            };
-
-            var userId = await _userRepository.SaveUserAsync(user);
             var result = new UserSignUpOutput();
+            ValidateSignUpParams(result, password, email);
+            await CheckUserByEmailAsync(result, email);
 
-            if (userId <= 0)
+            var userModel = CreateSignUpUserModel(password, email);
+            var userId = await _userRepository.SaveUserAsync(userModel);
+            ValidateUserId(result, userId);
+
+            if (result.Errors.Any())
             {
-                throw new NullReferenceException();
+                return result;
             }
 
             // Находим добавленного пользователя.
-            var getUser = await _userRepository.GetUserByUserIdAsync(userId);
-
-            if (getUser is not null)
+            var addedUser = await _userRepository.GetUserByUserIdAsync(userId);
+            
+            if (addedUser is not null)
             {
-                result = _mapper.Map<UserSignUpOutput>(getUser);
+                result = _mapper.Map<UserSignUpOutput>(addedUser);
             }
 
             return result;
@@ -83,6 +70,79 @@ public sealed class UserService : IUserService
         {
             await _logger.LogErrorAsync(ex);
             throw;
+        }
+    }
+
+    /// <summary>
+    /// Метод проверяет существование пользователя в базе по email.
+    /// </summary>
+    /// <param name="email">Email пользователя.</param>
+    private async Task CheckUserByEmailAsync(UserSignUpOutput result, string email)
+    {
+        var isUser = await _userRepository.CheckUserByEmailAsync(email);
+        
+        // Пользователь уже есть, не даем регистрировать.
+        if (isUser)
+        {
+            result.Errors = new List<string> { $"Пользователь с Email {email} уже зарегистрирован в системе!" };
+        }
+    }
+
+    /// <summary>
+    /// Метод проверяет входные параметры. Генерит исключения, если что то не так.
+    /// </summary>
+    /// <param name="password">Пароль./param>
+    /// <param name="email">Почта.</param>
+    private void ValidateSignUpParams(UserSignUpOutput result, string password, string email)
+    {
+        if (string.IsNullOrEmpty(password))
+        {
+            result.Errors = new List<string> { "Пароль не может быть пустым!" };
+        }
+
+        if (string.IsNullOrEmpty(email))
+        {
+            result.Errors = new List<string> { "Email не может быть пустым!" };
+        }
+    }
+
+    /// <summary>
+    /// Метод создает модель для регистрации пользователя.
+    /// </summary>
+    /// <param name="password">Пароль./param>
+    /// <param name="email">Почта.</param>
+    /// <returns>Модель с данными.</returns>
+    private UserEntity CreateSignUpUserModel(string password, string email)
+    {
+        var model = new UserEntity
+        {
+            PasswordHash = HashHelper.HashPassword(password),
+            Email = email,
+            DateRegister = DateTime.UtcNow,
+            UserCode = Guid.NewGuid()
+        };
+
+        return model;
+    }
+
+    /// <summary>
+    /// Метод проверяет UserId. Сроздает исключение, если с ним проблемы.
+    /// </summary>
+    /// <param name="userId">UserId.</param>
+    private void ValidateUserId(UserSignUpOutput result, long userId)
+    {
+        try
+        {
+            if (userId <= 0)
+            {
+                throw new ArgumentException("Id пользователя был <= 0!");
+            }
+        }
+        
+        catch (ArgumentException ex)
+        {
+            result.Errors = new List<string> { "Id пользователя был <= 0!" };
+            _logger.LogCritical(ex);
         }
     }
 }

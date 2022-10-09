@@ -1,9 +1,11 @@
+using LeokaEstetica.Platform.Models.Dto.Common;
+
 namespace LeokaEstetica.Platform.Models.Dto.Output.User;
 
 /// <summary>
 /// Класс выходной модели пользователя для регистрации.
 /// </summary>
-public class UserSignUpOutput
+public class UserSignUpOutput : FrontErrorOutput
 {
     /// <summary>
     /// Фамилия.

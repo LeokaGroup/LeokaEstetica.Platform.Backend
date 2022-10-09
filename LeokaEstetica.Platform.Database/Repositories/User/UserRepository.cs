@@ -42,4 +42,17 @@ public sealed class UserRepository : IUserRepository
 
         return result;
     }
+
+    /// <summary>
+    /// Метод проверет существование пользователя по email в базе.
+    /// </summary>
+    /// <param name="email">Email пользователя.</param>
+    /// <returns>Флаг проверки.</returns>
+    public async Task<bool> CheckUserByEmailAsync(string email)
+    {
+        var result = await _pgContext.Users
+            .AnyAsync(u => u.Email.Equals(email));
+
+        return result;
+    }
 }

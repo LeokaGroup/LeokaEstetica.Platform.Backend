@@ -20,4 +20,11 @@ public interface IUserRepository
     /// <param name="userId">Id пользователя.</param>
     /// <returns>Данные пользователя.</returns>
     Task<UserEntity> GetUserByUserIdAsync(long userId);
+
+    /// <summary>
+    /// Метод проверет существование пользователя по email в базе.
+    /// </summary>
+    /// <param name="email">Email пользователя.</param>
+    /// <returns>Флаг проверки.</returns>
+    Task<bool> CheckUserByEmailAsync(string email);
 }

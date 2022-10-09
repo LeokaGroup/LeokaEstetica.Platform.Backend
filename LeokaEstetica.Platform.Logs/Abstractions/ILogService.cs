@@ -28,4 +28,28 @@ public interface ILogService
     /// </summary>
     /// <param name="ex">Исключение.</param>
     Task LogWarningAsync(Exception ex);
+    
+    /// <summary>
+    /// Метод пишет логи ошибок в базу с уровнем Error.
+    /// </summary>
+    /// <param name="ex">Исключение.</param>
+    void LogError(Exception ex);
+    
+    /// <summary>
+    /// Метод пишет логи ошибок в базу с уровнем Info.
+    /// </summary>
+    /// <param name="ex">Исключение.</param>
+    void LogInfo(Exception ex);
+    
+    /// <summary>
+    /// Метод пишет логи ошибок в базу с уровнем Critical.
+    /// </summary>
+    /// <param name="ex">Исключение.</param>
+    void LogCritical(Exception ex);
+    
+    /// <summary>
+    /// Метод пишет логи ошибок в базу с уровнем Warning.
+    /// </summary>
+    /// <param name="ex">Исключение.</param>
+    void LogWarning(Exception ex);
 }
