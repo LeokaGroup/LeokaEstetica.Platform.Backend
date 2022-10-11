@@ -2,6 +2,7 @@ using AutoMapper;
 using LeokaEstetica.Platform.Access.Helpers;
 using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Logs.Abstractions;
+using LeokaEstetica.Platform.Messaging.Abstractions.Mail;
 using LeokaEstetica.Platform.Models.Dto.Output.User;
 using LeokaEstetica.Platform.Models.Entities.User;
 using LeokaEstetica.Platform.Services.Abstractions.User;
@@ -16,14 +17,17 @@ public sealed class UserService : IUserService
     private readonly ILogService _logger;
     private readonly IUserRepository _userRepository;
     private readonly IMapper _mapper;
+    private readonly IMailingsService _mailingsService;
     
     public UserService(ILogService logger, 
         IUserRepository userRepository, 
-        IMapper mapper)
+        IMapper mapper, 
+        IMailingsService mailingsService)
     {
         _logger = logger;
         _userRepository = userRepository;
         _mapper = mapper;
+        _mailingsService = mailingsService;
     }
 
     /// <summary>
@@ -56,6 +60,10 @@ public sealed class UserService : IUserService
             {
                 result = _mapper.Map<UserSignUpOutput>(addedUser);
             }
+            
+            // Отправляем пользователю письмо подтверждения почты.
+            var confirmationEmailCode = Guid.NewGuid();
+            await _mailingsService.SendConfirmEmailAsync(email, confirmationEmailCode);
 
             return result;
         }

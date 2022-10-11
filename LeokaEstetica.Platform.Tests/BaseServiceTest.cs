@@ -4,6 +4,7 @@ using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Utils;
 using LeokaEstetica.Platform.Database.Repositories.User;
 using LeokaEstetica.Platform.Logs.Services;
+using LeokaEstetica.Platform.Messaging.Services.Mail;
 using LeokaEstetica.Platform.Services.Services.User;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -21,6 +22,7 @@ public class BaseServiceTest
     protected LogService LogService;
     protected UserService UserService;
     protected UserRepository UserRepository;
+    protected MailingsService MailingsService;
     
     public BaseServiceTest()
     {
@@ -40,6 +42,7 @@ public class BaseServiceTest
 
         LogService = new LogService(PgContext);
         UserRepository = new UserRepository(PgContext);
-        UserService = new UserService(LogService, UserRepository, mapper);
+        MailingsService = new MailingsService(AppConfiguration);
+        UserService = new UserService(LogService, UserRepository, mapper, null);
     }
 }

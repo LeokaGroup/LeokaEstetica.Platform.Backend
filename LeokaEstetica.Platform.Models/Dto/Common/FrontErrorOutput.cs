@@ -8,5 +8,5 @@ public class FrontErrorOutput
     /// <summary>
     /// Список ошибок, которые будем выводить на фронт.
     /// </summary>
-    public List<string> Errors { get; set; }
+    public List<string> Errors { get; set; } = new();
 }
