@@ -11,11 +11,10 @@ public class AuthFilter : Attribute, IAuthorizationFilter
     public void OnAuthorization(AuthorizationFilterContext context)
     {
         // Проверяет, авторизован ли пользователь.
-        // Также это не должен быть роут меню профиля.
-        // Потому что фильтр глобальный, а есть места, где он не нужен.
+        // У этой проверки имеются исключения на определенные ендпоинты.
         if (context.HttpContext.User.Identity is not null 
             && !context.HttpContext.User.Identity.IsAuthenticated
-            && !new[] {"GetProfileMenuItems"}.Contains(context.RouteData.Values["action"]))
+            && !new[] {"SignIn"}.Contains(context.RouteData.Values["action"]))
         {
             context.Result =  new ForbidResult();
         }
