@@ -46,7 +46,7 @@ public class UserEntity
     public string Email { get; set; }
 
     /// <summary>
-    /// Подтвержден ли пароль.
+    /// Подтверждена ли почта пользователя.
     /// </summary>
     public bool EmailConfirmed { get; set; }
 
@@ -88,7 +88,7 @@ public class UserEntity
     /// <summary>
     /// Guid для подтверждения почты.
     /// </summary>
-    public string ConfirmEmailCode { get; set; }
+    public Guid ConfirmEmailCode { get; set; }
 
     /// <summary>
     /// Дата начала блокировки.

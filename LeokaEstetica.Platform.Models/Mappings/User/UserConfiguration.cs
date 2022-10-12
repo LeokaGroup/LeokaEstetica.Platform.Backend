@@ -87,7 +87,7 @@ public partial class UserConfiguration : IEntityTypeConfiguration<UserEntity>
         
         entity.Property(e => e.ConfirmEmailCode)
             .HasColumnName("ConfirmEmailCode")
-            .HasColumnType("text");
+            .HasColumnType("uuid");
         
         entity.Property(e => e.LockoutEnabledDate)
             .HasColumnName("LockoutEnabledDate")

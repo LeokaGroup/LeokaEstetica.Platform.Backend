@@ -54,15 +54,21 @@ public sealed class UserService : IUserService
             }
 
             // Находим добавленного пользователя.
-            var addedUser = await _userRepository.GetUserByUserIdAsync(userId);
+            // var addedUser = await _userRepository.GetUserByUserIdAsync(userId);
+            //
+            // if (addedUser is null)
+            // {
+            //     throw new NullReferenceException("Ошибка добавления пользователя!");
+            // }
+            //
+            // result = _mapper.Map<UserSignUpOutput>(addedUser);
+                
+            var confirmationEmailCode = Guid.NewGuid();
             
-            if (addedUser is not null)
-            {
-                result = _mapper.Map<UserSignUpOutput>(addedUser);
-            }
+            // Записываем пользлвателю код подтверждения для проверки его позже из его почты по ссылке.
+            // await _userRepository.SetConfirmAccountCodeAsync(confirmationEmailCode, addedUser.UserId);
             
             // Отправляем пользователю письмо подтверждения почты.
-            var confirmationEmailCode = Guid.NewGuid();
             await _mailingsService.SendConfirmEmailAsync(email, confirmationEmailCode);
 
             return result;
@@ -151,6 +157,27 @@ public sealed class UserService : IUserService
         {
             result.Errors = new List<string> { "Id пользователя был <= 0!" };
             _logger.LogCritical(ex);
+        }
+    }
+    
+    /// <summary>
+    /// Метод подтверждает аккаунт пользователя по коду, который ранее был отправлен пользователю на почту и записан в БД.
+    /// </summary>
+    /// <param name="code">Код подтверждения.</param>
+    /// <returns>Статус подтверждения.</returns>
+    public async Task<bool> ConfirmAccountAsync(Guid code)
+    {
+        try
+        {
+            var result = await _userRepository.ConfirmAccountAsync(code);
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            await _logger.LogErrorAsync(ex);
+            throw;
         }
     }
 }

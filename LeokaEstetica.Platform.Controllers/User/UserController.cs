@@ -29,9 +29,34 @@ public class UserController : BaseController
     [AllowAnonymous]
     [HttpPost]
     [Route("signup")]
+    [ProducesResponseType(200, Type = typeof(UserSignUpOutput))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
     public async Task<UserSignUpOutput> CreateUserAsync([FromBody] UserSignUpInput userSignUpInput)
     {
         var result = await _userService.CreateUserAsync(userSignUpInput.Password, userSignUpInput.Email);
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод подтверждает аккаунт пользователя по коду, который ранее был отправлен пользователю на почту и записан в БД.
+    /// </summary>
+    /// <param name="code">Код подтверждения.</param>
+    /// <returns>Статус подтверждения.</returns>
+    [AllowAnonymous]
+    [HttpPatch]
+    [Route("account/confirm")]
+    [ProducesResponseType(200, Type = typeof(bool))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<bool> ConfirmAccountAsync([FromBody] ConfirmAccountInput confirmAccountInput)
+    {
+        var result = await _userService.ConfirmAccountAsync(confirmAccountInput.ConfirmAccountCode);
 
         return result;
     }

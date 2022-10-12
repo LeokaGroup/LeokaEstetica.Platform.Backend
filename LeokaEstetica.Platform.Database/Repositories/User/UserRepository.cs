@@ -1,4 +1,5 @@
 using LeokaEstetica.Platform.Core.Data;
+using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Models.Entities.User;
 using Microsoft.EntityFrameworkCore;
@@ -54,5 +55,43 @@ public sealed class UserRepository : IUserRepository
             .AnyAsync(u => u.Email.Equals(email));
 
         return result;
+    }
+
+    /// <summary>
+    /// Метод запишет код подтверждения пользователю.
+    /// </summary>
+    /// <param name="code">Код подтверждения, который мы отправили пользователю на почту.</param>
+    /// <param name="userId">UserId.</param>
+    public async Task SetConfirmAccountCodeAsync(Guid code, long userId)
+    {
+        var user = await GetUserByUserIdAsync(userId);
+
+        if (user is null)
+        {
+            throw new NotFoundUserByIdException(userId);
+        }
+        
+        user.ConfirmEmailCode = code;
+        await _pgContext.SaveChangesAsync();
+    }
+
+    /// <summary>
+    /// Метод подтверждает аккаунт пользователя по коду, который ранее был отправлен пользователю на почту и записан в БД.
+    /// </summary>
+    /// <param name="code">Код подтверждения.</param>
+    /// <returns>Статус подтверждения.</returns>
+    public async Task<bool> ConfirmAccountAsync(Guid code)
+    {
+        var user = await _pgContext.Users.FirstOrDefaultAsync(u => u.ConfirmEmailCode.Equals(code));
+
+        if (user is null)
+        {
+            throw new InvalidOperationException($"Не удалось подтвердить почту пользователя по коду {code}!");
+        }
+
+        user.EmailConfirmed = true;
+        await _pgContext.SaveChangesAsync();
+
+        return true;
     }
 }

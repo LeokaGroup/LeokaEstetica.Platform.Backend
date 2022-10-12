@@ -42,9 +42,6 @@ public sealed class MailingsService : IMailingsService
         using var response = await request.GetResponseAsync();
         await using var stream = response.GetResponseStream();
         using var reader = new StreamReader(stream);
-        
-        // Получаем результат.
-        // var result = await reader.ReadToEndAsync();
     }
 
     /// <summary>
@@ -62,7 +59,7 @@ public sealed class MailingsService : IMailingsService
             To = mailTo,
             Html = "Рады вас видеть на Leoka Estetica!" +
                    "<br/><br/>" +
-                   $"Для завершения регистрации перейдите по ссылке <a href='https://leoka-estetica-dev.ru/user/confirm-email?code={confirmEmailCode}'>Подтвердить почту</a>" +
+                   $"Для завершения регистрации перейдите по ссылке <a href='https://leoka-estetica-dev.ru/user/account/confirm?code={confirmEmailCode}'>Подтвердить почту</a>" +
                    "<br/>-----<br/>" +
                    "С уважением, команда Leoka Estetica",
             Subject = "Активация аккаунта на leoka-estetica.ru",
@@ -70,8 +67,6 @@ public sealed class MailingsService : IMailingsService
                    "<br/><br/>" +
                    $"Для завершения регистрации перейдите по ссылке <a href='https://leoka-estetica-dev.ru/user/confirm-email?code={confirmEmailCode}'>Подтвердить почту</a>" +
                    "<br/>-----<br/>" +
-                   "<br/>" +
-                   "<br/>" +
                    "С уважением, команда Leoka Estetica",
             Payment = "credit"
         };
