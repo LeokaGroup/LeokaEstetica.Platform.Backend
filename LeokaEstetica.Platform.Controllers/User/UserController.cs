@@ -1,4 +1,5 @@
 using LeokaEstetica.Platform.Base;
+using LeokaEstetica.Platform.Core.Filters;
 using LeokaEstetica.Platform.Models.Dto.Input.User;
 using LeokaEstetica.Platform.Models.Dto.Output.User;
 using LeokaEstetica.Platform.Services.Abstractions.User;
@@ -10,6 +11,7 @@ namespace LeokaEstetica.Platform.Controllers.User;
 /// <summary>
 /// Контроллер работы с пользователями.
 /// </summary>
+[AuthFilter]
 [ApiController]
 [Route("user")]
 public class UserController : BaseController
