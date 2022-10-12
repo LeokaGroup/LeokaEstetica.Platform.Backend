@@ -1,8 +1,10 @@
 ﻿using AutoMapper;
 using LeokaEstetica.Platform.Models.Dto.Output.Header;
 using LeokaEstetica.Platform.Models.Dto.Output.Landing;
+using LeokaEstetica.Platform.Models.Dto.Output.User;
 using LeokaEstetica.Platform.Models.Entities.Common;
 using LeokaEstetica.Platform.Models.Entities.Landing;
+using LeokaEstetica.Platform.Models.Entities.User;
 
 namespace LeokaEstetica.Platform.Core.Mapper;
 
@@ -17,5 +19,6 @@ public class MappingProfile : Profile
         CreateMap<FonEntity, LandingStartFonOutput>();
         CreateMap<PlatformOfferEntity, PlatformOfferOutput>();
         CreateMap<PlatformOfferItemsEntity, PlatformOfferItemsOutput>();
+        CreateMap<UserEntity, UserSignUpOutput>();
     }
 }

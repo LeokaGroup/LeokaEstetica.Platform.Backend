@@ -80,4 +80,60 @@ public sealed class LogService : ILogService
         });
         await _pgContext.SaveChangesAsync();
     }
+
+    public void LogError(Exception ex)
+    {
+        _pgContext.LogInfos.Add(new LogInfoEntity
+        {
+            ExceptionMessage = ex.Message,
+            DateCreated = DateTime.UtcNow,
+            StackTrace = ex.StackTrace,
+            LogLevel = LogLevelEnum.Error.ToString(),
+            InnerException = ex.InnerException?.ToString(),
+            LogKey = Guid.NewGuid()
+        });
+        _pgContext.SaveChanges();
+    }
+
+    public void LogInfo(Exception ex)
+    {
+        _pgContext.LogInfos.Add(new LogInfoEntity
+        {
+            ExceptionMessage = ex.Message,
+            DateCreated = DateTime.UtcNow,
+            StackTrace = ex.StackTrace,
+            LogLevel = LogLevelEnum.Info.ToString(),
+            InnerException = ex.InnerException?.ToString(),
+            LogKey = Guid.NewGuid()
+        });
+        _pgContext.SaveChanges();
+    }
+
+    public void LogCritical(Exception ex)
+    {
+        _pgContext.LogInfos.Add(new LogInfoEntity
+        {
+            ExceptionMessage = ex.Message,
+            DateCreated = DateTime.UtcNow,
+            StackTrace = ex.StackTrace,
+            LogLevel = LogLevelEnum.Critical.ToString(),
+            InnerException = ex.InnerException?.ToString(),
+            LogKey = Guid.NewGuid()
+        });
+        _pgContext.SaveChanges();
+    }
+
+    public void LogWarning(Exception ex)
+    {
+        _pgContext.LogInfos.Add(new LogInfoEntity
+        {
+            ExceptionMessage = ex.Message,
+            DateCreated = DateTime.UtcNow,
+            StackTrace = ex.StackTrace,
+            LogLevel = LogLevelEnum.Warning.ToString(),
+            InnerException = ex.InnerException?.ToString(),
+            LogKey = Guid.NewGuid()
+        });
+        _pgContext.SaveChanges();
+    }
 }

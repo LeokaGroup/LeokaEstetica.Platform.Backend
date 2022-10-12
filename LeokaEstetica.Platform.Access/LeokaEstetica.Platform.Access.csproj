@@ -7,10 +7,12 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\LeokaEstetica.Platform.Access\LeokaEstetica.Platform.Access.csproj" />
+      <Folder Include="Abstractions" />
+      <Folder Include="Services" />
+    </ItemGroup>
+
+    <ItemGroup>
       <ProjectReference Include="..\LeokaEstetica.Platform.Core\LeokaEstetica.Platform.Core.csproj" />
-      <ProjectReference Include="..\LeokaEstetica.Platform.Database\LeokaEstetica.Platform.Database.csproj" />
-      <ProjectReference Include="..\LeokaEstetica.Platform.Messaging\LeokaEstetica.Platform.Messaging.csproj" />
     </ItemGroup>
 
 </Project>
