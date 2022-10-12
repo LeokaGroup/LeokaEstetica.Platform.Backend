@@ -1,4 +1,5 @@
 using LeokaEstetica.Platform.Base;
+using LeokaEstetica.Platform.Core.Filters;
 using LeokaEstetica.Platform.Models.Dto.Input.User;
 using LeokaEstetica.Platform.Models.Dto.Output.User;
 using LeokaEstetica.Platform.Services.Abstractions.User;
@@ -10,6 +11,7 @@ namespace LeokaEstetica.Platform.Controllers.User;
 /// <summary>
 /// Контроллер работы с пользователями.
 /// </summary>
+[AuthFilter]
 [ApiController]
 [Route("user")]
 public class UserController : BaseController
@@ -57,6 +59,21 @@ public class UserController : BaseController
     public async Task<bool> ConfirmAccountAsync([FromBody] ConfirmAccountInput confirmAccountInput)
     {
         var result = await _userService.ConfirmAccountAsync(confirmAccountInput.ConfirmAccountCode);
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод авторизует пользователя.
+    /// </summary>
+    /// <param name="userSignInInput">Входная модель.</param>
+    /// <returns>Данные авторизации.</returns>
+    [AllowAnonymous]
+    [HttpPost]
+    [Route("signin")]
+    public async Task<UserSignInOutput> SignInAsync([FromBody] UserSignInInput userSignInInput)
+    {
+        var result = await _userService.SignInAsync(userSignInInput.Email, userSignInInput.Password);
 
         return result;
     }

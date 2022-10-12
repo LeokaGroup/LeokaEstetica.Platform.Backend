@@ -21,4 +21,12 @@ public interface IUserService
     /// <param name="code">Код подтверждения.</param>
     /// <returns>Статус подтверждения.</returns>
     Task<bool> ConfirmAccountAsync(Guid code);
+
+    /// <summary>
+    /// Метод авторизует пользователя.
+    /// </summary>
+    /// <param name="email">Email.</param>
+    /// <param name="password">Пароль.</param>
+    /// <returns>Данные авторизации.</returns>
+    Task<UserSignInOutput> SignInAsync(string email, string password);
 }

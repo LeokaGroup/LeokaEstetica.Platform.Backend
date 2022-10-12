@@ -41,4 +41,11 @@ public interface IUserRepository
     /// <param name="code">Код подтверждения.</param>
     /// <returns>Статус подтверждения.</returns>
     Task<bool> ConfirmAccountAsync(Guid code);
+
+    /// <summary>
+    /// Метод получает хэш пароля для проверки пользователя.
+    /// </summary>
+    /// <param name="email">Почта.</param>
+    /// <returns>Хэш пароля.</returns>
+    Task<string> GetPasswordHashByEmailAsync(string email);
 }
