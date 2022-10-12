@@ -94,4 +94,19 @@ public sealed class UserRepository : IUserRepository
 
         return true;
     }
+
+    /// <summary>
+    /// Метод получает хэш пароля для проверки пользователя.
+    /// </summary>
+    /// <param name="email">Почта.</param>
+    /// <returns>Хэш пароля.</returns>
+    public async Task<string> GetPasswordHashByEmailAsync(string email)
+    {
+        var result = await _pgContext.Users
+            .Where(u => u.Email.Equals(email))
+            .Select(u => u.PasswordHash)
+            .FirstOrDefaultAsync();
+
+        return result;
+    }
 }

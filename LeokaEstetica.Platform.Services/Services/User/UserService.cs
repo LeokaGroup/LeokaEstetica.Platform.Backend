@@ -1,11 +1,15 @@
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using AutoMapper;
 using LeokaEstetica.Platform.Access.Helpers;
+using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Messaging.Abstractions.Mail;
 using LeokaEstetica.Platform.Models.Dto.Output.User;
 using LeokaEstetica.Platform.Models.Entities.User;
 using LeokaEstetica.Platform.Services.Abstractions.User;
+using Microsoft.IdentityModel.Tokens;
 
 namespace LeokaEstetica.Platform.Services.Services.User;
 
@@ -54,19 +58,19 @@ public sealed class UserService : IUserService
             }
 
             // Находим добавленного пользователя.
-            // var addedUser = await _userRepository.GetUserByUserIdAsync(userId);
-            //
-            // if (addedUser is null)
-            // {
-            //     throw new NullReferenceException("Ошибка добавления пользователя!");
-            // }
-            //
-            // result = _mapper.Map<UserSignUpOutput>(addedUser);
+            var addedUser = await _userRepository.GetUserByUserIdAsync(userId);
+            
+            if (addedUser is null)
+            {
+                throw new NullReferenceException("Ошибка добавления пользователя!");
+            }
+            
+            result = _mapper.Map<UserSignUpOutput>(addedUser);
                 
             var confirmationEmailCode = Guid.NewGuid();
             
             // Записываем пользлвателю код подтверждения для проверки его позже из его почты по ссылке.
-            // await _userRepository.SetConfirmAccountCodeAsync(confirmationEmailCode, addedUser.UserId);
+            await _userRepository.SetConfirmAccountCodeAsync(confirmationEmailCode, addedUser.UserId);
             
             // Отправляем пользователю письмо подтверждения почты.
             await _mailingsService.SendConfirmEmailAsync(email, confirmationEmailCode);
@@ -109,15 +113,39 @@ public sealed class UserService : IUserService
     /// <param name="email">Почта.</param>
     private void ValidateSignUpParams(UserSignUpOutput result, string password, string email)
     {
+        result.Errors = CheckErrors(result.Errors, password, email);
+    }
+    
+    /// <summary>
+    /// Метод проверяет входные параметры. Генерит исключения, если что то не так.
+    /// </summary>
+    /// <param name="password">Пароль./param>
+    /// <param name="email">Почта.</param>
+    private void ValidateSignInParams(UserSignInOutput result, string password, string email)
+    {
+        result.Errors = CheckErrors(result.Errors, password, email);
+    }
+
+    /// <summary>
+    /// Метод проверяет ошибки. Если они есть, то добавит их в список для фронта.
+    /// </summary>
+    /// <param name="errors">Список ошибок.</param>
+    /// <param name="password">Пароль./param>
+    /// <param name="email">Почта.</param>
+    /// <returns>Список ошибок.</returns>
+    private List<string> CheckErrors(List<string> errors, string password, string email)
+    {
         if (string.IsNullOrEmpty(password))
         {
-            result.Errors = new List<string> { "Пароль не может быть пустым!" };
+            errors = new List<string> { "Пароль не может быть пустым!" };
         }
 
         if (string.IsNullOrEmpty(email))
         {
-            result.Errors = new List<string> { "Email не может быть пустым!" };
+            errors = new List<string> { "Email не может быть пустым!" };
         }
+
+        return errors;
     }
 
     /// <summary>
@@ -179,5 +207,93 @@ public sealed class UserService : IUserService
             await _logger.LogErrorAsync(ex);
             throw;
         }
+    }
+
+    /// <summary>
+    /// Метод авторизует пользователя.
+    /// </summary>
+    /// <param name="email">Email.</param>
+    /// <param name="password">Пароль.</param>
+    /// <returns>Данные авторизации.</returns>
+    public async Task<UserSignInOutput> SignInAsync(string email, string password)
+    {
+        try
+        {
+            var result = new UserSignInOutput();
+            ValidateSignInParams(result, email, password);
+
+            if (result.Errors.Any())
+            {
+                return result;
+            }
+
+            var passwordHash = await _userRepository.GetPasswordHashByEmailAsync(email);
+
+            if (passwordHash is null)
+            {
+                throw new NullReferenceException($"Хэш пароль не удалось получить для пользователя {email}");
+            }
+
+            var checkPassword = HashHelper.VerifyHashedPassword(passwordHash, password);
+
+            if (!checkPassword)
+            {
+                throw new UnauthorizedAccessException("Пользователь не прошел проверку по паролю!");
+            }
+
+            var claim = GetIdentityClaim(email);
+            var token = CreateTokenFactory(claim);
+            
+            result.Email = email;
+            result.Token = token;
+            result.IsSuccess = true;
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            await _logger.LogCriticalAsync(ex);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Метод выдает токен пользователю, если он прошел авторизацию.
+    /// </summary>
+    /// <param name="email">Email.</param>
+    /// <returns>Токен пользователя.</returns>
+    private ClaimsIdentity GetIdentityClaim(string email)
+    {
+        var claims = new List<Claim> {
+            new(ClaimsIdentity.DefaultNameClaimType, email)
+            //new Claim(JwtRegisteredClaimNames.UniqueName, username)
+        };
+
+        var claimsIdentity = new ClaimsIdentity(claims, "Token", 
+            ClaimsIdentity.DefaultNameClaimType, 
+            ClaimsIdentity.DefaultRoleClaimType);
+
+        return claimsIdentity;
+    }
+    
+    /// <summary>
+    /// Метод создает токен пользователю.
+    /// </summary>
+    /// <param name="claimsIdentity">Объект полномочий.</param>
+    /// <returns>Строка токена.</returns>
+    private string CreateTokenFactory(ClaimsIdentity claimsIdentity)
+    {
+        var now = DateTime.UtcNow;
+        var jwt = new JwtSecurityToken(
+            issuer: AuthOptions.ISSUER,
+            audience: AuthOptions.AUDIENCE,
+            notBefore: now,
+            claims: claimsIdentity.Claims,
+            expires: now.Add(TimeSpan.FromMinutes(AuthOptions.LIFETIME)),
+            signingCredentials: new SigningCredentials(AuthOptions.GetSymmetricSecurityKey(), SecurityAlgorithms.HmacSha256));
+        var encodedJwt = new JwtSecurityTokenHandler().WriteToken(jwt);
+
+        return encodedJwt;
     }
 }

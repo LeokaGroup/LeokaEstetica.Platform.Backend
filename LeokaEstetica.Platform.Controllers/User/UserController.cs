@@ -62,4 +62,19 @@ public class UserController : BaseController
 
         return result;
     }
+
+    /// <summary>
+    /// Метод авторизует пользователя.
+    /// </summary>
+    /// <param name="userSignInInput">Входная модель.</param>
+    /// <returns>Данные авторизации.</returns>
+    [AllowAnonymous]
+    [HttpPost]
+    [Route("signin")]
+    public async Task<UserSignInOutput> SignInAsync([FromBody] UserSignInInput userSignInInput)
+    {
+        var result = await _userService.SignInAsync(userSignInInput.Email, userSignInInput.Password);
+
+        return result;
+    }
 }
