@@ -27,6 +27,10 @@ public class ServicesModule
             // Сервис пользователя.
             builder.RegisterType<UserService>().Named<IUserService>("UserService");
             builder.RegisterType<UserService>().As<IUserService>();
+            
+            // Сервис профиля пользователя.
+            builder.RegisterType<ProfileService>().Named<IProfileService>("ProfileService");
+            builder.RegisterType<ProfileService>().As<IProfileService>();
         }
     }
 }
