@@ -29,4 +29,11 @@ public interface IUserService
     /// <param name="password">Пароль.</param>
     /// <returns>Данные авторизации.</returns>
     Task<UserSignInOutput> SignInAsync(string email, string password);
+
+    /// <summary>
+    /// Метод обновляет токен.
+    /// </summary>
+    /// <param name="account">Аккаунт.</param>
+    /// <returns>Новые данные авторизации.</returns>
+    Task<UserSignInOutput> RefreshTokenAsync(string account);
 }
