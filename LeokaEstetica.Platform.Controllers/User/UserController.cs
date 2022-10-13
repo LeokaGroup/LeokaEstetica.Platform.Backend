@@ -71,9 +71,32 @@ public class UserController : BaseController
     [AllowAnonymous]
     [HttpPost]
     [Route("signin")]
+    [ProducesResponseType(200, Type = typeof(UserSignInOutput))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
     public async Task<UserSignInOutput> SignInAsync([FromBody] UserSignInInput userSignInInput)
     {
         var result = await _userService.SignInAsync(userSignInInput.Email, userSignInInput.Password);
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод обновляет токен.
+    /// </summary>
+    /// <returns>Новые данные авторизации.</returns>
+    [HttpPost]
+    [Route("token")]
+    [ProducesResponseType(200, Type = typeof(UserSignInOutput))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<UserSignInOutput> RefreshTokenAsync()
+    {
+        var result = await _userService.RefreshTokenAsync(GetUserName());
 
         return result;
     }

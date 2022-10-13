@@ -267,7 +267,6 @@ public sealed class UserService : IUserService
     {
         var claims = new List<Claim> {
             new(ClaimsIdentity.DefaultNameClaimType, email)
-            //new Claim(JwtRegisteredClaimNames.UniqueName, username)
         };
 
         var claimsIdentity = new ClaimsIdentity(claims, "Token", 
@@ -295,5 +294,32 @@ public sealed class UserService : IUserService
         var encodedJwt = new JwtSecurityTokenHandler().WriteToken(jwt);
 
         return encodedJwt;
+    }
+    
+    /// <summary>
+    /// Метод обновляет токен.
+    /// </summary>
+    /// <param name="account">Аккаунт.</param>
+    /// <returns>Новые данные авторизации.</returns>
+    public async Task<UserSignInOutput> RefreshTokenAsync(string account)
+    {
+        try
+        {
+            var claim = GetIdentityClaim(account);
+            var token = CreateTokenFactory(claim);
+
+            var result = new UserSignInOutput
+            {
+                Token = token
+            };
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            await _logger.LogCriticalAsync(ex);
+            throw;
+        }
     }
 }
