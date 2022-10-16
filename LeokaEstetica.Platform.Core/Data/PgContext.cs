@@ -61,4 +61,24 @@ public class PgContext : DbContext
     /// Таблица обо мне.
     /// </summary>
     public DbSet<ProfileInfoEntity> ProfilesInfo { get; set; }
+
+    /// <summary>
+    /// Таблица навыков пользователя.
+    /// </summary>
+    public DbSet<SkillEntity> Skills { get; set; }
+
+    /// <summary>
+    /// Таблица навыков, которые выбрал пользователь.
+    /// </summary>
+    public DbSet<UserSkillEntity> UserSkills { get; set; }
+
+    /// <summary>
+    /// Таблица целей на платформе, которые может выбрать пользователь.
+    /// </summary>
+    public DbSet<IntentEntity> Intents { get; set; }
+
+    /// <summary>
+    /// Таблица целей на платформе, которые выбрал пользователь.
+    /// </summary>
+    public DbSet<UserIntentEntity> UserIntents { get; set; }
 }
