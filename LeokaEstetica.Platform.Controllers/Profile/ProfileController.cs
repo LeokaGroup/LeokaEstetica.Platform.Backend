@@ -2,7 +2,7 @@ using LeokaEstetica.Platform.Base;
 using LeokaEstetica.Platform.Core.Filters;
 using Microsoft.AspNetCore.Mvc;
 
-namespace LeokaEstetica.Platform.Controllers.User;
+namespace LeokaEstetica.Platform.Controllers.Profile;
 
 /// <summary>
 /// Контроллер профиля пользователя.
