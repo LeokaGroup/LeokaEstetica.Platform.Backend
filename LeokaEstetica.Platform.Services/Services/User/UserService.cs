@@ -4,6 +4,7 @@ using System.Security.Claims;
 using AutoMapper;
 using LeokaEstetica.Platform.Access.Helpers;
 using LeokaEstetica.Platform.Core.Data;
+using LeokaEstetica.Platform.Database.Abstractions.Profile;
 using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Messaging.Abstractions.Mail;
@@ -25,18 +26,21 @@ public sealed class UserService : IUserService
     private readonly IMapper _mapper;
     private readonly IMailingsService _mailingsService;
     private readonly PgContext _pgContext;
+    private readonly IProfileRepository _profileRepository;
     
     public UserService(ILogService logger, 
         IUserRepository userRepository, 
         IMapper mapper, 
         IMailingsService mailingsService, 
-        PgContext pgContext)
+        PgContext pgContext, 
+        IProfileRepository profileRepository)
     {
         _logger = logger;
         _userRepository = userRepository;
         _mapper = mapper;
         _mailingsService = mailingsService;
         _pgContext = pgContext;
+        _profileRepository = profileRepository;
     }
 
     /// <summary>
@@ -74,7 +78,10 @@ public sealed class UserService : IUserService
             }
             
             result = _mapper.Map<UserSignUpOutput>(addedUser);
-                
+            
+            // Добавляет данные о пользователе в таблицу профиля.
+            await _profileRepository.AddUserInfoAsync(userId);
+
             var confirmationEmailCode = Guid.NewGuid();
             
             // Записываем пользлвателю код подтверждения для проверки его позже из его почты по ссылке.

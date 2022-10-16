@@ -29,4 +29,23 @@ public sealed class ProfileRepository : IProfileRepository
 
         return result;
     }
+
+    /// <summary>
+    /// Метод добавляет данные о пользователе в таблицу профиля.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    public async Task AddUserInfoAsync(long userId)
+    {
+        var userInfo = new ProfileInfoEntity
+        {
+            FirstName = string.Empty,
+            LastName = string.Empty,
+            UserId = userId,
+            IsShortFirstName = false,
+            Aboutme = string.Empty,
+            Job = string.Empty
+        };
+        await _pgContext.ProfilesInfo.AddAsync(userInfo);
+        await _pgContext.SaveChangesAsync();
+    }
 }

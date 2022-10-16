@@ -12,11 +12,11 @@ public class AuthFilter : Attribute, IAuthorizationFilter
     {
         // Проверяет, авторизован ли пользователь.
         // У этой проверки имеются исключения на определенные ендпоинты.
-        if (context.HttpContext.User.Identity is not null 
+        if (context.HttpContext.User.Identity is not null
             && !context.HttpContext.User.Identity.IsAuthenticated
-            && !new[] {"SignIn"}.Contains(context.RouteData.Values["action"]))
+            && !new[] { "SignIn", "CreateUser" }.Contains(context.RouteData.Values["action"]))
         {
-            context.Result =  new ForbidResult();
+            context.Result = new ForbidResult();
         }
     }
 }

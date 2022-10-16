@@ -13,4 +13,10 @@ public interface IProfileRepository
     /// </summary>
     /// <returns>Данные раздела обо мне.</returns>
     Task<ProfileInfoEntity> GetProfileInfoAsync(long userId);
+
+    /// <summary>
+    /// Метод добавляет данные о пользователе в таблицу профиля.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    Task AddUserInfoAsync(long userId);
 }
