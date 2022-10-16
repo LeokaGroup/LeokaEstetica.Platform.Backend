@@ -2,9 +2,11 @@
 using LeokaEstetica.Platform.Core.Attributes;
 using LeokaEstetica.Platform.Services.Abstractions.Header;
 using LeokaEstetica.Platform.Services.Abstractions.Landing;
+using LeokaEstetica.Platform.Services.Abstractions.Profile;
 using LeokaEstetica.Platform.Services.Abstractions.User;
 using LeokaEstetica.Platform.Services.Services.Header;
 using LeokaEstetica.Platform.Services.Services.Landing;
+using LeokaEstetica.Platform.Services.Services.Profile;
 using LeokaEstetica.Platform.Services.Services.User;
 
 namespace LeokaEstetica.Platform.Services.AutofacModules;

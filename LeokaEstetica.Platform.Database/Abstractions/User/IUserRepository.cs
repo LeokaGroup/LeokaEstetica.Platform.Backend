@@ -12,7 +12,7 @@ public interface IUserRepository
     /// </summary>
     /// <param name="user">Данные пользователя для добавления.</param>
     /// <returns>Id пользователя.</returns>
-    Task<long> SaveUserAsync(UserEntity user);
+    Task<long> SaveUserAsync(UserEntity user); 
 
     /// <summary>
     /// Метод находит пользователя по его UserId.
@@ -48,4 +48,11 @@ public interface IUserRepository
     /// <param name="email">Почта.</param>
     /// <returns>Хэш пароля.</returns>
     Task<string> GetPasswordHashByEmailAsync(string email);
+
+    /// <summary>
+    /// Метод находит Id пользователя по его почте.
+    /// </summary>
+    /// <param name="account">Почта пользователя.</param>
+    /// <returns>Id пользователя.</returns>
+    Task<long> GetUserByEmailAsync(string account);
 }

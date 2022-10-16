@@ -1,6 +1,7 @@
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.User;
+using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Models.Entities.User;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,10 +13,13 @@ namespace LeokaEstetica.Platform.Database.Repositories.User;
 public sealed class UserRepository : IUserRepository
 {
     private readonly PgContext _pgContext;
+    private readonly ILogService _logger;
     
-    public UserRepository(PgContext pgContext)
+    public UserRepository(PgContext pgContext, 
+        ILogService logger)
     {
         _pgContext = pgContext;
+        _logger = logger;
     }
 
     /// <summary>
@@ -108,5 +112,29 @@ public sealed class UserRepository : IUserRepository
             .FirstOrDefaultAsync();
 
         return result;
+    }
+
+    /// <summary>
+    /// Метод находит Id пользователя по его почте.
+    /// </summary>
+    /// <param name="account">Почта пользователя.</param>
+    /// <returns>Id пользователя.</returns>
+    public async Task<long> GetUserByEmailAsync(string account)
+    {
+        try
+        {
+            var result = await _pgContext.Users
+                .Where(u => u.Email.Equals(account))
+                .Select(u => u.UserId)
+                .FirstOrDefaultAsync();
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            await _logger.LogErrorAsync(ex);
+            throw;
+        }
     }
 }

@@ -59,4 +59,9 @@ public class ProfileInfoEntity
     /// Должность.
     /// </summary>
     public string Job { get; set; }
+
+    /// <summary>
+    /// Id пользователя.
+    /// </summary>
+    public long UserId { get; set; }
 }

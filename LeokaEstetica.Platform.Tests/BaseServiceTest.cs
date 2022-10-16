@@ -41,7 +41,7 @@ public class BaseServiceTest
         PgContext = new PgContext(optionsBuilder.Options);
 
         LogService = new LogService(PgContext);
-        UserRepository = new UserRepository(PgContext);
+        UserRepository = new UserRepository(PgContext, LogService);
         MailingsService = new MailingsService(AppConfiguration);
         UserService = new UserService(LogService, UserRepository, mapper, null);
     }
