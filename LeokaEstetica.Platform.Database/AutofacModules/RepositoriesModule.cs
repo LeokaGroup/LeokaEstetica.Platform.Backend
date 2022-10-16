@@ -19,20 +19,20 @@ public class RepositoriesModule
         public static void InitModules(ContainerBuilder builder)
         {
             // Репозиторий хидера.
-            builder.RegisterType<HeaderRepository>().Named<IHeaderRepository>("HeaderRepository");
-            builder.RegisterType<HeaderRepository>().As<IHeaderRepository>();
+            builder.RegisterType<HeaderRepository>().Named<IHeaderRepository>("HeaderRepository").InstancePerLifetimeScope();
+            builder.RegisterType<HeaderRepository>().As<IHeaderRepository>().InstancePerLifetimeScope();
             
             // Репозиторий лендингов.
-            builder.RegisterType<LandingRepository>().Named<ILandingRepository>("LandingRepository");
-            builder.RegisterType<LandingRepository>().As<ILandingRepository>();
+            builder.RegisterType<LandingRepository>().Named<ILandingRepository>("LandingRepository").InstancePerLifetimeScope();
+            builder.RegisterType<LandingRepository>().As<ILandingRepository>().InstancePerLifetimeScope();
             
             // Репозиторий пользователей.
-            builder.RegisterType<UserRepository>().Named<IUserRepository>("LandingRepository");
-            builder.RegisterType<UserRepository>().As<IUserRepository>();
+            builder.RegisterType<UserRepository>().Named<IUserRepository>("LandingRepository").InstancePerLifetimeScope();
+            builder.RegisterType<UserRepository>().As<IUserRepository>().InstancePerLifetimeScope();
             
             // Репозиторий профиля.
-            builder.RegisterType<ProfileRepository>().Named<IProfileRepository>("ProfileRepository");
-            builder.RegisterType<ProfileRepository>().As<IProfileRepository>();
+            builder.RegisterType<ProfileRepository>().Named<IProfileRepository>("ProfileRepository").InstancePerLifetimeScope();
+            builder.RegisterType<ProfileRepository>().As<IProfileRepository>().InstancePerLifetimeScope();
         }
     }
 }

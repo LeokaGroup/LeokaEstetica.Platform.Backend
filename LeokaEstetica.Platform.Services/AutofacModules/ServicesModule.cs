@@ -19,20 +19,20 @@ public class ServicesModule
         public static void InitModules(ContainerBuilder builder)
         {
             // Сервис хидера.
-            builder.RegisterType<HeaderService>().Named<IHeaderService>("HeaderService");
-            builder.RegisterType<HeaderService>().As<IHeaderService>();
+            builder.RegisterType<HeaderService>().Named<IHeaderService>("HeaderService").InstancePerLifetimeScope();
+            builder.RegisterType<HeaderService>().As<IHeaderService>().InstancePerLifetimeScope();
             
             // Сервис лендингов.
-            builder.RegisterType<LandingService>().Named<ILandingService>("LandingService");
-            builder.RegisterType<LandingService>().As<ILandingService>();
+            builder.RegisterType<LandingService>().Named<ILandingService>("LandingService").InstancePerLifetimeScope();
+            builder.RegisterType<LandingService>().As<ILandingService>().InstancePerLifetimeScope();
             
             // Сервис пользователя.
-            builder.RegisterType<UserService>().Named<IUserService>("UserService");
-            builder.RegisterType<UserService>().As<IUserService>();
+            builder.RegisterType<UserService>().Named<IUserService>("UserService").InstancePerLifetimeScope();
+            builder.RegisterType<UserService>().As<IUserService>().InstancePerLifetimeScope();
             
             // Сервис профиля пользователя.
-            builder.RegisterType<ProfileService>().Named<IProfileService>("ProfileService");
-            builder.RegisterType<ProfileService>().As<IProfileService>();
+            builder.RegisterType<ProfileService>().Named<IProfileService>("ProfileService").InstancePerLifetimeScope();
+            builder.RegisterType<ProfileService>().As<IProfileService>().InstancePerLifetimeScope();
         }
     }
 }
