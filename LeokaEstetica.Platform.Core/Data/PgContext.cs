@@ -2,6 +2,7 @@
 using LeokaEstetica.Platform.Models.Entities.Common;
 using LeokaEstetica.Platform.Models.Entities.Landing;
 using LeokaEstetica.Platform.Models.Entities.Logs;
+using LeokaEstetica.Platform.Models.Entities.Profile;
 using LeokaEstetica.Platform.Models.Entities.User;
 using Microsoft.EntityFrameworkCore;
 
@@ -55,4 +56,9 @@ public class PgContext : DbContext
     /// Таблица пользователей.
     /// </summary>
     public DbSet<UserEntity> Users { get; set; }
+
+    /// <summary>
+    /// Таблица обо мне.
+    /// </summary>
+    public DbSet<ProfileInfoEntity> ProfilesInfo { get; set; }
 }
