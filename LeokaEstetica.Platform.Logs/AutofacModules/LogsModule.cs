@@ -11,7 +11,7 @@ public class LogsModule : Module
     public static void InitModules(ContainerBuilder builder)
     {
         // Репозиторий логирования.
-        builder.RegisterType<LogService>().Named<ILogService>("LogService");
-        builder.RegisterType<LogService>().As<ILogService>();
+        builder.RegisterType<LogService>().Named<ILogService>("LogService").InstancePerLifetimeScope();
+        builder.RegisterType<LogService>().As<ILogService>().InstancePerLifetimeScope();
     }
 }

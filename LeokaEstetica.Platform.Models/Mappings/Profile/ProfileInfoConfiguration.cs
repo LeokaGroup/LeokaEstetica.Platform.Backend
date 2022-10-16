@@ -56,6 +56,11 @@ public partial class ProfileInfoConfiguration : IEntityTypeConfiguration<Profile
             .HasColumnType("text")
             .IsRequired();
         
+        entity.Property(e => e.UserId)
+            .HasColumnName("UserId")
+            .HasColumnType("bigint")
+            .IsRequired();
+        
         entity.Property(e => e.Job)
             .HasColumnName("Job")
             .HasColumnType("varchar(200)")
