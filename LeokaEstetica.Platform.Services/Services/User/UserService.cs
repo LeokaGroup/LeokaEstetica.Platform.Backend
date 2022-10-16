@@ -1,3 +1,4 @@
+using System.Data;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using AutoMapper;
@@ -9,6 +10,7 @@ using LeokaEstetica.Platform.Messaging.Abstractions.Mail;
 using LeokaEstetica.Platform.Models.Dto.Output.User;
 using LeokaEstetica.Platform.Models.Entities.User;
 using LeokaEstetica.Platform.Services.Abstractions.User;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
 namespace LeokaEstetica.Platform.Services.Services.User;
@@ -22,16 +24,19 @@ public sealed class UserService : IUserService
     private readonly IUserRepository _userRepository;
     private readonly IMapper _mapper;
     private readonly IMailingsService _mailingsService;
+    private readonly PgContext _pgContext;
     
     public UserService(ILogService logger, 
         IUserRepository userRepository, 
         IMapper mapper, 
-        IMailingsService mailingsService)
+        IMailingsService mailingsService, 
+        PgContext pgContext)
     {
         _logger = logger;
         _userRepository = userRepository;
         _mapper = mapper;
         _mailingsService = mailingsService;
+        _pgContext = pgContext;
     }
 
     /// <summary>
@@ -42,6 +47,8 @@ public sealed class UserService : IUserService
     /// <returns>Данные пользователя.</returns>
     public async Task<UserSignUpOutput> CreateUserAsync(string password, string email)
     {
+        var tran = await _pgContext.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted);
+        
         try
         {
             var result = new UserSignUpOutput();
@@ -49,6 +56,7 @@ public sealed class UserService : IUserService
             await CheckUserByEmailAsync(result, email);
 
             var userModel = CreateSignUpUserModel(password, email);
+            
             var userId = await _userRepository.SaveUserAsync(userModel);
             ValidateUserId(result, userId);
 
@@ -74,18 +82,22 @@ public sealed class UserService : IUserService
             
             // Отправляем пользователю письмо подтверждения почты.
             await _mailingsService.SendConfirmEmailAsync(email, confirmationEmailCode);
+            
+            await tran.CommitAsync();
 
             return result;
         }
 
         catch (NullReferenceException ex)
         {
+            await tran.RollbackAsync();
             await _logger.LogCriticalAsync(ex);
             throw;
         }
 
         catch (Exception ex)
         {
+            await tran.RollbackAsync();
             await _logger.LogErrorAsync(ex);
             throw;
         }
