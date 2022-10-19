@@ -1,9 +1,9 @@
-namespace LeokaEstetica.Platform.Models.Entities.Profile;
+namespace LeokaEstetica.Platform.Models.Dto.Output.Profile;
 
 /// <summary>
-/// Класс сопоставляется с таблицей навыков пользователей Profile.Skills.
+/// Класс выходной модели для списка навыков профиля пользователя.
 /// </summary>
-public class SkillEntity
+public class SkillOutput
 {
     /// <summary>
     /// PK.
@@ -24,7 +24,7 @@ public class SkillEntity
     /// Позиция.
     /// </summary>
     public int Position { get; set; }
-
+    
     /// <summary>
     /// Тэг навыка.
     /// </summary>

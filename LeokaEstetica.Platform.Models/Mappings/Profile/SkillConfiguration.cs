@@ -29,6 +29,11 @@ public partial class SkillConfiguration : IEntityTypeConfiguration<SkillEntity>
         entity.Property(e => e.Position)
             .HasColumnName("Position")
             .HasColumnType("int");
+        
+        entity.Property(e => e.Tag)
+            .HasColumnName("Tag")
+            .HasColumnType("varchar(150)")
+            .IsRequired();
 
         entity.HasIndex(u => u.SkillId)
             .HasDatabaseName("PK_Skills_SkillId")
