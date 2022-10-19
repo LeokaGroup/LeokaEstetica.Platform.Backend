@@ -23,5 +23,6 @@ public class MappingProfile : Profile
         CreateMap<PlatformOfferItemsEntity, PlatformOfferItemsOutput>();
         CreateMap<UserEntity, UserSignUpOutput>();
         CreateMap<ProfileInfoEntity, ProfileInfoOutput>();
+        CreateMap<ProfileMenuItemEntity, ProfileMenuItemsResultOutput>();
     }
 }

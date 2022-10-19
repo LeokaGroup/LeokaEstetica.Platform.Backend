@@ -13,4 +13,10 @@ public interface IProfileService
     /// </summary>
     /// <returns>Данные раздела обо мне.</returns>
     Task<ProfileInfoOutput> GetProfileInfoAsync(string account);
+
+    /// <summary>
+    /// Метод получает список элементов меню профиля пользователя.
+    /// </summary>
+    /// <returns>Список элементов меню профиля пользователя.</returns>
+    Task<ProfileMenuItemsResultOutput> ProfileMenuItemsAsync();
 }

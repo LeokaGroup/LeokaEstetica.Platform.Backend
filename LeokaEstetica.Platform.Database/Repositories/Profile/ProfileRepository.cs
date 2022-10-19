@@ -48,4 +48,16 @@ public sealed class ProfileRepository : IProfileRepository
         await _pgContext.ProfilesInfo.AddAsync(userInfo);
         await _pgContext.SaveChangesAsync();
     }
+
+    /// <summary>
+    /// Метод получает список элементов меню профиля пользователя.
+    /// </summary>
+    /// <returns>Список элементов меню профиля пользователя.</returns>
+    public async Task<ProfileMenuItemEntity> ProfileMenuItemsAsync()
+    {
+        var result = await _pgContext.ProfileMenuItems
+            .FirstOrDefaultAsync();
+
+        return result;
+    }
 }
