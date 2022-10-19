@@ -38,4 +38,22 @@ public class ProfileController : BaseController
 
         return result;
     }
+
+    /// <summary>
+    /// Метод получает список элементов меню профиля пользователя.
+    /// </summary>
+    /// <returns>Список элементов меню профиля пользователя.</returns>
+    [HttpGet]
+    [Route("menu")]
+    [ProducesResponseType(200, Type = typeof(ProfileMenuItemsResultOutput))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<ProfileMenuItemsResultOutput> ProfileMenuItemsAsync()
+    {
+        var result = await _profileService.ProfileMenuItemsAsync();
+
+        return result;
+    }
 }

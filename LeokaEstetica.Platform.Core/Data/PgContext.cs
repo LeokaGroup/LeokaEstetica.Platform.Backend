@@ -81,4 +81,9 @@ public class PgContext : DbContext
     /// Таблица целей на платформе, которые выбрал пользователь.
     /// </summary>
     public DbSet<UserIntentEntity> UserIntents { get; set; }
+
+    /// <summary>
+    /// Таблица элементов меню профиля пользователя.
+    /// </summary>
+    public DbSet<ProfileMenuItemEntity> ProfileMenuItems { get; set; }
 }

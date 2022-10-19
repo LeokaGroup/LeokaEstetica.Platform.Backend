@@ -67,4 +67,25 @@ public sealed class ProfileService : IProfileService
             throw;
         }
     }
+
+    /// <summary>
+    /// Метод получает список элементов меню профиля пользователя.
+    /// </summary>
+    /// <returns>Список элементов меню профиля пользователя.</returns>
+    public async Task<ProfileMenuItemsResultOutput> ProfileMenuItemsAsync()
+    {
+        try
+        {
+            var items = await _profileRepository.ProfileMenuItemsAsync();
+            var result = _mapper.Map<ProfileMenuItemsResultOutput>(items);
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            await _logger.LogErrorAsync(ex);
+            throw;
+        }
+    }
 }

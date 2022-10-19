@@ -19,4 +19,10 @@ public interface IProfileRepository
     /// </summary>
     /// <param name="userId">Id пользователя.</param>
     Task AddUserInfoAsync(long userId);
+
+    /// <summary>
+    /// Метод получает список элементов меню профиля пользователя.
+    /// </summary>
+    /// <returns>Список элементов меню профиля пользователя.</returns>
+    Task<ProfileMenuItemEntity> ProfileMenuItemsAsync();
 }
