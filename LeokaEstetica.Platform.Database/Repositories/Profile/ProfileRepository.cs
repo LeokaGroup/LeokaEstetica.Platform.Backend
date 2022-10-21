@@ -71,4 +71,15 @@ public sealed class ProfileRepository : IProfileRepository
 
         return result;
     }
+
+    /// <summary>
+    /// Метод получает список целей на платформе для выбора пользователем в профиль пользователя.
+    /// </summary>
+    /// <returns>Список целей.</returns>
+    public async Task<IEnumerable<IntentEntity>> ProfileIntentsAsync()
+    {
+        var result = await _pgContext.Intents.ToListAsync();
+
+        return result;
+    }
 }

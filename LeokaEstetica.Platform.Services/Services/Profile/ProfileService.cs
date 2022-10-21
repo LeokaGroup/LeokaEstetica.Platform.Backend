@@ -109,4 +109,25 @@ public sealed class ProfileService : IProfileService
             throw;
         }
     }
+
+    /// <summary>
+    /// Метод получает список целей на платформе для выбора пользователем в профиль пользователя.
+    /// </summary>
+    /// <returns>Список целей.</returns>
+    public async Task<IEnumerable<IntentOutput>> ProfileIntentsAsync()
+    {
+        try
+        {
+            var items = await _profileRepository.ProfileIntentsAsync();
+            var result = _mapper.Map<IEnumerable<IntentOutput>>(items);
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            await _logger.LogErrorAsync(ex);
+            throw;
+        }
+    }
 }

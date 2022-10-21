@@ -31,4 +31,10 @@ public interface IProfileRepository
     /// </summary>
     /// <returns>Список навыков.</returns>
     Task<IEnumerable<SkillEntity>> ProfileSkillsAsync();
+    
+    /// <summary>
+    /// Метод получает список целей на платформе для выбора пользователем в профиль пользователя.
+    /// </summary>
+    /// <returns>Список целей.</returns>
+    Task<IEnumerable<IntentEntity>> ProfileIntentsAsync();
 }
