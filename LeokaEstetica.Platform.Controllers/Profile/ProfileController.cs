@@ -56,4 +56,22 @@ public class ProfileController : BaseController
 
         return result;
     }
+
+    /// <summary>
+    /// Метод получает список навыков для выбора в профиль пользователя.
+    /// </summary>
+    /// <returns>Список навыков.</returns>
+    [HttpGet]
+    [Route("skills")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<SkillOutput>))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<IEnumerable<SkillOutput>> ProfileSkillsAsync()
+    {
+        var result = await _profileService.ProfileSkillsAsync();
+
+        return result;
+    }
 }

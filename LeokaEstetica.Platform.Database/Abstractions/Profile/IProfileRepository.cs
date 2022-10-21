@@ -25,4 +25,10 @@ public interface IProfileRepository
     /// </summary>
     /// <returns>Список элементов меню профиля пользователя.</returns>
     Task<ProfileMenuItemEntity> ProfileMenuItemsAsync();
+
+    /// <summary>
+    /// Метод получает список навыков для выбора в профиль пользователя.
+    /// </summary>
+    /// <returns>Список навыков.</returns>
+    Task<IEnumerable<SkillEntity>> ProfileSkillsAsync();
 }

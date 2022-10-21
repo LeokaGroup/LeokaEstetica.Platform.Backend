@@ -88,4 +88,25 @@ public sealed class ProfileService : IProfileService
             throw;
         }
     }
+
+    /// <summary>
+    /// Метод получает список навыков для выбора в профиль пользователя.
+    /// </summary>
+    /// <returns>Список навыков.</returns>
+    public async Task<IEnumerable<SkillOutput>> ProfileSkillsAsync()
+    {
+        try
+        {
+            var items = await _profileRepository.ProfileSkillsAsync();
+            var result = _mapper.Map<IEnumerable<SkillOutput>>(items);
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            await _logger.LogErrorAsync(ex);
+            throw;
+        }
+    }
 }

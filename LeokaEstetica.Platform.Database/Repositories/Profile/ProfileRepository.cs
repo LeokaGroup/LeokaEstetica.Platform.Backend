@@ -60,4 +60,15 @@ public sealed class ProfileRepository : IProfileRepository
 
         return result;
     }
+
+    /// <summary>
+    /// Метод получает список навыков для выбора в профиль пользователя.
+    /// </summary>
+    /// <returns>Список навыков.</returns>
+    public async Task<IEnumerable<SkillEntity>> ProfileSkillsAsync()
+    {
+        var result = await _pgContext.Skills.ToListAsync();
+
+        return result;
+    }
 }

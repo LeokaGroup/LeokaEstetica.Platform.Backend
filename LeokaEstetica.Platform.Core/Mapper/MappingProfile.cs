@@ -24,5 +24,6 @@ public class MappingProfile : Profile
         CreateMap<UserEntity, UserSignUpOutput>();
         CreateMap<ProfileInfoEntity, ProfileInfoOutput>();
         CreateMap<ProfileMenuItemEntity, ProfileMenuItemsResultOutput>();
+        CreateMap<SkillEntity, SkillOutput>();
     }
 }

@@ -19,4 +19,10 @@ public interface IProfileService
     /// </summary>
     /// <returns>Список элементов меню профиля пользователя.</returns>
     Task<ProfileMenuItemsResultOutput> ProfileMenuItemsAsync();
+
+    /// <summary>
+    /// Метод получает список навыков для выбора в профиль пользователя.
+    /// </summary>
+    /// <returns>Список навыков.</returns>
+    Task<IEnumerable<SkillOutput>> ProfileSkillsAsync();
 }
