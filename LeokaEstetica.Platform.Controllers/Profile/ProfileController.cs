@@ -88,6 +88,8 @@ public class ProfileController : BaseController
     [ProducesResponseType(404)]
     public async Task<IEnumerable<IntentOutput>> ProfileIntentsAsync()
     {
-        
+        var result = await _profileService.ProfileIntentsAsync();
+
+        return result;
     }
 }
