@@ -27,11 +27,15 @@ public sealed class NotificationsService : INotificationsService
     /// Метод отправляет уведомление об успешном сохранении.
     /// </summary>
     /// <param name="notifyText">Текст уведомления.</param>
-    public async Task SendNotifySuccessSaveAsync(string notifyText)
+    /// <param name="userCode">Код пользователя.</param>
+    public async Task SendNotifySuccessSaveAsync(string notifyText, string userCode)
     {
+        // Получаем ConnectionId из кэша.
+        var connectionId = await _redisService.GetConnectionIdCacheAsync(userCode);
+        
         await _hubContext.Clients
-            .All
-            .SendAsync("Receive", notifyText);
+            .Client(connectionId)
+            .SendAsync("SendNotifySuccessSave", notifyText);
     }
 
     /// <summary>

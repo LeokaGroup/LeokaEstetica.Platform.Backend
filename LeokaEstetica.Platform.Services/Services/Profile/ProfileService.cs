@@ -3,7 +3,6 @@ using LeokaEstetica.Platform.Database.Abstractions.Profile;
 using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Models.Dto.Output.Profile;
-using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Services.Abstractions.Profile;
 
 namespace LeokaEstetica.Platform.Services.Services.Profile;
@@ -17,19 +16,16 @@ public sealed class ProfileService : IProfileService
     private readonly IProfileRepository _profileRepository;
     private readonly IUserRepository _userRepository;
     private readonly IMapper _mapper;
-    private readonly INotificationsService _notificationsService;
 
     public ProfileService(ILogService logger, 
         IProfileRepository profileRepository, 
         IUserRepository userRepository, 
-        IMapper mapper, 
-        INotificationsService notificationsService)
+        IMapper mapper)
     {
         _logger = logger;
         _profileRepository = profileRepository;
         _userRepository = userRepository;
         _mapper = mapper;
-        _notificationsService = notificationsService;
     }
 
     /// <summary>
@@ -103,7 +99,6 @@ public sealed class ProfileService : IProfileService
         {
             var items = await _profileRepository.ProfileSkillsAsync();
             var result = _mapper.Map<IEnumerable<SkillOutput>>(items);
-            await _notificationsService.SendNotifySuccessSaveAsync("test message");
 
             return result;
         }

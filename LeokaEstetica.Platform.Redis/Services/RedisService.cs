@@ -24,11 +24,23 @@ public sealed class RedisService : IRedisService
     public async Task SaveConnectionIdCacheAsync(string connectionId, string userCode)
     {
         // Записываем ConnectionId в кэш редиса.
-        await _redis.SetStringAsync(string.Concat(userCode + "_" + connectionId),
+        await _redis.SetStringAsync(userCode,
             ProtoBufExtensions.Serialize(connectionId),
             new DistributedCacheEntryOptions
             {
-                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10)
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(12)
             });
+    }
+
+    /// <summary>
+    /// Метод получает ConnectionId подключения для SignalR.
+    /// </summary>
+    /// <param name="key">Ключ поиска.</param>
+    /// <returns>ConnectionId.</returns>
+    public async Task<string> GetConnectionIdCacheAsync(string key)
+    {
+        var result = await _redis.GetStringAsync(key);
+
+        return result;
     }
 }

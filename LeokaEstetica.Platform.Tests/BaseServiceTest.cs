@@ -49,6 +49,6 @@ public class BaseServiceTest
         MailingsService = new MailingsService(AppConfiguration);
         ProfileRepository = new ProfileRepository(PgContext);
         UserService = new UserService(LogService, UserRepository, mapper, null, PgContext, ProfileRepository);
-        ProfileService = new ProfileService(LogService, ProfileRepository, UserRepository, mapper, null);
+        ProfileService = new ProfileService(LogService, ProfileRepository, UserRepository, mapper);
     }
 }

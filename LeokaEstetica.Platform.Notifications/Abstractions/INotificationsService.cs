@@ -9,7 +9,8 @@ public interface INotificationsService
     /// Метод отправляет уведомление об успешном сохранении.
     /// </summary>
     /// <param name="notifyText">Текст уведомления.</param>
-    Task SendNotifySuccessSaveAsync(string notifyText);
+    /// <param name="userCode">Код пользователя.</param>
+    Task SendNotifySuccessSaveAsync(string notifyText, string userCode);
 
     /// <summary>
     /// Метод сохраняет ConnectionId подключения SignalR в кэш.
