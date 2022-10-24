@@ -17,5 +17,5 @@ public interface INotificationsService
     /// </summary>
     /// <param name="connectionId">Id подключения, который создает SignalR.</param>
     /// <param name="userCode">Код пользователя.</param>
-    Task SaveConnectionIdCacheAsync(string connectionId, string userCode);
+    // Task SaveConnectionIdCacheAsync(string connectionId, string userCode);
 }

@@ -30,12 +30,10 @@ public sealed class NotificationsService : INotificationsService
     /// <param name="userCode">Код пользователя.</param>
     public async Task SendNotifySuccessSaveAsync(string notifyText, string userCode)
     {
-        // Получаем ConnectionId из кэша.
-        var connectionId = await _redisService.GetConnectionIdCacheAsync(userCode);
+        // // Получаем ConnectionId из кэша.
+        // var connectionId = await _redisService.GetConnectionIdCacheAsync(userCode);
         
-        await _hubContext.Clients
-            .Client(connectionId)
-            .SendAsync("SendNotifySuccessSave", notifyText);
+        await _hubContext.Clients.All.SendAsync("SendNotifySuccessSave", notifyText);
     }
 
     /// <summary>
@@ -43,20 +41,20 @@ public sealed class NotificationsService : INotificationsService
     /// </summary>
     /// <param name="connectionId">Id подключения, который создает SignalR.</param>
     /// <param name="userCode">Код пользователя.</param>
-    public async Task SaveConnectionIdCacheAsync(string connectionId, string userCode)
-    {
-        try
-        {
-            ValidateConnection(connectionId, userCode);
-            await _redisService.SaveConnectionIdCacheAsync(connectionId, userCode);
-        }
-        
-        catch (Exception ex)
-        {
-            await _logger.LogErrorAsync(ex);
-            throw;
-        }
-    }
+    // public async Task SaveConnectionIdCacheAsync(string connectionId, string userCode)
+    // {
+    //     try
+    //     {
+    //         ValidateConnection(connectionId, userCode);
+    //         await _redisService.SaveConnectionIdCacheAsync(connectionId, userCode);
+    //     }
+    //     
+    //     catch (Exception ex)
+    //     {
+    //         await _logger.LogErrorAsync(ex);
+    //         throw;
+    //     }
+    // }
 
     /// <summary>
     /// Метод валидирует входные параметры подключения SignalR.
