@@ -1,6 +1,6 @@
 using ProtoBuf;
 
-namespace LeokaEstetica.Platform.Notifications.Extensions;
+namespace LeokaEstetica.Platform.Redis.Extensions;
 
 /// <summary>
 /// Класс расширений для ProtoBuf.

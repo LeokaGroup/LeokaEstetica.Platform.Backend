@@ -1,9 +1,8 @@
 using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Notifications.Data;
-using LeokaEstetica.Platform.Notifications.Extensions;
+using LeokaEstetica.Platform.Redis.Abstractions;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.Extensions.Caching.Distributed;
 
 namespace LeokaEstetica.Platform.Notifications.Services;
 
@@ -14,15 +13,14 @@ public sealed class NotificationsService : INotificationsService
 {
     private readonly IHubContext<NotifyHub> _hubContext;
     private readonly ILogService _logger;
-    private readonly IDistributedCache _redis;
+    private readonly IRedisService _redisService;
 
     public NotificationsService(IHubContext<NotifyHub> hubContext, 
-        ILogService logger, 
-        IDistributedCache redis)
+        ILogService logger, IRedisService redisService)
     {
         _hubContext = hubContext;
         _logger = logger;
-        _redis = redis;
+        _redisService = redisService;
     }
 
     /// <summary>
@@ -46,14 +44,7 @@ public sealed class NotificationsService : INotificationsService
         try
         {
             ValidateConnection(connectionId, userCode);
-            
-            // Записываем ConnectionId в кэш редиса.
-            await _redis.SetStringAsync(string.Concat(userCode + "_" + connectionId),
-                ProtoBufExtensions.Serialize(connectionId),
-                new DistributedCacheEntryOptions
-                {
-                    AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10)
-                });
+            await _redisService.SaveConnectionIdCacheAsync(connectionId, userCode);
         }
         
         catch (Exception ex)
