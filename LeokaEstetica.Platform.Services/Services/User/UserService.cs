@@ -260,12 +260,15 @@ public sealed class UserService : IUserService
                 throw new UnauthorizedAccessException("Пользователь не прошел проверку по паролю!");
             }
 
+            var userCode = await _userRepository.GetUserCodeByEmailAsync(email);
+
             var claim = GetIdentityClaim(email);
             var token = CreateTokenFactory(claim);
             
             result.Email = email;
             result.Token = token;
             result.IsSuccess = true;
+            result.UserCode = userCode;
 
             return result;
         }

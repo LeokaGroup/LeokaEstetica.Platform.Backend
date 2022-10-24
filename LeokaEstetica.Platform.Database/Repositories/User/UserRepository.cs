@@ -137,4 +137,19 @@ public sealed class UserRepository : IUserRepository
             throw;
         }
     }
+    
+    /// <summary>
+    /// Метод получает код пользователя по его почте.
+    /// </summary>
+    /// <param name="email">Почта.</param>
+    /// <returns>Хэш пароля.</returns>
+    public async Task<Guid> GetUserCodeByEmailAsync(string email)
+    {
+        var result = await _pgContext.Users
+            .Where(u => u.Email.Equals(email))
+            .Select(u => u.UserCode)
+            .FirstOrDefaultAsync();
+
+        return result;
+    }
 }

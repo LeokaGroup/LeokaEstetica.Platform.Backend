@@ -70,6 +70,12 @@ builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 // Подключаем SignalR.
 builder.Services.AddSignalR();
 
+// Подключаем кэш Redis.
+builder.Services.AddStackExchangeRedisCache(options => {
+    options.Configuration = configuration["Redis:RedisCacheUrl"] ?? string.Empty;
+    options.InstanceName = "LeokaEstetica_";
+});
+
 var app = builder.Build();
 
 app.UseHttpsRedirection();

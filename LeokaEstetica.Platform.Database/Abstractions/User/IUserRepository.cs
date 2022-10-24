@@ -55,4 +55,11 @@ public interface IUserRepository
     /// <param name="account">Почта пользователя.</param>
     /// <returns>Id пользователя.</returns>
     Task<long> GetUserByEmailAsync(string account);
+
+    /// <summary>
+    /// Метод получает код пользователя по его почте.
+    /// </summary>
+    /// <param name="email">Почта.</param>
+    /// <returns>Хэш пароля.</returns>
+    Task<Guid> GetUserCodeByEmailAsync(string email);
 }

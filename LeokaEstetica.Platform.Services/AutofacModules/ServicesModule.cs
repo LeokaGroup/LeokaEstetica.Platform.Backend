@@ -11,28 +11,25 @@ using LeokaEstetica.Platform.Services.Services.User;
 
 namespace LeokaEstetica.Platform.Services.AutofacModules;
 
-public class ServicesModule
+[CommonModule]
+public class ServicesModule : Module
 {
-    [CommonModule]
-    public class LogsModule : Module
+    public static void InitModules(ContainerBuilder builder)
     {
-        public static void InitModules(ContainerBuilder builder)
-        {
-            // Сервис хидера.
-            builder.RegisterType<HeaderService>().Named<IHeaderService>("HeaderService").InstancePerLifetimeScope();
-            builder.RegisterType<HeaderService>().As<IHeaderService>().InstancePerLifetimeScope();
+        // Сервис хидера.
+        builder.RegisterType<HeaderService>().Named<IHeaderService>("HeaderService").InstancePerLifetimeScope();
+        builder.RegisterType<HeaderService>().As<IHeaderService>().InstancePerLifetimeScope();
             
-            // Сервис лендингов.
-            builder.RegisterType<LandingService>().Named<ILandingService>("LandingService").InstancePerLifetimeScope();
-            builder.RegisterType<LandingService>().As<ILandingService>().InstancePerLifetimeScope();
+        // Сервис лендингов.
+        builder.RegisterType<LandingService>().Named<ILandingService>("LandingService").InstancePerLifetimeScope();
+        builder.RegisterType<LandingService>().As<ILandingService>().InstancePerLifetimeScope();
             
-            // Сервис пользователя.
-            builder.RegisterType<UserService>().Named<IUserService>("UserService").InstancePerLifetimeScope();
-            builder.RegisterType<UserService>().As<IUserService>().InstancePerLifetimeScope();
+        // Сервис пользователя.
+        builder.RegisterType<UserService>().Named<IUserService>("UserService").InstancePerLifetimeScope();
+        builder.RegisterType<UserService>().As<IUserService>().InstancePerLifetimeScope();
             
-            // Сервис профиля пользователя.
-            builder.RegisterType<ProfileService>().Named<IProfileService>("ProfileService").InstancePerLifetimeScope();
-            builder.RegisterType<ProfileService>().As<IProfileService>().InstancePerLifetimeScope();
-        }
+        // Сервис профиля пользователя.
+        builder.RegisterType<ProfileService>().Named<IProfileService>("ProfileService").InstancePerLifetimeScope();
+        builder.RegisterType<ProfileService>().As<IProfileService>().InstancePerLifetimeScope();
     }
 }

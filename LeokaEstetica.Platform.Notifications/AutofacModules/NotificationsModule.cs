@@ -2,7 +2,6 @@ using Autofac;
 using LeokaEstetica.Platform.Core.Attributes;
 using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Notifications.Services;
-using Module = System.Reflection.Module;
 
 namespace LeokaEstetica.Platform.Notifications.AutofacModules;
 
@@ -14,6 +13,9 @@ public class NotificationsModule : Module
         // Сервис уведомлений.
         builder.RegisterType<NotificationsService>()
             .Named<INotificationsService>("NotificationsService")
+            .InstancePerLifetimeScope();
+        builder.RegisterType<NotificationsService>()
+            .As<INotificationsService>()
             .InstancePerLifetimeScope();
     }
 }

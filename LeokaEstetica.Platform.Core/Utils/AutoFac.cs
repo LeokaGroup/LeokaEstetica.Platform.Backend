@@ -34,11 +34,10 @@ public static class AutoFac
     public static Assembly[] GetAssembliesFromApplicationBaseDirectory(Func<AssemblyName, bool> condition)
     {
         var baseDirectoryPath = AppDomain.CurrentDomain.BaseDirectory;
-        Func<string, bool> isAssembly = file =>
-            string.Equals(Path.GetExtension(file), ".dll", StringComparison.OrdinalIgnoreCase);
+        bool IsAssembly(string file) => string.Equals(Path.GetExtension(file), ".dll", StringComparison.OrdinalIgnoreCase);
 
         return Directory.GetFiles(baseDirectoryPath)
-            .Where(isAssembly)
+            .Where((Func<string, bool>)IsAssembly)
             .Where(f => condition(AssemblyName.GetAssemblyName(f)))
             .Select(Assembly.LoadFrom)
             .ToArray();
@@ -73,6 +72,10 @@ public static class AutoFac
         var assemblies6 =
             GetAssembliesFromApplicationBaseDirectory(x =>
                 x.FullName.StartsWith("LeokaEstetica.Platform.Messaging"));
+        
+        var assemblies7 =
+            GetAssembliesFromApplicationBaseDirectory(x =>
+                x.FullName.StartsWith("LeokaEstetica.Platform.Notifications"));
 
         b.RegisterAssemblyTypes(assemblies1).AsImplementedInterfaces();
         b.RegisterAssemblyTypes(assemblies2).AsImplementedInterfaces();
@@ -80,13 +83,15 @@ public static class AutoFac
         b.RegisterAssemblyTypes(assemblies4).AsImplementedInterfaces();
         b.RegisterAssemblyTypes(assemblies5).AsImplementedInterfaces();
         b.RegisterAssemblyTypes(assemblies6).AsImplementedInterfaces();
+        b.RegisterAssemblyTypes(assemblies7).AsImplementedInterfaces();
         
         var assemblies = assemblies1
             .Union(assemblies2)
             .Union(assemblies3)
             .Union(assemblies4)
             .Union(assemblies5)
-            .Union(assemblies6);
+            .Union(assemblies6)
+            .Union(assemblies7);
 
         RegisterMapper(b);
 
