@@ -152,6 +152,7 @@ public sealed class ProfileService : IProfileService
                 throw new NullReferenceException($"Id пользователя с аккаунтом {account} не найден!");
             }
             
+            // Получаем данные профиля пользователя.
             var profileInfo = await _profileRepository.GetProfileInfoAsync(userId);
 
             if (profileInfo is null)
@@ -159,7 +160,7 @@ public sealed class ProfileService : IProfileService
                 throw new NullReferenceException($"Для пользователя {account} не заведено профиля в системе!");
             }
 
-            CreateProfileInfoModel(profileInfoInput, userId, ref profileInfo);
+            CreateProfileInfoModel(profileInfoInput, ref profileInfo);
             var savedProfileInfo = await _profileRepository.SaveProfileInfoAsync(profileInfo);
             var result = _mapper.Map<ProfileInfoOutput>(savedProfileInfo);
 
@@ -194,9 +195,16 @@ public sealed class ProfileService : IProfileService
             throw new ArgumentException("Информация о себе должна быть заполнена!");
         }
         
+        // TODO: Добавить валидацию почты через регулярку. Завести для этого класс валидатора и туда эту валидацию.
         if (string.IsNullOrEmpty(profileInfoInput.Email))
         {
-            throw new ArgumentException("Почта пользователя должна быть заполнена!");
+            throw new ArgumentException("Email пользователя должен быть заполнен!");
+        }
+        
+        // TODO: Добавить валидацию номера телефона через регулярку. Завести для этого класс валидатора и туда эту валидацию.
+        if (string.IsNullOrEmpty(profileInfoInput.PhoneNumber))
+        {
+            throw new ArgumentException("Номер телефона пользователя должнен быть заполнен!");
         }
     }
 
@@ -204,9 +212,8 @@ public sealed class ProfileService : IProfileService
     /// Метод создает модель для сохранения данных профиля пользователя.
     /// </summary>
     /// <param name="profileInfoInput">Входная модель.</param>
-    /// <param name="userId">Id пользователя.</param>
     /// <param name="profileInfoId">Id профиля пользователя.</param>
-    private void CreateProfileInfoModel(ProfileInfoInput profileInfoInput, long userId, ref ProfileInfoEntity profileInfo)
+    private void CreateProfileInfoModel(ProfileInfoInput profileInfoInput, ref ProfileInfoEntity profileInfo)
     {
         profileInfo.FirstName = profileInfoInput.FirstName;
         profileInfo.LastName = profileInfoInput.LastName;

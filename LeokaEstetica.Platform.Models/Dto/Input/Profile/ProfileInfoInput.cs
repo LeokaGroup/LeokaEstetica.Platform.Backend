@@ -59,4 +59,9 @@ public class ProfileInfoInput
     /// Почта пользователя.
     /// </summary>
     public string Email { get; set; }
+
+    /// <summary>
+    /// Номер телефона.
+    /// </summary>
+    public string PhoneNumber { get; set; }
 }
