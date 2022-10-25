@@ -54,4 +54,9 @@ public class ProfileInfoInput
     /// Должность.
     /// </summary>
     public string Job { get; set; }
+
+    /// <summary>
+    /// Почта пользователя.
+    /// </summary>
+    public string Email { get; set; }
 }

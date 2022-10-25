@@ -193,6 +193,11 @@ public sealed class ProfileService : IProfileService
         {
             throw new ArgumentException("Информация о себе должна быть заполнена!");
         }
+        
+        if (string.IsNullOrEmpty(profileInfoInput.Email))
+        {
+            throw new ArgumentException("Почта пользователя должна быть заполнена!");
+        }
     }
 
     /// <summary>
