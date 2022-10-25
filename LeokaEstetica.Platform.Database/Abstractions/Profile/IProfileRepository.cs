@@ -37,4 +37,11 @@ public interface IProfileRepository
     /// </summary>
     /// <returns>Список целей.</returns>
     Task<IEnumerable<IntentEntity>> ProfileIntentsAsync();
+
+    /// <summary>
+    /// Метод сохраняет данные контактной информации пользователя.
+    /// </summary>
+    /// <param name="profileInfo">Данные для сохранения.</param>
+    /// <returns>Данные профиля.</returns>
+    Task<ProfileInfoEntity> SaveProfileInfoAsync(ProfileInfoEntity profileInfo);
 }

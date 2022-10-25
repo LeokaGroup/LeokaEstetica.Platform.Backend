@@ -2,7 +2,9 @@ using AutoMapper;
 using LeokaEstetica.Platform.Database.Abstractions.Profile;
 using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Logs.Abstractions;
+using LeokaEstetica.Platform.Models.Dto.Input.Profile;
 using LeokaEstetica.Platform.Models.Dto.Output.Profile;
+using LeokaEstetica.Platform.Models.Entities.Profile;
 using LeokaEstetica.Platform.Services.Abstractions.Profile;
 
 namespace LeokaEstetica.Platform.Services.Services.Profile;
@@ -129,5 +131,87 @@ public sealed class ProfileService : IProfileService
             await _logger.LogErrorAsync(ex);
             throw;
         }
+    }
+
+    /// <summary>
+    /// Метод сохраняет данные контактной информации пользователя.
+    /// </summary>
+    /// <param name="profileInfoInput">Входная модель.</param>
+    /// <param name="account">ккаунт пользователя.</param>
+    /// <returns>Сохраненные данные.</returns>
+    public async Task<ProfileInfoOutput> SaveProfileInfoAsync(ProfileInfoInput profileInfoInput, string account)
+    {
+        try
+        {
+            ValidateProfileInfo(profileInfoInput);
+
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId == 0)
+            {
+                throw new NullReferenceException($"Id пользователя с аккаунтом {account} не найден!");
+            }
+            
+            var profileInfo = await _profileRepository.GetProfileInfoAsync(userId);
+
+            if (profileInfo is null)
+            {
+                throw new NullReferenceException($"Для пользователя {account} не заведено профиля в системе!");
+            }
+
+            CreateProfileInfoModel(profileInfoInput, userId, ref profileInfo);
+            var savedProfileInfo = await _profileRepository.SaveProfileInfoAsync(profileInfo);
+            var result = _mapper.Map<ProfileInfoOutput>(savedProfileInfo);
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            await _logger.LogErrorAsync(ex);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Метод валидирует входную модель контактной информации.
+    /// </summary>
+    /// <param name="profileInfoInput">Входная модель для валидации.</param>
+    private void ValidateProfileInfo(ProfileInfoInput profileInfoInput)
+    {
+        if (string.IsNullOrEmpty(profileInfoInput.FirstName))
+        {
+            throw new ArgumentException("Имя должно быть заполнено!");
+        }
+        
+        if (string.IsNullOrEmpty(profileInfoInput.LastName))
+        {
+            throw new ArgumentException("Фамилия должна быть заполнена!");
+        }
+        
+        if (string.IsNullOrEmpty(profileInfoInput.Aboutme))
+        {
+            throw new ArgumentException("Информация о себе должна быть заполнена!");
+        }
+    }
+
+    /// <summary>
+    /// Метод создает модель для сохранения данных профиля пользователя.
+    /// </summary>
+    /// <param name="profileInfoInput">Входная модель.</param>
+    /// <param name="userId">Id пользователя.</param>
+    /// <param name="profileInfoId">Id профиля пользователя.</param>
+    private void CreateProfileInfoModel(ProfileInfoInput profileInfoInput, long userId, ref ProfileInfoEntity profileInfo)
+    {
+        profileInfo.FirstName = profileInfoInput.FirstName;
+        profileInfo.LastName = profileInfoInput.LastName;
+        profileInfo.Patronymic = profileInfoInput.Patronymic;
+        profileInfo.Aboutme = profileInfoInput.Aboutme;
+        profileInfo.IsShortFirstName = profileInfoInput.IsShortFirstName;
+        profileInfo.Job = profileInfoInput.Job;
+        profileInfo.WhatsApp = profileInfoInput.WhatsApp;
+        profileInfo.Telegram = profileInfoInput.Telegram;
+        profileInfo.Vkontakte = profileInfoInput.Vkontakte;
+        profileInfo.OtherLink = profileInfoInput.OtherLink;
     }
 }
