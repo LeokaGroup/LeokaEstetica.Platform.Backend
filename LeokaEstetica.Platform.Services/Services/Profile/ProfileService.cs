@@ -59,6 +59,17 @@ public sealed class ProfileService : IProfileService
             }
 
             var result = _mapper.Map<ProfileInfoOutput>(profileInfo);
+            
+            // Получаем поля почты и номера телефона пользователя.
+            var userData = await _userRepository.GetUserPhoneEmailByUserIdAsync(userId);
+
+            if (userData is null)
+            {
+                return result;
+            }
+            
+            result.Email = userData.Email;
+            result.PhoneNumber = userData.PhoneNumber;
 
             return result;
         }

@@ -7,5 +7,13 @@ namespace LeokaEstetica.Platform.Models.Dto.Output.Profile;
 /// </summary>
 public class ProfileInfoOutput : ProfileInfoEntity
 {
-    
+    /// <summary>
+    /// Email.
+    /// </summary>
+    public string Email { get; set; }
+
+    /// <summary>
+    /// Номер телефона пользователя.
+    /// </summary>
+    public string PhoneNumber { get; set; }
 }
