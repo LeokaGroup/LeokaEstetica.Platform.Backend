@@ -1,3 +1,5 @@
+using LeokaEstetica.Platform.Redis.Models;
+
 namespace LeokaEstetica.Platform.Redis.Abstractions;
 
 /// <summary>
@@ -19,4 +21,16 @@ public interface IRedisService
     // /// <param name="key">Ключ поиска.</param>
     // /// <returns>ConnectionId.</returns>
     // Task<string> GetConnectionIdCacheAsync(string key);
+
+    /// <summary>
+    /// Метод сохраняет в кэш меню профиля пользователя.
+    /// </summary>
+    /// <param name="profileMenuRedis">Класс для кэша.</param>
+    Task SaveProfileMenuCacheAsync(ProfileMenuRedis profileMenuRedis);
+    
+    /// <summary>
+    /// Метод получает из кэша меню профиля пользователя.
+    /// </summary>
+    /// <param name="key">Ключ для поиска в кэше.</param>
+    Task<ProfileMenuRedis> GetProfileMenuCacheAsync(string key);
 }

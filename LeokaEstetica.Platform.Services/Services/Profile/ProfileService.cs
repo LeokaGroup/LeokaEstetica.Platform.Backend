@@ -5,7 +5,10 @@ using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Models.Dto.Input.Profile;
 using LeokaEstetica.Platform.Models.Dto.Output.Profile;
 using LeokaEstetica.Platform.Models.Entities.Profile;
+using LeokaEstetica.Platform.Redis.Abstractions;
+using LeokaEstetica.Platform.Redis.Models;
 using LeokaEstetica.Platform.Services.Abstractions.Profile;
+using Items = LeokaEstetica.Platform.Redis.Models.Items;
 
 namespace LeokaEstetica.Platform.Services.Services.Profile;
 
@@ -18,16 +21,19 @@ public sealed class ProfileService : IProfileService
     private readonly IProfileRepository _profileRepository;
     private readonly IUserRepository _userRepository;
     private readonly IMapper _mapper;
+    private readonly IRedisService _redisService;
 
     public ProfileService(ILogService logger, 
         IProfileRepository profileRepository, 
         IUserRepository userRepository, 
-        IMapper mapper)
+        IMapper mapper, 
+        IRedisService redisService)
     {
         _logger = logger;
         _profileRepository = profileRepository;
         _userRepository = userRepository;
         _mapper = mapper;
+        _redisService = redisService;
     }
 
     /// <summary>
@@ -91,6 +97,24 @@ public sealed class ProfileService : IProfileService
         {
             var items = await _profileRepository.ProfileMenuItemsAsync();
             var result = _mapper.Map<ProfileMenuItemsResultOutput>(items);
+            
+            // Добавляем меню профиля в кэш.
+            await _redisService.SaveProfileMenuCacheAsync(new ProfileMenuRedis
+            {
+                ProfileMenuItems = new List<ProfileMenuItemsRedis>(result.ProfileMenuItems.Select(p =>
+                    new ProfileMenuItemsRedis
+                    {
+                        Label = p.Label,
+                        SysName = p.SysName,
+                        Url = p.Url,
+                        Items = new List<Items>(result.ProfileMenuItems.Select(i => new Items
+                        {
+                            Label = i.Label,
+                            SysName = i.SysName,
+                            Url = i.Url
+                        }))
+                    }))
+            });
 
             return result;
         }
