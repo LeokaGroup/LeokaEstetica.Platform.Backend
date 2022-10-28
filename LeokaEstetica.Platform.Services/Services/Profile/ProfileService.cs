@@ -99,22 +99,8 @@ public sealed class ProfileService : IProfileService
             var result = _mapper.Map<ProfileMenuItemsResultOutput>(items);
             
             // Добавляем меню профиля в кэш.
-            await _redisService.SaveProfileMenuCacheAsync(new ProfileMenuRedis
-            {
-                ProfileMenuItems = new List<ProfileMenuItemsRedis>(result.ProfileMenuItems.Select(p =>
-                    new ProfileMenuItemsRedis
-                    {
-                        Label = p.Label,
-                        SysName = p.SysName,
-                        Url = p.Url,
-                        Items = new List<Items>(result.ProfileMenuItems.Select(i => new Items
-                        {
-                            Label = i.Label,
-                            SysName = i.SysName,
-                            Url = i.Url
-                        }))
-                    }))
-            });
+            var model = CreateFactoryModelRedis(result.ProfileMenuItems);
+            await _redisService.SaveProfileMenuCacheAsync(model);
 
             return result;
         }
@@ -260,5 +246,32 @@ public sealed class ProfileService : IProfileService
         profileInfo.Telegram = profileInfoInput.Telegram;
         profileInfo.Vkontakte = profileInfoInput.Vkontakte;
         profileInfo.OtherLink = profileInfoInput.OtherLink;
+    }
+
+    /// <summary>
+    /// Метод создает модель для сохранения в кэше Redis.
+    /// </summary>
+    /// <param name="items">Список меню.</param>
+    /// <returns>Модеkь для сохранения.</returns>
+    private ProfileMenuRedis CreateFactoryModelRedis(IReadOnlyCollection<ProfileMenuItemsOutput> items)
+    {
+        var model = new ProfileMenuRedis
+        {
+            ProfileMenuItems = new List<ProfileMenuItemsRedis>(items.Select(p =>
+                new ProfileMenuItemsRedis
+                {
+                    Label = p.Label,
+                    SysName = p.SysName,
+                    Url = p.Url,
+                    Items = new List<Items>(items.Select(i => new Items
+                    {
+                        Label = i.Label,
+                        SysName = i.SysName,
+                        Url = i.Url
+                    }))
+                }))
+        };
+
+        return model;
     }
 }
