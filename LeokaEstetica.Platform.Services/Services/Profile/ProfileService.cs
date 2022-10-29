@@ -182,8 +182,13 @@ public sealed class ProfileService : IProfileService
             }
 
             CreateProfileInfoModel(profileInfoInput, ref profileInfo);
+            
+            // Сохраняем данные пользователя.
             var savedProfileInfo = await _profileRepository.SaveProfileInfoAsync(profileInfo);
             var result = _mapper.Map<ProfileInfoOutput>(savedProfileInfo);
+            
+            // Сохраняем почту и номер телефона пользователя.
+            await _userRepository.SaveUserPhoneAsync(userId, profileInfoInput.PhoneNumber);
 
             return result;
         }

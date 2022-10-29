@@ -70,4 +70,11 @@ public interface IUserRepository
     /// <param name="userId">Id пользователя.</param>
     /// <returns>Номер телефона и почту.</returns>
     Task<UserPhoneEmailOutput> GetUserPhoneEmailByUserIdAsync(long userId);
+
+    /// <summary>
+    /// Метод сохраняет телефон пользователя.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <param name="phone">Номер телефона.</param>
+    Task SaveUserPhoneAsync(long userId, string phone);
 }

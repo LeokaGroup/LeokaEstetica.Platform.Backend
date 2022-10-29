@@ -172,4 +172,16 @@ public sealed class UserRepository : IUserRepository
 
         return result;
     }
+
+    /// <summary>
+    /// Метод сохраняет телефон и почту пользователя.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <param name="phone">Номер телефона.</param>
+    public async Task SaveUserPhoneAsync(long userId, string phone)
+    {
+        var user = await GetUserByUserIdAsync(userId);
+        user.PhoneNumber = phone;
+        await _pgContext.SaveChangesAsync();
+    }
 }
