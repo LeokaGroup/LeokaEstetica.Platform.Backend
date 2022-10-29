@@ -5,6 +5,7 @@ using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Models.Dto.Input.Profile;
 using LeokaEstetica.Platform.Models.Dto.Output.Profile;
 using LeokaEstetica.Platform.Models.Entities.Profile;
+using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Redis.Abstractions;
 using LeokaEstetica.Platform.Redis.Models;
 using LeokaEstetica.Platform.Services.Abstractions.Profile;
@@ -22,18 +23,21 @@ public sealed class ProfileService : IProfileService
     private readonly IUserRepository _userRepository;
     private readonly IMapper _mapper;
     private readonly IRedisService _redisService;
+    private readonly INotificationsService _notificationsService;
 
     public ProfileService(ILogService logger,
         IProfileRepository profileRepository,
         IUserRepository userRepository,
         IMapper mapper,
-        IRedisService redisService)
+        IRedisService redisService, 
+        INotificationsService notificationsService)
     {
         _logger = logger;
         _profileRepository = profileRepository;
         _userRepository = userRepository;
         _mapper = mapper;
         _redisService = redisService;
+        _notificationsService = notificationsService;
     }
 
     /// <summary>
@@ -187,8 +191,11 @@ public sealed class ProfileService : IProfileService
             var savedProfileInfo = await _profileRepository.SaveProfileInfoAsync(profileInfo);
             var result = _mapper.Map<ProfileInfoOutput>(savedProfileInfo);
             
-            // Сохраняем почту и номер телефона пользователя.
+            // Сохраняем номер телефона пользователя.
             await _userRepository.SaveUserPhoneAsync(userId, profileInfoInput.PhoneNumber);
+            
+            // Отправляем уведомление о сохранении фронту.
+            await _notificationsService.SendNotifySuccessSaveAsync("Все хорошо", "Данные успешно сохранены!", null);
 
             return result;
         }
