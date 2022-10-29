@@ -31,6 +31,5 @@ public interface IRedisService
     /// <summary>
     /// Метод получает из кэша меню профиля пользователя.
     /// </summary>
-    /// <param name="key">Ключ для поиска в кэше.</param>
-    Task<ProfileMenuRedis> GetProfileMenuCacheAsync(string key);
+    Task<ProfileMenuRedis> GetProfileMenuCacheAsync();
 }

@@ -18,8 +18,8 @@ public class ProfileMenuItemsRedis
     /// Список элементов.
     /// </summary>
     [ProtoMember(2)]
-    public List<Items> Items { get; set; }
-    
+    public List<Items> Items { get; set; } = new();
+
     /// <summary>
     /// Системное название.
     /// </summary>

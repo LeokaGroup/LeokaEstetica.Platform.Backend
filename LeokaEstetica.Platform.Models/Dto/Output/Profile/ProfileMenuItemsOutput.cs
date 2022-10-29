@@ -13,7 +13,7 @@ public class ProfileMenuItemsOutput
     /// <summary>
     /// Список элементов.
     /// </summary>
-    public List<Items> Items { get; set; }
+    public List<Items> Items { get; set; } = new();
     
     /// <summary>
     /// Системное название.

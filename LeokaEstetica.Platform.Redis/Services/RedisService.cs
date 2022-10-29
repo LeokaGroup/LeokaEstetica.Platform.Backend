@@ -62,10 +62,18 @@ public sealed class RedisService : IRedisService
 
     /// <summary>
     /// Метод получает из кэша меню профиля пользователя.
-    /// </summary>
-    /// <param name="key">Ключ для поиска в кэше.</param>
-    public Task<ProfileMenuRedis> GetProfileMenuCacheAsync(string key)
+    /// </summary>param>
+    public async Task<ProfileMenuRedis> GetProfileMenuCacheAsync()
     {
-        throw new NotImplementedException();
+        var items = await _redis.GetStringAsync(GlobalConfigKeysCache.PROFILE_MENU_KEY);
+
+        if (string.IsNullOrEmpty(items))
+        {
+            return new ProfileMenuRedis();
+        }
+        
+        var result = ProtoBufExtensions.Deserialize<ProfileMenuRedis>(items);
+
+        return result;
     }
 }

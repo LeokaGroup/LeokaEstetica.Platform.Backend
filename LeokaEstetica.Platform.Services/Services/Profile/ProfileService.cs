@@ -23,10 +23,10 @@ public sealed class ProfileService : IProfileService
     private readonly IMapper _mapper;
     private readonly IRedisService _redisService;
 
-    public ProfileService(ILogService logger, 
-        IProfileRepository profileRepository, 
-        IUserRepository userRepository, 
-        IMapper mapper, 
+    public ProfileService(ILogService logger,
+        IProfileRepository profileRepository,
+        IUserRepository userRepository,
+        IMapper mapper,
         IRedisService redisService)
     {
         _logger = logger;
@@ -65,7 +65,7 @@ public sealed class ProfileService : IProfileService
             }
 
             var result = _mapper.Map<ProfileInfoOutput>(profileInfo);
-            
+
             // Получаем поля почты и номера телефона пользователя.
             var userData = await _userRepository.GetUserPhoneEmailByUserIdAsync(userId);
 
@@ -73,13 +73,13 @@ public sealed class ProfileService : IProfileService
             {
                 return result;
             }
-            
+
             result.Email = userData.Email;
             result.PhoneNumber = userData.PhoneNumber;
 
             return result;
         }
-        
+
         catch (Exception ex)
         {
             await _logger.LogErrorAsync(ex);
@@ -97,14 +97,14 @@ public sealed class ProfileService : IProfileService
         {
             var items = await _profileRepository.ProfileMenuItemsAsync();
             var result = _mapper.Map<ProfileMenuItemsResultOutput>(items);
-            
+
             // Добавляем меню профиля в кэш.
-            var model = CreateFactoryModelRedis(result.ProfileMenuItems);
+            var model = CreateFactoryModelToRedis(result.ProfileMenuItems);
             await _redisService.SaveProfileMenuCacheAsync(model);
 
             return result;
         }
-        
+
         catch (Exception ex)
         {
             await _logger.LogErrorAsync(ex);
@@ -125,7 +125,7 @@ public sealed class ProfileService : IProfileService
 
             return result;
         }
-        
+
         catch (Exception ex)
         {
             await _logger.LogErrorAsync(ex);
@@ -146,7 +146,7 @@ public sealed class ProfileService : IProfileService
 
             return result;
         }
-        
+
         catch (Exception ex)
         {
             await _logger.LogErrorAsync(ex);
@@ -172,7 +172,7 @@ public sealed class ProfileService : IProfileService
             {
                 throw new NullReferenceException($"Id пользователя с аккаунтом {account} не найден!");
             }
-            
+
             // Получаем данные профиля пользователя.
             var profileInfo = await _profileRepository.GetProfileInfoAsync(userId);
 
@@ -187,7 +187,7 @@ public sealed class ProfileService : IProfileService
 
             return result;
         }
-        
+
         catch (Exception ex)
         {
             await _logger.LogErrorAsync(ex);
@@ -205,23 +205,23 @@ public sealed class ProfileService : IProfileService
         {
             throw new ArgumentException("Имя должно быть заполнено!");
         }
-        
+
         if (string.IsNullOrEmpty(profileInfoInput.LastName))
         {
             throw new ArgumentException("Фамилия должна быть заполнена!");
         }
-        
+
         if (string.IsNullOrEmpty(profileInfoInput.Aboutme))
         {
             throw new ArgumentException("Информация о себе должна быть заполнена!");
         }
-        
+
         // TODO: Добавить валидацию почты через регулярку. Завести для этого класс валидатора и туда эту валидацию.
         if (string.IsNullOrEmpty(profileInfoInput.Email))
         {
             throw new ArgumentException("Email пользователя должен быть заполнен!");
         }
-        
+
         // TODO: Добавить валидацию номера телефона через регулярку. Завести для этого класс валидатора и туда эту валидацию.
         if (string.IsNullOrEmpty(profileInfoInput.PhoneNumber))
         {
@@ -252,26 +252,148 @@ public sealed class ProfileService : IProfileService
     /// Метод создает модель для сохранения в кэше Redis.
     /// </summary>
     /// <param name="items">Список меню.</param>
-    /// <returns>Модеkь для сохранения.</returns>
-    private ProfileMenuRedis CreateFactoryModelRedis(IReadOnlyCollection<ProfileMenuItemsOutput> items)
+    /// <returns>Модель для сохранения.</returns>
+    private ProfileMenuRedis CreateFactoryModelToRedis(IReadOnlyCollection<ProfileMenuItemsOutput> items)
     {
         var model = new ProfileMenuRedis
         {
-            ProfileMenuItems = new List<ProfileMenuItemsRedis>(items.Select(p =>
-                new ProfileMenuItemsRedis
-                {
-                    Label = p.Label,
-                    SysName = p.SysName,
-                    Url = p.Url,
-                    Items = new List<Items>(items.Select(i => new Items
+            ProfileMenuItems = new List<ProfileMenuItemsRedis>(items.Select(pmi => new ProfileMenuItemsRedis
+            {
+                SysName = pmi.SysName,
+                Label = pmi.Label,
+                Url = pmi.Url,
+                Items = pmi.Items.Select(i => new Items
                     {
-                        Label = i.Label,
                         SysName = i.SysName,
-                        Url = i.Url
-                    }))
-                }))
+                        Label = i.Label,
+                        Url = i.Url,
+                    })
+                    .ToList()
+            }))
         };
 
         return model;
+    }
+
+    /// <summary>
+    /// Метод создает модель получения из кэша Redis.
+    /// </summary>
+    /// <param name="items">Список меню.</param>
+    /// <returns>Модель с результатами.</returns>
+    private ProfileMenuRedis CreateFactoryModelFromRedis(IReadOnlyCollection<ProfileMenuItemsRedis> items)
+    {
+        var model = new ProfileMenuRedis
+        {
+            ProfileMenuItems = new List<ProfileMenuItemsRedis>(items.Select(pmi => new ProfileMenuItemsRedis
+            {
+                SysName = pmi.SysName,
+                Label = pmi.Label,
+                Url = pmi.Url,
+                Items = pmi.Items.Select(i => new Items
+                    {
+                        SysName = i.SysName,
+                        Label = i.Label,
+                        Url = i.Url,
+                    })
+                    .ToList()
+            }))
+        };
+
+        return model;
+    }
+
+    /// <summary>
+    /// Метод выбирает пункт меню профиля пользователя. Производит действия, если нужны. 
+    /// </summary>
+    /// <param name="selectMenuInput">Входная модель.</param>
+    /// <returns>Системное название действия и роут если нужно.</returns>
+    public async Task<SelectMenuOutput> SelectProfileMenuAsync(string text)
+    {
+        try
+        {
+            var result = new SelectMenuOutput();
+
+            // Ищем меню профиля в кэше.
+            var redisData = await _redisService.GetProfileMenuCacheAsync();
+
+            // Если данные в кэше есть, берем оттуда.
+            if (!redisData.ProfileMenuItems.Any())
+            {
+                // Данных в кэше не оказалось, подгружаем из БД, и снова заберем из кэша, так как данные там уже будут.
+                await ProfileMenuItemsAsync();
+            }
+
+            // Обходим дерево меню для нахождения системного названия.
+            result.SysName = SearchProfileMenuByText(redisData.ProfileMenuItems, text);
+
+            return result;
+        }
+
+        catch (Exception ex)
+        {
+            await _logger.LogErrorAsync(ex);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Метод обходит дерево меню профиля и находит системное имя пункта по его названию.
+    /// Для обхода используем обычный проход, так как рекурсивный обход тут не нужен, дерево небольшое и его глубина заранее известна.
+    /// </summary>
+    /// <param name="profileMenuItems">Список меню.</param>
+    /// <param name="text">Название.</param>
+    /// <returns>Системное имя.</returns>
+    private string SearchProfileMenuByText(IReadOnlyCollection<ProfileMenuItemsRedis> profileMenuItems, string text)
+    {
+        var stop = false;
+        var model = CreateFactoryModelFromRedis(profileMenuItems);
+        var items = model.ProfileMenuItems;
+        var sysName = string.Empty;
+
+        // Смотрим уровни дерева и находим нажатый пункт меню, далее берем его системное название и возвращаем фронту.
+        foreach (var item in items)
+        {
+            // Пропускаем итерацию, если не нашли.
+            if (!item.Label.Equals(text))
+            {
+                continue;
+            }
+
+            // Нашли, запишем и выходим с текущего уровня дерева выше.
+            sysName = item.SysName;
+            stop = true;
+            break;
+        }
+
+        // На первом уровне нет нужного пункта, спускаемся глубже.
+        if (!stop)
+        {
+            // Смотрим глубину дерева у первого уровня
+            foreach (var firstLevelItem in items)
+            {
+                // Если уже нашли, выходим.
+                if (stop)
+                {
+                    break;
+                }
+
+                // Смотрим глубину второго уровня.
+                foreach (var secondLevelItem in firstLevelItem.Items)
+                {
+                    // Пропускаем итерацию, если не нашли.
+                    if (!secondLevelItem.Label.Equals(text))
+                    {
+                        continue;
+                    }
+
+                    // Нашли, запишем и выходим с текущего уровня дерева выше.
+                    sysName = secondLevelItem.SysName;
+                    stop = true;
+                    break;
+                }
+            }
+        }
+
+        return sysName;
     }
 }
