@@ -82,4 +82,19 @@ public sealed class NotificationsService : INotificationsService
     //         throw new ArgumentNullException($"Код пользователя был пустым!");
     //     }
     // }
+    
+    /// <summary>
+    /// Метод отправляет уведомление с предупреждением о пустом списке навыков пользователя. Пользователь значит не выбрал навыки.
+    /// </summary>
+    /// <param name="title">Заголовок уведомления.</param>
+    /// <param name="notifyText">Текст уведомления.</param>
+    /// <param name="userCode">Код пользователя.</param>
+    public async Task SendNotificationWarningSaveUserSkillsAsync(string title, string notifyText, string userCode)
+    {
+        await _hubContext.Clients.All.SendAsync("SendNotifySuccessSave", new NotificationOutput
+        {
+            Title = title,
+            Message = notifyText
+        });
+    }
 }

@@ -204,14 +204,23 @@ public sealed class ProfileService : IProfileService
 
             // Сохраняем номер телефона пользователя.
             await _userRepository.SaveUserPhoneAsync(userId, profileInfoInput.PhoneNumber);
-            
+
             // Сохраняем выбранные навыки пользователя.
-            await _profileRepository.SaveProfileSkillsAsync(profileInfoInput.UserSkills.Select(s => new UserSkillEntity
+            if (profileInfoInput.UserSkills.Any())
             {
-                SkillId = s.SkillId,
-                UserId = userId,
-                Position = s.Position
-            }));
+                await _profileRepository.SaveProfileSkillsAsync(profileInfoInput.UserSkills.Select(s => new UserSkillEntity
+                {
+                    SkillId = s.SkillId,
+                    UserId = userId,
+                    Position = s.Position
+                }));
+            }
+
+            // Отправляем уведомление о совете фронту. Это не считаем ошибкой, просто предупреждаем пользователя.
+            else
+            {
+                await _notificationsService.SendNotificationWarningSaveUserSkillsAsync("Совет", "Советуем выбрать ваши навыки!", null);
+            }
 
             // Отправляем уведомление о сохранении фронту.
             await _notificationsService.SendNotifySuccessSaveAsync("Все хорошо", "Данные успешно сохранены!", null);
