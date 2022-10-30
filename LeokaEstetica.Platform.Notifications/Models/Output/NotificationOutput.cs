@@ -1,3 +1,5 @@
+using LeokaEstetica.Platform.Notifications.Enums;
+
 namespace LeokaEstetica.Platform.Notifications.Models.Output;
 
 /// <summary>
@@ -14,4 +16,9 @@ public class NotificationOutput
     /// Сообщение.
     /// </summary>
     public string Message { get; set; }
+
+    /// <summary>
+    /// Уровень уведомления.
+    /// </summary>
+    public string NotificationLevel { get; set; }
 }

@@ -64,4 +64,9 @@ public class ProfileInfoInput
     /// Номер телефона.
     /// </summary>
     public string PhoneNumber { get; set; }
+
+    /// <summary>
+    /// Список навыков пользователя, которые он выбрал.
+    /// </summary>
+    public IEnumerable<SkillInput> UserSkills { get; set; }
 }

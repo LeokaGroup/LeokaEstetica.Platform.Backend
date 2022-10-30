@@ -34,7 +34,7 @@ public interface IProfileService
     Task<IEnumerable<IntentOutput>> ProfileIntentsAsync();
 
     /// <summary>
-    /// Метод сохраняет данные контактной информации пользователя.
+    /// Метод сохраняет данные анкеты пользователя.
     /// </summary>
     /// <param name="profileInfoInput">Входная модель.</param>
     /// <param name="account">ккаунт пользователя.</param>
@@ -47,4 +47,18 @@ public interface IProfileService
     /// <param name="selectMenuInput">Входная модель.</param>
     /// <returns>Системное название действия и роут если нужно.</returns>
     Task<SelectMenuOutput> SelectProfileMenuAsync(string text);
+
+    /// <summary>
+    /// Метод сохраняет выбранные пользователям навыки.
+    /// </summary>
+    /// <param name="selectedSkills">Список навыков для сохранения.</param>
+    /// <param name="account">Аккаунт.</param>
+    Task SaveProfileSkillsAsync(IEnumerable<SkillInput> selectedSkills, string account);
+
+    /// <summary>
+    /// Метод получает выбранные пользователем навыки.
+    /// </summary>
+    /// <param name="account">Аккаунт пользователя.</param>
+    /// <returns>Список навыков.</returns>
+    Task<IEnumerable<SkillOutput>> SelectedProfileUserSkillsAsync(string account);
 }

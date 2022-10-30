@@ -95,7 +95,7 @@ public class ProfileController : BaseController
     }
 
     /// <summary>
-    /// Метод сохраняет данные контактной информации пользователя.
+    /// Метод сохраняет данные анкеты пользователя.
     /// </summary>
     /// <param name="profileInfoInput">Входная модель.</param>
     /// <returns>Сохраненные данные.</returns>
@@ -128,6 +128,24 @@ public class ProfileController : BaseController
     public async Task<SelectMenuOutput> SelectProfileMenuAsync([FromBody] SelectMenuInput selectMenuInput)
     {
         var result = await _profileService.SelectProfileMenuAsync(selectMenuInput.Text);
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод получает список выбранные навыки пользователя.
+    /// </summary>
+    /// <returns>Список навыков.</returns>
+    [HttpGet]
+    [Route("selected-skills")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<SkillInput>))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<IEnumerable<SkillOutput>> GetSelectedUserSkillsAsync()
+    {
+        var result = await _profileService.SelectedProfileUserSkillsAsync(GetUserName());
 
         return result;
     }

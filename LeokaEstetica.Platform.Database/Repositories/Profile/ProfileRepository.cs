@@ -84,7 +84,7 @@ public sealed class ProfileRepository : IProfileRepository
     }
 
     /// <summary>
-    /// Метод сохраняет данные контактной информации пользователя.
+    /// Метод сохраняет данные анкеты пользователя.
     /// </summary>
     /// <param name="profileInfo">Данные для сохранения.</param>
     /// <returns>Данные профиля.</returns>
@@ -94,5 +94,44 @@ public sealed class ProfileRepository : IProfileRepository
         await _pgContext.SaveChangesAsync();
 
         return profileInfo;
+    }
+
+    /// <summary>
+    /// Метод сохраняет выбранные пользователям навыки.
+    /// </summary>
+    /// <param name="selectedSkills">Список навыков для сохранения.</param>
+    /// <returns>Список навыков.</returns>
+    public async Task SaveProfileSkillsAsync(IEnumerable<UserSkillEntity> selectedSkills)
+    {
+        await _pgContext.UserSkills.AddRangeAsync(selectedSkills);
+        await _pgContext.SaveChangesAsync();
+    }
+
+    /// <summary>
+    /// Метод получает список выбранные навыки пользователя.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Список навыков.</returns>
+    public async Task<IEnumerable<UserSkillEntity>> SelectedProfileUserSkillsAsync(long userId)
+    {
+        var result = await _pgContext.UserSkills
+            .Where(s => s.UserId == userId)
+            .ToListAsync();
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод получает список навыков по их Id.
+    /// </summary>
+    /// <param name="skillsIds">Список навыков, которые нужно получить.</param>
+    /// <returns>Список навыков.</returns>
+    public async Task<IEnumerable<SkillEntity>> GetProfileSkillsBySkillIdAsync(int[] skillsIds)
+    {
+        var result = await _pgContext.Skills
+            .Where(s => skillsIds.Contains(s.SkillId))
+            .ToListAsync();
+
+        return result;
     }
 }
