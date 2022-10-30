@@ -62,9 +62,16 @@ public interface IProfileRepository
     /// <summary>
     /// Метод получает список навыков по их Id.
     /// </summary>
-    /// <param name="skillsIds">Список навыков, которые нужно получить.</param>
+    /// <param name="skillsIds">Список Id навыков, которые нужно получить.</param>
     /// <returns>Список навыков.</returns>
     Task<IEnumerable<SkillEntity>> GetProfileSkillsBySkillIdAsync(int[] skillsIds);
+    
+    /// <summary>
+    /// Метод получает список целей по их Id.
+    /// </summary>
+    /// <param name="intentsIds">Список Id целей, которые нужно получить.</param>
+    /// <returns>Список целей.</returns>
+    Task<IEnumerable<IntentEntity>> GetProfileIntentsByIntentIdAsync(int[] intentsIds);
     
     /// <summary>
     /// Метод сохраняет выбранные пользователям цели.
@@ -72,4 +79,11 @@ public interface IProfileRepository
     /// <param name="selectedIntents">Список целей для сохранения.</param>
     /// <returns>Список целей.</returns>
     Task SaveProfileIntentsAsync(IEnumerable<UserIntentEntity> selectedIntents);
+    
+    /// <summary>
+    /// Метод получает список выбранные цели пользователя.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Список целей.</returns>
+    Task<IEnumerable<UserIntentEntity>> SelectedProfileUserIntentsAsync(long userId);
 }

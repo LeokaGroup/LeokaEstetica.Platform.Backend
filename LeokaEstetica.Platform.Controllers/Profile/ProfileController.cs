@@ -149,4 +149,22 @@ public class ProfileController : BaseController
 
         return result;
     }
+    
+    /// <summary>
+    /// Метод получает список выбранные цели пользователя.
+    /// </summary>
+    /// <returns>Список целей.</returns>
+    [HttpGet]
+    [Route("selected-intents")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<IntentOutput>))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<IEnumerable<IntentOutput>> GetSelectedUserIntentsAsync()
+    {
+        var result = await _profileService.SelectedProfileUserIntentsAsync(GetUserName());
+
+        return result;
+    }
 }

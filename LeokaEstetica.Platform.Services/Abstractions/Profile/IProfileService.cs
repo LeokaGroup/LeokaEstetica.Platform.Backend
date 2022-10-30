@@ -49,16 +49,16 @@ public interface IProfileService
     Task<SelectMenuOutput> SelectProfileMenuAsync(string text);
 
     /// <summary>
-    /// Метод сохраняет выбранные пользователям навыки.
-    /// </summary>
-    /// <param name="selectedSkills">Список навыков для сохранения.</param>
-    /// <param name="account">Аккаунт.</param>
-    Task SaveProfileSkillsAsync(IEnumerable<SkillInput> selectedSkills, string account);
-
-    /// <summary>
     /// Метод получает выбранные пользователем навыки.
     /// </summary>
     /// <param name="account">Аккаунт пользователя.</param>
     /// <returns>Список навыков.</returns>
     Task<IEnumerable<SkillOutput>> SelectedProfileUserSkillsAsync(string account);
+    
+    /// <summary>
+    /// Метод получает выбранные пользователем цели.
+    /// </summary>
+    /// <param name="account">Аккаунт пользователя.</param>
+    /// <returns>Список целей.</returns>
+    Task<IEnumerable<IntentOutput>> SelectedProfileUserIntentsAsync(string account);
 }
