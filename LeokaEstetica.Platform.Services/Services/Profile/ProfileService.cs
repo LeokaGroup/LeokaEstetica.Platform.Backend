@@ -593,9 +593,7 @@ public sealed class ProfileService : IProfileService
             }
 
             // Получаем всю информацию о навыках наполняя список.
-            var skillsInfo =
-                await _profileRepository.GetProfileSkillsBySkillIdAsync(userSkillEntities.Select(i => i.SkillId)
-                    .ToArray());
+            var skillsInfo = await _profileRepository.GetProfileSkillsBySkillIdAsync(userSkillEntities.Select(i => i.SkillId).ToArray());
             var result = _mapper.Map<IEnumerable<SkillOutput>>(skillsInfo);
 
             return result;
