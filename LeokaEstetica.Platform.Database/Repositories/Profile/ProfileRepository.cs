@@ -84,7 +84,7 @@ public sealed class ProfileRepository : IProfileRepository
     }
 
     /// <summary>
-    /// Метод сохраняет данные контактной информации пользователя.
+    /// Метод сохраняет данные анкеты пользователя.
     /// </summary>
     /// <param name="profileInfo">Данные для сохранения.</param>
     /// <returns>Данные профиля.</returns>

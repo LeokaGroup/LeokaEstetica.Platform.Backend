@@ -95,7 +95,7 @@ public class ProfileController : BaseController
     }
 
     /// <summary>
-    /// Метод сохраняет данные контактной информации пользователя.
+    /// Метод сохраняет данные анкеты пользователя.
     /// </summary>
     /// <param name="profileInfoInput">Входная модель.</param>
     /// <returns>Сохраненные данные.</returns>
@@ -130,22 +130,6 @@ public class ProfileController : BaseController
         var result = await _profileService.SelectProfileMenuAsync(selectMenuInput.Text);
 
         return result;
-    }
-    
-    /// <summary>
-    /// Метод сохраняет выбранные пользователям навыки.
-    /// </summary>
-    /// <param name="saveSkillInput">Входная модель.</param>
-    [HttpPost]
-    [Route("save-skills")]
-    [ProducesResponseType(200, Type = typeof(SaveUserSkillOutput))]
-    [ProducesResponseType(400)]
-    [ProducesResponseType(403)]
-    [ProducesResponseType(500)]
-    [ProducesResponseType(404)]
-    public async Task SaveProfileSkillsAsync([FromBody] IEnumerable<SkillInput> selectedSkills)
-    {
-        await _profileService.SaveProfileSkillsAsync(selectedSkills, GetUserName());
     }
 
     /// <summary>

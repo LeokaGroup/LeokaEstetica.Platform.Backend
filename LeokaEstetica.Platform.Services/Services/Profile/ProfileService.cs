@@ -162,7 +162,7 @@ public sealed class ProfileService : IProfileService
     }
 
     /// <summary>
-    /// Метод сохраняет данные контактной информации пользователя.
+    /// Метод сохраняет данные анкеты пользователя.
     /// </summary>
     /// <param name="profileInfoInput">Входная модель.</param>
     /// <param name="account">ккаунт пользователя.</param>
@@ -204,6 +204,14 @@ public sealed class ProfileService : IProfileService
 
             // Сохраняем номер телефона пользователя.
             await _userRepository.SaveUserPhoneAsync(userId, profileInfoInput.PhoneNumber);
+            
+            // Сохраняем выбранные навыки пользователя.
+            await _profileRepository.SaveProfileSkillsAsync(profileInfoInput.UserSkills.Select(s => new UserSkillEntity
+            {
+                SkillId = s.SkillId,
+                UserId = userId,
+                Position = s.Position
+            }));
 
             // Отправляем уведомление о сохранении фронту.
             await _notificationsService.SendNotifySuccessSaveAsync("Все хорошо", "Данные успешно сохранены!", null);

@@ -34,7 +34,7 @@ public interface IProfileService
     Task<IEnumerable<IntentOutput>> ProfileIntentsAsync();
 
     /// <summary>
-    /// Метод сохраняет данные контактной информации пользователя.
+    /// Метод сохраняет данные анкеты пользователя.
     /// </summary>
     /// <param name="profileInfoInput">Входная модель.</param>
     /// <param name="account">ккаунт пользователя.</param>
