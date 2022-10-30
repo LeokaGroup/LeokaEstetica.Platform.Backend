@@ -27,6 +27,7 @@
     <ItemGroup>
       <ProjectReference Include="..\LeokaEstetica.Platform.Controllers\LeokaEstetica.Platform.Controllers.csproj" />
       <ProjectReference Include="..\LeokaEstetica.Platform.Core\LeokaEstetica.Platform.Core.csproj" />
+      <ProjectReference Include="..\LeokaEstetica.Platform.Notifications\LeokaEstetica.Platform.Notifications.csproj" />
     </ItemGroup>
 
 </Project>

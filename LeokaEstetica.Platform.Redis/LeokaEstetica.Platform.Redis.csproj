@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Autofac" Version="6.4.0" />
+      <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="6.0.10" />
+      <PackageReference Include="protobuf-net" Version="3.1.22" />
+      <PackageReference Include="StackExchange.Redis" Version="2.6.70" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\LeokaEstetica.Platform.Core\LeokaEstetica.Platform.Core.csproj" />
+    </ItemGroup>
+
+</Project>

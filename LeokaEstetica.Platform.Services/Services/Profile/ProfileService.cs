@@ -16,7 +16,7 @@ public sealed class ProfileService : IProfileService
     private readonly IProfileRepository _profileRepository;
     private readonly IUserRepository _userRepository;
     private readonly IMapper _mapper;
-    
+
     public ProfileService(ILogService logger, 
         IProfileRepository profileRepository, 
         IUserRepository userRepository, 

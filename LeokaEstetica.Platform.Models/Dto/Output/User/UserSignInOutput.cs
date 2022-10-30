@@ -21,4 +21,9 @@ public class UserSignInOutput : FrontErrorOutput
     /// Флаг успеха авторизации.
     /// </summary>
     public bool IsSuccess { get; set; }
+
+    /// <summary>
+    /// Код пользователя.
+    /// </summary>
+    public Guid UserCode { get; set; }
 }
