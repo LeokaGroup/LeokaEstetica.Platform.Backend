@@ -134,4 +134,15 @@ public sealed class ProfileRepository : IProfileRepository
 
         return result;
     }
+
+    /// <summary>
+    /// Метод сохраняет выбранные пользователям цели.
+    /// </summary>
+    /// <param name="selectedIntents">Список целей для сохранения.</param>
+    /// <returns>Список целей.</returns>
+    public async Task SaveProfileIntentsAsync(IEnumerable<UserIntentEntity> selectedIntents)
+    {
+        await _pgContext.UserIntents.AddRangeAsync(selectedIntents);
+        await _pgContext.SaveChangesAsync();
+    }
 }

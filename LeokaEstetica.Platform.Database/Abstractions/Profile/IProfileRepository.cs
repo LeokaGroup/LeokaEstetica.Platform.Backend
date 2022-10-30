@@ -65,4 +65,11 @@ public interface IProfileRepository
     /// <param name="skillsIds">Список навыков, которые нужно получить.</param>
     /// <returns>Список навыков.</returns>
     Task<IEnumerable<SkillEntity>> GetProfileSkillsBySkillIdAsync(int[] skillsIds);
+    
+    /// <summary>
+    /// Метод сохраняет выбранные пользователям цели.
+    /// </summary>
+    /// <param name="selectedIntents">Список целей для сохранения.</param>
+    /// <returns>Список целей.</returns>
+    Task SaveProfileIntentsAsync(IEnumerable<UserIntentEntity> selectedIntents);
 }
