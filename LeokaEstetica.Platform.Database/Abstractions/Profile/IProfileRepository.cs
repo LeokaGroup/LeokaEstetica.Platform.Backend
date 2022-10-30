@@ -44,4 +44,25 @@ public interface IProfileRepository
     /// <param name="profileInfo">Данные для сохранения.</param>
     /// <returns>Данные профиля.</returns>
     Task<ProfileInfoEntity> SaveProfileInfoAsync(ProfileInfoEntity profileInfo);
+
+    /// <summary>
+    /// Метод сохраняет выбранные пользователям навыки.
+    /// </summary>
+    /// <param name="selectedSkills">Список навыков для сохранения.</param>
+    /// <returns>Список навыков.</returns>
+    Task SaveProfileSkillsAsync(IEnumerable<UserSkillEntity> selectedSkills);
+
+    /// <summary>
+    /// Метод получает список выбранные навыки пользователя.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Список навыков.</returns>
+    Task<IEnumerable<UserSkillEntity>> SelectedProfileUserSkillsAsync(long userId);
+
+    /// <summary>
+    /// Метод получает список навыков по их Id.
+    /// </summary>
+    /// <param name="skillsIds">Список навыков, которые нужно получить.</param>
+    /// <returns>Список навыков.</returns>
+    Task<IEnumerable<SkillEntity>> GetProfileSkillsBySkillIdAsync(int[] skillsIds);
 }

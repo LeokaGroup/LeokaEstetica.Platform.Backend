@@ -136,16 +136,33 @@ public class ProfileController : BaseController
     /// Метод сохраняет выбранные пользователям навыки.
     /// </summary>
     /// <param name="saveSkillInput">Входная модель.</param>
-    /// <returns>Список навыков.</returns>
     [HttpPost]
     [Route("save-skills")]
-    [ProducesResponseType(200, Type = typeof(IEnumerable<SkillOutput>))]
+    [ProducesResponseType(200, Type = typeof(SaveUserSkillOutput))]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<IEnumerable<SkillOutput>> SaveProfileSkillsAsync([FromBody] SaveSkillInput saveSkillInput)
+    public async Task SaveProfileSkillsAsync([FromBody] IEnumerable<SkillInput> selectedSkills)
     {
-        
+        await _profileService.SaveProfileSkillsAsync(selectedSkills, GetUserName());
+    }
+
+    /// <summary>
+    /// Метод получает список выбранные навыки пользователя.
+    /// </summary>
+    /// <returns>Список навыков.</returns>
+    [HttpGet]
+    [Route("selected-skills")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<SkillInput>))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<IEnumerable<SkillOutput>> GetSelectedUserSkillsAsync()
+    {
+        var result = await _profileService.SelectedProfileUserSkillsAsync(GetUserName());
+
+        return result;
     }
 }
