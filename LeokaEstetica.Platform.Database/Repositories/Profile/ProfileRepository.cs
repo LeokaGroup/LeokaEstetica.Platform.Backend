@@ -82,4 +82,17 @@ public sealed class ProfileRepository : IProfileRepository
 
         return result;
     }
+
+    /// <summary>
+    /// Метод сохраняет данные контактной информации пользователя.
+    /// </summary>
+    /// <param name="profileInfo">Данные для сохранения.</param>
+    /// <returns>Данные профиля.</returns>
+    public async Task<ProfileInfoEntity> SaveProfileInfoAsync(ProfileInfoEntity profileInfo)
+    {
+        _pgContext.ProfilesInfo.Update(profileInfo);
+        await _pgContext.SaveChangesAsync();
+
+        return profileInfo;
+    }
 }

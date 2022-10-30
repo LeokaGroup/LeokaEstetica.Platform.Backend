@@ -1,5 +1,7 @@
+using LeokaEstetica.Platform.Core.Constants;
 using LeokaEstetica.Platform.Redis.Abstractions;
 using LeokaEstetica.Platform.Redis.Extensions;
+using LeokaEstetica.Platform.Redis.Models;
 using Microsoft.Extensions.Caching.Distributed;
 
 namespace LeokaEstetica.Platform.Redis.Services;
@@ -10,7 +12,7 @@ namespace LeokaEstetica.Platform.Redis.Services;
 public sealed class RedisService : IRedisService
 {
     private readonly IDistributedCache _redis;
-    
+
     public RedisService(IDistributedCache redis)
     {
         _redis = redis;
@@ -43,4 +45,35 @@ public sealed class RedisService : IRedisService
     //
     //     return result;
     // }
+
+    /// <summary>
+    /// Метод сохраняет в кэш меню профиля пользователя.
+    /// </summary>
+    /// <param name="profileMenuRedis">Класс для кэша.</param>
+    public async Task SaveProfileMenuCacheAsync(ProfileMenuRedis profileMenuRedis)
+    {
+        await _redis.SetStringAsync(GlobalConfigKeysCache.PROFILE_MENU_KEY,
+            ProtoBufExtensions.Serialize(profileMenuRedis),
+            new DistributedCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(12)
+            });
+    }
+
+    /// <summary>
+    /// Метод получает из кэша меню профиля пользователя.
+    /// </summary>param>
+    public async Task<ProfileMenuRedis> GetProfileMenuCacheAsync()
+    {
+        var items = await _redis.GetStringAsync(GlobalConfigKeysCache.PROFILE_MENU_KEY);
+
+        if (string.IsNullOrEmpty(items))
+        {
+            return new ProfileMenuRedis();
+        }
+        
+        var result = ProtoBufExtensions.Deserialize<ProfileMenuRedis>(items);
+
+        return result;
+    }
 }

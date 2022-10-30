@@ -1,17 +1,10 @@
-using LeokaEstetica.Platform.Models.Dto.Common;
-
-namespace LeokaEstetica.Platform.Models.Dto.Output.Profile;
+namespace LeokaEstetica.Platform.Models.Dto.Input.Profile;
 
 /// <summary>
-/// Класс выходной модели информации профиля пользователя для раздела обо мне.
+/// Класс входной модели информации профиля пользователя для раздела обо мне.
 /// </summary>
-public class ProfileInfoOutput : FrontErrorOutput
+public class ProfileInfoInput
 {
-    /// <summary>
-    /// PK.
-    /// </summary>
-    public long ProfileInfoId { get; set; }
-
     /// <summary>
     /// Фамилия.
     /// </summary>
@@ -63,22 +56,12 @@ public class ProfileInfoOutput : FrontErrorOutput
     public string Job { get; set; }
 
     /// <summary>
-    /// Id пользователя.
-    /// </summary>
-    public long UserId { get; set; }
-    
-    /// <summary>
-    /// Email.
+    /// Почта пользователя.
     /// </summary>
     public string Email { get; set; }
 
     /// <summary>
-    /// Номер телефона пользователя.
+    /// Номер телефона.
     /// </summary>
     public string PhoneNumber { get; set; }
-
-    /// <summary>
-    /// Флаг успешности.
-    /// </summary>
-    public bool IsSuccess { get; set; }
 }

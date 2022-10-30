@@ -1,3 +1,4 @@
+using LeokaEstetica.Platform.Models.Dto.Output.User;
 using LeokaEstetica.Platform.Models.Entities.User;
 
 namespace LeokaEstetica.Platform.Database.Abstractions.User;
@@ -62,4 +63,18 @@ public interface IUserRepository
     /// <param name="email">Почта.</param>
     /// <returns>Хэш пароля.</returns>
     Task<Guid> GetUserCodeByEmailAsync(string email);
+
+    /// <summary>
+    /// Метод получает номер телефона и почту пользователя по его UserId.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Номер телефона и почту.</returns>
+    Task<UserPhoneEmailOutput> GetUserPhoneEmailByUserIdAsync(long userId);
+
+    /// <summary>
+    /// Метод сохраняет телефон пользователя.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <param name="phone">Номер телефона.</param>
+    Task SaveUserPhoneAsync(long userId, string phone);
 }

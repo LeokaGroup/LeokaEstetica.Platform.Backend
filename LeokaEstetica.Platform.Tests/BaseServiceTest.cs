@@ -6,6 +6,7 @@ using LeokaEstetica.Platform.Database.Repositories.Profile;
 using LeokaEstetica.Platform.Database.Repositories.User;
 using LeokaEstetica.Platform.Logs.Services;
 using LeokaEstetica.Platform.Messaging.Services.Mail;
+using LeokaEstetica.Platform.Redis.Services;
 using LeokaEstetica.Platform.Services.Services.Profile;
 using LeokaEstetica.Platform.Services.Services.User;
 using Microsoft.EntityFrameworkCore;
@@ -27,6 +28,7 @@ public class BaseServiceTest
     protected MailingsService MailingsService;
     protected ProfileRepository ProfileRepository;
     protected ProfileService ProfileService;
+    protected RedisService RedisService;
     
     public BaseServiceTest()
     {
@@ -38,7 +40,7 @@ public class BaseServiceTest
         
         AutoFac.RegisterMapper(container);
         var mapper = AutoFac.Resolve<IMapper>();
-        
+
         // Настройка тестовых контекстов.
         var optionsBuilder = new DbContextOptionsBuilder<PgContext>();
         optionsBuilder.UseNpgsql(PostgreConfigString);
@@ -49,6 +51,6 @@ public class BaseServiceTest
         MailingsService = new MailingsService(AppConfiguration);
         ProfileRepository = new ProfileRepository(PgContext);
         UserService = new UserService(LogService, UserRepository, mapper, null, PgContext, ProfileRepository);
-        ProfileService = new ProfileService(LogService, ProfileRepository, UserRepository, mapper);
+        ProfileService = new ProfileService(LogService, ProfileRepository, UserRepository, mapper, null, null);
     }
 }

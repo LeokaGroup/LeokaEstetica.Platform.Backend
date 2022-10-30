@@ -1,5 +1,6 @@
 using LeokaEstetica.Platform.Base;
 using LeokaEstetica.Platform.Core.Filters;
+using LeokaEstetica.Platform.Models.Dto.Input.Profile;
 using LeokaEstetica.Platform.Models.Dto.Output.Profile;
 using LeokaEstetica.Platform.Services.Abstractions.Profile;
 using Microsoft.AspNetCore.Mvc;
@@ -89,6 +90,44 @@ public class ProfileController : BaseController
     public async Task<IEnumerable<IntentOutput>> ProfileIntentsAsync()
     {
         var result = await _profileService.ProfileIntentsAsync();
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод сохраняет данные контактной информации пользователя.
+    /// </summary>
+    /// <param name="profileInfoInput">Входная модель.</param>
+    /// <returns>Сохраненные данные.</returns>
+    [HttpPost]
+    [Route("info")]
+    [ProducesResponseType(200, Type = typeof(ProfileInfoOutput))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<ProfileInfoOutput> SaveProfileInfoAsync([FromBody] ProfileInfoInput profileInfoInput)
+    {
+        var result = await _profileService.SaveProfileInfoAsync(profileInfoInput, GetUserName());
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод выбирает пункт меню профиля пользователя. Производит действия, если нужны. 
+    /// </summary>
+    /// <param name="selectMenuInput">Входная модель.</param>
+    /// <returns>Системное название действия и роут если нужно.</returns>
+    [HttpPost]
+    [Route("select-menu")]
+    [ProducesResponseType(200, Type = typeof(SelectMenuOutput))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<SelectMenuOutput> SelectProfileMenuAsync([FromBody] SelectMenuInput selectMenuInput)
+    {
+        var result = await _profileService.SelectProfileMenuAsync(selectMenuInput.Text);
 
         return result;
     }

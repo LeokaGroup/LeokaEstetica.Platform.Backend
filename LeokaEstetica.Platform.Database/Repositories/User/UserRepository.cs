@@ -2,6 +2,7 @@ using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Logs.Abstractions;
+using LeokaEstetica.Platform.Models.Dto.Output.User;
 using LeokaEstetica.Platform.Models.Entities.User;
 using Microsoft.EntityFrameworkCore;
 
@@ -151,5 +152,36 @@ public sealed class UserRepository : IUserRepository
             .FirstOrDefaultAsync();
 
         return result;
+    }
+
+    /// <summary>
+    /// Метод получает номер телефона и почту пользователя по его UserId.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Номер телефона и почту.</returns>
+    public async Task<UserPhoneEmailOutput> GetUserPhoneEmailByUserIdAsync(long userId)
+    {
+        var result = await _pgContext.Users
+            .Where(u => u.UserId == userId)
+            .Select(u => new UserPhoneEmailOutput
+            {
+                PhoneNumber = u.PhoneNumber,
+                Email = u.Email
+            })
+            .FirstOrDefaultAsync();
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод сохраняет телефон и почту пользователя.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <param name="phone">Номер телефона.</param>
+    public async Task SaveUserPhoneAsync(long userId, string phone)
+    {
+        var user = await GetUserByUserIdAsync(userId);
+        user.PhoneNumber = phone;
+        await _pgContext.SaveChangesAsync();
     }
 }
