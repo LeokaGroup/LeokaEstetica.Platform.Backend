@@ -177,6 +177,7 @@ public sealed class ProfileService : IProfileService
             // Если есть ошибки валидации, не разрешаем идти дальше. Выдаем ошибки фронту.
             if (result.Errors.Any())
             {
+                result.IsSuccess = false;
                 return result;
             }
 
@@ -196,16 +197,18 @@ public sealed class ProfileService : IProfileService
             }
 
             CreateProfileInfoModel(profileInfoInput, ref profileInfo);
-            
+
             // Сохраняем данные пользователя.
             var savedProfileInfo = await _profileRepository.SaveProfileInfoAsync(profileInfo);
             result = _mapper.Map<ProfileInfoOutput>(savedProfileInfo);
-            
+
             // Сохраняем номер телефона пользователя.
             await _userRepository.SaveUserPhoneAsync(userId, profileInfoInput.PhoneNumber);
-            
+
             // Отправляем уведомление о сохранении фронту.
             await _notificationsService.SendNotifySuccessSaveAsync("Все хорошо", "Данные успешно сохранены!", null);
+
+            result.IsSuccess = true;
 
             return result;
         }

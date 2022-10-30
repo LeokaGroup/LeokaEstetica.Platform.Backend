@@ -76,4 +76,9 @@ public class ProfileInfoOutput : FrontErrorOutput
     /// Номер телефона пользователя.
     /// </summary>
     public string PhoneNumber { get; set; }
+
+    /// <summary>
+    /// Флаг успешности.
+    /// </summary>
+    public bool IsSuccess { get; set; }
 }
