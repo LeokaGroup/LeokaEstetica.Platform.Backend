@@ -7,6 +7,7 @@ using LeokaEstetica.Platform.Models.Dto.Input.Profile;
 using LeokaEstetica.Platform.Models.Dto.Output.Profile;
 using LeokaEstetica.Platform.Models.Entities.Profile;
 using LeokaEstetica.Platform.Notifications.Abstractions;
+using LeokaEstetica.Platform.Notifications.Enums;
 using LeokaEstetica.Platform.Redis.Abstractions;
 using LeokaEstetica.Platform.Redis.Models;
 using LeokaEstetica.Platform.Services.Abstractions.Profile;
@@ -32,7 +33,7 @@ public sealed class ProfileService : IProfileService
         IProfileRepository profileRepository,
         IUserRepository userRepository,
         IMapper mapper,
-        IRedisService redisService, 
+        IRedisService redisService,
         INotificationsService notificationsService)
     {
         _logger = logger;
@@ -208,22 +209,23 @@ public sealed class ProfileService : IProfileService
             // Сохраняем выбранные навыки пользователя.
             if (profileInfoInput.UserSkills.Any())
             {
-                await _profileRepository.SaveProfileSkillsAsync(profileInfoInput.UserSkills.Select(s => new UserSkillEntity
-                {
-                    SkillId = s.SkillId,
-                    UserId = userId,
-                    Position = s.Position
-                }));
+                await _profileRepository.SaveProfileSkillsAsync(profileInfoInput.UserSkills.Select(s =>
+                    new UserSkillEntity
+                    {
+                        SkillId = s.SkillId,
+                        UserId = userId,
+                        Position = s.Position
+                    }));
             }
 
             // Отправляем уведомление о совете фронту. Это не считаем ошибкой, просто предупреждаем пользователя.
             else
             {
-                await _notificationsService.SendNotificationWarningSaveUserSkillsAsync("Совет", "Советуем выбрать ваши навыки!", null);
+                await _notificationsService.SendNotificationWarningSaveUserSkillsAsync("Совет", "Советуем выбрать ваши навыки!", NotificationLevel.warn, null);
             }
 
             // Отправляем уведомление о сохранении фронту.
-            await _notificationsService.SendNotifySuccessSaveAsync("Все хорошо", "Данные успешно сохранены!", null);
+            await _notificationsService.SendNotifySuccessSaveAsync("Все хорошо", "Данные успешно сохранены!", NotificationLevel.success, null);
 
             result.IsSuccess = true;
 
@@ -266,7 +268,7 @@ public sealed class ProfileService : IProfileService
             _logger.LogError(error);
             result.Errors.Add(ValidationConsts.EMPTY_ABOUTME_ERROR);
         }
-        
+
         // Проверка почты.
         if (string.IsNullOrEmpty(profileInfoInput.Email))
         {
@@ -283,7 +285,7 @@ public sealed class ProfileService : IProfileService
             _logger.LogError(error);
             result.Errors.Add(ValidationConsts.NOT_VALID_EMAIL_ERROR);
         }
-        
+
         // Проверка номера телефона.
         if (string.IsNullOrEmpty(profileInfoInput.PhoneNumber))
         {
@@ -469,7 +471,7 @@ public sealed class ProfileService : IProfileService
 
         return sysName;
     }
-    
+
     /// <summary>
     /// Метод сохраняет выбранные пользователем навыки.
     /// </summary>
@@ -482,18 +484,18 @@ public sealed class ProfileService : IProfileService
         {
             var result = new SaveUserSkillOutput();
             var skillInputs = selectedSkills.ToList();
-            
+
             if (!skillInputs.Any())
             {
                 result.Errors.Add("Не передан список навыков для сохранения!");
             }
 
             var userId = await _userRepository.GetUserByEmailAsync(account);
-            
+
             // Получаем список навыков из БД, чтобы проставить флаги тем, которые выбрал пользователь.
             var allSkills = await ProfileSkillsAsync();
             var skillOutputs = allSkills.ToList();
-            
+
             if (!skillOutputs.Any())
             {
                 throw new NullReferenceException("Не удалось получить список навыков для сохранения!");
@@ -509,10 +511,10 @@ public sealed class ProfileService : IProfileService
             {
                 throw new NullReferenceException("Нет пересечений между элементами навыков для сохранения!");
             }
-            
+
             // Проставляем флаг выбранным элементам.
             items.ForEach(i => i.IsSelected = true);
-            
+
             // Сохраняем навыки пользователя в базу.
             await _profileRepository.SaveProfileSkillsAsync(items.Select(i => new UserSkillEntity
             {
@@ -521,7 +523,7 @@ public sealed class ProfileService : IProfileService
                 Position = i.Position
             }));
         }
-        
+
         catch (Exception ex)
         {
             await _logger.LogErrorAsync(ex);
@@ -539,7 +541,7 @@ public sealed class ProfileService : IProfileService
         try
         {
             var userId = await _userRepository.GetUserByEmailAsync(account);
-        
+
             // Получаем навыки пользователя.
             var items = await _profileRepository.SelectedProfileUserSkillsAsync(userId);
 
@@ -548,14 +550,16 @@ public sealed class ProfileService : IProfileService
             {
                 return Enumerable.Empty<SkillOutput>();
             }
-        
+
             // Получаем всю информацию о навыках наполняя список.
-            var skillsInfo = await _profileRepository.GetProfileSkillsBySkillIdAsync(userSkillEntities.Select(i => i.SkillId).ToArray());
+            var skillsInfo =
+                await _profileRepository.GetProfileSkillsBySkillIdAsync(userSkillEntities.Select(i => i.SkillId)
+                    .ToArray());
             var result = _mapper.Map<IEnumerable<SkillOutput>>(skillsInfo);
 
             return result;
         }
-        
+
         catch (Exception ex)
         {
             await _logger.LogErrorAsync(ex);

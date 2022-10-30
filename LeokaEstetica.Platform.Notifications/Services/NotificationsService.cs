@@ -1,6 +1,7 @@
 using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Notifications.Data;
+using LeokaEstetica.Platform.Notifications.Enums;
 using LeokaEstetica.Platform.Notifications.Models.Output;
 using LeokaEstetica.Platform.Redis.Abstractions;
 using Microsoft.AspNetCore.SignalR;
@@ -31,8 +32,9 @@ public sealed class NotificationsService : INotificationsService
     /// </summary>
     /// <param name="title">Заголовок уведомления.</param>
     /// <param name="notifyText">Текст уведомления.</param>
+    /// <param name="notificationLevel">Уровень уведомления.</param>
     /// <param name="userCode">Код пользователя.</param>
-    public async Task SendNotifySuccessSaveAsync(string title, string notifyText, string userCode)
+    public async Task SendNotifySuccessSaveAsync(string title, string notifyText, NotificationLevel notificationLevel, string userCode)
     {
         // // Получаем ConnectionId из кэша.
         // var connectionId = await _redisService.GetConnectionIdCacheAsync(userCode);
@@ -40,7 +42,8 @@ public sealed class NotificationsService : INotificationsService
         await _hubContext.Clients.All.SendAsync("SendNotifySuccessSave", new NotificationOutput
         {
             Title = title,
-            Message = notifyText
+            Message = notifyText,
+            NotificationLevel = notificationLevel.ToString()
         });
     }
 
@@ -88,13 +91,15 @@ public sealed class NotificationsService : INotificationsService
     /// </summary>
     /// <param name="title">Заголовок уведомления.</param>
     /// <param name="notifyText">Текст уведомления.</param>
+    /// <param name="notificationLevel">Уровень уведомления.</param>
     /// <param name="userCode">Код пользователя.</param>
-    public async Task SendNotificationWarningSaveUserSkillsAsync(string title, string notifyText, string userCode)
+    public async Task SendNotificationWarningSaveUserSkillsAsync(string title, string notifyText, NotificationLevel notificationLevel, string userCode)
     {
-        await _hubContext.Clients.All.SendAsync("SendNotifySuccessSave", new NotificationOutput
+        await _hubContext.Clients.All.SendAsync("SendNotificationWarningSaveUserSkills", new NotificationOutput
         {
             Title = title,
-            Message = notifyText
+            Message = notifyText,
+            NotificationLevel = notificationLevel.ToString()
         });
     }
 }

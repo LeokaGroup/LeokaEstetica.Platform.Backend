@@ -1,3 +1,5 @@
+using LeokaEstetica.Platform.Notifications.Enums;
+
 namespace LeokaEstetica.Platform.Notifications.Abstractions;
 
 /// <summary>
@@ -10,8 +12,9 @@ public interface INotificationsService
     /// </summary>
     /// <param name="title">Заголовок уведомления.</param>
     /// <param name="notifyText">Текст уведомления.</param>
+    /// <param name="notificationLevel">Уровень уведомления.</param>
     /// <param name="userCode">Код пользователя.</param>
-    Task SendNotifySuccessSaveAsync(string title, string notifyText, string userCode);
+    Task SendNotifySuccessSaveAsync(string title, string notifyText, NotificationLevel notificationLevel, string userCode);
 
     /// <summary>
     /// Метод сохраняет ConnectionId подключения SignalR в кэш.
@@ -25,6 +28,7 @@ public interface INotificationsService
     /// </summary>
     /// <param name="title">Заголовок уведомления.</param>
     /// <param name="notifyText">Текст уведомления.</param>
+    /// <param name="notificationLevel">Уровень уведомления.</param>
     /// <param name="userCode">Код пользователя.</param>
-    Task SendNotificationWarningSaveUserSkillsAsync(string title, string notifyText, string userCode);
+    Task SendNotificationWarningSaveUserSkillsAsync(string title, string notifyText, NotificationLevel notificationLevel, string userCode);
 }
