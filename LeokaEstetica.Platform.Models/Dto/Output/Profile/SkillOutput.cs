@@ -29,4 +29,9 @@ public class SkillOutput
     /// Тэг навыка.
     /// </summary>
     public string Tag { get; set; }
+
+    /// <summary>
+    /// Выбран ли навык был ранее пользователем.
+    /// </summary>
+    public bool IsSelected { get; set; }
 }

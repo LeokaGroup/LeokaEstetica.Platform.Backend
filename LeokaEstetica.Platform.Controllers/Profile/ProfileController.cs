@@ -131,4 +131,21 @@ public class ProfileController : BaseController
 
         return result;
     }
+    
+    /// <summary>
+    /// Метод сохраняет выбранные пользователям навыки.
+    /// </summary>
+    /// <param name="saveSkillInput">Входная модель.</param>
+    /// <returns>Список навыков.</returns>
+    [HttpPost]
+    [Route("save-skills")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<SkillOutput>))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<IEnumerable<SkillOutput>> SaveProfileSkillsAsync([FromBody] SaveSkillInput saveSkillInput)
+    {
+        
+    }
 }
