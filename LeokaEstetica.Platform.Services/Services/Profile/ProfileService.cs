@@ -207,25 +207,14 @@ public sealed class ProfileService : IProfileService
             await _userRepository.SaveUserPhoneAsync(userId, profileInfoInput.PhoneNumber);
 
             // Сохраняем выбранные навыки пользователя.
-            if (profileInfoInput.UserSkills.Any())
-            {
-                await _profileRepository.SaveProfileSkillsAsync(profileInfoInput.UserSkills.Select(s =>
-                    new UserSkillEntity
-                    {
-                        SkillId = s.SkillId,
-                        UserId = userId,
-                        Position = s.Position
-                    }));
-            }
-
-            // Отправляем уведомление о совете фронту. Это не считаем ошибкой, просто предупреждаем пользователя.
-            else
-            {
-                await _notificationsService.SendNotificationWarningSaveUserSkillsAsync("Совет", "Советуем выбрать ваши навыки!", NotificationLevel.warn, null);
-            }
+            await SaveUserSkillsAsync(profileInfoInput, userId);
+            
+            // Сохраняем выбранные цели пользователя.
+            await SaveUserIntentsAsync(profileInfoInput, userId);
 
             // Отправляем уведомление о сохранении фронту.
-            await _notificationsService.SendNotifySuccessSaveAsync("Все хорошо", "Данные успешно сохранены!", NotificationLevel.success, null);
+            await _notificationsService
+                .SendNotifySuccessSaveAsync("Все хорошо", "Данные успешно сохранены!", NotificationLevel.success, null);
 
             result.IsSuccess = true;
 
@@ -236,6 +225,58 @@ public sealed class ProfileService : IProfileService
         {
             await _logger.LogErrorAsync(ex);
             throw;
+        }
+    }
+
+    /// <summary>
+    /// Метод сохраняет навыки пользователя.
+    /// </summary>
+    /// <param name="profileInfoInput">Входная модель.</param>
+    /// <param name="userId">Id пользователя.</param>
+    private async Task SaveUserSkillsAsync(ProfileInfoInput profileInfoInput, long userId)
+    {
+        if (profileInfoInput.UserSkills.Any())
+        {
+            await _profileRepository.SaveProfileSkillsAsync(profileInfoInput.UserSkills.Select(s =>
+                new UserSkillEntity
+                {
+                    SkillId = s.SkillId,
+                    UserId = userId,
+                    Position = s.Position
+                }));
+        }
+
+        // Отправляем уведомление о совете фронту. Это не считаем ошибкой, просто предупреждаем пользователя.
+        else
+        {
+            await _notificationsService
+                .SendNotificationWarningSaveUserSkillsAsync("Совет", "Советуем выбрать ваши навыки!", NotificationLevel.warn, null);
+        }
+    }
+
+    /// <summary>
+    /// Метод сохраняет цели пользователя.
+    /// </summary>
+    /// <param name="profileInfoInput">Входная модель.</param>
+    /// <param name="userId">Id пользователя.</param>
+    private async Task SaveUserIntentsAsync(ProfileInfoInput profileInfoInput, long userId)
+    {
+        if (profileInfoInput.UserIntents.Any())
+        {
+            await _profileRepository.SaveProfileIntentsAsync(profileInfoInput.UserIntents.Select(s =>
+                new UserIntentEntity
+                {
+                    IntentId = s.IntentId,
+                    UserId = userId,
+                    Position = s.Position
+                }));
+        }
+
+        // Отправляем уведомление о совете фронту. Это не считаем ошибкой, просто предупреждаем пользователя.
+        else
+        {
+            await _notificationsService
+                .SendNotificationWarningSaveUserIntentsAsync("Совет", "Советуем выбрать ваши цели на платформе!", NotificationLevel.warn, null);
         }
     }
 

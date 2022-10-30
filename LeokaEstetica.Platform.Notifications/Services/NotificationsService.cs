@@ -102,4 +102,22 @@ public sealed class NotificationsService : INotificationsService
             NotificationLevel = notificationLevel.ToString()
         });
     }
+
+    /// <summary>
+    /// Метод отправляет уведомление с предупреждением о пустом списке целей пользователя. Пользователь значит не выбрал навыки.
+    /// </summary>
+    /// <param name="title">Заголовок уведомления.</param>
+    /// <param name="notifyText">Текст уведомления.</param>
+    /// <param name="notificationLevel">Уровень уведомления.</param>
+    /// <param name="userCode">Код пользователя.</param>
+    public async Task SendNotificationWarningSaveUserIntentsAsync(string title, string notifyText, NotificationLevel notificationLevel,
+        string userCode)
+    {
+        await _hubContext.Clients.All.SendAsync("SendNotificationWarningSaveUserIntents", new NotificationOutput
+        {
+            Title = title,
+            Message = notifyText,
+            NotificationLevel = notificationLevel.ToString()
+        });
+    }
 }

@@ -31,4 +31,13 @@ public interface INotificationsService
     /// <param name="notificationLevel">Уровень уведомления.</param>
     /// <param name="userCode">Код пользователя.</param>
     Task SendNotificationWarningSaveUserSkillsAsync(string title, string notifyText, NotificationLevel notificationLevel, string userCode);
+    
+    /// <summary>
+    /// Метод отправляет уведомление с предупреждением о пустом списке целей пользователя. Пользователь значит не выбрал навыки.
+    /// </summary>
+    /// <param name="title">Заголовок уведомления.</param>
+    /// <param name="notifyText">Текст уведомления.</param>
+    /// <param name="notificationLevel">Уровень уведомления.</param>
+    /// <param name="userCode">Код пользователя.</param>
+    Task SendNotificationWarningSaveUserIntentsAsync(string title, string notifyText, NotificationLevel notificationLevel, string userCode);
 }

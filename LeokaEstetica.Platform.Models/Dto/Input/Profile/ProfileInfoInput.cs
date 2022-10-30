@@ -1,3 +1,5 @@
+using LeokaEstetica.Platform.Models.Dto.Output.Profile;
+
 namespace LeokaEstetica.Platform.Models.Dto.Input.Profile;
 
 /// <summary>
@@ -69,4 +71,9 @@ public class ProfileInfoInput
     /// Список навыков пользователя, которые он выбрал.
     /// </summary>
     public IEnumerable<SkillInput> UserSkills { get; set; }
+
+    /// <summary>
+    /// Список целей пользователя, которые он выбрал.
+    /// </summary>
+    public IEnumerable<IntentOutput> UserIntents { get; set; }
 }
