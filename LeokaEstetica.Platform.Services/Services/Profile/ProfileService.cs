@@ -2,7 +2,6 @@ using AutoMapper;
 using LeokaEstetica.Platform.Database.Abstractions.Profile;
 using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Logs.Abstractions;
-using LeokaEstetica.Platform.Models.Dto.Base.Profile;
 using LeokaEstetica.Platform.Models.Dto.Input.Profile;
 using LeokaEstetica.Platform.Models.Dto.Output.Profile;
 using LeokaEstetica.Platform.Models.Entities.Profile;
@@ -514,65 +513,6 @@ public sealed class ProfileService : IProfileService
     }
 
     /// <summary>
-    /// Метод сохраняет выбранные пользователем навыки.
-    /// </summary>
-    /// <param name="selectedSkills">Список навыков для сохранения.</param>
-    /// <param name="account">Аккаунт.</param>
-    /// <returns>Список навыков.</returns>
-    public async Task SaveProfileSkillsAsync(IEnumerable<SkillInput> selectedSkills, string account)
-    {
-        try
-        {
-            var result = new SaveUserSkillOutput();
-            var skillInputs = selectedSkills.ToList();
-
-            if (!skillInputs.Any())
-            {
-                result.Errors.Add("Не передан список навыков для сохранения!");
-            }
-
-            var userId = await _userRepository.GetUserByEmailAsync(account);
-
-            // Получаем список навыков из БД, чтобы проставить флаги тем, которые выбрал пользователь.
-            var allSkills = await ProfileSkillsAsync();
-            var skillOutputs = allSkills.ToList();
-
-            if (!skillOutputs.Any())
-            {
-                throw new NullReferenceException("Не удалось получить список навыков для сохранения!");
-            }
-
-            // Получаем пересечения между элементами, которым будем проставлять флаг.
-            var items = skillOutputs
-                .Intersect<BaseSkill>(skillInputs)
-                .ToList();
-
-            // Если нет пересечений между элементами.
-            if (!items.Any())
-            {
-                throw new NullReferenceException("Нет пересечений между элементами навыков для сохранения!");
-            }
-
-            // Проставляем флаг выбранным элементам.
-            items.ForEach(i => i.IsSelected = true);
-
-            // Сохраняем навыки пользователя в базу.
-            await _profileRepository.SaveProfileSkillsAsync(items.Select(i => new UserSkillEntity
-            {
-                UserId = userId,
-                SkillId = i.SkillId,
-                Position = i.Position
-            }));
-        }
-
-        catch (Exception ex)
-        {
-            await _logger.LogErrorAsync(ex);
-            throw;
-        }
-    }
-
-    /// <summary>
     /// Метод получает выбранные пользователям навыки.
     /// </summary>
     /// <param name="account">Аккаунт пользователя.</param>
@@ -595,6 +535,40 @@ public sealed class ProfileService : IProfileService
             // Получаем всю информацию о навыках наполняя список.
             var skillsInfo = await _profileRepository.GetProfileSkillsBySkillIdAsync(userSkillEntities.Select(i => i.SkillId).ToArray());
             var result = _mapper.Map<IEnumerable<SkillOutput>>(skillsInfo);
+
+            return result;
+        }
+
+        catch (Exception ex)
+        {
+            await _logger.LogErrorAsync(ex);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Метод получает выбранные пользователем цели.
+    /// </summary>
+    /// <param name="account">Аккаунт пользователя.</param>
+    /// <returns>Список целей.</returns>
+    public async Task<IEnumerable<IntentOutput>> SelectedProfileUserIntentsAsync(string account)
+    {
+        try
+        {
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            // Получаем навыки пользователя.
+            var items = await _profileRepository.SelectedProfileUserIntentsAsync(userId);
+
+            var userIntentsEntities = items.ToList();
+            if (!userIntentsEntities.Any())
+            {
+                return Enumerable.Empty<IntentOutput>();
+            }
+
+            // Получаем всю информацию о навыках наполняя список.
+            var skillsInfo = await _profileRepository.GetProfileIntentsByIntentIdAsync(userIntentsEntities.Select(i => i.IntentId).ToArray());
+            var result = _mapper.Map<IEnumerable<IntentOutput>>(skillsInfo);
 
             return result;
         }

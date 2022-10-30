@@ -124,7 +124,7 @@ public sealed class ProfileRepository : IProfileRepository
     /// <summary>
     /// Метод получает список навыков по их Id.
     /// </summary>
-    /// <param name="skillsIds">Список навыков, которые нужно получить.</param>
+    /// <param name="skillsIds">Список Id навыков, которые нужно получить.</param>
     /// <returns>Список навыков.</returns>
     public async Task<IEnumerable<SkillEntity>> GetProfileSkillsBySkillIdAsync(int[] skillsIds)
     {
@@ -144,5 +144,33 @@ public sealed class ProfileRepository : IProfileRepository
     {
         await _pgContext.UserIntents.AddRangeAsync(selectedIntents);
         await _pgContext.SaveChangesAsync();
+    }
+
+    /// <summary>
+    /// Метод получает список целей по их Id.
+    /// </summary>
+    /// <param name="intentsIds">Список Id целей, которые нужно получить.</param>
+    /// <returns>Список целей.</returns>
+    public async Task<IEnumerable<IntentEntity>> GetProfileIntentsByIntentIdAsync(int[] intentsIds)
+    {
+        var result = await _pgContext.Intents
+            .Where(s => intentsIds.Contains(s.IntentId))
+            .ToListAsync();
+
+        return result;
+    }
+    
+    /// <summary>
+    /// Метод получает список выбранные цели пользователя.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Список целей.</returns>
+    public async Task<IEnumerable<UserIntentEntity>> SelectedProfileUserIntentsAsync(long userId)
+    {
+        var result = await _pgContext.UserIntents
+            .Where(s => s.UserId == userId)
+            .ToListAsync();
+
+        return result;
     }
 }
