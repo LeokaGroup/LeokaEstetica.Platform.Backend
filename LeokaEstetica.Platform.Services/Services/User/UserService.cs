@@ -1,5 +1,6 @@
 using System.Data;
 using System.IdentityModel.Tokens.Jwt;
+using System.Net.Mail;
 using System.Security.Claims;
 using AutoMapper;
 using LeokaEstetica.Platform.Access.Helpers;
@@ -11,6 +12,8 @@ using LeokaEstetica.Platform.Messaging.Abstractions.Mail;
 using LeokaEstetica.Platform.Models.Dto.Output.User;
 using LeokaEstetica.Platform.Models.Entities.User;
 using LeokaEstetica.Platform.Services.Abstractions.User;
+using LeokaEstetica.Platform.Services.Consts;
+using LeokaEstetica.Platform.Services.Validators;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
@@ -51,7 +54,8 @@ public sealed class UserService : IUserService
     /// <returns>Данные пользователя.</returns>
     public async Task<UserSignUpOutput> CreateUserAsync(string password, string email)
     {
-        var tran = await _pgContext.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted);
+        var tran = await _pgContext.Database
+            .BeginTransactionAsync(IsolationLevel.ReadCommitted);
         
         try
         {
@@ -84,7 +88,7 @@ public sealed class UserService : IUserService
 
             var confirmationEmailCode = Guid.NewGuid();
             
-            // Записываем пользлвателю код подтверждения для проверки его позже из его почты по ссылке.
+            // Записываем пользавателю код подтверждения для проверки его позже из его почты по ссылке.
             await _userRepository.SetConfirmAccountCodeAsync(confirmationEmailCode, addedUser.UserId);
             
             // Отправляем пользователю письмо подтверждения почты.
@@ -140,7 +144,7 @@ public sealed class UserService : IUserService
     /// </summary>
     /// <param name="password">Пароль./param>
     /// <param name="email">Почта.</param>
-    private void ValidateSignInParams(UserSignInOutput result, string password, string email)
+    private void ValidateSignInParams(UserSignInOutput result,  string email, string password)
     {
         result.Errors = CheckErrors(result.Errors, password, email);
     }
@@ -154,14 +158,29 @@ public sealed class UserService : IUserService
     /// <returns>Список ошибок.</returns>
     private List<string> CheckErrors(List<string> errors, string password, string email)
     {
+        // Проверка пароля.
         if (string.IsNullOrEmpty(password))
         {
-            errors = new List<string> { "Пароль не может быть пустым!" };
+            var error = new ArgumentException(ValidationConsts.EMPTY_PASSWORD_ERROR);
+            _logger.LogError(error);
+            errors.Add(ValidationConsts.EMPTY_PASSWORD_ERROR);
         }
 
+        // Проверка почты.
         if (string.IsNullOrEmpty(email))
         {
-            errors = new List<string> { "Email не может быть пустым!" };
+            var error = new ArgumentException(ValidationConsts.EMPTY_EMAIL_ERROR);
+            _logger.LogError(error);
+            errors.Add(ValidationConsts.EMPTY_EMAIL_ERROR);
+            email = string.Empty;
+        }
+
+        // Проверка формата почты.
+        if (!UserValidator.IsValidEmail(email))
+        {
+            var error = new ArgumentException(ValidationConsts.NOT_VALID_EMAIL_ERROR);
+            _logger.LogError(error);
+            errors.Add(ValidationConsts.NOT_VALID_EMAIL_ERROR);
         }
 
         return errors;

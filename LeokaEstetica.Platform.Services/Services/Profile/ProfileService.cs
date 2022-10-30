@@ -1,3 +1,4 @@
+using System.Net.Mail;
 using AutoMapper;
 using LeokaEstetica.Platform.Database.Abstractions.Profile;
 using LeokaEstetica.Platform.Database.Abstractions.User;
@@ -9,6 +10,8 @@ using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Redis.Abstractions;
 using LeokaEstetica.Platform.Redis.Models;
 using LeokaEstetica.Platform.Services.Abstractions.Profile;
+using LeokaEstetica.Platform.Services.Consts;
+using LeokaEstetica.Platform.Services.Validators;
 using Items = LeokaEstetica.Platform.Redis.Models.Items;
 
 namespace LeokaEstetica.Platform.Services.Services.Profile;
@@ -168,7 +171,14 @@ public sealed class ProfileService : IProfileService
     {
         try
         {
-            ValidateProfileInfo(profileInfoInput);
+            var result = new ProfileInfoOutput();
+            ValidateProfileInfo(profileInfoInput, ref result);
+
+            // Если есть ошибки валидации, не разрешаем идти дальше. Выдаем ошибки фронту.
+            if (result.Errors.Any())
+            {
+                return result;
+            }
 
             var userId = await _userRepository.GetUserByEmailAsync(account);
 
@@ -189,7 +199,7 @@ public sealed class ProfileService : IProfileService
             
             // Сохраняем данные пользователя.
             var savedProfileInfo = await _profileRepository.SaveProfileInfoAsync(profileInfo);
-            var result = _mapper.Map<ProfileInfoOutput>(savedProfileInfo);
+            result = _mapper.Map<ProfileInfoOutput>(savedProfileInfo);
             
             // Сохраняем номер телефона пользователя.
             await _userRepository.SaveUserPhoneAsync(userId, profileInfoInput.PhoneNumber);
@@ -211,33 +221,64 @@ public sealed class ProfileService : IProfileService
     /// Метод валидирует входную модель контактной информации.
     /// </summary>
     /// <param name="profileInfoInput">Входная модель для валидации.</param>
-    private void ValidateProfileInfo(ProfileInfoInput profileInfoInput)
+    private void ValidateProfileInfo(ProfileInfoInput profileInfoInput, ref ProfileInfoOutput result)
     {
+        // Проверка фамилии.
         if (string.IsNullOrEmpty(profileInfoInput.FirstName))
         {
-            throw new ArgumentException("Имя должно быть заполнено!");
+            var error = new ArgumentException(ValidationConsts.EMPTY_FIRST_NAME_ERROR);
+            _logger.LogError(error);
+            result.Errors.Add(ValidationConsts.EMPTY_FIRST_NAME_ERROR);
         }
 
+        // Проверка имени.
         if (string.IsNullOrEmpty(profileInfoInput.LastName))
         {
-            throw new ArgumentException("Фамилия должна быть заполнена!");
+            var error = new ArgumentException(ValidationConsts.EMPTY_LAST_NAME_ERROR);
+            _logger.LogError(error);
+            result.Errors.Add(ValidationConsts.EMPTY_LAST_NAME_ERROR);
         }
 
+        // Проверка информации о себе.
         if (string.IsNullOrEmpty(profileInfoInput.Aboutme))
         {
-            throw new ArgumentException("Информация о себе должна быть заполнена!");
+            var error = new ArgumentException(ValidationConsts.EMPTY_ABOUTME_ERROR);
+            _logger.LogError(error);
+            result.Errors.Add(ValidationConsts.EMPTY_ABOUTME_ERROR);
         }
-
-        // TODO: Добавить валидацию почты через регулярку. Завести для этого класс валидатора и туда эту валидацию.
+        
+        // Проверка почты.
         if (string.IsNullOrEmpty(profileInfoInput.Email))
         {
-            throw new ArgumentException("Email пользователя должен быть заполнен!");
+            var error = new ArgumentException(ValidationConsts.EMPTY_EMAIL_ERROR);
+            _logger.LogError(error);
+            result.Errors.Add(ValidationConsts.EMPTY_EMAIL_ERROR);
+            profileInfoInput.Email = string.Empty;
         }
 
-        // TODO: Добавить валидацию номера телефона через регулярку. Завести для этого класс валидатора и туда эту валидацию.
+        // Проверка формата почты.
+        if (!UserValidator.IsValidEmail(profileInfoInput.Email))
+        {
+            var error = new ArgumentException(ValidationConsts.NOT_VALID_EMAIL_ERROR);
+            _logger.LogError(error);
+            result.Errors.Add(ValidationConsts.NOT_VALID_EMAIL_ERROR);
+        }
+        
+        // Проверка номера телефона.
         if (string.IsNullOrEmpty(profileInfoInput.PhoneNumber))
         {
-            throw new ArgumentException("Номер телефона пользователя должнен быть заполнен!");
+            var error = new ArgumentException(ValidationConsts.EMPTY_PHONE_NUMBER_ERROR);
+            _logger.LogError(error);
+            result.Errors.Add(ValidationConsts.EMPTY_PHONE_NUMBER_ERROR);
+            profileInfoInput.PhoneNumber = string.Empty;
+        }
+
+        // Проверка формата номера телефона.
+        if (!UserValidator.IsValidPhoneNumber(profileInfoInput.PhoneNumber))
+        {
+            var error = new ArgumentException(ValidationConsts.NOT_VALID_PHONE_NUMBER_ERROR);
+            _logger.LogError(error);
+            result.Errors.Add(ValidationConsts.NOT_VALID_PHONE_NUMBER_ERROR);
         }
     }
 
