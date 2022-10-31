@@ -65,7 +65,7 @@ public sealed class ProfileRepository : IProfileRepository
     /// Метод получает список навыков для выбора в профиль пользователя.
     /// </summary>
     /// <returns>Список навыков.</returns>
-    public async Task<IEnumerable<SkillEntity>> ProfileSkillsAsync()
+    public async Task<List<SkillEntity>> ProfileSkillsAsync()
     {
         var result = await _pgContext.Skills.ToListAsync();
 
@@ -76,7 +76,7 @@ public sealed class ProfileRepository : IProfileRepository
     /// Метод получает список целей на платформе для выбора пользователем в профиль пользователя.
     /// </summary>
     /// <returns>Список целей.</returns>
-    public async Task<IEnumerable<IntentEntity>> ProfileIntentsAsync()
+    public async Task<List<IntentEntity>> ProfileIntentsAsync()
     {
         var result = await _pgContext.Intents.ToListAsync();
 
@@ -112,7 +112,7 @@ public sealed class ProfileRepository : IProfileRepository
     /// </summary>
     /// <param name="userId">Id пользователя.</param>
     /// <returns>Список навыков.</returns>
-    public async Task<IEnumerable<UserSkillEntity>> SelectedProfileUserSkillsAsync(long userId)
+    public async Task<List<UserSkillEntity>> SelectedProfileUserSkillsAsync(long userId)
     {
         var result = await _pgContext.UserSkills
             .Where(s => s.UserId == userId)
@@ -165,7 +165,7 @@ public sealed class ProfileRepository : IProfileRepository
     /// </summary>
     /// <param name="userId">Id пользователя.</param>
     /// <returns>Список целей.</returns>
-    public async Task<IEnumerable<UserIntentEntity>> SelectedProfileUserIntentsAsync(long userId)
+    public async Task<List<UserIntentEntity>> SelectedProfileUserIntentsAsync(long userId)
     {
         var result = await _pgContext.UserIntents
             .Where(s => s.UserId == userId)

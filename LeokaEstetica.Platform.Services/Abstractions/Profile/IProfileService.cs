@@ -25,13 +25,13 @@ public interface IProfileService
     /// Метод получает список навыков для выбора в профиль пользователя.
     /// </summary>
     /// <returns>Список навыков.</returns>
-    Task<IEnumerable<SkillOutput>> ProfileSkillsAsync();
+    Task<List<SkillOutput>> ProfileSkillsAsync(string account);
 
     /// <summary>
     /// Метод получает список целей на платформе для выбора пользователем в профиль пользователя.
     /// </summary>
     /// <returns>Список целей.</returns>
-    Task<IEnumerable<IntentOutput>> ProfileIntentsAsync();
+    Task<List<IntentOutput>> ProfileIntentsAsync(string account);
 
     /// <summary>
     /// Метод сохраняет данные анкеты пользователя.
@@ -53,12 +53,12 @@ public interface IProfileService
     /// </summary>
     /// <param name="account">Аккаунт пользователя.</param>
     /// <returns>Список навыков.</returns>
-    Task<IEnumerable<SkillOutput>> SelectedProfileUserSkillsAsync(string account);
+    Task<List<SkillOutput>> SelectedProfileUserSkillsAsync(string account);
     
     /// <summary>
     /// Метод получает выбранные пользователем цели.
     /// </summary>
     /// <param name="account">Аккаунт пользователя.</param>
     /// <returns>Список целей.</returns>
-    Task<IEnumerable<IntentOutput>> SelectedProfileUserIntentsAsync(string account);
+    Task<List<IntentOutput>> SelectedProfileUserIntentsAsync(string account);
 }

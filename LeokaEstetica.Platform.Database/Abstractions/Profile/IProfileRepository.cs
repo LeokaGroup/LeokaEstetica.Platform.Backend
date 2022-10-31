@@ -30,13 +30,13 @@ public interface IProfileRepository
     /// Метод получает список навыков для выбора в профиль пользователя.
     /// </summary>
     /// <returns>Список навыков.</returns>
-    Task<IEnumerable<SkillEntity>> ProfileSkillsAsync();
+    Task<List<SkillEntity>> ProfileSkillsAsync();
     
     /// <summary>
     /// Метод получает список целей на платформе для выбора пользователем в профиль пользователя.
     /// </summary>
     /// <returns>Список целей.</returns>
-    Task<IEnumerable<IntentEntity>> ProfileIntentsAsync();
+    Task<List<IntentEntity>> ProfileIntentsAsync();
 
     /// <summary>
     /// Метод сохраняет данные анкеты пользователя.
@@ -57,7 +57,7 @@ public interface IProfileRepository
     /// </summary>
     /// <param name="userId">Id пользователя.</param>
     /// <returns>Список навыков.</returns>
-    Task<IEnumerable<UserSkillEntity>> SelectedProfileUserSkillsAsync(long userId);
+    Task<List<UserSkillEntity>> SelectedProfileUserSkillsAsync(long userId);
 
     /// <summary>
     /// Метод получает список навыков по их Id.
@@ -85,5 +85,5 @@ public interface IProfileRepository
     /// </summary>
     /// <param name="userId">Id пользователя.</param>
     /// <returns>Список целей.</returns>
-    Task<IEnumerable<UserIntentEntity>> SelectedProfileUserIntentsAsync(long userId);
+    Task<List<UserIntentEntity>> SelectedProfileUserIntentsAsync(long userId);
 }

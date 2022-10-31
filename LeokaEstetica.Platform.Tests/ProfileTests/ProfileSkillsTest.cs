@@ -9,7 +9,7 @@ public class ProfileSkillsTest : BaseServiceTest
     [Test]
     public async Task ProfileSkillsAsyncTest()
     {
-        var result = await ProfileService.ProfileSkillsAsync();
+        var result = await ProfileService.ProfileSkillsAsync(string.Empty);
         
         IsTrue(result.Any());
     }

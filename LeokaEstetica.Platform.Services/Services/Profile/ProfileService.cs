@@ -122,15 +122,23 @@ public sealed class ProfileService : IProfileService
     /// <summary>
     /// Метод получает список навыков для выбора в профиль пользователя.
     /// </summary>
+    /// <param name="account">Аккаунт.</param>
     /// <returns>Список навыков.</returns>
-    public async Task<IEnumerable<SkillOutput>> ProfileSkillsAsync()
+    public async Task<List<SkillOutput>> ProfileSkillsAsync(string account)
     {
         try
         {
             var items = await _profileRepository.ProfileSkillsAsync();
-            var result = _mapper.Map<IEnumerable<SkillOutput>>(items);
+            var result = _mapper.Map<List<SkillOutput>>(items);
+            
+            // Исключаем те навыки, которые уже выбраны пользователем.
+            var userSkills = await SelectedProfileUserSkillsAsync(account);
 
-            return result;
+            // Находим Id навыков, которые ранее были выбраны пользователем.
+            var ids = userSkills.Select(s => s.SkillId);
+            result.RemoveAll(s => ids.Contains(s.SkillId));
+
+            return result;;
         }
 
         catch (Exception ex)
@@ -143,13 +151,21 @@ public sealed class ProfileService : IProfileService
     /// <summary>
     /// Метод получает список целей на платформе для выбора пользователем в профиль пользователя.
     /// </summary>
+    /// <param name="account">Аккаунт.</param>
     /// <returns>Список целей.</returns>
-    public async Task<IEnumerable<IntentOutput>> ProfileIntentsAsync()
+    public async Task<List<IntentOutput>> ProfileIntentsAsync(string account)
     {
         try
         {
             var items = await _profileRepository.ProfileIntentsAsync();
-            var result = _mapper.Map<IEnumerable<IntentOutput>>(items);
+            var result = _mapper.Map<List<IntentOutput>>(items);
+            
+            // Исключаем те цели, которые уже выбраны пользователем.
+            var userIntents = await SelectedProfileUserIntentsAsync(account);
+
+            // Находим Id целей, которые ранее были выбраны пользователем.
+            var ids = userIntents.Select(i => i.IntentId);
+            result.RemoveAll(s => ids.Contains(s.IntentId));
 
             return result;
         }
@@ -517,7 +533,7 @@ public sealed class ProfileService : IProfileService
     /// </summary>
     /// <param name="account">Аккаунт пользователя.</param>
     /// <returns>Список навыков.</returns>
-    public async Task<IEnumerable<SkillOutput>> SelectedProfileUserSkillsAsync(string account)
+    public async Task<List<SkillOutput>> SelectedProfileUserSkillsAsync(string account)
     {
         try
         {
@@ -525,16 +541,15 @@ public sealed class ProfileService : IProfileService
 
             // Получаем навыки пользователя.
             var items = await _profileRepository.SelectedProfileUserSkillsAsync(userId);
-
-            var userSkillEntities = items.ToList();
-            if (!userSkillEntities.Any())
+            
+            if (!items.Any())
             {
-                return Enumerable.Empty<SkillOutput>();
+                return new List<SkillOutput>();
             }
 
             // Получаем всю информацию о навыках наполняя список.
-            var skillsInfo = await _profileRepository.GetProfileSkillsBySkillIdAsync(userSkillEntities.Select(i => i.SkillId).ToArray());
-            var result = _mapper.Map<IEnumerable<SkillOutput>>(skillsInfo);
+            var skillsInfo = await _profileRepository.GetProfileSkillsBySkillIdAsync(items.Select(i => i.SkillId).ToArray());
+            var result = _mapper.Map<List<SkillOutput>>(skillsInfo);
 
             return result;
         }
@@ -551,7 +566,7 @@ public sealed class ProfileService : IProfileService
     /// </summary>
     /// <param name="account">Аккаунт пользователя.</param>
     /// <returns>Список целей.</returns>
-    public async Task<IEnumerable<IntentOutput>> SelectedProfileUserIntentsAsync(string account)
+    public async Task<List<IntentOutput>> SelectedProfileUserIntentsAsync(string account)
     {
         try
         {
@@ -559,16 +574,15 @@ public sealed class ProfileService : IProfileService
 
             // Получаем навыки пользователя.
             var items = await _profileRepository.SelectedProfileUserIntentsAsync(userId);
-
-            var userIntentsEntities = items.ToList();
-            if (!userIntentsEntities.Any())
+            
+            if (!items.Any())
             {
-                return Enumerable.Empty<IntentOutput>();
+                return new List<IntentOutput>();
             }
 
             // Получаем всю информацию о навыках наполняя список.
-            var skillsInfo = await _profileRepository.GetProfileIntentsByIntentIdAsync(userIntentsEntities.Select(i => i.IntentId).ToArray());
-            var result = _mapper.Map<IEnumerable<IntentOutput>>(skillsInfo);
+            var skillsInfo = await _profileRepository.GetProfileIntentsByIntentIdAsync(items.Select(i => i.IntentId).ToArray());
+            var result = _mapper.Map<List<IntentOutput>>(skillsInfo);
 
             return result;
         }

@@ -64,14 +64,14 @@ public class ProfileController : BaseController
     /// <returns>Список навыков.</returns>
     [HttpGet]
     [Route("skills")]
-    [ProducesResponseType(200, Type = typeof(IEnumerable<SkillOutput>))]
+    [ProducesResponseType(200, Type = typeof(List<SkillOutput>))]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<IEnumerable<SkillOutput>> ProfileSkillsAsync()
+    public async Task<List<SkillOutput>> ProfileSkillsAsync()
     {
-        var result = await _profileService.ProfileSkillsAsync();
+        var result = await _profileService.ProfileSkillsAsync(GetUserName());
 
         return result;
     }
@@ -82,14 +82,14 @@ public class ProfileController : BaseController
     /// <returns>Список целей.</returns>
     [HttpGet]
     [Route("intents")]
-    [ProducesResponseType(200, Type = typeof(IEnumerable<IntentOutput>))]
+    [ProducesResponseType(200, Type = typeof(List<IntentOutput>))]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<IEnumerable<IntentOutput>> ProfileIntentsAsync()
+    public async Task<List<IntentOutput>> ProfileIntentsAsync()
     {
-        var result = await _profileService.ProfileIntentsAsync();
+        var result = await _profileService.ProfileIntentsAsync(GetUserName());
 
         return result;
     }
@@ -138,12 +138,12 @@ public class ProfileController : BaseController
     /// <returns>Список навыков.</returns>
     [HttpGet]
     [Route("selected-skills")]
-    [ProducesResponseType(200, Type = typeof(IEnumerable<SkillInput>))]
+    [ProducesResponseType(200, Type = typeof(List<SkillInput>))]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<IEnumerable<SkillOutput>> GetSelectedUserSkillsAsync()
+    public async Task<List<SkillOutput>> GetSelectedUserSkillsAsync()
     {
         var result = await _profileService.SelectedProfileUserSkillsAsync(GetUserName());
 
@@ -156,12 +156,12 @@ public class ProfileController : BaseController
     /// <returns>Список целей.</returns>
     [HttpGet]
     [Route("selected-intents")]
-    [ProducesResponseType(200, Type = typeof(IEnumerable<IntentOutput>))]
+    [ProducesResponseType(200, Type = typeof(List<IntentOutput>))]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<IEnumerable<IntentOutput>> GetSelectedUserIntentsAsync()
+    public async Task<List<IntentOutput>> GetSelectedUserIntentsAsync()
     {
         var result = await _profileService.SelectedProfileUserIntentsAsync(GetUserName());
 

@@ -9,7 +9,7 @@ public class ProfileIntentsTest : BaseServiceTest
     [Test]
     public async Task ProfileIntentsAsyncTest()
     {
-        var result = await ProfileService.ProfileIntentsAsync();
+        var result = await ProfileService.ProfileIntentsAsync(string.Empty);
         
         IsTrue(result.Any());
     }
