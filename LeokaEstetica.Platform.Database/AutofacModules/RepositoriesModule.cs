@@ -3,10 +3,12 @@ using LeokaEstetica.Platform.Core.Attributes;
 using LeokaEstetica.Platform.Database.Abstractions.Header;
 using LeokaEstetica.Platform.Database.Abstractions.Landing;
 using LeokaEstetica.Platform.Database.Abstractions.Profile;
+using LeokaEstetica.Platform.Database.Abstractions.Project;
 using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Database.Repositories.Header;
 using LeokaEstetica.Platform.Database.Repositories.Landing;
 using LeokaEstetica.Platform.Database.Repositories.Profile;
+using LeokaEstetica.Platform.Database.Repositories.Project;
 using LeokaEstetica.Platform.Database.Repositories.User;
 
 namespace LeokaEstetica.Platform.Database.AutofacModules;
@@ -31,5 +33,9 @@ public class RepositoriesModule : Module
         // Репозиторий профиля.
         builder.RegisterType<ProfileRepository>().Named<IProfileRepository>("ProfileRepository").InstancePerLifetimeScope();
         builder.RegisterType<ProfileRepository>().As<IProfileRepository>().InstancePerLifetimeScope();
+        
+        // Репозиторий проектов.
+        builder.RegisterType<ProjectRepository>().Named<IProjectRepository>("ProjectRepository").InstancePerLifetimeScope();
+        builder.RegisterType<ProjectRepository>().As<IProjectRepository>().InstancePerLifetimeScope();
     }
 }
