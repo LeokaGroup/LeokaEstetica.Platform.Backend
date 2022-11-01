@@ -29,6 +29,10 @@ public partial class ProjectConfiguration : IEntityTypeConfiguration<ProjectEnti
         entity.Property(e => e.ProjectIcon)
             .HasColumnName("ProjectIcon")
             .HasColumnType("text");
+        
+        entity.Property(e => e.UserId)
+            .HasColumnName("UserId")
+            .HasColumnType("bigint");
 
         entity.HasIndex(u => u.ProjectId)
             .HasDatabaseName("PK_CatalogProjects_ProjectId")
