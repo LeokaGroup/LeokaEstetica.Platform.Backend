@@ -3,10 +3,12 @@ using LeokaEstetica.Platform.Core.Attributes;
 using LeokaEstetica.Platform.Services.Abstractions.Header;
 using LeokaEstetica.Platform.Services.Abstractions.Landing;
 using LeokaEstetica.Platform.Services.Abstractions.Profile;
+using LeokaEstetica.Platform.Services.Abstractions.Project;
 using LeokaEstetica.Platform.Services.Abstractions.User;
 using LeokaEstetica.Platform.Services.Services.Header;
 using LeokaEstetica.Platform.Services.Services.Landing;
 using LeokaEstetica.Platform.Services.Services.Profile;
+using LeokaEstetica.Platform.Services.Services.Project;
 using LeokaEstetica.Platform.Services.Services.User;
 
 namespace LeokaEstetica.Platform.Services.AutofacModules;
@@ -31,5 +33,9 @@ public class ServicesModule : Module
         // Сервис профиля пользователя.
         builder.RegisterType<ProfileService>().Named<IProfileService>("ProfileService").InstancePerLifetimeScope();
         builder.RegisterType<ProfileService>().As<IProfileService>().InstancePerLifetimeScope();
+        
+        // Сервис проектов.
+        builder.RegisterType<ProjectService>().Named<IProjectService>("ProjectService").InstancePerLifetimeScope();
+        builder.RegisterType<ProjectService>().As<IProjectService>().InstancePerLifetimeScope();
     }
 }
