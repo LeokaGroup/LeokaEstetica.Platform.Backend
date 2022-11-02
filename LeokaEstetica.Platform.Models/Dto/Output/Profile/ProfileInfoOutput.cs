@@ -5,7 +5,7 @@ namespace LeokaEstetica.Platform.Models.Dto.Output.Profile;
 /// <summary>
 /// Класс выходной модели информации профиля пользователя для раздела обо мне.
 /// </summary>
-public class ProfileInfoOutput : FrontErrorOutput
+public class ProfileInfoOutput : IFrontError
 {
     /// <summary>
     /// PK.
@@ -81,4 +81,9 @@ public class ProfileInfoOutput : FrontErrorOutput
     /// Флаг успешности.
     /// </summary>
     public bool IsSuccess { get; set; }
+
+    /// <summary>
+    /// Список ошибок.
+    /// </summary>
+    public List<string> Errors { get; set; } = new();
 }

@@ -5,7 +5,7 @@ namespace LeokaEstetica.Platform.Models.Dto.Output.User;
 /// <summary>
 /// Класс выходной модели пользователя для регистрации.
 /// </summary>
-public class UserSignUpOutput : FrontErrorOutput
+public class UserSignUpOutput : IFrontError
 {
     /// <summary>
     /// Фамилия.
@@ -86,4 +86,9 @@ public class UserSignUpOutput : FrontErrorOutput
     /// Дата окончания блокировки.
     /// </summary>
     public DateTime? LockoutEndDate { get; set; }
+
+    /// <summary>
+    /// Список ошибок.
+    /// </summary>
+    public List<string> Errors { get; set; } = new();
 }

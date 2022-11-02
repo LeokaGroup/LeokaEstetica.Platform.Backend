@@ -9,7 +9,7 @@ namespace LeokaEstetica.Platform.Controllers.Project;
 /// </summary>
 [AuthFilter]
 [ApiController]
-[Route("project")]
+[Route("projects")]
 public class ProjectController : BaseController
 {
     public ProjectController()
@@ -20,8 +20,15 @@ public class ProjectController : BaseController
     /// TODO: Подумать, давать ли всем пользователям возможность просматривать каталог проектов или только тем, у кого есть подписка.
     /// </summary>
     [HttpGet]
-    [Route("catalog")]
+    [Route("")]
     public async Task CatalogProjectsAsync()
+    {
+        
+    }
+
+    [HttpPost]
+    [Route("project")]
+    public async Task CreateProjectAsync()
     {
         
     }

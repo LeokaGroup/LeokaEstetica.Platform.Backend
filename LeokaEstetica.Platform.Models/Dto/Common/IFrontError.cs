@@ -1,12 +1,12 @@
 namespace LeokaEstetica.Platform.Models.Dto.Common;
 
 /// <summary>
-/// Базовый класс описывающий ошибки.
+/// Абстракция описывающая ошибки.
 /// </summary>
-public class FrontErrorOutput
+public interface IFrontError
 {
     /// <summary>
     /// Список ошибок, которые будем выводить на фронт.
     /// </summary>
-    public List<string> Errors { get; set; } = new();
+    List<string> Errors { get; set; }
 }
