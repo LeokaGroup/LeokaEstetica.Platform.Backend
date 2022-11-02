@@ -3,11 +3,13 @@ using AutoMapper;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Utils;
 using LeokaEstetica.Platform.Database.Repositories.Profile;
+using LeokaEstetica.Platform.Database.Repositories.Project;
 using LeokaEstetica.Platform.Database.Repositories.User;
 using LeokaEstetica.Platform.Logs.Services;
 using LeokaEstetica.Platform.Messaging.Services.Mail;
 using LeokaEstetica.Platform.Redis.Services;
 using LeokaEstetica.Platform.Services.Services.Profile;
+using LeokaEstetica.Platform.Services.Services.Project;
 using LeokaEstetica.Platform.Services.Services.User;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -29,6 +31,8 @@ public class BaseServiceTest
     protected ProfileRepository ProfileRepository;
     protected ProfileService ProfileService;
     protected RedisService RedisService;
+    protected ProjectRepository ProjectRepository;
+    protected ProjectService ProjectService;
     
     public BaseServiceTest()
     {
@@ -52,5 +56,7 @@ public class BaseServiceTest
         ProfileRepository = new ProfileRepository(PgContext);
         UserService = new UserService(LogService, UserRepository, mapper, null, PgContext, ProfileRepository);
         ProfileService = new ProfileService(LogService, ProfileRepository, UserRepository, mapper, null, null);
+        ProjectRepository = new ProjectRepository(PgContext);
+        ProjectService = new ProjectService(ProjectRepository, LogService, UserRepository, mapper);
     }
 }

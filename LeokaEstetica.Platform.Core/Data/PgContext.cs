@@ -3,6 +3,7 @@ using LeokaEstetica.Platform.Models.Entities.Common;
 using LeokaEstetica.Platform.Models.Entities.Landing;
 using LeokaEstetica.Platform.Models.Entities.Logs;
 using LeokaEstetica.Platform.Models.Entities.Profile;
+using LeokaEstetica.Platform.Models.Entities.Project;
 using LeokaEstetica.Platform.Models.Entities.User;
 using Microsoft.EntityFrameworkCore;
 
@@ -86,4 +87,9 @@ public class PgContext : DbContext
     /// Таблица элементов меню профиля пользователя.
     /// </summary>
     public DbSet<ProfileMenuItemEntity> ProfileMenuItems { get; set; }
+    
+    /// <summary>
+    /// Таблица проектов.
+    /// </summary>
+    public DbSet<ProjectEntity> Projects { get; set; }
 }
