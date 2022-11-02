@@ -1,11 +1,11 @@
 using LeokaEstetica.Platform.Models.Dto.Common;
 
-namespace LeokaEstetica.Platform.Models.Dto.Input.Project;
+namespace LeokaEstetica.Platform.Models.Dto.Output.Project;
 
 /// <summary>
-/// Класс входной модели для создания нового проекта.
+/// Класс выходной модели 
 /// </summary>
-public class CreateProjectInput : IFrontError
+public class CreateProjectOutput : IFrontError
 {
     /// <summary>
     /// Список ошибок.
@@ -26,4 +26,9 @@ public class CreateProjectInput : IFrontError
     /// Изображение проекта.
     /// </summary>
     public string ProjectIcon { get; set; }
+    
+    /// <summary>
+    /// PK.
+    /// </summary>
+    public long ProjectId { get; set; }
 }
