@@ -29,4 +29,9 @@ public class ProjectEntity
     /// Изображение проекта.
     /// </summary>
     public string ProjectIcon { get; set; }
+
+    /// <summary>
+    /// Код проекта.
+    /// </summary>
+    public Guid ProjectCode { get; set; }
 }
