@@ -1,5 +1,6 @@
 ﻿using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Models.Entities.Common;
+using LeokaEstetica.Platform.Models.Entities.Configs;
 using LeokaEstetica.Platform.Models.Entities.Landing;
 using LeokaEstetica.Platform.Models.Entities.Logs;
 using LeokaEstetica.Platform.Models.Entities.Profile;
@@ -92,4 +93,9 @@ public class PgContext : DbContext
     /// Таблица проектов.
     /// </summary>
     public DbSet<ProjectEntity> Projects { get; set; }
+
+    /// <summary>
+    /// Таблица названий столбцов в управляющей таблице.
+    /// </summary>
+    public DbSet<ColumnNameEntity> ColumnsNames { get; set; }
 }

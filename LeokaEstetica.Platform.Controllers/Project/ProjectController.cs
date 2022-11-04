@@ -1,3 +1,4 @@
+using System.Data;
 using LeokaEstetica.Platform.Base;
 using LeokaEstetica.Platform.Core.Filters;
 using LeokaEstetica.Platform.Models.Dto.Input.Project;
@@ -48,6 +49,41 @@ public class ProjectController : BaseController
     {
         var result = await _projectService
             .CreateProjectAsync(createProjectInput.ProjectName, createProjectInput.ProjectDetails, GetUserName());
+
+        return result;
+    }
+
+    [HttpGet]
+    [Route("my")]
+    [ProducesResponseType(200, Type = typeof(CreateProjectOutput))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<ProjectResultOutput> MyProjectsAsync()
+    {
+        var result = new ProjectResultOutput();
+        result.Projects.Columns.AddRange(new[]
+        {
+            new DataColumn
+            {
+                ColumnName = "Код проекта",
+                DataType = typeof(string),
+                DefaultValue = "Код проекта"
+            },
+            new DataColumn
+            {
+                ColumnName = "Название проекта",
+                DataType = typeof(string),
+                DefaultValue = "Название проекта"
+            },
+            new DataColumn
+            {
+                ColumnName = "Описание проекта",
+                DataType = typeof(string),
+                DefaultValue = "Описание проекта"
+            }
+        });
 
         return result;
     }
