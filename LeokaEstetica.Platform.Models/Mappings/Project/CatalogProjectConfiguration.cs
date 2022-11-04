@@ -18,7 +18,7 @@ public partial class CatalogProjectConfiguration : IEntityTypeConfiguration<Cata
 
         entity.HasOne(p => p.ProjectId)
             .WithMany(b => b.CatalogProjects)
-            .HasForeignKey(p => p.ProjectId)
+            .HasForeignKey(p => p.CatalogProjectId)
             .HasConstraintName("FK_UserProjects_ProjectId");
 
         entity.HasIndex(u => u.CatalogProjectId)
