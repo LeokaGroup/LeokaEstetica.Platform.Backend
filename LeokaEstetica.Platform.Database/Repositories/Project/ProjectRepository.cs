@@ -26,21 +26,22 @@ public sealed class ProjectRepository : IProjectRepository
     /// <param name="projectDetails">Описание проекта.</param>
     /// <param name="userId">Id пользователя.</param>
     /// <returns>Данные нового проекта.</returns>
-    public async Task<ProjectEntity> CreateProjectAsync(string projectName, string projectDetails, long userId)
+    public async Task<UserProjectEntity> CreateProjectAsync(string projectName, string projectDetails, long userId)
     {
         var transaction = await _pgContext.Database
             .BeginTransactionAsync(IsolationLevel.ReadCommitted);
         
         try
         {
-            var project = new ProjectEntity
+            var project = new UserProjectEntity
             {
                 ProjectName = projectName,
                 ProjectDetails = projectDetails,
                 UserId = userId,
-                ProjectCode = Guid.NewGuid()
+                ProjectCode = Guid.NewGuid(),
+                DateCreated = DateTime.UtcNow
             };
-            await _pgContext.Projects.AddAsync(project);
+            await _pgContext.UserProjects.AddAsync(project);
             await _pgContext.SaveChangesAsync();
             await transaction.CommitAsync();
 

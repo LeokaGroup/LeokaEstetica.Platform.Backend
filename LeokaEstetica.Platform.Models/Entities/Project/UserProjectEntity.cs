@@ -1,24 +1,29 @@
 namespace LeokaEstetica.Platform.Models.Entities.Project;
 
 /// <summary>
-/// Класс сопоставляется с таблицей каталога проектов Projects.CatalogProjects.
+/// Класс сопоставляется с таблицей прооектов пользователя.
 /// </summary>
-public class ProjectEntity
+public sealed class UserProjectEntity
 {
+    public UserProjectEntity()
+    {
+        CatalogProjects = new HashSet<CatalogProjectEntity>();
+    }
+
     /// <summary>
     /// PK.
     /// </summary>
     public long ProjectId { get; set; }
-
-    /// <summary>
-    /// Название проекта.
-    /// </summary>
-    public string ProjectName { get; set; }
-
+    
     /// <summary>
     /// Id пользователя, который создал проект (т.е владельца проекта).
     /// </summary>
     public long UserId { get; set; }
+    
+    /// <summary>
+    /// Название проекта.
+    /// </summary>
+    public string ProjectName { get; set; }
 
     /// <summary>
     /// Описание проекта.
@@ -34,4 +39,14 @@ public class ProjectEntity
     /// Код проекта.
     /// </summary>
     public Guid ProjectCode { get; set; }
+
+    /// <summary>
+    /// Дата создания проекта.
+    /// </summary>
+    public DateTime DateCreated { get; set; }
+
+    /// <summary>
+    /// FK каталога проектов.
+    /// </summary>
+    public ICollection<CatalogProjectEntity> CatalogProjects { get; set; }
 }

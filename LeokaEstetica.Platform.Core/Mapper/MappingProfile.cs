@@ -30,7 +30,7 @@ public class MappingProfile : Profile
         CreateMap<ProfileMenuItemEntity, ProfileMenuItemsResultOutput>();
         CreateMap<SkillEntity, SkillOutput>();
         CreateMap<IntentEntity, IntentOutput>();
-        CreateMap<ProjectEntity, CreateProjectOutput>(); 
+        CreateMap<CatalogProjectEntity, CreateProjectOutput>(); 
         CreateMap<ColumnNameEntity, ColumnNameOutput>(); 
     }
 }

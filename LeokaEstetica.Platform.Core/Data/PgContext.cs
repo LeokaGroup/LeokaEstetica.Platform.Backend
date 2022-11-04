@@ -90,12 +90,17 @@ public class PgContext : DbContext
     public DbSet<ProfileMenuItemEntity> ProfileMenuItems { get; set; }
     
     /// <summary>
-    /// Таблица проектов.
+    /// Таблица каталога проектов.
     /// </summary>
-    public DbSet<ProjectEntity> Projects { get; set; }
+    public DbSet<CatalogProjectEntity> CatalogProjects { get; set; }
 
     /// <summary>
     /// Таблица названий столбцов в управляющей таблице.
     /// </summary>
     public DbSet<ColumnNameEntity> ColumnsNames { get; set; }
+
+    /// <summary>
+    /// Таблица проектов пользователя.
+    /// </summary>
+    public DbSet<UserProjectEntity> UserProjects { get; set; }
 }
