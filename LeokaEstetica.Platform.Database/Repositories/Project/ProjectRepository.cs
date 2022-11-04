@@ -1,6 +1,7 @@
 using System.Data;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
+using LeokaEstetica.Platform.Models.Entities.Configs;
 using LeokaEstetica.Platform.Models.Entities.Project;
 using Microsoft.EntityFrameworkCore;
 
@@ -51,5 +52,19 @@ public sealed class ProjectRepository : IProjectRepository
             await transaction.RollbackAsync();
             throw;
         }
+    }
+
+    /// <summary>
+    /// Метод получает названия полей для таблицы проектов пользователя.
+    /// Все названия столбцов этой таблицы одинаковые у всех пользователей.
+    /// </summary>
+    /// <returns>Список названий полей таблицы.</returns>
+    public async Task<IEnumerable<ColumnNameEntity>> UserProjectsColumnsNamesAsync()
+    {
+        var result = await _pgContext.ColumnsNames
+            .OrderBy(o => o.Position)
+            .ToListAsync();
+
+        return result;
     }
 }

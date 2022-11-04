@@ -2,6 +2,7 @@ using AutoMapper;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
 using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Logs.Abstractions;
+using LeokaEstetica.Platform.Models.Dto.Output.Configs;
 using LeokaEstetica.Platform.Models.Dto.Output.Project;
 using LeokaEstetica.Platform.Services.Abstractions.Project;
 
@@ -89,6 +90,34 @@ public sealed class ProjectService : IProjectService
         {
             var ex = new ArgumentNullException($"Не передан аккаунт пользователя!");
             _logService.LogError(ex);
+        }
+    }
+    
+    /// <summary>
+    /// Метод получает названия полей для таблицы проектов пользователя.
+    /// Все названия столбцов этой таблицы одинаковые у всех пользователей.
+    /// </summary>
+    /// <returns>Список названий полей таблицы.</returns>
+    public async Task<IEnumerable<ColumnNameOutput>> UserProjectsColumnsNamesAsync()
+    {
+        try
+        {
+            var items = await _projectRepository.UserProjectsColumnsNamesAsync();
+
+            if (!items.Any())
+            {
+                throw new NullReferenceException("Не удалось получить поля для таблицы UserProjects!");
+            }
+
+            var result = _mapper.Map<IEnumerable<ColumnNameOutput>>(items);
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            await _logService.LogErrorAsync(ex);
+            throw;
         }
     }
 }

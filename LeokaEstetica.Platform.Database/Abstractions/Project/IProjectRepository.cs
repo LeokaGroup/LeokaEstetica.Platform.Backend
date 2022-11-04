@@ -1,3 +1,4 @@
+using LeokaEstetica.Platform.Models.Entities.Configs;
 using LeokaEstetica.Platform.Models.Entities.Project;
 
 namespace LeokaEstetica.Platform.Database.Abstractions.Project;
@@ -15,4 +16,11 @@ public interface IProjectRepository
     /// <param name="userId">Id пользователя.</param>
     /// <returns>Данные нового проекта.</returns>
     Task<ProjectEntity> CreateProjectAsync(string projectName, string projectDetails, long userId);
+    
+    /// <summary>
+    /// Метод получает названия полей для таблицы проектов пользователя.
+    /// Все названия столбцов этой таблицы одинаковые у всех пользователей.
+    /// </summary>
+    /// <returns>Список названий полей таблицы.</returns>
+    Task<IEnumerable<ColumnNameEntity>> UserProjectsColumnsNamesAsync();
 }

@@ -2,6 +2,7 @@ using System.Data;
 using LeokaEstetica.Platform.Base;
 using LeokaEstetica.Platform.Core.Filters;
 using LeokaEstetica.Platform.Models.Dto.Input.Project;
+using LeokaEstetica.Platform.Models.Dto.Output.Configs;
 using LeokaEstetica.Platform.Models.Dto.Output.Project;
 using LeokaEstetica.Platform.Services.Abstractions.Project;
 using Microsoft.AspNetCore.Mvc;
@@ -60,30 +61,26 @@ public class ProjectController : BaseController
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<ProjectResultOutput> MyProjectsAsync()
+    public Task<ProjectResultOutput> MyProjectsAsync()
     {
-        var result = new ProjectResultOutput();
-        result.Projects.Columns.AddRange(new[]
-        {
-            new DataColumn
-            {
-                ColumnName = "Код проекта",
-                DataType = typeof(string),
-                DefaultValue = "Код проекта"
-            },
-            new DataColumn
-            {
-                ColumnName = "Название проекта",
-                DataType = typeof(string),
-                DefaultValue = "Название проекта"
-            },
-            new DataColumn
-            {
-                ColumnName = "Описание проекта",
-                DataType = typeof(string),
-                DefaultValue = "Описание проекта"
-            }
-        });
+        throw new NotImplementedException();
+    }
+
+    /// <summary>
+    /// Метод получает названия полей для таблицы проектов пользователя.
+    /// Все названия столбцов этой таблицы одинаковые у всех пользователей.
+    /// </summary>
+    /// <returns>Список названий полей таблицы.</returns>
+    [HttpGet]
+    [Route("config-user-projects")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<ColumnNameOutput>))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<IEnumerable<ColumnNameOutput>> UserProjectsColumnsNamesAsync()
+    {
+        var result = await _projectService.UserProjectsColumnsNamesAsync();
 
         return result;
     }
