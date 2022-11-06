@@ -23,4 +23,12 @@ public interface IProjectRepository
     /// </summary>
     /// <returns>Список названий полей таблицы.</returns>
     Task<IEnumerable<ColumnNameEntity>> UserProjectsColumnsNamesAsync();
+
+    /// <summary>
+    /// Метод проверяет, создан ли уже такой заказ под текущим пользователем с таким названием.
+    /// </summary>
+    /// <param name="projectName">Название проекта.</param>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Создал либо нет.</returns>
+    Task<bool> CheckCreatedProjectByProjectNameAsync(string projectName, long userId);
 }

@@ -57,6 +57,6 @@ public class BaseServiceTest
         UserService = new UserService(LogService, UserRepository, mapper, null, PgContext, ProfileRepository);
         ProfileService = new ProfileService(LogService, ProfileRepository, UserRepository, mapper, null, null);
         ProjectRepository = new ProjectRepository(PgContext);
-        ProjectService = new ProjectService(ProjectRepository, LogService, UserRepository, mapper);
+        ProjectService = new ProjectService(ProjectRepository, LogService, UserRepository, mapper, null);
     }
 }

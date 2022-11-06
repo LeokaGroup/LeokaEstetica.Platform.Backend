@@ -1,5 +1,3 @@
-using LeokaEstetica.Platform.Notifications.Enums;
-
 namespace LeokaEstetica.Platform.Notifications.Models.Output;
 
 /// <summary>

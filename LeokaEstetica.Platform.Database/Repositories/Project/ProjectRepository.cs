@@ -68,4 +68,19 @@ public sealed class ProjectRepository : IProjectRepository
 
         return result;
     }
+
+    /// <summary>
+    /// Метод проверяет, создан ли уже такой заказ под текущим пользователем с таким названием.
+    /// </summary>
+    /// <param name="projectName">Название проекта.</param>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Создал либо нет.</returns>
+    public async Task<bool> CheckCreatedProjectByProjectNameAsync(string projectName, long userId)
+    {
+        var result = await _pgContext.UserProjects
+            .AnyAsync(p => p.UserId == userId 
+                           && p.ProjectName.Equals(projectName));
+
+        return result;
+    }
 }

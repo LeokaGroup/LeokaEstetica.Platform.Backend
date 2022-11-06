@@ -1,9 +1,12 @@
 using AutoMapper;
+using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
 using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Models.Dto.Output.Configs;
 using LeokaEstetica.Platform.Models.Dto.Output.Project;
+using LeokaEstetica.Platform.Notifications.Abstractions;
+using LeokaEstetica.Platform.Notifications.Consts;
 using LeokaEstetica.Platform.Services.Abstractions.Project;
 
 namespace LeokaEstetica.Platform.Services.Services.Project;
@@ -17,16 +20,19 @@ public sealed class ProjectService : IProjectService
     private readonly ILogService _logService;
     private readonly IUserRepository _userRepository;
     private readonly IMapper _mapper;
+    private readonly INotificationsService _notificationsService;
     
     public ProjectService(IProjectRepository projectRepository, 
         ILogService logService, 
         IUserRepository userRepository, 
-        IMapper mapper)
+        IMapper mapper, 
+        INotificationsService notificationsService)
     {
         _projectRepository = projectRepository;
         _logService = logService;
         _userRepository = userRepository;
         _mapper = mapper;
+        _notificationsService = notificationsService;
     }
 
     /// <summary>
@@ -45,17 +51,49 @@ public sealed class ProjectService : IProjectService
 
             if (result.Errors.Any())
             {
+                result.IsSuccess = false;
+                
                 return result;
             }
 
             var userId = await _userRepository.GetUserByEmailAsync(account);
 
-            var project = await _projectRepository.CreateProjectAsync(projectName, projectDetails, userId);
-
-            if (project is not null)
+            if (userId <= 0)
             {
-                result = _mapper.Map<CreateProjectOutput>(project);
+                throw new NotFoundUserIdByAccountException(account);
             }
+            
+            // Проверяем существование такого проекта у текущего пользователя.
+            var isCreatedProject = await _projectRepository.CheckCreatedProjectByProjectNameAsync(projectName, userId);
+
+            // Есть дубликат, нельзя создать проект.
+            if (isCreatedProject)
+            {
+                await _notificationsService.SendNotificationWarningDublicateUserProjectAsync("Увы...", "Такой проект у вас уже существует!", NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, null);
+                result.IsSuccess = false;
+                
+                return result;
+            }
+            
+            var project = await _projectRepository.CreateProjectAsync(projectName, projectDetails, userId);
+                
+            // Если что то пошло не так при создании проекта.
+            if (project?.ProjectId <= 0)
+            {
+                var ex = new Exception("Ошибка при создании проекта!");
+                await _logService.LogCriticalAsync(ex);
+                await _notificationsService.SendNotificationErrorCreatedUserProjectAsync("Что то пошло не так", "Ошибка при создании проекта. Мы уже знаем о проблеме и уже занимаемся ей.", NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, null);
+                
+                result.IsSuccess = false;
+                
+                return result;
+            }
+
+            result = _mapper.Map<CreateProjectOutput>(project);
+                
+            // Отправляем уведомление об успешном создании проекта.
+            await _notificationsService.SendNotificationSuccessCreatedUserProjectAsync("Все хорошо", "Данные успешно сохранены!", NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, null);
+            result.IsSuccess = true;
 
             return result;
         }

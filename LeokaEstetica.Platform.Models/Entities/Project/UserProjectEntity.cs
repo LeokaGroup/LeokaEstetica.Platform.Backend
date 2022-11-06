@@ -3,7 +3,7 @@ namespace LeokaEstetica.Platform.Models.Entities.Project;
 /// <summary>
 /// Класс сопоставляется с таблицей прооектов пользователя.
 /// </summary>
-public sealed class UserProjectEntity
+public class UserProjectEntity
 {
     public UserProjectEntity()
     {
@@ -48,5 +48,5 @@ public sealed class UserProjectEntity
     /// <summary>
     /// FK каталога проектов.
     /// </summary>
-    public ICollection<CatalogProjectEntity> CatalogProjects { get; set; }
+    public virtual ICollection<CatalogProjectEntity> CatalogProjects { get; set; }
 }

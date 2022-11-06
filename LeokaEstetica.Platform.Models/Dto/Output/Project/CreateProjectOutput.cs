@@ -31,4 +31,9 @@ public class CreateProjectOutput : IFrontError
     /// PK.
     /// </summary>
     public long ProjectId { get; set; }
+
+    /// <summary>
+    /// Успешное ли сохранение.
+    /// </summary>
+    public bool IsSuccess { get; set; }
 }
