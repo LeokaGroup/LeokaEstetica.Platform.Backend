@@ -92,7 +92,7 @@ public sealed class ProjectService : IProjectService
             result = _mapper.Map<CreateProjectOutput>(project);
                 
             // Отправляем уведомление об успешном создании проекта.
-            await _notificationsService.SendNotificationSuccessCreatedUserProjectAsync("Все хорошо", "Данные успешно сохранены!", NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, null);
+            await _notificationsService.SendNotificationSuccessCreatedUserProjectAsync("Все хорошо", "Данные успешно сохранены! Проект отправлен на модерацию!", NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, null);
             result.IsSuccess = true;
 
             return result;
