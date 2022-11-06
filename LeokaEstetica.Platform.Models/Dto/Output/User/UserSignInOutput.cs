@@ -5,7 +5,7 @@ namespace LeokaEstetica.Platform.Models.Dto.Output.User;
 /// <summary>
 /// Класс выходной модели авторизации.
 /// </summary>
-public class UserSignInOutput : FrontErrorOutput
+public class UserSignInOutput : IFrontError
 {
     /// <summary>
     /// Email.
@@ -26,4 +26,9 @@ public class UserSignInOutput : FrontErrorOutput
     /// Код пользователя.
     /// </summary>
     public Guid UserCode { get; set; }
+
+    /// <summary>
+    /// Список ошибок.
+    /// </summary>
+    public List<string> Errors { get; set; } = new();
 }

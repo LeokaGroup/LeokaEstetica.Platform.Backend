@@ -6,7 +6,7 @@ using LeokaEstetica.Platform.Models.Dto.Input.Profile;
 using LeokaEstetica.Platform.Models.Dto.Output.Profile;
 using LeokaEstetica.Platform.Models.Entities.Profile;
 using LeokaEstetica.Platform.Notifications.Abstractions;
-using LeokaEstetica.Platform.Notifications.Enums;
+using LeokaEstetica.Platform.Notifications.Consts;
 using LeokaEstetica.Platform.Redis.Abstractions;
 using LeokaEstetica.Platform.Redis.Models;
 using LeokaEstetica.Platform.Services.Abstractions.Profile;
@@ -229,7 +229,7 @@ public sealed class ProfileService : IProfileService
 
             // Отправляем уведомление о сохранении фронту.
             await _notificationsService
-                .SendNotifySuccessSaveAsync("Все хорошо", "Данные успешно сохранены!", NotificationLevel.success, null);
+                .SendNotifySuccessSaveAsync("Все хорошо", "Данные успешно сохранены!", NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, null);
 
             result.IsSuccess = true;
 
@@ -265,7 +265,7 @@ public sealed class ProfileService : IProfileService
         else
         {
             await _notificationsService
-                .SendNotificationWarningSaveUserSkillsAsync("Совет", "Советуем выбрать ваши навыки!", NotificationLevel.warn, null);
+                .SendNotificationWarningSaveUserSkillsAsync("Совет", "Советуем выбрать ваши навыки!", NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, null);
         }
     }
 
@@ -291,7 +291,7 @@ public sealed class ProfileService : IProfileService
         else
         {
             await _notificationsService
-                .SendNotificationWarningSaveUserIntentsAsync("Совет", "Советуем выбрать ваши цели на платформе!", NotificationLevel.warn, null);
+                .SendNotificationWarningSaveUserIntentsAsync("Совет", "Советуем выбрать ваши цели на платформе!", NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, null);
         }
     }
 
