@@ -25,8 +25,11 @@ public sealed class ProjectRepository : IProjectRepository
     /// <param name="projectName">Название проекта.</param>
     /// <param name="projectDetails">Описание проекта.</param>
     /// <param name="userId">Id пользователя.</param>
+    /// <param name="statusSysName">Системное название статуса.</param>
+    /// <param name="statusId">Id статуса.</param>
+    /// <param name="statusName">Русское название статуса.</param>
     /// <returns>Данные нового проекта.</returns>
-    public async Task<UserProjectEntity> CreateProjectAsync(string projectName, string projectDetails, long userId)
+    public async Task<UserProjectEntity> CreateProjectAsync(string projectName, string projectDetails, long userId, string statusSysName, int statusId, string statusName)
     {
         var transaction = await _pgContext.Database
             .BeginTransactionAsync(IsolationLevel.ReadCommitted);
@@ -42,6 +45,16 @@ public sealed class ProjectRepository : IProjectRepository
                 DateCreated = DateTime.UtcNow
             };
             await _pgContext.UserProjects.AddAsync(project);
+            await _pgContext.SaveChangesAsync();
+            
+            // Проставляем проекту статус "На модерации".
+            await _pgContext.ProjectStatuses.AddAsync(new ProjectStatusEntity
+            {
+                ProjectId = project.ProjectId,
+                StatusId = statusId,
+                ProjectStatusSysName = statusSysName,
+                ProjectStatusName = statusName
+            });
             await _pgContext.SaveChangesAsync();
             await transaction.CommitAsync();
 

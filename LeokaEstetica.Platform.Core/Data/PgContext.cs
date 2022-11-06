@@ -103,4 +103,9 @@ public class PgContext : DbContext
     /// Таблица проектов пользователя.
     /// </summary>
     public DbSet<UserProjectEntity> UserProjects { get; set; }
+
+    /// <summary>
+    /// Таблица статусов проектов.
+    /// </summary>
+    public DbSet<ProjectStatusEntity> ProjectStatuses { get; set; }
 }
