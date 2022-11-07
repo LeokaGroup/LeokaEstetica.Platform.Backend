@@ -161,4 +161,32 @@ public sealed class ProjectService : IProjectService
             throw;
         }
     }
+
+    /// <summary>
+    /// Метод получает список проектов пользователя.
+    /// </summary>
+    /// <param name="account">Аккаунт пользователя.</param>
+    /// <returns>Список проектов.</returns>
+    public async Task<IEnumerable<UserProjectOutput>> UserProjectsAsync(string account)
+    {
+        try
+        {
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId <= 0)
+            {
+                throw new NotFoundUserIdByAccountException(account);
+            }
+            
+            var result = await _projectRepository.UserProjectsAsync(userId);
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            await _logService.LogErrorAsync(ex);
+            throw;
+        }
+    }
 }

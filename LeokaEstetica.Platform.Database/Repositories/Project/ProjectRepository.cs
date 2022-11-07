@@ -1,6 +1,7 @@
 using System.Data;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
+using LeokaEstetica.Platform.Models.Dto.Output.Project;
 using LeokaEstetica.Platform.Models.Entities.Configs;
 using LeokaEstetica.Platform.Models.Entities.Moderation;
 using LeokaEstetica.Platform.Models.Entities.Project;
@@ -103,6 +104,29 @@ public sealed class ProjectRepository : IProjectRepository
         var result = await _pgContext.UserProjects
             .AnyAsync(p => p.UserId == userId 
                            && p.ProjectName.Equals(projectName));
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод получает список проектов пользователя.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Список проектов.</returns>
+    public async Task<IEnumerable<UserProjectOutput>> UserProjectsAsync(long userId)
+    {
+        var result = await _pgContext.ProjectStatuses
+            .Include(p => p.UserProject)
+            .Select(p => new UserProjectOutput
+            {
+                ProjectName = p.UserProject.ProjectName,
+                ProjectDetails = p.UserProject.ProjectDetails,
+                ProjectIcon = p.UserProject.ProjectIcon,
+                ProjectId = p.ProjectId,
+                ProjectStatusName = p.ProjectStatusName,
+                ProjectStatusSysName = p.ProjectStatusSysName
+            })
+            .ToListAsync();
 
         return result;
     }
