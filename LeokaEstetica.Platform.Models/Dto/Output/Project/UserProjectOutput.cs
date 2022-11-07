@@ -19,11 +19,6 @@ public class UserProjectOutput
     /// Изображение проекта.
     /// </summary>
     public string ProjectIcon { get; set; }
-    
-    /// <summary>
-    /// PK.
-    /// </summary>
-    public long ProjectId { get; set; }
 
     /// <summary>
     /// Название статуса проекта.
@@ -34,4 +29,9 @@ public class UserProjectOutput
     /// Системное название статуса проекта.
     /// </summary>
     public string ProjectStatusSysName { get; set; }
+
+    /// <summary>
+    /// Код проекта.
+    /// </summary>
+    public Guid ProjectCode { get; set; }
 }
