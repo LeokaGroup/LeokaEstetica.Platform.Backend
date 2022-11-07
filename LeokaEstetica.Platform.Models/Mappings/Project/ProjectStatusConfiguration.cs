@@ -28,6 +28,7 @@ public partial class ProjectStatusConfiguration : IEntityTypeConfiguration<Proje
             .HasColumnName("ProjectStatusName")
             .HasColumnType("varchar(100)");
 
+        // TODO: Возможно пригодится FK, чтобы удобно получать связанные данные.
         // entity.HasOne(p => p.ProjectId)
         //     .WithMany(b => b.ProjectId)
         //     .HasForeignKey(p => p.CatalogProjectId)
