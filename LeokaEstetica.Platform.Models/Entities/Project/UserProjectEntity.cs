@@ -1,3 +1,5 @@
+using LeokaEstetica.Platform.Models.Entities.Moderation;
+
 namespace LeokaEstetica.Platform.Models.Entities.Project;
 
 /// <summary>
@@ -8,6 +10,8 @@ public class UserProjectEntity
     public UserProjectEntity()
     {
         CatalogProjects = new HashSet<CatalogProjectEntity>();
+        ModerationProjects = new HashSet<ModerationProjectEntity>();
+        ProjectStatuses = new HashSet<ProjectStatusEntity>();
     }
 
     /// <summary>
@@ -48,5 +52,7 @@ public class UserProjectEntity
     /// <summary>
     /// FK каталога проектов.
     /// </summary>
-    public virtual ICollection<CatalogProjectEntity> CatalogProjects { get; set; }
+    public ICollection<CatalogProjectEntity> CatalogProjects { get; set; }
+    public ICollection<ModerationProjectEntity> ModerationProjects { get; set; }
+    public ICollection<ProjectStatusEntity> ProjectStatuses { get; set; }
 }

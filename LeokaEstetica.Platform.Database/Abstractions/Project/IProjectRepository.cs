@@ -14,8 +14,11 @@ public interface IProjectRepository
     /// <param name="projectName">Название проекта.</param>
     /// <param name="projectDetails">Описание проекта.</param>
     /// <param name="userId">Id пользователя.</param>
+    /// <param name="statusSysName">Системное название статуса.</param>
+    /// <param name="statusId">Id статуса.</param>
+    /// <param name="statusName">Русское название статуса.</param>
     /// <returns>Данные нового проекта.</returns>
-    Task<UserProjectEntity> CreateProjectAsync(string projectName, string projectDetails, long userId);
+    Task<UserProjectEntity> CreateProjectAsync(string projectName, string projectDetails, long userId, string statusSysName, int statusId, string statusName);
     
     /// <summary>
     /// Метод получает названия полей для таблицы проектов пользователя.

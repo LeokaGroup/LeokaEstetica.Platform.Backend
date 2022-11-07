@@ -3,6 +3,7 @@ using LeokaEstetica.Platform.Models.Entities.Common;
 using LeokaEstetica.Platform.Models.Entities.Configs;
 using LeokaEstetica.Platform.Models.Entities.Landing;
 using LeokaEstetica.Platform.Models.Entities.Logs;
+using LeokaEstetica.Platform.Models.Entities.Moderation;
 using LeokaEstetica.Platform.Models.Entities.Profile;
 using LeokaEstetica.Platform.Models.Entities.Project;
 using LeokaEstetica.Platform.Models.Entities.User;
@@ -103,4 +104,14 @@ public class PgContext : DbContext
     /// Таблица проектов пользователя.
     /// </summary>
     public DbSet<UserProjectEntity> UserProjects { get; set; }
+
+    /// <summary>
+    /// Таблица статусов проектов.
+    /// </summary>
+    public DbSet<ProjectStatusEntity> ProjectStatuses { get; set; }
+
+    /// <summary>
+    /// Таблица модерации проектов.
+    /// </summary>
+    public DbSet<ModerationProjectEntity> ModerationProjects { get; set; }
 }

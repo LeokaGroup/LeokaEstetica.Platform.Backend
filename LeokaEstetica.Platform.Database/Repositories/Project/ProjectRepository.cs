@@ -2,6 +2,7 @@ using System.Data;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
 using LeokaEstetica.Platform.Models.Entities.Configs;
+using LeokaEstetica.Platform.Models.Entities.Moderation;
 using LeokaEstetica.Platform.Models.Entities.Project;
 using Microsoft.EntityFrameworkCore;
 
@@ -25,8 +26,11 @@ public sealed class ProjectRepository : IProjectRepository
     /// <param name="projectName">Название проекта.</param>
     /// <param name="projectDetails">Описание проекта.</param>
     /// <param name="userId">Id пользователя.</param>
+    /// <param name="statusSysName">Системное название статуса.</param>
+    /// <param name="statusId">Id статуса.</param>
+    /// <param name="statusName">Русское название статуса.</param>
     /// <returns>Данные нового проекта.</returns>
-    public async Task<UserProjectEntity> CreateProjectAsync(string projectName, string projectDetails, long userId)
+    public async Task<UserProjectEntity> CreateProjectAsync(string projectName, string projectDetails, long userId, string statusSysName, int statusId, string statusName)
     {
         var transaction = await _pgContext.Database
             .BeginTransactionAsync(IsolationLevel.ReadCommitted);
@@ -43,6 +47,25 @@ public sealed class ProjectRepository : IProjectRepository
             };
             await _pgContext.UserProjects.AddAsync(project);
             await _pgContext.SaveChangesAsync();
+            
+            // Проставляем проекту статус "На модерации".
+            await _pgContext.ProjectStatuses.AddAsync(new ProjectStatusEntity
+            {
+                ProjectId = project.ProjectId,
+                StatusId = statusId,
+                ProjectStatusSysName = statusSysName,
+                ProjectStatusName = statusName
+            });
+            await _pgContext.SaveChangesAsync();
+            
+            // Отправляем проект на модерацию.
+            await _pgContext.ModerationProjects.AddAsync(new ModerationProjectEntity
+            {
+                DateModeration = DateTime.UtcNow,
+                ProjectId = project.ProjectId
+            });
+            await _pgContext.SaveChangesAsync();
+            
             await transaction.CommitAsync();
 
             return project;

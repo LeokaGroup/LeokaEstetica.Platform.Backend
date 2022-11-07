@@ -1,4 +1,5 @@
 using AutoMapper;
+using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
 using LeokaEstetica.Platform.Database.Abstractions.User;
@@ -65,8 +66,8 @@ public sealed class ProjectService : IProjectService
             
             // Проверяем существование такого проекта у текущего пользователя.
             var isCreatedProject = await _projectRepository.CheckCreatedProjectByProjectNameAsync(projectName, userId);
-
-            // Есть дубликат, нельзя создать проект.
+            //
+            // // Есть дубликат, нельзя создать проект.
             if (isCreatedProject)
             {
                 await _notificationsService.SendNotificationWarningDublicateUserProjectAsync("Увы...", "Такой проект у вас уже существует!", NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, null);
@@ -75,7 +76,9 @@ public sealed class ProjectService : IProjectService
                 return result;
             }
             
-            var project = await _projectRepository.CreateProjectAsync(projectName, projectDetails, userId);
+            var statusId = ProjectStatus.GetProjectStatusIdBySysName(ProjectStatusNameEnum.Moderation.ToString());
+            var statusName = ProjectStatus.GetProjectStatusNameBySysName(ProjectStatusNameEnum.Moderation.ToString());
+            var project = await _projectRepository.CreateProjectAsync(projectName, projectDetails, userId, ProjectStatusNameEnum.Moderation.ToString(), statusId, statusName);
                 
             // Если что то пошло не так при создании проекта.
             if (project?.ProjectId <= 0)
@@ -90,7 +93,7 @@ public sealed class ProjectService : IProjectService
             }
 
             result = _mapper.Map<CreateProjectOutput>(project);
-                
+
             // Отправляем уведомление об успешном создании проекта.
             await _notificationsService.SendNotificationSuccessCreatedUserProjectAsync("Все хорошо", "Данные успешно сохранены! Проект отправлен на модерацию!", NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, null);
             result.IsSuccess = true;
