@@ -11,6 +11,7 @@ public class UserProjectEntity
     {
         CatalogProjects = new HashSet<CatalogProjectEntity>();
         ModerationProjects = new HashSet<ModerationProjectEntity>();
+        ProjectStatuses = new HashSet<ProjectStatusEntity>();
     }
 
     /// <summary>
@@ -52,9 +53,6 @@ public class UserProjectEntity
     /// FK каталога проектов.
     /// </summary>
     public ICollection<CatalogProjectEntity> CatalogProjects { get; set; }
-
-    /// <summary>
-    /// FK проектов на модерации.
-    /// </summary>
     public ICollection<ModerationProjectEntity> ModerationProjects { get; set; }
+    public ICollection<ProjectStatusEntity> ProjectStatuses { get; set; }
 }

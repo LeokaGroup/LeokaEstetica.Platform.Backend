@@ -27,12 +27,11 @@ public partial class ProjectStatusConfiguration : IEntityTypeConfiguration<Proje
         entity.Property(e => e.ProjectStatusName)
             .HasColumnName("ProjectStatusName")
             .HasColumnType("varchar(100)");
-
-        // TODO: Возможно пригодится FK, чтобы удобно получать связанные данные.
-        // entity.HasOne(p => p.ProjectId)
-        //     .WithMany(b => b.ProjectId)
-        //     .HasForeignKey(p => p.CatalogProjectId)
-        //     .HasConstraintName("FK_UserProjects_ProjectId");
+        
+        entity.HasOne(p => p.UserProject)
+            .WithMany(b => b.ProjectStatuses)
+            .HasForeignKey(p => p.ProjectId)
+            .HasConstraintName("FK_UserProjects_ProjectId");
 
         entity.HasIndex(u => u.StatusId)
             .HasDatabaseName("PK_ProjectStatuses_StatusId")

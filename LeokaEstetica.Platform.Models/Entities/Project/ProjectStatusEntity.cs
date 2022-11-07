@@ -24,4 +24,6 @@ public class ProjectStatusEntity
     /// Название статуса.
     /// </summary>
     public string ProjectStatusName { get; set; }
+
+    public UserProjectEntity UserProject { get; set; }
 }
