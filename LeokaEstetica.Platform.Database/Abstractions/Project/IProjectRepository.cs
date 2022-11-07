@@ -1,3 +1,4 @@
+using LeokaEstetica.Platform.Models.Dto.Output.Project;
 using LeokaEstetica.Platform.Models.Entities.Configs;
 using LeokaEstetica.Platform.Models.Entities.Project;
 
@@ -34,4 +35,11 @@ public interface IProjectRepository
     /// <param name="userId">Id пользователя.</param>
     /// <returns>Создал либо нет.</returns>
     Task<bool> CheckCreatedProjectByProjectNameAsync(string projectName, long userId);
+    
+    /// <summary>
+    /// Метод получает список проектов пользователя.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Список проектов.</returns>
+    Task<IEnumerable<UserProjectOutput>> UserProjectsAsync(long userId);
 }

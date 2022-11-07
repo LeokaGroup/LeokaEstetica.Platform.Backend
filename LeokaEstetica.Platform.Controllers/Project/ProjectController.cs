@@ -1,4 +1,3 @@
-using System.Data;
 using LeokaEstetica.Platform.Base;
 using LeokaEstetica.Platform.Core.Filters;
 using LeokaEstetica.Platform.Models.Dto.Input.Project;
@@ -54,16 +53,22 @@ public class ProjectController : BaseController
         return result;
     }
 
+    /// <summary>
+    /// Метод получает список проектов пользователя.
+    /// </summary>
+    /// <returns>Список проектов.</returns>
     [HttpGet]
-    [Route("my")]
-    [ProducesResponseType(200, Type = typeof(CreateProjectOutput))]
+    [Route("user-projects")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<UserProjectOutput>))]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public Task<ProjectResultOutput> MyProjectsAsync()
+    public async Task<IEnumerable<UserProjectOutput>> UserProjectsAsync()
     {
-        throw new NotImplementedException();
+        var result = await _projectService.UserProjectsAsync(GetUserName());
+
+        return result;
     }
 
     /// <summary>

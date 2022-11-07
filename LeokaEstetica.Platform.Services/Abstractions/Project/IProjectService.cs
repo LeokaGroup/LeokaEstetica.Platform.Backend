@@ -23,4 +23,11 @@ public interface IProjectService
     /// </summary>
     /// <returns>Список названий полей таблицы.</returns>
     Task<IEnumerable<ColumnNameOutput>> UserProjectsColumnsNamesAsync();
+
+    /// <summary>
+    /// Метод получает список проектов пользователя.
+    /// </summary>
+    /// <param name="account">Аккаунт пользователя.</param>
+    /// <returns>Список проектов.</returns>
+    Task<IEnumerable<UserProjectOutput>> UserProjectsAsync(string account);
 }
