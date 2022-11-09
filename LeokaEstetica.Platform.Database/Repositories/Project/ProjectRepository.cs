@@ -124,7 +124,8 @@ public sealed class ProjectRepository : IProjectRepository
                 ProjectIcon = p.UserProject.ProjectIcon,
                 ProjectStatusName = p.ProjectStatusName,
                 ProjectStatusSysName = p.ProjectStatusSysName,
-                ProjectCode = p.UserProject.ProjectCode
+                ProjectCode = p.UserProject.ProjectCode,
+                ProjectId = p.ProjectId
             })
             .ToListAsync();
 

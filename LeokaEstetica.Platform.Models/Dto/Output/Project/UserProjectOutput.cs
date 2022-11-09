@@ -34,4 +34,9 @@ public class UserProjectOutput
     /// Код проекта.
     /// </summary>
     public Guid ProjectCode { get; set; }
+
+    /// <summary>
+    /// PK.
+    /// </summary>
+    public long ProjectId { get; set; }
 }
