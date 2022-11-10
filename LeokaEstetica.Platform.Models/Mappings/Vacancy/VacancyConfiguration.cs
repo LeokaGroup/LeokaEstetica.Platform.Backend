@@ -4,11 +4,11 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace LeokaEstetica.Platform.Models.Mappings.Vacancy;
 
-public partial class VacancyConfiguration : IEntityTypeConfiguration<CatalogVacancyEntity>
+public partial class VacancyConfiguration : IEntityTypeConfiguration<UserVacancyEntity>
 {
-    public void Configure(EntityTypeBuilder<CatalogVacancyEntity> entity)
+    public void Configure(EntityTypeBuilder<UserVacancyEntity> entity)
     {
-        entity.ToTable("CatalogVacancies", "Vacancies");
+        entity.ToTable("UserVacancies", "Vacancies");
 
         entity.HasKey(e => e.VacancyId);
 
@@ -55,5 +55,5 @@ public partial class VacancyConfiguration : IEntityTypeConfiguration<CatalogVaca
         OnConfigurePartial(entity);
     }
 
-    partial void OnConfigurePartial(EntityTypeBuilder<CatalogVacancyEntity> entity);
+    partial void OnConfigurePartial(EntityTypeBuilder<UserVacancyEntity> entity);
 }

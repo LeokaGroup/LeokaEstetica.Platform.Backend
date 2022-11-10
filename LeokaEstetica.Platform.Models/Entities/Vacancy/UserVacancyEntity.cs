@@ -1,9 +1,9 @@
 namespace LeokaEstetica.Platform.Models.Entities.Vacancy;
 
 /// <summary>
-/// Класс сопоставляется с таблицей каталога вакансий Vacancies.CatalogVacancies.
+/// Класс сопоставляется с таблицей вакансий пользователей Vacancies.UserVacancies.
 /// </summary>
-public class CatalogVacancyEntity
+public class UserVacancyEntity
 {
     /// <summary>
     /// PK.
