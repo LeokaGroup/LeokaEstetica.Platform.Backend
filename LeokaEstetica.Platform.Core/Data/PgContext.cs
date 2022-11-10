@@ -120,4 +120,9 @@ public class PgContext : DbContext
     /// Таблица вакансий пользователей.
     /// </summary>
     public DbSet<UserVacancyEntity> UserVacancies { get; set; }
+
+    /// <summary>
+    /// Таблица каталога вакансий.
+    /// </summary>
+    public DbSet<CatalogVacancyEntity> CatalogVacancies { get; set; }
 }
