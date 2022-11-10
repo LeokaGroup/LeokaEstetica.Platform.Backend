@@ -117,7 +117,7 @@ public class PgContext : DbContext
     public DbSet<ModerationProjectEntity> ModerationProjects { get; set; }
 
     /// <summary>
-    /// Таблица вакансий.
+    /// Таблица каталога вакансий.
     /// </summary>
-    public DbSet<VacancyEntity> Vacancies { get; set; }
+    public DbSet<CatalogVacancyEntity> CatalogVacancies { get; set; }
 }
