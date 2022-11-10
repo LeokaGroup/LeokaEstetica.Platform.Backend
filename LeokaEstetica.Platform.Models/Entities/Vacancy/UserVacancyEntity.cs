@@ -5,6 +5,11 @@ namespace LeokaEstetica.Platform.Models.Entities.Vacancy;
 /// </summary>
 public class UserVacancyEntity
 {
+    public UserVacancyEntity()
+    {
+        CatalogVacancies = new HashSet<CatalogVacancyEntity>();
+    }
+
     /// <summary>
     /// PK.
     /// </summary>
@@ -50,4 +55,6 @@ public class UserVacancyEntity
     /// Id пользователя.
     /// </summary>
     public long UserId { get; set; }
+
+    public ICollection<CatalogVacancyEntity> CatalogVacancies { get; set; }
 }
