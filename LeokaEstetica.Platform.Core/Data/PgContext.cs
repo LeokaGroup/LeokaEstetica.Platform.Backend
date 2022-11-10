@@ -7,6 +7,7 @@ using LeokaEstetica.Platform.Models.Entities.Moderation;
 using LeokaEstetica.Platform.Models.Entities.Profile;
 using LeokaEstetica.Platform.Models.Entities.Project;
 using LeokaEstetica.Platform.Models.Entities.User;
+using LeokaEstetica.Platform.Models.Entities.Vacancy;
 using Microsoft.EntityFrameworkCore;
 
 namespace LeokaEstetica.Platform.Core.Data;
@@ -114,4 +115,9 @@ public class PgContext : DbContext
     /// Таблица модерации проектов.
     /// </summary>
     public DbSet<ModerationProjectEntity> ModerationProjects { get; set; }
+
+    /// <summary>
+    /// Таблица вакансий.
+    /// </summary>
+    public DbSet<VacancyEntity> Vacancies { get; set; }
 }
