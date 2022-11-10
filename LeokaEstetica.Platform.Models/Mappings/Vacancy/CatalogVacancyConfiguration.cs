@@ -10,19 +10,19 @@ public partial class CatalogVacancyConfiguration : IEntityTypeConfiguration<Cata
     {
         entity.ToTable("CatalogVacancies", "Vacancies");
 
-        entity.HasKey(e => e.VacancyId);
+        entity.HasKey(e => e.CatalogVacancyId);
 
-        entity.Property(e => e.VacancyId)
-            .HasColumnName("VacancyId")
+        entity.Property(e => e.CatalogVacancyId)
+            .HasColumnName("CatalogVacancyId")
             .HasColumnType("bigserial");
 
         entity.HasOne(p => p.VacancyId)
             .WithMany(b => b.CatalogVacancies)
             .HasForeignKey(p => p.VacancyId)
-            .HasConstraintName("FK_UserProjects_ProjectId");
+            .HasConstraintName("FK_CatalogVacancies_VacancyId");
 
         entity.HasIndex(u => u.VacancyId)
-            .HasDatabaseName("PK_CatalogVacancies_VacancyId")
+            .HasDatabaseName("PK_CatalogVacancies_CatalogVacancyId")
             .IsUnique();
 
         OnConfigurePartial(entity);
