@@ -18,10 +18,10 @@ public partial class CatalogVacancyConfiguration : IEntityTypeConfiguration<Cata
 
         entity.HasOne(p => p.VacancyId)
             .WithMany(b => b.CatalogVacancies)
-            .HasForeignKey(p => p.VacancyId)
+            .HasForeignKey(p => p.CatalogVacancyId)
             .HasConstraintName("FK_CatalogVacancies_VacancyId");
 
-        entity.HasIndex(u => u.VacancyId)
+        entity.HasIndex(u => u.CatalogVacancyId)
             .HasDatabaseName("PK_CatalogVacancies_CatalogVacancyId")
             .IsUnique();
 
