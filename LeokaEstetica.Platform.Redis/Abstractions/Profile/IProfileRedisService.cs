@@ -1,11 +1,11 @@
-using LeokaEstetica.Platform.Redis.Models;
+using LeokaEstetica.Platform.Redis.Models.Profile;
 
-namespace LeokaEstetica.Platform.Redis.Abstractions;
+namespace LeokaEstetica.Platform.Redis.Abstractions.Profile;
 
 /// <summary>
-/// Абстракция работы с кэшем Redis.
+/// Абстракция профиля работы с кэшем Redis.
 /// </summary>
-public interface IRedisService
+public interface IProfileRedisService
 {
     // TODO: Эти два методы возможно будут нужны. Зависит от того, будет ли достаточно использование Clients.All в SignalR или нет. Возможно потом надо будет удалить этот код.
     /// <summary>

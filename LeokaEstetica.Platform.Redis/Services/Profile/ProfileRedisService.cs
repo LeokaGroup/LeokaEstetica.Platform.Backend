@@ -1,19 +1,19 @@
 using LeokaEstetica.Platform.Core.Constants;
-using LeokaEstetica.Platform.Redis.Abstractions;
+using LeokaEstetica.Platform.Redis.Abstractions.Profile;
 using LeokaEstetica.Platform.Redis.Extensions;
-using LeokaEstetica.Platform.Redis.Models;
+using LeokaEstetica.Platform.Redis.Models.Profile;
 using Microsoft.Extensions.Caching.Distributed;
 
-namespace LeokaEstetica.Platform.Redis.Services;
+namespace LeokaEstetica.Platform.Redis.Services.Profile;
 
 /// <summary>
-/// Класс реализует методы сервиса работы с кэшем Redis.
+/// Класс реализует методы сервиса профиля работы с кэшем Redis.
 /// </summary>
-public sealed class RedisService : IRedisService
+public sealed class ProfileRedisService : IProfileRedisService
 {
     private readonly IDistributedCache _redis;
 
-    public RedisService(IDistributedCache redis)
+    public ProfileRedisService(IDistributedCache redis)
     {
         _redis = redis;
     }

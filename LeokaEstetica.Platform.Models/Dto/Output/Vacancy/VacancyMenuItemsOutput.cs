@@ -1,9 +1,9 @@
-namespace LeokaEstetica.Platform.Models.Dto.Output.Profile;
+namespace LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
 
 /// <summary>
-/// Класс выходной модели для списков меню профиля пользователя.
+/// Класс выходной модели для списков меню вакансий.
 /// </summary>
-public class ProfileMenuItemsOutput
+public class VacancyMenuItemsOutput
 {
     /// <summary>
     /// Название пункта.
@@ -13,7 +13,7 @@ public class ProfileMenuItemsOutput
     /// <summary>
     /// Список элементов.
     /// </summary>
-    public List<ProfileItems> Items { get; set; } = new();
+    public List<VacancyItems> Items { get; set; } = new();
     
     /// <summary>
     /// Системное название.
@@ -27,9 +27,9 @@ public class ProfileMenuItemsOutput
 }
 
 /// <summary>
-/// Класс вложенных элементов списка меню.
+/// Класс вложенных элементов списка меню вакансий.
 /// </summary>
-public class ProfileItems
+public class VacancyItems
 {
     /// <summary>
     /// Название.

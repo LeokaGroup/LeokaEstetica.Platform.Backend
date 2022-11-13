@@ -7,7 +7,7 @@ using LeokaEstetica.Platform.Database.Repositories.Project;
 using LeokaEstetica.Platform.Database.Repositories.User;
 using LeokaEstetica.Platform.Logs.Services;
 using LeokaEstetica.Platform.Messaging.Services.Mail;
-using LeokaEstetica.Platform.Redis.Services;
+using LeokaEstetica.Platform.Redis.Services.Profile;
 using LeokaEstetica.Platform.Services.Services.Profile;
 using LeokaEstetica.Platform.Services.Services.Project;
 using LeokaEstetica.Platform.Services.Services.User;
@@ -30,7 +30,7 @@ public class BaseServiceTest
     protected MailingsService MailingsService;
     protected ProfileRepository ProfileRepository;
     protected ProfileService ProfileService;
-    protected RedisService RedisService;
+    protected ProfileRedisService RedisService;
     protected ProjectRepository ProjectRepository;
     protected ProjectService ProjectService;
     

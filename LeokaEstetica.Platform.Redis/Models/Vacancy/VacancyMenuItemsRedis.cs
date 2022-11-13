@@ -1,48 +1,59 @@
-namespace LeokaEstetica.Platform.Models.Dto.Output.Profile;
+using ProtoBuf;
+
+namespace LeokaEstetica.Platform.Redis.Models.Vacancy;
 
 /// <summary>
-/// Класс выходной модели для списков меню профиля пользователя.
+/// Класс модели меню вакансий списка элементов для работы с кэшем Redis.
 /// </summary>
-public class ProfileMenuItemsOutput
+[ProtoContract]
+public class VacancyMenuItemsRedis
 {
     /// <summary>
     /// Название пункта.
     /// </summary>
+    [ProtoMember(1)]
     public string Label { get; set; }
 
     /// <summary>
     /// Список элементов.
     /// </summary>
-    public List<ProfileItems> Items { get; set; } = new();
-    
+    [ProtoMember(2)]
+    public List<VacancyItems> Items { get; set; } = new();
+
     /// <summary>
     /// Системное название.
     /// </summary>
+    [ProtoMember(3)]
     public string SysName { get; set; }
 
     /// <summary>
     /// Путь.
     /// </summary>
+    [ProtoMember(4)]
     public string Url { get; set; }
 }
 
 /// <summary>
 /// Класс вложенных элементов списка меню.
 /// </summary>
-public class ProfileItems
+[ProtoContract]
+public class VacancyItems
 {
     /// <summary>
     /// Название.
     /// </summary>
+    [ProtoMember(1)]
     public string Label { get; set; }
 
     /// <summary>
     /// Системное название.
     /// </summary>
+    [ProtoMember(2)]
     public string SysName { get; set; }
 
     /// <summary>
     /// Путь.
     /// </summary>
+    [ProtoMember(3)]
     public string Url { get; set; }
 }

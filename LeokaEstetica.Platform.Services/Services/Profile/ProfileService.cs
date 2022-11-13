@@ -7,12 +7,13 @@ using LeokaEstetica.Platform.Models.Dto.Output.Profile;
 using LeokaEstetica.Platform.Models.Entities.Profile;
 using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Notifications.Consts;
-using LeokaEstetica.Platform.Redis.Abstractions;
-using LeokaEstetica.Platform.Redis.Models;
+using LeokaEstetica.Platform.Redis.Abstractions.Profile;
+using LeokaEstetica.Platform.Redis.Models.Profile;
 using LeokaEstetica.Platform.Services.Abstractions.Profile;
 using LeokaEstetica.Platform.Services.Consts;
 using LeokaEstetica.Platform.Services.Validators;
-using Items = LeokaEstetica.Platform.Redis.Models.Items;
+using Items = LeokaEstetica.Platform.Models.Dto.Output.Profile.ProfileItems;
+using ProfileItems = LeokaEstetica.Platform.Redis.Models.Profile.ProfileItems;
 
 namespace LeokaEstetica.Platform.Services.Services.Profile;
 
@@ -25,21 +26,21 @@ public sealed class ProfileService : IProfileService
     private readonly IProfileRepository _profileRepository;
     private readonly IUserRepository _userRepository;
     private readonly IMapper _mapper;
-    private readonly IRedisService _redisService;
+    private readonly IProfileRedisService _profileRedisService;
     private readonly INotificationsService _notificationsService;
 
     public ProfileService(ILogService logger,
         IProfileRepository profileRepository,
         IUserRepository userRepository,
         IMapper mapper,
-        IRedisService redisService,
+        IProfileRedisService profileRedisService,
         INotificationsService notificationsService)
     {
         _logger = logger;
         _profileRepository = profileRepository;
         _userRepository = userRepository;
         _mapper = mapper;
-        _redisService = redisService;
+        _profileRedisService = profileRedisService;
         _notificationsService = notificationsService;
     }
 
@@ -107,7 +108,7 @@ public sealed class ProfileService : IProfileService
 
             // Добавляем меню профиля в кэш.
             var model = CreateFactoryModelToRedis(result.ProfileMenuItems);
-            await _redisService.SaveProfileMenuCacheAsync(model);
+            await _profileRedisService.SaveProfileMenuCacheAsync(model);
 
             return result;
         }
@@ -393,7 +394,7 @@ public sealed class ProfileService : IProfileService
                 SysName = pmi.SysName,
                 Label = pmi.Label,
                 Url = pmi.Url,
-                Items = pmi.Items.Select(i => new Items
+                Items = pmi.Items.Select(i => new ProfileItems
                     {
                         SysName = i.SysName,
                         Label = i.Label,
@@ -420,7 +421,7 @@ public sealed class ProfileService : IProfileService
                 SysName = pmi.SysName,
                 Label = pmi.Label,
                 Url = pmi.Url,
-                Items = pmi.Items.Select(i => new Items
+                Items = pmi.Items.Select(i => new ProfileItems
                     {
                         SysName = i.SysName,
                         Label = i.Label,
@@ -445,7 +446,7 @@ public sealed class ProfileService : IProfileService
             var result = new SelectMenuOutput();
 
             // Ищем меню профиля в кэше.
-            var redisData = await _redisService.GetProfileMenuCacheAsync();
+            var redisData = await _profileRedisService.GetProfileMenuCacheAsync();
 
             // Если данные в кэше есть, берем оттуда.
             if (!redisData.ProfileMenuItems.Any())
