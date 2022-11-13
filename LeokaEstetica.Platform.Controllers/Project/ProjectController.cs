@@ -30,7 +30,7 @@ public class ProjectController : BaseController
     [Route("")]
     public async Task CatalogProjectsAsync()
     {
-        
+        throw new NotImplementedException();
     }
 
     /// <summary>

@@ -1,7 +1,9 @@
 using Autofac;
 using LeokaEstetica.Platform.Core.Attributes;
-using LeokaEstetica.Platform.Redis.Abstractions;
-using LeokaEstetica.Platform.Redis.Services;
+using LeokaEstetica.Platform.Redis.Abstractions.Profile;
+using LeokaEstetica.Platform.Redis.Abstractions.Vacancy;
+using LeokaEstetica.Platform.Redis.Services.Profile;
+using LeokaEstetica.Platform.Redis.Services.Vacancy;
 
 namespace LeokaEstetica.Platform.Redis.AutofacModules;
 
@@ -10,12 +12,20 @@ public class RedisModule : Module
 {
     public static void InitModules(ContainerBuilder builder)
     {
-        // Сервис работы с кэшем Redis.
-        builder.RegisterType<RedisService>()
-            .Named<IRedisService>("RedisService")
+        // Сервис работы с кэшем профиля Redis.
+        builder.RegisterType<ProfileRedisService>()
+            .Named<IProfileRedisService>("ProfileRedisService")
             .InstancePerLifetimeScope();
-        builder.RegisterType<RedisService>()
-            .As<IRedisService>()
+        builder.RegisterType<ProfileRedisService>()
+            .As<IProfileRedisService>()
+            .InstancePerLifetimeScope();
+        
+        // Сервис работы с кэшем вакансий Redis.
+        builder.RegisterType<VacancyRedisService>()
+            .Named<IVacancyRedisService>("VacancyRedisService")
+            .InstancePerLifetimeScope();
+        builder.RegisterType<VacancyRedisService>()
+            .As<IVacancyRedisService>()
             .InstancePerLifetimeScope();
     }
 }

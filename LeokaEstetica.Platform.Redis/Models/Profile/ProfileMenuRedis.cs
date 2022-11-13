@@ -1,6 +1,6 @@
 using ProtoBuf;
 
-namespace LeokaEstetica.Platform.Redis.Models;
+namespace LeokaEstetica.Platform.Redis.Models.Profile;
 
 /// <summary>
 /// Класс модели для хранения профиля пользователя для работы с кэшем Redis.

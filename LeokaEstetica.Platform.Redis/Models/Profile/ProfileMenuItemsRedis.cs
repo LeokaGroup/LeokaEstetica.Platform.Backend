@@ -1,6 +1,6 @@
 using ProtoBuf;
 
-namespace LeokaEstetica.Platform.Redis.Models;
+namespace LeokaEstetica.Platform.Redis.Models.Profile;
 
 /// <summary>
 /// Класс модели профиля пользователя списка элементов для работы с кэшем Redis.
@@ -18,7 +18,7 @@ public class ProfileMenuItemsRedis
     /// Список элементов.
     /// </summary>
     [ProtoMember(2)]
-    public List<Items> Items { get; set; } = new();
+    public List<ProfileItems> Items { get; set; } = new();
 
     /// <summary>
     /// Системное название.
@@ -37,7 +37,7 @@ public class ProfileMenuItemsRedis
 /// Класс вложенных элементов списка меню.
 /// </summary>
 [ProtoContract]
-public class Items
+public class ProfileItems
 {
     /// <summary>
     /// Название.
