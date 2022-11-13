@@ -1,5 +1,4 @@
 using LeokaEstetica.Platform.Base;
-using LeokaEstetica.Platform.Core.Filters;
 using LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
 using LeokaEstetica.Platform.Services.Abstractions.Vacancy;
 using Microsoft.AspNetCore.Mvc;
