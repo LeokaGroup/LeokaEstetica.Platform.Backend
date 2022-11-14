@@ -135,4 +135,9 @@ public class PgContext : DbContext
     /// Таблица статусов вакансий.
     /// </summary>
     public DbSet<VacancyStatusEntity> VacancyStatuses { get; set; }
+
+    /// <summary>
+    /// Таблица модерации вакансий.
+    /// </summary>
+    public DbSet<ModerationVacancyEntity> ModerationVacancies { get; set; }
 }

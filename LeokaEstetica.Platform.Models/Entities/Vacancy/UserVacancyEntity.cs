@@ -1,3 +1,5 @@
+using LeokaEstetica.Platform.Models.Entities.Moderation;
+
 namespace LeokaEstetica.Platform.Models.Entities.Vacancy;
 
 /// <summary>
@@ -9,6 +11,7 @@ public class UserVacancyEntity
     {
         CatalogVacancies = new HashSet<CatalogVacancyEntity>();
         VacancyStatuses = new HashSet<VacancyStatusEntity>();
+        ModerationVacancy = new HashSet<ModerationVacancyEntity>();
     }
 
     /// <summary>
@@ -60,4 +63,6 @@ public class UserVacancyEntity
     public ICollection<CatalogVacancyEntity> CatalogVacancies { get; set; }
 
     public ICollection<VacancyStatusEntity> VacancyStatuses { get; set; }
+
+    public ICollection<ModerationVacancyEntity> ModerationVacancy { get; set; }
 }
