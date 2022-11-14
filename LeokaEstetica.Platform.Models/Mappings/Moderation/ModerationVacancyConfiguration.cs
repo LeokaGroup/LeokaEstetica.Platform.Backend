@@ -27,10 +27,10 @@ public partial class ModerationVacancyConfiguration : IEntityTypeConfiguration<M
         entity.HasOne(p => p.VacancyId)
             .WithMany(b => b.ModerationVacancy)
             .HasForeignKey(p => p.VacancyId)
-            .HasConstraintName("FK_Projects_ProjectId");
+            .HasConstraintName("FK_Vacancies_VacancyId");
 
         entity.HasIndex(u => u.ModerationId)
-            .HasDatabaseName("PK_Projects_ModerationId")
+            .HasDatabaseName("PK_Vacancies_ModerationId")
             .IsUnique();
 
         OnConfigurePartial(entity);
