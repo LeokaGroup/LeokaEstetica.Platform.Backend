@@ -8,6 +8,7 @@ public class UserVacancyEntity
     public UserVacancyEntity()
     {
         CatalogVacancies = new HashSet<CatalogVacancyEntity>();
+        VacancyStatuses = new HashSet<VacancyStatusEntity>();
     }
 
     /// <summary>
@@ -57,4 +58,6 @@ public class UserVacancyEntity
     public long UserId { get; set; }
 
     public ICollection<CatalogVacancyEntity> CatalogVacancies { get; set; }
+
+    public ICollection<VacancyStatusEntity> VacancyStatuses { get; set; }
 }

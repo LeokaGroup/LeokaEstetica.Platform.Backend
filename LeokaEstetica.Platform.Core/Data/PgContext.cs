@@ -130,4 +130,9 @@ public class PgContext : DbContext
     /// Таблица меню вакансий.
     /// </summary>
     public DbSet<VacancyMenuItemEntity> VacancyMenuItems { get; set; }
+
+    /// <summary>
+    /// Таблица статусов вакансий.
+    /// </summary>
+    public DbSet<VacancyStatusEntity> VacancyStatuses { get; set; }
 }

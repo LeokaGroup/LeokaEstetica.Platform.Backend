@@ -1,4 +1,5 @@
 using LeokaEstetica.Platform.Base;
+using LeokaEstetica.Platform.Core.Filters;
 using LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
 using LeokaEstetica.Platform.Services.Abstractions.Vacancy;
 using Microsoft.AspNetCore.Mvc;
@@ -8,7 +9,7 @@ namespace LeokaEstetica.Platform.Controllers.Vacancy;
 /// <summary>
 /// Контроллер работы с вакансиями.
 /// </summary>
-// [AuthFilter]
+[AuthFilter]
 [ApiController]
 [Route("vacancies")]
 public class VacancyController : BaseController
