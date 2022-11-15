@@ -5,13 +5,15 @@ using LeokaEstetica.Platform.Core.Utils;
 using LeokaEstetica.Platform.Database.Repositories.Profile;
 using LeokaEstetica.Platform.Database.Repositories.Project;
 using LeokaEstetica.Platform.Database.Repositories.User;
+using LeokaEstetica.Platform.Database.Repositories.Vacancy;
 using LeokaEstetica.Platform.Logs.Services;
 using LeokaEstetica.Platform.Messaging.Services.Mail;
-using LeokaEstetica.Platform.Redis.Services.Profile;
 using LeokaEstetica.Platform.Services.Services.Profile;
 using LeokaEstetica.Platform.Services.Services.Project;
 using LeokaEstetica.Platform.Services.Services.User;
+using LeokaEstetica.Platform.Services.Services.Vacancy;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
 
 namespace LeokaEstetica.Platform.Tests;
@@ -30,10 +32,11 @@ public class BaseServiceTest
     protected MailingsService MailingsService;
     protected ProfileRepository ProfileRepository;
     protected ProfileService ProfileService;
-    protected ProfileRedisService RedisService;
     protected ProjectRepository ProjectRepository;
     protected ProjectService ProjectService;
-    
+    protected VacancyRepository VacancyRepository;
+    protected VacancyService VacancyService;
+
     public BaseServiceTest()
     {
         // Настройка тестовых строк подключения.
@@ -44,6 +47,7 @@ public class BaseServiceTest
         
         AutoFac.RegisterMapper(container);
         var mapper = AutoFac.Resolve<IMapper>();
+        var distributedCache = AutoFac.Resolve<IDistributedCache>();
 
         // Настройка тестовых контекстов.
         var optionsBuilder = new DbContextOptionsBuilder<PgContext>();
@@ -58,5 +62,7 @@ public class BaseServiceTest
         ProfileService = new ProfileService(LogService, ProfileRepository, UserRepository, mapper, null, null);
         ProjectRepository = new ProjectRepository(PgContext);
         ProjectService = new ProjectService(ProjectRepository, LogService, UserRepository, mapper, null);
+        VacancyRepository = new VacancyRepository(PgContext);
+        VacancyService = new VacancyService(LogService, VacancyRepository, mapper, null, UserRepository);
     }
 }

@@ -1,4 +1,5 @@
 using AutoMapper;
+using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Database.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
@@ -18,16 +19,29 @@ public sealed class VacancyService : IVacancyService
     private readonly IVacancyRepository _vacancyRepository;
     private readonly IMapper _mapper;
     private readonly IVacancyRedisService _vacancyRedisService;
+    private readonly IUserRepository _userRepository;
+
+    /// <summary>
+    /// Если не заполнили название вакансии.
+    /// </summary>
+    private const string ERROR_EMPTY_VACANCY_NAME = "Название вакансии не может быть пустым.";
     
+    /// <summary>
+    /// Если не заполнили описание вакансии.
+    /// </summary>
+    private const string ERROR_EMPTY_VACANCY_TEXT = "Описание вакансии не может быть пустым.";
+
     public VacancyService(ILogService logService, 
         IVacancyRepository vacancyRepository, 
         IMapper mapper, 
-        IVacancyRedisService vacancyRedisService)
+        IVacancyRedisService vacancyRedisService, 
+        IUserRepository userRepository)
     {
         _logService = logService;
         _vacancyRepository = vacancyRepository;
         _mapper = mapper;
         _vacancyRedisService = vacancyRedisService;
+        _userRepository = userRepository;
     }
 
     /// <summary>
@@ -80,5 +94,68 @@ public sealed class VacancyService : IVacancyService
         };
 
         return model;
+    }
+    
+    /// <summary>
+    /// Метод создает вакансию.
+    /// </summary>
+    /// <param name="vacancyName">Название вакансии.</param>
+    /// <param name="vacancyText">Описание вакансии.</param>
+    /// <param name="workExperience">Опыт работы.</param>
+    /// <param name="employment">Занятость у вакансии.</param>
+    /// <param name="payment">Оплата у вакансии.</param>
+    /// <param name="account">Аккаунт пользователя.</param>
+    /// <returns>Данные созданной вакансии.</returns>
+    public async Task<CreateVacancyOutput> CreateVacancyAsync(string vacancyName, string vacancyText, string workExperience, string employment, string payment, string account)
+    {
+        try
+        {
+            var result = new CreateVacancyOutput();
+            ValidateCreateVacancy(ref result, vacancyName, vacancyText, account);
+
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            var createdVacancy = await _vacancyRepository
+                .CreateVacancyAsync(vacancyName, vacancyText, workExperience, employment, payment, userId);
+            result = _mapper.Map<CreateVacancyOutput>(createdVacancy);
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            await _logService.LogErrorAsync(ex);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Метод валидирует входные параметры при создании вакансии.
+    /// </summary>
+    /// <param name="result">Выходные данные. Писать ошибки валидации туда, если будут.</param>
+    /// <param name="vacancyName">Название вакансии.</param>
+    /// <param name="vacancyText">Описание вакансии.</param>
+    /// <param name="account">Аккаунт пользователя.</param>
+    private void ValidateCreateVacancy(ref CreateVacancyOutput result, string vacancyName, string vacancyText, string account)
+    {
+        if (string.IsNullOrEmpty(vacancyName))
+        {
+            var ex = new ArgumentNullException(ERROR_EMPTY_VACANCY_NAME);
+            result.Errors.Add(ERROR_EMPTY_VACANCY_NAME);
+            _logService.LogError(ex);
+        }
+        
+        if (string.IsNullOrEmpty(vacancyText))
+        {
+            var ex = new ArgumentNullException(ERROR_EMPTY_VACANCY_TEXT);
+            result.Errors.Add(ERROR_EMPTY_VACANCY_TEXT);
+            _logService.LogError(ex);
+        }
+        
+        if (string.IsNullOrEmpty(account))
+        {
+            var ex = new ArgumentNullException($"Не передан аккаунт пользователя.");
+            _logService.LogError(ex);
+        }
     }
 }

@@ -35,6 +35,7 @@ public class MappingProfile : Profile
         CreateMap<IntentEntity, IntentOutput>();
         CreateMap<CatalogProjectEntity, CreateProjectOutput>(); 
         CreateMap<UserProjectEntity, CreateProjectOutput>(); 
-        CreateMap<ColumnNameEntity, ColumnNameOutput>(); 
+        CreateMap<ColumnNameEntity, ColumnNameOutput>();
+        CreateMap<UserVacancyEntity, CreateVacancyOutput>();
     }
 }
