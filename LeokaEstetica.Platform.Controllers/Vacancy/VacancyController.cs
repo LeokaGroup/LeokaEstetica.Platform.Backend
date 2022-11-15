@@ -61,8 +61,7 @@ public class VacancyController : BaseController
     [ProducesResponseType(404)]
     public async Task<CreateVacancyOutput> CreateVacancyAsync([FromBody] CreateVacancyInput createVacancyInput)
     {
-        var result = await _vacancyService
-            .CreateVacancyAsync(createVacancyInput.VacancyName, createVacancyInput.VacancyText, createVacancyInput.WorkExperience, createVacancyInput.Employment, createVacancyInput.Payment, GetUserName());
+        var result = await _vacancyService.CreateVacancyAsync(createVacancyInput.VacancyName, createVacancyInput.VacancyText, createVacancyInput.WorkExperience, createVacancyInput.Employment, createVacancyInput.Payment, GetUserName());
 
         return result;
     }

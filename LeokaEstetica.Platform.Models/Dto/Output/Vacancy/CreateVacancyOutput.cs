@@ -10,7 +10,7 @@ public class CreateVacancyOutput : IFrontError
     /// <summary>
     /// Список ошибок.
     /// </summary>
-    public List<string> Errors { get; set; }
+    public List<string> Errors { get; set; } = new();
     
     /// <summary>
     /// PK.
