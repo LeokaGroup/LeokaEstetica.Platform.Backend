@@ -24,7 +24,7 @@ public partial class VacancyStatusConfiguration : IEntityTypeConfiguration<Vacan
             .HasColumnName("VacancyStatusName")
             .HasColumnType("varchar(100)");
 
-        entity.HasOne(p => p.VacancyId)
+        entity.HasOne(p => p.UserVacancy)
             .WithMany(b => b.VacancyStatuses)
             .HasForeignKey(p => p.VacancyId)
             .HasConstraintName("FK_UserVacancies_VacancyId");

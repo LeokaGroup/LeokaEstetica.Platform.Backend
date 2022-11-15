@@ -11,6 +11,11 @@ public class VacancyStatusEntity
     public int StatusId { get; set; }
 
     /// <summary>
+    /// FK.
+    /// </summary>
+    public long VacancyId { get; set; }
+
+    /// <summary>
     /// Системное название статуса.
     /// </summary>
     public string VacancyStatusSysName { get; set; }
@@ -20,5 +25,5 @@ public class VacancyStatusEntity
     /// </summary>
     public string VacancyStatusName { get; set; }
 
-    public UserVacancyEntity VacancyId { get; set; }
+    public UserVacancyEntity UserVacancy { get; set; }
 }

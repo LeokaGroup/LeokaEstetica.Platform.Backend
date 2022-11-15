@@ -24,7 +24,7 @@ public partial class ModerationVacancyConfiguration : IEntityTypeConfiguration<M
             .HasColumnName("DateModeration")
             .HasColumnType("timestamp without timezone");
         
-        entity.HasOne(p => p.VacancyId)
+        entity.HasOne(p => p.UserVacancy)
             .WithMany(b => b.ModerationVacancy)
             .HasForeignKey(p => p.VacancyId)
             .HasConstraintName("FK_Vacancies_VacancyId");

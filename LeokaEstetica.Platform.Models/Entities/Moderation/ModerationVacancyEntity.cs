@@ -13,9 +13,14 @@ public class ModerationVacancyEntity
     public long ModerationId { get; set; }
 
     /// <summary>
+    /// FK.
+    /// </summary>
+    public long VacancyId { get; set; }
+
+    /// <summary>
     /// FK на Id вакансии.
     /// </summary>
-    public UserVacancyEntity VacancyId { get; set; }
+    public UserVacancyEntity UserVacancy { get; set; }
 
     /// <summary>
     /// Дата модерации.
