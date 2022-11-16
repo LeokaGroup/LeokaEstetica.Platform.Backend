@@ -13,5 +13,5 @@ public class CatalogVacancyEntity
     /// <summary>
     /// FK.
     /// </summary>
-    public UserVacancyEntity VacancyId { get; set; }
+    public UserVacancyEntity Vacancy { get; set; }
 }

@@ -16,7 +16,7 @@ public partial class CatalogVacancyConfiguration : IEntityTypeConfiguration<Cata
             .HasColumnName("CatalogVacancyId")
             .HasColumnType("bigserial");
 
-        entity.HasOne(p => p.VacancyId)
+        entity.HasOne(p => p.Vacancy)
             .WithMany(b => b.CatalogVacancies)
             .HasForeignKey(p => p.CatalogVacancyId)
             .HasConstraintName("FK_CatalogVacancies_VacancyId");

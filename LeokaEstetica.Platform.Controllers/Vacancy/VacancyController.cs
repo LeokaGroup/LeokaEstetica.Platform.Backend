@@ -22,12 +22,23 @@ public class VacancyController : BaseController
         _vacancyService = vacancyService;
     }
 
-    // [HttpGet]
-    // [Route("")]
-    // public async Task<VacancyMenuItemsResultOutput> CatalogVacanciesAsync()
-    // {
-    //     throw new NotImplementedException();
-    // }
+    /// <summary>
+    /// Метод получает список вакансий для каталога.
+    /// </summary>
+    /// <returns>Список вакансий.</returns>
+    [HttpGet]
+    [Route("")]
+    [ProducesResponseType(200, Type = typeof(CatalogVacancyResultOutput))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<CatalogVacancyResultOutput> CatalogVacanciesAsync()
+    {
+        var result = await _vacancyService.CatalogVacanciesAsync(GetUserName());
+
+        return result;
+    }
 
     /// <summary>
     /// Метод получает список меню вакансий.

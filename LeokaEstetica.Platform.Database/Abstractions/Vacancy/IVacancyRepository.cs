@@ -1,3 +1,4 @@
+using LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
 using LeokaEstetica.Platform.Models.Entities.Vacancy;
 
 namespace LeokaEstetica.Platform.Database.Abstractions.Vacancy;
@@ -24,4 +25,12 @@ public interface IVacancyRepository
     /// <param name="userId">Id пользователя.</param>
     /// <returns>Данные созданной вакансии.</returns>
     Task<UserVacancyEntity> CreateVacancyAsync(string vacancyName, string vacancyText, string workExperience, string employment, string payment, long userId);
+
+    /// <summary>
+    /// TODO: userId возможно нужкн будет использовать, если будет монетизация в каталоге вакансий. Если доступ будет только у тех пользователей, которые приобрели подписку.
+    /// Метод получает список вакансий для каталога.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Список вакансий.</returns>
+    Task<List<CatalogVacancyOutput>> CatalogVacanciesAsync(long userId);
 }

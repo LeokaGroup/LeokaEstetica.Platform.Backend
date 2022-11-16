@@ -24,4 +24,11 @@ public interface IVacancyService
     /// <param name="account">Аккаунт пользователя.</param>
     /// <returns>Данные созданной вакансии.</returns>
     Task<CreateVacancyOutput> CreateVacancyAsync(string vacancyName, string vacancyText, string workExperience, string employment, string payment, string account);
+
+    /// <summary>
+    /// Метод получает список вакансий для каталога.
+    /// </summary>
+    /// <param name="account">Аккаунт пользователя.</param>
+    /// <returns>Список вакансий.</returns>
+    Task<CatalogVacancyResultOutput> CatalogVacanciesAsync(string account);
 }
