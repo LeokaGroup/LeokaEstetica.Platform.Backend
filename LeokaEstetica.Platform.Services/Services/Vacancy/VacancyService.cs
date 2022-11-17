@@ -130,6 +130,35 @@ public sealed class VacancyService : IVacancyService
     }
 
     /// <summary>
+    /// TODO: Аккаунт возможно нужкн будет использовать, если будет монетизация в каталоге вакансий. Если доступ будет только у тех пользователей, которые приобрели подписку.
+    /// Метод получает список вакансий для каталога.
+    /// </summary>
+    /// <param name="account">Аккаунт пользователя.</param>
+    /// <returns>Список вакансий.</returns>
+    public async Task<CatalogVacancyResultOutput> CatalogVacanciesAsync(string account)
+    {
+        try
+        {
+            var result = new CatalogVacancyResultOutput();
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+            result.CatalogVacancies = await _vacancyRepository.CatalogVacanciesAsync(userId);
+
+            if (!result.CatalogVacancies.Any())
+            {
+                return result;
+            }
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            await _logService.LogErrorAsync(ex);
+            throw;
+        }
+    }
+
+    /// <summary>
     /// Метод валидирует входные параметры при создании вакансии.
     /// </summary>
     /// <param name="result">Выходные данные. Писать ошибки валидации туда, если будут.</param>

@@ -1,5 +1,6 @@
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Database.Abstractions.Vacancy;
+using LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
 using LeokaEstetica.Platform.Models.Entities.Vacancy;
 using Microsoft.EntityFrameworkCore;
 
@@ -56,5 +57,30 @@ public sealed class VacancyRepository : IVacancyRepository
         await _pgContext.SaveChangesAsync();
 
         return vacancy;
+    }
+
+    /// <summary>
+    /// TODO: userId возможно нужкн будет использовать, если будет монетизация в каталоге вакансий. Если доступ будет только у тех пользователей, которые приобрели подписку.
+    /// Метод получает список вакансий для каталога.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Список вакансий.</returns>
+    public async Task<List<CatalogVacancyOutput>> CatalogVacanciesAsync(long userId)
+    {
+        var result = await _pgContext.CatalogVacancies
+            .Include(uv => uv.Vacancy)
+            .Select(uv => new CatalogVacancyOutput
+            {
+                VacancyName = uv.Vacancy.VacancyName,
+                DateCreated = uv.Vacancy.DateCreated,
+                Employment = uv.Vacancy.Employment,
+                Payment = uv.Vacancy.Payment,
+                VacancyId = uv.Vacancy.VacancyId,
+                VacancyText = uv.Vacancy.VacancyText,
+                WorkExperience = uv.Vacancy.WorkExperience
+            })
+            .ToListAsync();
+
+        return result;
     }
 }
