@@ -5,6 +5,7 @@ using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Database.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
+using LeokaEstetica.Platform.Moderation.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Redis.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Redis.Models.Vacancy;
 using LeokaEstetica.Platform.Services.Abstractions.Vacancy;
@@ -22,6 +23,7 @@ public sealed class VacancyService : IVacancyService
     private readonly IMapper _mapper;
     private readonly IVacancyRedisService _vacancyRedisService;
     private readonly IUserRepository _userRepository;
+    private readonly IVacancyModerationService _vacancyModerationService;
 
     /// <summary>
     /// Если не заполнили название вакансии.
@@ -37,13 +39,15 @@ public sealed class VacancyService : IVacancyService
         IVacancyRepository vacancyRepository, 
         IMapper mapper, 
         IVacancyRedisService vacancyRedisService, 
-        IUserRepository userRepository)
+        IUserRepository userRepository, 
+        IVacancyModerationService vacancyModerationService)
     {
         _logService = logService;
         _vacancyRepository = vacancyRepository;
         _mapper = mapper;
         _vacancyRedisService = vacancyRedisService;
         _userRepository = userRepository;
+        _vacancyModerationService = vacancyModerationService;
     }
 
     /// <summary>
@@ -123,6 +127,9 @@ public sealed class VacancyService : IVacancyService
             
             // Добавляем вакансию в таблицу статусов вакансий. Проставляем новой вакансии статус "На модерации". 
             await _vacancyRepository.AddVacancyStatusAsync(createdVacancy.VacancyId, VacancyStatusNameEnum.Moderation.GetEnumDescription(), VacancyStatusNameEnum.Moderation.ToString());
+            
+            // Отправляем вакансию на модерацию.
+            await _vacancyModerationService.AddVacancyModerationAsync(createdVacancy.VacancyId);
             
             result = _mapper.Map<CreateVacancyOutput>(createdVacancy);
 
