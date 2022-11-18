@@ -42,4 +42,6 @@ public interface IProjectRepository
     /// <param name="userId">Id пользователя.</param>
     /// <returns>Список проектов.</returns>
     Task<IEnumerable<UserProjectOutput>> UserProjectsAsync(long userId);
+
+    Task<IEnumerable<CatalogProjectOutput>> CatalogProjectsAsync();
 }

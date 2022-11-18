@@ -25,12 +25,21 @@ public class ProjectController : BaseController
 
     /// <summary>
     /// TODO: Подумать, давать ли всем пользователям возможность просматривать каталог проектов или только тем, у кого есть подписка.
+    /// Метод получает список проектов для каталога.
     /// </summary>
+    /// <returns>Список проектов.</returns>
     [HttpGet]
     [Route("")]
-    public async Task CatalogProjectsAsync()
+    [ProducesResponseType(200, Type = typeof(IEnumerable<CatalogProjectOutput>))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<IEnumerable<CatalogProjectOutput>> CatalogProjectsAsync()
     {
-        throw new NotImplementedException();
+        var result = await _projectService.CatalogProjectsAsync();
+
+        return result;
     }
 
     /// <summary>
