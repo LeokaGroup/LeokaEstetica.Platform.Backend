@@ -33,4 +33,12 @@ public interface IVacancyRepository
     /// <param name="userId">Id пользователя.</param>
     /// <returns>Список вакансий.</returns>
     Task<List<CatalogVacancyOutput>> CatalogVacanciesAsync(long userId);
+
+    /// <summary>
+    /// Метод добавляет статус вакансии.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <param name="statusName">Название статуса.</param>
+    /// <param name="statusSysName">Системное название статуса.</param>
+    Task AddVacancyStatusAsync(long vacancyId, string statusName, string statusSysName);
 }

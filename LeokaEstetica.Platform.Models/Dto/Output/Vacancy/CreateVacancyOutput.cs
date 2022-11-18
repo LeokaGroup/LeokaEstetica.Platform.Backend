@@ -57,4 +57,9 @@ public class CreateVacancyOutput : IFrontError
     /// Id пользователя.
     /// </summary>
     public long UserId { get; set; }
+
+    /// <summary>
+    /// Успешно ли создание вакансии.
+    /// </summary>
+    public bool IsSuccess { get; set; }
 }

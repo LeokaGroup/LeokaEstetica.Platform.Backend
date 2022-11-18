@@ -80,6 +80,10 @@ public static class AutoFac
         var assemblies8 =
             GetAssembliesFromApplicationBaseDirectory(x =>
                 x.FullName.StartsWith("LeokaEstetica.Platform.Redis"));
+        
+        var assemblies9 =
+            GetAssembliesFromApplicationBaseDirectory(x =>
+                x.FullName.StartsWith("LeokaEstetica.Platform.Moderation"));
 
         b.RegisterAssemblyTypes(assemblies1).AsImplementedInterfaces();
         b.RegisterAssemblyTypes(assemblies2).AsImplementedInterfaces();
@@ -89,6 +93,7 @@ public static class AutoFac
         b.RegisterAssemblyTypes(assemblies6).AsImplementedInterfaces();
         b.RegisterAssemblyTypes(assemblies7).AsImplementedInterfaces();
         b.RegisterAssemblyTypes(assemblies8).AsImplementedInterfaces();
+        b.RegisterAssemblyTypes(assemblies9).AsImplementedInterfaces();
         
         var assemblies = assemblies1
             .Union(assemblies2)
@@ -97,7 +102,8 @@ public static class AutoFac
             .Union(assemblies5)
             .Union(assemblies6)
             .Union(assemblies7)
-            .Union(assemblies8);
+            .Union(assemblies8)
+            .Union(assemblies9);
 
         RegisterMapper(b);
 

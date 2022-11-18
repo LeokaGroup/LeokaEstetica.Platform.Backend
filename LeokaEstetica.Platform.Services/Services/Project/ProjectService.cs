@@ -1,5 +1,5 @@
 using AutoMapper;
-using LeokaEstetica.Platform.Core.Enums;
+using LeokaEstetica.Platform.Core.Helpers;
 using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
 using LeokaEstetica.Platform.Database.Abstractions.User;
