@@ -67,6 +67,6 @@ public class BaseServiceTest
         VacancyRepository = new VacancyRepository(PgContext);
         VacancyModerationRepository = new VacancyModerationRepository(PgContext);
         VacancyModerationService = new VacancyModerationService(VacancyModerationRepository, LogService);
-        VacancyService = new VacancyService(LogService, VacancyRepository, mapper, null, UserRepository, VacancyModerationService);
+        VacancyService = new VacancyService(LogService, VacancyRepository, mapper, null, UserRepository, VacancyModerationService, null);
     }
 }
