@@ -1,4 +1,6 @@
 using AutoMapper;
+using LeokaEstetica.Platform.Core.Extensions;
+using LeokaEstetica.Platform.Core.Helpers;
 using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Database.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Logs.Abstractions;
@@ -115,8 +117,13 @@ public sealed class VacancyService : IVacancyService
 
             var userId = await _userRepository.GetUserByEmailAsync(account);
 
+            // Добавляем вакансию в таблицу вакансий пользователя.
             var createdVacancy = await _vacancyRepository
                 .CreateVacancyAsync(vacancyName, vacancyText, workExperience, employment, payment, userId);
+            
+            // Добавляем вакансию в таблицу статусов вакансий. Проставляем новой вакансии статус "На модерации". 
+            await _vacancyRepository.AddVacancyStatusAsync(createdVacancy.VacancyId, VacancyStatusNameEnum.Moderation.GetEnumDescription(), VacancyStatusNameEnum.Moderation.ToString());
+            
             result = _mapper.Map<CreateVacancyOutput>(createdVacancy);
 
             return result;

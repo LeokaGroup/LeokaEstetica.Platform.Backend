@@ -83,4 +83,22 @@ public sealed class VacancyRepository : IVacancyRepository
 
         return result;
     }
+
+    /// <summary>
+    /// Метод добавляет статус вакансии.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <param name="statusName">Название статуса.</param>
+    /// <param name="statusSysName">Системное название статуса.</param>
+    public async Task AddVacancyStatusAsync(long vacancyId, string statusName, string statusSysName)
+    {
+        var vacancyStatus = new VacancyStatusEntity
+        {
+            VacancyId = vacancyId,
+            VacancyStatusName = statusName,
+            VacancyStatusSysName = statusSysName
+        };
+        await _pgContext.VacancyStatuses.AddAsync(vacancyStatus);
+        await _pgContext.SaveChangesAsync();
+    }
 }

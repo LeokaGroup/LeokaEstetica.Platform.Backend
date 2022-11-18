@@ -1,17 +1,17 @@
 using System.ComponentModel;
 using LeokaEstetica.Platform.Core.Extensions;
 
-namespace LeokaEstetica.Platform.Core.Enums;
+namespace LeokaEstetica.Platform.Core.Helpers;
 
 /// <summary>
-/// Класс получения системных или русских названий статусов проектов.
+/// Класс статусов вакансий.
 /// </summary>
-public static class ProjectStatus
+public static class VacancyStatus
 {
     /// <summary>
     /// Словарь статусов с системными именами.
     /// </summary>
-    private static readonly IDictionary<string, int> _projectStatusesSysNames = new Dictionary<string, int>()
+    private static readonly IDictionary<string, int> _vacancyStatusesSysNames = new Dictionary<string, int>()
     {
         ["Moderation"] = 1,
         ["Approved"] = 2,
@@ -23,13 +23,13 @@ public static class ProjectStatus
     /// <summary>
     /// Словарь статусов с русскими именами.
     /// </summary>
-    private static readonly IDictionary<string, string> _projectStatusesNames = new Dictionary<string, string>()
+    private static readonly IDictionary<string, string> _vacancyStatusesNames = new Dictionary<string, string>()
     {
         ["Moderation"] = "На модерации",
-        ["Approved"] = "Одобрен",
-        ["Rejected"] = "Отклонен",
+        ["Approved"] = "Одобрена",
+        ["Rejected"] = "Отклонена",
         ["Draft"] = "В черновике",
-        ["Removed"] = "Удален"
+        ["Removed"] = "Удалена"
     };
 
     /// <summary>
@@ -37,9 +37,9 @@ public static class ProjectStatus
     /// </summary>
     /// <param name="statusName">Системное название статуса.</param>
     /// <returns>Id статуса.</returns>
-    public static int GetProjectStatusIdBySysName(string statusName)
+    public static int GetVacancyStatusIdBySysName(string statusName)
     {
-        return _projectStatusesSysNames.TryGet(statusName);
+        return _vacancyStatusesSysNames.TryGet(statusName);
     }
     
     /// <summary>
@@ -47,29 +47,29 @@ public static class ProjectStatus
     /// </summary>
     /// <param name="statusName">Системное название статуса.</param>
     /// <returns>Русское название статуса.</returns>
-    public static string GetProjectStatusNameBySysName(string statusName)
+    public static string GetVacancyStatusNameBySysName(string statusName)
     {
-        return _projectStatusesNames.TryGet(statusName);
+        return _vacancyStatusesNames.TryGet(statusName);
     }
 }
 
 /// <summary>
-/// Перечисление системных названий статусов проектов.
+/// Перечисление системных названий статусов вакансий.
 /// </summary>
-public enum ProjectStatusNameEnum
+public enum VacancyStatusNameEnum
 {
     [Description("На модерации")]
     Moderation = 1,
     
-    [Description("Одобрен")]
+    [Description("Одобрена")]
     Approved = 2,
     
-    [Description("Отклонен")]
+    [Description("Отклонена")]
     Rejected = 3,
     
     [Description("В черновике")]
     Draft = 4,
     
-    [Description("Удален")]
+    [Description("Удалена")]
     Removed = 5
 }
