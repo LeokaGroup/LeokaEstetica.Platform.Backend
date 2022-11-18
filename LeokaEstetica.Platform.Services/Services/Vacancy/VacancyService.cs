@@ -6,6 +6,8 @@ using LeokaEstetica.Platform.Database.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
 using LeokaEstetica.Platform.Moderation.Abstractions.Vacancy;
+using LeokaEstetica.Platform.Notifications.Abstractions;
+using LeokaEstetica.Platform.Notifications.Consts;
 using LeokaEstetica.Platform.Redis.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Redis.Models.Vacancy;
 using LeokaEstetica.Platform.Services.Abstractions.Vacancy;
@@ -24,6 +26,7 @@ public sealed class VacancyService : IVacancyService
     private readonly IVacancyRedisService _vacancyRedisService;
     private readonly IUserRepository _userRepository;
     private readonly IVacancyModerationService _vacancyModerationService;
+    private readonly INotificationsService _notificationsService;
 
     /// <summary>
     /// Если не заполнили название вакансии.
@@ -40,7 +43,8 @@ public sealed class VacancyService : IVacancyService
         IMapper mapper, 
         IVacancyRedisService vacancyRedisService, 
         IUserRepository userRepository, 
-        IVacancyModerationService vacancyModerationService)
+        IVacancyModerationService vacancyModerationService, 
+        INotificationsService notificationsService)
     {
         _logService = logService;
         _vacancyRepository = vacancyRepository;
@@ -48,6 +52,7 @@ public sealed class VacancyService : IVacancyService
         _vacancyRedisService = vacancyRedisService;
         _userRepository = userRepository;
         _vacancyModerationService = vacancyModerationService;
+        _notificationsService = notificationsService;
     }
 
     /// <summary>
@@ -119,6 +124,13 @@ public sealed class VacancyService : IVacancyService
             var result = new CreateVacancyOutput();
             ValidateCreateVacancy(ref result, vacancyName, vacancyText, account);
 
+            if (result.Errors.Any())
+            {
+                result.IsSuccess = false;
+                
+                return result;
+            }
+
             var userId = await _userRepository.GetUserByEmailAsync(account);
 
             // Добавляем вакансию в таблицу вакансий пользователя.
@@ -131,7 +143,11 @@ public sealed class VacancyService : IVacancyService
             // Отправляем вакансию на модерацию.
             await _vacancyModerationService.AddVacancyModerationAsync(createdVacancy.VacancyId);
             
+            // Отправляем уведомление об успешном создании вакансии и отправки ее на модерацию.
+            await _notificationsService.SendNotificationSuccessCreatedUserVacancyAsync("Все хорошо", "Данные успешно сохранены! Вакансия отправлена на модерацию!", NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, null);
+            
             result = _mapper.Map<CreateVacancyOutput>(createdVacancy);
+            result.IsSuccess = true;
 
             return result;
         }

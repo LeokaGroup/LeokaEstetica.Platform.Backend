@@ -65,4 +65,14 @@ public interface INotificationsService
     /// <param name="notificationLevel">Уровень уведомления.</param>
     /// <param name="userCode">Код пользователя.</param>
     Task SendNotificationWarningDublicateUserProjectAsync(string title, string notifyText, string notificationLevel, string userCode);
+
+    /// <summary>
+    /// Метод отправляет уведомление об успешном создании вакансии.
+    /// </summary>
+    /// <param name="title">Заголовок уведомления.</param>
+    /// <param name="notifyText">Текст уведомления.</param>
+    /// <param name="notificationLevel">Уровень уведомления.</param>
+    /// <param name="userCode">Код пользователя.</param>
+    Task SendNotificationSuccessCreatedUserVacancyAsync(string title, string notifyText, string notificationLevel,
+        string userCode);
 }
