@@ -44,7 +44,7 @@ public sealed class ProjectRepository : IProjectRepository
                 ProjectDetails = projectDetails,
                 UserId = userId,
                 ProjectCode = Guid.NewGuid(),
-                DateCreated = DateTime.UtcNow
+                DateCreated = DateTime.Now
             };
             await _pgContext.UserProjects.AddAsync(project);
             await _pgContext.SaveChangesAsync();

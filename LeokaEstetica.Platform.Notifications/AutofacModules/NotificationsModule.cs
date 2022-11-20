@@ -17,5 +17,13 @@ public class NotificationsModule : Module
         builder.RegisterType<NotificationsService>()
             .As<INotificationsService>()
             .InstancePerLifetimeScope();
+        
+        // Сервис уведомлений проектов.
+        builder.RegisterType<ProjectNotificationsService>()
+            .Named<IProjectNotificationsService>("ProjectNotificationsService")
+            .InstancePerLifetimeScope();
+        builder.RegisterType<ProjectNotificationsService>()
+            .As<IProjectNotificationsService>()
+            .InstancePerLifetimeScope();
     }
 }

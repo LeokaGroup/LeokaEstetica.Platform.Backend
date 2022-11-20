@@ -43,6 +43,7 @@ public class ProjectController : BaseController
     }
 
     /// <summary>
+    /// TODO: Нужно также учитывать иконку проекта. Пока она не передается в БД.
     /// Метод создает новый проект пользователя.
     /// </summary>
     /// <param name="createProjectInput">Входная модель.</param>
@@ -97,5 +98,12 @@ public class ProjectController : BaseController
         var result = await _projectService.UserProjectsColumnsNamesAsync();
 
         return result;
+    }
+
+    [HttpPut]
+    [Route("project")]
+    public async Task<UpdateProjectOutput> UpdateProjectAsync([FromBody] UpdateProjectInput createProjectInput)
+    {
+        throw new NotImplementedException();
     }
 }

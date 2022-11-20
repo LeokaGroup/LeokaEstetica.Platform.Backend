@@ -21,19 +21,19 @@ public sealed class ProjectService : IProjectService
     private readonly ILogService _logService;
     private readonly IUserRepository _userRepository;
     private readonly IMapper _mapper;
-    private readonly INotificationsService _notificationsService;
+    private readonly IProjectNotificationsService _projectNotificationsService;
     
     public ProjectService(IProjectRepository projectRepository, 
         ILogService logService, 
         IUserRepository userRepository, 
-        IMapper mapper, 
-        INotificationsService notificationsService)
+        IMapper mapper,
+        IProjectNotificationsService projectNotificationsService)
     {
         _projectRepository = projectRepository;
         _logService = logService;
         _userRepository = userRepository;
         _mapper = mapper;
-        _notificationsService = notificationsService;
+        _projectNotificationsService = projectNotificationsService;
     }
 
     /// <summary>
@@ -61,16 +61,18 @@ public sealed class ProjectService : IProjectService
 
             if (userId <= 0)
             {
-                throw new NotFoundUserIdByAccountException(account);
+                var ex = new NotFoundUserIdByAccountException(account);
+                await _logService.LogErrorAsync(ex);
+                throw ex;
             }
             
             // Проверяем существование такого проекта у текущего пользователя.
             var isCreatedProject = await _projectRepository.CheckCreatedProjectByProjectNameAsync(projectName, userId);
-            //
-            // // Есть дубликат, нельзя создать проект.
+            
+            // Есть дубликат, нельзя создать проект.
             if (isCreatedProject)
             {
-                await _notificationsService.SendNotificationWarningDublicateUserProjectAsync("Увы...", "Такой проект у вас уже существует!", NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, null);
+                await _projectNotificationsService.SendNotificationWarningDublicateUserProjectAsync("Увы...", "Такой проект у вас уже существует.", NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING);
                 result.IsSuccess = false;
                 
                 return result;
@@ -83,9 +85,9 @@ public sealed class ProjectService : IProjectService
             // Если что то пошло не так при создании проекта.
             if (project?.ProjectId <= 0)
             {
-                var ex = new Exception("Ошибка при создании проекта!");
-                await _logService.LogCriticalAsync(ex);
-                await _notificationsService.SendNotificationErrorCreatedUserProjectAsync("Что то пошло не так", "Ошибка при создании проекта. Мы уже знаем о проблеме и уже занимаемся ей.", NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, null);
+                var ex = new Exception("Ошибка при создании проекта.");
+                await _logService.LogErrorAsync(ex);
+                await _projectNotificationsService.SendNotificationErrorCreatedUserProjectAsync("Что то пошло не так", "Ошибка при создании проекта. Мы уже знаем о проблеме и уже занимаемся ей.", NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR);
                 
                 result.IsSuccess = false;
                 
@@ -95,7 +97,7 @@ public sealed class ProjectService : IProjectService
             result = _mapper.Map<CreateProjectOutput>(project);
 
             // Отправляем уведомление об успешном создании проекта.
-            await _notificationsService.SendNotificationSuccessCreatedUserProjectAsync("Все хорошо", "Данные успешно сохранены! Проект отправлен на модерацию!", NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, null);
+            await _projectNotificationsService.SendNotificationSuccessCreatedUserProjectAsync("Все хорошо", "Данные успешно сохранены. Проект отправлен на модерацию.", NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS);
             result.IsSuccess = true;
 
             return result;
@@ -119,17 +121,17 @@ public sealed class ProjectService : IProjectService
     {
         if (string.IsNullOrEmpty(projectName))
         {
-            result.Errors.Add("Не заполнено название проекта!");
+            result.Errors.Add("Не заполнено название проекта.");
         }
         
         if (string.IsNullOrEmpty(projectDetails))
         {
-            result.Errors.Add("Не заполнено описание проекта!");
+            result.Errors.Add("Не заполнено описание проекта.");
         }
         
         if (string.IsNullOrEmpty(account))
         {
-            var ex = new ArgumentNullException($"Не передан аккаунт пользователя!");
+            var ex = new ArgumentNullException($"Не передан аккаунт пользователя.");
             _logService.LogError(ex);
         }
     }
@@ -147,7 +149,7 @@ public sealed class ProjectService : IProjectService
 
             if (!items.Any())
             {
-                throw new NullReferenceException("Не удалось получить поля для таблицы UserProjects!");
+                throw new NullReferenceException("Не удалось получить поля для таблицы UserProjects.");
             }
 
             var result = _mapper.Map<IEnumerable<ColumnNameOutput>>(items);
@@ -200,5 +202,10 @@ public sealed class ProjectService : IProjectService
         var result = await _projectRepository.CatalogProjectsAsync();
 
         return result;
+    }
+
+    public Task<CreateProjectOutput> UpdateProjectAsync(string projectName, string projectDetails, string account)
+    {
+        throw new NotImplementedException();
     }
 }

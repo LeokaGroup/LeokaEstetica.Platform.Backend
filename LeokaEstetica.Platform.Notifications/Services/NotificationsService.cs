@@ -24,8 +24,7 @@ public sealed class NotificationsService : INotificationsService
     /// <param name="title">Заголовок уведомления.</param>
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="userCode">Код пользователя.</param>
-    public async Task SendNotifySuccessSaveAsync(string title, string notifyText, string notificationLevel, string userCode)
+    public async Task SendNotifySuccessSaveAsync(string title, string notifyText, string notificationLevel)
     {
         // // Получаем ConnectionId из кэша.
         // var connectionId = await _redisService.GetConnectionIdCacheAsync(userCode);
@@ -83,8 +82,7 @@ public sealed class NotificationsService : INotificationsService
     /// <param name="title">Заголовок уведомления.</param>
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="userCode">Код пользователя.</param>
-    public async Task SendNotificationWarningSaveUserSkillsAsync(string title, string notifyText, string notificationLevel, string userCode)
+    public async Task SendNotificationWarningSaveUserSkillsAsync(string title, string notifyText, string notificationLevel)
     {
         await _hubContext.Clients.All.SendAsync("SendNotificationWarningSaveUserSkills", new NotificationOutput
         {
@@ -100,9 +98,7 @@ public sealed class NotificationsService : INotificationsService
     /// <param name="title">Заголовок уведомления.</param>
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="userCode">Код пользователя.</param>
-    public async Task SendNotificationWarningSaveUserIntentsAsync(string title, string notifyText, string notificationLevel,
-        string userCode)
+    public async Task SendNotificationWarningSaveUserIntentsAsync(string title, string notifyText, string notificationLevel)
     {
         await _hubContext.Clients.All.SendAsync("SendNotificationWarningSaveUserIntents", new NotificationOutput
         {
@@ -113,67 +109,12 @@ public sealed class NotificationsService : INotificationsService
     }
 
     /// <summary>
-    /// Метод отправляет уведомление об успешном создании проекта пользователя.
-    /// </summary>
-    /// <param name="title">Заголовок уведомления.</param>
-    /// <param name="notifyText">Текст уведомления.</param>
-    /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="userCode">Код пользователя.</param>
-    public async Task SendNotificationSuccessCreatedUserProjectAsync(string title, string notifyText, string notificationLevel, string userCode)
-    {
-        await _hubContext.Clients.All.SendAsync("SendNotificationSuccessCreatedUserProject", new NotificationOutput
-        {
-            Title = title,
-            Message = notifyText,
-            NotificationLevel = notificationLevel
-        });
-    }
-
-    /// <summary>
-    /// Метод отправляет уведомление об ошибке при создании проекта пользователя.
-    /// </summary>
-    /// <param name="title">Заголовок уведомления.</param>
-    /// <param name="notifyText">Текст уведомления.</param>
-    /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="userCode">Код пользователя.</param>
-    public async Task SendNotificationErrorCreatedUserProjectAsync(string title, string notifyText, string notificationLevel,
-        string userCode)
-    {
-        await _hubContext.Clients.All.SendAsync("SendNotificationErrorCreatedUserProject", new NotificationOutput
-        {
-            Title = title,
-            Message = notifyText,
-            NotificationLevel = notificationLevel
-        });
-    }
-
-    /// <summary>
-    /// Метод отправляет уведомление о дубликате проекта пользователя.
-    /// </summary>
-    /// <param name="title">Заголовок уведомления.</param>
-    /// <param name="notifyText">Текст уведомления.</param>
-    /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="userCode">Код пользователя.</param>
-    public async Task SendNotificationWarningDublicateUserProjectAsync(string title, string notifyText, string notificationLevel,
-        string userCode)
-    {
-        await _hubContext.Clients.All.SendAsync("SendNotificationWarningDublicateUserProject", new NotificationOutput
-        {
-            Title = title,
-            Message = notifyText,
-            NotificationLevel = notificationLevel
-        });
-    }
-    
-    /// <summary>
     /// Метод отправляет уведомление об успешном создании вакансии.
     /// </summary>
     /// <param name="title">Заголовок уведомления.</param>
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="userCode">Код пользователя.</param>
-    public async Task SendNotificationSuccessCreatedUserVacancyAsync(string title, string notifyText, string notificationLevel,
-        string userCode)
+    public async Task SendNotificationSuccessCreatedUserVacancyAsync(string title, string notifyText, string notificationLevel)
     {
         await _hubContext.Clients.All.SendAsync("SendNotificationSuccessCreatedUserVacancy", new NotificationOutput
         {
