@@ -13,5 +13,5 @@ public class CatalogProjectEntity
     /// <summary>
     /// Id проекта.
     /// </summary>
-    public UserProjectEntity ProjectId { get; set; }
+    public UserProjectEntity Project { get; set; }
 }

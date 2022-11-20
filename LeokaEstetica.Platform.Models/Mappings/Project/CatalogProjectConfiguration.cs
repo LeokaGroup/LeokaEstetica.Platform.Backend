@@ -16,7 +16,7 @@ public partial class CatalogProjectConfiguration : IEntityTypeConfiguration<Cata
             .HasColumnName("CatalogProjectId")
             .HasColumnType("bigserial");
 
-        entity.HasOne(p => p.ProjectId)
+        entity.HasOne(p => p.Project)
             .WithMany(b => b.CatalogProjects)
             .HasForeignKey(p => p.CatalogProjectId)
             .HasConstraintName("FK_UserProjects_ProjectId");

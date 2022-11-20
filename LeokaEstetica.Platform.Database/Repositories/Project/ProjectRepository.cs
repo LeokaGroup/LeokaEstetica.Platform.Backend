@@ -62,7 +62,7 @@ public sealed class ProjectRepository : IProjectRepository
             // Отправляем проект на модерацию.
             await _pgContext.ModerationProjects.AddAsync(new ModerationProjectEntity
             {
-                DateModeration = DateTime.UtcNow,
+                DateModeration = DateTime.Now,
                 ProjectId = project.ProjectId
             });
             await _pgContext.SaveChangesAsync();
@@ -117,6 +117,7 @@ public sealed class ProjectRepository : IProjectRepository
     {
         var result = await _pgContext.ProjectStatuses
             .Include(p => p.UserProject)
+            .Where(u => u.UserProject.UserId == userId)
             .Select(p => new UserProjectOutput
             {
                 ProjectName = p.UserProject.ProjectName,
@@ -126,6 +127,28 @@ public sealed class ProjectRepository : IProjectRepository
                 ProjectStatusSysName = p.ProjectStatusSysName,
                 ProjectCode = p.UserProject.ProjectCode,
                 ProjectId = p.ProjectId
+            })
+            .ToListAsync();
+
+        return result;
+    }
+
+    /// <summary>
+    /// TODO: Подумать, давать ли всем пользователям возможность просматривать каталог проектов или только тем, у кого есть подписка.
+    /// Метод получает список проектов для каталога.
+    /// </summary>
+    /// <returns>Список проектов.</returns>
+    public async Task<IEnumerable<CatalogProjectOutput>> CatalogProjectsAsync()
+    {
+        var result = await _pgContext.CatalogProjects
+            .Include(p => p.Project)
+            .Select(p => new CatalogProjectOutput
+            {
+                ProjectId = p.Project.ProjectId,
+                ProjectName = p.Project.ProjectName,
+                DateCreated = p.Project.DateCreated,
+                ProjectIcon = p.Project.ProjectIcon,
+                ProjectDetails = p.Project.ProjectDetails
             })
             .ToListAsync();
 

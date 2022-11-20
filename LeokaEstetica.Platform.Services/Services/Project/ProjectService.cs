@@ -189,4 +189,16 @@ public sealed class ProjectService : IProjectService
             throw;
         }
     }
+
+    /// <summary>
+    /// TODO: Подумать, давать ли всем пользователям возможность просматривать каталог проектов или только тем, у кого есть подписка.
+    /// Метод получает список проектов для каталога.
+    /// </summary>
+    /// <returns>Список проектов.</returns>
+    public async Task<IEnumerable<CatalogProjectOutput>> CatalogProjectsAsync()
+    {
+        var result = await _projectRepository.CatalogProjectsAsync();
+
+        return result;
+    }
 }
