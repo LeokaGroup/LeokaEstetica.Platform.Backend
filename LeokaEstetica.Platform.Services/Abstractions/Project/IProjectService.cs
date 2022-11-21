@@ -37,13 +37,14 @@ public interface IProjectService
     /// </summary>
     /// <returns>Список проектов.</returns>
     Task<IEnumerable<CatalogProjectOutput>> CatalogProjectsAsync();
-    
+
     /// <summary>
     /// Метод обновляет проект пользователя.
     /// </summary>
     /// <param name="projectName">Название проекта.</param>
     /// <param name="projectDetails">Описание проекта.</param>
     /// <param name="account">Аккаунт пользователя.</param>
+    /// <param name="projectId">Id проекта.</param>
     /// <returns>Данные нового проекта.</returns>
-    Task<CreateProjectOutput> UpdateProjectAsync(string projectName, string projectDetails, string account);
+    Task<UpdateProjectOutput> UpdateProjectAsync(string projectName, string projectDetails, string account, long projectId);
 }

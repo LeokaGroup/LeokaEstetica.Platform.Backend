@@ -10,10 +10,13 @@ using LeokaEstetica.Platform.Logs.Services;
 using LeokaEstetica.Platform.Messaging.Services.Mail;
 using LeokaEstetica.Platform.Moderation.Repositories.Vacancy;
 using LeokaEstetica.Platform.Moderation.Services.Vacancy;
+using LeokaEstetica.Platform.Notifications.Data;
+using LeokaEstetica.Platform.Notifications.Services;
 using LeokaEstetica.Platform.Services.Services.Profile;
 using LeokaEstetica.Platform.Services.Services.Project;
 using LeokaEstetica.Platform.Services.Services.User;
 using LeokaEstetica.Platform.Services.Services.Vacancy;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 
@@ -39,6 +42,7 @@ public class BaseServiceTest
     protected VacancyService VacancyService;
     protected VacancyModerationService VacancyModerationService;
     protected VacancyModerationRepository VacancyModerationRepository;
+    protected ProjectNotificationsService ProjectNotificationsService;
 
     public BaseServiceTest()
     {
@@ -50,6 +54,7 @@ public class BaseServiceTest
         
         AutoFac.RegisterMapper(container);
         var mapper = AutoFac.Resolve<IMapper>();
+        var hub = AutoFac.Resolve<IHubContext<NotifyHub>>();
 
         // Настройка тестовых контекстов.
         var optionsBuilder = new DbContextOptionsBuilder<PgContext>();
@@ -63,7 +68,8 @@ public class BaseServiceTest
         UserService = new UserService(LogService, UserRepository, mapper, null, PgContext, ProfileRepository);
         ProfileService = new ProfileService(LogService, ProfileRepository, UserRepository, mapper, null, null);
         ProjectRepository = new ProjectRepository(PgContext);
-        ProjectService = new ProjectService(ProjectRepository, LogService, UserRepository, mapper, null);
+        ProjectNotificationsService = new ProjectNotificationsService(hub);
+        ProjectService = new ProjectService(ProjectRepository, LogService, UserRepository, mapper, ProjectNotificationsService);
         VacancyRepository = new VacancyRepository(PgContext);
         VacancyModerationRepository = new VacancyModerationRepository(PgContext);
         VacancyModerationService = new VacancyModerationService(VacancyModerationRepository, LogService);

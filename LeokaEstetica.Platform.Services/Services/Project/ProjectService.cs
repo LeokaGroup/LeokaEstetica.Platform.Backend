@@ -9,6 +9,7 @@ using LeokaEstetica.Platform.Models.Dto.Output.Project;
 using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Notifications.Consts;
 using LeokaEstetica.Platform.Services.Abstractions.Project;
+using LeokaEstetica.Platform.Services.Validators;
 
 namespace LeokaEstetica.Platform.Services.Services.Project;
 
@@ -22,6 +23,11 @@ public sealed class ProjectService : IProjectService
     private readonly IUserRepository _userRepository;
     private readonly IMapper _mapper;
     private readonly IProjectNotificationsService _projectNotificationsService;
+    
+    /// <summary>
+    /// Если Id проекта невалидный.
+    /// </summary>
+    private const string NOT_VALID_PROJECT_ID = "Невалидный Id проекта. ProjectId был ";
     
     public ProjectService(IProjectRepository projectRepository, 
         ILogService logService, 
@@ -48,7 +54,14 @@ public sealed class ProjectService : IProjectService
         try
         {
             var result = new CreateProjectOutput();
-            ValidateProject(projectName, projectDetails, account, ref result);
+            
+            if (string.IsNullOrEmpty(account))
+            {
+                var ex = new ArgumentNullException($"Не передан аккаунт пользователя.");
+                await _logService.LogErrorAsync(ex);
+            }
+            
+            ProjectValidator.ValidateCreateProject(projectName, projectDetails, ref result);
 
             if (result.Errors.Any())
             {
@@ -110,32 +123,6 @@ public sealed class ProjectService : IProjectService
         }
     }
 
-    /// <summary>
-    /// Метод валидация проекта при его создании.
-    /// </summary>
-    /// <param name="projectName"></param>
-    /// <param name="projectDetails"></param>
-    /// <param name="account"></param>
-    /// <param name="result">Результирующая модель. Тут не возвращается, так как передана по ссылке сюда.</param>
-    private void ValidateProject(string projectName, string projectDetails, string account, ref CreateProjectOutput result)
-    {
-        if (string.IsNullOrEmpty(projectName))
-        {
-            result.Errors.Add("Не заполнено название проекта.");
-        }
-        
-        if (string.IsNullOrEmpty(projectDetails))
-        {
-            result.Errors.Add("Не заполнено описание проекта.");
-        }
-        
-        if (string.IsNullOrEmpty(account))
-        {
-            var ex = new ArgumentNullException($"Не передан аккаунт пользователя.");
-            _logService.LogError(ex);
-        }
-    }
-    
     /// <summary>
     /// Метод получает названия полей для таблицы проектов пользователя.
     /// Все названия столбцов этой таблицы одинаковые у всех пользователей.
@@ -199,13 +186,72 @@ public sealed class ProjectService : IProjectService
     /// <returns>Список проектов.</returns>
     public async Task<IEnumerable<CatalogProjectOutput>> CatalogProjectsAsync()
     {
-        var result = await _projectRepository.CatalogProjectsAsync();
+        try
+        {
+            var result = await _projectRepository.CatalogProjectsAsync();
 
-        return result;
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            await _logService.LogErrorAsync(ex);
+            throw;
+        }
     }
 
-    public Task<CreateProjectOutput> UpdateProjectAsync(string projectName, string projectDetails, string account)
+    /// <summary>
+    /// Метод обновляет проект пользователя.
+    /// </summary>
+    /// <param name="projectName">Название проекта.</param>
+    /// <param name="projectDetails">Описание проекта.</param>
+    /// <param name="account">Аккаунт пользователя.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Данные нового проекта.</returns>
+    public async Task<UpdateProjectOutput> UpdateProjectAsync(string projectName, string projectDetails, string account, long projectId)
     {
-        throw new NotImplementedException();
+        try
+        {
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+            
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                await _logService.LogErrorAsync(ex);
+                throw ex;
+            }
+            
+            if (projectId <= 0)
+            {
+                var ex = new ArgumentNullException(string.Concat(NOT_VALID_PROJECT_ID, projectId));
+                await _logService.LogErrorAsync(ex);
+                throw ex;
+            }
+
+            var result = new UpdateProjectOutput();
+            ProjectValidator.ValidateUpdateProject(projectName, projectDetails, ref result);
+            
+            if (result.Errors.Any())
+            {
+                result.IsSuccess = false;
+                
+                return result;
+            }
+            
+            // Изменяем проект в БД.
+            result = await _projectRepository.UpdateProjectAsync(projectName, projectDetails, userId, projectId);
+            
+            // TODO: Добавить отправку проекта на модерацию тут. Также удалять проект из каталога проектов на время модерации.
+            
+            await _projectNotificationsService.SendNotificationSuccessUpdatedUserProjectAsync("Все хорошо", "Данные успешно изменены. Проект отправлен на модерацию.", NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS);
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            await _logService.LogErrorAsync(ex);
+            throw;
+        }
     }
 }

@@ -100,10 +100,22 @@ public class ProjectController : BaseController
         return result;
     }
 
+    /// <summary>
+    /// Метод обновляет проект.
+    /// </summary>
+    /// <param name="createProjectInput">Входная модель.</param>
+    /// <returns>Обновленные данные.</returns>
     [HttpPut]
     [Route("project")]
+    [ProducesResponseType(200, Type = typeof(UpdateProjectOutput))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
     public async Task<UpdateProjectOutput> UpdateProjectAsync([FromBody] UpdateProjectInput createProjectInput)
     {
-        throw new NotImplementedException();
+        var result = await _projectService.UpdateProjectAsync(createProjectInput.ProjectName, createProjectInput.ProjectDetails, GetUserName(), createProjectInput.ProjectId);
+
+        return result;
     }
 }

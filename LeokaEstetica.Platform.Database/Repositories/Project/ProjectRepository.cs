@@ -154,4 +154,39 @@ public sealed class ProjectRepository : IProjectRepository
 
         return result;
     }
+
+    /// <summary>
+    /// Метод обновляет проект пользователя.
+    /// </summary>
+    /// <param name="projectName">Название проекта.</param>
+    /// <param name="projectDetails">Описание проекта.</param>
+    /// <param name="userId">Id пользователя.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Данные нового проекта.</returns>
+    public async Task<UpdateProjectOutput> UpdateProjectAsync(string projectName, string projectDetails, long userId, long projectId)
+    {
+        var project = await _pgContext.UserProjects
+            .FirstOrDefaultAsync(p => p.UserId == userId
+                                      && p.ProjectId == projectId);
+
+        if (project is null)
+        {
+            throw new NullReferenceException($"Проект не найден для обновления. ProjectId был {projectId}. UserId был {userId}");
+        }
+
+        project.ProjectName = projectName;
+        project.ProjectDetails = projectDetails;
+        await _pgContext.SaveChangesAsync();
+
+        var result = new UpdateProjectOutput
+        {
+            DateCreated = project.DateCreated,
+            ProjectName = project.ProjectName,
+            ProjectDetails = project.ProjectDetails,
+            ProjectIcon = project.ProjectIcon,
+            ProjectId = project.ProjectId
+        };
+
+        return result;
+    }
 }

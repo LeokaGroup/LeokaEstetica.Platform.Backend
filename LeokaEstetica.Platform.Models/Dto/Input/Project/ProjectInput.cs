@@ -19,4 +19,9 @@ public class ProjectInput
     /// Изображение проекта.
     /// </summary>
     public string ProjectIcon { get; set; }
+
+    /// <summary>
+    /// Id проекта.
+    /// </summary>
+    public long ProjectId { get; set; }
 }
