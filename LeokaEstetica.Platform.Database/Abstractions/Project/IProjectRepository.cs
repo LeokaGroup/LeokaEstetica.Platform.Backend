@@ -41,7 +41,7 @@ public interface IProjectRepository
     /// </summary>
     /// <param name="userId">Id пользователя.</param>
     /// <returns>Список проектов.</returns>
-    Task<IEnumerable<UserProjectOutput>> UserProjectsAsync(long userId);
+    Task<UserProjectResultOutput> UserProjectsAsync(long userId);
 
     /// <summary>
     /// TODO: Подумать, давать ли всем пользователям возможность просматривать каталог проектов или только тем, у кого есть подписка.

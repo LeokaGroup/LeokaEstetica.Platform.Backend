@@ -69,12 +69,12 @@ public class ProjectController : BaseController
     /// <returns>Список проектов.</returns>
     [HttpGet]
     [Route("user-projects")]
-    [ProducesResponseType(200, Type = typeof(IEnumerable<UserProjectOutput>))]
+    [ProducesResponseType(200, Type = typeof(UserProjectResultOutput))]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<IEnumerable<UserProjectOutput>> UserProjectsAsync()
+    public async Task<UserProjectResultOutput> UserProjectsAsync()
     {
         var result = await _projectService.UserProjectsAsync(GetUserName());
 

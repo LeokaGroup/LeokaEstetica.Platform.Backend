@@ -156,7 +156,7 @@ public sealed class ProjectService : IProjectService
     /// </summary>
     /// <param name="account">Аккаунт пользователя.</param>
     /// <returns>Список проектов.</returns>
-    public async Task<IEnumerable<UserProjectOutput>> UserProjectsAsync(string account)
+    public async Task<UserProjectResultOutput> UserProjectsAsync(string account)
     {
         try
         {

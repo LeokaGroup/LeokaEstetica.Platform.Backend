@@ -29,7 +29,7 @@ public interface IProjectService
     /// </summary>
     /// <param name="account">Аккаунт пользователя.</param>
     /// <returns>Список проектов.</returns>
-    Task<IEnumerable<UserProjectOutput>> UserProjectsAsync(string account);
+    Task<UserProjectResultOutput> UserProjectsAsync(string account);
 
     /// <summary>
     /// TODO: Подумать, давать ли всем пользователям возможность просматривать каталог проектов или только тем, у кого есть подписка.

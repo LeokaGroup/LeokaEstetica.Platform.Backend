@@ -113,22 +113,25 @@ public sealed class ProjectRepository : IProjectRepository
     /// </summary>
     /// <param name="userId">Id пользователя.</param>
     /// <returns>Список проектов.</returns>
-    public async Task<IEnumerable<UserProjectOutput>> UserProjectsAsync(long userId)
+    public async Task<UserProjectResultOutput> UserProjectsAsync(long userId)
     {
-        var result = await _pgContext.ProjectStatuses
-            .Include(p => p.UserProject)
-            .Where(u => u.UserProject.UserId == userId)
-            .Select(p => new UserProjectOutput
-            {
-                ProjectName = p.UserProject.ProjectName,
-                ProjectDetails = p.UserProject.ProjectDetails,
-                ProjectIcon = p.UserProject.ProjectIcon,
-                ProjectStatusName = p.ProjectStatusName,
-                ProjectStatusSysName = p.ProjectStatusSysName,
-                ProjectCode = p.UserProject.ProjectCode,
-                ProjectId = p.ProjectId
-            })
-            .ToListAsync();
+        var result = new UserProjectResultOutput
+        {
+            UserProjects = await _pgContext.ProjectStatuses
+                .Include(p => p.UserProject)
+                .Where(u => u.UserProject.UserId == userId)
+                .Select(p => new UserProjectOutput
+                {
+                    ProjectName = p.UserProject.ProjectName,
+                    ProjectDetails = p.UserProject.ProjectDetails,
+                    ProjectIcon = p.UserProject.ProjectIcon,
+                    ProjectStatusName = p.ProjectStatusName,
+                    ProjectStatusSysName = p.ProjectStatusSysName,
+                    ProjectCode = p.UserProject.ProjectCode,
+                    ProjectId = p.ProjectId
+                })
+                .ToListAsync()
+        };
 
         return result;
     }
