@@ -219,6 +219,7 @@ public sealed class ProjectService : IProjectService
             {
                 var ex = new NotFoundUserIdByAccountException(account);
                 await _logService.LogErrorAsync(ex);
+                await _projectNotificationsService.SendNotificationErrorUpdatedUserProjectAsync("Что то не так...", "Ошибка при обновлении проекта. Мы уже знаем о проблеме и уже занимаемся ей.", NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR);
                 throw ex;
             }
             
@@ -226,6 +227,7 @@ public sealed class ProjectService : IProjectService
             {
                 var ex = new ArgumentNullException(string.Concat(NOT_VALID_PROJECT_ID, projectId));
                 await _logService.LogErrorAsync(ex);
+                await _projectNotificationsService.SendNotificationErrorUpdatedUserProjectAsync("Что то не так...", "Ошибка при обновлении проекта. Мы уже знаем о проблеме и уже занимаемся ей.", NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR);
                 throw ex;
             }
 
@@ -243,7 +245,6 @@ public sealed class ProjectService : IProjectService
             result = await _projectRepository.UpdateProjectAsync(projectName, projectDetails, userId, projectId);
             
             // TODO: Добавить отправку проекта на модерацию тут. Также удалять проект из каталога проектов на время модерации.
-            
             await _projectNotificationsService.SendNotificationSuccessUpdatedUserProjectAsync("Все хорошо", "Данные успешно изменены. Проект отправлен на модерацию.", NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS);
 
             return result;

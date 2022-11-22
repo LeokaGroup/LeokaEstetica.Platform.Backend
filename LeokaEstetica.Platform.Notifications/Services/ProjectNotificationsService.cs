@@ -81,4 +81,21 @@ public sealed class ProjectNotificationsService : IProjectNotificationsService
             NotificationLevel = notificationLevel
         });
     }
+    
+    /// <summary>
+    /// Метод отправляет уведомление об ошибке при изменении проекта пользователя.
+    /// </summary>
+    /// <param name="title">Заголовок уведомления.</param>
+    /// <param name="notifyText">Текст уведомления.</param>
+    /// <param name="notificationLevel">Уровень уведомления.</param>
+    /// <param name="userCode">Код пользователя.</param>
+    public async Task SendNotificationErrorUpdatedUserProjectAsync(string title, string notifyText, string notificationLevel)
+    {
+        await _hubContext.Clients.All.SendAsync("SendNotificationErrorUpdatedUserProject", new NotificationOutput
+        {
+            Title = title,
+            Message = notifyText,
+            NotificationLevel = notificationLevel
+        });
+    }
 }
