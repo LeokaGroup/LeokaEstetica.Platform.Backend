@@ -1,3 +1,4 @@
+using LeokaEstetica.Platform.Access.Enums;
 using LeokaEstetica.Platform.Base;
 using LeokaEstetica.Platform.Core.Filters;
 using LeokaEstetica.Platform.Models.Dto.Input.Project;
@@ -115,6 +116,26 @@ public class ProjectController : BaseController
     public async Task<UpdateProjectOutput> UpdateProjectAsync([FromBody] UpdateProjectInput createProjectInput)
     {
         var result = await _projectService.UpdateProjectAsync(createProjectInput.ProjectName, createProjectInput.ProjectDetails, GetUserName(), createProjectInput.ProjectId);
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод получает проект для изменения или просмотра.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="mode">Режим. Чтение или изменение.</param>
+    /// <returns>Данные проекта.</returns>
+    [HttpGet]
+    [Route("project")]
+    [ProducesResponseType(200, Type = typeof(ProjectOutput))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<ProjectOutput> GetProjectAsync([FromQuery] long projectId, [FromQuery] ModeEnum mode)
+    {
+        var result = await _projectService.GetProjectAsync(projectId, mode, GetUserName());
 
         return result;
     }

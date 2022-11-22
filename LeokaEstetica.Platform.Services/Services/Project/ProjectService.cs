@@ -1,4 +1,5 @@
 using AutoMapper;
+using LeokaEstetica.Platform.Access.Enums;
 using LeokaEstetica.Platform.Core.Helpers;
 using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
@@ -244,6 +245,64 @@ public sealed class ProjectService : IProjectService
             // TODO: Добавить отправку проекта на модерацию тут. Также удалять проект из каталога проектов на время модерации.
             
             await _projectNotificationsService.SendNotificationSuccessUpdatedUserProjectAsync("Все хорошо", "Данные успешно изменены. Проект отправлен на модерацию.", NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS);
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            await _logService.LogErrorAsync(ex);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Метод получает проект для изменения или просмотра.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="mode">Режим. Чтение или изменение.</param>
+    /// <param name="account">Аккаунт.</param>
+    /// <returns>Данные проекта.</returns>
+    public async Task<ProjectOutput> GetProjectAsync(long projectId, ModeEnum mode, string account)
+    {
+        try
+        {
+            var result = new ProjectOutput();
+            ProjectValidator.ValidateGetProject(projectId, mode, ref result);
+
+            if (result.Errors.Any())
+            {
+                result.IsSuccess = false;
+                
+                return result;
+            }
+            
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                await _logService.LogErrorAsync(ex);
+                throw ex;
+            }
+            
+            // TODO: Реализовать в будущем.
+            // Проверяем, является ли текущий пользователь владельцем проекта.
+            // Это защита, если проект изменяется.
+            // if (mode.Equals(ModeEnum.Edit.ToString()))
+            // {
+            //     
+            // }
+
+            var project = await _projectRepository.GetProjectAsync(projectId, userId);
+
+            if (project is null)
+            {
+                var ex = new NullReferenceException($"Не удалось найти проект с ProjectId {projectId} и UserId {userId}");
+                await _logService.LogErrorAsync(ex);
+            }
+
+            result = _mapper.Map<ProjectOutput>(project);
 
             return result;
         }

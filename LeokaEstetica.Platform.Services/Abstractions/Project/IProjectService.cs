@@ -1,3 +1,4 @@
+using LeokaEstetica.Platform.Access.Enums;
 using LeokaEstetica.Platform.Models.Dto.Output.Configs;
 using LeokaEstetica.Platform.Models.Dto.Output.Project;
 
@@ -47,4 +48,13 @@ public interface IProjectService
     /// <param name="projectId">Id проекта.</param>
     /// <returns>Данные нового проекта.</returns>
     Task<UpdateProjectOutput> UpdateProjectAsync(string projectName, string projectDetails, string account, long projectId);
+
+    /// <summary>
+    /// Метод получает проект для изменения или просмотра.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="mode">Режим. Чтение или изменение.</param>
+    /// <param name="account">Аккаунт.</param>
+    /// <returns>Данные проекта.</returns>
+    Task<ProjectOutput> GetProjectAsync(long projectId, ModeEnum mode, string account);
 }

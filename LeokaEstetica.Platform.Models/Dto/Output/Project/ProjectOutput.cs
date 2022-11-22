@@ -1,9 +1,11 @@
+using LeokaEstetica.Platform.Models.Dto.Common;
+
 namespace LeokaEstetica.Platform.Models.Dto.Output.Project;
 
 /// <summary>
 /// Класс выходной модели проекта.
 /// </summary>
-public class ProjectOutput
+public class ProjectOutput : IFrontError
 {
     /// <summary>
     /// Название проекта.
@@ -34,4 +36,9 @@ public class ProjectOutput
     /// Дата создания проекта.
     /// </summary>
     public DateTime DateCreated { get; set; }
+
+    /// <summary>
+    /// Список ошибок.
+    /// </summary>
+    public List<string> Errors { get; set; } = new();
 }

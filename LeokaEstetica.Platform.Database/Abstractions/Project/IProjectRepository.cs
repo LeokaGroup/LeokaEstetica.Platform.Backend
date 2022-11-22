@@ -59,4 +59,12 @@ public interface IProjectRepository
     /// <param name="projectId">Id проекта.</param>
     /// <returns>Данные нового проекта.</returns>
     Task<UpdateProjectOutput> UpdateProjectAsync(string projectName, string projectDetails, long userId, long projectId);
+
+    /// <summary>
+    /// Метод получает проект для изменения или просмотра.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Данные проекта.</returns>
+    Task<UserProjectEntity> GetProjectAsync(long projectId, long userId);
 }

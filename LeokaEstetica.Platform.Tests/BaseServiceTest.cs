@@ -54,7 +54,7 @@ public class BaseServiceTest
         
         AutoFac.RegisterMapper(container);
         var mapper = AutoFac.Resolve<IMapper>();
-        var hub = AutoFac.Resolve<IHubContext<NotifyHub>>();
+        // var hub = AutoFac.Resolve<IHubContext<NotifyHub>>();
 
         // Настройка тестовых контекстов.
         var optionsBuilder = new DbContextOptionsBuilder<PgContext>();
@@ -68,7 +68,7 @@ public class BaseServiceTest
         UserService = new UserService(LogService, UserRepository, mapper, null, PgContext, ProfileRepository);
         ProfileService = new ProfileService(LogService, ProfileRepository, UserRepository, mapper, null, null);
         ProjectRepository = new ProjectRepository(PgContext);
-        ProjectNotificationsService = new ProjectNotificationsService(hub);
+        ProjectNotificationsService = new ProjectNotificationsService(null);
         ProjectService = new ProjectService(ProjectRepository, LogService, UserRepository, mapper, ProjectNotificationsService);
         VacancyRepository = new VacancyRepository(PgContext);
         VacancyModerationRepository = new VacancyModerationRepository(PgContext);
