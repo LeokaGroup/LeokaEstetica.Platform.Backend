@@ -52,7 +52,7 @@ public sealed class ProfileRedisService : IProfileRedisService
     /// <param name="profileMenuRedis">Класс для кэша.</param>
     public async Task SaveProfileMenuCacheAsync(ProfileMenuRedis profileMenuRedis)
     {
-        await _redis.SetStringAsync(GlobalConfigKeysCache.PROFILE_MENU_KEY,
+        await _redis.SetStringAsync(GlobalConfigKeys.Cache.PROFILE_MENU_KEY,
             ProtoBufExtensions.Serialize(profileMenuRedis),
             new DistributedCacheEntryOptions
             {
@@ -65,7 +65,7 @@ public sealed class ProfileRedisService : IProfileRedisService
     /// </summary>param>
     public async Task<ProfileMenuRedis> GetProfileMenuCacheAsync()
     {
-        var items = await _redis.GetStringAsync(GlobalConfigKeysCache.PROFILE_MENU_KEY);
+        var items = await _redis.GetStringAsync(GlobalConfigKeys.Cache.PROFILE_MENU_KEY);
 
         if (string.IsNullOrEmpty(items))
         {

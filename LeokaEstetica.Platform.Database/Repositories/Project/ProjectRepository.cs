@@ -44,7 +44,7 @@ public sealed class ProjectRepository : IProjectRepository
                 ProjectDetails = projectDetails,
                 UserId = userId,
                 ProjectCode = Guid.NewGuid(),
-                DateCreated = DateTime.UtcNow
+                DateCreated = DateTime.Now
             };
             await _pgContext.UserProjects.AddAsync(project);
             await _pgContext.SaveChangesAsync();
@@ -60,12 +60,7 @@ public sealed class ProjectRepository : IProjectRepository
             await _pgContext.SaveChangesAsync();
             
             // Отправляем проект на модерацию.
-            await _pgContext.ModerationProjects.AddAsync(new ModerationProjectEntity
-            {
-                DateModeration = DateTime.Now,
-                ProjectId = project.ProjectId
-            });
-            await _pgContext.SaveChangesAsync();
+            await SendModerationProjectAsync(project.ProjectId);
             
             await transaction.CommitAsync();
 
@@ -113,22 +108,25 @@ public sealed class ProjectRepository : IProjectRepository
     /// </summary>
     /// <param name="userId">Id пользователя.</param>
     /// <returns>Список проектов.</returns>
-    public async Task<IEnumerable<UserProjectOutput>> UserProjectsAsync(long userId)
+    public async Task<UserProjectResultOutput> UserProjectsAsync(long userId)
     {
-        var result = await _pgContext.ProjectStatuses
-            .Include(p => p.UserProject)
-            .Where(u => u.UserProject.UserId == userId)
-            .Select(p => new UserProjectOutput
-            {
-                ProjectName = p.UserProject.ProjectName,
-                ProjectDetails = p.UserProject.ProjectDetails,
-                ProjectIcon = p.UserProject.ProjectIcon,
-                ProjectStatusName = p.ProjectStatusName,
-                ProjectStatusSysName = p.ProjectStatusSysName,
-                ProjectCode = p.UserProject.ProjectCode,
-                ProjectId = p.ProjectId
-            })
-            .ToListAsync();
+        var result = new UserProjectResultOutput
+        {
+            UserProjects = await _pgContext.ProjectStatuses
+                .Include(p => p.UserProject)
+                .Where(u => u.UserProject.UserId == userId)
+                .Select(p => new UserProjectOutput
+                {
+                    ProjectName = p.UserProject.ProjectName,
+                    ProjectDetails = p.UserProject.ProjectDetails,
+                    ProjectIcon = p.UserProject.ProjectIcon,
+                    ProjectStatusName = p.ProjectStatusName,
+                    ProjectStatusSysName = p.ProjectStatusSysName,
+                    ProjectCode = p.UserProject.ProjectCode,
+                    ProjectId = p.ProjectId
+                })
+                .ToListAsync()
+        };
 
         return result;
     }
@@ -153,5 +151,85 @@ public sealed class ProjectRepository : IProjectRepository
             .ToListAsync();
 
         return result;
+    }
+
+    /// <summary>
+    /// Метод обновляет проект пользователя.
+    /// </summary>
+    /// <param name="projectName">Название проекта.</param>
+    /// <param name="projectDetails">Описание проекта.</param>
+    /// <param name="userId">Id пользователя.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Данные нового проекта.</returns>
+    public async Task<UpdateProjectOutput> UpdateProjectAsync(string projectName, string projectDetails, long userId, long projectId)
+    {
+        var transaction = await _pgContext.Database
+            .BeginTransactionAsync(IsolationLevel.ReadCommitted);
+        
+        try
+        {
+            var project = await _pgContext.UserProjects
+                .FirstOrDefaultAsync(p => p.UserId == userId
+                                          && p.ProjectId == projectId);
+
+            if (project is null)
+            {
+                throw new NullReferenceException($"Проект не найден для обновления. ProjectId был {projectId}. UserId был {userId}");
+            }
+
+            project.ProjectName = projectName;
+            project.ProjectDetails = projectDetails;
+            await _pgContext.SaveChangesAsync();
+            
+            // Отправляем проект на модерацию.
+            await SendModerationProjectAsync(project.ProjectId);
+
+            var result = new UpdateProjectOutput
+            {
+                DateCreated = project.DateCreated,
+                ProjectName = project.ProjectName,
+                ProjectDetails = project.ProjectDetails,
+                ProjectIcon = project.ProjectIcon,
+                ProjectId = project.ProjectId
+            };
+            await transaction.CommitAsync();
+
+            return result;
+        }
+        
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Метод получает проект для изменения или просмотра.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Данные проекта.</returns>
+    public async Task<UserProjectEntity> GetProjectAsync(long projectId, long userId)
+    {
+        var result = await _pgContext.UserProjects
+            .FirstOrDefaultAsync(p => p.ProjectId == projectId 
+                                      && p.UserId == userId);
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод отправляет проект на модерацию.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    private async Task SendModerationProjectAsync(long projectId)
+    {
+        await _pgContext.ModerationProjects.AddAsync(new ModerationProjectEntity
+        {
+            DateModeration = DateTime.Now,
+            ProjectId = projectId
+        });
+        await _pgContext.SaveChangesAsync();
     }
 }

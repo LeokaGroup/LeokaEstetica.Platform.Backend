@@ -1,4 +1,5 @@
 using AutoMapper;
+using LeokaEstetica.Platform.Access.Enums;
 using LeokaEstetica.Platform.Core.Helpers;
 using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
@@ -9,6 +10,7 @@ using LeokaEstetica.Platform.Models.Dto.Output.Project;
 using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Notifications.Consts;
 using LeokaEstetica.Platform.Services.Abstractions.Project;
+using LeokaEstetica.Platform.Services.Validators;
 
 namespace LeokaEstetica.Platform.Services.Services.Project;
 
@@ -21,19 +23,24 @@ public sealed class ProjectService : IProjectService
     private readonly ILogService _logService;
     private readonly IUserRepository _userRepository;
     private readonly IMapper _mapper;
-    private readonly INotificationsService _notificationsService;
+    private readonly IProjectNotificationsService _projectNotificationsService;
+    
+    /// <summary>
+    /// Если Id проекта невалидный.
+    /// </summary>
+    private const string NOT_VALID_PROJECT_ID = "Невалидный Id проекта. ProjectId был ";
     
     public ProjectService(IProjectRepository projectRepository, 
         ILogService logService, 
         IUserRepository userRepository, 
-        IMapper mapper, 
-        INotificationsService notificationsService)
+        IMapper mapper,
+        IProjectNotificationsService projectNotificationsService)
     {
         _projectRepository = projectRepository;
         _logService = logService;
         _userRepository = userRepository;
         _mapper = mapper;
-        _notificationsService = notificationsService;
+        _projectNotificationsService = projectNotificationsService;
     }
 
     /// <summary>
@@ -48,7 +55,14 @@ public sealed class ProjectService : IProjectService
         try
         {
             var result = new CreateProjectOutput();
-            ValidateProject(projectName, projectDetails, account, ref result);
+            
+            if (string.IsNullOrEmpty(account))
+            {
+                var ex = new ArgumentNullException($"Не передан аккаунт пользователя.");
+                await _logService.LogErrorAsync(ex);
+            }
+            
+            ProjectValidator.ValidateCreateProject(projectName, projectDetails, ref result);
 
             if (result.Errors.Any())
             {
@@ -61,16 +75,18 @@ public sealed class ProjectService : IProjectService
 
             if (userId <= 0)
             {
-                throw new NotFoundUserIdByAccountException(account);
+                var ex = new NotFoundUserIdByAccountException(account);
+                await _logService.LogErrorAsync(ex);
+                throw ex;
             }
             
             // Проверяем существование такого проекта у текущего пользователя.
             var isCreatedProject = await _projectRepository.CheckCreatedProjectByProjectNameAsync(projectName, userId);
-            //
-            // // Есть дубликат, нельзя создать проект.
+            
+            // Есть дубликат, нельзя создать проект.
             if (isCreatedProject)
             {
-                await _notificationsService.SendNotificationWarningDublicateUserProjectAsync("Увы...", "Такой проект у вас уже существует!", NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, null);
+                await _projectNotificationsService.SendNotificationWarningDublicateUserProjectAsync("Увы...", "Такой проект у вас уже существует.", NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING);
                 result.IsSuccess = false;
                 
                 return result;
@@ -83,9 +99,9 @@ public sealed class ProjectService : IProjectService
             // Если что то пошло не так при создании проекта.
             if (project?.ProjectId <= 0)
             {
-                var ex = new Exception("Ошибка при создании проекта!");
-                await _logService.LogCriticalAsync(ex);
-                await _notificationsService.SendNotificationErrorCreatedUserProjectAsync("Что то пошло не так", "Ошибка при создании проекта. Мы уже знаем о проблеме и уже занимаемся ей.", NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, null);
+                var ex = new Exception("Ошибка при создании проекта.");
+                await _logService.LogErrorAsync(ex);
+                await _projectNotificationsService.SendNotificationErrorCreatedUserProjectAsync("Что то пошло не так", "Ошибка при создании проекта. Мы уже знаем о проблеме и уже занимаемся ей.", NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR);
                 
                 result.IsSuccess = false;
                 
@@ -95,7 +111,7 @@ public sealed class ProjectService : IProjectService
             result = _mapper.Map<CreateProjectOutput>(project);
 
             // Отправляем уведомление об успешном создании проекта.
-            await _notificationsService.SendNotificationSuccessCreatedUserProjectAsync("Все хорошо", "Данные успешно сохранены! Проект отправлен на модерацию!", NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, null);
+            await _projectNotificationsService.SendNotificationSuccessCreatedUserProjectAsync("Все хорошо", "Данные успешно сохранены. Проект отправлен на модерацию.", NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS);
             result.IsSuccess = true;
 
             return result;
@@ -109,32 +125,6 @@ public sealed class ProjectService : IProjectService
     }
 
     /// <summary>
-    /// Метод валидация проекта при его создании.
-    /// </summary>
-    /// <param name="projectName"></param>
-    /// <param name="projectDetails"></param>
-    /// <param name="account"></param>
-    /// <param name="result">Результирующая модель. Тут не возвращается, так как передана по ссылке сюда.</param>
-    private void ValidateProject(string projectName, string projectDetails, string account, ref CreateProjectOutput result)
-    {
-        if (string.IsNullOrEmpty(projectName))
-        {
-            result.Errors.Add("Не заполнено название проекта!");
-        }
-        
-        if (string.IsNullOrEmpty(projectDetails))
-        {
-            result.Errors.Add("Не заполнено описание проекта!");
-        }
-        
-        if (string.IsNullOrEmpty(account))
-        {
-            var ex = new ArgumentNullException($"Не передан аккаунт пользователя!");
-            _logService.LogError(ex);
-        }
-    }
-    
-    /// <summary>
     /// Метод получает названия полей для таблицы проектов пользователя.
     /// Все названия столбцов этой таблицы одинаковые у всех пользователей.
     /// </summary>
@@ -147,7 +137,7 @@ public sealed class ProjectService : IProjectService
 
             if (!items.Any())
             {
-                throw new NullReferenceException("Не удалось получить поля для таблицы UserProjects!");
+                throw new NullReferenceException("Не удалось получить поля для таблицы UserProjects.");
             }
 
             var result = _mapper.Map<IEnumerable<ColumnNameOutput>>(items);
@@ -167,7 +157,7 @@ public sealed class ProjectService : IProjectService
     /// </summary>
     /// <param name="account">Аккаунт пользователя.</param>
     /// <returns>Список проектов.</returns>
-    public async Task<IEnumerable<UserProjectOutput>> UserProjectsAsync(string account)
+    public async Task<UserProjectResultOutput> UserProjectsAsync(string account)
     {
         try
         {
@@ -197,8 +187,131 @@ public sealed class ProjectService : IProjectService
     /// <returns>Список проектов.</returns>
     public async Task<IEnumerable<CatalogProjectOutput>> CatalogProjectsAsync()
     {
-        var result = await _projectRepository.CatalogProjectsAsync();
+        try
+        {
+            var result = await _projectRepository.CatalogProjectsAsync();
 
-        return result;
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            await _logService.LogErrorAsync(ex);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Метод обновляет проект пользователя.
+    /// </summary>
+    /// <param name="projectName">Название проекта.</param>
+    /// <param name="projectDetails">Описание проекта.</param>
+    /// <param name="account">Аккаунт пользователя.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Данные нового проекта.</returns>
+    public async Task<UpdateProjectOutput> UpdateProjectAsync(string projectName, string projectDetails, string account, long projectId)
+    {
+        try
+        {
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+            
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                await _logService.LogErrorAsync(ex);
+                await _projectNotificationsService.SendNotificationErrorUpdatedUserProjectAsync("Что то не так...", "Ошибка при обновлении проекта. Мы уже знаем о проблеме и уже занимаемся ей.", NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR);
+                throw ex;
+            }
+            
+            if (projectId <= 0)
+            {
+                var ex = new ArgumentNullException(string.Concat(NOT_VALID_PROJECT_ID, projectId));
+                await _logService.LogErrorAsync(ex);
+                await _projectNotificationsService.SendNotificationErrorUpdatedUserProjectAsync("Что то не так...", "Ошибка при обновлении проекта. Мы уже знаем о проблеме и уже занимаемся ей.", NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR);
+                throw ex;
+            }
+
+            var result = new UpdateProjectOutput();
+            ProjectValidator.ValidateUpdateProject(projectName, projectDetails, ref result);
+            
+            if (result.Errors.Any())
+            {
+                result.IsSuccess = false;
+                
+                return result;
+            }
+            
+            // Изменяем проект в БД.
+            result = await _projectRepository.UpdateProjectAsync(projectName, projectDetails, userId, projectId);
+            
+            // TODO: Добавить отправку проекта на модерацию тут. Также удалять проект из каталога проектов на время модерации.
+            await _projectNotificationsService.SendNotificationSuccessUpdatedUserProjectAsync("Все хорошо", "Данные успешно изменены. Проект отправлен на модерацию.", NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS);
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            await _logService.LogErrorAsync(ex);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Метод получает проект для изменения или просмотра.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="mode">Режим. Чтение или изменение.</param>
+    /// <param name="account">Аккаунт.</param>
+    /// <returns>Данные проекта.</returns>
+    public async Task<ProjectOutput> GetProjectAsync(long projectId, ModeEnum mode, string account)
+    {
+        try
+        {
+            var result = new ProjectOutput();
+            ProjectValidator.ValidateGetProject(projectId, mode, ref result);
+
+            if (result.Errors.Any())
+            {
+                result.IsSuccess = false;
+                
+                return result;
+            }
+            
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                await _logService.LogErrorAsync(ex);
+                throw ex;
+            }
+            
+            // TODO: Реализовать в будущем.
+            // Проверяем, является ли текущий пользователь владельцем проекта.
+            // Это защита, если проект изменяется.
+            // if (mode.Equals(ModeEnum.Edit.ToString()))
+            // {
+            //     
+            // }
+
+            var project = await _projectRepository.GetProjectAsync(projectId, userId);
+
+            if (project is null)
+            {
+                var ex = new NullReferenceException($"Не удалось найти проект с ProjectId {projectId} и UserId {userId}");
+                await _logService.LogErrorAsync(ex);
+            }
+
+            result = _mapper.Map<ProjectOutput>(project);
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            await _logService.LogErrorAsync(ex);
+            throw;
+        }
     }
 }

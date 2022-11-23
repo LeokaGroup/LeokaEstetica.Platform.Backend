@@ -1,3 +1,4 @@
+using LeokaEstetica.Platform.Access.Enums;
 using LeokaEstetica.Platform.Base;
 using LeokaEstetica.Platform.Core.Filters;
 using LeokaEstetica.Platform.Models.Dto.Input.Project;
@@ -43,6 +44,7 @@ public class ProjectController : BaseController
     }
 
     /// <summary>
+    /// TODO: Нужно также учитывать иконку проекта. Пока она не передается в БД.
     /// Метод создает новый проект пользователя.
     /// </summary>
     /// <param name="createProjectInput">Входная модель.</param>
@@ -68,12 +70,12 @@ public class ProjectController : BaseController
     /// <returns>Список проектов.</returns>
     [HttpGet]
     [Route("user-projects")]
-    [ProducesResponseType(200, Type = typeof(IEnumerable<UserProjectOutput>))]
+    [ProducesResponseType(200, Type = typeof(UserProjectResultOutput))]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<IEnumerable<UserProjectOutput>> UserProjectsAsync()
+    public async Task<UserProjectResultOutput> UserProjectsAsync()
     {
         var result = await _projectService.UserProjectsAsync(GetUserName());
 
@@ -95,6 +97,45 @@ public class ProjectController : BaseController
     public async Task<IEnumerable<ColumnNameOutput>> UserProjectsColumnsNamesAsync()
     {
         var result = await _projectService.UserProjectsColumnsNamesAsync();
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод обновляет проект.
+    /// </summary>
+    /// <param name="createProjectInput">Входная модель.</param>
+    /// <returns>Обновленные данные.</returns>
+    [HttpPut]
+    [Route("project")]
+    [ProducesResponseType(200, Type = typeof(UpdateProjectOutput))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<UpdateProjectOutput> UpdateProjectAsync([FromBody] UpdateProjectInput createProjectInput)
+    {
+        var result = await _projectService.UpdateProjectAsync(createProjectInput.ProjectName, createProjectInput.ProjectDetails, GetUserName(), createProjectInput.ProjectId);
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод получает проект для изменения или просмотра.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="mode">Режим. Чтение или изменение.</param>
+    /// <returns>Данные проекта.</returns>
+    [HttpGet]
+    [Route("project")]
+    [ProducesResponseType(200, Type = typeof(ProjectOutput))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<ProjectOutput> GetProjectAsync([FromQuery] long projectId, [FromQuery] ModeEnum mode)
+    {
+        var result = await _projectService.GetProjectAsync(projectId, mode, GetUserName());
 
         return result;
     }

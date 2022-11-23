@@ -230,7 +230,7 @@ public sealed class ProfileService : IProfileService
 
             // Отправляем уведомление о сохранении фронту.
             await _notificationsService
-                .SendNotifySuccessSaveAsync("Все хорошо", "Данные успешно сохранены!", NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, null);
+                .SendNotifySuccessSaveAsync("Все хорошо", "Данные успешно сохранены!", NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS);
 
             result.IsSuccess = true;
 
@@ -266,7 +266,7 @@ public sealed class ProfileService : IProfileService
         else
         {
             await _notificationsService
-                .SendNotificationWarningSaveUserSkillsAsync("Совет", "Советуем выбрать ваши навыки!", NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, null);
+                .SendNotificationWarningSaveUserSkillsAsync("Совет", "Советуем выбрать ваши навыки!", NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING);
         }
     }
 
@@ -292,7 +292,7 @@ public sealed class ProfileService : IProfileService
         else
         {
             await _notificationsService
-                .SendNotificationWarningSaveUserIntentsAsync("Совет", "Советуем выбрать ваши цели на платформе!", NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, null);
+                .SendNotificationWarningSaveUserIntentsAsync("Совет", "Советуем выбрать ваши цели на платформе!", NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING);
         }
     }
 

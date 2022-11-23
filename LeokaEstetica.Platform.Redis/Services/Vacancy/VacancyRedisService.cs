@@ -24,7 +24,7 @@ public sealed class VacancyRedisService : IVacancyRedisService
     /// <param name="vacancyMenu">Класс для кэша.</param>
     public async Task SaveVacancyMenuCacheAsync(VacancyMenuRedis vacancyMenu)
     {
-        await _redis.SetStringAsync(GlobalConfigKeysCache.VACANCY_MENU_KEY,
+        await _redis.SetStringAsync(GlobalConfigKeys.Cache.VACANCY_MENU_KEY,
             ProtoBufExtensions.Serialize(vacancyMenu),
             new DistributedCacheEntryOptions
             {
@@ -37,7 +37,7 @@ public sealed class VacancyRedisService : IVacancyRedisService
     /// </summary>
     public async Task<VacancyMenuRedis> GetVacancyMenuCacheAsync()
     {
-        var items = await _redis.GetStringAsync(GlobalConfigKeysCache.VACANCY_MENU_KEY);
+        var items = await _redis.GetStringAsync(GlobalConfigKeys.Cache.VACANCY_MENU_KEY);
 
         if (string.IsNullOrEmpty(items))
         {

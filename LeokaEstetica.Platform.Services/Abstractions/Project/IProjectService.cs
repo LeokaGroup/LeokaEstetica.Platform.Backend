@@ -1,3 +1,4 @@
+using LeokaEstetica.Platform.Access.Enums;
 using LeokaEstetica.Platform.Models.Dto.Output.Configs;
 using LeokaEstetica.Platform.Models.Dto.Output.Project;
 
@@ -29,7 +30,7 @@ public interface IProjectService
     /// </summary>
     /// <param name="account">Аккаунт пользователя.</param>
     /// <returns>Список проектов.</returns>
-    Task<IEnumerable<UserProjectOutput>> UserProjectsAsync(string account);
+    Task<UserProjectResultOutput> UserProjectsAsync(string account);
 
     /// <summary>
     /// TODO: Подумать, давать ли всем пользователям возможность просматривать каталог проектов или только тем, у кого есть подписка.
@@ -37,4 +38,23 @@ public interface IProjectService
     /// </summary>
     /// <returns>Список проектов.</returns>
     Task<IEnumerable<CatalogProjectOutput>> CatalogProjectsAsync();
+
+    /// <summary>
+    /// Метод обновляет проект пользователя.
+    /// </summary>
+    /// <param name="projectName">Название проекта.</param>
+    /// <param name="projectDetails">Описание проекта.</param>
+    /// <param name="account">Аккаунт пользователя.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Данные нового проекта.</returns>
+    Task<UpdateProjectOutput> UpdateProjectAsync(string projectName, string projectDetails, string account, long projectId);
+
+    /// <summary>
+    /// Метод получает проект для изменения или просмотра.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="mode">Режим. Чтение или изменение.</param>
+    /// <param name="account">Аккаунт.</param>
+    /// <returns>Данные проекта.</returns>
+    Task<ProjectOutput> GetProjectAsync(long projectId, ModeEnum mode, string account);
 }

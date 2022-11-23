@@ -144,7 +144,7 @@ public sealed class VacancyService : IVacancyService
             await _vacancyModerationService.AddVacancyModerationAsync(createdVacancy.VacancyId);
             
             // Отправляем уведомление об успешном создании вакансии и отправки ее на модерацию.
-            await _notificationsService.SendNotificationSuccessCreatedUserVacancyAsync("Все хорошо", "Данные успешно сохранены! Вакансия отправлена на модерацию!", NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, null);
+            await _notificationsService.SendNotificationSuccessCreatedUserVacancyAsync("Все хорошо", "Данные успешно сохранены! Вакансия отправлена на модерацию!", NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS);
             
             result = _mapper.Map<CreateVacancyOutput>(createdVacancy);
             result.IsSuccess = true;

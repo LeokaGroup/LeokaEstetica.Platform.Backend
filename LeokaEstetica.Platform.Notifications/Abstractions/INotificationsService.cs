@@ -11,8 +11,7 @@ public interface INotificationsService
     /// <param name="title">Заголовок уведомления.</param>
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="userCode">Код пользователя.</param>
-    Task SendNotifySuccessSaveAsync(string title, string notifyText, string notificationLevel, string userCode);
+    Task SendNotifySuccessSaveAsync(string title, string notifyText, string notificationLevel);
 
     /// <summary>
     /// Метод сохраняет ConnectionId подключения SignalR в кэш.
@@ -27,8 +26,7 @@ public interface INotificationsService
     /// <param name="title">Заголовок уведомления.</param>
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="userCode">Код пользователя.</param>
-    Task SendNotificationWarningSaveUserSkillsAsync(string title, string notifyText, string notificationLevel, string userCode);
+    Task SendNotificationWarningSaveUserSkillsAsync(string title, string notifyText, string notificationLevel);
     
     /// <summary>
     /// Метод отправляет уведомление с предупреждением о пустом списке целей пользователя. Пользователь значит не выбрал навыки.
@@ -36,35 +34,7 @@ public interface INotificationsService
     /// <param name="title">Заголовок уведомления.</param>
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="userCode">Код пользователя.</param>
-    Task SendNotificationWarningSaveUserIntentsAsync(string title, string notifyText, string notificationLevel, string userCode);
-    
-    /// <summary>
-    /// Метод отправляет уведомление об успешном создании проекта пользователя.
-    /// </summary>
-    /// <param name="title">Заголовок уведомления.</param>
-    /// <param name="notifyText">Текст уведомления.</param>
-    /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="userCode">Код пользователя.</param>
-    Task SendNotificationSuccessCreatedUserProjectAsync(string title, string notifyText, string notificationLevel, string userCode);
-    
-    /// <summary>
-    /// Метод отправляет уведомление об ошибке при создании проекта пользователя.
-    /// </summary>
-    /// <param name="title">Заголовок уведомления.</param>
-    /// <param name="notifyText">Текст уведомления.</param>
-    /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="userCode">Код пользователя.</param>
-    Task SendNotificationErrorCreatedUserProjectAsync(string title, string notifyText, string notificationLevel, string userCode);
-    
-    /// <summary>
-    /// Метод отправляет уведомление о дубликате проекта пользователя.
-    /// </summary>
-    /// <param name="title">Заголовок уведомления.</param>
-    /// <param name="notifyText">Текст уведомления.</param>
-    /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="userCode">Код пользователя.</param>
-    Task SendNotificationWarningDublicateUserProjectAsync(string title, string notifyText, string notificationLevel, string userCode);
+    Task SendNotificationWarningSaveUserIntentsAsync(string title, string notifyText, string notificationLevel);
 
     /// <summary>
     /// Метод отправляет уведомление об успешном создании вакансии.
@@ -72,7 +42,5 @@ public interface INotificationsService
     /// <param name="title">Заголовок уведомления.</param>
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="userCode">Код пользователя.</param>
-    Task SendNotificationSuccessCreatedUserVacancyAsync(string title, string notifyText, string notificationLevel,
-        string userCode);
+    Task SendNotificationSuccessCreatedUserVacancyAsync(string title, string notifyText, string notificationLevel);
 }
