@@ -58,8 +58,7 @@ public class ProjectController : BaseController
     [ProducesResponseType(404)]
     public async Task<CreateProjectOutput> CreateProjectAsync([FromBody] CreateProjectInput createProjectInput)
     {
-        var result = await _projectService
-            .CreateProjectAsync(createProjectInput.ProjectName, createProjectInput.ProjectDetails, GetUserName());
+        var result = await _projectService.CreateProjectAsync(createProjectInput.ProjectName, createProjectInput.ProjectDetails, GetUserName(), createProjectInput.ProjectStage);
 
         return result;
     }

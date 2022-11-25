@@ -1,6 +1,7 @@
 using LeokaEstetica.Platform.Models.Dto.Output.Project;
 using LeokaEstetica.Platform.Models.Entities.Configs;
 using LeokaEstetica.Platform.Models.Entities.Project;
+using LeokaEstetica.Platform.Models.Enums;
 
 namespace LeokaEstetica.Platform.Database.Abstractions.Project;
 
@@ -18,8 +19,9 @@ public interface IProjectRepository
     /// <param name="statusSysName">Системное название статуса.</param>
     /// <param name="statusId">Id статуса.</param>
     /// <param name="statusName">Русское название статуса.</param>
+    /// <param name="projectStage">Стадия проекта.</param>
     /// <returns>Данные нового проекта.</returns>
-    Task<UserProjectEntity> CreateProjectAsync(string projectName, string projectDetails, long userId, string statusSysName, int statusId, string statusName);
+    Task<UserProjectEntity> CreateProjectAsync(string projectName, string projectDetails, long userId, string statusSysName, int statusId, string statusName, ProjectStageEnum projectStage);
     
     /// <summary>
     /// Метод получает названия полей для таблицы проектов пользователя.

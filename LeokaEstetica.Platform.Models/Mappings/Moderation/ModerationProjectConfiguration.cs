@@ -22,7 +22,7 @@ public partial class ModerationProjectConfiguration : IEntityTypeConfiguration<M
         
         entity.Property(e => e.DateModeration)
             .HasColumnName("DateModeration")
-            .HasColumnType("timestamp without timezone");
+            .HasColumnType("timestamp");
         
         entity.HasOne(p => p.UserProject)
             .WithMany(b => b.ModerationProjects)

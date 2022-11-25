@@ -1,6 +1,7 @@
 using LeokaEstetica.Platform.Access.Enums;
 using LeokaEstetica.Platform.Models.Dto.Output.Configs;
 using LeokaEstetica.Platform.Models.Dto.Output.Project;
+using LeokaEstetica.Platform.Models.Enums;
 
 namespace LeokaEstetica.Platform.Services.Abstractions.Project;
 
@@ -15,8 +16,9 @@ public interface IProjectService
     /// <param name="projectName">Название проекта.</param>
     /// <param name="projectDetails">Описание проекта.</param>
     /// <param name="account">Аккаунт пользователя.</param>
+    /// <param name="projectStage">Стадия проекта.</param>
     /// <returns>Данные нового проекта.</returns>
-    Task<CreateProjectOutput> CreateProjectAsync(string projectName, string projectDetails, string account);
+    Task<CreateProjectOutput> CreateProjectAsync(string projectName, string projectDetails, string account, ProjectStageEnum projectStage);
 
     /// <summary>
     /// Метод получает названия полей для таблицы проектов пользователя.

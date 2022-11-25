@@ -5,6 +5,7 @@ using LeokaEstetica.Platform.Models.Dto.Output.Project;
 using LeokaEstetica.Platform.Models.Entities.Configs;
 using LeokaEstetica.Platform.Models.Entities.Moderation;
 using LeokaEstetica.Platform.Models.Entities.Project;
+using LeokaEstetica.Platform.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace LeokaEstetica.Platform.Database.Repositories.Project;
@@ -30,8 +31,9 @@ public sealed class ProjectRepository : IProjectRepository
     /// <param name="statusSysName">Системное название статуса.</param>
     /// <param name="statusId">Id статуса.</param>
     /// <param name="statusName">Русское название статуса.</param>
+    /// <param name="projectStage">Стадия проекта.</param>
     /// <returns>Данные нового проекта.</returns>
-    public async Task<UserProjectEntity> CreateProjectAsync(string projectName, string projectDetails, long userId, string statusSysName, int statusId, string statusName)
+    public async Task<UserProjectEntity> CreateProjectAsync(string projectName, string projectDetails, long userId, string statusSysName, int statusId, string statusName, ProjectStageEnum projectStage)
     {
         var transaction = await _pgContext.Database
             .BeginTransactionAsync(IsolationLevel.ReadCommitted);
@@ -58,6 +60,9 @@ public sealed class ProjectRepository : IProjectRepository
                 ProjectStatusName = statusName
             });
             await _pgContext.SaveChangesAsync();
+            
+            // Записываем стадию проекта.
+            await SaveProjectStageAsync((int)projectStage, project.ProjectId);
             
             // Отправляем проект на модерацию.
             await SendModerationProjectAsync(project.ProjectId);
@@ -229,6 +234,21 @@ public sealed class ProjectRepository : IProjectRepository
         {
             DateModeration = DateTime.Now,
             ProjectId = projectId
+        });
+        await _pgContext.SaveChangesAsync();
+    }
+
+    /// <summary>
+    /// Метод сохраняет стадию проекта.
+    /// </summary>
+    /// <param name="projectStage">Стадия проекта.</param>
+    /// <param name="projectId">Id проекта.</param>
+    private async Task SaveProjectStageAsync(int projectStage, long projectId)
+    {
+        await _pgContext.UserProjectsStages.AddAsync(new UserProjectStageEntity
+        {
+            ProjectId = projectId,
+            StageId = projectStage
         });
         await _pgContext.SaveChangesAsync();
     }
