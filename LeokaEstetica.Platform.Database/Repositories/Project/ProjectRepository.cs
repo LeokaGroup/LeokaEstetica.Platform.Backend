@@ -266,4 +266,17 @@ public sealed class ProjectRepository : IProjectRepository
         });
         await _pgContext.SaveChangesAsync();
     }
+    
+    /// <summary>
+    /// Метод получает стадии проекта для выбора.
+    /// </summary>
+    /// <returns>Стадии проекта.</returns>
+    public async Task<IEnumerable<ProjectStageEntity>> ProjectStagesAsync()
+    {
+        var result = await _pgContext.ProjectStages
+            .OrderBy(o => o.Position)
+            .ToListAsync();
+
+        return result;
+    }
 }

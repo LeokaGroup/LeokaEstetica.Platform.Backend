@@ -60,4 +60,10 @@ public interface IProjectService
     /// <param name="account">Аккаунт.</param>
     /// <returns>Данные проекта.</returns>
     Task<ProjectOutput> GetProjectAsync(long projectId, ModeEnum mode, string account);
+
+    /// <summary>
+    /// Метод получает стадии проекта для выбора.
+    /// </summary>
+    /// <returns>Стадии проекта.</returns>
+    Task<IEnumerable<ProjectStageOutput>> ProjectStagesAsync();
 }

@@ -138,4 +138,22 @@ public class ProjectController : BaseController
 
         return result;
     }
+
+    /// <summary>
+    /// Метод получает стадии проекта для выбора.
+    /// </summary>
+    /// <returns>Стадии проекта.</returns>
+    [HttpGet]
+    [Route("stages")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<ProjectStageOutput>))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<IEnumerable<ProjectStageOutput>> ProjectStagesAsync()
+    {
+        var result = await _projectService.ProjectStagesAsync();
+
+        return result;
+    }
 }

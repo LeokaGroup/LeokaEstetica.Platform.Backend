@@ -70,4 +70,10 @@ public interface IProjectRepository
     /// <param name="userId">Id пользователя.</param>
     /// <returns>Данные проекта.</returns>
     Task<UserProjectEntity> GetProjectAsync(long projectId, long userId);
+
+    /// <summary>
+    /// Метод получает стадии проекта для выбора.
+    /// </summary>
+    /// <returns>Стадии проекта.</returns>
+    Task<IEnumerable<ProjectStageEntity>> ProjectStagesAsync();
 }

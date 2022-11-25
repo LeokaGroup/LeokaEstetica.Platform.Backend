@@ -317,4 +317,25 @@ public sealed class ProjectService : IProjectService
             throw;
         }
     }
+
+    /// <summary>
+    /// Метод получает стадии проекта для выбора.
+    /// </summary>
+    /// <returns>Стадии проекта.</returns>
+    public async Task<IEnumerable<ProjectStageOutput>> ProjectStagesAsync()
+    {
+        try
+        {
+            var items = await _projectRepository.ProjectStagesAsync();
+            var result = _mapper.Map<IEnumerable<ProjectStageOutput>>(items);
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            await _logService.LogErrorAsync(ex);
+            throw;
+        };
+    }
 }
