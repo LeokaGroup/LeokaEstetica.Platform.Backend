@@ -210,8 +210,9 @@ public sealed class ProjectService : IProjectService
     /// <param name="projectDetails">Описание проекта.</param>
     /// <param name="account">Аккаунт пользователя.</param>
     /// <param name="projectId">Id проекта.</param>
+    /// <param name="projectStage">Стадия проекта.</param>
     /// <returns>Данные нового проекта.</returns>
-    public async Task<UpdateProjectOutput> UpdateProjectAsync(string projectName, string projectDetails, string account, long projectId)
+    public async Task<UpdateProjectOutput> UpdateProjectAsync(string projectName, string projectDetails, string account, long projectId, ProjectStageEnum projectStage)
     {
         try
         {
@@ -244,7 +245,7 @@ public sealed class ProjectService : IProjectService
             }
             
             // Изменяем проект в БД.
-            result = await _projectRepository.UpdateProjectAsync(projectName, projectDetails, userId, projectId);
+            result = await _projectRepository.UpdateProjectAsync(projectName, projectDetails, userId, projectId, projectStage);
             
             // TODO: Добавить отправку проекта на модерацию тут. Также удалять проект из каталога проектов на время модерации.
             await _projectNotificationsService.SendNotificationSuccessUpdatedUserProjectAsync("Все хорошо", "Данные успешно изменены. Проект отправлен на модерацию.", NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS);

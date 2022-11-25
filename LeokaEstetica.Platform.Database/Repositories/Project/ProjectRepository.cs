@@ -165,8 +165,9 @@ public sealed class ProjectRepository : IProjectRepository
     /// <param name="projectDetails">Описание проекта.</param>
     /// <param name="userId">Id пользователя.</param>
     /// <param name="projectId">Id проекта.</param>
+    /// <param name="projectStage">Стадия проекта.</param>
     /// <returns>Данные нового проекта.</returns>
-    public async Task<UpdateProjectOutput> UpdateProjectAsync(string projectName, string projectDetails, long userId, long projectId)
+    public async Task<UpdateProjectOutput> UpdateProjectAsync(string projectName, string projectDetails, long userId, long projectId, ProjectStageEnum projectStage)
     {
         var transaction = await _pgContext.Database
             .BeginTransactionAsync(IsolationLevel.ReadCommitted);
@@ -184,6 +185,19 @@ public sealed class ProjectRepository : IProjectRepository
 
             project.ProjectName = projectName;
             project.ProjectDetails = projectDetails;
+            await _pgContext.SaveChangesAsync();
+            
+            // Проставляем стадию проекта.
+            var stage = await _pgContext.UserProjectsStages
+                .Where(p => p.ProjectId == project.ProjectId)
+                .FirstOrDefaultAsync();
+
+            if (stage is null)
+            {
+                throw new NullReferenceException($"У проекта не записана стадия. ProjectId был {projectId}.");
+            }
+
+            stage.StageId = (int)projectStage;
             await _pgContext.SaveChangesAsync();
             
             // Отправляем проект на модерацию.
