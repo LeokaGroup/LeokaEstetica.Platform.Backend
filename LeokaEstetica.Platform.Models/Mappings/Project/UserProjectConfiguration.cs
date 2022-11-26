@@ -38,7 +38,7 @@ public partial class UserProjectConfiguration : IEntityTypeConfiguration<UserPro
         
         entity.Property(e => e.DateCreated)
             .HasColumnName("DateCreated")
-            .HasColumnType("timestamp without timezone");
+            .HasColumnType("timestamp");
 
         entity.HasIndex(u => u.ProjectId)
             .HasDatabaseName("PK_UserProjects_ProjectId")

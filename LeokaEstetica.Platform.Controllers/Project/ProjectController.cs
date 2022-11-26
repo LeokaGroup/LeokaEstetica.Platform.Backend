@@ -58,8 +58,7 @@ public class ProjectController : BaseController
     [ProducesResponseType(404)]
     public async Task<CreateProjectOutput> CreateProjectAsync([FromBody] CreateProjectInput createProjectInput)
     {
-        var result = await _projectService
-            .CreateProjectAsync(createProjectInput.ProjectName, createProjectInput.ProjectDetails, GetUserName());
+        var result = await _projectService.CreateProjectAsync(createProjectInput.ProjectName, createProjectInput.ProjectDetails, GetUserName(), createProjectInput.ProjectStage);
 
         return result;
     }
@@ -115,7 +114,7 @@ public class ProjectController : BaseController
     [ProducesResponseType(404)]
     public async Task<UpdateProjectOutput> UpdateProjectAsync([FromBody] UpdateProjectInput createProjectInput)
     {
-        var result = await _projectService.UpdateProjectAsync(createProjectInput.ProjectName, createProjectInput.ProjectDetails, GetUserName(), createProjectInput.ProjectId);
+        var result = await _projectService.UpdateProjectAsync(createProjectInput.ProjectName, createProjectInput.ProjectDetails, GetUserName(), createProjectInput.ProjectId, createProjectInput.ProjectStage);
 
         return result;
     }
@@ -136,6 +135,24 @@ public class ProjectController : BaseController
     public async Task<ProjectOutput> GetProjectAsync([FromQuery] long projectId, [FromQuery] ModeEnum mode)
     {
         var result = await _projectService.GetProjectAsync(projectId, mode, GetUserName());
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод получает стадии проекта для выбора.
+    /// </summary>
+    /// <returns>Стадии проекта.</returns>
+    [HttpGet]
+    [Route("stages")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<ProjectStageOutput>))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<IEnumerable<ProjectStageOutput>> ProjectStagesAsync()
+    {
+        var result = await _projectService.ProjectStagesAsync();
 
         return result;
     }

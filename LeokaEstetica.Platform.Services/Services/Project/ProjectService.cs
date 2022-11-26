@@ -7,6 +7,7 @@ using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Models.Dto.Output.Configs;
 using LeokaEstetica.Platform.Models.Dto.Output.Project;
+using LeokaEstetica.Platform.Models.Enums;
 using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Notifications.Consts;
 using LeokaEstetica.Platform.Services.Abstractions.Project;
@@ -49,8 +50,9 @@ public sealed class ProjectService : IProjectService
     /// <param name="projectName">Название проекта.</param>
     /// <param name="projectDetails">Описание проекта.</param>
     /// <param name="account">Аккаунт пользователя.</param>
+    /// <param name="projectStage">Стадия проекта.</param>
     /// <returns>Данные нового проекта.</returns>
-    public async Task<CreateProjectOutput> CreateProjectAsync(string projectName, string projectDetails, string account)
+    public async Task<CreateProjectOutput> CreateProjectAsync(string projectName, string projectDetails, string account, ProjectStageEnum projectStage)
     {
         try
         {
@@ -94,7 +96,7 @@ public sealed class ProjectService : IProjectService
             
             var statusId = ProjectStatus.GetProjectStatusIdBySysName(ProjectStatusNameEnum.Moderation.ToString());
             var statusName = ProjectStatus.GetProjectStatusNameBySysName(ProjectStatusNameEnum.Moderation.ToString());
-            var project = await _projectRepository.CreateProjectAsync(projectName, projectDetails, userId, ProjectStatusNameEnum.Moderation.ToString(), statusId, statusName);
+            var project = await _projectRepository.CreateProjectAsync(projectName, projectDetails, userId, ProjectStatusNameEnum.Moderation.ToString(), statusId, statusName, projectStage);
                 
             // Если что то пошло не так при создании проекта.
             if (project?.ProjectId <= 0)
@@ -208,8 +210,9 @@ public sealed class ProjectService : IProjectService
     /// <param name="projectDetails">Описание проекта.</param>
     /// <param name="account">Аккаунт пользователя.</param>
     /// <param name="projectId">Id проекта.</param>
+    /// <param name="projectStage">Стадия проекта.</param>
     /// <returns>Данные нового проекта.</returns>
-    public async Task<UpdateProjectOutput> UpdateProjectAsync(string projectName, string projectDetails, string account, long projectId)
+    public async Task<UpdateProjectOutput> UpdateProjectAsync(string projectName, string projectDetails, string account, long projectId, ProjectStageEnum projectStage)
     {
         try
         {
@@ -242,7 +245,7 @@ public sealed class ProjectService : IProjectService
             }
             
             // Изменяем проект в БД.
-            result = await _projectRepository.UpdateProjectAsync(projectName, projectDetails, userId, projectId);
+            result = await _projectRepository.UpdateProjectAsync(projectName, projectDetails, userId, projectId, projectStage);
             
             // TODO: Добавить отправку проекта на модерацию тут. Также удалять проект из каталога проектов на время модерации.
             await _projectNotificationsService.SendNotificationSuccessUpdatedUserProjectAsync("Все хорошо", "Данные успешно изменены. Проект отправлен на модерацию.", NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS);
@@ -313,5 +316,26 @@ public sealed class ProjectService : IProjectService
             await _logService.LogErrorAsync(ex);
             throw;
         }
+    }
+
+    /// <summary>
+    /// Метод получает стадии проекта для выбора.
+    /// </summary>
+    /// <returns>Стадии проекта.</returns>
+    public async Task<IEnumerable<ProjectStageOutput>> ProjectStagesAsync()
+    {
+        try
+        {
+            var items = await _projectRepository.ProjectStagesAsync();
+            var result = _mapper.Map<IEnumerable<ProjectStageOutput>>(items);
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            await _logService.LogErrorAsync(ex);
+            throw;
+        };
     }
 }

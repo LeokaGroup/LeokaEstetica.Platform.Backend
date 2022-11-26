@@ -1,3 +1,5 @@
+using LeokaEstetica.Platform.Models.Enums;
+
 namespace LeokaEstetica.Platform.Models.Dto.Input.Project;
 
 /// <summary>
@@ -24,4 +26,9 @@ public class ProjectInput
     /// Id проекта.
     /// </summary>
     public long ProjectId { get; set; }
+
+    /// <summary>
+    /// Стадия проекта.
+    /// </summary>
+    public ProjectStageEnum ProjectStage { get; set; }
 }

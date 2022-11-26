@@ -1,6 +1,7 @@
 using LeokaEstetica.Platform.Access.Enums;
 using LeokaEstetica.Platform.Models.Dto.Output.Configs;
 using LeokaEstetica.Platform.Models.Dto.Output.Project;
+using LeokaEstetica.Platform.Models.Enums;
 
 namespace LeokaEstetica.Platform.Services.Abstractions.Project;
 
@@ -15,8 +16,9 @@ public interface IProjectService
     /// <param name="projectName">Название проекта.</param>
     /// <param name="projectDetails">Описание проекта.</param>
     /// <param name="account">Аккаунт пользователя.</param>
+    /// <param name="projectStage">Стадия проекта.</param>
     /// <returns>Данные нового проекта.</returns>
-    Task<CreateProjectOutput> CreateProjectAsync(string projectName, string projectDetails, string account);
+    Task<CreateProjectOutput> CreateProjectAsync(string projectName, string projectDetails, string account, ProjectStageEnum projectStage);
 
     /// <summary>
     /// Метод получает названия полей для таблицы проектов пользователя.
@@ -46,8 +48,9 @@ public interface IProjectService
     /// <param name="projectDetails">Описание проекта.</param>
     /// <param name="account">Аккаунт пользователя.</param>
     /// <param name="projectId">Id проекта.</param>
+    /// <param name="projectStage">Стадия проекта.</param>
     /// <returns>Данные нового проекта.</returns>
-    Task<UpdateProjectOutput> UpdateProjectAsync(string projectName, string projectDetails, string account, long projectId);
+    Task<UpdateProjectOutput> UpdateProjectAsync(string projectName, string projectDetails, string account, long projectId, ProjectStageEnum projectStage);
 
     /// <summary>
     /// Метод получает проект для изменения или просмотра.
@@ -57,4 +60,10 @@ public interface IProjectService
     /// <param name="account">Аккаунт.</param>
     /// <returns>Данные проекта.</returns>
     Task<ProjectOutput> GetProjectAsync(long projectId, ModeEnum mode, string account);
+
+    /// <summary>
+    /// Метод получает стадии проекта для выбора.
+    /// </summary>
+    /// <returns>Стадии проекта.</returns>
+    Task<IEnumerable<ProjectStageOutput>> ProjectStagesAsync();
 }

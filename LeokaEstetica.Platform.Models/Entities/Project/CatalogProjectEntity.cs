@@ -10,6 +10,8 @@ public class CatalogProjectEntity
     /// </summary>
     public long CatalogProjectId { get; set; }
 
+    public long ProjectId { get; set; }
+
     /// <summary>
     /// Id проекта.
     /// </summary>

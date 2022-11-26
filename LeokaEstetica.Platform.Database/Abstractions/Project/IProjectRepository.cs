@@ -1,6 +1,7 @@
 using LeokaEstetica.Platform.Models.Dto.Output.Project;
 using LeokaEstetica.Platform.Models.Entities.Configs;
 using LeokaEstetica.Platform.Models.Entities.Project;
+using LeokaEstetica.Platform.Models.Enums;
 
 namespace LeokaEstetica.Platform.Database.Abstractions.Project;
 
@@ -18,8 +19,9 @@ public interface IProjectRepository
     /// <param name="statusSysName">Системное название статуса.</param>
     /// <param name="statusId">Id статуса.</param>
     /// <param name="statusName">Русское название статуса.</param>
+    /// <param name="projectStage">Стадия проекта.</param>
     /// <returns>Данные нового проекта.</returns>
-    Task<UserProjectEntity> CreateProjectAsync(string projectName, string projectDetails, long userId, string statusSysName, int statusId, string statusName);
+    Task<UserProjectEntity> CreateProjectAsync(string projectName, string projectDetails, long userId, string statusSysName, int statusId, string statusName, ProjectStageEnum projectStage);
     
     /// <summary>
     /// Метод получает названия полей для таблицы проектов пользователя.
@@ -57,8 +59,9 @@ public interface IProjectRepository
     /// <param name="projectDetails">Описание проекта.</param>
     /// <param name="userId">Id пользователя.</param>
     /// <param name="projectId">Id проекта.</param>
+    /// <param name="projectStage">Стадия проекта.</param>
     /// <returns>Данные нового проекта.</returns>
-    Task<UpdateProjectOutput> UpdateProjectAsync(string projectName, string projectDetails, long userId, long projectId);
+    Task<UpdateProjectOutput> UpdateProjectAsync(string projectName, string projectDetails, long userId, long projectId, ProjectStageEnum projectStage);
 
     /// <summary>
     /// Метод получает проект для изменения или просмотра.
@@ -67,4 +70,10 @@ public interface IProjectRepository
     /// <param name="userId">Id пользователя.</param>
     /// <returns>Данные проекта.</returns>
     Task<UserProjectEntity> GetProjectAsync(long projectId, long userId);
+
+    /// <summary>
+    /// Метод получает стадии проекта для выбора.
+    /// </summary>
+    /// <returns>Стадии проекта.</returns>
+    Task<IEnumerable<ProjectStageEntity>> ProjectStagesAsync();
 }
