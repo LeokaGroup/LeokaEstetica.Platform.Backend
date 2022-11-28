@@ -28,7 +28,7 @@ public interface IProjectRepository
     /// Все названия столбцов этой таблицы одинаковые у всех пользователей.
     /// </summary>
     /// <returns>Список названий полей таблицы.</returns>
-    Task<IEnumerable<ColumnNameEntity>> UserProjectsColumnsNamesAsync();
+    Task<IEnumerable<ProjectColumnNameEntity>> UserProjectsColumnsNamesAsync();
 
     /// <summary>
     /// Метод проверяет, создан ли уже такой заказ под текущим пользователем с таким названием.

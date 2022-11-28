@@ -1,9 +1,9 @@
 namespace LeokaEstetica.Platform.Models.Entities.Configs;
 
 /// <summary>
-/// Класс сопоставляется с таблицей Configs.ColumnsNames.
+/// Класс сопоставляется с таблицей названий столбцов проектов Configs.ProjectVacancyColumnNames.
 /// </summary>
-public class ColumnNameEntity
+public class ProjectVacancyColumnNameEntity
 {
     /// <summary>
     /// PK.

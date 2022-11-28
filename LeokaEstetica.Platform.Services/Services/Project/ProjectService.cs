@@ -132,7 +132,7 @@ public sealed class ProjectService : IProjectService
     /// Все названия столбцов этой таблицы одинаковые у всех пользователей.
     /// </summary>
     /// <returns>Список названий полей таблицы.</returns>
-    public async Task<IEnumerable<ColumnNameOutput>> UserProjectsColumnsNamesAsync()
+    public async Task<IEnumerable<ProjectColumnNameOutput>> UserProjectsColumnsNamesAsync()
     {
         try
         {
@@ -140,10 +140,10 @@ public sealed class ProjectService : IProjectService
 
             if (!items.Any())
             {
-                throw new NullReferenceException("Не удалось получить поля для таблицы UserProjects.");
+                throw new NullReferenceException("Не удалось получить поля для таблицы ProjectColumnsNames.");
             }
 
-            var result = _mapper.Map<IEnumerable<ColumnNameOutput>>(items);
+            var result = _mapper.Map<IEnumerable<ProjectColumnNameOutput>>(items);
 
             return result;
         }

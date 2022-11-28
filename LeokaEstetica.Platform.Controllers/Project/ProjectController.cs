@@ -88,12 +88,12 @@ public class ProjectController : BaseController
     /// <returns>Список названий полей таблицы.</returns>
     [HttpGet]
     [Route("config-user-projects")]
-    [ProducesResponseType(200, Type = typeof(IEnumerable<ColumnNameOutput>))]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<ProjectColumnNameOutput>))]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<IEnumerable<ColumnNameOutput>> UserProjectsColumnsNamesAsync()
+    public async Task<IEnumerable<ProjectColumnNameOutput>> UserProjectsColumnsNamesAsync()
     {
         var result = await _projectService.UserProjectsColumnsNamesAsync();
 

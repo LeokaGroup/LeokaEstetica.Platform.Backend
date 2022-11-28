@@ -84,9 +84,9 @@ public sealed class ProjectRepository : IProjectRepository
     /// Все названия столбцов этой таблицы одинаковые у всех пользователей.
     /// </summary>
     /// <returns>Список названий полей таблицы.</returns>
-    public async Task<IEnumerable<ColumnNameEntity>> UserProjectsColumnsNamesAsync()
+    public async Task<IEnumerable<ProjectColumnNameEntity>> UserProjectsColumnsNamesAsync()
     {
-        var result = await _pgContext.ColumnsNames
+        var result = await _pgContext.ProjectColumnsNames
             .OrderBy(o => o.Position)
             .ToListAsync();
 

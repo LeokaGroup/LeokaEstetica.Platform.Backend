@@ -25,7 +25,7 @@ public interface IProjectService
     /// Все названия столбцов этой таблицы одинаковые у всех пользователей.
     /// </summary>
     /// <returns>Список названий полей таблицы.</returns>
-    Task<IEnumerable<ColumnNameOutput>> UserProjectsColumnsNamesAsync();
+    Task<IEnumerable<ProjectColumnNameOutput>> UserProjectsColumnsNamesAsync();
 
     /// <summary>
     /// Метод получает список проектов пользователя.

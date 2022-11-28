@@ -1,4 +1,5 @@
 using LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
+using LeokaEstetica.Platform.Models.Entities.Configs;
 using LeokaEstetica.Platform.Models.Entities.Vacancy;
 
 namespace LeokaEstetica.Platform.Database.Abstractions.Vacancy;
@@ -41,4 +42,11 @@ public interface IVacancyRepository
     /// <param name="statusName">Название статуса.</param>
     /// <param name="statusSysName">Системное название статуса.</param>
     Task AddVacancyStatusAsync(long vacancyId, string statusName, string statusSysName);
+    
+    /// <summary>
+    /// Метод получает названия полей для таблицы вакансий проектов пользователя.
+    /// Все названия столбцов этой таблицы одинаковые у всех пользователей.
+    /// </summary>
+    /// <returns>Список названий полей таблицы.</returns>
+    Task<IEnumerable<ProjectVacancyColumnNameEntity>> ProjectUserVacanciesColumnsNamesAsync();
 }
