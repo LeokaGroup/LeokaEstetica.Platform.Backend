@@ -150,4 +150,9 @@ public class PgContext : DbContext
     /// Таблица стадий проектов пользователей.
     /// </summary>
     public DbSet<UserProjectStageEntity> UserProjectsStages { get; set; }
+
+    /// <summary>
+    /// Таблица вакансий проекта.
+    /// </summary>
+    public DbSet<ProjectVacancyEntity> ProjectVacancies { get; set; }
 }
