@@ -72,5 +72,5 @@ public interface IProjectService
     /// </summary>
     /// <param name="projectId">Id проекта, вакансии которого нужно получить.</param>
     /// <returns>Список вакансий.</returns>
-    Task<ProjectVacancyOutput> ProjectVacanciesAsync(long projectId);
+    Task<IEnumerable<ProjectVacancyOutput>> ProjectVacanciesAsync(long projectId);
 }

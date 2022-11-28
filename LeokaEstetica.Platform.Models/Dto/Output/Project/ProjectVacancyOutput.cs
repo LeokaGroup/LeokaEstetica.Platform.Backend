@@ -9,14 +9,33 @@ namespace LeokaEstetica.Platform.Models.Dto.Output.Project;
 public class ProjectVacancyOutput : IFrontError
 {
     /// <summary>
-    /// Список вакансий проекта.
+    /// PK.
     /// </summary>
-    public IEnumerable<UserVacancyOutput> ProjectVacancies { get; set; } = Enumerable.Empty<UserVacancyOutput>();
+    public long ProjectVacancyId { get; set; }
 
     /// <summary>
-    /// Крол-во вакансий проекта.
+    /// Id проекта.
     /// </summary>
-    public int Total => ProjectVacancies.Count();
+    public long ProjectId { get; set; }
+
+    /// <summary>
+    /// Id вакансии.
+    /// </summary>
+    public long VacancyId { get; set; }
+
+    /// <summary>
+    /// FK на вакансии пользователя.
+    /// </summary>
+    public UserVacancyOutput UserVacancy { get; set; }
+    /// <summary>
+    /// Список вакансий проекта.
+    /// </summary>
+    // public IEnumerable<UserVacancyOutput> ProjectVacancies { get; set; }
+    //
+    // /// <summary>
+    // /// Крол-во вакансий проекта.
+    // /// </summary>
+    // public int Total => ProjectVacancies.Count();
 
     /// <summary>
     /// Список ошибок.

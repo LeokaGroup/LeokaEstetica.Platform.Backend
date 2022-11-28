@@ -356,11 +356,11 @@ public sealed class ProjectService : IProjectService
     /// </summary>
     /// <param name="projectId">Id проекта, вакансии которого нужно получить.</param>
     /// <returns>Список вакансий.</returns>
-    public async Task<ProjectVacancyOutput> ProjectVacanciesAsync(long projectId)
+    public async Task<IEnumerable<ProjectVacancyOutput>> ProjectVacanciesAsync(long projectId)
     {
         try
         {
-            var result = new ProjectVacancyOutput();
+            IEnumerable<ProjectVacancyOutput> result = null;
             
             if (projectId <= 0)
             {
@@ -371,7 +371,7 @@ public sealed class ProjectService : IProjectService
 
             if (items.Any())
             {
-                result.ProjectVacancies = _mapper.Map<IEnumerable<UserVacancyOutput>>(items);
+                result = _mapper.Map<IEnumerable<ProjectVacancyOutput>>(items);
             }
 
             return result;
