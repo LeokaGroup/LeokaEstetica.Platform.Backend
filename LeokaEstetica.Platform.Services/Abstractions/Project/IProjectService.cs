@@ -66,4 +66,11 @@ public interface IProjectService
     /// </summary>
     /// <returns>Стадии проекта.</returns>
     Task<IEnumerable<ProjectStageOutput>> ProjectStagesAsync();
+
+    /// <summary>
+    /// Метод получает список вакансий проекта. Список вакансий, которые принадлежат владельцу проекта.
+    /// </summary>
+    /// <param name="projectId">Id проекта, вакансии которого нужно получить.</param>
+    /// <returns>Список вакансий.</returns>
+    Task<ProjectVacancyOutput> ProjectVacanciesAsync(long projectId);
 }

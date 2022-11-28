@@ -279,4 +279,20 @@ public sealed class ProjectRepository : IProjectRepository
 
         return result;
     }
+
+    /// <summary>
+    /// Метод получает список вакансий проекта. Список вакансий, которые принадлежат владельцу проекта.
+    /// </summary>
+    /// <param name="projectId">Id проекта, вакансии которого нужно получить.</param>
+    /// <returns>Список вакансий.</returns>
+    public async Task<IEnumerable<ProjectVacancyEntity>> ProjectVacanciesAsync(long projectId)
+    {
+        var result = await _pgContext.ProjectVacancies
+            .Include(uv => uv.UserVacancy)
+            .Where(pv => pv.ProjectId == projectId)
+            .OrderBy(o => o.ProjectVacancyId)
+            .ToListAsync();
+
+        return result;
+    }
 }

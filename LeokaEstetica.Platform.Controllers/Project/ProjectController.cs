@@ -156,4 +156,23 @@ public class ProjectController : BaseController
 
         return result;
     }
+
+    /// <summary>
+    /// Метод получает список вакансий проекта. Список вакансий, которые принадлежат владельцу проекта.
+    /// </summary>
+    /// <param name="projectId">Id проекта, вакансии которого нужно получить.</param>
+    /// <returns>Список вакансий.</returns>
+    [HttpGet]
+    [Route("vacancies")]
+    [ProducesResponseType(200, Type = typeof(ProjectVacancyOutput))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<ProjectVacancyOutput> ProjectVacanciesAsync([FromQuery] long projectId)
+    {
+        var result = await _projectService.ProjectVacanciesAsync(projectId);
+
+        return result;
+    }
 }

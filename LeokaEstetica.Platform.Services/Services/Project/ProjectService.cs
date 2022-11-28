@@ -7,6 +7,7 @@ using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Models.Dto.Output.Configs;
 using LeokaEstetica.Platform.Models.Dto.Output.Project;
+using LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
 using LeokaEstetica.Platform.Models.Enums;
 using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Notifications.Consts;
@@ -228,10 +229,7 @@ public sealed class ProjectService : IProjectService
             
             if (projectId <= 0)
             {
-                var ex = new ArgumentNullException(string.Concat(NOT_VALID_PROJECT_ID, projectId));
-                await _logService.LogErrorAsync(ex);
-                await _projectNotificationsService.SendNotificationErrorUpdatedUserProjectAsync("Что то не так...", "Ошибка при обновлении проекта. Мы уже знаем о проблеме и уже занимаемся ей.", NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR);
-                throw ex;
+                await ValidateProjectIdAsync(projectId);
             }
 
             var result = new UpdateProjectOutput();
@@ -337,5 +335,52 @@ public sealed class ProjectService : IProjectService
             await _logService.LogErrorAsync(ex);
             throw;
         };
+    }
+
+    /// <summary>
+    /// Метод валидирует Id проекта. Выбрасываем исклчюение, если он невалидный.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    private async Task ValidateProjectIdAsync(long projectId)
+    {
+        var ex = new ArgumentNullException(string.Concat(NOT_VALID_PROJECT_ID, projectId));
+        await _logService.LogErrorAsync(ex);
+        await _projectNotificationsService.SendNotificationErrorUpdatedUserProjectAsync("Что то не так...",
+            "Ошибка при обновлении проекта. Мы уже знаем о проблеме и уже занимаемся ей.",
+            NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR);
+        throw ex;
+    }
+
+    /// <summary>
+    /// Метод получает список вакансий проекта. Список вакансий, которые принадлежат владельцу проекта.
+    /// </summary>
+    /// <param name="projectId">Id проекта, вакансии которого нужно получить.</param>
+    /// <returns>Список вакансий.</returns>
+    public async Task<ProjectVacancyOutput> ProjectVacanciesAsync(long projectId)
+    {
+        try
+        {
+            var result = new ProjectVacancyOutput();
+            
+            if (projectId <= 0)
+            {
+                await ValidateProjectIdAsync(projectId);
+            }
+
+            var items = await _projectRepository.ProjectVacanciesAsync(projectId);
+
+            if (items.Any())
+            {
+                result.ProjectVacancies = _mapper.Map<IEnumerable<UserVacancyOutput>>(items);
+            }
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            await _logService.LogErrorAsync(ex);
+            throw;
+        }
     }
 }
