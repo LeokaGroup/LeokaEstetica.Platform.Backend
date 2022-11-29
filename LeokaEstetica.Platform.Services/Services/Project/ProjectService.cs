@@ -7,7 +7,6 @@ using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Models.Dto.Output.Configs;
 using LeokaEstetica.Platform.Models.Dto.Output.Project;
-using LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
 using LeokaEstetica.Platform.Models.Enums;
 using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Notifications.Consts;
@@ -356,11 +355,11 @@ public sealed class ProjectService : IProjectService
     /// </summary>
     /// <param name="projectId">Id проекта, вакансии которого нужно получить.</param>
     /// <returns>Список вакансий.</returns>
-    public async Task<IEnumerable<ProjectVacancyOutput>> ProjectVacanciesAsync(long projectId)
+    public async Task<ProjectVacancyResultOutput> ProjectVacanciesAsync(long projectId)
     {
         try
         {
-            IEnumerable<ProjectVacancyOutput> result = null;
+            var result = new ProjectVacancyResultOutput();
             
             if (projectId <= 0)
             {
@@ -371,7 +370,7 @@ public sealed class ProjectService : IProjectService
 
             if (items.Any())
             {
-                result = _mapper.Map<IEnumerable<ProjectVacancyOutput>>(items);
+                result.ProjectVacancies = _mapper.Map<IEnumerable<ProjectVacancyOutput>>(items);
             }
 
             return result;

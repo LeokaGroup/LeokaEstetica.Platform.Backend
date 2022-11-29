@@ -1,12 +1,11 @@
-using LeokaEstetica.Platform.Models.Dto.Common;
 using LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
 
 namespace LeokaEstetica.Platform.Models.Dto.Output.Project;
 
 /// <summary>
-/// Класс выходной модели 
+/// Класс выходной модели вакансий проекта.
 /// </summary>
-public class ProjectVacancyOutput : IFrontError
+public class ProjectVacancyOutput
 {
     /// <summary>
     /// PK.
@@ -27,18 +26,4 @@ public class ProjectVacancyOutput : IFrontError
     /// FK на вакансии пользователя.
     /// </summary>
     public UserVacancyOutput UserVacancy { get; set; }
-    /// <summary>
-    /// Список вакансий проекта.
-    /// </summary>
-    // public IEnumerable<UserVacancyOutput> ProjectVacancies { get; set; }
-    //
-    // /// <summary>
-    // /// Крол-во вакансий проекта.
-    // /// </summary>
-    // public int Total => ProjectVacancies.Count();
-
-    /// <summary>
-    /// Список ошибок.
-    /// </summary>
-    public List<string> Errors { get; set; } = new();
 }

@@ -164,12 +164,12 @@ public class ProjectController : BaseController
     /// <returns>Список вакансий.</returns>
     [HttpGet]
     [Route("vacancies")]
-    [ProducesResponseType(200, Type = typeof(IEnumerable<ProjectVacancyOutput>))]
+    [ProducesResponseType(200, Type = typeof(ProjectVacancyResultOutput))]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<IEnumerable<ProjectVacancyOutput>> ProjectVacanciesAsync([FromQuery] long projectId)
+    public async Task<ProjectVacancyResultOutput> ProjectVacanciesAsync([FromQuery] long projectId)
     {
         var result = await _projectService.ProjectVacanciesAsync(projectId);
 
