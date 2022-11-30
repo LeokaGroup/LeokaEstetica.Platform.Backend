@@ -84,9 +84,9 @@ public sealed class ProjectRepository : IProjectRepository
     /// Все названия столбцов этой таблицы одинаковые у всех пользователей.
     /// </summary>
     /// <returns>Список названий полей таблицы.</returns>
-    public async Task<IEnumerable<ColumnNameEntity>> UserProjectsColumnsNamesAsync()
+    public async Task<IEnumerable<ProjectColumnNameEntity>> UserProjectsColumnsNamesAsync()
     {
-        var result = await _pgContext.ColumnsNames
+        var result = await _pgContext.ProjectColumnsNames
             .OrderBy(o => o.Position)
             .ToListAsync();
 
@@ -275,6 +275,22 @@ public sealed class ProjectRepository : IProjectRepository
     {
         var result = await _pgContext.ProjectStages
             .OrderBy(o => o.Position)
+            .ToListAsync();
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод получает список вакансий проекта. Список вакансий, которые принадлежат владельцу проекта.
+    /// </summary>
+    /// <param name="projectId">Id проекта, вакансии которого нужно получить.</param>
+    /// <returns>Список вакансий.</returns>
+    public async Task<IEnumerable<ProjectVacancyEntity>> ProjectVacanciesAsync(long projectId)
+    {
+        var result = await _pgContext.ProjectVacancies
+            .Include(uv => uv.UserVacancy)
+            .Where(pv => pv.ProjectId == projectId)
+            .OrderBy(o => o.ProjectVacancyId)
             .ToListAsync();
 
         return result;

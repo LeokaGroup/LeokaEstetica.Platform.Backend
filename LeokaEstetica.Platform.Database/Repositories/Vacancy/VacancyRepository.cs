@@ -1,6 +1,7 @@
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Database.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
+using LeokaEstetica.Platform.Models.Entities.Configs;
 using LeokaEstetica.Platform.Models.Entities.Vacancy;
 using Microsoft.EntityFrameworkCore;
 
@@ -100,5 +101,19 @@ public sealed class VacancyRepository : IVacancyRepository
         };
         await _pgContext.VacancyStatuses.AddAsync(vacancyStatus);
         await _pgContext.SaveChangesAsync();
+    }
+    
+    /// <summary>
+    /// Метод получает названия полей для таблицы вакансий проектов пользователя.
+    /// Все названия столбцов этой таблицы одинаковые у всех пользователей.
+    /// </summary>
+    /// <returns>Список названий полей таблицы.</returns>
+    public async Task<IEnumerable<ProjectVacancyColumnNameEntity>> ProjectUserVacanciesColumnsNamesAsync()
+    {
+        var result = await _pgContext.ProjectVacancyColumnsNames
+            .OrderBy(o => o.Position)
+            .ToListAsync();
+
+        return result;
     }
 }

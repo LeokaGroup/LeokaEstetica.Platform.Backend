@@ -36,9 +36,12 @@ public class MappingProfile : Profile
         CreateMap<CatalogProjectEntity, CreateProjectOutput>(); 
         CreateMap<UserProjectEntity, CreateProjectOutput>(); 
         CreateMap<UserProjectEntity, ProjectOutput>(); 
-        CreateMap<ColumnNameEntity, ColumnNameOutput>();
-        CreateMap<UserVacancyEntity, CreateVacancyOutput>();
+        CreateMap<ProjectColumnNameEntity, ProjectColumnNameOutput>();
+        CreateMap<ProjectVacancyColumnNameEntity, ProjectVacancyColumnNameOutput>();
         CreateMap<UserVacancyEntity, CreateVacancyOutput>();
         CreateMap<ProjectStageEntity, ProjectStageOutput>();
+        CreateMap<ProjectVacancyEntity, ProjectVacancyOutput>();
+        CreateMap<UserVacancyEntity, UserVacancyOutput>();
+        CreateMap<UserVacancyOutput, UserVacancyEntity>();
     }
 }

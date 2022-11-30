@@ -4,11 +4,11 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace LeokaEstetica.Platform.Models.Mappings.Config;
 
-public partial class ColumnNameConfiguration : IEntityTypeConfiguration<ColumnNameEntity>
+public partial class ProjectColumnNameConfiguration : IEntityTypeConfiguration<ProjectColumnNameEntity>
 {
-    public void Configure(EntityTypeBuilder<ColumnNameEntity> entity)
+    public void Configure(EntityTypeBuilder<ProjectColumnNameEntity> entity)
     {
-        entity.ToTable("ColumnsNames", "Configs");
+        entity.ToTable("ProjectColumnsNames", "Configs");
 
         entity.HasKey(e => e.ColumnId);
 
@@ -38,5 +38,5 @@ public partial class ColumnNameConfiguration : IEntityTypeConfiguration<ColumnNa
         OnConfigurePartial(entity);
     }
 
-    partial void OnConfigurePartial(EntityTypeBuilder<ColumnNameEntity> entity);
+    partial void OnConfigurePartial(EntityTypeBuilder<ProjectColumnNameEntity> entity);
 }

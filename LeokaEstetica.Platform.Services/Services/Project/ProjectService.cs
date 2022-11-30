@@ -131,7 +131,7 @@ public sealed class ProjectService : IProjectService
     /// Все названия столбцов этой таблицы одинаковые у всех пользователей.
     /// </summary>
     /// <returns>Список названий полей таблицы.</returns>
-    public async Task<IEnumerable<ColumnNameOutput>> UserProjectsColumnsNamesAsync()
+    public async Task<IEnumerable<ProjectColumnNameOutput>> UserProjectsColumnsNamesAsync()
     {
         try
         {
@@ -139,10 +139,10 @@ public sealed class ProjectService : IProjectService
 
             if (!items.Any())
             {
-                throw new NullReferenceException("Не удалось получить поля для таблицы UserProjects.");
+                throw new NullReferenceException("Не удалось получить поля для таблицы ProjectColumnsNames.");
             }
 
-            var result = _mapper.Map<IEnumerable<ColumnNameOutput>>(items);
+            var result = _mapper.Map<IEnumerable<ProjectColumnNameOutput>>(items);
 
             return result;
         }
@@ -228,10 +228,7 @@ public sealed class ProjectService : IProjectService
             
             if (projectId <= 0)
             {
-                var ex = new ArgumentNullException(string.Concat(NOT_VALID_PROJECT_ID, projectId));
-                await _logService.LogErrorAsync(ex);
-                await _projectNotificationsService.SendNotificationErrorUpdatedUserProjectAsync("Что то не так...", "Ошибка при обновлении проекта. Мы уже знаем о проблеме и уже занимаемся ей.", NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR);
-                throw ex;
+                await ValidateProjectIdAsync(projectId);
             }
 
             var result = new UpdateProjectOutput();
@@ -337,5 +334,52 @@ public sealed class ProjectService : IProjectService
             await _logService.LogErrorAsync(ex);
             throw;
         };
+    }
+
+    /// <summary>
+    /// Метод валидирует Id проекта. Выбрасываем исклчюение, если он невалидный.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    private async Task ValidateProjectIdAsync(long projectId)
+    {
+        var ex = new ArgumentNullException(string.Concat(NOT_VALID_PROJECT_ID, projectId));
+        await _logService.LogErrorAsync(ex);
+        await _projectNotificationsService.SendNotificationErrorUpdatedUserProjectAsync("Что то не так...",
+            "Ошибка при обновлении проекта. Мы уже знаем о проблеме и уже занимаемся ей.",
+            NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR);
+        throw ex;
+    }
+
+    /// <summary>
+    /// Метод получает список вакансий проекта. Список вакансий, которые принадлежат владельцу проекта.
+    /// </summary>
+    /// <param name="projectId">Id проекта, вакансии которого нужно получить.</param>
+    /// <returns>Список вакансий.</returns>
+    public async Task<ProjectVacancyResultOutput> ProjectVacanciesAsync(long projectId)
+    {
+        try
+        {
+            var result = new ProjectVacancyResultOutput();
+            
+            if (projectId <= 0)
+            {
+                await ValidateProjectIdAsync(projectId);
+            }
+
+            var items = await _projectRepository.ProjectVacanciesAsync(projectId);
+
+            if (items.Any())
+            {
+                result.ProjectVacancies = _mapper.Map<IEnumerable<ProjectVacancyOutput>>(items);
+            }
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            await _logService.LogErrorAsync(ex);
+            throw;
+        }
     }
 }

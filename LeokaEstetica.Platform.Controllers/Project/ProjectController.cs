@@ -88,12 +88,12 @@ public class ProjectController : BaseController
     /// <returns>Список названий полей таблицы.</returns>
     [HttpGet]
     [Route("config-user-projects")]
-    [ProducesResponseType(200, Type = typeof(IEnumerable<ColumnNameOutput>))]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<ProjectColumnNameOutput>))]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<IEnumerable<ColumnNameOutput>> UserProjectsColumnsNamesAsync()
+    public async Task<IEnumerable<ProjectColumnNameOutput>> UserProjectsColumnsNamesAsync()
     {
         var result = await _projectService.UserProjectsColumnsNamesAsync();
 
@@ -153,6 +153,25 @@ public class ProjectController : BaseController
     public async Task<IEnumerable<ProjectStageOutput>> ProjectStagesAsync()
     {
         var result = await _projectService.ProjectStagesAsync();
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод получает список вакансий проекта. Список вакансий, которые принадлежат владельцу проекта.
+    /// </summary>
+    /// <param name="projectId">Id проекта, вакансии которого нужно получить.</param>
+    /// <returns>Список вакансий.</returns>
+    [HttpGet]
+    [Route("vacancies")]
+    [ProducesResponseType(200, Type = typeof(ProjectVacancyResultOutput))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<ProjectVacancyResultOutput> ProjectVacanciesAsync([FromQuery] long projectId)
+    {
+        var result = await _projectService.ProjectVacanciesAsync(projectId);
 
         return result;
     }

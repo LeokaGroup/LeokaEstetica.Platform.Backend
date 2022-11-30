@@ -4,6 +4,7 @@ using LeokaEstetica.Platform.Core.Helpers;
 using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Database.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Logs.Abstractions;
+using LeokaEstetica.Platform.Models.Dto.Output.Configs;
 using LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
 using LeokaEstetica.Platform.Moderation.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Notifications.Abstractions;
@@ -215,6 +216,34 @@ public sealed class VacancyService : IVacancyService
         {
             var ex = new ArgumentNullException($"Не передан аккаунт пользователя.");
             _logService.LogError(ex);
+        }
+    }
+    
+    /// <summary>
+    /// Метод получает названия полей для таблицы вакансий проектов пользователя.
+    /// Все названия столбцов этой таблицы одинаковые у всех пользователей.
+    /// </summary>
+    /// <returns>Список названий полей таблицы.</returns>
+    public async Task<IEnumerable<ProjectVacancyColumnNameOutput>> ProjectUserVacanciesColumnsNamesAsync()
+    {
+        try
+        {
+            var items = await _vacancyRepository.ProjectUserVacanciesColumnsNamesAsync();
+
+            if (!items.Any())
+            {
+                throw new NullReferenceException("Не удалось получить поля для таблицы ProjectVacancyColumnsNames.");
+            }
+
+            var result = _mapper.Map<IEnumerable<ProjectVacancyColumnNameOutput>>(items);
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            await _logService.LogErrorAsync(ex);
+            throw;
         }
     }
 }

@@ -25,7 +25,7 @@ public interface IProjectService
     /// Все названия столбцов этой таблицы одинаковые у всех пользователей.
     /// </summary>
     /// <returns>Список названий полей таблицы.</returns>
-    Task<IEnumerable<ColumnNameOutput>> UserProjectsColumnsNamesAsync();
+    Task<IEnumerable<ProjectColumnNameOutput>> UserProjectsColumnsNamesAsync();
 
     /// <summary>
     /// Метод получает список проектов пользователя.
@@ -66,4 +66,11 @@ public interface IProjectService
     /// </summary>
     /// <returns>Стадии проекта.</returns>
     Task<IEnumerable<ProjectStageOutput>> ProjectStagesAsync();
+
+    /// <summary>
+    /// Метод получает список вакансий проекта. Список вакансий, которые принадлежат владельцу проекта.
+    /// </summary>
+    /// <param name="projectId">Id проекта, вакансии которого нужно получить.</param>
+    /// <returns>Список вакансий.</returns>
+    Task<ProjectVacancyResultOutput> ProjectVacanciesAsync(long projectId);
 }

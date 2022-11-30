@@ -97,9 +97,14 @@ public class PgContext : DbContext
     public DbSet<CatalogProjectEntity> CatalogProjects { get; set; }
 
     /// <summary>
-    /// Таблица названий столбцов в управляющей таблице.
+    /// Таблица названий столбцов в управляющей таблице проектов.
     /// </summary>
-    public DbSet<ColumnNameEntity> ColumnsNames { get; set; }
+    public DbSet<ProjectColumnNameEntity> ProjectColumnsNames { get; set; }
+    
+    /// <summary>
+    /// Таблица названий столбцов в управляющей таблице вакансий проектов.
+    /// </summary>
+    public DbSet<ProjectVacancyColumnNameEntity> ProjectVacancyColumnsNames { get; set; }
 
     /// <summary>
     /// Таблица проектов пользователя.
@@ -150,4 +155,9 @@ public class PgContext : DbContext
     /// Таблица стадий проектов пользователей.
     /// </summary>
     public DbSet<UserProjectStageEntity> UserProjectsStages { get; set; }
+
+    /// <summary>
+    /// Таблица вакансий проекта.
+    /// </summary>
+    public DbSet<ProjectVacancyEntity> ProjectVacancies { get; set; }
 }

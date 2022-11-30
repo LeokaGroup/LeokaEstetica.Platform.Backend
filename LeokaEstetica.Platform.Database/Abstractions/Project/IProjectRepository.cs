@@ -28,7 +28,7 @@ public interface IProjectRepository
     /// Все названия столбцов этой таблицы одинаковые у всех пользователей.
     /// </summary>
     /// <returns>Список названий полей таблицы.</returns>
-    Task<IEnumerable<ColumnNameEntity>> UserProjectsColumnsNamesAsync();
+    Task<IEnumerable<ProjectColumnNameEntity>> UserProjectsColumnsNamesAsync();
 
     /// <summary>
     /// Метод проверяет, создан ли уже такой заказ под текущим пользователем с таким названием.
@@ -76,4 +76,11 @@ public interface IProjectRepository
     /// </summary>
     /// <returns>Стадии проекта.</returns>
     Task<IEnumerable<ProjectStageEntity>> ProjectStagesAsync();
+    
+    /// <summary>
+    /// Метод получает список вакансий проекта. Список вакансий, которые принадлежат владельцу проекта.
+    /// </summary>
+    /// <param name="projectId">Id проекта, вакансии которого нужно получить.</param>
+    /// <returns>Список вакансий.</returns>
+    Task<IEnumerable<ProjectVacancyEntity>> ProjectVacanciesAsync(long projectId);
 }

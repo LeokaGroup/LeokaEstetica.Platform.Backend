@@ -1,3 +1,4 @@
+using LeokaEstetica.Platform.Models.Dto.Output.Configs;
 using LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
 
 namespace LeokaEstetica.Platform.Services.Abstractions.Vacancy;
@@ -31,4 +32,11 @@ public interface IVacancyService
     /// <param name="account">Аккаунт пользователя.</param>
     /// <returns>Список вакансий.</returns>
     Task<CatalogVacancyResultOutput> CatalogVacanciesAsync(string account);
+
+    /// <summary>
+    /// Метод получает названия полей для таблицы вакансий проектов пользователя.
+    /// Все названия столбцов этой таблицы одинаковые у всех пользователей.
+    /// </summary>
+    /// <returns>Список названий полей таблицы.</returns>
+    Task<IEnumerable<ProjectVacancyColumnNameOutput>> ProjectUserVacanciesColumnsNamesAsync();
 }
