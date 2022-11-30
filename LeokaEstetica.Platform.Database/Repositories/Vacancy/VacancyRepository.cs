@@ -46,7 +46,7 @@ public sealed class VacancyRepository : IVacancyRepository
     {
         var vacancy = new UserVacancyEntity
         {
-            DateCreated = DateTime.UtcNow,
+            DateCreated = DateTime.Now,
             VacancyName = vacancyName,
             VacancyText = vacancyText,
             WorkExperience = workExperience,

@@ -402,7 +402,7 @@ public sealed class ProjectService : IProjectService
     {
         try
         {
-            var result = new CreateProjectVacancyOutput();
+            var result = new CreateProjectVacancyOutput { Errors = new List<string>() };
             
             // Если невалидный Id проекта.
             if (projectId <= 0)
