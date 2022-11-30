@@ -175,4 +175,23 @@ public class ProjectController : BaseController
 
         return result;
     }
+
+    /// <summary>
+    /// Метод создает вакансию проекта. При этом автоматически происходит привязка к проекту.
+    /// </summary>
+    /// <param name="createProjectVacancyInput">Входная модель.</param>
+    /// <returns>Данные созданной вакансии.</returns>
+    [HttpPost]
+    [Route("vacancy")]
+    [ProducesResponseType(200, Type = typeof(CreateProjectVacancyOutput))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<CreateProjectVacancyOutput> CreateProjectVacancyAsync([FromBody] CreateProjectVacancyInput createProjectVacancyInput)
+    {
+        var result = await _projectService.CreateProjectVacancyAsync(createProjectVacancyInput.VacancyName, createProjectVacancyInput.VacancyText, createProjectVacancyInput.ProjectId, createProjectVacancyInput.Employment, createProjectVacancyInput.Payment, createProjectVacancyInput.WorkExperience, GetUserName());
+
+        return result;
+    }
 }

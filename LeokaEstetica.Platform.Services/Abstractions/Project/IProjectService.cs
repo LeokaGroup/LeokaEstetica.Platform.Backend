@@ -73,4 +73,17 @@ public interface IProjectService
     /// <param name="projectId">Id проекта, вакансии которого нужно получить.</param>
     /// <returns>Список вакансий.</returns>
     Task<ProjectVacancyResultOutput> ProjectVacanciesAsync(long projectId);
+
+    /// <summary>
+    /// Метод создает вакансию проекта. При этом автоматически происходит привязка к проекту.
+    /// </summary>
+    /// <param name="vacancyName">Название вакансии.</param>
+    /// <param name="vacancyText">Описание вакансии.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="workExperience">Опыт работы.</param>
+    /// <param name="employment">Занятость у вакансии.</param>
+    /// <param name="payment">Оплата у вакансии.</param>
+    /// <param name="account">Аккаунт пользователя.</param>
+    /// <returns>Данные вакансии.</returns>
+    Task<CreateProjectVacancyOutput> CreateProjectVacancyAsync(string vacancyName, string vacancyText, long projectId, string employment, string payment, string workExperience, string account);
 }

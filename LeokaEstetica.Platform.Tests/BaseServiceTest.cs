@@ -10,13 +10,11 @@ using LeokaEstetica.Platform.Logs.Services;
 using LeokaEstetica.Platform.Messaging.Services.Mail;
 using LeokaEstetica.Platform.Moderation.Repositories.Vacancy;
 using LeokaEstetica.Platform.Moderation.Services.Vacancy;
-using LeokaEstetica.Platform.Notifications.Data;
 using LeokaEstetica.Platform.Notifications.Services;
 using LeokaEstetica.Platform.Services.Services.Profile;
 using LeokaEstetica.Platform.Services.Services.Project;
 using LeokaEstetica.Platform.Services.Services.User;
 using LeokaEstetica.Platform.Services.Services.Vacancy;
-using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 
@@ -69,10 +67,10 @@ public class BaseServiceTest
         ProfileService = new ProfileService(LogService, ProfileRepository, UserRepository, mapper, null, null);
         ProjectRepository = new ProjectRepository(PgContext);
         ProjectNotificationsService = new ProjectNotificationsService(null);
-        ProjectService = new ProjectService(ProjectRepository, LogService, UserRepository, mapper, ProjectNotificationsService);
         VacancyRepository = new VacancyRepository(PgContext);
         VacancyModerationRepository = new VacancyModerationRepository(PgContext);
         VacancyModerationService = new VacancyModerationService(VacancyModerationRepository, LogService);
         VacancyService = new VacancyService(LogService, VacancyRepository, mapper, null, UserRepository, VacancyModerationService, null);
+        ProjectService = new ProjectService(ProjectRepository, LogService, UserRepository, mapper, ProjectNotificationsService, VacancyService);
     }
 }

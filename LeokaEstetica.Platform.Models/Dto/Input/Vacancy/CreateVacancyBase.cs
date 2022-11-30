@@ -1,17 +1,10 @@
-using LeokaEstetica.Platform.Models.Dto.Common;
-
-namespace LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
+namespace LeokaEstetica.Platform.Models.Dto.Input.Vacancy;
 
 /// <summary>
-/// Класс выходной модели создания вакансии.
+/// Базовый класс создания вакансии.
 /// </summary>
-public class CreateVacancyOutput : IFrontError
+public class CreateVacancyBase
 {
-    /// <summary>
-    /// PK.
-    /// </summary>
-    public long VacancyId { get; set; }
-
     /// <summary>
     /// Название вакансии.
     /// </summary>
@@ -38,28 +31,8 @@ public class CreateVacancyOutput : IFrontError
     public string Employment { get; set; }
 
     /// <summary>
-    /// Дата создания вакансии.
-    /// </summary>
-    public DateTime DateCreated { get; set; }
-
-    /// <summary>
     /// Оплата у вакансии.
     /// Если не указано, то выводится текст "Не указана".
     /// </summary>
     public string Payment { get; set; }
-
-    /// <summary>
-    /// Id пользователя.
-    /// </summary>
-    public long UserId { get; set; }
-
-    /// <summary>
-    /// Успешно ли создание вакансии.
-    /// </summary>
-    public bool IsSuccess { get; set; }
-    
-    /// <summary>
-    /// Список ошибок.
-    /// </summary>
-    public List<string> Errors { get; set; } = new();
 }

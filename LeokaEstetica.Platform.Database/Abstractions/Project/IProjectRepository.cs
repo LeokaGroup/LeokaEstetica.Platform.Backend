@@ -83,4 +83,11 @@ public interface IProjectRepository
     /// <param name="projectId">Id проекта, вакансии которого нужно получить.</param>
     /// <returns>Список вакансий.</returns>
     Task<IEnumerable<ProjectVacancyEntity>> ProjectVacanciesAsync(long projectId);
+
+    /// <summary>
+    /// Метод прикрепляет вакансию к проекту.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="vacancyId">Id вакансии.</param>
+    Task AttachProjectVacancyAsync(long projectId, long vacancyId);
 }

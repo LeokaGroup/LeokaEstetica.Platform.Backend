@@ -295,4 +295,19 @@ public sealed class ProjectRepository : IProjectRepository
 
         return result;
     }
+
+    /// <summary>
+    /// Метод прикрепляет вакансию к проекту.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="vacancyId">Id вакансии.</param>
+    public async Task AttachProjectVacancyAsync(long projectId, long vacancyId)
+    {
+        await _pgContext.ProjectVacancies.AddAsync(new ProjectVacancyEntity
+        {
+            ProjectId = projectId,
+            VacancyId = vacancyId
+        });
+        await _pgContext.SaveChangesAsync();
+    }
 }

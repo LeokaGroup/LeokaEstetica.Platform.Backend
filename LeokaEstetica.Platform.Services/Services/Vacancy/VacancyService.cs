@@ -12,6 +12,7 @@ using LeokaEstetica.Platform.Notifications.Consts;
 using LeokaEstetica.Platform.Redis.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Redis.Models.Vacancy;
 using LeokaEstetica.Platform.Services.Abstractions.Vacancy;
+using LeokaEstetica.Platform.Services.Validators;
 using VacancyItems = LeokaEstetica.Platform.Redis.Models.Vacancy.VacancyItems;
 
 namespace LeokaEstetica.Platform.Services.Services.Vacancy;
@@ -28,16 +29,6 @@ public sealed class VacancyService : IVacancyService
     private readonly IUserRepository _userRepository;
     private readonly IVacancyModerationService _vacancyModerationService;
     private readonly INotificationsService _notificationsService;
-
-    /// <summary>
-    /// Если не заполнили название вакансии.
-    /// </summary>
-    private const string ERROR_EMPTY_VACANCY_NAME = "Название вакансии не может быть пустым.";
-    
-    /// <summary>
-    /// Если не заполнили описание вакансии.
-    /// </summary>
-    private const string ERROR_EMPTY_VACANCY_TEXT = "Описание вакансии не может быть пустым.";
 
     public VacancyService(ILogService logService, 
         IVacancyRepository vacancyRepository, 
@@ -123,7 +114,7 @@ public sealed class VacancyService : IVacancyService
         try
         {
             var result = new CreateVacancyOutput();
-            ValidateCreateVacancy(ref result, vacancyName, vacancyText, account);
+            VacancyValidator.ValidateCreateVacancy(ref result, vacancyName, vacancyText, account);
 
             if (result.Errors.Any())
             {
@@ -189,36 +180,6 @@ public sealed class VacancyService : IVacancyService
         }
     }
 
-    /// <summary>
-    /// Метод валидирует входные параметры при создании вакансии.
-    /// </summary>
-    /// <param name="result">Выходные данные. Писать ошибки валидации туда, если будут.</param>
-    /// <param name="vacancyName">Название вакансии.</param>
-    /// <param name="vacancyText">Описание вакансии.</param>
-    /// <param name="account">Аккаунт пользователя.</param>
-    private void ValidateCreateVacancy(ref CreateVacancyOutput result, string vacancyName, string vacancyText, string account)
-    {
-        if (string.IsNullOrEmpty(vacancyName))
-        {
-            var ex = new ArgumentNullException(ERROR_EMPTY_VACANCY_NAME);
-            result.Errors.Add(ERROR_EMPTY_VACANCY_NAME);
-            _logService.LogError(ex);
-        }
-        
-        if (string.IsNullOrEmpty(vacancyText))
-        {
-            var ex = new ArgumentNullException(ERROR_EMPTY_VACANCY_TEXT);
-            result.Errors.Add(ERROR_EMPTY_VACANCY_TEXT);
-            _logService.LogError(ex);
-        }
-        
-        if (string.IsNullOrEmpty(account))
-        {
-            var ex = new ArgumentNullException($"Не передан аккаунт пользователя.");
-            _logService.LogError(ex);
-        }
-    }
-    
     /// <summary>
     /// Метод получает названия полей для таблицы вакансий проектов пользователя.
     /// Все названия столбцов этой таблицы одинаковые у всех пользователей.
