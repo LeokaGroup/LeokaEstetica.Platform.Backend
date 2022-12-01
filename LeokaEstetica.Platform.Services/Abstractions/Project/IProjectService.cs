@@ -1,6 +1,9 @@
 using LeokaEstetica.Platform.Access.Enums;
 using LeokaEstetica.Platform.Models.Dto.Output.Configs;
 using LeokaEstetica.Platform.Models.Dto.Output.Project;
+using LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
+using LeokaEstetica.Platform.Models.Entities.Project;
+using LeokaEstetica.Platform.Models.Entities.Vacancy;
 using LeokaEstetica.Platform.Models.Enums;
 
 namespace LeokaEstetica.Platform.Services.Abstractions.Project;
@@ -18,7 +21,7 @@ public interface IProjectService
     /// <param name="account">Аккаунт пользователя.</param>
     /// <param name="projectStage">Стадия проекта.</param>
     /// <returns>Данные нового проекта.</returns>
-    Task<CreateProjectOutput> CreateProjectAsync(string projectName, string projectDetails, string account, ProjectStageEnum projectStage);
+    Task<UserProjectEntity> CreateProjectAsync(string projectName, string projectDetails, string account, ProjectStageEnum projectStage);
 
     /// <summary>
     /// Метод получает названия полей для таблицы проектов пользователя.
@@ -59,7 +62,7 @@ public interface IProjectService
     /// <param name="mode">Режим. Чтение или изменение.</param>
     /// <param name="account">Аккаунт.</param>
     /// <returns>Данные проекта.</returns>
-    Task<ProjectOutput> GetProjectAsync(long projectId, ModeEnum mode, string account);
+    Task<UserProjectEntity> GetProjectAsync(long projectId, ModeEnum mode, string account);
 
     /// <summary>
     /// Метод получает стадии проекта для выбора.
@@ -72,7 +75,7 @@ public interface IProjectService
     /// </summary>
     /// <param name="projectId">Id проекта, вакансии которого нужно получить.</param>
     /// <returns>Список вакансий.</returns>
-    Task<ProjectVacancyResultOutput> ProjectVacanciesAsync(long projectId);
+    Task< IEnumerable<ProjectVacancyEntity>> ProjectVacanciesAsync(long projectId);
 
     /// <summary>
     /// Метод создает вакансию проекта. При этом автоматически происходит привязка к проекту.
@@ -85,5 +88,5 @@ public interface IProjectService
     /// <param name="payment">Оплата у вакансии.</param>
     /// <param name="account">Аккаунт пользователя.</param>
     /// <returns>Данные вакансии.</returns>
-    Task<CreateProjectVacancyOutput> CreateProjectVacancyAsync(string vacancyName, string vacancyText, long projectId, string employment, string payment, string workExperience, string account);
+    Task<UserVacancyEntity> CreateProjectVacancyAsync(string vacancyName, string vacancyText, long projectId, string employment, string payment, string workExperience, string account);
 }

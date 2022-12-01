@@ -1,3 +1,5 @@
+using FluentValidation.Results;
+
 namespace LeokaEstetica.Platform.Models.Dto.Common;
 
 /// <summary>
@@ -8,5 +10,5 @@ public interface IFrontError
     /// <summary>
     /// Список ошибок, которые будем выводить на фронт.
     /// </summary>
-    List<string> Errors { get; set; }
+    List<ValidationFailure> Errors { get; set; }
 }

@@ -6,6 +6,7 @@ using LeokaEstetica.Platform.Database.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Models.Dto.Output.Configs;
 using LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
+using LeokaEstetica.Platform.Models.Entities.Vacancy;
 using LeokaEstetica.Platform.Moderation.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Notifications.Consts;
@@ -109,20 +110,10 @@ public sealed class VacancyService : IVacancyService
     /// <param name="payment">Оплата у вакансии.</param>
     /// <param name="account">Аккаунт пользователя.</param>
     /// <returns>Данные созданной вакансии.</returns>
-    public async Task<CreateVacancyOutput> CreateVacancyAsync(string vacancyName, string vacancyText, string workExperience, string employment, string payment, string account)
+    public async Task<UserVacancyEntity> CreateVacancyAsync(string vacancyName, string vacancyText, string workExperience, string employment, string payment, string account)
     {
         try
         {
-            var result = new CreateVacancyOutput();
-            VacancyValidator.ValidateCreateVacancy(ref result, vacancyName, vacancyText, account);
-
-            if (result.Errors.Any())
-            {
-                result.IsSuccess = false;
-                
-                return result;
-            }
-
             var userId = await _userRepository.GetUserByEmailAsync(account);
 
             // Добавляем вакансию в таблицу вакансий пользователя.
@@ -137,11 +128,8 @@ public sealed class VacancyService : IVacancyService
             
             // Отправляем уведомление об успешном создании вакансии и отправки ее на модерацию.
             await _notificationsService.SendNotificationSuccessCreatedUserVacancyAsync("Все хорошо", "Данные успешно сохранены! Вакансия отправлена на модерацию!", NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS);
-            
-            result = _mapper.Map<CreateVacancyOutput>(createdVacancy);
-            result.IsSuccess = true;
 
-            return result;
+            return createdVacancy;
         }
         
         catch (Exception ex)

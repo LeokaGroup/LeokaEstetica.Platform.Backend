@@ -5,5 +5,8 @@ namespace LeokaEstetica.Platform.Models.Dto.Input.Vacancy;
 /// </summary>
 public class CreateVacancyInput : CreateVacancyBase
 {
-    
+    /// <summary>
+    /// Аккаунт.
+    /// </summary>
+    public string Account { get; set; }
 }

@@ -10,5 +10,5 @@ public class UpdateProjectOutput : ProjectOutput, IFrontError
     /// <summary>
     /// Список ошибок.
     /// </summary>
-    public List<string> Errors { get; set; } = new();
+    
 }

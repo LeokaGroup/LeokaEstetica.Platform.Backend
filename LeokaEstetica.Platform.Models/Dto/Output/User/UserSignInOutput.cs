@@ -1,3 +1,4 @@
+using FluentValidation.Results;
 using LeokaEstetica.Platform.Models.Dto.Common;
 
 namespace LeokaEstetica.Platform.Models.Dto.Output.User;
@@ -30,5 +31,5 @@ public class UserSignInOutput : IFrontError
     /// <summary>
     /// Список ошибок.
     /// </summary>
-    public List<string> Errors { get; set; } = new();
+    public List<ValidationFailure> Errors { get; set; }
 }

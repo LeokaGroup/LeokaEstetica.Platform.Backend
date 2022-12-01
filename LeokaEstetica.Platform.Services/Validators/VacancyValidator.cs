@@ -17,28 +17,28 @@ public static class VacancyValidator
     /// <param name="vacancyName">Название вакансии.</param>
     /// <param name="vacancyText">Описание вакансии.</param>
     /// <param name="account">Аккаунт пользователя.</param>
-    public static void ValidateCreateVacancy(ref CreateVacancyOutput result, string vacancyName, string vacancyText, string account)
-    {
-        var logger = AutoFac.Resolve<ILogService>();
-        
-        if (string.IsNullOrEmpty(vacancyName))
-        {
-            var ex = new ArgumentNullException(GlobalConfigKeys.Vacancy.EMPTY_VACANCY_NAME);
-            result.Errors.Add(GlobalConfigKeys.Vacancy.EMPTY_VACANCY_NAME);
-            logger.LogError(ex);
-        }
-        
-        if (string.IsNullOrEmpty(vacancyText))
-        {
-            var ex = new ArgumentNullException(GlobalConfigKeys.Vacancy.EMPTY_VACANCY_TEXT);
-            result.Errors.Add(GlobalConfigKeys.Vacancy.EMPTY_VACANCY_TEXT);
-            logger.LogError(ex);
-        }
-        
-        if (string.IsNullOrEmpty(account))
-        {
-            var ex = new ArgumentNullException($"Не передан аккаунт пользователя.");
-            logger.LogError(ex);
-        }
-    }
+    // public static void ValidateCreateVacancy(ref CreateVacancyOutput result, string vacancyName, string vacancyText, string account)
+    // {
+    //     var logger = AutoFac.Resolve<ILogService>();
+    //     
+    //     if (string.IsNullOrEmpty(vacancyName))
+    //     {
+    //         var ex = new ArgumentNullException(GlobalConfigKeys.Vacancy.EMPTY_VACANCY_NAME);
+    //         result.Errors.Add(GlobalConfigKeys.Vacancy.EMPTY_VACANCY_NAME);
+    //         logger.LogError(ex);
+    //     }
+    //     
+    //     if (string.IsNullOrEmpty(vacancyText))
+    //     {
+    //         var ex = new ArgumentNullException(GlobalConfigKeys.Vacancy.EMPTY_VACANCY_TEXT);
+    //         result.Errors.Add(GlobalConfigKeys.Vacancy.EMPTY_VACANCY_TEXT);
+    //         logger.LogError(ex);
+    //     }
+    //     
+    //     if (string.IsNullOrEmpty(account))
+    //     {
+    //         var ex = new ArgumentNullException($"Не передан аккаунт пользователя.");
+    //         logger.LogError(ex);
+    //     }
+    // }
 }

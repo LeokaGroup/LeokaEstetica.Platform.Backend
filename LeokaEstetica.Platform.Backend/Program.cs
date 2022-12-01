@@ -1,5 +1,6 @@
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
+using FluentValidation.AspNetCore;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Utils;
 using LeokaEstetica.Platform.Notifications.Data;
@@ -74,6 +75,13 @@ builder.Services.AddSignalR();
 builder.Services.AddStackExchangeRedisCache(options => {
     options.Configuration = configuration["Redis:RedisCacheUrl"] ?? string.Empty;
     options.InstanceName = "LeokaEstetica_";
+});
+
+// Добавляем Fluent Validation.
+builder.Services.AddFluentValidation(conf =>
+{
+    conf.RegisterValidatorsFromAssembly(typeof(Program).Assembly);
+    conf.AutomaticValidationEnabled = false;
 });
 
 var app = builder.Build();

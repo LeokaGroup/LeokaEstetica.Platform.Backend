@@ -1,5 +1,7 @@
-using LeokaEstetica.Platform.Access.Enums;
+using AutoMapper;
 using LeokaEstetica.Platform.Base;
+using LeokaEstetica.Platform.Controllers.ModelsValidation.Project;
+using LeokaEstetica.Platform.Controllers.Validators.Project;
 using LeokaEstetica.Platform.Core.Filters;
 using LeokaEstetica.Platform.Models.Dto.Input.Project;
 using LeokaEstetica.Platform.Models.Dto.Output.Configs;
@@ -18,10 +20,13 @@ namespace LeokaEstetica.Platform.Controllers.Project;
 public class ProjectController : BaseController
 {
     private readonly IProjectService _projectService;
-    
-    public ProjectController(IProjectService projectService)
+    private readonly IMapper _mapper;
+
+    public ProjectController(IProjectService projectService, 
+        IMapper mapper)
     {
         _projectService = projectService;
+        _mapper = mapper;
     }
 
     /// <summary>
@@ -58,7 +63,23 @@ public class ProjectController : BaseController
     [ProducesResponseType(404)]
     public async Task<CreateProjectOutput> CreateProjectAsync([FromBody] CreateProjectInput createProjectInput)
     {
-        var result = await _projectService.CreateProjectAsync(createProjectInput.ProjectName, createProjectInput.ProjectDetails, GetUserName(), createProjectInput.ProjectStage);
+        var result = new CreateProjectOutput();
+        var validator = await new CreateProjectValidator().ValidateAsync(new CreateProjectValidationModel
+        {
+            ProjectName = createProjectInput.ProjectName,
+            ProjectDetails = createProjectInput.ProjectDetails,
+            Account = GetUserName()
+        });
+
+        if (validator.Errors.Any())
+        {
+            result.Errors = validator.Errors;
+
+            return result;
+        }
+        
+        var project = await _projectService.CreateProjectAsync(createProjectInput.ProjectName, createProjectInput.ProjectDetails, GetUserName(), createProjectInput.ProjectStage);
+        result = _mapper.Map<CreateProjectOutput>(project);
 
         return result;
     }
@@ -114,7 +135,17 @@ public class ProjectController : BaseController
     [ProducesResponseType(404)]
     public async Task<UpdateProjectOutput> UpdateProjectAsync([FromBody] UpdateProjectInput createProjectInput)
     {
-        var result = await _projectService.UpdateProjectAsync(createProjectInput.ProjectName, createProjectInput.ProjectDetails, GetUserName(), createProjectInput.ProjectId, createProjectInput.ProjectStage);
+        var result = new UpdateProjectOutput();
+        var validator = await new UpdateProjectValidator().ValidateAsync(createProjectInput);
+
+        if (validator.Errors.Any())
+        {
+            result.Errors = validator.Errors;
+
+            return result;
+        }
+        
+        result = await _projectService.UpdateProjectAsync(createProjectInput.ProjectName, createProjectInput.ProjectDetails, GetUserName(), createProjectInput.ProjectId, createProjectInput.ProjectStage);
 
         return result;
     }
@@ -132,9 +163,20 @@ public class ProjectController : BaseController
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<ProjectOutput> GetProjectAsync([FromQuery] long projectId, [FromQuery] ModeEnum mode)
+    public async Task<ProjectOutput> GetProjectAsync([FromQuery] GetProjectValidationModel model)
     {
-        var result = await _projectService.GetProjectAsync(projectId, mode, GetUserName());
+        var result = new ProjectOutput();
+        var validator = await new GetProjectValidator().ValidateAsync(model);
+        
+        if (validator.Errors.Any())
+        {
+            result.Errors = validator.Errors;
+            
+            return result;
+        }
+        
+        var project = await _projectService.GetProjectAsync(model.ProjectId, model.Mode, GetUserName());
+        result = _mapper.Map<ProjectOutput>(project);
 
         return result;
     }
@@ -171,7 +213,9 @@ public class ProjectController : BaseController
     [ProducesResponseType(404)]
     public async Task<ProjectVacancyResultOutput> ProjectVacanciesAsync([FromQuery] long projectId)
     {
-        var result = await _projectService.ProjectVacanciesAsync(projectId);
+        var result = new ProjectVacancyResultOutput();
+        var items = await _projectService.ProjectVacanciesAsync(projectId);
+        result.ProjectVacancies = _mapper.Map<IEnumerable<ProjectVacancyOutput>>(items);
 
         return result;
     }
@@ -190,8 +234,41 @@ public class ProjectController : BaseController
     [ProducesResponseType(404)]
     public async Task<CreateProjectVacancyOutput> CreateProjectVacancyAsync([FromBody] CreateProjectVacancyInput createProjectVacancyInput)
     {
-        var result = await _projectService.CreateProjectVacancyAsync(createProjectVacancyInput.VacancyName, createProjectVacancyInput.VacancyText, createProjectVacancyInput.ProjectId, createProjectVacancyInput.Employment, createProjectVacancyInput.Payment, createProjectVacancyInput.WorkExperience, GetUserName());
+        var result = new CreateProjectVacancyOutput();
+        var validator = await new CreateProjectVacancyValidator().ValidateAsync(new CreateProjectVacancyValidationModel
+        {
+            VacancyName = createProjectVacancyInput.VacancyName,
+            VacancyText = createProjectVacancyInput.VacancyText,
+            Account = GetUserName()
+        });
+
+        if (validator.Errors.Any())
+        {
+            result.Errors = validator.Errors;
+
+            return result;
+        }
+        
+        var createdVacancy = await _projectService.CreateProjectVacancyAsync(createProjectVacancyInput.VacancyName, createProjectVacancyInput.VacancyText, createProjectVacancyInput.ProjectId, createProjectVacancyInput.Employment, createProjectVacancyInput.Payment, createProjectVacancyInput.WorkExperience, GetUserName());
+        result = _mapper.Map<CreateProjectVacancyOutput>(createdVacancy);
 
         return result;
     }
+
+    /// <summary>
+    /// Метод прикрепляет вакансию к проекту.
+    /// </summary>
+    /// <param name="attachProjectVacancyInput">Входная модель.</param>
+    /// <returns>Выходная модель.</returns>
+    // [HttpPost]
+    // [Route("attach-vacancy")]
+    // [ProducesResponseType(200, Type = typeof(AttachProjectVacancyOutput))]
+    // [ProducesResponseType(400)]
+    // [ProducesResponseType(403)]
+    // [ProducesResponseType(500)]
+    // [ProducesResponseType(404)]
+    // public async Task<AttachProjectVacancyOutput> AttachProjectVacancyAsync([FromBody] AttachProjectVacancyInput attachProjectVacancyInput)
+    // {
+    //     
+    // }
 }
