@@ -11,6 +11,7 @@ using LeokaEstetica.Platform.Models.Enums;
 using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Notifications.Consts;
 using LeokaEstetica.Platform.Services.Abstractions.Project;
+using LeokaEstetica.Platform.Services.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Services.Validators;
 
 namespace LeokaEstetica.Platform.Services.Services.Project;
@@ -25,6 +26,7 @@ public sealed class ProjectService : IProjectService
     private readonly IUserRepository _userRepository;
     private readonly IMapper _mapper;
     private readonly IProjectNotificationsService _projectNotificationsService;
+    private readonly IVacancyService _vacancyService;
     
     /// <summary>
     /// Если Id проекта невалидный.
@@ -35,13 +37,15 @@ public sealed class ProjectService : IProjectService
         ILogService logService, 
         IUserRepository userRepository, 
         IMapper mapper,
-        IProjectNotificationsService projectNotificationsService)
+        IProjectNotificationsService projectNotificationsService, 
+        IVacancyService vacancyService)
     {
         _projectRepository = projectRepository;
         _logService = logService;
         _userRepository = userRepository;
         _mapper = mapper;
         _projectNotificationsService = projectNotificationsService;
+        _vacancyService = vacancyService;
     }
 
     /// <summary>
@@ -372,6 +376,58 @@ public sealed class ProjectService : IProjectService
             {
                 result.ProjectVacancies = _mapper.Map<IEnumerable<ProjectVacancyOutput>>(items);
             }
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            await _logService.LogErrorAsync(ex);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Метод создает вакансию проекта. При этом автоматически происходит привязка к проекту.
+    /// </summary>
+    /// <param name="vacancyName">Название вакансии.</param>
+    /// <param name="vacancyText">Описание вакансии.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="workExperience">Опыт работы.</param>
+    /// <param name="employment">Занятость у вакансии.</param>
+    /// <param name="payment">Оплата у вакансии.</param>
+    /// <param name="account">Аккаунт пользователя.</param>
+    /// <returns>Данные вакансии.</returns>
+    public async Task<CreateProjectVacancyOutput> CreateProjectVacancyAsync(string vacancyName, string vacancyText, long projectId, string employment, string payment, string workExperience, string account)
+    {
+        try
+        {
+            var result = new CreateProjectVacancyOutput { Errors = new List<string>() };
+            
+            // Если невалидный Id проекта.
+            if (projectId <= 0)
+            {
+                var ex = new ArgumentException("Невалидный Id проекта. ProjectId был " + projectId);
+                await _logService.LogErrorAsync(ex);
+                throw ex;
+            }
+            
+            ProjectValidator.ValidateCreateProjectVacancy(ref result, vacancyName, vacancyText, account);
+
+            if (result.Errors.Any())
+            {
+                result.IsSuccess = false;
+                
+                return result;
+            }
+            
+            // Создаем вакансию.
+            var createdVacancy = await _vacancyService.CreateVacancyAsync(vacancyName, vacancyText, workExperience, employment, payment, account);
+            
+            // Автоматически привязываем вакансию к проекту.
+            await _projectRepository.AttachProjectVacancyAsync(projectId, createdVacancy.VacancyId);
+
+            result = _mapper.Map<CreateProjectVacancyOutput>(createdVacancy);
 
             return result;
         }

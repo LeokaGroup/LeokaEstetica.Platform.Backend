@@ -1,11 +1,11 @@
 using LeokaEstetica.Platform.Models.Dto.Common;
 
-namespace LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
+namespace LeokaEstetica.Platform.Models.Dto.Output.Project;
 
 /// <summary>
-/// Класс выходной модели создания вакансии.
+/// Класс выходной модели создан ия вакансии проекта.
 /// </summary>
-public class CreateVacancyOutput : IFrontError
+public class CreateProjectVacancyOutput : IFrontError
 {
     /// <summary>
     /// PK.
@@ -59,7 +59,12 @@ public class CreateVacancyOutput : IFrontError
     public bool IsSuccess { get; set; }
     
     /// <summary>
+    /// Id проекта.
+    /// </summary>
+    public long ProjectId { get; set; }
+
+    /// <summary>
     /// Список ошибок.
     /// </summary>
-    public List<string> Errors { get; set; } = new();
+    public List<string> Errors { get; set; }
 }

@@ -46,4 +46,36 @@ public static class GlobalConfigKeys
         /// </summary>
         public const string EMPTY_MODE = "Передан некорректный режим. Mode был ";
     }
+
+    /// <summary>
+    /// Класс описывает ключи валидации вакансий.
+    /// </summary>
+    public static class Vacancy
+    {
+        /// <summary>
+        /// Если не заполнили название вакансии.
+        /// </summary>
+        public const string EMPTY_VACANCY_NAME = "Название вакансии не может быть пустым.";
+    
+        /// <summary>
+        /// Если не заполнили описание вакансии.
+        /// </summary>
+        public const string EMPTY_VACANCY_TEXT = "Описание вакансии не может быть пустым.";
+    }
+
+    /// <summary>
+    /// Класс описывает ключи для валидации вакансий проектов.
+    /// </summary>
+    public static class ProjectVacancy
+    {
+        /// <summary>
+        /// Если не заполнили название вакансии проекта.
+        /// </summary>
+        public const string EMPTY_PROJECT_VACANCY_NAME = "Не заполнено название вакансии проекта.";
+
+        /// <summary>
+        /// Если не заполнили описание вакансии проекта.
+        /// </summary>
+        public const string EMPTY_PROJECT_VACANCY_TEXT = "Не заполнено описание вакансии проекта.";
+    }
 }
