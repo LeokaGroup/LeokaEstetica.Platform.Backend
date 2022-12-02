@@ -1,3 +1,4 @@
+using FluentValidation.Results;
 using LeokaEstetica.Platform.Models.Dto.Common;
 
 namespace LeokaEstetica.Platform.Models.Dto.Output.Project;
@@ -66,5 +67,5 @@ public class CreateProjectVacancyOutput : IFrontError
     /// <summary>
     /// Список ошибок.
     /// </summary>
-    public List<string> Errors { get; set; }
+    public List<ValidationFailure> Errors { get; set; }
 }

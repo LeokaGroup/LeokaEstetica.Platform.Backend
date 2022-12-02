@@ -1,4 +1,5 @@
 using LeokaEstetica.Platform.Base;
+using LeokaEstetica.Platform.Controllers.Validators.User;
 using LeokaEstetica.Platform.Core.Filters;
 using LeokaEstetica.Platform.Models.Dto.Input.User;
 using LeokaEstetica.Platform.Models.Dto.Output.User;
@@ -38,7 +39,17 @@ public class UserController : BaseController
     [ProducesResponseType(404)]
     public async Task<UserSignUpOutput> CreateUserAsync([FromBody] UserSignUpInput userSignUpInput)
     {
-        var result = await _userService.CreateUserAsync(userSignUpInput.Password, userSignUpInput.Email);
+        var result = new UserSignUpOutput();
+        var validator = await new CreateUserValidator().ValidateAsync(userSignUpInput);
+
+        if (validator.Errors.Any())
+        {
+            result.Errors = validator.Errors;
+
+            return result;
+        }
+        
+        result = await _userService.CreateUserAsync(userSignUpInput.Password, userSignUpInput.Email);
 
         return result;
     }
@@ -78,7 +89,17 @@ public class UserController : BaseController
     [ProducesResponseType(404)]
     public async Task<UserSignInOutput> SignInAsync([FromBody] UserSignInInput userSignInInput)
     {
-        var result = await _userService.SignInAsync(userSignInInput.Email, userSignInInput.Password);
+        var result = new UserSignInOutput();
+        var validator = await new SignInValidator().ValidateAsync(userSignInInput);
+
+        if (validator.Errors.Any())
+        {
+            result.Errors = validator.Errors;
+
+            return result;
+        }
+        
+        result = await _userService.SignInAsync(userSignInInput.Email, userSignInInput.Password);
 
         return result;
     }

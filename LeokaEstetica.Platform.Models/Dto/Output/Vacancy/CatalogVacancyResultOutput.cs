@@ -1,3 +1,4 @@
+using FluentValidation.Results;
 using LeokaEstetica.Platform.Models.Dto.Common;
 
 namespace LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
@@ -10,7 +11,7 @@ public class CatalogVacancyResultOutput : IFrontError
     /// <summary>
     /// Список ошибок.
     /// </summary>
-    public List<string> Errors { get; set; }
+    public List<ValidationFailure> Errors { get; set; }
 
     /// <summary>
     /// Список вакансий в каталоге.

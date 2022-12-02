@@ -6,6 +6,11 @@ namespace LeokaEstetica.Platform.Core.Constants;
 public static class GlobalConfigKeys
 {
     /// <summary>
+    /// Если не передали аккаунт пользователя.
+    /// </summary>
+    public const string EMPTY_ACCOUNT = "Не передан аккаунт пользователя.";
+    
+    /// <summary>
     /// Класс описывает ключи для кэшей приложения.
     /// </summary>
     public static class Cache

@@ -1,4 +1,5 @@
 using LeokaEstetica.Platform.Base;
+using LeokaEstetica.Platform.Controllers.Validators.Profile;
 using LeokaEstetica.Platform.Core.Filters;
 using LeokaEstetica.Platform.Models.Dto.Input.Profile;
 using LeokaEstetica.Platform.Models.Dto.Output.Profile;
@@ -16,7 +17,7 @@ namespace LeokaEstetica.Platform.Controllers.Profile;
 public class ProfileController : BaseController
 {
     private readonly IProfileService _profileService;
-    
+
     public ProfileController(IProfileService profileService)
     {
         _profileService = profileService;
@@ -108,7 +109,17 @@ public class ProfileController : BaseController
     [ProducesResponseType(404)]
     public async Task<ProfileInfoOutput> SaveProfileInfoAsync([FromBody] ProfileInfoInput profileInfoInput)
     {
-        var result = await _profileService.SaveProfileInfoAsync(profileInfoInput, GetUserName());
+        var result = new ProfileInfoOutput();
+        var validator = await new SaveProfileInfoValidator().ValidateAsync(profileInfoInput);
+
+        if (validator.Errors.Any())
+        {
+            result.Errors = validator.Errors;
+
+            return result;
+        }
+        
+        result = await _profileService.SaveProfileInfoAsync(profileInfoInput, GetUserName());
 
         return result;
     }

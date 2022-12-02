@@ -1,6 +1,5 @@
 using System.Data;
 using System.IdentityModel.Tokens.Jwt;
-using System.Net.Mail;
 using System.Security.Claims;
 using AutoMapper;
 using LeokaEstetica.Platform.Access.Helpers;
@@ -12,10 +11,9 @@ using LeokaEstetica.Platform.Messaging.Abstractions.Mail;
 using LeokaEstetica.Platform.Models.Dto.Output.User;
 using LeokaEstetica.Platform.Models.Entities.User;
 using LeokaEstetica.Platform.Services.Abstractions.User;
-using LeokaEstetica.Platform.Services.Consts;
-using LeokaEstetica.Platform.Services.Validators;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using ValidationFailure = FluentValidation.Results.ValidationFailure;
 
 namespace LeokaEstetica.Platform.Services.Services.User;
 
@@ -60,7 +58,6 @@ public sealed class UserService : IUserService
         try
         {
             var result = new UserSignUpOutput();
-            ValidateSignUpParams(result, password, email);
             await CheckUserByEmailAsync(result, email);
 
             var userModel = CreateSignUpUserModel(password, email);
@@ -125,65 +122,11 @@ public sealed class UserService : IUserService
         // Пользователь уже есть, не даем регистрировать.
         if (isUser)
         {
-            result.Errors = new List<string> { $"Пользователь с Email {email} уже зарегистрирован в системе!" };
+            result.Errors = new List<ValidationFailure>()
+            {
+                new() { ErrorMessage = $"Пользователь с Email {email} уже зарегистрирован в системе!" }
+            };
         }
-    }
-
-    /// <summary>
-    /// Метод проверяет входные параметры. Генерит исключения, если что то не так.
-    /// </summary>
-    /// <param name="password">Пароль./param>
-    /// <param name="email">Почта.</param>
-    private void ValidateSignUpParams(UserSignUpOutput result, string password, string email)
-    {
-        result.Errors = CheckErrors(result.Errors, password, email);
-    }
-    
-    /// <summary>
-    /// Метод проверяет входные параметры. Генерит исключения, если что то не так.
-    /// </summary>
-    /// <param name="password">Пароль./param>
-    /// <param name="email">Почта.</param>
-    private void ValidateSignInParams(UserSignInOutput result,  string email, string password)
-    {
-        result.Errors = CheckErrors(result.Errors, password, email);
-    }
-
-    /// <summary>
-    /// Метод проверяет ошибки. Если они есть, то добавит их в список для фронта.
-    /// </summary>
-    /// <param name="errors">Список ошибок.</param>
-    /// <param name="password">Пароль./param>
-    /// <param name="email">Почта.</param>
-    /// <returns>Список ошибок.</returns>
-    private List<string> CheckErrors(List<string> errors, string password, string email)
-    {
-        // Проверка пароля.
-        if (string.IsNullOrEmpty(password))
-        {
-            var error = new ArgumentException(ValidationConsts.EMPTY_PASSWORD_ERROR);
-            _logger.LogError(error);
-            errors.Add(ValidationConsts.EMPTY_PASSWORD_ERROR);
-        }
-
-        // Проверка почты.
-        if (string.IsNullOrEmpty(email))
-        {
-            var error = new ArgumentException(ValidationConsts.EMPTY_EMAIL_ERROR);
-            _logger.LogError(error);
-            errors.Add(ValidationConsts.EMPTY_EMAIL_ERROR);
-            email = string.Empty;
-        }
-
-        // Проверка формата почты.
-        if (!UserValidator.IsValidEmail(email))
-        {
-            var error = new ArgumentException(ValidationConsts.NOT_VALID_EMAIL_ERROR);
-            _logger.LogError(error);
-            errors.Add(ValidationConsts.NOT_VALID_EMAIL_ERROR);
-        }
-
-        return errors;
     }
 
     /// <summary>
@@ -221,7 +164,10 @@ public sealed class UserService : IUserService
         
         catch (ArgumentException ex)
         {
-            result.Errors = new List<string> { "Id пользователя был <= 0!" };
+            result.Errors = new List<ValidationFailure>()
+            {
+                new() { ErrorMessage = "Id пользователя был <= 0!" }
+            };
             _logger.LogCritical(ex);
         }
     }
@@ -258,12 +204,6 @@ public sealed class UserService : IUserService
         try
         {
             var result = new UserSignInOutput();
-            ValidateSignInParams(result, email, password);
-
-            if (result.Errors.Any())
-            {
-                return result;
-            }
 
             var passwordHash = await _userRepository.GetPasswordHashByEmailAsync(email);
 

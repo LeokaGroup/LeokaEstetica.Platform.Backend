@@ -10,8 +10,6 @@ using LeokaEstetica.Platform.Notifications.Consts;
 using LeokaEstetica.Platform.Redis.Abstractions.Profile;
 using LeokaEstetica.Platform.Redis.Models.Profile;
 using LeokaEstetica.Platform.Services.Abstractions.Profile;
-using LeokaEstetica.Platform.Services.Consts;
-using LeokaEstetica.Platform.Services.Validators;
 using Items = LeokaEstetica.Platform.Models.Dto.Output.Profile.ProfileItems;
 using ProfileItems = LeokaEstetica.Platform.Redis.Models.Profile.ProfileItems;
 
@@ -188,16 +186,6 @@ public sealed class ProfileService : IProfileService
     {
         try
         {
-            var result = new ProfileInfoOutput();
-            ValidateProfileInfo(profileInfoInput, ref result);
-
-            // Если есть ошибки валидации, не разрешаем идти дальше. Выдаем ошибки фронту.
-            if (result.Errors.Any())
-            {
-                result.IsSuccess = false;
-                return result;
-            }
-
             var userId = await _userRepository.GetUserByEmailAsync(account);
 
             if (userId == 0)
@@ -217,7 +205,7 @@ public sealed class ProfileService : IProfileService
 
             // Сохраняем данные пользователя.
             var savedProfileInfo = await _profileRepository.SaveProfileInfoAsync(profileInfo);
-            result = _mapper.Map<ProfileInfoOutput>(savedProfileInfo);
+            var result = _mapper.Map<ProfileInfoOutput>(savedProfileInfo);
 
             // Сохраняем номер телефона пользователя.
             await _userRepository.SaveUserPhoneAsync(userId, profileInfoInput.PhoneNumber);
@@ -293,71 +281,6 @@ public sealed class ProfileService : IProfileService
         {
             await _notificationsService
                 .SendNotificationWarningSaveUserIntentsAsync("Совет", "Советуем выбрать ваши цели на платформе!", NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING);
-        }
-    }
-
-    /// <summary>
-    /// Метод валидирует входную модель контактной информации.
-    /// </summary>
-    /// <param name="profileInfoInput">Входная модель для валидации.</param>
-    private void ValidateProfileInfo(ProfileInfoInput profileInfoInput, ref ProfileInfoOutput result)
-    {
-        // Проверка фамилии.
-        if (string.IsNullOrEmpty(profileInfoInput.FirstName))
-        {
-            var error = new ArgumentException(ValidationConsts.EMPTY_FIRST_NAME_ERROR);
-            _logger.LogError(error);
-            result.Errors.Add(ValidationConsts.EMPTY_FIRST_NAME_ERROR);
-        }
-
-        // Проверка имени.
-        if (string.IsNullOrEmpty(profileInfoInput.LastName))
-        {
-            var error = new ArgumentException(ValidationConsts.EMPTY_LAST_NAME_ERROR);
-            _logger.LogError(error);
-            result.Errors.Add(ValidationConsts.EMPTY_LAST_NAME_ERROR);
-        }
-
-        // Проверка информации о себе.
-        if (string.IsNullOrEmpty(profileInfoInput.Aboutme))
-        {
-            var error = new ArgumentException(ValidationConsts.EMPTY_ABOUTME_ERROR);
-            _logger.LogError(error);
-            result.Errors.Add(ValidationConsts.EMPTY_ABOUTME_ERROR);
-        }
-
-        // Проверка почты.
-        if (string.IsNullOrEmpty(profileInfoInput.Email))
-        {
-            var error = new ArgumentException(ValidationConsts.EMPTY_EMAIL_ERROR);
-            _logger.LogError(error);
-            result.Errors.Add(ValidationConsts.EMPTY_EMAIL_ERROR);
-            profileInfoInput.Email = string.Empty;
-        }
-
-        // Проверка формата почты.
-        if (!UserValidator.IsValidEmail(profileInfoInput.Email))
-        {
-            var error = new ArgumentException(ValidationConsts.NOT_VALID_EMAIL_ERROR);
-            _logger.LogError(error);
-            result.Errors.Add(ValidationConsts.NOT_VALID_EMAIL_ERROR);
-        }
-
-        // Проверка номера телефона.
-        if (string.IsNullOrEmpty(profileInfoInput.PhoneNumber))
-        {
-            var error = new ArgumentException(ValidationConsts.EMPTY_PHONE_NUMBER_ERROR);
-            _logger.LogError(error);
-            result.Errors.Add(ValidationConsts.EMPTY_PHONE_NUMBER_ERROR);
-            profileInfoInput.PhoneNumber = string.Empty;
-        }
-
-        // Проверка формата номера телефона.
-        if (!UserValidator.IsValidPhoneNumber(profileInfoInput.PhoneNumber))
-        {
-            var error = new ArgumentException(ValidationConsts.NOT_VALID_PHONE_NUMBER_ERROR);
-            _logger.LogError(error);
-            result.Errors.Add(ValidationConsts.NOT_VALID_PHONE_NUMBER_ERROR);
         }
     }
 

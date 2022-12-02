@@ -1,4 +1,6 @@
+using AutoMapper;
 using LeokaEstetica.Platform.Base;
+using LeokaEstetica.Platform.Controllers.Validators.Vacancy;
 using LeokaEstetica.Platform.Core.Filters;
 using LeokaEstetica.Platform.Models.Dto.Input.Vacancy;
 using LeokaEstetica.Platform.Models.Dto.Output.Configs;
@@ -17,10 +19,13 @@ namespace LeokaEstetica.Platform.Controllers.Vacancy;
 public class VacancyController : BaseController
 {
     private readonly IVacancyService _vacancyService;
+    private readonly IMapper _mapper;
     
-    public VacancyController(IVacancyService vacancyService)
+    public VacancyController(IVacancyService vacancyService, 
+        IMapper mapper)
     {
         _vacancyService = vacancyService;
+        _mapper = mapper;
     }
 
     /// <summary>
@@ -73,7 +78,18 @@ public class VacancyController : BaseController
     [ProducesResponseType(404)]
     public async Task<CreateVacancyOutput> CreateVacancyAsync([FromBody] CreateVacancyInput createVacancyInput)
     {
-        var result = await _vacancyService.CreateVacancyAsync(createVacancyInput.VacancyName, createVacancyInput.VacancyText, createVacancyInput.WorkExperience, createVacancyInput.Employment, createVacancyInput.Payment, GetUserName());
+        var result = new CreateVacancyOutput();
+        var validator = await new CreateVacancyValidator().ValidateAsync(createVacancyInput);
+
+        if (validator.Errors.Any())
+        {
+            result.Errors = validator.Errors;
+
+            return result;
+        }
+        
+        var createdVacancy = await _vacancyService.CreateVacancyAsync(createVacancyInput.VacancyName, createVacancyInput.VacancyText, createVacancyInput.WorkExperience, createVacancyInput.Employment, createVacancyInput.Payment, GetUserName());
+        result = _mapper.Map<CreateVacancyOutput>(createdVacancy);
 
         return result;
     }

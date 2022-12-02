@@ -7,12 +7,13 @@ using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Models.Dto.Output.Configs;
 using LeokaEstetica.Platform.Models.Dto.Output.Project;
+using LeokaEstetica.Platform.Models.Entities.Project;
+using LeokaEstetica.Platform.Models.Entities.Vacancy;
 using LeokaEstetica.Platform.Models.Enums;
 using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Notifications.Consts;
 using LeokaEstetica.Platform.Services.Abstractions.Project;
 using LeokaEstetica.Platform.Services.Abstractions.Vacancy;
-using LeokaEstetica.Platform.Services.Validators;
 
 namespace LeokaEstetica.Platform.Services.Services.Project;
 
@@ -56,27 +57,10 @@ public sealed class ProjectService : IProjectService
     /// <param name="account">Аккаунт пользователя.</param>
     /// <param name="projectStage">Стадия проекта.</param>
     /// <returns>Данные нового проекта.</returns>
-    public async Task<CreateProjectOutput> CreateProjectAsync(string projectName, string projectDetails, string account, ProjectStageEnum projectStage)
+    public async Task<UserProjectEntity> CreateProjectAsync(string projectName, string projectDetails, string account, ProjectStageEnum projectStage)
     {
         try
         {
-            var result = new CreateProjectOutput();
-            
-            if (string.IsNullOrEmpty(account))
-            {
-                var ex = new ArgumentNullException($"Не передан аккаунт пользователя.");
-                await _logService.LogErrorAsync(ex);
-            }
-            
-            ProjectValidator.ValidateCreateProject(projectName, projectDetails, ref result);
-
-            if (result.Errors.Any())
-            {
-                result.IsSuccess = false;
-                
-                return result;
-            }
-
             var userId = await _userRepository.GetUserByEmailAsync(account);
 
             if (userId <= 0)
@@ -93,14 +77,12 @@ public sealed class ProjectService : IProjectService
             if (isCreatedProject)
             {
                 await _projectNotificationsService.SendNotificationWarningDublicateUserProjectAsync("Увы...", "Такой проект у вас уже существует.", NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING);
-                result.IsSuccess = false;
-                
-                return result;
+
+                return null;
             }
             
-            var statusId = ProjectStatus.GetProjectStatusIdBySysName(ProjectStatusNameEnum.Moderation.ToString());
             var statusName = ProjectStatus.GetProjectStatusNameBySysName(ProjectStatusNameEnum.Moderation.ToString());
-            var project = await _projectRepository.CreateProjectAsync(projectName, projectDetails, userId, ProjectStatusNameEnum.Moderation.ToString(), statusId, statusName, projectStage);
+            var project = await _projectRepository.CreateProjectAsync(projectName, projectDetails, userId, ProjectStatusNameEnum.Moderation.ToString(), statusName, projectStage);
                 
             // Если что то пошло не так при создании проекта.
             if (project?.ProjectId <= 0)
@@ -108,19 +90,14 @@ public sealed class ProjectService : IProjectService
                 var ex = new Exception("Ошибка при создании проекта.");
                 await _logService.LogErrorAsync(ex);
                 await _projectNotificationsService.SendNotificationErrorCreatedUserProjectAsync("Что то пошло не так", "Ошибка при создании проекта. Мы уже знаем о проблеме и уже занимаемся ей.", NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR);
-                
-                result.IsSuccess = false;
-                
-                return result;
-            }
 
-            result = _mapper.Map<CreateProjectOutput>(project);
+                return null;
+            }
 
             // Отправляем уведомление об успешном создании проекта.
             await _projectNotificationsService.SendNotificationSuccessCreatedUserProjectAsync("Все хорошо", "Данные успешно сохранены. Проект отправлен на модерацию.", NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS);
-            result.IsSuccess = true;
 
-            return result;
+            return project;
         }
         
         catch (Exception ex)
@@ -235,19 +212,9 @@ public sealed class ProjectService : IProjectService
                 await ValidateProjectIdAsync(projectId);
             }
 
-            var result = new UpdateProjectOutput();
-            ProjectValidator.ValidateUpdateProject(projectName, projectDetails, ref result);
-            
-            if (result.Errors.Any())
-            {
-                result.IsSuccess = false;
-                
-                return result;
-            }
-            
             // Изменяем проект в БД.
-            result = await _projectRepository.UpdateProjectAsync(projectName, projectDetails, userId, projectId, projectStage);
-            
+            var result = await _projectRepository.UpdateProjectAsync(projectName, projectDetails, userId, projectId, projectStage);
+
             // TODO: Добавить отправку проекта на модерацию тут. Также удалять проект из каталога проектов на время модерации.
             await _projectNotificationsService.SendNotificationSuccessUpdatedUserProjectAsync("Все хорошо", "Данные успешно изменены. Проект отправлен на модерацию.", NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS);
 
@@ -268,20 +235,10 @@ public sealed class ProjectService : IProjectService
     /// <param name="mode">Режим. Чтение или изменение.</param>
     /// <param name="account">Аккаунт.</param>
     /// <returns>Данные проекта.</returns>
-    public async Task<ProjectOutput> GetProjectAsync(long projectId, ModeEnum mode, string account)
+    public async Task<UserProjectEntity> GetProjectAsync(long projectId, ModeEnum mode, string account)
     {
         try
         {
-            var result = new ProjectOutput();
-            ProjectValidator.ValidateGetProject(projectId, mode, ref result);
-
-            if (result.Errors.Any())
-            {
-                result.IsSuccess = false;
-                
-                return result;
-            }
-            
             var userId = await _userRepository.GetUserByEmailAsync(account);
 
             if (userId <= 0)
@@ -299,15 +256,14 @@ public sealed class ProjectService : IProjectService
             //     
             // }
 
-            var project = await _projectRepository.GetProjectAsync(projectId, userId);
+            var result = await _projectRepository.GetProjectAsync(projectId, userId);
 
-            if (project is null)
+            if (result is null)
             {
                 var ex = new NullReferenceException($"Не удалось найти проект с ProjectId {projectId} и UserId {userId}");
                 await _logService.LogErrorAsync(ex);
+                throw ex;
             }
-
-            result = _mapper.Map<ProjectOutput>(project);
 
             return result;
         }
@@ -359,23 +315,16 @@ public sealed class ProjectService : IProjectService
     /// </summary>
     /// <param name="projectId">Id проекта, вакансии которого нужно получить.</param>
     /// <returns>Список вакансий.</returns>
-    public async Task<ProjectVacancyResultOutput> ProjectVacanciesAsync(long projectId)
+    public async Task< IEnumerable<ProjectVacancyEntity>> ProjectVacanciesAsync(long projectId)
     {
         try
         {
-            var result = new ProjectVacancyResultOutput();
-            
             if (projectId <= 0)
             {
                 await ValidateProjectIdAsync(projectId);
             }
 
-            var items = await _projectRepository.ProjectVacanciesAsync(projectId);
-
-            if (items.Any())
-            {
-                result.ProjectVacancies = _mapper.Map<IEnumerable<ProjectVacancyOutput>>(items);
-            }
+            var result = await _projectRepository.ProjectVacanciesAsync(projectId);
 
             return result;
         }
@@ -398,12 +347,10 @@ public sealed class ProjectService : IProjectService
     /// <param name="payment">Оплата у вакансии.</param>
     /// <param name="account">Аккаунт пользователя.</param>
     /// <returns>Данные вакансии.</returns>
-    public async Task<CreateProjectVacancyOutput> CreateProjectVacancyAsync(string vacancyName, string vacancyText, long projectId, string employment, string payment, string workExperience, string account)
+    public async Task<UserVacancyEntity> CreateProjectVacancyAsync(string vacancyName, string vacancyText, long projectId, string employment, string payment, string workExperience, string account)
     {
         try
         {
-            var result = new CreateProjectVacancyOutput { Errors = new List<string>() };
-            
             // Если невалидный Id проекта.
             if (projectId <= 0)
             {
@@ -411,25 +358,14 @@ public sealed class ProjectService : IProjectService
                 await _logService.LogErrorAsync(ex);
                 throw ex;
             }
-            
-            ProjectValidator.ValidateCreateProjectVacancy(ref result, vacancyName, vacancyText, account);
 
-            if (result.Errors.Any())
-            {
-                result.IsSuccess = false;
-                
-                return result;
-            }
-            
             // Создаем вакансию.
             var createdVacancy = await _vacancyService.CreateVacancyAsync(vacancyName, vacancyText, workExperience, employment, payment, account);
             
             // Автоматически привязываем вакансию к проекту.
             await _projectRepository.AttachProjectVacancyAsync(projectId, createdVacancy.VacancyId);
 
-            result = _mapper.Map<CreateProjectVacancyOutput>(createdVacancy);
-
-            return result;
+            return createdVacancy;
         }
         
         catch (Exception ex)
