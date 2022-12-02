@@ -29,11 +29,10 @@ public sealed class ProjectRepository : IProjectRepository
     /// <param name="projectDetails">Описание проекта.</param>
     /// <param name="userId">Id пользователя.</param>
     /// <param name="statusSysName">Системное название статуса.</param>
-    /// <param name="statusId">Id статуса.</param>
     /// <param name="statusName">Русское название статуса.</param>
     /// <param name="projectStage">Стадия проекта.</param>
     /// <returns>Данные нового проекта.</returns>
-    public async Task<UserProjectEntity> CreateProjectAsync(string projectName, string projectDetails, long userId, string statusSysName, int statusId, string statusName, ProjectStageEnum projectStage)
+    public async Task<UserProjectEntity> CreateProjectAsync(string projectName, string projectDetails, long userId, string statusSysName, string statusName, ProjectStageEnum projectStage)
     {
         var transaction = await _pgContext.Database
             .BeginTransactionAsync(IsolationLevel.ReadCommitted);
@@ -55,7 +54,6 @@ public sealed class ProjectRepository : IProjectRepository
             await _pgContext.ProjectStatuses.AddAsync(new ProjectStatusEntity
             {
                 ProjectId = project.ProjectId,
-                StatusId = statusId,
                 ProjectStatusSysName = statusSysName,
                 ProjectStatusName = statusName
             });

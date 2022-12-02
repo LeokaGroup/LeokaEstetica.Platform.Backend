@@ -6,6 +6,7 @@ using LeokaEstetica.Platform.Core.Filters;
 using LeokaEstetica.Platform.Models.Dto.Input.Project;
 using LeokaEstetica.Platform.Models.Dto.Output.Configs;
 using LeokaEstetica.Platform.Models.Dto.Output.Project;
+using LeokaEstetica.Platform.Models.Enums;
 using LeokaEstetica.Platform.Services.Abstractions.Project;
 using Microsoft.AspNetCore.Mvc;
 
@@ -64,12 +65,7 @@ public class ProjectController : BaseController
     public async Task<CreateProjectOutput> CreateProjectAsync([FromBody] CreateProjectInput createProjectInput)
     {
         var result = new CreateProjectOutput();
-        var validator = await new CreateProjectValidator().ValidateAsync(new CreateProjectValidationModel
-        {
-            ProjectName = createProjectInput.ProjectName,
-            ProjectDetails = createProjectInput.ProjectDetails,
-            Account = GetUserName()
-        });
+        var validator = await new CreateProjectValidator().ValidateAsync(createProjectInput);
 
         if (validator.Errors.Any())
         {
@@ -78,7 +74,7 @@ public class ProjectController : BaseController
             return result;
         }
         
-        var project = await _projectService.CreateProjectAsync(createProjectInput.ProjectName, createProjectInput.ProjectDetails, GetUserName(), createProjectInput.ProjectStage);
+        var project = await _projectService.CreateProjectAsync(createProjectInput.ProjectName, createProjectInput.ProjectDetails, GetUserName(), Enum.Parse<ProjectStageEnum>(createProjectInput.ProjectStage));
         result = _mapper.Map<CreateProjectOutput>(project);
 
         return result;
@@ -145,7 +141,7 @@ public class ProjectController : BaseController
             return result;
         }
         
-        result = await _projectService.UpdateProjectAsync(createProjectInput.ProjectName, createProjectInput.ProjectDetails, GetUserName(), createProjectInput.ProjectId, createProjectInput.ProjectStage);
+        result = await _projectService.UpdateProjectAsync(createProjectInput.ProjectName, createProjectInput.ProjectDetails, GetUserName(), createProjectInput.ProjectId, Enum.Parse<ProjectStageEnum>(createProjectInput.ProjectStage));
 
         return result;
     }
@@ -235,12 +231,7 @@ public class ProjectController : BaseController
     public async Task<CreateProjectVacancyOutput> CreateProjectVacancyAsync([FromBody] CreateProjectVacancyInput createProjectVacancyInput)
     {
         var result = new CreateProjectVacancyOutput();
-        var validator = await new CreateProjectVacancyValidator().ValidateAsync(new CreateProjectVacancyValidationModel
-        {
-            VacancyName = createProjectVacancyInput.VacancyName,
-            VacancyText = createProjectVacancyInput.VacancyText,
-            Account = GetUserName()
-        });
+        var validator = await new CreateProjectVacancyValidator().ValidateAsync(createProjectVacancyInput);
 
         if (validator.Errors.Any())
         {

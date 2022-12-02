@@ -81,9 +81,8 @@ public sealed class ProjectService : IProjectService
                 return null;
             }
             
-            var statusId = ProjectStatus.GetProjectStatusIdBySysName(ProjectStatusNameEnum.Moderation.ToString());
             var statusName = ProjectStatus.GetProjectStatusNameBySysName(ProjectStatusNameEnum.Moderation.ToString());
-            var project = await _projectRepository.CreateProjectAsync(projectName, projectDetails, userId, ProjectStatusNameEnum.Moderation.ToString(), statusId, statusName, projectStage);
+            var project = await _projectRepository.CreateProjectAsync(projectName, projectDetails, userId, ProjectStatusNameEnum.Moderation.ToString(), statusName, projectStage);
                 
             // Если что то пошло не так при создании проекта.
             if (project?.ProjectId <= 0)
