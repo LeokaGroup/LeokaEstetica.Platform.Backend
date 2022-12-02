@@ -13,7 +13,6 @@ using LeokaEstetica.Platform.Notifications.Consts;
 using LeokaEstetica.Platform.Redis.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Redis.Models.Vacancy;
 using LeokaEstetica.Platform.Services.Abstractions.Vacancy;
-using LeokaEstetica.Platform.Services.Validators;
 using VacancyItems = LeokaEstetica.Platform.Redis.Models.Vacancy.VacancyItems;
 
 namespace LeokaEstetica.Platform.Services.Services.Vacancy;
