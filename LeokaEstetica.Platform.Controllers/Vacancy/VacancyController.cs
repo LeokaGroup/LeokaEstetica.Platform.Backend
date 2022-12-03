@@ -1,5 +1,6 @@
 using AutoMapper;
 using LeokaEstetica.Platform.Base;
+using LeokaEstetica.Platform.Base.Abstractions.Services;
 using LeokaEstetica.Platform.Controllers.Validators.Vacancy;
 using LeokaEstetica.Platform.Core.Filters;
 using LeokaEstetica.Platform.Models.Dto.Input.Vacancy;
@@ -20,12 +21,15 @@ public class VacancyController : BaseController
 {
     private readonly IVacancyService _vacancyService;
     private readonly IMapper _mapper;
+    private readonly IValidationExcludeErrorsService _validationExcludeErrorsService;
     
     public VacancyController(IVacancyService vacancyService, 
-        IMapper mapper)
+        IMapper mapper, 
+        IValidationExcludeErrorsService validationExcludeErrorsService)
     {
         _vacancyService = vacancyService;
         _mapper = mapper;
+        _validationExcludeErrorsService = validationExcludeErrorsService;
     }
 
     /// <summary>
@@ -83,7 +87,7 @@ public class VacancyController : BaseController
 
         if (validator.Errors.Any())
         {
-            result.Errors = validator.Errors;
+            result.Errors = await _validationExcludeErrorsService.ExcludeAsync(validator.Errors);
 
             return result;
         }

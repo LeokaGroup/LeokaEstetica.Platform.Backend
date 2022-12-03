@@ -1,4 +1,5 @@
 using LeokaEstetica.Platform.Base;
+using LeokaEstetica.Platform.Base.Abstractions.Services;
 using LeokaEstetica.Platform.Controllers.Validators.Profile;
 using LeokaEstetica.Platform.Core.Filters;
 using LeokaEstetica.Platform.Models.Dto.Input.Profile;
@@ -17,10 +18,13 @@ namespace LeokaEstetica.Platform.Controllers.Profile;
 public class ProfileController : BaseController
 {
     private readonly IProfileService _profileService;
+    private readonly IValidationExcludeErrorsService _validationExcludeErrorsService;
 
-    public ProfileController(IProfileService profileService)
+    public ProfileController(IProfileService profileService, 
+        IValidationExcludeErrorsService validationExcludeErrorsService)
     {
         _profileService = profileService;
+        _validationExcludeErrorsService = validationExcludeErrorsService;
     }
 
     /// <summary>
@@ -114,7 +118,7 @@ public class ProfileController : BaseController
 
         if (validator.Errors.Any())
         {
-            result.Errors = validator.Errors;
+            result.Errors = await _validationExcludeErrorsService.ExcludeAsync(validator.Errors);
 
             return result;
         }
