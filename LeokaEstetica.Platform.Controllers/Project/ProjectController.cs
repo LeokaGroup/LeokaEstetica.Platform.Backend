@@ -1,5 +1,6 @@
 using AutoMapper;
 using LeokaEstetica.Platform.Base;
+using LeokaEstetica.Platform.Base.Abstractions.Services;
 using LeokaEstetica.Platform.Controllers.ModelsValidation.Project;
 using LeokaEstetica.Platform.Controllers.Validators.Project;
 using LeokaEstetica.Platform.Core.Filters;
@@ -22,12 +23,15 @@ public class ProjectController : BaseController
 {
     private readonly IProjectService _projectService;
     private readonly IMapper _mapper;
+    private readonly IValidationExcludeErrorsService _validationExcludeErrorsService;
 
     public ProjectController(IProjectService projectService, 
-        IMapper mapper)
+        IMapper mapper, 
+        IValidationExcludeErrorsService validationExcludeErrorsService)
     {
         _projectService = projectService;
         _mapper = mapper;
+        _validationExcludeErrorsService = validationExcludeErrorsService;
     }
 
     /// <summary>
@@ -69,7 +73,7 @@ public class ProjectController : BaseController
 
         if (validator.Errors.Any())
         {
-            result.Errors = validator.Errors;
+            result.Errors = await _validationExcludeErrorsService.ExcludeAsync(validator.Errors);
 
             return result;
         }
@@ -138,11 +142,11 @@ public class ProjectController : BaseController
 
         if (validator.Errors.Any())
         {
-            result.Errors = validator.Errors;
+            result.Errors = await _validationExcludeErrorsService.ExcludeAsync(validator.Errors);
 
             return result;
         }
-        
+
         result = await _projectService.UpdateProjectAsync(createProjectInput.ProjectName,
             createProjectInput.ProjectDetails, GetUserName(), createProjectInput.ProjectId,
             Enum.Parse<ProjectStageEnum>(createProjectInput.ProjectStage));
@@ -170,7 +174,7 @@ public class ProjectController : BaseController
         
         if (validator.Errors.Any())
         {
-            result.Errors = validator.Errors;
+            result.Errors = await _validationExcludeErrorsService.ExcludeAsync(validator.Errors);
             
             return result;
         }
@@ -240,7 +244,7 @@ public class ProjectController : BaseController
 
         if (validator.Errors.Any())
         {
-            result.Errors = validator.Errors;
+            result.Errors = await _validationExcludeErrorsService.ExcludeAsync(validator.Errors);
 
             return result;
         }

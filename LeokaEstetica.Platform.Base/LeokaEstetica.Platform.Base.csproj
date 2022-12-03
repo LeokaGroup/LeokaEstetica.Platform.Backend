@@ -3,11 +3,18 @@
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
+        <Nullable>disable</Nullable>
     </PropertyGroup>
 
     <ItemGroup>
+      <PackageReference Include="FluentValidation" Version="11.4.0" />
       <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.2.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\LeokaEstetica.Platform.Core\LeokaEstetica.Platform.Core.csproj" />
+      <ProjectReference Include="..\LeokaEstetica.Platform.Logs\LeokaEstetica.Platform.Logs.csproj" />
+      <ProjectReference Include="..\LeokaEstetica.Platform.Redis\LeokaEstetica.Platform.Redis.csproj" />
     </ItemGroup>
 
 </Project>
