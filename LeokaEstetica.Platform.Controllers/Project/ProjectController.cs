@@ -77,8 +77,10 @@ public class ProjectController : BaseController
 
             return result;
         }
-        
-        var project = await _projectService.CreateProjectAsync(createProjectInput.ProjectName, createProjectInput.ProjectDetails, GetUserName(), Enum.Parse<ProjectStageEnum>(createProjectInput.ProjectStage));
+
+        var project = await _projectService.CreateProjectAsync(createProjectInput.ProjectName,
+            createProjectInput.ProjectDetails, GetUserName(),
+            Enum.Parse<ProjectStageEnum>(createProjectInput.ProjectStage));
         result = _mapper.Map<CreateProjectOutput>(project);
 
         return result;
@@ -144,8 +146,10 @@ public class ProjectController : BaseController
 
             return result;
         }
-        
-        result = await _projectService.UpdateProjectAsync(createProjectInput.ProjectName, createProjectInput.ProjectDetails, GetUserName(), createProjectInput.ProjectId, Enum.Parse<ProjectStageEnum>(createProjectInput.ProjectStage));
+
+        result = await _projectService.UpdateProjectAsync(createProjectInput.ProjectName,
+            createProjectInput.ProjectDetails, GetUserName(), createProjectInput.ProjectId,
+            Enum.Parse<ProjectStageEnum>(createProjectInput.ProjectStage));
 
         return result;
     }
@@ -232,7 +236,8 @@ public class ProjectController : BaseController
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<CreateProjectVacancyOutput> CreateProjectVacancyAsync([FromBody] CreateProjectVacancyInput createProjectVacancyInput)
+    public async Task<CreateProjectVacancyOutput> CreateProjectVacancyAsync(
+        [FromBody] CreateProjectVacancyInput createProjectVacancyInput)
     {
         var result = new CreateProjectVacancyOutput();
         var validator = await new CreateProjectVacancyValidator().ValidateAsync(createProjectVacancyInput);
@@ -243,8 +248,11 @@ public class ProjectController : BaseController
 
             return result;
         }
-        
-        var createdVacancy = await _projectService.CreateProjectVacancyAsync(createProjectVacancyInput.VacancyName, createProjectVacancyInput.VacancyText, createProjectVacancyInput.ProjectId, createProjectVacancyInput.Employment, createProjectVacancyInput.Payment, createProjectVacancyInput.WorkExperience, GetUserName());
+
+        var createdVacancy = await _projectService.CreateProjectVacancyAsync(createProjectVacancyInput.VacancyName,
+            createProjectVacancyInput.VacancyText, createProjectVacancyInput.ProjectId,
+            createProjectVacancyInput.Employment, createProjectVacancyInput.Payment,
+            createProjectVacancyInput.WorkExperience, GetUserName());
         result = _mapper.Map<CreateProjectVacancyOutput>(createdVacancy);
 
         return result;
