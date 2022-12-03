@@ -57,7 +57,8 @@ public sealed class ProjectService : IProjectService
     /// <param name="account">Аккаунт пользователя.</param>
     /// <param name="projectStage">Стадия проекта.</param>
     /// <returns>Данные нового проекта.</returns>
-    public async Task<UserProjectEntity> CreateProjectAsync(string projectName, string projectDetails, string account, ProjectStageEnum projectStage)
+    public async Task<UserProjectEntity> CreateProjectAsync(string projectName, string projectDetails, string account,
+        ProjectStageEnum projectStage)
     {
         try
         {
@@ -76,26 +77,33 @@ public sealed class ProjectService : IProjectService
             // Есть дубликат, нельзя создать проект.
             if (isCreatedProject)
             {
-                await _projectNotificationsService.SendNotificationWarningDublicateUserProjectAsync("Увы...", "Такой проект у вас уже существует.", NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING);
+                await _projectNotificationsService
+                    .SendNotificationWarningDublicateUserProjectAsync("Увы...", "Такой проект у вас уже существует.",
+                        NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING);
 
                 return null;
             }
             
             var statusName = ProjectStatus.GetProjectStatusNameBySysName(ProjectStatusNameEnum.Moderation.ToString());
-            var project = await _projectRepository.CreateProjectAsync(projectName, projectDetails, userId, ProjectStatusNameEnum.Moderation.ToString(), statusName, projectStage);
+            var project = await _projectRepository.CreateProjectAsync(projectName, projectDetails, userId,
+                ProjectStatusNameEnum.Moderation.ToString(), statusName, projectStage);
                 
             // Если что то пошло не так при создании проекта.
             if (project?.ProjectId <= 0)
             {
                 var ex = new Exception("Ошибка при создании проекта.");
                 await _logService.LogErrorAsync(ex);
-                await _projectNotificationsService.SendNotificationErrorCreatedUserProjectAsync("Что то пошло не так", "Ошибка при создании проекта. Мы уже знаем о проблеме и уже занимаемся ей.", NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR);
+                await _projectNotificationsService.SendNotificationErrorCreatedUserProjectAsync("Что то пошло не так",
+                    "Ошибка при создании проекта. Мы уже знаем о проблеме и уже занимаемся ей.",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR);
 
                 return null;
             }
 
             // Отправляем уведомление об успешном создании проекта.
-            await _projectNotificationsService.SendNotificationSuccessCreatedUserProjectAsync("Все хорошо", "Данные успешно сохранены. Проект отправлен на модерацию.", NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS);
+            await _projectNotificationsService.SendNotificationSuccessCreatedUserProjectAsync("Все хорошо",
+                    "Данные успешно сохранены. Проект отправлен на модерацию.",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS);
 
             return project;
         }
@@ -193,7 +201,8 @@ public sealed class ProjectService : IProjectService
     /// <param name="projectId">Id проекта.</param>
     /// <param name="projectStage">Стадия проекта.</param>
     /// <returns>Данные нового проекта.</returns>
-    public async Task<UpdateProjectOutput> UpdateProjectAsync(string projectName, string projectDetails, string account, long projectId, ProjectStageEnum projectStage)
+    public async Task<UpdateProjectOutput> UpdateProjectAsync(string projectName, string projectDetails, string account,
+        long projectId, ProjectStageEnum projectStage)
     {
         try
         {
@@ -203,7 +212,9 @@ public sealed class ProjectService : IProjectService
             {
                 var ex = new NotFoundUserIdByAccountException(account);
                 await _logService.LogErrorAsync(ex);
-                await _projectNotificationsService.SendNotificationErrorUpdatedUserProjectAsync("Что то не так...", "Ошибка при обновлении проекта. Мы уже знаем о проблеме и уже занимаемся ей.", NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR);
+                await _projectNotificationsService.SendNotificationErrorUpdatedUserProjectAsync("Что то не так...",
+                    "Ошибка при обновлении проекта. Мы уже знаем о проблеме и уже занимаемся ей.",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR);
                 throw ex;
             }
             
@@ -213,10 +224,14 @@ public sealed class ProjectService : IProjectService
             }
 
             // Изменяем проект в БД.
-            var result = await _projectRepository.UpdateProjectAsync(projectName, projectDetails, userId, projectId, projectStage);
+            var result =
+                await _projectRepository.UpdateProjectAsync(projectName, projectDetails, userId, projectId,
+                    projectStage);
 
             // TODO: Добавить отправку проекта на модерацию тут. Также удалять проект из каталога проектов на время модерации.
-            await _projectNotificationsService.SendNotificationSuccessUpdatedUserProjectAsync("Все хорошо", "Данные успешно изменены. Проект отправлен на модерацию.", NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS);
+            await _projectNotificationsService.SendNotificationSuccessUpdatedUserProjectAsync("Все хорошо",
+                "Данные успешно изменены. Проект отправлен на модерацию.",
+                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS);
 
             return result;
         }
@@ -260,7 +275,8 @@ public sealed class ProjectService : IProjectService
 
             if (result is null)
             {
-                var ex = new NullReferenceException($"Не удалось найти проект с ProjectId {projectId} и UserId {userId}");
+                var ex = new NullReferenceException(
+                    $"Не удалось найти проект с ProjectId {projectId} и UserId {userId}");
                 await _logService.LogErrorAsync(ex);
                 throw ex;
             }
@@ -347,7 +363,8 @@ public sealed class ProjectService : IProjectService
     /// <param name="payment">Оплата у вакансии.</param>
     /// <param name="account">Аккаунт пользователя.</param>
     /// <returns>Данные вакансии.</returns>
-    public async Task<UserVacancyEntity> CreateProjectVacancyAsync(string vacancyName, string vacancyText, long projectId, string employment, string payment, string workExperience, string account)
+    public async Task<UserVacancyEntity> CreateProjectVacancyAsync(string vacancyName, string vacancyText,
+        long projectId, string employment, string payment, string workExperience, string account)
     {
         try
         {
@@ -360,7 +377,8 @@ public sealed class ProjectService : IProjectService
             }
 
             // Создаем вакансию.
-            var createdVacancy = await _vacancyService.CreateVacancyAsync(vacancyName, vacancyText, workExperience, employment, payment, account);
+            var createdVacancy = await _vacancyService.CreateVacancyAsync(vacancyName, vacancyText, workExperience,
+                employment, payment, account);
             
             // Автоматически привязываем вакансию к проекту.
             await _projectRepository.AttachProjectVacancyAsync(projectId, createdVacancy.VacancyId);
