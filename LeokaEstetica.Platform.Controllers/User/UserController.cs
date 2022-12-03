@@ -1,4 +1,5 @@
 using LeokaEstetica.Platform.Base;
+using LeokaEstetica.Platform.Base.Abstractions.Services;
 using LeokaEstetica.Platform.Controllers.Validators.User;
 using LeokaEstetica.Platform.Core.Filters;
 using LeokaEstetica.Platform.Models.Dto.Input.User;
@@ -18,10 +19,13 @@ namespace LeokaEstetica.Platform.Controllers.User;
 public class UserController : BaseController
 {
     private readonly IUserService _userService;
+    private readonly IValidationExcludeErrorsService _validationExcludeErrorsService;
     
-    public UserController(IUserService userService)
+    public UserController(IUserService userService, 
+        IValidationExcludeErrorsService validationExcludeErrorsService)
     {
         _userService = userService;
+        _validationExcludeErrorsService = validationExcludeErrorsService;
     }
 
     /// <summary>
@@ -44,7 +48,7 @@ public class UserController : BaseController
 
         if (validator.Errors.Any())
         {
-            result.Errors = validator.Errors;
+            result.Errors = await _validationExcludeErrorsService.ExcludeAsync(validator.Errors);
 
             return result;
         }
@@ -94,7 +98,7 @@ public class UserController : BaseController
 
         if (validator.Errors.Any())
         {
-            result.Errors = validator.Errors;
+            result.Errors = await _validationExcludeErrorsService.ExcludeAsync(validator.Errors);
 
             return result;
         }

@@ -24,6 +24,11 @@ public static class GlobalConfigKeys
         /// Ключ для меню вакансий.
         /// </summary>
         public const string VACANCY_MENU_KEY = "VacancyMenu";
+
+        /// <summary>
+        /// Ключ для исключения полей при валидации.
+        /// </summary>
+        public const string VALIDATION_EXCLUDE_KEY = "ValidationExclude";
     }
     
     /// <summary>
