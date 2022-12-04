@@ -25,7 +25,8 @@ public interface IVacancyRepository
     /// <param name="payment">Оплата у вакансии.</param>
     /// <param name="userId">Id пользователя.</param>
     /// <returns>Данные созданной вакансии.</returns>
-    Task<UserVacancyEntity> CreateVacancyAsync(string vacancyName, string vacancyText, string workExperience, string employment, string payment, long userId);
+    Task<UserVacancyEntity> CreateVacancyAsync(string vacancyName, string vacancyText, string workExperience,
+        string employment, string payment, long userId);
 
     /// <summary>
     /// TODO: userId возможно нужкн будет использовать, если будет монетизация в каталоге вакансий. Если доступ будет только у тех пользователей, которые приобрели подписку.
@@ -42,11 +43,19 @@ public interface IVacancyRepository
     /// <param name="statusName">Название статуса.</param>
     /// <param name="statusSysName">Системное название статуса.</param>
     Task AddVacancyStatusAsync(long vacancyId, string statusName, string statusSysName);
-    
+
     /// <summary>
     /// Метод получает названия полей для таблицы вакансий проектов пользователя.
     /// Все названия столбцов этой таблицы одинаковые у всех пользователей.
     /// </summary>
     /// <returns>Список названий полей таблицы.</returns>
     Task<IEnumerable<ProjectVacancyColumnNameEntity>> ProjectUserVacanciesColumnsNamesAsync();
+
+    /// <summary>
+    /// Метод получает вакансию по ее Id.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Данные вакансии.</returns>
+    Task<UserVacancyEntity> GetVacancyByVacancyIdAsync(long vacancyId, long userId);
 }

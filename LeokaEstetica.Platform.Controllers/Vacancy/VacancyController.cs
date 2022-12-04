@@ -22,9 +22,9 @@ public class VacancyController : BaseController
     private readonly IVacancyService _vacancyService;
     private readonly IMapper _mapper;
     private readonly IValidationExcludeErrorsService _validationExcludeErrorsService;
-    
-    public VacancyController(IVacancyService vacancyService, 
-        IMapper mapper, 
+
+    public VacancyController(IVacancyService vacancyService,
+        IMapper mapper,
         IValidationExcludeErrorsService validationExcludeErrorsService)
     {
         _vacancyService = vacancyService;
@@ -91,13 +91,15 @@ public class VacancyController : BaseController
 
             return result;
         }
-        
-        var createdVacancy = await _vacancyService.CreateVacancyAsync(createVacancyInput.VacancyName, createVacancyInput.VacancyText, createVacancyInput.WorkExperience, createVacancyInput.Employment, createVacancyInput.Payment, GetUserName());
+
+        var createdVacancy = await _vacancyService.CreateVacancyAsync(createVacancyInput.VacancyName,
+            createVacancyInput.VacancyText, createVacancyInput.WorkExperience, createVacancyInput.Employment,
+            createVacancyInput.Payment, GetUserName());
         result = _mapper.Map<CreateVacancyOutput>(createdVacancy);
 
         return result;
     }
-    
+
     /// <summary>
     /// Метод получает названия полей для таблицы вакансий проектов пользователя.
     /// Все названия столбцов этой таблицы одинаковые у всех пользователей.
@@ -113,6 +115,26 @@ public class VacancyController : BaseController
     public async Task<IEnumerable<ProjectVacancyColumnNameOutput>> ProjectUserVacanciesColumnsNamesAsync()
     {
         var result = await _vacancyService.ProjectUserVacanciesColumnsNamesAsync();
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод получает вакансию по ее Id.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <returns>Данные вакансии.</returns>
+    [HttpGet]
+    [Route("vacancy")]
+    [ProducesResponseType(200, Type = typeof(VacancyOutput))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<VacancyOutput> GetVacancyByVacancyIdAsync([FromQuery] long vacancyId)
+    {
+        var vacancy = await _vacancyService.GetVacancyByVacancyIdAsync(vacancyId, GetUserName());
+        var result = _mapper.Map<VacancyOutput>(vacancy);
 
         return result;
     }

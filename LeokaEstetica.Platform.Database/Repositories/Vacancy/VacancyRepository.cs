@@ -13,7 +13,7 @@ namespace LeokaEstetica.Platform.Database.Repositories.Vacancy;
 public sealed class VacancyRepository : IVacancyRepository
 {
     private readonly PgContext _pgContext;
-    
+
     public VacancyRepository(PgContext pgContext)
     {
         _pgContext = pgContext;
@@ -41,7 +41,8 @@ public sealed class VacancyRepository : IVacancyRepository
     /// <param name="payment">Оплата у вакансии.</param>
     /// <param name="userId">Id пользователя.</param>
     /// <returns>Данные созданной вакансии.</returns>
-    public async Task<UserVacancyEntity> CreateVacancyAsync(string vacancyName, string vacancyText, string workExperience, string employment,
+    public async Task<UserVacancyEntity> CreateVacancyAsync(string vacancyName, string vacancyText,
+        string workExperience, string employment,
         string payment, long userId)
     {
         var vacancy = new UserVacancyEntity
@@ -102,7 +103,7 @@ public sealed class VacancyRepository : IVacancyRepository
         await _pgContext.VacancyStatuses.AddAsync(vacancyStatus);
         await _pgContext.SaveChangesAsync();
     }
-    
+
     /// <summary>
     /// Метод получает названия полей для таблицы вакансий проектов пользователя.
     /// Все названия столбцов этой таблицы одинаковые у всех пользователей.
@@ -113,6 +114,21 @@ public sealed class VacancyRepository : IVacancyRepository
         var result = await _pgContext.ProjectVacancyColumnsNames
             .OrderBy(o => o.Position)
             .ToListAsync();
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод получает вакансию по ее Id.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Данные вакансии.</returns>
+    public async Task<UserVacancyEntity> GetVacancyByVacancyIdAsync(long vacancyId, long userId)
+    {
+        var result = await _pgContext.UserVacancies
+            .FirstOrDefaultAsync(v => v.VacancyId == vacancyId
+                                      && v.UserId == userId);
 
         return result;
     }

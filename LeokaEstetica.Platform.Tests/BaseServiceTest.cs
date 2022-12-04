@@ -52,7 +52,6 @@ public class BaseServiceTest
         
         AutoFac.RegisterMapper(container);
         var mapper = AutoFac.Resolve<IMapper>();
-        // var hub = AutoFac.Resolve<IHubContext<NotifyHub>>();
 
         // Настройка тестовых контекстов.
         var optionsBuilder = new DbContextOptionsBuilder<PgContext>();
