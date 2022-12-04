@@ -4,9 +4,9 @@ using LeokaEstetica.Platform.Models.Dto.Common;
 namespace LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
 
 /// <summary>
-/// Класс выходной модели создания вакансии.
+/// Класс выходной модели вакансии.
 /// </summary>
-public class CreateVacancyOutput : IFrontError
+public class VacancyOutput : IFrontError
 {
     /// <summary>
     /// PK.
@@ -53,7 +53,7 @@ public class CreateVacancyOutput : IFrontError
     /// Id пользователя.
     /// </summary>
     public long UserId { get; set; }
-
+    
     /// <summary>
     /// Список ошибок.
     /// </summary>

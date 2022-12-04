@@ -1,4 +1,5 @@
 using AutoMapper;
+using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Core.Helpers;
 using LeokaEstetica.Platform.Database.Abstractions.User;
@@ -184,6 +185,37 @@ public sealed class VacancyService : IVacancyService
             }
 
             var result = _mapper.Map<IEnumerable<ProjectVacancyColumnNameOutput>>(items);
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            await _logService.LogErrorAsync(ex);
+            throw;
+        }
+    }
+    
+    /// <summary>
+    /// Метод получает вакансию по ее Id.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <param name="account">Аккаунт.</param>
+    /// <returns>Данные вакансии.</returns>
+    public async Task<UserVacancyEntity> GetVacancyByVacancyIdAsync(long vacancyId, string account)
+    {
+        try
+        {
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                await _logService.LogErrorAsync(ex);
+                throw ex;
+            }
+
+            var result = await _vacancyRepository.GetVacancyByVacancyIdAsync(vacancyId, userId);
 
             return result;
         }

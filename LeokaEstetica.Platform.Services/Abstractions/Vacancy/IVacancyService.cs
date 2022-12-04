@@ -25,7 +25,8 @@ public interface IVacancyService
     /// <param name="payment">Оплата у вакансии.</param>
     /// <param name="account">Аккаунт пользователя.</param>
     /// <returns>Данные созданной вакансии.</returns>
-    Task<UserVacancyEntity> CreateVacancyAsync(string vacancyName, string vacancyText, string workExperience, string employment, string payment, string account);
+    Task<UserVacancyEntity> CreateVacancyAsync(string vacancyName, string vacancyText, string workExperience,
+        string employment, string payment, string account);
 
     /// <summary>
     /// Метод получает список вакансий для каталога.
@@ -40,4 +41,12 @@ public interface IVacancyService
     /// </summary>
     /// <returns>Список названий полей таблицы.</returns>
     Task<IEnumerable<ProjectVacancyColumnNameOutput>> ProjectUserVacanciesColumnsNamesAsync();
+
+    /// <summary>
+    /// Метод получает вакансию по ее Id.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <param name="account">Аккаунт.</param>
+    /// <returns>Данные вакансии.</returns>
+    Task<UserVacancyEntity> GetVacancyByVacancyIdAsync(long vacancyId, string account);
 }
