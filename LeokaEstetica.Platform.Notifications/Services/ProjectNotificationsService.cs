@@ -23,7 +23,8 @@ public sealed class ProjectNotificationsService : IProjectNotificationsService
     /// <param name="title">Заголовок уведомления.</param>
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
-    public async Task SendNotificationSuccessCreatedUserProjectAsync(string title, string notifyText, string notificationLevel)
+    public async Task SendNotificationSuccessCreatedUserProjectAsync(string title, string notifyText,
+        string notificationLevel)
     {
         await _hubContext.Clients.All.SendAsync("SendNotificationSuccessCreatedUserProject", new NotificationOutput
         {
@@ -39,7 +40,8 @@ public sealed class ProjectNotificationsService : IProjectNotificationsService
     /// <param name="title">Заголовок уведомления.</param>
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
-    public async Task SendNotificationErrorCreatedUserProjectAsync(string title, string notifyText, string notificationLevel)
+    public async Task SendNotificationErrorCreatedUserProjectAsync(string title, string notifyText,
+        string notificationLevel)
     {
         await _hubContext.Clients.All.SendAsync("SendNotificationErrorCreatedUserProject", new NotificationOutput
         {
@@ -55,7 +57,8 @@ public sealed class ProjectNotificationsService : IProjectNotificationsService
     /// <param name="title">Заголовок уведомления.</param>
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
-    public async Task SendNotificationWarningDublicateUserProjectAsync(string title, string notifyText, string notificationLevel)
+    public async Task SendNotificationWarningDublicateUserProjectAsync(string title, string notifyText,
+        string notificationLevel)
     {
         await _hubContext.Clients.All.SendAsync("SendNotificationWarningDublicateUserProject", new NotificationOutput
         {
@@ -72,7 +75,8 @@ public sealed class ProjectNotificationsService : IProjectNotificationsService
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
     /// <param name="userCode">Код пользователя.</param>
-    public async Task SendNotificationSuccessUpdatedUserProjectAsync(string title, string notifyText, string notificationLevel)
+    public async Task SendNotificationSuccessUpdatedUserProjectAsync(string title, string notifyText,
+        string notificationLevel)
     {
         await _hubContext.Clients.All.SendAsync("SendNotificationSuccessUpdatedUserProject", new NotificationOutput
         {
@@ -81,7 +85,7 @@ public sealed class ProjectNotificationsService : IProjectNotificationsService
             NotificationLevel = notificationLevel
         });
     }
-    
+
     /// <summary>
     /// Метод отправляет уведомление об ошибке при изменении проекта пользователя.
     /// </summary>
@@ -89,7 +93,8 @@ public sealed class ProjectNotificationsService : IProjectNotificationsService
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
     /// <param name="userCode">Код пользователя.</param>
-    public async Task SendNotificationErrorUpdatedUserProjectAsync(string title, string notifyText, string notificationLevel)
+    public async Task SendNotificationErrorUpdatedUserProjectAsync(string title, string notifyText,
+        string notificationLevel)
     {
         await _hubContext.Clients.All.SendAsync("SendNotificationErrorUpdatedUserProject", new NotificationOutput
         {
@@ -97,5 +102,42 @@ public sealed class ProjectNotificationsService : IProjectNotificationsService
             Message = notifyText,
             NotificationLevel = notificationLevel
         });
+    }
+
+    /// <summary>
+    /// Метод отправляет уведомление об успешной привязке вакансии к проекту.
+    /// </summary>
+    /// <param name="title">Заголовок уведомления.</param>
+    /// <param name="notifyText">Текст уведомления.</param>
+    /// <param name="notificationLevel">Уровень уведомления.</param>
+    /// <param name="userCode">Код пользователя.</param>
+    public async Task SendNotificationSuccessAttachProjectVacancyAsync(string title, string notifyText,
+        string notificationLevel)
+    {
+        await _hubContext.Clients.All.SendAsync("SendNotificationSuccessAttachProjectVacancy", new NotificationOutput
+        {
+            Title = title,
+            Message = notifyText,
+            NotificationLevel = notificationLevel
+        });
+    }
+
+    /// <summary>
+    /// Метод отправляет уведомление об дубликате при привязке вакансии к проекту.
+    /// </summary>
+    /// <param name="title">Заголовок уведомления.</param>
+    /// <param name="notifyText">Текст уведомления.</param>
+    /// <param name="notificationLevel">Уровень уведомления.</param>
+    /// <param name="userCode">Код пользователя.</param>
+    public async Task SendNotificationErrorDublicateAttachProjectVacancyAsync(string title, string notifyText,
+        string notificationLevel)
+    {
+        await _hubContext.Clients.All.SendAsync("SendNotificationErrorDublicateAttachProjectVacancy",
+            new NotificationOutput
+            {
+                Title = title,
+                Message = notifyText,
+                NotificationLevel = notificationLevel
+            });
     }
 }

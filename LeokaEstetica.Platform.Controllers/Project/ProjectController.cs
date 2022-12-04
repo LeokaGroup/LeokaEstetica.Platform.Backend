@@ -263,15 +263,37 @@ public class ProjectController : BaseController
     /// </summary>
     /// <param name="attachProjectVacancyInput">Входная модель.</param>
     /// <returns>Выходная модель.</returns>
-    // [HttpPost]
-    // [Route("attach-vacancy")]
-    // [ProducesResponseType(200, Type = typeof(AttachProjectVacancyOutput))]
-    // [ProducesResponseType(400)]
-    // [ProducesResponseType(403)]
-    // [ProducesResponseType(500)]
-    // [ProducesResponseType(404)]
-    // public async Task<AttachProjectVacancyOutput> AttachProjectVacancyAsync([FromBody] AttachProjectVacancyInput attachProjectVacancyInput)
-    // {
-    //     
-    // }
+    [HttpPost]
+    [Route("attach-vacancy")]
+    [ProducesResponseType(200, Type = typeof(AttachProjectVacancyOutput))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task AttachProjectVacancyAsync([FromBody] AttachProjectVacancyInput attachProjectVacancyInput)
+    {
+        await _projectService.AttachProjectVacancyAsync(attachProjectVacancyInput.ProjectId,
+            attachProjectVacancyInput.VacancyId);
+    }
+    
+    /// <summary>
+    /// Метод получает список вакансий проекта, которые могут быть прикреплены у проекту пользователя.
+    /// </summary>
+    /// <param name="projectId">Id проекта, для которого получить список вакансий.</param>
+    /// <returns>Список вакансий проекта.</returns>
+    [HttpGet]
+    [Route("available-attach-vacancies")]
+    [ProducesResponseType(200, Type = typeof(ProjectVacancyResultOutput))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<ProjectVacancyResultOutput> ProjectVacanciesAvailableAttachAsync([FromQuery] long projectId)
+    {
+        var result = new ProjectVacancyResultOutput();
+        var items = await _projectService.ProjectVacanciesAvailableAttachAsync(projectId, GetUserName());
+        result.ProjectVacancies = _mapper.Map<IEnumerable<ProjectVacancyOutput>>(items);
+
+        return result;
+    }
 }

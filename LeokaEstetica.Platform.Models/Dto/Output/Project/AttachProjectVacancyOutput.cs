@@ -12,9 +12,4 @@ public class AttachProjectVacancyOutput : IFrontError
     /// Список ошибок.
     /// </summary>
     public List<ValidationFailure> Errors { get; set; }
-
-    /// <summary>
-    /// Успешно ли.
-    /// </summary>
-    public bool IsSuccess { get; set; }
 }
