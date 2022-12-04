@@ -1,9 +1,9 @@
 namespace LeokaEstetica.Platform.Models.Dto.Input.Vacancy;
 
 /// <summary>
-/// Базовый класс создания вакансии.
+/// Класс входной модели вакансии.
 /// </summary>
-public class CreateVacancyBase
+public class VacancyInput
 {
     /// <summary>
     /// Название вакансии.
@@ -35,4 +35,9 @@ public class CreateVacancyBase
     /// Если не указано, то выводится текст "Не указана".
     /// </summary>
     public string Payment { get; set; }
+
+    /// <summary>
+    /// Id вакансии.
+    /// </summary>
+    public long VacancyId { get; set; }
 }

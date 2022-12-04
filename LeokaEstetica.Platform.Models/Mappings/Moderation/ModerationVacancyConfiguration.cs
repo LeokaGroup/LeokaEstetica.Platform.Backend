@@ -22,7 +22,7 @@ public partial class ModerationVacancyConfiguration : IEntityTypeConfiguration<M
         
         entity.Property(e => e.DateModeration)
             .HasColumnName("DateModeration")
-            .HasColumnType("timestamp without timezone");
+            .HasColumnType("timestamp");
         
         entity.HasOne(p => p.UserVacancy)
             .WithMany(b => b.ModerationVacancy)

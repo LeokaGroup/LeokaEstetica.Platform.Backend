@@ -7,7 +7,7 @@ namespace LeokaEstetica.Platform.Controllers.Validators.Vacancy;
 /// <summary>
 /// Класс валидатора создания вакансии.
 /// </summary>
-public class CreateVacancyValidator : AbstractValidator<CreateVacancyInput>
+public class CreateVacancyValidator : AbstractValidator<VacancyInput>
 {
     public CreateVacancyValidator()
     {

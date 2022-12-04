@@ -31,12 +31,12 @@ public sealed class VacancyService : IVacancyService
     private readonly IVacancyModerationService _vacancyModerationService;
     private readonly INotificationsService _notificationsService;
 
-    public VacancyService(ILogService logService, 
-        IVacancyRepository vacancyRepository, 
-        IMapper mapper, 
-        IVacancyRedisService vacancyRedisService, 
-        IUserRepository userRepository, 
-        IVacancyModerationService vacancyModerationService, 
+    public VacancyService(ILogService logService,
+        IVacancyRepository vacancyRepository,
+        IMapper mapper,
+        IVacancyRedisService vacancyRedisService,
+        IUserRepository userRepository,
+        IVacancyModerationService vacancyModerationService,
         INotificationsService notificationsService)
     {
         _logService = logService;
@@ -65,7 +65,7 @@ public sealed class VacancyService : IVacancyService
 
             return result;
         }
-        
+
         catch (Exception ex)
         {
             await _logService.LogErrorAsync(ex);
@@ -99,7 +99,7 @@ public sealed class VacancyService : IVacancyService
 
         return model;
     }
-    
+
     /// <summary>
     /// Метод создает вакансию.
     /// </summary>
@@ -110,7 +110,8 @@ public sealed class VacancyService : IVacancyService
     /// <param name="payment">Оплата у вакансии.</param>
     /// <param name="account">Аккаунт пользователя.</param>
     /// <returns>Данные созданной вакансии.</returns>
-    public async Task<UserVacancyEntity> CreateVacancyAsync(string vacancyName, string vacancyText, string workExperience, string employment, string payment, string account)
+    public async Task<UserVacancyEntity> CreateVacancyAsync(string vacancyName, string vacancyText,
+        string workExperience, string employment, string payment, string account)
     {
         try
         {
@@ -119,19 +120,22 @@ public sealed class VacancyService : IVacancyService
             // Добавляем вакансию в таблицу вакансий пользователя.
             var createdVacancy = await _vacancyRepository
                 .CreateVacancyAsync(vacancyName, vacancyText, workExperience, employment, payment, userId);
-            
+
             // Добавляем вакансию в таблицу статусов вакансий. Проставляем новой вакансии статус "На модерации". 
-            await _vacancyRepository.AddVacancyStatusAsync(createdVacancy.VacancyId, VacancyStatusNameEnum.Moderation.GetEnumDescription(), VacancyStatusNameEnum.Moderation.ToString());
-            
+            await _vacancyRepository.AddVacancyStatusAsync(createdVacancy.VacancyId,
+                VacancyStatusNameEnum.Moderation.GetEnumDescription(), VacancyStatusNameEnum.Moderation.ToString());
+
             // Отправляем вакансию на модерацию.
             await _vacancyModerationService.AddVacancyModerationAsync(createdVacancy.VacancyId);
-            
+
             // Отправляем уведомление об успешном создании вакансии и отправки ее на модерацию.
-            await _notificationsService.SendNotificationSuccessCreatedUserVacancyAsync("Все хорошо", "Данные успешно сохранены! Вакансия отправлена на модерацию!", NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS);
+            await _notificationsService.SendNotificationSuccessCreatedUserVacancyAsync("Все хорошо",
+                "Данные успешно сохранены! Вакансия отправлена на модерацию!",
+                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS);
 
             return createdVacancy;
         }
-        
+
         catch (Exception ex)
         {
             await _logService.LogErrorAsync(ex);
@@ -160,7 +164,7 @@ public sealed class VacancyService : IVacancyService
 
             return result;
         }
-        
+
         catch (Exception ex)
         {
             await _logService.LogErrorAsync(ex);
@@ -188,14 +192,14 @@ public sealed class VacancyService : IVacancyService
 
             return result;
         }
-        
+
         catch (Exception ex)
         {
             await _logService.LogErrorAsync(ex);
             throw;
         }
     }
-    
+
     /// <summary>
     /// Метод получает вакансию по ее Id.
     /// </summary>
@@ -219,7 +223,57 @@ public sealed class VacancyService : IVacancyService
 
             return result;
         }
-        
+
+        catch (Exception ex)
+        {
+            await _logService.LogErrorAsync(ex);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Метод обновляет вакансию.
+    /// </summary>
+    /// <param name="vacancyName">Название вакансии.</param>
+    /// <param name="vacancyText">Описание вакансии.</param>
+    /// <param name="workExperience">Опыт работы.</param>
+    /// <param name="employment">Занятость у вакансии.</param>
+    /// <param name="payment">Оплата у вакансии.</param>
+    /// <param name="account">Аккаунт пользователя.</param>
+    /// <returns>Данные созданной вакансии.</returns>
+    public async Task<UserVacancyEntity> UpdateVacancyAsync(string vacancyName, string vacancyText,
+        string workExperience, string employment, string payment, string account, long vacancyId)
+    {
+        try
+        {
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                await _logService.LogErrorAsync(ex);
+                throw ex;
+            }
+
+            // Добавляем вакансию в таблицу вакансий пользователя.
+            var createdVacancy = await _vacancyRepository
+                .UpdateVacancyAsync(vacancyName, vacancyText, workExperience, employment, payment, userId, vacancyId);
+
+            // Добавляем вакансию в таблицу статусов вакансий. Проставляем новой вакансии статус "На модерации". 
+            await _vacancyRepository.AddVacancyStatusAsync(createdVacancy.VacancyId,
+                VacancyStatusNameEnum.Moderation.GetEnumDescription(), VacancyStatusNameEnum.Moderation.ToString());
+
+            // Отправляем вакансию на модерацию.
+            await _vacancyModerationService.AddVacancyModerationAsync(createdVacancy.VacancyId);
+
+            // Отправляем уведомление об успешном изменении вакансии и отправки ее на модерацию.
+            await _notificationsService.SendNotificationSuccessCreatedUserVacancyAsync("Все хорошо",
+                "Данные успешно сохранены! Вакансия отправлена на модерацию!",
+                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS);
+
+            return createdVacancy;
+        }
+
         catch (Exception ex)
         {
             await _logService.LogErrorAsync(ex);
