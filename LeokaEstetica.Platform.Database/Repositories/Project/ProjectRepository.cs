@@ -303,14 +303,27 @@ public sealed class ProjectRepository : IProjectRepository
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
     /// <param name="vacancyId">Id вакансии.</param>
-    public async Task AttachProjectVacancyAsync(long projectId, long vacancyId)
+    /// <returns>Флаг успеха.</returns>
+    public async Task<bool> AttachProjectVacancyAsync(long projectId, long vacancyId)
     {
+        var isDublicateProjectVacancy = await _pgContext.ProjectVacancies
+            .AnyAsync(p => p.ProjectId == projectId
+                           && p.VacancyId == vacancyId);
+        
+        // Если такая вакансия уже прикреплена к проекту.
+        if (isDublicateProjectVacancy)
+        {
+            return true;
+        }
+        
         await _pgContext.ProjectVacancies.AddAsync(new ProjectVacancyEntity
         {
             ProjectId = projectId,
             VacancyId = vacancyId
         });
         await _pgContext.SaveChangesAsync();
+
+        return false;
     }
     /// <summary>
     /// Метод получает список вакансий проекта, которые можно прикрепить к проекту.

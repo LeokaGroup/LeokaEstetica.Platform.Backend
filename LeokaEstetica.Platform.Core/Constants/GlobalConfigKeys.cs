@@ -87,5 +87,10 @@ public static class GlobalConfigKeys
         /// Если не заполнили описание вакансии проекта.
         /// </summary>
         public const string EMPTY_PROJECT_VACANCY_TEXT = "Не заполнено описание вакансии проекта.";
+
+        /// <summary>
+        /// Если к проекту уже прикреплена такая вакансия.
+        /// </summary>
+        public const string DUBLICATE_PROJECT_VACANCY = "Вакансия уже прикреплена к проекту.";
     }
 }

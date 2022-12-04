@@ -49,4 +49,22 @@ public interface IProjectNotificationsService
     /// <param name="notificationLevel">Уровень уведомления.</param>
     /// <param name="userCode">Код пользователя.</param>
     Task SendNotificationErrorUpdatedUserProjectAsync(string title, string notifyText, string notificationLevel);
+    
+    /// <summary>
+    /// Метод отправляет уведомление об успешной привязке вакансии к проекту.
+    /// </summary>
+    /// <param name="title">Заголовок уведомления.</param>
+    /// <param name="notifyText">Текст уведомления.</param>
+    /// <param name="notificationLevel">Уровень уведомления.</param>
+    /// <param name="userCode">Код пользователя.</param>
+    Task SendNotificationSuccessAttachProjectVacancyAsync(string title, string notifyText, string notificationLevel);
+    
+    /// <summary>
+    /// Метод отправляет уведомление об дубликате при привязке вакансии к проекту.
+    /// </summary>
+    /// <param name="title">Заголовок уведомления.</param>
+    /// <param name="notifyText">Текст уведомления.</param>
+    /// <param name="notificationLevel">Уровень уведомления.</param>
+    /// <param name="userCode">Код пользователя.</param>
+    Task SendNotificationErrorDublicateAttachProjectVacancyAsync(string title, string notifyText, string notificationLevel);
 }

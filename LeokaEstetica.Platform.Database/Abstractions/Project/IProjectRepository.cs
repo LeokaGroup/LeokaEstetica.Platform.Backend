@@ -90,7 +90,8 @@ public interface IProjectRepository
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
     /// <param name="vacancyId">Id вакансии.</param>
-    Task AttachProjectVacancyAsync(long projectId, long vacancyId);
+    /// <returns>Флаг успеха.</returns>
+    Task<bool> AttachProjectVacancyAsync(long projectId, long vacancyId);
     
     /// <summary>
     /// Метод получает список вакансий проекта, которые можно прикрепить к проекту.

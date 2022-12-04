@@ -4,7 +4,6 @@ using LeokaEstetica.Platform.Base.Abstractions.Services;
 using LeokaEstetica.Platform.Controllers.ModelsValidation.Project;
 using LeokaEstetica.Platform.Controllers.Validators.Project;
 using LeokaEstetica.Platform.Core.Filters;
-using LeokaEstetica.Platform.Database.Abstractions.Project;
 using LeokaEstetica.Platform.Models.Dto.Input.Project;
 using LeokaEstetica.Platform.Models.Dto.Output.Configs;
 using LeokaEstetica.Platform.Models.Dto.Output.Project;
@@ -25,17 +24,14 @@ public class ProjectController : BaseController
     private readonly IProjectService _projectService;
     private readonly IMapper _mapper;
     private readonly IValidationExcludeErrorsService _validationExcludeErrorsService;
-    private readonly IProjectRepository _projectRepository;
 
     public ProjectController(IProjectService projectService, 
         IMapper mapper, 
-        IValidationExcludeErrorsService validationExcludeErrorsService, 
-        IProjectRepository projectRepository)
+        IValidationExcludeErrorsService validationExcludeErrorsService)
     {
         _projectService = projectService;
         _mapper = mapper;
         _validationExcludeErrorsService = validationExcludeErrorsService;
-        _projectRepository = projectRepository;
     }
 
     /// <summary>
@@ -276,7 +272,7 @@ public class ProjectController : BaseController
     [ProducesResponseType(404)]
     public async Task AttachProjectVacancyAsync([FromBody] AttachProjectVacancyInput attachProjectVacancyInput)
     {
-        await _projectRepository.AttachProjectVacancyAsync(attachProjectVacancyInput.ProjectId,
+        await _projectService.AttachProjectVacancyAsync(attachProjectVacancyInput.ProjectId,
             attachProjectVacancyInput.VacancyId);
     }
     
