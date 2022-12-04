@@ -5,6 +5,7 @@ using LeokaEstetica.Platform.Models.Dto.Output.Project;
 using LeokaEstetica.Platform.Models.Entities.Configs;
 using LeokaEstetica.Platform.Models.Entities.Moderation;
 using LeokaEstetica.Platform.Models.Entities.Project;
+using LeokaEstetica.Platform.Models.Entities.Vacancy;
 using LeokaEstetica.Platform.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 
@@ -32,7 +33,8 @@ public sealed class ProjectRepository : IProjectRepository
     /// <param name="statusName">Русское название статуса.</param>
     /// <param name="projectStage">Стадия проекта.</param>
     /// <returns>Данные нового проекта.</returns>
-    public async Task<UserProjectEntity> CreateProjectAsync(string projectName, string projectDetails, long userId, string statusSysName, string statusName, ProjectStageEnum projectStage)
+    public async Task<UserProjectEntity> CreateProjectAsync(string projectName, string projectDetails, long userId,
+        string statusSysName, string statusName, ProjectStageEnum projectStage)
     {
         var transaction = await _pgContext.Database
             .BeginTransactionAsync(IsolationLevel.ReadCommitted);
@@ -165,7 +167,8 @@ public sealed class ProjectRepository : IProjectRepository
     /// <param name="projectId">Id проекта.</param>
     /// <param name="projectStage">Стадия проекта.</param>
     /// <returns>Данные нового проекта.</returns>
-    public async Task<UpdateProjectOutput> UpdateProjectAsync(string projectName, string projectDetails, long userId, long projectId, ProjectStageEnum projectStage)
+    public async Task<UpdateProjectOutput> UpdateProjectAsync(string projectName, string projectDetails, long userId,
+        long projectId, ProjectStageEnum projectStage)
     {
         var transaction = await _pgContext.Database
             .BeginTransactionAsync(IsolationLevel.ReadCommitted);
@@ -178,7 +181,8 @@ public sealed class ProjectRepository : IProjectRepository
 
             if (project is null)
             {
-                throw new NullReferenceException($"Проект не найден для обновления. ProjectId был {projectId}. UserId был {userId}");
+                throw new NullReferenceException(
+                    $"Проект не найден для обновления. ProjectId был {projectId}. UserId был {userId}");
             }
 
             project.ProjectName = projectName;
@@ -307,5 +311,45 @@ public sealed class ProjectRepository : IProjectRepository
             VacancyId = vacancyId
         });
         await _pgContext.SaveChangesAsync();
+    }
+    /// <summary>
+    /// Метод получает список вакансий проекта, которые можно прикрепить к проекту.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Список вакансий проекта.</returns>
+    public async Task<IEnumerable<ProjectVacancyEntity>> ProjectVacanciesAvailableAttachAsync(long projectId,
+        long userId)
+    {
+        // Получаем Id вакансий, которые уже прикреплены к проекту. Их исключаем.
+        var attachedVacanciesIds = _pgContext.ProjectVacancies
+            .Where(p => p.ProjectId == projectId)
+            .Select(p => p.VacancyId)
+            .AsQueryable();
+
+        // Получаем вакансии, которые можно прикрепить к проекту.
+        var result = await _pgContext.UserVacancies
+            .Where(v => v.UserId == userId
+                        && !attachedVacanciesIds.Contains(v.VacancyId))
+            .Select(v => new ProjectVacancyEntity
+            {
+                ProjectId = projectId,
+                VacancyId = v.VacancyId,
+                UserVacancy = new UserVacancyEntity
+                {
+                    VacancyName = v.VacancyName,
+                    VacancyText = v.VacancyText,
+                    Employment = v.Employment,
+                    WorkExperience = v.WorkExperience,
+                    DateCreated = v.DateCreated,
+                    Payment = v.Payment,
+                    UserId = userId,
+                    VacancyId = v.VacancyId,
+                }
+            })
+            .OrderBy(o => o.VacancyId)
+            .ToListAsync();
+
+        return result;
     }
 }

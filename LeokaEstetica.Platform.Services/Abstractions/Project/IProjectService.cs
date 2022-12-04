@@ -1,7 +1,6 @@
 using LeokaEstetica.Platform.Access.Enums;
 using LeokaEstetica.Platform.Models.Dto.Output.Configs;
 using LeokaEstetica.Platform.Models.Dto.Output.Project;
-using LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
 using LeokaEstetica.Platform.Models.Entities.Project;
 using LeokaEstetica.Platform.Models.Entities.Vacancy;
 using LeokaEstetica.Platform.Models.Enums;
@@ -21,7 +20,8 @@ public interface IProjectService
     /// <param name="account">Аккаунт пользователя.</param>
     /// <param name="projectStage">Стадия проекта.</param>
     /// <returns>Данные нового проекта.</returns>
-    Task<UserProjectEntity> CreateProjectAsync(string projectName, string projectDetails, string account, ProjectStageEnum projectStage);
+    Task<UserProjectEntity> CreateProjectAsync(string projectName, string projectDetails, string account,
+        ProjectStageEnum projectStage);
 
     /// <summary>
     /// Метод получает названия полей для таблицы проектов пользователя.
@@ -53,7 +53,8 @@ public interface IProjectService
     /// <param name="projectId">Id проекта.</param>
     /// <param name="projectStage">Стадия проекта.</param>
     /// <returns>Данные нового проекта.</returns>
-    Task<UpdateProjectOutput> UpdateProjectAsync(string projectName, string projectDetails, string account, long projectId, ProjectStageEnum projectStage);
+    Task<UpdateProjectOutput> UpdateProjectAsync(string projectName, string projectDetails, string account,
+        long projectId, ProjectStageEnum projectStage);
 
     /// <summary>
     /// Метод получает проект для изменения или просмотра.
@@ -88,5 +89,14 @@ public interface IProjectService
     /// <param name="payment">Оплата у вакансии.</param>
     /// <param name="account">Аккаунт пользователя.</param>
     /// <returns>Данные вакансии.</returns>
-    Task<UserVacancyEntity> CreateProjectVacancyAsync(string vacancyName, string vacancyText, long projectId, string employment, string payment, string workExperience, string account);
+    Task<UserVacancyEntity> CreateProjectVacancyAsync(string vacancyName, string vacancyText, long projectId,
+        string employment, string payment, string workExperience, string account);
+    
+    /// <summary>
+    /// Метод получает список вакансий проекта, которые могут быть прикреплены у проекту пользователя.
+    /// </summary>
+    /// <param name="projectId">Id проекта, для которого получить список вакансий.</param>
+    /// <param name="account">Аккаунт пользователя.</param>
+    /// <returns>Список вакансий проекта.</returns>
+    Task<IEnumerable<ProjectVacancyEntity>> ProjectVacanciesAvailableAttachAsync(long projectId, string account);
 }

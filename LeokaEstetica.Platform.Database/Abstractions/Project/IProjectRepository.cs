@@ -20,8 +20,9 @@ public interface IProjectRepository
     /// <param name="statusName">Русское название статуса.</param>
     /// <param name="projectStage">Стадия проекта.</param>
     /// <returns>Данные нового проекта.</returns>
-    Task<UserProjectEntity> CreateProjectAsync(string projectName, string projectDetails, long userId, string statusSysName, string statusName, ProjectStageEnum projectStage);
-    
+    Task<UserProjectEntity> CreateProjectAsync(string projectName, string projectDetails, long userId,
+        string statusSysName, string statusName, ProjectStageEnum projectStage);
+
     /// <summary>
     /// Метод получает названия полей для таблицы проектов пользователя.
     /// Все названия столбцов этой таблицы одинаковые у всех пользователей.
@@ -36,7 +37,7 @@ public interface IProjectRepository
     /// <param name="userId">Id пользователя.</param>
     /// <returns>Создал либо нет.</returns>
     Task<bool> CheckCreatedProjectByProjectNameAsync(string projectName, long userId);
-    
+
     /// <summary>
     /// Метод получает список проектов пользователя.
     /// </summary>
@@ -60,7 +61,8 @@ public interface IProjectRepository
     /// <param name="projectId">Id проекта.</param>
     /// <param name="projectStage">Стадия проекта.</param>
     /// <returns>Данные нового проекта.</returns>
-    Task<UpdateProjectOutput> UpdateProjectAsync(string projectName, string projectDetails, long userId, long projectId, ProjectStageEnum projectStage);
+    Task<UpdateProjectOutput> UpdateProjectAsync(string projectName, string projectDetails, long userId, long projectId,
+        ProjectStageEnum projectStage);
 
     /// <summary>
     /// Метод получает проект для изменения или просмотра.
@@ -75,7 +77,7 @@ public interface IProjectRepository
     /// </summary>
     /// <returns>Стадии проекта.</returns>
     Task<IEnumerable<ProjectStageEntity>> ProjectStagesAsync();
-    
+
     /// <summary>
     /// Метод получает список вакансий проекта. Список вакансий, которые принадлежат владельцу проекта.
     /// </summary>
@@ -89,4 +91,12 @@ public interface IProjectRepository
     /// <param name="projectId">Id проекта.</param>
     /// <param name="vacancyId">Id вакансии.</param>
     Task AttachProjectVacancyAsync(long projectId, long vacancyId);
+    
+    /// <summary>
+    /// Метод получает список вакансий проекта, которые можно прикрепить к проекту.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Список вакансий проекта.</returns>
+    Task<IEnumerable<ProjectVacancyEntity>> ProjectVacanciesAvailableAttachAsync(long projectId, long userId);
 }

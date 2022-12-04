@@ -392,4 +392,38 @@ public sealed class ProjectService : IProjectService
             throw;
         }
     }
+
+    /// <summary>
+    /// Метод получает список вакансий проекта, которые могут быть прикреплены у проекту пользователя.
+    /// </summary>
+    /// <param name="projectId">Id проекта, для которого получить список вакансий.</param>
+    /// <param name="account">Аккаунт пользователя.</param>
+    /// <returns>Список вакансий проекта.</returns>
+    public async Task<IEnumerable<ProjectVacancyEntity>> ProjectVacanciesAvailableAttachAsync(long projectId,
+        string account)
+    {
+        try
+        {
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                await _logService.LogErrorAsync(ex);
+                throw ex;
+            }
+            
+            // Получаем список вакансий проекта, из которых можно выбрать вакансию для прикрепления к проекту.
+            // Исключаем вакансии, которые уже прикреплены к проекту.
+            var result = await _projectRepository.ProjectVacanciesAvailableAttachAsync(projectId, userId);
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            await _logService.LogErrorAsync(ex);
+            throw;
+        }
+    }
 }

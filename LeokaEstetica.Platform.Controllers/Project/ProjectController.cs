@@ -4,6 +4,7 @@ using LeokaEstetica.Platform.Base.Abstractions.Services;
 using LeokaEstetica.Platform.Controllers.ModelsValidation.Project;
 using LeokaEstetica.Platform.Controllers.Validators.Project;
 using LeokaEstetica.Platform.Core.Filters;
+using LeokaEstetica.Platform.Database.Abstractions.Project;
 using LeokaEstetica.Platform.Models.Dto.Input.Project;
 using LeokaEstetica.Platform.Models.Dto.Output.Configs;
 using LeokaEstetica.Platform.Models.Dto.Output.Project;
@@ -24,14 +25,17 @@ public class ProjectController : BaseController
     private readonly IProjectService _projectService;
     private readonly IMapper _mapper;
     private readonly IValidationExcludeErrorsService _validationExcludeErrorsService;
+    private readonly IProjectRepository _projectRepository;
 
     public ProjectController(IProjectService projectService, 
         IMapper mapper, 
-        IValidationExcludeErrorsService validationExcludeErrorsService)
+        IValidationExcludeErrorsService validationExcludeErrorsService, 
+        IProjectRepository projectRepository)
     {
         _projectService = projectService;
         _mapper = mapper;
         _validationExcludeErrorsService = validationExcludeErrorsService;
+        _projectRepository = projectRepository;
     }
 
     /// <summary>
@@ -270,17 +274,17 @@ public class ProjectController : BaseController
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public Task<AttachProjectVacancyOutput> AttachProjectVacancyAsync(
-        [FromBody] AttachProjectVacancyInput attachProjectVacancyInput)
+    public async Task AttachProjectVacancyAsync([FromBody] AttachProjectVacancyInput attachProjectVacancyInput)
     {
-        throw new NotImplementedException();
+        await _projectRepository.AttachProjectVacancyAsync(attachProjectVacancyInput.ProjectId,
+            attachProjectVacancyInput.VacancyId);
     }
     
     /// <summary>
     /// Метод получает список вакансий проекта, которые могут быть прикреплены у проекту пользователя.
     /// </summary>
-    /// <param name="projectId"></param>
-    /// <returns></returns>
+    /// <param name="projectId">Id проекта, для которого получить список вакансий.</param>
+    /// <returns>Список вакансий проекта.</returns>
     [HttpGet]
     [Route("available-attach-vacancies")]
     [ProducesResponseType(200, Type = typeof(ProjectVacancyResultOutput))]
@@ -291,7 +295,7 @@ public class ProjectController : BaseController
     public async Task<ProjectVacancyResultOutput> ProjectVacanciesAvailableAttachAsync([FromQuery] long projectId)
     {
         var result = new ProjectVacancyResultOutput();
-        var items = await _projectService.ProjectVacanciesAsync(projectId);
+        var items = await _projectService.ProjectVacanciesAvailableAttachAsync(projectId, GetUserName());
         result.ProjectVacancies = _mapper.Map<IEnumerable<ProjectVacancyOutput>>(items);
 
         return result;
