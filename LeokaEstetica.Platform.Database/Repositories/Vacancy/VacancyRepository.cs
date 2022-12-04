@@ -132,4 +132,37 @@ public sealed class VacancyRepository : IVacancyRepository
 
         return result;
     }
+
+    /// <summary>
+    /// Метод обновляет вакансию.
+    /// </summary>
+    /// <param name="vacancyName">Название вакансии.</param>
+    /// <param name="vacancyText">Описание вакансии.</param>
+    /// <param name="workExperience">Опыт работы.</param>
+    /// <param name="employment">Занятость у вакансии.</param>
+    /// <param name="payment">Оплата у вакансии.</param>
+    /// <param name="userId">Id пользователя.</param>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <returns>Данные созданной вакансии.</returns>
+    public async Task<UserVacancyEntity> UpdateVacancyAsync(string vacancyName, string vacancyText,
+        string workExperience, string employment, string payment, long userId, long vacancyId)
+    {
+        var vacancy = await _pgContext.UserVacancies
+            .FirstOrDefaultAsync(v => v.VacancyId == vacancyId
+                                      && v.UserId == userId);
+
+        if (vacancy is null)
+        {
+            throw new NullReferenceException($"Не найдено вакансии для обновления. VacancyId был {vacancyId}");
+        }
+
+        vacancy.VacancyName = vacancyName;
+        vacancy.VacancyText = vacancyText;
+        vacancy.WorkExperience = workExperience;
+        vacancy.Employment = employment;
+        vacancy.Payment = payment;
+        await _pgContext.SaveChangesAsync();
+
+        return vacancy;
+    }
 }

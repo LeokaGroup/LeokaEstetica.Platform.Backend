@@ -75,15 +75,15 @@ public class VacancyController : BaseController
     /// <returns>Данные созданной вакансии.</returns>
     [HttpPost]
     [Route("vacancy")]
-    [ProducesResponseType(200, Type = typeof(CreateVacancyOutput))]
+    [ProducesResponseType(200, Type = typeof(VacancyOutput))]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<CreateVacancyOutput> CreateVacancyAsync([FromBody] CreateVacancyInput createVacancyInput)
+    public async Task<VacancyOutput> CreateVacancyAsync([FromBody] VacancyInput vacancyInput)
     {
-        var result = new CreateVacancyOutput();
-        var validator = await new CreateVacancyValidator().ValidateAsync(createVacancyInput);
+        var result = new VacancyOutput();
+        var validator = await new CreateVacancyValidator().ValidateAsync(vacancyInput);
 
         if (validator.Errors.Any())
         {
@@ -92,10 +92,10 @@ public class VacancyController : BaseController
             return result;
         }
 
-        var createdVacancy = await _vacancyService.CreateVacancyAsync(createVacancyInput.VacancyName,
-            createVacancyInput.VacancyText, createVacancyInput.WorkExperience, createVacancyInput.Employment,
-            createVacancyInput.Payment, GetUserName());
-        result = _mapper.Map<CreateVacancyOutput>(createdVacancy);
+        var createdVacancy = await _vacancyService.CreateVacancyAsync(vacancyInput.VacancyName,
+            vacancyInput.VacancyText, vacancyInput.WorkExperience, vacancyInput.Employment, vacancyInput.Payment,
+            GetUserName());
+        result = _mapper.Map<VacancyOutput>(createdVacancy);
 
         return result;
     }
@@ -135,6 +135,38 @@ public class VacancyController : BaseController
     {
         var vacancy = await _vacancyService.GetVacancyByVacancyIdAsync(vacancyId, GetUserName());
         var result = _mapper.Map<VacancyOutput>(vacancy);
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод обновляет вакансию.
+    /// </summary>
+    /// <param name="vacancyInput">Входная модель.</param>
+    /// <returns>Данные вакансии.</returns>
+    [HttpPut]
+    [Route("vacancy")]
+    [ProducesResponseType(200, Type = typeof(VacancyOutput))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<VacancyOutput> UpdateVacancyAsync([FromBody] VacancyInput vacancyInput)
+    {
+        var result = new VacancyOutput();
+        var validator = await new CreateVacancyValidator().ValidateAsync(vacancyInput);
+
+        if (validator.Errors.Any())
+        {
+            result.Errors = await _validationExcludeErrorsService.ExcludeAsync(validator.Errors);
+
+            return result;
+        }
+        
+        var createdVacancy = await _vacancyService.UpdateVacancyAsync(vacancyInput.VacancyName,
+            vacancyInput.VacancyText, vacancyInput.WorkExperience, vacancyInput.Employment, vacancyInput.Payment,
+            GetUserName(), vacancyInput.VacancyId);
+        result = _mapper.Map<VacancyOutput>(createdVacancy);
 
         return result;
     }

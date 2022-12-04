@@ -38,12 +38,11 @@ public class MappingProfile : Profile
         CreateMap<UserProjectEntity, ProjectOutput>(); 
         CreateMap<ProjectColumnNameEntity, ProjectColumnNameOutput>();
         CreateMap<ProjectVacancyColumnNameEntity, ProjectVacancyColumnNameOutput>();
-        CreateMap<UserVacancyEntity, CreateVacancyOutput>();
+        CreateMap<UserVacancyEntity, VacancyOutput>();
         CreateMap<ProjectStageEntity, ProjectStageOutput>();
         CreateMap<ProjectVacancyEntity, ProjectVacancyOutput>();
         CreateMap<UserVacancyEntity, UserVacancyOutput>();
         CreateMap<UserVacancyOutput, UserVacancyEntity>();
-        CreateMap<CreateVacancyOutput, CreateProjectVacancyOutput>();
-        CreateMap<UserVacancyEntity, VacancyOutput>();
+        CreateMap<VacancyOutput, CreateProjectVacancyOutput>();
     }
 }
