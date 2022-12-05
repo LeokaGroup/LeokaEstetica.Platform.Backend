@@ -1,5 +1,6 @@
 using System.Data;
 using LeokaEstetica.Platform.Core.Data;
+using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
 using LeokaEstetica.Platform.Models.Dto.Output.Project;
 using LeokaEstetica.Platform.Models.Entities.Configs;
@@ -364,5 +365,40 @@ public sealed class ProjectRepository : IProjectRepository
             .ToListAsync();
 
         return result;
+    }
+
+    /// <summary>
+    /// Метод записывает отклик на проект.
+    /// Отклик может быть с указанием вакансии, на которую идет отклик (если указана VacancyId).
+    /// Отклик может быть без указаниея вакансии, на которую идет отклик (если не указана VacancyId).
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Выходная модель с записанным откликом.</returns>
+    public async Task<ProjectResponseEntity> WriteProjectResponseAsync(long projectId, long? vacancyId, long userId)
+    {
+        var isDublicate = await _pgContext.ProjectResponses
+            .AnyAsync(p => p.UserId == userId
+                           && p.ProjectId == projectId);
+
+        // Если уже оставляли отклик на проект.
+        if (isDublicate)
+        {
+            throw new DublicateProjectResponseException();
+        }
+
+        var response = new ProjectResponseEntity
+        {
+            ProjectId = projectId,
+            UserId = userId,
+            VacancyId = vacancyId,
+            ProjectResponseStatuseId = (int)ProjectResponseStatusEnum.Wait
+        };
+
+        await _pgContext.ProjectResponses.AddAsync(response);
+        await _pgContext.SaveChangesAsync();
+
+        return response;
     }
 }

@@ -3,7 +3,7 @@ using LeokaEstetica.Platform.Core.Constants;
 namespace LeokaEstetica.Platform.Core.Exceptions;
 
 /// <summary>
-/// Исключения дубликата вакансии, которая уже прикреплена к проекту.
+/// Исключение дубликата вакансии, которая уже прикреплена к проекту.
 /// </summary>
 public class DublicateProjectVacancyException : Exception
 {

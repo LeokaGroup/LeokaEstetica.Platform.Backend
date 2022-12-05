@@ -106,4 +106,15 @@ public interface IProjectService
     /// <param name="projectId">Id проекта.</param>
     /// <param name="vacancyId">Id вакансии.</param>
     Task AttachProjectVacancyAsync(long projectId, long vacancyId);
+
+    /// <summary>
+    /// Метод записывает отклик на проект.
+    /// Отклик может быть с указанием вакансии, на которую идет отклик (если указана VacancyId).
+    /// Отклик может быть без указаниея вакансии, на которую идет отклик (если не указана VacancyId).
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <param name="account">Аккаунт пользователя.</param>
+    /// <returns>Выходная модель с записанным откликом.</returns>
+    Task<ProjectResponseEntity> WriteProjectResponseAsync(long projectId, long? vacancyId, string account);
 }
