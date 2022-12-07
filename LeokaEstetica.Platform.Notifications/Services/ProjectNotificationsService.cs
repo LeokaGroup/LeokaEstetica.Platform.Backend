@@ -140,4 +140,40 @@ public sealed class ProjectNotificationsService : IProjectNotificationsService
                 NotificationLevel = notificationLevel
             });
     }
+
+    /// <summary>
+    /// Метод отправляет уведомление об отклике на проект.
+    /// </summary>
+    /// <param name="title">Заголовок уведомления.</param>
+    /// <param name="notifyText">Текст уведомления.</param>
+    /// <param name="notificationLevel">Уровень уведомления.</param>
+    /// <param name="userCode">Код пользователя.</param>
+    public async Task SendNotificationSuccessProjectResponseAsync(string title, string notifyText, string notificationLevel)
+    {
+        await _hubContext.Clients.All.SendAsync("SendNotificationSuccessProjectResponse",
+            new NotificationOutput
+            {
+                Title = title,
+                Message = notifyText,
+                NotificationLevel = notificationLevel
+            });
+    }
+
+    /// <summary>
+    /// Метод отправляет уведомление предупреждения об отклике на проект.
+    /// </summary>
+    /// <param name="title">Заголовок уведомления.</param>
+    /// <param name="notifyText">Текст уведомления.</param>
+    /// <param name="notificationLevel">Уровень уведомления.</param>
+    /// <param name="userCode">Код пользователя.</param>
+    public async Task SendNotificationWarningProjectResponseAsync(string title, string notifyText, string notificationLevel)
+    {
+        await _hubContext.Clients.All.SendAsync("SendNotificationWarningProjectResponse",
+            new NotificationOutput
+            {
+                Title = title,
+                Message = notifyText,
+                NotificationLevel = notificationLevel
+            });
+    }
 }

@@ -476,6 +476,8 @@ public sealed class ProjectService : IProjectService
     /// <returns>Выходная модель с записанным откликом.</returns>
     public async Task<ProjectResponseEntity> WriteProjectResponseAsync(long projectId, long? vacancyId, string account)
     {
+        var result = new ProjectResponseEntity();
+        
         try
         {
             var userId = await _userRepository.GetUserByEmailAsync(account);
@@ -487,9 +489,22 @@ public sealed class ProjectService : IProjectService
                 throw ex;
             }
 
-            var result = await _projectRepository.WriteProjectResponseAsync(projectId, vacancyId, userId);
+            result = await _projectRepository.WriteProjectResponseAsync(projectId, vacancyId, userId);
+            await _projectNotificationsService.SendNotificationSuccessProjectResponseAsync(
+                "Все хорошо",
+                "Отклик на проект успешно оставлен. Вы получите уведомление о решении владельца проекта.",
+                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS);
 
-            return result;
+           
+        }
+
+        catch (DublicateProjectResponseException ex)
+        {
+            await _projectNotificationsService.SendNotificationWarningProjectResponseAsync(
+                "Внимание",
+                "Вы уже откликались на этот проект.",
+                NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING);
+            await _logService.LogErrorAsync(ex);
         }
         
         catch (Exception ex)
@@ -497,5 +512,7 @@ public sealed class ProjectService : IProjectService
             await _logService.LogErrorAsync(ex);
             throw;
         }
+        
+        return result;
     }
 }
