@@ -393,7 +393,8 @@ public sealed class ProjectRepository : IProjectRepository
             ProjectId = projectId,
             UserId = userId,
             VacancyId = vacancyId,
-            ProjectResponseStatuseId = (int)ProjectResponseStatusEnum.Wait
+            ProjectResponseStatuseId = (int)ProjectResponseStatusEnum.Wait,
+            DateResponse = DateTime.Now
         };
 
         await _pgContext.ProjectResponses.AddAsync(response);
