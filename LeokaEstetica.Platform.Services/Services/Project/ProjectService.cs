@@ -464,4 +464,55 @@ public sealed class ProjectService : IProjectService
             throw;
         }
     }
+
+    /// <summary>
+    /// Метод записывает отклик на проект.
+    /// Отклик может быть с указанием вакансии, на которую идет отклик (если указана VacancyId).
+    /// Отклик может быть без указаниея вакансии, на которую идет отклик (если не указана VacancyId).
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <param name="account">Аккаунт пользователя.</param>
+    /// <returns>Выходная модель с записанным откликом.</returns>
+    public async Task<ProjectResponseEntity> WriteProjectResponseAsync(long projectId, long? vacancyId, string account)
+    {
+        var result = new ProjectResponseEntity();
+        
+        try
+        {
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                await _logService.LogErrorAsync(ex);
+                throw ex;
+            }
+
+            result = await _projectRepository.WriteProjectResponseAsync(projectId, vacancyId, userId);
+            await _projectNotificationsService.SendNotificationSuccessProjectResponseAsync(
+                "Все хорошо",
+                "Отклик на проект успешно оставлен. Вы получите уведомление о решении владельца проекта.",
+                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS);
+
+           
+        }
+
+        catch (DublicateProjectResponseException ex)
+        {
+            await _projectNotificationsService.SendNotificationWarningProjectResponseAsync(
+                "Внимание",
+                "Вы уже откликались на этот проект.",
+                NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING);
+            await _logService.LogErrorAsync(ex);
+        }
+        
+        catch (Exception ex)
+        {
+            await _logService.LogErrorAsync(ex);
+            throw;
+        }
+        
+        return result;
+    }
 }

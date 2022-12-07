@@ -100,4 +100,15 @@ public interface IProjectRepository
     /// <param name="userId">Id пользователя.</param>
     /// <returns>Список вакансий проекта.</returns>
     Task<IEnumerable<ProjectVacancyEntity>> ProjectVacanciesAvailableAttachAsync(long projectId, long userId);
+    
+    /// <summary>
+    /// Метод записывает отклик на проект.
+    /// Отклик может быть с указанием вакансии, на которую идет отклик (если указана VacancyId).
+    /// Отклик может быть без указаниея вакансии, на которую идет отклик (если не указана VacancyId).
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Выходная модель с записанным откликом.</returns>
+    Task<ProjectResponseEntity> WriteProjectResponseAsync(long projectId, long? vacancyId, long userId);
 }

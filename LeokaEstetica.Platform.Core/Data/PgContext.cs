@@ -165,4 +165,14 @@ public class PgContext : DbContext
     /// Таблица управления исключения полей при валидации.
     /// </summary>
     public DbSet<ValidationColumnExcludeEntity> ValidationColumnsExclude { get; set; }
+
+    /// <summary>
+    /// Таблица откликов на проекты.
+    /// </summary>
+    public DbSet<ProjectResponseEntity> ProjectResponses { get; set; }
+
+    /// <summary>
+    /// Таблица статусов откликов на проекты.
+    /// </summary>
+    public DbSet<ProjectResponseStatuseEntity> ProjectResponseStatuses { get; set; }
 }

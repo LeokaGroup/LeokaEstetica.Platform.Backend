@@ -296,4 +296,28 @@ public class ProjectController : BaseController
 
         return result;
     }
+
+    /// <summary>
+    /// Метод записывает отклик на проект.
+    /// Отклик может быть с указанием вакансии, на которую идет отклик (если указана VacancyId).
+    /// Отклик может быть без указаниея вакансии, на которую идет отклик (если не указана VacancyId).
+    /// </summary>
+    /// <param name="projectResponseInput">Входная модель.</param>
+    /// <returns>Выходная модель с записанным откликом.</returns>
+    [HttpPost]
+    [Route("response")]
+    [ProducesResponseType(200, Type = typeof(ProjectResponseOutput))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<ProjectResponseOutput> WriteProjectResponseAsync(
+        [FromBody] ProjectResponseInput projectResponseInput)
+    {
+        var projectResponse = await _projectService.WriteProjectResponseAsync(projectResponseInput.ProjectId,
+            projectResponseInput.VacancyId, GetUserName());
+        var result = _mapper.Map<ProjectResponseOutput>(projectResponse);
+
+        return result;
+    }
 }

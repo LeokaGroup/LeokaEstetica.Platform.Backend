@@ -93,4 +93,15 @@ public static class GlobalConfigKeys
         /// </summary>
         public const string DUBLICATE_PROJECT_VACANCY = "Вакансия уже прикреплена к проекту.";
     }
+
+    /// <summary>
+    /// Класс ключей откликов на проекты.
+    /// </summary>
+    public static class ProjectResponse
+    {
+        /// <summary>
+        /// Если уже был оставлен отклик к проекту.
+        /// </summary>
+        public const string DUBLICATE_PROJECT_RESPONSE = "Вы уже откликались на этот проект.";
+    }
 }
