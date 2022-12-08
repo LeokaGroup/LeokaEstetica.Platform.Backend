@@ -1,9 +1,13 @@
+using System.Transactions;
 using LeokaEstetica.Platform.Core.Data;
+using LeokaEstetica.Platform.Core.Extensions;
+using LeokaEstetica.Platform.Core.Helpers;
 using LeokaEstetica.Platform.Database.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
 using LeokaEstetica.Platform.Models.Entities.Configs;
 using LeokaEstetica.Platform.Models.Entities.Vacancy;
 using Microsoft.EntityFrameworkCore;
+using IsolationLevel = System.Data.IsolationLevel;
 
 namespace LeokaEstetica.Platform.Database.Repositories.Vacancy;
 
@@ -45,20 +49,37 @@ public sealed class VacancyRepository : IVacancyRepository
         string workExperience, string employment,
         string payment, long userId)
     {
-        var vacancy = new UserVacancyEntity
-        {
-            DateCreated = DateTime.Now,
-            VacancyName = vacancyName,
-            VacancyText = vacancyText,
-            WorkExperience = workExperience,
-            Employment = employment,
-            Payment = payment,
-            UserId = userId
-        };
-        await _pgContext.UserVacancies.AddAsync(vacancy);
-        await _pgContext.SaveChangesAsync();
+        var transaction = await _pgContext.Database
+            .BeginTransactionAsync(IsolationLevel.ReadCommitted);
 
-        return vacancy;
+        try
+        {
+            var vacancy = new UserVacancyEntity
+            {
+                DateCreated = DateTime.Now,
+                VacancyName = vacancyName,
+                VacancyText = vacancyText,
+                WorkExperience = workExperience,
+                Employment = employment,
+                Payment = payment,
+                UserId = userId
+            };
+            await _pgContext.UserVacancies.AddAsync(vacancy);
+            await _pgContext.SaveChangesAsync();
+
+            // Добавляем вакансию в таблицу статусов вакансий. Проставляем новой вакансии статус "На модерации". 
+            await AddVacancyStatusAsync(vacancy.VacancyId, VacancyStatusNameEnum.Moderation.GetEnumDescription(),
+                VacancyStatusNameEnum.Moderation.ToString());
+            await transaction.CommitAsync();
+
+            return vacancy;
+        }
+
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
     }
 
     /// <summary>
@@ -162,6 +183,10 @@ public sealed class VacancyRepository : IVacancyRepository
         vacancy.Employment = employment;
         vacancy.Payment = payment;
         await _pgContext.SaveChangesAsync();
+
+        // Добавляем вакансию в таблицу статусов вакансий. Проставляем новой вакансии статус "На модерации". 
+        await AddVacancyStatusAsync(vacancy.VacancyId, VacancyStatusNameEnum.Moderation.GetEnumDescription(),
+            VacancyStatusNameEnum.Moderation.ToString());
 
         return vacancy;
     }

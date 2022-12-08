@@ -1,7 +1,5 @@
 using AutoMapper;
 using LeokaEstetica.Platform.Core.Exceptions;
-using LeokaEstetica.Platform.Core.Extensions;
-using LeokaEstetica.Platform.Core.Helpers;
 using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Database.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Logs.Abstractions;
@@ -120,10 +118,6 @@ public sealed class VacancyService : IVacancyService
             // Добавляем вакансию в таблицу вакансий пользователя.
             var createdVacancy = await _vacancyRepository
                 .CreateVacancyAsync(vacancyName, vacancyText, workExperience, employment, payment, userId);
-
-            // Добавляем вакансию в таблицу статусов вакансий. Проставляем новой вакансии статус "На модерации". 
-            await _vacancyRepository.AddVacancyStatusAsync(createdVacancy.VacancyId,
-                VacancyStatusNameEnum.Moderation.GetEnumDescription(), VacancyStatusNameEnum.Moderation.ToString());
 
             // Отправляем вакансию на модерацию.
             await _vacancyModerationService.AddVacancyModerationAsync(createdVacancy.VacancyId);
@@ -256,12 +250,8 @@ public sealed class VacancyService : IVacancyService
             }
 
             // Добавляем вакансию в таблицу вакансий пользователя.
-            var createdVacancy = await _vacancyRepository
-                .UpdateVacancyAsync(vacancyName, vacancyText, workExperience, employment, payment, userId, vacancyId);
-
-            // Добавляем вакансию в таблицу статусов вакансий. Проставляем новой вакансии статус "На модерации". 
-            await _vacancyRepository.AddVacancyStatusAsync(createdVacancy.VacancyId,
-                VacancyStatusNameEnum.Moderation.GetEnumDescription(), VacancyStatusNameEnum.Moderation.ToString());
+            var createdVacancy = await _vacancyRepository.UpdateVacancyAsync(vacancyName, vacancyText, workExperience,
+                employment, payment, userId, vacancyId);
 
             // Отправляем вакансию на модерацию.
             await _vacancyModerationService.AddVacancyModerationAsync(createdVacancy.VacancyId);
