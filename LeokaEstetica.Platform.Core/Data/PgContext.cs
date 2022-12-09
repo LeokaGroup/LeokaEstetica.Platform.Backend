@@ -1,5 +1,6 @@
 ﻿using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Models.Entities.Common;
+using LeokaEstetica.Platform.Models.Entities.Communication;
 using LeokaEstetica.Platform.Models.Entities.Configs;
 using LeokaEstetica.Platform.Models.Entities.Landing;
 using LeokaEstetica.Platform.Models.Entities.Logs;
@@ -175,4 +176,19 @@ public class PgContext : DbContext
     /// Таблица статусов откликов на проекты.
     /// </summary>
     public DbSet<ProjectResponseStatuseEntity> ProjectResponseStatuses { get; set; }
+
+    /// <summary>
+    /// Таблица диалогов.
+    /// </summary>
+    public DbSet<MainInfoDialogEntity> Dialogs { get; set; }
+
+    /// <summary>
+    /// Таблица сообщений диалога.
+    /// </summary>
+    public DbSet<DialogMessageEntity> DialogMessages { get; set; }
+
+    /// <summary>
+    /// Таблица участников диалога.
+    /// </summary>
+    public DbSet<DialogMemberEntity> DialogMembers { get; set; }
 }

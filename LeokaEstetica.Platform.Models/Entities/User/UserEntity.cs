@@ -1,3 +1,5 @@
+using LeokaEstetica.Platform.Models.Entities.Communication;
+
 namespace LeokaEstetica.Platform.Models.Entities.User;
 
 /// <summary>
@@ -5,6 +7,12 @@ namespace LeokaEstetica.Platform.Models.Entities.User;
 /// </summary>
 public class UserEntity
 {
+    public UserEntity()
+    {
+        DialogMessages = new HashSet<DialogMessageEntity>();
+        DialogMembers = new HashSet<DialogMemberEntity>();
+    }
+
     /// <summary>
     /// PK.
     /// </summary>
@@ -99,4 +107,14 @@ public class UserEntity
     /// Дата окончания блокировки.
     /// </summary>
     public DateTime? LockoutEndDate { get; set; }
+
+    /// <summary>
+    /// Сообщения диалога.
+    /// </summary>
+    public ICollection<DialogMessageEntity> DialogMessages { get; set; }
+
+    /// <summary>
+    /// Участники диалога.
+    /// </summary>
+    public ICollection<DialogMemberEntity> DialogMembers { get; set; }
 }
