@@ -46,8 +46,7 @@ public sealed class VacancyRepository : IVacancyRepository
     /// <param name="userId">Id пользователя.</param>
     /// <returns>Данные созданной вакансии.</returns>
     public async Task<UserVacancyEntity> CreateVacancyAsync(string vacancyName, string vacancyText,
-        string workExperience, string employment,
-        string payment, long userId)
+        string workExperience, string employment, string payment, long userId)
     {
         var transaction = await _pgContext.Database
             .BeginTransactionAsync(IsolationLevel.ReadCommitted);
