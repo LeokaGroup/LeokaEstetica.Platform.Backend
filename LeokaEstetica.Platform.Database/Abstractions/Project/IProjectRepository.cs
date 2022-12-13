@@ -92,7 +92,7 @@ public interface IProjectRepository
     /// <param name="vacancyId">Id вакансии.</param>
     /// <returns>Флаг успеха.</returns>
     Task<bool> AttachProjectVacancyAsync(long projectId, long vacancyId);
-    
+
     /// <summary>
     /// Метод получает список вакансий проекта, которые можно прикрепить к проекту.
     /// </summary>
@@ -100,7 +100,7 @@ public interface IProjectRepository
     /// <param name="userId">Id пользователя.</param>
     /// <returns>Список вакансий проекта.</returns>
     Task<IEnumerable<ProjectVacancyEntity>> ProjectVacanciesAvailableAttachAsync(long projectId, long userId);
-    
+
     /// <summary>
     /// Метод записывает отклик на проект.
     /// Отклик может быть с указанием вакансии, на которую идет отклик (если указана VacancyId).
@@ -111,4 +111,11 @@ public interface IProjectRepository
     /// <param name="userId">Id пользователя.</param>
     /// <returns>Выходная модель с записанным откликом.</returns>
     Task<ProjectResponseEntity> WriteProjectResponseAsync(long projectId, long? vacancyId, long userId);
+
+    /// <summary>
+    /// Метод находит Id владельца проекта.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Id владельца проекта.</returns>
+    Task<long> GetProjectOwnerIdAsync(long projectId);
 }

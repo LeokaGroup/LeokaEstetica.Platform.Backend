@@ -402,4 +402,19 @@ public sealed class ProjectRepository : IProjectRepository
 
         return response;
     }
+
+    /// <summary>
+    /// Метод находит Id владельца проекта.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Id владельца проекта.</returns>
+    public async Task<long> GetProjectOwnerIdAsync(long projectId)
+    {
+        var result = await _pgContext.UserProjects
+            .Where(p => p.ProjectId == projectId)
+            .Select(p => p.UserId)
+            .FirstOrDefaultAsync();
+
+        return result;
+    }
 }

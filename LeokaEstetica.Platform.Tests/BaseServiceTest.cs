@@ -2,13 +2,13 @@
 using AutoMapper;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Utils;
+using LeokaEstetica.Platform.Database.Repositories.Moderation.Vacancy;
 using LeokaEstetica.Platform.Database.Repositories.Profile;
 using LeokaEstetica.Platform.Database.Repositories.Project;
 using LeokaEstetica.Platform.Database.Repositories.User;
 using LeokaEstetica.Platform.Database.Repositories.Vacancy;
 using LeokaEstetica.Platform.Logs.Services;
 using LeokaEstetica.Platform.Messaging.Services.Mail;
-using LeokaEstetica.Platform.Moderation.Repositories.Vacancy;
 using LeokaEstetica.Platform.Moderation.Services.Vacancy;
 using LeokaEstetica.Platform.Notifications.Services;
 using LeokaEstetica.Platform.Services.Services.Profile;

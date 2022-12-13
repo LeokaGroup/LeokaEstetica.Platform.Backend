@@ -72,4 +72,11 @@ public interface IVacancyRepository
     /// <param name="userId">Id пользователя.</param>
     /// <returns>Данные вакансии.</returns>
     Task<UserVacancyEntity> GetVacancyByVacancyIdAsync(long vacancyId, long userId);
+    
+    /// <summary>
+    /// Метод находит Id владельца проекта.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <returns>Id владельца вакансии.</returns>
+    Task<long> GetVacancyOwnerIdAsync(long vacancyId);
 }

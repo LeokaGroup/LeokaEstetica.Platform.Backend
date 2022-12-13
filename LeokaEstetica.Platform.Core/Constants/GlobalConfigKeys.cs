@@ -95,6 +95,22 @@ public static class GlobalConfigKeys
     }
 
     /// <summary>
+    /// Класс описывает ключи для чата.
+    /// </summary>
+    public static class Chat
+    {
+        /// <summary>
+        /// Если невалидный тип предмета обсуждения.
+        /// </summary>
+        public const string NOT_VALID_DISCUSSION_TYPE = "Тип предмета обсуждения невалидный.";
+
+        /// <summary>
+        /// Если пустой предмет обсуждения.
+        /// </summary>
+        public const string NOT_EMPTY_DISCUSSION_TYPE = "Тип предмета обсуждения не может быть пустым.";
+    }
+
+    /// <summary>
     /// Класс ключей откликов на проекты.
     /// </summary>
     public static class ProjectResponse

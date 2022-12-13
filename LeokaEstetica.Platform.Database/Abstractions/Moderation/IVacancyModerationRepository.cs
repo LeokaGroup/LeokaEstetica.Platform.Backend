@@ -1,4 +1,4 @@
-namespace LeokaEstetica.Platform.Moderation.Abstractions.Vacancy;
+namespace LeokaEstetica.Platform.Database.Abstractions.Moderation;
 
 /// <summary>
 /// Абстракция репозитория модерации вакансий.

@@ -21,4 +21,8 @@
       <ProjectReference Include="..\LeokaEstetica.Platform.Models\LeokaEstetica.Platform.Models.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Enums" />
+    </ItemGroup>
+
 </Project>
