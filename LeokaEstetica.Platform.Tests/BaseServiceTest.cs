@@ -2,12 +2,14 @@
 using AutoMapper;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Utils;
+using LeokaEstetica.Platform.Database.Repositories.Chat;
 using LeokaEstetica.Platform.Database.Repositories.Moderation.Vacancy;
 using LeokaEstetica.Platform.Database.Repositories.Profile;
 using LeokaEstetica.Platform.Database.Repositories.Project;
 using LeokaEstetica.Platform.Database.Repositories.User;
 using LeokaEstetica.Platform.Database.Repositories.Vacancy;
 using LeokaEstetica.Platform.Logs.Services;
+using LeokaEstetica.Platform.Messaging.Services.Chat;
 using LeokaEstetica.Platform.Messaging.Services.Mail;
 using LeokaEstetica.Platform.Moderation.Services.Vacancy;
 using LeokaEstetica.Platform.Notifications.Services;
@@ -41,6 +43,8 @@ public class BaseServiceTest
     protected VacancyModerationService VacancyModerationService;
     protected VacancyModerationRepository VacancyModerationRepository;
     protected ProjectNotificationsService ProjectNotificationsService;
+    protected ChatService ChatService;
+    protected ChatRepository ChatRepository;
 
     public BaseServiceTest()
     {
@@ -49,7 +53,7 @@ public class BaseServiceTest
         AppConfiguration = builder.Build();
         PostgreConfigString = AppConfiguration["ConnectionStrings:NpgDevSqlConnection"] ?? string.Empty;
         var container = new ContainerBuilder();
-        
+
         AutoFac.RegisterMapper(container);
         var mapper = AutoFac.Resolve<IMapper>();
 
@@ -69,7 +73,12 @@ public class BaseServiceTest
         VacancyRepository = new VacancyRepository(PgContext);
         VacancyModerationRepository = new VacancyModerationRepository(PgContext);
         VacancyModerationService = new VacancyModerationService(VacancyModerationRepository, LogService);
-        VacancyService = new VacancyService(LogService, VacancyRepository, mapper, null, UserRepository, VacancyModerationService, null);
-        ProjectService = new ProjectService(ProjectRepository, LogService, UserRepository, mapper, ProjectNotificationsService, VacancyService);
+        VacancyService = new VacancyService(LogService, VacancyRepository, mapper, null, UserRepository,
+            VacancyModerationService, null);
+        ProjectService = new ProjectService(ProjectRepository, LogService, UserRepository, mapper,
+            ProjectNotificationsService, VacancyService);
+        ChatRepository = new ChatRepository(PgContext);
+        ChatService = new ChatService(LogService, UserRepository, ProjectRepository, VacancyRepository, ChatRepository,
+            mapper);
     }
 }

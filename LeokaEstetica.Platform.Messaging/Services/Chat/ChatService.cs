@@ -88,7 +88,7 @@ public sealed class ChatService : IChatService
                     isFindDialog = true;
                     ownerDialogId = findDialogId;
                 }
-
+                
                 // Сравниваем DialogId текущего пользователя с владельцем проекта.
                 // Если они равны, значит текущий пользователь общается с владельцем.
                 if (currentDialogId != ownerDialogId
@@ -102,6 +102,17 @@ public sealed class ChatService : IChatService
                     // Добавляем участников нового диалога.
                     await _chatRepository.AddDialogMembersAsync(userId, ownerId, lastDialogId);
                     result.DialogState = DialogStateEnum.Open.ToString();
+                }
+
+                // Если просматривает владелец объект обсуждения,
+                // то собеседника нет и надо вернуть пустой диалог без его создания.
+                if (currentDialogId == 0 
+                    && ownerDialogId == 0
+                    && !isFindDialog)
+                {
+                    result.DialogState = DialogStateEnum.Empty.ToString();
+
+                    return result;
                 }
 
                 dialogId = ownerDialogId;
