@@ -57,7 +57,7 @@ public sealed class UserService : IUserService
         
         try
         {
-            var result = new UserSignUpOutput();
+            var result = new UserSignUpOutput() { Errors = new List<ValidationFailure>() };
             await CheckUserByEmailAsync(result, email);
 
             var userModel = CreateSignUpUserModel(password, email);

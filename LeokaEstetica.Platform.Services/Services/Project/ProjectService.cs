@@ -272,7 +272,8 @@ public sealed class ProjectService : IProjectService
             //     
             // }
 
-            var result = await _projectRepository.GetProjectAsync(projectId, userId);
+            // TODO: При редактировании давать изменять проект лишь владельцу.
+            var result = await _projectRepository.GetProjectAsync(projectId);
 
             if (result is null)
             {

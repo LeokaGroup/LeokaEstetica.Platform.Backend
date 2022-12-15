@@ -68,9 +68,8 @@ public interface IProjectRepository
     /// Метод получает проект для изменения или просмотра.
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
-    /// <param name="userId">Id пользователя.</param>
     /// <returns>Данные проекта.</returns>
-    Task<UserProjectEntity> GetProjectAsync(long projectId, long userId);
+    Task<UserProjectEntity> GetProjectAsync(long projectId);
 
     /// <summary>
     /// Метод получает стадии проекта для выбора.
