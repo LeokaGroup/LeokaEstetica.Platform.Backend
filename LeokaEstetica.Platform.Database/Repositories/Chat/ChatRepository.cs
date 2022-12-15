@@ -1,5 +1,7 @@
+using System.Globalization;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Database.Chat;
+using LeokaEstetica.Platform.Models.Dto.Chat.Output;
 using LeokaEstetica.Platform.Models.Entities.Communication;
 using Microsoft.EntityFrameworkCore;
 
@@ -155,5 +157,45 @@ public sealed class ChatRepository : IChatRepository
             .FirstOrDefaultAsync();
 
         return result;
+    }
+
+    /// <summary>
+    /// Метод получит все диалогы.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Список диалогов.</returns>
+    public async Task<List<DialogOutput>> GetDialogsAsync(long userId)
+    {
+        var result = await (from dm in _pgContext.DialogMembers
+                join d in _pgContext.Dialogs
+                    on dm.DialogId
+                    equals d.DialogId
+                where dm.UserId == userId
+                select new DialogOutput
+                {
+                    DialogId = dm.DialogId,
+                    DialogName = d.DialogName,
+                    UserId = dm.UserId,
+                    Created = d.Created.ToString(CultureInfo.CurrentCulture)
+                })
+            .ToListAsync();
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод находит последнее сообщение диалога.
+    /// </summary>
+    /// <param name="dialogId">Id диалога.</param>
+    /// <returns>Последнее сообщение.</returns>
+    public async Task<string> GetLastMessageAsync(long dialogId)
+    {
+        var lastMessage = await _pgContext.DialogMessages
+            .Where(d => d.DialogId == dialogId)
+            .OrderBy(o => o.Created)
+            .Select(m => m.Message)
+            .LastOrDefaultAsync();
+
+        return lastMessage;
     }
 }

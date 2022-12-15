@@ -1,3 +1,4 @@
+using LeokaEstetica.Platform.Models.Dto.Chat.Output;
 using LeokaEstetica.Platform.Models.Entities.Communication;
 
 namespace LeokaEstetica.Platform.Database.Chat;
@@ -65,4 +66,18 @@ public interface IChatRepository
     /// <param name="dialogId">Id диалога.</param>
     /// <returns>Дата начала диалога.</returns>
     Task<string> GetDialogStartDateAsync(long dialogId);
+    
+    /// <summary>
+    /// Метод получит все диалогы.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Список диалогов.</returns>
+    Task<List<DialogOutput>> GetDialogsAsync(long userId);
+
+    /// <summary>
+    /// Метод находит последнее сообщение диалога.
+    /// </summary>
+    /// <param name="dialogId">Id диалога.</param>
+    /// <returns>Последнее сообщение.</returns>
+    Task<string> GetLastMessageAsync(long dialogId);
 }

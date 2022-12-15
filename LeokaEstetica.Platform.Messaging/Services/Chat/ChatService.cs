@@ -5,7 +5,6 @@ using LeokaEstetica.Platform.Database.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Database.Chat;
 using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Messaging.Abstractions.Chat;
-using LeokaEstetica.Platform.Messaging.Builders;
 using LeokaEstetica.Platform.Messaging.Enums;
 using LeokaEstetica.Platform.Messaging.Models.Chat.Output;
 using LeokaEstetica.Platform.Models.Dto.Chat.Output;
@@ -137,7 +136,9 @@ public sealed class ChatService : IChatService
             var user = await _userRepository.GetUserByUserIdAsync(userId);
 
             // Записываем полное ФИО пользователя, с которым идет общение в чате.
-            CreateMessageBuilder.SetUserFullNameDialog(ref result, user);
+            result.FirstName = user.FirstName;
+            result.LastName = user.LastName;
+            result.FullName = result.FirstName + "" + result.LastName;
 
             // Если у диалога нет сообщений, значит вернуть пустой диалог, который будет открыт.
             if (!getMessages.Any())
@@ -150,10 +151,13 @@ public sealed class ChatService : IChatService
             var messages = _mapper.Map<List<DialogMessageOutput>>(getMessages);
 
             // Форматируем дату сообщений.
-            CreateMessageBuilder.FormatMessageDateCreated(ref messages);
-
-            // Помечаем сообщения текущего пользователя.
-            CreateMessageBuilder.RemarkFlagMessagesCurrentUser(ref messages, userId);
+            foreach (var item in messages)
+            {
+                item.Created = string.Format("{0:f}", item.Created);
+                
+                // Помечаем сообщения текущего пользователя.
+                item.IsMyMessage = item.UserId == userId;
+            }
 
             result.DialogState = DialogStateEnum.Open.ToString();
 
@@ -202,5 +206,80 @@ public sealed class ChatService : IChatService
         }
 
         return ownerId;
+    }
+    
+    /// <summary>
+    /// Метод получает список диалогов.
+    /// </summary>
+    /// <param name="account">Аккаунт.</param>
+    /// <returns>Список диалогов.</returns>
+    public async Task<IEnumerable<DialogOutput>> GetDialogsAsync(string account)
+    {
+        try
+        {
+            var result = new List<DialogOutput>();
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId == 0)
+            {
+                throw new NullReferenceException($"Id пользователя с аккаунтом {account} не найден!");
+            }
+
+            var dialogs = await _chatRepository.GetDialogsAsync(userId);
+
+            if (!dialogs.Any())
+            {
+                return Enumerable.Empty<DialogOutput>();
+            }
+            
+            foreach (var dialog in dialogs)
+            {
+                // Подтягиваем последнее сообщение для каждого диалога и проставляет после 40 символов ...
+                var lastMessage = await _chatRepository.GetLastMessageAsync(dialog.DialogId);
+                dialog.LastMessage = lastMessage.Length > 40
+                    ? string.Concat(lastMessage.Substring(0, 40), "...")
+                    : lastMessage;
+                
+                // Найдет Id участников диалога по DialogId.
+                var membersIds = await _chatRepository.GetDialogMembersAsync(dialog.DialogId);
+                
+                if (membersIds == null)
+                {
+                    throw new NullReferenceException($"Не найдено участников для диалога с DialogId {dialog.DialogId}");
+                }
+                
+                // Записываем имя и фамилию участника диалога, с которым идет общение.
+                var otherUserId = membersIds.FirstOrDefault(m => !m.Equals(userId));
+                var otherData = await _userRepository.GetUserByUserIdAsync(otherUserId);
+                dialog.FullName = otherData.FirstName + " " + otherData.LastName;
+                
+                // Если дата диалога совпадает с сегодняшней, то заполнит часы и минуты, иначе оставит их null.
+                if (DateTime.Now.ToString("d").Equals(Convert.ToDateTime(dialog.Created).ToString("d")))
+                {
+                    // Запишет только часы и минуты.
+                    dialog.CalcTime = Convert.ToDateTime(dialog.Created).ToString("t");
+                }
+
+                // Если дата диалога не совпадает с сегодняшней.
+                else
+                {
+                    // Записываем только дату.
+                    dialog.CalcShortDate = Convert.ToDateTime(dialog.Created).ToString("d");
+                }
+                
+                // Форматируем дату убрав секунды.
+                dialog.Created = Convert.ToDateTime(dialog.Created).ToString("g");
+            }
+            
+            result.AddRange(dialogs);
+            
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            await _logService.LogErrorAsync(ex);
+            throw;
+        }
     }
 }

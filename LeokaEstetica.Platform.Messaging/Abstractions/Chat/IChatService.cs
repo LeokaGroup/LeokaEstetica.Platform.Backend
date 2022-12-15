@@ -1,4 +1,5 @@
 using LeokaEstetica.Platform.Messaging.Models.Chat.Output;
+using LeokaEstetica.Platform.Models.Dto.Chat.Output;
 using LeokaEstetica.Platform.Models.Enums;
 
 namespace LeokaEstetica.Platform.Messaging.Abstractions.Chat;
@@ -18,4 +19,11 @@ public interface IChatService
     /// <returns>Данные диалога.</returns>
     Task<DialogResultOutput> GetDialogAsync(long? dialogId, DiscussionTypeEnum discussionType, string account,
         long discussionTypeId);
+
+    /// <summary>
+    /// Метод получает список диалогов.
+    /// </summary>
+    /// <param name="account">Аккаунт.</param>
+    /// <returns>Список диалогов.</returns>
+    Task<IEnumerable<DialogOutput>> GetDialogsAsync(string account);
 }

@@ -5,6 +5,7 @@ using LeokaEstetica.Platform.Core.Filters;
 using LeokaEstetica.Platform.Messaging.Abstractions.Chat;
 using LeokaEstetica.Platform.Messaging.Models.Chat.Output;
 using LeokaEstetica.Platform.Models.Dto.Chat.Input;
+using LeokaEstetica.Platform.Models.Dto.Chat.Output;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LeokaEstetica.Platform.Controllers.Chat;
@@ -48,6 +49,24 @@ public class ChatController : BaseController
 
         result = await _chatService.GetDialogAsync(dialogInput.DialogId, dialogInput.DiscussionType, GetUserName(),
             dialogInput.DiscussionTypeId);
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод получает список диалогов.
+    /// </summary>
+    /// <returns>Список диалогов.</returns>
+    [HttpGet]
+    [Route("dialogs")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<DialogOutput>))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<IEnumerable<DialogOutput>> GetDialogsAsync()
+    {
+        var result = await _chatService.GetDialogsAsync(GetUserName());
 
         return result;
     }
