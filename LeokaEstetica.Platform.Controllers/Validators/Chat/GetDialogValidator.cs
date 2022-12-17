@@ -17,8 +17,8 @@ public class GetDialogValidator : AbstractValidator<DialogInput>
             .WithMessage(GlobalConfigKeys.Chat.NOT_EMPTY_DISCUSSION_TYPE)
             .NotEmpty()
             .WithMessage(GlobalConfigKeys.Chat.NOT_EMPTY_DISCUSSION_TYPE)
-            .When(p => p.DiscussionType == DiscussionTypeEnum.Project ||
-                       p.DiscussionType == DiscussionTypeEnum.Vacancy)
+            .When(p => p.DiscussionType.Equals(DiscussionTypeEnum.Project.ToString()) ||
+                       p.DiscussionType.Equals(DiscussionTypeEnum.Vacancy.ToString()))
             .WithMessage(GlobalConfigKeys.Chat.NOT_VALID_DISCUSSION_TYPE);
     }
 }

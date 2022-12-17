@@ -26,4 +26,14 @@ public interface IChatService
     /// <param name="account">Аккаунт.</param>
     /// <returns>Список диалогов.</returns>
     Task<IEnumerable<DialogOutput>> GetDialogsAsync(string account);
+
+    /// <summary>
+    /// Метод создает диалог для написания владельцу проекта.
+    /// Если такой диалог уже создан с текущим юзером и владельцем проекта,
+    /// то ничего не происходит и диалог считается пустым для начала общения.
+    /// <param name="discussionType">Тип объекта обсуждения.</param>
+    /// <param name="account">Аккаунт.</param>
+    /// <param name="discussionTypeId">Id предмета обсуждения (Id проекта или вакансии).</param>
+    /// <returns>Данные диалога.</returns>
+    Task<DialogResultOutput> WriteProjectDialogOwnerAsync(DiscussionTypeEnum discussionType, string account, long discussionTypeId);
 }

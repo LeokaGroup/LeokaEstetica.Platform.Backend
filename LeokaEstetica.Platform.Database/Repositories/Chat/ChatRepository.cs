@@ -43,7 +43,8 @@ public sealed class ChatRepository : IChatRepository
     public async Task<long> GetDialogMembersAsync(long userId, long ownerId)
     {
         var result = await _pgContext.DialogMembers
-            .Where(dm => dm.UserId == userId && dm.UserId == ownerId)
+            .Where(dm => dm.UserId == userId 
+                         || dm.UserId == ownerId)
             .Select(dm => dm.DialogId)
             .FirstOrDefaultAsync();
 

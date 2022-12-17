@@ -15,7 +15,7 @@ public class DialogInput
     /// <summary>
     /// Тип предмета обсуждения. Проект, вакансия и тд.
     /// </summary>
-    public DiscussionTypeEnum DiscussionType { get; set; }
+    public string DiscussionType { get; set; }
 
     /// <summary>
     /// Id предмета обсуждения (Id проекта или вакансии).

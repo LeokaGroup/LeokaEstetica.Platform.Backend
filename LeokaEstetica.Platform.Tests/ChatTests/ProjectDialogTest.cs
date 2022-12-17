@@ -1,7 +1,7 @@
 using LeokaEstetica.Platform.Models.Enums;
 using NUnit.Framework;
 
-namespace LeokaEstetica.Platform.Tests.Chat;
+namespace LeokaEstetica.Platform.Tests.ChatTests;
 
 [TestFixture]
 public class ProjectDialogTest : BaseServiceTest

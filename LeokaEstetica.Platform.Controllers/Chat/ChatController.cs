@@ -6,6 +6,7 @@ using LeokaEstetica.Platform.Messaging.Abstractions.Chat;
 using LeokaEstetica.Platform.Messaging.Models.Chat.Output;
 using LeokaEstetica.Platform.Models.Dto.Chat.Input;
 using LeokaEstetica.Platform.Models.Dto.Chat.Output;
+using LeokaEstetica.Platform.Models.Enums;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LeokaEstetica.Platform.Controllers.Chat;
@@ -47,7 +48,8 @@ public class ChatController : BaseController
             return result;
         }
 
-        result = await _chatService.GetDialogAsync(dialogInput.DialogId, dialogInput.DiscussionType, GetUserName(),
+        Enum.TryParse(dialogInput.DiscussionType, out DiscussionTypeEnum discussionType);
+        result = await _chatService.GetDialogAsync(dialogInput.DialogId, discussionType, GetUserName(),
             dialogInput.DiscussionTypeId);
 
         return result;
@@ -67,6 +69,37 @@ public class ChatController : BaseController
     public async Task<IEnumerable<DialogOutput>> GetDialogsAsync()
     {
         var result = await _chatService.GetDialogsAsync(GetUserName());
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод создает диалог для написания владельцу проекта.
+    /// Если такой диалог уже создан с текущим юзером и владельцем проекта,
+    /// то ничего не происходит и диалог считается пустым для начала общения.
+    /// </summary>
+    /// <param name="dialogInput">Входная модель.</param>
+    /// <returns>Данные диалога.</returns>
+    [HttpPost]
+    [Route("write")]
+    [ProducesResponseType(200, Type = typeof(DialogResultOutput))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<DialogResultOutput> WriteProjectDialogOwnerAsync([FromBody] DialogInput dialogInput)
+    {
+        var result = new DialogResultOutput { Errors = new List<ValidationFailure>() };
+        var validator = await new GetDialogValidator().ValidateAsync(dialogInput);
+
+        if (validator.Errors.Any())
+        {
+            return result;
+        }
+
+        Enum.TryParse(dialogInput.DiscussionType, out DiscussionTypeEnum discussionType);
+        result = await _chatService.WriteProjectDialogOwnerAsync(discussionType, GetUserName(),
+            dialogInput.DiscussionTypeId);
 
         return result;
     }
