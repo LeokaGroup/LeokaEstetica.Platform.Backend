@@ -53,14 +53,14 @@ public sealed class ProfileService : IProfileService
         {
             if (string.IsNullOrEmpty(account))
             {
-                throw new ArgumentException("Имя аккаунта не передано!");
+                throw new ArgumentException("Имя аккаунта не передано.");
             }
 
             var userId = await _userRepository.GetUserByEmailAsync(account);
 
             if (userId <= 0)
             {
-                throw new NullReferenceException($"Пользователя с почтой {account} не существует в системе!");
+                throw new NullReferenceException($"Пользователя с почтой {account} не существует в системе.");
             }
 
             var profileInfo = await _profileRepository.GetProfileInfoAsync(userId);
@@ -72,7 +72,7 @@ public sealed class ProfileService : IProfileService
 
             var result = _mapper.Map<ProfileInfoOutput>(profileInfo);
 
-            // Получаем поля почты и номера телефона пользователя.
+            // Получаем основную информацию профиля пользователя.
             var userData = await _userRepository.GetUserPhoneEmailByUserIdAsync(userId);
 
             if (userData is null)
@@ -82,6 +82,8 @@ public sealed class ProfileService : IProfileService
 
             result.Email = userData.Email;
             result.PhoneNumber = userData.PhoneNumber;
+            result.FirstName = userData.FirstName;
+            result.LastName = userData.LastName;
 
             return result;
         }

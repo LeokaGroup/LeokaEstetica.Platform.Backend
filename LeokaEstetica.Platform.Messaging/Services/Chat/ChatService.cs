@@ -54,6 +54,7 @@ public sealed class ChatService : IChatService
         {
             var result = new DialogResultOutput { Messages = new List<DialogMessageOutput>() };
             var isFindDialog = false;
+            long ownerId = 0;
 
             // Находим Id текущего пользователя, который просматривает страницу проекта или вакансии.
             var userId = await _userRepository.GetUserByEmailAsync(account);
@@ -63,59 +64,62 @@ public sealed class ChatService : IChatService
                 throw new NullReferenceException($"Id пользователя с аккаунтом {account} не найден.");
             }
 
-            if (discussionTypeId > 0)
+            if (discussionTypeId <= 0)
             {
-                var ownerId = await GetOwnerIdAsync(discussionType, discussionTypeId);
-
-                // Выбираем Id диалога с владельцем проекта.
-                var ownerDialogId = await _chatRepository.GetDialogByUserIdAsync(ownerId);
-
-                // Выбираем Id диалога с текущем пользователем.
-                var currentDialogId = await _chatRepository.GetDialogByUserIdAsync(userId);
-
-                // Если диалоги не нашли, то будем искать иначе.
-                if (currentDialogId == 0 && ownerDialogId == 0)
-                {
-                    isFindDialog = false;
-                }
-
-                // Найдем диалог, в котором есть оба участника.
-                var findDialogId = await _chatRepository.GetDialogMembersAsync(userId, ownerId);
-
-                if (findDialogId > 0)
-                {
-                    isFindDialog = true;
-                    ownerDialogId = findDialogId;
-                }
-
-                // Сравниваем DialogId текущего пользователя с владельцем проекта.
-                // Если они равны, значит текущий пользователь общается с владельцем.
-                if (currentDialogId != ownerDialogId
-                    && currentDialogId > 0
-                    && ownerDialogId > 0
-                    && !isFindDialog)
-                {
-                    // Создаем новый диалог.
-                    var lastDialogId = await _chatRepository.CreateDialogAsync(string.Empty, DateTime.Now);
-
-                    // Добавляем участников нового диалога.
-                    await _chatRepository.AddDialogMembersAsync(userId, ownerId, lastDialogId);
-                    result.DialogState = DialogStateEnum.Open.ToString();
-                }
-
-                // Если просматривает владелец объект обсуждения,
-                // то собеседника нет и надо вернуть пустой диалог без его создания.
-                if (currentDialogId == 0
-                    && ownerDialogId == 0
-                    && !isFindDialog)
-                {
-                    result.DialogState = DialogStateEnum.Empty.ToString();
-
-                    return result;
-                }
-
-                dialogId = ownerDialogId;
+                throw new NullReferenceException("Не передали Id предмета обсуждения.");
             }
+
+            ownerId = await GetOwnerIdAsync(discussionType, discussionTypeId);
+
+            // Выбираем Id диалога с владельцем проекта.
+            var ownerDialogId = await _chatRepository.GetDialogByUserIdAsync(ownerId);
+
+            // Выбираем Id диалога с текущем пользователем.
+            var currentDialogId = await _chatRepository.GetDialogByUserIdAsync(userId);
+
+            // Если диалоги не нашли, то будем искать иначе.
+            if (currentDialogId == 0 && ownerDialogId == 0)
+            {
+                isFindDialog = false;
+            }
+
+            // Найдем диалог, в котором есть оба участника.
+            var findDialogId = await _chatRepository.GetDialogMembersAsync(userId, ownerId);
+
+            if (findDialogId > 0)
+            {
+                isFindDialog = true;
+                ownerDialogId = findDialogId;
+            }
+
+            // Сравниваем DialogId текущего пользователя с владельцем проекта.
+            // Если они равны, значит текущий пользователь общается с владельцем.
+            if (currentDialogId != ownerDialogId
+                && currentDialogId > 0
+                && ownerDialogId > 0
+                && !isFindDialog)
+            {
+                // Создаем новый диалог.
+                var lastDialogId = await _chatRepository.CreateDialogAsync(string.Empty, DateTime.Now);
+
+                // Добавляем участников нового диалога.
+                await _chatRepository.AddDialogMembersAsync(userId, ownerId, lastDialogId);
+                result.DialogState = DialogStateEnum.Open.ToString();
+            }
+
+            // Если просматривает владелец объект обсуждения,
+            // то собеседника нет и надо вернуть пустой диалог без его создания.
+            if (currentDialogId == 0
+                && ownerDialogId == 0
+                && !isFindDialog)
+            {
+                result.DialogState = DialogStateEnum.Empty.ToString();
+                result.FullName = await CreateDialogOwnerFioAsync(userId);
+
+                return result;
+            }
+
+            dialogId = ownerDialogId;
 
             var convertDialogId = Convert.ToInt64(dialogId);
 
@@ -138,7 +142,7 @@ public sealed class ChatService : IChatService
             // Записываем полное ФИО пользователя, с которым идет общение в чате.
             result.FirstName = user.FirstName;
             result.LastName = user.LastName;
-            result.FullName = result.FirstName + "" + result.LastName;
+            result.FullName = await CreateDialogOwnerFioAsync(userId);
 
             // Если у диалога нет сообщений, значит вернуть пустой диалог, который будет открыт.
             if (!getMessages.Any())
@@ -314,13 +318,14 @@ public sealed class ChatService : IChatService
             {
                 throw new NullReferenceException("Не передали Id предмета обсуждения.");
             }
-            
+
             var ownerId = await GetOwnerIdAsync(discussionType, discussionTypeId);
 
             // Если это один и тот же пользователь, то ничего не делаем.
             if (ownerId == userId)
             {
                 result.DialogState = DialogStateEnum.Empty.ToString();
+                result.FullName = await CreateDialogOwnerFioAsync(userId);
 
                 return result;
             }
@@ -333,10 +338,11 @@ public sealed class ChatService : IChatService
             {
                 result.DialogState = DialogStateEnum.Empty.ToString();
                 result.DialogId = findDialogId;
+                result.FullName = await CreateDialogOwnerFioAsync(userId);
 
                 return result;
             }
-                
+
             // Создаем новый диалог.
             var lastDialogId = await _chatRepository.CreateDialogAsync(string.Empty, DateTime.Now);
 
@@ -344,7 +350,7 @@ public sealed class ChatService : IChatService
             await _chatRepository.AddDialogMembersAsync(userId, ownerId, lastDialogId);
             result.DialogState = DialogStateEnum.Open.ToString();
             result.DialogId = lastDialogId;
-                    
+
             // Получаем дату начала диалога.
             result.DateStartDialog = await _chatRepository.GetDialogStartDateAsync(result.DialogId);
 
@@ -356,5 +362,17 @@ public sealed class ChatService : IChatService
             await _logService.LogErrorAsync(ex);
             throw;
         }
+    }
+
+    /// <summary>
+    /// Метод строит строку с имененм и фамилией пользователя, с которым идет общение.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Строка с именем и фамилией.</returns>
+    private async Task<string> CreateDialogOwnerFioAsync(long userId)
+    {
+        var result = await _userRepository.GetUserByUserIdAsync(userId);
+
+        return result.FirstName + " " + result.LastName;
     }
 }
