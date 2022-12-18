@@ -416,7 +416,7 @@ public sealed class ChatService : IChatService
             }
             
             // Записываем сообщение в БД.
-            await _chatRepository.SaveMessageAsync(message, dialogId, DateTime.UtcNow, userId, true);
+            await _chatRepository.SaveMessageAsync(message, dialogId, DateTime.Now, userId, true);
             
             // Получаем список сообщений диалога.
             var messages = await _chatRepository.GetDialogMessagesAsync(dialogId);
