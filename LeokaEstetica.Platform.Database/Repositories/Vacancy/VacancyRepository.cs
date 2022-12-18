@@ -1,4 +1,3 @@
-using System.Transactions;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Core.Helpers;
@@ -188,5 +187,20 @@ public sealed class VacancyRepository : IVacancyRepository
             VacancyStatusNameEnum.Moderation.ToString());
 
         return vacancy;
+    }
+    
+    /// <summary>
+    /// Метод находит Id владельца проекта.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <returns>Id владельца вакансии.</returns>
+    public async Task<long> GetVacancyOwnerIdAsync(long vacancyId)
+    {
+        var result = await _pgContext.UserVacancies
+            .Where(v => v.VacancyId == vacancyId)
+            .Select(v => v.UserId)
+            .FirstOrDefaultAsync();
+
+        return result;
     }
 }

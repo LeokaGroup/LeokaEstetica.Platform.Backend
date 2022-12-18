@@ -230,13 +230,11 @@ public sealed class ProjectRepository : IProjectRepository
     /// Метод получает проект для изменения или просмотра.
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
-    /// <param name="userId">Id пользователя.</param>
     /// <returns>Данные проекта.</returns>
-    public async Task<UserProjectEntity> GetProjectAsync(long projectId, long userId)
+    public async Task<UserProjectEntity> GetProjectAsync(long projectId)
     {
         var result = await _pgContext.UserProjects
-            .FirstOrDefaultAsync(p => p.ProjectId == projectId 
-                                      && p.UserId == userId);
+            .FirstOrDefaultAsync(p => p.ProjectId == projectId);
 
         return result;
     }
@@ -401,5 +399,20 @@ public sealed class ProjectRepository : IProjectRepository
         await _pgContext.SaveChangesAsync();
 
         return response;
+    }
+
+    /// <summary>
+    /// Метод находит Id владельца проекта.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Id владельца проекта.</returns>
+    public async Task<long> GetProjectOwnerIdAsync(long projectId)
+    {
+        var result = await _pgContext.UserProjects
+            .Where(p => p.ProjectId == projectId)
+            .Select(p => p.UserId)
+            .FirstOrDefaultAsync();
+
+        return result;
     }
 }

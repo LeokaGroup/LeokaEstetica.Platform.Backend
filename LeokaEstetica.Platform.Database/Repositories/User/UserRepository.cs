@@ -155,18 +155,20 @@ public sealed class UserRepository : IUserRepository
     }
 
     /// <summary>
-    /// Метод получает номер телефона и почту пользователя по его UserId.
+    /// Метод получает основную информацию профиля по UserId.
     /// </summary>
     /// <param name="userId">Id пользователя.</param>
-    /// <returns>Номер телефона и почту.</returns>
-    public async Task<UserPhoneEmailOutput> GetUserPhoneEmailByUserIdAsync(long userId)
+    /// <returns>Основные данные профиля.</returns>
+    public async Task<UserInfoOutput> GetUserPhoneEmailByUserIdAsync(long userId)
     {
         var result = await _pgContext.Users
             .Where(u => u.UserId == userId)
-            .Select(u => new UserPhoneEmailOutput
+            .Select(u => new UserInfoOutput
             {
                 PhoneNumber = u.PhoneNumber,
-                Email = u.Email
+                Email = u.Email,
+                FirstName = u.FirstName,
+                LastName = u.LastName
             })
             .FirstOrDefaultAsync();
 

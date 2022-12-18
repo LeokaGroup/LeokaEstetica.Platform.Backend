@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using LeokaEstetica.Platform.Models.Dto.Chat.Output;
 using LeokaEstetica.Platform.Models.Dto.Output.Configs;
 using LeokaEstetica.Platform.Models.Dto.Output.Header;
 using LeokaEstetica.Platform.Models.Dto.Output.Landing;
@@ -7,6 +8,7 @@ using LeokaEstetica.Platform.Models.Dto.Output.Project;
 using LeokaEstetica.Platform.Models.Dto.Output.User;
 using LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
 using LeokaEstetica.Platform.Models.Entities.Common;
+using LeokaEstetica.Platform.Models.Entities.Communication;
 using LeokaEstetica.Platform.Models.Entities.Configs;
 using LeokaEstetica.Platform.Models.Entities.Landing;
 using LeokaEstetica.Platform.Models.Entities.Profile;
@@ -45,5 +47,6 @@ public class MappingProfile : Profile
         CreateMap<UserVacancyOutput, UserVacancyEntity>();
         CreateMap<VacancyOutput, CreateProjectVacancyOutput>();
         CreateMap<ProjectResponseEntity, ProjectResponseOutput>();
+        CreateMap<DialogMessageEntity, DialogMessageOutput>();
     }
 }

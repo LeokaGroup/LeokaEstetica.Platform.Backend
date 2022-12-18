@@ -1,8 +1,8 @@
 using LeokaEstetica.Platform.Core.Data;
+using LeokaEstetica.Platform.Database.Abstractions.Moderation;
 using LeokaEstetica.Platform.Models.Entities.Moderation;
-using LeokaEstetica.Platform.Moderation.Abstractions.Vacancy;
 
-namespace LeokaEstetica.Platform.Moderation.Repositories.Vacancy;
+namespace LeokaEstetica.Platform.Database.Repositories.Moderation.Vacancy;
 
 /// <summary>
 /// Класс реализует методы репозитория модерации вакансий.

@@ -65,11 +65,11 @@ public interface IUserRepository
     Task<Guid> GetUserCodeByEmailAsync(string email);
 
     /// <summary>
-    /// Метод получает номер телефона и почту пользователя по его UserId.
+    /// Метод получает основную информацию профиля по UserId.
     /// </summary>
     /// <param name="userId">Id пользователя.</param>
-    /// <returns>Номер телефона и почту.</returns>
-    Task<UserPhoneEmailOutput> GetUserPhoneEmailByUserIdAsync(long userId);
+    /// <returns>Основные данные профиля.</returns>
+    Task<UserInfoOutput> GetUserPhoneEmailByUserIdAsync(long userId);
 
     /// <summary>
     /// Метод сохраняет телефон пользователя.

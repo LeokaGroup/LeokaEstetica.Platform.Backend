@@ -2,12 +2,16 @@
 using LeokaEstetica.Platform.Core.Attributes;
 using LeokaEstetica.Platform.Database.Abstractions.Header;
 using LeokaEstetica.Platform.Database.Abstractions.Landing;
+using LeokaEstetica.Platform.Database.Abstractions.Moderation;
 using LeokaEstetica.Platform.Database.Abstractions.Profile;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
 using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Database.Abstractions.Vacancy;
+using LeokaEstetica.Platform.Database.Chat;
+using LeokaEstetica.Platform.Database.Repositories.Chat;
 using LeokaEstetica.Platform.Database.Repositories.Header;
 using LeokaEstetica.Platform.Database.Repositories.Landing;
+using LeokaEstetica.Platform.Database.Repositories.Moderation.Vacancy;
 using LeokaEstetica.Platform.Database.Repositories.Profile;
 using LeokaEstetica.Platform.Database.Repositories.Project;
 using LeokaEstetica.Platform.Database.Repositories.User;
@@ -78,6 +82,26 @@ public class RepositoriesModule : Module
         builder
             .RegisterType<VacancyRepository>()
             .As<IVacancyRepository>()
+            .InstancePerLifetimeScope();
+        
+        // Репозиторий модерации вакансий.
+        builder
+            .RegisterType<VacancyModerationRepository>()
+            .Named<IVacancyModerationRepository>("VacancyModerationRepository")
+            .InstancePerLifetimeScope();
+        builder
+            .RegisterType<VacancyModerationRepository>()
+            .As<IVacancyModerationRepository>()
+            .InstancePerLifetimeScope();
+        
+        // Репозиторий чата.
+        builder
+            .RegisterType<ChatRepository>()
+            .Named<IChatRepository>("ChatRepository")
+            .InstancePerLifetimeScope();
+        builder
+            .RegisterType<ChatRepository>()
+            .As<IChatRepository>()
             .InstancePerLifetimeScope();
     }
 }
