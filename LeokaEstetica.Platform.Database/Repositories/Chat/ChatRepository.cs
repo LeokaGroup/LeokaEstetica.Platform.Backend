@@ -13,7 +13,7 @@ namespace LeokaEstetica.Platform.Database.Repositories.Chat;
 public sealed class ChatRepository : IChatRepository
 {
     private readonly PgContext _pgContext;
-    
+
     public ChatRepository(PgContext pgContext)
     {
         _pgContext = pgContext;
@@ -43,7 +43,7 @@ public sealed class ChatRepository : IChatRepository
     public async Task<long> GetDialogMembersAsync(long userId, long ownerId)
     {
         var result = await _pgContext.DialogMembers
-            .Where(dm => dm.UserId == userId 
+            .Where(dm => dm.UserId == userId
                          || dm.UserId == ownerId)
             .Select(dm => dm.DialogId)
             .FirstOrDefaultAsync();
@@ -198,5 +198,28 @@ public sealed class ChatRepository : IChatRepository
             .LastOrDefaultAsync();
 
         return lastMessage;
+    }
+
+    /// <summary>
+    /// Метод сохраняет сообщение.
+    /// </summary>
+    /// <param name="message">Сообщение.</param>
+    /// <param name="dialogId">Id диалога.</param>
+    /// <param name="dateCreated">Дата записи сообщения.</param>
+    /// <param name="userId">Id пользователя.</param>
+    /// <param name="isMyMessage">Флаг принадлежности сообщения пользователю, который пишет сообщение.</param>
+    public async Task SaveMessageAsync(string message, long dialogId, DateTime dateCreated, long userId,
+        bool isMyMessage)
+    {
+        await _pgContext.DialogMessages.AddAsync(new DialogMessageEntity
+        {
+            Message = message,
+            DialogId = dialogId,
+            Created = dateCreated,
+            UserId = userId,
+            IsMyMessage = isMyMessage
+        });
+
+        await _pgContext.SaveChangesAsync();
     }
 }

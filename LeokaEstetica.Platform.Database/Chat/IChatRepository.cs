@@ -30,7 +30,7 @@ public interface IChatRepository
     /// <param name="dateCreated">Дата создания диалога.</param>
     /// <returns>Id добавленного диалога.</returns>
     Task<long> CreateDialogAsync(string dialogName, DateTime dateCreated);
-    
+
     /// <summary>
     /// Метод добавит текущего пользователя и представителя/владельца к диалогу.
     /// </summary>
@@ -38,21 +38,21 @@ public interface IChatRepository
     /// <param name="ownerId">Id владельца.</param>
     /// <param name="newDialogId">Id нового диалога.</param>
     Task AddDialogMembersAsync(long userId, long ownerId, long newDialogId);
-    
+
     /// <summary>
     /// Метод проверит существование диалога.
     /// </summary>
     /// <param name="dialogId">Id диалога.</param>
     /// <returns>Флаг проверки.</returns>
     Task<bool> CheckDialogAsync(long dialogId);
-    
+
     /// <summary>
     /// Метод получает список сообщений диалога.
     /// </summary>
     /// <param name="dialogId">Id диалога.</param>
     /// <returns>Список сообщений.</returns>
     Task<List<DialogMessageEntity>> GetDialogMessagesAsync(long dialogId);
-    
+
     /// <summary>
     /// Метод получает диалог, где есть и текущий пользователь и владелец предмета обсуждения.
     /// </summary>
@@ -66,7 +66,7 @@ public interface IChatRepository
     /// <param name="dialogId">Id диалога.</param>
     /// <returns>Дата начала диалога.</returns>
     Task<string> GetDialogStartDateAsync(long dialogId);
-    
+
     /// <summary>
     /// Метод получит все диалогы.
     /// </summary>
@@ -80,4 +80,14 @@ public interface IChatRepository
     /// <param name="dialogId">Id диалога.</param>
     /// <returns>Последнее сообщение.</returns>
     Task<string> GetLastMessageAsync(long dialogId);
+
+    /// <summary>
+    /// Метод сохраняет сообщение.
+    /// </summary>
+    /// <param name="message">Сообщение.</param>
+    /// <param name="dialogId">Id диалога.</param>
+    /// <param name="dateCreated">Дата записи сообщения.</param>
+    /// <param name="userId">Id пользователя.</param>
+    /// <param name="isMyMessage">Флаг принадлежности сообщения пользователю, который пишет сообщение.</param>
+    Task SaveMessageAsync(string message, long dialogId, DateTime dateCreated, long userId, bool isMyMessage);
 }

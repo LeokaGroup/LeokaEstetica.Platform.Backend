@@ -35,5 +35,15 @@ public interface IChatService
     /// <param name="account">Аккаунт.</param>
     /// <param name="discussionTypeId">Id предмета обсуждения (Id проекта или вакансии).</param>
     /// <returns>Данные диалога.</returns>
-    Task<DialogResultOutput> WriteProjectDialogOwnerAsync(DiscussionTypeEnum discussionType, string account, long discussionTypeId);
+    Task<DialogResultOutput> WriteProjectDialogOwnerAsync(DiscussionTypeEnum discussionType, string account,
+        long discussionTypeId);
+
+    /// <summary>
+    /// Метод отправляет сообщение.
+    /// </summary>
+    /// <param name="message">Сообщение.</param>
+    /// <param name="dialogId">Id диалога.</param>
+    /// <param name="account">Аккаунт.</param>
+    /// <returns>Выходная модель.</returns>
+    Task<DialogResultOutput> SendMessageAsync(string message, long dialogId, string account);
 }

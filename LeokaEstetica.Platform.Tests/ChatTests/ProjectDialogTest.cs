@@ -6,11 +6,6 @@ namespace LeokaEstetica.Platform.Tests.ChatTests;
 [TestFixture]
 public class ProjectDialogTest : BaseServiceTest
 {
-    [Test]
-    public async Task GetDialogAsyncTest()
-    {
-    }
-
     /// <summary>
     /// Метод тестирует создание нового диалога в проекте, поэтому не передаем Id диалога.
     /// </summary>

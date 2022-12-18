@@ -375,4 +375,69 @@ public sealed class ChatService : IChatService
 
         return result.FirstName + " " + result.LastName;
     }
+
+    /// <summary>
+    /// Метод отправляет сообщение.
+    /// </summary>
+    /// <param name="message">Сообщение.</param>
+    /// <param name="dialogId">Id диалога.</param>
+    /// <param name="account">Аккаунт.</param>
+    /// <returns>Выходная модель.</returns>
+    public async Task<DialogResultOutput> SendMessageAsync(string message, long dialogId, string account)
+    {
+        try
+        {
+            var result = new DialogResultOutput() { Messages = new List<DialogMessageOutput>() };
+            
+            // Если нет сообщения, то ничего не делать.
+            if (string.IsNullOrEmpty(message))
+            {
+                return null;
+            }
+
+            if (dialogId == 0)
+            {
+                throw new ArgumentException("Id диалога не может быть пустым.");
+            }
+
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId == 0)
+            {
+                throw new NullReferenceException($"Id пользователя с аккаунтом {account} не найден.");
+            }
+            
+            // Проверяем существование диалога.
+            var checkDialog = await _chatRepository.CheckDialogAsync(dialogId);
+
+            if (!checkDialog)
+            {
+                throw new NullReferenceException($"Такого диалога не найдено. DialogId был {dialogId}");
+            }
+            
+            // Записываем сообщение в БД.
+            await _chatRepository.SaveMessageAsync(message, dialogId, DateTime.Now, userId, true);
+            
+            // Получаем список сообщений диалога.
+            var messages = await _chatRepository.GetDialogMessagesAsync(dialogId);
+            
+            // Проставляем флаг принадлежности сообщений.
+            foreach (var msg in messages)
+            {
+                msg.IsMyMessage = msg.UserId == userId;
+            }
+            
+            result.DialogState = DialogStateEnum.Open.ToString();
+            var mapMessages = _mapper.Map<List<DialogMessageOutput>>(messages);
+            result.Messages.AddRange(mapMessages);
+
+            return result;
+        }
+
+        catch (Exception ex)
+        {
+            await _logService.LogErrorAsync(ex);
+            throw;
+        }
+    }
 }

@@ -1,5 +1,3 @@
-using LeokaEstetica.Platform.Models.Enums;
-
 namespace LeokaEstetica.Platform.Models.Dto.Chat.Input;
 
 /// <summary>
