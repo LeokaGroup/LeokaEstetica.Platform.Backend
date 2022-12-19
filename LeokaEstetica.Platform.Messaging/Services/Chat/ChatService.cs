@@ -169,7 +169,7 @@ public sealed class ChatService : IChatService
                 msg.IsMyMessage = item.UserId == userId;
                 
                 // Форматируем дату сообщения.
-                msg.Created = item.Created.ToString("f", CultureInfo.CurrentCulture);
+                msg.Created = item.Created.ToString("f", CultureInfo.GetCultureInfo("ru"));
                 result.Messages.Add(msg);
             }
 
