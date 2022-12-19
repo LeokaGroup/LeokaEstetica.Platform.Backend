@@ -1,3 +1,5 @@
+using LeokaEstetica.Platform.Models.Entities.Communication;
+
 namespace LeokaEstetica.Platform.Models.Entities.Project;
 
 /// <summary>
@@ -19,4 +21,14 @@ public class ProjectCommentStatuseEntity
     /// Системное название статуса.
     /// </summary>
     public string StatusSysName { get; set; }
+
+    /// <summary>
+    /// Id комментария.
+    /// </summary>
+    public long CommentId { get; set; }
+
+    /// <summary>
+    /// FK.
+    /// </summary>
+    public ProjectCommentEntity ProjectComment { get; set; }
 }

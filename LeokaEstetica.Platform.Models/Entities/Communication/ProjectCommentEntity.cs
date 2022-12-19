@@ -1,3 +1,5 @@
+using LeokaEstetica.Platform.Models.Entities.Project;
+
 namespace LeokaEstetica.Platform.Models.Entities.Communication;
 
 /// <summary>
@@ -5,6 +7,11 @@ namespace LeokaEstetica.Platform.Models.Entities.Communication;
 /// </summary>
 public class ProjectCommentEntity
 {
+    public ProjectCommentEntity()
+    {
+        ProjectCommentStatuses = new HashSet<ProjectCommentStatuseEntity>();
+    }
+
     /// <summary>
     /// PK.
     /// </summary>
@@ -29,4 +36,9 @@ public class ProjectCommentEntity
     /// Дата создания комментария.
     /// </summary>
     public DateTime Created { get; set; }
+
+    /// <summary>
+    /// Список статусов заказов.
+    /// </summary>
+    public ICollection<ProjectCommentStatuseEntity> ProjectCommentStatuses { get; set; }
 }
