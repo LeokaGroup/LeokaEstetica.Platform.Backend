@@ -1,3 +1,4 @@
+using System.Globalization;
 using AutoMapper;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
 using LeokaEstetica.Platform.Database.Abstractions.User;
@@ -130,6 +131,14 @@ public sealed class ChatService : IChatService
             {
                 throw new NullReferenceException($"Такого диалога не найдено. DialogId был {convertDialogId}");
             }
+            
+            // Получаем список Id участников диалога.
+            var memberIds = await _chatRepository.GetDialogMembersAsync(convertDialogId);
+            
+            if (!memberIds.Any())
+            {
+                throw new NullReferenceException($"Не найдено участников для диалога с DialogId {convertDialogId}");
+            }
 
             // Получаем список сообщений диалога.
             var getMessages = await _chatRepository.GetDialogMessagesAsync(convertDialogId);
@@ -151,29 +160,20 @@ public sealed class ChatService : IChatService
 
                 return result;
             }
-
-            var messages = _mapper.Map<List<DialogMessageOutput>>(getMessages);
-
-            // Форматируем дату сообщений.
-            foreach (var item in messages)
+            
+            foreach (var item in getMessages)
             {
-                item.Created = string.Format("{0:f}", item.Created);
-
+                var msg = _mapper.Map<DialogMessageOutput>(item);
+                
                 // Помечаем сообщения текущего пользователя.
-                item.IsMyMessage = item.UserId == userId;
+                msg.IsMyMessage = item.UserId == userId;
+                
+                // Форматируем дату сообщения.
+                msg.Created = item.Created.ToString("f", CultureInfo.CurrentCulture);
+                result.Messages.Add(msg);
             }
 
             result.DialogState = DialogStateEnum.Open.ToString();
-
-            // Получаем список Id участников диалога.
-            var memberIds = await _chatRepository.GetDialogMembersAsync(convertDialogId);
-
-            if (!memberIds.Any())
-            {
-                throw new NullReferenceException($"Не найдено участников для диалога с DialogId {convertDialogId}");
-            }
-
-            result.Messages = messages;
 
             return result;
         }
@@ -387,7 +387,7 @@ public sealed class ChatService : IChatService
     {
         try
         {
-            var result = new DialogResultOutput() { Messages = new List<DialogMessageOutput>() };
+            var result = new DialogResultOutput { Messages = new List<DialogMessageOutput>() };
             
             // Если нет сообщения, то ничего не делать.
             if (string.IsNullOrEmpty(message))
