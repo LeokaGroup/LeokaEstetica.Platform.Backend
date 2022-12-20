@@ -1,6 +1,10 @@
+using System.Data;
 using LeokaEstetica.Platform.Core.Data;
+using LeokaEstetica.Platform.Core.Enums;
+using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation;
 using LeokaEstetica.Platform.Models.Entities.Moderation;
+using Microsoft.EntityFrameworkCore;
 
 namespace LeokaEstetica.Platform.Database.Repositories.Moderation.Vacancy;
 
@@ -23,12 +27,33 @@ public sealed class VacancyModerationRepository : IVacancyModerationRepository
     /// <param name="vacancyId">Id вакансии.</param>
     public async Task AddVacancyModerationAsync(long vacancyId)
     {
-        var vacancy = new ModerationVacancyEntity
+        var transaction = await _pgContext.Database
+            .BeginTransactionAsync(IsolationLevel.ReadCommitted);
+        
+        try
         {
-            VacancyId = vacancyId,
-            DateModeration = DateTime.Now
-        };
-        await _pgContext.ModerationVacancies.AddAsync(vacancy);
-        await _pgContext.SaveChangesAsync();
+            // Отправляем вакансию на модерацию.
+            var vacancy = new ModerationVacancyEntity
+            {
+                VacancyId = vacancyId,
+                DateModeration = DateTime.Now
+            };
+            await _pgContext.ModerationVacancies.AddAsync(vacancy);
+            await _pgContext.SaveChangesAsync();
+            
+            // Проставляем статус модерации проекта "На модерации".
+            await _pgContext.ModerationStatuses.AddAsync(new ModerationStatusEntity
+            {
+                StatusName = VacancyModerationStatusEnum.ModerationVacancy.GetEnumDescription(),
+                StatusSysName = VacancyModerationStatusEnum.ModerationVacancy.ToString()
+            });
+            await _pgContext.SaveChangesAsync();
+            await transaction.CommitAsync();
+        }
+        
+        catch 
+        {
+            await transaction.RollbackAsync();
+        }
     }
 }

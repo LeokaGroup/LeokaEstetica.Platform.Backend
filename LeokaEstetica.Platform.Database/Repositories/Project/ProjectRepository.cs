@@ -1,6 +1,8 @@
 using System.Data;
 using LeokaEstetica.Platform.Core.Data;
+using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Core.Exceptions;
+using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
 using LeokaEstetica.Platform.Models.Dto.Output.Project;
 using LeokaEstetica.Platform.Models.Entities.Configs;
@@ -245,12 +247,33 @@ public sealed class ProjectRepository : IProjectRepository
     /// <param name="projectId">Id проекта.</param>
     private async Task SendModerationProjectAsync(long projectId)
     {
-        await _pgContext.ModerationProjects.AddAsync(new ModerationProjectEntity
+        var transaction = await _pgContext.Database
+            .BeginTransactionAsync(IsolationLevel.ReadCommitted);
+        
+        try
         {
-            DateModeration = DateTime.Now,
-            ProjectId = projectId
-        });
-        await _pgContext.SaveChangesAsync();
+            // Добавляем проект в таблицу модерации проектов.
+            await _pgContext.ModerationProjects.AddAsync(new ModerationProjectEntity
+            {
+                DateModeration = DateTime.Now,
+                ProjectId = projectId
+            });
+            await _pgContext.SaveChangesAsync();
+
+            // Проставляем статус модерации проекта "На модерации".
+            await _pgContext.ModerationStatuses.AddAsync(new ModerationStatusEntity
+            {
+                StatusName = ProjectModerationStatusEnum.ModerationProject.GetEnumDescription(),
+                StatusSysName = ProjectModerationStatusEnum.ModerationProject.ToString()
+            });
+            await _pgContext.SaveChangesAsync();
+            await transaction.CommitAsync();
+        }
+        
+        catch
+        {
+            await transaction.RollbackAsync();
+        }
     }
 
     /// <summary>

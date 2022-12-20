@@ -22,5 +22,10 @@ public class ModerationProjectEntity
     /// </summary>
     public DateTime DateModeration { get; set; }
 
+    /// <summary>
+    /// Системное название статуса модерации проекта.
+    /// </summary>
+    public string ModerationSysName { get; set; }
+
     public virtual UserProjectEntity UserProject { get; set; }
 }

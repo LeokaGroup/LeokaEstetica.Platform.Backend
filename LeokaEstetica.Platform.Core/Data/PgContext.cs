@@ -191,4 +191,19 @@ public class PgContext : DbContext
     /// Таблица участников диалога.
     /// </summary>
     public DbSet<DialogMemberEntity> DialogMembers { get; set; }
+
+    /// <summary>
+    /// Таблица комментариев к проектам.
+    /// </summary>
+    public DbSet<ProjectCommentEntity> ProjectComments { get; set; }
+
+    /// <summary>
+    /// Таблица статусов комментариев проектов.
+    /// </summary>
+    public DbSet<ProjectCommentStatuseEntity> ProjectCommentsStatuses { get; set; }
+
+    /// <summary>
+    /// Таблица статусов.
+    /// </summary>
+    public DbSet<ModerationStatusEntity> ModerationStatuses { get; set; }
 }
