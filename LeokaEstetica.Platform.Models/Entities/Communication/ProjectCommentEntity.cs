@@ -1,3 +1,4 @@
+using LeokaEstetica.Platform.Models.Entities.Moderation;
 using LeokaEstetica.Platform.Models.Entities.Project;
 
 namespace LeokaEstetica.Platform.Models.Entities.Communication;
@@ -10,6 +11,7 @@ public class ProjectCommentEntity
     public ProjectCommentEntity()
     {
         ProjectCommentStatuses = new HashSet<ProjectCommentStatuseEntity>();
+        ProjectCommentsModeration = new HashSet<ProjectCommentModerationEntity>();
     }
 
     /// <summary>
@@ -41,4 +43,9 @@ public class ProjectCommentEntity
     /// Список статусов заказов.
     /// </summary>
     public ICollection<ProjectCommentStatuseEntity> ProjectCommentStatuses { get; set; }
+
+    /// <summary>
+    /// Список комментариев на модерации.
+    /// </summary>
+    public ICollection<ProjectCommentModerationEntity> ProjectCommentsModeration { get; set; }
 }
