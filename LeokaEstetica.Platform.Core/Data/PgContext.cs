@@ -201,4 +201,9 @@ public class PgContext : DbContext
     /// Таблица статусов комментариев проектов.
     /// </summary>
     public DbSet<ProjectCommentStatuseEntity> ProjectCommentsStatuses { get; set; }
+
+    /// <summary>
+    /// Таблица статусов.
+    /// </summary>
+    public DbSet<ModerationStatusEntity> ModerationStatuses { get; set; }
 }

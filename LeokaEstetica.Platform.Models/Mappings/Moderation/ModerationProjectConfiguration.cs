@@ -24,6 +24,10 @@ public partial class ModerationProjectConfiguration : IEntityTypeConfiguration<M
             .HasColumnName("DateModeration")
             .HasColumnType("timestamp");
         
+        entity.Property(e => e.ModerationSysName)
+            .HasColumnName("ModerationSysName")
+            .HasColumnType("varchar(150)");
+        
         entity.HasOne(p => p.UserProject)
             .WithMany(b => b.ModerationProjects)
             .HasForeignKey(p => p.ProjectId)
