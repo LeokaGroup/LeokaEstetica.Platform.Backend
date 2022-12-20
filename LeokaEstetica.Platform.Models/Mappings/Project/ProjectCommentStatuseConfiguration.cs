@@ -25,11 +25,6 @@ public partial class ProjectCommentStatuseConfiguration : IEntityTypeConfigurati
             .HasColumnName("StatusSysName")
             .HasColumnType("varchar(150)")
             .IsRequired();
-        
-        entity.HasOne(p => p.ProjectComment)
-            .WithMany(b => b.ProjectCommentStatuses)
-            .HasForeignKey(p => p.CommentId)
-            .HasConstraintName("FK_ProjectComments_StatusId");
 
         entity.HasIndex(u => u.StatusId)
             .HasDatabaseName("PK_ProjectCommentsStatuses_StatusId")
