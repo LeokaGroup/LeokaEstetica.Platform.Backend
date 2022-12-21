@@ -1,4 +1,5 @@
 using LeokaEstetica.Platform.Models.Entities.Communication;
+using LeokaEstetica.Platform.Models.Entities.Role;
 
 namespace LeokaEstetica.Platform.Models.Entities.User;
 
@@ -11,6 +12,7 @@ public class UserEntity
     {
         DialogMessages = new HashSet<DialogMessageEntity>();
         DialogMembers = new HashSet<DialogMemberEntity>();
+        ModerationUserRoles = new HashSet<ModerationUserRoleEntity>();
     }
 
     /// <summary>
@@ -117,4 +119,9 @@ public class UserEntity
     /// Участники диалога.
     /// </summary>
     public ICollection<DialogMemberEntity> DialogMembers { get; set; }
+
+    /// <summary>
+    /// Список ролей модерации пользователя.
+    /// </summary>
+    public ICollection<ModerationUserRoleEntity> ModerationUserRoles { get; set; }
 }
