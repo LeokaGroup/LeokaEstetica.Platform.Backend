@@ -1,6 +1,6 @@
 using LeokaEstetica.Platform.Moderation.Models.Dto.Output;
 
-namespace LeokaEstetica.Platform.Access.Abstractions;
+namespace LeokaEstetica.Platform.Access.Abstractions.Moderation;
 
 /// <summary>
 /// Абстракция сервиса проверки доступа к модерации.

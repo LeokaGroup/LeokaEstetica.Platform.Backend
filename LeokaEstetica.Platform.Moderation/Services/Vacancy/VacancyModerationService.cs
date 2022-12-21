@@ -1,4 +1,4 @@
-using LeokaEstetica.Platform.Database.Abstractions.Moderation;
+using LeokaEstetica.Platform.Database.Abstractions.Moderation.Vacancy;
 using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Moderation.Abstractions.Vacancy;
 

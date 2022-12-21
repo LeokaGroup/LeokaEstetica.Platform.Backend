@@ -7,10 +7,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Folder Include="Abstractions\Moderation" />
-    </ItemGroup>
-
-    <ItemGroup>
       <ProjectReference Include="..\LeokaEstetica.Platform.Core\LeokaEstetica.Platform.Core.csproj" />
       <ProjectReference Include="..\LeokaEstetica.Platform.Moderation\LeokaEstetica.Platform.Moderation.csproj" />
     </ItemGroup>

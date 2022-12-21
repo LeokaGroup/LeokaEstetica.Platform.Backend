@@ -2,7 +2,7 @@ using System.Data;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Core.Extensions;
-using LeokaEstetica.Platform.Database.Abstractions.Moderation;
+using LeokaEstetica.Platform.Database.Abstractions.Moderation.Vacancy;
 using LeokaEstetica.Platform.Models.Entities.Moderation;
 using Microsoft.EntityFrameworkCore;
 

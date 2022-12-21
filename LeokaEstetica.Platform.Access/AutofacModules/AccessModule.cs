@@ -1,5 +1,5 @@
 using Autofac;
-using LeokaEstetica.Platform.Access.Abstractions;
+using LeokaEstetica.Platform.Access.Abstractions.Moderation;
 using LeokaEstetica.Platform.Access.Services.Moderation;
 using LeokaEstetica.Platform.Core.Attributes;
 

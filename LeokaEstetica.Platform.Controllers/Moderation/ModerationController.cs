@@ -1,4 +1,4 @@
-using LeokaEstetica.Platform.Access.Abstractions;
+using LeokaEstetica.Platform.Access.Abstractions.Moderation;
 using LeokaEstetica.Platform.Base;
 using LeokaEstetica.Platform.Core.Filters;
 using LeokaEstetica.Platform.Moderation.Models.Dto.Output;
