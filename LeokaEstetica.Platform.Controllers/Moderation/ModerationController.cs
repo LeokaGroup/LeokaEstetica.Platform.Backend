@@ -1,6 +1,5 @@
 using LeokaEstetica.Platform.Access.Abstractions.Moderation;
 using LeokaEstetica.Platform.Base;
-using LeokaEstetica.Platform.Core.Filters;
 using LeokaEstetica.Platform.Moderation.Models.Dto.Input;
 using LeokaEstetica.Platform.Moderation.Models.Dto.Output;
 using Microsoft.AspNetCore.Mvc;
@@ -10,7 +9,7 @@ namespace LeokaEstetica.Platform.Controllers.Moderation;
 /// <summary>
 /// Контроллер модерации (отвечает за весь функционал модерации).
 /// </summary>
-[AuthFilter]
+[ApiController]
 [Route("moderation")]
 public class ModerationController : BaseController
 {
