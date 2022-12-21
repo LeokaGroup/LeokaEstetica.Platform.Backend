@@ -11,7 +11,6 @@ namespace LeokaEstetica.Platform.Controllers.Moderation;
 /// Контроллер модерации (отвечает за весь функционал модерации).
 /// </summary>
 [AuthFilter]
-[ApiController]
 [Route("moderation")]
 public class ModerationController : BaseController
 {
