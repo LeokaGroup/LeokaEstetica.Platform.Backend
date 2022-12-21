@@ -7,6 +7,7 @@ using LeokaEstetica.Platform.Models.Entities.Logs;
 using LeokaEstetica.Platform.Models.Entities.Moderation;
 using LeokaEstetica.Platform.Models.Entities.Profile;
 using LeokaEstetica.Platform.Models.Entities.Project;
+using LeokaEstetica.Platform.Models.Entities.Role;
 using LeokaEstetica.Platform.Models.Entities.User;
 using LeokaEstetica.Platform.Models.Entities.Vacancy;
 using Microsoft.EntityFrameworkCore;
@@ -206,4 +207,14 @@ public class PgContext : DbContext
     /// Таблица статусов.
     /// </summary>
     public DbSet<ModerationStatusEntity> ModerationStatuses { get; set; }
+
+    /// <summary>
+    /// Таблица ролей модерации.
+    /// </summary>
+    public DbSet<ModerationRoleEntity> ModerationRoles { get; set; }
+
+    /// <summary>
+    /// Таблица ролей модерации пользователей.
+    /// </summary>
+    public DbSet<ModerationUserRoleEntity> ModerationUserRoles { get; set; }
 }
