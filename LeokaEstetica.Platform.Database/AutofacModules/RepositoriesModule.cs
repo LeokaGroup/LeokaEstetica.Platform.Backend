@@ -2,7 +2,8 @@
 using LeokaEstetica.Platform.Core.Attributes;
 using LeokaEstetica.Platform.Database.Abstractions.Header;
 using LeokaEstetica.Platform.Database.Abstractions.Landing;
-using LeokaEstetica.Platform.Database.Abstractions.Moderation;
+using LeokaEstetica.Platform.Database.Abstractions.Moderation.Access;
+using LeokaEstetica.Platform.Database.Abstractions.Moderation.Vacancy;
 using LeokaEstetica.Platform.Database.Abstractions.Profile;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
 using LeokaEstetica.Platform.Database.Abstractions.User;
@@ -11,6 +12,7 @@ using LeokaEstetica.Platform.Database.Chat;
 using LeokaEstetica.Platform.Database.Repositories.Chat;
 using LeokaEstetica.Platform.Database.Repositories.Header;
 using LeokaEstetica.Platform.Database.Repositories.Landing;
+using LeokaEstetica.Platform.Database.Repositories.Moderation.Access;
 using LeokaEstetica.Platform.Database.Repositories.Moderation.Vacancy;
 using LeokaEstetica.Platform.Database.Repositories.Profile;
 using LeokaEstetica.Platform.Database.Repositories.Project;
@@ -102,6 +104,16 @@ public class RepositoriesModule : Module
         builder
             .RegisterType<ChatRepository>()
             .As<IChatRepository>()
+            .InstancePerLifetimeScope();
+        
+        // Репозиторий доступа к модерации.
+        builder
+            .RegisterType<AccessModerationRepository>()
+            .Named<IAccessModerationRepository>("AccessModerationRepository")
+            .InstancePerLifetimeScope();
+        builder
+            .RegisterType<AccessModerationRepository>()
+            .As<IAccessModerationRepository>()
             .InstancePerLifetimeScope();
     }
 }

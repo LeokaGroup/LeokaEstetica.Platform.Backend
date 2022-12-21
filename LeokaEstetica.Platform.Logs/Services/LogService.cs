@@ -21,11 +21,13 @@ public sealed class LogService : ILogService
     /// Метод пишет логи ошибок в базу.
     /// </summary>
     /// <param name="ex">Исключение.</param>
-    public async Task LogErrorAsync(Exception ex)
+    public async Task LogErrorAsync(Exception ex, string errorText = null)
     {
         await _pgContext.LogInfos.AddAsync(new LogInfoEntity
         {
-            ExceptionMessage = ex.Message,
+            ExceptionMessage = errorText is not null
+                ? string.Concat(errorText + " ", ex.Message)
+                : ex.Message,
             DateCreated = DateTime.UtcNow,
             StackTrace = ex.StackTrace,
             LogLevel = LogLevelEnum.Error.ToString(),
@@ -35,11 +37,13 @@ public sealed class LogService : ILogService
         await _pgContext.SaveChangesAsync();
     }
 
-    public async Task LogInfoAsync(Exception ex)
+    public async Task LogInfoAsync(Exception ex, string errorText = null)
     {
         await _pgContext.LogInfos.AddAsync(new LogInfoEntity
         {
-            ExceptionMessage = ex.Message,
+            ExceptionMessage = errorText is not null
+                ? string.Concat(errorText + " ", ex.Message)
+                : ex.Message,
             DateCreated = DateTime.UtcNow,
             StackTrace = ex.StackTrace,
             LogLevel = LogLevelEnum.Info.ToString(),
@@ -49,11 +53,13 @@ public sealed class LogService : ILogService
         await _pgContext.SaveChangesAsync();
     }
 
-    public async Task LogCriticalAsync(Exception ex)
+    public async Task LogCriticalAsync(Exception ex, string errorText = null)
     {
         await _pgContext.LogInfos.AddAsync(new LogInfoEntity
         {
-            ExceptionMessage = ex.Message,
+            ExceptionMessage = errorText is not null
+                ? string.Concat(errorText + " ", ex.Message)
+                : ex.Message,
             DateCreated = DateTime.UtcNow,
             StackTrace = ex.StackTrace,
             LogLevel = LogLevelEnum.Critical.ToString(),
@@ -67,11 +73,13 @@ public sealed class LogService : ILogService
     /// Метод пишет логи ошибок в базу с уровнем Warning.
     /// </summary>
     /// <param name="ex">Исключение.</param>
-    public async Task LogWarningAsync(Exception ex)
+    public async Task LogWarningAsync(Exception ex, string errorText = null)
     {
         await _pgContext.LogInfos.AddAsync(new LogInfoEntity
         {
-            ExceptionMessage = ex.Message,
+            ExceptionMessage = errorText is not null
+                ? string.Concat(errorText + " ", ex.Message)
+                : ex.Message,
             DateCreated = DateTime.UtcNow,
             StackTrace = ex.StackTrace,
             LogLevel = LogLevelEnum.Warning.ToString(),
@@ -81,11 +89,13 @@ public sealed class LogService : ILogService
         await _pgContext.SaveChangesAsync();
     }
 
-    public void LogError(Exception ex)
+    public void LogError(Exception ex, string errorText = null)
     {
         _pgContext.LogInfos.Add(new LogInfoEntity
         {
-            ExceptionMessage = ex.Message,
+            ExceptionMessage = errorText is not null
+                ? string.Concat(errorText + " ", ex.Message)
+                : ex.Message,
             DateCreated = DateTime.UtcNow,
             StackTrace = ex.StackTrace,
             LogLevel = LogLevelEnum.Error.ToString(),
@@ -95,11 +105,13 @@ public sealed class LogService : ILogService
         _pgContext.SaveChanges();
     }
 
-    public void LogInfo(Exception ex)
+    public void LogInfo(Exception ex, string errorText = null)
     {
         _pgContext.LogInfos.Add(new LogInfoEntity
         {
-            ExceptionMessage = ex.Message,
+            ExceptionMessage = errorText is not null
+                ? string.Concat(errorText + " ", ex.Message)
+                : ex.Message,
             DateCreated = DateTime.UtcNow,
             StackTrace = ex.StackTrace,
             LogLevel = LogLevelEnum.Info.ToString(),
@@ -109,11 +121,13 @@ public sealed class LogService : ILogService
         _pgContext.SaveChanges();
     }
 
-    public void LogCritical(Exception ex)
+    public void LogCritical(Exception ex, string errorText = null)
     {
         _pgContext.LogInfos.Add(new LogInfoEntity
         {
-            ExceptionMessage = ex.Message,
+            ExceptionMessage = errorText is not null
+                ? string.Concat(errorText + " ", ex.Message)
+                : ex.Message,
             DateCreated = DateTime.UtcNow,
             StackTrace = ex.StackTrace,
             LogLevel = LogLevelEnum.Critical.ToString(),
@@ -123,11 +137,13 @@ public sealed class LogService : ILogService
         _pgContext.SaveChanges();
     }
 
-    public void LogWarning(Exception ex)
+    public void LogWarning(Exception ex, string errorText = null)
     {
         _pgContext.LogInfos.Add(new LogInfoEntity
         {
-            ExceptionMessage = ex.Message,
+            ExceptionMessage = errorText is not null
+                ? string.Concat(errorText + " ", ex.Message)
+                : ex.Message,
             DateCreated = DateTime.UtcNow,
             StackTrace = ex.StackTrace,
             LogLevel = LogLevelEnum.Warning.ToString(),

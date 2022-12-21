@@ -8,7 +8,7 @@ public partial class ModerationUserRoleConfiguration : IEntityTypeConfiguration<
 {
     public void Configure(EntityTypeBuilder<ModerationUserRoleEntity> entity)
     {
-        entity.ToTable("ModerationRoles", "Roles");
+        entity.ToTable("ModerationUserRoles", "Roles");
 
         entity.HasKey(e => e.UserRoleId);
 
