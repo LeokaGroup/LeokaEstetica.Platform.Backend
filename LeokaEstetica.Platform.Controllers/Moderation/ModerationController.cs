@@ -1,6 +1,7 @@
 using LeokaEstetica.Platform.Access.Abstractions.Moderation;
 using LeokaEstetica.Platform.Base;
 using LeokaEstetica.Platform.Core.Filters;
+using LeokaEstetica.Platform.Moderation.Models.Dto.Input;
 using LeokaEstetica.Platform.Moderation.Models.Dto.Output;
 using Microsoft.AspNetCore.Mvc;
 
@@ -15,7 +16,7 @@ namespace LeokaEstetica.Platform.Controllers.Moderation;
 public class ModerationController : BaseController
 {
     private readonly IAccessModerationService _accessModerationService;
-    
+
     public ModerationController(IAccessModerationService accessModerationService)
     {
         _accessModerationService = accessModerationService;
@@ -32,9 +33,10 @@ public class ModerationController : BaseController
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<ModerationRoleOutput> CheckUserRoleModerationAsync()
+    public async Task<ModerationRoleOutput> CheckUserRoleModerationAsync(
+        [FromBody] ModerationRoleInput moderationRoleInput)
     {
-        var result = await _accessModerationService.CheckUserRoleModerationAsync(GetUserName());
+        var result = await _accessModerationService.CheckUserRoleModerationAsync(moderationRoleInput.Email);
 
         return result;
     }

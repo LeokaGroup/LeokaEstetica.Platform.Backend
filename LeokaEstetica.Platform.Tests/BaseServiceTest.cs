@@ -1,8 +1,10 @@
 ﻿using Autofac;
 using AutoMapper;
+using LeokaEstetica.Platform.Access.Services.Moderation;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Utils;
 using LeokaEstetica.Platform.Database.Repositories.Chat;
+using LeokaEstetica.Platform.Database.Repositories.Moderation.Access;
 using LeokaEstetica.Platform.Database.Repositories.Moderation.Vacancy;
 using LeokaEstetica.Platform.Database.Repositories.Profile;
 using LeokaEstetica.Platform.Database.Repositories.Project;
@@ -45,6 +47,8 @@ public class BaseServiceTest
     protected ProjectNotificationsService ProjectNotificationsService;
     protected ChatService ChatService;
     protected ChatRepository ChatRepository;
+    protected AccessModerationRepository AccessModerationRepository;
+    protected AccessModerationService AccessModerationService;
 
     public BaseServiceTest()
     {
@@ -80,5 +84,7 @@ public class BaseServiceTest
         ChatRepository = new ChatRepository(PgContext);
         ChatService = new ChatService(LogService, UserRepository, ProjectRepository, VacancyRepository, ChatRepository,
             mapper);
+        AccessModerationRepository = new AccessModerationRepository(PgContext);
+        AccessModerationService = new AccessModerationService(LogService, AccessModerationRepository, UserRepository);
     }
 }
