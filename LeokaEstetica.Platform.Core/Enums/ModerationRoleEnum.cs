@@ -8,8 +8,8 @@ namespace LeokaEstetica.Platform.Core.Enums;
 public enum ModerationRoleEnum
 {
     [Description("Администратор")]
-    Administrator = -1,
+    Administrator = 1,
     
     [Description("Модератор")]
-    Moderator = 1
+    Moderator = 2
 }
