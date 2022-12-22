@@ -11,5 +11,5 @@ public interface IProjectModerationService
     /// Метод получает список проектов для модерации.
     /// </summary>
     /// <returns>Список проектов.</returns>
-    Task<IEnumerable<ProjectModerationOutput>> ProjectsModerationAsync();
+    Task<ProjectsModerationResult> ProjectsModerationAsync();
 }

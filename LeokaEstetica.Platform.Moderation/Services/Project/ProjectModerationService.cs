@@ -29,12 +29,13 @@ public sealed class ProjectModerationService : IProjectModerationService
     /// Метод получает список проектов для модерации.
     /// </summary>
     /// <returns>Список проектов.</returns>
-    public async Task<IEnumerable<ProjectModerationOutput>> ProjectsModerationAsync()
+    public async Task<ProjectsModerationResult> ProjectsModerationAsync()
     {
         try
         {
+            var result = new ProjectsModerationResult();
             var items = await _projectModerationRepository.ProjectsModerationAsync();
-            var result = CreateProjectsModerationDatesBuilder.Create(items, _mapper);
+            result.Projects = CreateProjectsModerationDatesBuilder.Create(items, _mapper);
 
             return result;
         }

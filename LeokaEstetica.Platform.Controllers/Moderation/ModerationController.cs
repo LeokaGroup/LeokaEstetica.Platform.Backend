@@ -50,12 +50,12 @@ public class ModerationController : BaseController
     /// <returns>Список проектов.</returns>
     [HttpGet]
     [Route("projects")]
-    [ProducesResponseType(200, Type = typeof(IEnumerable<ProjectModerationOutput>))]
+    [ProducesResponseType(200, Type = typeof(ProjectsModerationResult))]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<IEnumerable<ProjectModerationOutput>> ProjectsModerationAsync()
+    public async Task<ProjectsModerationResult> ProjectsModerationAsync()
     {
         var result = await _projectModerationService.ProjectsModerationAsync();
 

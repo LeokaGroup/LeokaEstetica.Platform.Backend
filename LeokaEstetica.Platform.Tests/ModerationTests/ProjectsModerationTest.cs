@@ -12,7 +12,7 @@ public class ProjectsModerationTest : BaseServiceTest
         var result = await ProjectModerationService.ProjectsModerationAsync();
 
         IsNotNull(result);
-        var moderationProjectEntities = result.ToList();
+        var moderationProjectEntities = result.Projects.ToList();
         IsNotEmpty(moderationProjectEntities);
         IsTrue(moderationProjectEntities.FirstOrDefault()?.ProjectId > 0);
     }
