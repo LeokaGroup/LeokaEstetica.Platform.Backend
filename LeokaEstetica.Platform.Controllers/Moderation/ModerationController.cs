@@ -1,4 +1,3 @@
-using AutoMapper;
 using LeokaEstetica.Platform.Access.Abstractions.Moderation;
 using LeokaEstetica.Platform.Base;
 using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Project;
@@ -18,15 +17,12 @@ public class ModerationController : BaseController
 {
     private readonly IAccessModerationService _accessModerationService;
     private readonly IProjectModerationService _projectModerationService;
-    private readonly IMapper _mapper;
 
     public ModerationController(IAccessModerationService accessModerationService, 
-        IProjectModerationService projectModerationService, 
-        IMapper mapper)
+        IProjectModerationService projectModerationService)
     {
         _accessModerationService = accessModerationService;
         _projectModerationService = projectModerationService;
-        _mapper = mapper;
     }
 
     /// <summary>
@@ -61,8 +57,7 @@ public class ModerationController : BaseController
     [ProducesResponseType(404)]
     public async Task<IEnumerable<ProjectModerationOutput>> ProjectsModerationAsync()
     {
-        var items = await _projectModerationService.ProjectsModerationAsync();
-        var result = _mapper.Map<IEnumerable<ProjectModerationOutput>>(items);
+        var result = await _projectModerationService.ProjectsModerationAsync();
 
         return result;
     }

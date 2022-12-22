@@ -91,6 +91,6 @@ public class BaseServiceTest
         AccessModerationRepository = new AccessModerationRepository(PgContext);
         AccessModerationService = new AccessModerationService(LogService, AccessModerationRepository, UserRepository);
         ProjectModerationRepository = new ProjectModerationRepository(PgContext);
-        ProjectModerationService = new ProjectModerationService(ProjectModerationRepository, LogService);
+        ProjectModerationService = new ProjectModerationService(ProjectModerationRepository, LogService, mapper);
     }
 }

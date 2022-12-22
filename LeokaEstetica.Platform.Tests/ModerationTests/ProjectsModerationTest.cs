@@ -14,6 +14,6 @@ public class ProjectsModerationTest : BaseServiceTest
         IsNotNull(result);
         var moderationProjectEntities = result.ToList();
         IsNotEmpty(moderationProjectEntities);
-        IsTrue(moderationProjectEntities.FirstOrDefault()?.ModerationId > 0);
+        IsTrue(moderationProjectEntities.FirstOrDefault()?.ProjectId > 0);
     }
 }

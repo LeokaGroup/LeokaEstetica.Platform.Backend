@@ -34,7 +34,8 @@ public sealed class ProjectModerationRepository : IProjectModerationRepository
                 ProjectId = p.ProjectId,
                 UserProject = new UserProjectEntity
                 {
-                    ProjectName = p.UserProject.ProjectName
+                    ProjectName = p.UserProject.ProjectName,
+                    DateCreated = p.UserProject.DateCreated
                 },
                 DateModeration = p.DateModeration
             })

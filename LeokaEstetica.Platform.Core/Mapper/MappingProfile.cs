@@ -51,5 +51,6 @@ public class MappingProfile : Profile
         CreateMap<ProjectResponseEntity, ProjectResponseOutput>();
         CreateMap<DialogMessageEntity, DialogMessageOutput>();
         CreateMap<ModerationProjectEntity, ProjectModerationOutput>();
+        CreateMap<UserProjectEntity, UserProjectModerationOutput>();
     }
 }

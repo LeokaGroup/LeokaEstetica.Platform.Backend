@@ -1,7 +1,9 @@
+using AutoMapper;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Project;
 using LeokaEstetica.Platform.Logs.Abstractions;
-using LeokaEstetica.Platform.Models.Entities.Moderation;
+using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Project;
 using LeokaEstetica.Platform.Moderation.Abstractions.Project;
+using LeokaEstetica.Platform.Moderation.Formatters;
 
 namespace LeokaEstetica.Platform.Moderation.Services.Project;
 
@@ -12,23 +14,27 @@ public sealed class ProjectModerationService : IProjectModerationService
 {
     private readonly IProjectModerationRepository _projectModerationRepository;
     private readonly ILogService _logService;
+    private readonly IMapper _mapper;
     
     public ProjectModerationService(IProjectModerationRepository projectModerationRepository, 
-        ILogService logService)
+        ILogService logService, 
+        IMapper mapper)
     {
         _projectModerationRepository = projectModerationRepository;
         _logService = logService;
+        _mapper = mapper;
     }
 
     /// <summary>
     /// Метод получает список проектов для модерации.
     /// </summary>
     /// <returns>Список проектов.</returns>
-    public async Task<IEnumerable<ModerationProjectEntity>> ProjectsModerationAsync()
+    public async Task<IEnumerable<ProjectModerationOutput>> ProjectsModerationAsync()
     {
         try
         {
-            var result = await _projectModerationRepository.ProjectsModerationAsync();
+            var items = await _projectModerationRepository.ProjectsModerationAsync();
+            var result = CreateProjectsModerationDatesBuilder.Create(items, _mapper);
 
             return result;
         }

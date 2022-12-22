@@ -18,5 +18,10 @@ public class ProjectModerationOutput
     /// <summary>
     /// Дата создания проекта.
     /// </summary>
-    public string Created { get; set; }
+    public string DateModeration { get; set; }
+
+    /// <summary>
+    /// FK на проект модерации.
+    /// </summary>
+    public UserProjectModerationOutput UserProject { get; set; }
 }
