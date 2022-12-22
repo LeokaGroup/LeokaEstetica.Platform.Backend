@@ -10,7 +10,7 @@ namespace LeokaEstetica.Platform.Moderation.Formatters;
 /// </summary>
 public static class CreateProjectsModerationDatesBuilder
 {
-    private static List<ProjectModerationOutput> _projects = new();
+    private static readonly List<ProjectModerationOutput> _projects = new();
     
     /// <summary>
     /// Метод форматирует даты к нужному виду для модерации.
@@ -28,7 +28,8 @@ public static class CreateProjectsModerationDatesBuilder
             var convertCreatedDate = item.UserProject.DateCreated.ToString("g", CultureInfo.GetCultureInfo("ru"));
             var newItem = mapper.Map<ProjectModerationOutput>(item);
             newItem.DateModeration = convertModerationDate;
-            newItem.UserProject.DateCreated = convertCreatedDate;
+            newItem.DateCreated = convertCreatedDate;
+            newItem.ProjectName = item.UserProject.ProjectName;
             _projects.Add(newItem);
         }
 

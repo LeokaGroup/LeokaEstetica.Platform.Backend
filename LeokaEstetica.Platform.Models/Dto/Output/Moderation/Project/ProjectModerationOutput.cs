@@ -16,12 +16,12 @@ public class ProjectModerationOutput
     public string ProjectName { get; set; }
 
     /// <summary>
-    /// Дата создания проекта.
+    /// Дата модерации проекта.
     /// </summary>
     public string DateModeration { get; set; }
 
     /// <summary>
-    /// FK на проект модерации.
+    /// Дата создания проекта.
     /// </summary>
-    public UserProjectModerationOutput UserProject { get; set; }
+    public string DateCreated { get; set; }
 }
