@@ -1,4 +1,5 @@
 using LeokaEstetica.Platform.Core.Data;
+using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Project;
 using LeokaEstetica.Platform.Models.Entities.Moderation;
 using LeokaEstetica.Platform.Models.Entities.Project;
@@ -12,7 +13,7 @@ namespace LeokaEstetica.Platform.Database.Repositories.Moderation.Project;
 public sealed class ProjectModerationRepository : IProjectModerationRepository
 {
     private readonly PgContext _pgContext;
-    
+
     public ProjectModerationRepository(PgContext pgContext)
     {
         _pgContext = pgContext;
@@ -26,6 +27,7 @@ public sealed class ProjectModerationRepository : IProjectModerationRepository
     {
         var result = await _pgContext.ModerationProjects
             .Include(up => up.UserProject)
+            .Where(p => p.ModerationStatus.StatusId == (int)ProjectModerationStatusEnum.ModerationProject)
             .Select(p => new ModerationProjectEntity
             {
                 ModerationId = p.ModerationId,

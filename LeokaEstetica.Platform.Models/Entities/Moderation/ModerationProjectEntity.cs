@@ -27,5 +27,18 @@ public class ModerationProjectEntity
     /// </summary>
     public string ModerationSysName { get; set; }
 
+    /// <summary>
+    /// Id статуса момодерации.
+    /// </summary>
+    public int ModerationStatusId { get; set; }
+
+    /// <summary>
+    /// FK.
+    /// </summary>
     public virtual UserProjectEntity UserProject { get; set; }
+
+    /// <summary>
+    /// FK.
+    /// </summary>
+    public ModerationStatusEntity ModerationStatus { get; set; }
 }

@@ -32,6 +32,11 @@ public partial class ModerationProjectConfiguration : IEntityTypeConfiguration<M
             .WithMany(b => b.ModerationProjects)
             .HasForeignKey(p => p.ProjectId)
             .HasConstraintName("FK_Projects_ProjectId");
+        
+        entity.HasOne(p => p.ModerationStatus)
+            .WithMany(b => b.ModerationProjects)
+            .HasForeignKey(p => p.ModerationStatusId)
+            .HasConstraintName("FK_ModerationStatuses_StatusId");
 
         entity.HasIndex(u => u.ModerationId)
             .HasDatabaseName("PK_Projects_ModerationId")

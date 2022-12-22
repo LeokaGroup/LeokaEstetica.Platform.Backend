@@ -8,6 +8,7 @@ public class ModerationStatusEntity
     public ModerationStatusEntity()
     {
         ProjectCommentsModeration = new HashSet<ProjectCommentModerationEntity>();
+        ModerationProjects = new HashSet<ModerationProjectEntity>();
     }
 
     /// <summary>
@@ -29,4 +30,9 @@ public class ModerationStatusEntity
     /// Список статусов модерации.
     /// </summary>
     public ICollection<ProjectCommentModerationEntity> ProjectCommentsModeration { get; set; }
+
+    /// <summary>
+    /// Список проектов модерации.
+    /// </summary>
+    public ICollection<ModerationProjectEntity> ModerationProjects { get; set; }
 }
