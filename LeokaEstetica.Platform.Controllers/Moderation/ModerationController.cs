@@ -1,6 +1,8 @@
+using AutoMapper;
 using LeokaEstetica.Platform.Access.Abstractions.Moderation;
 using LeokaEstetica.Platform.Base;
 using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Project;
+using LeokaEstetica.Platform.Models.Dto.Output.Project;
 using LeokaEstetica.Platform.Moderation.Abstractions.Project;
 using LeokaEstetica.Platform.Moderation.Models.Dto.Input;
 using LeokaEstetica.Platform.Moderation.Models.Dto.Output;
@@ -17,12 +19,15 @@ public class ModerationController : BaseController
 {
     private readonly IAccessModerationService _accessModerationService;
     private readonly IProjectModerationService _projectModerationService;
+    private readonly IMapper _mapper;
 
-    public ModerationController(IAccessModerationService accessModerationService, 
-        IProjectModerationService projectModerationService)
+    public ModerationController(IAccessModerationService accessModerationService,
+        IProjectModerationService projectModerationService, 
+        IMapper mapper)
     {
         _accessModerationService = accessModerationService;
         _projectModerationService = projectModerationService;
+        _mapper = mapper;
     }
 
     /// <summary>
@@ -59,6 +64,26 @@ public class ModerationController : BaseController
     {
         var result = await _projectModerationService.ProjectsModerationAsync();
 
-        return result; 
+        return result;
+    }
+
+    /// <summary>
+    /// Метод получает проект для просмотра/изменения.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Данные проекта.</returns>
+    [HttpGet]
+    [Route("project/{projectId}/preview")]
+    [ProducesResponseType(200, Type = typeof(UserProjectOutput))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<UserProjectOutput> GetProjectModerationByProjectIdAsync([FromRoute] long projectId)
+    {
+        var prj = await _projectModerationService.GetProjectModerationByProjectIdAsync(projectId);
+        var result = _mapper.Map<UserProjectOutput>(prj);
+
+        return result;
     }
 }
