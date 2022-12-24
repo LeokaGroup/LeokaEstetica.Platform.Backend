@@ -4,6 +4,7 @@ using LeokaEstetica.Platform.Models.Dto.Output.Configs;
 using LeokaEstetica.Platform.Models.Dto.Output.Header;
 using LeokaEstetica.Platform.Models.Dto.Output.Landing;
 using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Project;
+using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Vacancy;
 using LeokaEstetica.Platform.Models.Dto.Output.Profile;
 using LeokaEstetica.Platform.Models.Dto.Output.Project;
 using LeokaEstetica.Platform.Models.Dto.Output.User;
@@ -73,5 +74,7 @@ public class MappingProfile : Profile
         CreateMap<DialogMessageEntity, DialogMessageOutput>();
         
         CreateMap<ModerationProjectEntity, ProjectModerationOutput>();
+        
+        CreateMap<ModerationVacancyEntity, VacancyModerationOutput>();
     }
 }

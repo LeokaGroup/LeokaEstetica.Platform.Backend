@@ -1,7 +1,10 @@
+using AutoMapper;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Vacancy;
 using LeokaEstetica.Platform.Logs.Abstractions;
+using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Vacancy;
 using LeokaEstetica.Platform.Models.Entities.Vacancy;
 using LeokaEstetica.Platform.Moderation.Abstractions.Vacancy;
+using LeokaEstetica.Platform.Moderation.Builders;
 
 namespace LeokaEstetica.Platform.Moderation.Services.Vacancy;
 
@@ -12,12 +15,15 @@ public sealed class VacancyModerationService : IVacancyModerationService
 {
     private readonly IVacancyModerationRepository _vacancyModerationRepository;
     private readonly ILogService _logService;
+    private readonly IMapper _mapper;
 
     public VacancyModerationService(IVacancyModerationRepository vacancyModerationRepository,
-        ILogService logService)
+        ILogService logService, 
+        IMapper mapper)
     {
         _vacancyModerationRepository = vacancyModerationRepository;
         _logService = logService;
+        _mapper = mapper;
     }
 
     /// <summary>
@@ -57,6 +63,28 @@ public sealed class VacancyModerationService : IVacancyModerationService
         {
             await _logService.LogErrorAsync(ex,
                 $"Ошибка при получении вакансии для модерации. VacancyId = {vacancyId}");
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Метод получает список вакансий для модерации.
+    /// </summary>
+    /// <returns>Список вакансий.</returns>
+    public async Task<VacanciesModerationResult> VacanciesModerationAsync()
+    {
+        try
+        {
+            var result = new VacanciesModerationResult();
+            var items = await _vacancyModerationRepository.VacanciesModerationAsync();
+            result.Vacancies = CreateVacanciesModerationDatesBuilder.Create(items, _mapper);
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            await _logService.LogErrorAsync(ex);
             throw;
         }
     }

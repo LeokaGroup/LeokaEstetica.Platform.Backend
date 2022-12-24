@@ -70,4 +70,29 @@ public sealed class VacancyModerationRepository : IVacancyModerationRepository
 
         return result;
     }
+
+    /// <summary>
+    /// Метод получает список вакансий для модерации.
+    /// </summary>
+    /// <returns>Список вакансий.</returns>
+    public async Task<IEnumerable<ModerationVacancyEntity>> VacanciesModerationAsync()
+    {
+        var result = await _pgContext.ModerationVacancies
+            .Include(up => up.UserVacancy)
+            .Where(p => p.ModerationStatus.StatusId == (int)VacancyModerationStatusEnum.ModerationVacancy)
+            .Select(p => new ModerationVacancyEntity
+            {
+                ModerationId = p.ModerationId,
+                VacancyId = p.VacancyId,
+                UserVacancy = new UserVacancyEntity
+                {
+                    VacancyName = p.UserVacancy.VacancyName,
+                    DateCreated = p.UserVacancy.DateCreated
+                },
+                DateModeration = p.DateModeration
+            })
+            .ToListAsync();
+
+        return result;
+    }
 }

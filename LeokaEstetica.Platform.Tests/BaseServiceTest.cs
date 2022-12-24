@@ -80,7 +80,7 @@ public class BaseServiceTest
         ProjectNotificationsService = new ProjectNotificationsService(null);
         VacancyRepository = new VacancyRepository(PgContext);
         VacancyModerationRepository = new VacancyModerationRepository(PgContext);
-        VacancyModerationService = new VacancyModerationService(VacancyModerationRepository, LogService);
+        VacancyModerationService = new VacancyModerationService(VacancyModerationRepository, LogService, mapper);
         VacancyService = new VacancyService(LogService, VacancyRepository, mapper, null, UserRepository,
             VacancyModerationService, null);
         ProjectService = new ProjectService(ProjectRepository, LogService, UserRepository, mapper,

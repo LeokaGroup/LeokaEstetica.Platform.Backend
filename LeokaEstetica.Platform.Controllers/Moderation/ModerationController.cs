@@ -2,6 +2,7 @@ using AutoMapper;
 using LeokaEstetica.Platform.Access.Abstractions.Moderation;
 using LeokaEstetica.Platform.Base;
 using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Project;
+using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Vacancy;
 using LeokaEstetica.Platform.Models.Dto.Output.Project;
 using LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
 using LeokaEstetica.Platform.Moderation.Abstractions.Project;
@@ -146,6 +147,24 @@ public class ModerationController : BaseController
     {
         var vac = await _vacancyModerationService.GetVacancyModerationByVacancyIdAsync(vacancyId);
         var result = _mapper.Map<UserVacancyOutput>(vac);
+
+        return result;
+    }
+    
+    /// <summary>
+    /// Метод получает список вакансий для модерации.
+    /// </summary>
+    /// <returns>Список вакансий.</returns>
+    [HttpGet]
+    [Route("vacancies")]
+    [ProducesResponseType(200, Type = typeof(VacanciesModerationResult))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<VacanciesModerationResult> VacanciesModerationAsync()
+    {
+        var result = await _vacancyModerationService.VacanciesModerationAsync();
 
         return result;
     }
