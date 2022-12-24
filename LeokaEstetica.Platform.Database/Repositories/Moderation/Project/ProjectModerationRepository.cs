@@ -43,4 +43,17 @@ public sealed class ProjectModerationRepository : IProjectModerationRepository
 
         return result;
     }
+
+    /// <summary>
+    /// Метод получает проект для просмотра/изменения.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Данные проекта.</returns>
+    public async Task<UserProjectEntity> GetProjectModerationByProjectIdAsync(long projectId)
+    {
+        var result = await _pgContext.UserProjects
+            .FirstOrDefaultAsync(p => p.ProjectId == projectId);
+
+        return result;
+    }
 }

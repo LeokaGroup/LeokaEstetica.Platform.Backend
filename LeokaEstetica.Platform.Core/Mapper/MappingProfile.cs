@@ -28,28 +28,50 @@ public class MappingProfile : Profile
     public MappingProfile()
     {
         CreateMap<HeaderEntity, HeaderOutput>();
+        
         CreateMap<FonEntity, LandingStartFonOutput>();
+        
         CreateMap<PlatformOfferEntity, PlatformOfferOutput>();
+        
         CreateMap<PlatformOfferItemsEntity, PlatformOfferItemsOutput>();
+        
         CreateMap<UserEntity, UserSignUpOutput>();
+        
         CreateMap<ProfileInfoEntity, ProfileInfoOutput>();
+        
         CreateMap<ProfileMenuItemEntity, ProfileMenuItemsResultOutput>();
+        
         CreateMap<VacancyMenuItemEntity, VacancyMenuItemsResultOutput>();
+        
         CreateMap<SkillEntity, SkillOutput>();
+        
         CreateMap<IntentEntity, IntentOutput>();
+        
         CreateMap<CatalogProjectEntity, CreateProjectOutput>(); 
+        
         CreateMap<UserProjectEntity, CreateProjectOutput>(); 
         CreateMap<UserProjectEntity, ProjectOutput>(); 
+        CreateMap<UserProjectEntity, UserProjectOutput>(); 
+        
         CreateMap<ProjectColumnNameEntity, ProjectColumnNameOutput>();
+        
         CreateMap<ProjectVacancyColumnNameEntity, ProjectVacancyColumnNameOutput>();
+        
         CreateMap<UserVacancyEntity, VacancyOutput>();
-        CreateMap<ProjectStageEntity, ProjectStageOutput>();
-        CreateMap<ProjectVacancyEntity, ProjectVacancyOutput>();
         CreateMap<UserVacancyEntity, UserVacancyOutput>();
+        
+        CreateMap<ProjectStageEntity, ProjectStageOutput>();
+        
+        CreateMap<ProjectVacancyEntity, ProjectVacancyOutput>();
+        
         CreateMap<UserVacancyOutput, UserVacancyEntity>();
+        
         CreateMap<VacancyOutput, CreateProjectVacancyOutput>();
+        
         CreateMap<ProjectResponseEntity, ProjectResponseOutput>();
+        
         CreateMap<DialogMessageEntity, DialogMessageOutput>();
+        
         CreateMap<ModerationProjectEntity, ProjectModerationOutput>();
     }
 }
