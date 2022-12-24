@@ -28,4 +28,11 @@ public interface IProjectModerationService
     /// <param name="projectId">Id проекта.</param>
     /// <returns>Выходная модель модерации.</returns>
     Task<ApproveProjectOutput> ApproveProjectAsync(long projectId);
+    
+    /// <summary>
+    /// Метод отклоняет проект на модерации.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Выходная модель модерации.</returns>
+    Task<ApproveProjectOutput> RejectProjectAsync(long projectId);
 }

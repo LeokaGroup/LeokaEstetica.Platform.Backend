@@ -64,6 +64,31 @@ public sealed class ProjectModerationRepository : IProjectModerationRepository
     /// <returns>Признак подиверждения проекта.</returns>
     public async Task<bool> ApproveProjectAsync(long projectId)
     {
+        var result = await SetProjectStatus(projectId, ProjectModerationStatusEnum.ApproveProject);
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод отклоняет проект на модерации.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Признак подиверждения проекта.</returns>
+    public async Task<bool> RejectProjectAsync(long projectId)
+    {
+        var result = await SetProjectStatus(projectId, ProjectModerationStatusEnum.RejectedProject);
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод устанавливает статус проекту.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="projectModerationStatus">Статус.</param>
+    /// <returns>Признак подиверждения проекта.</returns>
+    private async Task<bool> SetProjectStatus(long projectId, ProjectModerationStatusEnum projectModerationStatus)
+    {
         var prj = await _pgContext.ModerationProjects
             .FirstOrDefaultAsync(p => p.ProjectId == projectId);
 
@@ -72,7 +97,7 @@ public sealed class ProjectModerationRepository : IProjectModerationRepository
             throw new NullReferenceException($"Не удалось найти проект для модерации. ProjectId = {projectId}");
         }
 
-        prj.ModerationStatusId = (int)ProjectModerationStatusEnum.ApproveProject;
+        prj.ModerationStatusId = (int)projectModerationStatus;
         await _pgContext.SaveChangesAsync();
 
         return true;
