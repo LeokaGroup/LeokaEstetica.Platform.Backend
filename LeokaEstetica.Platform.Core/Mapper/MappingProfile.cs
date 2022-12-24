@@ -65,7 +65,7 @@ public class MappingProfile : Profile
         CreateMap<ProjectVacancyEntity, ProjectVacancyOutput>();
         
         CreateMap<UserVacancyOutput, UserVacancyEntity>();
-        
+
         CreateMap<VacancyOutput, CreateProjectVacancyOutput>();
         
         CreateMap<ProjectResponseEntity, ProjectResponseOutput>();

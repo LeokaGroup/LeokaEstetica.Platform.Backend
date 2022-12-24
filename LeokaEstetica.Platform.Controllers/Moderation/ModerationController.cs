@@ -3,7 +3,9 @@ using LeokaEstetica.Platform.Access.Abstractions.Moderation;
 using LeokaEstetica.Platform.Base;
 using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Project;
 using LeokaEstetica.Platform.Models.Dto.Output.Project;
+using LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
 using LeokaEstetica.Platform.Moderation.Abstractions.Project;
+using LeokaEstetica.Platform.Moderation.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Moderation.Models.Dto.Input;
 using LeokaEstetica.Platform.Moderation.Models.Dto.Output;
 using Microsoft.AspNetCore.Mvc;
@@ -20,14 +22,17 @@ public class ModerationController : BaseController
     private readonly IAccessModerationService _accessModerationService;
     private readonly IProjectModerationService _projectModerationService;
     private readonly IMapper _mapper;
+    private readonly IVacancyModerationService _vacancyModerationService;
 
     public ModerationController(IAccessModerationService accessModerationService,
         IProjectModerationService projectModerationService,
-        IMapper mapper)
+        IMapper mapper,
+        IVacancyModerationService vacancyModerationService)
     {
         _accessModerationService = accessModerationService;
         _projectModerationService = projectModerationService;
         _mapper = mapper;
+        _vacancyModerationService = vacancyModerationService;
     }
 
     /// <summary>
@@ -68,7 +73,7 @@ public class ModerationController : BaseController
     }
 
     /// <summary>
-    /// Метод получает проект для просмотра/изменения.
+    /// Метод получает проект для просмотра.
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
     /// <returns>Данные проекта.</returns>
@@ -105,7 +110,7 @@ public class ModerationController : BaseController
 
         return result;
     }
-    
+
     /// <summary>
     /// Метод отклоняет проект на модерации.
     /// </summary>
@@ -121,6 +126,26 @@ public class ModerationController : BaseController
     public async Task<ApproveProjectOutput> RejectProjectAsync([FromBody] ApproveProjectInput approveProjectInput)
     {
         var result = await _projectModerationService.RejectProjectAsync(approveProjectInput.ProjectId);
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод получает вакансию для просмотра.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <returns>Данные вакансии.</returns>
+    [HttpGet]
+    [Route("vacancy/{vacancyId}/preview")]
+    [ProducesResponseType(200, Type = typeof(UserVacancyOutput))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<UserVacancyOutput> GetVacancyModerationByVacancyIdAsync([FromRoute] long vacancyId)
+    {
+        var vac = await _vacancyModerationService.GetVacancyModerationByVacancyIdAsync(vacancyId);
+        var result = _mapper.Map<UserVacancyOutput>(vac);
 
         return result;
     }

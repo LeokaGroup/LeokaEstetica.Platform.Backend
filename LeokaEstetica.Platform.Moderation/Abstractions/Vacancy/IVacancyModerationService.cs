@@ -1,3 +1,5 @@
+using LeokaEstetica.Platform.Models.Entities.Vacancy;
+
 namespace LeokaEstetica.Platform.Moderation.Abstractions.Vacancy;
 
 /// <summary>
@@ -11,4 +13,11 @@ public interface IVacancyModerationService
     /// </summary>
     /// <param name="vacancyId">Id вакансии.</param>
     Task AddVacancyModerationAsync(long vacancyId);
+
+    /// <summary>
+    /// Метод получает вакансию для просмотра.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <returns>Данные вакансии.</returns>
+    Task<UserVacancyEntity> GetVacancyModerationByVacancyIdAsync(long vacancyId);
 }
