@@ -23,11 +23,6 @@ public class ModerationProjectEntity
     public DateTime DateModeration { get; set; }
 
     /// <summary>
-    /// Системное название статуса модерации проекта.
-    /// </summary>
-    public string ModerationSysName { get; set; }
-
-    /// <summary>
     /// Id статуса момодерации.
     /// </summary>
     public int ModerationStatusId { get; set; }
