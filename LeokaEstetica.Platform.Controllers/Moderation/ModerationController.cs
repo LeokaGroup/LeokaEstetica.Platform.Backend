@@ -105,4 +105,23 @@ public class ModerationController : BaseController
 
         return result;
     }
+    
+    /// <summary>
+    /// Метод отклоняет проект на модерации.
+    /// </summary>
+    /// <param name="approveProjectInput">Входная модель.</param>
+    /// <returns>Выходная модель модерации.</returns>
+    [HttpPatch]
+    [Route("project/reject")]
+    [ProducesResponseType(200, Type = typeof(UserProjectOutput))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<ApproveProjectOutput> RejectProjectAsync([FromBody] ApproveProjectInput approveProjectInput)
+    {
+        var result = await _projectModerationService.RejectProjectAsync(approveProjectInput.ProjectId);
+
+        return result;
+    }
 }
