@@ -3,7 +3,7 @@ using AutoMapper;
 using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Project;
 using LeokaEstetica.Platform.Models.Entities.Moderation;
 
-namespace LeokaEstetica.Platform.Moderation.Formatters;
+namespace LeokaEstetica.Platform.Moderation.Builders;
 
 /// <summary>
 /// Билдер строит даты модерации к нужному виду.

@@ -1,10 +1,12 @@
 using AutoMapper;
+using FluentValidation.Results;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Project;
 using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Project;
 using LeokaEstetica.Platform.Models.Entities.Project;
 using LeokaEstetica.Platform.Moderation.Abstractions.Project;
-using LeokaEstetica.Platform.Moderation.Formatters;
+using LeokaEstetica.Platform.Moderation.Builders;
+using LeokaEstetica.Platform.Moderation.Models.Dto.Output;
 
 namespace LeokaEstetica.Platform.Moderation.Services.Project;
 
@@ -65,6 +67,30 @@ public sealed class ProjectModerationService : IProjectModerationService
         catch (Exception ex)
         {
             await _logService.LogErrorAsync(ex, $"Ошибка при получении проекта для модерации. ProjectId = {projectId}");
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Метод одобряет проект на модерации.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Выходная модель модерации.</returns>
+    public async Task<ApproveProjectOutput> ApproveProjectAsync(long projectId)
+    {
+        try
+        {
+            var result = new ApproveProjectOutput
+            {
+                IsSuccess = await _projectModerationRepository.ApproveProjectAsync(projectId)
+            };
+
+            return result;
+        }
+
+        catch (Exception ex)
+        {
+            await _logService.LogErrorAsync(ex, $"Ошибка при одобрении проекта при модерации. ProjectId = {projectId}");
             throw;
         }
     }

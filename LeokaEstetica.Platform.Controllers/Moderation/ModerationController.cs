@@ -22,7 +22,7 @@ public class ModerationController : BaseController
     private readonly IMapper _mapper;
 
     public ModerationController(IAccessModerationService accessModerationService,
-        IProjectModerationService projectModerationService, 
+        IProjectModerationService projectModerationService,
         IMapper mapper)
     {
         _accessModerationService = accessModerationService;
@@ -83,6 +83,25 @@ public class ModerationController : BaseController
     {
         var prj = await _projectModerationService.GetProjectModerationByProjectIdAsync(projectId);
         var result = _mapper.Map<UserProjectOutput>(prj);
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод одобряет проект на модерации.
+    /// </summary>
+    /// <param name="approveProjectInput">Входная модель.</param>
+    /// <returns>Выходная модель модерации.</returns>
+    [HttpPatch]
+    [Route("project/{projectId}/approve")]
+    [ProducesResponseType(200, Type = typeof(UserProjectOutput))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<ApproveProjectOutput> ApproveProjectAsync([FromBody] ApproveProjectInput approveProjectInput)
+    {
+        var result = await _projectModerationService.ApproveProjectAsync(approveProjectInput.ProjectId);
 
         return result;
     }

@@ -56,4 +56,25 @@ public sealed class ProjectModerationRepository : IProjectModerationRepository
 
         return result;
     }
+
+    /// <summary>
+    /// Метод одобряет проект на модерации.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Признак подиверждения проекта.</returns>
+    public async Task<bool> ApproveProjectAsync(long projectId)
+    {
+        var prj = await _pgContext.ModerationProjects
+            .FirstOrDefaultAsync(p => p.ProjectId == projectId);
+
+        if (prj is null)
+        {
+            throw new NullReferenceException($"Не удалось найти проект для модерации. ProjectId = {projectId}");
+        }
+
+        prj.ModerationStatusId = (int)ProjectModerationStatusEnum.ApproveProject;
+        await _pgContext.SaveChangesAsync();
+
+        return true;
+    }
 }
