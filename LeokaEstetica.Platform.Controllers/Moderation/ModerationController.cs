@@ -93,7 +93,7 @@ public class ModerationController : BaseController
     /// <param name="approveProjectInput">Входная модель.</param>
     /// <returns>Выходная модель модерации.</returns>
     [HttpPatch]
-    [Route("project/{projectId}/approve")]
+    [Route("project/approve")]
     [ProducesResponseType(200, Type = typeof(UserProjectOutput))]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]
