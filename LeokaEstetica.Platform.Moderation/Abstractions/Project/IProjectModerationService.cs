@@ -1,4 +1,5 @@
 using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Project;
+using LeokaEstetica.Platform.Models.Entities.Project;
 
 namespace LeokaEstetica.Platform.Moderation.Abstractions.Project;
 
@@ -12,4 +13,11 @@ public interface IProjectModerationService
     /// </summary>
     /// <returns>Список проектов.</returns>
     Task<ProjectsModerationResult> ProjectsModerationAsync();
+
+    /// <summary>
+    /// Метод получает проект для просмотра/изменения.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Данные проекта.</returns>
+    Task<UserProjectEntity> GetProjectModerationByProjectIdAsync(long projectId);
 }
