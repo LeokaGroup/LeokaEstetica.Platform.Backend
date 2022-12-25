@@ -6,7 +6,7 @@ using LeokaEstetica.Platform.Models.Entities.Moderation;
 namespace LeokaEstetica.Platform.Moderation.Builders;
 
 /// <summary>
-/// Билдер строит даты модерации к нужному виду.
+/// Билдер строит даты проектов модерации к нужному виду.
 /// </summary>
 public static class CreateProjectsModerationDatesBuilder
 {

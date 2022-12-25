@@ -35,4 +35,9 @@ public class ModerationStatusEntity
     /// Список проектов модерации.
     /// </summary>
     public ICollection<ModerationProjectEntity> ModerationProjects { get; set; }
+
+    /// <summary>
+    /// Список вакансий модерации.
+    /// </summary>
+    public ICollection<ModerationVacancyEntity> ModerationVacancies { get; set; }
 }

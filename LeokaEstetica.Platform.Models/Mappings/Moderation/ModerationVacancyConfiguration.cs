@@ -24,10 +24,19 @@ public partial class ModerationVacancyConfiguration : IEntityTypeConfiguration<M
             .HasColumnName("DateModeration")
             .HasColumnType("timestamp");
         
+        entity.Property(e => e.ModerationStatusId)
+            .HasColumnName("ModerationStatusId")
+            .HasColumnType("int");
+        
         entity.HasOne(p => p.UserVacancy)
             .WithMany(b => b.ModerationVacancy)
             .HasForeignKey(p => p.VacancyId)
             .HasConstraintName("FK_Vacancies_VacancyId");
+        
+        entity.HasOne(p => p.ModerationStatus)
+            .WithMany(b => b.ModerationVacancies)
+            .HasForeignKey(p => p.ModerationStatusId)
+            .HasConstraintName("FK_ModerationStatuses_StatusId");
 
         entity.HasIndex(u => u.ModerationId)
             .HasDatabaseName("PK_Vacancies_ModerationId")
