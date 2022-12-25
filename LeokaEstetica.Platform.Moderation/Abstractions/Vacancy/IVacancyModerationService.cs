@@ -1,5 +1,7 @@
 using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Vacancy;
 using LeokaEstetica.Platform.Models.Entities.Vacancy;
+using LeokaEstetica.Platform.Moderation.Models.Dto.Output.Project;
+using LeokaEstetica.Platform.Moderation.Models.Dto.Output.Vacancy;
 
 namespace LeokaEstetica.Platform.Moderation.Abstractions.Vacancy;
 
@@ -27,4 +29,18 @@ public interface IVacancyModerationService
     /// </summary>
     /// <returns>Список вакансий.</returns>
     Task<VacanciesModerationResult> VacanciesModerationAsync();
+    
+    /// <summary>
+    /// Метод одобряет вакансию на модерации.
+    /// </summary>
+    /// <param name="projectId">Id вакансии.</param>
+    /// <returns>Выходная модель модерации.</returns>
+    Task<ApproveVacancyOutput> ApproveVacancyAsync(long vacancyId);
+    
+    /// <summary>
+    /// Метод отклоняет вакансию на модерации.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <returns>Выходная модель модерации.</returns>
+    Task<RejectVacancyOutput> RejectVacancyAsync(long vacancyId);
 }

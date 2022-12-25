@@ -95,4 +95,50 @@ public sealed class VacancyModerationRepository : IVacancyModerationRepository
 
         return result;
     }
+
+    /// <summary>
+    /// Метод одобряет вакансию на модерации.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <returns>Признак подтверждения вакансии.</returns>
+    public async Task<bool> ApproveVacancyAsync(long vacancyId)
+    {
+        var result = await SetVacancyStatus(vacancyId, VacancyModerationStatusEnum.ApproveVacancy);
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод отклоняет вакансию на модерации.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <returns>Признак подтверждения вакансии.</returns>
+    public async Task<bool> RejectVacancyAsync(long vacancyId)
+    {
+        var result = await SetVacancyStatus(vacancyId, VacancyModerationStatusEnum.RejectedVacancy);
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод устанавливает статус вакансии.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <param name="projectModerationStatus">Статус.</param>
+    /// <returns>Признак подвверждения вакансии.</returns>
+    private async Task<bool> SetVacancyStatus(long vacancyId, VacancyModerationStatusEnum vacancyModerationStatus)
+    {
+        var vac = await _pgContext.ModerationVacancies
+            .FirstOrDefaultAsync(p => p.VacancyId == vacancyId);
+
+        if (vac is null)
+        {
+            throw new NullReferenceException($"Не удалось найти вакансию для модерации. VacancyId = {vacancyId}");
+        }
+
+        vac.ModerationStatusId = (int)vacancyModerationStatus;
+        await _pgContext.SaveChangesAsync();
+
+        return true;
+    }
 }

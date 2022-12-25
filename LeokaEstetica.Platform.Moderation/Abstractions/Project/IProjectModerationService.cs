@@ -1,6 +1,6 @@
 using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Project;
 using LeokaEstetica.Platform.Models.Entities.Project;
-using LeokaEstetica.Platform.Moderation.Models.Dto.Output;
+using LeokaEstetica.Platform.Moderation.Models.Dto.Output.Project;
 
 namespace LeokaEstetica.Platform.Moderation.Abstractions.Project;
 
@@ -34,5 +34,5 @@ public interface IProjectModerationService
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
     /// <returns>Выходная модель модерации.</returns>
-    Task<ApproveProjectOutput> RejectProjectAsync(long projectId);
+    Task<RejectProjectOutput> RejectProjectAsync(long projectId);
 }

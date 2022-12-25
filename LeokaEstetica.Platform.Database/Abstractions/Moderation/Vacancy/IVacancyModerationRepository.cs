@@ -27,4 +27,18 @@ public interface IVacancyModerationRepository
     /// </summary>
     /// <returns>Список вакансий.</returns>
     Task<IEnumerable<ModerationVacancyEntity>> VacanciesModerationAsync();
+    
+    /// <summary>
+    /// Метод одобряет вакансию на модерации.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <returns>Признак подтверждения вакансии.</returns>
+    Task<bool> ApproveVacancyAsync(long vacancyId);
+    
+    /// <summary>
+    /// Метод отклоняет вакансию на модерации.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <returns>Признак подтверждения вакансии.</returns>
+    Task<bool> RejectVacancyAsync(long vacancyId);
 }

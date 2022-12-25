@@ -1,4 +1,4 @@
-using LeokaEstetica.Platform.Moderation.Models.Dto.Output;
+using LeokaEstetica.Platform.Moderation.Models.Dto.Output.Role;
 
 namespace LeokaEstetica.Platform.Access.Abstractions.Moderation;
 

@@ -1,4 +1,4 @@
-namespace LeokaEstetica.Platform.Moderation.Models.Dto.Output;
+namespace LeokaEstetica.Platform.Moderation.Models.Dto.Output.Project;
 
 /// <summary>
 /// Класс выходной модели для апрува проекта при модерации.

@@ -7,8 +7,12 @@ using LeokaEstetica.Platform.Models.Dto.Output.Project;
 using LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
 using LeokaEstetica.Platform.Moderation.Abstractions.Project;
 using LeokaEstetica.Platform.Moderation.Abstractions.Vacancy;
-using LeokaEstetica.Platform.Moderation.Models.Dto.Input;
-using LeokaEstetica.Platform.Moderation.Models.Dto.Output;
+using LeokaEstetica.Platform.Moderation.Models.Dto.Input.Project;
+using LeokaEstetica.Platform.Moderation.Models.Dto.Input.Role;
+using LeokaEstetica.Platform.Moderation.Models.Dto.Input.Vacancy;
+using LeokaEstetica.Platform.Moderation.Models.Dto.Output.Project;
+using LeokaEstetica.Platform.Moderation.Models.Dto.Output.Role;
+using LeokaEstetica.Platform.Moderation.Models.Dto.Output.Vacancy;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LeokaEstetica.Platform.Controllers.Moderation;
@@ -119,12 +123,12 @@ public class ModerationController : BaseController
     /// <returns>Выходная модель модерации.</returns>
     [HttpPatch]
     [Route("project/reject")]
-    [ProducesResponseType(200, Type = typeof(UserProjectOutput))]
+    [ProducesResponseType(200, Type = typeof(RejectProjectOutput))]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<ApproveProjectOutput> RejectProjectAsync([FromBody] ApproveProjectInput approveProjectInput)
+    public async Task<RejectProjectOutput> RejectProjectAsync([FromBody] ApproveProjectInput approveProjectInput)
     {
         var result = await _projectModerationService.RejectProjectAsync(approveProjectInput.ProjectId);
 
@@ -165,6 +169,44 @@ public class ModerationController : BaseController
     public async Task<VacanciesModerationResult> VacanciesModerationAsync()
     {
         var result = await _vacancyModerationService.VacanciesModerationAsync();
+
+        return result;
+    }
+    
+    /// <summary>
+    /// Метод одобряет вакансию на модерации.
+    /// </summary>
+    /// <param name="approveProjectInput">Входная модель.</param>
+    /// <returns>Выходная модель модерации.</returns>
+    [HttpPatch]
+    [Route("vacancy/approve")]
+    [ProducesResponseType(200, Type = typeof(ApproveVacancyOutput))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<ApproveVacancyOutput> ApproveVacancyAsync([FromBody] ApproveVacancyInput approveVacancyInput)
+    {
+        var result = await _vacancyModerationService.ApproveVacancyAsync(approveVacancyInput.VacancyId);
+
+        return result;
+    }
+    
+    /// <summary>
+    /// Метод отклоняет вакансию на модерации.
+    /// </summary>
+    /// <param name="rejectVacancyInput">Входная модель.</param>
+    /// <returns>Выходная модель модерации.</returns>
+    [HttpPatch]
+    [Route("vacancy/reject")]
+    [ProducesResponseType(200, Type = typeof(RejectVacancyOutput))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<RejectVacancyOutput> RejectProjectAsync([FromBody] RejectVacancyInput rejectVacancyInput)
+    {
+        var result = await _vacancyModerationService.RejectVacancyAsync(rejectVacancyInput.VacancyId);
 
         return result;
     }
