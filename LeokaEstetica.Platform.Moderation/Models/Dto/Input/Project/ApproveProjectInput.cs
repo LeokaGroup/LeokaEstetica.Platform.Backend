@@ -1,4 +1,4 @@
-namespace LeokaEstetica.Platform.Moderation.Models.Dto.Input;
+namespace LeokaEstetica.Platform.Moderation.Models.Dto.Input.Project;
 
 /// <summary>
 /// Класс входной модели для апрува проекта при модерации.

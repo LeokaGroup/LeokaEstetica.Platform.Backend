@@ -5,7 +5,7 @@ using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Project;
 using LeokaEstetica.Platform.Models.Entities.Project;
 using LeokaEstetica.Platform.Moderation.Abstractions.Project;
 using LeokaEstetica.Platform.Moderation.Builders;
-using LeokaEstetica.Platform.Moderation.Models.Dto.Output;
+using LeokaEstetica.Platform.Moderation.Models.Dto.Output.Project;
 
 namespace LeokaEstetica.Platform.Moderation.Services.Project;
 
@@ -99,11 +99,11 @@ public sealed class ProjectModerationService : IProjectModerationService
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
     /// <returns>Выходная модель модерации.</returns>
-    public async Task<ApproveProjectOutput> RejectProjectAsync(long projectId)
+    public async Task<RejectProjectOutput> RejectProjectAsync(long projectId)
     {
         try
         {
-            var result = new ApproveProjectOutput
+            var result = new RejectProjectOutput
             {
                 IsSuccess = await _projectModerationRepository.RejectProjectAsync(projectId)
             };

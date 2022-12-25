@@ -1,4 +1,4 @@
-namespace LeokaEstetica.Platform.Moderation.Models.Dto.Output;
+namespace LeokaEstetica.Platform.Moderation.Models.Dto.Output.Role;
 
 /// <summary>
 /// Класс выходной модели ролей модерации.

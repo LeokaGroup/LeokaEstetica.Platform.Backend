@@ -5,6 +5,8 @@ using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Vacancy;
 using LeokaEstetica.Platform.Models.Entities.Vacancy;
 using LeokaEstetica.Platform.Moderation.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Moderation.Builders;
+using LeokaEstetica.Platform.Moderation.Models.Dto.Output.Project;
+using LeokaEstetica.Platform.Moderation.Models.Dto.Output.Vacancy;
 
 namespace LeokaEstetica.Platform.Moderation.Services.Vacancy;
 
@@ -85,6 +87,56 @@ public sealed class VacancyModerationService : IVacancyModerationService
         catch (Exception ex)
         {
             await _logService.LogErrorAsync(ex);
+            throw;
+        }
+    }
+    
+    /// <summary>
+    /// Метод одобряет вакансию на модерации.
+    /// </summary>
+    /// <param name="projectId">Id вакансии.</param>
+    /// <returns>Выходная модель модерации.</returns>
+    public async Task<ApproveVacancyOutput> ApproveVacancyAsync(long vacancyId)
+    {
+        try
+        {
+            var result = new ApproveVacancyOutput
+            {
+                IsSuccess = await _vacancyModerationRepository.ApproveVacancyAsync(vacancyId)
+            };
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            await _logService.LogErrorAsync(ex,
+                $"Ошибка при одобрении вакансии при модерации. VacancyId = {vacancyId}");
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Метод отклоняет вакансию на модерации.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <returns>Выходная модель модерации.</returns>
+    public async Task<RejectVacancyOutput> RejectVacancyAsync(long vacancyId)
+    {
+        try
+        {
+            var result = new RejectVacancyOutput
+            {
+                IsSuccess = await _vacancyModerationRepository.RejectVacancyAsync(vacancyId)
+            };
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            await _logService.LogErrorAsync(ex,
+                $"Ошибка при отклонении вакансии при модерации. VacancyId = {vacancyId}");
             throw;
         }
     }

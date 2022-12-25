@@ -1,4 +1,4 @@
-namespace LeokaEstetica.Platform.Moderation.Models.Dto.Input;
+namespace LeokaEstetica.Platform.Moderation.Models.Dto.Input.Role;
 
 /// <summary>
 /// Класс входной модели ролей модерации.

@@ -73,7 +73,7 @@ public sealed class ProjectModerationRepository : IProjectModerationRepository
     /// Метод отклоняет проект на модерации.
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
-    /// <returns>Признак подиверждения проекта.</returns>
+    /// <returns>Признак отклонения проекта.</returns>
     public async Task<bool> RejectProjectAsync(long projectId)
     {
         var result = await SetProjectStatus(projectId, ProjectModerationStatusEnum.RejectedProject);

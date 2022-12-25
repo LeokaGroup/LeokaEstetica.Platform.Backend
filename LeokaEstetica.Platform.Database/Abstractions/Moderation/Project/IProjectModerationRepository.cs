@@ -32,6 +32,6 @@ public interface IProjectModerationRepository
     /// Метод отклоняет проект на модерации.
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
-    /// <returns>Признак подиверждения проекта.</returns>
+    /// <returns>Признак отклонения проекта.</returns>
     Task<bool> RejectProjectAsync(long projectId);
 }
