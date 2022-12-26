@@ -117,4 +117,12 @@ public interface IProjectRepository
     /// <param name="projectId">Id проекта.</param>
     /// <returns>Id владельца проекта.</returns>
     Task<long> GetProjectOwnerIdAsync(long projectId);
+
+    /// <summary>
+    /// Метод создает комментарий к проекту.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="comment">Текст комментария.</param>
+    /// <param name="userId">Id пользователя.</param>
+    Task CreateProjectCommentAsync(long projectId, string comment, long userId);
 }
