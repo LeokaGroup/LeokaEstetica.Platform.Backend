@@ -1,20 +1,20 @@
 using LeokaEstetica.Platform.Models.Entities.Communication;
 
-namespace LeokaEstetica.Platform.Messaging.Abstractions.Project;
+namespace LeokaEstetica.Platform.Database.Abstractions.Project;
 
 /// <summary>
-/// Абстракция сервиса комментариев к проектам.
+/// Абстракция репозитория комментариев проектов.
 /// </summary>
-public interface IProjectCommentsService
+public interface IProjectCommentsRepository
 {
     /// <summary>
     /// Метод создает комментарий к проекту.
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
     /// <param name="comment">Текст комментария.</param>
-    /// <param name="account">Аккаунт.</param>
-    Task CreateProjectCommentAsync(long projectId, string comment, string account);
-
+    /// <param name="userId">Id пользователя.</param>
+    Task CreateProjectCommentAsync(long projectId, string comment, long userId);
+    
     /// <summary>
     /// Метод получает список комментариев проекта.
     /// </summary>

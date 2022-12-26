@@ -8,6 +8,6 @@ public class CreateProjectCommentTest : BaseServiceTest
     [Test]
     public async Task CreateProjectCommentAsyncTest()
     {
-        await ProjectService.CreateProjectCommentAsync(6, "Тестовый коммент", "alisaiva931@mail.ru");
+        await ProjectCommentsService.CreateProjectCommentAsync(6, "Тестовый коммент", "alisaiva931@mail.ru");
     }
 }

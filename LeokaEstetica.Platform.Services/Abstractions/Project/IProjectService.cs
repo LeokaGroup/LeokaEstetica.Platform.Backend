@@ -117,13 +117,4 @@ public interface IProjectService
     /// <param name="account">Аккаунт пользователя.</param>
     /// <returns>Выходная модель с записанным откликом.</returns>
     Task<ProjectResponseEntity> WriteProjectResponseAsync(long projectId, long? vacancyId, string account);
-
-    
-    /// <summary>
-    /// Метод создает комментарий к проекту.
-    /// </summary>
-    /// <param name="projectId">Id проекта.</param>
-    /// <param name="comment">Текст комментария.</param>
-    /// <param name="account">Аккаунт.</param>
-    Task CreateProjectCommentAsync(long projectId, string comment, string account);
 }

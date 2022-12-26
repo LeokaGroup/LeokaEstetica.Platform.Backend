@@ -127,5 +127,15 @@ public class RepositoriesModule : Module
             .RegisterType<ProjectModerationRepository>()
             .As<IProjectModerationRepository>()
             .InstancePerLifetimeScope();
+        
+        // Репозиторий комментариев проектов.
+        builder
+            .RegisterType<ProjectCommentsRepository>()
+            .Named<IProjectCommentsRepository>("ProjectModerationRepository")
+            .InstancePerLifetimeScope();
+        builder
+            .RegisterType<ProjectCommentsRepository>()
+            .As<IProjectCommentsRepository>()
+            .InstancePerLifetimeScope();
     }
 }

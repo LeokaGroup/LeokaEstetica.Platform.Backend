@@ -4,6 +4,8 @@ using LeokaEstetica.Platform.Base.Abstractions.Services;
 using LeokaEstetica.Platform.Controllers.ModelsValidation.Project;
 using LeokaEstetica.Platform.Controllers.Validators.Project;
 using LeokaEstetica.Platform.Core.Filters;
+using LeokaEstetica.Platform.Messaging.Abstractions.Project;
+using LeokaEstetica.Platform.Messaging.Builders;
 using LeokaEstetica.Platform.Models.Dto.Input.Project;
 using LeokaEstetica.Platform.Models.Dto.Output.Configs;
 using LeokaEstetica.Platform.Models.Dto.Output.Project;
@@ -24,14 +26,17 @@ public class ProjectController : BaseController
     private readonly IProjectService _projectService;
     private readonly IMapper _mapper;
     private readonly IValidationExcludeErrorsService _validationExcludeErrorsService;
+    private readonly IProjectCommentsService _projectCommentsService;
 
     public ProjectController(IProjectService projectService,
         IMapper mapper,
-        IValidationExcludeErrorsService validationExcludeErrorsService)
+        IValidationExcludeErrorsService validationExcludeErrorsService,
+        IProjectCommentsService projectCommentsService)
     {
         _projectService = projectService;
         _mapper = mapper;
         _validationExcludeErrorsService = validationExcludeErrorsService;
+        _projectCommentsService = projectCommentsService;
     }
 
     /// <summary>
@@ -334,7 +339,28 @@ public class ProjectController : BaseController
     [ProducesResponseType(404)]
     public async Task CreateProjectCommentAsync([FromBody] ProjectCommentInput projectCommentInput)
     {
-        await _projectService.CreateProjectCommentAsync(projectCommentInput.ProjectId, projectCommentInput.Comment,
-            GetUserName());
+        await _projectCommentsService.CreateProjectCommentAsync(projectCommentInput.ProjectId,
+            projectCommentInput.Comment, GetUserName());
+    }
+
+    /// <summary>
+    /// Метод получает список комментариев проекта.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Список комментариев проекта.</returns>
+    [HttpGet]
+    [Route("comments/{projectId}")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<ProjectCommentOutput>))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<IEnumerable<ProjectCommentOutput>> GetProjectCommentsAsync([FromRoute] long projectId)
+    {
+        var prjComments = await _projectCommentsService.GetProjectCommentsAsync(projectId);
+        var items = CreateProjectCommentsDatesBuilder.Create(prjComments, _mapper);
+        var result = _mapper.Map<IEnumerable<ProjectCommentOutput>>(items);
+
+        return result;
     }
 }

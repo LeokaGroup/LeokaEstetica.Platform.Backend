@@ -439,23 +439,4 @@ public sealed class ProjectRepository : IProjectRepository
 
         return result;
     }
-
-    /// <summary>
-    /// Метод создает комментарий к проекту.
-    /// </summary>
-    /// <param name="projectId">Id проекта.</param>
-    /// <param name="comment">Текст комментария.</param>
-    /// <param name="userId">Id пользователя.</param>
-    public async Task CreateProjectCommentAsync(long projectId, string comment, long userId)
-    {
-        await _pgContext.ProjectComments.AddAsync(new ProjectCommentEntity
-        {
-            Comment = comment,
-            Created = DateTime.Now,
-            ProjectId = projectId,
-            UserId = userId,
-            IsMyComment = true
-        });
-        await _pgContext.SaveChangesAsync();
-    }
 }

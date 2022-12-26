@@ -14,6 +14,7 @@ using LeokaEstetica.Platform.Database.Repositories.Vacancy;
 using LeokaEstetica.Platform.Logs.Services;
 using LeokaEstetica.Platform.Messaging.Services.Chat;
 using LeokaEstetica.Platform.Messaging.Services.Mail;
+using LeokaEstetica.Platform.Messaging.Services.Project;
 using LeokaEstetica.Platform.Moderation.Services.Project;
 using LeokaEstetica.Platform.Moderation.Services.Vacancy;
 using LeokaEstetica.Platform.Notifications.Services;
@@ -53,6 +54,8 @@ public class BaseServiceTest
     protected AccessModerationService AccessModerationService;
     protected ProjectModerationService ProjectModerationService;
     protected ProjectModerationRepository ProjectModerationRepository;
+    protected ProjectCommentsService ProjectCommentsService;
+    protected ProjectCommentsRepository ProjectCommentsRepository;
 
     public BaseServiceTest()
     {
@@ -92,5 +95,7 @@ public class BaseServiceTest
         AccessModerationService = new AccessModerationService(LogService, AccessModerationRepository, UserRepository);
         ProjectModerationRepository = new ProjectModerationRepository(PgContext);
         ProjectModerationService = new ProjectModerationService(ProjectModerationRepository, LogService, mapper);
+        ProjectCommentsRepository = new ProjectCommentsRepository(PgContext);
+        ProjectCommentsService = new ProjectCommentsService(LogService, UserRepository, ProjectCommentsRepository);
     }
 }
