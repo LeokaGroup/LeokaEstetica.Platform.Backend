@@ -76,7 +76,7 @@ public interface IProjectService
     /// </summary>
     /// <param name="projectId">Id проекта, вакансии которого нужно получить.</param>
     /// <returns>Список вакансий.</returns>
-    Task< IEnumerable<ProjectVacancyEntity>> ProjectVacanciesAsync(long projectId);
+    Task<IEnumerable<ProjectVacancyEntity>> ProjectVacanciesAsync(long projectId);
 
     /// <summary>
     /// Метод создает вакансию проекта. При этом автоматически происходит привязка к проекту.
@@ -91,7 +91,7 @@ public interface IProjectService
     /// <returns>Данные вакансии.</returns>
     Task<UserVacancyEntity> CreateProjectVacancyAsync(string vacancyName, string vacancyText, long projectId,
         string employment, string payment, string workExperience, string account);
-    
+
     /// <summary>
     /// Метод получает список вакансий проекта, которые могут быть прикреплены у проекту пользователя.
     /// </summary>
@@ -117,4 +117,13 @@ public interface IProjectService
     /// <param name="account">Аккаунт пользователя.</param>
     /// <returns>Выходная модель с записанным откликом.</returns>
     Task<ProjectResponseEntity> WriteProjectResponseAsync(long projectId, long? vacancyId, string account);
+
+    
+    /// <summary>
+    /// Метод создает комментарий к проекту.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="comment">Текст комментария.</param>
+    /// <param name="account">Аккаунт.</param>
+    Task CreateProjectCommentAsync(long projectId, string comment, string account);
 }

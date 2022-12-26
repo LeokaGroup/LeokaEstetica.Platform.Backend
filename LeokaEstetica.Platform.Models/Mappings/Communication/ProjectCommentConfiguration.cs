@@ -35,6 +35,11 @@ public partial class ProjectCommentConfiguration : IEntityTypeConfiguration<Proj
             .HasColumnName("IsMyComment")
             .HasColumnType("bool")
             .IsRequired();
+        
+        entity.HasOne(p => p.User)
+            .WithMany(b => b.ProjectComments)
+            .HasForeignKey(p => p.UserId)
+            .HasConstraintName("FK_Users_UserId");
 
         entity.HasIndex(u => u.CommentId)
             .HasDatabaseName("PK_ProjectComments_CommentId")

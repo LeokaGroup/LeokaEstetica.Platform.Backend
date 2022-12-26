@@ -25,8 +25,8 @@ public class ProjectController : BaseController
     private readonly IMapper _mapper;
     private readonly IValidationExcludeErrorsService _validationExcludeErrorsService;
 
-    public ProjectController(IProjectService projectService, 
-        IMapper mapper, 
+    public ProjectController(IProjectService projectService,
+        IMapper mapper,
         IValidationExcludeErrorsService validationExcludeErrorsService)
     {
         _projectService = projectService;
@@ -171,14 +171,14 @@ public class ProjectController : BaseController
     {
         var result = new ProjectOutput();
         var validator = await new GetProjectValidator().ValidateAsync(model);
-        
+
         if (validator.Errors.Any())
         {
             result.Errors = await _validationExcludeErrorsService.ExcludeAsync(validator.Errors);
-            
+
             return result;
         }
-        
+
         var project = await _projectService.GetProjectAsync(model.ProjectId, model.Mode, GetUserName());
         result = _mapper.Map<ProjectOutput>(project);
 
@@ -275,7 +275,7 @@ public class ProjectController : BaseController
         await _projectService.AttachProjectVacancyAsync(attachProjectVacancyInput.ProjectId,
             attachProjectVacancyInput.VacancyId);
     }
-    
+
     /// <summary>
     /// Метод получает список вакансий проекта, которые могут быть прикреплены у проекту пользователя.
     /// </summary>
@@ -319,5 +319,22 @@ public class ProjectController : BaseController
         var result = _mapper.Map<ProjectResponseOutput>(projectResponse);
 
         return result;
+    }
+
+    /// <summary>
+    /// Метод создает комментарий к проекту.
+    /// </summary>
+    /// <param name="projectCommentInput">Входная модель.</param>
+    [HttpPost]
+    [Route("project/comment")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task CreateProjectCommentAsync([FromBody] ProjectCommentInput projectCommentInput)
+    {
+        await _projectService.CreateProjectCommentAsync(projectCommentInput.ProjectId, projectCommentInput.Comment,
+            GetUserName());
     }
 }

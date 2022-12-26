@@ -1,4 +1,5 @@
 using LeokaEstetica.Platform.Models.Entities.Moderation;
+using LeokaEstetica.Platform.Models.Entities.User;
 
 namespace LeokaEstetica.Platform.Models.Entities.Communication;
 
@@ -38,7 +39,17 @@ public class ProjectCommentEntity
     public DateTime Created { get; set; }
 
     /// <summary>
+    /// Id пользователя.
+    /// </summary>
+    public long UserId { get; set; }
+
+    /// <summary>
     /// Список комментариев на модерации.
     /// </summary>
     public ICollection<ProjectCommentModerationEntity> ProjectCommentsModeration { get; set; }
+
+    /// <summary>
+    /// FK.
+    /// </summary>
+    public UserEntity User { get; set; }
 }

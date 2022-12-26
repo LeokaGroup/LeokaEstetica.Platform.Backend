@@ -478,7 +478,7 @@ public sealed class ProjectService : IProjectService
     public async Task<ProjectResponseEntity> WriteProjectResponseAsync(long projectId, long? vacancyId, string account)
     {
         var result = new ProjectResponseEntity();
-        
+
         try
         {
             var userId = await _userRepository.GetUserByEmailAsync(account);
@@ -495,8 +495,6 @@ public sealed class ProjectService : IProjectService
                 "Все хорошо",
                 "Отклик на проект успешно оставлен. Вы получите уведомление о решении владельца проекта.",
                 NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS);
-
-           
         }
 
         catch (DublicateProjectResponseException ex)
@@ -507,13 +505,45 @@ public sealed class ProjectService : IProjectService
                 NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING);
             await _logService.LogErrorAsync(ex);
         }
-        
+
         catch (Exception ex)
         {
             await _logService.LogErrorAsync(ex);
             throw;
         }
-        
+
         return result;
+    }
+
+    /// <summary>
+    /// Метод создает комментарий к проекту.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="comment">Текст комментария.</param>
+    /// <param name="account">Аккаунт.</param>
+    public async Task CreateProjectCommentAsync(long projectId, string comment, string account)
+    {
+        try
+        {
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                await _logService.LogErrorAsync(ex);
+                throw ex;
+            }
+            
+            await _projectRepository.CreateProjectCommentAsync(projectId, comment, userId);
+        }
+        
+        catch (Exception ex)
+        {
+            await _logService.LogErrorAsync(ex,
+                "Ошибка при создании комментария к проекту. " +
+                $"ProjectId = {projectId}. " +
+                $"Comment = {comment}. Account = {account}");
+            throw;
+        }
     }
 }

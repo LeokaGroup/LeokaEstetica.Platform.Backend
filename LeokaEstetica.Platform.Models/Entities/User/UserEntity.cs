@@ -124,4 +124,9 @@ public class UserEntity
     /// Список ролей модерации пользователя.
     /// </summary>
     public ICollection<ModerationUserRoleEntity> ModerationUserRoles { get; set; }
+
+    /// <summary>
+    /// Список комментариев к проекту.
+    /// </summary>
+    public ICollection<ProjectCommentEntity> ProjectComments { get; set; }
 }
