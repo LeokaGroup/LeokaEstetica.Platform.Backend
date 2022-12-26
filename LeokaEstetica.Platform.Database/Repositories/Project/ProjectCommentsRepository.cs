@@ -1,7 +1,9 @@
+using System.Data;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
 using LeokaEstetica.Platform.Models.Entities.Communication;
+using LeokaEstetica.Platform.Models.Entities.Moderation;
 using Microsoft.EntityFrameworkCore;
 
 namespace LeokaEstetica.Platform.Database.Repositories.Project;
@@ -12,7 +14,7 @@ namespace LeokaEstetica.Platform.Database.Repositories.Project;
 public sealed class ProjectCommentsRepository : IProjectCommentsRepository
 {
     private readonly PgContext _pgContext;
-    
+
     public ProjectCommentsRepository(PgContext pgContext)
     {
         _pgContext = pgContext;
@@ -26,15 +28,38 @@ public sealed class ProjectCommentsRepository : IProjectCommentsRepository
     /// <param name="userId">Id пользователя.</param>
     public async Task CreateProjectCommentAsync(long projectId, string comment, long userId)
     {
-        await _pgContext.ProjectComments.AddAsync(new ProjectCommentEntity
+        var transaction = await _pgContext.Database
+            .BeginTransactionAsync(IsolationLevel.ReadCommitted);
+        
+        try
         {
-            Comment = comment,
-            Created = DateTime.Now,
-            ProjectId = projectId,
-            UserId = userId,
-            IsMyComment = true
-        });
-        await _pgContext.SaveChangesAsync();
+            var prj = new ProjectCommentEntity
+            {
+                Comment = comment,
+                Created = DateTime.Now,
+                ProjectId = projectId,
+                UserId = userId,
+                IsMyComment = true
+            };
+            await _pgContext.ProjectComments.AddAsync(prj);
+            await _pgContext.SaveChangesAsync();
+            
+            // Отправляем комментарий к проекту на модерацию.
+            await _pgContext.ProjectCommentsModeration.AddAsync(new ProjectCommentModerationEntity
+            {
+                CommentId = prj.CommentId,
+                DateModeration = DateTime.Now,
+                StatusId = (int)ProjectModerationStatusEnum.ModerationProject
+            });
+            await _pgContext.SaveChangesAsync();
+            
+            await transaction.CommitAsync();
+        }
+        
+        catch
+        {
+            await transaction.RollbackAsync();
+        }
     }
 
     /// <summary>
@@ -48,12 +73,12 @@ public sealed class ProjectCommentsRepository : IProjectCommentsRepository
                 join pcm in _pgContext.ProjectCommentsModeration
                     on pc.CommentId
                     equals pcm.CommentId
-                where !new[]
-                    {
-                        (int)ProjectModerationStatusEnum.ModerationProject, // На модерации.
-                        (int)ProjectModerationStatusEnum.RejectedProject // Отклонен.
-                    }
-                    .Contains(pcm.StatusId)
+                // where !new[]
+                //     {
+                //         (int)ProjectModerationStatusEnum.ModerationProject, // На модерации.
+                //         (int)ProjectModerationStatusEnum.RejectedProject // Отклонен.
+                //     }
+                //     .Contains(pcm.StatusId)
                 select new ProjectCommentEntity
                 {
                     CommentId = pc.CommentId,
