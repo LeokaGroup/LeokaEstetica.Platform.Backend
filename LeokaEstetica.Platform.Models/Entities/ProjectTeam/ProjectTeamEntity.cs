@@ -7,6 +7,11 @@ namespace LeokaEstetica.Platform.Models.Entities.ProjectTeam;
 /// </summary>
 public class ProjectTeamEntity
 {
+    public ProjectTeamEntity()
+    {
+        ProjectTeamVacancies = new HashSet<ProjectTeamVacancyEntity>();
+    }
+
     /// <summary>
     /// PK.
     /// </summary>
@@ -26,4 +31,9 @@ public class ProjectTeamEntity
     /// FK.
     /// </summary>
     public CatalogProjectEntity CatalogProject { get; set; }
+
+    /// <summary>
+    /// Список вакансий в командах проектов.
+    /// </summary>
+    public ICollection<ProjectTeamVacancyEntity> ProjectTeamVacancies { get; set; }
 }
