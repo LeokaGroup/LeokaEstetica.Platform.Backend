@@ -1,4 +1,5 @@
 using LeokaEstetica.Platform.Models.Entities.Communication;
+using LeokaEstetica.Platform.Models.Entities.ProjectTeam;
 using LeokaEstetica.Platform.Models.Entities.Role;
 
 namespace LeokaEstetica.Platform.Models.Entities.User;
@@ -13,6 +14,7 @@ public class UserEntity
         DialogMessages = new HashSet<DialogMessageEntity>();
         DialogMembers = new HashSet<DialogMemberEntity>();
         ModerationUserRoles = new HashSet<ModerationUserRoleEntity>();
+        ProjectTeamMembers = new HashSet<ProjectTeamMemberEntity>();
     }
 
     /// <summary>
@@ -129,4 +131,9 @@ public class UserEntity
     /// Список комментариев к проекту.
     /// </summary>
     public ICollection<ProjectCommentEntity> ProjectComments { get; set; }
+
+    /// <summary>
+    /// Список участников команд проектов.
+    /// </summary>
+    public ICollection<ProjectTeamMemberEntity> ProjectTeamMembers { get; set; }
 }

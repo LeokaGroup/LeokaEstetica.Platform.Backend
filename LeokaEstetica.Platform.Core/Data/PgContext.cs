@@ -233,4 +233,9 @@ public class PgContext : DbContext
     /// Таблица вакансий команд проектов.
     /// </summary>
     public DbSet<ProjectTeamVacancyEntity> ProjectsTeamsVacancies { get; set; }
+
+    /// <summary>
+    /// Таблица участников проектов.
+    /// </summary>
+    public DbSet<ProjectTeamMemberEntity> ProjectTeamMembers { get; set; }
 }
