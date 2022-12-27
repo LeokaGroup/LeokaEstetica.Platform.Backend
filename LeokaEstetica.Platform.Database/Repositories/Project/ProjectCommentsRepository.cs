@@ -36,7 +36,7 @@ public sealed class ProjectCommentsRepository : IProjectCommentsRepository
             var prj = new ProjectCommentEntity
             {
                 Comment = comment,
-                Created = DateTime.Now,
+                Created = DateTime.UtcNow,
                 ProjectId = projectId,
                 UserId = userId,
                 IsMyComment = true
@@ -48,7 +48,7 @@ public sealed class ProjectCommentsRepository : IProjectCommentsRepository
             await _pgContext.ProjectCommentsModeration.AddAsync(new ProjectCommentModerationEntity
             {
                 CommentId = prj.CommentId,
-                DateModeration = DateTime.Now,
+                DateModeration = DateTime.UtcNow,
                 StatusId = (int)ProjectModerationStatusEnum.ModerationProject
             });
             await _pgContext.SaveChangesAsync();

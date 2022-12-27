@@ -101,7 +101,7 @@ public sealed class ChatService : IChatService
                 && !isFindDialog)
             {
                 // Создаем новый диалог.
-                var lastDialogId = await _chatRepository.CreateDialogAsync(string.Empty, DateTime.Now);
+                var lastDialogId = await _chatRepository.CreateDialogAsync(string.Empty, DateTime.UtcNow);
 
                 // Добавляем участников нового диалога.
                 await _chatRepository.AddDialogMembersAsync(userId, ownerId, lastDialogId);
@@ -262,7 +262,7 @@ public sealed class ChatService : IChatService
                 dialog.FullName = otherData.FirstName + " " + otherData.LastName;
 
                 // Если дата диалога совпадает с сегодняшней, то заполнит часы и минуты, иначе оставит их null.
-                if (DateTime.Now.ToString("d").Equals(Convert.ToDateTime(dialog.Created).ToString("d")))
+                if (DateTime.UtcNow.ToString("d").Equals(Convert.ToDateTime(dialog.Created).ToString("d")))
                 {
                     // Запишет только часы и минуты.
                     dialog.CalcTime = Convert.ToDateTime(dialog.Created).ToString("t");
@@ -344,7 +344,7 @@ public sealed class ChatService : IChatService
             }
 
             // Создаем новый диалог.
-            var lastDialogId = await _chatRepository.CreateDialogAsync(string.Empty, DateTime.Now);
+            var lastDialogId = await _chatRepository.CreateDialogAsync(string.Empty, DateTime.UtcNow);
 
             // Добавляем участников нового диалога.
             await _chatRepository.AddDialogMembersAsync(userId, ownerId, lastDialogId);
@@ -416,7 +416,7 @@ public sealed class ChatService : IChatService
             }
             
             // Записываем сообщение в БД.
-            await _chatRepository.SaveMessageAsync(message, dialogId, DateTime.Now, userId, true);
+            await _chatRepository.SaveMessageAsync(message, dialogId, DateTime.UtcNow, userId, true);
             
             // Получаем список сообщений диалога.
             var messages = await _chatRepository.GetDialogMessagesAsync(dialogId);
