@@ -25,7 +25,7 @@ public partial class ProjectResponseConfiguration : IEntityTypeConfiguration<Pro
         entity.Property(e => e.DateResponse)
             .HasColumnName("DateResponse")
             .HasColumnType("timestamp")
-            .HasDefaultValue(DateTime.UtcNow)
+            .HasDefaultValue(DateTime.Now)
             .IsRequired();
         
         entity.Property(e => e.ProjectResponseStatuseId)

@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using LeokaEstetica.Platform.Models.Entities.Moderation;
 using LeokaEstetica.Platform.Models.Entities.User;
 
@@ -46,10 +47,12 @@ public class ProjectCommentEntity
     /// <summary>
     /// Список комментариев на модерации.
     /// </summary>
+    [JsonIgnore]
     public ICollection<ProjectCommentModerationEntity> ProjectCommentsModeration { get; set; }
 
     /// <summary>
     /// FK.
     /// </summary>
+    [JsonIgnore]
     public UserEntity User { get; set; }
 }

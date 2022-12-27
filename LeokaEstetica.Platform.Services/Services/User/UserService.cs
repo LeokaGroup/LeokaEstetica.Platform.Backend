@@ -141,7 +141,7 @@ public sealed class UserService : IUserService
         {
             PasswordHash = HashHelper.HashPassword(password),
             Email = email,
-            DateRegister = DateTime.UtcNow,
+            DateRegister = DateTime.Now,
             UserCode = Guid.NewGuid()
         };
 
@@ -264,7 +264,7 @@ public sealed class UserService : IUserService
     /// <returns>Строка токена.</returns>
     private string CreateTokenFactory(ClaimsIdentity claimsIdentity)
     {
-        var now = DateTime.UtcNow;
+        var now = DateTime.Now;
         var jwt = new JwtSecurityToken(
             issuer: AuthOptions.ISSUER,
             audience: AuthOptions.AUDIENCE,

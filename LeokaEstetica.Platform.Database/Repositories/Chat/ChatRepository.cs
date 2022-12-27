@@ -83,13 +83,13 @@ public sealed class ChatRepository : IChatRepository
             {
                 DialogId = newDialogId,
                 UserId = userId,
-                Joined = DateTime.UtcNow
+                Joined = DateTime.Now
             },
             new DialogMemberEntity
             {
                 DialogId = newDialogId,
                 UserId = ownerId,
-                Joined = DateTime.UtcNow
+                Joined = DateTime.Now
             });
         await _pgContext.SaveChangesAsync();
     }

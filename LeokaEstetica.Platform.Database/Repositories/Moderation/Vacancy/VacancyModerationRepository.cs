@@ -37,7 +37,7 @@ public sealed class VacancyModerationRepository : IVacancyModerationRepository
             var vacancy = new ModerationVacancyEntity
             {
                 VacancyId = vacancyId,
-                DateModeration = DateTime.UtcNow
+                DateModeration = DateTime.Now
             };
             await _pgContext.ModerationVacancies.AddAsync(vacancy);
             await _pgContext.SaveChangesAsync();

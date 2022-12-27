@@ -36,7 +36,7 @@ public sealed class ProjectCommentsRepository : IProjectCommentsRepository
             var prj = new ProjectCommentEntity
             {
                 Comment = comment,
-                Created = DateTime.UtcNow,
+                Created = DateTime.Now,
                 ProjectId = projectId,
                 UserId = userId,
                 IsMyComment = true
@@ -48,7 +48,7 @@ public sealed class ProjectCommentsRepository : IProjectCommentsRepository
             await _pgContext.ProjectCommentsModeration.AddAsync(new ProjectCommentModerationEntity
             {
                 CommentId = prj.CommentId,
-                DateModeration = DateTime.UtcNow,
+                DateModeration = DateTime.Now,
                 StatusId = (int)ProjectModerationStatusEnum.ModerationProject
             });
             await _pgContext.SaveChangesAsync();
@@ -73,12 +73,12 @@ public sealed class ProjectCommentsRepository : IProjectCommentsRepository
                 join pcm in _pgContext.ProjectCommentsModeration
                     on pc.CommentId
                     equals pcm.CommentId
-                // where !new[]
-                //     {
-                //         (int)ProjectModerationStatusEnum.ModerationProject, // На модерации.
-                //         (int)ProjectModerationStatusEnum.RejectedProject // Отклонен.
-                //     }
-                //     .Contains(pcm.StatusId)
+                where !new[]
+                    {
+                        (int)ProjectModerationStatusEnum.ModerationProject, // На модерации.
+                        (int)ProjectModerationStatusEnum.RejectedProject // Отклонен.
+                    }
+                    .Contains(pcm.StatusId)
                 select new ProjectCommentEntity
                 {
                     CommentId = pc.CommentId,

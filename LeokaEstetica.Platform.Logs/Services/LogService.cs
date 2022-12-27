@@ -28,7 +28,7 @@ public sealed class LogService : ILogService
             ExceptionMessage = errorText is not null
                 ? string.Concat(errorText + " ", ex.Message)
                 : ex.Message,
-            DateCreated = DateTime.UtcNow,
+            DateCreated = DateTime.Now,
             StackTrace = ex.StackTrace,
             LogLevel = LogLevelEnum.Error.ToString(),
             InnerException = ex.InnerException?.ToString(),
@@ -44,7 +44,7 @@ public sealed class LogService : ILogService
             ExceptionMessage = errorText is not null
                 ? string.Concat(errorText + " ", ex.Message)
                 : ex.Message,
-            DateCreated = DateTime.UtcNow,
+            DateCreated = DateTime.Now,
             StackTrace = ex.StackTrace,
             LogLevel = LogLevelEnum.Info.ToString(),
             InnerException = ex.InnerException?.ToString(),
@@ -60,7 +60,7 @@ public sealed class LogService : ILogService
             ExceptionMessage = errorText is not null
                 ? string.Concat(errorText + " ", ex.Message)
                 : ex.Message,
-            DateCreated = DateTime.UtcNow,
+            DateCreated = DateTime.Now,
             StackTrace = ex.StackTrace,
             LogLevel = LogLevelEnum.Critical.ToString(),
             InnerException = ex.InnerException?.ToString(),
@@ -80,7 +80,7 @@ public sealed class LogService : ILogService
             ExceptionMessage = errorText is not null
                 ? string.Concat(errorText + " ", ex.Message)
                 : ex.Message,
-            DateCreated = DateTime.UtcNow,
+            DateCreated = DateTime.Now,
             StackTrace = ex.StackTrace,
             LogLevel = LogLevelEnum.Warning.ToString(),
             InnerException = ex.InnerException?.ToString(),
@@ -96,7 +96,7 @@ public sealed class LogService : ILogService
             ExceptionMessage = errorText is not null
                 ? string.Concat(errorText + " ", ex.Message)
                 : ex.Message,
-            DateCreated = DateTime.UtcNow,
+            DateCreated = DateTime.Now,
             StackTrace = ex.StackTrace,
             LogLevel = LogLevelEnum.Error.ToString(),
             InnerException = ex.InnerException?.ToString(),
@@ -112,7 +112,7 @@ public sealed class LogService : ILogService
             ExceptionMessage = errorText is not null
                 ? string.Concat(errorText + " ", ex.Message)
                 : ex.Message,
-            DateCreated = DateTime.UtcNow,
+            DateCreated = DateTime.Now,
             StackTrace = ex.StackTrace,
             LogLevel = LogLevelEnum.Info.ToString(),
             InnerException = ex.InnerException?.ToString(),
@@ -128,7 +128,7 @@ public sealed class LogService : ILogService
             ExceptionMessage = errorText is not null
                 ? string.Concat(errorText + " ", ex.Message)
                 : ex.Message,
-            DateCreated = DateTime.UtcNow,
+            DateCreated = DateTime.Now,
             StackTrace = ex.StackTrace,
             LogLevel = LogLevelEnum.Critical.ToString(),
             InnerException = ex.InnerException?.ToString(),
@@ -144,7 +144,7 @@ public sealed class LogService : ILogService
             ExceptionMessage = errorText is not null
                 ? string.Concat(errorText + " ", ex.Message)
                 : ex.Message,
-            DateCreated = DateTime.UtcNow,
+            DateCreated = DateTime.Now,
             StackTrace = ex.StackTrace,
             LogLevel = LogLevelEnum.Warning.ToString(),
             InnerException = ex.InnerException?.ToString(),

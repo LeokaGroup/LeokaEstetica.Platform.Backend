@@ -51,7 +51,7 @@ public sealed class ProjectRepository : IProjectRepository
                 ProjectDetails = projectDetails,
                 UserId = userId,
                 ProjectCode = Guid.NewGuid(),
-                DateCreated = DateTime.UtcNow
+                DateCreated = DateTime.Now
             };
             await _pgContext.UserProjects.AddAsync(project);
             await _pgContext.SaveChangesAsync();
@@ -256,7 +256,7 @@ public sealed class ProjectRepository : IProjectRepository
             // Добавляем проект в таблицу модерации проектов.
             await _pgContext.ModerationProjects.AddAsync(new ModerationProjectEntity
             {
-                DateModeration = DateTime.UtcNow,
+                DateModeration = DateTime.Now,
                 ProjectId = projectId
             });
             await _pgContext.SaveChangesAsync();
@@ -416,7 +416,7 @@ public sealed class ProjectRepository : IProjectRepository
             UserId = userId,
             VacancyId = vacancyId,
             ProjectResponseStatuseId = (int)ProjectResponseStatusEnum.Wait,
-            DateResponse = DateTime.UtcNow
+            DateResponse = DateTime.Now
         };
 
         await _pgContext.ProjectResponses.AddAsync(response);
