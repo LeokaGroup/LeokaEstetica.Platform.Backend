@@ -7,6 +7,7 @@ using LeokaEstetica.Platform.Models.Entities.Logs;
 using LeokaEstetica.Platform.Models.Entities.Moderation;
 using LeokaEstetica.Platform.Models.Entities.Profile;
 using LeokaEstetica.Platform.Models.Entities.Project;
+using LeokaEstetica.Platform.Models.Entities.ProjectTeam;
 using LeokaEstetica.Platform.Models.Entities.Role;
 using LeokaEstetica.Platform.Models.Entities.User;
 using LeokaEstetica.Platform.Models.Entities.Vacancy;
@@ -222,4 +223,9 @@ public class PgContext : DbContext
     /// Таблица модерации комментариев проектов.
     /// </summary>
     public DbSet<ProjectCommentModerationEntity> ProjectCommentsModeration { get; set; }
+
+    /// <summary>
+    /// Таблица команд проектов.
+    /// </summary>
+    public DbSet<ProjectTeamEntity> ProjectsTeams { get; set; }
 }

@@ -1,3 +1,5 @@
+using LeokaEstetica.Platform.Models.Entities.ProjectTeam;
+
 namespace LeokaEstetica.Platform.Models.Entities.Project;
 
 /// <summary>
@@ -5,6 +7,11 @@ namespace LeokaEstetica.Platform.Models.Entities.Project;
 /// </summary>
 public class CatalogProjectEntity
 {
+    public CatalogProjectEntity()
+    {
+        ProjectsTeams = new HashSet<ProjectTeamEntity>();
+    }
+
     /// <summary>
     /// PK.
     /// </summary>
@@ -16,4 +23,9 @@ public class CatalogProjectEntity
     /// Id проекта.
     /// </summary>
     public UserProjectEntity Project { get; set; }
+
+    /// <summary>
+    /// Список команд проектов.
+    /// </summary>
+    public ICollection<ProjectTeamEntity> ProjectsTeams { get; set; }
 }
