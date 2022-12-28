@@ -26,10 +26,10 @@ public partial class ProjectTeamVacancyConfiguration : IEntityTypeConfiguration<
             .HasColumnType("bool")
             .IsRequired();
 
-        entity.HasOne(p => p.CatalogVacancy)
+        entity.HasOne(p => p.UserVacancy)
             .WithMany(b => b.ProjectTeamVacancies)
             .HasForeignKey(p => p.VacancyId)
-            .HasConstraintName("FK_CatalogVacancies_VacancyId");
+            .HasConstraintName("FK_UserVacancies_VacancyId");
         
         entity.HasOne(p => p.ProjectTeam)
             .WithMany(b => b.ProjectTeamVacancies)

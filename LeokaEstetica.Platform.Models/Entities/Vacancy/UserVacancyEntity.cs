@@ -1,5 +1,6 @@
 using LeokaEstetica.Platform.Models.Entities.Moderation;
 using LeokaEstetica.Platform.Models.Entities.Project;
+using LeokaEstetica.Platform.Models.Entities.ProjectTeam;
 
 namespace LeokaEstetica.Platform.Models.Entities.Vacancy;
 
@@ -14,6 +15,8 @@ public class UserVacancyEntity
         VacancyStatuses = new HashSet<VacancyStatusEntity>();
         ModerationVacancy = new HashSet<ModerationVacancyEntity>();
         ProjectVacancies = new HashSet<ProjectVacancyEntity>();
+        ProjectTeamVacancies = new List<ProjectTeamVacancyEntity>();
+        ProjectTeamMembers = new List<ProjectTeamMemberEntity>();
     }
 
     /// <summary>
@@ -81,4 +84,14 @@ public class UserVacancyEntity
     /// Вакансии проекта.
     /// </summary>
     public ICollection<ProjectVacancyEntity> ProjectVacancies { get; set; }
+    
+    /// <summary>
+    /// Список вакансий в команде проекта.
+    /// </summary>
+    public ICollection<ProjectTeamVacancyEntity> ProjectTeamVacancies { get; set; }
+    
+    /// <summary>
+    /// Список участников команд проектов.
+    /// </summary>
+    public ICollection<ProjectTeamMemberEntity> ProjectTeamMembers { get; set; }
 }

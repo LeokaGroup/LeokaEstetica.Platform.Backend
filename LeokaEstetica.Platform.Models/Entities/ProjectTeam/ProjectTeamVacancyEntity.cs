@@ -31,7 +31,7 @@ public class ProjectTeamVacancyEntity
     /// <summary>
     /// FK.
     /// </summary>
-    public CatalogVacancyEntity CatalogVacancy { get; set; }
+    public UserVacancyEntity UserVacancy { get; set; }
 
     /// <summary>
     /// FK.

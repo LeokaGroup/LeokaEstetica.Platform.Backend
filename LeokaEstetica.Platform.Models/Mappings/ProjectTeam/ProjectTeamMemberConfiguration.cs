@@ -36,10 +36,10 @@ public partial class ProjectTeamMemberConfiguration : IEntityTypeConfiguration<P
             .HasForeignKey(p => p.UserId)
             .HasConstraintName("FK_Users_UserId");
         
-        entity.HasOne(p => p.CatalogVacancy)
+        entity.HasOne(p => p.UserVacancy)
             .WithMany(b => b.ProjectTeamMembers)
             .HasForeignKey(p => p.VacancyId)
-            .HasConstraintName("FK_CatalogVacancies_VacancyId");
+            .HasConstraintName("FK_UserVacancies_VacancyId");
 
         entity.HasIndex(u => u.MemberId)
             .HasDatabaseName("PK_ProjectsTeamsMembers_MemberId")
