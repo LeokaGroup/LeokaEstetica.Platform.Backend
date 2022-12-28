@@ -217,4 +217,9 @@ public class PgContext : DbContext
     /// Таблица ролей модерации пользователей.
     /// </summary>
     public DbSet<ModerationUserRoleEntity> ModerationUserRoles { get; set; }
+
+    /// <summary>
+    /// Таблица модерации комментариев проектов.
+    /// </summary>
+    public DbSet<ProjectCommentModerationEntity> ProjectCommentsModeration { get; set; }
 }

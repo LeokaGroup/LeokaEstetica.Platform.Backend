@@ -514,36 +514,4 @@ public sealed class ProjectService : IProjectService
 
         return result;
     }
-
-    /// <summary>
-    /// Метод создает комментарий к проекту.
-    /// </summary>
-    /// <param name="projectId">Id проекта.</param>
-    /// <param name="comment">Текст комментария.</param>
-    /// <param name="account">Аккаунт.</param>
-    public async Task CreateProjectCommentAsync(long projectId, string comment, string account)
-    {
-        try
-        {
-            var userId = await _userRepository.GetUserByEmailAsync(account);
-
-            if (userId <= 0)
-            {
-                var ex = new NotFoundUserIdByAccountException(account);
-                await _logService.LogErrorAsync(ex);
-                throw ex;
-            }
-            
-            await _projectRepository.CreateProjectCommentAsync(projectId, comment, userId);
-        }
-        
-        catch (Exception ex)
-        {
-            await _logService.LogErrorAsync(ex,
-                "Ошибка при создании комментария к проекту. " +
-                $"ProjectId = {projectId}. " +
-                $"Comment = {comment}. Account = {account}");
-            throw;
-        }
-    }
 }
