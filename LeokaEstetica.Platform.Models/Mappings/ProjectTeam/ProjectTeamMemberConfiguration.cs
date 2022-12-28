@@ -17,7 +17,7 @@ public partial class ProjectTeamMemberConfiguration : IEntityTypeConfiguration<P
             .HasColumnType("bigserial");
         
         entity.Property(e => e.VacancyId)
-            .HasColumnName("ProjectId")
+            .HasColumnName("VacancyId")
             .HasColumnType("bigint")
             .IsRequired();
         
