@@ -5,16 +5,20 @@ using LeokaEstetica.Platform.Core.Helpers;
 using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
 using LeokaEstetica.Platform.Database.Abstractions.User;
+using LeokaEstetica.Platform.Database.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Models.Dto.Output.Configs;
 using LeokaEstetica.Platform.Models.Dto.Output.Project;
+using LeokaEstetica.Platform.Models.Dto.Output.ProjectTeam;
 using LeokaEstetica.Platform.Models.Entities.Project;
+using LeokaEstetica.Platform.Models.Entities.ProjectTeam;
 using LeokaEstetica.Platform.Models.Entities.Vacancy;
 using LeokaEstetica.Platform.Models.Enums;
 using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Notifications.Consts;
 using LeokaEstetica.Platform.Services.Abstractions.Project;
 using LeokaEstetica.Platform.Services.Abstractions.Vacancy;
+using LeokaEstetica.Platform.Services.Builders;
 
 namespace LeokaEstetica.Platform.Services.Services.Project;
 
@@ -29,6 +33,7 @@ public sealed class ProjectService : IProjectService
     private readonly IMapper _mapper;
     private readonly IProjectNotificationsService _projectNotificationsService;
     private readonly IVacancyService _vacancyService;
+    private readonly IVacancyRepository _vacancyRepository;
 
     /// <summary>
     /// Если Id проекта невалидный.
@@ -40,7 +45,8 @@ public sealed class ProjectService : IProjectService
         IUserRepository userRepository,
         IMapper mapper,
         IProjectNotificationsService projectNotificationsService,
-        IVacancyService vacancyService)
+        IVacancyService vacancyService,
+        IVacancyRepository vacancyRepository)
     {
         _projectRepository = projectRepository;
         _logService = logService;
@@ -48,6 +54,7 @@ public sealed class ProjectService : IProjectService
         _mapper = mapper;
         _projectNotificationsService = projectNotificationsService;
         _vacancyService = vacancyService;
+        _vacancyRepository = vacancyRepository;
     }
 
     /// <summary>
@@ -510,6 +517,96 @@ public sealed class ProjectService : IProjectService
         {
             await _logService.LogErrorAsync(ex);
             throw;
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод получает команду проекта.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Данные команды проекта.</returns>
+    public async Task<IEnumerable<ProjectTeamOutput>> GetProjectTeamAsync(long projectId)
+    {
+        try
+        {
+            // Получаем данные команды проекта.
+            var projectTeam = await _projectRepository.GetProjectTeamAsync(projectId);
+
+            // Если команды проекта не нашли.
+            if (projectTeam is null)
+            {
+                var ex = new NullReferenceException($"Команды проекта не найдено. ProjectId = {projectId}");
+                await _logService.LogErrorAsync(ex);
+                throw ex;
+            }
+
+            // Находим участников команды проекта.
+            var teamMembers = await _projectRepository.GetProjectTeamMembersAsync(projectTeam.TeamId);
+
+            // Если не нашли участников команды проекта.
+            if (teamMembers is null)
+            {
+                var ex = new NullReferenceException(
+                    $"Участников команды проекта не найдено. ProjectId = {projectId}. TeamId = projectTeam.TeamId");
+                await _logService.LogErrorAsync(ex);
+                throw ex;
+            }
+
+            var result = await FillMembersDataAsync(teamMembers);
+
+            return result;
+        }
+
+        catch (Exception ex)
+        {
+            await _logService.LogErrorAsync(ex);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Метод записывает данные участников команды проекта.
+    /// </summary>
+    /// <param name="teamMembers">Список участников команды проекта.</param>
+    /// <returns>Список с изменениями.</returns>
+    private async Task<List<ProjectTeamOutput>> FillMembersDataAsync(IEnumerable<ProjectTeamMemberEntity> teamMembers)
+    {
+        var result = new List<ProjectTeamOutput>();
+        foreach (var member in teamMembers)
+        {
+            var team = new ProjectTeamOutput();
+
+            // Заполняем название вакансии.
+            var vacancyName = await _vacancyRepository.GetVacancyNameByVacancyIdAsync(member.UserVacancy.VacancyId);
+
+            if (string.IsNullOrEmpty(vacancyName))
+            {
+                var ex = new NullReferenceException(
+                    $"Ошибка получения названия вакансии. VacancyId = {member.UserVacancy.VacancyId}");
+                await _logService.LogErrorAsync(ex);
+                throw ex;
+            }
+
+            team.VacancyName = vacancyName;
+            var user = await _userRepository.GetUserByUserIdAsync(member.UserId);
+
+            if (user is null)
+            {
+                var ex = new NullReferenceException(
+                    $"Ошибка получения данных пользователя. UserId = {member.UserId}");
+                await _logService.LogErrorAsync(ex);
+                throw ex;
+            }
+
+            // Заполняем участника команды проекта.
+            team.Member = CreateProjectTeamMembersBuilder.FillMember(user);
+
+            // Форматируем даты.
+            team.Joined = CreateProjectTeamMembersBuilder.Create(member.Joined);
+            team.UserId = member.UserId;
+            result.Add(team);
         }
 
         return result;

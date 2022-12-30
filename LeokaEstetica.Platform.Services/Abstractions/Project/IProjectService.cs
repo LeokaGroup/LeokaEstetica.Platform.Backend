@@ -1,6 +1,7 @@
 using LeokaEstetica.Platform.Access.Enums;
 using LeokaEstetica.Platform.Models.Dto.Output.Configs;
 using LeokaEstetica.Platform.Models.Dto.Output.Project;
+using LeokaEstetica.Platform.Models.Dto.Output.ProjectTeam;
 using LeokaEstetica.Platform.Models.Entities.Project;
 using LeokaEstetica.Platform.Models.Entities.Vacancy;
 using LeokaEstetica.Platform.Models.Enums;
@@ -117,4 +118,11 @@ public interface IProjectService
     /// <param name="account">Аккаунт пользователя.</param>
     /// <returns>Выходная модель с записанным откликом.</returns>
     Task<ProjectResponseEntity> WriteProjectResponseAsync(long projectId, long? vacancyId, string account);
+
+    /// <summary>
+    /// Метод получает команду проекта.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Данные команды проекта.</returns>
+    Task<IEnumerable<ProjectTeamOutput>> GetProjectTeamAsync(long projectId);
 }

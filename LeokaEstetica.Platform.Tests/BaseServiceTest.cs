@@ -87,7 +87,7 @@ public class BaseServiceTest
         VacancyService = new VacancyService(LogService, VacancyRepository, mapper, null, UserRepository,
             VacancyModerationService, null);
         ProjectService = new ProjectService(ProjectRepository, LogService, UserRepository, mapper,
-            ProjectNotificationsService, VacancyService);
+            ProjectNotificationsService, VacancyService, VacancyRepository);
         ChatRepository = new ChatRepository(PgContext);
         ChatService = new ChatService(LogService, UserRepository, ProjectRepository, VacancyRepository, ChatRepository,
             mapper);

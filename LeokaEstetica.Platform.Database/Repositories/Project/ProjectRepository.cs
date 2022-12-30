@@ -5,10 +5,10 @@ using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
 using LeokaEstetica.Platform.Models.Dto.Output.Project;
-using LeokaEstetica.Platform.Models.Entities.Communication;
 using LeokaEstetica.Platform.Models.Entities.Configs;
 using LeokaEstetica.Platform.Models.Entities.Moderation;
 using LeokaEstetica.Platform.Models.Entities.Project;
+using LeokaEstetica.Platform.Models.Entities.ProjectTeam;
 using LeokaEstetica.Platform.Models.Entities.Vacancy;
 using LeokaEstetica.Platform.Models.Enums;
 using Microsoft.EntityFrameworkCore;
@@ -436,6 +436,45 @@ public sealed class ProjectRepository : IProjectRepository
             .Where(p => p.ProjectId == projectId)
             .Select(p => p.UserId)
             .FirstOrDefaultAsync();
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод получает данные команды проекта.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Данные команды проекта.</returns>
+    public async Task<ProjectTeamEntity> GetProjectTeamAsync(long projectId)
+    {
+        var result = await _pgContext.ProjectsTeams
+            .Where(t => t.ProjectId == projectId)
+            .Select(t => new ProjectTeamEntity
+            {
+                ProjectId = t.ProjectId,
+                TeamId = t.TeamId
+            })
+            .FirstOrDefaultAsync();
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод получает список участников команды проекта по Id команды.
+    /// </summary>
+    /// <param name="teamId">Id проекта.</param>
+    /// <returns>Список участников команды проекта.</returns>
+    public async Task<List<ProjectTeamMemberEntity>> GetProjectTeamMembersAsync(long teamId)
+    {
+        var result = await _pgContext.ProjectTeamMembers
+            .Include(tm => tm.UserVacancy)
+            .Select(tm => new ProjectTeamMemberEntity
+            {
+                UserId = tm.UserId,
+                Joined = tm.Joined,
+                UserVacancy = tm.UserVacancy
+            })
+            .ToListAsync();
 
         return result;
     }

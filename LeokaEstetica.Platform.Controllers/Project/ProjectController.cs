@@ -9,6 +9,7 @@ using LeokaEstetica.Platform.Messaging.Builders;
 using LeokaEstetica.Platform.Models.Dto.Input.Project;
 using LeokaEstetica.Platform.Models.Dto.Output.Configs;
 using LeokaEstetica.Platform.Models.Dto.Output.Project;
+using LeokaEstetica.Platform.Models.Dto.Output.ProjectTeam;
 using LeokaEstetica.Platform.Models.Enums;
 using LeokaEstetica.Platform.Services.Abstractions.Project;
 using Microsoft.AspNetCore.Mvc;
@@ -360,6 +361,25 @@ public class ProjectController : BaseController
         var prjComments = await _projectCommentsService.GetProjectCommentsAsync(projectId);
         var items = CreateProjectCommentsDatesBuilder.Create(prjComments, _mapper);
         var result = _mapper.Map<IEnumerable<ProjectCommentOutput>>(items);
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод получает команду проекта.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Данные команды проекта.</returns>
+    [HttpGet]
+    [Route("{projectId}/team")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<ProjectTeamOutput>))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<IEnumerable<ProjectTeamOutput>> GetProjectTeamAsync([FromQuery] long projectId)
+    {
+        var result = await _projectService.GetProjectTeamAsync(projectId);
 
         return result;
     }
