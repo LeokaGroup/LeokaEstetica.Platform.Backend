@@ -549,7 +549,7 @@ public sealed class ProjectService : IProjectService
             if (teamMembers is null)
             {
                 var ex = new NullReferenceException(
-                    $"Участников команды проекта не найдено. ProjectId = {projectId}. TeamId = projectTeam.TeamId");
+                    $"Участников команды проекта не найдено. ProjectId = {projectId}. TeamId = {projectTeam.TeamId}");
                 await _logService.LogErrorAsync(ex);
                 throw ex;
             }

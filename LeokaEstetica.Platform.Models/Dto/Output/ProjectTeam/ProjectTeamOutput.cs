@@ -24,4 +24,9 @@ public class ProjectTeamOutput
     /// В проекте с.
     /// </summary>
     public string Joined { get; set; }
+
+    /// <summary>
+    /// Должность.
+    /// </summary>
+    public string Job { get; set; }
 }

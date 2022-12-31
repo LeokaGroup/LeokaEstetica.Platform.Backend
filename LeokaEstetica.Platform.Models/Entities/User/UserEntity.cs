@@ -15,6 +15,7 @@ public class UserEntity
         DialogMembers = new HashSet<DialogMemberEntity>();
         ModerationUserRoles = new HashSet<ModerationUserRoleEntity>();
         ProjectTeamMembers = new HashSet<ProjectTeamMemberEntity>();
+        ProjectComments = new List<ProjectCommentEntity>();
     }
 
     /// <summary>
