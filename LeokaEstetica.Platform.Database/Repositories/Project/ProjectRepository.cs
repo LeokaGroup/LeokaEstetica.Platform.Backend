@@ -468,12 +468,26 @@ public sealed class ProjectRepository : IProjectRepository
     {
         var result = await _pgContext.ProjectTeamMembers
             .Include(tm => tm.UserVacancy)
+            .Where(tm => tm.TeamId == teamId)
             .Select(tm => new ProjectTeamMemberEntity
             {
                 UserId = tm.UserId,
                 Joined = tm.Joined,
                 UserVacancy = tm.UserVacancy
             })
+            .ToListAsync();
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод получает названия полей для таблицы команды проекта пользователя.
+    /// </summary>
+    /// <returns>Список названий полей таблицы.</returns>
+    public async Task<IEnumerable<ProjectTeamColumnNameEntity>> ProjectTeamColumnsNamesAsync()
+    {
+        var result = await _pgContext.ProjectTeamColumnNames
+            .OrderBy(o => o.Position)
             .ToListAsync();
 
         return result;

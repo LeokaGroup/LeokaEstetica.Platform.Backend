@@ -132,4 +132,10 @@ public interface IProjectRepository
     /// <param name="teamId">Id проекта.</param>
     /// <returns>Список участников команды проекта.</returns>
     Task<List<ProjectTeamMemberEntity>> GetProjectTeamMembersAsync(long teamId);
+    
+    /// <summary>
+    /// Метод получает названия полей для таблицы команды проекта пользователя.
+    /// </summary>
+    /// <returns>Список названий полей таблицы.</returns>
+    Task<IEnumerable<ProjectTeamColumnNameEntity>> ProjectTeamColumnsNamesAsync();
 }

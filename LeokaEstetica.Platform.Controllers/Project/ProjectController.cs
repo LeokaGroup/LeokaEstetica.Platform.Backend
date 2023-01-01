@@ -383,4 +383,23 @@ public class ProjectController : BaseController
 
         return result;
     }
+    
+    /// <summary>
+    /// Метод получает названия полей для таблицы команды проекта пользователя.
+    /// </summary>
+    /// <returns>Список названий полей таблицы.</returns>
+    [HttpGet]
+    [Route("config-project-team")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<ProjectTeamColumnNameOutput>))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<IEnumerable<ProjectTeamColumnNameOutput>> ProjectTeamColumnsNamesAsync()
+    {
+        var items = await _projectService.ProjectTeamColumnsNamesAsync();
+        var result = _mapper.Map<IEnumerable<ProjectTeamColumnNameOutput>>(items);
+
+        return result;
+    }
 }

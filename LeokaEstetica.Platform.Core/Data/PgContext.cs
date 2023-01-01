@@ -238,4 +238,9 @@ public class PgContext : DbContext
     /// Таблица участников проектов.
     /// </summary>
     public DbSet<ProjectTeamMemberEntity> ProjectTeamMembers { get; set; }
+
+    /// <summary>
+    /// Таблица названий столбцов команд проектов.
+    /// </summary>
+    public DbSet<ProjectTeamColumnNameEntity> ProjectTeamColumnNames { get; set; }
 }
