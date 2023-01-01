@@ -5,10 +5,10 @@ using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
 using LeokaEstetica.Platform.Models.Dto.Output.Project;
-using LeokaEstetica.Platform.Models.Entities.Communication;
 using LeokaEstetica.Platform.Models.Entities.Configs;
 using LeokaEstetica.Platform.Models.Entities.Moderation;
 using LeokaEstetica.Platform.Models.Entities.Project;
+using LeokaEstetica.Platform.Models.Entities.ProjectTeam;
 using LeokaEstetica.Platform.Models.Entities.Vacancy;
 using LeokaEstetica.Platform.Models.Enums;
 using Microsoft.EntityFrameworkCore;
@@ -54,8 +54,11 @@ public sealed class ProjectRepository : IProjectRepository
                 DateCreated = DateTime.Now
             };
             await _pgContext.UserProjects.AddAsync(project);
-            await _pgContext.SaveChangesAsync();
             
+            // Дергаем сохранение тут, так как нам нужен Id добавленного проекта.
+            // Фактического сохраненеия не произойдет, пока мы не завершили транзакцию.
+            await _pgContext.SaveChangesAsync(); 
+
             // Проставляем проекту статус "На модерации".
             await _pgContext.ProjectStatuses.AddAsync(new ProjectStatusEntity
             {
@@ -63,14 +66,25 @@ public sealed class ProjectRepository : IProjectRepository
                 ProjectStatusSysName = statusSysName,
                 ProjectStatusName = statusName
             });
-            await _pgContext.SaveChangesAsync();
-            
+
             // Записываем стадию проекта.
-            await SaveProjectStageAsync((int)projectStage, project.ProjectId);
+            await _pgContext.UserProjectsStages.AddAsync(new UserProjectStageEntity
+            {
+                ProjectId = project.ProjectId,
+                StageId = (int)projectStage
+            });
             
             // Отправляем проект на модерацию.
             await SendModerationProjectAsync(project.ProjectId);
             
+            // Создаем команду проекта по дефолту.
+            await _pgContext.ProjectsTeams.AddAsync(new ProjectTeamEntity
+            {
+                Created = DateTime.Now,
+                ProjectId = project.ProjectId
+            });
+            
+            await _pgContext.SaveChangesAsync();
             await transaction.CommitAsync();
 
             return project;
@@ -191,8 +205,7 @@ public sealed class ProjectRepository : IProjectRepository
 
             project.ProjectName = projectName;
             project.ProjectDetails = projectDetails;
-            await _pgContext.SaveChangesAsync();
-            
+
             // Проставляем стадию проекта.
             var stage = await _pgContext.UserProjectsStages
                 .Where(p => p.ProjectId == project.ProjectId)
@@ -204,8 +217,7 @@ public sealed class ProjectRepository : IProjectRepository
             }
 
             stage.StageId = (int)projectStage;
-            await _pgContext.SaveChangesAsync();
-            
+
             // Отправляем проект на модерацию.
             await SendModerationProjectAsync(project.ProjectId);
 
@@ -248,50 +260,22 @@ public sealed class ProjectRepository : IProjectRepository
     /// <param name="projectId">Id проекта.</param>
     private async Task SendModerationProjectAsync(long projectId)
     {
-        var transaction = await _pgContext.Database
-            .BeginTransactionAsync(IsolationLevel.ReadCommitted);
-        
-        try
+        // Добавляем проект в таблицу модерации проектов.
+        await _pgContext.ModerationProjects.AddAsync(new ModerationProjectEntity
         {
-            // Добавляем проект в таблицу модерации проектов.
-            await _pgContext.ModerationProjects.AddAsync(new ModerationProjectEntity
-            {
-                DateModeration = DateTime.Now,
-                ProjectId = projectId
-            });
-            await _pgContext.SaveChangesAsync();
-
-            // Проставляем статус модерации проекта "На модерации".
-            await _pgContext.ModerationStatuses.AddAsync(new ModerationStatusEntity
-            {
-                StatusName = ProjectModerationStatusEnum.ModerationProject.GetEnumDescription(),
-                StatusSysName = ProjectModerationStatusEnum.ModerationProject.ToString()
-            });
-            await _pgContext.SaveChangesAsync();
-            await transaction.CommitAsync();
-        }
-        
-        catch
-        {
-            await transaction.RollbackAsync();
-        }
-    }
-
-    /// <summary>
-    /// Метод сохраняет стадию проекта.
-    /// </summary>
-    /// <param name="projectStage">Стадия проекта.</param>
-    /// <param name="projectId">Id проекта.</param>
-    private async Task SaveProjectStageAsync(int projectStage, long projectId)
-    {
-        await _pgContext.UserProjectsStages.AddAsync(new UserProjectStageEntity
-        {
+            DateModeration = DateTime.Now,
             ProjectId = projectId,
-            StageId = projectStage
+            ModerationStatusId = (int)ProjectModerationStatusEnum.ModerationProject
         });
-        await _pgContext.SaveChangesAsync();
+
+        // Проставляем статус модерации проекта "На модерации".
+        await _pgContext.ModerationStatuses.AddAsync(new ModerationStatusEntity
+        {
+            StatusName = ProjectModerationStatusEnum.ModerationProject.GetEnumDescription(),
+            StatusSysName = ProjectModerationStatusEnum.ModerationProject.ToString()
+        });
     }
-    
+
     /// <summary>
     /// Метод получает стадии проекта для выбора.
     /// </summary>
@@ -436,6 +420,59 @@ public sealed class ProjectRepository : IProjectRepository
             .Where(p => p.ProjectId == projectId)
             .Select(p => p.UserId)
             .FirstOrDefaultAsync();
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод получает данные команды проекта.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Данные команды проекта.</returns>
+    public async Task<ProjectTeamEntity> GetProjectTeamAsync(long projectId)
+    {
+        var result = await _pgContext.ProjectsTeams
+            .Where(t => t.ProjectId == projectId)
+            .Select(t => new ProjectTeamEntity
+            {
+                ProjectId = t.ProjectId,
+                TeamId = t.TeamId
+            })
+            .FirstOrDefaultAsync();
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод получает список участников команды проекта по Id команды.
+    /// </summary>
+    /// <param name="teamId">Id проекта.</param>
+    /// <returns>Список участников команды проекта.</returns>
+    public async Task<List<ProjectTeamMemberEntity>> GetProjectTeamMembersAsync(long teamId)
+    {
+        var result = await _pgContext.ProjectTeamMembers
+            .Include(tm => tm.UserVacancy)
+            .Where(tm => tm.TeamId == teamId)
+            .Select(tm => new ProjectTeamMemberEntity
+            {
+                UserId = tm.UserId,
+                Joined = tm.Joined,
+                UserVacancy = tm.UserVacancy
+            })
+            .ToListAsync();
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод получает названия полей для таблицы команды проекта пользователя.
+    /// </summary>
+    /// <returns>Список названий полей таблицы.</returns>
+    public async Task<IEnumerable<ProjectTeamColumnNameEntity>> ProjectTeamColumnsNamesAsync()
+    {
+        var result = await _pgContext.ProjectTeamColumnNames
+            .OrderBy(o => o.Position)
+            .ToListAsync();
 
         return result;
     }

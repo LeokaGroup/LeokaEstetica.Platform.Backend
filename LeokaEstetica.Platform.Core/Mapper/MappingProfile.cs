@@ -78,5 +78,7 @@ public class MappingProfile : Profile
         CreateMap<ModerationVacancyEntity, VacancyModerationOutput>();
         
         CreateMap<ProjectCommentEntity, ProjectCommentOutput>();
+        
+        CreateMap<ProjectTeamColumnNameEntity, ProjectTeamColumnNameOutput>();
     }
 }

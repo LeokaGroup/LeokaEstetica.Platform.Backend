@@ -203,4 +203,19 @@ public sealed class VacancyRepository : IVacancyRepository
 
         return result;
     }
+
+    /// <summary>
+    /// Метод получает название вакансии по ее Id.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <returns>Название вакансии.</returns>
+    public async Task<string> GetVacancyNameByVacancyIdAsync(long vacancyId)
+    {
+        var result = await _pgContext.UserVacancies
+            .Where(v => v.VacancyId == vacancyId)
+            .Select(v => v.VacancyName)
+            .FirstOrDefaultAsync();
+
+        return result;
+    }
 }

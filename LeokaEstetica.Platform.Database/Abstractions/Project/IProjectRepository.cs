@@ -1,6 +1,7 @@
 using LeokaEstetica.Platform.Models.Dto.Output.Project;
 using LeokaEstetica.Platform.Models.Entities.Configs;
 using LeokaEstetica.Platform.Models.Entities.Project;
+using LeokaEstetica.Platform.Models.Entities.ProjectTeam;
 using LeokaEstetica.Platform.Models.Enums;
 
 namespace LeokaEstetica.Platform.Database.Abstractions.Project;
@@ -117,4 +118,24 @@ public interface IProjectRepository
     /// <param name="projectId">Id проекта.</param>
     /// <returns>Id владельца проекта.</returns>
     Task<long> GetProjectOwnerIdAsync(long projectId);
+
+    /// <summary>
+    /// Метод получает данные команды проекта.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Данные команды проекта.</returns>
+    Task<ProjectTeamEntity> GetProjectTeamAsync(long projectId);
+
+    /// <summary>
+    /// Метод получает список участников команды проекта по Id команды.
+    /// </summary>
+    /// <param name="teamId">Id проекта.</param>
+    /// <returns>Список участников команды проекта.</returns>
+    Task<List<ProjectTeamMemberEntity>> GetProjectTeamMembersAsync(long teamId);
+    
+    /// <summary>
+    /// Метод получает названия полей для таблицы команды проекта пользователя.
+    /// </summary>
+    /// <returns>Список названий полей таблицы.</returns>
+    Task<IEnumerable<ProjectTeamColumnNameEntity>> ProjectTeamColumnsNamesAsync();
 }
