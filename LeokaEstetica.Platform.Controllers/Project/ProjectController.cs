@@ -377,7 +377,7 @@ public class ProjectController : BaseController
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<IEnumerable<ProjectTeamOutput>> GetProjectTeamAsync([FromQuery] long projectId)
+    public async Task<IEnumerable<ProjectTeamOutput>> GetProjectTeamAsync([FromRoute] long projectId)
     {
         var result = await _projectService.GetProjectTeamAsync(projectId);
 
