@@ -8,7 +8,7 @@ public class SearchInviteProjectMembersTest : BaseServiceTest
     [Test]
     public async Task SearchInviteProjectMembersAsyncSuccessTest()
     {
-        var result = await SearchProjectService.SearchInviteProjectMembersAsync("alisaiva931@mail.ru");
+        var result = await ProjectFinderService.SearchInviteProjectMembersAsync("alisaiva931@mail.ru");
         
         Assert.IsNotEmpty(result);
     }
@@ -16,7 +16,7 @@ public class SearchInviteProjectMembersTest : BaseServiceTest
     [Test]
     public async Task SearchInviteProjectMembersAsyncErrorTest()
     {
-        var result = await SearchProjectService.SearchInviteProjectMembersAsync("testuser");
+        var result = await ProjectFinderService.SearchInviteProjectMembersAsync("testuser");
         
         Assert.IsEmpty(result);
     }

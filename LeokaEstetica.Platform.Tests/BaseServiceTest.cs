@@ -55,7 +55,7 @@ public class BaseServiceTest
     protected ProjectModerationRepository ProjectModerationRepository;
     protected ProjectCommentsService ProjectCommentsService;
     protected ProjectCommentsRepository ProjectCommentsRepository;
-    protected SearchProjectService SearchProjectService;
+    protected ProjectFinderService ProjectFinderService;
 
     public BaseServiceTest()
     {
@@ -96,6 +96,6 @@ public class BaseServiceTest
         ProjectModerationService = new ProjectModerationService(ProjectModerationRepository, LogService, mapper);
         ProjectCommentsRepository = new ProjectCommentsRepository(PgContext);
         ProjectCommentsService = new ProjectCommentsService(LogService, UserRepository, ProjectCommentsRepository);
-        SearchProjectService = new SearchProjectService(LogService, UserRepository, ProjectNotificationsService);
+        ProjectFinderService = new ProjectFinderService(LogService, UserRepository, ProjectNotificationsService);
     }
 }

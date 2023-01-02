@@ -5,7 +5,7 @@ namespace LeokaEstetica.Platform.Services.Abstractions.Search.Project;
 /// <summary>
 /// Абстракция сервиса поиска в проектах.
 /// </summary>
-public interface ISearchProjectService
+public interface IProjectFinderService
 {
     /// <summary>
     /// Метод ищет пользователей для приглашения в команду проекта.

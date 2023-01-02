@@ -10,13 +10,13 @@ namespace LeokaEstetica.Platform.Services.Services.Search.Project;
 /// <summary>
 /// Класс реализует методы сервиса поиска в проектах.
 /// </summary>
-public sealed class SearchProjectService : ISearchProjectService
+public sealed class ProjectFinderService : IProjectFinderService
 {
     private readonly ILogService _logService;
     private readonly IUserRepository _userRepository;
     private readonly IProjectNotificationsService _projectNotificationsService;
 
-    public SearchProjectService(ILogService logService,
+    public ProjectFinderService(ILogService logService,
         IUserRepository userRepository,
         IProjectNotificationsService projectNotificationsService)
     {

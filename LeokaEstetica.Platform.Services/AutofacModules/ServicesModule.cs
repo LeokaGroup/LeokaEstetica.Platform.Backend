@@ -84,12 +84,12 @@ public class ServicesModule : Module
         
         // Сервис поиска в проектах.
         builder
-            .RegisterType<SearchProjectService>()
-            .Named<ISearchProjectService>("SearchProjectService")
+            .RegisterType<ProjectFinderService>()
+            .Named<IProjectFinderService>("ProjectFinderService")
             .InstancePerLifetimeScope();
         builder
-            .RegisterType<SearchProjectService>()
-            .As<ISearchProjectService>()
+            .RegisterType<ProjectFinderService>()
+            .As<IProjectFinderService>()
             .InstancePerLifetimeScope();
     }
 }

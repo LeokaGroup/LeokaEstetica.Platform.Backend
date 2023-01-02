@@ -18,13 +18,13 @@ namespace LeokaEstetica.Platform.Controllers.Search;
 [Route("search")]
 public class SearchController : BaseController
 {
-    private readonly ISearchProjectService _searchProjectService;
+    private readonly IProjectFinderService _projectFinderService;
     private readonly IMapper _mapper;
 
-    public SearchController(ISearchProjectService searchProjectService, 
+    public SearchController(IProjectFinderService projectFinderService, 
         IMapper mapper)
     {
-        _searchProjectService = searchProjectService;
+        _projectFinderService = projectFinderService;
         _mapper = mapper;
     }
 
@@ -46,7 +46,7 @@ public class SearchController : BaseController
         // Если поисковая строка невалидна, то не дергаем поиск.
         await new SearchInviteProjectMembersValidator().ValidateAndThrowAsync(searchProjectMemberInput);
 
-        var items = await _searchProjectService.SearchInviteProjectMembersAsync(searchProjectMemberInput.SearchText);
+        var items = await _projectFinderService.SearchInviteProjectMembersAsync(searchProjectMemberInput.SearchText);
         var result = _mapper.Map<IEnumerable<SearchProjectMemberOutput>>(items);
         
         return result;
