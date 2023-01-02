@@ -13,13 +13,13 @@ using LeokaEstetica.Platform.Database.Repositories.User;
 using LeokaEstetica.Platform.Database.Repositories.Vacancy;
 using LeokaEstetica.Platform.Logs.Services;
 using LeokaEstetica.Platform.Messaging.Services.Chat;
-using LeokaEstetica.Platform.Messaging.Services.Mail;
 using LeokaEstetica.Platform.Messaging.Services.Project;
 using LeokaEstetica.Platform.Moderation.Services.Project;
 using LeokaEstetica.Platform.Moderation.Services.Vacancy;
 using LeokaEstetica.Platform.Notifications.Services;
 using LeokaEstetica.Platform.Services.Services.Profile;
 using LeokaEstetica.Platform.Services.Services.Project;
+using LeokaEstetica.Platform.Services.Services.Search.Project;
 using LeokaEstetica.Platform.Services.Services.User;
 using LeokaEstetica.Platform.Services.Services.Vacancy;
 using Microsoft.EntityFrameworkCore;
@@ -38,7 +38,6 @@ public class BaseServiceTest
     protected LogService LogService;
     protected UserService UserService;
     protected UserRepository UserRepository;
-    protected MailingsService MailingsService;
     protected ProfileRepository ProfileRepository;
     protected ProfileService ProfileService;
     protected ProjectRepository ProjectRepository;
@@ -56,6 +55,7 @@ public class BaseServiceTest
     protected ProjectModerationRepository ProjectModerationRepository;
     protected ProjectCommentsService ProjectCommentsService;
     protected ProjectCommentsRepository ProjectCommentsRepository;
+    protected SearchProjectService SearchProjectService;
 
     public BaseServiceTest()
     {
@@ -75,7 +75,6 @@ public class BaseServiceTest
 
         LogService = new LogService(PgContext);
         UserRepository = new UserRepository(PgContext, LogService);
-        MailingsService = new MailingsService(AppConfiguration);
         ProfileRepository = new ProfileRepository(PgContext);
         UserService = new UserService(LogService, UserRepository, mapper, null, PgContext, ProfileRepository);
         ProfileService = new ProfileService(LogService, ProfileRepository, UserRepository, mapper, null, null);
@@ -97,5 +96,6 @@ public class BaseServiceTest
         ProjectModerationService = new ProjectModerationService(ProjectModerationRepository, LogService, mapper);
         ProjectCommentsRepository = new ProjectCommentsRepository(PgContext);
         ProjectCommentsService = new ProjectCommentsService(LogService, UserRepository, ProjectCommentsRepository);
+        SearchProjectService = new SearchProjectService(LogService, UserRepository, ProjectNotificationsService);
     }
 }

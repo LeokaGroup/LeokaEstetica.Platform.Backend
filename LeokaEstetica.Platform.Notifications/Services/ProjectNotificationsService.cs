@@ -148,7 +148,8 @@ public sealed class ProjectNotificationsService : IProjectNotificationsService
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
     /// <param name="userCode">Код пользователя.</param>
-    public async Task SendNotificationSuccessProjectResponseAsync(string title, string notifyText, string notificationLevel)
+    public async Task SendNotificationSuccessProjectResponseAsync(string title, string notifyText,
+        string notificationLevel)
     {
         await _hubContext.Clients.All.SendAsync("SendNotificationSuccessProjectResponse",
             new NotificationOutput
@@ -166,9 +167,30 @@ public sealed class ProjectNotificationsService : IProjectNotificationsService
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
     /// <param name="userCode">Код пользователя.</param>
-    public async Task SendNotificationWarningProjectResponseAsync(string title, string notifyText, string notificationLevel)
+    public async Task SendNotificationWarningProjectResponseAsync(string title, string notifyText,
+        string notificationLevel)
     {
         await _hubContext.Clients.All.SendAsync("SendNotificationWarningProjectResponse",
+            new NotificationOutput
+            {
+                Title = title,
+                Message = notifyText,
+                NotificationLevel = notificationLevel
+            });
+    }
+
+    /// <summary>
+    /// Метод отправляет уведомление предупреждения о не найденных пользователях по поисковому запросу.
+    /// </summary>
+    /// <param name="title">Заголовок уведомления.</param>
+    /// <param name="notifyText">Текст уведомления.</param>
+    /// <param name="notificationLevel">Уровень уведомления.</param>
+    /// <param name="userCode">Код пользователя.</param>
+    /// <param name="searchText">Поисковый запрос.</param>
+    public async Task SendNotificationWarningSearchProjectTeamMemberAsync(string title, string notifyText,
+        string notificationLevel)
+    {
+        await _hubContext.Clients.All.SendAsync("SendNotificationWarningSearchProjectTeamMember",
             new NotificationOutput
             {
                 Title = title,

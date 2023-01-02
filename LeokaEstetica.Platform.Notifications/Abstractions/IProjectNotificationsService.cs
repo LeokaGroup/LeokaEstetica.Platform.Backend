@@ -68,7 +68,7 @@ public interface IProjectNotificationsService
     /// <param name="userCode">Код пользователя.</param>
     Task SendNotificationErrorDublicateAttachProjectVacancyAsync(string title, string notifyText,
         string notificationLevel);
-    
+
     /// <summary>
     /// Метод отправляет уведомление об отклике на проект.
     /// </summary>
@@ -77,7 +77,7 @@ public interface IProjectNotificationsService
     /// <param name="notificationLevel">Уровень уведомления.</param>
     /// <param name="userCode">Код пользователя.</param>
     Task SendNotificationSuccessProjectResponseAsync(string title, string notifyText, string notificationLevel);
-    
+
     /// <summary>
     /// Метод отправляет уведомление предупреждения об отклике на проект.
     /// </summary>
@@ -86,4 +86,14 @@ public interface IProjectNotificationsService
     /// <param name="notificationLevel">Уровень уведомления.</param>
     /// <param name="userCode">Код пользователя.</param>
     Task SendNotificationWarningProjectResponseAsync(string title, string notifyText, string notificationLevel);
+
+    /// <summary>
+    /// Метод отправляет уведомление предупреждения о не найденных пользователях по поисковому запросу.
+    /// </summary>
+    /// <param name="title">Заголовок уведомления.</param>
+    /// <param name="notifyText">Текст уведомления.</param>
+    /// <param name="notificationLevel">Уровень уведомления.</param>
+    /// <param name="userCode">Код пользователя.</param>
+    /// <param name="searchText">Поисковый запрос.</param>
+    Task SendNotificationWarningSearchProjectTeamMemberAsync(string title, string notifyText, string notificationLevel);
 }

@@ -77,4 +77,11 @@ public interface IUserRepository
     /// <param name="userId">Id пользователя.</param>
     /// <param name="phone">Номер телефона.</param>
     Task SaveUserPhoneAsync(long userId, string phone);
+
+    /// <summary>
+    /// Метод находит логин и почту пользователей по почте или логину пользователя.
+    /// </summary>
+    /// <param name="searchText">Текст, по которому надо искать.</param>
+    /// <returns>Список пользователей.</returns>
+    Task<List<UserEntity>> GetUserByEmailOrLoginAsync(string searchText);
 }

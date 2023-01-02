@@ -186,4 +186,24 @@ public sealed class UserRepository : IUserRepository
         user.PhoneNumber = phone;
         await _pgContext.SaveChangesAsync();
     }
+
+    /// <summary>
+    /// Метод находит логин и почту пользователей по почте или логину пользователя.
+    /// </summary>
+    /// <param name="searchText">Текст, по которому надо искать.</param>
+    /// <returns>Список пользователей.</returns>
+    public async Task<List<UserEntity>> GetUserByEmailOrLoginAsync(string searchText)
+    {
+        var result = await _pgContext.Users
+            .Where(u => u.Email.Contains(searchText) 
+                        || u.Login.Contains(searchText))
+            .Select(u => new UserEntity
+            {
+                Email = u.Email,
+                Login = u.Login
+            })
+            .ToListAsync();
+
+        return result;
+    }
 }
