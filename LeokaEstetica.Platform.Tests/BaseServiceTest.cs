@@ -9,6 +9,7 @@ using LeokaEstetica.Platform.Database.Repositories.Moderation.Project;
 using LeokaEstetica.Platform.Database.Repositories.Moderation.Vacancy;
 using LeokaEstetica.Platform.Database.Repositories.Profile;
 using LeokaEstetica.Platform.Database.Repositories.Project;
+using LeokaEstetica.Platform.Database.Repositories.Resume;
 using LeokaEstetica.Platform.Database.Repositories.User;
 using LeokaEstetica.Platform.Database.Repositories.Vacancy;
 using LeokaEstetica.Platform.Logs.Services;
@@ -19,6 +20,7 @@ using LeokaEstetica.Platform.Moderation.Services.Vacancy;
 using LeokaEstetica.Platform.Notifications.Services;
 using LeokaEstetica.Platform.Services.Services.Profile;
 using LeokaEstetica.Platform.Services.Services.Project;
+using LeokaEstetica.Platform.Services.Services.Resume;
 using LeokaEstetica.Platform.Services.Services.Search.Project;
 using LeokaEstetica.Platform.Services.Services.User;
 using LeokaEstetica.Platform.Services.Services.Vacancy;
@@ -56,6 +58,8 @@ public class BaseServiceTest
     protected ProjectCommentsService ProjectCommentsService;
     protected ProjectCommentsRepository ProjectCommentsRepository;
     protected ProjectFinderService ProjectFinderService;
+    protected ResumeService ResumeService;
+    protected ResumeRepository ResumeRepository;
 
     public BaseServiceTest()
     {
@@ -97,5 +101,7 @@ public class BaseServiceTest
         ProjectCommentsRepository = new ProjectCommentsRepository(PgContext);
         ProjectCommentsService = new ProjectCommentsService(LogService, UserRepository, ProjectCommentsRepository);
         ProjectFinderService = new ProjectFinderService(LogService, UserRepository, ProjectNotificationsService);
+        ResumeRepository = new ResumeRepository(PgContext);
+        ResumeService = new ResumeService(LogService, ResumeRepository);
     }
 }

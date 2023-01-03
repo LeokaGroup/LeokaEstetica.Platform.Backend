@@ -7,6 +7,7 @@ using LeokaEstetica.Platform.Database.Abstractions.Moderation.Project;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Vacancy;
 using LeokaEstetica.Platform.Database.Abstractions.Profile;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
+using LeokaEstetica.Platform.Database.Abstractions.Resume;
 using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Database.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Database.Chat;
@@ -18,6 +19,7 @@ using LeokaEstetica.Platform.Database.Repositories.Moderation.Project;
 using LeokaEstetica.Platform.Database.Repositories.Moderation.Vacancy;
 using LeokaEstetica.Platform.Database.Repositories.Profile;
 using LeokaEstetica.Platform.Database.Repositories.Project;
+using LeokaEstetica.Platform.Database.Repositories.Resume;
 using LeokaEstetica.Platform.Database.Repositories.User;
 using LeokaEstetica.Platform.Database.Repositories.Vacancy;
 
@@ -136,6 +138,16 @@ public class RepositoriesModule : Module
         builder
             .RegisterType<ProjectCommentsRepository>()
             .As<IProjectCommentsRepository>()
+            .InstancePerLifetimeScope();
+        
+        // Репозиторий базы резюме.
+        builder
+            .RegisterType<ResumeRepository>()
+            .Named<IResumeRepository>("ResumeRepository")
+            .InstancePerLifetimeScope();
+        builder
+            .RegisterType<ResumeRepository>()
+            .As<IResumeRepository>()
             .InstancePerLifetimeScope();
     }
 }
