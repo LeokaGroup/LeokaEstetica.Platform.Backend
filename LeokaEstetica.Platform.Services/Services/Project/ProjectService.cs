@@ -20,6 +20,7 @@ using LeokaEstetica.Platform.Notifications.Consts;
 using LeokaEstetica.Platform.Services.Abstractions.Project;
 using LeokaEstetica.Platform.Services.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Services.Builders;
+using LeokaEstetica.Platform.Services.Consts;
 
 namespace LeokaEstetica.Platform.Services.Services.Project;
 
@@ -35,11 +36,6 @@ public sealed class ProjectService : IProjectService
     private readonly IProjectNotificationsService _projectNotificationsService;
     private readonly IVacancyService _vacancyService;
     private readonly IVacancyRepository _vacancyRepository;
-
-    /// <summary>
-    /// Если Id проекта невалидный.
-    /// </summary>
-    private const string NOT_VALID_PROJECT_ID = "Невалидный Id проекта. ProjectId был ";
 
     public ProjectService(IProjectRepository projectRepository,
         ILogService logService,
@@ -330,7 +326,7 @@ public sealed class ProjectService : IProjectService
     /// <param name="projectId">Id проекта.</param>
     private async Task ValidateProjectIdAsync(long projectId)
     {
-        var ex = new ArgumentNullException(string.Concat(NOT_VALID_PROJECT_ID, projectId));
+        var ex = new ArgumentNullException(string.Concat(ValidationConsts.NOT_VALID_PROJECT_ID, projectId));
         await _logService.LogErrorAsync(ex);
         await _projectNotificationsService.SendNotificationErrorUpdatedUserProjectAsync("Что то не так...",
             "Ошибка при обновлении проекта. Мы уже знаем о проблеме и уже занимаемся ей.",
@@ -612,7 +608,7 @@ public sealed class ProjectService : IProjectService
 
         return result;
     }
-    
+
     /// <summary>
     /// Метод получает названия полей для таблицы команды проекта пользователя.
     /// </summary>
@@ -625,11 +621,94 @@ public sealed class ProjectService : IProjectService
 
             return result;
         }
-        
+
         catch (Exception ex)
         {
             await _logService.LogErrorAsync(ex);
             throw;
+        }
+    }
+
+    /// <summary>
+    /// Метод добавляет в команду проекта пользователей.
+    /// </summary>
+    /// <param name="userName">Пользователь, который будет добавлен в команду проекта.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <returns>Добавленный пользователь.</returns>s
+    public async Task<ProjectTeamMemberEntity> InviteProjectTeamAsync(string userName, long projectId, long vacancyId)
+    {
+        try
+        {
+            await ValidateInviteProjectTeamParams(userName, projectId, vacancyId);
+            
+            var userId = await _userRepository.GetUserIdByEmailOrLoginAsync(userName);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(userName);
+                await _logService.LogErrorAsync(ex);
+                throw ex;
+            }
+
+            // Получаем Id команды проекта.
+            var teamId = await _projectRepository.GetProjectTeamIdAsync(projectId);
+            
+            // Добавляем пользователя в команду проекта.
+            var result = await _projectRepository.AddProjectTeamMemberAsync(userId, projectId, vacancyId, teamId);
+
+            return result;
+        }
+
+        catch (Exception ex)
+        {
+            await _logService.LogErrorAsync(ex,
+                "Ошибка добавления пользователей в команду проекта. " +
+                $"User был {userName}. " +
+                $"ProjectId был {projectId}. " +
+                $"VacancyId был {vacancyId}");
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Метод валидирует входные параметры перед добавлением пользователя в команду проекта.
+    /// </summary>
+    /// <param name="userId">Id пользователя, который будет добавлен в команду проекта.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="vacancyId">Id вакансии.</param>
+    private async Task ValidateInviteProjectTeamParams(string userId, long projectId, long vacancyId)
+    {
+        var isError = false;
+
+        if (string.IsNullOrEmpty(userId))
+        {
+            var ex = new ArgumentException(ValidationConsts.NOT_VALID_INVITE_PROJECT_TEAM_USER);
+            await _logService.LogErrorAsync(ex);
+            isError = true;
+        }
+
+        if (projectId <= 0)
+        {
+            var ex = new ArgumentException(ValidationConsts.NOT_VALID_INVITE_PROJECT_TEAM_PROJECT_ID);
+            await _logService.LogErrorAsync(ex);
+            isError = true;
+        }
+
+        if (vacancyId <= 0)
+        {
+            var ex = new ArgumentException(ValidationConsts.NOT_VALID_INVITE_PROJECT_TEAM_VACANCY_ID);
+            await _logService.LogErrorAsync(ex);
+            isError = true;
+        }
+
+        // Если была ошибка, то покажем уведомление юзеру и генерим исключение.
+        if (isError)
+        {
+            await _projectNotificationsService.SendNotificationErrorInviteProjectTeamMembersAsync("Ошибка",
+                "Ошибка при добавлении пользователя в команду проекта. Мы уже знаем о ней и разбираемся. " +
+                "А пока, попробуйте еще раз.",
+                NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR);
         }
     }
 }

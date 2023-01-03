@@ -4,6 +4,7 @@ using LeokaEstetica.Platform.Models.Dto.Output.Project;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectTeam;
 using LeokaEstetica.Platform.Models.Entities.Configs;
 using LeokaEstetica.Platform.Models.Entities.Project;
+using LeokaEstetica.Platform.Models.Entities.ProjectTeam;
 using LeokaEstetica.Platform.Models.Entities.Vacancy;
 using LeokaEstetica.Platform.Models.Enums;
 
@@ -126,10 +127,19 @@ public interface IProjectService
     /// <param name="projectId">Id проекта.</param>
     /// <returns>Данные команды проекта.</returns>
     Task<IEnumerable<ProjectTeamOutput>> GetProjectTeamAsync(long projectId);
-    
+
     /// <summary>
     /// Метод получает названия полей для таблицы команды проекта пользователя.
     /// </summary>
     /// <returns>Список названий полей таблицы.</returns>
     Task<IEnumerable<ProjectTeamColumnNameEntity>> ProjectTeamColumnsNamesAsync();
+
+    /// <summary>
+    /// Метод добавляет в команду проекта пользователей.
+    /// </summary>
+    /// <param name="userName">Пользователь, который будет добавлен в команду проекта.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <returns>Добавленный пользователь.</returns>s
+    Task<ProjectTeamMemberEntity> InviteProjectTeamAsync(string userName, long projectId, long vacancyId);
 }

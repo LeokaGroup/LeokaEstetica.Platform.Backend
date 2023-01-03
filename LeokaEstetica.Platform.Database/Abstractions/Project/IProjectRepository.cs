@@ -132,10 +132,27 @@ public interface IProjectRepository
     /// <param name="teamId">Id проекта.</param>
     /// <returns>Список участников команды проекта.</returns>
     Task<List<ProjectTeamMemberEntity>> GetProjectTeamMembersAsync(long teamId);
-    
+
     /// <summary>
     /// Метод получает названия полей для таблицы команды проекта пользователя.
     /// </summary>
     /// <returns>Список названий полей таблицы.</returns>
     Task<IEnumerable<ProjectTeamColumnNameEntity>> ProjectTeamColumnsNamesAsync();
+
+    /// <summary>
+    /// Метод добавляет пользователя в команду проекта.
+    /// </summary>
+    /// <param name="userId">Id пользователя, который будет добавлен в команду проекта.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <param name="teamId">Id команды проекта.</param>
+    /// <returns>Данные добавленного пользователя.</returns>
+    Task<ProjectTeamMemberEntity> AddProjectTeamMemberAsync(long userId, long projectId, long vacancyId, long teamId);
+
+    /// <summary>
+    /// Метод находит Id команды проекта.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Id команды.</returns>
+    Task<long> GetProjectTeamIdAsync(long projectId);
 }

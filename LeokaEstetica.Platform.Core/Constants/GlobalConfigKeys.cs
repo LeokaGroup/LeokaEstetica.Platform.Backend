@@ -9,7 +9,7 @@ public static class GlobalConfigKeys
     /// Если не передали аккаунт пользователя.
     /// </summary>
     public const string EMPTY_ACCOUNT = "Не передан аккаунт пользователя.";
-    
+
     /// <summary>
     /// Класс описывает ключи для кэшей приложения.
     /// </summary>
@@ -30,17 +30,17 @@ public static class GlobalConfigKeys
         /// </summary>
         public const string VALIDATION_EXCLUDE_KEY = "ValidationExclude";
     }
-    
+
     /// <summary>
     /// Класс описывает ключи для валидации проектов.
     /// </summary>
-    public static class ProjectMode
+    public static class ProjectValidation
     {
         /// <summary>
         /// Если не заполнили название проекта.
         /// </summary>
         public const string EMPTY_PROJECT_NAME = "Не заполнено название проекта.";
-    
+
         /// <summary>
         /// Если не заполнили описание проекта.
         /// </summary>
@@ -55,6 +55,27 @@ public static class GlobalConfigKeys
         /// Если передали некорректный режим.
         /// </summary>
         public const string EMPTY_MODE = "Передан некорректный режим. Mode был ";
+
+        /// <summary>
+        /// Если не передали список участников команды проекта. для добавления в команду.
+        /// </summary>
+        public const string EMPTY_PROJECT_TEAM_MEMBERS = "Список участников команды проекта не может быть пустым.";
+    }
+
+    /// <summary>
+    /// Класс описывает ключи поиска в проектах.
+    /// </summary>
+    public static class SearchProject
+    {
+        /// <summary>
+        /// Если не заполнена поисковая строка.
+        /// </summary>
+        public const string NOT_EMPTY_SEARCH_TEXT = "Поисковая строка не может быть пустой.";
+
+        /// <summary>
+        /// Если превышена максимальная длина поискоsвой строки.
+        /// </summary>
+        public const string MAX_LENGHT_EXCEEDED = "Поисковая строка не может превышать больше 100 символов.";
     }
 
     /// <summary>
@@ -66,7 +87,7 @@ public static class GlobalConfigKeys
         /// Если не заполнили название вакансии.
         /// </summary>
         public const string EMPTY_VACANCY_NAME = "Название вакансии не может быть пустым.";
-    
+
         /// <summary>
         /// Если не заполнили описание вакансии.
         /// </summary>

@@ -7,6 +7,7 @@ using LeokaEstetica.Platform.Core.Filters;
 using LeokaEstetica.Platform.Messaging.Abstractions.Project;
 using LeokaEstetica.Platform.Messaging.Builders;
 using LeokaEstetica.Platform.Models.Dto.Input.Project;
+using LeokaEstetica.Platform.Models.Dto.Input.ProjectTeam;
 using LeokaEstetica.Platform.Models.Dto.Output.Configs;
 using LeokaEstetica.Platform.Models.Dto.Output.Project;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectTeam;
@@ -399,6 +400,28 @@ public class ProjectController : BaseController
     {
         var items = await _projectService.ProjectTeamColumnsNamesAsync();
         var result = _mapper.Map<IEnumerable<ProjectTeamColumnNameOutput>>(items);
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод добавляет в команду проекта пользователей.
+    /// </summary>
+    /// <param name="inviteProjectMemberInput">Входная модель.</param>
+    /// <returns>Добавленный пользователь.</returns>s
+    [HttpPost]
+    [Route("invite-project-team")]
+    [ProducesResponseType(200, Type = typeof(ProjectTeamMemberOutput))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<ProjectTeamMemberOutput> InviteProjectTeamAsync(
+        [FromBody] InviteProjectMemberInput inviteProjectMemberInput)
+    {
+        var invitedUser = await _projectService.InviteProjectTeamAsync(inviteProjectMemberInput.User,
+            inviteProjectMemberInput.ProjectId, inviteProjectMemberInput.VacancyId);
+        var result = _mapper.Map<ProjectTeamMemberOutput>(invitedUser);
 
         return result;
     }

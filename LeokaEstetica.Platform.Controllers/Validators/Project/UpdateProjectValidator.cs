@@ -13,14 +13,14 @@ public class UpdateProjectValidator : AbstractValidator<UpdateProjectInput>
     {
         RuleFor(p => p.ProjectName)
             .NotEmpty()
-            .WithMessage(GlobalConfigKeys.ProjectMode.EMPTY_PROJECT_NAME)
+            .WithMessage(GlobalConfigKeys.ProjectValidation.EMPTY_PROJECT_NAME)
             .NotNull()
-            .WithMessage(GlobalConfigKeys.ProjectMode.EMPTY_PROJECT_NAME);
+            .WithMessage(GlobalConfigKeys.ProjectValidation.EMPTY_PROJECT_NAME);
 
         RuleFor(p => p.ProjectDetails)
             .NotEmpty()
-            .WithMessage(GlobalConfigKeys.ProjectMode.EMPTY_PROJECT_DETAILS)
+            .WithMessage(GlobalConfigKeys.ProjectValidation.EMPTY_PROJECT_DETAILS)
             .NotNull()
-            .WithMessage(GlobalConfigKeys.ProjectMode.EMPTY_PROJECT_DETAILS);
+            .WithMessage(GlobalConfigKeys.ProjectValidation.EMPTY_PROJECT_DETAILS);
     }
 }
