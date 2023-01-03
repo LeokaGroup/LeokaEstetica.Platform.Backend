@@ -6,12 +6,17 @@ namespace LeokaEstetica.Platform.Models.Dto.Input.ProjectTeam;
 public class InviteProjectMemberInput
 {
     /// <summary>
-    /// Список Id пользователей, которые будут добавлены в участники команды проекта.
+    /// Пользователь, который будет добавлен в команду проекта.
     /// </summary>
-    public List<long> UsersIds { get; set; }
+    public string User { get; set; }
 
     /// <summary>
     /// Id проекта.
     /// </summary>
     public long ProjectId { get; set; }
+
+    /// <summary>
+    /// Id вакансии.
+    /// </summary>
+    public long VacancyId { get; set; }
 }

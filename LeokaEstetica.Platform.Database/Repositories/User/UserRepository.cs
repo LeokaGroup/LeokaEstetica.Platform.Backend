@@ -207,4 +207,20 @@ public sealed class UserRepository : IUserRepository
 
         return result;
     }
+
+    /// <summary>
+    /// Метод находит Id пользователя по почте или логину пользователя.
+    /// </summary>
+    /// <param name="searchText">Текст, по которому надо искать.</param>
+    /// <returns>Id пользователя.</returns>
+    public async Task<long> GetUserIdByEmailOrLoginAsync(string searchText)
+    {
+        var result = await _pgContext.Users
+            .Where(u => u.Email.Contains(searchText) 
+                        || u.Login.Contains(searchText))
+            .Select(u => u.UserId)
+            .FirstOrDefaultAsync();
+
+        return result;
+    }
 }

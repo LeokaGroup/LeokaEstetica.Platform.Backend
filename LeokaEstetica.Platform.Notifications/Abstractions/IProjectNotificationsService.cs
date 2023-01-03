@@ -107,4 +107,14 @@ public interface IProjectNotificationsService
     /// <param name="searchText">Поисковый запрос.</param>
     Task SendNotificationWarningInviteProjectTeamMembersAsync(string title, string notifyText,
         string notificationLevel);
+
+    /// <summary>
+    /// Метод отправляет уведомление ошибки об ошибке при добавлении пользователей в команду проекта.
+    /// </summary>
+    /// <param name="title">Заголовок уведомления.</param>
+    /// <param name="notifyText">Текст уведомления.</param>
+    /// <param name="notificationLevel">Уровень уведомления.</param>
+    /// <param name="userCode">Код пользователя.</param>
+    /// <param name="searchText">Поисковый запрос.</param>
+    Task SendNotificationErrorInviteProjectTeamMembersAsync(string title, string notifyText, string notificationLevel);
 }

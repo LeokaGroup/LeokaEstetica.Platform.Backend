@@ -7,6 +7,7 @@ using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Project;
 using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Vacancy;
 using LeokaEstetica.Platform.Models.Dto.Output.Profile;
 using LeokaEstetica.Platform.Models.Dto.Output.Project;
+using LeokaEstetica.Platform.Models.Dto.Output.ProjectTeam;
 using LeokaEstetica.Platform.Models.Dto.Output.Search.Project;
 using LeokaEstetica.Platform.Models.Dto.Output.User;
 using LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
@@ -17,6 +18,7 @@ using LeokaEstetica.Platform.Models.Entities.Landing;
 using LeokaEstetica.Platform.Models.Entities.Moderation;
 using LeokaEstetica.Platform.Models.Entities.Profile;
 using LeokaEstetica.Platform.Models.Entities.Project;
+using LeokaEstetica.Platform.Models.Entities.ProjectTeam;
 using LeokaEstetica.Platform.Models.Entities.User;
 using LeokaEstetica.Platform.Models.Entities.Vacancy;
 
@@ -86,5 +88,7 @@ public class MappingProfile : Profile
             .ForMember(p => p.DisplayName,
                 p => p.MapFrom(src => !string.IsNullOrEmpty(src.Email) ? src.Email : src.Login))
             .ForMember(p => p.UserId, p => p.MapFrom(src => src.UserId));
+        
+        CreateMap<ProjectTeamMemberEntity, ProjectTeamMemberOutput>();
     }
 }

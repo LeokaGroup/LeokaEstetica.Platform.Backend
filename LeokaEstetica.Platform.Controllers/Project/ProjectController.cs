@@ -408,17 +408,21 @@ public class ProjectController : BaseController
     /// Метод добавляет в команду проекта пользователей.
     /// </summary>
     /// <param name="inviteProjectMemberInput">Входная модель.</param>
-    /// <returns>Список добавленных пользователей.</returns>
+    /// <returns>Добавленный пользователь.</returns>s
     [HttpPost]
     [Route("invite-project-team")]
-    [ProducesResponseType(200, Type = typeof(IEnumerable<InviteProjectMemberOutput>))]
+    [ProducesResponseType(200, Type = typeof(ProjectTeamMemberOutput))]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<IEnumerable<InviteProjectMemberOutput>> InviteProjectTeamAsync(
+    public async Task<ProjectTeamMemberOutput> InviteProjectTeamAsync(
         [FromBody] InviteProjectMemberInput inviteProjectMemberInput)
     {
-        
+        var invitedUser = await _projectService.InviteProjectTeamAsync(inviteProjectMemberInput.User,
+            inviteProjectMemberInput.ProjectId, inviteProjectMemberInput.VacancyId);
+        var result = _mapper.Map<ProjectTeamMemberOutput>(invitedUser);
+
+        return result;
     }
 }

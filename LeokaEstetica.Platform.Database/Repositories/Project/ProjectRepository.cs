@@ -21,7 +21,7 @@ namespace LeokaEstetica.Platform.Database.Repositories.Project;
 public sealed class ProjectRepository : IProjectRepository
 {
     private readonly PgContext _pgContext;
-    
+
     public ProjectRepository(PgContext pgContext)
     {
         _pgContext = pgContext;
@@ -42,7 +42,7 @@ public sealed class ProjectRepository : IProjectRepository
     {
         var transaction = await _pgContext.Database
             .BeginTransactionAsync(IsolationLevel.ReadCommitted);
-        
+
         try
         {
             var project = new UserProjectEntity
@@ -54,10 +54,10 @@ public sealed class ProjectRepository : IProjectRepository
                 DateCreated = DateTime.Now
             };
             await _pgContext.UserProjects.AddAsync(project);
-            
+
             // Дергаем сохранение тут, так как нам нужен Id добавленного проекта.
             // Фактического сохраненеия не произойдет, пока мы не завершили транзакцию.
-            await _pgContext.SaveChangesAsync(); 
+            await _pgContext.SaveChangesAsync();
 
             // Проставляем проекту статус "На модерации".
             await _pgContext.ProjectStatuses.AddAsync(new ProjectStatusEntity
@@ -73,17 +73,17 @@ public sealed class ProjectRepository : IProjectRepository
                 ProjectId = project.ProjectId,
                 StageId = (int)projectStage
             });
-            
+
             // Отправляем проект на модерацию.
             await SendModerationProjectAsync(project.ProjectId);
-            
+
             // Создаем команду проекта по дефолту.
             await _pgContext.ProjectsTeams.AddAsync(new ProjectTeamEntity
             {
                 Created = DateTime.Now,
                 ProjectId = project.ProjectId
             });
-            
+
             await _pgContext.SaveChangesAsync();
             await transaction.CommitAsync();
 
@@ -120,7 +120,7 @@ public sealed class ProjectRepository : IProjectRepository
     public async Task<bool> CheckCreatedProjectByProjectNameAsync(string projectName, long userId)
     {
         var result = await _pgContext.UserProjects
-            .AnyAsync(p => p.UserId == userId 
+            .AnyAsync(p => p.UserId == userId
                            && p.ProjectName.Equals(projectName));
 
         return result;
@@ -190,7 +190,7 @@ public sealed class ProjectRepository : IProjectRepository
     {
         var transaction = await _pgContext.Database
             .BeginTransactionAsync(IsolationLevel.ReadCommitted);
-        
+
         try
         {
             var project = await _pgContext.UserProjects
@@ -233,7 +233,7 @@ public sealed class ProjectRepository : IProjectRepository
 
             return result;
         }
-        
+
         catch
         {
             await transaction.RollbackAsync();
@@ -316,13 +316,13 @@ public sealed class ProjectRepository : IProjectRepository
         var isDublicateProjectVacancy = await _pgContext.ProjectVacancies
             .AnyAsync(p => p.ProjectId == projectId
                            && p.VacancyId == vacancyId);
-        
+
         // Если такая вакансия уже прикреплена к проекту.
         if (isDublicateProjectVacancy)
         {
             return true;
         }
-        
+
         await _pgContext.ProjectVacancies.AddAsync(new ProjectVacancyEntity
         {
             ProjectId = projectId,
@@ -332,6 +332,7 @@ public sealed class ProjectRepository : IProjectRepository
 
         return false;
     }
+
     /// <summary>
     /// Метод получает список вакансий проекта, которые можно прикрепить к проекту.
     /// </summary>
@@ -473,6 +474,44 @@ public sealed class ProjectRepository : IProjectRepository
         var result = await _pgContext.ProjectTeamColumnNames
             .OrderBy(o => o.Position)
             .ToListAsync();
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод добавляет пользователя в команду проекта.
+    /// </summary>
+    /// <param name="userId">Id пользователя, который будет добавлен в команду проекта.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <returns>Данные добавленного пользователя.</returns>
+    public async Task<ProjectTeamMemberEntity> AddProjectTeamMemberAsync(long userId, long projectId, long vacancyId,
+        long teamId)
+    {
+        var result = new ProjectTeamMemberEntity
+        {
+            Joined = DateTime.Now,
+            UserId = userId,
+            VacancyId = vacancyId,
+            TeamId = teamId
+        };
+        await _pgContext.ProjectTeamMembers.AddAsync(result);
+        await _pgContext.SaveChangesAsync();
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод находит Id команды проекта.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Id команды.</returns>
+    public async Task<long> GetProjectTeamIdAsync(long projectId)
+    {
+        var result = await _pgContext.ProjectsTeams
+            .Where(p => p.ProjectId == projectId)
+            .Select(p => p.TeamId)
+            .FirstOrDefaultAsync();
 
         return result;
     }
