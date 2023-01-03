@@ -132,4 +132,12 @@ public interface IProjectService
     /// </summary>
     /// <returns>Список названий полей таблицы.</returns>
     Task<IEnumerable<ProjectTeamColumnNameEntity>> ProjectTeamColumnsNamesAsync();
+
+    /// <summary>
+    /// Метод добавляет в команду проекта пользователей.
+    /// </summary>
+    /// <param name="usersIds">Список Id пользователей, которых надо добавить в участники команды проекта.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Список добавленных пользователей.</returns>s
+    Task<IEnumerable<InviteProjectMemberOutput>> InviteProjectTeamAsync(List<long> usersIds, long projectId);
 }

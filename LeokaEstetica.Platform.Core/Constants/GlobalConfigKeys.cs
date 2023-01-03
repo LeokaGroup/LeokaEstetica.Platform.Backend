@@ -55,6 +55,11 @@ public static class GlobalConfigKeys
         /// Если передали некорректный режим.
         /// </summary>
         public const string EMPTY_MODE = "Передан некорректный режим. Mode был ";
+
+        /// <summary>
+        /// Если не передали список участников команды проекта. для добавления в команду.
+        /// </summary>
+        public const string EMPTY_PROJECT_TEAM_MEMBERS = "Список участников команды проекта не может быть пустым.";
     }
 
     /// <summary>

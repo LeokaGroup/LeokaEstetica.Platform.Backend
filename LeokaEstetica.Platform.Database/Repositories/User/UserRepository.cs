@@ -200,7 +200,8 @@ public sealed class UserRepository : IUserRepository
             .Select(u => new UserEntity
             {
                 Email = u.Email,
-                Login = u.Login
+                Login = u.Login,
+                UserId = u.UserId
             })
             .ToListAsync();
 

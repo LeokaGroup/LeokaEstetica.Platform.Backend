@@ -20,6 +20,7 @@ using LeokaEstetica.Platform.Notifications.Consts;
 using LeokaEstetica.Platform.Services.Abstractions.Project;
 using LeokaEstetica.Platform.Services.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Services.Builders;
+using Newtonsoft.Json;
 
 namespace LeokaEstetica.Platform.Services.Services.Project;
 
@@ -612,7 +613,7 @@ public sealed class ProjectService : IProjectService
 
         return result;
     }
-    
+
     /// <summary>
     /// Метод получает названия полей для таблицы команды проекта пользователя.
     /// </summary>
@@ -625,10 +626,42 @@ public sealed class ProjectService : IProjectService
 
             return result;
         }
-        
+
         catch (Exception ex)
         {
             await _logService.LogErrorAsync(ex);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Метод добавляет в команду проекта пользователей.
+    /// </summary>
+    /// <param name="usersIds">Список Id пользователей, которых надо добавить в участники команды проекта.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Список добавленных пользователей.</returns>
+    public async Task<IEnumerable<InviteProjectMemberOutput>> InviteProjectTeamAsync(List<long> usersIds,
+        long projectId)
+    {
+        try
+        {
+            // Если не передали список Id пользователей, то нам некого добавлять в команду проекта.
+            if (!usersIds.Any())
+            {
+                await _projectNotificationsService.SendNotificationWarningInviteProjectTeamMembersAsync("Внимание",
+                    "Список пользователей для добавления в команду проекта не передан.",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING);
+            }
+            
+            // Пробуем сопоставить должность из анкеты пользователя с вакансией проекта из справочника.
+        }
+
+        catch (Exception ex)
+        {
+            await _logService.LogErrorAsync(ex,
+                $"Ошибка добавления пользователей в команду проекта. " +
+                $"UserIds был {JsonConvert.SerializeObject(usersIds)}. " +
+                $"ProjectId был {projectId}.");
             throw;
         }
     }

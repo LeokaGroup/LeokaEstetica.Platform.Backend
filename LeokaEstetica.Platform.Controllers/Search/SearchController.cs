@@ -31,7 +31,7 @@ public class SearchController : BaseController
     /// <summary>
     /// Метод ищет пользователей для приглашения в команду проекта.
     /// </summary>
-    /// <param name="searchText">Поисковый запрос.</param>
+    /// <param name="searchProjectMemberInput">Входная модель.</param>
     /// <returns>Список пользователей, которых можно пригласить в команду проекта.</returns>
     [HttpGet]
     [Route("project-members/{searchText}")]
