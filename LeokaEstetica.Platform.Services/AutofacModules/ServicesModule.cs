@@ -4,6 +4,7 @@ using LeokaEstetica.Platform.Services.Abstractions.Header;
 using LeokaEstetica.Platform.Services.Abstractions.Landing;
 using LeokaEstetica.Platform.Services.Abstractions.Profile;
 using LeokaEstetica.Platform.Services.Abstractions.Project;
+using LeokaEstetica.Platform.Services.Abstractions.Resume;
 using LeokaEstetica.Platform.Services.Abstractions.Search.Project;
 using LeokaEstetica.Platform.Services.Abstractions.User;
 using LeokaEstetica.Platform.Services.Abstractions.Vacancy;
@@ -11,6 +12,7 @@ using LeokaEstetica.Platform.Services.Services.Header;
 using LeokaEstetica.Platform.Services.Services.Landing;
 using LeokaEstetica.Platform.Services.Services.Profile;
 using LeokaEstetica.Platform.Services.Services.Project;
+using LeokaEstetica.Platform.Services.Services.Resume;
 using LeokaEstetica.Platform.Services.Services.Search.Project;
 using LeokaEstetica.Platform.Services.Services.User;
 using LeokaEstetica.Platform.Services.Services.Vacancy;
@@ -90,6 +92,16 @@ public class ServicesModule : Module
         builder
             .RegisterType<ProjectFinderService>()
             .As<IProjectFinderService>()
+            .InstancePerLifetimeScope();
+        
+        // Сервис базы резюме.
+        builder
+            .RegisterType<ResumeService>()
+            .Named<IResumeService>("ResumeService")
+            .InstancePerLifetimeScope();
+        builder
+            .RegisterType<ResumeService>()
+            .As<IResumeService>()
             .InstancePerLifetimeScope();
     }
 }
