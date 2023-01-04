@@ -63,4 +63,6 @@ public interface IVacancyService
     /// <param name="account">Аккаунт.</param>
     /// <returns>Данные вакансии.</returns>
     Task<UserVacancyEntity> GetVacancyByVacancyIdAsync(long vacancyId, string account);
+
+    Task<CatalogVacancyResultOutput> FilterVacanciesAsync();
 }

@@ -151,11 +151,6 @@ public sealed class VacancyService : IVacancyService
             var userId = await _userRepository.GetUserByEmailAsync(account);
             result.CatalogVacancies = await _vacancyRepository.CatalogVacanciesAsync(userId);
 
-            if (!result.CatalogVacancies.Any())
-            {
-                return result;
-            }
-
             return result;
         }
 
@@ -269,5 +264,10 @@ public sealed class VacancyService : IVacancyService
             await _logService.LogErrorAsync(ex);
             throw;
         }
+    }
+    
+    public Task<CatalogVacancyResultOutput> FilterVacanciesAsync()
+    {
+        throw new NotImplementedException();
     }
 }
