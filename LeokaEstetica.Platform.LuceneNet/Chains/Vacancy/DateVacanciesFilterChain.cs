@@ -29,7 +29,13 @@ public sealed class DateVacanciesFilterChain : BaseVacanciesFilterChain
 
         using var reader = IndexReader.Open(_index.Value, true);
         using var searcher = new IndexSearcher(reader);
-        var sort = new Sort(SortField.FIELD_SCORE, new SortField(VacancyFinderConst.DATE_CREATED, SortField.STRING));
+
+        // Условие сортировки поля даты.
+        // Управлять можно через признак в объекте SortField.
+        // Если false, то по возрастанию (по дефолту), если true, то по убыванию.
+        // Поставили true, так как надо, чтобы новые вакансии были выше.
+        var sort = new Sort(SortField.FIELD_SCORE,
+            new SortField(VacancyFinderConst.DATE_CREATED, SortField.STRING, true));
 
         // Больше 20 и не надо, так как есть пагинация.
         var searchResults = searcher.Search(new MatchAllDocsQuery(), null, 20, sort).ScoreDocs;
