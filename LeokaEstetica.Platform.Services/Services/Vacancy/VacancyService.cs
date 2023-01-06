@@ -3,6 +3,8 @@ using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Database.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Logs.Abstractions;
+using LeokaEstetica.Platform.LuceneNet.Chains.Vacancy;
+using LeokaEstetica.Platform.Models.Dto.Input.Vacancy;
 using LeokaEstetica.Platform.Models.Dto.Output.Configs;
 using LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
 using LeokaEstetica.Platform.Models.Entities.Vacancy;
@@ -29,6 +31,10 @@ public sealed class VacancyService : IVacancyService
     private readonly IVacancyModerationService _vacancyModerationService;
     private readonly INotificationsService _notificationsService;
 
+    // Определяем всю цепочку фильтров.
+    private readonly BaseVacanciesFilterChain _salaryFilterVacanciesChain = new DateVacanciesFilterChain();
+    // private readonly BaseFilterVacanciesChain _dateFilterVacanciesChain = new DateFilterVacanciesChain();
+
     public VacancyService(ILogService logService,
         IVacancyRepository vacancyRepository,
         IMapper mapper,
@@ -44,6 +50,9 @@ public sealed class VacancyService : IVacancyService
         _userRepository = userRepository;
         _vacancyModerationService = vacancyModerationService;
         _notificationsService = notificationsService;
+
+        // Определяем обработчики цепочки фильтров.
+        // _salaryFilterVacanciesChain.Successor = _dateFilterVacanciesChain;
     }
 
     /// <summary>
@@ -141,15 +150,15 @@ public sealed class VacancyService : IVacancyService
     /// TODO: Аккаунт возможно нужкн будет использовать, если будет монетизация в каталоге вакансий. Если доступ будет только у тех пользователей, которые приобрели подписку.
     /// Метод получает список вакансий для каталога.
     /// </summary>
-    /// <param name="account">Аккаунт пользователя.</param>
     /// <returns>Список вакансий.</returns>
-    public async Task<CatalogVacancyResultOutput> CatalogVacanciesAsync(string account)
+    public async Task<CatalogVacancyResultOutput> CatalogVacanciesAsync()
     {
         try
         {
-            var result = new CatalogVacancyResultOutput();
-            var userId = await _userRepository.GetUserByEmailAsync(account);
-            result.CatalogVacancies = await _vacancyRepository.CatalogVacanciesAsync(userId);
+            var result = new CatalogVacancyResultOutput
+            {
+                CatalogVacancies = await _vacancyRepository.CatalogVacanciesAsync()
+            };
 
             return result;
         }
@@ -265,9 +274,28 @@ public sealed class VacancyService : IVacancyService
             throw;
         }
     }
-    
-    public Task<CatalogVacancyResultOutput> FilterVacanciesAsync()
+
+    /// <summary>
+    /// Метод фильтрации вакансий в зависимости от параметров фильтров.
+    /// </summary>
+    /// <param name="filters">Фильтры.</param>
+    /// <returns>Список вакансий после фильтрации.</returns>
+    public async Task<CatalogVacancyResultOutput> FilterVacanciesAsync(FilterVacancyInput filters)
     {
-        throw new NotImplementedException();
+        try
+        {
+            var result = new CatalogVacancyResultOutput();
+            var items = await _vacancyRepository.GetFiltersVacanciesAsync();
+            _salaryFilterVacanciesChain.Initialize(items);
+            result.CatalogVacancies = await _salaryFilterVacanciesChain.FilterVacanciesAsync(filters, items);
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            await _logService.LogErrorAsync(ex);
+            throw;
+        }
     }
 }

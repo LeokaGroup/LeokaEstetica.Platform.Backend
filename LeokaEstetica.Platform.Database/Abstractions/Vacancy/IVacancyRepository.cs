@@ -46,9 +46,8 @@ public interface IVacancyRepository
     /// TODO: userId возможно нужкн будет использовать, если будет монетизация в каталоге вакансий. Если доступ будет только у тех пользователей, которые приобрели подписку.
     /// Метод получает список вакансий для каталога.
     /// </summary>
-    /// <param name="userId">Id пользователя.</param>
     /// <returns>Список вакансий.</returns>
-    Task<List<CatalogVacancyOutput>> CatalogVacanciesAsync(long userId);
+    Task<List<CatalogVacancyOutput>> CatalogVacanciesAsync();
 
     /// <summary>
     /// Метод добавляет статус вакансии.
@@ -86,4 +85,10 @@ public interface IVacancyRepository
     /// <param name="vacancyId">Id вакансии.</param>
     /// <returns>Название вакансии.</returns>
     Task<string> GetVacancyNameByVacancyIdAsync(long vacancyId);
+    
+    /// <summary>
+    /// Метод получает список вакансий для дальнейшей фильтрации.
+    /// </summary>
+    /// <returns>Список вакансий без выгрузки в память, так как этот список будем еще фильтровать.</returns>
+    Task<IOrderedQueryable<CatalogVacancyOutput>> GetFiltersVacanciesAsync();
 }

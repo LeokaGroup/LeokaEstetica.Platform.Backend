@@ -84,9 +84,8 @@ public sealed class VacancyRepository : IVacancyRepository
     /// TODO: userId возможно нужкн будет использовать, если будет монетизация в каталоге вакансий. Если доступ будет только у тех пользователей, которые приобрели подписку.
     /// Метод получает список вакансий для каталога.
     /// </summary>
-    /// <param name="userId">Id пользователя.</param>
     /// <returns>Список вакансий.</returns>
-    public async Task<List<CatalogVacancyOutput>> CatalogVacanciesAsync(long userId)
+    public async Task<List<CatalogVacancyOutput>> CatalogVacanciesAsync()
     {
         var result = await _pgContext.CatalogVacancies
             .Include(uv => uv.Vacancy)
@@ -217,5 +216,28 @@ public sealed class VacancyRepository : IVacancyRepository
             .FirstOrDefaultAsync();
 
         return result;
+    }
+
+    /// <summary>
+    /// Метод получает список вакансий для дальнейшей фильтрации.
+    /// </summary>
+    /// <returns>Список вакансий без выгрузки в память, так как этот список будем еще фильтровать.</returns>
+    public async Task<IOrderedQueryable<CatalogVacancyOutput>> GetFiltersVacanciesAsync()
+    {
+        var result = (IOrderedQueryable<CatalogVacancyOutput>)_pgContext.CatalogVacancies
+            .Include(uv => uv.Vacancy)
+            .Select(uv => new CatalogVacancyOutput
+            {
+                VacancyName = uv.Vacancy.VacancyName,
+                DateCreated = uv.Vacancy.DateCreated,
+                Employment = uv.Vacancy.Employment,
+                Payment = uv.Vacancy.Payment,
+                VacancyId = uv.Vacancy.VacancyId,
+                VacancyText = uv.Vacancy.VacancyText,
+                WorkExperience = uv.Vacancy.WorkExperience
+            })
+            .AsQueryable();
+
+        return await Task.FromResult(result);
     }
 }

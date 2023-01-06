@@ -1,3 +1,4 @@
+using LeokaEstetica.Platform.Models.Dto.Input.Vacancy;
 using LeokaEstetica.Platform.Models.Dto.Output.Configs;
 using LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
 using LeokaEstetica.Platform.Models.Entities.Vacancy;
@@ -45,9 +46,8 @@ public interface IVacancyService
     /// <summary>
     /// Метод получает список вакансий для каталога.
     /// </summary>
-    /// <param name="account">Аккаунт пользователя.</param>
     /// <returns>Список вакансий.</returns>
-    Task<CatalogVacancyResultOutput> CatalogVacanciesAsync(string account);
+    Task<CatalogVacancyResultOutput> CatalogVacanciesAsync();
 
     /// <summary>
     /// Метод получает названия полей для таблицы вакансий проектов пользователя.
@@ -64,5 +64,10 @@ public interface IVacancyService
     /// <returns>Данные вакансии.</returns>
     Task<UserVacancyEntity> GetVacancyByVacancyIdAsync(long vacancyId, string account);
 
-    Task<CatalogVacancyResultOutput> FilterVacanciesAsync();
+    /// <summary>
+    /// Метод фильтрации вакансий в зависимости от параметров фильтров.
+    /// </summary>
+    /// <param name="filters">Фильтры.</param>
+    /// <returns>Список вакансий после фильтрации.</returns>
+    Task<CatalogVacancyResultOutput> FilterVacanciesAsync(FilterVacancyInput filters);
 }

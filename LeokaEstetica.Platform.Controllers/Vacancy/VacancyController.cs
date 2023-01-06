@@ -45,7 +45,7 @@ public class VacancyController : BaseController
     [ProducesResponseType(404)]
     public async Task<CatalogVacancyResultOutput> CatalogVacanciesAsync()
     {
-        var result = await _vacancyService.CatalogVacanciesAsync(GetUserName());
+        var result = await _vacancyService.CatalogVacanciesAsync();
 
         return result;
     }
@@ -186,6 +186,8 @@ public class VacancyController : BaseController
     public async Task<CatalogVacancyResultOutput> FilterVacanciesAsync(
         [FromQuery] FilterVacancyInput filterVacancyInput)
     {
-        throw new NotImplementedException();
+        var result = await _vacancyService.FilterVacanciesAsync(filterVacancyInput);
+
+        return result;
     }
 }
