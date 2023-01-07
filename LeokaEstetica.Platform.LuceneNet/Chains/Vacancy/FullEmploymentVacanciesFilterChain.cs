@@ -10,12 +10,12 @@ using Lucene.Net.Search;
 namespace LeokaEstetica.Platform.LuceneNet.Chains.Vacancy;
 
 /// <summary>
-/// Класс фильтра по типу оплаты (без оплаты).
+/// Класс фильтра вакансий по занятости (полная занятость).
 /// </summary>
-public class NotPayVacanciesFilterChain : BaseVacanciesFilterChain
+public class FullEmploymentVacanciesFilterChain : BaseVacanciesFilterChain
 {
     /// <summary>
-    /// Метод фильтрует вакансии по типу оплаты (без оплаты).
+    /// Метод фильтрует вакансии по занятости (полная занятость).
     /// </summary>
     /// <param name="filters">Условия фильтрации.</param>
     /// <param name="vacancies">Список вакансий до фильтрации без выгрузки в память.</param>
@@ -23,16 +23,16 @@ public class NotPayVacanciesFilterChain : BaseVacanciesFilterChain
     public override async Task<IQueryable<CatalogVacancyOutput>> FilterVacanciesAsync(FilterVacancyInput filters,
         IOrderedQueryable<CatalogVacancyOutput> vacancies)
     {
-        // Если фильтр не имеет тип оплаты (без оплаты), то передаем следующему по цепочке.
-        if (Enum.Parse<FilterPayTypeEnum>(filters.Pay) != FilterPayTypeEnum.NotPay)
+        // Если фильтр занятости не (полная занятость), то передаем следующему по цепочке.
+        if (Enum.Parse<FilterEmploymentTypeEnum>(filters.Employment) != FilterEmploymentTypeEnum.Full)
         {
             return await CallNextSuccessor(filters, vacancies);
         }
 
         using var reader = IndexReader.Open(_index.Value, true);
         using var searcher = new IndexSearcher(reader);
-        var filterQuery =
-            new TermQuery(new Term(VacancyFinderConst.PAYMENT, FilterPayTypeEnum.NotPay.GetEnumDescription()));
+        var filterQuery = new TermQuery(new Term(VacancyFinderConst.WORK_EXPERIENCE,
+            FilterEmploymentTypeEnum.Full.GetEnumDescription()));
         var filter = new QueryWrapperFilter(filterQuery);
 
         // Больше 20 и не надо, так как есть пагинация.

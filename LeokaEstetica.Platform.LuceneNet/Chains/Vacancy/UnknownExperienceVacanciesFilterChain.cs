@@ -31,8 +31,7 @@ public class UnknownExperienceVacanciesFilterChain : BaseVacanciesFilterChain
 
         using var reader = IndexReader.Open(_index.Value, true);
         using var searcher = new IndexSearcher(reader);
-        var filterQuery =
-            new TermQuery(new Term(VacancyFinderConst.WORK_EXPERIENCE,
+        var filterQuery = new TermQuery(new Term(VacancyFinderConst.WORK_EXPERIENCE,
                 FilterExperienceTypeEnum.Unknown.GetEnumDescription()));
         var filter = new QueryWrapperFilter(filterQuery);
 
