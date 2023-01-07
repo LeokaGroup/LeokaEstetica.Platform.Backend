@@ -28,10 +28,4 @@ public class FilterVacancyInput
     /// <seealso cref="FilterEmploymentTypeEnum"/>.
     /// </summary>
     public string Employment { get; set; }
-
-    /// <summary>
-    /// Фильтр ключевых слов.
-    /// <seealso cref="FilterKeywordsTypeEnum"/>.
-    /// </summary>
-    public string Keywords { get; set; }
 }
