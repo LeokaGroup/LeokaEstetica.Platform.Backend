@@ -9,31 +9,31 @@ using Lucene.Net.Search;
 namespace LeokaEstetica.Platform.LuceneNet.Chains.Vacancy;
 
 /// <summary>
-/// Класс фильтрации вакансий по дате.
+/// Класс фильтра зарплаты по убыванию.
 /// </summary>
-public sealed class DateVacanciesFilterChain : BaseVacanciesFilterChain
+public class DescSalaryVacanciesFilterChain : BaseVacanciesFilterChain
 {
     /// <summary>
-    /// Метод фильтрует вакансии по дате.
+    /// Метод фильтрует вакансии по убыванию зарплаты.
     /// </summary>
     /// <param name="filters">Условия фильтрации.</param>
     /// <param name="vacancies">Список вакансий до фильтрации без выгрузки в память.</param>
     /// <returns>Список вакансий после фильтрации.</returns>
-    public override async Task<IQueryable<CatalogVacancyOutput>> FilterVacanciesAsync(
-        FilterVacancyInput filters, IOrderedQueryable<CatalogVacancyOutput> vacancies)
+    public override async Task<IQueryable<CatalogVacancyOutput>> FilterVacanciesAsync(FilterVacancyInput filters,
+        IOrderedQueryable<CatalogVacancyOutput> vacancies)
     {
-        // Если фильтр не по дате, то передаем следующему по цепочке.
-        if (Enum.Parse<FilterSalaryTypeEnum>(filters.Salary) != FilterSalaryTypeEnum.Date)
+        // Если фильтр не по убыванию зарплаты, то передаем следующему по цепочке.
+        if (Enum.Parse<FilterSalaryTypeEnum>(filters.Salary) != FilterSalaryTypeEnum.DescSalary)
         {
             return await CallNextSuccessor(filters, vacancies);
         }
 
         using var reader = IndexReader.Open(_index.Value, true);
         using var searcher = new IndexSearcher(reader);
-
+        
         // Если false, то по возрастанию (по дефолту), если true, то по убыванию.
         var sort = new Sort(SortField.FIELD_SCORE,
-            new SortField(VacancyFinderConst.DATE_CREATED, SortField.STRING, true));
+            new SortField(VacancyFinderConst.PAYMENT, SortField.STRING, true));
 
         // Больше 20 и не надо, так как есть пагинация.
         var searchResults = searcher.Search(new MatchAllDocsQuery(), null, 20, sort).ScoreDocs;

@@ -33,7 +33,7 @@ public sealed class VacancyService : IVacancyService
 
     // Определяем всю цепочку фильтров.
     private readonly BaseVacanciesFilterChain _salaryFilterVacanciesChain = new DateVacanciesFilterChain();
-    // private readonly BaseFilterVacanciesChain _dateFilterVacanciesChain = new DateFilterVacanciesChain();
+    private readonly BaseVacanciesFilterChain _descSalaryVacanciesFilterChain = new DescSalaryVacanciesFilterChain();
 
     public VacancyService(ILogService logService,
         IVacancyRepository vacancyRepository,
@@ -52,7 +52,7 @@ public sealed class VacancyService : IVacancyService
         _notificationsService = notificationsService;
 
         // Определяем обработчики цепочки фильтров.
-        // _salaryFilterVacanciesChain.Successor = _dateFilterVacanciesChain;
+        _salaryFilterVacanciesChain.Successor = _descSalaryVacanciesFilterChain;
     }
 
     /// <summary>

@@ -9,21 +9,20 @@ using Lucene.Net.Search;
 namespace LeokaEstetica.Platform.LuceneNet.Chains.Vacancy;
 
 /// <summary>
-/// Класс фильтрации вакансий по дате.
+/// Класс фильтра зарплаты.
 /// </summary>
-public sealed class DateVacanciesFilterChain : BaseVacanciesFilterChain
+public class AscSalaryVacanciesFilterChain : BaseVacanciesFilterChain
 {
     /// <summary>
-    /// Метод фильтрует вакансии по дате.
+    /// Метод фильтрует вакансии по зарплате.
     /// </summary>
     /// <param name="filters">Условия фильтрации.</param>
     /// <param name="vacancies">Список вакансий до фильтрации без выгрузки в память.</param>
     /// <returns>Список вакансий после фильтрации.</returns>
-    public override async Task<IQueryable<CatalogVacancyOutput>> FilterVacanciesAsync(
-        FilterVacancyInput filters, IOrderedQueryable<CatalogVacancyOutput> vacancies)
+    public override async Task<IQueryable<CatalogVacancyOutput>> FilterVacanciesAsync(FilterVacancyInput filters, IOrderedQueryable<CatalogVacancyOutput> vacancies)
     {
-        // Если фильтр не по дате, то передаем следующему по цепочке.
-        if (Enum.Parse<FilterSalaryTypeEnum>(filters.Salary) != FilterSalaryTypeEnum.Date)
+        // Если фильтр не по зарплате, то передаем следующему по цепочке.
+        if (Enum.Parse<FilterSalaryTypeEnum>(filters.Salary) != FilterSalaryTypeEnum.AscSalary)
         {
             return await CallNextSuccessor(filters, vacancies);
         }
@@ -33,7 +32,7 @@ public sealed class DateVacanciesFilterChain : BaseVacanciesFilterChain
 
         // Если false, то по возрастанию (по дефолту), если true, то по убыванию.
         var sort = new Sort(SortField.FIELD_SCORE,
-            new SortField(VacancyFinderConst.DATE_CREATED, SortField.STRING, true));
+            new SortField(VacancyFinderConst.PAYMENT, SortField.STRING));
 
         // Больше 20 и не надо, так как есть пагинация.
         var searchResults = searcher.Search(new MatchAllDocsQuery(), null, 20, sort).ScoreDocs;
