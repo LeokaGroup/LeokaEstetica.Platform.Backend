@@ -10,21 +10,20 @@ using Lucene.Net.Search;
 namespace LeokaEstetica.Platform.LuceneNet.Chains.Vacancy;
 
 /// <summary>
-/// Класс фильтра по опыту работу (не имеет значения).
+/// Класс фильтра по опыту работу (от 3 до 6 лет).
 /// </summary>
-public class UnknownExperienceVacanciesFilterChain : BaseVacanciesFilterChain
+public class ThreeSixExperienceVacanciesFilterChain : BaseVacanciesFilterChain
 {
     /// <summary>
-    /// Метод фильтрует вакансии по опыту работы (не имеет значения).
+    /// Метод фильтрует вакансии по опыту работы (от 3 до 6 лет).
     /// </summary>
     /// <param name="filters">Условия фильтрации.</param>
     /// <param name="vacancies">Список вакансий до фильтрации без выгрузки в память.</param>
     /// <returns>Список вакансий после фильтрации.</returns>
-    public override async Task<IQueryable<CatalogVacancyOutput>> FilterVacanciesAsync(FilterVacancyInput filters,
-        IOrderedQueryable<CatalogVacancyOutput> vacancies)
+    public override async Task<IQueryable<CatalogVacancyOutput>> FilterVacanciesAsync(FilterVacancyInput filters, IOrderedQueryable<CatalogVacancyOutput> vacancies)
     {
-        // Если фильтр опыта работы не (без оплаты), то передаем следующему по цепочке.
-        if (Enum.Parse<FilterExperienceTypeEnum>(filters.Experience) != FilterExperienceTypeEnum.Unknown)
+        // Если фильтр опыта работы не (от 3 до 6 лет), то передаем следующему по цепочке.
+        if (Enum.Parse<FilterExperienceTypeEnum>(filters.Experience) != FilterExperienceTypeEnum.ThreeSix)
         {
             return await CallNextSuccessor(filters, vacancies);
         }
@@ -33,7 +32,7 @@ public class UnknownExperienceVacanciesFilterChain : BaseVacanciesFilterChain
         using var searcher = new IndexSearcher(reader);
         var filterQuery =
             new TermQuery(new Term(VacancyFinderConst.WORK_EXPERIENCE,
-                FilterExperienceTypeEnum.Unknown.GetEnumDescription()));
+                FilterExperienceTypeEnum.ThreeSix.GetEnumDescription()));
         var filter = new QueryWrapperFilter(filterQuery);
 
         // Больше 20 и не надо, так как есть пагинация.
