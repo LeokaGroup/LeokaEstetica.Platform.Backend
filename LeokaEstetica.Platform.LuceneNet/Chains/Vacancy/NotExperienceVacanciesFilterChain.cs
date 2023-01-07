@@ -10,20 +10,21 @@ using Lucene.Net.Search;
 namespace LeokaEstetica.Platform.LuceneNet.Chains.Vacancy;
 
 /// <summary>
-/// Класс фильтра по опыту работу (более 6 лет).
+/// Класс фильтра по опыту работу (нет опыта).
 /// </summary>
-public class ManySixExperienceVacanciesFilterChain : BaseVacanciesFilterChain
+public class NotExperienceVacanciesFilterChain : BaseVacanciesFilterChain
 {
     /// <summary>
-    /// Метод фильтрует вакансии по опыту работы (более 6 лет).
+    /// Метод фильтрует вакансии по опыту работы (нет опыта).
     /// </summary>
     /// <param name="filters">Условия фильтрации.</param>
     /// <param name="vacancies">Список вакансий до фильтрации без выгрузки в память.</param>
     /// <returns>Список вакансий после фильтрации.</returns>
-    public override async Task<IQueryable<CatalogVacancyOutput>> FilterVacanciesAsync(FilterVacancyInput filters, IOrderedQueryable<CatalogVacancyOutput> vacancies)
+    public override async Task<IQueryable<CatalogVacancyOutput>> FilterVacanciesAsync(FilterVacancyInput filters,
+        IOrderedQueryable<CatalogVacancyOutput> vacancies)
     {
-        // Если фильтр опыта работы не (более 6 лет), то передаем следующему по цепочке.
-        if (Enum.Parse<FilterExperienceTypeEnum>(filters.Experience) != FilterExperienceTypeEnum.ManySix)
+        // Если фильтр опыта работы не (нет опыта), то передаем следующему по цепочке.
+        if (Enum.Parse<FilterExperienceTypeEnum>(filters.Experience) != FilterExperienceTypeEnum.NotExperience)
         {
             return await CallNextSuccessor(filters, vacancies);
         }
@@ -32,7 +33,7 @@ public class ManySixExperienceVacanciesFilterChain : BaseVacanciesFilterChain
         using var searcher = new IndexSearcher(reader);
         var filterQuery =
             new TermQuery(new Term(VacancyFinderConst.WORK_EXPERIENCE,
-                FilterExperienceTypeEnum.ManySix.GetEnumDescription()));
+                FilterExperienceTypeEnum.NotExperience.GetEnumDescription()));
         var filter = new QueryWrapperFilter(filterQuery);
 
         // Больше 20 и не надо, так как есть пагинация.

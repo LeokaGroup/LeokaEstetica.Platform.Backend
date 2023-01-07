@@ -23,7 +23,7 @@ public class UnknownExperienceVacanciesFilterChain : BaseVacanciesFilterChain
     public override async Task<IQueryable<CatalogVacancyOutput>> FilterVacanciesAsync(FilterVacancyInput filters,
         IOrderedQueryable<CatalogVacancyOutput> vacancies)
     {
-        // Если фильтр опыта работы не (без оплаты), то передаем следующему по цепочке.
+        // Если фильтр опыта работы не (не имеет значения), то передаем следующему по цепочке.
         if (Enum.Parse<FilterExperienceTypeEnum>(filters.Experience) != FilterExperienceTypeEnum.Unknown)
         {
             return await CallNextSuccessor(filters, vacancies);
