@@ -19,19 +19,19 @@ public abstract class BaseVacanciesFilterChain
     /// <summary>
     /// Версия люсины.
     /// </summary>
-    public const Version _version = Version.LUCENE_CURRENT;
+    private const Version _version = Version.LUCENE_CURRENT;
 
     /// <summary>
     /// Индекс в памяти.
     /// Объявляем как Lazy, чтобы дергался лишь при использовании.
     /// </summary>
-    public Lazy<RAMDirectory> _index { get; set; }
+    protected Lazy<RAMDirectory> _index { get; set; }
 
     /// <summary>
     /// Используем стандартный анализатор текста для люсины.
     /// </summary>
-    public readonly StandardAnalyzer _analyzer;
-    
+    private readonly StandardAnalyzer _analyzer;
+
     protected BaseVacanciesFilterChain()
     {
         _analyzer = new StandardAnalyzer(_version);
@@ -57,7 +57,7 @@ public abstract class BaseVacanciesFilterChain
     /// <summary>
     /// Метод передает дальше по цепочке либо возвращает результат, если в цепочке больше нет обработчиков.
     /// </summary>
-    public async Task<IQueryable<CatalogVacancyOutput>> CallNextSuccessor(FilterVacancyInput filters,
+    protected async Task<IQueryable<CatalogVacancyOutput>> CallNextSuccessor(FilterVacancyInput filters,
         IOrderedQueryable<CatalogVacancyOutput> vacancies)
     {
         return Successor != null
@@ -69,7 +69,7 @@ public abstract class BaseVacanciesFilterChain
     /// Метод инициализирует данными индекс в памяти.
     /// </summary>
     /// <param name="vacancies">Список вакансий.</param>
-    public void Initialize(IOrderedQueryable<CatalogVacancyOutput> vacancies)
+    protected void Initialize(IOrderedQueryable<CatalogVacancyOutput> vacancies)
     {
         using var writer = new IndexWriter(_index.Value, _analyzer, IndexWriter.MaxFieldLength.UNLIMITED);
 
@@ -123,10 +123,9 @@ public abstract class BaseVacanciesFilterChain
 
             doc.Add(new Field(VacancyFinderConst.OUTPUT_FIELD, vac.VacancyName?.Trim(), Field.Store.YES,
                 Field.Index.NOT_ANALYZED));
-
             writer.AddDocument(doc);
         }
-
+        
         writer.Optimize();
         writer.Flush(false, false, false);
     }

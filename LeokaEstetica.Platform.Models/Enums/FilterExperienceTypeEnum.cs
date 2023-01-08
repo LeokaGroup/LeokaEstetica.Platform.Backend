@@ -7,18 +7,21 @@ namespace LeokaEstetica.Platform.Models.Enums;
 /// </summary>
 public enum FilterExperienceTypeEnum
 {
+    [Description("Отсутствует. Не ищем по этому значению.")]
+    None = 1,
+    
     [Description("Не имеет значения")]
-    Unknown = 1,
+    Unknown = 2,
     
     [Description("От 3 до 6 лет")]
-    ThreeSix = 2,
+    ThreeSix = 3,
     
     [Description("Более 6 лет")]
-    ManySix = 3,
+    ManySix = 4,
     
     [Description("От 1 года до 3 лет")]
-    OneThree = 4,
+    OneThree = 5,
     
     [Description("Нет опыта")]
-    NotExperience = 5
+    NotExperience = 6
 }

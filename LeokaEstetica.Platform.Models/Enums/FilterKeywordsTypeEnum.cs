@@ -7,9 +7,12 @@ namespace LeokaEstetica.Platform.Models.Enums;
 /// </summary>
 public enum FilterKeywordsTypeEnum
 {
+    [Description("Отсутствует. Не ищем по этому значению.")]
+    None = 1,
+    
     [Description("В названии вакансии")]
-    VacancyName = 1,
+    VacancyName = 2,
     
     [Description("В описании вакансии")]
-    VacancyDetail = 2
+    VacancyDetail = 3
 }

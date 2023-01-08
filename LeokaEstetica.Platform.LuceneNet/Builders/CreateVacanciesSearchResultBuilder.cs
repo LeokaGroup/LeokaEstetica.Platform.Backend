@@ -20,6 +20,7 @@ public static class CreateVacanciesSearchResultBuilder
     public static IQueryable<CatalogVacancyOutput> CreateVacanciesSearchResult(ScoreDoc[] searchResults,
         IndexSearcher searcher)
     {
+        _vacancies.Clear();
         foreach (var item in searchResults)
         {
             var document = searcher.Doc(item.Doc);

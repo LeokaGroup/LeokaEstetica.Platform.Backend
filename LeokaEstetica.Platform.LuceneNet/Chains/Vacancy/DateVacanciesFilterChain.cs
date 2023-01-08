@@ -27,6 +27,8 @@ public sealed class DateVacanciesFilterChain : BaseVacanciesFilterChain
         {
             return await CallNextSuccessor(filters, vacancies);
         }
+        
+        Initialize(vacancies);
 
         using var reader = IndexReader.Open(_index.Value, true);
         using var searcher = new IndexSearcher(reader);
@@ -38,7 +40,7 @@ public sealed class DateVacanciesFilterChain : BaseVacanciesFilterChain
         // Больше 20 и не надо, так как есть пагинация.
         var searchResults = searcher.Search(new MatchAllDocsQuery(), null, 20, sort).ScoreDocs;
         var result = CreateVacanciesSearchResultBuilder.CreateVacanciesSearchResult(searchResults, searcher);
-        vacancies = (IOrderedQueryable<CatalogVacancyOutput>)result;  
+        vacancies = (IOrderedQueryable<CatalogVacancyOutput>)result;
 
         return await CallNextSuccessor(filters, vacancies);
     }

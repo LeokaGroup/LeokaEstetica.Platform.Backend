@@ -8,12 +8,15 @@ namespace LeokaEstetica.Platform.Models.Enums;
 /// </summary>
 public enum FilterPayTypeEnum
 {
+    [Description("Отсутствует. Не ищем по этому значению.")]
+    None = 1,
+    
     [Description("Не имеет значения")]
-    Unknown = 1,
+    Unknown = 2,
     
     [Description("Есть оплата")]
-    Pay = 2,
+    Pay = 3,
     
     [Description("Без оплаты")]
-    NotPay = 3
+    NotPay = 4
 }

@@ -7,12 +7,15 @@ namespace LeokaEstetica.Platform.Models.Enums;
 /// </summary>
 public enum FilterEmploymentTypeEnum
 {
+    [Description("Отсутствует. Не ищем по этому значению.")]
+    None = 1,
+    
     [Description("Полная занятость")]
-    Full = 1,
+    Full = 2,
     
     [Description("Проектная работа")]
-    ProjectWork = 2,
+    ProjectWork = 3,
     
     [Description("Частичная занятость")]
-    Partial = 3
+    Partial = 4
 }

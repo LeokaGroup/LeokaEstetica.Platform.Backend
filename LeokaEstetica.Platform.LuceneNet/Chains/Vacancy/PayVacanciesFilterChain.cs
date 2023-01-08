@@ -27,6 +27,8 @@ public class PayVacanciesFilterChain : BaseVacanciesFilterChain
         {
             return await CallNextSuccessor(filters, vacancies);
         }
+        
+        Initialize(vacancies);
 
         using var reader = IndexReader.Open(_index.Value, true);
         using var searcher = new IndexSearcher(reader);

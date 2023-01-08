@@ -34,6 +34,37 @@ public sealed class VacancyService : IVacancyService
     // Определяем всю цепочку фильтров.
     private readonly BaseVacanciesFilterChain _salaryFilterVacanciesChain = new DateVacanciesFilterChain();
     private readonly BaseVacanciesFilterChain _descSalaryVacanciesFilterChain = new DescSalaryVacanciesFilterChain();
+    private readonly BaseVacanciesFilterChain _ascSalaryVacanciesFilterChain = new AscSalaryVacanciesFilterChain();
+
+    private readonly BaseVacanciesFilterChain _fullEmploymentVacanciesFilterChain =
+        new FullEmploymentVacanciesFilterChain();
+
+    private readonly BaseVacanciesFilterChain _manySixExperienceVacanciesFilterChain =
+        new ManySixExperienceVacanciesFilterChain();
+
+    private readonly BaseVacanciesFilterChain _notExperienceVacanciesFilterChain =
+        new NotExperienceVacanciesFilterChain();
+
+    private readonly BaseVacanciesFilterChain _notPayVacanciesFilterChain = new NotPayVacanciesFilterChain();
+
+    private readonly BaseVacanciesFilterChain _oneThreeExperienceVacanciesFilterChain =
+        new OneThreeExperienceVacanciesFilterChain();
+
+    private readonly BaseVacanciesFilterChain _partialEmploymentVacanciesFilterChain =
+        new PartialEmploymentVacanciesFilterChain();
+
+    private readonly BaseVacanciesFilterChain _payVacanciesFilterChain = new PayVacanciesFilterChain();
+
+    private readonly BaseVacanciesFilterChain _projectWorkEmploymentVacanciesFilterChain =
+        new ProjectWorkEmploymentVacanciesFilterChain();
+
+    private readonly BaseVacanciesFilterChain _threeSixExperienceVacanciesFilterChain =
+        new ThreeSixExperienceVacanciesFilterChain();
+
+    private readonly BaseVacanciesFilterChain _unknownExperienceVacanciesFilterChain =
+        new UnknownExperienceVacanciesFilterChain();
+
+    private readonly BaseVacanciesFilterChain _unknownPayVacanciesFilterChain = new UnknownPayVacanciesFilterChain();
 
     public VacancyService(ILogService logService,
         IVacancyRepository vacancyRepository,
@@ -53,6 +84,18 @@ public sealed class VacancyService : IVacancyService
 
         // Определяем обработчики цепочки фильтров.
         _salaryFilterVacanciesChain.Successor = _descSalaryVacanciesFilterChain;
+        _descSalaryVacanciesFilterChain.Successor = _ascSalaryVacanciesFilterChain;
+        _ascSalaryVacanciesFilterChain.Successor = _fullEmploymentVacanciesFilterChain;
+        _fullEmploymentVacanciesFilterChain.Successor = _manySixExperienceVacanciesFilterChain;
+        _manySixExperienceVacanciesFilterChain.Successor = _notExperienceVacanciesFilterChain;
+        _notExperienceVacanciesFilterChain.Successor = _notPayVacanciesFilterChain;
+        _notPayVacanciesFilterChain.Successor = _oneThreeExperienceVacanciesFilterChain;
+        _oneThreeExperienceVacanciesFilterChain.Successor = _partialEmploymentVacanciesFilterChain;
+        _partialEmploymentVacanciesFilterChain.Successor = _payVacanciesFilterChain;
+        _payVacanciesFilterChain.Successor = _projectWorkEmploymentVacanciesFilterChain;
+        _projectWorkEmploymentVacanciesFilterChain.Successor = _threeSixExperienceVacanciesFilterChain;
+        _threeSixExperienceVacanciesFilterChain.Successor = _unknownExperienceVacanciesFilterChain;
+        _unknownExperienceVacanciesFilterChain.Successor = _unknownPayVacanciesFilterChain;
     }
 
     /// <summary>
@@ -286,12 +329,11 @@ public sealed class VacancyService : IVacancyService
         {
             var result = new CatalogVacancyResultOutput();
             var items = await _vacancyRepository.GetFiltersVacanciesAsync();
-            _salaryFilterVacanciesChain.Initialize(items);
             result.CatalogVacancies = await _salaryFilterVacanciesChain.FilterVacanciesAsync(filters, items);
 
             return result;
         }
-        
+
         catch (Exception ex)
         {
             await _logService.LogErrorAsync(ex);

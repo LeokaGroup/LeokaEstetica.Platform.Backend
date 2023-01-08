@@ -8,15 +8,18 @@ namespace LeokaEstetica.Platform.Models.Enums;
 /// </summary>
 public enum FilterSalaryTypeEnum
 {
+    [Description("Отсутствует. Не ищем по этому значению.")]
+    None = 1,
+    
     [Description("По соответствию")]
-    Match = 1,
+    Match = 2,
     
     [Description("По дате")]
-    Date = 2,
+    Date = 3,
     
     [Description("По убыванию зарплат")]
-    DescSalary = 3,
+    DescSalary = 4,
     
     [Description("По возрастанию зарплат")]
-    AscSalary = 4
+    AscSalary = 5
 }
