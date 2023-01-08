@@ -23,7 +23,7 @@ public class PartialEmploymentVacanciesFilterChain : BaseVacanciesFilterChain
     public override async Task<IQueryable<CatalogVacancyOutput>> FilterVacanciesAsync(FilterVacancyInput filters, IOrderedQueryable<CatalogVacancyOutput> vacancies)
     {
         // Если фильтр занятости не (проектная занятость), то передаем следующему по цепочке.
-        if (Enum.Parse<FilterEmploymentTypeEnum>(filters.Employment) != FilterEmploymentTypeEnum.Partial)
+        if (!filters.Employments.Contains(FilterEmploymentTypeEnum.Partial.ToString()))
         {
             return await CallNextSuccessor(filters, vacancies);
         }

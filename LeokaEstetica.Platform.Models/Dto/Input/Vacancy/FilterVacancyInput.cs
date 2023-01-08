@@ -27,5 +27,5 @@ public class FilterVacancyInput
     /// Фильтр занятости.
     /// <seealso cref="FilterEmploymentTypeEnum"/>.
     /// </summary>
-    public string Employment { get; set; }
+    public List<string> Employments { get; set; }
 }

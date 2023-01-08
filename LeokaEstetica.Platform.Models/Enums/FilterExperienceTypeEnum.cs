@@ -11,7 +11,7 @@ public enum FilterExperienceTypeEnum
     None = 1,
     
     [Description("Не имеет значения")]
-    Unknown = 2,
+    UnknownExperience = 2,
     
     [Description("От 3 до 6 лет")]
     ThreeSix = 3,

@@ -24,7 +24,7 @@ public class UnknownExperienceVacanciesFilterChain : BaseVacanciesFilterChain
         IOrderedQueryable<CatalogVacancyOutput> vacancies)
     {
         // Если фильтр опыта работы не (не имеет значения), то передаем следующему по цепочке.
-        if (Enum.Parse<FilterExperienceTypeEnum>(filters.Experience) != FilterExperienceTypeEnum.Unknown)
+        if (Enum.Parse<FilterExperienceTypeEnum>(filters.Experience) != FilterExperienceTypeEnum.UnknownExperience)
         {
             return await CallNextSuccessor(filters, vacancies);
         }
@@ -34,7 +34,7 @@ public class UnknownExperienceVacanciesFilterChain : BaseVacanciesFilterChain
         using var reader = IndexReader.Open(_index.Value, true);
         using var searcher = new IndexSearcher(reader);
         var filterQuery = new TermQuery(new Term(VacancyFinderConst.WORK_EXPERIENCE,
-                FilterExperienceTypeEnum.Unknown.GetEnumDescription()));
+                FilterExperienceTypeEnum.UnknownExperience.GetEnumDescription()));
         var filter = new QueryWrapperFilter(filterQuery);
 
         // Больше 20 и не надо, так как есть пагинация.

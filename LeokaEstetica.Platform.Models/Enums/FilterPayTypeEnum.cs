@@ -12,7 +12,7 @@ public enum FilterPayTypeEnum
     None = 1,
     
     [Description("Не имеет значения")]
-    Unknown = 2,
+    UnknownPay = 2,
     
     [Description("Есть оплата")]
     Pay = 3,

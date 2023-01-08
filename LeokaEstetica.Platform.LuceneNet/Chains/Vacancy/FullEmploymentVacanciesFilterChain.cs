@@ -24,7 +24,7 @@ public class FullEmploymentVacanciesFilterChain : BaseVacanciesFilterChain
         IOrderedQueryable<CatalogVacancyOutput> vacancies)
     {
         // Если фильтр занятости не (полная занятость), то передаем следующему по цепочке.
-        if (Enum.Parse<FilterEmploymentTypeEnum>(filters.Employment) != FilterEmploymentTypeEnum.Full)
+        if (!filters.Employments.Contains(FilterEmploymentTypeEnum.Full.ToString()))
         {
             return await CallNextSuccessor(filters, vacancies);
         }

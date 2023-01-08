@@ -24,7 +24,7 @@ public class UnknownPayVacanciesFilterChain : BaseVacanciesFilterChain
         IOrderedQueryable<CatalogVacancyOutput> vacancies)
     {
         // Если фильтр не имеет тип оплаты (не имеет значения), то передаем следующему по цепочке.
-        if (Enum.Parse<FilterPayTypeEnum>(filters.Pay) != FilterPayTypeEnum.Unknown)
+        if (Enum.Parse<FilterPayTypeEnum>(filters.Pay) != FilterPayTypeEnum.UnknownPay)
         {
             return await CallNextSuccessor(filters, vacancies);
         }
@@ -34,7 +34,7 @@ public class UnknownPayVacanciesFilterChain : BaseVacanciesFilterChain
         using var reader = IndexReader.Open(_index.Value, true);
         using var searcher = new IndexSearcher(reader);
         var filterQuery =
-            new TermQuery(new Term(VacancyFinderConst.PAYMENT, FilterPayTypeEnum.Unknown.GetEnumDescription()));
+            new TermQuery(new Term(VacancyFinderConst.PAYMENT, FilterPayTypeEnum.UnknownPay.GetEnumDescription()));
         var filter = new QueryWrapperFilter(filterQuery);
 
         // Больше 20 и не надо, так как есть пагинация.
