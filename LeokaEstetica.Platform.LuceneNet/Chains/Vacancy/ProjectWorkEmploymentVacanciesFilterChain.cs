@@ -24,7 +24,7 @@ public class ProjectWorkEmploymentVacanciesFilterChain : BaseVacanciesFilterChai
         IOrderedQueryable<CatalogVacancyOutput> vacancies)
     {
         // Если фильтр занятости не (проектная занятость), то передаем следующему по цепочке.
-        if (!filters.Employments.Contains(FilterEmploymentTypeEnum.ProjectWork.ToString()))
+        if (!filters.Employments.Contains(FilterEmploymentTypeEnum.ProjectWork))
         {
             return await CallNextSuccessor(filters, vacancies);
         }

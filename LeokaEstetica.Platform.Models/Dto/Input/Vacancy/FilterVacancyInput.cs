@@ -1,3 +1,5 @@
+using LeokaEstetica.Platform.Models.Enums;
+
 namespace LeokaEstetica.Platform.Models.Dto.Input.Vacancy;
 
 /// <summary>
@@ -24,8 +26,13 @@ public class FilterVacancyInput
     public string Experience { get; set; }
 
     /// <summary>
-    /// Фильтр занятости.
+    /// Фильтр занятости (список значений).
     /// <seealso cref="FilterEmploymentTypeEnum"/>.
     /// </summary>
-    public List<string> Employments { get; set; }
+    public string EmploymentsValues { get; set; }
+
+    /// <summary>
+    /// Список значений после парсинга списка знчений.
+    /// </summary>
+    public List<FilterEmploymentTypeEnum> Employments { get; set; }
 }

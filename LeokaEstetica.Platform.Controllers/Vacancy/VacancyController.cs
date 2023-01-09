@@ -1,6 +1,7 @@
 using AutoMapper;
 using LeokaEstetica.Platform.Base;
 using LeokaEstetica.Platform.Base.Abstractions.Services;
+using LeokaEstetica.Platform.Controllers.Builders;
 using LeokaEstetica.Platform.Controllers.Validators.Vacancy;
 using LeokaEstetica.Platform.Core.Filters;
 using LeokaEstetica.Platform.Models.Dto.Input.Vacancy;
@@ -186,6 +187,8 @@ public class VacancyController : BaseController
     public async Task<CatalogVacancyResultOutput> FilterVacanciesAsync(
         [FromQuery] FilterVacancyInput filterVacancyInput)
     {
+        filterVacancyInput.Employments =
+            CreateEmploymentsBuilder.CreateEmploymentsResult(filterVacancyInput.EmploymentsValues);
         var result = await _vacancyService.FilterVacanciesAsync(filterVacancyInput);
 
         return result;
