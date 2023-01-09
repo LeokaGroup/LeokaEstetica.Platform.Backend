@@ -3,6 +3,8 @@ using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Database.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Logs.Abstractions;
+using LeokaEstetica.Platform.LuceneNet.Chains.Vacancy;
+using LeokaEstetica.Platform.Models.Dto.Input.Vacancy;
 using LeokaEstetica.Platform.Models.Dto.Output.Configs;
 using LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
 using LeokaEstetica.Platform.Models.Entities.Vacancy;
@@ -29,6 +31,41 @@ public sealed class VacancyService : IVacancyService
     private readonly IVacancyModerationService _vacancyModerationService;
     private readonly INotificationsService _notificationsService;
 
+    // Определяем всю цепочку фильтров.
+    private readonly BaseVacanciesFilterChain _salaryFilterVacanciesChain = new DateVacanciesFilterChain();
+    private readonly BaseVacanciesFilterChain _descSalaryVacanciesFilterChain = new DescSalaryVacanciesFilterChain();
+    private readonly BaseVacanciesFilterChain _ascSalaryVacanciesFilterChain = new AscSalaryVacanciesFilterChain();
+
+    private readonly BaseVacanciesFilterChain _fullEmploymentVacanciesFilterChain =
+        new FullEmploymentVacanciesFilterChain();
+
+    private readonly BaseVacanciesFilterChain _manySixExperienceVacanciesFilterChain =
+        new ManySixExperienceVacanciesFilterChain();
+
+    private readonly BaseVacanciesFilterChain _notExperienceVacanciesFilterChain =
+        new NotExperienceVacanciesFilterChain();
+
+    private readonly BaseVacanciesFilterChain _notPayVacanciesFilterChain = new NotPayVacanciesFilterChain();
+
+    private readonly BaseVacanciesFilterChain _oneThreeExperienceVacanciesFilterChain =
+        new OneThreeExperienceVacanciesFilterChain();
+
+    private readonly BaseVacanciesFilterChain _partialEmploymentVacanciesFilterChain =
+        new PartialEmploymentVacanciesFilterChain();
+
+    private readonly BaseVacanciesFilterChain _payVacanciesFilterChain = new PayVacanciesFilterChain();
+
+    private readonly BaseVacanciesFilterChain _projectWorkEmploymentVacanciesFilterChain =
+        new ProjectWorkEmploymentVacanciesFilterChain();
+
+    private readonly BaseVacanciesFilterChain _threeSixExperienceVacanciesFilterChain =
+        new ThreeSixExperienceVacanciesFilterChain();
+
+    private readonly BaseVacanciesFilterChain _unknownExperienceVacanciesFilterChain =
+        new UnknownExperienceVacanciesFilterChain();
+
+    private readonly BaseVacanciesFilterChain _unknownPayVacanciesFilterChain = new UnknownPayVacanciesFilterChain();
+
     public VacancyService(ILogService logService,
         IVacancyRepository vacancyRepository,
         IMapper mapper,
@@ -44,6 +81,21 @@ public sealed class VacancyService : IVacancyService
         _userRepository = userRepository;
         _vacancyModerationService = vacancyModerationService;
         _notificationsService = notificationsService;
+
+        // Определяем обработчики цепочки фильтров.
+        _salaryFilterVacanciesChain.Successor = _descSalaryVacanciesFilterChain;
+        _descSalaryVacanciesFilterChain.Successor = _ascSalaryVacanciesFilterChain;
+        _ascSalaryVacanciesFilterChain.Successor = _fullEmploymentVacanciesFilterChain;
+        _fullEmploymentVacanciesFilterChain.Successor = _manySixExperienceVacanciesFilterChain;
+        _manySixExperienceVacanciesFilterChain.Successor = _notExperienceVacanciesFilterChain;
+        _notExperienceVacanciesFilterChain.Successor = _notPayVacanciesFilterChain;
+        _notPayVacanciesFilterChain.Successor = _oneThreeExperienceVacanciesFilterChain;
+        _oneThreeExperienceVacanciesFilterChain.Successor = _partialEmploymentVacanciesFilterChain;
+        _partialEmploymentVacanciesFilterChain.Successor = _payVacanciesFilterChain;
+        _payVacanciesFilterChain.Successor = _projectWorkEmploymentVacanciesFilterChain;
+        _projectWorkEmploymentVacanciesFilterChain.Successor = _threeSixExperienceVacanciesFilterChain;
+        _threeSixExperienceVacanciesFilterChain.Successor = _unknownExperienceVacanciesFilterChain;
+        _unknownExperienceVacanciesFilterChain.Successor = _unknownPayVacanciesFilterChain;
     }
 
     /// <summary>
@@ -141,20 +193,15 @@ public sealed class VacancyService : IVacancyService
     /// TODO: Аккаунт возможно нужкн будет использовать, если будет монетизация в каталоге вакансий. Если доступ будет только у тех пользователей, которые приобрели подписку.
     /// Метод получает список вакансий для каталога.
     /// </summary>
-    /// <param name="account">Аккаунт пользователя.</param>
     /// <returns>Список вакансий.</returns>
-    public async Task<CatalogVacancyResultOutput> CatalogVacanciesAsync(string account)
+    public async Task<CatalogVacancyResultOutput> CatalogVacanciesAsync()
     {
         try
         {
-            var result = new CatalogVacancyResultOutput();
-            var userId = await _userRepository.GetUserByEmailAsync(account);
-            result.CatalogVacancies = await _vacancyRepository.CatalogVacanciesAsync(userId);
-
-            if (!result.CatalogVacancies.Any())
+            var result = new CatalogVacancyResultOutput
             {
-                return result;
-            }
+                CatalogVacancies = await _vacancyRepository.CatalogVacanciesAsync()
+            };
 
             return result;
         }
@@ -262,6 +309,29 @@ public sealed class VacancyService : IVacancyService
                 NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS);
 
             return createdVacancy;
+        }
+
+        catch (Exception ex)
+        {
+            await _logService.LogErrorAsync(ex);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Метод фильтрации вакансий в зависимости от параметров фильтров.
+    /// </summary>
+    /// <param name="filters">Фильтры.</param>
+    /// <returns>Список вакансий после фильтрации.</returns>
+    public async Task<CatalogVacancyResultOutput> FilterVacanciesAsync(FilterVacancyInput filters)
+    {
+        try
+        {
+            var result = new CatalogVacancyResultOutput();
+            var items = await _vacancyRepository.GetFiltersVacanciesAsync();
+            result.CatalogVacancies = await _salaryFilterVacanciesChain.FilterVacanciesAsync(filters, items);
+
+            return result;
         }
 
         catch (Exception ex)

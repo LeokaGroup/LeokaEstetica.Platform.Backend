@@ -1,6 +1,7 @@
 using AutoMapper;
 using LeokaEstetica.Platform.Base;
 using LeokaEstetica.Platform.Base.Abstractions.Services;
+using LeokaEstetica.Platform.Controllers.Builders;
 using LeokaEstetica.Platform.Controllers.Validators.Vacancy;
 using LeokaEstetica.Platform.Core.Filters;
 using LeokaEstetica.Platform.Models.Dto.Input.Vacancy;
@@ -45,7 +46,7 @@ public class VacancyController : BaseController
     [ProducesResponseType(404)]
     public async Task<CatalogVacancyResultOutput> CatalogVacanciesAsync()
     {
-        var result = await _vacancyService.CatalogVacanciesAsync(GetUserName());
+        var result = await _vacancyService.CatalogVacanciesAsync();
 
         return result;
     }
@@ -162,11 +163,33 @@ public class VacancyController : BaseController
 
             return result;
         }
-        
+
         var createdVacancy = await _vacancyService.UpdateVacancyAsync(vacancyInput.VacancyName,
             vacancyInput.VacancyText, vacancyInput.WorkExperience, vacancyInput.Employment, vacancyInput.Payment,
             GetUserName(), vacancyInput.VacancyId);
         result = _mapper.Map<VacancyOutput>(createdVacancy);
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод фильтрации вакансий в зависимости от параметров фильтров.
+    /// </summary>
+    /// <param name="filterVacancyInput">Входная модель.</param>
+    /// <returns>Список вакансий после фильтрации.</returns>
+    [HttpGet]
+    [Route("filter")]
+    [ProducesResponseType(200, Type = typeof(CatalogVacancyResultOutput))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<CatalogVacancyResultOutput> FilterVacanciesAsync(
+        [FromQuery] FilterVacancyInput filterVacancyInput)
+    {
+        filterVacancyInput.Employments =
+            CreateEmploymentsBuilder.CreateEmploymentsResult(filterVacancyInput.EmploymentsValues);
+        var result = await _vacancyService.FilterVacanciesAsync(filterVacancyInput);
 
         return result;
     }
