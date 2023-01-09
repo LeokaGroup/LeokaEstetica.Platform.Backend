@@ -1,6 +1,6 @@
 using LeokaEstetica.Platform.Models.Enums;
 
-namespace LeokaEstetica.Platform.Controllers.Builders;
+namespace LeokaEstetica.Platform.Services.Builders;
 
 /// <summary>
 /// Класс билдера создает список занятостей для входного параметра.
