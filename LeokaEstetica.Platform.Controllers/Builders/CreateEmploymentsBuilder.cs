@@ -13,14 +13,27 @@ public static class CreateEmploymentsBuilder
     private static readonly List<FilterEmploymentTypeEnum> _employments = new();
 
     /// <summary>
+    /// Список, который будем выдавать по дефолту, если ничего не передали.
+    /// </summary>
+    private static readonly List<FilterEmploymentTypeEnum> _defaultEmployments = new()
+    {
+        FilterEmploymentTypeEnum.None
+    };
+
+    /// <summary>
     /// Метод создает список занятостей из строки.
     /// </summary>
     /// <param name="employments">Входная строка для парсинга.</param>
     /// <returns>Список занятостей.</returns>
     public static List<FilterEmploymentTypeEnum> CreateEmploymentsResult(string employments)
     {
+        if (string.IsNullOrEmpty(employments))
+        {
+            return _defaultEmployments;
+        }
+
         _employments.Clear();
-        
+
         // Если есть разделитель, то можем разбить.
         if (employments.Contains(','))
         {
