@@ -1,43 +1,17 @@
 using System.Globalization;
 using LeokaEstetica.Platform.LuceneNet.Consts;
-using LeokaEstetica.Platform.LuceneNet.Factors;
 using LeokaEstetica.Platform.Models.Dto.Input.Vacancy;
 using LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
-using Lucene.Net.Analysis.Standard;
 using Lucene.Net.Documents;
 using Lucene.Net.Index;
-using Lucene.Net.Store;
-using Version = Lucene.Net.Util.Version;
 
 namespace LeokaEstetica.Platform.LuceneNet.Chains.Vacancy;
 
 /// <summary>
 /// Базовый класс фильтрации вакансий.
 /// </summary>
-public abstract class BaseVacanciesFilterChain
+public abstract class BaseVacanciesFilterChain : BaseFilterChain
 {
-    /// <summary>
-    /// Версия люсины.
-    /// </summary>
-    private const Version _version = Version.LUCENE_CURRENT;
-
-    /// <summary>
-    /// Индекс в памяти.
-    /// Объявляем как Lazy, чтобы дергался лишь при использовании.
-    /// </summary>
-    protected Lazy<RAMDirectory> _index { get; set; }
-
-    /// <summary>
-    /// Используем стандартный анализатор текста для люсины.
-    /// </summary>
-    private readonly StandardAnalyzer _analyzer;
-
-    protected BaseVacanciesFilterChain()
-    {
-        _analyzer = new StandardAnalyzer(_version);
-        _index = new Lazy<RAMDirectory>(CreateIndexRamDirectoryFactory.CreateNew<RAMDirectory>);
-    }
-
     /// <summary>
     /// Метод занимается передачей по цепочке.
     /// Он будет null, если ему неизвестен следующий в цепочке либо его нет.
