@@ -1,4 +1,5 @@
 using LeokaEstetica.Platform.Access.Enums;
+using LeokaEstetica.Platform.Models.Dto.Input.Project;
 using LeokaEstetica.Platform.Models.Dto.Output.Configs;
 using LeokaEstetica.Platform.Models.Dto.Output.Project;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectTeam;
@@ -142,4 +143,11 @@ public interface IProjectService
     /// <param name="vacancyId">Id вакансии.</param>
     /// <returns>Добавленный пользователь.</returns>s
     Task<ProjectTeamMemberEntity> InviteProjectTeamAsync(string userName, long projectId, long vacancyId);
+
+    /// <summary>
+    /// Метод фильтрации проектов в зависимости от параметров фильтров.
+    /// </summary>
+    /// <param name="filterProjectInput">Входная модель.</param>
+    /// <returns>Список проектов после фильтрации.</returns>
+    Task<IEnumerable<CatalogProjectOutput>> FilterProjectsAsync(FilterProjectInput filterProjectInput);
 }

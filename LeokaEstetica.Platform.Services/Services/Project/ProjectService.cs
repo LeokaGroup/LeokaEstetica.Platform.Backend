@@ -7,6 +7,7 @@ using LeokaEstetica.Platform.Database.Abstractions.Project;
 using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Database.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Logs.Abstractions;
+using LeokaEstetica.Platform.Models.Dto.Input.Project;
 using LeokaEstetica.Platform.Models.Dto.Output.Configs;
 using LeokaEstetica.Platform.Models.Dto.Output.Project;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectTeam;
@@ -710,5 +711,15 @@ public sealed class ProjectService : IProjectService
                 "А пока, попробуйте еще раз.",
                 NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR);
         }
+    }
+    
+    /// <summary>
+    /// Метод фильтрации проектов в зависимости от параметров фильтров.
+    /// </summary>
+    /// <param name="filterProjectInput">Входная модель.</param>
+    /// <returns>Список проектов после фильтрации.</returns>
+    public Task<IEnumerable<CatalogProjectOutput>> FilterProjectsAsync(FilterProjectInput filterProjectInput)
+    {
+        throw new NotImplementedException();
     }
 }
