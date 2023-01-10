@@ -482,10 +482,9 @@ public sealed class ProjectRepository : IProjectRepository
     /// Метод добавляет пользователя в команду проекта.
     /// </summary>
     /// <param name="userId">Id пользователя, который будет добавлен в команду проекта.</param>
-    /// <param name="projectId">Id проекта.</param>
     /// <param name="vacancyId">Id вакансии.</param>
     /// <returns>Данные добавленного пользователя.</returns>
-    public async Task<ProjectTeamMemberEntity> AddProjectTeamMemberAsync(long userId, long projectId, long vacancyId,
+    public async Task<ProjectTeamMemberEntity> AddProjectTeamMemberAsync(long userId, long vacancyId,
         long teamId)
     {
         var result = new ProjectTeamMemberEntity
@@ -514,5 +513,29 @@ public sealed class ProjectRepository : IProjectRepository
             .FirstOrDefaultAsync();
 
         return result;
+    }
+
+    /// <summary>
+    /// Метод получает список проектов для дальнейшей фильтрации.
+    /// </summary>
+    /// <returns>Список проектов без выгрузки в память, так как этот список будем еще фильтровать.</returns>
+    public async Task<IOrderedQueryable<CatalogProjectOutput>> GetFiltersProjectsAsync()
+    {
+        var result = (IOrderedQueryable<CatalogProjectOutput>)_pgContext.CatalogProjects
+            .Include(p => p.Project)
+            .Select(p => new CatalogProjectOutput
+            {
+                ProjectId = p.Project.ProjectId,
+                ProjectName = p.Project.ProjectName,
+                DateCreated = p.Project.DateCreated,
+                ProjectIcon = p.Project.ProjectIcon,
+                ProjectDetails = p.Project.ProjectDetails,
+                HasVacancies =
+                    _pgContext.ProjectVacancies.Any(pv =>
+                        pv.ProjectId == p.ProjectId) // Если у проекта есть вакансии.
+            })
+            .AsQueryable();
+
+        return await Task.FromResult(result);
     }
 }

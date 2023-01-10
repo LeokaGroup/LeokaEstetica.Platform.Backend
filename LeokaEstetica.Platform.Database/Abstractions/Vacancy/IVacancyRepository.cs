@@ -89,6 +89,7 @@ public interface IVacancyRepository
     /// <summary>
     /// Метод получает список вакансий для дальнейшей фильтрации.
     /// </summary>
-    /// <returns>Список вакансий без выгрузки в память, так как этот список будем еще фильтровать.</returns>
+    /// <returns>Список вакансий без выгрузки в память,
+    /// так как этот список будем еще фильтровать.</returns>
     Task<IOrderedQueryable<CatalogVacancyOutput>> GetFiltersVacanciesAsync();
 }

@@ -7,6 +7,7 @@ using LeokaEstetica.Platform.Database.Abstractions.Project;
 using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Database.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Logs.Abstractions;
+using LeokaEstetica.Platform.LuceneNet.Chains.Project;
 using LeokaEstetica.Platform.Models.Dto.Input.Project;
 using LeokaEstetica.Platform.Models.Dto.Output.Configs;
 using LeokaEstetica.Platform.Models.Dto.Output.Project;
@@ -38,6 +39,10 @@ public sealed class ProjectService : IProjectService
     private readonly IVacancyService _vacancyService;
     private readonly IVacancyRepository _vacancyRepository;
 
+    // Определяем всю цепочку фильтров.
+    private readonly BaseProjectsFilterChain _dateProjectsFilterChain = new DateProjectsFilterChain();
+    private readonly BaseProjectsFilterChain _projectsVacanciesFilterChain = new ProjectsVacanciesFilterChain();
+
     public ProjectService(IProjectRepository projectRepository,
         ILogService logService,
         IUserRepository userRepository,
@@ -53,6 +58,9 @@ public sealed class ProjectService : IProjectService
         _projectNotificationsService = projectNotificationsService;
         _vacancyService = vacancyService;
         _vacancyRepository = vacancyRepository;
+
+        // Определяем обработчики цепочки фильтров.
+        _dateProjectsFilterChain.Successor = _projectsVacanciesFilterChain;
     }
 
     /// <summary>
@@ -642,7 +650,7 @@ public sealed class ProjectService : IProjectService
         try
         {
             await ValidateInviteProjectTeamParams(userName, projectId, vacancyId);
-            
+
             var userId = await _userRepository.GetUserIdByEmailOrLoginAsync(userName);
 
             if (userId <= 0)
@@ -654,9 +662,9 @@ public sealed class ProjectService : IProjectService
 
             // Получаем Id команды проекта.
             var teamId = await _projectRepository.GetProjectTeamIdAsync(projectId);
-            
+
             // Добавляем пользователя в команду проекта.
-            var result = await _projectRepository.AddProjectTeamMemberAsync(userId, projectId, vacancyId, teamId);
+            var result = await _projectRepository.AddProjectTeamMemberAsync(userId, vacancyId, teamId);
 
             return result;
         }
@@ -712,14 +720,29 @@ public sealed class ProjectService : IProjectService
                 NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR);
         }
     }
-    
+
     /// <summary>
     /// Метод фильтрации проектов в зависимости от параметров фильтров.
     /// </summary>
     /// <param name="filterProjectInput">Входная модель.</param>
     /// <returns>Список проектов после фильтрации.</returns>
-    public Task<IEnumerable<CatalogProjectOutput>> FilterProjectsAsync(FilterProjectInput filterProjectInput)
+    public async Task<IEnumerable<CatalogProjectOutput>> FilterProjectsAsync(FilterProjectInput filterProjectInput)
     {
-        throw new NotImplementedException();
+        try
+        {
+            // Разбиваем строку занятости, так как там может приходить несколько значений в строке.
+            // filters.Employments =
+            //     CreateEmploymentsBuilder.CreateEmploymentsResult(filters.EmploymentsValues);
+            var items = await _projectRepository.GetFiltersProjectsAsync();
+            var result = await _dateProjectsFilterChain.FilterProjectsAsync(filterProjectInput, items);
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            await _logService.LogErrorAsync(ex);
+            throw;
+        }
     }
 }

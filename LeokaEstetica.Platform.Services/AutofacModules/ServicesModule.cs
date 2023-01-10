@@ -68,11 +68,11 @@ public class ServicesModule : Module
         builder
             .RegisterType<ProjectService>()
             .Named<IProjectService>("ProjectService")
-            .InstancePerLifetimeScope();
+            .SingleInstance();
         builder
             .RegisterType<ProjectService>()
             .As<IProjectService>()
-            .InstancePerLifetimeScope();
+            .SingleInstance();
         
         // Сервис вакансий.
         builder
