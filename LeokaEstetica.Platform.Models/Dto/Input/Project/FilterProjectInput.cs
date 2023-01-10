@@ -1,3 +1,5 @@
+using LeokaEstetica.Platform.Models.Enums;
+
 namespace LeokaEstetica.Platform.Models.Dto.Input.Project;
 
 /// <summary>
@@ -19,4 +21,9 @@ public class FilterProjectInput
     /// Фильтр стадий проекта (может содержать несколько значений).
     /// </summary>
     public string StageValues { get; set; }
+
+    /// <summary>
+    /// Список стадий проекта.
+    /// </summary>
+    public List<FilterProjectStageTypeEnum> ProjectStages { get; set; }
 }

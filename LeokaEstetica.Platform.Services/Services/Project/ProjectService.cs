@@ -726,19 +726,18 @@ public sealed class ProjectService : IProjectService
     /// </summary>
     /// <param name="filterProjectInput">Входная модель.</param>
     /// <returns>Список проектов после фильтрации.</returns>
-    public async Task<IEnumerable<CatalogProjectOutput>> FilterProjectsAsync(FilterProjectInput filterProjectInput)
+    public async Task<IEnumerable<CatalogProjectOutput>> FilterProjectsAsync(FilterProjectInput filters)
     {
         try
         {
-            // Разбиваем строку занятости, так как там может приходить несколько значений в строке.
-            // filters.Employments =
-            //     CreateEmploymentsBuilder.CreateEmploymentsResult(filters.EmploymentsValues);
+            // Разбиваем строку стадий проекта, так как там может приходить несколько значений в строке.
+            filters.ProjectStages = CreateProjectStagesBuilder.CreateProjectStagesResult(filters.StageValues);
             var items = await _projectRepository.GetFiltersProjectsAsync();
-            var result = await _dateProjectsFilterChain.FilterProjectsAsync(filterProjectInput, items);
+            var result = await _dateProjectsFilterChain.FilterProjectsAsync(filters, items);
 
             return result;
         }
-        
+
         catch (Exception ex)
         {
             await _logService.LogErrorAsync(ex);
