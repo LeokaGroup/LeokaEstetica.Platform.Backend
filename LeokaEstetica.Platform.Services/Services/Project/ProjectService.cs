@@ -44,6 +44,24 @@ public sealed class ProjectService : IProjectService
     private readonly BaseProjectsFilterChain _projectsVacanciesFilterChain = new ProjectsVacanciesFilterChain();
     private readonly BaseProjectsFilterChain _projectStageConceptFilterChain = new ProjectStageConceptFilterChain();
 
+    private readonly BaseProjectsFilterChain _projectStageSearchTeamFilterChain =
+        new ProjectStageSearchTeamFilterChain();
+
+    private readonly BaseProjectsFilterChain _projectStageTestingFilterChain = new ProjectStageTestingFilterChain();
+
+    private readonly BaseProjectsFilterChain _projectStageDevelopmentFilterChain =
+        new ProjectStageDevelopmentFilterChain();
+
+    private readonly BaseProjectsFilterChain _projectStageProjectingFilterChain =
+        new ProjectStageProjectingFilterChain();
+
+    private readonly BaseProjectsFilterChain _projectStageSupportFilterChain = new ProjectStageSupportFilterChain();
+
+    private readonly BaseProjectsFilterChain _projectStageStartFilterChain = new ProjectStageStartFilterChain();
+
+    private readonly BaseProjectsFilterChain _projectStageSearchInvestorsFilterChain =
+        new ProjectStageSearchInvestorsFilterChain();
+
     public ProjectService(IProjectRepository projectRepository,
         ILogService logService,
         IUserRepository userRepository,
@@ -63,6 +81,13 @@ public sealed class ProjectService : IProjectService
         // Определяем обработчики цепочки фильтров.
         _dateProjectsFilterChain.Successor = _projectsVacanciesFilterChain;
         _projectsVacanciesFilterChain.Successor = _projectStageConceptFilterChain;
+        _projectStageConceptFilterChain.Successor = _projectStageSearchTeamFilterChain;
+        _projectStageSearchTeamFilterChain.Successor = _projectStageTestingFilterChain;
+        _projectStageTestingFilterChain.Successor = _projectStageDevelopmentFilterChain;
+        _projectStageDevelopmentFilterChain.Successor = _projectStageProjectingFilterChain;
+        _projectStageProjectingFilterChain.Successor = _projectStageSupportFilterChain;
+        _projectStageSupportFilterChain.Successor = _projectStageStartFilterChain;
+        _projectStageStartFilterChain.Successor = _projectStageSearchInvestorsFilterChain;
     }
 
     /// <summary>

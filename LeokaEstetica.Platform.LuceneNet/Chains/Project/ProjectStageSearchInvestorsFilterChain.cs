@@ -9,12 +9,15 @@ using Lucene.Net.Search;
 namespace LeokaEstetica.Platform.LuceneNet.Chains.Project;
 
 /// <summary>
-/// Класс фильтра по стадии проекта (идея).
+/// Метод фмильтрует проекты по стадии "поиск инвесторов".
 /// </summary>
-public class ProjectStageConceptFilterChain : BaseProjectsFilterChain
+/// <param name="filters">Фильтры.</param>
+/// <param name="projects">Список проектов.</param>
+/// <returns>Список проектов после фильтрации.</returns>
+public class ProjectStageSearchInvestorsFilterChain : BaseProjectsFilterChain
 {
     /// <summary>
-    /// Метод фмильтрует проекты по стадии "идея".
+    /// Метод фмильтрует проекты по стадии "поиск инвесторов".
     /// </summary>
     /// <param name="filters">Фильтры.</param>
     /// <param name="projects">Список проектов.</param>
@@ -22,8 +25,8 @@ public class ProjectStageConceptFilterChain : BaseProjectsFilterChain
     public override async Task<IQueryable<CatalogProjectOutput>> FilterProjectsAsync(FilterProjectInput filters,
         IOrderedQueryable<CatalogProjectOutput> projects)
     {
-        // Если фильтр не по стадии проекта "идея", то передаем следующему по цепочке.
-        if (!filters.ProjectStages.Contains(FilterProjectStageTypeEnum.Concept))
+        // Если фильтр не по стадии проекта "поиск инвесторов", то передаем следующему по цепочке.
+        if (!filters.ProjectStages.Contains(FilterProjectStageTypeEnum.SearchInvestors))
         {
             return await CallNextSuccessor(filters, projects);
         }
@@ -34,7 +37,7 @@ public class ProjectStageConceptFilterChain : BaseProjectsFilterChain
         using var searcher = new IndexSearcher(reader);
 
         var query = new TermQuery(new Term(ProjectFinderConst.PROJECT_STAGE_SYSNAME,
-            FilterProjectStageTypeEnum.Concept.ToString()));
+            FilterProjectStageTypeEnum.SearchInvestors.ToString()));
         var filter = new QueryWrapperFilter(query);
 
         // Больше 20 и не надо, так как есть пагинация.
