@@ -42,6 +42,7 @@ public sealed class ProjectService : IProjectService
     // Определяем всю цепочку фильтров.
     private readonly BaseProjectsFilterChain _dateProjectsFilterChain = new DateProjectsFilterChain();
     private readonly BaseProjectsFilterChain _projectsVacanciesFilterChain = new ProjectsVacanciesFilterChain();
+    private readonly BaseProjectsFilterChain _projectStageConceptFilterChain = new ProjectStageConceptFilterChain();
 
     public ProjectService(IProjectRepository projectRepository,
         ILogService logService,
@@ -61,6 +62,7 @@ public sealed class ProjectService : IProjectService
 
         // Определяем обработчики цепочки фильтров.
         _dateProjectsFilterChain.Successor = _projectsVacanciesFilterChain;
+        _projectsVacanciesFilterChain.Successor = _projectStageConceptFilterChain;
     }
 
     /// <summary>

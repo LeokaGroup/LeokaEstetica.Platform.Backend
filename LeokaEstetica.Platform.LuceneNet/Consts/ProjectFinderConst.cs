@@ -44,4 +44,9 @@ public class ProjectFinderConst
     /// Поле признака наличия вакансий у проекта.
     /// </summary>
     public const string HAS_VACANCIES = "HasVacancies";
+    
+    /// <summary>
+    /// Поле признака наличия вакансий у проекта.
+    /// </summary>
+    public const string PROJECT_STAGE_SYSNAME = "ProjectStage";
 }

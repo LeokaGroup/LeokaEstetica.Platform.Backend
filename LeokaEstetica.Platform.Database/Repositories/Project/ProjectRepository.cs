@@ -531,8 +531,13 @@ public sealed class ProjectRepository : IProjectRepository
                 ProjectIcon = p.Project.ProjectIcon,
                 ProjectDetails = p.Project.ProjectDetails,
                 HasVacancies =
-                    _pgContext.ProjectVacancies.Any(pv =>
-                        pv.ProjectId == p.ProjectId) // Если у проекта есть вакансии.
+                    _pgContext.ProjectVacancies.Any(pv => pv.ProjectId == p.ProjectId), // Если у проекта есть вакансии.
+                ProjectStageSysName = (from ps in _pgContext.UserProjectsStages
+                        join s in _pgContext.ProjectStages
+                            on ps.StageId
+                            equals s.StageId
+                        select s.StageSysName)
+                    .FirstOrDefault()
             })
             .AsQueryable();
 

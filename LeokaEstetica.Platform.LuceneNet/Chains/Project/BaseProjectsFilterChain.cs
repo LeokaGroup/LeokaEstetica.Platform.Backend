@@ -80,6 +80,12 @@ public abstract class BaseProjectsFilterChain : BaseFilterChain
                     Field.Index.NOT_ANALYZED_NO_NORMS));
             }
             
+            if (!string.IsNullOrEmpty(prj.ProjectStageSysName))
+            {
+                doc.Add(new Field(ProjectFinderConst.PROJECT_STAGE_SYSNAME, prj.ProjectStageSysName, Field.Store.YES,
+                    Field.Index.NOT_ANALYZED_NO_NORMS));
+            }
+            
             doc.Add(new Field(ProjectFinderConst.HAS_VACANCIES, prj.HasVacancies.ToString(), Field.Store.YES,
                 Field.Index.NOT_ANALYZED_NO_NORMS));
 

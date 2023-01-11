@@ -1,6 +1,5 @@
 using LeokaEstetica.Platform.Models.Dto.Input.Project;
 using LeokaEstetica.Platform.Models.Dto.Output.Project;
-using System.Linq;
 
 namespace LeokaEstetica.Platform.LuceneNet.Chains.Project;
 

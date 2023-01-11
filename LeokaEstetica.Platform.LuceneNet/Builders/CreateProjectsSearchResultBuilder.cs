@@ -13,7 +13,7 @@ public static class CreateProjectsSearchResultBuilder
     /// Список проектов.
     /// </summary>
     private static readonly List<CatalogProjectOutput> _projects = new(20);
-    
+
     /// <summary>
     /// Метод создает результат поиска проектов.
     /// </summary>
@@ -24,7 +24,7 @@ public static class CreateProjectsSearchResultBuilder
         IndexSearcher searcher)
     {
         _projects.Clear();
-        
+
         foreach (var item in searchResults)
         {
             var document = searcher.Doc(item.Doc);
@@ -34,6 +34,7 @@ public static class CreateProjectsSearchResultBuilder
             var dateCreated = string.Empty;
             var projectIcon = string.Empty;
             var hasVacancies = string.Empty;
+            var stageSysName = string.Empty;
 
             if (!string.IsNullOrEmpty(document.GetField(ProjectFinderConst.PROJECT_NAME).ToString()))
             {
@@ -54,10 +55,15 @@ public static class CreateProjectsSearchResultBuilder
             {
                 projectIcon = document.GetField(ProjectFinderConst.PROJECT_ICON).StringValue;
             }
-            
+
             if (!string.IsNullOrEmpty(document.GetField(ProjectFinderConst.HAS_VACANCIES).ToString()))
             {
                 hasVacancies = document.GetField(ProjectFinderConst.HAS_VACANCIES).StringValue;
+            }
+
+            if (!string.IsNullOrEmpty(document.GetField(ProjectFinderConst.PROJECT_STAGE_SYSNAME).ToString()))
+            {
+                stageSysName = document.GetField(ProjectFinderConst.PROJECT_STAGE_SYSNAME).StringValue;
             }
 
             _projects.Add(new CatalogProjectOutput
@@ -67,7 +73,8 @@ public static class CreateProjectsSearchResultBuilder
                 ProjectDetails = projectDetails,
                 DateCreated = DateTime.Parse(dateCreated),
                 ProjectIcon = projectIcon,
-                HasVacancies = bool.Parse(hasVacancies)
+                HasVacancies = bool.Parse(hasVacancies),
+                ProjectStageSysName = stageSysName
             });
         }
 

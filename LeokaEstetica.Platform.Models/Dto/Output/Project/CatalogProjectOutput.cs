@@ -34,4 +34,9 @@ public class CatalogProjectOutput
     /// Признак наличия вакансий у проекта.
     /// </summary>
     public bool HasVacancies { get; set; }
+
+    /// <summary>
+    /// Системное название проекта.
+    /// </summary>
+    public string ProjectStageSysName { get; set; }
 }
