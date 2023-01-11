@@ -9,6 +9,9 @@ namespace LeokaEstetica.Platform.LuceneNet.Builders;
 /// </summary>
 public static class CreateVacanciesSearchResultBuilder
 {
+    /// <summary>
+    /// Список вакансий.
+    /// </summary>
     private static readonly List<CatalogVacancyOutput> _vacancies = new(20);
 
     /// <summary>
@@ -21,6 +24,7 @@ public static class CreateVacanciesSearchResultBuilder
         IndexSearcher searcher)
     {
         _vacancies.Clear();
+        
         foreach (var item in searchResults)
         {
             var document = searcher.Doc(item.Doc);

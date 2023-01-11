@@ -384,7 +384,7 @@ public class ProjectController : BaseController
 
         return result;
     }
-    
+
     /// <summary>
     /// Метод получает названия полей для таблицы команды проекта пользователя.
     /// </summary>
@@ -422,6 +422,26 @@ public class ProjectController : BaseController
         var invitedUser = await _projectService.InviteProjectTeamAsync(inviteProjectMemberInput.User,
             inviteProjectMemberInput.ProjectId, inviteProjectMemberInput.VacancyId);
         var result = _mapper.Map<ProjectTeamMemberOutput>(invitedUser);
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод фильтрации проектов в зависимости от параметров фильтров.
+    /// </summary>
+    /// <param name="filterProjectInput">Входная модель.</param>
+    /// <returns>Список проектов после фильтрации.</returns>
+    [HttpGet]
+    [Route("filter")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<CatalogProjectOutput>))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<IEnumerable<CatalogProjectOutput>> FilterProjectsAsync(
+        [FromQuery] FilterProjectInput filterProjectInput)
+    {
+        var result = await _projectService.FilterProjectsAsync(filterProjectInput);
 
         return result;
     }

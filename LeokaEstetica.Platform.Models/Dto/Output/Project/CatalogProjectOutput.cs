@@ -29,4 +29,14 @@ public class CatalogProjectOutput
     /// Дата создания проекта.
     /// </summary>
     public DateTime DateCreated { get; set; }
+
+    /// <summary>
+    /// Признак наличия вакансий у проекта.
+    /// </summary>
+    public bool HasVacancies { get; set; }
+
+    /// <summary>
+    /// Системное название проекта.
+    /// </summary>
+    public string ProjectStageSysName { get; set; }
 }

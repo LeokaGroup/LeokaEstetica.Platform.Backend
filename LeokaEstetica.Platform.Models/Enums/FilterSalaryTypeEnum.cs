@@ -4,7 +4,6 @@ namespace LeokaEstetica.Platform.Models.Enums;
 
 /// <summary>
 /// Перечисление типов фильтров по соответствиям.
-/// Используется при фильтрации по соответствиям.
 /// </summary>
 public enum FilterSalaryTypeEnum
 {
