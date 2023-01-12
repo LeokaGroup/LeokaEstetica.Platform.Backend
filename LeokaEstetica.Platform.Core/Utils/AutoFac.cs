@@ -87,7 +87,7 @@ public static class AutoFac
         
         var assemblies10 =
             GetAssembliesFromApplicationBaseDirectory(x =>
-                x.FullName.StartsWith("LeokaEstetica.Platform.LuceneNet"));
+                x.FullName.StartsWith("LeokaEstetica.Platform.Finder"));
 
         b.RegisterAssemblyTypes(assemblies1).AsImplementedInterfaces();
         b.RegisterAssemblyTypes(assemblies2).AsImplementedInterfaces();
