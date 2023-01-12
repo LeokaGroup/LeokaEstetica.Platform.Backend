@@ -12,7 +12,6 @@ using LeokaEstetica.Platform.Database.Repositories.Project;
 using LeokaEstetica.Platform.Database.Repositories.Resume;
 using LeokaEstetica.Platform.Database.Repositories.User;
 using LeokaEstetica.Platform.Database.Repositories.Vacancy;
-using LeokaEstetica.Platform.Finder.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Finder.Services.Vacancy;
 using LeokaEstetica.Platform.Logs.Services;
 using LeokaEstetica.Platform.Messaging.Services.Chat;
@@ -62,7 +61,8 @@ public class BaseServiceTest
     protected ProjectFinderService ProjectFinderService;
     protected ResumeService ResumeService;
     protected ResumeRepository ResumeRepository;
-    protected IVacancyFinderService IVacancyFinderService;
+    protected VacancyFinderService VacancyFinderService;
+    protected Finder.Services.Project.ProjectFinderService FinderProjectService;
 
     public BaseServiceTest()
     {
@@ -106,6 +106,7 @@ public class BaseServiceTest
         ProjectFinderService = new ProjectFinderService(LogService, UserRepository, ProjectNotificationsService);
         ResumeRepository = new ResumeRepository(PgContext);
         ResumeService = new ResumeService(LogService, ResumeRepository);
-        IVacancyFinderService = new VacancyFinderService(VacancyRepository);
+        VacancyFinderService = new VacancyFinderService(VacancyRepository, LogService);
+        FinderProjectService = new Finder.Services.Project.ProjectFinderService(ProjectRepository, LogService);
     }
 }
