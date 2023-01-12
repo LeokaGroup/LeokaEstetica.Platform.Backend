@@ -13,7 +13,7 @@ public abstract class BaseFilterChain
     /// <summary>
     /// Версия люсины.
     /// </summary>
-    private const Version _version = Version.LUCENE_CURRENT;
+    protected const Version _version = Version.LUCENE_CURRENT;
 
     /// <summary>
     /// Индекс в памяти.
