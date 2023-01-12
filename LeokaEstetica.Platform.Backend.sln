@@ -40,7 +40,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Moderation", "Moderation", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LeokaEstetica.Platform.Moderation", "LeokaEstetica.Platform.Moderation\LeokaEstetica.Platform.Moderation.csproj", "{F7F0A173-7414-467C-AE03-2C818071BC05}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LeokaEstetica.Platform.LuceneNet", "LeokaEstetica.Platform.LuceneNet\LeokaEstetica.Platform.LuceneNet.csproj", "{A1721B16-3838-4DAF-B9B6-0A8758025202}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LeokaEstetica.Platform.Finder", "LeokaEstetica.Platform.Finder\LeokaEstetica.Platform.Finder.csproj", "{A1721B16-3838-4DAF-B9B6-0A8758025202}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

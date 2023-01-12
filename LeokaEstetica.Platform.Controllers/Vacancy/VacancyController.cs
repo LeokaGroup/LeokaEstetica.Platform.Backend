@@ -3,6 +3,7 @@ using LeokaEstetica.Platform.Base;
 using LeokaEstetica.Platform.Base.Abstractions.Services;
 using LeokaEstetica.Platform.Controllers.Validators.Vacancy;
 using LeokaEstetica.Platform.Core.Filters;
+using LeokaEstetica.Platform.Finder.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Models.Dto.Input.Vacancy;
 using LeokaEstetica.Platform.Models.Dto.Output.Configs;
 using LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
@@ -22,14 +23,17 @@ public class VacancyController : BaseController
     private readonly IVacancyService _vacancyService;
     private readonly IMapper _mapper;
     private readonly IValidationExcludeErrorsService _validationExcludeErrorsService;
+    private readonly IVacancyFinderService _vacancyFinderService;
 
     public VacancyController(IVacancyService vacancyService,
         IMapper mapper,
-        IValidationExcludeErrorsService validationExcludeErrorsService)
+        IValidationExcludeErrorsService validationExcludeErrorsService, 
+        IVacancyFinderService vacancyFinderService)
     {
         _vacancyService = vacancyService;
         _mapper = mapper;
         _validationExcludeErrorsService = validationExcludeErrorsService;
+        _vacancyFinderService = vacancyFinderService;
     }
 
     /// <summary>
@@ -187,6 +191,25 @@ public class VacancyController : BaseController
         [FromQuery] FilterVacancyInput filterVacancyInput)
     {
         var result = await _vacancyService.FilterVacanciesAsync(filterVacancyInput);
+
+        return result;
+    }
+    
+    /// <summary>
+    /// Метод находит вакансии по поисковому запросу.
+    /// </summary>
+    /// <param name="searchText">Строка поиска.</param>
+    /// <returns>Список вакансий соответствующие поисковому запросу.</returns>
+    [HttpGet]
+    [Route("search")]
+    [ProducesResponseType(200, Type = typeof(CatalogVacancyResultOutput))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<CatalogVacancyResultOutput> SearchVacanciesAsync([FromQuery] string searchText)
+    {
+        var result = await _vacancyFinderService.SearchVacanciesAsync(searchText);
 
         return result;
     }
