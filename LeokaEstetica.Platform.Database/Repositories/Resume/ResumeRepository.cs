@@ -28,4 +28,26 @@ public sealed class ResumeRepository : IResumeRepository
 
         return result;
     }
+
+    /// <summary>
+    /// Метод получает резюме для фильтрации без выгрузки в память.
+    /// </summary>
+    /// <returns>Резюме без выгрузки в память.</returns>
+    public async Task<IOrderedQueryable<ProfileInfoEntity>> GetFilterResumesAsync()
+    {
+        var result = (IOrderedQueryable<ProfileInfoEntity>)_pgContext.ProfilesInfo
+            .Select(pi => new ProfileInfoEntity
+            {
+                LastName = pi.LastName,
+                FirstName = pi.FirstName,
+                Patronymic = pi.Patronymic,
+                Job = pi.Job,
+                Aboutme = pi.Aboutme,
+                IsShortFirstName = pi.IsShortFirstName,
+                UserId = pi.UserId
+            })
+            .AsQueryable();
+
+        return await Task.FromResult(result);
+    }
 }
