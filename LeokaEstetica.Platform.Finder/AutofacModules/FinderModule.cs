@@ -1,6 +1,8 @@
 using Autofac;
 using LeokaEstetica.Platform.Core.Attributes;
+using LeokaEstetica.Platform.Finder.Abstractions.Project;
 using LeokaEstetica.Platform.Finder.Abstractions.Vacancy;
+using LeokaEstetica.Platform.Finder.Services.Project;
 using LeokaEstetica.Platform.Finder.Services.Vacancy;
 
 namespace LeokaEstetica.Platform.Finder.AutofacModules;
@@ -18,6 +20,16 @@ public class FinderModule : Module
         builder
             .RegisterType<VacancyFinderService>()
             .As<IVacancyFinderService>()
+            .SingleInstance();
+        
+        // Поисковый сервис проектов.
+        builder
+            .RegisterType<ProjectFinderService>()
+            .Named<IProjectFinderService>("ProjectFinderService")
+            .SingleInstance();
+        builder
+            .RegisterType<ProjectFinderService>()
+            .As<IProjectFinderService>()
             .SingleInstance();
     }
 }

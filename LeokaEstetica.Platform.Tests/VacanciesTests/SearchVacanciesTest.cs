@@ -9,7 +9,7 @@ public class SearchVacanciesTest : BaseServiceTest
     [Test]
     public async Task SearchVacanciesAsyncTest()
     {
-        var result = await IVacancyFinderService.SearchVacanciesAsync("Тестовая вакансия");
+        var result = await VacancyFinderService.SearchVacanciesAsync("Тестовая вакансия");
         
         IsNotNull(result);
         IsNotEmpty(result.CatalogVacancies);

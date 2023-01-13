@@ -4,6 +4,7 @@ using LeokaEstetica.Platform.Base.Abstractions.Services;
 using LeokaEstetica.Platform.Controllers.ModelsValidation.Project;
 using LeokaEstetica.Platform.Controllers.Validators.Project;
 using LeokaEstetica.Platform.Core.Filters;
+using LeokaEstetica.Platform.Finder.Abstractions.Project;
 using LeokaEstetica.Platform.Messaging.Abstractions.Project;
 using LeokaEstetica.Platform.Messaging.Builders;
 using LeokaEstetica.Platform.Models.Dto.Input.Project;
@@ -29,16 +30,19 @@ public class ProjectController : BaseController
     private readonly IMapper _mapper;
     private readonly IValidationExcludeErrorsService _validationExcludeErrorsService;
     private readonly IProjectCommentsService _projectCommentsService;
+    private readonly IProjectFinderService _projectFinderService;
 
     public ProjectController(IProjectService projectService,
         IMapper mapper,
         IValidationExcludeErrorsService validationExcludeErrorsService,
-        IProjectCommentsService projectCommentsService)
+        IProjectCommentsService projectCommentsService, 
+        IProjectFinderService projectFinderService)
     {
         _projectService = projectService;
         _mapper = mapper;
         _validationExcludeErrorsService = validationExcludeErrorsService;
         _projectCommentsService = projectCommentsService;
+        _projectFinderService = projectFinderService;
     }
 
     /// <summary>
@@ -442,6 +446,25 @@ public class ProjectController : BaseController
         [FromQuery] FilterProjectInput filterProjectInput)
     {
         var result = await _projectService.FilterProjectsAsync(filterProjectInput);
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод находит проекты по поисковому запросу.
+    /// </summary>
+    /// <param name="searchText">Строка поиска.</param>
+    /// <returns>Список проектов соответствующие поисковому запросу.</returns>
+    [HttpGet]
+    [Route("search")]
+    [ProducesResponseType(200, Type = typeof(CatalogProjectResultOutput))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<CatalogProjectResultOutput> SearchProjectsAsync([FromQuery] string searchText)
+    {
+        var result = await _projectFinderService.SearchProjectsAsync(searchText);
 
         return result;
     }
