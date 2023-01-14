@@ -31,6 +31,8 @@ public sealed class ResumeService : IResumeService
         {
             var result = await _resumeRepository.GetProfileInfosAsync();
             
+            // TODO: Это по хорошему должна решать мродерация и некорректные резюме не будут попадать в каталог.
+            // TODO: А это потом надо убрать.
             // Убираем анкеты, которые не проходят по условиям.
             CreateProfileInfosBuilder.CreateProfileInfosResult(ref result);
 
