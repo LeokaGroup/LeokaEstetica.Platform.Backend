@@ -24,16 +24,19 @@ public class VacancyController : BaseController
     private readonly IMapper _mapper;
     private readonly IValidationExcludeErrorsService _validationExcludeErrorsService;
     private readonly IVacancyFinderService _vacancyFinderService;
+    private readonly IVacancyPaginationService _vacancyPaginationService;
 
     public VacancyController(IVacancyService vacancyService,
         IMapper mapper,
         IValidationExcludeErrorsService validationExcludeErrorsService, 
-        IVacancyFinderService vacancyFinderService)
+        IVacancyFinderService vacancyFinderService, 
+        IVacancyPaginationService vacancyPaginationService)
     {
         _vacancyService = vacancyService;
         _mapper = mapper;
         _validationExcludeErrorsService = validationExcludeErrorsService;
         _vacancyFinderService = vacancyFinderService;
+        _vacancyPaginationService = vacancyPaginationService;
     }
 
     /// <summary>
@@ -210,6 +213,25 @@ public class VacancyController : BaseController
     public async Task<CatalogVacancyResultOutput> SearchVacanciesAsync([FromQuery] string searchText)
     {
         var result = await _vacancyFinderService.SearchVacanciesAsync(searchText);
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод пагинации вакансий.
+    /// </summary>
+    /// <param name="page">Номер страницы.</param>
+    /// <returns>Список вакансий.</returns>
+    [HttpGet]
+    [Route("pagination/{page}")]
+    [ProducesResponseType(200, Type = typeof(PaginationVacancyOutput))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<PaginationVacancyOutput> GetVacanciesPaginationAsync([FromQuery] int page = 1)
+    {
+        var result = await _vacancyPaginationService.GetVacanciesPaginationAsync(page);
 
         return result;
     }

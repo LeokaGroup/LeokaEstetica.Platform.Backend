@@ -15,7 +15,7 @@ namespace LeokaEstetica.Platform.Finder.Services.Resume;
 /// <summary>
 /// Класс реализует методы поискового сервиса резюме.
 /// </summary>
-public class ResumeFinderService : BaseFilterChain, IResumeFinderService
+public class ResumeFinderService : BaseIndexRamDirectory, IResumeFinderService
 {
     private readonly ILogService _logService;
     private readonly IResumeRepository _resumeRepository;

@@ -43,5 +43,15 @@ public class FinderModule : Module
             .RegisterType<ResumeFinderService>()
             .As<IResumeFinderService>()
             .SingleInstance();
+        
+        // Сервис пагинации вакансий.
+        builder
+            .RegisterType<VacancyPaginationService>()
+            .Named<IVacancyPaginationService>("VacancyPaginationService")
+            .SingleInstance();
+        builder
+            .RegisterType<VacancyPaginationService>()
+            .As<IVacancyPaginationService>()
+            .SingleInstance();
     }
 }

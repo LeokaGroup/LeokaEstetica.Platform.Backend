@@ -1,5 +1,8 @@
 namespace LeokaEstetica.Platform.Finder.Factors;
 
+/// <summary>
+/// Класс факторки, которая создает индекс для работы с Lucene.
+/// </summary>
 public static class CreateIndexRamDirectoryFactory
 {
     /// <summary>

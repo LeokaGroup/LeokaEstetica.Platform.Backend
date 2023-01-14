@@ -7,7 +7,7 @@ namespace LeokaEstetica.Platform.Finder.Chains.Vacancy;
 /// <summary>
 /// Базовый класс фильтрации вакансий.
 /// </summary>
-public abstract class BaseVacanciesFilterChain : BaseFilterChain
+public abstract class BaseVacanciesFilterChain : BaseIndexRamDirectory
 {
     /// <summary>
     /// Метод занимается передачей по цепочке.

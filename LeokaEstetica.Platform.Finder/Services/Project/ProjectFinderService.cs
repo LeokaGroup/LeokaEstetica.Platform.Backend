@@ -15,7 +15,7 @@ namespace LeokaEstetica.Platform.Finder.Services.Project;
 /// <summary>
 /// Класс реализует методы поискового сервиса проектов.
 /// </summary>
-public class ProjectFinderService : BaseFilterChain, IProjectFinderService
+public class ProjectFinderService : BaseIndexRamDirectory, IProjectFinderService
 {
     private readonly IProjectRepository _projectRepository;
     private readonly ILogService _logService;
