@@ -229,7 +229,7 @@ public class VacancyController : BaseController
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<PaginationVacancyOutput> GetVacanciesPaginationAsync([FromQuery] int page = 1)
+    public async Task<PaginationVacancyOutput> GetVacanciesPaginationAsync([FromRoute] int page)
     {
         var result = await _vacancyPaginationService.GetVacanciesPaginationAsync(page);
 

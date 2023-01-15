@@ -32,7 +32,7 @@ public class VacancyPaginationService : BaseIndexRamDirectory, IVacancyPaginatio
     /// </summary>
     /// <param name="page">Номер страницы.</param>
     /// <returns>Список вакансий.</returns>
-    public async Task<PaginationVacancyOutput> GetVacanciesPaginationAsync(int page = 1)
+    public async Task<PaginationVacancyOutput> GetVacanciesPaginationAsync(int page)
     {
         try
         {

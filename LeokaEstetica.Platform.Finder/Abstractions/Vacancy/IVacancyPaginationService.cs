@@ -12,5 +12,5 @@ public interface IVacancyPaginationService
     /// </summary>
     /// <param name="page">Номер страницы.</param>
     /// <returns>Список вакансий.</returns>
-    Task<PaginationVacancyOutput> GetVacanciesPaginationAsync(int page = 1);
+    Task<PaginationVacancyOutput> GetVacanciesPaginationAsync(int page);
 }
