@@ -55,12 +55,12 @@ public class ProjectController : BaseController
     /// <returns>Список проектов.</returns>
     [HttpGet]
     [Route("")]
-    [ProducesResponseType(200, Type = typeof(IEnumerable<CatalogProjectOutput>))]
+    [ProducesResponseType(200, Type = typeof(CatalogProjectResultOutput))]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<IEnumerable<CatalogProjectOutput>> CatalogProjectsAsync()
+    public async Task<CatalogProjectResultOutput> CatalogProjectsAsync()
     {
         var result = await _projectService.CatalogProjectsAsync();
 

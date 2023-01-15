@@ -217,11 +217,14 @@ public sealed class ProjectService : IProjectService
     /// Метод получает список проектов для каталога.
     /// </summary>
     /// <returns>Список проектов.</returns>
-    public async Task<IEnumerable<CatalogProjectOutput>> CatalogProjectsAsync()
+    public async Task<CatalogProjectResultOutput> CatalogProjectsAsync()
     {
         try
         {
-            var result = await _projectRepository.CatalogProjectsAsync();
+            var result = new CatalogProjectResultOutput
+            {
+                CatalogProjects = await _projectRepository.CatalogProjectsAsync()
+            };
 
             return result;
         }

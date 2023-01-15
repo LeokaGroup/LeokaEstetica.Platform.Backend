@@ -46,7 +46,7 @@ public interface IProjectService
     /// Метод получает список проектов для каталога.
     /// </summary>
     /// <returns>Список проектов.</returns>
-    Task<IEnumerable<CatalogProjectOutput>> CatalogProjectsAsync();
+    Task<CatalogProjectResultOutput> CatalogProjectsAsync();
 
     /// <summary>
     /// Метод обновляет проект пользователя.
