@@ -18,7 +18,6 @@ public class VacancyPaginationService : BaseIndexRamDirectory, IVacancyPaginatio
 {
     private readonly IVacancyRepository _vacancyRepository;
     private readonly ILogService _logService;
-    private static readonly List<ScoreDoc> _scoreDocs = new();
 
     public VacancyPaginationService(IVacancyRepository vacancyRepository,
         ILogService logService)
@@ -44,22 +43,10 @@ public class VacancyPaginationService : BaseIndexRamDirectory, IVacancyPaginatio
 
             using var reader = IndexReader.Open(_index.Value, true);
             using var searcher = new IndexSearcher(reader);
-            var skipRows = (page - 1) * PaginationConst.TAKE_COUNT;
-            var searchResults = searcher.Search(new MatchAllDocsQuery(), null, skipRows + PaginationConst.TAKE_COUNT)
-                .ScoreDocs;
-
-            for (var i = skipRows; i < searchResults.Length; i++)
-            {
-                if (i > (skipRows + PaginationConst.TAKE_COUNT) - 1)
-                {
-                    break;
-                }
-
-                _scoreDocs.Add(searchResults[i]);
-            }
+            var scoreDocs = CreateScoreDocsBuilder.CreateScoreDocsResult(page, searcher);
 
             result.Vacancies = CreateVacanciesSearchResultBuilder
-                .CreateVacanciesSearchResult(_scoreDocs.ToArray(), searcher)
+                .CreateVacanciesSearchResult(scoreDocs, searcher)
                 .ToList();
 
             // Если первая страница и записей менее максимального на странице,
