@@ -17,4 +17,9 @@ public class CatalogVacancyResultOutput : IFrontError
     /// Список вакансий в каталоге.
     /// </summary>
     public IEnumerable<CatalogVacancyOutput> CatalogVacancies { get; set; }
+
+    /// <summary>
+    /// Кол-во.
+    /// </summary>
+    public int Total => CatalogVacancies.Count();
 }

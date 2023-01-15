@@ -15,7 +15,7 @@ namespace LeokaEstetica.Platform.Finder.Services.Vacancy;
 /// <summary>
 /// Класс реализует методы поискового сервиса вакансий.
 /// </summary>
-public class VacancyFinderService : BaseFilterChain, IVacancyFinderService
+public class VacancyFinderService : BaseIndexRamDirectory, IVacancyFinderService
 {
     private readonly IVacancyRepository _vacancyRepository;
     private readonly ILogService _logService;

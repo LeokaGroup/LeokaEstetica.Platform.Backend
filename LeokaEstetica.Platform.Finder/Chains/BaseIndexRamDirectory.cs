@@ -6,9 +6,9 @@ using Version = Lucene.Net.Util.Version;
 namespace LeokaEstetica.Platform.Finder.Chains;
 
 /// <summary>
-/// Базовый класс цепочек фильтров.
+/// Класс строит индекс для работы с Lucene.
 /// </summary>
-public abstract class BaseFilterChain
+public abstract class BaseIndexRamDirectory
 {
     /// <summary>
     /// Версия люсины.
@@ -26,7 +26,7 @@ public abstract class BaseFilterChain
     /// </summary>
     protected readonly StandardAnalyzer _analyzer;
 
-    protected BaseFilterChain()
+    protected BaseIndexRamDirectory()
     {
         _analyzer = new StandardAnalyzer(_version);
         _index = new Lazy<RAMDirectory>(CreateIndexRamDirectoryFactory.CreateNew<RAMDirectory>);

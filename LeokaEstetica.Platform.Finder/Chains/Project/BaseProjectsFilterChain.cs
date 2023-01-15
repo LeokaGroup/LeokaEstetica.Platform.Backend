@@ -7,7 +7,7 @@ namespace LeokaEstetica.Platform.Finder.Chains.Project;
 /// <summary>
 /// Базовый класс фильтрации проектов.
 /// </summary>
-public abstract class BaseProjectsFilterChain : BaseFilterChain
+public abstract class BaseProjectsFilterChain : BaseIndexRamDirectory
 {
     /// <summary>
     /// Метод занимается передачей по цепочке.
