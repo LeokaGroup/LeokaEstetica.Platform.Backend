@@ -12,6 +12,7 @@ using LeokaEstetica.Platform.Database.Repositories.Project;
 using LeokaEstetica.Platform.Database.Repositories.Resume;
 using LeokaEstetica.Platform.Database.Repositories.User;
 using LeokaEstetica.Platform.Database.Repositories.Vacancy;
+using LeokaEstetica.Platform.Finder.Services.Project;
 using LeokaEstetica.Platform.Finder.Services.Resume;
 using LeokaEstetica.Platform.Finder.Services.Vacancy;
 using LeokaEstetica.Platform.Logs.Services;
@@ -23,11 +24,11 @@ using LeokaEstetica.Platform.Notifications.Services;
 using LeokaEstetica.Platform.Services.Services.Profile;
 using LeokaEstetica.Platform.Services.Services.Project;
 using LeokaEstetica.Platform.Services.Services.Resume;
-using LeokaEstetica.Platform.Services.Services.Search.Project;
 using LeokaEstetica.Platform.Services.Services.User;
 using LeokaEstetica.Platform.Services.Services.Vacancy;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using ProjectFinderService = LeokaEstetica.Platform.Services.Services.Search.Project.ProjectFinderService;
 
 namespace LeokaEstetica.Platform.Tests;
 
@@ -53,6 +54,7 @@ public class BaseServiceTest
     protected readonly Finder.Services.Project.ProjectFinderService FinderProjectService;
     protected readonly ResumeFinderService ResumeFinderService;
     protected readonly VacancyPaginationService VacancyPaginationService;
+    protected readonly ProjectPaginationService ProjectPaginationService;
 
     protected BaseServiceTest()
     {
@@ -100,5 +102,6 @@ public class BaseServiceTest
         FinderProjectService = new Finder.Services.Project.ProjectFinderService(projectRepository, logService);
         ResumeFinderService = new ResumeFinderService(logService, resumeRepository);
         VacancyPaginationService = new VacancyPaginationService(vacancyRepository, logService);
+        ProjectPaginationService = new ProjectPaginationService(projectRepository, logService);
     }
 }

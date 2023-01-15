@@ -53,5 +53,14 @@ public class FinderModule : Module
             .RegisterType<VacancyPaginationService>()
             .As<IVacancyPaginationService>()
             .SingleInstance();
+        
+        builder
+            .RegisterType<ProjectPaginationService>()
+            .Named<IProjectPaginationService>("ProjectPaginationService")
+            .SingleInstance();
+        builder
+            .RegisterType<ProjectPaginationService>()
+            .As<IProjectPaginationService>()
+            .SingleInstance();
     }
 }

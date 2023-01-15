@@ -1,63 +1,63 @@
-using LeokaEstetica.Platform.Database.Abstractions.Vacancy;
-using LeokaEstetica.Platform.Finder.Abstractions.Vacancy;
+using LeokaEstetica.Platform.Database.Abstractions.Project;
+using LeokaEstetica.Platform.Finder.Abstractions.Project;
 using LeokaEstetica.Platform.Finder.Builders;
 using LeokaEstetica.Platform.Finder.Chains;
 using LeokaEstetica.Platform.Finder.Consts;
 using LeokaEstetica.Platform.Finder.Loaders;
 using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Models.Dto.Output.Pagination;
-using LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
+using LeokaEstetica.Platform.Models.Dto.Output.Project;
 using Lucene.Net.Index;
 using Lucene.Net.Search;
 
-namespace LeokaEstetica.Platform.Finder.Services.Vacancy;
+namespace LeokaEstetica.Platform.Finder.Services.Project;
 
 /// <summary>
-/// Класс реализует методы сервиса пагинации вакансий.
+/// Класс реализует методы сервиса пагинации проектов.
 /// </summary>
-public class VacancyPaginationService : BaseIndexRamDirectory, IVacancyPaginationService
+public class ProjectPaginationService : BaseIndexRamDirectory, IProjectPaginationService
 {
-    private readonly IVacancyRepository _vacancyRepository;
+    private readonly IProjectRepository _projectRepository;
     private readonly ILogService _logService;
 
-    public VacancyPaginationService(IVacancyRepository vacancyRepository,
+    public ProjectPaginationService(IProjectRepository projectRepository,
         ILogService logService)
     {
-        _vacancyRepository = vacancyRepository;
+        _projectRepository = projectRepository;
         _logService = logService;
     }
-
+    
     /// <summary>
-    /// Метод пагинации вакансий.
+    /// Метод пагинации проектов.
     /// </summary>
     /// <param name="page">Номер страницы.</param>
-    /// <returns>Список вакансий.</returns>
-    public async Task<PaginationVacancyOutput> GetVacanciesPaginationAsync(int page)
+    /// <returns>Список проектов.</returns>
+    public async Task<PaginationProjectOutput> GetProjectsPaginationAsync(int page)
     {
         try
         {
-            var vacancies = await _vacancyRepository.GetFiltersVacanciesAsync();
-            var result = new PaginationVacancyOutput
+            var projects = await _projectRepository.GetFiltersProjectsAsync();
+            var result = new PaginationProjectOutput
             {
                 IsVisiblePagination = true,
-                PaginationInfo = new PaginationInfoOutput(vacancies.Count(), page, PaginationConst.TAKE_COUNT)
+                PaginationInfo = new PaginationInfoOutput(projects.Count(), page, PaginationConst.TAKE_COUNT)
             };
 
-            // Получаем все вакансии из БД без выгрузки в память.
-            VacanciesDocumentLoader.Load(vacancies, _index, _analyzer);
+            // Получаем все проекты из БД без выгрузки в память.
+            ProjectsDocumentLoader.Load(projects, _index, _analyzer);
 
             using var reader = IndexReader.Open(_index.Value, true);
             using var searcher = new IndexSearcher(reader);
             var scoreDocs = CreateScoreDocsBuilder.CreateScoreDocsResult(page, searcher);
 
-            result.Vacancies = CreateVacanciesSearchResultBuilder
-                .CreateVacanciesSearchResult(scoreDocs, searcher)
+            result.Projects = CreateProjectsSearchResultBuilder
+                .CreateProjectsSearchResult(scoreDocs, searcher)
                 .ToList();
 
             // Если первая страница и записей менее максимального на странице,
             // то надо скрыть пагинацию, так как смысл в пагинации теряется в этом кейсе.
             // Применяем именно к 1 странице, к последней нет (там это надо показывать).
-            if (page == 1 && result.Vacancies.Count < PaginationConst.TAKE_COUNT)
+            if (page == 1 && result.Projects.Count < PaginationConst.TAKE_COUNT)
             {
                 result.IsVisiblePagination = false;
             }
