@@ -62,5 +62,14 @@ public class FinderModule : Module
             .RegisterType<ProjectPaginationService>()
             .As<IProjectPaginationService>()
             .SingleInstance();
+        
+        builder
+            .RegisterType<ResumePaginationService>()
+            .Named<IResumePaginationService>("ResumePaginationService")
+            .SingleInstance();
+        builder
+            .RegisterType<ResumePaginationService>()
+            .As<IResumePaginationService>()
+            .SingleInstance();
     }
 }
