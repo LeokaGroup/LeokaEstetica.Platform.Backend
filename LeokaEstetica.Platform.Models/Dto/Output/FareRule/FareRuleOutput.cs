@@ -39,4 +39,9 @@ public class FareRuleOutput
     /// Признак популярного тарифа.
     /// </summary>
     public bool IsPopular { get; set; }
+
+    /// <summary>
+    /// Список элементов правил тарифов.
+    /// </summary>
+    public IEnumerable<FareRuleItemOutput> FareRuleItems { get; set; }
 }

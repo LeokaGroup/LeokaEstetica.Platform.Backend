@@ -10,10 +10,10 @@ public partial class FareRuleItemConfiguration : IEntityTypeConfiguration<FareRu
     {
         entity.ToTable("FareRulesItems", "Rules");
 
-        entity.HasKey(e => e.RuleId);
+        entity.HasKey(e => e.RuleItemId);
 
-        entity.Property(e => e.RuleId)
-            .HasColumnName("RuleId")
+        entity.Property(e => e.RuleItemId)
+            .HasColumnName("RuleItemId")
             .HasColumnType("serial");
         
         entity.Property(e => e.Name)
@@ -35,10 +35,10 @@ public partial class FareRuleItemConfiguration : IEntityTypeConfiguration<FareRu
         entity.HasOne(p => p.FareRule)
             .WithMany(b => b.FareRuleItems)
             .HasForeignKey(p => p.RuleId)
-            .HasConstraintName("FK_FareRules_ProjectId");
+            .HasConstraintName("FK_FareRules_RuleId");
 
-        entity.HasIndex(u => u.RuleId)
-            .HasDatabaseName("PK_FareRulesItems_RuleId")
+        entity.HasIndex(u => u.RuleItemId)
+            .HasDatabaseName("PK_FareRulesItems_RuleItemId")
             .IsUnique();
 
         OnConfigurePartial(entity);

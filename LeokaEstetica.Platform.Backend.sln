@@ -42,6 +42,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LeokaEstetica.Platform.Mode
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LeokaEstetica.Platform.Finder", "LeokaEstetica.Platform.Finder\LeokaEstetica.Platform.Finder.csproj", "{A1721B16-3838-4DAF-B9B6-0A8758025202}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Commerce", "Commerce", "{F15A1314-6F7A-49FE-939A-B2B7C538A599}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LeokaEstetica.Platform.Commerce", "LeokaEstetica.Platform.Commerce\LeokaEstetica.Platform.Commerce.csproj", "{09F89426-9999-4D57-A3C8-922698CB81E6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -108,6 +112,10 @@ Global
 		{A1721B16-3838-4DAF-B9B6-0A8758025202}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A1721B16-3838-4DAF-B9B6-0A8758025202}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A1721B16-3838-4DAF-B9B6-0A8758025202}.Release|Any CPU.Build.0 = Release|Any CPU
+		{09F89426-9999-4D57-A3C8-922698CB81E6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{09F89426-9999-4D57-A3C8-922698CB81E6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{09F89426-9999-4D57-A3C8-922698CB81E6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{09F89426-9999-4D57-A3C8-922698CB81E6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{585B7062-D95A-4635-A7AE-FF6639B9AEC2} = {0FF89A95-839B-4178-9376-7B136864B810}
@@ -125,5 +133,6 @@ Global
 		{3A019A5C-2688-4D2F-BCB2-FC23326B5026} = {4A8BBD25-977E-42E4-9B6C-0C2DAB374BE7}
 		{F7F0A173-7414-467C-AE03-2C818071BC05} = {F3870F02-8BFA-4F9D-8CE2-520E5371B44C}
 		{A1721B16-3838-4DAF-B9B6-0A8758025202} = {4A8BBD25-977E-42E4-9B6C-0C2DAB374BE7}
+		{09F89426-9999-4D57-A3C8-922698CB81E6} = {F15A1314-6F7A-49FE-939A-B2B7C538A599}
 	EndGlobalSection
 EndGlobal

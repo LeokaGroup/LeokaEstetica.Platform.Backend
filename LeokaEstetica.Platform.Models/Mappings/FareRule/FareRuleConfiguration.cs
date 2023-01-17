@@ -19,11 +19,7 @@ public partial class FareRuleConfiguration : IEntityTypeConfiguration<FareRuleEn
         entity.Property(e => e.Name)
             .HasColumnName("Name")
             .HasColumnType("varchar(150)");
-        
-        entity.Property(e => e.Name)
-            .HasColumnName("Name")
-            .HasColumnType("varchar(150)");
-        
+
         entity.Property(e => e.Label)
             .HasColumnName("Label")
             .HasColumnType("varchar(200)");
