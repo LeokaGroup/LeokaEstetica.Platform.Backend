@@ -2,6 +2,7 @@
 using LeokaEstetica.Platform.Models.Entities.Common;
 using LeokaEstetica.Platform.Models.Entities.Communication;
 using LeokaEstetica.Platform.Models.Entities.Configs;
+using LeokaEstetica.Platform.Models.Entities.FareRule;
 using LeokaEstetica.Platform.Models.Entities.Landing;
 using LeokaEstetica.Platform.Models.Entities.Logs;
 using LeokaEstetica.Platform.Models.Entities.Moderation;
@@ -243,4 +244,14 @@ public class PgContext : DbContext
     /// Таблица названий столбцов команд проектов.
     /// </summary>
     public DbSet<ProjectTeamColumnNameEntity> ProjectTeamColumnNames { get; set; }
+
+    /// <summary>
+    /// Таблица правил тарифов.
+    /// </summary>
+    public DbSet<FareRuleEntity> FareRules { get; set; }
+
+    /// <summary>
+    /// Таблица элементов тарифов.
+    /// </summary>
+    public DbSet<FareRuleItemEntity> FareRuleItems { get; set; }
 }
