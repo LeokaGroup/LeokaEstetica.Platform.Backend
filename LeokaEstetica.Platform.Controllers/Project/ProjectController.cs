@@ -31,18 +31,21 @@ public class ProjectController : BaseController
     private readonly IValidationExcludeErrorsService _validationExcludeErrorsService;
     private readonly IProjectCommentsService _projectCommentsService;
     private readonly IProjectFinderService _projectFinderService;
+    private readonly IProjectPaginationService _projectPaginationService;
 
     public ProjectController(IProjectService projectService,
         IMapper mapper,
         IValidationExcludeErrorsService validationExcludeErrorsService,
         IProjectCommentsService projectCommentsService, 
-        IProjectFinderService projectFinderService)
+        IProjectFinderService projectFinderService, 
+        IProjectPaginationService projectPaginationService)
     {
         _projectService = projectService;
         _mapper = mapper;
         _validationExcludeErrorsService = validationExcludeErrorsService;
         _projectCommentsService = projectCommentsService;
         _projectFinderService = projectFinderService;
+        _projectPaginationService = projectPaginationService;
     }
 
     /// <summary>
@@ -465,6 +468,25 @@ public class ProjectController : BaseController
     public async Task<CatalogProjectResultOutput> SearchProjectsAsync([FromQuery] string searchText)
     {
         var result = await _projectFinderService.SearchProjectsAsync(searchText);
+
+        return result;
+    }
+    
+    /// <summary>
+    /// Метод пагинации проектов.
+    /// </summary>
+    /// <param name="page">Номер страницы.</param>
+    /// <returns>Список проектов.</returns>
+    [HttpGet]
+    [Route("pagination/{page}")]
+    [ProducesResponseType(200, Type = typeof(PaginationProjectOutput))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<PaginationProjectOutput> GetProjectsPaginationAsync([FromRoute] int page)
+    {
+        var result = await _projectPaginationService.GetProjectsPaginationAsync(page);
 
         return result;
     }

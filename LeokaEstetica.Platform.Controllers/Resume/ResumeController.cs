@@ -20,14 +20,17 @@ public class ResumeController : BaseController
     private readonly IResumeService _resumeService;
     private readonly IMapper _mapper;
     private readonly IResumeFinderService _resumeFinderService;
+    private readonly IResumePaginationService _resumePaginationService;
     
     public ResumeController(IResumeService resumeService, 
         IMapper mapper, 
-        IResumeFinderService resumeFinderService)
+        IResumeFinderService resumeFinderService, 
+        IResumePaginationService resumePaginationService)
     {
         _resumeService = resumeService;
         _mapper = mapper;
         _resumeFinderService = resumeFinderService;
+        _resumePaginationService = resumePaginationService;
     }
 
     /// <summary>
@@ -65,6 +68,25 @@ public class ResumeController : BaseController
     public async Task<ResumeResultOutput> SearchResumesAsync([FromQuery] string searchText)
     {
         var result = await _resumeFinderService.SearchResumesAsync(searchText);
+
+        return result;
+    }
+    
+    /// <summary>
+    /// Метод пагинации резюме.
+    /// </summary>
+    /// <param name="page">Номер страницы.</param>
+    /// <returns>Список резюме.</returns>
+    [HttpGet]
+    [Route("pagination/{page}")]
+    [ProducesResponseType(200, Type = typeof(PaginationResumeOutput))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<PaginationResumeOutput> GetResumesPaginationAsync([FromRoute] int page)
+    {
+        var result = await _resumePaginationService.GetResumesPaginationAsync(page);
 
         return result;
     }
