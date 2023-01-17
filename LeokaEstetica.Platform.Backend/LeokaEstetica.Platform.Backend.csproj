@@ -4,16 +4,17 @@
         <TargetFramework>net6.0</TargetFramework>
         <Nullable>disable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-      <DocumentationFile></DocumentationFile>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
       <WarningLevel>4</WarningLevel>
       <NoWarn>1701;1702;1591</NoWarn>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-      <DocumentationFile></DocumentationFile>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
       <WarningLevel>4</WarningLevel>
       <NoWarn>1701;1702;1591</NoWarn>
     </PropertyGroup>
