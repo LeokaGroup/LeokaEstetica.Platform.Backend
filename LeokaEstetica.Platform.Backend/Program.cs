@@ -36,7 +36,21 @@ if (builder.Environment.IsStaging())
         options.UseNpgsql(configuration.GetConnectionString("NpgTestSqlConnection") ?? string.Empty));
 }
 
-builder.Services.AddSwaggerGen(c => { c.SwaggerDoc("v1", new OpenApiInfo { Title = "Leoka.Estetica.Platform" }); });
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "Leoka.Estetica.Platform" });
+    AddSwaggerXml(c);
+});
+
+// Добавляем xml-комментарии для всех API.
+static void AddSwaggerXml(Swashbuckle.AspNetCore.SwaggerGen.SwaggerGenOptions c)
+{
+    var xmlFiles = Directory.GetFiles(AppContext.BaseDirectory, "*.xml");
+    foreach (var xmlFile in xmlFiles)
+    {
+        c.IncludeXmlComments(xmlFile);
+    }
+}
 
 builder.WebHost
     .UseKestrel()

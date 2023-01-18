@@ -4,6 +4,7 @@ using LeokaEstetica.Platform.Access.Services.Moderation;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Utils;
 using LeokaEstetica.Platform.Database.Repositories.Chat;
+using LeokaEstetica.Platform.Database.Repositories.FareRule;
 using LeokaEstetica.Platform.Database.Repositories.Moderation.Access;
 using LeokaEstetica.Platform.Database.Repositories.Moderation.Project;
 using LeokaEstetica.Platform.Database.Repositories.Moderation.Vacancy;
@@ -21,6 +22,7 @@ using LeokaEstetica.Platform.Messaging.Services.Project;
 using LeokaEstetica.Platform.Moderation.Services.Project;
 using LeokaEstetica.Platform.Moderation.Services.Vacancy;
 using LeokaEstetica.Platform.Notifications.Services;
+using LeokaEstetica.Platform.Services.Services.FareRule;
 using LeokaEstetica.Platform.Services.Services.Profile;
 using LeokaEstetica.Platform.Services.Services.Project;
 using LeokaEstetica.Platform.Services.Services.Resume;
@@ -55,6 +57,7 @@ public class BaseServiceTest
     protected readonly ResumeFinderService ResumeFinderService;
     protected readonly VacancyPaginationService VacancyPaginationService;
     protected readonly ProjectPaginationService ProjectPaginationService;
+    protected readonly FareRuleService FareRuleService;
 
     protected BaseServiceTest()
     {
@@ -103,5 +106,7 @@ public class BaseServiceTest
         ResumeFinderService = new ResumeFinderService(logService, resumeRepository);
         VacancyPaginationService = new VacancyPaginationService(vacancyRepository, logService);
         ProjectPaginationService = new ProjectPaginationService(projectRepository, logService);
+        var fareRuleRepository = new FareRuleRepository(pgContext);
+        FareRuleService = new FareRuleService(fareRuleRepository, logService);
     }
 }

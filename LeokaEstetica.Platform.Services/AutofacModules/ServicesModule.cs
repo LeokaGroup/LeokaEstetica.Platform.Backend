@@ -1,5 +1,6 @@
 ﻿using Autofac;
 using LeokaEstetica.Platform.Core.Attributes;
+using LeokaEstetica.Platform.Services.Abstractions.FareRule;
 using LeokaEstetica.Platform.Services.Abstractions.Header;
 using LeokaEstetica.Platform.Services.Abstractions.Landing;
 using LeokaEstetica.Platform.Services.Abstractions.Profile;
@@ -8,6 +9,7 @@ using LeokaEstetica.Platform.Services.Abstractions.Resume;
 using LeokaEstetica.Platform.Services.Abstractions.Search.Project;
 using LeokaEstetica.Platform.Services.Abstractions.User;
 using LeokaEstetica.Platform.Services.Abstractions.Vacancy;
+using LeokaEstetica.Platform.Services.Services.FareRule;
 using LeokaEstetica.Platform.Services.Services.Header;
 using LeokaEstetica.Platform.Services.Services.Landing;
 using LeokaEstetica.Platform.Services.Services.Profile;
@@ -102,6 +104,16 @@ public class ServicesModule : Module
         builder
             .RegisterType<ResumeService>()
             .As<IResumeService>()
+            .InstancePerLifetimeScope();
+        
+        // Сервис правил тарифов.
+        builder
+            .RegisterType<FareRuleService>()
+            .Named<IFareRuleService>("FareRuleService")
+            .InstancePerLifetimeScope();
+        builder
+            .RegisterType<FareRuleService>()
+            .As<IFareRuleService>()
             .InstancePerLifetimeScope();
     }
 }
