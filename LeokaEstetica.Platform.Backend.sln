@@ -44,7 +44,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LeokaEstetica.Platform.Find
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Commerce", "Commerce", "{F15A1314-6F7A-49FE-939A-B2B7C538A599}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LeokaEstetica.Platform.Commerce", "LeokaEstetica.Platform.Commerce\LeokaEstetica.Platform.Commerce.csproj", "{09F89426-9999-4D57-A3C8-922698CB81E6}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LeokaEstetica.Platform.Processing", "LeokaEstetica.Platform.Processing\LeokaEstetica.Platform.Processing.csproj", "{09F89426-9999-4D57-A3C8-922698CB81E6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
