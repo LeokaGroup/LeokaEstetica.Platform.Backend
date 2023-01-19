@@ -34,7 +34,9 @@ public static class AutoFac
     public static Assembly[] GetAssembliesFromApplicationBaseDirectory(Func<AssemblyName, bool> condition)
     {
         var baseDirectoryPath = AppDomain.CurrentDomain.BaseDirectory;
-        bool IsAssembly(string file) => string.Equals(Path.GetExtension(file), ".dll", StringComparison.OrdinalIgnoreCase);
+
+        bool IsAssembly(string file) =>
+            string.Equals(Path.GetExtension(file), ".dll", StringComparison.OrdinalIgnoreCase);
 
         return Directory.GetFiles(baseDirectoryPath)
             .Where((Func<string, bool>)IsAssembly)
@@ -52,42 +54,46 @@ public static class AutoFac
         var assemblies1 =
             GetAssembliesFromApplicationBaseDirectory(x =>
                 x.FullName.StartsWith("LeokaEstetica.Platform.Logs"));
-        
+
         var assemblies2 =
             GetAssembliesFromApplicationBaseDirectory(x =>
                 x.FullName.StartsWith("LeokaEstetica.Platform.Services"));
-        
+
         var assemblies3 =
             GetAssembliesFromApplicationBaseDirectory(x =>
                 x.FullName.StartsWith("LeokaEstetica.Platform.Base"));
-        
+
         var assemblies4 =
             GetAssembliesFromApplicationBaseDirectory(x =>
                 x.FullName.StartsWith("LeokaEstetica.Platform.Database"));
-        
+
         var assemblies5 =
             GetAssembliesFromApplicationBaseDirectory(x =>
                 x.FullName.StartsWith("LeokaEstetica.Platform.Access"));
-        
+
         var assemblies6 =
             GetAssembliesFromApplicationBaseDirectory(x =>
                 x.FullName.StartsWith("LeokaEstetica.Platform.Messaging"));
-        
+
         var assemblies7 =
             GetAssembliesFromApplicationBaseDirectory(x =>
                 x.FullName.StartsWith("LeokaEstetica.Platform.Notifications"));
-        
+
         var assemblies8 =
             GetAssembliesFromApplicationBaseDirectory(x =>
                 x.FullName.StartsWith("LeokaEstetica.Platform.Redis"));
-        
+
         var assemblies9 =
             GetAssembliesFromApplicationBaseDirectory(x =>
                 x.FullName.StartsWith("LeokaEstetica.Platform.Moderation"));
-        
+
         var assemblies10 =
             GetAssembliesFromApplicationBaseDirectory(x =>
                 x.FullName.StartsWith("LeokaEstetica.Platform.Finder"));
+        
+        var assemblies11 =
+            GetAssembliesFromApplicationBaseDirectory(x =>
+                x.FullName.StartsWith("LeokaEstetica.Platform.Processing"));
 
         b.RegisterAssemblyTypes(assemblies1).AsImplementedInterfaces();
         b.RegisterAssemblyTypes(assemblies2).AsImplementedInterfaces();
@@ -99,7 +105,8 @@ public static class AutoFac
         b.RegisterAssemblyTypes(assemblies8).AsImplementedInterfaces();
         b.RegisterAssemblyTypes(assemblies9).AsImplementedInterfaces();
         b.RegisterAssemblyTypes(assemblies10).AsImplementedInterfaces();
-        
+        b.RegisterAssemblyTypes(assemblies11).AsImplementedInterfaces();
+
         var assemblies = assemblies1
             .Union(assemblies2)
             .Union(assemblies3)
@@ -109,7 +116,8 @@ public static class AutoFac
             .Union(assemblies7)
             .Union(assemblies8)
             .Union(assemblies9)
-            .Union(assemblies10);
+            .Union(assemblies10)
+            .Union(assemblies11);
 
         RegisterMapper(b);
 
@@ -117,12 +125,12 @@ public static class AutoFac
             from type in assembly.GetTypes()
             where type.IsClass && type.GetCustomAttribute<CommonModuleAttribute>() != null
             select type).ToArray();
-        
+
         foreach (var module in _typeModules)
         {
             if (module is not null)
             {
-                b.RegisterModule(Activator.CreateInstance(module) as Module);   
+                b.RegisterModule(Activator.CreateInstance(module) as Module);
             }
         }
     }
@@ -142,7 +150,7 @@ public static class AutoFac
             RegisterAllAssemblyTypes(_builder);
             RegisterDbContext(_builder);
             RegisterMapper(_builder);
-            
+
             _container = _builder.Build();
         }
 
