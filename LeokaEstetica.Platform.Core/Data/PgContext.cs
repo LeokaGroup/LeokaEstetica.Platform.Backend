@@ -260,4 +260,9 @@ public class PgContext : DbContext
     /// Таблица заказов.
     /// </summary>
     public DbSet<OrderEntity> Orders { get; set; }
+
+    /// <summary>
+    /// Таблица чеков.
+    /// </summary>
+    public DbSet<ReceiptEntity> Receipts { get; set; }
 }
