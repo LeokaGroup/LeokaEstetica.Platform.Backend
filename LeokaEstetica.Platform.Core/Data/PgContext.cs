@@ -1,4 +1,5 @@
 ﻿using LeokaEstetica.Platform.Core.Extensions;
+using LeokaEstetica.Platform.Models.Entities.Commerce;
 using LeokaEstetica.Platform.Models.Entities.Common;
 using LeokaEstetica.Platform.Models.Entities.Communication;
 using LeokaEstetica.Platform.Models.Entities.Configs;
@@ -254,4 +255,9 @@ public class PgContext : DbContext
     /// Таблица элементов тарифов.
     /// </summary>
     public DbSet<FareRuleItemEntity> FareRuleItems { get; set; }
+
+    /// <summary>
+    /// Таблица заказов.
+    /// </summary>
+    public DbSet<OrderEntity> Orders { get; set; }
 }
