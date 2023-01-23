@@ -12,4 +12,11 @@ public interface IFareRuleRepository
     /// </summary>
     /// <returns>Список тарифов.</returns>
     Task<IEnumerable<FareRuleEntity>> GetFareRulesAsync();
+
+    /// <summary>
+    /// Метод получает тариф по его Id.
+    /// </summary>
+    /// <param name="fareRuleId">Id тарифа.</param>
+    /// <returns>Данные тарифа.</returns>
+    Task<FareRuleEntity> GetByIdAsync(long fareRuleId);
 }

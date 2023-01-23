@@ -2,6 +2,7 @@ using LeokaEstetica.Platform.Base;
 using LeokaEstetica.Platform.Core.Filters;
 using LeokaEstetica.Platform.Models.Dto.Input.Commerce.PayMaster;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce.PayMaster;
+using LeokaEstetica.Platform.Processing.Abstractions.PayMaster;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LeokaEstetica.Platform.Controllers.Commerce;
@@ -14,13 +15,16 @@ namespace LeokaEstetica.Platform.Controllers.Commerce;
 [Route("commercial")]
 public class CommerceController : BaseController
 {
+    private readonly IPayMasterService _payMasterService;
+    
     /// <inheritdoc />
-    public CommerceController()
+    public CommerceController(IPayMasterService payMasterService)
     {
+        _payMasterService = payMasterService;
     }
 
     /// <summary>
-    /// Метод создает платеж. Платеж представляет собой заказ.
+    /// Метод создает заказ.
     /// </summary>
     /// <param name="createOrderInput">Входная модель.</param>
     /// <returns>Данные платежа.</returns>
@@ -31,8 +35,10 @@ public class CommerceController : BaseController
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<CreateOrderOutput> CreatePaymentAsync([FromBody] CreateOrderInput createOrderInput)
+    public async Task<CreateOrderOutput> CreateOrderAsync([FromBody] CreateOrderInput createOrderInput)
     {
-        throw new NotImplementedException();
+        var result = await _payMasterService.CreateOrderAsync(createOrderInput);
+
+        return result;
     }
 }

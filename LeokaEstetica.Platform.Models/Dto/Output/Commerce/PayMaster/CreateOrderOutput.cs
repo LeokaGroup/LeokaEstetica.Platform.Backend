@@ -10,30 +10,10 @@ public class CreateOrderOutput
     /// <summary>
     /// Id заказа.
     /// </summary>
-    [JsonProperty("id")]
-    public string OrderId { get; set; }
+    public string PaymentId { get; set; }
 
     /// <summary>
-    /// Дата создания заказа.
+    /// Ссылка на оплату.
     /// </summary>
-    [JsonProperty("created")]
-    public DateTime Created { get; set; }
-
-    /// <summary>
-    /// Признак тестового платежа.
-    /// </summary>
-    [JsonProperty("testMode")]
-    public bool IsTestMode { get; set; }
-    
-    /// <summary>
-    /// Статус заказа.
-    /// </summary>
-    [JsonProperty("status")] 
-    public string OrderStatus { get; set; }
-
-    /// <summary>
-    /// Код статуса заказа.
-    /// </summary>
-    [JsonProperty("resultCode")] 
-    public string OrderCode { get; set; }
+    public string Url { get; set; }
 }

@@ -11,9 +11,18 @@ public class CreateOrderInput
     /// <summary>
     /// Ключ мерчанта (магазина).
     /// </summary>
-    [JsonProperty("merchantId")]
     public Guid MerchantId { get; set; }
 
+    /// <summary>
+    /// Id тарифа.
+    /// </summary>
+    public long FareRuleId { get; set; }
+
+    /// <summary>
+    /// Признак тестового режима.
+    /// </summary>
+    public bool TestMode { get; set; }
+    
     /// <summary>
     /// Детали счета.
     /// </summary>
@@ -25,16 +34,10 @@ public class CreateOrderInput
     /// </summary>
     [JsonProperty("amount")]
     public Amount Amount { get; set; }
-    
-    /// <summary>
-    /// Данные платежа.
-    /// </summary>
-    [JsonProperty("paymentData")]
-    public PaymentData PaymentData { get; set; }
 
     /// <summary>
-    /// Способ подтверждения платежа.
+    /// Метод оплаты.
     /// </summary>
-    [JsonProperty("confirmation")]
-    public Confirmation Confirmation { get; set; }
+    [JsonProperty("paymentMethod")]
+    public string PaymentMethod { get; set; }
 }
