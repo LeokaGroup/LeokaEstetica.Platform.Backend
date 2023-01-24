@@ -1,6 +1,7 @@
 using LeokaEstetica.Platform.Models.Dto.Base.Commerce.PayMaster;
 using LeokaEstetica.Platform.Models.Dto.Input.Commerce.PayMaster;
 using LeokaEstetica.Platform.Models.Entities.FareRule;
+using LeokaEstetica.Platform.Processing.Enums;
 using Microsoft.Extensions.Configuration;
 
 namespace LeokaEstetica.Platform.Processing.Factories;
@@ -21,7 +22,7 @@ public static class CreateOrderRequestFactory
     {
         // Задаем Id мерчанта (магазина).
         createOrderInput.MerchantId = new Guid(configuration["Commerce:PayMaster:MerchantId"]);
-        createOrderInput.TestMode = true;
+        createOrderInput.TestMode = true; // TODO: Добавить управляющий ключ в таблицу конфигов.
         createOrderInput.Invoice = new Invoice
         {
             Description = "Оплата тарифа: " + fareRule.Name
@@ -29,7 +30,7 @@ public static class CreateOrderRequestFactory
         createOrderInput.Amount = new Amount
         {
             Value = fareRule.Price,
-            Currency = "RUB"
+            Currency = PaymentCurrencyEnum.RUB.ToString()
         };
         createOrderInput.PaymentMethod = "BankCard";
     }

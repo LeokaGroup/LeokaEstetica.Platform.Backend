@@ -54,6 +54,11 @@ public partial class OrderConfiguration : IEntityTypeConfiguration<OrderEntity>
             .HasColumnName("Currency")
             .HasColumnType("varchar(5)")
             .HasMaxLength(5);
+        
+        entity.Property(e => e.PaymentId)
+            .HasColumnName("PaymentId")
+            .HasColumnType("varchar(50)")
+            .HasMaxLength(50);
 
         entity.HasIndex(u => u.OrderId)
             .HasDatabaseName("PK_Orders_OrderId")

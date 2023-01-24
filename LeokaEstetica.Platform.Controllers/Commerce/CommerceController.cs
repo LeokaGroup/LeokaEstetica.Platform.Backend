@@ -1,3 +1,4 @@
+using AutoMapper;
 using LeokaEstetica.Platform.Base;
 using LeokaEstetica.Platform.Core.Filters;
 using LeokaEstetica.Platform.Models.Dto.Input.Commerce.PayMaster;
@@ -16,11 +17,14 @@ namespace LeokaEstetica.Platform.Controllers.Commerce;
 public class CommerceController : BaseController
 {
     private readonly IPayMasterService _payMasterService;
+    private readonly IMapper _mapper;
     
     /// <inheritdoc />
-    public CommerceController(IPayMasterService payMasterService)
+    public CommerceController(IPayMasterService payMasterService, 
+        IMapper mapper)
     {
         _payMasterService = payMasterService;
+        _mapper = mapper;
     }
 
     /// <summary>
@@ -37,7 +41,8 @@ public class CommerceController : BaseController
     [ProducesResponseType(404)]
     public async Task<CreateOrderOutput> CreateOrderAsync([FromBody] CreateOrderInput createOrderInput)
     {
-        var result = await _payMasterService.CreateOrderAsync(createOrderInput);
+        var order = await _payMasterService.CreateOrderAsync(createOrderInput, GetUserName());
+        var result = _mapper.Map<CreateOrderOutput>(order);
 
         return result;
     }
