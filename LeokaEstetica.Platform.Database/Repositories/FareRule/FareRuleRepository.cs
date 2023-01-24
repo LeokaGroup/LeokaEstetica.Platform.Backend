@@ -43,4 +43,32 @@ public class FareRuleRepository : IFareRuleRepository
 
         return result;
     }
+
+    /// <summary>
+    /// Метод получает тариф по его Id.
+    /// </summary>
+    /// <param name="fareRuleId">Id тарифа.</param>
+    /// <returns>Данные тарифа.</returns>
+    public async Task<FareRuleEntity> GetByIdAsync(long fareRuleId)
+    {
+        var result = await _pgContext.FareRules
+            .Where(fr => fr.RuleId == fareRuleId)
+            .Select(fr => new FareRuleEntity
+            {
+                RuleId = fr.RuleId,
+                Name = fr.Name,
+                Label = fr.Label,
+                Currency = fr.Currency,
+                Price = fr.Price,
+                FareRuleItems = _pgContext.FareRuleItems
+                    .Where(fri => fri.RuleId == fr.RuleId)
+                    .OrderBy(o => o.Position)
+                    .ToList(),
+                Position = fr.Position,
+                IsPopular = fr.IsPopular
+            })
+            .FirstOrDefaultAsync();
+
+        return result;
+    }
 }

@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using LeokaEstetica.Platform.Models.Dto.Chat.Output;
+using LeokaEstetica.Platform.Models.Dto.Output.Commerce.PayMaster;
 using LeokaEstetica.Platform.Models.Dto.Output.Configs;
 using LeokaEstetica.Platform.Models.Dto.Output.FareRule;
 using LeokaEstetica.Platform.Models.Dto.Output.Header;
@@ -13,6 +14,7 @@ using LeokaEstetica.Platform.Models.Dto.Output.Resume;
 using LeokaEstetica.Platform.Models.Dto.Output.Search.Project;
 using LeokaEstetica.Platform.Models.Dto.Output.User;
 using LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
+using LeokaEstetica.Platform.Models.Entities.Commerce;
 using LeokaEstetica.Platform.Models.Entities.Common;
 using LeokaEstetica.Platform.Models.Entities.Communication;
 using LeokaEstetica.Platform.Models.Entities.Configs;
@@ -98,5 +100,7 @@ public class MappingProfile : Profile
         
         CreateMap<FareRuleEntity, FareRuleOutput>();
         CreateMap<FareRuleItemEntity, FareRuleItemOutput>();
+        
+        CreateMap<OrderEntity, CreateOrderOutput>();
     }
 }

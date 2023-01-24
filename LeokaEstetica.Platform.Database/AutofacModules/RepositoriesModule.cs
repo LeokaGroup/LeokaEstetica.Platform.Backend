@@ -1,5 +1,6 @@
 ﻿using Autofac;
 using LeokaEstetica.Platform.Core.Attributes;
+using LeokaEstetica.Platform.Database.Abstractions.Commerce;
 using LeokaEstetica.Platform.Database.Abstractions.Header;
 using LeokaEstetica.Platform.Database.Abstractions.Landing;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Access;
@@ -12,6 +13,7 @@ using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Database.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Database.Chat;
 using LeokaEstetica.Platform.Database.Repositories.Chat;
+using LeokaEstetica.Platform.Database.Repositories.Commerce;
 using LeokaEstetica.Platform.Database.Repositories.Header;
 using LeokaEstetica.Platform.Database.Repositories.Landing;
 using LeokaEstetica.Platform.Database.Repositories.Moderation.Access;
@@ -148,6 +150,16 @@ public class RepositoriesModule : Module
         builder
             .RegisterType<ResumeRepository>()
             .As<IResumeRepository>()
+            .InstancePerLifetimeScope();
+        
+        // Репозиторий заказов.
+        builder
+            .RegisterType<PayMasterRepository>()
+            .Named<IPayMasterRepository>("PayMasterRepository")
+            .InstancePerLifetimeScope();
+        builder
+            .RegisterType<PayMasterRepository>()
+            .As<IPayMasterRepository>()
             .InstancePerLifetimeScope();
     }
 }

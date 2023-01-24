@@ -54,4 +54,9 @@ public class OrderEntity
     /// Системное название статуса заказа. По дефолту "New".
     /// </summary>
     public string StatusSysName { get; set; }
+
+    /// <summary>
+    /// Id заказа в ПС.
+    /// </summary>
+    public string PaymentId { get; set; }
 }
