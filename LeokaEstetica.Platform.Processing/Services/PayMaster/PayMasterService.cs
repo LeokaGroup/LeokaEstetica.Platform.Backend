@@ -1,6 +1,5 @@
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using AutoMapper;
 using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.Commerce;
 using LeokaEstetica.Platform.Database.Abstractions.FareRule;
@@ -29,21 +28,18 @@ public class PayMasterService : IPayMasterService
     private readonly IFareRuleRepository _fareRuleRepository;
     private readonly IUserRepository _userRepository;
     private readonly IPayMasterRepository _payMasterRepository;
-    private readonly IMapper _mapper;
 
     public PayMasterService(ILogService logService,
         IConfiguration configuration,
         IFareRuleRepository fareRuleRepository,
         IUserRepository userRepository,
-        IPayMasterRepository payMasterRepository, 
-        IMapper mapper)
+        IPayMasterRepository payMasterRepository)
     {
         _logService = logService;
         _configuration = configuration;
         _fareRuleRepository = fareRuleRepository;
         _userRepository = userRepository;
         _payMasterRepository = payMasterRepository;
-        _mapper = mapper;
     }
 
     /// <summary>

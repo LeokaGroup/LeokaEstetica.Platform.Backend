@@ -127,6 +127,6 @@ public class BaseServiceTest
 
         FareRuleService = new FareRuleService(fareRuleRepository, logService);
         PayMasterService = new PayMasterService(logService, AppConfiguration, fareRuleRepository, userRepository,
-            payMasterRepository, mapper);
+            payMasterRepository);
     }
 }
