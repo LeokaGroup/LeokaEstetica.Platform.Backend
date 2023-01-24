@@ -27,6 +27,6 @@ public class CreateOrderTest : BaseServiceTest
         }, "sierra_93@mail.ru");
 
         NotNull(result);
-        IsTrue(result.OrderId > 0);
+        IsTrue(long.Parse(result.PaymentId) > 0);
     }
 }

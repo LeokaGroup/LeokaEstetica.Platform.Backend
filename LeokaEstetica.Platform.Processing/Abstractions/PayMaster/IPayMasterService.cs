@@ -1,5 +1,5 @@
 using LeokaEstetica.Platform.Models.Dto.Input.Commerce.PayMaster;
-using LeokaEstetica.Platform.Models.Entities.Commerce;
+using LeokaEstetica.Platform.Models.Dto.Output.Commerce.PayMaster;
 
 namespace LeokaEstetica.Platform.Processing.Abstractions.PayMaster;
 
@@ -14,5 +14,5 @@ public interface IPayMasterService
     /// <param name="createOrderInput">Входная модель.</param>
     /// <param name="account">Аккаунт.</param>
     /// <returns>Данные платежа.</returns>
-    Task<OrderEntity> CreateOrderAsync(CreateOrderInput createOrderInput, string account);
+    Task<CreateOrderOutput> CreateOrderAsync(CreateOrderInput createOrderInput, string account);
 }

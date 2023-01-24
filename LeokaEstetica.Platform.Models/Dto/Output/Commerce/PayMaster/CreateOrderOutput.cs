@@ -1,5 +1,3 @@
-using Newtonsoft.Json;
-
 namespace LeokaEstetica.Platform.Models.Dto.Output.Commerce.PayMaster;
 
 /// <summary>

@@ -100,7 +100,7 @@ public class MappingProfile : Profile
         
         CreateMap<FareRuleEntity, FareRuleOutput>();
         CreateMap<FareRuleItemEntity, FareRuleItemOutput>();
-        
+
         CreateMap<OrderEntity, CreateOrderOutput>();
     }
 }

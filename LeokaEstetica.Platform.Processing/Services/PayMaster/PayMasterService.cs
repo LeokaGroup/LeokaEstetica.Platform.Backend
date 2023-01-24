@@ -1,5 +1,6 @@
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using AutoMapper;
 using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.Commerce;
 using LeokaEstetica.Platform.Database.Abstractions.FareRule;
@@ -7,7 +8,6 @@ using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Models.Dto.Input.Commerce.PayMaster;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce.PayMaster;
-using LeokaEstetica.Platform.Models.Entities.Commerce;
 using LeokaEstetica.Platform.Processing.Abstractions.PayMaster;
 using LeokaEstetica.Platform.Processing.Consts;
 using LeokaEstetica.Platform.Processing.Enums;
@@ -29,18 +29,21 @@ public class PayMasterService : IPayMasterService
     private readonly IFareRuleRepository _fareRuleRepository;
     private readonly IUserRepository _userRepository;
     private readonly IPayMasterRepository _payMasterRepository;
+    private readonly IMapper _mapper;
 
     public PayMasterService(ILogService logService,
         IConfiguration configuration,
         IFareRuleRepository fareRuleRepository,
         IUserRepository userRepository,
-        IPayMasterRepository payMasterRepository)
+        IPayMasterRepository payMasterRepository, 
+        IMapper mapper)
     {
         _logService = logService;
         _configuration = configuration;
         _fareRuleRepository = fareRuleRepository;
         _userRepository = userRepository;
         _payMasterRepository = payMasterRepository;
+        _mapper = mapper;
     }
 
     /// <summary>
@@ -49,7 +52,7 @@ public class PayMasterService : IPayMasterService
     /// <param name="createOrderInput">Входная модель.</param>
     /// <param name="account">Аккаунт.</param>
     /// <returns>Данные платежа.</returns>
-    public async Task<OrderEntity> CreateOrderAsync(CreateOrderInput createOrderInput, string account)
+    public async Task<CreateOrderOutput> CreateOrderAsync(CreateOrderInput createOrderInput, string account)
     {
         try
         {
@@ -104,7 +107,10 @@ public class PayMasterService : IPayMasterService
                 PaymentStatusEnum.Pending.GetEnumDescription());
 
             // Создаем заказ в БД.
-            var result = await _payMasterRepository.CreateOrderAsync(createdOrder);
+            var createdOrderResult = await _payMasterRepository.CreateOrderAsync(createdOrder);
+            
+            // Приводим к нужному виду.
+            var result = CreateOrderResultFactory.Create(createdOrderResult.OrderId.ToString(), order.Url);
 
             return result;
         }
