@@ -30,7 +30,6 @@ using LeokaEstetica.Platform.Services.Services.Project;
 using LeokaEstetica.Platform.Services.Services.Resume;
 using LeokaEstetica.Platform.Services.Services.User;
 using LeokaEstetica.Platform.Services.Services.Vacancy;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using ProjectFinderService = LeokaEstetica.Platform.Services.Services.Search.Project.ProjectFinderService;
 
@@ -41,8 +40,7 @@ namespace LeokaEstetica.Platform.Tests;
 /// </summary>
 public class BaseServiceTest
 {
-    private string PostgreConfigString { get; set; }
-    private IConfiguration AppConfiguration { get; set; }
+    private IConfiguration AppConfiguration { get; }
     protected readonly UserService UserService;
     protected readonly ProfileService ProfileService;
     protected readonly ProjectService ProjectService;
@@ -67,16 +65,11 @@ public class BaseServiceTest
         // Настройка тестовых строк подключения.
         var builder = new ConfigurationBuilder().AddJsonFile("appsettings.json");
         AppConfiguration = builder.Build();
-        PostgreConfigString = AppConfiguration["ConnectionStrings:NpgDevSqlConnection"] ?? string.Empty;
         var container = new ContainerBuilder();
 
         AutoFac.RegisterMapper(container);
         var mapper = AutoFac.Resolve<IMapper>();
-
-        // Настройка тестовых контекстов.
-        var optionsBuilder = new DbContextOptionsBuilder<PgContext>();
-        optionsBuilder.UseNpgsql(PostgreConfigString);
-        var pgContext = new PgContext(optionsBuilder.Options);
+        var pgContext = new PgContext();
         var logService = new LogService(pgContext);
         var userRepository = new UserRepository(pgContext, logService);
         var profileRepository = new ProfileRepository(pgContext);

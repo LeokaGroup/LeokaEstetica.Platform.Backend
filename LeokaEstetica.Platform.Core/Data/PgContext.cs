@@ -11,6 +11,7 @@ using LeokaEstetica.Platform.Models.Entities.Profile;
 using LeokaEstetica.Platform.Models.Entities.Project;
 using LeokaEstetica.Platform.Models.Entities.ProjectTeam;
 using LeokaEstetica.Platform.Models.Entities.Role;
+using LeokaEstetica.Platform.Models.Entities.Subscription;
 using LeokaEstetica.Platform.Models.Entities.User;
 using LeokaEstetica.Platform.Models.Entities.Vacancy;
 using Microsoft.EntityFrameworkCore;
@@ -22,14 +23,6 @@ namespace LeokaEstetica.Platform.Core.Data;
 /// </summary>
 public class PgContext : DbContext
 {
-    private readonly DbContextOptions<PgContext> _options;
-
-    public PgContext(DbContextOptions<PgContext> options) 
-        : base(options)
-    {
-        _options = options;
-    }
-    
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         // Настраиваем все маппинги приложения.
@@ -265,4 +258,14 @@ public class PgContext : DbContext
     /// Таблица чеков.
     /// </summary>
     public DbSet<ReceiptEntity> Receipts { get; set; }
+
+    /// <summary>
+    /// Таблица подписок.
+    /// </summary>
+    public DbSet<SubscriptionEntity> Subscriptions { get; set; }
+
+    /// <summary>
+    /// Таблица подписок пользователей.
+    /// </summary>
+    public DbSet<UserSubscriptionEntity> UserSubscriptions { get; set; }
 }
