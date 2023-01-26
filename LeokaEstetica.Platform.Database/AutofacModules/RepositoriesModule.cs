@@ -9,6 +9,7 @@ using LeokaEstetica.Platform.Database.Abstractions.Moderation.Vacancy;
 using LeokaEstetica.Platform.Database.Abstractions.Profile;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
 using LeokaEstetica.Platform.Database.Abstractions.Resume;
+using LeokaEstetica.Platform.Database.Abstractions.Subscription;
 using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Database.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Database.Chat;
@@ -22,6 +23,7 @@ using LeokaEstetica.Platform.Database.Repositories.Moderation.Vacancy;
 using LeokaEstetica.Platform.Database.Repositories.Profile;
 using LeokaEstetica.Platform.Database.Repositories.Project;
 using LeokaEstetica.Platform.Database.Repositories.Resume;
+using LeokaEstetica.Platform.Database.Repositories.Subscription;
 using LeokaEstetica.Platform.Database.Repositories.User;
 using LeokaEstetica.Platform.Database.Repositories.Vacancy;
 
@@ -160,6 +162,16 @@ public class RepositoriesModule : Module
         builder
             .RegisterType<PayMasterRepository>()
             .As<IPayMasterRepository>()
+            .InstancePerLifetimeScope();
+        
+        // Репозиторий подписок.
+        builder
+            .RegisterType<SubscriptionRepository>()
+            .Named<ISubscriptionRepository>("SubscriptionRepository")
+            .InstancePerLifetimeScope();
+        builder
+            .RegisterType<SubscriptionRepository>()
+            .As<ISubscriptionRepository>()
             .InstancePerLifetimeScope();
     }
 }

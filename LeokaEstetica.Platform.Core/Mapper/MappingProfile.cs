@@ -12,6 +12,7 @@ using LeokaEstetica.Platform.Models.Dto.Output.Project;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectTeam;
 using LeokaEstetica.Platform.Models.Dto.Output.Resume;
 using LeokaEstetica.Platform.Models.Dto.Output.Search.Project;
+using LeokaEstetica.Platform.Models.Dto.Output.Subscription;
 using LeokaEstetica.Platform.Models.Dto.Output.User;
 using LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
 using LeokaEstetica.Platform.Models.Entities.Commerce;
@@ -24,6 +25,7 @@ using LeokaEstetica.Platform.Models.Entities.Moderation;
 using LeokaEstetica.Platform.Models.Entities.Profile;
 using LeokaEstetica.Platform.Models.Entities.Project;
 using LeokaEstetica.Platform.Models.Entities.ProjectTeam;
+using LeokaEstetica.Platform.Models.Entities.Subscription;
 using LeokaEstetica.Platform.Models.Entities.User;
 using LeokaEstetica.Platform.Models.Entities.Vacancy;
 
@@ -102,5 +104,7 @@ public class MappingProfile : Profile
         CreateMap<FareRuleItemEntity, FareRuleItemOutput>();
 
         CreateMap<OrderEntity, CreateOrderOutput>();
+        
+        CreateMap<SubscriptionEntity, SubscriptionOutput>();
     }
 }
