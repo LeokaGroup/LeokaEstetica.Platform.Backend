@@ -74,14 +74,12 @@ public class SubscriptionService : ISubscriptionService
             var userSubscriptions = await _subscriptionRepository.GetFillSubscriptionsAsync(userId);
 
             // Если пользователь не оформлял подписок, то и выделять нечего.
-            if (!userSubscriptions.Any())
+            if (userSubscriptions.Any())
             {
-                return subscriptions;
+                // Проставляем выделение подпискам.
+                FillSubscriptionsBuilder.Fill(ref subscriptions, userSubscriptions);
             }
 
-            // Проставляем выделение подпискам.
-            FillSubscriptionsBuilder.Fill(ref subscriptions, userSubscriptions);
-            
             // Записываем названия.
             var ids = subscriptions.Select(s => s.ObjectId);
             var fareRules = await _fareRuleRepository.GetFareRulesNamesByIdsAsync(ids);
