@@ -22,6 +22,13 @@ public class ResumeController : BaseController
     private readonly IResumeFinderService _resumeFinderService;
     private readonly IResumePaginationService _resumePaginationService;
     
+    /// <summary>
+    /// Конструктор.
+    /// </summary>
+    /// <param name="resumeService">Сервис резюме.</param>
+    /// <param name="mapper">Автомаппер.</param>
+    /// <param name="resumeFinderService">Поисковый сервис резюме.</param>
+    /// <param name="resumePaginationService">Сервис пагинации резюме.</param>
     public ResumeController(IResumeService resumeService, 
         IMapper mapper, 
         IResumeFinderService resumeFinderService, 
