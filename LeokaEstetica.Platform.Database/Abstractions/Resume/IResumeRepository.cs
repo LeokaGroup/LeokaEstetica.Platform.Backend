@@ -18,4 +18,11 @@ public interface IResumeRepository
     /// </summary>
     /// <returns>Резюме без выгрузки в память.</returns>
     Task<IOrderedQueryable<ProfileInfoEntity>> GetFilterResumesAsync();
+
+    /// <summary>
+    /// Метод получает анкету пользователя по ее 
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Данные анкеты.</returns>
+    Task<ProfileInfoEntity> GetResumeAsync(long userId);
 }

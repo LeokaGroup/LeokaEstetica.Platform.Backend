@@ -118,7 +118,7 @@ public class BaseServiceTest
 
         var resumeRepository = new ResumeRepository(pgContext);
 
-        ResumeService = new ResumeService(logService, resumeRepository);
+        ResumeService = new ResumeService(logService, resumeRepository, userRepository);
         VacancyFinderService = new VacancyFinderService(vacancyRepository, logService);
         FinderProjectService = new Finder.Services.Project.ProjectFinderService(projectRepository, logService);
         ResumeFinderService = new ResumeFinderService(logService, resumeRepository);

@@ -8,7 +8,7 @@ namespace LeokaEstetica.Platform.Database.Repositories.Resume;
 /// <summary>
 /// Класс реализует методы репозитория базы резюме.
 /// </summary>
-public sealed class ResumeRepository : IResumeRepository
+public class ResumeRepository : IResumeRepository
 {
     private readonly PgContext _pgContext;
     
@@ -49,5 +49,18 @@ public sealed class ResumeRepository : IResumeRepository
             .AsQueryable();
 
         return await Task.FromResult(result);
+    }
+
+    /// <summary>
+    /// Метод получает анкету пользователя по ее 
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Данные анкеты.</returns>
+    public async Task<ProfileInfoEntity> GetResumeAsync(long userId)
+    {
+        var result = await _pgContext.ProfilesInfo
+            .FirstOrDefaultAsync(p => p.UserId == userId);
+
+        return result;
     }
 }

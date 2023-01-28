@@ -97,4 +97,24 @@ public class ResumeController : BaseController
 
         return result;
     }
+
+    /// <summary>
+    /// Метод получает анкету пользователя по ее 
+    /// </summary>
+    /// <param name="resumeId">Id анкеты пользователя.</param>
+    /// <returns>Данные анкеты.</returns>
+    [HttpGet]
+    [Route("{resumeId}")]
+    [ProducesResponseType(200, Type = typeof(ResumeOutput))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<ResumeOutput> GetResumeAsync([FromRoute] long resumeId)
+    {
+        var resume = await _resumeService.GetResumeAsync(GetUserName());
+        var result = _mapper.Map<ResumeOutput>(resume);
+
+        return result;
+    }
 }
