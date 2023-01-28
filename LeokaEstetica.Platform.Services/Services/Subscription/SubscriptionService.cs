@@ -84,7 +84,8 @@ public class SubscriptionService : ISubscriptionService
             
             // Записываем названия.
             var ids = subscriptions.Select(s => s.ObjectId);
-            subscriptions = await FillSubscriptionsNamesAsync(ids, subscriptions);
+            var fareRules = await _fareRuleRepository.GetFareRulesNamesByIdsAsync(ids);
+            CreateSubscriptionsNamesBuilder.Create(ref subscriptions, fareRules);
 
             return subscriptions;
         }
@@ -94,24 +95,5 @@ public class SubscriptionService : ISubscriptionService
             await _logService.LogErrorAsync(ex);
             throw;
         }
-    }
-
-    /// <summary>
-    /// Метод получает список тарифов по .
-    /// </summary>
-    /// <param name="fareRulesIds"></param>
-    /// <returns></returns>
-    private async Task<List<SubscriptionOutput>> FillSubscriptionsNamesAsync(IEnumerable<long> fareRulesIds,
-        List<SubscriptionOutput> subscriptions)
-    {
-        var fareRules = await _fareRuleRepository.GetFareRulesNamesByIdsAsync(fareRulesIds);
-
-        foreach (var s in subscriptions)
-        {
-            var fr = fareRules.FirstOrDefault(fr => fr.RuleId == s.ObjectId); // Находим тариф.
-            s.SubscriptionName = fr?.Name; // Записываем название подписке.
-        }
-
-        return subscriptions;
     }
 }
