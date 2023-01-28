@@ -11,7 +11,7 @@ public interface IResumeService
     /// Метод получает список резюме.
     /// </summary>
     /// <returns>Список резюме.</returns>
-    Task<IEnumerable<ProfileInfoEntity>> GetProfileInfosAsync();
+    Task<List<ProfileInfoEntity>> GetProfileInfosAsync();
 
     /// <summary>
     /// Метод получает анкету пользователя.

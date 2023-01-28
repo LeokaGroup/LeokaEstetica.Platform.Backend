@@ -23,8 +23,7 @@ public class ResumeRepository : IResumeRepository
     /// <returns>Список резюме.</returns>
     public async Task<List<ProfileInfoEntity>> GetProfileInfosAsync()
     {
-        var result = await _pgContext.ProfilesInfo
-            .ToListAsync();
+        var result = await _pgContext.ProfilesInfo.ToListAsync();
 
         return result;
     }

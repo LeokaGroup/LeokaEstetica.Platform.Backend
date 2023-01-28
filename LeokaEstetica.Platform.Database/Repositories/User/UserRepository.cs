@@ -223,4 +223,15 @@ public sealed class UserRepository : IUserRepository
 
         return result;
     }
+
+    /// <summary>
+    /// Метод получает словарь кодов пользователей.
+    /// </summary>
+    /// <returns>Словарь кодов пользователей.</returns>
+    public async Task<Dictionary<long, Guid>> GetUsersCodesAsync()
+    {
+        var result = await _pgContext.Users.ToDictionaryAsync(k => k.UserId, v => v.UserCode);
+
+        return result;
+    }
 }

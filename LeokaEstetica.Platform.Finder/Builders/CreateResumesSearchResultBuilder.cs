@@ -69,7 +69,7 @@ public static class CreateResumesSearchResultBuilder
                 Patronymic = patronymic,
                 Job = job,
                 IsShortFirstName = isShortFirstName,
-                ProfileInfoId = userId,
+                UserId = userId,
                 Aboutme = aboutMe
             });
         }
