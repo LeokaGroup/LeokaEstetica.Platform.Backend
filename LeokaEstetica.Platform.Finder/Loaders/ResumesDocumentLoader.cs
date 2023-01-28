@@ -66,6 +66,12 @@ public static class ResumesDocumentLoader
                 doc.Add(new Field(ResumeFinderConst.JOB, res.Job, Field.Store.YES,
                     Field.Index.NOT_ANALYZED_NO_NORMS));
             }
+            
+            if (res.ProfileInfoId > 0)
+            {
+                doc.Add(new Field(ResumeFinderConst.PROFILE_INFO_ID, res.ProfileInfoId.ToString(),
+                    Field.Store.YES, Field.Index.NOT_ANALYZED_NO_NORMS));
+            }
 
             doc.Add(new Field(ResumeFinderConst.SEARCH_FIELD,
                 (res.LastName + " " + res.FirstName + " " + res.Patronymic).Trim(), Field.Store.YES,

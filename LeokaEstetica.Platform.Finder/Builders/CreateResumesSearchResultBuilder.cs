@@ -29,6 +29,7 @@ public static class CreateResumesSearchResultBuilder
             var job = string.Empty;
             long userId = 0;
             var aboutMe = string.Empty;
+            long profileInfoId = 0;
 
             if (!string.IsNullOrEmpty(document.GetField(ResumeFinderConst.LAST_NAME).ToString()))
             {
@@ -59,6 +60,11 @@ public static class CreateResumesSearchResultBuilder
             {
                 aboutMe = document.GetField(ResumeFinderConst.ABOUT_ME).StringValue;
             }
+            
+            if (long.Parse(document.GetField(ResumeFinderConst.PROFILE_INFO_ID).StringValue) > 0)
+            {
+                profileInfoId = long.Parse(document.GetField(ResumeFinderConst.PROFILE_INFO_ID).StringValue);
+            }
 
             var isShortFirstName = bool.Parse(document.GetField(ResumeFinderConst.IS_SHORT_FIRST_NAME).StringValue);
 
@@ -70,7 +76,8 @@ public static class CreateResumesSearchResultBuilder
                 Job = job,
                 IsShortFirstName = isShortFirstName,
                 UserId = userId,
-                Aboutme = aboutMe
+                Aboutme = aboutMe,
+                ProfileInfoId = profileInfoId
             });
         }
 
