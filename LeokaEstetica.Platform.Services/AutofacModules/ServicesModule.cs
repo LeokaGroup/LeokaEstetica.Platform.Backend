@@ -7,6 +7,7 @@ using LeokaEstetica.Platform.Services.Abstractions.Profile;
 using LeokaEstetica.Platform.Services.Abstractions.Project;
 using LeokaEstetica.Platform.Services.Abstractions.Resume;
 using LeokaEstetica.Platform.Services.Abstractions.Search.Project;
+using LeokaEstetica.Platform.Services.Abstractions.Subscription;
 using LeokaEstetica.Platform.Services.Abstractions.User;
 using LeokaEstetica.Platform.Services.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Services.Services.FareRule;
@@ -16,6 +17,7 @@ using LeokaEstetica.Platform.Services.Services.Profile;
 using LeokaEstetica.Platform.Services.Services.Project;
 using LeokaEstetica.Platform.Services.Services.Resume;
 using LeokaEstetica.Platform.Services.Services.Search.Project;
+using LeokaEstetica.Platform.Services.Services.Subscription;
 using LeokaEstetica.Platform.Services.Services.User;
 using LeokaEstetica.Platform.Services.Services.Vacancy;
 
@@ -114,6 +116,16 @@ public class ServicesModule : Module
         builder
             .RegisterType<FareRuleService>()
             .As<IFareRuleService>()
+            .InstancePerLifetimeScope();
+        
+        // Сервис подписок.
+        builder
+            .RegisterType<SubscriptionService>()
+            .Named<ISubscriptionService>("SubscriptionService")
+            .InstancePerLifetimeScope();
+        builder
+            .RegisterType<SubscriptionService>()
+            .As<ISubscriptionService>()
             .InstancePerLifetimeScope();
     }
 }

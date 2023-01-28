@@ -11,6 +11,7 @@ using LeokaEstetica.Platform.Models.Entities.Profile;
 using LeokaEstetica.Platform.Models.Entities.Project;
 using LeokaEstetica.Platform.Models.Entities.ProjectTeam;
 using LeokaEstetica.Platform.Models.Entities.Role;
+using LeokaEstetica.Platform.Models.Entities.Subscription;
 using LeokaEstetica.Platform.Models.Entities.User;
 using LeokaEstetica.Platform.Models.Entities.Vacancy;
 using Microsoft.EntityFrameworkCore;
@@ -265,4 +266,14 @@ public class PgContext : DbContext
     /// Таблица чеков.
     /// </summary>
     public DbSet<ReceiptEntity> Receipts { get; set; }
+
+    /// <summary>
+    /// Таблица подписок.
+    /// </summary>
+    public DbSet<SubscriptionEntity> Subscriptions { get; set; }
+
+    /// <summary>
+    /// Таблица подписок пользователей.
+    /// </summary>
+    public DbSet<UserSubscriptionEntity> UserSubscriptions { get; set; }
 }
