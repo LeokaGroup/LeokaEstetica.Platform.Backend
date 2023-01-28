@@ -10,20 +10,15 @@ namespace LeokaEstetica.Platform.Finder.Builders;
 public static class CreateResumesSearchResultBuilder
 {
     /// <summary>
-    /// Список резюме.
-    /// </summary>
-    private static readonly List<ResumeOutput> _resumes = new(20);
-
-    /// <summary>
     /// Метод создает результат поиска резюме.
     /// </summary>
     /// <param name="searchResults">Результаты поиска.</param>
     /// <param name="searcher">Поисковый индекс.</param>
     /// <returns>Список резюме.</returns>
-    public static IQueryable<ResumeOutput> CreateResumesSearchResult(ScoreDoc[] searchResults,
+    public static List<ResumeOutput> CreateResumesSearchResult(ScoreDoc[] searchResults,
         IndexSearcher searcher)
     {
-        _resumes.Clear();
+        var resumes = new List<ResumeOutput>(20);
 
         foreach (var item in searchResults)
         {
@@ -34,6 +29,7 @@ public static class CreateResumesSearchResultBuilder
             var job = string.Empty;
             long userId = 0;
             var aboutMe = string.Empty;
+            long profileInfoId = 0;
 
             if (!string.IsNullOrEmpty(document.GetField(ResumeFinderConst.LAST_NAME).ToString()))
             {
@@ -64,10 +60,15 @@ public static class CreateResumesSearchResultBuilder
             {
                 aboutMe = document.GetField(ResumeFinderConst.ABOUT_ME).StringValue;
             }
+            
+            if (long.Parse(document.GetField(ResumeFinderConst.PROFILE_INFO_ID).StringValue) > 0)
+            {
+                profileInfoId = long.Parse(document.GetField(ResumeFinderConst.PROFILE_INFO_ID).StringValue);
+            }
 
             var isShortFirstName = bool.Parse(document.GetField(ResumeFinderConst.IS_SHORT_FIRST_NAME).StringValue);
 
-            _resumes.Add(new ResumeOutput
+            resumes.Add(new ResumeOutput
             {
                 LastName = lastName,
                 FirstName = firstName,
@@ -75,10 +76,11 @@ public static class CreateResumesSearchResultBuilder
                 Job = job,
                 IsShortFirstName = isShortFirstName,
                 UserId = userId,
-                Aboutme = aboutMe
+                Aboutme = aboutMe,
+                ProfileInfoId = profileInfoId
             });
         }
 
-        return _resumes.AsQueryable();
+        return resumes;
     }
 }

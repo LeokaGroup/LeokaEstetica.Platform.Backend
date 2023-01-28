@@ -1,9 +1,11 @@
 using AutoMapper;
 using LeokaEstetica.Platform.Base;
 using LeokaEstetica.Platform.Core.Filters;
+using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Finder.Abstractions.Resume;
 using LeokaEstetica.Platform.Models.Dto.Output.Resume;
 using LeokaEstetica.Platform.Services.Abstractions.Resume;
+using LeokaEstetica.Platform.Services.Builders;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LeokaEstetica.Platform.Controllers.Resume;
@@ -21,7 +23,8 @@ public class ResumeController : BaseController
     private readonly IMapper _mapper;
     private readonly IResumeFinderService _resumeFinderService;
     private readonly IResumePaginationService _resumePaginationService;
-    
+    private readonly IUserRepository _userRepository;
+
     /// <summary>
     /// Конструктор.
     /// </summary>
@@ -29,15 +32,18 @@ public class ResumeController : BaseController
     /// <param name="mapper">Автомаппер.</param>
     /// <param name="resumeFinderService">Поисковый сервис резюме.</param>
     /// <param name="resumePaginationService">Сервис пагинации резюме.</param>
+    /// <param name="userRepository">Репозиторий пользователя.</param>
     public ResumeController(IResumeService resumeService, 
         IMapper mapper, 
         IResumeFinderService resumeFinderService, 
-        IResumePaginationService resumePaginationService)
+        IResumePaginationService resumePaginationService, 
+        IUserRepository userRepository)
     {
         _resumeService = resumeService;
         _mapper = mapper;
         _resumeFinderService = resumeFinderService;
         _resumePaginationService = resumePaginationService;
+        _userRepository = userRepository;
     }
 
     /// <summary>
@@ -53,9 +59,15 @@ public class ResumeController : BaseController
     [ProducesResponseType(404)]
     public async Task<ResumeResultOutput> GetProfileInfosAsync()
     {
-        var result = new ResumeResultOutput();
         var items = await _resumeService.GetProfileInfosAsync();
-        result.CatalogResumes = _mapper.Map<IEnumerable<ResumeOutput>>(items);
+        var result = new ResumeResultOutput
+        {
+            // Приводим к выходной модели.
+            CatalogResumes = _mapper.Map<IEnumerable<ResumeOutput>>(items)
+        };
+
+        // Записываем коды пользователей.
+        result.CatalogResumes = await FillUserCodesBuilder.Fill(result.CatalogResumes, _userRepository);
 
         return result;
     }
@@ -94,6 +106,26 @@ public class ResumeController : BaseController
     public async Task<PaginationResumeOutput> GetResumesPaginationAsync([FromRoute] int page)
     {
         var result = await _resumePaginationService.GetResumesPaginationAsync(page);
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод получает анкету пользователя по ее 
+    /// </summary>
+    /// <param name="resumeId">Id анкеты пользователя.</param>
+    /// <returns>Данные анкеты.</returns>
+    [HttpGet]
+    [Route("{resumeId}")]
+    [ProducesResponseType(200, Type = typeof(ResumeOutput))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<ResumeOutput> GetResumeAsync([FromRoute] long resumeId)
+    {
+        var resume = await _resumeService.GetResumeAsync(resumeId);
+        var result = _mapper.Map<ResumeOutput>(resume);
 
         return result;
     }

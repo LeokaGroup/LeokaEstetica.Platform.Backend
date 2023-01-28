@@ -11,5 +11,12 @@ public interface IResumeService
     /// Метод получает список резюме.
     /// </summary>
     /// <returns>Список резюме.</returns>
-    Task<IEnumerable<ProfileInfoEntity>> GetProfileInfosAsync();
+    Task<List<ProfileInfoEntity>> GetProfileInfosAsync();
+
+    /// <summary>
+    /// Метод получает анкету пользователя.
+    /// </summary>
+    /// <param name="resumeId">Id анкеты пользователя.</param>
+    /// <returns>Данные анкеты.</returns>
+    Task<ProfileInfoEntity> GetResumeAsync(long resumeId);
 }

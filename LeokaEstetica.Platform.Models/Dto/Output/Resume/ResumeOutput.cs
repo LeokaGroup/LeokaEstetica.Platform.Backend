@@ -39,4 +39,14 @@ public class ResumeOutput
     /// Id пользователя.
     /// </summary>
     public long UserId { get; set; }
+
+    /// <summary>
+    /// Код пользователя.
+    /// </summary>
+    public Guid UserCode { get; set; }
+
+    /// <summary>
+    /// Id анкеты пользователя.
+    /// </summary>
+    public long ProfileInfoId { get; set; }
 }

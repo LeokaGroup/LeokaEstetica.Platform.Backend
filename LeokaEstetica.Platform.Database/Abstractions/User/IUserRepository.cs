@@ -91,4 +91,10 @@ public interface IUserRepository
     /// <param name="searchText">Текст, по которому надо искать.</param>
     /// <returns>Id пользователя.</returns>
     Task<long> GetUserIdByEmailOrLoginAsync(string searchText);
+
+    /// <summary>
+    /// Метод получает словарь кодов пользователей.
+    /// </summary>
+    /// <returns>Словарь кодов пользователей.</returns>
+    Task<Dictionary<long, Guid>> GetUsersCodesAsync();
 }

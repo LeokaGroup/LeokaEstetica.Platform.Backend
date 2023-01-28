@@ -49,4 +49,9 @@ public static class ResumeFinderConst
     /// Название поля Id пользователя.
     /// </summary>
     public const string USER_ID = "UserId";
+
+    /// <summary>
+    /// Id анкеты пользователя.
+    /// </summary>
+    public const string PROFILE_INFO_ID = "ProfileInfoId";
 }
