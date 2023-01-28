@@ -71,4 +71,24 @@ public class FareRuleRepository : IFareRuleRepository
 
         return result;
     }
+    
+    /// <summary>
+    /// Метод получает список названий входящих в список Ids тарифов.
+    /// </summary>
+    /// <returns>Список тарифов.</returns>
+    public async Task<List<FareRuleEntity>> GetFareRulesNamesByIdsAsync(IEnumerable<long> fareRuleIds)
+    {
+        var result = await _pgContext.FareRules
+            .Where(fr => fareRuleIds.Contains(fr.RuleId))
+            .Select(fr => new FareRuleEntity
+            {
+                RuleId = fr.RuleId,
+                Name = fr.Name,
+                Position = fr.Position
+            })
+            .OrderBy(o => o.Position)
+            .ToListAsync();
+
+        return result;
+    }
 }

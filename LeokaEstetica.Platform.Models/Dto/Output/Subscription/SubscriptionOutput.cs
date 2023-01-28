@@ -29,4 +29,9 @@ public class SubscriptionOutput
     /// Признак активной подписки пользователя (вычисляемое поле).
     /// </summary>
     public bool IsActive { get; set; }
+
+    /// <summary>
+    /// Название подписки.
+    /// </summary>
+    public string SubscriptionName { get; set; }
 }

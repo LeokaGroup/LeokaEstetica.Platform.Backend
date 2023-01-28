@@ -12,6 +12,7 @@ using LeokaEstetica.Platform.Database.Repositories.Moderation.Vacancy;
 using LeokaEstetica.Platform.Database.Repositories.Profile;
 using LeokaEstetica.Platform.Database.Repositories.Project;
 using LeokaEstetica.Platform.Database.Repositories.Resume;
+using LeokaEstetica.Platform.Database.Repositories.Subscription;
 using LeokaEstetica.Platform.Database.Repositories.User;
 using LeokaEstetica.Platform.Database.Repositories.Vacancy;
 using LeokaEstetica.Platform.Finder.Services.Project;
@@ -28,6 +29,7 @@ using LeokaEstetica.Platform.Services.Services.FareRule;
 using LeokaEstetica.Platform.Services.Services.Profile;
 using LeokaEstetica.Platform.Services.Services.Project;
 using LeokaEstetica.Platform.Services.Services.Resume;
+using LeokaEstetica.Platform.Services.Services.Subscription;
 using LeokaEstetica.Platform.Services.Services.User;
 using LeokaEstetica.Platform.Services.Services.Vacancy;
 using Microsoft.EntityFrameworkCore;
@@ -61,6 +63,7 @@ public class BaseServiceTest
     protected readonly ProjectPaginationService ProjectPaginationService;
     protected readonly FareRuleService FareRuleService;
     protected readonly PayMasterService PayMasterService;
+    protected readonly SubscriptionService SubscriptionService;
 
     protected BaseServiceTest()
     {
@@ -75,8 +78,8 @@ public class BaseServiceTest
         
         // Настройка тестовых контекстов.
         var optionsBuilder = new DbContextOptionsBuilder<PgContext>();
-        var pgContext = new PgContext(optionsBuilder.Options);
         optionsBuilder.UseNpgsql(PostgreConfigString);
+        var pgContext = new PgContext(optionsBuilder.Options);
         var logService = new LogService(pgContext);
         var userRepository = new UserRepository(pgContext, logService);
         var profileRepository = new ProfileRepository(pgContext);
@@ -124,9 +127,12 @@ public class BaseServiceTest
 
         var fareRuleRepository = new FareRuleRepository(pgContext);
         var payMasterRepository = new PayMasterRepository(pgContext);
+        var subscriptionRepository = new SubscriptionRepository(pgContext);
 
         FareRuleService = new FareRuleService(fareRuleRepository, logService);
         PayMasterService = new PayMasterService(logService, AppConfiguration, fareRuleRepository, userRepository,
             payMasterRepository);
+        SubscriptionService =
+            new SubscriptionService(logService, userRepository, subscriptionRepository, fareRuleRepository);
     }
 }

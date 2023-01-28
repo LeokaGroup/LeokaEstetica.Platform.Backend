@@ -1,4 +1,5 @@
 using LeokaEstetica.Platform.Core.Exceptions;
+using LeokaEstetica.Platform.Database.Abstractions.FareRule;
 using LeokaEstetica.Platform.Database.Abstractions.Subscription;
 using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Logs.Abstractions;
@@ -17,14 +18,17 @@ public class SubscriptionService : ISubscriptionService
     private readonly ILogService _logService;
     private readonly IUserRepository _userRepository;
     private readonly ISubscriptionRepository _subscriptionRepository;
-    
-    public SubscriptionService(ILogService logService, 
-        IUserRepository userRepository, 
-        ISubscriptionRepository subscriptionRepository)
+    private readonly IFareRuleRepository _fareRuleRepository;
+
+    public SubscriptionService(ILogService logService,
+        IUserRepository userRepository,
+        ISubscriptionRepository subscriptionRepository, 
+        IFareRuleRepository fareRuleRepository)
     {
         _logService = logService;
         _userRepository = userRepository;
         _subscriptionRepository = subscriptionRepository;
+        _fareRuleRepository = fareRuleRepository;
     }
 
     /// <summary>
@@ -40,7 +44,7 @@ public class SubscriptionService : ISubscriptionService
 
             return result;
         }
-        
+
         catch (Exception ex)
         {
             await _logService.LogErrorAsync(ex);
@@ -54,17 +58,18 @@ public class SubscriptionService : ISubscriptionService
     /// <param name="account">Аккаунт пользователя.</param>
     /// <param name="subscriptions">Список подписок до выделения.</param>
     /// <returns>Список подписок, но с выделенной подпиской, которую оформил пользователь либо не выделяем.</returns>
-    public async Task<List<SubscriptionOutput>> FillSubscriptionsAsync(string account, List<SubscriptionOutput> subscriptions)
+    public async Task<List<SubscriptionOutput>> FillSubscriptionsAsync(string account,
+        List<SubscriptionOutput> subscriptions)
     {
         try
         {
             var userId = await _userRepository.GetUserByEmailAsync(account);
-            
+
             if (userId <= 0)
             {
                 throw new NotFoundUserIdByAccountException(account);
             }
-            
+
             // Получаем подписки пользователя.
             var userSubscriptions = await _subscriptionRepository.GetFillSubscriptionsAsync(userId);
 
@@ -76,14 +81,37 @@ public class SubscriptionService : ISubscriptionService
 
             // Проставляем выделение подпискам.
             FillSubscriptionsBuilder.Fill(ref subscriptions, userSubscriptions);
+            
+            // Записываем названия.
+            var ids = subscriptions.Select(s => s.ObjectId);
+            subscriptions = await FillSubscriptionsNamesAsync(ids, subscriptions);
 
             return subscriptions;
         }
-        
+
         catch (Exception ex)
         {
             await _logService.LogErrorAsync(ex);
             throw;
         }
+    }
+
+    /// <summary>
+    /// Метод получает список тарифов по .
+    /// </summary>
+    /// <param name="fareRulesIds"></param>
+    /// <returns></returns>
+    private async Task<List<SubscriptionOutput>> FillSubscriptionsNamesAsync(IEnumerable<long> fareRulesIds,
+        List<SubscriptionOutput> subscriptions)
+    {
+        var fareRules = await _fareRuleRepository.GetFareRulesNamesByIdsAsync(fareRulesIds);
+
+        foreach (var s in subscriptions)
+        {
+            var fr = fareRules.FirstOrDefault(fr => fr.RuleId == s.ObjectId); // Находим тариф.
+            s.SubscriptionName = fr?.Name; // Записываем название подписке.
+        }
+
+        return subscriptions;
     }
 }
