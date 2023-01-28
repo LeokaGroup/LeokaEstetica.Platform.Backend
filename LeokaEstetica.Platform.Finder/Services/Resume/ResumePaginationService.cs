@@ -50,9 +50,7 @@ public class ResumePaginationService : BaseIndexRamDirectory, IResumePaginationS
             using var searcher = new IndexSearcher(reader);
             var scoreDocs = CreateScoreDocsBuilder.CreateScoreDocsResult(page, searcher);
 
-            result.Resumes = CreateResumesSearchResultBuilder
-                .CreateResumesSearchResult(scoreDocs, searcher)
-                .ToList();
+            result.Resumes = CreateResumesSearchResultBuilder.CreateResumesSearchResult(scoreDocs, searcher);
 
             // Если первая страница и записей менее максимального на странице,
             // то надо скрыть пагинацию, так как смысл в пагинации теряется в этом кейсе.

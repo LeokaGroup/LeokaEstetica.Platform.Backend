@@ -36,7 +36,7 @@ public class ResumeOutput
     public string Job { get; set; }
 
     /// <summary>
-    /// Id пользователя.
+    /// Id анкеты пользователя.
     /// </summary>
-    public long UserId { get; set; }
+    public long ProfileInfoId { get; set; }
 }

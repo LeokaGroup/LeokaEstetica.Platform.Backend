@@ -52,14 +52,14 @@ public class ResumeRepository : IResumeRepository
     }
 
     /// <summary>
-    /// Метод получает анкету пользователя по ее 
+    /// Метод получает анкету пользователя.
     /// </summary>
-    /// <param name="userId">Id пользователя.</param>
+    /// <param name="resumeId">Id анкеты пользователя.</param>
     /// <returns>Данные анкеты.</returns>
-    public async Task<ProfileInfoEntity> GetResumeAsync(long userId)
+    public async Task<ProfileInfoEntity> GetResumeAsync(long resumeId)
     {
         var result = await _pgContext.ProfilesInfo
-            .FirstOrDefaultAsync(p => p.UserId == userId);
+            .FirstOrDefaultAsync(p => p.ProfileInfoId == resumeId);
 
         return result;
     }

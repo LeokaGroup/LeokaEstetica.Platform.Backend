@@ -16,7 +16,7 @@ public interface IResumeService
     /// <summary>
     /// Метод получает анкету пользователя.
     /// </summary>
-    /// <param name="account">Аккаунт пользователя.</param>
+    /// <param name="resumeId">Id анкеты пользователя.</param>
     /// <returns>Данные анкеты.</returns>
-    Task<ProfileInfoEntity> GetResumeAsync(string account);
+    Task<ProfileInfoEntity> GetResumeAsync(long resumeId);
 }

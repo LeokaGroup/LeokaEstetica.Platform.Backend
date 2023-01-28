@@ -10,20 +10,15 @@ namespace LeokaEstetica.Platform.Finder.Builders;
 public static class CreateResumesSearchResultBuilder
 {
     /// <summary>
-    /// Список резюме.
-    /// </summary>
-    private static readonly List<ResumeOutput> _resumes = new(20);
-
-    /// <summary>
     /// Метод создает результат поиска резюме.
     /// </summary>
     /// <param name="searchResults">Результаты поиска.</param>
     /// <param name="searcher">Поисковый индекс.</param>
     /// <returns>Список резюме.</returns>
-    public static IQueryable<ResumeOutput> CreateResumesSearchResult(ScoreDoc[] searchResults,
+    public static List<ResumeOutput> CreateResumesSearchResult(ScoreDoc[] searchResults,
         IndexSearcher searcher)
     {
-        _resumes.Clear();
+        var resumes = new List<ResumeOutput>(20);
 
         foreach (var item in searchResults)
         {
@@ -67,18 +62,18 @@ public static class CreateResumesSearchResultBuilder
 
             var isShortFirstName = bool.Parse(document.GetField(ResumeFinderConst.IS_SHORT_FIRST_NAME).StringValue);
 
-            _resumes.Add(new ResumeOutput
+            resumes.Add(new ResumeOutput
             {
                 LastName = lastName,
                 FirstName = firstName,
                 Patronymic = patronymic,
                 Job = job,
                 IsShortFirstName = isShortFirstName,
-                UserId = userId,
+                ProfileInfoId = userId,
                 Aboutme = aboutMe
             });
         }
 
-        return _resumes.AsQueryable();
+        return resumes;
     }
 }

@@ -54,22 +54,13 @@ public class ResumeService : IResumeService
     /// <summary>
     /// Метод получает анкету пользователя.
     /// </summary>
-    /// <param name="account">Аккаунт пользователя.</param>
+    /// <param name="resumeId">Id анкеты пользователя.</param>
     /// <returns>Данные анкеты.</returns>
-    public async Task<ProfileInfoEntity> GetResumeAsync(string account)
+    public async Task<ProfileInfoEntity> GetResumeAsync(long resumeId)
     {
         try
         {
-            var userId = await _userRepository.GetUserByEmailAsync(account);
-
-            if (userId <= 0)
-            {
-                var ex = new NotFoundUserIdByAccountException(account);
-                await _logService.LogErrorAsync(ex);
-                throw ex;
-            }
-
-            var result = await _resumeRepository.GetResumeAsync(userId);
+            var result = await _resumeRepository.GetResumeAsync(resumeId);
 
             return result;
         }

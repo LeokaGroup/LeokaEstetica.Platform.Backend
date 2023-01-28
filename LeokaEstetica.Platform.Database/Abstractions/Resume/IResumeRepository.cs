@@ -20,9 +20,9 @@ public interface IResumeRepository
     Task<IOrderedQueryable<ProfileInfoEntity>> GetFilterResumesAsync();
 
     /// <summary>
-    /// Метод получает анкету пользователя по ее 
+    /// Метод получает анкету пользователя.
     /// </summary>
-    /// <param name="userId">Id пользователя.</param>
+    /// <param name="resumeId">Id анкеты пользователя.</param>
     /// <returns>Данные анкеты.</returns>
-    Task<ProfileInfoEntity> GetResumeAsync(long userId);
+    Task<ProfileInfoEntity> GetResumeAsync(long resumeId);
 }
