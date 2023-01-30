@@ -6,6 +6,7 @@ using LeokaEstetica.Platform.Database.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Database.Chat;
 using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Messaging.Abstractions.Chat;
+using LeokaEstetica.Platform.Messaging.Builders;
 using LeokaEstetica.Platform.Messaging.Enums;
 using LeokaEstetica.Platform.Messaging.Models.Chat.Output;
 using LeokaEstetica.Platform.Models.Dto.Chat.Output;
@@ -139,10 +140,10 @@ public sealed class ChatService : IChatService
             {
                 throw new NullReferenceException($"Такого диалога не найдено. DialogId был {convertDialogId}");
             }
-            
+
             // Получаем список Id участников диалога.
             var memberIds = await _chatRepository.GetDialogMembersAsync(convertDialogId);
-            
+
             if (!memberIds.Any())
             {
                 throw new NullReferenceException($"Не найдено участников для диалога с DialogId {convertDialogId}");
@@ -168,14 +169,14 @@ public sealed class ChatService : IChatService
 
                 return result;
             }
-            
+
             foreach (var item in getMessages)
             {
                 var msg = _mapper.Map<DialogMessageOutput>(item);
-                
+
                 // Помечаем сообщения текущего пользователя.
                 msg.IsMyMessage = item.UserId == userId;
-                
+
                 // Форматируем дату сообщения.
                 msg.Created = item.Created.ToString("g", CultureInfo.GetCultureInfo("ru"));
                 result.Messages.Add(msg);
@@ -224,8 +225,9 @@ public sealed class ChatService : IChatService
     /// Метод получает список диалогов.
     /// </summary>
     /// <param name="account">Аккаунт.</param>
+    /// <param name="projectId">Id проекта.</param>
     /// <returns>Список диалогов.</returns>
-    public async Task<IEnumerable<DialogOutput>> GetDialogsAsync(string account)
+    public async Task<IEnumerable<DialogOutput>> GetDialogsAsync(string account, long projectId)
     {
         try
         {
@@ -237,49 +239,7 @@ public sealed class ChatService : IChatService
             }
 
             var dialogs = await _chatRepository.GetDialogsAsync(userId);
-
-            foreach (var dialog in dialogs)
-            {
-                var lastMessage = await _chatRepository.GetLastMessageAsync(dialog.DialogId);
-
-                // Подтягиваем последнее сообщение для каждого диалога и проставляет после 40 символов ...
-                if (lastMessage is not null)
-                {
-                    dialog.LastMessage = lastMessage.Length > 40
-                        ? string.Concat(lastMessage.Substring(0, 40), "...")
-                        : lastMessage;
-                }
-
-                // Найдет Id участников диалога по DialogId.
-                var membersIds = await _chatRepository.GetDialogMembersAsync(dialog.DialogId);
-
-                if (membersIds == null)
-                {
-                    throw new NullReferenceException($"Не найдено участников для диалога с DialogId {dialog.DialogId}");
-                }
-
-                // Записываем имя и фамилию участника диалога, с которым идет общение.
-                var otherUserId = membersIds.FirstOrDefault(m => !m.Equals(userId));
-                var otherData = await _userRepository.GetUserByUserIdAsync(otherUserId);
-                dialog.FullName = otherData.FirstName + " " + otherData.LastName;
-
-                // Если дата диалога совпадает с сегодняшней, то заполнит часы и минуты, иначе оставит их null.
-                if (DateTime.Now.ToString("d").Equals(Convert.ToDateTime(dialog.Created).ToString("d")))
-                {
-                    // Запишет только часы и минуты.
-                    dialog.CalcTime = Convert.ToDateTime(dialog.Created).ToString("t");
-                }
-
-                // Если дата диалога не совпадает с сегодняшней.
-                else
-                {
-                    // Записываем только дату.
-                    dialog.CalcShortDate = Convert.ToDateTime(dialog.Created).ToString("d");
-                }
-
-                // Форматируем дату убрав секунды.
-                dialog.Created = Convert.ToDateTime(dialog.Created).ToString("g");
-            }
+            dialogs = await CreateDialogMessagesBuilder.Create(dialogs, _chatRepository, _userRepository, userId);
 
             return dialogs;
         }
@@ -333,10 +293,10 @@ public sealed class ChatService : IChatService
 
                 return result;
             }
-            
+
             // Проверяем существование диалога перед его созданием.
             var isDublicateDialog = await _chatRepository.CheckDialogAsync(userId, ownerId);
-            
+
             // Диалога нет, можем создавать.
             if (!isDublicateDialog)
             {
@@ -347,7 +307,7 @@ public sealed class ChatService : IChatService
                 await _chatRepository.AddDialogMembersAsync(userId, ownerId, lastDialogId);
                 result.DialogState = DialogStateEnum.Open.ToString();
                 result.DialogId = lastDialogId;
-                
+
                 // Получаем дату начала диалога.
                 result.DateStartDialog = await _chatRepository.GetDialogStartDateAsync(result.DialogId);
             }
@@ -386,7 +346,7 @@ public sealed class ChatService : IChatService
         try
         {
             var result = new DialogResultOutput { Messages = new List<DialogMessageOutput>() };
-            
+
             // Если нет сообщения, то ничего не делать.
             if (string.IsNullOrEmpty(message))
             {
@@ -404,7 +364,7 @@ public sealed class ChatService : IChatService
             {
                 throw new NullReferenceException($"Id пользователя с аккаунтом {account} не найден.");
             }
-            
+
             // Проверяем существование диалога.
             var checkDialog = await _chatRepository.CheckDialogAsync(dialogId);
 
@@ -412,19 +372,19 @@ public sealed class ChatService : IChatService
             {
                 throw new NullReferenceException($"Такого диалога не найдено. DialogId был {dialogId}");
             }
-            
+
             // Записываем сообщение в БД.
             await _chatRepository.SaveMessageAsync(message, dialogId, DateTime.Now, userId, true);
-            
+
             // Получаем список сообщений диалога.
             var messages = await _chatRepository.GetDialogMessagesAsync(dialogId);
-            
+
             // Проставляем флаг принадлежности сообщений.
             foreach (var msg in messages)
             {
                 msg.IsMyMessage = msg.UserId == userId;
             }
-            
+
             result.DialogState = DialogStateEnum.Open.ToString();
             var mapMessages = _mapper.Map<List<DialogMessageOutput>>(messages);
             result.Messages.AddRange(mapMessages);
