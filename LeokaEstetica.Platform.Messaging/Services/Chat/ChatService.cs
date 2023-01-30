@@ -129,9 +129,9 @@ public sealed class ChatService : IChatService
                 return result;
             }
 
-            dialogId ??= ownerDialogId;
+            dialogId ??= ownerDialogId; // Если DialogId null, то присваиваем ему ownerDialogId.
 
-            var convertDialogId = Convert.ToInt64(dialogId);
+            var convertDialogId = (long)dialogId;
 
             // Проверяем существование диалога.
             var checkDialog = await _chatRepository.CheckDialogAsync(convertDialogId);
