@@ -16,12 +16,11 @@ public interface IChatRepository
     Task<long> GetDialogByUserIdAsync(long userId);
 
     /// <summary>
-    /// Метод получает диалог, где есть и текущий пользователь и владелец предмета обсуждения.
+    /// Метод получает диалог по Id пользователя.
     /// </summary>
     /// <param name="userId">Id пользователя.</param>
-    /// <param name="ownerId">Id владельца.</param>
     /// <returns>Id диалога.</returns>
-    Task<long> GetDialogMembersAsync(long userId, long ownerId);
+    Task<long> GetDialogMembersByUserIdAsync(long userId);
 
     /// <summary>
     /// Метод создаст новый диалог.
@@ -45,6 +44,13 @@ public interface IChatRepository
     /// <param name="dialogId">Id диалога.</param>
     /// <returns>Флаг проверки.</returns>
     Task<bool> CheckDialogAsync(long dialogId);
+    
+    /// <summary>
+    /// Метод проверит существование диалога по участникам диалога.
+    /// </summary>
+    /// <param name="dialogId">Id диалога.</param>
+    /// <returns>Флаг проверки.</returns>
+    Task<bool> CheckDialogAsync(long userId, long ownerId);
 
     /// <summary>
     /// Метод получает список сообщений диалога.

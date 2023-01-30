@@ -21,6 +21,10 @@ public class ChatController : BaseController
 {
     private readonly IChatService _chatService;
 
+    /// <summary>
+    /// Конструктор.
+    /// </summary>
+    /// <param name="chatService">Чат сервиса.</param>
     public ChatController(IChatService chatService)
     {
         _chatService = chatService;

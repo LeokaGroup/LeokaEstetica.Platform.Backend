@@ -55,7 +55,6 @@ public sealed class ChatService : IChatService
         {
             var result = new DialogResultOutput { Messages = new List<DialogMessageOutput>() };
             var isFindDialog = false;
-            long ownerId = 0;
 
             // Находим Id текущего пользователя, который просматривает страницу проекта или вакансии.
             var userId = await _userRepository.GetUserByEmailAsync(account);
@@ -70,7 +69,7 @@ public sealed class ChatService : IChatService
                 throw new NullReferenceException("Не передали Id предмета обсуждения.");
             }
 
-            ownerId = await GetOwnerIdAsync(discussionType, discussionTypeId);
+            var ownerId = await GetOwnerIdAsync(discussionType, discussionTypeId);
 
             // Выбираем Id диалога с владельцем проекта.
             var ownerDialogId = await _chatRepository.GetDialogByUserIdAsync(ownerId);
@@ -78,14 +77,21 @@ public sealed class ChatService : IChatService
             // Выбираем Id диалога с текущем пользователем.
             var currentDialogId = await _chatRepository.GetDialogByUserIdAsync(userId);
 
-            // Если диалоги не нашли, то будем искать иначе.
-            if (currentDialogId == 0 && ownerDialogId == 0)
-            {
-                isFindDialog = false;
-            }
+            // Найдем диалог, в котором есть оба участника, отталкиваемся от текущего пользователя.
+            var findDialogId = await _chatRepository.GetDialogMembersByUserIdAsync(userId);
 
-            // Найдем диалог, в котором есть оба участника.
-            var findDialogId = await _chatRepository.GetDialogMembersAsync(userId, ownerId);
+            if (findDialogId == 0)
+            {
+                // Создаем новый диалог.
+                dialogId = await _chatRepository.CreateDialogAsync(string.Empty, DateTime.Now);
+
+                // Добавляем участников нового диалога.
+                await _chatRepository.AddDialogMembersAsync(userId, ownerId, (long)dialogId);
+                result.DialogState = DialogStateEnum.Open.ToString();
+                result.DialogId = (long)dialogId;
+
+                return result;
+            }
 
             if (findDialogId > 0)
             {
@@ -101,11 +107,13 @@ public sealed class ChatService : IChatService
                 && !isFindDialog)
             {
                 // Создаем новый диалог.
-                var lastDialogId = await _chatRepository.CreateDialogAsync(string.Empty, DateTime.Now);
+                dialogId = await _chatRepository.CreateDialogAsync(string.Empty, DateTime.Now);
 
                 // Добавляем участников нового диалога.
-                await _chatRepository.AddDialogMembersAsync(userId, ownerId, lastDialogId);
+                await _chatRepository.AddDialogMembersAsync(userId, ownerId, (long)dialogId);
                 result.DialogState = DialogStateEnum.Open.ToString();
+
+                return result;
             }
 
             // Если просматривает владелец объект обсуждения,
@@ -120,7 +128,7 @@ public sealed class ChatService : IChatService
                 return result;
             }
 
-            dialogId = ownerDialogId;
+            dialogId ??= ownerDialogId;
 
             var convertDialogId = Convert.ToInt64(dialogId);
 
@@ -221,7 +229,6 @@ public sealed class ChatService : IChatService
     {
         try
         {
-            var result = new List<DialogOutput>();
             var userId = await _userRepository.GetUserByEmailAsync(account);
 
             if (userId == 0)
@@ -230,11 +237,6 @@ public sealed class ChatService : IChatService
             }
 
             var dialogs = await _chatRepository.GetDialogsAsync(userId);
-
-            if (!dialogs.Any())
-            {
-                return Enumerable.Empty<DialogOutput>();
-            }
 
             foreach (var dialog in dialogs)
             {
@@ -279,9 +281,7 @@ public sealed class ChatService : IChatService
                 dialog.Created = Convert.ToDateTime(dialog.Created).ToString("g");
             }
 
-            result.AddRange(dialogs);
-
-            return result;
+            return dialogs;
         }
 
         catch (Exception ex)
@@ -330,8 +330,8 @@ public sealed class ChatService : IChatService
                 return result;
             }
 
-            // Найдем диалог, в котором есть оба участника.
-            var findDialogId = await _chatRepository.GetDialogMembersAsync(userId, ownerId);
+            // Найдем диалог, в котором есть оба участника, отталкиваемся от текущего пользователя.
+            var findDialogId = await _chatRepository.GetDialogMembersByUserIdAsync(userId);
 
             // Если диалог уже есть, ничего не делать.
             if (findDialogId > 0)
@@ -342,17 +342,24 @@ public sealed class ChatService : IChatService
 
                 return result;
             }
+            
+            // Проверяем существование диалога перед его созданием.
+            var isDublicateDialog = await _chatRepository.CheckDialogAsync(userId, ownerId);
+            
+            // Диалога нет, можем создавать.
+            if (!isDublicateDialog)
+            {
+                // Создаем новый диалог.
+                var lastDialogId = await _chatRepository.CreateDialogAsync(string.Empty, DateTime.Now);
 
-            // Создаем новый диалог.
-            var lastDialogId = await _chatRepository.CreateDialogAsync(string.Empty, DateTime.Now);
-
-            // Добавляем участников нового диалога.
-            await _chatRepository.AddDialogMembersAsync(userId, ownerId, lastDialogId);
-            result.DialogState = DialogStateEnum.Open.ToString();
-            result.DialogId = lastDialogId;
-
-            // Получаем дату начала диалога.
-            result.DateStartDialog = await _chatRepository.GetDialogStartDateAsync(result.DialogId);
+                // Добавляем участников нового диалога.
+                await _chatRepository.AddDialogMembersAsync(userId, ownerId, lastDialogId);
+                result.DialogState = DialogStateEnum.Open.ToString();
+                result.DialogId = lastDialogId;
+                
+                // Получаем дату начала диалога.
+                result.DateStartDialog = await _chatRepository.GetDialogStartDateAsync(result.DialogId);
+            }
 
             return result;
         }

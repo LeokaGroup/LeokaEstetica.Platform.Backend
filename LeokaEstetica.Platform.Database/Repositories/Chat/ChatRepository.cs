@@ -10,7 +10,7 @@ namespace LeokaEstetica.Platform.Database.Repositories.Chat;
 /// <summary>
 /// Класс реализует методы репозитория чата.
 /// </summary>
-public sealed class ChatRepository : IChatRepository
+public class ChatRepository : IChatRepository
 {
     private readonly PgContext _pgContext;
 
@@ -35,16 +35,14 @@ public sealed class ChatRepository : IChatRepository
     }
 
     /// <summary>
-    /// Метод получает диалог, где есть и текущий пользователь и владелец предмета обсуждения.
+    /// Метод получает диалог по Id пользователя.
     /// </summary>
     /// <param name="userId">Id пользователя.</param>
-    /// <param name="ownerId">Id владельца.</param>
     /// <returns>Id диалога.</returns>
-    public async Task<long> GetDialogMembersAsync(long userId, long ownerId)
+    public async Task<long> GetDialogMembersByUserIdAsync(long userId)
     {
         var result = await _pgContext.DialogMembers
-            .Where(dm => dm.UserId == userId
-                         || dm.UserId == ownerId)
+            .Where(dm => dm.UserId == userId)
             .Select(dm => dm.DialogId)
             .FirstOrDefaultAsync();
 
@@ -101,6 +99,24 @@ public sealed class ChatRepository : IChatRepository
     /// <returns>Флаг проверки.</returns>
     public async Task<bool> CheckDialogAsync(long dialogId)
     {
+        var isDialog = await _pgContext.Dialogs
+            .FirstOrDefaultAsync(d => d.DialogId == dialogId);
+
+        return isDialog != null;
+    }
+
+    /// <summary>
+    /// Метод проверит существование диалога по участникам диалога.
+    /// </summary>
+    /// <param name="dialogId">Id диалога.</param>
+    /// <returns>Флаг проверки.</returns>
+    public async Task<bool> CheckDialogAsync(long userId, long ownerId)
+    {
+        var dialogId = await _pgContext.DialogMembers
+            .Where(dm => new[] { userId, ownerId }.Contains(dm.UserId))
+            .Select(dm => dm.DialogId)
+            .FirstOrDefaultAsync();
+        
         var isDialog = await _pgContext.Dialogs
             .FirstOrDefaultAsync(d => d.DialogId == dialogId);
 
