@@ -321,15 +321,6 @@ public sealed class ChatService : IChatService
 
             var ownerId = await GetOwnerIdAsync(discussionType, discussionTypeId);
 
-            // Если это один и тот же пользователь, то ничего не делаем.
-            if (ownerId == userId)
-            {
-                result.DialogState = DialogStateEnum.Empty.ToString();
-                result.FullName = await CreateDialogOwnerFioAsync(userId);
-
-                return result;
-            }
-
             // Найдем диалог, в котором есть оба участника, отталкиваемся от текущего пользователя.
             var findDialogId = await _chatRepository.GetDialogMembersByUserIdAsync(userId);
 
