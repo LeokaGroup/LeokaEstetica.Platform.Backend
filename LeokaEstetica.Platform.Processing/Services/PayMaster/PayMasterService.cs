@@ -10,7 +10,6 @@ using LeokaEstetica.Platform.Models.Dto.Output.Commerce.PayMaster;
 using LeokaEstetica.Platform.Processing.Abstractions.PayMaster;
 using LeokaEstetica.Platform.Processing.Consts;
 using LeokaEstetica.Platform.Processing.Enums;
-using LeokaEstetica.Platform.Processing.Exceptions;
 using LeokaEstetica.Platform.Processing.Factories;
 using LeokaEstetica.Platform.Processing.Models.Output;
 using Microsoft.Extensions.Configuration;
@@ -53,7 +52,6 @@ public class PayMasterService : IPayMasterService
         try
         {
             using var httpClient = new HttpClient();
-
             var userId = await _userRepository.GetUserByEmailAsync(account);
 
             // Находим тариф, который оплачивает пользователь.
@@ -73,16 +71,30 @@ public class PayMasterService : IPayMasterService
             httpClient.DefaultRequestHeaders.Authorization =
                 new AuthenticationHeaderValue("Bearer", _configuration["Commerce:PayMaster:ApiToken"]);
 
+            await _logService.LogInfoAsync(null, "Начало создания заказа.");
+            
             // Создаем платеж в ПС.
             var responseCreateOrder = await httpClient.PostAsJsonAsync(ApiConsts.CREATE_PAYMENT, createOrderInput);
 
-            // Получаем результат из ПС.
+            // Если ошибка при создании платежа в ПС.
+            if (!responseCreateOrder.IsSuccessStatusCode)
+            {
+                var ex = new InvalidOperationException(
+                    $"Ошибка создания платежа в ПС. Данные платежа: {JsonConvert.SerializeObject(createOrderInput)}");
+                await _logService.LogErrorAsync(ex);
+                throw ex;
+            }
+
+            // Парсим результат из ПС.
             var order = await responseCreateOrder.Content.ReadFromJsonAsync<CreateOrderOutput>();
 
-            // Если ошибка при получении заказа из ПС, то не даем создать заказ.
+            // Если ошибка при парсинге заказа из ПС, то не даем создать заказ.
             if (string.IsNullOrEmpty(order?.PaymentId))
             {
-                throw new ErrorCreateOrderException(JsonConvert.SerializeObject(createOrderInput));
+                var ex = new InvalidOperationException(
+                    $"Ошибка парсинга данных из ПС. Данные платежа: {JsonConvert.SerializeObject(createOrderInput)}");
+                await _logService.LogErrorAsync(ex);
+                throw ex;
             }
 
             // Проверяем статус заказа в ПС.
@@ -92,11 +104,14 @@ public class PayMasterService : IPayMasterService
             // Если ошибка получения данных платежа.
             if (string.IsNullOrEmpty(responseCheckStatusOrder))
             {
-                throw new ErrorCreateOrderException(JsonConvert.SerializeObject(createOrderInput));
+                var ex = new InvalidOperationException(
+                    "Ошибка проверки статуса платежа в ПС. " +
+                    $"Данные платежа: {JsonConvert.SerializeObject(createOrderInput)}");
+                await _logService.LogErrorAsync(ex);
+                throw ex;
             }
 
             var createOrder = JsonConvert.DeserializeObject<PaymentStatusOutput>(responseCheckStatusOrder);
-            
             var createdOrder = CreatePaymentOrderFactory.Create(order.PaymentId, fareRule.Name,
                 createOrderInput.Invoice.Description, userId, createOrderInput.Amount.Value, 1,
                 PaymentCurrencyEnum.RUB.ToString(), DateTime.Parse(createOrder.Created), createOrder.OrderStatus,
@@ -107,13 +122,15 @@ public class PayMasterService : IPayMasterService
             
             // Приводим к нужному виду.
             var result = CreateOrderResultFactory.Create(createdOrderResult.OrderId.ToString(), order.Url);
+            await _logService.LogInfoAsync(null, "Конец создания заказа.");
+            await _logService.LogInfoAsync(null, "Создание заказа успешно.");
 
             return result;
         }
 
         catch (Exception ex)
         {
-            await _logService.LogErrorAsync(ex);
+            await _logService.LogCriticalAsync(ex);
             throw;
         }
     }

@@ -9,6 +9,9 @@ namespace LeokaEstetica.Platform.Controllers.Validators.Project;
 /// </summary>
 public class CreateProjectVacancyValidator : AbstractValidator<CreateProjectVacancyInput>
 {
+    /// <summary>
+    /// Конструктор.
+    /// </summary>
     public CreateProjectVacancyValidator()
     {
         RuleFor(p => p.VacancyName)

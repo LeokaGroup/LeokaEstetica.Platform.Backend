@@ -1,15 +1,11 @@
 namespace LeokaEstetica.Platform.Core.Constants;
 
 /// <summary>
+/// TODO: Отрефачить этот класс, отделить ключи для упр.таблицы, редиса от простых констант. Есть задача на это.
 /// Класс описывает ключи приложения.
 /// </summary>
 public static class GlobalConfigKeys
 {
-    /// <summary>
-    /// Если не передали аккаунт пользователя.
-    /// </summary>
-    public const string EMPTY_ACCOUNT = "Не передан аккаунт пользователя.";
-
     /// <summary>
     /// Класс описывает ключи для кэшей приложения.
     /// </summary>

@@ -1,4 +1,5 @@
 using LeokaEstetica.Platform.Base;
+using LeokaEstetica.Platform.Controllers.Validators.Commerce;
 using LeokaEstetica.Platform.Core.Filters;
 using LeokaEstetica.Platform.Models.Dto.Input.Commerce.PayMaster;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce.PayMaster;
@@ -17,7 +18,10 @@ public class CommerceController : BaseController
 {
     private readonly IPayMasterService _payMasterService;
     
-    /// <inheritdoc />
+    /// <summary>
+    /// Конструктор.
+    /// </summary>
+    /// <param name="payMasterService">Зависимость сервиса платежей через ПС PayMaster.</param>
     public CommerceController(IPayMasterService payMasterService)
     {
         _payMasterService = payMasterService;
@@ -37,7 +41,17 @@ public class CommerceController : BaseController
     [ProducesResponseType(404)]
     public async Task<CreateOrderOutput> CreateOrderAsync([FromBody] CreateOrderInput createOrderInput)
     {
-        var result = await _payMasterService.CreateOrderAsync(createOrderInput, GetUserName());
+        var result = new CreateOrderOutput();
+        var validator = await new CreateOrderValidator().ValidateAsync(createOrderInput);
+
+        if (validator.Errors.Any())
+        {
+            result.Errors = validator.Errors;
+
+            return result;
+        }
+        
+        result = await _payMasterService.CreateOrderAsync(createOrderInput, GetUserName());
 
         return result;
     }
