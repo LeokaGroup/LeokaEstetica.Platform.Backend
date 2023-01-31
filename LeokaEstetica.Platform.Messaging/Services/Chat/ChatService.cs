@@ -158,7 +158,7 @@ public sealed class ChatService : IChatService
             result.LastName = user.LastName;
             
             // Исключаем текущего пользователя.
-            var id = memberIds.Except(new[] { userId }).FirstOrDefault();
+            var id = memberIds.Except(new[] { userId }).First();
             result.FullName = await CreateDialogOwnerFioAsync(id);
             result.DialogId = convertDialogId;
             
