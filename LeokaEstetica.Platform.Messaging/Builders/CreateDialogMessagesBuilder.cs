@@ -62,6 +62,22 @@ public static class CreateDialogMessagesBuilder
 
             // Форматируем дату убрав секунды.
             dialog.Created = Convert.ToDateTime(dialog.Created).ToString("g");
+            
+            var id = membersIds.Except(new[] { userId }).FirstOrDefault();
+            var user = await userRepository.GetUserByUserIdAsync(id);
+
+            // Если имя и фамилия заполнены, то берем их.
+            if (user.FirstName is not null 
+                && user.LastName is not null)
+            {
+                dialog.FullName = user.FirstName + " " + user.LastName;
+            }
+            
+            // Иначе берем почту.
+            else
+            {
+                dialog.FullName = user.Email;
+            }
         }
 
         return dialogs;

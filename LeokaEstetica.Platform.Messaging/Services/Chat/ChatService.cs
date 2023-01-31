@@ -129,7 +129,7 @@ public sealed class ChatService : IChatService
                 return result;
             }
 
-            dialogId ??= ownerDialogId; // Если DialogId null, то присваиваем ему ownerDialogId.
+            dialogId ??= ownerDialogId; // Если dialogId == null, то берем ownerDialogId.
 
             var convertDialogId = (long)dialogId;
 
@@ -151,16 +151,20 @@ public sealed class ChatService : IChatService
 
             // Получаем список сообщений диалога.
             var getMessages = await _chatRepository.GetDialogMessagesAsync(convertDialogId);
-
-            // Получаем дату начала диалога.
-            result.DateStartDialog = await _chatRepository.GetDialogStartDateAsync(convertDialogId);
-
             var user = await _userRepository.GetUserByUserIdAsync(userId);
 
             // Записываем полное ФИО пользователя, с которым идет общение в чате.
             result.FirstName = user.FirstName;
             result.LastName = user.LastName;
-            result.FullName = await CreateDialogOwnerFioAsync(userId);
+            
+            // Исключаем текущего пользователя.
+            var id = memberIds.Except(new[] { userId }).FirstOrDefault();
+            result.FullName = await CreateDialogOwnerFioAsync(id);
+            result.DialogId = convertDialogId;
+            
+            // Получаем дату начала диалога.
+            result.DateStartDialog = await _chatRepository.GetDialogStartDateAsync(convertDialogId);
+            result.DialogState = DialogStateEnum.Open.ToString();
 
             // Если у диалога нет сообщений, значит вернуть пустой диалог, который будет открыт.
             if (!getMessages.Any())
@@ -181,8 +185,6 @@ public sealed class ChatService : IChatService
                 msg.Created = item.Created.ToString("g", CultureInfo.GetCultureInfo("ru"));
                 result.Messages.Add(msg);
             }
-
-            result.DialogState = DialogStateEnum.Open.ToString();
 
             return result;
         }
@@ -329,6 +331,12 @@ public sealed class ChatService : IChatService
     private async Task<string> CreateDialogOwnerFioAsync(long userId)
     {
         var result = await _userRepository.GetUserByUserIdAsync(userId);
+
+        if (result.FirstName is null 
+            && result.LastName is null)
+        {
+            return result.Email;
+        }
 
         return result.FirstName + " " + result.LastName;
     }
