@@ -225,9 +225,8 @@ public sealed class ChatService : IChatService
     /// Метод получает список диалогов.
     /// </summary>
     /// <param name="account">Аккаунт.</param>
-    /// <param name="projectId">Id проекта.</param>
     /// <returns>Список диалогов.</returns>
-    public async Task<IEnumerable<DialogOutput>> GetDialogsAsync(string account, long projectId)
+    public async Task<IEnumerable<DialogOutput>> GetDialogsAsync(string account)
     {
         try
         {

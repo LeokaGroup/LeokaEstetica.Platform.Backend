@@ -24,9 +24,8 @@ public interface IChatService
     /// Метод получает список диалогов.
     /// </summary>
     /// <param name="account">Аккаунт.</param>
-    /// <param name="projectId">Id проекта.</param>
     /// <returns>Список диалогов.</returns>
-    Task<IEnumerable<DialogOutput>> GetDialogsAsync(string account, long projectId);
+    Task<IEnumerable<DialogOutput>> GetDialogsAsync(string account);
 
     /// <summary>
     /// Метод создает диалог для написания владельцу проекта.
