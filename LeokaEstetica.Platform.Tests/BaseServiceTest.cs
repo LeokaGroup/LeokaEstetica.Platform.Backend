@@ -1,6 +1,7 @@
 ﻿using Autofac;
 using AutoMapper;
 using LeokaEstetica.Platform.Access.Services.Moderation;
+using LeokaEstetica.Platform.Access.Services.Resume;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Utils;
 using LeokaEstetica.Platform.Database.Repositories.Chat;
@@ -64,6 +65,7 @@ public class BaseServiceTest
     protected readonly FareRuleService FareRuleService;
     protected readonly PayMasterService PayMasterService;
     protected readonly SubscriptionService SubscriptionService;
+    protected readonly AccessResumeService AccessResumeService;
 
     protected BaseServiceTest()
     {
@@ -118,7 +120,8 @@ public class BaseServiceTest
 
         var resumeRepository = new ResumeRepository(pgContext);
 
-        ResumeService = new ResumeService(logService, resumeRepository);
+        AccessResumeService = new AccessResumeService();
+        ResumeService = new ResumeService(logService, resumeRepository, AccessResumeService);
         VacancyFinderService = new VacancyFinderService(vacancyRepository, logService);
         FinderProjectService = new Finder.Services.Project.ProjectFinderService(projectRepository, logService);
         ResumeFinderService = new ResumeFinderService(logService, resumeRepository);

@@ -1,9 +1,9 @@
 using AutoMapper;
 using LeokaEstetica.Platform.Base;
 using LeokaEstetica.Platform.Base.Abstractions.Services;
+using LeokaEstetica.Platform.Controllers.Filters;
 using LeokaEstetica.Platform.Controllers.ModelsValidation.Project;
 using LeokaEstetica.Platform.Controllers.Validators.Project;
-using LeokaEstetica.Platform.Core.Filters;
 using LeokaEstetica.Platform.Finder.Abstractions.Project;
 using LeokaEstetica.Platform.Messaging.Abstractions.Project;
 using LeokaEstetica.Platform.Messaging.Builders;

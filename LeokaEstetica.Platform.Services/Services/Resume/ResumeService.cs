@@ -1,3 +1,4 @@
+using LeokaEstetica.Platform.Access.Abstractions.Resume;
 using LeokaEstetica.Platform.Database.Abstractions.Resume;
 using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Models.Entities.Profile;
@@ -13,19 +14,29 @@ public class ResumeService : IResumeService
 {
     private readonly ILogService _logService;
     private readonly IResumeRepository _resumeRepository;
+    private readonly IAccessResumeService _accessResumeService;
 
+    /// <summary>
+    /// Конструктор.
+    /// </summary>
+    /// <param name="logService">Сервис логов.</param>
+    /// <param name="resumeRepository">Репозиторий базы резюме.</param>
+    /// <param name="accessResumeService">Сервис првоерки доступа к базе резюме.</param>
     public ResumeService(ILogService logService, 
-        IResumeRepository resumeRepository)
+        IResumeRepository resumeRepository, 
+        IAccessResumeService accessResumeService)
     {
         _logService = logService;
         _resumeRepository = resumeRepository;
+        _accessResumeService = accessResumeService;
     }
 
     /// <summary>
     /// Метод получает список резюме.
     /// </summary>
+    /// <param name="account">Аккаунт.</param>
     /// <returns>Список резюме.</returns>
-    public async Task<List<ProfileInfoEntity>> GetProfileInfosAsync()
+    public async Task<List<ProfileInfoEntity>> GetProfileInfosAsync(string account)
     {
         try
         {

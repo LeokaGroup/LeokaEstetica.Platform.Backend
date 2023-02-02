@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 
-namespace LeokaEstetica.Platform.Core.Filters;
+namespace LeokaEstetica.Platform.Controllers.Filters;
 
 /// <summary>
 /// Фильтр авторизации.
@@ -18,6 +18,10 @@ public class AuthFilter : Attribute, IAuthorizationFilter
         "GetFareRules" // Получение правил тарифов.
     };
     
+    /// <summary>
+    /// Метод проверки авторизации.
+    /// </summary>
+    /// <param name="context">Контекст.</param>
     public void OnAuthorization(AuthorizationFilterContext context)
     {
         // Проверяет, авторизован ли пользователь.

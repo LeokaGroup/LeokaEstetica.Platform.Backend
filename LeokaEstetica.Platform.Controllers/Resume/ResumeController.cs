@@ -1,6 +1,6 @@
 using AutoMapper;
 using LeokaEstetica.Platform.Base;
-using LeokaEstetica.Platform.Core.Filters;
+using LeokaEstetica.Platform.Controllers.Filters;
 using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Finder.Abstractions.Resume;
 using LeokaEstetica.Platform.Models.Dto.Output.Resume;
@@ -11,7 +11,6 @@ using Microsoft.AspNetCore.Mvc;
 namespace LeokaEstetica.Platform.Controllers.Resume;
 
 /// <summary>
-/// TODO: Доступ к этому модулю только для пользователей, которые приобрели подписку.
 /// Контроллер работы с резюме.
 /// </summary>
 [AuthFilter]
@@ -59,7 +58,7 @@ public class ResumeController : BaseController
     [ProducesResponseType(404)]
     public async Task<ResumeResultOutput> GetProfileInfosAsync()
     {
-        var items = await _resumeService.GetProfileInfosAsync();
+        var items = await _resumeService.GetProfileInfosAsync(GetUserName());
         var result = new ResumeResultOutput
         {
             // Приводим к выходной модели.

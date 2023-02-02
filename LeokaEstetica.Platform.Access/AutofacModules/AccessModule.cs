@@ -1,6 +1,8 @@
 using Autofac;
 using LeokaEstetica.Platform.Access.Abstractions.Moderation;
+using LeokaEstetica.Platform.Access.Abstractions.Resume;
 using LeokaEstetica.Platform.Access.Services.Moderation;
+using LeokaEstetica.Platform.Access.Services.Resume;
 using LeokaEstetica.Platform.Core.Attributes;
 
 namespace LeokaEstetica.Platform.Access.AutofacModules;
@@ -18,6 +20,16 @@ public class AccessModule : Module
         builder
             .RegisterType<AccessModerationService>()
             .As<IAccessModerationService>()
+            .InstancePerLifetimeScope();
+        
+        // Сервис проверки доступа к базе резюме.
+        builder
+            .RegisterType<AccessResumeService>()
+            .Named<IAccessResumeService>("AccessResumeService")
+            .InstancePerLifetimeScope();
+        builder
+            .RegisterType<AccessResumeService>()
+            .As<IAccessResumeService>()
             .InstancePerLifetimeScope();
     }
 }

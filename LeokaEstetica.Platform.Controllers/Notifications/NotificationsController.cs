@@ -1,5 +1,5 @@
 using LeokaEstetica.Platform.Base;
-using LeokaEstetica.Platform.Core.Filters;
+using LeokaEstetica.Platform.Controllers.Filters;
 using LeokaEstetica.Platform.Notifications.Abstractions;
 using Microsoft.AspNetCore.Mvc;
 

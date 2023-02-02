@@ -1,8 +1,8 @@
 using AutoMapper;
 using FluentValidation;
 using LeokaEstetica.Platform.Base;
+using LeokaEstetica.Platform.Controllers.Filters;
 using LeokaEstetica.Platform.Controllers.Validators.Search;
-using LeokaEstetica.Platform.Core.Filters;
 using LeokaEstetica.Platform.Models.Dto.Input.Search.Project;
 using LeokaEstetica.Platform.Models.Dto.Output.Search.Project;
 using LeokaEstetica.Platform.Services.Abstractions.Search.Project;

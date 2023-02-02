@@ -1,6 +1,6 @@
 using AutoMapper;
 using LeokaEstetica.Platform.Base;
-using LeokaEstetica.Platform.Core.Filters;
+using LeokaEstetica.Platform.Controllers.Filters;
 using LeokaEstetica.Platform.Models.Dto.Output.Subscription;
 using LeokaEstetica.Platform.Services.Abstractions.Subscription;
 using Microsoft.AspNetCore.Mvc;
