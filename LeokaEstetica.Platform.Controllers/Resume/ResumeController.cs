@@ -1,4 +1,5 @@
 using AutoMapper;
+using LeokaEstetica.Platform.Access.Abstractions.Resume;
 using LeokaEstetica.Platform.Base;
 using LeokaEstetica.Platform.Controllers.Filters;
 using LeokaEstetica.Platform.Database.Abstractions.User;
@@ -23,6 +24,7 @@ public class ResumeController : BaseController
     private readonly IResumeFinderService _resumeFinderService;
     private readonly IResumePaginationService _resumePaginationService;
     private readonly IUserRepository _userRepository;
+    private readonly IAccessResumeService _accessResumeService;
 
     /// <summary>
     /// Конструктор.
@@ -32,17 +34,20 @@ public class ResumeController : BaseController
     /// <param name="resumeFinderService">Поисковый сервис резюме.</param>
     /// <param name="resumePaginationService">Сервис пагинации резюме.</param>
     /// <param name="userRepository">Репозиторий пользователя.</param>
+    /// <param name="accessResumeService">Сервис проверки доступа к базе резюме.</param>
     public ResumeController(IResumeService resumeService, 
         IMapper mapper, 
         IResumeFinderService resumeFinderService, 
         IResumePaginationService resumePaginationService, 
-        IUserRepository userRepository)
+        IUserRepository userRepository, 
+        IAccessResumeService accessResumeService)
     {
         _resumeService = resumeService;
         _mapper = mapper;
         _resumeFinderService = resumeFinderService;
         _resumePaginationService = resumePaginationService;
         _userRepository = userRepository;
+        _accessResumeService = accessResumeService;
     }
 
     /// <summary>
@@ -58,7 +63,7 @@ public class ResumeController : BaseController
     [ProducesResponseType(404)]
     public async Task<ResumeResultOutput> GetProfileInfosAsync()
     {
-        var items = await _resumeService.GetProfileInfosAsync(GetUserName());
+        var items = await _resumeService.GetProfileInfosAsync();
         var result = new ResumeResultOutput
         {
             // Приводим к выходной модели.
@@ -125,6 +130,24 @@ public class ResumeController : BaseController
     {
         var resume = await _resumeService.GetResumeAsync(resumeId);
         var result = _mapper.Map<ResumeOutput>(resume);
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод проверяет доступ к базе резюме.
+    /// </summary>
+    /// <returns>Доступ.</returns>
+    [HttpGet]
+    [Route("access")]
+    [ProducesResponseType(200, Type = typeof(AcessResumeOutput))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<AcessResumeOutput> CheckAvailableAccessResumesAsync()
+    {
+        var result = await _accessResumeService.CheckAvailableResumesAsync(GetUserName());
 
         return result;
     }

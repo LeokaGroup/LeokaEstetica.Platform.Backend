@@ -1,3 +1,5 @@
+using LeokaEstetica.Platform.Models.Dto.Output.Resume;
+
 namespace LeokaEstetica.Platform.Access.Abstractions.Resume;
 
 /// <summary>
@@ -8,7 +10,7 @@ public interface IAccessResumeService
     /// <summary>
     /// Метод проверяет доступ пользователя.
     /// </summary>
-    /// <param name="account"></param>
-    /// <returns></returns>
-    Task<int> CheckAvailableResumesAsync(string account);
+    /// <param name="account">Аккаунт.</param>
+    /// <returns>Число, определяющее уровень доступа.</returns>
+    Task<AcessResumeOutput> CheckAvailableResumesAsync(string account);
 }

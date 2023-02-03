@@ -14,9 +14,16 @@ public interface ISubscriptionRepository
     Task<List<SubscriptionEntity>> GetSubscriptionsAsync();
 
     /// <summary>
-    /// Метод проставляет выделенные подписки пользователю.
+    /// Метод получает выделенные подписки пользователю.
     /// </summary>
     /// <param name="account">Аккаунт пользователя.</param>
     /// <returns>Список подписок, но с выделенной подпиской, которую оформил пользователь либо не выделяем.</returns>
     Task<List<long>> GetFillSubscriptionsAsync(long userId);
+
+    /// <summary>
+    /// Метод получает подписку пользователя по его Id.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Подписку.</returns>
+    Task<SubscriptionEntity> GetUserSubscriptionAsync(long userId);
 }

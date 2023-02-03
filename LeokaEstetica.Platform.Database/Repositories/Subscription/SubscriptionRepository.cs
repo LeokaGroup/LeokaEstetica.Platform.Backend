@@ -1,4 +1,5 @@
 using LeokaEstetica.Platform.Core.Data;
+using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Database.Abstractions.Subscription;
 using LeokaEstetica.Platform.Models.Entities.Subscription;
 using Microsoft.EntityFrameworkCore;
@@ -41,5 +42,29 @@ public class SubscriptionRepository : ISubscriptionRepository
             .ToListAsync();
 
         return reult;
+    }
+
+    /// <summary>
+    /// Метод получает подписку пользователя по его Id.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Число, означающее уровень доступа.</returns>
+    public async Task<SubscriptionEntity> GetUserSubscriptionAsync(long userId)
+    {
+        // Получаем активную подписку пользователя.
+        var userSubscription = await _pgContext.UserSubscriptions
+            .FirstOrDefaultAsync(s => s.UserId == userId 
+                                      && s.IsActive);
+
+        // Доступа нет.
+        if (userSubscription is null)
+        {
+            return null;
+        }
+        
+        var result = await _pgContext.Subscriptions
+            .FirstOrDefaultAsync(s => s.SubscriptionId == userSubscription.SubscriptionId);
+
+        return result;
     }
 }

@@ -10,9 +10,8 @@ public interface IResumeService
     /// <summary>
     /// Метод получает список резюме.
     /// </summary>
-    /// <param name="account">Аккаунт.</param>
     /// <returns>Список резюме.</returns>
-    Task<List<ProfileInfoEntity>> GetProfileInfosAsync(string account);
+    Task<List<ProfileInfoEntity>> GetProfileInfosAsync();
 
     /// <summary>
     /// Метод получает анкету пользователя.

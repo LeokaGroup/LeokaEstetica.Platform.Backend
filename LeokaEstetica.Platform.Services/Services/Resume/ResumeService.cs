@@ -1,5 +1,5 @@
-using LeokaEstetica.Platform.Access.Abstractions.Resume;
 using LeokaEstetica.Platform.Database.Abstractions.Resume;
+using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Models.Entities.Profile;
 using LeokaEstetica.Platform.Services.Abstractions.Resume;
@@ -14,7 +14,7 @@ public class ResumeService : IResumeService
 {
     private readonly ILogService _logService;
     private readonly IResumeRepository _resumeRepository;
-    private readonly IAccessResumeService _accessResumeService;
+    private readonly IUserRepository _userRepository;
 
     /// <summary>
     /// Конструктор.
@@ -23,23 +23,24 @@ public class ResumeService : IResumeService
     /// <param name="resumeRepository">Репозиторий базы резюме.</param>
     /// <param name="accessResumeService">Сервис првоерки доступа к базе резюме.</param>
     public ResumeService(ILogService logService, 
-        IResumeRepository resumeRepository, 
-        IAccessResumeService accessResumeService)
+        IResumeRepository resumeRepository,
+        IUserRepository userRepository)
     {
         _logService = logService;
         _resumeRepository = resumeRepository;
-        _accessResumeService = accessResumeService;
+        _userRepository = userRepository;
     }
 
     /// <summary>
     /// Метод получает список резюме.
     /// </summary>
-    /// <param name="account">Аккаунт.</param>
     /// <returns>Список резюме.</returns>
-    public async Task<List<ProfileInfoEntity>> GetProfileInfosAsync(string account)
+    public async Task<List<ProfileInfoEntity>> GetProfileInfosAsync()
     {
         try
         {
+            //TODO: в отдельном методе проверять роль. Если вернет >= 1, то доступ к базе резюме давать.
+            
             var result = await _resumeRepository.GetProfileInfosAsync();
             
             // TODO: Временный костыль.Это должна решать модерация и некорректные резюме не будут попадать в каталог.

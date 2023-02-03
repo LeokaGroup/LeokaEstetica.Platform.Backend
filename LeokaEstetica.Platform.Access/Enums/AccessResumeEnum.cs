@@ -7,15 +7,15 @@ namespace LeokaEstetica.Platform.Access.Enums;
 /// </summary>
 public enum AccessResumeEnum
 {
-    /// <summary>
-    /// Пользователь не имеет доступа.
-    /// </summary>
     [Description("Нет доступа.")]
     NotAvailable = 0,
     
-    /// <summary>
-    /// Пользователь имеет базовый доступ.
-    /// </summary>
-    [Description("Базовый доступ.")]
-    Standart = 1
+    [Description("Базовый тариф.")]
+    Base = 1,
+    
+    [Description("Тариф бизнес.")]
+    Business = 2,
+    
+    [Description("Тариф профессиональный.")]
+    Professional = 3
 }

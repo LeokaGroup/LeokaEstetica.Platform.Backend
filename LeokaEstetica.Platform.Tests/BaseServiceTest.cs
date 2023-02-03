@@ -119,23 +119,23 @@ public class BaseServiceTest
         ProjectFinderService = new ProjectFinderService(logService, userRepository, projectNotificationsService);
 
         var resumeRepository = new ResumeRepository(pgContext);
+        var subscriptionRepository = new SubscriptionRepository(pgContext);
+        var fareRuleRepository = new FareRuleRepository(pgContext);
 
-        AccessResumeService = new AccessResumeService();
-        ResumeService = new ResumeService(logService, resumeRepository, AccessResumeService);
+        SubscriptionService =
+            new SubscriptionService(logService, userRepository, subscriptionRepository, fareRuleRepository);
+        AccessResumeService = new AccessResumeService(logService, subscriptionRepository, userRepository);
+        ResumeService = new ResumeService(logService, resumeRepository, userRepository);
         VacancyFinderService = new VacancyFinderService(vacancyRepository, logService);
         FinderProjectService = new Finder.Services.Project.ProjectFinderService(projectRepository, logService);
         ResumeFinderService = new ResumeFinderService(logService, resumeRepository);
         VacancyPaginationService = new VacancyPaginationService(vacancyRepository, logService);
         ProjectPaginationService = new ProjectPaginationService(projectRepository, logService);
-
-        var fareRuleRepository = new FareRuleRepository(pgContext);
+        
         var payMasterRepository = new PayMasterRepository(pgContext);
-        var subscriptionRepository = new SubscriptionRepository(pgContext);
 
         FareRuleService = new FareRuleService(fareRuleRepository, logService);
         PayMasterService = new PayMasterService(logService, AppConfiguration, fareRuleRepository, userRepository,
             payMasterRepository);
-        SubscriptionService =
-            new SubscriptionService(logService, userRepository, subscriptionRepository, fareRuleRepository);
     }
 }

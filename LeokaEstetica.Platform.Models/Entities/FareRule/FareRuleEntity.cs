@@ -46,6 +46,11 @@ public class FareRuleEntity
     public bool IsPopular { get; set; }
 
     /// <summary>
+    /// Признак бесплатного тарифа.
+    /// </summary>
+    public bool IsFree { get; set; }
+
+    /// <summary>
     /// Список элементов тарифов.
     /// </summary>
     public ICollection<FareRuleItemEntity> FareRuleItems { get; set; }
