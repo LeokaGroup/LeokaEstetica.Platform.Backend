@@ -4,7 +4,9 @@ using System.Security.Claims;
 using AutoMapper;
 using LeokaEstetica.Platform.Access.Helpers;
 using LeokaEstetica.Platform.Core.Data;
+using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Database.Abstractions.Profile;
+using LeokaEstetica.Platform.Database.Abstractions.Subscription;
 using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Messaging.Abstractions.Mail;
@@ -28,13 +30,25 @@ public sealed class UserService : IUserService
     private readonly IMailingsService _mailingsService;
     private readonly PgContext _pgContext;
     private readonly IProfileRepository _profileRepository;
+    private readonly ISubscriptionRepository _subscriptionRepository;
     
+    /// <summary>
+    /// Конструктор.
+    /// </summary>
+    /// <param name="logger">Сервис логера.</param>
+    /// <param name="userRepository">Репозиторий пользователя.</param>
+    /// <param name="mapper">Автомаппер.</param>
+    /// <param name="mailingsService">Сервис рассылок.</param>
+    /// <param name="pgContext">Датаконтекст.</param>
+    /// <param name="profileRepository">Репозиторий профиля.</param>
+    /// <param name="profileRepository">Репозиторий подписок.</param>
     public UserService(ILogService logger, 
         IUserRepository userRepository, 
         IMapper mapper, 
         IMailingsService mailingsService, 
         PgContext pgContext, 
-        IProfileRepository profileRepository)
+        IProfileRepository profileRepository, 
+        ISubscriptionRepository subscriptionRepository)
     {
         _logger = logger;
         _userRepository = userRepository;
@@ -42,6 +56,7 @@ public sealed class UserService : IUserService
         _mailingsService = mailingsService;
         _pgContext = pgContext;
         _profileRepository = profileRepository;
+        _subscriptionRepository = subscriptionRepository;
     }
 
     /// <summary>
@@ -57,7 +72,7 @@ public sealed class UserService : IUserService
         
         try
         {
-            var result = new UserSignUpOutput() { Errors = new List<ValidationFailure>() };
+            var result = new UserSignUpOutput { Errors = new List<ValidationFailure>() };
             await CheckUserByEmailAsync(result, email);
 
             var userModel = CreateSignUpUserModel(password, email);
@@ -90,6 +105,9 @@ public sealed class UserService : IUserService
             
             // Отправляем пользователю письмо подтверждения почты.
             await _mailingsService.SendConfirmEmailAsync(email, confirmationEmailCode);
+            
+            // Добавляем пользователю бесплатную подписку.
+            await _subscriptionRepository.AddUserSubscriptionAsync(addedUser.UserId, SubscriptionTypeEnum.FareRule, 1);
             
             await tran.CommitAsync();
 

@@ -21,6 +21,11 @@ public class UserController : BaseController
     private readonly IUserService _userService;
     private readonly IValidationExcludeErrorsService _validationExcludeErrorsService;
     
+    /// <summary>
+    /// Конструктор.
+    /// </summary>
+    /// <param name="userService">Сервис пользователя.</param>
+    /// <param name="validationExcludeErrorsService">Сервис исключения ошибок, которые не надо проверять.</param>
     public UserController(IUserService userService, 
         IValidationExcludeErrorsService validationExcludeErrorsService)
     {
