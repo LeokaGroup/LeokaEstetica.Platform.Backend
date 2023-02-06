@@ -1,5 +1,4 @@
 using LeokaEstetica.Platform.Database.Abstractions.Resume;
-using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Models.Entities.Profile;
 using LeokaEstetica.Platform.Services.Abstractions.Resume;
@@ -14,7 +13,6 @@ public class ResumeService : IResumeService
 {
     private readonly ILogService _logService;
     private readonly IResumeRepository _resumeRepository;
-    private readonly IUserRepository _userRepository;
 
     /// <summary>
     /// Конструктор.
@@ -23,12 +21,10 @@ public class ResumeService : IResumeService
     /// <param name="resumeRepository">Репозиторий базы резюме.</param>
     /// <param name="accessResumeService">Сервис првоерки доступа к базе резюме.</param>
     public ResumeService(ILogService logService, 
-        IResumeRepository resumeRepository,
-        IUserRepository userRepository)
+        IResumeRepository resumeRepository)
     {
         _logService = logService;
         _resumeRepository = resumeRepository;
-        _userRepository = userRepository;
     }
 
     /// <summary>
@@ -39,8 +35,6 @@ public class ResumeService : IResumeService
     {
         try
         {
-            //TODO: в отдельном методе проверять роль. Если вернет >= 1, то доступ к базе резюме давать.
-            
             var result = await _resumeRepository.GetProfileInfosAsync();
             
             // TODO: Временный костыль.Это должна решать модерация и некорректные резюме не будут попадать в каталог.

@@ -1,6 +1,8 @@
 using Autofac;
+using LeokaEstetica.Platform.Access.Abstractions.AvailableLimits;
 using LeokaEstetica.Platform.Access.Abstractions.Moderation;
 using LeokaEstetica.Platform.Access.Abstractions.Resume;
+using LeokaEstetica.Platform.Access.Services.AvailableLimits;
 using LeokaEstetica.Platform.Access.Services.Moderation;
 using LeokaEstetica.Platform.Access.Services.Resume;
 using LeokaEstetica.Platform.Core.Attributes;
@@ -30,6 +32,16 @@ public class AccessModule : Module
         builder
             .RegisterType<AccessResumeService>()
             .As<IAccessResumeService>()
+            .InstancePerLifetimeScope();
+        
+        // Сервис проверки лимитов.
+        builder
+            .RegisterType<AvailableLimitsService>()
+            .Named<IAvailableLimitsService>("AvailableLimitsService")
+            .InstancePerLifetimeScope();
+        builder
+            .RegisterType<AvailableLimitsService>()
+            .As<IAvailableLimitsService>()
             .InstancePerLifetimeScope();
     }
 }

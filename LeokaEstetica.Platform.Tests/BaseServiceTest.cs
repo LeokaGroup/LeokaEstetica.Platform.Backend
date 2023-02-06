@@ -125,7 +125,7 @@ public class BaseServiceTest
         SubscriptionService =
             new SubscriptionService(logService, userRepository, subscriptionRepository, fareRuleRepository);
         AccessResumeService = new AccessResumeService(logService, subscriptionRepository, userRepository);
-        ResumeService = new ResumeService(logService, resumeRepository, userRepository);
+        ResumeService = new ResumeService(logService, resumeRepository);
         VacancyFinderService = new VacancyFinderService(vacancyRepository, logService);
         FinderProjectService = new Finder.Services.Project.ProjectFinderService(projectRepository, logService);
         ResumeFinderService = new ResumeFinderService(logService, resumeRepository);
