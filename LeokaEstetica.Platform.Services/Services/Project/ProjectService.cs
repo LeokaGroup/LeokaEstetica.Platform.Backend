@@ -1,9 +1,12 @@
 using AutoMapper;
+using LeokaEstetica.Platform.Access.Abstractions.AvailableLimits;
 using LeokaEstetica.Platform.Access.Enums;
 using LeokaEstetica.Platform.Core.Constants;
 using LeokaEstetica.Platform.Core.Helpers;
 using LeokaEstetica.Platform.Core.Exceptions;
+using LeokaEstetica.Platform.Database.Abstractions.FareRule;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
+using LeokaEstetica.Platform.Database.Abstractions.Subscription;
 using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Database.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Logs.Abstractions;
@@ -62,13 +65,31 @@ public sealed class ProjectService : IProjectService
     private readonly BaseProjectsFilterChain _projectStageSearchInvestorsFilterChain =
         new ProjectStageSearchInvestorsFilterChain();
 
+    private readonly IAvailableLimitsService _availableLimitsService;
+    private readonly ISubscriptionRepository _subscriptionRepository;
+    private readonly IFareRuleRepository _fareRuleRepository;
+
+    /// <summary>
+    /// Конструктор.
+    /// </summary>
+    /// <param name="projectRepository">Репозиторий проектов.</param>
+    /// <param name="logService">Сервис логера.</param>
+    /// <param name="userRepository">Репозиторий пользователя.</param>
+    /// <param name="mapper">Автомаппер.</param>
+    /// <param name="projectNotificationsService">Сервис уведомлений.</param>
+    /// <param name="vacancyService">Сервис вакансий.</param>
+    /// <param name="vacancyRepository">Репозиторий вакансий.</param>
+    /// <param name="availableLimitsService">Сервис проверки лимитов.</param>
     public ProjectService(IProjectRepository projectRepository,
         ILogService logService,
         IUserRepository userRepository,
         IMapper mapper,
         IProjectNotificationsService projectNotificationsService,
         IVacancyService vacancyService,
-        IVacancyRepository vacancyRepository)
+        IVacancyRepository vacancyRepository, 
+        IAvailableLimitsService availableLimitsService, 
+        ISubscriptionRepository subscriptionRepository, 
+        IFareRuleRepository fareRuleRepository)
     {
         _projectRepository = projectRepository;
         _logService = logService;
@@ -77,6 +98,9 @@ public sealed class ProjectService : IProjectService
         _projectNotificationsService = projectNotificationsService;
         _vacancyService = vacancyService;
         _vacancyRepository = vacancyRepository;
+        _availableLimitsService = availableLimitsService;
+        _subscriptionRepository = subscriptionRepository;
+        _fareRuleRepository = fareRuleRepository;
 
         // Определяем обработчики цепочки фильтров.
         _dateProjectsFilterChain.Successor = _projectsVacanciesFilterChain;
@@ -110,6 +134,28 @@ public sealed class ProjectService : IProjectService
                 var ex = new NotFoundUserIdByAccountException(account);
                 await _logService.LogErrorAsync(ex);
                 throw ex;
+            }
+            
+            // Получаем подписку пользователя.
+            var userSubscription = await _subscriptionRepository.GetUserSubscriptionAsync(userId);
+            
+            // Получаем тариф, на который оформлена подписка у пользователя.
+            var fareRule = await _fareRuleRepository.GetByIdAsync(userSubscription.ObjectId);
+            
+            // Проверяем доступо ли пользователю создание проекта.
+            var availableCreateProjectLimit =
+                await _availableLimitsService.CheckAvailableCreateProjectAsync(userId, fareRule.Name);
+
+            // Если лимит по тарифу превышен.
+            if (!availableCreateProjectLimit)
+            {
+                var ex = new Exception($"Превышен лимит проектов по тарифу. UserId: {userId}. Тариф: {fareRule.Name}");
+                await _logService.LogErrorAsync(ex);
+                await _projectNotificationsService.SendNotificationWarningLimitFareRuleProjectsAsync("Что то пошло не так",
+                    "Превышен лимит проектов по тарифу.",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING);
+
+                return null;
             }
 
             // Проверяем существование такого проекта у текущего пользователя.

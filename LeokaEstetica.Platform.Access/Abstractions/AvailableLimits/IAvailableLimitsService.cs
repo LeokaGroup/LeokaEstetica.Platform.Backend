@@ -9,6 +9,7 @@ public interface IAvailableLimitsService
     /// Метод проверяет, доступны ли пользователю для создания проекты в зависимости от подписки. 
     /// </summary>
     /// <param name="userId">Id пользователя.</param>
+    /// <param name="fareRuleName">Название тарифа.</param>
     /// <returns>Признак доступости.</returns>
-    Task<bool> CheckAvailableCreateProjectAsync(long userId);
+    Task<bool> CheckAvailableCreateProjectAsync(long userId, string fareRuleName);
 }

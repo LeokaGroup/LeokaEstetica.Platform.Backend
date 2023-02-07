@@ -1,9 +1,11 @@
 ﻿using Autofac;
 using AutoMapper;
+using LeokaEstetica.Platform.Access.Services.AvailableLimits;
 using LeokaEstetica.Platform.Access.Services.Moderation;
 using LeokaEstetica.Platform.Access.Services.Resume;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Utils;
+using LeokaEstetica.Platform.Database.Repositories.AvailableLimits;
 using LeokaEstetica.Platform.Database.Repositories.Chat;
 using LeokaEstetica.Platform.Database.Repositories.Commerce;
 using LeokaEstetica.Platform.Database.Repositories.FareRule;
@@ -65,7 +67,6 @@ public class BaseServiceTest
     protected readonly FareRuleService FareRuleService;
     protected readonly PayMasterService PayMasterService;
     protected readonly SubscriptionService SubscriptionService;
-    protected readonly AccessResumeService AccessResumeService;
 
     protected BaseServiceTest()
     {
@@ -77,7 +78,7 @@ public class BaseServiceTest
 
         AutoFac.RegisterMapper(container);
         var mapper = AutoFac.Resolve<IMapper>();
-        
+
         // Настройка тестовых контекстов.
         var optionsBuilder = new DbContextOptionsBuilder<PgContext>();
         optionsBuilder.UseNpgsql(PostgreConfigString);
@@ -97,8 +98,6 @@ public class BaseServiceTest
         VacancyModerationService = new VacancyModerationService(vacancyModerationRepository, logService, mapper);
         VacancyService = new VacancyService(logService, vacancyRepository, mapper, null, userRepository,
             VacancyModerationService, null);
-        ProjectService = new ProjectService(projectRepository, logService, userRepository, mapper,
-            projectNotificationsService, VacancyService, vacancyRepository);
 
         var chatRepository = new ChatRepository(pgContext);
 
@@ -121,17 +120,23 @@ public class BaseServiceTest
         var resumeRepository = new ResumeRepository(pgContext);
         var subscriptionRepository = new SubscriptionRepository(pgContext);
         var fareRuleRepository = new FareRuleRepository(pgContext);
+        var availableLimitsRepository = new AvailableLimitsRepository(pgContext);
+        var availableLimitsService = new AvailableLimitsService(logService, availableLimitsRepository);
+
+        ProjectService = new ProjectService(projectRepository, logService, userRepository, mapper,
+            projectNotificationsService, VacancyService, vacancyRepository, availableLimitsService,
+            subscriptionRepository, fareRuleRepository);
 
         SubscriptionService =
             new SubscriptionService(logService, userRepository, subscriptionRepository, fareRuleRepository);
-        AccessResumeService = new AccessResumeService(logService, subscriptionRepository, userRepository);
+        new AccessResumeService(logService, subscriptionRepository, userRepository);
         ResumeService = new ResumeService(logService, resumeRepository);
         VacancyFinderService = new VacancyFinderService(vacancyRepository, logService);
         FinderProjectService = new Finder.Services.Project.ProjectFinderService(projectRepository, logService);
         ResumeFinderService = new ResumeFinderService(logService, resumeRepository);
         VacancyPaginationService = new VacancyPaginationService(vacancyRepository, logService);
         ProjectPaginationService = new ProjectPaginationService(projectRepository, logService);
-        
+
         var payMasterRepository = new PayMasterRepository(pgContext);
 
         FareRuleService = new FareRuleService(fareRuleRepository, logService);

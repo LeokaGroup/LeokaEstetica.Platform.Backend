@@ -49,31 +49,31 @@ public class AccessResumeService : IAccessResumeService
             // Не даем доступ.
             if (userSubscription is null)
             {
-                result.Access = (int)AccessResumeEnum.NotAvailable;
+                result.Access = (int)FareRuleTypeEnum.NotAvailable;
 
                 return result;
             }
 
             if (userSubscription.ObjectId < 1)
             {
-                result.Access = (int)AccessResumeEnum.NotAvailable;
+                result.Access = (int)FareRuleTypeEnum.NotAvailable;
 
                 return result;
             }
             
             if (userSubscription.ObjectId == 2)
             {
-                result.Access = (int)AccessResumeEnum.Base;
+                result.Access = (int)FareRuleTypeEnum.Base;
             }
             
             if (userSubscription.ObjectId == 3)
             {
-                result.Access = (int)AccessResumeEnum.Business;
+                result.Access = (int)FareRuleTypeEnum.Business;
             }
             
             if (userSubscription.ObjectId == 4)
             {
-                result.Access = (int)AccessResumeEnum.Professional;
+                result.Access = (int)FareRuleTypeEnum.Professional;
             }
 
             return result;
