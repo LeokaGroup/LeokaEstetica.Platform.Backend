@@ -13,6 +13,10 @@ public class SubscriptionRepository : ISubscriptionRepository
 {
     private readonly PgContext _pgContext;
     
+    /// <summary>
+    /// Конструктор.
+    /// </summary>
+    /// <param name="pgContext">Датаконтекст.</param>
     public SubscriptionRepository(PgContext pgContext)
     {
         _pgContext = pgContext;
@@ -66,5 +70,30 @@ public class SubscriptionRepository : ISubscriptionRepository
             .FirstOrDefaultAsync(s => s.SubscriptionId == userSubscription.SubscriptionId);
 
         return result;
+    }
+
+    /// <summary>
+    /// Метод запишет пользователю подписку.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <param name="subscriptionType">Тип подписки.</param>
+    /// <param name="objectId">Id типа подписки.</param>
+    public async Task AddUserSubscriptionAsync(long userId, SubscriptionTypeEnum subscriptionType, long objectId)
+    {
+        // Получаем подписку, которую надо присвоить пользователю.
+        var freeSubscriptionId = await _pgContext.Subscriptions
+            .Where(s => s.ObjectId == objectId
+                        && s.SubscriptionType.Equals(subscriptionType.ToString()))
+            .Select(s => s.SubscriptionId)
+            .FirstOrDefaultAsync();
+        
+        // Присваиваем пользователю подписку.
+        await _pgContext.UserSubscriptions.AddAsync(new UserSubscriptionEntity
+        {
+            UserId = userId,
+            IsActive = true,
+            SubscriptionId = freeSubscriptionId
+        });
+        await _pgContext.SaveChangesAsync();
     }
 }
