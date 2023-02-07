@@ -8,10 +8,14 @@ namespace LeokaEstetica.Platform.Notifications.Services;
 /// <summary>
 /// Класс реализует методы уведомлений проектов.
 /// </summary>
-public sealed class ProjectNotificationsService : IProjectNotificationsService
+public class ProjectNotificationsService : IProjectNotificationsService
 {
     private readonly IHubContext<NotifyHub> _hubContext;
 
+    /// <summary>
+    /// Конструктор.
+    /// </summary>
+    /// <param name="hubContext">Контекст хаба.</param>
     public ProjectNotificationsService(IHubContext<NotifyHub> hubContext)
     {
         _hubContext = hubContext;
@@ -231,6 +235,24 @@ public sealed class ProjectNotificationsService : IProjectNotificationsService
         string notificationLevel)
     {
         await _hubContext.Clients.All.SendAsync("SendNotificationErrorInviteProjectTeamMembers",
+            new NotificationOutput
+            {
+                Title = title,
+                Message = notifyText,
+                NotificationLevel = notificationLevel
+            });
+    }
+
+    /// <summary>
+    /// Метод отправляет уведомление об предупреждении лимите проектов по тарифу.
+    /// </summary>
+    /// <param name="title">Заголовок уведомления.</param>
+    /// <param name="notifyText">Текст уведомления.</param>
+    /// <param name="notificationLevel">Уровень уведомления.</param>
+    public async Task SendNotificationWarningLimitFareRuleProjectsAsync(string title, string notifyText,
+        string notificationLevel)
+    {
+        await _hubContext.Clients.All.SendAsync("SendNotificationWarningLimitFareRuleProjects",
             new NotificationOutput
             {
                 Title = title,

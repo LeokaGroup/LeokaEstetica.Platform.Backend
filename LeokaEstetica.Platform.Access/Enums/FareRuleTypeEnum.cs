@@ -3,19 +3,22 @@ using System.ComponentModel;
 namespace LeokaEstetica.Platform.Access.Enums;
 
 /// <summary>
-/// Перечисление типов доступов.
+/// Перечисление типов подписок.
 /// </summary>
-public enum AccessResumeEnum
+public enum FareRuleTypeEnum
 {
     [Description("Нет доступа.")]
     NotAvailable = 0,
     
+    [Description("Тариф старт.")]
+    Start = 1,
+    
     [Description("Базовый тариф.")]
-    Base = 1,
+    Base = 2,
     
     [Description("Тариф бизнес.")]
-    Business = 2,
+    Business = 3,
     
     [Description("Тариф профессиональный.")]
-    Professional = 3
+    Professional = 4
 }

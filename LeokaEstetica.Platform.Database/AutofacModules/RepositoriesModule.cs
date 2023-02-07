@@ -1,5 +1,6 @@
 ﻿using Autofac;
 using LeokaEstetica.Platform.Core.Attributes;
+using LeokaEstetica.Platform.Database.Abstractions.AvailableLimits;
 using LeokaEstetica.Platform.Database.Abstractions.Commerce;
 using LeokaEstetica.Platform.Database.Abstractions.Header;
 using LeokaEstetica.Platform.Database.Abstractions.Landing;
@@ -13,6 +14,7 @@ using LeokaEstetica.Platform.Database.Abstractions.Subscription;
 using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Database.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Database.Chat;
+using LeokaEstetica.Platform.Database.Repositories.AvailableLimits;
 using LeokaEstetica.Platform.Database.Repositories.Chat;
 using LeokaEstetica.Platform.Database.Repositories.Commerce;
 using LeokaEstetica.Platform.Database.Repositories.Header;
@@ -172,6 +174,16 @@ public class RepositoriesModule : Module
         builder
             .RegisterType<SubscriptionRepository>()
             .As<ISubscriptionRepository>()
+            .InstancePerLifetimeScope();
+        
+        // Репозиторий проверки лимитов.
+        builder
+            .RegisterType<AvailableLimitsRepository>()
+            .Named<IAvailableLimitsRepository>("AvailableLimitsRepository")
+            .InstancePerLifetimeScope();
+        builder
+            .RegisterType<AvailableLimitsRepository>()
+            .As<IAvailableLimitsRepository>()
             .InstancePerLifetimeScope();
     }
 }
