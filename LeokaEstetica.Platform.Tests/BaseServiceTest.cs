@@ -86,8 +86,9 @@ public class BaseServiceTest
         var logService = new LogService(pgContext);
         var userRepository = new UserRepository(pgContext, logService);
         var profileRepository = new ProfileRepository(pgContext);
+        var subscriptionRepository = new SubscriptionRepository(pgContext);
 
-        UserService = new UserService(logService, userRepository, mapper, null, pgContext, profileRepository);
+        UserService = new UserService(logService, userRepository, mapper, null, pgContext, profileRepository, subscriptionRepository);
         ProfileService = new ProfileService(logService, profileRepository, userRepository, mapper, null, null);
 
         var projectRepository = new ProjectRepository(pgContext);
@@ -118,7 +119,6 @@ public class BaseServiceTest
         ProjectFinderService = new ProjectFinderService(logService, userRepository, projectNotificationsService);
 
         var resumeRepository = new ResumeRepository(pgContext);
-        var subscriptionRepository = new SubscriptionRepository(pgContext);
         var fareRuleRepository = new FareRuleRepository(pgContext);
         var availableLimitsRepository = new AvailableLimitsRepository(pgContext);
         var availableLimitsService = new AvailableLimitsService(logService, availableLimitsRepository);
