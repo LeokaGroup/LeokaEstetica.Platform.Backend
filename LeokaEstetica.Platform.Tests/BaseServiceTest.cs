@@ -88,17 +88,23 @@ public class BaseServiceTest
         var profileRepository = new ProfileRepository(pgContext);
         var subscriptionRepository = new SubscriptionRepository(pgContext);
 
-        UserService = new UserService(logService, userRepository, mapper, null, pgContext, profileRepository, subscriptionRepository);
+        UserService = new UserService(logService, userRepository, mapper, null, pgContext, profileRepository,
+            subscriptionRepository);
         ProfileService = new ProfileService(logService, profileRepository, userRepository, mapper, null, null);
 
         var projectRepository = new ProjectRepository(pgContext);
         var projectNotificationsService = new ProjectNotificationsService(null);
         var vacancyRepository = new VacancyRepository(pgContext);
         var vacancyModerationRepository = new VacancyModerationRepository(pgContext);
+        var vacancyNotificationsService = new VacancyNotificationsService(null);
+        var fareRuleRepository = new FareRuleRepository(pgContext);
+        var availableLimitsRepository = new AvailableLimitsRepository(pgContext);
+        var availableLimitsService = new AvailableLimitsService(logService, availableLimitsRepository);
 
         VacancyModerationService = new VacancyModerationService(vacancyModerationRepository, logService, mapper);
         VacancyService = new VacancyService(logService, vacancyRepository, mapper, null, userRepository,
-            VacancyModerationService, null);
+            VacancyModerationService, null, subscriptionRepository, fareRuleRepository, availableLimitsService,
+            vacancyNotificationsService);
 
         var chatRepository = new ChatRepository(pgContext);
 
@@ -119,9 +125,6 @@ public class BaseServiceTest
         ProjectFinderService = new ProjectFinderService(logService, userRepository, projectNotificationsService);
 
         var resumeRepository = new ResumeRepository(pgContext);
-        var fareRuleRepository = new FareRuleRepository(pgContext);
-        var availableLimitsRepository = new AvailableLimitsRepository(pgContext);
-        var availableLimitsService = new AvailableLimitsService(logService, availableLimitsRepository);
 
         ProjectService = new ProjectService(projectRepository, logService, userRepository, mapper,
             projectNotificationsService, VacancyService, vacancyRepository, availableLimitsService,

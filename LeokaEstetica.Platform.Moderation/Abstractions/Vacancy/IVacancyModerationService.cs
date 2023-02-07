@@ -1,6 +1,5 @@
 using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Vacancy;
 using LeokaEstetica.Platform.Models.Entities.Vacancy;
-using LeokaEstetica.Platform.Moderation.Models.Dto.Output.Project;
 using LeokaEstetica.Platform.Moderation.Models.Dto.Output.Vacancy;
 
 namespace LeokaEstetica.Platform.Moderation.Abstractions.Vacancy;

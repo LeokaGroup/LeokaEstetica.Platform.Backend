@@ -1,5 +1,8 @@
 using AutoMapper;
+using LeokaEstetica.Platform.Access.Abstractions.AvailableLimits;
 using LeokaEstetica.Platform.Core.Exceptions;
+using LeokaEstetica.Platform.Database.Abstractions.FareRule;
+using LeokaEstetica.Platform.Database.Abstractions.Subscription;
 using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Database.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Logs.Abstractions;
@@ -67,13 +70,32 @@ public sealed class VacancyService : IVacancyService
 
     private readonly BaseVacanciesFilterChain _unknownPayVacanciesFilterChain = new UnknownPayVacanciesFilterChain();
 
+    private readonly ISubscriptionRepository _subscriptionRepository;
+    private readonly IFareRuleRepository _fareRuleRepository;
+    private readonly IAvailableLimitsService _availableLimitsService;
+    private readonly IVacancyNotificationsService _vacancyNotificationsService;
+
+    /// <summary>
+    /// Конструктор.
+    /// </summary>
+    /// <param name="logService">Сервис логера.</param>
+    /// <param name="vacancyRepository">Репозиторий вакансий.</param>
+    /// <param name="mapper">Автомаппер.</param>
+    /// <param name="vacancyRedisService">Сервис вакансий кэша.</param>
+    /// <param name="userRepository">Репозиторий пользователя.</param>
+    /// <param name="vacancyModerationService">Сервис модерации вакансий.</param>
+    /// <param name="notificationsService">Сервис уведомлений.</param>
     public VacancyService(ILogService logService,
         IVacancyRepository vacancyRepository,
         IMapper mapper,
         IVacancyRedisService vacancyRedisService,
         IUserRepository userRepository,
         IVacancyModerationService vacancyModerationService,
-        INotificationsService notificationsService)
+        INotificationsService notificationsService,
+        ISubscriptionRepository subscriptionRepository,
+        IFareRuleRepository fareRuleRepository,
+        IAvailableLimitsService availableLimitsService,
+        IVacancyNotificationsService vacancyNotificationsService)
     {
         _logService = logService;
         _vacancyRepository = vacancyRepository;
@@ -82,6 +104,10 @@ public sealed class VacancyService : IVacancyService
         _userRepository = userRepository;
         _vacancyModerationService = vacancyModerationService;
         _notificationsService = notificationsService;
+        _subscriptionRepository = subscriptionRepository;
+        _fareRuleRepository = fareRuleRepository;
+        _availableLimitsService = availableLimitsService;
+        _vacancyNotificationsService = vacancyNotificationsService;
 
         // Определяем обработчики цепочки фильтров.
         _salaryFilterVacanciesChain.Successor = _descSalaryVacanciesFilterChain;
@@ -168,6 +194,36 @@ public sealed class VacancyService : IVacancyService
         {
             var userId = await _userRepository.GetUserByEmailAsync(account);
 
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                await _logService.LogErrorAsync(ex);
+                throw ex;
+            }
+
+            // Получаем подписку пользователя.
+            var userSubscription = await _subscriptionRepository.GetUserSubscriptionAsync(userId);
+
+            // Получаем тариф, на который оформлена подписка у пользователя.
+            var fareRule = await _fareRuleRepository.GetByIdAsync(userSubscription.ObjectId);
+
+            // Проверяем доступо ли пользователю создание вакансии.
+            var availableCreateProjectLimit =
+                await _availableLimitsService.CheckAvailableCreateVacancyAsync(userId, fareRule.Name);
+
+            // Если лимит по тарифу превышен.
+            if (!availableCreateProjectLimit)
+            {
+                var ex = new Exception($"Превышен лимит вакансий по тарифу. UserId: {userId}. Тариф: {fareRule.Name}");
+                await _logService.LogErrorAsync(ex);
+                await _vacancyNotificationsService.SendNotificationWarningLimitFareRuleVacanciesAsync(
+                    "Что то пошло не так",
+                    "Превышен лимит вакансий по тарифу.",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING);
+
+                return null;
+            }
+
             // Добавляем вакансию в таблицу вакансий пользователя.
             var createdVacancy = await _vacancyRepository
                 .CreateVacancyAsync(vacancyName, vacancyText, workExperience, employment, payment, userId);
@@ -176,7 +232,7 @@ public sealed class VacancyService : IVacancyService
             await _vacancyModerationService.AddVacancyModerationAsync(createdVacancy.VacancyId);
 
             // Отправляем уведомление об успешном создании вакансии и отправки ее на модерацию.
-            await _notificationsService.SendNotificationSuccessCreatedUserVacancyAsync("Все хорошо",
+            await _vacancyNotificationsService.SendNotificationSuccessCreatedUserVacancyAsync("Все хорошо",
                 "Данные успешно сохранены! Вакансия отправлена на модерацию!",
                 NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS);
 
@@ -305,7 +361,7 @@ public sealed class VacancyService : IVacancyService
             await _vacancyModerationService.AddVacancyModerationAsync(createdVacancy.VacancyId);
 
             // Отправляем уведомление об успешном изменении вакансии и отправки ее на модерацию.
-            await _notificationsService.SendNotificationSuccessCreatedUserVacancyAsync("Все хорошо",
+            await _vacancyNotificationsService.SendNotificationSuccessCreatedUserVacancyAsync("Все хорошо",
                 "Данные успешно сохранены! Вакансия отправлена на модерацию!",
                 NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS);
 
@@ -329,7 +385,7 @@ public sealed class VacancyService : IVacancyService
         try
         {
             var result = new CatalogVacancyResultOutput();
-            
+
             // Разбиваем строку занятости, так как там может приходить несколько значений в строке.
             filters.Employments =
                 CreateEmploymentsBuilder.CreateEmploymentsResult(filters.EmploymentsValues);
