@@ -107,20 +107,4 @@ public sealed class NotificationsService : INotificationsService
             NotificationLevel = notificationLevel
         });
     }
-
-    /// <summary>
-    /// Метод отправляет уведомление об успешном создании вакансии.
-    /// </summary>
-    /// <param name="title">Заголовок уведомления.</param>
-    /// <param name="notifyText">Текст уведомления.</param>
-    /// <param name="notificationLevel">Уровень уведомления.</param>
-    public async Task SendNotificationSuccessCreatedUserVacancyAsync(string title, string notifyText, string notificationLevel)
-    {
-        await _hubContext.Clients.All.SendAsync("SendNotificationSuccessCreatedUserVacancy", new NotificationOutput
-        {
-            Title = title,
-            Message = notifyText,
-            NotificationLevel = notificationLevel
-        });
-    }
 }

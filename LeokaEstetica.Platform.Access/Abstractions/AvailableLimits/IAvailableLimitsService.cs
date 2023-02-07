@@ -12,4 +12,12 @@ public interface IAvailableLimitsService
     /// <param name="fareRuleName">Название тарифа.</param>
     /// <returns>Признак доступости.</returns>
     Task<bool> CheckAvailableCreateProjectAsync(long userId, string fareRuleName);
+    
+    /// <summary>
+    /// Метод проверяет, доступны ли пользователю для создания вакансии в зависимости от подписки. 
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <param name="fareRuleName">Название тарифа.</param>
+    /// <returns>Признак доступости.</returns>
+    Task<bool> CheckAvailableCreateVacancyAsync(long userId, string fareRuleName);
 }

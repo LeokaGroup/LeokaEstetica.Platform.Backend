@@ -13,9 +13,14 @@ public class AvailableLimitsService : IAvailableLimitsService
 {
     private readonly ILogService _logService;
     private readonly IAvailableLimitsRepository _availableLimitsRepository;
+    
     private const int AVAILABLE_PROJECT_START_COUNT = 4; // Кол-во у тарифа старта.
     private const int AVAILABLE_PROJECT_BASE_COUNT = 10; // Кол-во у тарифа базовый.
     private const int AVAILABLE_PROJECT_BUSINESS_COUNT = 35; // Кол-во у тарифа бизнес.
+    
+    private const int AVAILABLE_VACANCY_START_COUNT = 5; // Кол-во у тарифа старта.
+    private const int AVAILABLE_VACANCY_BASE_COUNT = 15; // Кол-во у тарифа базовый.
+    private const int AVAILABLE_VACANCY_BUSINESS_COUNT = 40; // Кол-во у тарифа бизнес.
 
     /// <summary>
     /// Конструктор.
@@ -66,6 +71,48 @@ public class AvailableLimitsService : IAvailableLimitsService
         catch (Exception ex)
         {
             await _logService.LogErrorAsync(ex, $"Ошибка проверки лимитов проектов пользователя. UserId был {userId}");
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Метод проверяет, доступны ли пользователю для создания вакансии в зависимости от подписки. 
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <param name="fareRuleName">Название тарифа.</param>
+    /// <returns>Признак доступости.</returns>
+    public async Task<bool> CheckAvailableCreateVacancyAsync(long userId, string fareRuleName)
+    {
+        try
+        {
+            // Получаем кол-во вакансий пользователя.
+            var userVacanciesCount = await _availableLimitsRepository.CheckAvailableCreateVacancyAsync(userId);
+
+            // Проверяем кол-во в зависимости от подписки.
+            // Если стартовый тариф.
+            if (fareRuleName.Equals(FareRuleTypeEnum.Start.GetEnumDescription()))
+            {
+                return userVacanciesCount < AVAILABLE_VACANCY_START_COUNT;
+            }
+            
+            // Если базовый тариф.
+            if (fareRuleName.Equals(FareRuleTypeEnum.Base.GetEnumDescription()))
+            {
+                return userVacanciesCount < AVAILABLE_VACANCY_BASE_COUNT;
+            }
+            
+            // Если бизнес тариф.
+            if (fareRuleName.Equals(FareRuleTypeEnum.Business.GetEnumDescription()))
+            {
+                return userVacanciesCount < AVAILABLE_VACANCY_BUSINESS_COUNT;
+            }
+
+            return true;
+        }
+        
+        catch (Exception ex)
+        {
+            await _logService.LogErrorAsync(ex, $"Ошибка проверки лимитов вакансий пользователя. UserId был {userId}");
             throw;
         }
     }
