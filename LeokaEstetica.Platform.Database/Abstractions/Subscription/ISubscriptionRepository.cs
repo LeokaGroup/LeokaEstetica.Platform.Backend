@@ -35,4 +35,11 @@ public interface ISubscriptionRepository
     /// <param name="subscriptionType">Тип подписки.</param>
     /// <param name="objectId">Id типа подписки.</param>
     Task AddUserSubscriptionAsync(long userId, SubscriptionTypeEnum subscriptionType, long objectId);
+
+    /// <summary>
+    /// Метод получает список подписок пользователей.
+    /// </summary>
+    /// <param name="userIds">Список Id пользователей.</param>
+    /// <returns>Список подписок.</returns>
+    Task<List<UserSubscriptionEntity>> GetUsersSubscriptionsAsync(IEnumerable<long> userIds);
 }

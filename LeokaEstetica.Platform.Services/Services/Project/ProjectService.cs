@@ -70,6 +70,15 @@ public sealed class ProjectService : IProjectService
     private readonly IFareRuleRepository _fareRuleRepository;
 
     /// <summary>
+    /// Список названий тарифов, которые дают выделение цветом.
+    /// </summary>
+    private static readonly List<string> _fareRuleTypesNames = new()
+    {
+        "Тариф “Бизнес”.",
+        "Тариф “Профессиональный”."
+    };
+
+    /// <summary>
     /// Конструктор.
     /// </summary>
     /// <param name="projectRepository">Репозиторий проектов.</param>
@@ -271,6 +280,58 @@ public sealed class ProjectService : IProjectService
             {
                 CatalogProjects = await _projectRepository.CatalogProjectsAsync()
             };
+            
+            if (!result.CatalogProjects.Any())
+            {
+                return result;
+            }
+            
+            // Получаем список юзеров для проставления цветов.
+            var userIds = result.CatalogProjects.Select(p => p.UserId).Distinct();
+            
+            // Выбираем список подписок пользователей.
+            var userSubscriptions = await _subscriptionRepository.GetUsersSubscriptionsAsync(userIds);
+
+            // Получаем список подписок.
+            var subscriptions = await _subscriptionRepository.GetSubscriptionsAsync();
+            
+            // Получаем список тарифов, чтобы взять названия тарифов.
+            var fareRules = await _fareRuleRepository.GetFareRulesAsync();
+            var fareRulesList = fareRules.ToList();
+
+            // Выбираем пользователей, у которых есть подписка выше бизнеса. Только их выделяем цветом.
+            foreach (var prj in result.CatalogProjects)
+            {
+                // Смотрим подписку пользователя.
+                var userSubscription = userSubscriptions.Find(s => s.UserId == prj.UserId);
+
+                if (userSubscription is null)
+                {
+                    continue;
+                }
+                
+                var subscriptionId = userSubscription.SubscriptionId;
+                var s = subscriptions.Find(s => s.ObjectId == subscriptionId);
+
+                if (s is null)
+                {
+                    continue;
+                }
+                
+                // Получаем название тарифа подписки.
+                var sn = fareRulesList.Find(fr => fr.RuleId == s.ObjectId);
+                
+                if (sn is null)
+                {
+                    continue;
+                }
+                        
+                // Подписка позволяет. Проставляем выделение цвета.
+                if (_fareRuleTypesNames.Contains(sn.Name))
+                {
+                    prj.IsSelectedColor = true;
+                }
+            }
 
             return result;
         }
