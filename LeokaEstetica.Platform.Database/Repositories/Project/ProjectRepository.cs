@@ -169,7 +169,8 @@ public sealed class ProjectRepository : IProjectRepository
                 ProjectName = p.Project.ProjectName,
                 DateCreated = p.Project.DateCreated,
                 ProjectIcon = p.Project.ProjectIcon,
-                ProjectDetails = p.Project.ProjectDetails
+                ProjectDetails = p.Project.ProjectDetails,
+                UserId = p.Project.UserId
             })
             .ToListAsync();
 
