@@ -96,4 +96,18 @@ public class SubscriptionRepository : ISubscriptionRepository
         });
         await _pgContext.SaveChangesAsync();
     }
+
+    /// <summary>
+    /// Метод получает список подписок пользователей.
+    /// </summary>
+    /// <param name="userIds">Список Id пользователей.</param>
+    /// <returns>Список подписок.</returns>
+    public async Task<List<UserSubscriptionEntity>> GetUsersSubscriptionsAsync(IEnumerable<long> userIds)
+    {
+        var result = await _pgContext.UserSubscriptions
+            .Where(s => userIds.Contains(s.UserId))
+            .ToListAsync();
+
+        return result;
+    }
 }

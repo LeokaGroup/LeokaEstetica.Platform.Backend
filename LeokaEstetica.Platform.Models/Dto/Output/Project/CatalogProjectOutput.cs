@@ -1,3 +1,5 @@
+using Newtonsoft.Json;
+
 namespace LeokaEstetica.Platform.Models.Dto.Output.Project;
 
 /// <summary>
@@ -39,4 +41,15 @@ public class CatalogProjectOutput
     /// Системное название проекта.
     /// </summary>
     public string ProjectStageSysName { get; set; }
+
+    /// <summary>
+    /// Id пользователя.
+    /// </summary>
+    [JsonIgnore]
+    public long UserId { get; set; }
+
+    /// <summary>
+    /// Признак выделения цветом.
+    /// </summary>
+    public bool IsSelectedColor { get; set; }
 }

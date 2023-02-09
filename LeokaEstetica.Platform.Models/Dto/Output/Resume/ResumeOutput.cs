@@ -49,4 +49,9 @@ public class ResumeOutput
     /// Id анкеты пользователя.
     /// </summary>
     public long ProfileInfoId { get; set; }
+    
+    /// <summary>
+    /// Признак выделения цветом.
+    /// </summary>
+    public bool IsSelectedColor { get; set; }
 }

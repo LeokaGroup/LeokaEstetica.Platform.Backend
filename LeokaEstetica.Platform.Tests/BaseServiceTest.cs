@@ -2,7 +2,6 @@
 using AutoMapper;
 using LeokaEstetica.Platform.Access.Services.AvailableLimits;
 using LeokaEstetica.Platform.Access.Services.Moderation;
-using LeokaEstetica.Platform.Access.Services.Resume;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Utils;
 using LeokaEstetica.Platform.Database.Repositories.AvailableLimits;
@@ -103,7 +102,7 @@ public class BaseServiceTest
 
         VacancyModerationService = new VacancyModerationService(vacancyModerationRepository, logService, mapper);
         VacancyService = new VacancyService(logService, vacancyRepository, mapper, null, userRepository,
-            VacancyModerationService, null, subscriptionRepository, fareRuleRepository, availableLimitsService,
+            VacancyModerationService, subscriptionRepository, fareRuleRepository, availableLimitsService,
             vacancyNotificationsService);
 
         var chatRepository = new ChatRepository(pgContext);
@@ -132,8 +131,7 @@ public class BaseServiceTest
 
         SubscriptionService =
             new SubscriptionService(logService, userRepository, subscriptionRepository, fareRuleRepository);
-        new AccessResumeService(logService, subscriptionRepository, userRepository);
-        ResumeService = new ResumeService(logService, resumeRepository);
+        ResumeService = new ResumeService(logService, resumeRepository, mapper, subscriptionRepository, fareRuleRepository);
         VacancyFinderService = new VacancyFinderService(vacancyRepository, logService);
         FinderProjectService = new Finder.Services.Project.ProjectFinderService(projectRepository, logService);
         ResumeFinderService = new ResumeFinderService(logService, resumeRepository);

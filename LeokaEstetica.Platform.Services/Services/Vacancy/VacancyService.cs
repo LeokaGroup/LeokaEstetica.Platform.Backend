@@ -33,7 +33,6 @@ public sealed class VacancyService : IVacancyService
     private readonly IVacancyRedisService _vacancyRedisService;
     private readonly IUserRepository _userRepository;
     private readonly IVacancyModerationService _vacancyModerationService;
-    private readonly INotificationsService _notificationsService;
 
     // Определяем всю цепочку фильтров.
     private readonly BaseVacanciesFilterChain _salaryFilterVacanciesChain = new DateVacanciesFilterChain();
@@ -74,6 +73,15 @@ public sealed class VacancyService : IVacancyService
     private readonly IFareRuleRepository _fareRuleRepository;
     private readonly IAvailableLimitsService _availableLimitsService;
     private readonly IVacancyNotificationsService _vacancyNotificationsService;
+    
+    /// <summary>
+    /// Список названий тарифов, которые дают выделение цветом.
+    /// </summary>
+    private static readonly List<string> _fareRuleTypesNames = new()
+    {
+        "Тариф “Бизнес”.",
+        "Тариф “Профессиональный”."
+    };
 
     /// <summary>
     /// Конструктор.
@@ -84,14 +92,12 @@ public sealed class VacancyService : IVacancyService
     /// <param name="vacancyRedisService">Сервис вакансий кэша.</param>
     /// <param name="userRepository">Репозиторий пользователя.</param>
     /// <param name="vacancyModerationService">Сервис модерации вакансий.</param>
-    /// <param name="notificationsService">Сервис уведомлений.</param>
     public VacancyService(ILogService logService,
         IVacancyRepository vacancyRepository,
         IMapper mapper,
         IVacancyRedisService vacancyRedisService,
         IUserRepository userRepository,
         IVacancyModerationService vacancyModerationService,
-        INotificationsService notificationsService,
         ISubscriptionRepository subscriptionRepository,
         IFareRuleRepository fareRuleRepository,
         IAvailableLimitsService availableLimitsService,
@@ -103,7 +109,6 @@ public sealed class VacancyService : IVacancyService
         _vacancyRedisService = vacancyRedisService;
         _userRepository = userRepository;
         _vacancyModerationService = vacancyModerationService;
-        _notificationsService = notificationsService;
         _subscriptionRepository = subscriptionRepository;
         _fareRuleRepository = fareRuleRepository;
         _availableLimitsService = availableLimitsService;
@@ -259,6 +264,58 @@ public sealed class VacancyService : IVacancyService
             {
                 CatalogVacancies = await _vacancyRepository.CatalogVacanciesAsync()
             };
+            
+            if (!result.CatalogVacancies.Any())
+            {
+                return result;
+            }
+            
+            // Получаем список юзеров для проставления цветов.
+            var userIds = result.CatalogVacancies.Select(p => p.UserId).Distinct();
+            
+            // Выбираем список подписок пользователей.
+            var userSubscriptions = await _subscriptionRepository.GetUsersSubscriptionsAsync(userIds);
+
+            // Получаем список подписок.
+            var subscriptions = await _subscriptionRepository.GetSubscriptionsAsync();
+            
+            // Получаем список тарифов, чтобы взять названия тарифов.
+            var fareRules = await _fareRuleRepository.GetFareRulesAsync();
+            var fareRulesList = fareRules.ToList();
+
+            // Выбираем пользователей, у которых есть подписка выше бизнеса. Только их выделяем цветом.
+            foreach (var v in result.CatalogVacancies)
+            {
+                // Смотрим подписку пользователя.
+                var userSubscription = userSubscriptions.Find(s => s.UserId == v.UserId);
+
+                if (userSubscription is null)
+                {
+                    continue;
+                }
+                
+                var subscriptionId = userSubscription.SubscriptionId;
+                var s = subscriptions.Find(s => s.ObjectId == subscriptionId);
+
+                if (s is null)
+                {
+                    continue;
+                }
+                
+                // Получаем название тарифа подписки.
+                var sn = fareRulesList.Find(fr => fr.RuleId == s.ObjectId);
+                
+                if (sn is null)
+                {
+                    continue;
+                }
+                        
+                // Подписка позволяет. Проставляем выделение цвета.
+                if (_fareRuleTypesNames.Contains(sn.Name))
+                {
+                    v.IsSelectedColor = true;
+                }
+            }
 
             return result;
         }

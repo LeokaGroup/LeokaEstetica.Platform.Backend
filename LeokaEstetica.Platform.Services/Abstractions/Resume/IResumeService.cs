@@ -1,3 +1,4 @@
+using LeokaEstetica.Platform.Models.Dto.Output.Resume;
 using LeokaEstetica.Platform.Models.Entities.Profile;
 
 namespace LeokaEstetica.Platform.Services.Abstractions.Resume;
@@ -11,7 +12,7 @@ public interface IResumeService
     /// Метод получает список резюме.
     /// </summary>
     /// <returns>Список резюме.</returns>
-    Task<List<ProfileInfoEntity>> GetProfileInfosAsync();
+    Task<ResumeResultOutput> GetProfileInfosAsync();
 
     /// <summary>
     /// Метод получает анкету пользователя.

@@ -63,12 +63,7 @@ public class ResumeController : BaseController
     [ProducesResponseType(404)]
     public async Task<ResumeResultOutput> GetProfileInfosAsync()
     {
-        var items = await _resumeService.GetProfileInfosAsync();
-        var result = new ResumeResultOutput
-        {
-            // Приводим к выходной модели.
-            CatalogResumes = _mapper.Map<IEnumerable<ResumeOutput>>(items)
-        };
+        var result = await _resumeService.GetProfileInfosAsync();
 
         // Записываем коды пользователей.
         result.CatalogResumes = await FillUserCodesBuilder.Fill(result.CatalogResumes, _userRepository);
