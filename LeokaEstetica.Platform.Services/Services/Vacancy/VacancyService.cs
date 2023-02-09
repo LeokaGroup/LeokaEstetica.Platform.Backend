@@ -284,10 +284,10 @@ public sealed class VacancyService : IVacancyService
             var fareRulesList = fareRules.ToList();
 
             // Выбираем пользователей, у которых есть подписка выше бизнеса. Только их выделяем цветом.
-            foreach (var prj in result.CatalogVacancies)
+            foreach (var v in result.CatalogVacancies)
             {
                 // Смотрим подписку пользователя.
-                var userSubscription = userSubscriptions.Find(s => s.UserId == prj.UserId);
+                var userSubscription = userSubscriptions.Find(s => s.UserId == v.UserId);
 
                 if (userSubscription is null)
                 {
@@ -313,7 +313,7 @@ public sealed class VacancyService : IVacancyService
                 // Подписка позволяет. Проставляем выделение цвета.
                 if (_fareRuleTypesNames.Contains(sn.Name))
                 {
-                    prj.IsSelectedColor = true;
+                    v.IsSelectedColor = true;
                 }
             }
 

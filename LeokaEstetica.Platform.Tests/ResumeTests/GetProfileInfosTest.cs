@@ -10,6 +10,6 @@ public class GetProfileInfosTest : BaseServiceTest
     {
         var result = await ResumeService.GetProfileInfosAsync();
         
-        Assert.IsNotEmpty(result);
+        Assert.IsNotEmpty(result.CatalogResumes);
     }
 }
