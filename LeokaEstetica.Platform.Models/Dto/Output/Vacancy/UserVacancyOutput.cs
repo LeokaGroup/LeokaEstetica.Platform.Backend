@@ -50,4 +50,9 @@ public class UserVacancyOutput
     /// Id пользователя.
     /// </summary>
     public long UserId { get; set; }
+
+    /// <summary>
+    /// Статус вакансии.
+    /// </summary>
+    public string VacancyStatusName { get; set; }
 }

@@ -89,7 +89,9 @@ public sealed class VacancyModerationRepository : IVacancyModerationRepository
                     VacancyName = p.UserVacancy.VacancyName,
                     DateCreated = p.UserVacancy.DateCreated
                 },
-                DateModeration = p.DateModeration
+                DateModeration = p.DateModeration,
+                ModerationStatusId = p.ModerationStatusId,
+                ModerationStatus = p.ModerationStatus
             })
             .ToListAsync();
 

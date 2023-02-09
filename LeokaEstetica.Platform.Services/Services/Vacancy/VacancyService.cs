@@ -1,6 +1,8 @@
 using AutoMapper;
 using LeokaEstetica.Platform.Access.Abstractions.AvailableLimits;
+using LeokaEstetica.Platform.Access.Enums;
 using LeokaEstetica.Platform.Core.Exceptions;
+using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.FareRule;
 using LeokaEstetica.Platform.Database.Abstractions.Subscription;
 using LeokaEstetica.Platform.Database.Abstractions.User;
@@ -79,8 +81,8 @@ public sealed class VacancyService : IVacancyService
     /// </summary>
     private static readonly List<string> _fareRuleTypesNames = new()
     {
-        "Тариф “Бизнес”.",
-        "Тариф “Профессиональный”."
+        FareRuleTypeEnum.Business.GetEnumDescription(),
+        FareRuleTypeEnum.Professional.GetEnumDescription()
     };
 
     /// <summary>

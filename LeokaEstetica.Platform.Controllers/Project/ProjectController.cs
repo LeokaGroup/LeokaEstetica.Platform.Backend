@@ -171,8 +171,7 @@ public class ProjectController : BaseController
     /// <summary>
     /// Метод получает проект для изменения или просмотра.
     /// </summary>
-    /// <param name="projectId">Id проекта.</param>
-    /// <param name="mode">Режим. Чтение или изменение.</param>
+    /// <param name="getProjectValidation">Входная модель.</param>
     /// <returns>Данные проекта.</returns>
     [HttpGet]
     [Route("project")]
@@ -181,10 +180,10 @@ public class ProjectController : BaseController
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<ProjectOutput> GetProjectAsync([FromQuery] GetProjectValidationModel model)
+    public async Task<ProjectOutput> GetProjectAsync([FromQuery] GetProjectValidationModel getProjectValidation)
     {
         var result = new ProjectOutput();
-        var validator = await new GetProjectValidator().ValidateAsync(model);
+        var validator = await new GetProjectValidator().ValidateAsync(getProjectValidation);
 
         if (validator.Errors.Any())
         {
@@ -193,7 +192,8 @@ public class ProjectController : BaseController
             return result;
         }
 
-        var project = await _projectService.GetProjectAsync(model.ProjectId, model.Mode, GetUserName());
+        var project = await _projectService.GetProjectAsync(getProjectValidation.ProjectId, getProjectValidation.Mode,
+            GetUserName());
         result = _mapper.Map<ProjectOutput>(project);
 
         return result;
@@ -231,9 +231,7 @@ public class ProjectController : BaseController
     [ProducesResponseType(404)]
     public async Task<ProjectVacancyResultOutput> ProjectVacanciesAsync([FromQuery] long projectId)
     {
-        var result = new ProjectVacancyResultOutput();
-        var items = await _projectService.ProjectVacanciesAsync(projectId);
-        result.ProjectVacancies = _mapper.Map<IEnumerable<ProjectVacancyOutput>>(items);
+        var result = await _projectService.ProjectVacanciesAsync(projectId);
 
         return result;
     }

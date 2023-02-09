@@ -1,4 +1,6 @@
 using AutoMapper;
+using LeokaEstetica.Platform.Access.Enums;
+using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.FareRule;
 using LeokaEstetica.Platform.Database.Abstractions.Resume;
 using LeokaEstetica.Platform.Database.Abstractions.Subscription;
@@ -26,8 +28,8 @@ public class ResumeService : IResumeService
     /// </summary>
     private static readonly List<string> _fareRuleTypesNames = new()
     {
-        "Тариф “Бизнес”.",
-        "Тариф “Профессиональный”."
+        FareRuleTypeEnum.Business.GetEnumDescription(),
+        FareRuleTypeEnum.Professional.GetEnumDescription()
     };
 
     /// <summary>

@@ -10,15 +10,15 @@ public enum FareRuleTypeEnum
     [Description("Нет доступа.")]
     NotAvailable = 0,
     
-    [Description("Тариф старт.")]
+    [Description("Старт")]
     Start = 1,
     
-    [Description("Базовый тариф.")]
+    [Description("Базовый")]
     Base = 2,
     
-    [Description("Тариф бизнес.")]
+    [Description("Бизнес")]
     Business = 3,
     
-    [Description("Тариф профессиональный.")]
+    [Description("Профессиональный")]
     Professional = 4
 }

@@ -34,6 +34,7 @@ public static class CreateVacanciesModerationDatesBuilder
             newItem.DateModeration = convertModerationDate;
             newItem.DateCreated = convertCreatedDate;
             newItem.VacancyName = item.UserVacancy.VacancyName;
+            newItem.ModerationStatusName = item.ModerationStatus.StatusName;
             _vacancies.Add(newItem);
         }
 

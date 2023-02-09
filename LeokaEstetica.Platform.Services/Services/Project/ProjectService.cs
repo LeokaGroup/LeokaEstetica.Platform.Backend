@@ -4,6 +4,7 @@ using LeokaEstetica.Platform.Access.Enums;
 using LeokaEstetica.Platform.Core.Constants;
 using LeokaEstetica.Platform.Core.Helpers;
 using LeokaEstetica.Platform.Core.Exceptions;
+using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.FareRule;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
 using LeokaEstetica.Platform.Database.Abstractions.Subscription;
@@ -20,6 +21,7 @@ using LeokaEstetica.Platform.Models.Entities.Project;
 using LeokaEstetica.Platform.Models.Entities.ProjectTeam;
 using LeokaEstetica.Platform.Models.Entities.Vacancy;
 using LeokaEstetica.Platform.Models.Enums;
+using LeokaEstetica.Platform.Moderation.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Notifications.Consts;
 using LeokaEstetica.Platform.Services.Abstractions.Project;
@@ -74,9 +76,12 @@ public sealed class ProjectService : IProjectService
     /// </summary>
     private static readonly List<string> _fareRuleTypesNames = new()
     {
-        "Тариф “Бизнес”.",
-        "Тариф “Профессиональный”."
+        FareRuleTypeEnum.Business.GetEnumDescription(),
+        FareRuleTypeEnum.Professional.GetEnumDescription()
     };
+
+    private readonly IVacancyModerationService _vacancyModerationService;
+    private static readonly string _approveVacancy = "Опубликована";
 
     /// <summary>
     /// Конструктор.
@@ -89,6 +94,7 @@ public sealed class ProjectService : IProjectService
     /// <param name="vacancyService">Сервис вакансий.</param>
     /// <param name="vacancyRepository">Репозиторий вакансий.</param>
     /// <param name="availableLimitsService">Сервис проверки лимитов.</param>
+    /// <param name="vacancyModerationService">Сервис модерации вакансий проектов.</param>
     public ProjectService(IProjectRepository projectRepository,
         ILogService logService,
         IUserRepository userRepository,
@@ -98,7 +104,8 @@ public sealed class ProjectService : IProjectService
         IVacancyRepository vacancyRepository, 
         IAvailableLimitsService availableLimitsService, 
         ISubscriptionRepository subscriptionRepository, 
-        IFareRuleRepository fareRuleRepository)
+        IFareRuleRepository fareRuleRepository, 
+        IVacancyModerationService vacancyModerationService)
     {
         _projectRepository = projectRepository;
         _logService = logService;
@@ -110,6 +117,7 @@ public sealed class ProjectService : IProjectService
         _availableLimitsService = availableLimitsService;
         _subscriptionRepository = subscriptionRepository;
         _fareRuleRepository = fareRuleRepository;
+        _vacancyModerationService = vacancyModerationService;
 
         // Определяем обработчики цепочки фильтров.
         _dateProjectsFilterChain.Successor = _projectsVacanciesFilterChain;
@@ -485,7 +493,7 @@ public sealed class ProjectService : IProjectService
     /// </summary>
     /// <param name="projectId">Id проекта, вакансии которого нужно получить.</param>
     /// <returns>Список вакансий.</returns>
-    public async Task<IEnumerable<ProjectVacancyEntity>> ProjectVacanciesAsync(long projectId)
+    public async Task<ProjectVacancyResultOutput> ProjectVacanciesAsync(long projectId)
     {
         try
         {
@@ -493,8 +501,45 @@ public sealed class ProjectService : IProjectService
             {
                 await ValidateProjectIdAsync(projectId);
             }
+            
+            var projectVacancies = await _projectRepository.ProjectVacanciesAsync(projectId);
+            
+            var result = new ProjectVacancyResultOutput
+            {
+                ProjectVacancies = _mapper.Map<IEnumerable<ProjectVacancyOutput>>(projectVacancies)
+            };
+            
+            // Получаем список вакансий на модерации.
+            var moderationVacancies = await _vacancyModerationService.VacanciesModerationAsync();
 
-            var result = await _projectRepository.ProjectVacanciesAsync(projectId);
+            // Получаем список вакансий из каталога вакансий.
+            var catalogVacancies = await _vacancyRepository.CatalogVacanciesAsync();
+
+            // Проставляем статусы вакансий.
+            foreach (var pv in result.ProjectVacancies)
+            {
+                // Ищем в модерации вакансий.
+                var isVacancy = moderationVacancies.Vacancies.Any(v => v.VacancyId == pv.VacancyId);
+
+                if (isVacancy)
+                {
+                    pv.UserVacancy.VacancyStatusName = moderationVacancies.Vacancies
+                        .Where(v => v.VacancyId == pv.VacancyId)
+                        .Select(v => v.ModerationStatusName)
+                        .FirstOrDefault();
+                }
+                
+                // Ищем вакансию в каталоге вакансий.
+                else
+                {
+                    var isCatalogVacancy = catalogVacancies.Any(v => v.VacancyId == pv.VacancyId);
+
+                    if (isCatalogVacancy)
+                    {
+                        pv.UserVacancy.VacancyStatusName = _approveVacancy;
+                    }
+                }
+            }
 
             return result;
         }
