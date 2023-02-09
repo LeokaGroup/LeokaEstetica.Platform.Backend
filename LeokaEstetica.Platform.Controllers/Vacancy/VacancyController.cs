@@ -26,6 +26,14 @@ public class VacancyController : BaseController
     private readonly IVacancyFinderService _vacancyFinderService;
     private readonly IVacancyPaginationService _vacancyPaginationService;
 
+    /// <summary>
+    /// Конструктор.
+    /// </summary>
+    /// <param name="vacancyService">Сервис вакансий.</param>
+    /// <param name="mapper">Автомаппер.</param>
+    /// <param name="validationExcludeErrorsService">Сервис исключения параметров валидации.</param>
+    /// <param name="vacancyFinderService">Поисковый сервис вакансий.</param>
+    /// <param name="vacancyPaginationService">Сервис пагинации вакансий.</param>
     public VacancyController(IVacancyService vacancyService,
         IMapper mapper,
         IValidationExcludeErrorsService validationExcludeErrorsService, 

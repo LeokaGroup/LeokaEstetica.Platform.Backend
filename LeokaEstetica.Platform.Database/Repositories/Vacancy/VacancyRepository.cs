@@ -97,7 +97,8 @@ public sealed class VacancyRepository : IVacancyRepository
                 Payment = uv.Vacancy.Payment,
                 VacancyId = uv.Vacancy.VacancyId,
                 VacancyText = uv.Vacancy.VacancyText,
-                WorkExperience = uv.Vacancy.WorkExperience
+                WorkExperience = uv.Vacancy.WorkExperience,
+                UserId = uv.Vacancy.UserId
             })
             .ToListAsync();
 

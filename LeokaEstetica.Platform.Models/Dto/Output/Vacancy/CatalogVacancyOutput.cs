@@ -1,3 +1,5 @@
+using Newtonsoft.Json;
+
 namespace LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
 
 /// <summary>
@@ -45,4 +47,15 @@ public class CatalogVacancyOutput
     /// Если не указано, то выводится текст "Не указана".
     /// </summary>
     public string Payment { get; set; }
+
+    /// <summary>
+    /// Id пользователя.
+    /// </summary>
+    [JsonIgnore]
+    public long UserId { get; set; }
+    
+    /// <summary>
+    /// Признак выделения цветом.
+    /// </summary>
+    public bool IsSelectedColor { get; set; }
 }

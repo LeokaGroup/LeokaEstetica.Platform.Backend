@@ -103,7 +103,7 @@ public class BaseServiceTest
 
         VacancyModerationService = new VacancyModerationService(vacancyModerationRepository, logService, mapper);
         VacancyService = new VacancyService(logService, vacancyRepository, mapper, null, userRepository,
-            VacancyModerationService, null, subscriptionRepository, fareRuleRepository, availableLimitsService,
+            VacancyModerationService, subscriptionRepository, fareRuleRepository, availableLimitsService,
             vacancyNotificationsService);
 
         var chatRepository = new ChatRepository(pgContext);
