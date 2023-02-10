@@ -18,7 +18,7 @@ namespace LeokaEstetica.Platform.Database.Repositories.Project;
 /// <summary>
 /// Класс реализует метод репозитория проектов.
 /// </summary>
-public sealed class ProjectRepository : IProjectRepository
+public class ProjectRepository : IProjectRepository
 {
     private readonly PgContext _pgContext;
 
@@ -543,5 +543,43 @@ public sealed class ProjectRepository : IProjectRepository
             .AsQueryable();
 
         return await Task.FromResult(result);
+    }
+
+    /// <summary>
+    /// Метод првоеряет владельца проекта.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Признак является ли пользователь владельцем проекта.</returns>
+    public async Task<bool> CheckProjectOwnerAsync(long projectId, long userId)
+    {
+        var result = await _pgContext.UserProjects
+            .AnyAsync(p => p.ProjectId == projectId
+                           && p.UserId == userId);
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод удаляет вакансию проекта.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Признак удаления вакансии проекта.</returns>
+    public async Task<bool> DeleteProjectVacancyByIdAsync(long vacancyId, long projectId)
+    {
+        var vacancy = await _pgContext.ProjectVacancies
+            .FirstOrDefaultAsync(v => v.VacancyId == vacancyId
+                                      && v.ProjectId == projectId);
+
+        if (vacancy is null)
+        {
+            return false;
+        }
+
+        _pgContext.ProjectVacancies.Remove(vacancy);
+        await _pgContext.SaveChangesAsync();
+
+        return true;
     }
 }

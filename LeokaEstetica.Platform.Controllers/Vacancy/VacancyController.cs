@@ -140,13 +140,13 @@ public class VacancyController : BaseController
     /// <param name="vacancyId">Id вакансии.</param>
     /// <returns>Данные вакансии.</returns>
     [HttpGet]
-    [Route("vacancy")]
+    [Route("vacancies/{vacancyId}")]
     [ProducesResponseType(200, Type = typeof(VacancyOutput))]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<VacancyOutput> GetVacancyByVacancyIdAsync([FromQuery] long vacancyId)
+    public async Task<VacancyOutput> GetVacancyByVacancyIdAsync([FromRoute] long vacancyId)
     {
         var vacancy = await _vacancyService.GetVacancyByVacancyIdAsync(vacancyId, GetUserName());
         var result = _mapper.Map<VacancyOutput>(vacancy);

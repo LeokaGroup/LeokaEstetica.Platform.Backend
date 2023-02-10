@@ -926,4 +926,33 @@ public sealed class ProjectService : IProjectService
             throw;
         }
     }
+
+    /// <summary>
+    /// Метод удаляет вакансию проекта.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="account">Аккаунт.</param>
+    public async Task DeleteProjectVacancyAsync(long vacancyId, long projectId, string account)
+    {
+        var userId = await _userRepository.GetUserIdByEmailOrLoginAsync(account);
+
+        if (userId <= 0)
+        {
+            var ex = new NotFoundUserIdByAccountException(account);
+            await _logService.LogErrorAsync(ex);
+            throw ex;
+        }
+        
+        // Только владелец проекта может удалять вакансии проекта.
+        var isOwner = await _projectRepository.CheckProjectOwnerAsync(projectId, userId);
+
+        if (!isOwner)
+        {
+            var ex = new InvalidOperationException($"Пользователя не является владельцем проекта. UserId: {userId}");
+            await _logService.LogErrorAsync(ex);
+        }
+
+        var result = await _projectRepository.DeleteProjectVacancyByIdAsync(vacancyId, projectId);
+    }
 }
