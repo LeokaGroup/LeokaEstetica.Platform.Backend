@@ -951,8 +951,31 @@ public sealed class ProjectService : IProjectService
         {
             var ex = new InvalidOperationException($"Пользователя не является владельцем проекта. UserId: {userId}");
             await _logService.LogErrorAsync(ex);
+            throw ex;
         }
 
-        var result = await _projectRepository.DeleteProjectVacancyByIdAsync(vacancyId, projectId);
+        var isRemoved = await _projectRepository.DeleteProjectVacancyByIdAsync(vacancyId, projectId);
+
+        if (!isRemoved)
+        {
+            var ex = new InvalidOperationException(
+                "Ошибка удаления вакансии проекта. " +
+                $"VacancyId: {vacancyId}. " +
+                $"ProjectId: {projectId}. " +
+                $"UserId: {userId}");
+            
+            await _projectNotificationsService.SendNotificationErrorDeleteProjectVacancyAsync(
+                "Ошибка",
+                "Ошибка при удалении вакансии проекта.",
+                NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR);
+            
+            await _logService.LogErrorAsync(ex);
+            throw ex;
+        }
+        
+        await _projectNotificationsService.SendNotificationSuccessDeleteProjectVacancyAsync(
+            "Все хорошо",
+            "Вакансия успешно удалена из проекта.",
+            NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS);
     }
 }
