@@ -150,4 +150,12 @@ public interface IProjectService
     /// <param name="filterProjectInput">Входная модель.</param>
     /// <returns>Список проектов после фильтрации.</returns>
     Task<IEnumerable<CatalogProjectOutput>> FilterProjectsAsync(FilterProjectInput filterProjectInput);
+
+    /// <summary>
+    /// Метод удаляет вакансию проекта.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="account">Аккаунт.</param>
+    Task DeleteProjectVacancyAsync(long vacancyId, long projectId, string account);
 }

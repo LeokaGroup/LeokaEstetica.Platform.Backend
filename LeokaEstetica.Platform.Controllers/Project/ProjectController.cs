@@ -5,6 +5,7 @@ using LeokaEstetica.Platform.Controllers.Filters;
 using LeokaEstetica.Platform.Controllers.ModelsValidation.Project;
 using LeokaEstetica.Platform.Controllers.Validators.Project;
 using LeokaEstetica.Platform.Finder.Abstractions.Project;
+using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Messaging.Abstractions.Project;
 using LeokaEstetica.Platform.Messaging.Builders;
 using LeokaEstetica.Platform.Models.Dto.Input.Project;
@@ -32,13 +33,25 @@ public class ProjectController : BaseController
     private readonly IProjectCommentsService _projectCommentsService;
     private readonly IProjectFinderService _projectFinderService;
     private readonly IProjectPaginationService _projectPaginationService;
+    private readonly ILogService _logService;
 
+    /// <summary>
+    /// Конструктор.
+    /// </summary>
+    /// <param name="projectService">Сервис проектов.</param>
+    /// <param name="mapper">Автомаппер.</param>
+    /// <param name="validationExcludeErrorsService">Сервис исключения валидации ошибок.</param>
+    /// <param name="projectCommentsService">Сервис комментариев проектов.</param>
+    /// <param name="projectFinderService">Поисковый сервис проектов.</param>
+    /// <param name="projectPaginationService">Сервис пагинации проектов.</param>
+    /// <param name="logService">Сервис логера.</param>
     public ProjectController(IProjectService projectService,
         IMapper mapper,
         IValidationExcludeErrorsService validationExcludeErrorsService,
         IProjectCommentsService projectCommentsService, 
         IProjectFinderService projectFinderService, 
-        IProjectPaginationService projectPaginationService)
+        IProjectPaginationService projectPaginationService, 
+        ILogService logService)
     {
         _projectService = projectService;
         _mapper = mapper;
@@ -46,6 +59,7 @@ public class ProjectController : BaseController
         _projectCommentsService = projectCommentsService;
         _projectFinderService = projectFinderService;
         _projectPaginationService = projectPaginationService;
+        _logService = logService;
     }
 
     /// <summary>
@@ -487,5 +501,34 @@ public class ProjectController : BaseController
         var result = await _projectPaginationService.GetProjectsPaginationAsync(page);
 
         return result;
+    }
+
+    /// <summary>
+    /// Метод удаляет вакансию проекта.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <param name="projectId">Id проекта.</param>
+    [HttpDelete]
+    [Route("projects/{projectId}/vacancies/{vacancyId}")]
+    [ProducesResponseType(200, Type = typeof(bool))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task DeleteProjectVacancyAsync([FromRoute] long vacancyId, long projectId)
+    {
+        if (vacancyId <= 0)
+        {
+            var ex = new ArgumentNullException($"Id вакансии не может быть пустым. VacancyId: {vacancyId}");
+            await _logService.LogErrorAsync(ex);
+        }
+        
+        if (projectId <= 0)
+        {
+            var ex = new ArgumentNullException($"Id проекта не может быть пустым. ProjectId: {projectId}");
+            await _logService.LogErrorAsync(ex);
+        }
+
+        await _projectService.DeleteProjectVacancyAsync(vacancyId, projectId, GetUserName());
     }
 }

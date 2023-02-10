@@ -160,4 +160,20 @@ public interface IProjectRepository
     /// </summary>
     /// <returns>Список проектов без выгрузки в память, так как этот список будем еще фильтровать.</returns>
     Task<IOrderedQueryable<CatalogProjectOutput>> GetFiltersProjectsAsync();
+
+    /// <summary>
+    /// Метод првоеряет владельца проекта.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Признак является ли пользователь владельцем проекта.</returns>
+    Task<bool> CheckProjectOwnerAsync(long projectId, long userId);
+
+    /// <summary>
+    /// Метод удаляет вакансию проекта.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Признак удаления вакансии проекта.</returns>
+    Task<bool> DeleteProjectVacancyByIdAsync(long vacancyId, long projectId);
 }
