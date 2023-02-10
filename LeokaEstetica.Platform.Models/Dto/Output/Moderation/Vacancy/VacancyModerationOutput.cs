@@ -55,4 +55,9 @@ public class VacancyModerationOutput
     /// Id пользователя.
     /// </summary>
     public long UserId { get; set; }
+
+    /// <summary>
+    /// Название статуса модерации.
+    /// </summary>
+    public string ModerationStatusName { get; set; }
 }
