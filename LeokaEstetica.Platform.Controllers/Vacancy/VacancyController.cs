@@ -162,7 +162,7 @@ public class VacancyController : BaseController
         var result = _mapper.Map<VacancyOutput>(vacancy);
         
         // Проверяем владельца вакансии.
-        result.IsVisibleDelete = await _vacancyRepository.CheckProjectOwnerAsync(vacancyId, result.UserId);
+        result.IsVisibleControls = await _vacancyRepository.CheckProjectOwnerAsync(vacancyId, result.UserId);
 
         return result;
     }
