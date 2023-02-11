@@ -145,7 +145,7 @@ public class VacancyController : BaseController
     /// <param name="vacancyId">Id вакансии.</param>
     /// <returns>Данные вакансии.</returns>
     [HttpGet]
-    [Route("vacancies/{vacancyId}")]
+    [Route("{vacancyId}")]
     [ProducesResponseType(200, Type = typeof(VacancyOutput))]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]
