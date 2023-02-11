@@ -13,10 +13,14 @@ namespace LeokaEstetica.Platform.Database.Repositories.Vacancy;
 /// <summary>
 /// Класс реализует методы репозитория вакансий. 
 /// </summary>
-public sealed class VacancyRepository : IVacancyRepository
+public class VacancyRepository : IVacancyRepository
 {
     private readonly PgContext _pgContext;
 
+    /// <summary>
+    /// Конструктор.
+    /// </summary>
+    /// <param name="pgContext">Датаконтекст.</param>
     public VacancyRepository(PgContext pgContext)
     {
         _pgContext = pgContext;
@@ -240,5 +244,43 @@ public sealed class VacancyRepository : IVacancyRepository
             .AsQueryable();
 
         return await Task.FromResult(result);
+    }
+
+    /// <summary>
+    /// Метод удаляет вакансию.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Признак удаления.</returns>
+    public async Task<bool> DeleteVacancyAsync(long vacancyId, long userId)
+    {
+        var vacancy = await _pgContext.UserVacancies
+            .FirstOrDefaultAsync(v => v.VacancyId == vacancyId 
+                                      && v.UserId == userId);
+
+        if (vacancy is null)
+        {
+            return false;
+        }
+
+        _pgContext.UserVacancies.Remove(vacancy);
+        await _pgContext.SaveChangesAsync();
+
+        return true;
+    }
+
+    /// <summary>
+    /// Метод првоеряет владельца вакансии.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Признак является ли пользователь владельцем вакансии.</returns>
+    public async Task<bool> CheckProjectOwnerAsync(long vacancyId, long userId)
+    {
+        var result = await _pgContext.UserVacancies
+            .AnyAsync(p => p.VacancyId == vacancyId
+                           && p.UserId == userId);
+
+        return result;
     }
 }
