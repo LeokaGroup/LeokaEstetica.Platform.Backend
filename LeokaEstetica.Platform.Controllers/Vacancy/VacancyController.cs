@@ -39,7 +39,6 @@ public class VacancyController : BaseController
     /// <param name="vacancyFinderService">Поисковый сервис вакансий.</param>
     /// <param name="vacancyPaginationService">Сервис пагинации вакансий.</param>
     /// <param name="logService">Сервис логов.</param>
-    /// <param name="vacancyRepository">Репозиторий вакансий.</param>
     public VacancyController(IVacancyService vacancyService,
         IMapper mapper,
         IValidationExcludeErrorsService validationExcludeErrorsService, 
@@ -96,7 +95,7 @@ public class VacancyController : BaseController
     /// <summary>
     /// Метод создает вакансию.
     /// </summary>
-    /// <param name="vacancyInput">Входная модель.</param>
+    /// <param name="createVacancyInput">Входная модель.</param>
     /// <returns>Данные созданной вакансии.</returns>
     [HttpPost]
     [Route("vacancy")]
@@ -150,7 +149,7 @@ public class VacancyController : BaseController
     /// <param name="vacancyId">Id вакансии.</param>
     /// <returns>Данные вакансии.</returns>
     [HttpGet]
-    [Route("{vacancyId}")]
+    [Route("vacancy/{vacancyId}")]
     [ProducesResponseType(200, Type = typeof(VacancyOutput))]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]
