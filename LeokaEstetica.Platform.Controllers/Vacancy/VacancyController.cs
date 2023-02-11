@@ -3,6 +3,7 @@ using LeokaEstetica.Platform.Base;
 using LeokaEstetica.Platform.Base.Abstractions.Services;
 using LeokaEstetica.Platform.Controllers.Filters;
 using LeokaEstetica.Platform.Controllers.Validators.Vacancy;
+using LeokaEstetica.Platform.Database.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Finder.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Models.Dto.Input.Vacancy;
@@ -27,6 +28,7 @@ public class VacancyController : BaseController
     private readonly IVacancyFinderService _vacancyFinderService;
     private readonly IVacancyPaginationService _vacancyPaginationService;
     private readonly ILogService _logService;
+    private readonly IVacancyRepository _vacancyRepository;
 
     /// <summary>
     /// Конструктор.
@@ -37,12 +39,14 @@ public class VacancyController : BaseController
     /// <param name="vacancyFinderService">Поисковый сервис вакансий.</param>
     /// <param name="vacancyPaginationService">Сервис пагинации вакансий.</param>
     /// <param name="logService">Сервис логов.</param>
+    /// <param name="vacancyRepository">Репозиторий вакансий.</param>
     public VacancyController(IVacancyService vacancyService,
         IMapper mapper,
         IValidationExcludeErrorsService validationExcludeErrorsService, 
         IVacancyFinderService vacancyFinderService, 
         IVacancyPaginationService vacancyPaginationService, 
-        ILogService logService)
+        ILogService logService, 
+        IVacancyRepository vacancyRepository)
     {
         _vacancyService = vacancyService;
         _mapper = mapper;
@@ -50,6 +54,7 @@ public class VacancyController : BaseController
         _vacancyFinderService = vacancyFinderService;
         _vacancyPaginationService = vacancyPaginationService;
         _logService = logService;
+        _vacancyRepository = vacancyRepository;
     }
 
     /// <summary>
@@ -91,7 +96,7 @@ public class VacancyController : BaseController
     /// <summary>
     /// Метод создает вакансию.
     /// </summary>
-    /// <param name="createVacancyInput">Входная модель.</param>
+    /// <param name="vacancyInput">Входная модель.</param>
     /// <returns>Данные созданной вакансии.</returns>
     [HttpPost]
     [Route("vacancy")]
@@ -155,6 +160,9 @@ public class VacancyController : BaseController
     {
         var vacancy = await _vacancyService.GetVacancyByVacancyIdAsync(vacancyId, GetUserName());
         var result = _mapper.Map<VacancyOutput>(vacancy);
+        
+        // Проверяем владельца вакансии.
+        result.IsVisibleDelete = await _vacancyRepository.CheckProjectOwnerAsync(vacancyId, result.UserId);
 
         return result;
     }
