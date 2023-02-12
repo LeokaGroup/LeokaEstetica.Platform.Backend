@@ -30,7 +30,7 @@ public class ProjectRepository : IProjectRepository
     /// </summary>
     /// <param name="pgContext">Датаконтекст.</param>
     /// <param name="chatRepository">Репозиторий чата.</param>
-    public ProjectRepository(PgContext pgContext, 
+    public ProjectRepository(PgContext pgContext,
         IChatRepository chatRepository)
     {
         _pgContext = pgContext;
@@ -469,7 +469,9 @@ public class ProjectRepository : IProjectRepository
             {
                 UserId = tm.UserId,
                 Joined = tm.Joined,
-                UserVacancy = tm.UserVacancy
+                UserVacancy = tm.UserVacancy,
+                TeamId = tm.TeamId,
+                MemberId = tm.MemberId
             })
             .ToListAsync();
 
@@ -603,7 +605,7 @@ public class ProjectRepository : IProjectRepository
     {
         var tran = await _pgContext.Database
             .BeginTransactionAsync(IsolationLevel.ReadCommitted);
-        
+
         try
         {
             // Удаляем вакансии проекта.
@@ -615,7 +617,7 @@ public class ProjectRepository : IProjectRepository
             {
                 _pgContext.ProjectVacancies.RemoveRange(projectVacancies);
             }
-            
+
             // Удаляем чат диалога и все сообщения.
             var projectDialogs = await _chatRepository.GetDialogsAsync(userId);
 
@@ -631,7 +633,7 @@ public class ProjectRepository : IProjectRepository
                     if (projectDialogMessages.Any())
                     {
                         _pgContext.DialogMessages.RemoveRange(projectDialogMessages);
-                        
+
                         // Дропаем участников диалога.
                         var dialogMembers = await _chatRepository.GetDialogMembersByDialogIdAsync(d.DialogId);
 
@@ -642,7 +644,7 @@ public class ProjectRepository : IProjectRepository
                     }
                 }
             }
-            
+
             // Смотрим команду проекта.
             var projectTeam = await GetProjectTeamAsync(projectId);
 
@@ -655,23 +657,33 @@ public class ProjectRepository : IProjectRepository
                 {
                     _pgContext.ProjectTeamMembers.RemoveRange(projectTeamMembers);
                 }
-                    
+
                 // Дропаем команду проекта.
                 _pgContext.ProjectsTeams.Remove(projectTeam);
             }
-            
+
             // Дропаем комментарии проекта.
             var projectComments = await GetProjectCommentsAsync(projectId);
 
             if (projectComments.Any())
             {
+                // Дропаем комментарии проекта из модерации.
+                var moderationProjectComments = _pgContext.ProjectCommentsModeration
+                    .Where(c => c.ProjectComment.ProjectId == projectId)
+                    .AsQueryable();
+
+                if (await moderationProjectComments.AnyAsync())
+                {
+                    _pgContext.ProjectCommentsModeration.RemoveRange(moderationProjectComments);
+                }
+
                 _pgContext.ProjectComments.RemoveRange(projectComments);
             }
 
             await _pgContext.SaveChangesAsync();
             await tran.CommitAsync();
         }
-        
+
         catch
         {
             await tran.RollbackAsync();

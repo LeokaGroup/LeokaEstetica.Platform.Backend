@@ -143,7 +143,8 @@ public class ChatRepository : IChatRepository
                 Message = m.Message,
                 Created = m.Created,
                 UserId = m.UserId,
-                IsMyMessage = m.IsMyMessage
+                IsMyMessage = m.IsMyMessage,
+                MessageId = m.MessageId
             })
             .ToListAsync();
 
