@@ -679,6 +679,52 @@ public class ProjectRepository : IProjectRepository
 
                 _pgContext.ProjectComments.RemoveRange(projectComments);
             }
+            
+            // Удаляем проект из каталога.
+            var catalogProject = await _pgContext.CatalogProjects
+                .FirstOrDefaultAsync(p => p.ProjectId == projectId);
+
+            if (catalogProject is not null)
+            {
+                _pgContext.CatalogProjects.Remove(catalogProject);   
+            }
+
+            // Удаляем проект из статусов.
+            var projectStatus = await _pgContext.ProjectStatuses
+                .FirstOrDefaultAsync(p => p.ProjectId == projectId);
+            
+            if (projectStatus is not null)
+            {
+                _pgContext.ProjectStatuses.Remove(projectStatus);
+            }
+
+            // Удаляем проект из модерации.
+            var moderationProject = await _pgContext.ModerationProjects
+                .FirstOrDefaultAsync(p => p.ProjectId == projectId);
+            
+            if (moderationProject is not null)
+            {
+                _pgContext.ModerationProjects.Remove(moderationProject);
+            }
+            
+            // Удаляем проект из стадий.
+            var projectStage = await _pgContext.UserProjectsStages
+                .FirstOrDefaultAsync(p => p.ProjectId == projectId);
+
+            if (projectStage is not null)
+            {
+                _pgContext.UserProjectsStages.Remove(projectStage);
+            }
+
+            // Удаляем проект пользователя.
+            var userProject = await _pgContext.UserProjects
+                .FirstOrDefaultAsync(p => p.ProjectId == projectId 
+                                          && p.UserId == userId);
+
+            if (userProject is not null)
+            {
+                _pgContext.UserProjects.Remove(userProject);
+            }
 
             await _pgContext.SaveChangesAsync();
             await tran.CommitAsync();
