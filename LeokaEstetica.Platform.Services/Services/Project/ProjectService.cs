@@ -1016,6 +1016,27 @@ public class ProjectService : IProjectService
                     $"ProjectId: {projectId}.");
                 throw ex;
             }
+
+            var isRemoved = await _projectRepository.DeleteProjectAsync(projectId, userId);
+            
+            if (!isRemoved)
+            {
+                var ex = new InvalidOperationException(
+                    "Ошибка удаления проекта. " +
+                    $"ProjectId: {projectId}. " +
+                    $"UserId: {userId}");
+            
+                await _projectNotificationsService.SendNotificationErrorDeleteProjectAsync(
+                    "Ошибка",
+                    "Ошибка при удалении проекта.",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR);
+                throw ex;
+            }
+        
+            await _projectNotificationsService.SendNotificationSuccessDeleteProjectAsync(
+                "Все хорошо",
+                "Проект успешно удален.",
+                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS);
         }
         
         catch (Exception ex)

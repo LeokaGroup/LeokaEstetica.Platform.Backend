@@ -4,7 +4,9 @@ using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
+using LeokaEstetica.Platform.Database.Chat;
 using LeokaEstetica.Platform.Models.Dto.Output.Project;
+using LeokaEstetica.Platform.Models.Entities.Communication;
 using LeokaEstetica.Platform.Models.Entities.Configs;
 using LeokaEstetica.Platform.Models.Entities.Moderation;
 using LeokaEstetica.Platform.Models.Entities.Project;
@@ -21,14 +23,18 @@ namespace LeokaEstetica.Platform.Database.Repositories.Project;
 public class ProjectRepository : IProjectRepository
 {
     private readonly PgContext _pgContext;
+    private readonly IChatRepository _chatRepository;
 
     /// <summary>
     /// Конструктор.
     /// </summary>
     /// <param name="pgContext">Датаконтекст.</param>
-    public ProjectRepository(PgContext pgContext)
+    /// <param name="chatRepository">Репозиторий чата.</param>
+    public ProjectRepository(PgContext pgContext, 
+        IChatRepository chatRepository)
     {
         _pgContext = pgContext;
+        _chatRepository = chatRepository;
     }
 
     /// <summary>
@@ -588,11 +594,12 @@ public class ProjectRepository : IProjectRepository
     }
 
     /// <summary>
-    /// Метод удаляет вакансии проекта.
+    /// Метод удаляет проект.
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
+    /// <param name="userId">Id пользователя.</param>
     /// <returns>Признак результата удаления.</returns>
-    public async Task<bool> DeleteProjectVacanciesAsync(long projectId)
+    public async Task<bool> DeleteProjectAsync(long projectId, long userId)
     {
         var tran = await _pgContext.Database
             .BeginTransactionAsync(IsolationLevel.ReadCommitted);
@@ -610,6 +617,56 @@ public class ProjectRepository : IProjectRepository
             }
             
             // Удаляем чат диалога и все сообщения.
+            var projectDialogs = await _chatRepository.GetDialogsAsync(userId);
+
+            // Если у проекта есть диалоги.
+            if (projectDialogs.Any())
+            {
+                // Перед удалением диалога, сначала смотрим сообщения диалога.
+                foreach (var d in projectDialogs)
+                {
+                    var projectDialogMessages = await _chatRepository.GetDialogMessagesAsync(d.DialogId);
+
+                    // Если есть сообщения, дропаем их.
+                    if (projectDialogMessages.Any())
+                    {
+                        _pgContext.DialogMessages.RemoveRange(projectDialogMessages);
+                        
+                        // Дропаем участников диалога.
+                        var dialogMembers = await _chatRepository.GetDialogMembersByDialogIdAsync(d.DialogId);
+
+                        if (dialogMembers.Any())
+                        {
+                            _pgContext.DialogMembers.RemoveRange(dialogMembers);
+                        }
+                    }
+                }
+            }
+            
+            // Смотрим команду проекта.
+            var projectTeam = await GetProjectTeamAsync(projectId);
+
+            if (projectTeam is not null)
+            {
+                // Дропаем участников команды.
+                var projectTeamMembers = await GetProjectTeamMembersAsync(projectTeam.TeamId);
+
+                if (projectTeamMembers.Any())
+                {
+                    _pgContext.ProjectTeamMembers.RemoveRange(projectTeamMembers);
+                }
+                    
+                // Дропаем команду проекта.
+                _pgContext.ProjectsTeams.Remove(projectTeam);
+            }
+            
+            // Дропаем комментарии проекта.
+            var projectComments = await GetProjectCommentsAsync(projectId);
+
+            if (projectComments.Any())
+            {
+                _pgContext.ProjectComments.RemoveRange(projectComments);
+            }
 
             await _pgContext.SaveChangesAsync();
             await tran.CommitAsync();
@@ -622,5 +679,19 @@ public class ProjectRepository : IProjectRepository
         }
 
         return true;
+    }
+
+    /// <summary>
+    /// Метод удаляет комментарии проекта.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Список комментариев проекта.</returns>
+    public async Task<ICollection<ProjectCommentEntity>> GetProjectCommentsAsync(long projectId)
+    {
+        var result = await _pgContext.ProjectComments
+            .Where(c => c.ProjectId == projectId)
+            .ToListAsync();
+
+        return result;
     }
 }

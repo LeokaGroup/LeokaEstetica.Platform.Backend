@@ -86,12 +86,13 @@ public class BaseServiceTest
         var userRepository = new UserRepository(pgContext, logService);
         var profileRepository = new ProfileRepository(pgContext);
         var subscriptionRepository = new SubscriptionRepository(pgContext);
+        var chatRepository = new ChatRepository(pgContext);
 
         UserService = new UserService(logService, userRepository, mapper, null, pgContext, profileRepository,
             subscriptionRepository);
         ProfileService = new ProfileService(logService, profileRepository, userRepository, mapper, null, null);
 
-        var projectRepository = new ProjectRepository(pgContext);
+        var projectRepository = new ProjectRepository(pgContext, chatRepository);
         var projectNotificationsService = new ProjectNotificationsService(null);
         var vacancyRepository = new VacancyRepository(pgContext);
         var vacancyModerationRepository = new VacancyModerationRepository(pgContext);
@@ -104,8 +105,6 @@ public class BaseServiceTest
         VacancyService = new VacancyService(logService, vacancyRepository, mapper, null, userRepository,
             VacancyModerationService, subscriptionRepository, fareRuleRepository, availableLimitsService,
             vacancyNotificationsService);
-
-        var chatRepository = new ChatRepository(pgContext);
 
         ChatService = new ChatService(logService, userRepository, projectRepository, vacancyRepository, chatRepository,
             mapper);

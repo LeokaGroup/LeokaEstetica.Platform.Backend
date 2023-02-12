@@ -141,4 +141,20 @@ public interface IProjectNotificationsService
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
     Task SendNotificationSuccessDeleteProjectVacancyAsync(string title, string notifyText, string notificationLevel);
+    
+    /// <summary>
+    /// Метод отправляет уведомление об ошибке при удалении проекта.
+    /// </summary>
+    /// <param name="title">Заголовок уведомления.</param>
+    /// <param name="notifyText">Текст уведомления.</param>
+    /// <param name="notificationLevel">Уровень уведомления.</param>
+    Task SendNotificationErrorDeleteProjectAsync(string title, string notifyText, string notificationLevel);
+    
+    /// <summary>
+    /// Метод отправляет уведомление об успехе при удалении проекта.
+    /// </summary>
+    /// <param name="title">Заголовок уведомления.</param>
+    /// <param name="notifyText">Текст уведомления.</param>
+    /// <param name="notificationLevel">Уровень уведомления.</param>
+    Task SendNotificationSuccessDeleteProjectAsync(string title, string notifyText, string notificationLevel);
 }

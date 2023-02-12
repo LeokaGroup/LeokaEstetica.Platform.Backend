@@ -14,6 +14,10 @@ public class ChatRepository : IChatRepository
 {
     private readonly PgContext _pgContext;
 
+    /// <summary>
+    /// Конструктор.
+    /// </summary>
+    /// <param name="pgContext">Датаконтекст.</param>
     public ChatRepository(PgContext pgContext)
     {
         _pgContext = pgContext;
@@ -237,5 +241,19 @@ public class ChatRepository : IChatRepository
         });
 
         await _pgContext.SaveChangesAsync();
+    }
+
+    /// <summary>
+    /// Метод получает участников диалога.
+    /// </summary>
+    /// <param name="dialogId">Id диалога.</param>
+    /// <returns>Список участников диалога.</returns>
+    public async Task<ICollection<DialogMemberEntity>> GetDialogMembersByDialogIdAsync(long dialogId)
+    {
+        var result = await _pgContext.DialogMembers
+            .Where(d => d.DialogId == dialogId)
+            .ToListAsync();
+
+        return result;
     }
 }

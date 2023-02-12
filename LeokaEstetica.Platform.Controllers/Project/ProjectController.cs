@@ -550,5 +550,7 @@ public class ProjectController : BaseController
             var ex = new ArgumentNullException($"Id проекта не может быть пустым. ProjectId: {projectId}");
             await _logService.LogErrorAsync(ex);
         }
+
+        await _projectService.DeleteProjectAsync(projectId, GetUserName());
     }
 }
