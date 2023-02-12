@@ -1,3 +1,4 @@
+using System.Data.Common;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Core.Helpers;
@@ -254,18 +255,67 @@ public class VacancyRepository : IVacancyRepository
     /// <returns>Признак удаления.</returns>
     public async Task<bool> DeleteVacancyAsync(long vacancyId, long userId)
     {
-        var vacancy = await _pgContext.UserVacancies
-            .FirstOrDefaultAsync(v => v.VacancyId == vacancyId 
-                                      && v.UserId == userId);
+        var tran = await _pgContext.Database
+            .BeginTransactionAsync(IsolationLevel.ReadCommitted);
 
-        if (vacancy is null)
+        try
         {
-            return false;
+            // Удаляем вакансию из каталога.
+            var catalogVacancy = await _pgContext.CatalogVacancies
+                .FirstOrDefaultAsync(v => v.VacancyId == vacancyId 
+                                          && v.Vacancy.UserId == userId);
+
+            if (catalogVacancy is null)
+            {
+                return false;
+            }
+        
+            _pgContext.CatalogVacancies.Remove(catalogVacancy);
+
+            // Удаляем вакансию из статусов.
+            var vacancyStatus = await _pgContext.VacancyStatuses
+                .FirstOrDefaultAsync(v => v.VacancyId == vacancyId);
+            
+            if (vacancyStatus is null)
+            {
+                return false;
+            }
+            
+            _pgContext.VacancyStatuses.Remove(vacancyStatus);
+
+            // Удаляем вакансию из модерации.
+            var moderationVacancy = await _pgContext.ModerationVacancies
+                .FirstOrDefaultAsync(v => v.VacancyId == vacancyId);
+            
+            if (moderationVacancy is null)
+            {
+                return false;
+            }
+            
+            _pgContext.ModerationVacancies.Remove(moderationVacancy);
+
+            // Удаляем вакансию пользователя.
+            var userVacancy = await _pgContext.UserVacancies
+                .FirstOrDefaultAsync(v => v.VacancyId == vacancyId 
+                                          && v.UserId == userId);
+
+            if (userVacancy is null)
+            {
+                return false;
+            }
+        
+            _pgContext.UserVacancies.Remove(userVacancy);
+            
+            await _pgContext.SaveChangesAsync();
+            await tran.CommitAsync();
         }
-
-        _pgContext.UserVacancies.Remove(vacancy);
-        await _pgContext.SaveChangesAsync();
-
+        
+        catch
+        {
+            await tran.RollbackAsync();
+            throw;
+        }
+        
         return true;
     }
 
