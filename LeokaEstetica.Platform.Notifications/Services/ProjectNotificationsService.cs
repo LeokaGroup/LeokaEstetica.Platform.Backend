@@ -296,4 +296,40 @@ public class ProjectNotificationsService : IProjectNotificationsService
                 NotificationLevel = notificationLevel
             });
     }
+
+    /// <summary>
+    /// Метод отправляет уведомление об ошибке при удалении проекта.
+    /// </summary>
+    /// <param name="title">Заголовок уведомления.</param>
+    /// <param name="notifyText">Текст уведомления.</param>
+    /// <param name="notificationLevel">Уровень уведомления.</param>
+    public async Task SendNotificationErrorDeleteProjectAsync(string title, string notifyText, 
+        string notificationLevel)
+    {
+        await _hubContext.Clients.All.SendAsync("SendNotificationErrorDeleteProject",
+            new NotificationOutput
+            {
+                Title = title,
+                Message = notifyText,
+                NotificationLevel = notificationLevel
+            });
+    }
+
+    /// <summary>
+    /// Метод отправляет уведомление об успехе при удалении проекта.
+    /// </summary>
+    /// <param name="title">Заголовок уведомления.</param>
+    /// <param name="notifyText">Текст уведомления.</param>
+    /// <param name="notificationLevel">Уровень уведомления.</param>
+    public async Task SendNotificationSuccessDeleteProjectAsync(string title, string notifyText,
+        string notificationLevel)
+    {
+        await _hubContext.Clients.All.SendAsync("SendNotificationSuccessDeleteProject",
+            new NotificationOutput
+            {
+                Title = title,
+                Message = notifyText,
+                NotificationLevel = notificationLevel
+            });
+    }
 }

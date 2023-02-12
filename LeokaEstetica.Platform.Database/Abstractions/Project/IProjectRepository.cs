@@ -1,4 +1,5 @@
 using LeokaEstetica.Platform.Models.Dto.Output.Project;
+using LeokaEstetica.Platform.Models.Entities.Communication;
 using LeokaEstetica.Platform.Models.Entities.Configs;
 using LeokaEstetica.Platform.Models.Entities.Project;
 using LeokaEstetica.Platform.Models.Entities.ProjectTeam;
@@ -176,4 +177,19 @@ public interface IProjectRepository
     /// <param name="projectId">Id проекта.</param>
     /// <returns>Признак удаления вакансии проекта.</returns>
     Task<bool> DeleteProjectVacancyByIdAsync(long vacancyId, long projectId);
+
+    /// <summary>
+    /// Метод удаляет вакансии проекта.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Признак результата удаления.</returns>
+    Task<bool> DeleteProjectAsync(long projectId, long userId);
+
+    /// <summary>
+    /// Метод удаляет комментарии проекта.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Список комментариев проекта.</returns>
+    Task<ICollection<ProjectCommentEntity>> GetProjectCommentsAsync(long projectId);
 }

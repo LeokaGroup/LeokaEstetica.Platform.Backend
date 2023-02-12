@@ -96,4 +96,11 @@ public interface IChatRepository
     /// <param name="userId">Id пользователя.</param>
     /// <param name="isMyMessage">Флаг принадлежности сообщения пользователю, который пишет сообщение.</param>
     Task SaveMessageAsync(string message, long dialogId, DateTime dateCreated, long userId, bool isMyMessage);
+
+    /// <summary>
+    /// Метод получает участников диалога.
+    /// </summary>
+    /// <param name="dialogId">Id диалога.</param>
+    /// <returns>Список участников диалога.</returns>
+    Task<ICollection<DialogMemberEntity>> GetDialogMembersByDialogIdAsync(long dialogId);
 }
