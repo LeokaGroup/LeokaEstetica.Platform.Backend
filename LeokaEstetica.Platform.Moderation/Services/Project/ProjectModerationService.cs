@@ -83,6 +83,12 @@ public sealed class ProjectModerationService : IProjectModerationService
             {
                 IsSuccess = await _projectModerationRepository.ApproveProjectAsync(projectId)
             };
+            
+            if (!result.IsSuccess)
+            {
+                var ex = new InvalidOperationException($"Ошибка при одобрении проекта. ProjectId: {projectId}");
+                throw ex;
+            }
 
             return result;
         }

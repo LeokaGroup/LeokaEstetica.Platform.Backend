@@ -105,9 +105,29 @@ public sealed class VacancyModerationRepository : IVacancyModerationRepository
     /// <returns>Признак подтверждения вакансии.</returns>
     public async Task<bool> ApproveVacancyAsync(long vacancyId)
     {
-        var result = await SetVacancyStatus(vacancyId, VacancyModerationStatusEnum.ApproveVacancy);
+        var isSuccessSetStatus = await SetVacancyStatus(vacancyId, VacancyModerationStatusEnum.ApproveVacancy);
 
-        return result;
+        if (!isSuccessSetStatus)
+        {
+            return false;
+        }
+
+        var vacancy = await _pgContext.UserVacancies
+            .FirstOrDefaultAsync(v => v.VacancyId == vacancyId);
+
+        if (vacancy is null)
+        {
+            throw new InvalidOperationException($"Не удалось найти вакансию. VacancyId = {vacancyId}");
+        }
+        
+        // Добавляем вакансию в каталог.
+        await _pgContext.CatalogVacancies.AddAsync(new CatalogVacancyEntity
+        {
+            VacancyId = vacancyId
+        });
+        await _pgContext.SaveChangesAsync();
+
+        return true;
     }
 
     /// <summary>
@@ -135,7 +155,7 @@ public sealed class VacancyModerationRepository : IVacancyModerationRepository
 
         if (vac is null)
         {
-            throw new NullReferenceException($"Не удалось найти вакансию для модерации. VacancyId = {vacancyId}");
+            throw new InvalidOperationException($"Не удалось найти вакансию для модерации. VacancyId = {vacancyId}");
         }
 
         vac.ModerationStatusId = (int)vacancyModerationStatus;

@@ -105,6 +105,12 @@ public sealed class VacancyModerationService : IVacancyModerationService
                 IsSuccess = await _vacancyModerationRepository.ApproveVacancyAsync(vacancyId)
             };
 
+            if (!result.IsSuccess)
+            {
+                var ex = new InvalidOperationException($"Ошибка при одобрении вакансии. VacancyId: {vacancyId}");
+                throw ex;
+            }
+
             return result;
         }
         
