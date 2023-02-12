@@ -29,6 +29,13 @@ public class ModerationController : BaseController
     private readonly IMapper _mapper;
     private readonly IVacancyModerationService _vacancyModerationService;
 
+    /// <summary>
+    /// Конструктор.
+    /// </summary>
+    /// <param name="accessModerationService">Сервис модерации доступов.</param>
+    /// <param name="projectModerationService">Сервис медерации проектов.</param>
+    /// <param name="mapper">Автомаппер.</param>
+    /// <param name="vacancyModerationService">Сервис модерации вакансий.</param>
     public ModerationController(IAccessModerationService accessModerationService,
         IProjectModerationService projectModerationService,
         IMapper mapper,
