@@ -22,6 +22,10 @@ public class ProjectRepository : IProjectRepository
 {
     private readonly PgContext _pgContext;
 
+    /// <summary>
+    /// Конструктор.
+    /// </summary>
+    /// <param name="pgContext">Датаконтекст.</param>
     public ProjectRepository(PgContext pgContext)
     {
         _pgContext = pgContext;
@@ -579,6 +583,43 @@ public class ProjectRepository : IProjectRepository
 
         _pgContext.ProjectVacancies.Remove(vacancy);
         await _pgContext.SaveChangesAsync();
+
+        return true;
+    }
+
+    /// <summary>
+    /// Метод удаляет вакансии проекта.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Признак результата удаления.</returns>
+    public async Task<bool> DeleteProjectVacanciesAsync(long projectId)
+    {
+        var tran = await _pgContext.Database
+            .BeginTransactionAsync(IsolationLevel.ReadCommitted);
+        
+        try
+        {
+            // Удаляем вакансии проекта.
+            var projectVacancies = _pgContext.ProjectVacancies
+                .Where(v => v.ProjectId == projectId)
+                .AsQueryable();
+
+            if (await projectVacancies.AnyAsync())
+            {
+                _pgContext.ProjectVacancies.RemoveRange(projectVacancies);
+            }
+            
+            // Удаляем чат диалога и все сообщения.
+
+            await _pgContext.SaveChangesAsync();
+            await tran.CommitAsync();
+        }
+        
+        catch
+        {
+            await tran.RollbackAsync();
+            throw;
+        }
 
         return true;
     }

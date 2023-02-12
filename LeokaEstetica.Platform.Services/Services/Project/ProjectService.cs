@@ -34,7 +34,7 @@ namespace LeokaEstetica.Platform.Services.Services.Project;
 /// <summary>
 /// Класс реализует методы сервиса проектов.
 /// </summary>
-public sealed class ProjectService : IProjectService
+public class ProjectService : IProjectService
 {
     private readonly IProjectRepository _projectRepository;
     private readonly ILogService _logService;
@@ -942,7 +942,6 @@ public sealed class ProjectService : IProjectService
             if (userId <= 0)
             {
                 var ex = new NotFoundUserIdByAccountException(account);
-                await _logService.LogErrorAsync(ex);
                 throw ex;
             }
         
@@ -956,7 +955,6 @@ public sealed class ProjectService : IProjectService
                     $"UserId: {userId}. " +
                     $"ProjectId: {projectId}. " +
                     $"VacancyId: {vacancyId}");
-                await _logService.LogErrorAsync(ex);
                 throw ex;
             }
 
@@ -974,8 +972,6 @@ public sealed class ProjectService : IProjectService
                     "Ошибка",
                     "Ошибка при удалении вакансии проекта.",
                     NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR);
-            
-                await _logService.LogErrorAsync(ex);
                 throw ex;
             }
         
@@ -983,6 +979,43 @@ public sealed class ProjectService : IProjectService
                 "Все хорошо",
                 "Вакансия успешно удалена из проекта.",
                 NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS);
+        }
+        
+        catch (Exception ex)
+        {
+            await _logService.LogErrorAsync(ex);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Метод удаляет проект и все, что с ним связано.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="account">Аккаунт.</param>
+    public async Task DeleteProjectAsync(long projectId, string account)
+    {
+        try
+        {
+            var userId = await _userRepository.GetUserIdByEmailOrLoginAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+        
+            // Только владелец проекта может удалять проект.
+            var isOwner = await _projectRepository.CheckProjectOwnerAsync(projectId, userId);
+
+            if (!isOwner)
+            {
+                var ex = new InvalidOperationException(
+                    "Пользователь не является владельцем проекта. " +
+                    $"UserId: {userId}. " +
+                    $"ProjectId: {projectId}.");
+                throw ex;
+            }
         }
         
         catch (Exception ex)

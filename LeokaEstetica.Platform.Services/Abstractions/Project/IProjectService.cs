@@ -158,4 +158,11 @@ public interface IProjectService
     /// <param name="projectId">Id проекта.</param>
     /// <param name="account">Аккаунт.</param>
     Task DeleteProjectVacancyAsync(long vacancyId, long projectId, string account);
+
+    /// <summary>
+    /// Метод удаляет проект и все, что с ним связано.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="account">Аккаунт.</param>
+    Task DeleteProjectAsync(long projectId, string account);
 }

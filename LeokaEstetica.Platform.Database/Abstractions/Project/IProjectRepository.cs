@@ -176,4 +176,11 @@ public interface IProjectRepository
     /// <param name="projectId">Id проекта.</param>
     /// <returns>Признак удаления вакансии проекта.</returns>
     Task<bool> DeleteProjectVacancyByIdAsync(long vacancyId, long projectId);
+
+    /// <summary>
+    /// Метод удаляет вакансии проекта.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Признак результата удаления.</returns>
+    Task<bool> DeleteProjectVacanciesAsync(long projectId);
 }

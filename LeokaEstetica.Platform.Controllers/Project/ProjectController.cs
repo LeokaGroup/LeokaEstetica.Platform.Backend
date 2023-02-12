@@ -531,4 +531,24 @@ public class ProjectController : BaseController
 
         await _projectService.DeleteProjectVacancyAsync(vacancyId, projectId, GetUserName());
     }
+
+    /// <summary>
+    /// Метод удаляет проект и все, что с ним связано.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    [HttpDelete]
+    [Route("{projectId}")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task DeleteProjectAsync([FromRoute] long projectId)
+    {
+        if (projectId <= 0)
+        {
+            var ex = new ArgumentNullException($"Id проекта не может быть пустым. ProjectId: {projectId}");
+            await _logService.LogErrorAsync(ex);
+        }
+    }
 }
