@@ -11,6 +11,11 @@ public class CatalogVacancyEntity
     public long CatalogVacancyId { get; set; }
 
     /// <summary>
+    /// Id вакансии.
+    /// </summary>
+    public long VacancyId { get; set; }
+
+    /// <summary>
     /// FK.
     /// </summary>
     public UserVacancyEntity Vacancy { get; set; }

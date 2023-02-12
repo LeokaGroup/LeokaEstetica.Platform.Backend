@@ -27,7 +27,7 @@ namespace LeokaEstetica.Platform.Services.Services.Vacancy;
 /// <summary>
 /// Класс реализует методы сервиса вакансий.
 /// </summary>
-public sealed class VacancyService : IVacancyService
+public class VacancyService : IVacancyService
 {
     private readonly ILogService _logService;
     private readonly IVacancyRepository _vacancyRepository;
@@ -454,6 +454,66 @@ public sealed class VacancyService : IVacancyService
             return result;
         }
 
+        catch (Exception ex)
+        {
+            await _logService.LogErrorAsync(ex);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Метод удаляет вакансию.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <param name="account">Аккаунт.</param>
+    public async Task DeleteVacancyAsync(long vacancyId, string account)
+    {
+        try
+        {
+            var userId = await _userRepository.GetUserIdByEmailOrLoginAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                await _logService.LogErrorAsync(ex);
+                throw ex;
+            }
+
+            // Только владелец вакансии может удалять вакансии проекта.
+            var isOwner = await _vacancyRepository.CheckProjectOwnerAsync(vacancyId, userId);
+
+            if (!isOwner)
+            {
+                var ex = new InvalidOperationException(
+                    $"Пользователь не является владельцем вакансии. UserId: {userId}");
+                await _logService.LogErrorAsync(ex);
+                throw ex;
+            }
+            
+            var isRemoved = await _vacancyRepository.DeleteVacancyAsync(vacancyId, userId);
+            
+            if (!isRemoved)
+            {
+                var ex = new InvalidOperationException(
+                    "Ошибка удаления вакансии. " +
+                    $"VacancyId: {vacancyId}. " +
+                    $"UserId: {userId}");
+            
+                await _vacancyNotificationsService.SendNotificationErrorDeleteVacancyAsync(
+                    "Ошибка",
+                    "Ошибка при удалении вакансии.",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR);
+            
+                await _logService.LogErrorAsync(ex);
+                throw ex;
+            }
+        
+            await _vacancyNotificationsService.SendNotificationSuccessDeleteVacancyAsync(
+                "Все хорошо",
+                "Вакансия успешно удалена.",
+                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS);
+        }
+        
         catch (Exception ex)
         {
             await _logService.LogErrorAsync(ex);

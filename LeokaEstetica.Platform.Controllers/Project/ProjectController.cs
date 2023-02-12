@@ -510,7 +510,7 @@ public class ProjectController : BaseController
     /// <param name="projectId">Id проекта.</param>
     [HttpDelete]
     [Route("projects/{projectId}/vacancies/{vacancyId}")]
-    [ProducesResponseType(200, Type = typeof(bool))]
+    [ProducesResponseType(200)]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]

@@ -92,4 +92,20 @@ public interface IVacancyRepository
     /// <returns>Список вакансий без выгрузки в память,
     /// так как этот список будем еще фильтровать.</returns>
     Task<IOrderedQueryable<CatalogVacancyOutput>> GetFiltersVacanciesAsync();
+
+    /// <summary>
+    /// Метод удаляет вакансию.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Признак удаления.</returns>
+    Task<bool> DeleteVacancyAsync(long vacancyId, long userId);
+
+    /// <summary>
+    /// Метод првоеряет владельца вакансии.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Признак является ли пользователь владельцем вакансии.</returns>
+    Task<bool> CheckProjectOwnerAsync(long vacancyId, long userId);
 }

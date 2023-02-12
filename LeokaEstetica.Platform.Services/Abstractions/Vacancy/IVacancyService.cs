@@ -70,4 +70,11 @@ public interface IVacancyService
     /// <param name="filters">Фильтры.</param>
     /// <returns>Список вакансий после фильтрации.</returns>
     Task<CatalogVacancyResultOutput> FilterVacanciesAsync(FilterVacancyInput filters);
+
+    /// <summary>
+    /// Метод удаляет вакансию.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <param name="account">Аккаунт.</param>
+    Task DeleteVacancyAsync(long vacancyId, string account);
 }

@@ -1,3 +1,4 @@
+using System.Data.Common;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Core.Helpers;
@@ -13,10 +14,14 @@ namespace LeokaEstetica.Platform.Database.Repositories.Vacancy;
 /// <summary>
 /// Класс реализует методы репозитория вакансий. 
 /// </summary>
-public sealed class VacancyRepository : IVacancyRepository
+public class VacancyRepository : IVacancyRepository
 {
     private readonly PgContext _pgContext;
 
+    /// <summary>
+    /// Конструктор.
+    /// </summary>
+    /// <param name="pgContext">Датаконтекст.</param>
     public VacancyRepository(PgContext pgContext)
     {
         _pgContext = pgContext;
@@ -240,5 +245,92 @@ public sealed class VacancyRepository : IVacancyRepository
             .AsQueryable();
 
         return await Task.FromResult(result);
+    }
+
+    /// <summary>
+    /// Метод удаляет вакансию.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Признак удаления.</returns>
+    public async Task<bool> DeleteVacancyAsync(long vacancyId, long userId)
+    {
+        var tran = await _pgContext.Database
+            .BeginTransactionAsync(IsolationLevel.ReadCommitted);
+
+        try
+        {
+            // Удаляем вакансию из каталога.
+            var catalogVacancy = await _pgContext.CatalogVacancies
+                .FirstOrDefaultAsync(v => v.VacancyId == vacancyId 
+                                          && v.Vacancy.UserId == userId);
+
+            if (catalogVacancy is null)
+            {
+                return false;
+            }
+        
+            _pgContext.CatalogVacancies.Remove(catalogVacancy);
+
+            // Удаляем вакансию из статусов.
+            var vacancyStatus = await _pgContext.VacancyStatuses
+                .FirstOrDefaultAsync(v => v.VacancyId == vacancyId);
+            
+            if (vacancyStatus is null)
+            {
+                return false;
+            }
+            
+            _pgContext.VacancyStatuses.Remove(vacancyStatus);
+
+            // Удаляем вакансию из модерации.
+            var moderationVacancy = await _pgContext.ModerationVacancies
+                .FirstOrDefaultAsync(v => v.VacancyId == vacancyId);
+            
+            if (moderationVacancy is null)
+            {
+                return false;
+            }
+            
+            _pgContext.ModerationVacancies.Remove(moderationVacancy);
+
+            // Удаляем вакансию пользователя.
+            var userVacancy = await _pgContext.UserVacancies
+                .FirstOrDefaultAsync(v => v.VacancyId == vacancyId 
+                                          && v.UserId == userId);
+
+            if (userVacancy is null)
+            {
+                return false;
+            }
+        
+            _pgContext.UserVacancies.Remove(userVacancy);
+            
+            await _pgContext.SaveChangesAsync();
+            await tran.CommitAsync();
+        }
+        
+        catch
+        {
+            await tran.RollbackAsync();
+            throw;
+        }
+        
+        return true;
+    }
+
+    /// <summary>
+    /// Метод првоеряет владельца вакансии.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Признак является ли пользователь владельцем вакансии.</returns>
+    public async Task<bool> CheckProjectOwnerAsync(long vacancyId, long userId)
+    {
+        var result = await _pgContext.UserVacancies
+            .AnyAsync(p => p.VacancyId == vacancyId
+                           && p.UserId == userId);
+
+        return result;
     }
 }

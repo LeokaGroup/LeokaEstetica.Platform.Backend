@@ -935,47 +935,60 @@ public sealed class ProjectService : IProjectService
     /// <param name="account">Аккаунт.</param>
     public async Task DeleteProjectVacancyAsync(long vacancyId, long projectId, string account)
     {
-        var userId = await _userRepository.GetUserIdByEmailOrLoginAsync(account);
-
-        if (userId <= 0)
+        try
         {
-            var ex = new NotFoundUserIdByAccountException(account);
-            await _logService.LogErrorAsync(ex);
-            throw ex;
+            var userId = await _userRepository.GetUserIdByEmailOrLoginAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                await _logService.LogErrorAsync(ex);
+                throw ex;
+            }
+        
+            // Только владелец проекта может удалять вакансии проекта.
+            var isOwner = await _projectRepository.CheckProjectOwnerAsync(projectId, userId);
+
+            if (!isOwner)
+            {
+                var ex = new InvalidOperationException(
+                    "Пользователь не является владельцем проекта. " +
+                    $"UserId: {userId}. " +
+                    $"ProjectId: {projectId}. " +
+                    $"VacancyId: {vacancyId}");
+                await _logService.LogErrorAsync(ex);
+                throw ex;
+            }
+
+            var isRemoved = await _projectRepository.DeleteProjectVacancyByIdAsync(vacancyId, projectId);
+
+            if (!isRemoved)
+            {
+                var ex = new InvalidOperationException(
+                    "Ошибка удаления вакансии проекта. " +
+                    $"VacancyId: {vacancyId}. " +
+                    $"ProjectId: {projectId}. " +
+                    $"UserId: {userId}");
+            
+                await _projectNotificationsService.SendNotificationErrorDeleteProjectVacancyAsync(
+                    "Ошибка",
+                    "Ошибка при удалении вакансии проекта.",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR);
+            
+                await _logService.LogErrorAsync(ex);
+                throw ex;
+            }
+        
+            await _projectNotificationsService.SendNotificationSuccessDeleteProjectVacancyAsync(
+                "Все хорошо",
+                "Вакансия успешно удалена из проекта.",
+                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS);
         }
         
-        // Только владелец проекта может удалять вакансии проекта.
-        var isOwner = await _projectRepository.CheckProjectOwnerAsync(projectId, userId);
-
-        if (!isOwner)
+        catch (Exception ex)
         {
-            var ex = new InvalidOperationException($"Пользователя не является владельцем проекта. UserId: {userId}");
             await _logService.LogErrorAsync(ex);
-            throw ex;
+            throw;
         }
-
-        var isRemoved = await _projectRepository.DeleteProjectVacancyByIdAsync(vacancyId, projectId);
-
-        if (!isRemoved)
-        {
-            var ex = new InvalidOperationException(
-                "Ошибка удаления вакансии проекта. " +
-                $"VacancyId: {vacancyId}. " +
-                $"ProjectId: {projectId}. " +
-                $"UserId: {userId}");
-            
-            await _projectNotificationsService.SendNotificationErrorDeleteProjectVacancyAsync(
-                "Ошибка",
-                "Ошибка при удалении вакансии проекта.",
-                NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR);
-            
-            await _logService.LogErrorAsync(ex);
-            throw ex;
-        }
-        
-        await _projectNotificationsService.SendNotificationSuccessDeleteProjectVacancyAsync(
-            "Все хорошо",
-            "Вакансия успешно удалена из проекта.",
-            NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS);
     }
 }

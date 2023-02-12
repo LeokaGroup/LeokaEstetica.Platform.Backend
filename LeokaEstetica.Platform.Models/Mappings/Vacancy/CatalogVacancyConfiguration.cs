@@ -15,10 +15,14 @@ public partial class CatalogVacancyConfiguration : IEntityTypeConfiguration<Cata
         entity.Property(e => e.CatalogVacancyId)
             .HasColumnName("CatalogVacancyId")
             .HasColumnType("bigserial");
+        
+        entity.Property(e => e.VacancyId)
+            .HasColumnName("VacancyId")
+            .HasColumnType("bigint");
 
         entity.HasOne(p => p.Vacancy)
             .WithMany(b => b.CatalogVacancies)
-            .HasForeignKey(p => p.CatalogVacancyId)
+            .HasForeignKey(p => p.VacancyId)
             .HasConstraintName("FK_CatalogVacancies_VacancyId");
 
         entity.HasIndex(u => u.CatalogVacancyId)

@@ -20,4 +20,20 @@ public interface IVacancyNotificationsService
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
     Task SendNotificationWarningLimitFareRuleVacanciesAsync(string title, string notifyText, string notificationLevel);
+    
+    /// <summary>
+    /// Метод отправляет уведомление об ошибке при удалении вакансии.
+    /// </summary>
+    /// <param name="title">Заголовок уведомления.</param>
+    /// <param name="notifyText">Текст уведомления.</param>
+    /// <param name="notificationLevel">Уровень уведомления.</param>
+    Task SendNotificationErrorDeleteVacancyAsync(string title, string notifyText, string notificationLevel);
+    
+    /// <summary>
+    /// Метод отправляет уведомление об успехе при удалении вакансии.
+    /// </summary>
+    /// <param name="title">Заголовок уведомления.</param>
+    /// <param name="notifyText">Текст уведомления.</param>
+    /// <param name="notificationLevel">Уровень уведомления.</param>
+    Task SendNotificationSuccessDeleteVacancyAsync(string title, string notifyText, string notificationLevel);
 }
