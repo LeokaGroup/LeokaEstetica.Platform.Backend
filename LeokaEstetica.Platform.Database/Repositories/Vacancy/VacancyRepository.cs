@@ -1,5 +1,6 @@
 using System.Data.Common;
 using LeokaEstetica.Platform.Core.Data;
+using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Core.Helpers;
 using LeokaEstetica.Platform.Database.Abstractions.Vacancy;
@@ -92,19 +93,29 @@ public class VacancyRepository : IVacancyRepository
     /// <returns>Список вакансий.</returns>
     public async Task<List<CatalogVacancyOutput>> CatalogVacanciesAsync()
     {
-        var result = await _pgContext.CatalogVacancies
-            .Include(uv => uv.Vacancy)
-            .Select(uv => new CatalogVacancyOutput
-            {
-                VacancyName = uv.Vacancy.VacancyName,
-                DateCreated = uv.Vacancy.DateCreated,
-                Employment = uv.Vacancy.Employment,
-                Payment = uv.Vacancy.Payment,
-                VacancyId = uv.Vacancy.VacancyId,
-                VacancyText = uv.Vacancy.VacancyText,
-                WorkExperience = uv.Vacancy.WorkExperience,
-                UserId = uv.Vacancy.UserId
-            })
+        var result = await (from cv in _pgContext.CatalogVacancies
+                join mv in _pgContext.ModerationVacancies
+                    on cv.VacancyId
+                    equals mv.VacancyId
+                    into table
+                from tbl in table.DefaultIfEmpty()
+                where !new[]
+                    {
+                        (int)VacancyModerationStatusEnum.ModerationVacancy,
+                        (int)VacancyModerationStatusEnum.RejectedVacancy
+                    }
+                    .Contains(tbl.ModerationStatusId)
+                select new CatalogVacancyOutput
+                {
+                    VacancyName = cv.Vacancy.VacancyName,
+                    DateCreated = cv.Vacancy.DateCreated,
+                    Employment = cv.Vacancy.Employment,
+                    Payment = cv.Vacancy.Payment,
+                    VacancyId = cv.Vacancy.VacancyId,
+                    VacancyText = cv.Vacancy.VacancyText,
+                    WorkExperience = cv.Vacancy.WorkExperience,
+                    UserId = cv.Vacancy.UserId
+                })
             .ToListAsync();
 
         return result;
