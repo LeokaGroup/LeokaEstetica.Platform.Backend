@@ -183,7 +183,7 @@ public class ModerationController : BaseController
     /// <summary>
     /// Метод одобряет вакансию на модерации.
     /// </summary>
-    /// <param name="approveProjectInput">Входная модель.</param>
+    /// <param name="approveVacancyInput">Входная модель.</param>
     /// <returns>Выходная модель модерации.</returns>
     [HttpPatch]
     [Route("vacancy/approve")]

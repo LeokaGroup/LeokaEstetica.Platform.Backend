@@ -64,9 +64,29 @@ public sealed class ProjectModerationRepository : IProjectModerationRepository
     /// <returns>Признак подиверждения проекта.</returns>
     public async Task<bool> ApproveProjectAsync(long projectId)
     {
-        var result = await SetProjectStatus(projectId, ProjectModerationStatusEnum.ApproveProject);
+        var isSuccessSetStatus = await SetProjectStatus(projectId, ProjectModerationStatusEnum.ApproveProject);
+        
+        if (!isSuccessSetStatus)
+        {
+            return false;
+        }
+        
+        var project = await _pgContext.UserProjects
+            .FirstOrDefaultAsync(v => v.ProjectId == projectId);
 
-        return result;
+        if (project is null)
+        {
+            throw new InvalidOperationException($"Не удалось найти проект. ProjectId = {projectId}");
+        }
+        
+        // Добавляем проект в каталог.
+        await _pgContext.CatalogProjects.AddAsync(new CatalogProjectEntity
+        {
+            ProjectId = projectId
+        });
+        await _pgContext.SaveChangesAsync();
+
+        return true;
     }
 
     /// <summary>

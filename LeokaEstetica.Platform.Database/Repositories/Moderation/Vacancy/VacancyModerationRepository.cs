@@ -105,9 +105,9 @@ public sealed class VacancyModerationRepository : IVacancyModerationRepository
     /// <returns>Признак подтверждения вакансии.</returns>
     public async Task<bool> ApproveVacancyAsync(long vacancyId)
     {
-        var result = await SetVacancyStatus(vacancyId, VacancyModerationStatusEnum.ApproveVacancy);
+        var isSuccessSetStatus = await SetVacancyStatus(vacancyId, VacancyModerationStatusEnum.ApproveVacancy);
 
-        if (!result)
+        if (!isSuccessSetStatus)
         {
             return false;
         }
