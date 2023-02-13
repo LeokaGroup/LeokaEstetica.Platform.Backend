@@ -14,14 +14,6 @@ public class CreateOrderValidator : AbstractValidator<CreateOrderInput>
     /// </summary>
     public CreateOrderValidator()
     {
-        RuleFor(p => p.Amount)
-            .NotNull()
-            .WithMessage(CommerceConst.EMPTY_AMOUNT);
-
-        RuleFor(p => p.Invoice)
-            .NotNull()
-            .WithMessage(CommerceConst.EMPTY_INVOICE);
-
         RuleFor(p => p.FareRuleId)
             .Must(p => p > 0)
             .WithMessage(CommerceConst.NOT_VALID_FARE_RULE_ID);

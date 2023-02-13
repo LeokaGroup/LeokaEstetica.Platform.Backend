@@ -71,7 +71,7 @@ public class PayMasterService : IPayMasterService
             httpClient.DefaultRequestHeaders.Authorization =
                 new AuthenticationHeaderValue("Bearer", _configuration["Commerce:PayMaster:ApiToken"]);
 
-            await _logService.LogInfoAsync(null, "Начало создания заказа.");
+            await _logService.LogInfoAsync(new ApplicationException("Начало создания заказа."));
             
             // Создаем платеж в ПС.
             var responseCreateOrder = await httpClient.PostAsJsonAsync(ApiConsts.CREATE_PAYMENT, createOrderInput);
@@ -122,8 +122,9 @@ public class PayMasterService : IPayMasterService
             
             // Приводим к нужному виду.
             var result = CreateOrderResultFactory.Create(createdOrderResult.OrderId.ToString(), order.Url);
-            await _logService.LogInfoAsync(null, "Конец создания заказа.");
-            await _logService.LogInfoAsync(null, "Создание заказа успешно.");
+            
+            await _logService.LogInfoAsync(new ApplicationException("Конец создания заказа."));
+            await _logService.LogInfoAsync(new ApplicationException("Создание заказа успешно."));
 
             return result;
         }
