@@ -265,6 +265,11 @@ public class ProjectService : IProjectService
 
             var result = await _projectRepository.UserProjectsAsync(userId);
 
+            foreach (var prj in result.UserProjects)
+            {
+                prj.ProjectDetails = ClearHtmlBuilder.Clear(prj.ProjectDetails);
+            }
+
             return result;
         }
 
