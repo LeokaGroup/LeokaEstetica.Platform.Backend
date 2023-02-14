@@ -1,6 +1,7 @@
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Access;
 using LeokaEstetica.Platform.Models.Entities.Access;
+using Microsoft.EntityFrameworkCore;
 
 namespace LeokaEstetica.Platform.Database.Repositories.Moderation.Access;
 
@@ -10,7 +11,7 @@ namespace LeokaEstetica.Platform.Database.Repositories.Moderation.Access;
 public class UserBlackListRepository : IUserBlackListRepository
 {
     private readonly PgContext _pgContext;
-    
+
     /// <summary>
     /// Конструктор.
     /// </summary>
@@ -43,9 +44,24 @@ public class UserBlackListRepository : IUserBlackListRepository
             {
                 UserId = userId,
                 PhoneNumber = phoneNumber
-            });   
+            });
         }
 
         await _pgContext.SaveChangesAsync();
+    }
+
+    /// <summary>
+    /// Метод получает список пользователей в ЧС.
+    /// </summary>
+    /// <returns>Список пользователей в ЧС.</returns>
+    public async Task<(IEnumerable<UserEmailBlackListEntity>, IEnumerable<UserPhoneBlackListEntity>)>
+        GetUsersBlackListAsync()
+    {
+        (IEnumerable<UserEmailBlackListEntity>, IEnumerable<UserPhoneBlackListEntity>) result;
+
+        result.Item1 = await _pgContext.UserEmailBlackList.ToListAsync();
+        result.Item2 = await _pgContext.UserPhoneBlackList.ToListAsync();
+
+        return result;
     }
 }

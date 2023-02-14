@@ -1,3 +1,5 @@
+using LeokaEstetica.Platform.Models.Entities.Access;
+
 namespace LeokaEstetica.Platform.Database.Abstractions.Moderation.Access;
 
 /// <summary>
@@ -12,4 +14,10 @@ public interface IUserBlackListRepository
     /// <param name="email">Почта для блока..</param>
     /// <param name="phoneNumber">Номер телефона для блока.</param>
     Task AddUserBlackListAsync(long userId, string email, string phoneNumber);
+
+    /// <summary>
+    /// Метод получает список пользователей в ЧС.
+    /// </summary>
+    /// <returns>Список пользователей в ЧС.</returns>
+    Task<(IEnumerable<UserEmailBlackListEntity>, IEnumerable<UserPhoneBlackListEntity>)> GetUsersBlackListAsync();
 }

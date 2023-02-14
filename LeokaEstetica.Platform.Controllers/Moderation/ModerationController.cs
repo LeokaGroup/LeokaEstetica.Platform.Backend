@@ -13,6 +13,7 @@ using LeokaEstetica.Platform.Moderation.Models.Dto.Input.Access;
 using LeokaEstetica.Platform.Moderation.Models.Dto.Input.Project;
 using LeokaEstetica.Platform.Moderation.Models.Dto.Input.Role;
 using LeokaEstetica.Platform.Moderation.Models.Dto.Input.Vacancy;
+using LeokaEstetica.Platform.Moderation.Models.Dto.Output.Access;
 using LeokaEstetica.Platform.Moderation.Models.Dto.Output.Project;
 using LeokaEstetica.Platform.Moderation.Models.Dto.Output.Role;
 using LeokaEstetica.Platform.Moderation.Models.Dto.Output.Vacancy;
@@ -241,5 +242,23 @@ public class ModerationController : BaseController
         await new AddUserBlackListValidator().ValidateAndThrowAsync(addUserBlackListInput);
         await _userBlackListService.AddUserBlackListAsync(addUserBlackListInput.UserId, addUserBlackListInput.Email,
             addUserBlackListInput.PhoneNumber);
+    }
+
+    /// <summary>
+    /// Метод получает список пользователей в ЧС.
+    /// </summary>
+    /// <returns>Список пользователей в ЧС.</returns>
+    [HttpGet]
+    [Route("blacklist")]
+    [ProducesResponseType(200, Type = typeof(UserBlackListResult))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<UserBlackListResult> GetUsersBlackListAsync()
+    {
+        var result = await _userBlackListService.GetUsersBlackListAsync();
+
+        return result;
     }
 }
