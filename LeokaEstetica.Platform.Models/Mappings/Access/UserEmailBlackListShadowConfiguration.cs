@@ -32,6 +32,10 @@ public partial class UserEmailBlackListShadowConfiguration : IEntityTypeConfigur
             .HasColumnName("DateCreated")
             .HasColumnType("timestamp")
             .HasDefaultValue(DateTime.Now);
+        
+        entity.Property(e => e.Email)
+            .HasColumnName("Email")
+            .HasColumnType("varchar(120)");
 
         entity.HasIndex(u => u.ShadowId)
             .HasDatabaseName("PK_UserEmailBlackListShadow_ShadowId")

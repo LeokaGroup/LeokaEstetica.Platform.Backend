@@ -28,17 +28,23 @@ public class UserBlackListRepository : IUserBlackListRepository
     /// <param name="phoneNumber">Номер телефона для блока.</param>
     public async Task AddUserBlackListAsync(long userId, string email, string phoneNumber)
     {
-        await _pgContext.UserEmailBlackList.AddAsync(new UserEmailBlackListEntity
+        if (!string.IsNullOrEmpty(email))
         {
-            UserId = userId,
-            Email = email
-        });
-        
-        await _pgContext.UserPhoneBlackList.AddAsync(new UserPhoneBlackListEntity
+            await _pgContext.UserEmailBlackList.AddAsync(new UserEmailBlackListEntity
+            {
+                UserId = userId,
+                Email = email
+            });
+        }
+
+        if (!string.IsNullOrEmpty(phoneNumber))
         {
-            UserId = userId,
-            PhoneNumber = phoneNumber
-        });
+            await _pgContext.UserPhoneBlackList.AddAsync(new UserPhoneBlackListEntity
+            {
+                UserId = userId,
+                PhoneNumber = phoneNumber
+            });   
+        }
 
         await _pgContext.SaveChangesAsync();
     }

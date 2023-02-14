@@ -66,6 +66,7 @@ public class BaseServiceTest
     protected readonly FareRuleService FareRuleService;
     protected readonly PayMasterService PayMasterService;
     protected readonly SubscriptionService SubscriptionService;
+    protected readonly UserBlackListService UserBlackListService;
 
     protected BaseServiceTest()
     {
@@ -130,7 +131,8 @@ public class BaseServiceTest
 
         SubscriptionService =
             new SubscriptionService(logService, userRepository, subscriptionRepository, fareRuleRepository);
-        ResumeService = new ResumeService(logService, resumeRepository, mapper, subscriptionRepository, fareRuleRepository);
+        ResumeService = new ResumeService(logService, resumeRepository, mapper, subscriptionRepository,
+            fareRuleRepository);
         VacancyFinderService = new VacancyFinderService(vacancyRepository, logService);
         FinderProjectService = new Finder.Services.Project.ProjectFinderService(projectRepository, logService);
         ResumeFinderService = new ResumeFinderService(logService, resumeRepository);
@@ -142,5 +144,8 @@ public class BaseServiceTest
         FareRuleService = new FareRuleService(fareRuleRepository, logService);
         PayMasterService = new PayMasterService(logService, AppConfiguration, fareRuleRepository, userRepository,
             payMasterRepository);
+
+        var userBlackListService = new UserBlackListRepository(pgContext);
+        UserBlackListService = new UserBlackListService(logService, userBlackListService);
     }
 }

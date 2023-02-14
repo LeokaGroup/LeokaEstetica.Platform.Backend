@@ -29,4 +29,9 @@ public class UserPhoneBlackListShadowEntity
     /// Id пользователя.
     /// </summary>
     public long UserId { get; set; }
+    
+    /// <summary>
+    /// Номер телефона пользователя.
+    /// </summary>
+    public string PhoneNumber { get; set; }
 }

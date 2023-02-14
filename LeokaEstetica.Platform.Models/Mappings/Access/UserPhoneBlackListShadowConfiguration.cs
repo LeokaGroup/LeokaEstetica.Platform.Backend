@@ -8,7 +8,7 @@ public partial class UserPhoneBlackListShadowConfiguration : IEntityTypeConfigur
 {
     public void Configure(EntityTypeBuilder<UserPhoneBlackListShadowEntity> entity)
     {
-        entity.ToTable("UserEmailBlackListShadow", "Access");
+        entity.ToTable("UserPhoneBlackListShadow", "Access");
 
         entity.HasKey(e => e.ShadowId);
 
@@ -22,11 +22,11 @@ public partial class UserPhoneBlackListShadowConfiguration : IEntityTypeConfigur
         
         entity.Property(e => e.ActionText)
             .HasColumnName("ActionText")
-            .HasColumnType("text");
+            .HasColumnType("varchar(300)");
         
-        entity.Property(e => e.ActionSysName)
-            .HasColumnName("ActionSysName")
-            .HasColumnType("varchar(100)");
+        entity.Property(e => e.PhoneNumber)
+            .HasColumnName("PhoneNumber")
+            .HasColumnType("varchar(50)");
         
         entity.Property(e => e.DateCreated)
             .HasColumnName("DateCreated")

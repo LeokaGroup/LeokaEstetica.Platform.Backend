@@ -29,4 +29,9 @@ public class UserEmailBlackListShadowEntity
     /// Id пользователя.
     /// </summary>
     public long UserId { get; set; }
+    
+    /// <summary>
+    /// Почта пользователя.
+    /// </summary>
+    public string Email { get; set; }
 }
