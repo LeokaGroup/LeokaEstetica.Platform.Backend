@@ -1,12 +1,15 @@
 using AutoMapper;
+using FluentValidation;
 using LeokaEstetica.Platform.Access.Abstractions.Moderation;
 using LeokaEstetica.Platform.Base;
+using LeokaEstetica.Platform.Controllers.Validators.Access;
 using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Project;
 using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Vacancy;
 using LeokaEstetica.Platform.Models.Dto.Output.Project;
 using LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
 using LeokaEstetica.Platform.Moderation.Abstractions.Project;
 using LeokaEstetica.Platform.Moderation.Abstractions.Vacancy;
+using LeokaEstetica.Platform.Moderation.Models.Dto.Input.Access;
 using LeokaEstetica.Platform.Moderation.Models.Dto.Input.Project;
 using LeokaEstetica.Platform.Moderation.Models.Dto.Input.Role;
 using LeokaEstetica.Platform.Moderation.Models.Dto.Input.Vacancy;
@@ -216,5 +219,21 @@ public class ModerationController : BaseController
         var result = await _vacancyModerationService.RejectVacancyAsync(rejectVacancyInput.VacancyId);
 
         return result;
+    }
+
+    /// <summary>
+    /// Метод добавляет пользователя в ЧС.
+    /// </summary>
+    /// <param name="addUserBlackListInput">Входная модель.</param>
+    [HttpPost]
+    [Route("blacklist")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task AddUserBlackListAsync([FromBody] AddUserBlackListInput addUserBlackListInput)
+    {
+        await new AddUserBlackListValidator().ValidateAndThrowAsync(addUserBlackListInput);
     }
 }
