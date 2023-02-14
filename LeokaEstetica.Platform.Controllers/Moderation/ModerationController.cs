@@ -31,6 +31,7 @@ public class ModerationController : BaseController
     private readonly IProjectModerationService _projectModerationService;
     private readonly IMapper _mapper;
     private readonly IVacancyModerationService _vacancyModerationService;
+    private readonly IUserBlackListService _userBlackListService;
 
     /// <summary>
     /// Конструктор.
@@ -39,15 +40,18 @@ public class ModerationController : BaseController
     /// <param name="projectModerationService">Сервис медерации проектов.</param>
     /// <param name="mapper">Автомаппер.</param>
     /// <param name="vacancyModerationService">Сервис модерации вакансий.</param>
+    /// <param name="userBlackListService">Сервис ЧС пользователей.</param>
     public ModerationController(IAccessModerationService accessModerationService,
         IProjectModerationService projectModerationService,
         IMapper mapper,
-        IVacancyModerationService vacancyModerationService)
+        IVacancyModerationService vacancyModerationService, 
+        IUserBlackListService userBlackListService)
     {
         _accessModerationService = accessModerationService;
         _projectModerationService = projectModerationService;
         _mapper = mapper;
         _vacancyModerationService = vacancyModerationService;
+        _userBlackListService = userBlackListService;
     }
 
     /// <summary>
@@ -235,5 +239,7 @@ public class ModerationController : BaseController
     public async Task AddUserBlackListAsync([FromBody] AddUserBlackListInput addUserBlackListInput)
     {
         await new AddUserBlackListValidator().ValidateAndThrowAsync(addUserBlackListInput);
+        await _userBlackListService.AddUserBlackListAsync(addUserBlackListInput.UserId, addUserBlackListInput.Email,
+            addUserBlackListInput.PhoneNumber);
     }
 }

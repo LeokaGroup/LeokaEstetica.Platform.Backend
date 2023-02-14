@@ -43,5 +43,15 @@ public class AccessModule : Module
             .RegisterType<AvailableLimitsService>()
             .As<IAvailableLimitsService>()
             .InstancePerLifetimeScope();
+        
+        // Сервис ЧС пользователей.
+        builder
+            .RegisterType<UserBlackListService>()
+            .Named<IUserBlackListService>("UserBlackListService")
+            .InstancePerLifetimeScope();
+        builder
+            .RegisterType<UserBlackListService>()
+            .As<IUserBlackListService>()
+            .InstancePerLifetimeScope();
     }
 }
