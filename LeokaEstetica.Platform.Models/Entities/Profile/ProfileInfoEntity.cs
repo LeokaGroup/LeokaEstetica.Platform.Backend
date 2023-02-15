@@ -1,3 +1,5 @@
+using LeokaEstetica.Platform.Models.Entities.Moderation;
+
 namespace LeokaEstetica.Platform.Models.Entities.Profile;
 
 /// <summary>
@@ -5,6 +7,11 @@ namespace LeokaEstetica.Platform.Models.Entities.Profile;
 /// </summary>
 public class ProfileInfoEntity
 {
+    public ProfileInfoEntity()
+    {
+        ModerationResumes = new HashSet<ModerationResumeEntity>();
+    }
+
     /// <summary>
     /// PK.
     /// </summary>
@@ -64,4 +71,9 @@ public class ProfileInfoEntity
     /// Id пользователя.
     /// </summary>
     public long UserId { get; set; }
+
+    /// <summary>
+    /// Список анкет.
+    /// </summary>
+    public ICollection<ModerationResumeEntity> ModerationResumes { get; set; }
 }
