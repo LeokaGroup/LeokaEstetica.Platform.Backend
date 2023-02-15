@@ -13,7 +13,7 @@ public interface IUserRepository
     /// </summary>
     /// <param name="user">Данные пользователя для добавления.</param>
     /// <returns>Id пользователя.</returns>
-    Task<long> SaveUserAsync(UserEntity user); 
+    Task<long> AddUserAsync(UserEntity user); 
 
     /// <summary>
     /// Метод находит пользователя по его UserId.

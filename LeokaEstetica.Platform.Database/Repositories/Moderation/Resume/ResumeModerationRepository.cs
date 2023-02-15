@@ -3,7 +3,6 @@ using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Resume;
 using LeokaEstetica.Platform.Models.Entities.Moderation;
 using LeokaEstetica.Platform.Models.Entities.Profile;
-using LeokaEstetica.Platform.Models.Entities.Project;
 using Microsoft.EntityFrameworkCore;
 
 namespace LeokaEstetica.Platform.Database.Repositories.Moderation.Resume;
@@ -55,5 +54,21 @@ public class ResumeModerationRepository : IResumeModerationRepository
             .ToListAsync();
 
         return result;
+    }
+
+    /// <summary>
+    /// Метод отправляет анкету на модерацию. Это происходит через добавление в таблицу модерации анкет.
+    /// Если анкета в этой таблице, значит она не прошла еще модерацию. 
+    /// </summary>
+    /// <param name="profileInfoId">Id анкеты.</param>
+    public async Task AddResumeModerationAsync(long profileInfoId)
+    {
+        await _pgContext.ModerationResumes.AddAsync(new ModerationResumeEntity
+        {
+            ProfileInfoId = profileInfoId,
+            DateModeration = DateTime.Now,
+            ModerationStatusId = (int)ResumeModerationStatusEnum.ModerationResume
+        });
+        await _pgContext.SaveChangesAsync();
     }
 }

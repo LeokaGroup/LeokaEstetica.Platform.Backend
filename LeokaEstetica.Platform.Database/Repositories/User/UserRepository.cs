@@ -28,7 +28,7 @@ public sealed class UserRepository : IUserRepository
     /// </summary>
     /// <param name="user">Данные пользователя для добавления.</param>
     /// <returns>Id пользователя.</returns>
-    public async Task<long> SaveUserAsync(UserEntity user)
+    public async Task<long> AddUserAsync(UserEntity user)
     {
         await _pgContext.Users.AddAsync(user);
         await _pgContext.SaveChangesAsync();

@@ -91,9 +91,10 @@ public class BaseServiceTest
         var profileRepository = new ProfileRepository(pgContext);
         var subscriptionRepository = new SubscriptionRepository(pgContext);
         var chatRepository = new ChatRepository(pgContext);
+        var resumeModerationRepository = new ResumeModerationRepository(pgContext);
 
         UserService = new UserService(logService, userRepository, mapper, null, pgContext, profileRepository,
-            subscriptionRepository);
+            subscriptionRepository, resumeModerationRepository);
         ProfileService = new ProfileService(logService, profileRepository, userRepository, mapper, null, null);
 
         var projectRepository = new ProjectRepository(pgContext, chatRepository);
@@ -150,8 +151,6 @@ public class BaseServiceTest
 
         var userBlackListService = new UserBlackListRepository(pgContext);
         UserBlackListService = new UserBlackListService(logService, userBlackListService);
-
-        var resumeModerationRepository = new ResumeModerationRepository(pgContext);
         ResumeModerationService = new ResumeModerationService(logService, resumeModerationRepository, mapper);
     }
 }

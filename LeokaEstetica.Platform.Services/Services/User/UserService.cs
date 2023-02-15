@@ -5,6 +5,7 @@ using AutoMapper;
 using LeokaEstetica.Platform.Access.Helpers;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Enums;
+using LeokaEstetica.Platform.Database.Abstractions.Moderation.Resume;
 using LeokaEstetica.Platform.Database.Abstractions.Profile;
 using LeokaEstetica.Platform.Database.Abstractions.Subscription;
 using LeokaEstetica.Platform.Database.Abstractions.User;
@@ -31,6 +32,7 @@ public sealed class UserService : IUserService
     private readonly PgContext _pgContext;
     private readonly IProfileRepository _profileRepository;
     private readonly ISubscriptionRepository _subscriptionRepository;
+    private readonly IResumeModerationRepository _resumeModerationRepository;
     
     /// <summary>
     /// Конструктор.
@@ -42,13 +44,15 @@ public sealed class UserService : IUserService
     /// <param name="pgContext">Датаконтекст.</param>
     /// <param name="profileRepository">Репозиторий профиля.</param>
     /// <param name="profileRepository">Репозиторий подписок.</param>
+    /// <param name="resumeModerationRepository">Репозиторий модерации анкет.</param>
     public UserService(ILogService logger, 
         IUserRepository userRepository, 
         IMapper mapper, 
         IMailingsService mailingsService, 
         PgContext pgContext, 
         IProfileRepository profileRepository, 
-        ISubscriptionRepository subscriptionRepository)
+        ISubscriptionRepository subscriptionRepository, 
+        IResumeModerationRepository resumeModerationRepository)
     {
         _logger = logger;
         _userRepository = userRepository;
@@ -57,6 +61,7 @@ public sealed class UserService : IUserService
         _pgContext = pgContext;
         _profileRepository = profileRepository;
         _subscriptionRepository = subscriptionRepository;
+        _resumeModerationRepository = resumeModerationRepository;
     }
 
     /// <summary>
@@ -77,7 +82,7 @@ public sealed class UserService : IUserService
 
             var userModel = CreateSignUpUserModel(password, email);
             
-            var userId = await _userRepository.SaveUserAsync(userModel);
+            var userId = await _userRepository.AddUserAsync(userModel);
             ValidateUserId(result, userId);
 
             if (result.Errors.Any())
@@ -96,7 +101,7 @@ public sealed class UserService : IUserService
             result = _mapper.Map<UserSignUpOutput>(addedUser);
             
             // Добавляет данные о пользователе в таблицу профиля.
-            await _profileRepository.AddUserInfoAsync(userId);
+            var profileInfoId = await _profileRepository.AddUserInfoAsync(userId);
 
             var confirmationEmailCode = Guid.NewGuid();
             
@@ -109,6 +114,9 @@ public sealed class UserService : IUserService
             // Добавляем пользователю бесплатную подписку.
             await _subscriptionRepository.AddUserSubscriptionAsync(addedUser.UserId, SubscriptionTypeEnum.FareRule, 1);
             
+            // Отправляем анкету на модерацию.
+            await _resumeModerationRepository.AddResumeModerationAsync(profileInfoId);
+
             await tran.CommitAsync();
 
             return result;
