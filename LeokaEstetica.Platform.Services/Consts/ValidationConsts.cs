@@ -67,4 +67,9 @@ public static class ValidationConsts
     /// Если Id проекта невалидный.
     /// </summary>
     public const string NOT_VALID_PROJECT_ID = "Невалидный Id проекта. ProjectId был ";
+    
+    /// <summary>
+    /// Если некорректный Id пользователя.
+    /// </summary>
+    public const string ACCESS_NOT_VALID_USER_ID = "Id пользователя <= 0.";
 }

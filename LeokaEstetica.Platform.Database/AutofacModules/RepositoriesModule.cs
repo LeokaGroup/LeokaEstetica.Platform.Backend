@@ -185,5 +185,15 @@ public class RepositoriesModule : Module
             .RegisterType<AvailableLimitsRepository>()
             .As<IAvailableLimitsRepository>()
             .InstancePerLifetimeScope();
+        
+        // Репозиторий ЧС пользователей.
+        builder
+            .RegisterType<UserBlackListRepository>()
+            .Named<IUserBlackListRepository>("UserBlackListRepository")
+            .InstancePerLifetimeScope();
+        builder
+            .RegisterType<UserBlackListRepository>()
+            .As<IUserBlackListRepository>()
+            .InstancePerLifetimeScope();
     }
 }

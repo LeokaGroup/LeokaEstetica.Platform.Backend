@@ -1,15 +1,19 @@
 using AutoMapper;
+using FluentValidation;
 using LeokaEstetica.Platform.Access.Abstractions.Moderation;
 using LeokaEstetica.Platform.Base;
+using LeokaEstetica.Platform.Controllers.Validators.Access;
 using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Project;
 using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Vacancy;
 using LeokaEstetica.Platform.Models.Dto.Output.Project;
 using LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
 using LeokaEstetica.Platform.Moderation.Abstractions.Project;
 using LeokaEstetica.Platform.Moderation.Abstractions.Vacancy;
+using LeokaEstetica.Platform.Moderation.Models.Dto.Input.Access;
 using LeokaEstetica.Platform.Moderation.Models.Dto.Input.Project;
 using LeokaEstetica.Platform.Moderation.Models.Dto.Input.Role;
 using LeokaEstetica.Platform.Moderation.Models.Dto.Input.Vacancy;
+using LeokaEstetica.Platform.Moderation.Models.Dto.Output.Access;
 using LeokaEstetica.Platform.Moderation.Models.Dto.Output.Project;
 using LeokaEstetica.Platform.Moderation.Models.Dto.Output.Role;
 using LeokaEstetica.Platform.Moderation.Models.Dto.Output.Vacancy;
@@ -28,6 +32,7 @@ public class ModerationController : BaseController
     private readonly IProjectModerationService _projectModerationService;
     private readonly IMapper _mapper;
     private readonly IVacancyModerationService _vacancyModerationService;
+    private readonly IUserBlackListService _userBlackListService;
 
     /// <summary>
     /// Конструктор.
@@ -36,15 +41,18 @@ public class ModerationController : BaseController
     /// <param name="projectModerationService">Сервис медерации проектов.</param>
     /// <param name="mapper">Автомаппер.</param>
     /// <param name="vacancyModerationService">Сервис модерации вакансий.</param>
+    /// <param name="userBlackListService">Сервис ЧС пользователей.</param>
     public ModerationController(IAccessModerationService accessModerationService,
         IProjectModerationService projectModerationService,
         IMapper mapper,
-        IVacancyModerationService vacancyModerationService)
+        IVacancyModerationService vacancyModerationService, 
+        IUserBlackListService userBlackListService)
     {
         _accessModerationService = accessModerationService;
         _projectModerationService = projectModerationService;
         _mapper = mapper;
         _vacancyModerationService = vacancyModerationService;
+        _userBlackListService = userBlackListService;
     }
 
     /// <summary>
@@ -214,6 +222,42 @@ public class ModerationController : BaseController
     public async Task<RejectVacancyOutput> RejectProjectAsync([FromBody] RejectVacancyInput rejectVacancyInput)
     {
         var result = await _vacancyModerationService.RejectVacancyAsync(rejectVacancyInput.VacancyId);
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод добавляет пользователя в ЧС.
+    /// </summary>
+    /// <param name="addUserBlackListInput">Входная модель.</param>
+    [HttpPost]
+    [Route("blacklist")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task AddUserBlackListAsync([FromBody] AddUserBlackListInput addUserBlackListInput)
+    {
+        await new AddUserBlackListValidator().ValidateAndThrowAsync(addUserBlackListInput);
+        await _userBlackListService.AddUserBlackListAsync(addUserBlackListInput.UserId, addUserBlackListInput.Email,
+            addUserBlackListInput.PhoneNumber);
+    }
+
+    /// <summary>
+    /// Метод получает список пользователей в ЧС.
+    /// </summary>
+    /// <returns>Список пользователей в ЧС.</returns>
+    [HttpGet]
+    [Route("blacklist")]
+    [ProducesResponseType(200, Type = typeof(UserBlackListResult))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<UserBlackListResult> GetUsersBlackListAsync()
+    {
+        var result = await _userBlackListService.GetUsersBlackListAsync();
 
         return result;
     }

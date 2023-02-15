@@ -1,4 +1,5 @@
 ﻿using LeokaEstetica.Platform.Core.Extensions;
+using LeokaEstetica.Platform.Models.Entities.Access;
 using LeokaEstetica.Platform.Models.Entities.Commerce;
 using LeokaEstetica.Platform.Models.Entities.Common;
 using LeokaEstetica.Platform.Models.Entities.Communication;
@@ -276,4 +277,24 @@ public class PgContext : DbContext
     /// Таблица подписок пользователей.
     /// </summary>
     public DbSet<UserSubscriptionEntity> UserSubscriptions { get; set; }
+
+    /// <summary>
+    /// Таблица ЧС почты пользователей.
+    /// </summary>
+    public DbSet<UserEmailBlackListEntity> UserEmailBlackList { get; set; }
+    
+    /// <summary>
+    /// Таблица ЧС номеров телефонов пользователей.
+    /// </summary>
+    public DbSet<UserPhoneBlackListEntity> UserPhoneBlackList { get; set; }
+
+    /// <summary>
+    /// Теневая таблица истории ЧС почты пользователей.
+    /// </summary>
+    public DbSet<UserEmailBlackListShadowEntity> UserEmailBlackListShadow { get; set; }
+
+    /// <summary>
+    /// Теневая таблица истории ЧС номеров телефонов пользователей.
+    /// </summary>
+    public DbSet<UserPhoneBlackListShadowEntity> UserPhoneBlackListShadow { get; set; }
 }
