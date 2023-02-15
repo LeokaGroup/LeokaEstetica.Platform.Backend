@@ -62,12 +62,12 @@ public sealed class ChatService : IChatService
 
             if (userId == 0)
             {
-                throw new NullReferenceException($"Id пользователя с аккаунтом {account} не найден.");
+                throw new InvalidOperationException($"Id пользователя с аккаунтом {account} не найден.");
             }
 
             if (discussionTypeId <= 0)
             {
-                throw new NullReferenceException("Не передали Id предмета обсуждения.");
+                throw new InvalidOperationException("Не передали Id предмета обсуждения.");
             }
 
             var ownerId = await GetOwnerIdAsync(discussionType, discussionTypeId);
@@ -138,7 +138,7 @@ public sealed class ChatService : IChatService
 
             if (!checkDialog)
             {
-                throw new NullReferenceException($"Такого диалога не найдено. DialogId был {convertDialogId}");
+                throw new InvalidOperationException($"Такого диалога не найдено. DialogId был {convertDialogId}");
             }
 
             // Получаем список Id участников диалога.
@@ -146,7 +146,7 @@ public sealed class ChatService : IChatService
 
             if (!memberIds.Any())
             {
-                throw new NullReferenceException($"Не найдено участников для диалога с DialogId {convertDialogId}");
+                throw new InvalidOperationException($"Не найдено участников для диалога с DialogId {convertDialogId}");
             }
 
             // Получаем список сообщений диалога.
@@ -236,7 +236,7 @@ public sealed class ChatService : IChatService
 
             if (userId == 0)
             {
-                throw new NullReferenceException($"Id пользователя с аккаунтом {account} не найден.");
+                throw new InvalidOperationException($"Id пользователя с аккаунтом {account} не найден.");
             }
 
             var dialogs = await _chatRepository.GetDialogsAsync(userId);
@@ -272,12 +272,12 @@ public sealed class ChatService : IChatService
 
             if (userId == 0)
             {
-                throw new NullReferenceException($"Id пользователя с аккаунтом {account} не найден.");
+                throw new InvalidOperationException($"Id пользователя с аккаунтом {account} не найден.");
             }
 
             if (discussionTypeId <= 0)
             {
-                throw new NullReferenceException("Не передали Id предмета обсуждения.");
+                throw new InvalidOperationException("Не передали Id предмета обсуждения.");
             }
 
             var ownerId = await GetOwnerIdAsync(discussionType, discussionTypeId);
@@ -369,7 +369,7 @@ public sealed class ChatService : IChatService
 
             if (userId == 0)
             {
-                throw new NullReferenceException($"Id пользователя с аккаунтом {account} не найден.");
+                throw new InvalidOperationException($"Id пользователя с аккаунтом {account} не найден.");
             }
 
             // Проверяем существование диалога.
@@ -377,7 +377,7 @@ public sealed class ChatService : IChatService
 
             if (!checkDialog)
             {
-                throw new NullReferenceException($"Такого диалога не найдено. DialogId был {dialogId}");
+                throw new InvalidOperationException($"Такого диалога не найдено. DialogId был {dialogId}");
             }
 
             // Записываем сообщение в БД.

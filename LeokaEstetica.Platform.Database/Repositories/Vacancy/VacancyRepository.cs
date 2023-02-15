@@ -188,7 +188,7 @@ public class VacancyRepository : IVacancyRepository
 
         if (vacancy is null)
         {
-            throw new NullReferenceException($"Не найдено вакансии для обновления. VacancyId был {vacancyId}");
+            throw new InvalidOperationException($"Не найдено вакансии для обновления. VacancyId был {vacancyId}");
         }
 
         vacancy.VacancyName = vacancyName;

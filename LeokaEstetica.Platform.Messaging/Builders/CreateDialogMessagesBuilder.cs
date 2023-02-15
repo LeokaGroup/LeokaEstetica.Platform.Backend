@@ -17,7 +17,6 @@ public static class CreateDialogMessagesBuilder
     /// <param name="userRepository">Зависимость пользователя.</param>
     /// <param name="userId">Id пользователя.</param>
     /// <returns>Список диалогов.</returns>
-    /// <exception cref="NullReferenceException"></exception>
     public static async Task<List<DialogOutput>> Create(List<DialogOutput> dialogs, IChatRepository chatRepository,
         IUserRepository userRepository, long userId)
     {
@@ -38,7 +37,7 @@ public static class CreateDialogMessagesBuilder
 
             if (membersIds == null)
             {
-                throw new NullReferenceException($"Не найдено участников для диалога с DialogId {dialog.DialogId}");
+                throw new InvalidOperationException($"Не найдено участников для диалога с DialogId {dialog.DialogId}");
             }
 
             // Записываем имя и фамилию участника диалога, с которым идет общение.

@@ -342,7 +342,7 @@ public class VacancyService : IVacancyService
 
             if (!items.Any())
             {
-                throw new NullReferenceException("Не удалось получить поля для таблицы ProjectVacancyColumnsNames.");
+                throw new InvalidOperationException("Не удалось получить поля для таблицы ProjectVacancyColumnsNames.");
             }
 
             var result = _mapper.Map<IEnumerable<ProjectVacancyColumnNameOutput>>(items);

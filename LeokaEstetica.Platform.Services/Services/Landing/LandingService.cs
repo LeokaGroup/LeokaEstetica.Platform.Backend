@@ -36,7 +36,7 @@ public sealed class LandingService : ILandingService
 
             if (fon is null)
             {
-                throw new NullReferenceException($"Нет данных фона для главного лендинга!");
+                throw new InvalidOperationException($"Нет данных фона для главного лендинга!");
             }
 
             var result = _mapper.Map<LandingStartFonOutput>(fon);
@@ -64,7 +64,7 @@ public sealed class LandingService : ILandingService
 
             if (fon is null)
             {
-                throw new NullReferenceException($"Нет данных фона для предложений платформы!");
+                throw new InvalidOperationException($"Нет данных фона для предложений платформы!");
             }
 
             var result = _mapper.Map<PlatformOfferOutput>(fon);
@@ -76,7 +76,7 @@ public sealed class LandingService : ILandingService
             
             if (!platformOfferItemsEntities.Any())
             {
-                throw new NullReferenceException($"Нет данных списка элементов для предложений платформы!");
+                throw new InvalidOperationException($"Нет данных списка элементов для предложений платформы!");
             }
 
             // Наполняем список элементов в выходной модели.

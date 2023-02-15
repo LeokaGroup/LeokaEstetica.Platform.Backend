@@ -90,7 +90,7 @@ public sealed class UserService : IUserService
             
             if (addedUser is null)
             {
-                throw new NullReferenceException("Ошибка добавления пользователя!");
+                throw new InvalidOperationException("Ошибка добавления пользователя!");
             }
             
             result = _mapper.Map<UserSignUpOutput>(addedUser);
@@ -112,13 +112,6 @@ public sealed class UserService : IUserService
             await tran.CommitAsync();
 
             return result;
-        }
-
-        catch (NullReferenceException ex)
-        {
-            await tran.RollbackAsync();
-            await _logger.LogCriticalAsync(ex);
-            throw;
         }
 
         catch (Exception ex)
@@ -227,7 +220,7 @@ public sealed class UserService : IUserService
 
             if (passwordHash is null)
             {
-                throw new NullReferenceException($"Хэш пароль не удалось получить для пользователя {email}");
+                throw new InvalidOperationException($"Хэш пароль не удалось получить для пользователя {email}");
             }
 
             var checkPassword = HashHelper.VerifyHashedPassword(passwordHash, password);

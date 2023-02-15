@@ -114,7 +114,7 @@ public sealed class ProjectModerationRepository : IProjectModerationRepository
 
         if (prj is null)
         {
-            throw new NullReferenceException($"Не удалось найти проект для модерации. ProjectId = {projectId}");
+            throw new InvalidOperationException($"Не удалось найти проект для модерации. ProjectId = {projectId}");
         }
 
         prj.ModerationStatusId = (int)projectModerationStatus;

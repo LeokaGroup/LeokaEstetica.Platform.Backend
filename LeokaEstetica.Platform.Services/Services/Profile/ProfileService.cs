@@ -60,14 +60,14 @@ public sealed class ProfileService : IProfileService
 
             if (userId <= 0)
             {
-                throw new NullReferenceException($"Пользователя с почтой {account} не существует в системе.");
+                throw new InvalidOperationException($"Пользователя с почтой {account} не существует в системе.");
             }
 
             var profileInfo = await _profileRepository.GetProfileInfoAsync(userId);
 
             if (profileInfo is null)
             {
-                throw new NullReferenceException($"Не найдено информации о профиле пользователя с UserId: {userId}");
+                throw new InvalidOperationException($"Не найдено информации о профиле пользователя с UserId: {userId}");
             }
 
             var result = _mapper.Map<ProfileInfoOutput>(profileInfo);
@@ -192,7 +192,7 @@ public sealed class ProfileService : IProfileService
 
             if (userId == 0)
             {
-                throw new NullReferenceException($"Id пользователя с аккаунтом {account} не найден!");
+                throw new InvalidOperationException($"Id пользователя с аккаунтом {account} не найден!");
             }
 
             // Получаем данные профиля пользователя.
@@ -200,7 +200,7 @@ public sealed class ProfileService : IProfileService
 
             if (profileInfo is null)
             {
-                throw new NullReferenceException($"Для пользователя {account} не заведено профиля в системе!");
+                throw new InvalidOperationException($"Для пользователя {account} не заведено профиля в системе!");
             }
 
             CreateProfileInfoModel(profileInfoInput, ref profileInfo);
@@ -219,8 +219,8 @@ public sealed class ProfileService : IProfileService
             await SaveUserIntentsAsync(profileInfoInput, userId);
 
             // Отправляем уведомление о сохранении фронту.
-            await _notificationsService
-                .SendNotifySuccessSaveAsync("Все хорошо", "Данные успешно сохранены!", NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS);
+            await _notificationsService.SendNotifySuccessSaveAsync("Все хорошо", "Данные успешно сохранены!",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS);
 
             result.IsSuccess = true;
 

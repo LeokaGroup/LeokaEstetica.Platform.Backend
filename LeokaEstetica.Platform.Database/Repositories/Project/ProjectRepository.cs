@@ -210,7 +210,7 @@ public class ProjectRepository : IProjectRepository
 
             if (project is null)
             {
-                throw new NullReferenceException(
+                throw new InvalidOperationException(
                     $"Проект не найден для обновления. ProjectId был {projectId}. UserId был {userId}");
             }
 
@@ -224,7 +224,7 @@ public class ProjectRepository : IProjectRepository
 
             if (stage is null)
             {
-                throw new NullReferenceException($"У проекта не записана стадия. ProjectId был {projectId}.");
+                throw new InvalidOperationException($"У проекта не записана стадия. ProjectId был {projectId}.");
             }
 
             stage.StageId = (int)projectStage;

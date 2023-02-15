@@ -232,7 +232,7 @@ public class ProjectService : IProjectService
 
             if (!items.Any())
             {
-                throw new NullReferenceException("Не удалось получить поля для таблицы ProjectColumnsNames.");
+                throw new InvalidOperationException("Не удалось получить поля для таблицы ProjectColumnsNames.");
             }
 
             var result = _mapper.Map<IEnumerable<ProjectColumnNameOutput>>(items);
@@ -440,7 +440,7 @@ public class ProjectService : IProjectService
 
             if (result is null)
             {
-                var ex = new NullReferenceException(
+                var ex = new InvalidOperationException(
                     $"Не удалось найти проект с ProjectId {projectId} и UserId {userId}");
                 await _logService.LogErrorAsync(ex);
                 throw ex;
@@ -730,7 +730,7 @@ public class ProjectService : IProjectService
             // Если команды проекта не нашли.
             if (projectTeam is null)
             {
-                var ex = new NullReferenceException($"Команды проекта не найдено. ProjectId = {projectId}");
+                var ex = new InvalidOperationException($"Команды проекта не найдено. ProjectId = {projectId}");
                 await _logService.LogErrorAsync(ex);
                 throw ex;
             }
@@ -741,7 +741,7 @@ public class ProjectService : IProjectService
             // Если не нашли участников команды проекта.
             if (teamMembers is null)
             {
-                var ex = new NullReferenceException(
+                var ex = new InvalidOperationException(
                     $"Участников команды проекта не найдено. ProjectId = {projectId}. TeamId = {projectTeam.TeamId}");
                 await _logService.LogErrorAsync(ex);
                 throw ex;
@@ -776,7 +776,7 @@ public class ProjectService : IProjectService
 
             if (string.IsNullOrEmpty(vacancyName))
             {
-                var ex = new NullReferenceException(
+                var ex = new InvalidOperationException(
                     $"Ошибка получения названия вакансии. VacancyId = {member.UserVacancy.VacancyId}");
                 await _logService.LogErrorAsync(ex);
                 throw ex;
@@ -787,7 +787,7 @@ public class ProjectService : IProjectService
 
             if (user is null)
             {
-                var ex = new NullReferenceException(
+                var ex = new InvalidOperationException(
                     $"Ошибка получения данных пользователя. UserId = {member.UserId}");
                 await _logService.LogErrorAsync(ex);
                 throw ex;

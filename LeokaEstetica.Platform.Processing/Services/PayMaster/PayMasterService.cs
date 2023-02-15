@@ -59,7 +59,7 @@ public class PayMasterService : IPayMasterService
 
             if (fareRule is null)
             {
-                throw new NullReferenceException(
+                throw new InvalidOperationException(
                     $"Ошибка получения тарифа. FareRuleId был {createOrderInput.FareRuleId}. " +
                     $"CreateOrder:{JsonConvert.SerializeObject(createOrderInput)}");
             }

@@ -39,7 +39,7 @@ public sealed class ProjectFinderService : IProjectFinderService
             // Если не удалось найти таких пользователей.
             if (!users.Any())
             {
-                var ex = new NullReferenceException($"Пользователя по поисковому запросу {searchText} не найдено.");
+                var ex = new InvalidOperationException($"Пользователя по поисковому запросу {searchText} не найдено.");
                 await _logService.LogErrorAsync(ex,
                     $"Ошибка поиска пользователей для приглашения в команду проекта. Поисковая строка была {searchText}");
                 await _projectNotificationsService.SendNotificationWarningSearchProjectTeamMemberAsync(
