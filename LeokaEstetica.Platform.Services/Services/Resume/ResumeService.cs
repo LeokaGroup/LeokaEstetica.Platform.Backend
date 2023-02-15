@@ -8,7 +8,6 @@ using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Models.Dto.Output.Resume;
 using LeokaEstetica.Platform.Models.Entities.Profile;
 using LeokaEstetica.Platform.Services.Abstractions.Resume;
-using LeokaEstetica.Platform.Services.Builders;
 
 namespace LeokaEstetica.Platform.Services.Services.Resume;
 
@@ -61,12 +60,7 @@ public class ResumeService : IResumeService
         try
         {
             var resumes = await _resumeRepository.GetProfileInfosAsync();
-            
-            // TODO: Временный костыль.Это должна решать модерация и некорректные резюме не будут попадать в каталог.
-            // TODO: А это потом надо убрать.
-            // Убираем анкеты, которые не проходят по условиям.
-            CreateProfileInfosBuilder.CreateProfileInfosResult(ref resumes);
-            
+
             var result = new ResumeResultOutput
             {
                 // Приводим к выходной модели.
