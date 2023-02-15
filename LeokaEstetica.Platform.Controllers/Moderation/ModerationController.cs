@@ -4,10 +4,12 @@ using LeokaEstetica.Platform.Access.Abstractions.Moderation;
 using LeokaEstetica.Platform.Base;
 using LeokaEstetica.Platform.Controllers.Validators.Access;
 using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Project;
+using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Resume;
 using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Vacancy;
 using LeokaEstetica.Platform.Models.Dto.Output.Project;
 using LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
 using LeokaEstetica.Platform.Moderation.Abstractions.Project;
+using LeokaEstetica.Platform.Moderation.Abstractions.Resume;
 using LeokaEstetica.Platform.Moderation.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Moderation.Models.Dto.Input.Access;
 using LeokaEstetica.Platform.Moderation.Models.Dto.Input.Project;
@@ -33,6 +35,7 @@ public class ModerationController : BaseController
     private readonly IMapper _mapper;
     private readonly IVacancyModerationService _vacancyModerationService;
     private readonly IUserBlackListService _userBlackListService;
+    private readonly IResumeModerationService _resumeModerationService;
 
     /// <summary>
     /// Конструктор.
@@ -42,17 +45,20 @@ public class ModerationController : BaseController
     /// <param name="mapper">Автомаппер.</param>
     /// <param name="vacancyModerationService">Сервис модерации вакансий.</param>
     /// <param name="userBlackListService">Сервис ЧС пользователей.</param>
+    /// <param name="resumeModerationService">Сервис модерации анкет.</param>
     public ModerationController(IAccessModerationService accessModerationService,
         IProjectModerationService projectModerationService,
         IMapper mapper,
         IVacancyModerationService vacancyModerationService, 
-        IUserBlackListService userBlackListService)
+        IUserBlackListService userBlackListService, 
+        IResumeModerationService resumeModerationService)
     {
         _accessModerationService = accessModerationService;
         _projectModerationService = projectModerationService;
         _mapper = mapper;
         _vacancyModerationService = vacancyModerationService;
         _userBlackListService = userBlackListService;
+        _resumeModerationService = resumeModerationService;
     }
 
     /// <summary>
@@ -258,6 +264,24 @@ public class ModerationController : BaseController
     public async Task<UserBlackListResult> GetUsersBlackListAsync()
     {
         var result = await _userBlackListService.GetUsersBlackListAsync();
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод получает список анкет для модерации.
+    /// </summary>
+    /// <returns>Список анкет.</returns>
+    [HttpGet]
+    [Route("resumes")]
+    [ProducesResponseType(200, Type = typeof(ResumeModerationResult))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<ResumeModerationResult> ResumesModerationAsync()
+    {
+        var result = await _resumeModerationService.ResumesModerationAsync();
 
         return result;
     }

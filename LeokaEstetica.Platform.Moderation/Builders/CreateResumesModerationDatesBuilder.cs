@@ -1,16 +1,16 @@
 using System.Globalization;
 using AutoMapper;
-using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Project;
+using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Resume;
 using LeokaEstetica.Platform.Models.Entities.Moderation;
 
 namespace LeokaEstetica.Platform.Moderation.Builders;
 
 /// <summary>
-/// Билдер строит даты проектов модерации к нужному виду.
+/// Билдер строит даты анкет модерации к нужному виду.
 /// </summary>
-public static class CreateProjectsModerationDatesBuilder
+public static class CreateResumesModerationDatesBuilder
 {
-    private static readonly List<ProjectModerationOutput> _projects = new();
+    private static readonly List<ResumeModerationOutput> _resumes = new();
     
     /// <summary>
     /// Метод форматирует даты к нужному виду для модерации.
@@ -18,25 +18,22 @@ public static class CreateProjectsModerationDatesBuilder
     /// <param name="projects">Список проектов из БД.</param>
     /// <param name="mapper">Автомаппер.</param>
     /// <returns>Список с измененными датами.</returns>
-    public static IEnumerable<ProjectModerationOutput> Create(IEnumerable<ModerationProjectEntity> projects,
+    public static IEnumerable<ResumeModerationOutput> Create(IEnumerable<ModerationResumeEntity> resumes,
         IMapper mapper)
     {
-        _projects.Clear();
+        _resumes.Clear();
         
-        foreach (var item in projects)
+        foreach (var item in resumes)
         {
             // Прежде чем мапить форматируем даты.
             var convertModerationDate = item.DateModeration.ToString("g", CultureInfo.GetCultureInfo("ru"));
-            var convertCreatedDate = item.UserProject.DateCreated.ToString("g", CultureInfo.GetCultureInfo("ru"));
-            
+
             // Затем уже мапим к результирующей модели.
-            var newItem = mapper.Map<ProjectModerationOutput>(item);
+            var newItem = mapper.Map<ResumeModerationOutput>(item);
             newItem.DateModeration = convertModerationDate;
-            newItem.DateCreated = convertCreatedDate;
-            newItem.ProjectName = item.UserProject.ProjectName;
-            _projects.Add(newItem);
+            _resumes.Add(newItem);
         }
 
-        return _projects;
+        return _resumes;
     }
 }

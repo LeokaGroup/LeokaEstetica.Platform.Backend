@@ -1,8 +1,10 @@
 using Autofac;
 using LeokaEstetica.Platform.Core.Attributes;
 using LeokaEstetica.Platform.Moderation.Abstractions.Project;
+using LeokaEstetica.Platform.Moderation.Abstractions.Resume;
 using LeokaEstetica.Platform.Moderation.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Moderation.Services.Project;
+using LeokaEstetica.Platform.Moderation.Services.Resume;
 using LeokaEstetica.Platform.Moderation.Services.Vacancy;
 
 namespace LeokaEstetica.Platform.Moderation.AutofacModules;
@@ -30,6 +32,16 @@ public class ModerationModule : Module
         builder
             .RegisterType<ProjectModerationService>()
             .As<IProjectModerationService>()
+            .InstancePerLifetimeScope();
+        
+        // Сервис модерации анкет пользователей.
+        builder
+            .RegisterType<ResumeModerationService>()
+            .Named<IResumeModerationService>("ResumeModerationService")
+            .InstancePerLifetimeScope();
+        builder
+            .RegisterType<ResumeModerationService>()
+            .As<IResumeModerationService>()
             .InstancePerLifetimeScope();
     }
 }
