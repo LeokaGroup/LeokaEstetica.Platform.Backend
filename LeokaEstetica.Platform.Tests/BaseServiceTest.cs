@@ -151,6 +151,7 @@ public class BaseServiceTest
 
         var userBlackListService = new UserBlackListRepository(pgContext);
         UserBlackListService = new UserBlackListService(logService, userBlackListService);
-        ResumeModerationService = new ResumeModerationService(logService, resumeModerationRepository, mapper);
+        ResumeModerationService =
+            new ResumeModerationService(logService, resumeModerationRepository, mapper, userRepository);
     }
 }
