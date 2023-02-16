@@ -1,4 +1,3 @@
-using LeokaEstetica.Platform.Finder.Factors;
 using Lucene.Net.Analysis.Standard;
 using Lucene.Net.Store;
 using Version = Lucene.Net.Util.Version;
@@ -29,6 +28,6 @@ public abstract class BaseIndexRamDirectory
     protected BaseIndexRamDirectory()
     {
         _analyzer = new StandardAnalyzer(_version);
-        _index = new Lazy<RAMDirectory>(CreateIndexRamDirectoryFactory.CreateNew<RAMDirectory>);
+        _index = new Lazy<RAMDirectory>();
     }
 }
