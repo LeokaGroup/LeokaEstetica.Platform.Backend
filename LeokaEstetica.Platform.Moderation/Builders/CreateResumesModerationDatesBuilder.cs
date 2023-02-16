@@ -2,6 +2,7 @@ using System.Globalization;
 using AutoMapper;
 using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Resume;
 using LeokaEstetica.Platform.Models.Entities.Moderation;
+using LeokaEstetica.Platform.Models.Entities.User;
 
 namespace LeokaEstetica.Platform.Moderation.Builders;
 
@@ -19,7 +20,7 @@ public static class CreateResumesModerationDatesBuilder
     /// <param name="mapper">Автомаппер.</param>
     /// <returns>Список с измененными датами.</returns>
     public static IEnumerable<ResumeModerationOutput> Create(IEnumerable<ModerationResumeEntity> resumes,
-        IMapper mapper)
+        IMapper mapper, List<UserEntity> users)
     {
         _resumes.Clear();
         
@@ -31,6 +32,16 @@ public static class CreateResumesModerationDatesBuilder
             // Затем уже мапим к результирующей модели.
             var newItem = mapper.Map<ResumeModerationOutput>(item);
             newItem.DateModeration = convertModerationDate;
+            
+            // Получаем недостающие данные для пользователей.
+            var findItem = users.Find(u => u.UserId == item.ProfileInfo.UserId);
+
+            if (findItem is not null)
+            {
+                newItem.Email = findItem.Email;
+                newItem.PhoneNumber = findItem.PhoneNumber;
+            }
+            
             _resumes.Add(newItem);
         }
 

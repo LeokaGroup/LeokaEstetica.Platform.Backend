@@ -74,4 +74,14 @@ public class ResumeModerationOutput
     /// Дата модерации вакансии.
     /// </summary>
     public string DateModeration { get; set; }
+    
+    /// <summary>
+    /// Email.
+    /// </summary>
+    public string Email { get; set; }
+
+    /// <summary>
+    /// Номер телефона пользователя.
+    /// </summary>
+    public string PhoneNumber { get; set; }
 }

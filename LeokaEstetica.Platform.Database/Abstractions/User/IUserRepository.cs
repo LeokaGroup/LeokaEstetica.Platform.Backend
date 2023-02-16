@@ -97,4 +97,10 @@ public interface IUserRepository
     /// </summary>
     /// <returns>Словарь кодов пользователей.</returns>
     Task<Dictionary<long, Guid>> GetUsersCodesAsync();
+
+    /// <summary>
+    /// Метод получает список пользователей.
+    /// </summary>
+    /// <returns>Список пользователей.</returns>
+    Task<List<UserEntity>> GetAllAsync();
 }

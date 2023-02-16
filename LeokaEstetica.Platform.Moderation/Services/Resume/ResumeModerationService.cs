@@ -1,5 +1,6 @@
 using AutoMapper;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Resume;
+using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Resume;
 using LeokaEstetica.Platform.Moderation.Abstractions.Resume;
@@ -15,6 +16,7 @@ public class ResumeModerationService : IResumeModerationService
     private readonly ILogService _logService;
     private readonly IResumeModerationRepository _resumeModerationRepository;
     private readonly IMapper _mapper;
+    private readonly IUserRepository _userRepository;
     
     /// <summary>
     /// Конструктор.
@@ -22,13 +24,16 @@ public class ResumeModerationService : IResumeModerationService
     /// <param name="logService">Сервис логера.</param>
     /// <param name="resumeModerationRepository">Репозиторий анкет.</param>
     /// <param name="mapper">Автомаппер.</param>
+    /// <param name="userRepository">Репозиторий пользователя..</param>
     public ResumeModerationService(ILogService logService, 
         IResumeModerationRepository resumeModerationRepository, 
-        IMapper mapper)
+        IMapper mapper, 
+        IUserRepository userRepository)
     {
         _logService = logService;
         _resumeModerationRepository = resumeModerationRepository;
         _mapper = mapper;
+        _userRepository = userRepository;
     }
 
     /// <summary>
@@ -41,7 +46,8 @@ public class ResumeModerationService : IResumeModerationService
         {
             var result = new ResumeModerationResult();
             var items = await _resumeModerationRepository.ResumesModerationAsync();
-            result.Resumes = CreateResumesModerationDatesBuilder.Create(items, _mapper);
+            var users = await _userRepository.GetAllAsync();
+            result.Resumes = CreateResumesModerationDatesBuilder.Create(items, _mapper, users);
 
             return result;
         }
