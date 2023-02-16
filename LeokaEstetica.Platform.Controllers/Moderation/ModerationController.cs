@@ -306,16 +306,16 @@ public class ModerationController : BaseController
     /// <summary>
     /// Метод отклоняет анкету на модерации.
     /// </summary>
-    /// <param name="approveResumeInput">Входная модель.</param>
+    /// <param name="rejectResumeInput">Входная модель.</param>
     [HttpPatch]
-    [Route("resume/approve")]
+    [Route("resume/reject")]
     [ProducesResponseType(200)]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task RejectResumeAsync([FromBody] ApproveResumeInput approveResumeInput)
+    public async Task RejectResumeAsync([FromBody] RejectResumeInput rejectResumeInput)
     {
-        await _resumeModerationService.RejectResumeAsync(approveResumeInput.ProfileInfoId);
+        await _resumeModerationService.RejectResumeAsync(rejectResumeInput.ProfileInfoId);
     }
 }
