@@ -6,6 +6,7 @@ using LeokaEstetica.Platform.Models.Dto.Output.FareRule;
 using LeokaEstetica.Platform.Models.Dto.Output.Header;
 using LeokaEstetica.Platform.Models.Dto.Output.Landing;
 using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Project;
+using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Resume;
 using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Vacancy;
 using LeokaEstetica.Platform.Models.Dto.Output.Profile;
 using LeokaEstetica.Platform.Models.Dto.Output.Project;
@@ -106,5 +107,7 @@ public class MappingProfile : Profile
         CreateMap<OrderEntity, CreateOrderOutput>();
         
         CreateMap<SubscriptionEntity, SubscriptionOutput>();
+        
+        CreateMap<ModerationResumeEntity, ResumeModerationOutput>();
     }
 }
