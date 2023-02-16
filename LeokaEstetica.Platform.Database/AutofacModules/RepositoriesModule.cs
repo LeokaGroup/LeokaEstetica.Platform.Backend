@@ -6,6 +6,7 @@ using LeokaEstetica.Platform.Database.Abstractions.Header;
 using LeokaEstetica.Platform.Database.Abstractions.Landing;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Access;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Project;
+using LeokaEstetica.Platform.Database.Abstractions.Moderation.Resume;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Vacancy;
 using LeokaEstetica.Platform.Database.Abstractions.Profile;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
@@ -21,6 +22,7 @@ using LeokaEstetica.Platform.Database.Repositories.Header;
 using LeokaEstetica.Platform.Database.Repositories.Landing;
 using LeokaEstetica.Platform.Database.Repositories.Moderation.Access;
 using LeokaEstetica.Platform.Database.Repositories.Moderation.Project;
+using LeokaEstetica.Platform.Database.Repositories.Moderation.Resume;
 using LeokaEstetica.Platform.Database.Repositories.Moderation.Vacancy;
 using LeokaEstetica.Platform.Database.Repositories.Profile;
 using LeokaEstetica.Platform.Database.Repositories.Project;
@@ -194,6 +196,16 @@ public class RepositoriesModule : Module
         builder
             .RegisterType<UserBlackListRepository>()
             .As<IUserBlackListRepository>()
+            .InstancePerLifetimeScope();
+        
+        // Репозиторий модерации анкет пользователей.
+        builder
+            .RegisterType<ResumeModerationRepository>()
+            .Named<IResumeModerationRepository>("ResumeModerationRepository")
+            .InstancePerLifetimeScope();
+        builder
+            .RegisterType<ResumeModerationRepository>()
+            .As<IResumeModerationRepository>()
             .InstancePerLifetimeScope();
     }
 }

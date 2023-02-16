@@ -34,7 +34,8 @@ public sealed class ProfileRepository : IProfileRepository
     /// Метод добавляет данные о пользователе в таблицу профиля.
     /// </summary>
     /// <param name="userId">Id пользователя.</param>
-    public async Task AddUserInfoAsync(long userId)
+    /// <returns>Id анкеты пользователя.</returns>
+    public async Task<long> AddUserInfoAsync(long userId)
     {
         var userInfo = new ProfileInfoEntity
         {
@@ -47,6 +48,8 @@ public sealed class ProfileRepository : IProfileRepository
         };
         await _pgContext.ProfilesInfo.AddAsync(userInfo);
         await _pgContext.SaveChangesAsync();
+
+        return userInfo.ProfileInfoId;
     }
 
     /// <summary>

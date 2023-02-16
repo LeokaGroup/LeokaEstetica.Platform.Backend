@@ -9,6 +9,7 @@ public class ModerationStatusEntity
     {
         ProjectCommentsModeration = new HashSet<ProjectCommentModerationEntity>();
         ModerationProjects = new HashSet<ModerationProjectEntity>();
+        ModerationResumes = new HashSet<ModerationResumeEntity>();
     }
 
     /// <summary>
@@ -40,4 +41,9 @@ public class ModerationStatusEntity
     /// Список вакансий модерации.
     /// </summary>
     public ICollection<ModerationVacancyEntity> ModerationVacancies { get; set; }
+
+    /// <summary>
+    /// Список анкет модерации.
+    /// </summary>
+    public ICollection<ModerationResumeEntity> ModerationResumes { get; set; }
 }

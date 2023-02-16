@@ -13,7 +13,7 @@ public interface IUserRepository
     /// </summary>
     /// <param name="user">Данные пользователя для добавления.</param>
     /// <returns>Id пользователя.</returns>
-    Task<long> SaveUserAsync(UserEntity user); 
+    Task<long> AddUserAsync(UserEntity user); 
 
     /// <summary>
     /// Метод находит пользователя по его UserId.
@@ -97,4 +97,10 @@ public interface IUserRepository
     /// </summary>
     /// <returns>Словарь кодов пользователей.</returns>
     Task<Dictionary<long, Guid>> GetUsersCodesAsync();
+
+    /// <summary>
+    /// Метод получает список пользователей.
+    /// </summary>
+    /// <returns>Список пользователей.</returns>
+    Task<List<UserEntity>> GetAllAsync();
 }

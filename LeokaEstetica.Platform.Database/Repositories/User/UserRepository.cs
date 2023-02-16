@@ -11,11 +11,16 @@ namespace LeokaEstetica.Platform.Database.Repositories.User;
 /// <summary>
 /// Класс реализует методы репозитория пользователей.
 /// </summary>
-public sealed class UserRepository : IUserRepository
+public class UserRepository : IUserRepository
 {
     private readonly PgContext _pgContext;
     private readonly ILogService _logger;
     
+    /// <summary>
+    /// Конструктор.
+    /// </summary>
+    /// <param name="pgContext">Датаконтекст.</param>
+    /// <param name="logger">Сервис логера.</param>
     public UserRepository(PgContext pgContext, 
         ILogService logger)
     {
@@ -28,7 +33,7 @@ public sealed class UserRepository : IUserRepository
     /// </summary>
     /// <param name="user">Данные пользователя для добавления.</param>
     /// <returns>Id пользователя.</returns>
-    public async Task<long> SaveUserAsync(UserEntity user)
+    public async Task<long> AddUserAsync(UserEntity user)
     {
         await _pgContext.Users.AddAsync(user);
         await _pgContext.SaveChangesAsync();
@@ -231,6 +236,17 @@ public sealed class UserRepository : IUserRepository
     public async Task<Dictionary<long, Guid>> GetUsersCodesAsync()
     {
         var result = await _pgContext.Users.ToDictionaryAsync(k => k.UserId, v => v.UserCode);
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод получает список пользователей.
+    /// </summary>
+    /// <returns>Список пользователей.</returns>
+    public async Task<List<UserEntity>> GetAllAsync()
+    {
+        var result = await _pgContext.Users.ToListAsync();
 
         return result;
     }

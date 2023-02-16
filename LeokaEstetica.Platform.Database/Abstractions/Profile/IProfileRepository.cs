@@ -18,7 +18,8 @@ public interface IProfileRepository
     /// Метод добавляет данные о пользователе в таблицу профиля.
     /// </summary>
     /// <param name="userId">Id пользователя.</param>
-    Task AddUserInfoAsync(long userId);
+    /// <returns>Id анкеты пользователя.</returns>
+    Task<long> AddUserInfoAsync(long userId);
 
     /// <summary>
     /// Метод получает список элементов меню профиля пользователя.

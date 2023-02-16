@@ -1,17 +1,15 @@
-using LeokaEstetica.Platform.Models.Entities.Moderation;
-
-namespace LeokaEstetica.Platform.Models.Entities.Profile;
+namespace LeokaEstetica.Platform.Models.Dto.Output.Moderation.Resume;
 
 /// <summary>
-/// Класс сопоставляется с таблицей информации о пользователе (Обо мне) Profile.ProfilesInfo.
+/// Класс выходной модели анкет.
 /// </summary>
-public class ProfileInfoEntity
+public class ResumeModerationOutput
 {
-    public ProfileInfoEntity()
-    {
-        ModerationResumes = new HashSet<ModerationResumeEntity>();
-    }
-
+    /// <summary>
+    /// Название статуса модерации.
+    /// </summary>
+    public string ModerationStatusName { get; set; }
+    
     /// <summary>
     /// PK.
     /// </summary>
@@ -71,9 +69,19 @@ public class ProfileInfoEntity
     /// Id пользователя.
     /// </summary>
     public long UserId { get; set; }
+    
+    /// <summary>
+    /// Дата модерации вакансии.
+    /// </summary>
+    public string DateModeration { get; set; }
+    
+    /// <summary>
+    /// Email.
+    /// </summary>
+    public string Email { get; set; }
 
     /// <summary>
-    /// Список анкет.
+    /// Номер телефона пользователя.
     /// </summary>
-    public ICollection<ModerationResumeEntity> ModerationResumes { get; set; }
+    public string PhoneNumber { get; set; }
 }

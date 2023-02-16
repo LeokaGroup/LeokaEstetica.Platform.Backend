@@ -297,4 +297,9 @@ public class PgContext : DbContext
     /// Теневая таблица истории ЧС номеров телефонов пользователей.
     /// </summary>
     public DbSet<UserPhoneBlackListShadowEntity> UserPhoneBlackListShadow { get; set; }
+
+    /// <summary>
+    /// Таблица модерации анкет.
+    /// </summary>
+    public DbSet<ModerationResumeEntity> ModerationResumes { get; set; }
 }

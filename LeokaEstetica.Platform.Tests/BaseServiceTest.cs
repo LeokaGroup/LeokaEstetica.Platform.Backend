@@ -10,6 +10,7 @@ using LeokaEstetica.Platform.Database.Repositories.Commerce;
 using LeokaEstetica.Platform.Database.Repositories.FareRule;
 using LeokaEstetica.Platform.Database.Repositories.Moderation.Access;
 using LeokaEstetica.Platform.Database.Repositories.Moderation.Project;
+using LeokaEstetica.Platform.Database.Repositories.Moderation.Resume;
 using LeokaEstetica.Platform.Database.Repositories.Moderation.Vacancy;
 using LeokaEstetica.Platform.Database.Repositories.Profile;
 using LeokaEstetica.Platform.Database.Repositories.Project;
@@ -24,6 +25,7 @@ using LeokaEstetica.Platform.Logs.Services;
 using LeokaEstetica.Platform.Messaging.Services.Chat;
 using LeokaEstetica.Platform.Messaging.Services.Project;
 using LeokaEstetica.Platform.Moderation.Services.Project;
+using LeokaEstetica.Platform.Moderation.Services.Resume;
 using LeokaEstetica.Platform.Moderation.Services.Vacancy;
 using LeokaEstetica.Platform.Notifications.Services;
 using LeokaEstetica.Platform.Processing.Services.PayMaster;
@@ -67,6 +69,7 @@ public class BaseServiceTest
     protected readonly PayMasterService PayMasterService;
     protected readonly SubscriptionService SubscriptionService;
     protected readonly UserBlackListService UserBlackListService;
+    protected readonly ResumeModerationService ResumeModerationService;
 
     protected BaseServiceTest()
     {
@@ -88,9 +91,10 @@ public class BaseServiceTest
         var profileRepository = new ProfileRepository(pgContext);
         var subscriptionRepository = new SubscriptionRepository(pgContext);
         var chatRepository = new ChatRepository(pgContext);
+        var resumeModerationRepository = new ResumeModerationRepository(pgContext);
 
         UserService = new UserService(logService, userRepository, mapper, null, pgContext, profileRepository,
-            subscriptionRepository);
+            subscriptionRepository, resumeModerationRepository);
         ProfileService = new ProfileService(logService, profileRepository, userRepository, mapper, null, null);
 
         var projectRepository = new ProjectRepository(pgContext, chatRepository);
@@ -147,5 +151,6 @@ public class BaseServiceTest
 
         var userBlackListService = new UserBlackListRepository(pgContext);
         UserBlackListService = new UserBlackListService(logService, userBlackListService);
+        ResumeModerationService = new ResumeModerationService(logService, resumeModerationRepository, mapper);
     }
 }
