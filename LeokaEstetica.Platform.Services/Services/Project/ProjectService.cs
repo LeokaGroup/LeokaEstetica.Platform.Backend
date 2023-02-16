@@ -545,6 +545,12 @@ public class ProjectService : IProjectService
                     }
                 }
             }
+            
+            // Чистим описание вакансии от html-тегов.
+            foreach (var vac in result.ProjectVacancies)
+            {
+                vac.UserVacancy.VacancyText = ClearHtmlBuilder.Clear(vac.UserVacancy.VacancyText);
+            }
 
             return result;
         }
