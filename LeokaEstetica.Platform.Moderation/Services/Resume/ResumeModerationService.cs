@@ -58,4 +58,40 @@ public class ResumeModerationService : IResumeModerationService
             throw;
         }
     }
+
+    /// <summary>
+    /// Метод одобряет анкету на модерации.
+    /// </summary>
+    /// <param name="profileInfoId">Id анкеты.</param>
+    public async Task ApproveResumeAsync(long profileInfoId)
+    {
+        try
+        {
+            await _resumeModerationRepository.ApproveResumeAsync(profileInfoId);
+        }
+        
+        catch (Exception ex)
+        {
+            await _logService.LogErrorAsync(ex);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Метод отклоняет анкету на модерации.
+    /// </summary>
+    /// <param name="profileInfoId">Id анкеты.</param>
+    public async Task RejectResumeAsync(long profileInfoId)
+    {
+        try
+        {
+            await _resumeModerationRepository.ApproveResumeAsync(profileInfoId);
+        }
+        
+        catch (Exception ex)
+        {
+            await _logService.LogErrorAsync(ex);
+            throw;
+        }
+    }
 }

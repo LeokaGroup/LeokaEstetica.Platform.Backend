@@ -1,4 +1,5 @@
 using LeokaEstetica.Platform.Core.Data;
+using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Database.Abstractions.Resume;
 using LeokaEstetica.Platform.Models.Entities.Profile;
 using Microsoft.EntityFrameworkCore;
@@ -23,12 +24,20 @@ public class ResumeRepository : IResumeRepository
     /// <returns>Список резюме.</returns>
     public async Task<List<ProfileInfoEntity>> GetProfileInfosAsync()
     {
+        var excludedResumes = _pgContext.ModerationResumes
+            .Where(r => !new[]
+                    { (int)ResumeModerationStatusEnum.ModerationResume, (int)ResumeModerationStatusEnum.RejectedResume }
+                .Contains(r.ModerationStatusId))
+            .Select(r => r.ProfileInfoId)
+            .AsQueryable();
+
         var result = await _pgContext.ProfilesInfo
             .Where(r => !string.IsNullOrEmpty(r.FirstName)
                         && !string.IsNullOrEmpty(r.LastName)
                         && !string.IsNullOrEmpty(r.Patronymic)
                         && !string.IsNullOrEmpty(r.Job)
-                        && !string.IsNullOrEmpty(r.Aboutme))
+                        && !string.IsNullOrEmpty(r.Aboutme)
+                        && !excludedResumes.Contains(r.ProfileInfoId))
             .ToListAsync();
 
         return result;

@@ -19,4 +19,16 @@ public interface IResumeModerationRepository
     /// </summary>
     /// <param name="profileInfoId">Id анкеты.</param>
     Task AddResumeModerationAsync(long profileInfoId);
+
+    /// <summary>
+    /// Метод одобряет анкету на модерации.
+    /// </summary>
+    /// <param name="profileInfoId">Id анкеты.</param>
+    Task ApproveResumeAsync(long profileInfoId);
+    
+    /// <summary>
+    /// Метод отклоняет анкету на модерации.
+    /// </summary>
+    /// <param name="profileInfoId">Id анкеты.</param>
+    Task RejectResumeAsync(long profileInfoId);
 }
