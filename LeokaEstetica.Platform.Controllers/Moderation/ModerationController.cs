@@ -13,6 +13,7 @@ using LeokaEstetica.Platform.Moderation.Abstractions.Resume;
 using LeokaEstetica.Platform.Moderation.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Moderation.Models.Dto.Input.Access;
 using LeokaEstetica.Platform.Moderation.Models.Dto.Input.Project;
+using LeokaEstetica.Platform.Moderation.Models.Dto.Input.Resume;
 using LeokaEstetica.Platform.Moderation.Models.Dto.Input.Role;
 using LeokaEstetica.Platform.Moderation.Models.Dto.Input.Vacancy;
 using LeokaEstetica.Platform.Moderation.Models.Dto.Output.Access;
@@ -284,5 +285,37 @@ public class ModerationController : BaseController
         var result = await _resumeModerationService.ResumesModerationAsync();
 
         return result;
+    }
+    
+    /// <summary>
+    /// Метод одобряет анкету на модерации.
+    /// </summary>
+    /// <param name="approveResumeInput">Входная модель.</param>
+    [HttpPatch]
+    [Route("resume/approve")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task ApproveResumeAsync([FromBody] ApproveResumeInput approveResumeInput)
+    {
+        await _resumeModerationService.ApproveResumeAsync(approveResumeInput.ProfileInfoId);
+    }
+    
+    /// <summary>
+    /// Метод отклоняет анкету на модерации.
+    /// </summary>
+    /// <param name="approveResumeInput">Входная модель.</param>
+    [HttpPatch]
+    [Route("resume/approve")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task RejectResumeAsync([FromBody] ApproveResumeInput approveResumeInput)
+    {
+        await _resumeModerationService.RejectResumeAsync(approveResumeInput.ProfileInfoId);
     }
 }

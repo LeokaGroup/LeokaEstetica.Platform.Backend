@@ -12,4 +12,16 @@ public interface IResumeModerationService
     /// </summary>
     /// <returns>Список анкет.</returns>
     Task<ResumeModerationResult> ResumesModerationAsync();
+
+    /// <summary>
+    /// Метод одобряет анкету на модерации.
+    /// </summary>
+    /// <param name="profileInfoId">Id анкеты.</param>
+    Task ApproveResumeAsync(long profileInfoId);
+    
+    /// <summary>
+    /// Метод отклоняет анкету на модерации.
+    /// </summary>
+    /// <param name="profileInfoId">Id анкеты.</param>
+    Task RejectResumeAsync(long profileInfoId);
 }

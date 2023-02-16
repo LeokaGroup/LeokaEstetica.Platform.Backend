@@ -71,4 +71,42 @@ public class ResumeModerationRepository : IResumeModerationRepository
         });
         await _pgContext.SaveChangesAsync();
     }
+
+    /// <summary>
+    /// Метод одобряет анкету на модерации.
+    /// </summary>
+    /// <param name="profileInfoId">Id анкеты.</param>
+    public async Task ApproveResumeAsync(long profileInfoId)
+    {
+        var profileInfo = await _pgContext.ModerationResumes
+            .FirstOrDefaultAsync(p => p.ProfileInfoId == profileInfoId);
+
+        if (profileInfo is null)
+        {
+            throw new InvalidOperationException(
+                $"Не удалось найти анкету для модерации. ProfileInfoId = {profileInfoId}");
+        }
+
+        profileInfo.ModerationStatusId = (int)ResumeModerationStatusEnum.ApproveResume;
+        await _pgContext.SaveChangesAsync();
+    }
+    
+    /// <summary>
+    /// Метод отклоняет анкету на модерации.
+    /// </summary>
+    /// <param name="profileInfoId">Id анкеты.</param>
+    public async Task RejectResumeAsync(long profileInfoId)
+    {
+        var profileInfo = await _pgContext.ModerationResumes
+            .FirstOrDefaultAsync(p => p.ProfileInfoId == profileInfoId);
+
+        if (profileInfo is null)
+        {
+            throw new InvalidOperationException(
+                $"Не удалось найти анкету для модерации. ProfileInfoId = {profileInfoId}");
+        }
+
+        profileInfo.ModerationStatusId = (int)ResumeModerationStatusEnum.RejectedResume;
+        await _pgContext.SaveChangesAsync();
+    }
 }
