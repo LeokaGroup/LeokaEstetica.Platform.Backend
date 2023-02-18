@@ -67,7 +67,7 @@ public interface IProjectService
     /// <param name="mode">Режим. Чтение или изменение.</param>
     /// <param name="account">Аккаунт.</param>
     /// <returns>Данные проекта.</returns>
-    Task<UserProjectEntity> GetProjectAsync(long projectId, ModeEnum mode, string account);
+    Task<ProjectOutput> GetProjectAsync(long projectId, ModeEnum mode, string account);
 
     /// <summary>
     /// Метод получает стадии проекта для выбора.

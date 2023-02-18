@@ -206,9 +206,8 @@ public class ProjectController : BaseController
             return result;
         }
 
-        var project = await _projectService.GetProjectAsync(getProjectValidation.ProjectId, getProjectValidation.Mode,
+        result = await _projectService.GetProjectAsync(getProjectValidation.ProjectId, getProjectValidation.Mode,
             GetUserName());
-        result = _mapper.Map<ProjectOutput>(project);
 
         return result;
     }

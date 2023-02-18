@@ -42,4 +42,19 @@ public class ProjectOutput : IFrontError
     /// Список ошибок.
     /// </summary>
     public List<ValidationFailure> Errors { get; set; }
+
+    /// <summary>
+    /// Название стадии проекта.
+    /// </summary>
+    public string StageName { get; set; }
+    
+    /// <summary>
+    /// Системное название стадии проекта.
+    /// </summary>
+    public string StageSysName { get; set; }
+
+    /// <summary>
+    /// Id стадии проекта.
+    /// </summary>
+    public int StageId { get; set; }
 }

@@ -414,7 +414,7 @@ public class ProjectService : IProjectService
     /// <param name="mode">Режим. Чтение или изменение.</param>
     /// <param name="account">Аккаунт.</param>
     /// <returns>Данные проекта.</returns>
-    public async Task<UserProjectEntity> GetProjectAsync(long projectId, ModeEnum mode, string account)
+    public async Task<ProjectOutput> GetProjectAsync(long projectId, ModeEnum mode, string account)
     {
         try
         {
@@ -436,15 +436,20 @@ public class ProjectService : IProjectService
             // }
 
             // TODO: При редактировании давать изменять проект лишь владельцу.
-            var result = await _projectRepository.GetProjectAsync(projectId);
+            var prj = await _projectRepository.GetProjectAsync(projectId);
 
-            if (result is null)
+            if (prj.Item1 is null)
             {
                 var ex = new InvalidOperationException(
                     $"Не удалось найти проект с ProjectId {projectId} и UserId {userId}");
                 await _logService.LogErrorAsync(ex);
                 throw ex;
             }
+            
+            var result = _mapper.Map<ProjectOutput>(prj.Item1);
+            result.StageId = prj.Item2.StageId;
+            result.StageName = prj.Item2.StageName;
+            result.StageSysName = prj.Item2.StageSysName;
 
             return result;
         }

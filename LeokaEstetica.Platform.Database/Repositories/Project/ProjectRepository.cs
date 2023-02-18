@@ -257,10 +257,25 @@ public class ProjectRepository : IProjectRepository
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
     /// <returns>Данные проекта.</returns>
-    public async Task<UserProjectEntity> GetProjectAsync(long projectId)
+    public async Task<(UserProjectEntity, ProjectStageEntity)> GetProjectAsync(long projectId)
     {
-        var result = await _pgContext.UserProjects
+        (UserProjectEntity, ProjectStageEntity) result = (null, null);
+        
+        result.Item1 = await _pgContext.UserProjects
             .FirstOrDefaultAsync(p => p.ProjectId == projectId);
+
+        result.Item2 = await (from ups in _pgContext.UserProjectsStages
+                join ps in _pgContext.ProjectStages
+                    on ups.StageId
+                    equals ps.StageId
+                where ups.ProjectId == projectId
+                select new ProjectStageEntity
+                {
+                    StageId = ps.StageId,
+                    StageName = ps.StageName,
+                    StageSysName = ps.StageSysName
+                })
+            .FirstOrDefaultAsync();
 
         return result;
     }
