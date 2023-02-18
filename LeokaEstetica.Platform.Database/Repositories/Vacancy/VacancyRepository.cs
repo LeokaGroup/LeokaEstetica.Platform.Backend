@@ -162,8 +162,7 @@ public class VacancyRepository : IVacancyRepository
     public async Task<UserVacancyEntity> GetVacancyByVacancyIdAsync(long vacancyId, long userId)
     {
         var result = await _pgContext.UserVacancies
-            .FirstOrDefaultAsync(v => v.VacancyId == vacancyId
-                                      && v.UserId == userId);
+            .FirstOrDefaultAsync(v => v.VacancyId == vacancyId);
 
         return result;
     }
