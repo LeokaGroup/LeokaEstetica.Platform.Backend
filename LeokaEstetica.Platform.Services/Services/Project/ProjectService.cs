@@ -427,15 +427,6 @@ public class ProjectService : IProjectService
                 throw ex;
             }
 
-            // TODO: Реализовать в будущем.
-            // Проверяем, является ли текущий пользователь владельцем проекта.
-            // Это защита, если проект изменяется.
-            // if (mode.Equals(ModeEnum.Edit.ToString()))
-            // {
-            //     
-            // }
-
-            // TODO: При редактировании давать изменять проект лишь владельцу.
             var prj = await _projectRepository.GetProjectAsync(projectId);
 
             if (prj.Item1 is null)
@@ -445,11 +436,8 @@ public class ProjectService : IProjectService
                 await _logService.LogErrorAsync(ex);
                 throw ex;
             }
-            
-            var result = _mapper.Map<ProjectOutput>(prj.Item1);
-            result.StageId = prj.Item2.StageId;
-            result.StageName = prj.Item2.StageName;
-            result.StageSysName = prj.Item2.StageSysName;
+
+            var result = await CreateProjectResultAsync(projectId, prj, userId);
 
             return result;
         }
@@ -459,6 +447,33 @@ public class ProjectService : IProjectService
             await _logService.LogErrorAsync(ex);
             throw;
         }
+    }
+
+    /// <summary>
+    /// Метод создает результаты проекта. 
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="prj">Данные проекта.</param>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Результаты проекта.</returns>
+    private async Task<ProjectOutput> CreateProjectResultAsync(long projectId,
+        (UserProjectEntity, ProjectStageEntity) prj, long userId)
+    {
+        var result = _mapper.Map<ProjectOutput>(prj.Item1);
+        result.StageId = prj.Item2.StageId;
+        result.StageName = prj.Item2.StageName;
+        result.StageSysName = prj.Item2.StageSysName;
+        
+        // Проверяем владельца проекта.
+        var projectOwnerId = await _projectRepository.GetProjectOwnerIdAsync(projectId);
+
+        // Если владелец проекта, то проставляем признак видимости кнопок событий.
+        if (projectOwnerId == userId)
+        {
+            result.IsVisibleAction = true;
+        }
+
+        return result;
     }
 
     /// <summary>

@@ -264,11 +264,7 @@ public class ProjectRepository : IProjectRepository
         result.Item1 = await _pgContext.UserProjects
             .FirstOrDefaultAsync(p => p.ProjectId == projectId);
 
-        result.Item2 = await (from ups in _pgContext.UserProjectsStages
-                join ps in _pgContext.ProjectStages
-                    on ups.StageId
-                    equals ps.StageId
-                where ups.ProjectId == projectId
+        result.Item2 = await (from ps in _pgContext.ProjectStages
                 select new ProjectStageEntity
                 {
                     StageId = ps.StageId,

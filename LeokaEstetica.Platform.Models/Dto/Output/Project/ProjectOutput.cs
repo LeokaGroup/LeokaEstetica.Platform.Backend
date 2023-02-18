@@ -57,4 +57,9 @@ public class ProjectOutput : IFrontError
     /// Id стадии проекта.
     /// </summary>
     public int StageId { get; set; }
+
+    /// <summary>
+    /// Признак видимости кнопок событий.
+    /// </summary>
+    public bool IsVisibleAction { get; set; }
 }
