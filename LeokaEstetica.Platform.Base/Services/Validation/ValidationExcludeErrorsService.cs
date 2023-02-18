@@ -1,11 +1,13 @@
 using FluentValidation.Results;
-using LeokaEstetica.Platform.Base.Abstractions.Repositories;
-using LeokaEstetica.Platform.Base.Abstractions.Services;
+using LeokaEstetica.Platform.Base.Abstractions.Repositories.Validation;
+using LeokaEstetica.Platform.Base.Abstractions.Services.Validation;
 using LeokaEstetica.Platform.Core.Constants;
 using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Redis.Abstractions.Validation;
+using LeokaEstetica.Platform.Redis.Models;
+using Newtonsoft.Json;
 
-namespace LeokaEstetica.Platform.Base.Services;
+namespace LeokaEstetica.Platform.Base.Services.Validation;
 
 /// <summary>
 /// Класс сервиса реализует методы сервиса для исключения параметров валидации, которые не нужно выдавать фронту.
@@ -29,6 +31,7 @@ public sealed class ValidationExcludeErrorsService : IValidationExcludeErrorsSer
     /// Метод исключает из списка ошибок те, которые есть в управляющей таблице исключения параметров валидации.
     /// </summary>
     /// <param name="errors">Список ошибок.</param>
+    /// <returns>Список ошибок после фильтрации.</returns>
     public async Task<List<ValidationFailure>> ExcludeAsync(List<ValidationFailure> errors)
     {
         try
@@ -38,30 +41,34 @@ public sealed class ValidationExcludeErrorsService : IValidationExcludeErrorsSer
                 .ValidationColumnsExcludeFromCacheAsync();
 
             // Если нашли в кэше, то продливаем время жизни и исключаем поля, затем возвращаем.
-            if (cacheFields.Any())
+            if (cacheFields is not null && cacheFields.Any())
             {
                 await _validationExcludeErrorsCacheService
                     .RefreshCacheAsync(GlobalConfigKeys.Cache.VALIDATION_EXCLUDE_KEY);
                 
                 var excludeCacheErrors = cacheFields.Select(x => x.ParamName);
-               
-                // Исключаем поля из ошибок валидации, которые есть в кэше.
-                var cacheResult = errors
-                    .Where(x => excludeCacheErrors.Contains(x.PropertyName))
-                    .ToList();
+                Exclude(ref errors, excludeCacheErrors);
                 
-                return cacheResult;
+                return errors;
             }
             
-            // В кэше нет, получим из БД и исключим, затем вернем.
+            // В кэше нет, получим из БД и исключим, затем добавим в кэш и вернем.
             var items = await _validationExcludeErrorsRepository
                 .ValidationColumnsExcludeAsync();
-            var excludeErrors = items.Select(x => x.ParamName);
-            var result = errors
-                .Where(x => excludeErrors.Contains(x.PropertyName))
-                .ToList();
 
-            return result;
+            if (items.Any())
+            {
+                var serializeItems = JsonConvert.SerializeObject(items);
+                var cacheItems = JsonConvert.DeserializeObject<ICollection<ValidationExcludeRedis>>(serializeItems);
+                
+                // Добавляем в кэш.
+                await _validationExcludeErrorsCacheService.AddValidationColumnsExcludeToCacheAsync(cacheItems);
+            }
+
+            var excludeErrors = items.Select(x => x.ParamName);
+            Exclude(ref errors, excludeErrors);
+
+            return errors;
         }
         
         catch (Exception ex)
@@ -69,5 +76,19 @@ public sealed class ValidationExcludeErrorsService : IValidationExcludeErrorsSer
             await _logService.LogErrorAsync(ex);
             throw;
         }
+    }
+
+    /// <summary>
+    /// Метод исключает параметры валидации и удаляет дубли.
+    /// </summary>
+    /// <param name="errors">Список ошибок до исключения.</param>
+    /// <param name="excludeCacheErrors">Список параметров дял исключения.</param>
+    private void Exclude(ref List<ValidationFailure> errors, IEnumerable<string> excludeCacheErrors)
+    {
+        errors.RemoveAll(x => excludeCacheErrors.Contains(x.PropertyName));
+        
+        errors = errors
+            .DistinctBy(d => d.PropertyName)
+            .ToList();
     }
 }

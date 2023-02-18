@@ -17,7 +17,7 @@ public interface IValidationExcludeErrorsCacheService
     /// Метод добабвляет в кэш поля для исключения при валидации.
     /// </summary>
     /// <param name="fields">Список полей.</param>
-    Task AddValidationColumnsExcludeToCacheAsync(List<ValidationExcludeRedis> fields);
+    Task AddValidationColumnsExcludeToCacheAsync(ICollection<ValidationExcludeRedis> fields);
 
     /// <summary>
     /// Метод обновляет в кэше по ключу.

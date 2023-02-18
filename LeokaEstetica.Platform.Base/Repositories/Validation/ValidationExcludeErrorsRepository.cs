@@ -1,9 +1,9 @@
-using LeokaEstetica.Platform.Base.Abstractions.Repositories;
+using LeokaEstetica.Platform.Base.Abstractions.Repositories.Validation;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Models.Entities.Configs;
 using Microsoft.EntityFrameworkCore;
 
-namespace LeokaEstetica.Platform.Base.Repositories;
+namespace LeokaEstetica.Platform.Base.Repositories.Validation;
 
 /// <summary>
 /// Класс реализует методы репозитория для исключения параметров валидации, которые не нужно выдавать фронту.
@@ -21,7 +21,7 @@ public sealed class ValidationExcludeErrorsRepository : IValidationExcludeErrors
     /// Метод получает список полей, которые нужно исключить.
     /// </summary>
     /// <returns>Список полей для исключения.</returns>
-    public async Task<IEnumerable<ValidationColumnExcludeEntity>> ValidationColumnsExcludeAsync()
+    public async Task<ICollection<ValidationColumnExcludeEntity>> ValidationColumnsExcludeAsync()
     {
         var result = await _pgContext.ValidationColumnsExclude
             .ToListAsync();

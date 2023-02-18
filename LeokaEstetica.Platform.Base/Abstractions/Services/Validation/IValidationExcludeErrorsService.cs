@@ -1,6 +1,6 @@
 using FluentValidation.Results;
 
-namespace LeokaEstetica.Platform.Base.Abstractions.Services;
+namespace LeokaEstetica.Platform.Base.Abstractions.Services.Validation;
 
 /// <summary>
 /// Абстракция сервиса для исключения параметров валидации, которые не нужно выдавать фронту.

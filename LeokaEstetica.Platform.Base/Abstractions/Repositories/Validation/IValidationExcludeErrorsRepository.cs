@@ -1,6 +1,6 @@
 using LeokaEstetica.Platform.Models.Entities.Configs;
 
-namespace LeokaEstetica.Platform.Base.Abstractions.Repositories;
+namespace LeokaEstetica.Platform.Base.Abstractions.Repositories.Validation;
 
 /// <summary>
 /// Абстракция репозитория для исключения параметров валидации, которые не нужно выдавать фронту.
@@ -11,5 +11,5 @@ public interface IValidationExcludeErrorsRepository
     /// Метод получает список полей, которые нужно исключить.
     /// </summary>
     /// <returns>Список полей для исключения.</returns>
-    Task<IEnumerable<ValidationColumnExcludeEntity>> ValidationColumnsExcludeAsync();
+    Task<ICollection<ValidationColumnExcludeEntity>> ValidationColumnsExcludeAsync();
 }

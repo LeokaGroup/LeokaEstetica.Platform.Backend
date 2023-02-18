@@ -25,6 +25,12 @@ public sealed class ValidationExcludeErrorsCacheService : IValidationExcludeErro
     public async Task<List<ValidationExcludeRedis>> ValidationColumnsExcludeFromCacheAsync()
     {
         var items = await _redis.GetStringAsync(GlobalConfigKeys.Cache.VALIDATION_EXCLUDE_KEY);
+
+        if (string.IsNullOrEmpty(items))
+        {
+            return null;
+        }
+        
         var result = ProtoBufExtensions.Deserialize<List<ValidationExcludeRedis>>(items);
 
         return result;
@@ -34,7 +40,7 @@ public sealed class ValidationExcludeErrorsCacheService : IValidationExcludeErro
     /// Метод добабвляет в кэш поля для исключения при валидации.
     /// </summary>
     /// <param name="fields">Список полей.</param>
-    public async Task AddValidationColumnsExcludeToCacheAsync(List<ValidationExcludeRedis> fields)
+    public async Task AddValidationColumnsExcludeToCacheAsync(ICollection<ValidationExcludeRedis> fields)
     {
         await _redis.SetStringAsync(GlobalConfigKeys.Cache.VALIDATION_EXCLUDE_KEY,
             ProtoBufExtensions.Serialize(fields),

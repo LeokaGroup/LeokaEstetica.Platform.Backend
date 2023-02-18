@@ -1,5 +1,5 @@
 using LeokaEstetica.Platform.Base;
-using LeokaEstetica.Platform.Base.Abstractions.Services;
+using LeokaEstetica.Platform.Base.Abstractions.Services.Validation;
 using LeokaEstetica.Platform.Controllers.Filters;
 using LeokaEstetica.Platform.Controllers.Validators.User;
 using LeokaEstetica.Platform.Models.Dto.Input.User;
@@ -66,7 +66,7 @@ public class UserController : BaseController
     /// <summary>
     /// Метод подтверждает аккаунт пользователя по коду, который ранее был отправлен пользователю на почту и записан в БД.
     /// </summary>
-    /// <param name="code">Код подтверждения.</param>
+    /// <param name="confirmAccountInput">Входная модель.</param>
     /// <returns>Статус подтверждения.</returns>
     [AllowAnonymous]
     [HttpPatch]
