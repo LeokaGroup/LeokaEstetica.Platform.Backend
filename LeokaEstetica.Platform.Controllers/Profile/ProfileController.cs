@@ -1,5 +1,4 @@
 using LeokaEstetica.Platform.Base;
-using LeokaEstetica.Platform.Base.Abstractions.Services;
 using LeokaEstetica.Platform.Base.Abstractions.Services.Validation;
 using LeokaEstetica.Platform.Controllers.Filters;
 using LeokaEstetica.Platform.Controllers.Validators.Profile;
