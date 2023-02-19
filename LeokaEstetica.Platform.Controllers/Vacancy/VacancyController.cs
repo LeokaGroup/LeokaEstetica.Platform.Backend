@@ -3,7 +3,6 @@ using LeokaEstetica.Platform.Base;
 using LeokaEstetica.Platform.Base.Abstractions.Services.Validation;
 using LeokaEstetica.Platform.Controllers.Filters;
 using LeokaEstetica.Platform.Controllers.Validators.Vacancy;
-using LeokaEstetica.Platform.Database.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Finder.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Models.Dto.Input.Vacancy;
@@ -28,7 +27,6 @@ public class VacancyController : BaseController
     private readonly IVacancyFinderService _vacancyFinderService;
     private readonly IVacancyPaginationService _vacancyPaginationService;
     private readonly ILogService _logService;
-    private readonly IVacancyRepository _vacancyRepository;
 
     /// <summary>
     /// Конструктор.
@@ -39,14 +37,12 @@ public class VacancyController : BaseController
     /// <param name="vacancyFinderService">Поисковый сервис вакансий.</param>
     /// <param name="vacancyPaginationService">Сервис пагинации вакансий.</param>
     /// <param name="logService">Сервис логов.</param>
-    /// <param name="vacancyRepository">Репозиторий вакансий.</param>
     public VacancyController(IVacancyService vacancyService,
         IMapper mapper,
         IValidationExcludeErrorsService validationExcludeErrorsService, 
         IVacancyFinderService vacancyFinderService, 
         IVacancyPaginationService vacancyPaginationService, 
-        ILogService logService, 
-        IVacancyRepository vacancyRepository)
+        ILogService logService)
     {
         _vacancyService = vacancyService;
         _mapper = mapper;
@@ -54,7 +50,6 @@ public class VacancyController : BaseController
         _vacancyFinderService = vacancyFinderService;
         _vacancyPaginationService = vacancyPaginationService;
         _logService = logService;
-        _vacancyRepository = vacancyRepository;
     }
 
     /// <summary>

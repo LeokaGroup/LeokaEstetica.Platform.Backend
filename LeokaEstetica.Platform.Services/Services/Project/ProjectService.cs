@@ -432,7 +432,6 @@ public class ProjectService : IProjectService
             {
                 var ex = new InvalidOperationException(
                     $"Не удалось найти проект с ProjectId {projectId} и UserId {userId}");
-                await _logService.LogErrorAsync(ex);
                 throw ex;
             }
 
@@ -699,7 +698,6 @@ public class ProjectService : IProjectService
             if (projectTeam is null)
             {
                 var ex = new InvalidOperationException($"Команды проекта не найдено. ProjectId = {projectId}");
-                await _logService.LogErrorAsync(ex);
                 throw ex;
             }
 
@@ -711,7 +709,6 @@ public class ProjectService : IProjectService
             {
                 var ex = new InvalidOperationException(
                     $"Участников команды проекта не найдено. ProjectId = {projectId}. TeamId = {projectTeam.TeamId}");
-                await _logService.LogErrorAsync(ex);
                 throw ex;
             }
 
@@ -966,7 +963,6 @@ public class ProjectService : IProjectService
             {
                 var ex = new InvalidOperationException(
                     $"Ошибка получения данных пользователя. UserId = {member.UserId}");
-                await _logService.LogErrorAsync(ex);
                 throw ex;
             }
 
