@@ -1,3 +1,4 @@
+using System.Globalization;
 using AutoMapper;
 using LeokaEstetica.Platform.Access.Abstractions.AvailableLimits;
 using LeokaEstetica.Platform.Access.Enums;
@@ -19,6 +20,7 @@ using LeokaEstetica.Platform.Models.Dto.Output.ProjectTeam;
 using LeokaEstetica.Platform.Models.Entities.Configs;
 using LeokaEstetica.Platform.Models.Entities.Project;
 using LeokaEstetica.Platform.Models.Entities.ProjectTeam;
+using LeokaEstetica.Platform.Models.Entities.User;
 using LeokaEstetica.Platform.Models.Entities.Vacancy;
 using LeokaEstetica.Platform.Models.Enums;
 using LeokaEstetica.Platform.Moderation.Abstractions.Vacancy;
@@ -712,7 +714,7 @@ public class ProjectService : IProjectService
                 throw ex;
             }
 
-            var result = await FillMembersDataAsync(teamMembers);
+            var result = await CreateProjectTeamResultAsync(teamMembers);
 
             return result;
         }
@@ -938,13 +940,13 @@ public class ProjectService : IProjectService
     /// </summary>
     /// <param name="teamMembers">Список участников команды проекта.</param>
     /// <returns>Список с изменениями.</returns>
-    private async Task<List<ProjectTeamOutput>> FillMembersDataAsync(IEnumerable<ProjectTeamMemberEntity> teamMembers)
+    private async Task<List<ProjectTeamOutput>> CreateProjectTeamResultAsync(
+        IEnumerable<ProjectTeamMemberEntity> teamMembers)
     {
         var result = new List<ProjectTeamOutput>();
+        
         foreach (var member in teamMembers)
         {
-            var team = new ProjectTeamOutput();
-
             // Заполняем название вакансии.
             var vacancyName = await _vacancyRepository.GetVacancyNameByVacancyIdAsync(member.UserVacancy.VacancyId);
 
@@ -955,8 +957,7 @@ public class ProjectService : IProjectService
                 await _logService.LogErrorAsync(ex);
                 throw ex;
             }
-
-            team.VacancyName = vacancyName;
+            
             var user = await _userRepository.GetUserByUserIdAsync(member.UserId);
 
             if (user is null)
@@ -966,12 +967,9 @@ public class ProjectService : IProjectService
                 throw ex;
             }
 
-            // Заполняем участника команды проекта.
-            team.Member = CreateProjectTeamMembersBuilder.FillMember(user);
-
-            // Форматируем даты.
-            team.Joined = CreateProjectTeamMembersBuilder.Create(member.Joined);
-            team.UserId = member.UserId;
+            // Создаем команду проекта.
+            var team = CreateProjectTeamResult(vacancyName, user, member);
+            
             result.Add(team);
         }
 
@@ -1145,6 +1143,61 @@ public class ProjectService : IProjectService
         }
 
         return result;
+    }
+
+    /// <summary>
+    /// Метод записывает участника команды проекта.
+    /// </summary>
+    /// <param name="user">Данные пользователя.</param>
+    /// <returns>Участник.</returns>
+    private string FillProjectTeamMemberAsync(UserEntity user)
+    {
+        // Если у пользователя заполнены имя и фамилия, то запишем их.
+        if (!string.IsNullOrEmpty(user.FirstName)
+            && !string.IsNullOrEmpty(user.LastName))
+        {
+            return user.FirstName + " " + user.LastName;
+        }
+
+        // Если логин заполнен, то запишем его.
+        if (!string.IsNullOrEmpty(user.Login))
+        {
+            return user.Login;
+        }
+
+        // Иначе запишем Email.
+        return user.Email;
+    }
+
+    /// <summary>
+    /// Метод форматирует дату к нужному виду.
+    /// </summary>
+    /// <param name="date">Дата, которую нужно форматировать.</param>
+    /// <returns>Дата в нужном виде.</returns>
+    private string CreateDateResult(DateTime date)
+    {
+        return date.ToString("g", CultureInfo.GetCultureInfo("ru"));
+    }
+
+    /// <summary>
+    /// Метод создает результат команды проекта.
+    /// </summary>
+    /// <param name="vacancyName">Название вакансии.</param>
+    /// <param name="user">Данные пользователя.</param>
+    /// <param name="member">Данные участника.</param>
+    /// <returns>Результирующая модель.</returns>
+    private ProjectTeamOutput CreateProjectTeamResult(string vacancyName, UserEntity user,
+        ProjectTeamMemberEntity member)
+    {
+        var team = new ProjectTeamOutput
+        {
+            VacancyName = vacancyName,
+            Member = FillProjectTeamMemberAsync(user), // Заполняем участника команды проекта.
+            Joined = CreateDateResult(member.Joined), // Форматируем даты.
+            UserId = member.UserId
+        };
+
+        return team;
     }
     
     #endregion
