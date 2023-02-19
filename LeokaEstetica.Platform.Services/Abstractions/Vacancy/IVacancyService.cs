@@ -62,7 +62,7 @@ public interface IVacancyService
     /// <param name="vacancyId">Id вакансии.</param>
     /// <param name="account">Аккаунт.</param>
     /// <returns>Данные вакансии.</returns>
-    Task<UserVacancyEntity> GetVacancyByVacancyIdAsync(long vacancyId, string account);
+    Task<VacancyOutput> GetVacancyByVacancyIdAsync(long vacancyId, string account);
 
     /// <summary>
     /// Метод фильтрации вакансий в зависимости от параметров фильтров.

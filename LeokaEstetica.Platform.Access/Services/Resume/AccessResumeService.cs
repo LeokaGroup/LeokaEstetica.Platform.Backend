@@ -41,7 +41,6 @@ public class AccessResumeService : IAccessResumeService
             if (userId <= 0)
             {
                 var ex = new NotFoundUserIdByAccountException(account);
-                await _logService.LogErrorAsync(ex);
                 throw ex;
             }
             var userSubscription = await _subscriptionRepository.GetUserSubscriptionAsync(userId);

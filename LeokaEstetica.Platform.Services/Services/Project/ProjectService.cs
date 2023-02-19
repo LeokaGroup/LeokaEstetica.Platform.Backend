@@ -151,7 +151,6 @@ public class ProjectService : IProjectService
             if (userId <= 0)
             {
                 var ex = new NotFoundUserIdByAccountException(account);
-                await _logService.LogErrorAsync(ex);
                 throw ex;
             }
             
@@ -377,7 +376,6 @@ public class ProjectService : IProjectService
             if (userId <= 0)
             {
                 var ex = new NotFoundUserIdByAccountException(account);
-                await _logService.LogErrorAsync(ex);
                 await _projectNotificationsService.SendNotificationErrorUpdatedUserProjectAsync("Что то не так...",
                     "Ошибка при обновлении проекта. Мы уже знаем о проблеме и уже занимаемся ей.",
                     NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR);
@@ -425,7 +423,6 @@ public class ProjectService : IProjectService
             if (userId <= 0)
             {
                 var ex = new NotFoundUserIdByAccountException(account);
-                await _logService.LogErrorAsync(ex);
                 throw ex;
             }
 
@@ -499,7 +496,6 @@ public class ProjectService : IProjectService
             if (userId <= 0)
             {
                 var ex = new NotFoundUserIdByAccountException(account);
-                await _logService.LogErrorAsync(ex);
                 throw ex;
             }
             

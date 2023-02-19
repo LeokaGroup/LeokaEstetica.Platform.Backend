@@ -132,6 +132,8 @@ public class VacancyService : IVacancyService
         _unknownExperienceVacanciesFilterChain.Successor = _unknownPayVacanciesFilterChain;
     }
 
+    #region Публичные методы.
+
     /// <summary>
     /// Метод получает список меню вакансий.
     /// </summary>
@@ -158,33 +160,6 @@ public class VacancyService : IVacancyService
     }
 
     /// <summary>
-    /// Метод создает модель для сохранения в кэше Redis.
-    /// </summary>
-    /// <param name="items">Список меню.</param>
-    /// <returns>Модель для сохранения.</returns>
-    private VacancyMenuRedis CreateFactoryModelToRedis(IReadOnlyCollection<VacancyMenuItemsOutput> items)
-    {
-        var model = new VacancyMenuRedis
-        {
-            VacancyMenuItems = new List<VacancyMenuItemsRedis>(items.Select(pmi => new VacancyMenuItemsRedis
-            {
-                SysName = pmi.SysName,
-                Label = pmi.Label,
-                Url = pmi.Url,
-                Items = pmi.Items.Select(i => new VacancyItems
-                    {
-                        SysName = i.SysName,
-                        Label = i.Label,
-                        Url = i.Url,
-                    })
-                    .ToList()
-            }))
-        };
-
-        return model;
-    }
-
-    /// <summary>
     /// Метод создает вакансию.
     /// </summary>
     /// <param name="vacancyName">Название вакансии.</param>
@@ -204,7 +179,6 @@ public class VacancyService : IVacancyService
             if (userId <= 0)
             {
                 var ex = new NotFoundUserIdByAccountException(account);
-                await _logService.LogErrorAsync(ex);
                 throw ex;
             }
 
@@ -363,7 +337,7 @@ public class VacancyService : IVacancyService
     /// <param name="vacancyId">Id вакансии.</param>
     /// <param name="account">Аккаунт.</param>
     /// <returns>Данные вакансии.</returns>
-    public async Task<UserVacancyEntity> GetVacancyByVacancyIdAsync(long vacancyId, string account)
+    public async Task<VacancyOutput> GetVacancyByVacancyIdAsync(long vacancyId, string account)
     {
         try
         {
@@ -372,11 +346,18 @@ public class VacancyService : IVacancyService
             if (userId <= 0)
             {
                 var ex = new NotFoundUserIdByAccountException(account);
-                await _logService.LogErrorAsync(ex);
                 throw ex;
             }
 
-            var result = await _vacancyRepository.GetVacancyByVacancyIdAsync(vacancyId, userId);
+            var vacancy = await _vacancyRepository.GetVacancyByVacancyIdAsync(vacancyId, userId);
+
+            if (vacancy is null)
+            {
+                throw new InvalidOperationException(
+                    $"Не удалось получить вакансию. VacancyId: {vacancyId}. UserId: {userId}");
+            }
+
+            var result = await CreateVacancyResultAsync(vacancy, userId);
 
             return result;
         }
@@ -475,7 +456,6 @@ public class VacancyService : IVacancyService
             if (userId <= 0)
             {
                 var ex = new NotFoundUserIdByAccountException(account);
-                await _logService.LogErrorAsync(ex);
                 throw ex;
             }
 
@@ -520,4 +500,58 @@ public class VacancyService : IVacancyService
             throw;
         }
     }
+    
+    #endregion
+
+    #region Приватные методы.
+
+    /// <summary>
+    /// Метод создает модель для сохранения в кэше Redis.
+    /// </summary>
+    /// <param name="items">Список меню.</param>
+    /// <returns>Модель для сохранения.</returns>
+    private VacancyMenuRedis CreateFactoryModelToRedis(IReadOnlyCollection<VacancyMenuItemsOutput> items)
+    {
+        var model = new VacancyMenuRedis
+        {
+            VacancyMenuItems = new List<VacancyMenuItemsRedis>(items.Select(pmi => new VacancyMenuItemsRedis
+            {
+                SysName = pmi.SysName,
+                Label = pmi.Label,
+                Url = pmi.Url,
+                Items = pmi.Items.Select(i => new VacancyItems
+                    {
+                        SysName = i.SysName,
+                        Label = i.Label,
+                        Url = i.Url,
+                    })
+                    .ToList()
+            }))
+        };
+
+        return model;
+    }
+
+    /// <summary>
+    /// Метод создает результат вакансии.
+    /// </summary>
+    /// <param name="vacancy">Данные вакансии.</param>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Результирующая модель.</returns>
+    private async Task<VacancyOutput> CreateVacancyResultAsync(UserVacancyEntity vacancy, long userId)
+    {
+        var result = _mapper.Map<VacancyOutput>(vacancy);
+        var vacancyOwnerId = await _vacancyRepository.GetVacancyOwnerIdAsync(vacancy.VacancyId);
+
+        // Если владелец вакансии.
+        if (vacancyOwnerId == userId)
+        {
+            result.IsVisibleDeleteButton = true;
+            result.IsVisibleSaveButton = true;
+        }
+
+        return result;
+    }
+    
+    #endregion
 }

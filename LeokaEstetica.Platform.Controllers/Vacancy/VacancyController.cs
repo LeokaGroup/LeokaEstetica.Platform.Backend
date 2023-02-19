@@ -158,11 +158,7 @@ public class VacancyController : BaseController
     [ProducesResponseType(404)]
     public async Task<VacancyOutput> GetVacancyByVacancyIdAsync([FromRoute] long vacancyId)
     {
-        var vacancy = await _vacancyService.GetVacancyByVacancyIdAsync(vacancyId, GetUserName());
-        var result = _mapper.Map<VacancyOutput>(vacancy);
-        
-        // Проверяем владельца вакансии.
-        result.IsVisibleControls = await _vacancyRepository.CheckProjectOwnerAsync(vacancyId, result.UserId);
+        var result = await _vacancyService.GetVacancyByVacancyIdAsync(vacancyId, GetUserName());
 
         return result;
     }

@@ -5,7 +5,8 @@ namespace LeokaEstetica.Platform.Core.Exceptions;
 /// </summary>
 public class NotFoundUserIdByAccountException : Exception
 {
-    public NotFoundUserIdByAccountException(string account) : base($"Не удалось найти Id пользователя с аккаунтом {account}")
+    public NotFoundUserIdByAccountException(string account) : base(
+        $"Не удалось найти Id пользователя с аккаунтом {account}")
     {
     }
 }

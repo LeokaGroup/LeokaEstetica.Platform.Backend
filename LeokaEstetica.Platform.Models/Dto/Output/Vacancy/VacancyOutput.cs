@@ -60,7 +60,12 @@ public class VacancyOutput : IFrontError
     public List<ValidationFailure> Errors { get; set; }
 
     /// <summary>
-    /// Признак отображения кнопки вакансии.
+    /// Признак отображения кнопки удаления вакансии.
     /// </summary>
-    public bool IsVisibleControls { get; set; }
+    public bool IsVisibleDeleteButton { get; set; }
+    
+    /// <summary>
+    /// Признак отображения кнопки сохранения вакансии.
+    /// </summary>
+    public bool IsVisibleSaveButton { get; set; }
 }
