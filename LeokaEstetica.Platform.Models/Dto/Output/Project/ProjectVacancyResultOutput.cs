@@ -22,4 +22,9 @@ public class ProjectVacancyResultOutput : IFrontError
     /// Список ошибок.
     /// </summary>
     public List<ValidationFailure> Errors { get; set; }
+
+    /// <summary>
+    /// Признак видимости кнопок действий вакансий проектов.
+    /// </summary>
+    public bool IsVisibleActionVacancyButton { get; set; }
 }

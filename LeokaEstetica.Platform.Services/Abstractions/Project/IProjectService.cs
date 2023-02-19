@@ -79,8 +79,9 @@ public interface IProjectService
     /// Метод получает список вакансий проекта. Список вакансий, которые принадлежат владельцу проекта.
     /// </summary>
     /// <param name="projectId">Id проекта, вакансии которого нужно получить.</param>
+    /// <param name="account">Аккаунт пользователя.</param>
     /// <returns>Список вакансий.</returns>
-    Task<ProjectVacancyResultOutput> ProjectVacanciesAsync(long projectId);
+    Task<ProjectVacancyResultOutput> ProjectVacanciesAsync(long projectId, string account);
 
     /// <summary>
     /// Метод создает вакансию проекта. При этом автоматически происходит привязка к проекту.

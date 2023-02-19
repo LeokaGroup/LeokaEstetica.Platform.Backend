@@ -244,7 +244,7 @@ public class ProjectController : BaseController
     [ProducesResponseType(404)]
     public async Task<ProjectVacancyResultOutput> ProjectVacanciesAsync([FromQuery] long projectId)
     {
-        var result = await _projectService.ProjectVacanciesAsync(projectId);
+        var result = await _projectService.ProjectVacanciesAsync(projectId, GetUserName());
 
         return result;
     }

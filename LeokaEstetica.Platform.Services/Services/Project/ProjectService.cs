@@ -131,6 +131,8 @@ public class ProjectService : IProjectService
         _projectStageStartFilterChain.Successor = _projectStageSearchInvestorsFilterChain;
     }
 
+    #region Публичные методы.
+
     /// <summary>
     /// Метод создает новый проект пользователя.
     /// </summary>
@@ -450,39 +452,6 @@ public class ProjectService : IProjectService
     }
 
     /// <summary>
-    /// Метод создает результаты проекта. 
-    /// </summary>
-    /// <param name="projectId">Id проекта.</param>
-    /// <param name="prj">Данные проекта.</param>
-    /// <param name="userId">Id пользователя.</param>
-    /// <returns>Результаты проекта.</returns>
-    private async Task<ProjectOutput> CreateProjectResultAsync(long projectId,
-        (UserProjectEntity, ProjectStageEntity) prj, long userId)
-    {
-        var result = _mapper.Map<ProjectOutput>(prj.Item1);
-        result.StageId = prj.Item2.StageId;
-        result.StageName = prj.Item2.StageName;
-        result.StageSysName = prj.Item2.StageSysName;
-        
-        // Проверяем владельца проекта.
-        var projectOwnerId = await _projectRepository.GetProjectOwnerIdAsync(projectId);
-
-        // Если владелец проекта, то проставляем признак видимости кнопок событий.
-        if (projectOwnerId == userId)
-        {
-            result.IsVisibleDeleteButton = true;
-        }
-
-        else
-        {
-            // Просматривает не владелец, допускаем видимость кнопок действий проекта.
-            result.IsVisibleActionProjectButtons = true;
-        }
-
-        return result;
-    }
-
-    /// <summary>
     /// Метод получает стадии проекта для выбора.
     /// </summary>
     /// <returns>Стадии проекта.</returns>
@@ -501,30 +470,15 @@ public class ProjectService : IProjectService
             await _logService.LogErrorAsync(ex);
             throw;
         }
-
-        ;
-    }
-
-    /// <summary>
-    /// Метод валидирует Id проекта. Выбрасываем исклчюение, если он невалидный.
-    /// </summary>
-    /// <param name="projectId">Id проекта.</param>
-    private async Task ValidateProjectIdAsync(long projectId)
-    {
-        var ex = new ArgumentNullException(string.Concat(ValidationConsts.NOT_VALID_PROJECT_ID, projectId));
-        await _logService.LogErrorAsync(ex);
-        await _projectNotificationsService.SendNotificationErrorUpdatedUserProjectAsync("Что то не так...",
-            "Ошибка при обновлении проекта. Мы уже знаем о проблеме и уже занимаемся ей.",
-            NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR);
-        throw ex;
     }
 
     /// <summary>
     /// Метод получает список вакансий проекта. Список вакансий, которые принадлежат владельцу проекта.
     /// </summary>
     /// <param name="projectId">Id проекта, вакансии которого нужно получить.</param>
+    /// <param name="account">Аккаунт пользователя.</param>
     /// <returns>Список вакансий.</returns>
-    public async Task<ProjectVacancyResultOutput> ProjectVacanciesAsync(long projectId)
+    public async Task<ProjectVacancyResultOutput> ProjectVacanciesAsync(long projectId, string account)
     {
         try
         {
@@ -533,50 +487,36 @@ public class ProjectService : IProjectService
                 await ValidateProjectIdAsync(projectId);
             }
             
-            var projectVacancies = await _projectRepository.ProjectVacanciesAsync(projectId);
+            var items = await _projectRepository.ProjectVacanciesAsync(projectId);
+
+            if (items is null || !items.Any())
+            {
+                return new ProjectVacancyResultOutput { ProjectVacancies = new List<ProjectVacancyOutput>() };
+            }
+            
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                await _logService.LogErrorAsync(ex);
+                throw ex;
+            }
             
             var result = new ProjectVacancyResultOutput
             {
-                ProjectVacancies = _mapper.Map<IEnumerable<ProjectVacancyOutput>>(projectVacancies)
+                ProjectVacancies = _mapper.Map<IEnumerable<ProjectVacancyOutput>>(items)
             };
-            
-            // Получаем список вакансий на модерации.
-            var moderationVacancies = await _vacancyModerationService.VacanciesModerationAsync();
+            var projectVacancies = result.ProjectVacancies.ToList();
 
-            // Получаем список вакансий из каталога вакансий.
-            var catalogVacancies = await _vacancyRepository.CatalogVacanciesAsync();
+            // Проставляем вакансиям статусы.
+            result.ProjectVacancies = await FillVacanciesStatuses(projectVacancies);
 
-            // Проставляем статусы вакансий.
-            foreach (var pv in result.ProjectVacancies)
-            {
-                // Ищем в модерации вакансий.
-                var isVacancy = moderationVacancies.Vacancies.Any(v => v.VacancyId == pv.VacancyId);
+            // Чистим описания от html-тегов.
+            result.ProjectVacancies = ClearHtmlTags(projectVacancies);
 
-                if (isVacancy)
-                {
-                    pv.UserVacancy.VacancyStatusName = moderationVacancies.Vacancies
-                        .Where(v => v.VacancyId == pv.VacancyId)
-                        .Select(v => v.ModerationStatusName)
-                        .FirstOrDefault();
-                }
-                
-                // Ищем вакансию в каталоге вакансий.
-                else
-                {
-                    var isCatalogVacancy = catalogVacancies.Any(v => v.VacancyId == pv.VacancyId);
-
-                    if (isCatalogVacancy)
-                    {
-                        pv.UserVacancy.VacancyStatusName = _approveVacancy;
-                    }
-                }
-            }
-            
-            // Чистим описание вакансии от html-тегов.
-            foreach (var vac in result.ProjectVacancies)
-            {
-                vac.UserVacancy.VacancyText = ClearHtmlBuilder.Clear(vac.UserVacancy.VacancyText);
-            }
+            // Проставляем признаки видимости кнопок вакансий проекта.
+            result = await FillVisibleControlsProjectVacanciesAsync(result, projectId, userId);
 
             return result;
         }
@@ -792,52 +732,6 @@ public class ProjectService : IProjectService
     }
 
     /// <summary>
-    /// Метод записывает данные участников команды проекта.
-    /// </summary>
-    /// <param name="teamMembers">Список участников команды проекта.</param>
-    /// <returns>Список с изменениями.</returns>
-    private async Task<List<ProjectTeamOutput>> FillMembersDataAsync(IEnumerable<ProjectTeamMemberEntity> teamMembers)
-    {
-        var result = new List<ProjectTeamOutput>();
-        foreach (var member in teamMembers)
-        {
-            var team = new ProjectTeamOutput();
-
-            // Заполняем название вакансии.
-            var vacancyName = await _vacancyRepository.GetVacancyNameByVacancyIdAsync(member.UserVacancy.VacancyId);
-
-            if (string.IsNullOrEmpty(vacancyName))
-            {
-                var ex = new InvalidOperationException(
-                    $"Ошибка получения названия вакансии. VacancyId = {member.UserVacancy.VacancyId}");
-                await _logService.LogErrorAsync(ex);
-                throw ex;
-            }
-
-            team.VacancyName = vacancyName;
-            var user = await _userRepository.GetUserByUserIdAsync(member.UserId);
-
-            if (user is null)
-            {
-                var ex = new InvalidOperationException(
-                    $"Ошибка получения данных пользователя. UserId = {member.UserId}");
-                await _logService.LogErrorAsync(ex);
-                throw ex;
-            }
-
-            // Заполняем участника команды проекта.
-            team.Member = CreateProjectTeamMembersBuilder.FillMember(user);
-
-            // Форматируем даты.
-            team.Joined = CreateProjectTeamMembersBuilder.Create(member.Joined);
-            team.UserId = member.UserId;
-            result.Add(team);
-        }
-
-        return result;
-    }
-
-    /// <summary>
     /// Метод получает названия полей для таблицы команды проекта пользователя.
     /// </summary>
     /// <returns>Список названий полей таблицы.</returns>
@@ -896,47 +790,6 @@ public class ProjectService : IProjectService
                 $"ProjectId был {projectId}. " +
                 $"VacancyId был {vacancyId}");
             throw;
-        }
-    }
-
-    /// <summary>
-    /// Метод валидирует входные параметры перед добавлением пользователя в команду проекта.
-    /// </summary>
-    /// <param name="userId">Id пользователя, который будет добавлен в команду проекта.</param>
-    /// <param name="projectId">Id проекта.</param>
-    /// <param name="vacancyId">Id вакансии.</param>
-    private async Task ValidateInviteProjectTeamParams(string userId, long projectId, long vacancyId)
-    {
-        var isError = false;
-
-        if (string.IsNullOrEmpty(userId))
-        {
-            var ex = new ArgumentException(ValidationConsts.NOT_VALID_INVITE_PROJECT_TEAM_USER);
-            await _logService.LogErrorAsync(ex);
-            isError = true;
-        }
-
-        if (projectId <= 0)
-        {
-            var ex = new ArgumentException(ValidationConsts.NOT_VALID_INVITE_PROJECT_TEAM_PROJECT_ID);
-            await _logService.LogErrorAsync(ex);
-            isError = true;
-        }
-
-        if (vacancyId <= 0)
-        {
-            var ex = new ArgumentException(ValidationConsts.NOT_VALID_INVITE_PROJECT_TEAM_VACANCY_ID);
-            await _logService.LogErrorAsync(ex);
-            isError = true;
-        }
-
-        // Если была ошибка, то покажем уведомление юзеру и генерим исключение.
-        if (isError)
-        {
-            await _projectNotificationsService.SendNotificationErrorInviteProjectTeamMembersAsync("Ошибка",
-                "Ошибка при добавлении пользователя в команду проекта. Мы уже знаем о ней и разбираемся. " +
-                "А пока, попробуйте еще раз.",
-                NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR);
         }
     }
 
@@ -1082,4 +935,225 @@ public class ProjectService : IProjectService
             throw;
         }
     }
+    
+    #endregion
+
+    #region Приватные методы.
+
+    /// <summary>
+    /// Метод записывает данные участников команды проекта.
+    /// </summary>
+    /// <param name="teamMembers">Список участников команды проекта.</param>
+    /// <returns>Список с изменениями.</returns>
+    private async Task<List<ProjectTeamOutput>> FillMembersDataAsync(IEnumerable<ProjectTeamMemberEntity> teamMembers)
+    {
+        var result = new List<ProjectTeamOutput>();
+        foreach (var member in teamMembers)
+        {
+            var team = new ProjectTeamOutput();
+
+            // Заполняем название вакансии.
+            var vacancyName = await _vacancyRepository.GetVacancyNameByVacancyIdAsync(member.UserVacancy.VacancyId);
+
+            if (string.IsNullOrEmpty(vacancyName))
+            {
+                var ex = new InvalidOperationException(
+                    $"Ошибка получения названия вакансии. VacancyId = {member.UserVacancy.VacancyId}");
+                await _logService.LogErrorAsync(ex);
+                throw ex;
+            }
+
+            team.VacancyName = vacancyName;
+            var user = await _userRepository.GetUserByUserIdAsync(member.UserId);
+
+            if (user is null)
+            {
+                var ex = new InvalidOperationException(
+                    $"Ошибка получения данных пользователя. UserId = {member.UserId}");
+                await _logService.LogErrorAsync(ex);
+                throw ex;
+            }
+
+            // Заполняем участника команды проекта.
+            team.Member = CreateProjectTeamMembersBuilder.FillMember(user);
+
+            // Форматируем даты.
+            team.Joined = CreateProjectTeamMembersBuilder.Create(member.Joined);
+            team.UserId = member.UserId;
+            result.Add(team);
+        }
+
+        return result;
+    }
+    
+    /// <summary>
+    /// Метод валидирует входные параметры перед добавлением пользователя в команду проекта.
+    /// </summary>
+    /// <param name="userId">Id пользователя, который будет добавлен в команду проекта.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="vacancyId">Id вакансии.</param>
+    private async Task ValidateInviteProjectTeamParams(string userId, long projectId, long vacancyId)
+    {
+        var isError = false;
+
+        if (string.IsNullOrEmpty(userId))
+        {
+            var ex = new ArgumentException(ValidationConsts.NOT_VALID_INVITE_PROJECT_TEAM_USER);
+            await _logService.LogErrorAsync(ex);
+            isError = true;
+        }
+
+        if (projectId <= 0)
+        {
+            var ex = new ArgumentException(ValidationConsts.NOT_VALID_INVITE_PROJECT_TEAM_PROJECT_ID);
+            await _logService.LogErrorAsync(ex);
+            isError = true;
+        }
+
+        if (vacancyId <= 0)
+        {
+            var ex = new ArgumentException(ValidationConsts.NOT_VALID_INVITE_PROJECT_TEAM_VACANCY_ID);
+            await _logService.LogErrorAsync(ex);
+            isError = true;
+        }
+
+        // Если была ошибка, то покажем уведомление юзеру и генерим исключение.
+        if (isError)
+        {
+            await _projectNotificationsService.SendNotificationErrorInviteProjectTeamMembersAsync("Ошибка",
+                "Ошибка при добавлении пользователя в команду проекта. Мы уже знаем о ней и разбираемся. " +
+                "А пока, попробуйте еще раз.",
+                NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR);
+        }
+    }
+    
+    /// <summary>
+    /// Метод валидирует Id проекта. Выбрасываем исклчюение, если он невалидный.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    private async Task ValidateProjectIdAsync(long projectId)
+    {
+        var ex = new ArgumentNullException(string.Concat(ValidationConsts.NOT_VALID_PROJECT_ID, projectId));
+        await _logService.LogErrorAsync(ex);
+        await _projectNotificationsService.SendNotificationErrorUpdatedUserProjectAsync("Что то не так...",
+            "Ошибка при обновлении проекта. Мы уже знаем о проблеме и уже занимаемся ей.",
+            NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR);
+        throw ex;
+    }
+
+    /// <summary>
+    /// Метод проставляет статусы вакансиям.
+    /// </summary>
+    /// <param name="projectVacancies">Список вакансий.</param>
+    /// <returns>Список вакансий.</returns>
+    private async Task<IEnumerable<ProjectVacancyOutput>> FillVacanciesStatuses(
+        List<ProjectVacancyOutput> projectVacancies)
+    {
+        // Получаем список вакансий на модерации.
+        var moderationVacancies = await _vacancyModerationService.VacanciesModerationAsync();
+
+        // Получаем список вакансий из каталога вакансий.
+        var catalogVacancies = await _vacancyRepository.CatalogVacanciesAsync();
+
+        // Проставляем статусы вакансий.
+        foreach (var pv in projectVacancies)
+        {
+            // Ищем в модерации вакансий.
+            var isVacancy = moderationVacancies.Vacancies.Any(v => v.VacancyId == pv.VacancyId);
+
+            if (isVacancy)
+            {
+                pv.UserVacancy.VacancyStatusName = moderationVacancies.Vacancies
+                    .Where(v => v.VacancyId == pv.VacancyId)
+                    .Select(v => v.ModerationStatusName)
+                    .FirstOrDefault();
+            }
+                
+            // Ищем вакансию в каталоге вакансий.
+            else
+            {
+                var isCatalogVacancy = catalogVacancies.Any(v => v.VacancyId == pv.VacancyId);
+
+                if (isCatalogVacancy)
+                {
+                    pv.UserVacancy.VacancyStatusName = _approveVacancy;
+                }
+            }
+        }
+
+        return projectVacancies;
+    }
+
+    /// <summary>
+    /// Метод чистит описание от тегов.
+    /// </summary>
+    /// <param name="projectVacancies">Список вакансий.</param>
+    /// <returns>Список вакансий после очистки.</returns>
+    private IEnumerable<ProjectVacancyOutput> ClearHtmlTags(List<ProjectVacancyOutput> projectVacancies)
+    {
+        // Чистим описание вакансии от html-тегов.
+        foreach (var vac in projectVacancies)
+        {
+            vac.UserVacancy.VacancyText = ClearHtmlBuilder.Clear(vac.UserVacancy.VacancyText);
+        }
+
+        return projectVacancies;
+    }
+    
+    /// <summary>
+    /// Метод создает результаты проекта. 
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="prj">Данные проекта.</param>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Результаты проекта.</returns>
+    private async Task<ProjectOutput> CreateProjectResultAsync(long projectId,
+        (UserProjectEntity, ProjectStageEntity) prj, long userId)
+    {
+        var result = _mapper.Map<ProjectOutput>(prj.Item1);
+        result.StageId = prj.Item2.StageId;
+        result.StageName = prj.Item2.StageName;
+        result.StageSysName = prj.Item2.StageSysName;
+        
+        // Проверяем владельца проекта.
+        var projectOwnerId = await _projectRepository.GetProjectOwnerIdAsync(projectId);
+
+        // Если владелец проекта, то проставляем признак видимости кнопок событий.
+        if (projectOwnerId == userId)
+        {
+            result.IsVisibleDeleteButton = true;
+        }
+
+        else
+        {
+            // Просматривает не владелец, допускаем видимость кнопок действий проекта.
+            result.IsVisibleActionProjectButtons = true;
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод проставляет признаки видимости кнопок вакансий проекта.
+    /// </summary>
+    /// <param name="result">Результирующая модель.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Результирующая модель.</returns>
+    private async Task<ProjectVacancyResultOutput> FillVisibleControlsProjectVacanciesAsync(
+        ProjectVacancyResultOutput result, long projectId, long userId)
+    {
+        // Проверяем владельца проекта.
+        var projectOwnerId = await _projectRepository.GetProjectOwnerIdAsync(projectId);
+
+        // Если владелец проекта, то проставляем признак видимости кнопок событий.
+        if (projectOwnerId == userId)
+        {
+            result.IsVisibleActionVacancyButton = true;
+        }
+
+        return result;
+    }
+    
+    #endregion
 }
