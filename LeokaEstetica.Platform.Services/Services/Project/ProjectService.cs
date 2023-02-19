@@ -470,7 +470,7 @@ public class ProjectService : IProjectService
         // Если владелец проекта, то проставляем признак видимости кнопок событий.
         if (projectOwnerId == userId)
         {
-            result.IsVisibleAction = true;
+            result.IsVisibleDeleteButton = true;
         }
 
         return result;

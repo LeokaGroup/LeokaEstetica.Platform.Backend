@@ -59,7 +59,7 @@ public class ProjectOutput : IFrontError
     public int StageId { get; set; }
 
     /// <summary>
-    /// Признак видимости кнопок событий.
+    /// Признак видимости кнопки удаления.
     /// </summary>
-    public bool IsVisibleAction { get; set; }
+    public bool IsVisibleDeleteButton { get; set; }
 }
