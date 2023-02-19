@@ -473,6 +473,12 @@ public class ProjectService : IProjectService
             result.IsVisibleDeleteButton = true;
         }
 
+        else
+        {
+            // Просматривает не владелец, допускаем видимость кнопок действий проекта.
+            result.IsVisibleActionProjectButtons = true;
+        }
+
         return result;
     }
 

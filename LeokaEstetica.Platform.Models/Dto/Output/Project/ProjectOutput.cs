@@ -62,4 +62,9 @@ public class ProjectOutput : IFrontError
     /// Признак видимости кнопки удаления.
     /// </summary>
     public bool IsVisibleDeleteButton { get; set; }
+
+    /// <summary>
+    /// Признак видимости кнопок управления проектом.
+    /// </summary>
+    public bool IsVisibleActionProjectButtons { get; set; }
 }
