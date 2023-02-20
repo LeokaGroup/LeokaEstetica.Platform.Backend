@@ -255,7 +255,7 @@ public sealed class ProfileService : IProfileService
         else
         {
             await _notificationsService
-                .SendNotificationWarningSaveUserSkillsAsync("Совет", "Советуем выбрать ваши навыки!", NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING);
+                .SendNotificationWarningSaveUserSkillsAsync("Совет", "Советуем выбрать ваши навыки.", NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING);
         }
     }
 
