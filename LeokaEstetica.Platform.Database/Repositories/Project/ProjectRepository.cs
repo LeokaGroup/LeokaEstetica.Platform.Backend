@@ -24,6 +24,15 @@ public class ProjectRepository : IProjectRepository
 {
     private readonly PgContext _pgContext;
     private readonly IChatRepository _chatRepository;
+    
+    /// <summary>
+    /// Список статусов вакансий, которые надо исключать при атаче вакансий к проекту.
+    /// </summary>
+    private static readonly List<long> _excludedVacanciesStatuses = new()
+    {
+        (int)VacancyModerationStatusEnum.ModerationVacancy,
+        (int)VacancyModerationStatusEnum.RejectedVacancy
+    };
 
     /// <summary>
     /// Конструктор.
@@ -369,11 +378,18 @@ public class ProjectRepository : IProjectRepository
             .Where(p => p.ProjectId == projectId)
             .Select(p => p.VacancyId)
             .AsQueryable();
+        
+        // Получаем Id вакансий, которые еще на модерации, так как их нельзя атачить.
+        var moderationVacanciesIds = await _pgContext.ModerationVacancies
+            .Where(v => !_excludedVacanciesStatuses.Contains(v.ModerationStatusId))
+            .Select(v => v.VacancyId)
+            .ToListAsync();
 
         // Получаем вакансии, которые можно прикрепить к проекту.
         var result = await _pgContext.UserVacancies
             .Where(v => v.UserId == userId
-                        && !attachedVacanciesIds.Contains(v.VacancyId))
+                        && !attachedVacanciesIds.Contains(v.VacancyId)
+                        && !moderationVacanciesIds.Contains(v.VacancyId))
             .Select(v => new ProjectVacancyEntity
             {
                 ProjectId = projectId,
