@@ -20,6 +20,11 @@ public class ProfileController : BaseController
     private readonly IProfileService _profileService;
     private readonly IValidationExcludeErrorsService _validationExcludeErrorsService;
 
+    /// <summary>
+    /// Конструктор.
+    /// </summary>
+    /// <param name="profileService">Сервис профиля.</param>
+    /// <param name="validationExcludeErrorsService">Сервис исключения параметров валидации.</param>
     public ProfileController(IProfileService profileService, 
         IValidationExcludeErrorsService validationExcludeErrorsService)
     {

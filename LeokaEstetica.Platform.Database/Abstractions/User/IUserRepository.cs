@@ -65,7 +65,7 @@ public interface IUserRepository
     Task<Guid> GetUserCodeByEmailAsync(string email);
 
     /// <summary>
-    /// Метод получает основную информацию профиля по UserId.
+    /// Метод получает недостающую информацию профиля по UserId.
     /// </summary>
     /// <param name="userId">Id пользователя.</param>
     /// <returns>Основные данные профиля.</returns>

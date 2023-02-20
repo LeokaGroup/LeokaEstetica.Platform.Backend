@@ -160,7 +160,7 @@ public class UserRepository : IUserRepository
     }
 
     /// <summary>
-    /// Метод получает основную информацию профиля по UserId.
+    /// Метод получает недостающую информацию профиля по UserId.
     /// </summary>
     /// <param name="userId">Id пользователя.</param>
     /// <returns>Основные данные профиля.</returns>
@@ -171,9 +171,7 @@ public class UserRepository : IUserRepository
             .Select(u => new UserInfoOutput
             {
                 PhoneNumber = u.PhoneNumber,
-                Email = u.Email,
-                FirstName = u.FirstName,
-                LastName = u.LastName
+                Email = u.Email
             })
             .FirstOrDefaultAsync();
 

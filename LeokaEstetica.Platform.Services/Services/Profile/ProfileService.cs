@@ -82,8 +82,6 @@ public sealed class ProfileService : IProfileService
 
             result.Email = userData.Email;
             result.PhoneNumber = userData.PhoneNumber;
-            result.FirstName = userData.FirstName;
-            result.LastName = userData.LastName;
 
             return result;
         }
@@ -192,7 +190,7 @@ public sealed class ProfileService : IProfileService
 
             if (userId == 0)
             {
-                throw new InvalidOperationException($"Id пользователя с аккаунтом {account} не найден!");
+                throw new InvalidOperationException($"Id пользователя с аккаунтом {account} не найден.");
             }
 
             // Получаем данные профиля пользователя.
@@ -200,7 +198,7 @@ public sealed class ProfileService : IProfileService
 
             if (profileInfo is null)
             {
-                throw new InvalidOperationException($"Для пользователя {account} не заведено профиля в системе!");
+                throw new InvalidOperationException($"Для пользователя {account} не заведено профиля в системе.");
             }
 
             CreateProfileInfoModel(profileInfoInput, ref profileInfo);
@@ -208,6 +206,7 @@ public sealed class ProfileService : IProfileService
             // Сохраняем данные пользователя.
             var savedProfileInfo = await _profileRepository.SaveProfileInfoAsync(profileInfo);
             var result = _mapper.Map<ProfileInfoOutput>(savedProfileInfo);
+            result.PhoneNumber = profileInfoInput.PhoneNumber;
 
             // Сохраняем номер телефона пользователя.
             await _userRepository.SaveUserPhoneAsync(userId, profileInfoInput.PhoneNumber);
