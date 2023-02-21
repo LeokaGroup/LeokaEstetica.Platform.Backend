@@ -215,7 +215,7 @@ public sealed class ProfileService : IProfileService
             await SaveUserSkillsAsync(profileInfoInput, userId);
             
             // Сохраняем выбранные цели пользователя.
-            //await SaveUserIntentsAsync(profileInfoInput, userId);
+            await SaveUserIntentsAsync(profileInfoInput, userId);
 
             // Отправляем уведомление о сохранении фронту.
             await _notificationsService.SendNotifySuccessSaveAsync("Все хорошо", "Данные успешно сохранены!",
@@ -240,23 +240,13 @@ public sealed class ProfileService : IProfileService
     /// <param name="userId">Id пользователя.</param>
     private async Task SaveUserSkillsAsync(ProfileInfoInput profileInfoInput, long userId)
     {
-        if (profileInfoInput.UserSkills.Any())
-        {
-            await _profileRepository.SaveProfileSkillsAsync(profileInfoInput.UserSkills.Select(s =>
-                    new UserSkillEntity
-                    {
-                        SkillId = s.SkillId,
-                        UserId = userId,
-                        Position = s.Position
-                    })
-                .ToList(), userId);
-        }
-
-        // Удалим то, что осталось в навыках у пользователя.
-        else
-        {
-            await _profileRepository.SaveProfileSkillsAsync(new List<UserSkillEntity>(), userId);
-        }
+        await _profileRepository.SaveProfileSkillsAsync(profileInfoInput.UserSkills
+            .Select(s => new UserSkillEntity
+            {
+                SkillId = s.SkillId,
+                UserId = userId,
+                Position = s.Position
+            }), userId);
     }
 
     /// <summary>
@@ -266,16 +256,13 @@ public sealed class ProfileService : IProfileService
     /// <param name="userId">Id пользователя.</param>
     private async Task SaveUserIntentsAsync(ProfileInfoInput profileInfoInput, long userId)
     {
-        if (profileInfoInput.UserIntents.Any())
-        {
-            await _profileRepository.SaveProfileIntentsAsync(profileInfoInput.UserIntents.Select(s =>
-                new UserIntentEntity
-                {
-                    IntentId = s.IntentId,
-                    UserId = userId,
-                    Position = s.Position
-                }));
-        }
+        await _profileRepository.SaveProfileIntentsAsync(profileInfoInput.UserIntents
+            .Select(s => new UserIntentEntity
+            {
+                IntentId = s.IntentId,
+                UserId = userId,
+                Position = s.Position
+            }), userId);
     }
 
     /// <summary>

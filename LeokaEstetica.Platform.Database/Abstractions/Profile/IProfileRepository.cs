@@ -52,7 +52,7 @@ public interface IProfileRepository
     /// <param name="selectedSkills">Список навыков для сохранения.</param>
     /// <param name="userId">Id пользователя.</param>
     /// <returns>Список навыков.</returns>
-    Task SaveProfileSkillsAsync(List<UserSkillEntity> selectedSkills, long userId);
+    Task SaveProfileSkillsAsync(IEnumerable<UserSkillEntity> selectedSkills, long userId);
 
     /// <summary>
     /// Метод получает список выбранные навыки пользователя.
@@ -79,8 +79,9 @@ public interface IProfileRepository
     /// Метод сохраняет выбранные пользователям цели.
     /// </summary>
     /// <param name="selectedIntents">Список целей для сохранения.</param>
+    /// <param name="userId">Id пользователя.</param>
     /// <returns>Список целей.</returns>
-    Task SaveProfileIntentsAsync(IEnumerable<UserIntentEntity> selectedIntents);
+    Task SaveProfileIntentsAsync(IEnumerable<UserIntentEntity> selectedIntents, long userId);
     
     /// <summary>
     /// Метод получает список выбранные цели пользователя.
