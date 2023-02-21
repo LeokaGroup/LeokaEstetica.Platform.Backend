@@ -50,8 +50,9 @@ public interface IProfileRepository
     /// Метод сохраняет выбранные пользователям навыки.
     /// </summary>
     /// <param name="selectedSkills">Список навыков для сохранения.</param>
+    /// <param name="userId">Id пользователя.</param>
     /// <returns>Список навыков.</returns>
-    Task SaveProfileSkillsAsync(IEnumerable<UserSkillEntity> selectedSkills);
+    Task SaveProfileSkillsAsync(List<UserSkillEntity> selectedSkills, long userId);
 
     /// <summary>
     /// Метод получает список выбранные навыки пользователя.

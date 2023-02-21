@@ -103,10 +103,17 @@ public sealed class ProfileRepository : IProfileRepository
     /// Метод сохраняет выбранные пользователям навыки.
     /// </summary>
     /// <param name="selectedSkills">Список навыков для сохранения.</param>
+    /// <param name="userId">Id пользователя.</param>
     /// <returns>Список навыков.</returns>
-    public async Task SaveProfileSkillsAsync(IEnumerable<UserSkillEntity> selectedSkills)
+    public async Task SaveProfileSkillsAsync(List<UserSkillEntity> selectedSkills, long userId)
     {
-        await _pgContext.UserSkills.AddRangeAsync(selectedSkills);
+        var userSkills = await _pgContext.UserSkills
+            .Where(s => s.UserId == userId)
+            .ToListAsync();
+        
+        _pgContext.UserSkills.RemoveRange(userSkills);
+        _pgContext.UserSkills.AddRange(selectedSkills);
+
         await _pgContext.SaveChangesAsync();
     }
 

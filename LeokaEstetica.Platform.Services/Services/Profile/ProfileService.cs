@@ -215,7 +215,7 @@ public sealed class ProfileService : IProfileService
             await SaveUserSkillsAsync(profileInfoInput, userId);
             
             // Сохраняем выбранные цели пользователя.
-            await SaveUserIntentsAsync(profileInfoInput, userId);
+            //await SaveUserIntentsAsync(profileInfoInput, userId);
 
             // Отправляем уведомление о сохранении фронту.
             await _notificationsService.SendNotifySuccessSaveAsync("Все хорошо", "Данные успешно сохранены!",
@@ -243,19 +243,19 @@ public sealed class ProfileService : IProfileService
         if (profileInfoInput.UserSkills.Any())
         {
             await _profileRepository.SaveProfileSkillsAsync(profileInfoInput.UserSkills.Select(s =>
-                new UserSkillEntity
-                {
-                    SkillId = s.SkillId,
-                    UserId = userId,
-                    Position = s.Position
-                }));
+                    new UserSkillEntity
+                    {
+                        SkillId = s.SkillId,
+                        UserId = userId,
+                        Position = s.Position
+                    })
+                .ToList(), userId);
         }
 
-        // Отправляем уведомление о совете фронту. Это не считаем ошибкой, просто предупреждаем пользователя.
+        // Удалим то, что осталось в навыках у пользователя.
         else
         {
-            await _notificationsService
-                .SendNotificationWarningSaveUserSkillsAsync("Совет", "Советуем выбрать ваши навыки.", NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING);
+            await _profileRepository.SaveProfileSkillsAsync(new List<UserSkillEntity>(), userId);
         }
     }
 
@@ -275,13 +275,6 @@ public sealed class ProfileService : IProfileService
                     UserId = userId,
                     Position = s.Position
                 }));
-        }
-
-        // Отправляем уведомление о совете фронту. Это не считаем ошибкой, просто предупреждаем пользователя.
-        else
-        {
-            await _notificationsService
-                .SendNotificationWarningSaveUserIntentsAsync("Совет", "Советуем выбрать ваши цели на платформе!", NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING);
         }
     }
 
