@@ -110,10 +110,52 @@ public sealed class ProfileRepository : IProfileRepository
         var userSkills = await _pgContext.UserSkills
             .Where(s => s.UserId == userId)
             .ToListAsync();
+
+        // Если у пользователя в БД еще не было навыков, то просто добавляем из выбранных.
+        var enumerable = selectedSkills.ToList();
+        var skillEntities = enumerable.ToList();
+        var userSkillEntities = skillEntities.ToList();
         
-        _pgContext.UserSkills.RemoveRange(userSkills);
+        // Если в БД нет навыков еще у пользователя, то добавляем все, что он выбрал.
+        if (!userSkills.Any())
+        {
+            await _pgContext.UserSkills.AddRangeAsync(userSkillEntities);
+        }
         
-        await _pgContext.UserSkills.AddRangeAsync(selectedSkills);
+        // Если в БД есть навыки у пользователя, но он ничего не выбрал, то удаляем все его навыки из БД.
+        else if (!enumerable.Any())
+        {
+            _pgContext.UserSkills.RemoveRange(userSkillEntities);
+        }
+
+        else
+        {
+            // Если в БД есть навыки у пользователя, то актуализируем их.
+            foreach (var skill in userSkillEntities)
+            {
+                // Если в БД есть такой уже навык, то ничего не делаем.
+                var findIndex = userSkills.FindIndex(s => s.SkillId == skill.SkillId);
+
+                if (findIndex != -1)
+                {
+                    continue;
+                }
+            
+                // Если в БД нету, то добавляем.
+                await _pgContext.UserSkills.AddAsync(skill);
+            }   
+        }
+
+        // Удаляем те навыки, которые пользователь не выбрал, но они есть в БД.
+        if (userSkills.Any())
+        {
+            var items = await _pgContext.UserSkills
+                .Where(s => s.UserId == userId 
+                            && !skillEntities.Select(x => x.SkillId).Contains(s.SkillId))
+                .ToListAsync();
+            
+            _pgContext.UserSkills.RemoveRange(items);
+        }
 
         await _pgContext.SaveChangesAsync();
     }
@@ -157,11 +199,53 @@ public sealed class ProfileRepository : IProfileRepository
         var userIntents = await _pgContext.UserIntents
             .Where(s => s.UserId == userId)
             .ToListAsync();
+
+        // Если у пользователя в БД еще не было целей, то просто добавляем из выбранных.
+        var enumerable = selectedIntents.ToList();
+        var skillEntities = enumerable.ToList();
+        var userIntentsEntities = skillEntities.ToList();
         
-        _pgContext.UserIntents.RemoveRange(userIntents);
+        // Если в БД нет целей еще у пользователя, то добавляем все, что он выбрал.
+        if (!userIntents.Any())
+        {
+            await _pgContext.UserIntents.AddRangeAsync(userIntentsEntities);
+        }
         
-        await _pgContext.UserIntents.AddRangeAsync(selectedIntents);
-        
+        // Если в БД есть цели у пользователя, но он ничего не выбрал, то удаляем все его цели из БД.
+        else if (!enumerable.Any())
+        {
+            _pgContext.UserIntents.RemoveRange(userIntentsEntities);
+        }
+
+        else
+        {
+            // Если в БД есть цели у пользователя, то актуализируем их.
+            foreach (var intent in userIntentsEntities)
+            {
+                // Если в БД есть такой уже цель, то ничего не делаем.
+                var findIndex = userIntents.FindIndex(s => s.IntentId == intent.IntentId);
+
+                if (findIndex != -1)
+                {
+                    continue;
+                }
+            
+                // Если в БД нету, то добавляем.
+                await _pgContext.UserIntents.AddAsync(intent);
+            }   
+        }
+
+        // Удаляем те цели, которые пользователь не выбрал, но они есть в БД.
+        if (userIntents.Any())
+        {
+            var items = await _pgContext.UserIntents
+                .Where(s => s.UserId == userId 
+                            && !skillEntities.Select(x => x.IntentId).Contains(s.IntentId))
+                .ToListAsync();
+            
+            _pgContext.UserIntents.RemoveRange(items);
+        }
+
         await _pgContext.SaveChangesAsync();
     }
 
