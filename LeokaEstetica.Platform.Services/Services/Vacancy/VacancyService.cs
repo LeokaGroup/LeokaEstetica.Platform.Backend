@@ -402,7 +402,7 @@ public class VacancyService : IVacancyService
 
             // Отправляем уведомление об успешном изменении вакансии и отправки ее на модерацию.
             await _vacancyNotificationsService.SendNotificationSuccessCreatedUserVacancyAsync("Все хорошо",
-                "Данные успешно сохранены! Вакансия отправлена на модерацию!",
+                "Данные успешно сохранены. Вакансия отправлена на модерацию.",
                 NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS);
 
             return createdVacancy;
