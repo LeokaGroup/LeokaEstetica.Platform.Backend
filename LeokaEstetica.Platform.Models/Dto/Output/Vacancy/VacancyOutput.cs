@@ -68,4 +68,9 @@ public class VacancyOutput : IFrontError
     /// Признак отображения кнопки сохранения вакансии.
     /// </summary>
     public bool IsVisibleSaveButton { get; set; }
+    
+    /// <summary>
+    /// Признак отображения кнопки изменения вакансии.
+    /// </summary>
+    public bool IsVisibleEditButton { get; set; }
 }

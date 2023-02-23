@@ -548,6 +548,7 @@ public class VacancyService : IVacancyService
         {
             result.IsVisibleDeleteButton = true;
             result.IsVisibleSaveButton = true;
+            result.IsVisibleEditButton = true;
         }
 
         return result;
