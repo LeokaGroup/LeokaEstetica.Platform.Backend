@@ -1,4 +1,3 @@
-using System.Data.Common;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Core.Extensions;
@@ -346,6 +345,21 @@ public class VacancyRepository : IVacancyRepository
         var result = await _pgContext.UserVacancies
             .AnyAsync(p => p.VacancyId == vacancyId
                            && p.UserId == userId);
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод получает список вакансий пользователя.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Список вакансий.</returns>
+    public async Task<IEnumerable<UserVacancyEntity>> GetUserVacanciesAsync(long userId)
+    {
+        var result = await _pgContext.UserVacancies
+            .Where(v => v.UserId == userId)
+            .OrderBy(v => v.VacancyId)
+            .ToListAsync();
 
         return result;
     }

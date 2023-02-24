@@ -58,9 +58,4 @@ public class CatalogVacancyOutput
     /// Признак выделения цветом.
     /// </summary>
     public bool IsSelectedColor { get; set; }
-
-    /// <summary>
-    /// Название статуса вакансии.
-    /// </summary>
-    public string VacancyStatusName { get; set; }
 }

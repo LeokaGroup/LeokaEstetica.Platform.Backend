@@ -297,7 +297,7 @@ public class VacancyService : IVacancyService
                 }
             }
 
-            result.CatalogVacancies = ClearHtmlTags(result.CatalogVacancies.ToList());
+            result.CatalogVacancies = ClearCatalogVacanciesHtmlTags(result.CatalogVacancies.ToList());
 
             return result;
         }
@@ -506,7 +506,47 @@ public class VacancyService : IVacancyService
             throw;
         }
     }
-    
+
+    /// <summary>
+    /// Метод получает список вакансий пользователя.
+    /// </summary>
+    /// <returns>Список вакансий.</returns>
+    public async Task<VacancyResultOutput> GetUserVacanciesAsync(string account)
+    {
+        try
+        {
+            var result = new VacancyResultOutput();
+            var userId = await _userRepository.GetUserIdByEmailOrLoginAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+
+            var items = await _vacancyRepository.GetUserVacanciesAsync(userId);
+
+            if (items.Any())
+            {
+                result = new VacancyResultOutput
+                {
+                    Vacancies = _mapper.Map<IEnumerable<VacancyOutput>>(items)
+                };
+            }
+            
+            // Очищаем теги.
+            result.Vacancies = ClearVacanciesHtmlTags(result.Vacancies.ToList());
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            await _logService.LogErrorAsync(ex);
+            throw;
+        }
+    }
+
     #endregion
 
     #region Приватные методы.
@@ -561,11 +601,27 @@ public class VacancyService : IVacancyService
     }
     
     /// <summary>
-    /// Метод чистит описание от тегов.
+    /// Метод чистит описание от тегов список вакансий для каталога.
     /// </summary>
     /// <param name="vacancies">Список вакансий.</param>
     /// <returns>Список вакансий после очистки.</returns>
-    private IEnumerable<CatalogVacancyOutput> ClearHtmlTags(List<CatalogVacancyOutput> vacancies)
+    private IEnumerable<CatalogVacancyOutput> ClearCatalogVacanciesHtmlTags(List<CatalogVacancyOutput> vacancies)
+    {
+        // Чистим описание вакансии от html-тегов.
+        foreach (var vac in vacancies)
+        {
+            vac.VacancyText = ClearHtmlBuilder.Clear(vac.VacancyText);
+        }
+
+        return vacancies;
+    }
+    
+    /// <summary>
+    /// Метод чистит описание от тегов список вакансий.
+    /// </summary>
+    /// <param name="vacancies">Список вакансий.</param>
+    /// <returns>Список вакансий после очистки.</returns>
+    private IEnumerable<VacancyOutput> ClearVacanciesHtmlTags(List<VacancyOutput> vacancies)
     {
         // Чистим описание вакансии от html-тегов.
         foreach (var vac in vacancies)
