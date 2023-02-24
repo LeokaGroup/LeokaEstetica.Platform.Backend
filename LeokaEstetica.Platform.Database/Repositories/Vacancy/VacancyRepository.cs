@@ -69,11 +69,13 @@ public class VacancyRepository : IVacancyRepository
                 UserId = userId
             };
             await _pgContext.UserVacancies.AddAsync(vacancy);
-            await _pgContext.SaveChangesAsync();
 
             // Добавляем вакансию в таблицу статусов вакансий. Проставляем новой вакансии статус "На модерации". 
             await AddVacancyStatusAsync(vacancy.VacancyId, VacancyStatusNameEnum.Moderation.GetEnumDescription(),
                 VacancyStatusNameEnum.Moderation.ToString());
+            
+            await _pgContext.SaveChangesAsync();
+            
             await transaction.CommitAsync();
 
             return vacancy;
@@ -136,7 +138,6 @@ public class VacancyRepository : IVacancyRepository
             VacancyStatusSysName = statusSysName
         };
         await _pgContext.VacancyStatuses.AddAsync(vacancyStatus);
-        await _pgContext.SaveChangesAsync();
     }
 
     /// <summary>
@@ -195,11 +196,12 @@ public class VacancyRepository : IVacancyRepository
         vacancy.WorkExperience = workExperience;
         vacancy.Employment = employment;
         vacancy.Payment = payment;
-        await _pgContext.SaveChangesAsync();
 
         // Добавляем вакансию в таблицу статусов вакансий. Проставляем новой вакансии статус "На модерации". 
         await AddVacancyStatusAsync(vacancy.VacancyId, VacancyStatusNameEnum.Moderation.GetEnumDescription(),
             VacancyStatusNameEnum.Moderation.ToString());
+        
+        await _pgContext.SaveChangesAsync();
 
         return vacancy;
     }

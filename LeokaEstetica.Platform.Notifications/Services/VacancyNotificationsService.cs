@@ -39,6 +39,23 @@ public class VacancyNotificationsService : IVacancyNotificationsService
     }
 
     /// <summary>
+    /// Метод отправляет уведомление об ошибке при создании вакансии.
+    /// </summary>
+    /// <param name="title">Заголовок уведомления.</param>
+    /// <param name="notifyText">Текст уведомления.</param>
+    /// <param name="notificationLevel">Уровень уведомления.</param>
+    public async Task SendNotificationErrorCreatedUserVacancyAsync(string title, string notifyText,
+        string notificationLevel)
+    {
+        await _hubContext.Clients.All.SendAsync("SendNotificationErrorCreatedUserVacancy", new NotificationOutput
+        {
+            Title = title,
+            Message = notifyText,
+            NotificationLevel = notificationLevel
+        });
+    }
+
+    /// <summary>
     /// Метод отправляет уведомление об предупреждении лимите вакансий по тарифу.
     /// </summary>
     /// <param name="title">Заголовок уведомления.</param>

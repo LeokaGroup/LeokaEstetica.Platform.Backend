@@ -214,7 +214,7 @@ public class VacancyService : IVacancyService
 
             // Отправляем уведомление об успешном создании вакансии и отправки ее на модерацию.
             await _vacancyNotificationsService.SendNotificationSuccessCreatedUserVacancyAsync("Все хорошо",
-                "Данные успешно сохранены! Вакансия отправлена на модерацию!",
+                "Данные успешно сохранены. Вакансия отправлена на модерацию.",
                 NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS);
 
             return createdVacancy;
@@ -222,6 +222,11 @@ public class VacancyService : IVacancyService
 
         catch (Exception ex)
         {
+            await _vacancyNotificationsService.SendNotificationErrorCreatedUserVacancyAsync("Ошибка",
+                "Ошибка при создании вакансии. Мы уже знаем о ней и разбираемся. " +
+                "А пока, попробуйте еще раз.",
+                NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR);
+            
             await _logService.LogErrorAsync(ex);
             throw;
         }
