@@ -108,4 +108,11 @@ public interface IVacancyRepository
     /// <param name="userId">Id пользователя.</param>
     /// <returns>Признак является ли пользователь владельцем вакансии.</returns>
     Task<bool> CheckProjectOwnerAsync(long vacancyId, long userId);
+
+    /// <summary>
+    /// Метод получает список вакансий пользователя.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Список вакансий.</returns>
+    Task<IEnumerable<UserVacancyEntity>> GetUserVacanciesAsync(long userId);
 }

@@ -269,4 +269,22 @@ public class VacancyController : BaseController
 
         await _vacancyService.DeleteVacancyAsync(vacancyId, GetUserName());
     }
+
+    /// <summary>
+    /// Метод получает список вакансий пользователя.
+    /// </summary>
+    /// <returns>Список вакансий.</returns>
+    [HttpGet]
+    [Route("user-vacancies")]
+    [ProducesResponseType(200, Type = typeof(VacancyResultOutput))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<VacancyResultOutput> GetUserVacanciesAsync()
+    {
+        var result = await _vacancyService.GetUserVacanciesAsync(GetUserName());
+
+        return result;
+    }
 }

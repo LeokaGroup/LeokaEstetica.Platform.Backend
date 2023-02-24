@@ -77,4 +77,10 @@ public interface IVacancyService
     /// <param name="vacancyId">Id вакансии.</param>
     /// <param name="account">Аккаунт.</param>
     Task DeleteVacancyAsync(long vacancyId, string account);
+
+    /// <summary>
+    /// Метод получает список вакансий пользователя.
+    /// </summary>
+    /// <returns>Список вакансий.</returns>
+    Task<VacancyResultOutput> GetUserVacanciesAsync(string account);
 }
