@@ -69,6 +69,8 @@ public class VacancyRepository : IVacancyRepository
                 UserId = userId
             };
             await _pgContext.UserVacancies.AddAsync(vacancy);
+            
+            await _pgContext.SaveChangesAsync(); // Сохраняем тут, так как нам нужен VacancyId.
 
             // Добавляем вакансию в таблицу статусов вакансий. Проставляем новой вакансии статус "На модерации". 
             await AddVacancyStatusAsync(vacancy.VacancyId, VacancyStatusNameEnum.Moderation.GetEnumDescription(),
@@ -196,6 +198,8 @@ public class VacancyRepository : IVacancyRepository
         vacancy.WorkExperience = workExperience;
         vacancy.Employment = employment;
         vacancy.Payment = payment;
+        
+        await _pgContext.SaveChangesAsync(); // Сохраняем тут, так как нам нужен VacancyId.
 
         // Добавляем вакансию в таблицу статусов вакансий. Проставляем новой вакансии статус "На модерации". 
         await AddVacancyStatusAsync(vacancy.VacancyId, VacancyStatusNameEnum.Moderation.GetEnumDescription(),

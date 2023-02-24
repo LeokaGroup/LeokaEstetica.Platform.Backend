@@ -35,16 +35,7 @@ public sealed class VacancyModerationService : IVacancyModerationService
     /// <param name="vacancyId">Id вакансии.</param>
     public async Task AddVacancyModerationAsync(long vacancyId)
     {
-        try
-        {
-            await _vacancyModerationRepository.AddVacancyModerationAsync(vacancyId);
-        }
-
-        catch (Exception ex)
-        {
-            await _logService.LogErrorAsync(ex);
-            throw;
-        }
+        await _vacancyModerationRepository.AddVacancyModerationAsync(vacancyId);
     }
 
     /// <summary>

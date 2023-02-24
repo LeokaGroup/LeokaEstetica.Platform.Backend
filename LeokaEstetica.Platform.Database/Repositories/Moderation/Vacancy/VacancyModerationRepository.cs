@@ -23,7 +23,7 @@ public sealed class VacancyModerationRepository : IVacancyModerationRepository
 
     /// <summary>
     /// Метод отправляет вакансию на модерацию. Это происходит через добавление в таблицу модерации вакансий.
-    /// Если вакансия в этой таблице, значит она не прошла еще модерацию. При прохождении модерации она удаляется из нее.
+    /// Если вакансия в этой таблице, значит она не прошла еще модерацию.
     /// </summary>
     /// <param name="vacancyId">Id вакансии.</param>
     public async Task AddVacancyModerationAsync(long vacancyId)
@@ -37,18 +37,20 @@ public sealed class VacancyModerationRepository : IVacancyModerationRepository
             var vacancy = new ModerationVacancyEntity
             {
                 VacancyId = vacancyId,
-                DateModeration = DateTime.Now
+                DateModeration = DateTime.Now,
+                ModerationStatusId = (int)VacancyModerationStatusEnum.ModerationVacancy
             };
             await _pgContext.ModerationVacancies.AddAsync(vacancy);
-            await _pgContext.SaveChangesAsync();
-            
+
             // Проставляем статус модерации проекта "На модерации".
             await _pgContext.ModerationStatuses.AddAsync(new ModerationStatusEntity
             {
                 StatusName = VacancyModerationStatusEnum.ModerationVacancy.GetEnumDescription(),
                 StatusSysName = VacancyModerationStatusEnum.ModerationVacancy.ToString()
             });
+                
             await _pgContext.SaveChangesAsync();
+            
             await transaction.CommitAsync();
         }
         
