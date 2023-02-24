@@ -233,7 +233,6 @@ public class VacancyService : IVacancyService
     }
 
     /// <summary>
-    /// TODO: Аккаунт возможно нужкн будет использовать, если будет монетизация в каталоге вакансий. Если доступ будет только у тех пользователей, которые приобрели подписку.
     /// Метод получает список вакансий для каталога.
     /// </summary>
     /// <returns>Список вакансий.</returns>
@@ -297,6 +296,8 @@ public class VacancyService : IVacancyService
                     v.IsSelectedColor = true;
                 }
             }
+
+            result.CatalogVacancies = ClearHtmlTags(result.CatalogVacancies.ToList());
 
             return result;
         }
@@ -557,6 +558,22 @@ public class VacancyService : IVacancyService
         }
 
         return result;
+    }
+    
+    /// <summary>
+    /// Метод чистит описание от тегов.
+    /// </summary>
+    /// <param name="vacancies">Список вакансий.</param>
+    /// <returns>Список вакансий после очистки.</returns>
+    private IEnumerable<CatalogVacancyOutput> ClearHtmlTags(List<CatalogVacancyOutput> vacancies)
+    {
+        // Чистим описание вакансии от html-тегов.
+        foreach (var vac in vacancies)
+        {
+            vac.VacancyText = ClearHtmlBuilder.Clear(vac.VacancyText);
+        }
+
+        return vacancies;
     }
     
     #endregion
