@@ -73,4 +73,9 @@ public class VacancyOutput : IFrontError
     /// Признак отображения кнопки изменения вакансии.
     /// </summary>
     public bool IsVisibleEditButton { get; set; }
+
+    /// <summary>
+    /// Статус вакансии.
+    /// </summary>
+    public string VacancyStatusName { get; set; }
 }

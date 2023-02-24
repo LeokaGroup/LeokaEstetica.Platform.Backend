@@ -76,6 +76,8 @@ public class VacancyService : IVacancyService
     private readonly IAvailableLimitsService _availableLimitsService;
     private readonly IVacancyNotificationsService _vacancyNotificationsService;
     
+    private static readonly string _approveVacancy = "Опубликована";
+    
     /// <summary>
     /// Список названий тарифов, которые дают выделение цветом.
     /// </summary>
@@ -526,16 +528,23 @@ public class VacancyService : IVacancyService
 
             var items = await _vacancyRepository.GetUserVacanciesAsync(userId);
 
-            if (items.Any())
+            var userVacancyEntities = items.ToList();
+            
+            if (userVacancyEntities.Any())
             {
                 result = new VacancyResultOutput
                 {
                     Vacancies = _mapper.Map<IEnumerable<VacancyOutput>>(items)
                 };
             }
+
+            var vacancies = result.Vacancies.ToList();
+
+            // Проставляем вакансиям статусы.
+            result.Vacancies = await FillVacanciesStatuses(vacancies);
             
             // Очищаем теги.
-            result.Vacancies = ClearVacanciesHtmlTags(result.Vacancies.ToList());
+            result.Vacancies = ClearVacanciesHtmlTags(vacancies);
 
             return result;
         }
@@ -599,7 +608,7 @@ public class VacancyService : IVacancyService
 
         return result;
     }
-    
+
     /// <summary>
     /// Метод чистит описание от тегов список вакансий для каталога.
     /// </summary>
@@ -627,6 +636,49 @@ public class VacancyService : IVacancyService
         foreach (var vac in vacancies)
         {
             vac.VacancyText = ClearHtmlBuilder.Clear(vac.VacancyText);
+        }
+
+        return vacancies;
+    }
+    
+    /// <summary>
+    /// Метод проставляет статусы вакансиям.
+    /// </summary>
+    /// <param name="projectVacancies">Список вакансий.</param>
+    /// <returns>Список вакансий.</returns>
+    private async Task<IEnumerable<VacancyOutput>> FillVacanciesStatuses(
+        List<VacancyOutput> vacancies)
+    {
+        // Получаем список вакансий на модерации.
+        var moderationVacancies = await _vacancyModerationService.VacanciesModerationAsync();
+
+        // Получаем список вакансий из каталога вакансий.
+        var catalogVacancies = await _vacancyRepository.CatalogVacanciesAsync();
+
+        // Проставляем статусы вакансий.
+        foreach (var pv in vacancies)
+        {
+            // Ищем в модерации вакансий.
+            var isVacancy = moderationVacancies.Vacancies.Any(v => v.VacancyId == pv.VacancyId);
+
+            if (isVacancy)
+            {
+                pv.VacancyStatusName = moderationVacancies.Vacancies
+                    .Where(v => v.VacancyId == pv.VacancyId)
+                    .Select(v => v.ModerationStatusName)
+                    .FirstOrDefault();
+            }
+                
+            // Ищем вакансию в каталоге вакансий.
+            else
+            {
+                var isCatalogVacancy = catalogVacancies.Any(v => v.VacancyId == pv.VacancyId);
+
+                if (isCatalogVacancy)
+                {
+                    pv.VacancyStatusName = _approveVacancy;
+                }
+            }
         }
 
         return vacancies;
