@@ -1,7 +1,14 @@
+using AutoMapper;
+using LeokaEstetica.Platform.Core.Exceptions;
+using LeokaEstetica.Platform.Database.Abstractions.Notification;
+using LeokaEstetica.Platform.Database.Abstractions.User;
+using LeokaEstetica.Platform.Logs.Abstractions;
+using LeokaEstetica.Platform.Models.Dto.Output.Notification;
 using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Notifications.Data;
-using LeokaEstetica.Platform.Notifications.Models.Output;
 using Microsoft.AspNetCore.SignalR;
+using NotificationOutput = LeokaEstetica.Platform.Notifications.Models.Output.NotificationOutput;
+using NotificationProjectOutput = LeokaEstetica.Platform.Models.Dto.Output.Notification.NotificationOutput;
 
 namespace LeokaEstetica.Platform.Notifications.Services;
 
@@ -11,14 +18,30 @@ namespace LeokaEstetica.Platform.Notifications.Services;
 public class ProjectNotificationsService : IProjectNotificationsService
 {
     private readonly IHubContext<NotifyHub> _hubContext;
+    private readonly ILogService _logService;
+    private readonly IUserRepository _userRepository;
+    private readonly INotificationsRepository _notificationsRepository;
+    private readonly IMapper _mapper;
 
     /// <summary>
     /// Конструктор.
     /// </summary>
     /// <param name="hubContext">Контекст хаба.</param>
-    public ProjectNotificationsService(IHubContext<NotifyHub> hubContext)
+    /// <param name="logService">Сервис логера.</param>
+    /// <param name="userRepository">Репозиторий пользователя.</param>
+    /// <param name="notificationsRepository">Репозиторий уведомлений.</param>
+    /// <param name="mapper">Автомаппер.</param>
+    public ProjectNotificationsService(IHubContext<NotifyHub> hubContext, 
+        ILogService logService, 
+        IUserRepository userRepository, 
+        INotificationsRepository notificationsRepository, 
+        IMapper mapper)
     {
         _hubContext = hubContext;
+        _logService = logService;
+        _userRepository = userRepository;
+        _notificationsRepository = notificationsRepository;
+        _mapper = mapper;
     }
 
     /// <summary>
@@ -332,7 +355,7 @@ public class ProjectNotificationsService : IProjectNotificationsService
                 NotificationLevel = notificationLevel
             });
     }
-    
+
     /// <summary>
     /// Метод отправляет уведомление об ошибке при отклике на проект.
     /// </summary>
@@ -350,5 +373,42 @@ public class ProjectNotificationsService : IProjectNotificationsService
                 Message = notifyText,
                 NotificationLevel = notificationLevel
             });
+    }
+    
+    /// <summary>
+    /// Метод получает список уведомлений в проекты пользователя.
+    /// </summary>
+    /// <param name="account">Аккаунт пользователя.</param>
+    /// <returns>Список уведомлений.</returns>
+    public async Task<NotificationResultOutput> GetUserProjectsNotificationsAsync(string account)
+    {
+        try
+        {
+            var userId = await _userRepository.GetUserIdByEmailOrLoginAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+            
+            var result = new NotificationResultOutput();
+
+            // Получаем список уведомлений инвайтов в проект пользователя.
+            var items = await _notificationsRepository.GetUserProjectsNotificationsAsync(userId);
+
+            if (items.Any())
+            {
+                result.Notifications = _mapper.Map<IEnumerable<NotificationProjectOutput>>(items);
+            }
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            await _logService.LogErrorAsync(ex);
+            throw;
+        }
     }
 }

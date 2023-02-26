@@ -1,3 +1,5 @@
+using LeokaEstetica.Platform.Models.Entities.Notification;
+
 namespace LeokaEstetica.Platform.Database.Abstractions.Notification;
 
 /// <summary>
@@ -13,4 +15,11 @@ public interface INotificationsRepository
     /// <param name="userId">Id пользователя.</param>
     /// <param name="projectName">Название проекта.</param>
     Task AddNotificationInviteProjectAsync(long projectId, long? vacancyId, long userId, string projectName);
+
+    /// <summary>
+    /// Метод получает список уведомлений в проекты пользователя.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Список уведомлений.</returns>
+    Task<IEnumerable<NotificationEntity>> GetUserProjectsNotificationsAsync(long userId);
 }
