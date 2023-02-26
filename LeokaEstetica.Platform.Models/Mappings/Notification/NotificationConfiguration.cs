@@ -41,10 +41,13 @@ public partial class NotificationConfiguration : IEntityTypeConfiguration<Notifi
             .HasColumnName("Rejected")
             .HasColumnType("bool");
         
-        entity.Property(e => e.ObjectId)
-            .HasColumnName("ObjectId")
-            .HasColumnType("bigint")
-            .IsRequired();
+        entity.Property(e => e.ProjectId)
+            .HasColumnName("ProjectId")
+            .HasColumnType("bigint");
+        
+        entity.Property(e => e.VacancyId)
+            .HasColumnName("VacancyId")
+            .HasColumnType("bigint");
         
         entity.Property(e => e.UserId)
             .HasColumnName("UserId")

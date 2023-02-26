@@ -36,9 +36,14 @@ public class NotificationEntity
     public bool Rejected { get; set; }
 
     /// <summary>
-    /// Id объекта уведомления (например, проект). 
+    /// Id проекта. 
     /// </summary>
-    public long ObjectId { get; set; }
+    public long? ProjectId { get; set; }
+    
+    /// <summary>
+    /// Id вакансии. 
+    /// </summary>
+    public long? VacancyId { get; set; }
 
     /// <summary>
     /// Id пользователя, который будет видеть уведомления.
