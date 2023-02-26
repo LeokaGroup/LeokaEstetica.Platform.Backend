@@ -38,7 +38,7 @@ public class NotificationsRepository : INotificationsRepository
             IsNeedAccepted = true,
             Approved = false,
             Rejected = false,
-            NotificationText = $"Приглашение в проект {projectName}",
+            NotificationText = $"Приглашение в проект \"{projectName}\"",
             Created = DateTime.Now,
             NotificationType = NotificationTypeEnum.ProjectInvite.ToString(),
             IsShow = true

@@ -652,8 +652,6 @@ public class ProjectService : IProjectService
     /// <returns>Выходная модель с записанным откликом.</returns>
     public async Task<ProjectResponseEntity> WriteProjectResponseAsync(long projectId, long? vacancyId, string account)
     {
-        var result = new ProjectResponseEntity();
-
         try
         {
             var userId = await _userRepository.GetUserByEmailAsync(account);
@@ -665,7 +663,7 @@ public class ProjectService : IProjectService
                 throw ex;
             }
 
-            result = await _projectRepository.WriteProjectResponseAsync(projectId, vacancyId, userId);
+            var result = await _projectRepository.WriteProjectResponseAsync(projectId, vacancyId, userId);
 
             // Показываем уведомления.
             await DisplayNotificationsAfterResponseProjectAsync(vacancyId, result.ResponseId);
@@ -675,6 +673,8 @@ public class ProjectService : IProjectService
             // Записываем уведомления о приглашении в проект.
             await _notificationsRepository.AddNotificationInviteProjectAsync(
                 projectId, vacancyId, userId, projectName);
+            
+            return result;
         }
 
         catch (DublicateProjectResponseException ex)
@@ -684,6 +684,7 @@ public class ProjectService : IProjectService
                 "Вы уже откликались на этот проект.",
                 NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING);
             await _logService.LogErrorAsync(ex);
+            throw;
         }
 
         catch (Exception ex)
@@ -691,8 +692,6 @@ public class ProjectService : IProjectService
             await _logService.LogErrorAsync(ex);
             throw;
         }
-
-        return result;
     }
 
     /// <summary>
