@@ -7,6 +7,7 @@ using LeokaEstetica.Platform.Core.Helpers;
 using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.FareRule;
+using LeokaEstetica.Platform.Database.Abstractions.Notification;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
 using LeokaEstetica.Platform.Database.Abstractions.Subscription;
 using LeokaEstetica.Platform.Database.Abstractions.User;
@@ -85,6 +86,8 @@ public class ProjectService : IProjectService
     private readonly IVacancyModerationService _vacancyModerationService;
     private static readonly string _approveVacancy = "Опубликована";
 
+    private readonly INotificationsRepository _notificationsRepository;
+
     /// <summary>
     /// Конструктор.
     /// </summary>
@@ -97,6 +100,7 @@ public class ProjectService : IProjectService
     /// <param name="vacancyRepository">Репозиторий вакансий.</param>
     /// <param name="availableLimitsService">Сервис проверки лимитов.</param>
     /// <param name="vacancyModerationService">Сервис модерации вакансий проектов.</param>
+    /// <param name="notificationsRepository">Репозиторий уведомлений.</param>
     public ProjectService(IProjectRepository projectRepository,
         ILogService logService,
         IUserRepository userRepository,
@@ -107,7 +111,8 @@ public class ProjectService : IProjectService
         IAvailableLimitsService availableLimitsService, 
         ISubscriptionRepository subscriptionRepository, 
         IFareRuleRepository fareRuleRepository, 
-        IVacancyModerationService vacancyModerationService)
+        IVacancyModerationService vacancyModerationService, 
+        INotificationsRepository notificationsRepository)
     {
         _projectRepository = projectRepository;
         _logService = logService;
@@ -120,6 +125,7 @@ public class ProjectService : IProjectService
         _subscriptionRepository = subscriptionRepository;
         _fareRuleRepository = fareRuleRepository;
         _vacancyModerationService = vacancyModerationService;
+        _notificationsRepository = notificationsRepository;
 
         // Определяем обработчики цепочки фильтров.
         _dateProjectsFilterChain.Successor = _projectsVacanciesFilterChain;
@@ -663,6 +669,12 @@ public class ProjectService : IProjectService
 
             // Показываем уведомления.
             await DisplayNotificationsAfterResponseProjectAsync(vacancyId, result.ResponseId);
+
+            var projectName = await _projectRepository.GetProjectNameByProjectIdAsync(projectId);
+
+            // Записываем уведомления о приглашении в проект.
+            await _notificationsRepository.AddNotificationInviteProjectAsync(
+                projectId, vacancyId, userId, projectName);
         }
 
         catch (DublicateProjectResponseException ex)

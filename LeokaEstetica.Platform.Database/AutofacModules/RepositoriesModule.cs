@@ -8,6 +8,7 @@ using LeokaEstetica.Platform.Database.Abstractions.Moderation.Access;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Project;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Resume;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Vacancy;
+using LeokaEstetica.Platform.Database.Abstractions.Notification;
 using LeokaEstetica.Platform.Database.Abstractions.Profile;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
 using LeokaEstetica.Platform.Database.Abstractions.Resume;
@@ -24,6 +25,7 @@ using LeokaEstetica.Platform.Database.Repositories.Moderation.Access;
 using LeokaEstetica.Platform.Database.Repositories.Moderation.Project;
 using LeokaEstetica.Platform.Database.Repositories.Moderation.Resume;
 using LeokaEstetica.Platform.Database.Repositories.Moderation.Vacancy;
+using LeokaEstetica.Platform.Database.Repositories.Notification;
 using LeokaEstetica.Platform.Database.Repositories.Profile;
 using LeokaEstetica.Platform.Database.Repositories.Project;
 using LeokaEstetica.Platform.Database.Repositories.Resume;
@@ -206,6 +208,16 @@ public class RepositoriesModule : Module
         builder
             .RegisterType<ResumeModerationRepository>()
             .As<IResumeModerationRepository>()
+            .InstancePerLifetimeScope();
+        
+        // Репозиторий уведомлений.
+        builder
+            .RegisterType<NotificationsRepository>()
+            .Named<INotificationsRepository>("NotificationsRepository")
+            .InstancePerLifetimeScope();
+        builder
+            .RegisterType<NotificationsRepository>()
+            .As<INotificationsRepository>()
             .InstancePerLifetimeScope();
     }
 }

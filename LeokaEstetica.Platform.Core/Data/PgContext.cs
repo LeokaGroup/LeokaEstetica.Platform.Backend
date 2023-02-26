@@ -8,6 +8,7 @@ using LeokaEstetica.Platform.Models.Entities.FareRule;
 using LeokaEstetica.Platform.Models.Entities.Landing;
 using LeokaEstetica.Platform.Models.Entities.Logs;
 using LeokaEstetica.Platform.Models.Entities.Moderation;
+using LeokaEstetica.Platform.Models.Entities.Notification;
 using LeokaEstetica.Platform.Models.Entities.Profile;
 using LeokaEstetica.Platform.Models.Entities.Project;
 using LeokaEstetica.Platform.Models.Entities.ProjectTeam;
@@ -302,4 +303,9 @@ public class PgContext : DbContext
     /// Таблица модерации анкет.
     /// </summary>
     public DbSet<ModerationResumeEntity> ModerationResumes { get; set; }
+
+    /// <summary>
+    /// Таблица уведомлений.
+    /// </summary>
+    public DbSet<NotificationEntity> Notifications { get; set; }
 }
