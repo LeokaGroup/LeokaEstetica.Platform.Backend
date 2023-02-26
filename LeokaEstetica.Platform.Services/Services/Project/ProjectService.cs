@@ -660,10 +660,9 @@ public class ProjectService : IProjectService
             }
 
             result = await _projectRepository.WriteProjectResponseAsync(projectId, vacancyId, userId);
-            await _projectNotificationsService.SendNotificationSuccessProjectResponseAsync(
-                "Все хорошо",
-                "Отклик на проект успешно оставлен. Вы получите уведомление о решении владельца проекта.",
-                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS);
+
+            // Показываем уведомления.
+            await DisplayNotificationsAfterResponseProjectAsync(vacancyId, result.ResponseId);
         }
 
         catch (DublicateProjectResponseException ex)
@@ -1198,6 +1197,40 @@ public class ProjectService : IProjectService
         };
 
         return team;
+    }
+
+    /// <summary>
+    /// Метод отправляет уведомления после отклика на проект.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    private async Task DisplayNotificationsAfterResponseProjectAsync(long? vacancyId, long responseId)
+    {
+        if (responseId > 0)
+        {
+            await _projectNotificationsService.SendNotificationSuccessProjectResponseAsync(
+                "Все хорошо",
+                "Отклик на проект успешно оставлен. Вы получите уведомление о решении владельца проекта.",
+                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS);
+        }
+
+        else
+        {
+            if (vacancyId > 0)
+            {
+                await _projectNotificationsService.SendNotificationErrorProjectResponseAsync("Ошибка",
+                    "Ошибка при отклике на проект с указанием вакансии. Мы уже знаем о ней и разбираемся. " +
+                    "А пока, попробуйте еще раз.",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR);
+            }
+
+            else
+            {
+                await _projectNotificationsService.SendNotificationErrorProjectResponseAsync("Ошибка",
+                    "Ошибка при отклике на проект без указания вакансии. Мы уже знаем о ней и разбираемся. " +
+                    "А пока, попробуйте еще раз.",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR);
+            }
+        }
     }
     
     #endregion

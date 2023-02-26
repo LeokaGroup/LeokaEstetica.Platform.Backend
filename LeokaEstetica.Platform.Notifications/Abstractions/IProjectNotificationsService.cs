@@ -77,6 +77,15 @@ public interface IProjectNotificationsService
     /// <param name="notificationLevel">Уровень уведомления.</param>
     /// <param name="userCode">Код пользователя.</param>
     Task SendNotificationSuccessProjectResponseAsync(string title, string notifyText, string notificationLevel);
+    
+    /// <summary>
+    /// Метод отправляет уведомление об ошибке при отклике на проект.
+    /// </summary>
+    /// <param name="title">Заголовок уведомления.</param>
+    /// <param name="notifyText">Текст уведомления.</param>
+    /// <param name="notificationLevel">Уровень уведомления.</param>
+    /// <param name="userCode">Код пользователя.</param>
+    Task SendNotificationErrorProjectResponseAsync(string title, string notifyText, string notificationLevel);
 
     /// <summary>
     /// Метод отправляет уведомление предупреждения об отклике на проект.
