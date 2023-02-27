@@ -192,4 +192,11 @@ public interface IProjectRepository
     /// <param name="projectId">Id проекта.</param>
     /// <returns>Список комментариев проекта.</returns>
     Task<ICollection<ProjectCommentEntity>> GetProjectCommentsAsync(long projectId);
+
+    /// <summary>
+    /// Метод получает название проекта по его Id.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Название проекта.</returns>
+    Task<string> GetProjectNameByProjectIdAsync(long projectId);
 }

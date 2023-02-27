@@ -779,4 +779,20 @@ public class ProjectRepository : IProjectRepository
 
         return result;
     }
+
+    /// <summary>
+    /// Метод получает название проекта по его Id.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Название проекта.</returns>
+    public async Task<string> GetProjectNameByProjectIdAsync(long projectId)
+    {
+        var result = await _pgContext.CatalogProjects
+            .Include(p => p.Project)
+            .Where(p => p.ProjectId == projectId)
+            .Select(p => p.Project.ProjectName)
+            .FirstOrDefaultAsync();
+
+        return result;
+    }
 }

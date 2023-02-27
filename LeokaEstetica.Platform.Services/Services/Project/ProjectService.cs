@@ -7,6 +7,7 @@ using LeokaEstetica.Platform.Core.Helpers;
 using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.FareRule;
+using LeokaEstetica.Platform.Database.Abstractions.Notification;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
 using LeokaEstetica.Platform.Database.Abstractions.Subscription;
 using LeokaEstetica.Platform.Database.Abstractions.User;
@@ -85,6 +86,8 @@ public class ProjectService : IProjectService
     private readonly IVacancyModerationService _vacancyModerationService;
     private static readonly string _approveVacancy = "Опубликована";
 
+    private readonly INotificationsRepository _notificationsRepository;
+
     /// <summary>
     /// Конструктор.
     /// </summary>
@@ -97,6 +100,7 @@ public class ProjectService : IProjectService
     /// <param name="vacancyRepository">Репозиторий вакансий.</param>
     /// <param name="availableLimitsService">Сервис проверки лимитов.</param>
     /// <param name="vacancyModerationService">Сервис модерации вакансий проектов.</param>
+    /// <param name="notificationsRepository">Репозиторий уведомлений.</param>
     public ProjectService(IProjectRepository projectRepository,
         ILogService logService,
         IUserRepository userRepository,
@@ -107,7 +111,8 @@ public class ProjectService : IProjectService
         IAvailableLimitsService availableLimitsService, 
         ISubscriptionRepository subscriptionRepository, 
         IFareRuleRepository fareRuleRepository, 
-        IVacancyModerationService vacancyModerationService)
+        IVacancyModerationService vacancyModerationService, 
+        INotificationsRepository notificationsRepository)
     {
         _projectRepository = projectRepository;
         _logService = logService;
@@ -120,6 +125,7 @@ public class ProjectService : IProjectService
         _subscriptionRepository = subscriptionRepository;
         _fareRuleRepository = fareRuleRepository;
         _vacancyModerationService = vacancyModerationService;
+        _notificationsRepository = notificationsRepository;
 
         // Определяем обработчики цепочки фильтров.
         _dateProjectsFilterChain.Successor = _projectsVacanciesFilterChain;
@@ -646,8 +652,6 @@ public class ProjectService : IProjectService
     /// <returns>Выходная модель с записанным откликом.</returns>
     public async Task<ProjectResponseEntity> WriteProjectResponseAsync(long projectId, long? vacancyId, string account)
     {
-        var result = new ProjectResponseEntity();
-
         try
         {
             var userId = await _userRepository.GetUserByEmailAsync(account);
@@ -659,11 +663,18 @@ public class ProjectService : IProjectService
                 throw ex;
             }
 
-            result = await _projectRepository.WriteProjectResponseAsync(projectId, vacancyId, userId);
-            await _projectNotificationsService.SendNotificationSuccessProjectResponseAsync(
-                "Все хорошо",
-                "Отклик на проект успешно оставлен. Вы получите уведомление о решении владельца проекта.",
-                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS);
+            var result = await _projectRepository.WriteProjectResponseAsync(projectId, vacancyId, userId);
+
+            // Показываем уведомления.
+            await DisplayNotificationsAfterResponseProjectAsync(vacancyId, result.ResponseId);
+
+            var projectName = await _projectRepository.GetProjectNameByProjectIdAsync(projectId);
+
+            // Записываем уведомления о приглашении в проект.
+            await _notificationsRepository.AddNotificationInviteProjectAsync(
+                projectId, vacancyId, userId, projectName);
+            
+            return result;
         }
 
         catch (DublicateProjectResponseException ex)
@@ -673,6 +684,7 @@ public class ProjectService : IProjectService
                 "Вы уже откликались на этот проект.",
                 NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING);
             await _logService.LogErrorAsync(ex);
+            throw;
         }
 
         catch (Exception ex)
@@ -680,8 +692,6 @@ public class ProjectService : IProjectService
             await _logService.LogErrorAsync(ex);
             throw;
         }
-
-        return result;
     }
 
     /// <summary>
@@ -1198,6 +1208,40 @@ public class ProjectService : IProjectService
         };
 
         return team;
+    }
+
+    /// <summary>
+    /// Метод отправляет уведомления после отклика на проект.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    private async Task DisplayNotificationsAfterResponseProjectAsync(long? vacancyId, long responseId)
+    {
+        if (responseId > 0)
+        {
+            await _projectNotificationsService.SendNotificationSuccessProjectResponseAsync(
+                "Все хорошо",
+                "Отклик на проект успешно оставлен. Вы получите уведомление о решении владельца проекта.",
+                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS);
+        }
+
+        else
+        {
+            if (vacancyId > 0)
+            {
+                await _projectNotificationsService.SendNotificationErrorProjectResponseAsync("Ошибка",
+                    "Ошибка при отклике на проект с указанием вакансии. Мы уже знаем о ней и разбираемся. " +
+                    "А пока, попробуйте еще раз.",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR);
+            }
+
+            else
+            {
+                await _projectNotificationsService.SendNotificationErrorProjectResponseAsync("Ошибка",
+                    "Ошибка при отклике на проект без указания вакансии. Мы уже знаем о ней и разбираемся. " +
+                    "А пока, попробуйте еще раз.",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR);
+            }
+        }
     }
     
     #endregion

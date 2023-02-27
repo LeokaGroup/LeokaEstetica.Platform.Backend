@@ -12,6 +12,7 @@ using LeokaEstetica.Platform.Database.Repositories.Moderation.Access;
 using LeokaEstetica.Platform.Database.Repositories.Moderation.Project;
 using LeokaEstetica.Platform.Database.Repositories.Moderation.Resume;
 using LeokaEstetica.Platform.Database.Repositories.Moderation.Vacancy;
+using LeokaEstetica.Platform.Database.Repositories.Notification;
 using LeokaEstetica.Platform.Database.Repositories.Profile;
 using LeokaEstetica.Platform.Database.Repositories.Project;
 using LeokaEstetica.Platform.Database.Repositories.Resume;
@@ -128,10 +129,11 @@ public class BaseServiceTest
         ProjectFinderService = new ProjectFinderService(logService, userRepository, projectNotificationsService);
 
         var resumeRepository = new ResumeRepository(pgContext);
+        var notificationsRepository = new NotificationsRepository(pgContext);
 
         ProjectService = new ProjectService(projectRepository, logService, userRepository, mapper,
             projectNotificationsService, VacancyService, vacancyRepository, availableLimitsService,
-            subscriptionRepository, fareRuleRepository, VacancyModerationService);
+            subscriptionRepository, fareRuleRepository, VacancyModerationService, notificationsRepository);
 
         SubscriptionService =
             new SubscriptionService(logService, userRepository, subscriptionRepository, fareRuleRepository);
