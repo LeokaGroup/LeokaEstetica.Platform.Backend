@@ -99,7 +99,9 @@ public class BaseServiceTest
         ProfileService = new ProfileService(logService, profileRepository, userRepository, mapper, null, null);
 
         var projectRepository = new ProjectRepository(pgContext, chatRepository);
-        var projectNotificationsService = new ProjectNotificationsService(null);
+        var notificationsRepository = new NotificationsRepository(pgContext);
+        var projectNotificationsService =
+            new ProjectNotificationsService(null, logService, userRepository, notificationsRepository, mapper);
         var vacancyRepository = new VacancyRepository(pgContext);
         var vacancyModerationRepository = new VacancyModerationRepository(pgContext);
         var vacancyNotificationsService = new VacancyNotificationsService(null);
@@ -129,7 +131,6 @@ public class BaseServiceTest
         ProjectFinderService = new ProjectFinderService(logService, userRepository, projectNotificationsService);
 
         var resumeRepository = new ResumeRepository(pgContext);
-        var notificationsRepository = new NotificationsRepository(pgContext);
 
         ProjectService = new ProjectService(projectRepository, logService, userRepository, mapper,
             projectNotificationsService, VacancyService, vacancyRepository, availableLimitsService,

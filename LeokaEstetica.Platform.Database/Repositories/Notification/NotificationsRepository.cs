@@ -3,6 +3,7 @@ using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.Notification;
 using LeokaEstetica.Platform.Models.Entities.Notification;
+using Microsoft.EntityFrameworkCore;
 
 namespace LeokaEstetica.Platform.Database.Repositories.Notification;
 
@@ -44,5 +45,25 @@ public class NotificationsRepository : INotificationsRepository
             IsShow = true
         });
         await _pgContext.SaveChangesAsync();
+    }
+
+    /// <summary>
+    /// Метод получает список уведомлений в проекты пользователя.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Список уведомлений.</returns>
+    public async Task<IEnumerable<NotificationEntity>> GetUserProjectsNotificationsAsync(long userId)
+    {
+        var result = await _pgContext.Notifications
+            .Where(n => n.UserId == userId
+                        && n.NotificationSysName == NotificationTypeEnum.ProjectInvite.ToString()
+                        && n.NotificationType == NotificationTypeEnum.ProjectInvite.ToString()
+                        && n.IsShow
+                        && n.IsNeedAccepted
+                        && !n.Approved
+                        && !n.Rejected)
+            .ToListAsync();
+
+        return result;
     }
 }

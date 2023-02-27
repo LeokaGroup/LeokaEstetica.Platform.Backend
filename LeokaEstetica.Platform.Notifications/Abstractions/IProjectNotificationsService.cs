@@ -1,3 +1,5 @@
+using LeokaEstetica.Platform.Models.Dto.Output.Notification;
+
 namespace LeokaEstetica.Platform.Notifications.Abstractions;
 
 /// <summary>
@@ -166,4 +168,11 @@ public interface IProjectNotificationsService
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
     Task SendNotificationSuccessDeleteProjectAsync(string title, string notifyText, string notificationLevel);
+
+    /// <summary>
+    /// Метод получает список уведомлений в проекты пользователя.
+    /// </summary>
+    /// <param name="account">Аккаунт пользователя.</param>
+    /// <returns>Список уведомлений.</returns>
+    Task<NotificationResultOutput> GetUserProjectsNotificationsAsync(string account);
 }

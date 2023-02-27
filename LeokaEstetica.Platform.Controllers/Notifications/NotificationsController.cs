@@ -1,5 +1,6 @@
 using LeokaEstetica.Platform.Base;
 using LeokaEstetica.Platform.Controllers.Filters;
+using LeokaEstetica.Platform.Models.Dto.Output.Notification;
 using LeokaEstetica.Platform.Notifications.Abstractions;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,22 +14,32 @@ namespace LeokaEstetica.Platform.Controllers.Notifications;
 [Route("notifications")]
 public class NotificationsController : BaseController
 {
-    private readonly INotificationsService _notificationsService;
+    private readonly IProjectNotificationsService _projectNotificationsService;
     
-    public NotificationsController(INotificationsService notificationsService)
+    /// <summary>
+    /// Конструктор.
+    /// </summary>
+    /// <param name="projectNotificationsService">Сервис уведомлений проектов.</param>
+    public NotificationsController(IProjectNotificationsService projectNotificationsService)
     {
-        _notificationsService = notificationsService;
+        _projectNotificationsService = projectNotificationsService;
     }
 
-    // TODO: Эти два методы возможно будут нужны. Зависит от того, будет ли достаточно использование Clients.All в SignalR или нет. Возможно потом надо будет удалить этот код.
     /// <summary>
-    /// Метод записывает Id подключения, который создается при подключении SignalR в кэш.
+    /// Метод получает список уведомлений в проекты пользователя.
     /// </summary>
-    /// <param name="connectionInput">Входная модель.</param>
-    // [HttpPost]
-    // [Route("signalr-connectionid")]
-    // public async Task SaveConnectionIdCacheAsync([FromBody] ConnectionInput connectionInput)
-    // {
-    //     await _notificationsService.SaveConnectionIdCacheAsync(connectionInput.ConnectionId, connectionInput.UserCode);
-    // }
+    /// <returns>Список уведомлений.</returns>
+    [HttpGet]
+    [Route("")]
+    [ProducesResponseType(200, Type = typeof(NotificationResultOutput))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<NotificationResultOutput> GetUserProjectsNotificationsAsync()
+    {
+        var result = await _projectNotificationsService.GetUserProjectsNotificationsAsync(GetUserName());
+
+        return result;
+    }
 }

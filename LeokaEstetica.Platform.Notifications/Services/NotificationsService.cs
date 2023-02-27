@@ -26,9 +26,6 @@ public sealed class NotificationsService : INotificationsService
     /// <param name="notificationLevel">Уровень уведомления.</param>
     public async Task SendNotifySuccessSaveAsync(string title, string notifyText, string notificationLevel)
     {
-        // // Получаем ConnectionId из кэша.
-        // var connectionId = await _redisService.GetConnectionIdCacheAsync(userCode);
-        
         await _hubContext.Clients.All.SendAsync("SendNotifySuccessSave", new NotificationOutput
         {
             Title = title,
