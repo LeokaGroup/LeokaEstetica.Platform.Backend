@@ -13,5 +13,5 @@ public class NotificationResultOutput
     /// <summary>
     /// Кол-во уведомлений.
     /// </summary>
-    public int Total => Notifications.Count();
+    public int Total => Notifications?.Count() ?? 0;
 }

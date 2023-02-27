@@ -36,4 +36,9 @@ public class NotificationOutput
     /// Признак отображения кнопки отклонения инвайта в проект.
     /// </summary>
     public bool IsRejectButton { get; set; }
+
+    /// <summary>
+    /// Признак необходимости подтверждения уведомления.
+    /// </summary>
+    public bool IsNeedAccepted { get; set; }
 }
