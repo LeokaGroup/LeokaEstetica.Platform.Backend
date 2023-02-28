@@ -14,4 +14,9 @@ public class NotificationResultOutput
     /// Кол-во уведомлений.
     /// </summary>
     public int Total => Notifications?.Count() ?? 0;
+
+    /// <summary>
+    /// Признак отображения кнопок принятия и отклонения приглашений уведомлений.
+    /// </summary>
+    public bool IsVisibleNotificationsButtons { get; set; }
 }
