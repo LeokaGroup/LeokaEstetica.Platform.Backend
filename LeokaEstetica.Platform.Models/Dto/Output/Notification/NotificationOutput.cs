@@ -41,4 +41,10 @@ public class NotificationOutput
     /// Признак необходимости подтверждения уведомления.
     /// </summary>
     public bool IsNeedAccepted { get; set; }
+    
+    /// <summary>
+    /// Признак владельца приглашения.
+    /// Если true, то инициатором приглашения был владелец, при false другой пользователь.
+    /// </summary>
+    public bool IsOwner { get; set; }
 }

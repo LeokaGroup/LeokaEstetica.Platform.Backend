@@ -42,7 +42,8 @@ public class NotificationsRepository : INotificationsRepository
             NotificationText = $"Приглашение в проект \"{projectName}\"",
             Created = DateTime.Now,
             NotificationType = NotificationTypeEnum.ProjectInvite.ToString(),
-            IsShow = true
+            IsShow = true,
+            IsOwner = false
         });
         await _pgContext.SaveChangesAsync();
     }
