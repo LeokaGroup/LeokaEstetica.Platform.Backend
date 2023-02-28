@@ -1,5 +1,6 @@
 using LeokaEstetica.Platform.Base;
 using LeokaEstetica.Platform.Controllers.Filters;
+using LeokaEstetica.Platform.Models.Dto.Input.Notification;
 using LeokaEstetica.Platform.Models.Dto.Output.Notification;
 using LeokaEstetica.Platform.Notifications.Abstractions;
 using Microsoft.AspNetCore.Mvc;
@@ -41,5 +42,21 @@ public class NotificationsController : BaseController
         var result = await _projectNotificationsService.GetUserProjectsNotificationsAsync(GetUserName());
 
         return result;
+    }
+
+    /// <summary>
+    /// Метод апрувит приглашение в проект.
+    /// </summary>
+    /// <param name="approveProjectInviteInput"></param>
+    [HttpPatch]
+    [Route("approve-project-invite")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task ApproveProjectInviteAsync([FromBody] ApproveProjectInviteInput approveProjectInviteInput)
+    {
+        
     }
 }
