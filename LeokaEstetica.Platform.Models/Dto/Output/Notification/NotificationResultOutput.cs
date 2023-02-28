@@ -8,10 +8,10 @@ public class NotificationResultOutput
     /// <summary>
     /// Список уведомлений.
     /// </summary>
-    public IEnumerable<NotificationOutput> Notifications { get; set; }
+    public List<NotificationOutput> Notifications { get; set; }
 
     /// <summary>
     /// Кол-во уведомлений.
     /// </summary>
-    public int Total => Notifications?.Count() ?? 0;
+    public int Total => Notifications?.Count ?? 0;
 }

@@ -47,4 +47,9 @@ public class NotificationOutput
     /// Если true, то инициатором приглашения был владелец, при false другой пользователь.
     /// </summary>
     public bool IsOwner { get; set; }
+    
+    /// <summary>
+    /// Признак отображения кнопок принятия и отклонения приглашений уведомлений.
+    /// </summary>
+    public bool IsVisibleNotificationsButtons { get; set; }
 }

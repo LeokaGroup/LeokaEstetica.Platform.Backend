@@ -53,9 +53,14 @@ public class NotificationsRepository : INotificationsRepository
     /// </summary>
     /// <param name="userId">Id пользователя.</param>
     /// <returns>Список уведомлений.</returns>
-    public async Task<IEnumerable<NotificationEntity>> GetUserProjectsNotificationsAsync(long userId)
+    public async Task<(List<NotificationEntity>, List<NotificationEntity>)>
+        GetUserProjectsNotificationsAsync(long userId)
     {
-        var result = await _pgContext.Notifications
+        (List<NotificationEntity>, List<NotificationEntity>) result = (new List<NotificationEntity>(),
+            new List<NotificationEntity>());
+        
+        // Уведомления пользователей, в этом списке нет уведомлений владельцев проектов.
+        result.Item1 = await _pgContext.Notifications
             .Where(n => n.UserId == userId
                         && n.NotificationSysName == NotificationTypeEnum.ProjectInvite.ToString()
                         && n.NotificationType == NotificationTypeEnum.ProjectInvite.ToString()
@@ -64,6 +69,24 @@ public class NotificationsRepository : INotificationsRepository
                         && !n.Approved
                         && !n.Rejected)
             .ToListAsync();
+        
+        // Дополняем этот список уведомлениями, которые должен видеть лишь владелец проектов.
+        // Смотрим проекты пользователя, которые находятся в каталоге,
+        // так как проекты, которых нет в каталоге нельзя учитывать тут.
+        var userProjects = _pgContext.CatalogProjects
+            .Where(p => p.Project.UserId == userId)
+            .AsQueryable();
+        
+        var userProjectsIds = userProjects.Select(p => p.ProjectId);
+
+        var userNotifications = _pgContext.Notifications
+            .Where(n => userProjectsIds.Contains((long)n.ProjectId))
+            .AsQueryable();
+
+        if (userNotifications.Any())
+        {
+            result.Item2.AddRange(userNotifications);   
+        }
 
         return result;
     }

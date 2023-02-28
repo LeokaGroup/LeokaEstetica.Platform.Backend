@@ -21,5 +21,5 @@ public interface INotificationsRepository
     /// </summary>
     /// <param name="userId">Id пользователя.</param>
     /// <returns>Список уведомлений.</returns>
-    Task<IEnumerable<NotificationEntity>> GetUserProjectsNotificationsAsync(long userId);
+    Task<(List<NotificationEntity>, List<NotificationEntity>)> GetUserProjectsNotificationsAsync(long userId);
 }
