@@ -490,14 +490,7 @@ public class ProjectService : IProjectService
             {
                 await ValidateProjectIdAsync(projectId);
             }
-            
-            var items = await _projectRepository.ProjectVacanciesAsync(projectId);
 
-            if (items is null || !items.Any())
-            {
-                return new ProjectVacancyResultOutput { ProjectVacancies = new List<ProjectVacancyOutput>() };
-            }
-            
             var userId = await _userRepository.GetUserByEmailAsync(account);
 
             if (userId <= 0)
@@ -508,8 +501,20 @@ public class ProjectService : IProjectService
             
             var result = new ProjectVacancyResultOutput
             {
-                ProjectVacancies = _mapper.Map<IEnumerable<ProjectVacancyOutput>>(items)
+                ProjectVacancies = new List<ProjectVacancyOutput>()
             };
+            
+            // Проставляем признаки видимости кнопок вакансий проекта.
+            result = await FillVisibleControlsProjectVacanciesAsync(result, projectId, userId);
+            
+            var items = await _projectRepository.ProjectVacanciesAsync(projectId);
+
+            if (items is null || !items.Any())
+            {
+                return result;
+            }
+
+            result.ProjectVacancies = _mapper.Map<IEnumerable<ProjectVacancyOutput>>(items);
             var projectVacancies = result.ProjectVacancies.ToList();
 
             // Проставляем вакансиям статусы.
@@ -517,9 +522,6 @@ public class ProjectService : IProjectService
 
             // Чистим описания от html-тегов.
             result.ProjectVacancies = ClearHtmlTags(projectVacancies);
-
-            // Проставляем признаки видимости кнопок вакансий проекта.
-            result = await FillVisibleControlsProjectVacanciesAsync(result, projectId, userId);
 
             return result;
         }
