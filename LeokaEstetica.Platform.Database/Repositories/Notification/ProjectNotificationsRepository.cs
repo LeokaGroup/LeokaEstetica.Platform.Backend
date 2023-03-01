@@ -8,16 +8,22 @@ using Microsoft.EntityFrameworkCore;
 namespace LeokaEstetica.Platform.Database.Repositories.Notification;
 
 /// <summary>
-/// Класс реализует методы репозитория уведомлений.
+/// Класс реализует методы репозитория уведомлений проектов.
 /// </summary>
-public class NotificationsRepository : INotificationsRepository
+public class ProjectNotificationsRepository : IProjectNotificationsRepository
 {
     private readonly PgContext _pgContext;
     
-    public NotificationsRepository(PgContext pgContext)
+    /// <summary>
+    /// Конструктор.
+    /// </summary>
+    /// <param name="pgContext"></param>
+    public ProjectNotificationsRepository(PgContext pgContext)
     {
         _pgContext = pgContext;
     }
+
+    #region Публичные методы.
 
     /// <summary>
     /// Метод записывает уведомление о приглашении пользователя в проект.
@@ -53,14 +59,14 @@ public class NotificationsRepository : INotificationsRepository
     /// </summary>
     /// <param name="userId">Id пользователя.</param>
     /// <returns>Список уведомлений.</returns>
-    public async Task<(List<NotificationEntity>, List<NotificationEntity>)>
+    public async Task<(List<NotificationEntity> UserNotifications, List<NotificationEntity> OwnerNotifications)>
         GetUserProjectsNotificationsAsync(long userId)
     {
-        (List<NotificationEntity>, List<NotificationEntity>) result = (new List<NotificationEntity>(),
-            new List<NotificationEntity>());
+        (List<NotificationEntity> UserNotifications, List<NotificationEntity> OwnerNotifications) result = (
+            new List<NotificationEntity>(), new List<NotificationEntity>());
         
         // Уведомления пользователей, в этом списке нет уведомлений владельцев проектов.
-        result.Item1 = await _pgContext.Notifications
+        result.UserNotifications = await _pgContext.Notifications
             .Where(n => n.UserId == userId
                         && n.NotificationSysName == NotificationTypeEnum.ProjectInvite.ToString()
                         && n.NotificationType == NotificationTypeEnum.ProjectInvite.ToString()
@@ -85,9 +91,23 @@ public class NotificationsRepository : INotificationsRepository
 
         if (userNotifications.Any())
         {
-            result.Item2.AddRange(userNotifications);   
+            result.OwnerNotifications.AddRange(userNotifications);   
         }
 
         return result;
     }
+
+    /// <summary>
+    /// Метод проверяет существование уведомления по его Id.
+    /// </summary>
+    /// <param name="notificationId">Id уведомления.</param>
+    /// <returns>Признак существования уведомления.</returns>
+    public async Task<bool> CheckExistsNotificationByIdAsync(long notificationId)
+    {
+        var result = await _pgContext.Notifications.AnyAsync(n => n.NotificationId == notificationId);
+
+        return result;
+    }
+    
+    #endregion
 }

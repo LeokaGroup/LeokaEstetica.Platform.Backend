@@ -86,7 +86,7 @@ public class ProjectService : IProjectService
     private readonly IVacancyModerationService _vacancyModerationService;
     private static readonly string _approveVacancy = "Опубликована";
 
-    private readonly INotificationsRepository _notificationsRepository;
+    private readonly IProjectNotificationsRepository _projectNotificationsRepository;
 
     /// <summary>
     /// Конструктор.
@@ -112,7 +112,7 @@ public class ProjectService : IProjectService
         ISubscriptionRepository subscriptionRepository, 
         IFareRuleRepository fareRuleRepository, 
         IVacancyModerationService vacancyModerationService, 
-        INotificationsRepository notificationsRepository)
+        IProjectNotificationsRepository projectNotificationsRepository)
     {
         _projectRepository = projectRepository;
         _logService = logService;
@@ -125,7 +125,7 @@ public class ProjectService : IProjectService
         _subscriptionRepository = subscriptionRepository;
         _fareRuleRepository = fareRuleRepository;
         _vacancyModerationService = vacancyModerationService;
-        _notificationsRepository = notificationsRepository;
+        _projectNotificationsRepository = projectNotificationsRepository;
 
         // Определяем обработчики цепочки фильтров.
         _dateProjectsFilterChain.Successor = _projectsVacanciesFilterChain;
@@ -671,7 +671,7 @@ public class ProjectService : IProjectService
             var projectName = await _projectRepository.GetProjectNameByProjectIdAsync(projectId);
 
             // Записываем уведомления о приглашении в проект.
-            await _notificationsRepository.AddNotificationInviteProjectAsync(
+            await _projectNotificationsRepository.AddNotificationInviteProjectAsync(
                 projectId, vacancyId, userId, projectName);
             
             return result;

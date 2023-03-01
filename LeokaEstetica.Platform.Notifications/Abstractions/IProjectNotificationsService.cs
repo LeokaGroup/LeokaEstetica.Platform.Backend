@@ -175,4 +175,10 @@ public interface IProjectNotificationsService
     /// <param name="account">Аккаунт пользователя.</param>
     /// <returns>Список уведомлений.</returns>
     Task<NotificationResultOutput> GetUserProjectsNotificationsAsync(string account);
+
+    /// <summary>
+    /// Метод апрувит приглашение в проект.
+    /// </summary>
+    /// <param name="notificationId">Id уведомления.</param>
+    Task ApproveProjectInviteAsync(long notificationId);
 }

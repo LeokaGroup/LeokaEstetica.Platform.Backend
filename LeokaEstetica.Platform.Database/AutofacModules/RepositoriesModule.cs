@@ -210,14 +210,14 @@ public class RepositoriesModule : Module
             .As<IResumeModerationRepository>()
             .InstancePerLifetimeScope();
         
-        // Репозиторий уведомлений.
+        // Репозиторий уведомлений проектов.
         builder
-            .RegisterType<NotificationsRepository>()
-            .Named<INotificationsRepository>("NotificationsRepository")
+            .RegisterType<ProjectNotificationsRepository>()
+            .Named<IProjectNotificationsRepository>("ProjectNotificationsRepository")
             .InstancePerLifetimeScope();
         builder
-            .RegisterType<NotificationsRepository>()
-            .As<INotificationsRepository>()
+            .RegisterType<ProjectNotificationsRepository>()
+            .As<IProjectNotificationsRepository>()
             .InstancePerLifetimeScope();
     }
 }

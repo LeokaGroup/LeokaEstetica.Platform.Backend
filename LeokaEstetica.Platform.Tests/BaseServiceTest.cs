@@ -99,9 +99,9 @@ public class BaseServiceTest
         ProfileService = new ProfileService(logService, profileRepository, userRepository, mapper, null, null);
 
         var projectRepository = new ProjectRepository(pgContext, chatRepository);
-        var notificationsRepository = new NotificationsRepository(pgContext);
+        var projectNotificationsRepository = new ProjectNotificationsRepository(pgContext);
         var projectNotificationsService =
-            new ProjectNotificationsService(null, logService, userRepository, notificationsRepository, mapper);
+            new ProjectNotificationsService(null, logService, userRepository, mapper, projectNotificationsRepository);
         var vacancyRepository = new VacancyRepository(pgContext);
         var vacancyModerationRepository = new VacancyModerationRepository(pgContext);
         var vacancyNotificationsService = new VacancyNotificationsService(null);
@@ -134,7 +134,7 @@ public class BaseServiceTest
 
         ProjectService = new ProjectService(projectRepository, logService, userRepository, mapper,
             projectNotificationsService, VacancyService, vacancyRepository, availableLimitsService,
-            subscriptionRepository, fareRuleRepository, VacancyModerationService, notificationsRepository);
+            subscriptionRepository, fareRuleRepository, VacancyModerationService, projectNotificationsRepository);
 
         SubscriptionService =
             new SubscriptionService(logService, userRepository, subscriptionRepository, fareRuleRepository);
