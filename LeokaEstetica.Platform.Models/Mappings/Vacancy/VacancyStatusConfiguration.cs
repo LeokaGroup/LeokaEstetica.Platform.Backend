@@ -27,7 +27,8 @@ public partial class VacancyStatusConfiguration : IEntityTypeConfiguration<Vacan
         entity.HasOne(p => p.UserVacancy)
             .WithMany(b => b.VacancyStatuses)
             .HasForeignKey(p => p.VacancyId)
-            .HasConstraintName("FK_UserVacancies_VacancyId");
+            .HasConstraintName("FK_UserVacancies_VacancyId")
+            .OnDelete(DeleteBehavior.Cascade);
 
         entity.HasIndex(u => u.StatusId)
             .HasDatabaseName("PK_VacancyStatuses_StatusId")

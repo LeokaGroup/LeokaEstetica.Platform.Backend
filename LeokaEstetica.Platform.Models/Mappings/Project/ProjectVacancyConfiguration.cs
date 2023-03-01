@@ -23,7 +23,8 @@ public partial class ProjectVacancyConfiguration : IEntityTypeConfiguration<Proj
         entity.HasOne(p => p.UserVacancy)
             .WithMany(b => b.ProjectVacancies)
             .HasForeignKey(p => p.VacancyId)
-            .HasConstraintName("FK_UserVacancies_VacancyId");
+            .HasConstraintName("FK_UserVacancies_VacancyId")
+            .OnDelete(DeleteBehavior.Cascade);
 
         entity.HasIndex(u => u.ProjectVacancyId)
             .HasDatabaseName("PK_ProjectVacancies_ProjectVacancyId")

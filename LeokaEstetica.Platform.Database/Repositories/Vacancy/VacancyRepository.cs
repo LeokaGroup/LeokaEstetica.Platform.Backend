@@ -275,54 +275,48 @@ public class VacancyRepository : IVacancyRepository
 
         try
         {
-            // Удаляем вакансию из каталога.
             var catalogVacancy = await _pgContext.CatalogVacancies
                 .FirstOrDefaultAsync(v => v.VacancyId == vacancyId 
                                           && v.Vacancy.UserId == userId);
 
-            if (catalogVacancy is null)
+            // Удаляем вакансию из каталога.
+            if (catalogVacancy is not null)
             {
-                return false;
+                _pgContext.CatalogVacancies.Remove(catalogVacancy);   
             }
-        
-            _pgContext.CatalogVacancies.Remove(catalogVacancy);
-
-            // Удаляем вакансию из статусов.
+            
             var vacancyStatus = await _pgContext.VacancyStatuses
                 .FirstOrDefaultAsync(v => v.VacancyId == vacancyId);
             
-            if (vacancyStatus is null)
+            // Удаляем вакансию из статусов.
+            if (vacancyStatus is not null)
             {
-                return false;
+                _pgContext.VacancyStatuses.Remove(vacancyStatus);
             }
             
-            _pgContext.VacancyStatuses.Remove(vacancyStatus);
-
-            // Удаляем вакансию из модерации.
             var moderationVacancy = await _pgContext.ModerationVacancies
                 .FirstOrDefaultAsync(v => v.VacancyId == vacancyId);
             
-            if (moderationVacancy is null)
+            // Удаляем вакансию из модерации.
+            if (moderationVacancy is not null)
             {
-                return false;
+                _pgContext.ModerationVacancies.Remove(moderationVacancy);
             }
             
-            _pgContext.ModerationVacancies.Remove(moderationVacancy);
-
-            // Удаляем вакансию пользователя.
             var userVacancy = await _pgContext.UserVacancies
                 .FirstOrDefaultAsync(v => v.VacancyId == vacancyId 
                                           && v.UserId == userId);
 
-            if (userVacancy is null)
+            // Удаляем вакансию пользователя.
+            if (userVacancy is not null)
             {
-                return false;
+                _pgContext.UserVacancies.Remove(userVacancy);
             }
-        
-            _pgContext.UserVacancies.Remove(userVacancy);
-            
+
             await _pgContext.SaveChangesAsync();
             await tran.CommitAsync();
+
+            return true;
         }
         
         catch
@@ -330,8 +324,6 @@ public class VacancyRepository : IVacancyRepository
             await tran.RollbackAsync();
             throw;
         }
-        
-        return true;
     }
 
     /// <summary>
