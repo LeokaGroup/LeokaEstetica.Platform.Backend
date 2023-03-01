@@ -86,7 +86,13 @@ public class ProjectNotificationsRepository : IProjectNotificationsRepository
         var userProjectsIds = userProjects.Select(p => p.ProjectId);
 
         var userNotifications = _pgContext.Notifications
-            .Where(n => userProjectsIds.Contains((long)n.ProjectId))
+            .Where(n => userProjectsIds.Contains((long)n.ProjectId)
+                        && n.NotificationSysName == NotificationTypeEnum.ProjectInvite.ToString()
+                        && n.NotificationType == NotificationTypeEnum.ProjectInvite.ToString()
+                        && n.IsShow
+                        && n.IsNeedAccepted
+                        && !n.Approved
+                        && !n.Rejected)
             .AsQueryable();
 
         if (userNotifications.Any())
