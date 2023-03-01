@@ -453,6 +453,9 @@ public class ProjectNotificationsService : IProjectNotificationsService
             }
 
             await _projectNotificationsRepository.ApproveProjectInviteAsync(notificationId);
+
+            await SendNotificationSuccessApproveProjectInviteAsync("Все хорошо", "Приглашение в проект успешно.",
+                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS);
         }
         
         catch (Exception ex)
@@ -494,6 +497,24 @@ public class ProjectNotificationsService : IProjectNotificationsService
         string notificationLevel)
     {
         await _hubContext.Clients.All.SendAsync("SendNotificationErrorApproveProjectInvite",
+            new NotificationOutput
+            {
+                Title = title,
+                Message = notifyText,
+                NotificationLevel = notificationLevel
+            });
+    }
+    
+    /// <summary>
+    /// Метод отправляет уведомление об успехе при приглашении в проект.
+    /// </summary>
+    /// <param name="title">Заголовок уведомления.</param>
+    /// <param name="notifyText">Текст уведомления.</param>
+    /// <param name="notificationLevel">Уровень уведомления.</param>
+    public async Task SendNotificationSuccessApproveProjectInviteAsync(string title, string notifyText,
+        string notificationLevel)
+    {
+        await _hubContext.Clients.All.SendAsync("SendNotificationSuccessApproveProjectInvite",
             new NotificationOutput
             {
                 Title = title,
