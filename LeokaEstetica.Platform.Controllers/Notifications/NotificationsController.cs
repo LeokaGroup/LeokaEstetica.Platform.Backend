@@ -1,7 +1,5 @@
-using FluentValidation;
 using LeokaEstetica.Platform.Base;
 using LeokaEstetica.Platform.Controllers.Filters;
-using LeokaEstetica.Platform.Controllers.Validators.Notification;
 using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Models.Dto.Input.Notification;
 using LeokaEstetica.Platform.Models.Dto.Output.Notification;
@@ -64,7 +62,12 @@ public class NotificationsController : BaseController
     [ProducesResponseType(404)]
     public async Task ApproveProjectInviteAsync([FromBody] ApproveProjectInviteInput approveProjectInviteInput)
     {
-        await new ApproveProjectInviteValidator().ValidateAndThrowAsync(approveProjectInviteInput);
+        if (approveProjectInviteInput.NotificationId <= 0)
+        {
+            var ex = new InvalidOperationException("Id уведомления был <= 0.");
+            await _logService.LogErrorAsync(ex);
+            throw ex;
+        }
         
         await _projectNotificationsService.ApproveProjectInviteAsync(approveProjectInviteInput.NotificationId);
     }

@@ -132,18 +132,4 @@ public static class GlobalConfigKeys
         /// </summary>
         public const string DUBLICATE_PROJECT_RESPONSE = "Вы уже откликались на этот проект.";
     }
-
-    /// <summary>
-    /// Класс описывает ключи для валидации уведомлений.
-    /// </summary>
-    public static class Notification
-    {
-        /// <summary>
-        /// Класс описывает ключи для валидации уведомлений проектов.
-        /// </summary>
-        public static class ProjectNotification
-        {
-            public const string NEGATIVE_NOTIFICATION_ID = "Id уведомления был <= 0.";
-        }
-    }
 }
