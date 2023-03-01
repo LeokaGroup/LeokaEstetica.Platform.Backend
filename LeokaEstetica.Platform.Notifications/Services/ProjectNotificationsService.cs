@@ -465,6 +465,45 @@ public class ProjectNotificationsService : IProjectNotificationsService
         }
     }
 
+    /// <summary>
+    /// Метод реджектит приглашение в проект.
+    /// </summary>
+    /// <param name="notificationId">Id уведомления.</param>
+    public async Task RejectProjectInviteAsync(long notificationId)
+    {
+        try
+        {
+            // Проверяем существование уведомления.
+            var isExistsNotification =
+                await _projectNotificationsRepository.CheckExistsNotificationByIdAsync(notificationId);
+
+            if (!isExistsNotification)
+            {
+                var ex = new InvalidOperationException(
+                    $"Уведомления с NotificationId: {notificationId} не существует.");
+
+                await SendNotificationErrorRejectProjectInviteAsync("Ошибка",
+                    "Ошибка при отклонении приглашения в проект. Мы уже знаем о ней и разбираемся. " +
+                    "А пока, попробуйте еще раз.",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR);
+                
+                throw ex;
+            }
+
+            await _projectNotificationsRepository.RejectProjectInviteAsync(notificationId);
+
+            await SendNotificationSuccessRejectProjectInviteAsync("Все хорошо",
+                "Отклонение приглашения в проект успешно.",
+                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS);
+        }
+        
+        catch (Exception ex)
+        {
+            await _logService.LogErrorAsync(ex);
+            throw;
+        }
+    }
+
     #endregion
 
     #region Приватные методы.
@@ -511,10 +550,47 @@ public class ProjectNotificationsService : IProjectNotificationsService
     /// <param name="title">Заголовок уведомления.</param>
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
-    public async Task SendNotificationSuccessApproveProjectInviteAsync(string title, string notifyText,
+    private async Task SendNotificationSuccessApproveProjectInviteAsync(string title, string notifyText,
         string notificationLevel)
     {
         await _hubContext.Clients.All.SendAsync("SendNotificationSuccessApproveProjectInvite",
+            new NotificationOutput
+            {
+                Title = title,
+                Message = notifyText,
+                NotificationLevel = notificationLevel
+            });
+    }
+    
+    /// <summary>
+    /// Метод отправляет уведомление об ошибке при реджекте приглашения в проект.
+    /// </summary>
+    /// <param name="title">Заголовок уведомления.</param>
+    /// <param name="notifyText">Текст уведомления.</param>
+    /// <param name="notificationLevel">Уровень уведомления.</param>
+    /// <param name="userCode">Код пользователя.</param>
+    private async Task SendNotificationErrorRejectProjectInviteAsync(string title, string notifyText,
+        string notificationLevel)
+    {
+        await _hubContext.Clients.All.SendAsync("SendNotificationErrorRejectProjectInvite",
+            new NotificationOutput
+            {
+                Title = title,
+                Message = notifyText,
+                NotificationLevel = notificationLevel
+            });
+    }
+    
+    /// <summary>
+    /// Метод отправляет уведомление об успехе при реджекте в проект.
+    /// </summary>
+    /// <param name="title">Заголовок уведомления.</param>
+    /// <param name="notifyText">Текст уведомления.</param>
+    /// <param name="notificationLevel">Уровень уведомления.</param>
+    private async Task SendNotificationSuccessRejectProjectInviteAsync(string title, string notifyText,
+        string notificationLevel)
+    {
+        await _hubContext.Clients.All.SendAsync("SendNotificationSuccessRejectProjectInvite",
             new NotificationOutput
             {
                 Title = title,

@@ -52,7 +52,7 @@ public class NotificationsController : BaseController
     /// <summary>
     /// Метод апрувит приглашение в проект.
     /// </summary>
-    /// <param name="approveProjectInviteInput"></param>
+    /// <param name="approveProjectInviteInput">Входная модель.</param>
     [HttpPatch]
     [Route("approve-project-invite")]
     [ProducesResponseType(200)]
@@ -70,5 +70,28 @@ public class NotificationsController : BaseController
         }
         
         await _projectNotificationsService.ApproveProjectInviteAsync(approveProjectInviteInput.NotificationId);
+    }
+    
+    /// <summary>
+    /// Метод реджектит приглашение в проект.
+    /// </summary>
+    /// <param name="rejectProjectInviteInput">Входная модель.</param>
+    [HttpPatch]
+    [Route("reject-project-invite")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task RejectProjectInviteAsync([FromBody] RejectProjectInviteInput rejectProjectInviteInput)
+    {
+        if (rejectProjectInviteInput.NotificationId <= 0)
+        {
+            var ex = new InvalidOperationException("Id уведомления был <= 0.");
+            await _logService.LogErrorAsync(ex);
+            throw ex;
+        }
+        
+        await _projectNotificationsService.RejectProjectInviteAsync(rejectProjectInviteInput.NotificationId);
     }
 }
