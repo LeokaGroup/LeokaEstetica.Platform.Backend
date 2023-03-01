@@ -1,5 +1,8 @@
+using FluentValidation;
 using LeokaEstetica.Platform.Base;
 using LeokaEstetica.Platform.Controllers.Filters;
+using LeokaEstetica.Platform.Controllers.Validators.Notification;
+using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Models.Dto.Input.Notification;
 using LeokaEstetica.Platform.Models.Dto.Output.Notification;
 using LeokaEstetica.Platform.Notifications.Abstractions;
@@ -16,14 +19,18 @@ namespace LeokaEstetica.Platform.Controllers.Notifications;
 public class NotificationsController : BaseController
 {
     private readonly IProjectNotificationsService _projectNotificationsService;
-    
+    private readonly ILogService _logService;
+
     /// <summary>
     /// Конструктор.
     /// </summary>
     /// <param name="projectNotificationsService">Сервис уведомлений проектов.</param>
-    public NotificationsController(IProjectNotificationsService projectNotificationsService)
+    /// <param name="logService">Сервис логгера.</param>
+    public NotificationsController(IProjectNotificationsService projectNotificationsService, 
+        ILogService logService)
     {
         _projectNotificationsService = projectNotificationsService;
+        _logService = logService;
     }
 
     /// <summary>
@@ -57,6 +64,8 @@ public class NotificationsController : BaseController
     [ProducesResponseType(404)]
     public async Task ApproveProjectInviteAsync([FromBody] ApproveProjectInviteInput approveProjectInviteInput)
     {
+        await new ApproveProjectInviteValidator().ValidateAndThrowAsync(approveProjectInviteInput);
         
+        await _projectNotificationsService.ApproveProjectInviteAsync(approveProjectInviteInput.NotificationId);
     }
 }

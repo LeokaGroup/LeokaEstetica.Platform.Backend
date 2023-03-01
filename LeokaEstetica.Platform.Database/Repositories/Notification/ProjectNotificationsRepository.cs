@@ -108,6 +108,24 @@ public class ProjectNotificationsRepository : IProjectNotificationsRepository
 
         return result;
     }
-    
+
+    /// <summary>
+    /// Метод апрувит приглашение в проект.
+    /// </summary>
+    /// <param name="notificationId">Id уведомления.</param>
+    public async Task ApproveProjectInviteAsync(long notificationId)
+    {
+        var notification = await _pgContext.Notifications
+            .FirstOrDefaultAsync(n => n.NotificationId == notificationId);
+
+        if (notification is not null)
+        {
+            notification.Approved = true;
+            notification.Rejected = false;
+        }
+
+        await _pgContext.SaveChangesAsync();
+    }
+
     #endregion
 }

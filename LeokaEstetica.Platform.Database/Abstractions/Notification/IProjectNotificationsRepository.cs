@@ -30,4 +30,10 @@ public interface IProjectNotificationsRepository
     /// <param name="notificationId">Id уведомления.</param>
     /// <returns>Признак существования уведомления.</returns>
     Task<bool> CheckExistsNotificationByIdAsync(long notificationId);
+
+    /// <summary>
+    /// Метод апрувит приглашение в проект.
+    /// </summary>
+    /// <param name="notificationId">Id уведомления.</param>
+    Task ApproveProjectInviteAsync(long notificationId);
 }

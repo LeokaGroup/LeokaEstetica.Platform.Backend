@@ -451,6 +451,8 @@ public class ProjectNotificationsService : IProjectNotificationsService
                 
                 throw ex;
             }
+
+            await _projectNotificationsRepository.ApproveProjectInviteAsync(notificationId);
         }
         
         catch (Exception ex)
