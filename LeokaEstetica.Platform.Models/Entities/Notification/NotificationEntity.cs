@@ -71,4 +71,10 @@ public class NotificationEntity
     /// IsShow может скрывать от мест повышенных индикаторов, но не влияет на отображение уведомлений в общих местах системы.
     /// </summary>
     public bool IsShow { get; set; }
+
+    /// <summary>
+    /// Признак владельца приглашения.
+    /// Если true, то инициатором приглашения был владелец, при false другой пользователь.
+    /// </summary>
+    public bool IsOwner { get; set; }
 }

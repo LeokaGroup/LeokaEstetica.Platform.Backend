@@ -74,6 +74,10 @@ public partial class NotificationConfiguration : IEntityTypeConfiguration<Notifi
             .HasColumnName("IsShow")
             .HasColumnType("bool")
             .IsRequired();
+        
+        entity.Property(e => e.IsOwner)
+            .HasColumnName("IsOwner")
+            .HasColumnType("bool");
 
         entity.HasIndex(u => u.NotificationId)
             .HasDatabaseName("PK_Notifications_NotificationId")

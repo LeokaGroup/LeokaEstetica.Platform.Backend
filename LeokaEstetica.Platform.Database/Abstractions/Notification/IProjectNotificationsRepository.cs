@@ -3,9 +3,9 @@ using LeokaEstetica.Platform.Models.Entities.Notification;
 namespace LeokaEstetica.Platform.Database.Abstractions.Notification;
 
 /// <summary>
-/// Абстракция репозитория уведомлений.
+/// Абстракция репозитория уведомлений проектов.
 /// </summary>
-public interface INotificationsRepository
+public interface IProjectNotificationsRepository
 {
     /// <summary>
     /// Метод записывает уведомление о приглашении пользователя в проект.
@@ -21,5 +21,19 @@ public interface INotificationsRepository
     /// </summary>
     /// <param name="userId">Id пользователя.</param>
     /// <returns>Список уведомлений.</returns>
-    Task<IEnumerable<NotificationEntity>> GetUserProjectsNotificationsAsync(long userId);
+    Task<(List<NotificationEntity> UserNotifications, List<NotificationEntity> OwnerNotifications)>
+        GetUserProjectsNotificationsAsync(long userId);
+    
+    /// <summary>
+    /// Метод проверяет существование уведомления по его Id.
+    /// </summary>
+    /// <param name="notificationId">Id уведомления.</param>
+    /// <returns>Признак существования уведомления.</returns>
+    Task<bool> CheckExistsNotificationByIdAsync(long notificationId);
+
+    /// <summary>
+    /// Метод апрувит приглашение в проект.
+    /// </summary>
+    /// <param name="notificationId">Id уведомления.</param>
+    Task ApproveProjectInviteAsync(long notificationId);
 }
