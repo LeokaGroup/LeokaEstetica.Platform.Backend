@@ -36,4 +36,10 @@ public interface IProjectNotificationsRepository
     /// </summary>
     /// <param name="notificationId">Id уведомления.</param>
     Task ApproveProjectInviteAsync(long notificationId);
+    
+    /// <summary>
+    /// Метод реджектит приглашение в проект.
+    /// </summary>
+    /// <param name="notificationId">Id уведомления.</param>
+    Task RejectProjectInviteAsync(long notificationId);
 }

@@ -121,13 +121,37 @@ public class ProjectNotificationsRepository : IProjectNotificationsRepository
     /// <param name="notificationId">Id уведомления.</param>
     public async Task ApproveProjectInviteAsync(long notificationId)
     {
+        await UpdateProjectInviteAsync(notificationId, true, false);
+    }
+
+    /// <summary>
+    /// Метод реджектит приглашение в проект.
+    /// </summary>
+    /// <param name="notificationId">Id уведомления.</param>
+    public async Task RejectProjectInviteAsync(long notificationId)
+    {
+        await UpdateProjectInviteAsync(notificationId, false, true);
+    }
+
+    #endregion
+
+    #region Приватные методы.
+
+    /// <summary>
+    /// Метод обновляет уведомление приглашения в проект.
+    /// </summary>
+    /// <param name="notificationId">Id уведомления.</param>
+    /// <param name="approved">Признак необходимости апрува уведомления.</param>
+    /// <param name="approved">Признак необходимости реджекта уведомления.</param>
+    private async Task UpdateProjectInviteAsync(long notificationId, bool approved, bool rejected)
+    {
         var notification = await _pgContext.Notifications
             .FirstOrDefaultAsync(n => n.NotificationId == notificationId);
 
         if (notification is not null)
         {
-            notification.Approved = true;
-            notification.Rejected = false;
+            notification.Approved = approved;
+            notification.Rejected = rejected;
         }
 
         await _pgContext.SaveChangesAsync();
