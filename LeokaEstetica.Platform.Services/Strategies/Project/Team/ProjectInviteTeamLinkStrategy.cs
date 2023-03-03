@@ -1,6 +1,4 @@
 using LeokaEstetica.Platform.Database.Abstractions.User;
-using LeokaEstetica.Platform.Notifications.Data;
-using Microsoft.AspNetCore.SignalR;
 
 namespace LeokaEstetica.Platform.Services.Strategies.Project.Team;
 
@@ -13,8 +11,7 @@ public class ProjectInviteTeamLinkStrategy : BaseProjectInviteTeamStrategy
     /// Конструктор.
     /// </summary>
     /// <param name="userRepository">Репозиторий пользователя.</param>
-    public ProjectInviteTeamLinkStrategy(IUserRepository userRepository,
-        IHubContext<NotifyHub> hubContext) : base(userRepository, hubContext)
+    public ProjectInviteTeamLinkStrategy(IUserRepository userRepository) : base(userRepository)
     {
     }
 

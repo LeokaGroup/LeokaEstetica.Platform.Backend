@@ -134,8 +134,7 @@ public class BaseServiceTest
 
         ProjectService = new ProjectService(projectRepository, logService, userRepository, mapper,
             projectNotificationsService, VacancyService, vacancyRepository, availableLimitsService,
-            subscriptionRepository, fareRuleRepository, VacancyModerationService, projectNotificationsRepository, 
-            null);
+            subscriptionRepository, fareRuleRepository, VacancyModerationService, projectNotificationsRepository);
 
         SubscriptionService =
             new SubscriptionService(logService, userRepository, subscriptionRepository, fareRuleRepository);
