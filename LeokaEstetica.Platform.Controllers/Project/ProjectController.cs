@@ -4,6 +4,7 @@ using LeokaEstetica.Platform.Base.Abstractions.Services.Validation;
 using LeokaEstetica.Platform.Controllers.Filters;
 using LeokaEstetica.Platform.Controllers.ModelsValidation.Project;
 using LeokaEstetica.Platform.Controllers.Validators.Project;
+using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Finder.Abstractions.Project;
 using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Messaging.Abstractions.Project;
@@ -423,7 +424,7 @@ public class ProjectController : BaseController
     }
 
     /// <summary>
-    /// Метод добавляет в команду проекта пользователей.
+    /// Метод добавляет в команду проекта пользователя выбранным способом.
     /// </summary>
     /// <param name="inviteProjectMemberInput">Входная модель.</param>
     /// <returns>Добавленный пользователь.</returns>s
@@ -437,8 +438,10 @@ public class ProjectController : BaseController
     public async Task<ProjectTeamMemberOutput> InviteProjectTeamAsync(
         [FromBody] InviteProjectMemberInput inviteProjectMemberInput)
     {
-        var invitedUser = await _projectService.InviteProjectTeamAsync(inviteProjectMemberInput.User,
-            inviteProjectMemberInput.ProjectId, inviteProjectMemberInput.VacancyId);
+        var invitedUser = await _projectService.InviteProjectTeamAsync(inviteProjectMemberInput.InviteText,
+            Enum.Parse<ProjectInviteTypeEnum>(inviteProjectMemberInput.InviteType), inviteProjectMemberInput.ProjectId,
+            inviteProjectMemberInput.VacancyId);
+        
         var result = _mapper.Map<ProjectTeamMemberOutput>(invitedUser);
 
         return result;

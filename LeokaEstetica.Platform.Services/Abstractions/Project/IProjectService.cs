@@ -1,4 +1,5 @@
 using LeokaEstetica.Platform.Access.Enums;
+using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Models.Dto.Input.Project;
 using LeokaEstetica.Platform.Models.Dto.Output.Configs;
 using LeokaEstetica.Platform.Models.Dto.Output.Project;
@@ -139,11 +140,13 @@ public interface IProjectService
     /// <summary>
     /// Метод добавляет в команду проекта пользователей.
     /// </summary>
-    /// <param name="userName">Пользователь, который будет добавлен в команду проекта.</param>
+    /// <param name="inviteText">Текст, который будет использоваться для поиска пользователя для приглашения.</param>
+    /// <param name="inviteType">Способ приглашения.</param>
     /// <param name="projectId">Id проекта.</param>
     /// <param name="vacancyId">Id вакансии.</param>
-    /// <returns>Добавленный пользователь.</returns>s
-    Task<ProjectTeamMemberEntity> InviteProjectTeamAsync(string userName, long projectId, long vacancyId);
+    /// <returns>Добавленный пользователь.</returns>
+    Task<ProjectTeamMemberEntity> InviteProjectTeamAsync(string inviteText, ProjectInviteTypeEnum inviteType,
+        long projectId, long? vacancyId);
 
     /// <summary>
     /// Метод фильтрации проектов в зависимости от параметров фильтров.

@@ -41,7 +41,7 @@ public class ProjectTeamMemberEntity
     /// <summary>
     /// Id вакансии.
     /// </summary>
-    public long VacancyId { get; set; }
+    public long? VacancyId { get; set; }
 
     /// <summary>
     /// FK.

@@ -524,7 +524,7 @@ public class ProjectRepository : IProjectRepository
     /// <param name="userId">Id пользователя, который будет добавлен в команду проекта.</param>
     /// <param name="vacancyId">Id вакансии.</param>
     /// <returns>Данные добавленного пользователя.</returns>
-    public async Task<ProjectTeamMemberEntity> AddProjectTeamMemberAsync(long userId, long vacancyId,
+    public async Task<ProjectTeamMemberEntity> AddProjectTeamMemberAsync(long userId, long? vacancyId,
         long teamId)
     {
         var result = new ProjectTeamMemberEntity

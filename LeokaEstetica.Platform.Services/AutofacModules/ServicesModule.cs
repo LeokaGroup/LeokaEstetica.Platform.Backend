@@ -20,6 +20,7 @@ using LeokaEstetica.Platform.Services.Services.Search.Project;
 using LeokaEstetica.Platform.Services.Services.Subscription;
 using LeokaEstetica.Platform.Services.Services.User;
 using LeokaEstetica.Platform.Services.Services.Vacancy;
+using LeokaEstetica.Platform.Services.Strategies.Project.Team;
 
 namespace LeokaEstetica.Platform.Services.AutofacModules;
 
@@ -126,6 +127,46 @@ public class ServicesModule : Module
         builder
             .RegisterType<SubscriptionService>()
             .As<ISubscriptionService>()
+            .InstancePerLifetimeScope();
+        
+        // Класс стратегии приглашения в проект по ссылке.
+        builder
+            .RegisterType<ProjectInviteTeamLinkStrategy>()
+            .Named<BaseProjectInviteTeamStrategy>("ProjectInviteTeamLinkStrategy")
+            .InstancePerLifetimeScope();
+        builder
+            .RegisterType<ProjectInviteTeamLinkStrategy>()
+            .As<BaseProjectInviteTeamStrategy>()
+            .InstancePerLifetimeScope();
+        
+        // Класс стратегии приглашения в проект по Email.
+        builder
+            .RegisterType<ProjectInviteTeamEmailStrategy>()
+            .Named<BaseProjectInviteTeamStrategy>("ProjectInviteTeamEmailStrategy")
+            .InstancePerLifetimeScope();
+        builder
+            .RegisterType<ProjectInviteTeamEmailStrategy>()
+            .As<BaseProjectInviteTeamStrategy>()
+            .InstancePerLifetimeScope();
+        
+        // Класс стратегии приглашения в проект по номеру телефона.
+        builder
+            .RegisterType<ProjectInviteTeamPhoneNumberStrategy>()
+            .Named<BaseProjectInviteTeamStrategy>("ProjectInviteTeamPhoneNumberStrategy")
+            .InstancePerLifetimeScope();
+        builder
+            .RegisterType<ProjectInviteTeamPhoneNumberStrategy>()
+            .As<BaseProjectInviteTeamStrategy>()
+            .InstancePerLifetimeScope();
+        
+        // Класс стратегии приглашения в проект по логину.
+        builder
+            .RegisterType<ProjectInviteTeamLoginStrategy>()
+            .Named<BaseProjectInviteTeamStrategy>("ProjectInviteTeamLoginStrategy")
+            .InstancePerLifetimeScope();
+        builder
+            .RegisterType<ProjectInviteTeamLoginStrategy>()
+            .As<BaseProjectInviteTeamStrategy>()
             .InstancePerLifetimeScope();
     }
 }
