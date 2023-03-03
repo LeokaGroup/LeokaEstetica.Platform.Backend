@@ -1,4 +1,6 @@
 using LeokaEstetica.Platform.Database.Abstractions.User;
+using LeokaEstetica.Platform.Notifications.Data;
+using Microsoft.AspNetCore.SignalR;
 
 namespace LeokaEstetica.Platform.Services.Strategies.Project.Team;
 
@@ -11,7 +13,8 @@ public class ProjectInviteTeamPhoneNumberStrategy : BaseProjectInviteTeamStrateg
     /// Конструктор.
     /// </summary>
     /// <param name="userRepository">Репозиторий пользователя.</param>
-    public ProjectInviteTeamPhoneNumberStrategy(IUserRepository userRepository) : base(userRepository)
+    public ProjectInviteTeamPhoneNumberStrategy(IUserRepository userRepository,
+        IHubContext<NotifyHub> hubContext) : base(userRepository, hubContext)
     {
     }
 

@@ -28,11 +28,13 @@ using LeokaEstetica.Platform.Models.Enums;
 using LeokaEstetica.Platform.Moderation.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Notifications.Consts;
+using LeokaEstetica.Platform.Notifications.Data;
 using LeokaEstetica.Platform.Services.Abstractions.Project;
 using LeokaEstetica.Platform.Services.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Services.Builders;
 using LeokaEstetica.Platform.Services.Consts;
 using LeokaEstetica.Platform.Services.Strategies.Project.Team;
+using Microsoft.AspNetCore.SignalR;
 
 namespace LeokaEstetica.Platform.Services.Services.Project;
 
@@ -75,6 +77,7 @@ public class ProjectService : IProjectService
     private readonly IAvailableLimitsService _availableLimitsService;
     private readonly ISubscriptionRepository _subscriptionRepository;
     private readonly IFareRuleRepository _fareRuleRepository;
+    private readonly IHubContext<NotifyHub> _hubContext;
 
     /// <summary>
     /// Список названий тарифов, которые дают выделение цветом.
@@ -125,7 +128,8 @@ public class ProjectService : IProjectService
         ISubscriptionRepository subscriptionRepository, 
         IFareRuleRepository fareRuleRepository, 
         IVacancyModerationService vacancyModerationService, 
-        IProjectNotificationsRepository projectNotificationsRepository)
+        IProjectNotificationsRepository projectNotificationsRepository, 
+        IHubContext<NotifyHub> hubContext)
     {
         _projectRepository = projectRepository;
         _logService = logService;
@@ -139,6 +143,7 @@ public class ProjectService : IProjectService
         _fareRuleRepository = fareRuleRepository;
         _vacancyModerationService = vacancyModerationService;
         _projectNotificationsRepository = projectNotificationsRepository;
+        _hubContext = hubContext;
 
         // Определяем обработчики цепочки фильтров.
         _dateProjectsFilterChain.Successor = _projectsVacanciesFilterChain;
@@ -1284,16 +1289,16 @@ public class ProjectService : IProjectService
         var userId = inviteType switch
         {
             ProjectInviteTypeEnum.Link => await projectInviteTeamJob.GetUserIdAsync(
-                new ProjectInviteTeamLinkStrategy(_userRepository), inviteText),
+                new ProjectInviteTeamLinkStrategy(_userRepository, _hubContext), inviteText),
 
             ProjectInviteTypeEnum.Email => await projectInviteTeamJob.GetUserIdAsync(
-                new ProjectInviteTeamEmailStrategy(_userRepository), inviteText),
+                new ProjectInviteTeamEmailStrategy(_userRepository, _hubContext), inviteText),
 
             ProjectInviteTypeEnum.PhoneNumber => await projectInviteTeamJob.GetUserIdAsync(
-                new ProjectInviteTeamPhoneNumberStrategy(_userRepository), inviteText),
+                new ProjectInviteTeamPhoneNumberStrategy(_userRepository, _hubContext), inviteText),
 
             ProjectInviteTypeEnum.Login => await projectInviteTeamJob.GetUserIdAsync(
-                new ProjectInviteTeamLoginStrategy(_userRepository), inviteText),
+                new ProjectInviteTeamLoginStrategy(_userRepository, _hubContext), inviteText),
 
             _ => 0
         };

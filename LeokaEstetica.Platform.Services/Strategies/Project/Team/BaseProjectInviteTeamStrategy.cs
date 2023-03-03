@@ -1,4 +1,6 @@
 using LeokaEstetica.Platform.Database.Abstractions.User;
+using LeokaEstetica.Platform.Notifications.Data;
+using Microsoft.AspNetCore.SignalR;
 
 namespace LeokaEstetica.Platform.Services.Strategies.Project.Team;
 
@@ -9,14 +11,17 @@ namespace LeokaEstetica.Platform.Services.Strategies.Project.Team;
 public abstract class BaseProjectInviteTeamStrategy
 {
     protected readonly IUserRepository UserRepository;
+    protected readonly IHubContext<NotifyHub> _hubContext;
     
     /// <summary>
     /// Конструктор.
     /// </summary>
     /// <param name="userRepository">Репозиторий пользователя.</param>
-    protected BaseProjectInviteTeamStrategy(IUserRepository userRepository)
+    protected BaseProjectInviteTeamStrategy(IUserRepository userRepository, 
+        IHubContext<NotifyHub> hubContext)
     {
         UserRepository = userRepository;
+        _hubContext = hubContext;
     }
 
     /// <summary>
