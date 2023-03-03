@@ -187,4 +187,37 @@ public interface IProjectNotificationsService
     /// </summary>
     /// <param name="notificationId">Id уведомления.</param>
     Task RejectProjectInviteAsync(long notificationId);
+    
+    /// <summary>
+    /// Метод отправляет уведомление об ошибке при приглашении в проект по ссылке.
+    /// </summary>
+    /// <param name="title">Заголовок уведомления.</param>
+    /// <param name="notifyText">Текст уведомления.</param>
+    /// <param name="notificationLevel">Уровень уведомления.</param>
+    Task SendNotificationErrorProjectInviteTeamByLinkAsync(string title, string notifyText, string notificationLevel);
+    
+    /// <summary>
+    /// Метод отправляет уведомление об ошибке при приглашении в проект по логину.
+    /// </summary>
+    /// <param name="title">Заголовок уведомления.</param>
+    /// <param name="notifyText">Текст уведомления.</param>
+    /// <param name="notificationLevel">Уровень уведомления.</param>
+    Task SendNotificationErrorProjectInviteTeamByLoginAsync(string title, string notifyText, string notificationLevel);
+    
+    /// <summary>
+    /// Метод отправляет уведомление об ошибке при приглашении в проект по почте.
+    /// </summary>
+    /// <param name="title">Заголовок уведомления.</param>
+    /// <param name="notifyText">Текст уведомления.</param>
+    /// <param name="notificationLevel">Уровень уведомления.</param>
+    Task SendNotificationErrorProjectInviteTeamByEmailAsync(string title, string notifyText, string notificationLevel);
+    
+    /// <summary>
+    /// Метод отправляет уведомление об ошибке при приглашении в проект по номеру телефону.
+    /// </summary>
+    /// <param name="title">Заголовок уведомления.</param>
+    /// <param name="notifyText">Текст уведомления.</param>
+    /// <param name="notificationLevel">Уровень уведомления.</param>
+    Task SendNotificationErrorProjectInviteTeamByPhoneNumberAsync(string title, string notifyText,
+        string notificationLevel);
 }

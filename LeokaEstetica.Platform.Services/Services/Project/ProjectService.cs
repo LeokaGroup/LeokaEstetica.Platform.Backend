@@ -1284,16 +1284,16 @@ public class ProjectService : IProjectService
         var userId = inviteType switch
         {
             ProjectInviteTypeEnum.Link => await projectInviteTeamJob.GetUserIdAsync(
-                new ProjectInviteTeamLinkStrategy(_userRepository), inviteText),
+                new ProjectInviteTeamLinkStrategy(_userRepository, _projectNotificationsService), inviteText),
 
             ProjectInviteTypeEnum.Email => await projectInviteTeamJob.GetUserIdAsync(
-                new ProjectInviteTeamEmailStrategy(_userRepository), inviteText),
+                new ProjectInviteTeamEmailStrategy(_userRepository, _projectNotificationsService), inviteText),
 
             ProjectInviteTypeEnum.PhoneNumber => await projectInviteTeamJob.GetUserIdAsync(
-                new ProjectInviteTeamPhoneNumberStrategy(_userRepository), inviteText),
+                new ProjectInviteTeamPhoneNumberStrategy(_userRepository, _projectNotificationsService), inviteText),
 
             ProjectInviteTypeEnum.Login => await projectInviteTeamJob.GetUserIdAsync(
-                new ProjectInviteTeamLoginStrategy(_userRepository), inviteText),
+                new ProjectInviteTeamLoginStrategy(_userRepository, _projectNotificationsService), inviteText),
 
             _ => 0
         };

@@ -1,4 +1,5 @@
 using LeokaEstetica.Platform.Database.Abstractions.User;
+using LeokaEstetica.Platform.Notifications.Abstractions;
 
 namespace LeokaEstetica.Platform.Services.Strategies.Project.Team;
 
@@ -9,14 +10,17 @@ namespace LeokaEstetica.Platform.Services.Strategies.Project.Team;
 public abstract class BaseProjectInviteTeamStrategy
 {
     protected readonly IUserRepository UserRepository;
+    protected readonly IProjectNotificationsService ProjectNotificationsService;
     
     /// <summary>
     /// Конструктор.
     /// </summary>
     /// <param name="userRepository">Репозиторий пользователя.</param>
-    protected BaseProjectInviteTeamStrategy(IUserRepository userRepository)
+    protected BaseProjectInviteTeamStrategy(IUserRepository userRepository, 
+        IProjectNotificationsService projectNotificationsService)
     {
         UserRepository = userRepository;
+        ProjectNotificationsService = projectNotificationsService;
     }
 
     /// <summary>

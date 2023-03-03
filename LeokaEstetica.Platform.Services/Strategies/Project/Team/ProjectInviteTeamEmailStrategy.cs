@@ -1,4 +1,6 @@
 using LeokaEstetica.Platform.Database.Abstractions.User;
+using LeokaEstetica.Platform.Notifications.Abstractions;
+using LeokaEstetica.Platform.Notifications.Consts;
 
 namespace LeokaEstetica.Platform.Services.Strategies.Project.Team;
 
@@ -11,7 +13,8 @@ public class ProjectInviteTeamEmailStrategy : BaseProjectInviteTeamStrategy
     /// Конструктор.
     /// </summary>
     /// <param name="userRepository">Репозиторий пользователя.</param>
-    public ProjectInviteTeamEmailStrategy(IUserRepository userRepository) : base(userRepository)
+    public ProjectInviteTeamEmailStrategy(IUserRepository userRepository,
+        IProjectNotificationsService projectNotificationsService) : base(userRepository, projectNotificationsService)
     {
     }
 
@@ -23,6 +26,14 @@ public class ProjectInviteTeamEmailStrategy : BaseProjectInviteTeamStrategy
     public override async Task<long> GetUserId(string inviteText)
     {
         var result = await UserRepository.GetUserIdByEmailAsync(inviteText);
+        
+        if (result <= 0)
+        {
+            await ProjectNotificationsService.SendNotificationErrorProjectInviteTeamByEmailAsync(
+                "Внимание",
+                "Не удалось пригласить пользователя по Email. Проверьте корректность Email пользователя.",
+                NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING);
+        }
 
         return result;
     }

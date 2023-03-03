@@ -1,4 +1,6 @@
 using LeokaEstetica.Platform.Database.Abstractions.User;
+using LeokaEstetica.Platform.Notifications.Abstractions;
+using LeokaEstetica.Platform.Notifications.Consts;
 
 namespace LeokaEstetica.Platform.Services.Strategies.Project.Team;
 
@@ -11,7 +13,8 @@ public class ProjectInviteTeamPhoneNumberStrategy : BaseProjectInviteTeamStrateg
     /// Конструктор.
     /// </summary>
     /// <param name="userRepository">Репозиторий пользователя.</param>
-    public ProjectInviteTeamPhoneNumberStrategy(IUserRepository userRepository) : base(userRepository)
+    public ProjectInviteTeamPhoneNumberStrategy(IUserRepository userRepository,
+        IProjectNotificationsService projectNotificationsService) : base(userRepository, projectNotificationsService)
     {
     }
 
@@ -23,6 +26,14 @@ public class ProjectInviteTeamPhoneNumberStrategy : BaseProjectInviteTeamStrateg
     public override async Task<long> GetUserId(string inviteText)
     {
         var result = await UserRepository.GetUserIdByPhoneNumberAsync(inviteText);
+        
+        if (result <= 0)
+        {
+            await ProjectNotificationsService.SendNotificationErrorProjectInviteTeamByPhoneNumberAsync("Внимание",
+                "Не удалось пригласить пользователя по номеру телефона. " +
+                "Проверьте корректность номера телефона пользователя.",
+                NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING);
+        }
 
         return result;
     }
