@@ -46,10 +46,15 @@ public static class ValidationConsts
     public const string EMPTY_PASSWORD_ERROR = "Пароль не может быть пустым.";
 
     /// <summary>
-    /// Если не передали UserId.
+    /// Если не передали текст для поиска пользователя.
     /// </summary>
     public const string NOT_VALID_INVITE_PROJECT_TEAM_USER =
-        "Пользователь для добавления в команду проекта не передан.";
+        "Текст для добавления пользователя в команду проекта не передан.";
+
+    /// <summary>
+    /// Если не передали тип приглашения.
+    /// </summary>
+    public const string NOT_VALID_INVITE_TYPE = "Тип приглашения не передан.";
 
     /// <summary>
     /// Если не передали ProjectId.

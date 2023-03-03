@@ -6,9 +6,14 @@ namespace LeokaEstetica.Platform.Models.Dto.Input.ProjectTeam;
 public class InviteProjectMemberInput
 {
     /// <summary>
-    /// Пользователь, который будет добавлен в команду проекта.
+    /// Текст, который будет использоваться для поиска пользователя для приглашения.
     /// </summary>
-    public string User { get; set; }
+    public string InviteText { get; set; }
+
+    /// <summary>
+    /// Способ приглашения.
+    /// </summary>
+    public string InviteType { get; set; }
 
     /// <summary>
     /// Id проекта.
@@ -17,6 +22,7 @@ public class InviteProjectMemberInput
 
     /// <summary>
     /// Id вакансии.
+    /// Если вакансия не передана, значит идет инвайт без указания вакансии.
     /// </summary>
-    public long VacancyId { get; set; }
+    public long? VacancyId { get; set; }
 }

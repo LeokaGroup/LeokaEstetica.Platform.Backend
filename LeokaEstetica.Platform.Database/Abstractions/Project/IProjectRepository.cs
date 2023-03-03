@@ -147,7 +147,7 @@ public interface IProjectRepository
     /// <param name="vacancyId">Id вакансии.</param>
     /// <param name="teamId">Id команды проекта.</param>
     /// <returns>Данные добавленного пользователя.</returns>
-    Task<ProjectTeamMemberEntity> AddProjectTeamMemberAsync(long userId, long vacancyId, long teamId);
+    Task<ProjectTeamMemberEntity> AddProjectTeamMemberAsync(long userId, long? vacancyId, long teamId);
 
     /// <summary>
     /// Метод находит Id команды проекта.

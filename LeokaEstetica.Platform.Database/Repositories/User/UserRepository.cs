@@ -20,7 +20,7 @@ public class UserRepository : IUserRepository
     /// Конструктор.
     /// </summary>
     /// <param name="pgContext">Датаконтекст.</param>
-    /// <param name="logger">Сервис логера.</param>
+    /// <param name="logger">Сервис логгера.</param>
     public UserRepository(PgContext pgContext, 
         ILogService logger)
     {
@@ -245,6 +245,66 @@ public class UserRepository : IUserRepository
     public async Task<List<UserEntity>> GetAllAsync()
     {
         var result = await _pgContext.Users.ToListAsync();
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод находит Id пользователя по его коду.
+    /// </summary>
+    /// <param name="userCode">Код пользователя.</param>
+    /// <returns>Id пользователя.</returns>
+    public async Task<long> GetUserIdByCodeAsync(string userCode)
+    {
+        var result = await _pgContext.Users
+            .Where(u => u.UserCode.Equals(userCode))
+            .Select(u => u.UserId)
+            .FirstOrDefaultAsync();
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод находит Id пользователя по его Email.
+    /// </summary>
+    /// <param name="email">Email пользователя.</param>
+    /// <returns>Id пользователя.</returns>
+    public async Task<long> GetUserIdByEmailAsync(string email)
+    {
+        var result = await _pgContext.Users
+            .Where(u => u.Email.Equals(email))
+            .Select(u => u.UserId)
+            .FirstOrDefaultAsync();
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод находит Id пользователя по его номеру телефона.
+    /// </summary>
+    /// <param name="phoneNumber">Номер телефона пользователя.</param>
+    /// <returns>Id пользователя.</returns>
+    public async Task<long> GetUserIdByPhoneNumberAsync(string phoneNumber)
+    {
+        var result = await _pgContext.Users
+            .Where(u => u.PhoneNumber.Equals(phoneNumber))
+            .Select(u => u.UserId)
+            .FirstOrDefaultAsync();
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод находит Id пользователя по его логину.
+    /// </summary>
+    /// <param name="phoneNumber">Логин пользователя.</param>
+    /// <returns>Id пользователя.</returns>
+    public async Task<long> GetUserIdByLoginAsync(string login)
+    {
+        var result = await _pgContext.Users
+            .Where(u => u.Login.Equals(login))
+            .Select(u => u.UserId)
+            .FirstOrDefaultAsync();
 
         return result;
     }

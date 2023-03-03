@@ -103,4 +103,32 @@ public interface IUserRepository
     /// </summary>
     /// <returns>Список пользователей.</returns>
     Task<List<UserEntity>> GetAllAsync();
+
+    /// <summary>
+    /// Метод находит Id пользователя по его коду.
+    /// </summary>
+    /// <param name="userCode">Код пользователя.</param>
+    /// <returns>Id пользователя.</returns>
+    Task<long> GetUserIdByCodeAsync(string userCode);
+    
+    /// <summary>
+    /// Метод находит Id пользователя по его Email.
+    /// </summary>
+    /// <param name="email">Email пользователя.</param>
+    /// <returns>Id пользователя.</returns>
+    Task<long> GetUserIdByEmailAsync(string email);
+    
+    /// <summary>
+    /// Метод находит Id пользователя по его номеру телефона.
+    /// </summary>
+    /// <param name="phoneNumber">Номер телефона пользователя.</param>
+    /// <returns>Id пользователя.</returns>
+    Task<long> GetUserIdByPhoneNumberAsync(string phoneNumber);
+    
+    /// <summary>
+    /// Метод находит Id пользователя по его логину.
+    /// </summary>
+    /// <param name="phoneNumber">Логин пользователя.</param>
+    /// <returns>Id пользователя.</returns>
+    Task<long> GetUserIdByLoginAsync(string login);
 }

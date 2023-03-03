@@ -3,6 +3,7 @@ using AutoMapper;
 using LeokaEstetica.Platform.Access.Abstractions.AvailableLimits;
 using LeokaEstetica.Platform.Access.Enums;
 using LeokaEstetica.Platform.Core.Constants;
+using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Core.Helpers;
 using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Core.Extensions;
@@ -31,6 +32,7 @@ using LeokaEstetica.Platform.Services.Abstractions.Project;
 using LeokaEstetica.Platform.Services.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Services.Builders;
 using LeokaEstetica.Platform.Services.Consts;
+using LeokaEstetica.Platform.Services.Strategies.Project.Team;
 
 namespace LeokaEstetica.Platform.Services.Services.Project;
 
@@ -81,6 +83,17 @@ public class ProjectService : IProjectService
     {
         FareRuleTypeEnum.Business.GetEnumDescription(),
         FareRuleTypeEnum.Professional.GetEnumDescription()
+    };
+
+    /// <summary>
+    /// Список типов приглашений в проект.
+    /// </summary>
+    private static readonly List<ProjectInviteTypeEnum> _projectInviteTypes = new()
+    {
+        ProjectInviteTypeEnum.Email,
+        ProjectInviteTypeEnum.Login,
+        ProjectInviteTypeEnum.PhoneNumber,
+        ProjectInviteTypeEnum.Link
     };
 
     private readonly IVacancyModerationService _vacancyModerationService;
@@ -761,21 +774,23 @@ public class ProjectService : IProjectService
     /// <summary>
     /// Метод добавляет в команду проекта пользователей.
     /// </summary>
-    /// <param name="userName">Пользователь, который будет добавлен в команду проекта.</param>
+    /// <param name="inviteText">Текст, который будет использоваться для поиска пользователя для приглашения.</param>
+    /// <param name="inviteType">Способ приглашения.</param>
     /// <param name="projectId">Id проекта.</param>
     /// <param name="vacancyId">Id вакансии.</param>
-    /// <returns>Добавленный пользователь.</returns>s
-    public async Task<ProjectTeamMemberEntity> InviteProjectTeamAsync(string userName, long projectId, long vacancyId)
+    /// <returns>Добавленный пользователь.</returns>
+    public async Task<ProjectTeamMemberEntity> InviteProjectTeamAsync(string inviteText,
+        ProjectInviteTypeEnum inviteType, long projectId, long? vacancyId)
     {
         try
         {
-            await ValidateInviteProjectTeamParams(userName, projectId, vacancyId);
+            await ValidateInviteProjectTeamParams(inviteText, inviteType, projectId, vacancyId);
 
-            var userId = await _userRepository.GetUserIdByEmailOrLoginAsync(userName);
+            var userId = await GetUserIdAsync(inviteText, inviteType);
 
             if (userId <= 0)
             {
-                var ex = new NotFoundUserIdByAccountException(userName);
+                var ex = new NotFoundUserIdByAccountException(inviteText);
                 await _logService.LogErrorAsync(ex);
                 throw ex;
             }
@@ -792,8 +807,9 @@ public class ProjectService : IProjectService
         catch (Exception ex)
         {
             await _logService.LogErrorAsync(ex,
-                "Ошибка добавления пользователей в команду проекта. " +
-                $"User был {userName}. " +
+                "Ошибка добавления пользователя в команду проекта. " +
+                $"InviteText был {inviteText}. " +
+                $"InviteType был {inviteType}. " +
                 $"ProjectId был {projectId}. " +
                 $"VacancyId был {vacancyId}");
             throw;
@@ -991,16 +1007,25 @@ public class ProjectService : IProjectService
     /// <summary>
     /// Метод валидирует входные параметры перед добавлением пользователя в команду проекта.
     /// </summary>
-    /// <param name="userId">Id пользователя, который будет добавлен в команду проекта.</param>
+    /// <param name="inviteText">Текст, который будет использоваться для поиска пользователя для приглашения.</param>
+    /// <param name="inviteType">Способ приглашения.</param>
     /// <param name="projectId">Id проекта.</param>
     /// <param name="vacancyId">Id вакансии.</param>
-    private async Task ValidateInviteProjectTeamParams(string userId, long projectId, long vacancyId)
+    private async Task ValidateInviteProjectTeamParams(string inviteText, ProjectInviteTypeEnum inviteType,
+        long projectId, long? vacancyId)
     {
         var isError = false;
 
-        if (string.IsNullOrEmpty(userId))
+        if (string.IsNullOrEmpty(inviteText))
         {
             var ex = new ArgumentException(ValidationConsts.NOT_VALID_INVITE_PROJECT_TEAM_USER);
+            await _logService.LogErrorAsync(ex);
+            isError = true;
+        }
+        
+        if (!_projectInviteTypes.Contains(inviteType))
+        {
+            var ex = new ArgumentException(ValidationConsts.NOT_VALID_INVITE_TYPE);
             await _logService.LogErrorAsync(ex);
             isError = true;
         }
@@ -1244,6 +1269,36 @@ public class ProjectService : IProjectService
                     NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR);
             }
         }
+    }
+
+    /// <summary>
+    /// Метод находит Id пользователя выбранным способом.
+    /// </summary>
+    /// <param name="inviteText">Текст, который будет использоваться для поиска пользователя для приглашения.</param>
+    /// <param name="inviteType">Способ приглашения.</param>
+    /// <returns>Id пользователя.</returns>
+    private async Task<long> GetUserIdAsync(string inviteText, ProjectInviteTypeEnum inviteType)
+    {
+        var projectInviteTeamJob = new ProjectInviteTeamJob();
+
+        var userId = inviteType switch
+        {
+            ProjectInviteTypeEnum.Link => await projectInviteTeamJob.GetUserIdAsync(
+                new ProjectInviteTeamLinkStrategy(_userRepository, _projectNotificationsService), inviteText),
+
+            ProjectInviteTypeEnum.Email => await projectInviteTeamJob.GetUserIdAsync(
+                new ProjectInviteTeamEmailStrategy(_userRepository, _projectNotificationsService), inviteText),
+
+            ProjectInviteTypeEnum.PhoneNumber => await projectInviteTeamJob.GetUserIdAsync(
+                new ProjectInviteTeamPhoneNumberStrategy(_userRepository, _projectNotificationsService), inviteText),
+
+            ProjectInviteTypeEnum.Login => await projectInviteTeamJob.GetUserIdAsync(
+                new ProjectInviteTeamLoginStrategy(_userRepository, _projectNotificationsService), inviteText),
+
+            _ => 0
+        };
+
+        return userId;
     }
     
     #endregion
