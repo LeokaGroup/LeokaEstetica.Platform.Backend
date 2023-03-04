@@ -7,6 +7,7 @@ using LeokaEstetica.Platform.Models.Dto.Output.Notification;
 using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Notifications.Consts;
 using LeokaEstetica.Platform.Notifications.Data;
+using LeokaEstetica.Platform.Redis.Abstractions.Notification;
 using Microsoft.AspNetCore.SignalR;
 using NotificationOutput = LeokaEstetica.Platform.Notifications.Models.Output.NotificationOutput;
 using NotificationProjectOutput = LeokaEstetica.Platform.Models.Dto.Output.Notification.NotificationOutput;
@@ -23,6 +24,7 @@ public class ProjectNotificationsService : IProjectNotificationsService
     private readonly IUserRepository _userRepository;
     private readonly IProjectNotificationsRepository _projectNotificationsRepository;
     private readonly IMapper _mapper;
+    private readonly INotificationsRedisService _notificationsRedisService;
 
     /// <summary>
     /// Конструктор.
@@ -32,17 +34,20 @@ public class ProjectNotificationsService : IProjectNotificationsService
     /// <param name="userRepository">Репозиторий пользователя.</param>
     /// <param name="_projectNotificationsRepository">Репозиторий уведомлений проектов.</param>
     /// <param name="mapper">Автомаппер.</param>
+    /// <param name="notificationsRedisService">Сервис уведомлений кэша.</param>
     public ProjectNotificationsService(IHubContext<NotifyHub> hubContext, 
         ILogService logService, 
         IUserRepository userRepository,
         IMapper mapper, 
-        IProjectNotificationsRepository projectNotificationsRepository)
+        IProjectNotificationsRepository projectNotificationsRepository, 
+        INotificationsRedisService notificationsRedisService)
     {
         _hubContext = hubContext;
         _logService = logService;
         _userRepository = userRepository;
         _mapper = mapper;
         _projectNotificationsRepository = projectNotificationsRepository;
+        _notificationsRedisService = notificationsRedisService;
     }
 
     #region Публичные методы.
@@ -141,15 +146,20 @@ public class ProjectNotificationsService : IProjectNotificationsService
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
     /// <param name="userCode">Код пользователя.</param>
+    /// <param name="userId">Id пользователя.</param>
     public async Task SendNotificationSuccessAttachProjectVacancyAsync(string title, string notifyText,
-        string notificationLevel)
+        string notificationLevel, long userId)
     {
-        await _hubContext.Clients.All.SendAsync("SendNotificationSuccessAttachProjectVacancy", new NotificationOutput
-        {
-            Title = title,
-            Message = notifyText,
-            NotificationLevel = notificationLevel
-        });
+        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(userId.ToString());
+
+        await _hubContext.Clients
+            .Client(connectionId)
+            .SendAsync("SendNotificationSuccessAttachProjectVacancy", new NotificationOutput
+            {
+                Title = title,
+                Message = notifyText,
+                NotificationLevel = notificationLevel
+            });
     }
 
     /// <summary>

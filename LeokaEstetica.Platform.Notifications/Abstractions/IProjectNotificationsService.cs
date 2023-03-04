@@ -59,7 +59,9 @@ public interface IProjectNotificationsService
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
     /// <param name="userCode">Код пользователя.</param>
-    Task SendNotificationSuccessAttachProjectVacancyAsync(string title, string notifyText, string notificationLevel);
+    /// <param name="userId">Id пользователя.</param>
+    Task SendNotificationSuccessAttachProjectVacancyAsync(string title, string notifyText, string notificationLevel,
+        long userId);
 
     /// <summary>
     /// Метод отправляет уведомление об дубликате при привязке вакансии к проекту.

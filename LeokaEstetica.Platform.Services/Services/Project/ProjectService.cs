@@ -575,7 +575,7 @@ public class ProjectService : IProjectService
                 employment, payment, account);
 
             // Автоматически привязываем вакансию к проекту.
-            await AttachProjectVacancyAsync(projectId, createdVacancy.VacancyId);
+            await AttachProjectVacancyAsync(projectId, createdVacancy.VacancyId, account);
 
             return createdVacancy;
         }
@@ -626,7 +626,8 @@ public class ProjectService : IProjectService
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
     /// <param name="vacancyId">Id вакансии.</param>
-    public async Task AttachProjectVacancyAsync(long projectId, long vacancyId)
+    /// <param name="account">Аккаунт пользователя.</param>
+    public async Task AttachProjectVacancyAsync(long projectId, long vacancyId, string account)
     {
         try
         {
@@ -642,11 +643,21 @@ public class ProjectService : IProjectService
                     NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR);
                 throw ex;
             }
+            
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                await _logService.LogErrorAsync(ex);
+                throw ex;
+            }
 
             await _projectNotificationsService.SendNotificationSuccessAttachProjectVacancyAsync(
                 "Все хорошо",
                 "Вакансия успешно привязана к проекту.",
-                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS);
+                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS,
+                userId);
         }
 
         catch (Exception ex)

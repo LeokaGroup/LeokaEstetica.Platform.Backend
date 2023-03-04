@@ -101,7 +101,8 @@ public class BaseServiceTest
         var projectRepository = new ProjectRepository(pgContext, chatRepository);
         var projectNotificationsRepository = new ProjectNotificationsRepository(pgContext);
         var projectNotificationsService =
-            new ProjectNotificationsService(null, logService, userRepository, mapper, projectNotificationsRepository);
+            new ProjectNotificationsService(null, logService, userRepository, mapper, projectNotificationsRepository,
+                null);
         var vacancyRepository = new VacancyRepository(pgContext);
         var vacancyModerationRepository = new VacancyModerationRepository(pgContext);
         var vacancyNotificationsService = new VacancyNotificationsService(null);

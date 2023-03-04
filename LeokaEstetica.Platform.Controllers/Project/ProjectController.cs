@@ -299,7 +299,7 @@ public class ProjectController : BaseController
     public async Task AttachProjectVacancyAsync([FromBody] AttachProjectVacancyInput attachProjectVacancyInput)
     {
         await _projectService.AttachProjectVacancyAsync(attachProjectVacancyInput.ProjectId,
-            attachProjectVacancyInput.VacancyId);
+            attachProjectVacancyInput.VacancyId, GetUserName());
     }
 
     /// <summary>
