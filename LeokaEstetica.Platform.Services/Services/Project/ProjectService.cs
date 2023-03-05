@@ -181,7 +181,7 @@ public class ProjectService : IProjectService
             // Получаем тариф, на который оформлена подписка у пользователя.
             var fareRule = await _fareRuleRepository.GetByIdAsync(userSubscription.ObjectId);
             
-            // Проверяем доступо ли пользователю создание проекта.
+            // Проверяем доступно ли пользователю создание проекта.
             var availableCreateProjectLimit =
                 await _availableLimitsService.CheckAvailableCreateProjectAsync(userId, fareRule.Name);
 
@@ -566,7 +566,6 @@ public class ProjectService : IProjectService
             if (projectId <= 0)
             {
                 var ex = new ArgumentException("Невалидный Id проекта. ProjectId был " + projectId);
-                await _logService.LogErrorAsync(ex);
                 throw ex;
             }
 
@@ -603,7 +602,6 @@ public class ProjectService : IProjectService
             if (userId <= 0)
             {
                 var ex = new NotFoundUserIdByAccountException(account);
-                await _logService.LogErrorAsync(ex);
                 throw ex;
             }
 

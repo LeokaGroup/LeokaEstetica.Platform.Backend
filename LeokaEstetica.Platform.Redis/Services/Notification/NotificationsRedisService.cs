@@ -43,15 +43,29 @@ public class NotificationsRedisService : INotificationsRedisService
     /// <returns>ConnectionId.</returns>
     public async Task<string> GetConnectionIdCacheAsync(string key)
     {
-        var connectionId = await _redisCache.GetStringAsync(string.Concat(CacheKeysConsts.ADD_CONNECTION_ID, key));
+        var searchKey = string.Concat(CacheKeysConsts.ADD_CONNECTION_ID, key);
+        var connectionId = await _redisCache.GetStringAsync(searchKey);
 
         if (!string.IsNullOrEmpty(connectionId))
         {
-            var result = ProtoBufExtensions.Deserialize<string>(connectionId);
+            connectionId = ProtoBufExtensions.Deserialize<string>(connectionId);
+            
+            // Данные нашли, продлеваем время жизни ключа.
+            await _redisCache.RefreshAsync(searchKey);
 
-            return result;
+            return connectionId;
         }
 
-        return null;
+        // В кэше нет ключа, добавляем.
+        await _redisCache.SetStringAsync(searchKey, ProtoBufExtensions.Serialize(key),
+            new DistributedCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(1)
+            });
+
+        var addedConnectionId = await _redisCache.GetStringAsync(searchKey);
+        connectionId = ProtoBufExtensions.Deserialize<string>(addedConnectionId);
+
+        return connectionId;
     }
 }

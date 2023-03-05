@@ -380,10 +380,10 @@ public class ProjectRepository : IProjectRepository
             .AsQueryable();
         
         // Получаем Id вакансий, которые еще на модерации, так как их нельзя атачить.
-        var moderationVacanciesIds = await _pgContext.ModerationVacancies
+        var moderationVacanciesIds = _pgContext.ModerationVacancies
             .Where(v => !_excludedVacanciesStatuses.Contains(v.ModerationStatusId))
             .Select(v => v.VacancyId)
-            .ToListAsync();
+            .AsQueryable();
 
         // Получаем вакансии, которые можно прикрепить к проекту.
         var result = await _pgContext.UserVacancies
