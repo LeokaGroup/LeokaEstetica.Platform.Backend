@@ -32,7 +32,7 @@ public class ProjectInviteTeamPhoneNumberStrategy : BaseProjectInviteTeamStrateg
             await ProjectNotificationsService.SendNotificationErrorProjectInviteTeamByPhoneNumberAsync("Внимание",
                 "Не удалось пригласить пользователя по номеру телефона. " +
                 "Проверьте корректность номера телефона пользователя.",
-                NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING);
+                NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, result);
         }
 
         return result;

@@ -58,15 +58,20 @@ public class ProjectNotificationsService : IProjectNotificationsService
     /// <param name="title">Заголовок уведомления.</param>
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
+    /// <param name="userId">Id пользователя.</param>
     public async Task SendNotificationSuccessCreatedUserProjectAsync(string title, string notifyText,
-        string notificationLevel)
+        string notificationLevel, long userId)
     {
-        await _hubContext.Clients.All.SendAsync("SendNotificationSuccessCreatedUserProject", new NotificationOutput
-        {
-            Title = title,
-            Message = notifyText,
-            NotificationLevel = notificationLevel
-        });
+        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(userId.ToString());
+
+        await _hubContext.Clients
+            .Client(connectionId)
+            .SendAsync("SendNotificationSuccessCreatedUserProject", new NotificationOutput
+            {
+                Title = title,
+                Message = notifyText,
+                NotificationLevel = notificationLevel
+            });
     }
 
     /// <summary>
@@ -75,15 +80,20 @@ public class ProjectNotificationsService : IProjectNotificationsService
     /// <param name="title">Заголовок уведомления.</param>
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
+    /// <param name="userId">Id пользователя.</param>
     public async Task SendNotificationErrorCreatedUserProjectAsync(string title, string notifyText,
-        string notificationLevel)
+        string notificationLevel, long userId)
     {
-        await _hubContext.Clients.All.SendAsync("SendNotificationErrorCreatedUserProject", new NotificationOutput
-        {
-            Title = title,
-            Message = notifyText,
-            NotificationLevel = notificationLevel
-        });
+        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(userId.ToString());
+
+        await _hubContext.Clients
+            .Client(connectionId)
+            .SendAsync("SendNotificationErrorCreatedUserProject", new NotificationOutput
+            {
+                Title = title,
+                Message = notifyText,
+                NotificationLevel = notificationLevel
+            });
     }
 
     /// <summary>
@@ -92,15 +102,20 @@ public class ProjectNotificationsService : IProjectNotificationsService
     /// <param name="title">Заголовок уведомления.</param>
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
+    /// <param name="userId">Id пользователя.</param>
     public async Task SendNotificationWarningDublicateUserProjectAsync(string title, string notifyText,
-        string notificationLevel)
+        string notificationLevel, long userId)
     {
-        await _hubContext.Clients.All.SendAsync("SendNotificationWarningDublicateUserProject", new NotificationOutput
-        {
-            Title = title,
-            Message = notifyText,
-            NotificationLevel = notificationLevel
-        });
+        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(userId.ToString());
+
+        await _hubContext.Clients
+            .Client(connectionId)
+            .SendAsync("SendNotificationWarningDublicateUserProject", new NotificationOutput
+            {
+                Title = title,
+                Message = notifyText,
+                NotificationLevel = notificationLevel
+            });
     }
 
     /// <summary>
@@ -109,16 +124,20 @@ public class ProjectNotificationsService : IProjectNotificationsService
     /// <param name="title">Заголовок уведомления.</param>
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="userCode">Код пользователя.</param>
+    /// <param name="userId">Id пользователя.</param>
     public async Task SendNotificationSuccessUpdatedUserProjectAsync(string title, string notifyText,
-        string notificationLevel)
+        string notificationLevel, long userId)
     {
-        await _hubContext.Clients.All.SendAsync("SendNotificationSuccessUpdatedUserProject", new NotificationOutput
-        {
-            Title = title,
-            Message = notifyText,
-            NotificationLevel = notificationLevel
-        });
+        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(userId.ToString());
+
+        await _hubContext.Clients
+            .Client(connectionId)
+            .SendAsync("SendNotificationSuccessUpdatedUserProject", new NotificationOutput
+            {
+                Title = title,
+                Message = notifyText,
+                NotificationLevel = notificationLevel
+            });
     }
 
     /// <summary>
@@ -127,16 +146,20 @@ public class ProjectNotificationsService : IProjectNotificationsService
     /// <param name="title">Заголовок уведомления.</param>
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="userCode">Код пользователя.</param>
+    /// <param name="userId">Id пользователя.</param>
     public async Task SendNotificationErrorUpdatedUserProjectAsync(string title, string notifyText,
-        string notificationLevel)
+        string notificationLevel, long userId)
     {
-        await _hubContext.Clients.All.SendAsync("SendNotificationErrorUpdatedUserProject", new NotificationOutput
-        {
-            Title = title,
-            Message = notifyText,
-            NotificationLevel = notificationLevel
-        });
+        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(userId.ToString());
+
+        await _hubContext.Clients
+            .Client(connectionId)
+            .SendAsync("SendNotificationErrorUpdatedUserProject", new NotificationOutput
+            {
+                Title = title,
+                Message = notifyText,
+                NotificationLevel = notificationLevel
+            });
     }
 
     /// <summary>
@@ -145,7 +168,6 @@ public class ProjectNotificationsService : IProjectNotificationsService
     /// <param name="title">Заголовок уведомления.</param>
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="userCode">Код пользователя.</param>
     /// <param name="userId">Id пользователя.</param>
     public async Task SendNotificationSuccessAttachProjectVacancyAsync(string title, string notifyText,
         string notificationLevel, long userId)
@@ -168,11 +190,15 @@ public class ProjectNotificationsService : IProjectNotificationsService
     /// <param name="title">Заголовок уведомления.</param>
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="userCode">Код пользователя.</param>
+    /// <param name="userId">Id пользователя.</param>
     public async Task SendNotificationErrorDublicateAttachProjectVacancyAsync(string title, string notifyText,
-        string notificationLevel)
+        string notificationLevel, long userId)
     {
-        await _hubContext.Clients.All.SendAsync("SendNotificationErrorDublicateAttachProjectVacancy",
+        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(userId.ToString());
+        
+        await _hubContext.Clients
+            .Client(connectionId)
+            .SendAsync("SendNotificationErrorDublicateAttachProjectVacancy",
             new NotificationOutput
             {
                 Title = title,
@@ -187,17 +213,21 @@ public class ProjectNotificationsService : IProjectNotificationsService
     /// <param name="title">Заголовок уведомления.</param>
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="userCode">Код пользователя.</param>
+    /// <param name="userId">Id пользователя.</param>
     public async Task SendNotificationSuccessProjectResponseAsync(string title, string notifyText,
-        string notificationLevel)
+        string notificationLevel, long userId)
     {
-        await _hubContext.Clients.All.SendAsync("SendNotificationSuccessProjectResponse",
-            new NotificationOutput
-            {
-                Title = title,
-                Message = notifyText,
-                NotificationLevel = notificationLevel
-            });
+        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(userId.ToString());
+
+        await _hubContext.Clients
+            .Client(connectionId)
+            .SendAsync("SendNotificationSuccessProjectResponse",
+                new NotificationOutput
+                {
+                    Title = title,
+                    Message = notifyText,
+                    NotificationLevel = notificationLevel
+                });
     }
 
     /// <summary>
@@ -206,17 +236,21 @@ public class ProjectNotificationsService : IProjectNotificationsService
     /// <param name="title">Заголовок уведомления.</param>
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="userCode">Код пользователя.</param>
+    /// <param name="userId">Id пользователя.</param>
     public async Task SendNotificationWarningProjectResponseAsync(string title, string notifyText,
-        string notificationLevel)
+        string notificationLevel, long userId)
     {
-        await _hubContext.Clients.All.SendAsync("SendNotificationWarningProjectResponse",
-            new NotificationOutput
-            {
-                Title = title,
-                Message = notifyText,
-                NotificationLevel = notificationLevel
-            });
+        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(userId.ToString());
+
+        await _hubContext.Clients
+            .Client(connectionId)
+            .SendAsync("SendNotificationWarningProjectResponse",
+                new NotificationOutput
+                {
+                    Title = title,
+                    Message = notifyText,
+                    NotificationLevel = notificationLevel
+                });
     }
 
     /// <summary>
@@ -225,18 +259,21 @@ public class ProjectNotificationsService : IProjectNotificationsService
     /// <param name="title">Заголовок уведомления.</param>
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="userCode">Код пользователя.</param>
-    /// <param name="searchText">Поисковый запрос.</param>
+    /// <param name="userId">Id пользователя.</param>
     public async Task SendNotificationWarningSearchProjectTeamMemberAsync(string title, string notifyText,
-        string notificationLevel)
+        string notificationLevel, long userId)
     {
-        await _hubContext.Clients.All.SendAsync("SendNotificationWarningSearchProjectTeamMember",
-            new NotificationOutput
-            {
-                Title = title,
-                Message = notifyText,
-                NotificationLevel = notificationLevel
-            });
+        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(userId.ToString());
+
+        await _hubContext.Clients
+            .Client(connectionId)
+            .SendAsync("SendNotificationWarningSearchProjectTeamMember",
+                new NotificationOutput
+                {
+                    Title = title,
+                    Message = notifyText,
+                    NotificationLevel = notificationLevel
+                });
     }
 
     /// <summary>
@@ -245,18 +282,21 @@ public class ProjectNotificationsService : IProjectNotificationsService
     /// <param name="title">Заголовок уведомления.</param>
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="userCode">Код пользователя.</param>
-    /// <param name="searchText">Поисковый запрос.</param>
+    /// <param name="userId">Id пользователя.</param>
     public async Task SendNotificationWarningInviteProjectTeamMembersAsync(string title, string notifyText,
-        string notificationLevel)
+        string notificationLevel, long userId)
     {
-        await _hubContext.Clients.All.SendAsync("SendNotificationWarningInviteProjectTeamMembers",
-            new NotificationOutput
-            {
-                Title = title,
-                Message = notifyText,
-                NotificationLevel = notificationLevel
-            });
+        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(userId.ToString());
+
+        await _hubContext.Clients
+            .Client(connectionId)
+            .SendAsync("SendNotificationWarningInviteProjectTeamMembers",
+                new NotificationOutput
+                {
+                    Title = title,
+                    Message = notifyText,
+                    NotificationLevel = notificationLevel
+                });
     }
 
     /// <summary>
@@ -265,18 +305,21 @@ public class ProjectNotificationsService : IProjectNotificationsService
     /// <param name="title">Заголовок уведомления.</param>
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="userCode">Код пользователя.</param>
-    /// <param name="searchText">Поисковый запрос.</param>
+    /// <param name="userId">Id пользователя.</param>
     public async Task SendNotificationErrorInviteProjectTeamMembersAsync(string title, string notifyText,
-        string notificationLevel)
+        string notificationLevel, long userId)
     {
-        await _hubContext.Clients.All.SendAsync("SendNotificationErrorInviteProjectTeamMembers",
-            new NotificationOutput
-            {
-                Title = title,
-                Message = notifyText,
-                NotificationLevel = notificationLevel
-            });
+        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(userId.ToString());
+
+        await _hubContext.Clients
+            .Client(connectionId)
+            .SendAsync("SendNotificationErrorInviteProjectTeamMembers",
+                new NotificationOutput
+                {
+                    Title = title,
+                    Message = notifyText,
+                    NotificationLevel = notificationLevel
+                });
     }
 
     /// <summary>
@@ -285,16 +328,21 @@ public class ProjectNotificationsService : IProjectNotificationsService
     /// <param name="title">Заголовок уведомления.</param>
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
+    /// <param name="userId">Id пользователя.</param>
     public async Task SendNotificationWarningLimitFareRuleProjectsAsync(string title, string notifyText,
-        string notificationLevel)
+        string notificationLevel, long userId)
     {
-        await _hubContext.Clients.All.SendAsync("SendNotificationWarningLimitFareRuleProjects",
-            new NotificationOutput
-            {
-                Title = title,
-                Message = notifyText,
-                NotificationLevel = notificationLevel
-            });
+        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(userId.ToString());
+
+        await _hubContext.Clients
+            .Client(connectionId)
+            .SendAsync("SendNotificationWarningLimitFareRuleProjects",
+                new NotificationOutput
+                {
+                    Title = title,
+                    Message = notifyText,
+                    NotificationLevel = notificationLevel
+                });
     }
 
     /// <summary>
@@ -303,16 +351,21 @@ public class ProjectNotificationsService : IProjectNotificationsService
     /// <param name="title">Заголовок уведомления.</param>
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
+    /// <param name="userId">Id пользователя.</param>
     public async Task SendNotificationErrorDeleteProjectVacancyAsync(string title, string notifyText,
-        string notificationLevel)
+        string notificationLevel, long userId)
     {
-        await _hubContext.Clients.All.SendAsync("SendNotificationErrorDeleteProjectVacancy",
-            new NotificationOutput
-            {
-                Title = title,
-                Message = notifyText,
-                NotificationLevel = notificationLevel
-            });
+        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(userId.ToString());
+
+        await _hubContext.Clients
+            .Client(connectionId)
+            .SendAsync("SendNotificationErrorDeleteProjectVacancy",
+                new NotificationOutput
+                {
+                    Title = title,
+                    Message = notifyText,
+                    NotificationLevel = notificationLevel
+                });
     }
 
     /// <summary>
@@ -321,16 +374,21 @@ public class ProjectNotificationsService : IProjectNotificationsService
     /// <param name="title">Заголовок уведомления.</param>
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
+    /// <param name="userId">Id пользователя.</param>
     public async Task SendNotificationSuccessDeleteProjectVacancyAsync(string title, string notifyText,
-        string notificationLevel)
+        string notificationLevel, long userId)
     {
-        await _hubContext.Clients.All.SendAsync("SendNotificationSuccessDeleteProjectVacancy",
-            new NotificationOutput
-            {
-                Title = title,
-                Message = notifyText,
-                NotificationLevel = notificationLevel
-            });
+        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(userId.ToString());
+
+        await _hubContext.Clients
+            .Client(connectionId)
+            .SendAsync("SendNotificationSuccessDeleteProjectVacancy",
+                new NotificationOutput
+                {
+                    Title = title,
+                    Message = notifyText,
+                    NotificationLevel = notificationLevel
+                });
     }
 
     /// <summary>
@@ -339,16 +397,21 @@ public class ProjectNotificationsService : IProjectNotificationsService
     /// <param name="title">Заголовок уведомления.</param>
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
+    /// <param name="userId">Id пользователя.</param>
     public async Task SendNotificationErrorDeleteProjectAsync(string title, string notifyText, 
-        string notificationLevel)
+        string notificationLevel, long userId)
     {
-        await _hubContext.Clients.All.SendAsync("SendNotificationErrorDeleteProject",
-            new NotificationOutput
-            {
-                Title = title,
-                Message = notifyText,
-                NotificationLevel = notificationLevel
-            });
+        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(userId.ToString());
+
+        await _hubContext.Clients
+            .Client(connectionId)
+            .SendAsync("SendNotificationErrorDeleteProject",
+                new NotificationOutput
+                {
+                    Title = title,
+                    Message = notifyText,
+                    NotificationLevel = notificationLevel
+                });
     }
 
     /// <summary>
@@ -357,16 +420,21 @@ public class ProjectNotificationsService : IProjectNotificationsService
     /// <param name="title">Заголовок уведомления.</param>
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
+    /// <param name="userId">Id пользователя.</param>
     public async Task SendNotificationSuccessDeleteProjectAsync(string title, string notifyText,
-        string notificationLevel)
+        string notificationLevel, long userId)
     {
-        await _hubContext.Clients.All.SendAsync("SendNotificationSuccessDeleteProject",
-            new NotificationOutput
-            {
-                Title = title,
-                Message = notifyText,
-                NotificationLevel = notificationLevel
-            });
+        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(userId.ToString());
+
+        await _hubContext.Clients
+            .Client(connectionId)
+            .SendAsync("SendNotificationSuccessDeleteProject",
+                new NotificationOutput
+                {
+                    Title = title,
+                    Message = notifyText,
+                    NotificationLevel = notificationLevel
+                });
     }
 
     /// <summary>
@@ -375,17 +443,21 @@ public class ProjectNotificationsService : IProjectNotificationsService
     /// <param name="title">Заголовок уведомления.</param>
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="userCode">Код пользователя.</param>
+    /// <param name="userId">Id пользователя.</param>
     public async Task SendNotificationErrorProjectResponseAsync(string title, string notifyText,
-        string notificationLevel)
+        string notificationLevel, long userId)
     {
-        await _hubContext.Clients.All.SendAsync("SendNotificationErrorProjectResponse",
-            new NotificationOutput
-            {
-                Title = title,
-                Message = notifyText,
-                NotificationLevel = notificationLevel
-            });
+        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(userId.ToString());
+
+        await _hubContext.Clients
+            .Client(connectionId)
+            .SendAsync("SendNotificationErrorProjectResponse",
+                new NotificationOutput
+                {
+                    Title = title,
+                    Message = notifyText,
+                    NotificationLevel = notificationLevel
+                });
     }
     
     /// <summary>
@@ -441,13 +513,22 @@ public class ProjectNotificationsService : IProjectNotificationsService
     /// Метод апрувит приглашение в проект.
     /// </summary>
     /// <param name="notificationId">Id уведомления.</param>
-    public async Task ApproveProjectInviteAsync(long notificationId)
+    /// <param name="account">Аккаунт.</param>
+    public async Task ApproveProjectInviteAsync(long notificationId, string account)
     {
         try
         {
             // Проверяем существование уведомления.
             var isExistsNotification =
                 await _projectNotificationsRepository.CheckExistsNotificationByIdAsync(notificationId);
+            
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
 
             if (!isExistsNotification)
             {
@@ -457,7 +538,7 @@ public class ProjectNotificationsService : IProjectNotificationsService
                 await SendNotificationErrorApproveProjectInviteAsync("Ошибка",
                     "Ошибка при подтверждении приглашения в проект. Мы уже знаем о ней и разбираемся. " +
                     "А пока, попробуйте еще раз.",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR);
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, userId);
                 
                 throw ex;
             }
@@ -465,7 +546,7 @@ public class ProjectNotificationsService : IProjectNotificationsService
             await _projectNotificationsRepository.ApproveProjectInviteAsync(notificationId);
 
             await SendNotificationSuccessApproveProjectInviteAsync("Все хорошо", "Приглашение в проект успешно.",
-                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS);
+                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, userId);
         }
         
         catch (Exception ex)
@@ -479,13 +560,22 @@ public class ProjectNotificationsService : IProjectNotificationsService
     /// Метод реджектит приглашение в проект.
     /// </summary>
     /// <param name="notificationId">Id уведомления.</param>
-    public async Task RejectProjectInviteAsync(long notificationId)
+    /// <param name="account">Аккаунт.</param>
+    public async Task RejectProjectInviteAsync(long notificationId, string account)
     {
         try
         {
             // Проверяем существование уведомления.
             var isExistsNotification =
                 await _projectNotificationsRepository.CheckExistsNotificationByIdAsync(notificationId);
+            
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
 
             if (!isExistsNotification)
             {
@@ -495,7 +585,7 @@ public class ProjectNotificationsService : IProjectNotificationsService
                 await SendNotificationErrorRejectProjectInviteAsync("Ошибка",
                     "Ошибка при отклонении приглашения в проект. Мы уже знаем о ней и разбираемся. " +
                     "А пока, попробуйте еще раз.",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR);
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, userId);
                 
                 throw ex;
             }
@@ -504,7 +594,7 @@ public class ProjectNotificationsService : IProjectNotificationsService
 
             await SendNotificationSuccessRejectProjectInviteAsync("Все хорошо",
                 "Отклонение приглашения в проект успешно.",
-                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS);
+                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, userId);
         }
         
         catch (Exception ex)
@@ -520,16 +610,21 @@ public class ProjectNotificationsService : IProjectNotificationsService
     /// <param name="title">Заголовок уведомления.</param>
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
+    /// <param name="userId">Id пользователя.</param>
     public async Task SendNotificationErrorProjectInviteTeamByLinkAsync(string title, string notifyText,
-        string notificationLevel)
+        string notificationLevel, long userId)
     {
-        await _hubContext.Clients.All.SendAsync("SendNotificationErrorProjectInviteTeamByLink",
-            new NotificationOutput
-            {
-                Title = title,
-                Message = notifyText,
-                NotificationLevel = notificationLevel
-            });
+        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(userId.ToString());
+
+        await _hubContext.Clients
+            .Client(connectionId)
+            .SendAsync("SendNotificationErrorProjectInviteTeamByLink",
+                new NotificationOutput
+                {
+                    Title = title,
+                    Message = notifyText,
+                    NotificationLevel = notificationLevel
+                });
     }
 
     /// <summary>
@@ -538,16 +633,21 @@ public class ProjectNotificationsService : IProjectNotificationsService
     /// <param name="title">Заголовок уведомления.</param>
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
+    /// <param name="userId">Id пользователя.</param>
     public async Task SendNotificationErrorProjectInviteTeamByLoginAsync(string title, string notifyText,
-        string notificationLevel)
+        string notificationLevel, long userId)
     {
-        await _hubContext.Clients.All.SendAsync("SendNotificationErrorProjectInviteTeamByLogin",
-            new NotificationOutput
-            {
-                Title = title,
-                Message = notifyText,
-                NotificationLevel = notificationLevel
-            });
+        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(userId.ToString());
+
+        await _hubContext.Clients
+            .Client(connectionId)
+            .SendAsync("SendNotificationErrorProjectInviteTeamByLogin",
+                new NotificationOutput
+                {
+                    Title = title,
+                    Message = notifyText,
+                    NotificationLevel = notificationLevel
+                });
     }
 
     /// <summary>
@@ -556,16 +656,21 @@ public class ProjectNotificationsService : IProjectNotificationsService
     /// <param name="title">Заголовок уведомления.</param>
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
+    /// <param name="userId">Id пользователя.</param>
     public async Task SendNotificationErrorProjectInviteTeamByEmailAsync(string title, string notifyText,
-        string notificationLevel)
+        string notificationLevel, long userId)
     {
-        await _hubContext.Clients.All.SendAsync("SendNotificationErrorProjectInviteTeamByEmail",
-            new NotificationOutput
-            {
-                Title = title,
-                Message = notifyText,
-                NotificationLevel = notificationLevel
-            });
+        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(userId.ToString());
+
+        await _hubContext.Clients
+            .Client(connectionId)
+            .SendAsync("SendNotificationErrorProjectInviteTeamByEmail",
+                new NotificationOutput
+                {
+                    Title = title,
+                    Message = notifyText,
+                    NotificationLevel = notificationLevel
+                });
     }
 
     /// <summary>
@@ -574,16 +679,21 @@ public class ProjectNotificationsService : IProjectNotificationsService
     /// <param name="title">Заголовок уведомления.</param>
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
+    /// <param name="userId">Id пользователя.</param>
     public async Task SendNotificationErrorProjectInviteTeamByPhoneNumberAsync(string title, string notifyText,
-        string notificationLevel)
+        string notificationLevel, long userId)
     {
-        await _hubContext.Clients.All.SendAsync("SendNotificationErrorProjectInviteTeamByPhoneNumber",
-            new NotificationOutput
-            {
-                Title = title,
-                Message = notifyText,
-                NotificationLevel = notificationLevel
-            });
+        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(userId.ToString());
+
+        await _hubContext.Clients
+            .Client(connectionId)
+            .SendAsync("SendNotificationErrorProjectInviteTeamByPhoneNumber",
+                new NotificationOutput
+                {
+                    Title = title,
+                    Message = notifyText,
+                    NotificationLevel = notificationLevel
+                });
     }
 
     #endregion
@@ -613,17 +723,21 @@ public class ProjectNotificationsService : IProjectNotificationsService
     /// <param name="title">Заголовок уведомления.</param>
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="userCode">Код пользователя.</param>
+    /// <param name="userId">Id пользователя.</param>
     private async Task SendNotificationErrorApproveProjectInviteAsync(string title, string notifyText,
-        string notificationLevel)
+        string notificationLevel, long userId)
     {
-        await _hubContext.Clients.All.SendAsync("SendNotificationErrorApproveProjectInvite",
-            new NotificationOutput
-            {
-                Title = title,
-                Message = notifyText,
-                NotificationLevel = notificationLevel
-            });
+        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(userId.ToString());
+
+        await _hubContext.Clients
+            .Client(connectionId)
+            .SendAsync("SendNotificationErrorApproveProjectInvite",
+                new NotificationOutput
+                {
+                    Title = title,
+                    Message = notifyText,
+                    NotificationLevel = notificationLevel
+                });
     }
     
     /// <summary>
@@ -632,16 +746,21 @@ public class ProjectNotificationsService : IProjectNotificationsService
     /// <param name="title">Заголовок уведомления.</param>
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
+    /// <param name="userId">Id пользователя.</param>
     private async Task SendNotificationSuccessApproveProjectInviteAsync(string title, string notifyText,
-        string notificationLevel)
+        string notificationLevel, long userId)
     {
-        await _hubContext.Clients.All.SendAsync("SendNotificationSuccessApproveProjectInvite",
-            new NotificationOutput
-            {
-                Title = title,
-                Message = notifyText,
-                NotificationLevel = notificationLevel
-            });
+        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(userId.ToString());
+
+        await _hubContext.Clients
+            .Client(connectionId)
+            .SendAsync("SendNotificationSuccessApproveProjectInvite",
+                new NotificationOutput
+                {
+                    Title = title,
+                    Message = notifyText,
+                    NotificationLevel = notificationLevel
+                });
     }
     
     /// <summary>
@@ -650,17 +769,21 @@ public class ProjectNotificationsService : IProjectNotificationsService
     /// <param name="title">Заголовок уведомления.</param>
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="userCode">Код пользователя.</param>
+    /// <param name="userId">Id пользователя.</param>
     private async Task SendNotificationErrorRejectProjectInviteAsync(string title, string notifyText,
-        string notificationLevel)
+        string notificationLevel, long userId)
     {
-        await _hubContext.Clients.All.SendAsync("SendNotificationErrorRejectProjectInvite",
-            new NotificationOutput
-            {
-                Title = title,
-                Message = notifyText,
-                NotificationLevel = notificationLevel
-            });
+        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(userId.ToString());
+
+        await _hubContext.Clients
+            .Client(connectionId)
+            .SendAsync("SendNotificationErrorRejectProjectInvite",
+                new NotificationOutput
+                {
+                    Title = title,
+                    Message = notifyText,
+                    NotificationLevel = notificationLevel
+                });
     }
     
     /// <summary>
@@ -669,16 +792,21 @@ public class ProjectNotificationsService : IProjectNotificationsService
     /// <param name="title">Заголовок уведомления.</param>
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
+    /// <param name="userId">Id пользователя.</param>
     private async Task SendNotificationSuccessRejectProjectInviteAsync(string title, string notifyText,
-        string notificationLevel)
+        string notificationLevel, long userId)
     {
-        await _hubContext.Clients.All.SendAsync("SendNotificationSuccessRejectProjectInvite",
-            new NotificationOutput
-            {
-                Title = title,
-                Message = notifyText,
-                NotificationLevel = notificationLevel
-            });
+        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(userId.ToString());
+
+        await _hubContext.Clients
+            .Client(connectionId)
+            .SendAsync("SendNotificationSuccessRejectProjectInvite",
+                new NotificationOutput
+                {
+                    Title = title,
+                    Message = notifyText,
+                    NotificationLevel = notificationLevel
+                });
     }
 
     #endregion

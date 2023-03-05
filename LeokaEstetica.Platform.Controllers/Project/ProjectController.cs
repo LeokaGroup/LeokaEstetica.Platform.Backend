@@ -440,7 +440,7 @@ public class ProjectController : BaseController
     {
         var invitedUser = await _projectService.InviteProjectTeamAsync(inviteProjectMemberInput.InviteText,
             Enum.Parse<ProjectInviteTypeEnum>(inviteProjectMemberInput.InviteType), inviteProjectMemberInput.ProjectId,
-            inviteProjectMemberInput.VacancyId);
+            inviteProjectMemberInput.VacancyId, GetUserName());
         
         var result = _mapper.Map<ProjectTeamMemberOutput>(invitedUser);
 

@@ -78,8 +78,9 @@ public class NotificationsController : BaseController
             await _logService.LogErrorAsync(ex);
             throw ex;
         }
-        
-        await _projectNotificationsService.ApproveProjectInviteAsync(approveProjectInviteInput.NotificationId);
+
+        await _projectNotificationsService.ApproveProjectInviteAsync(approveProjectInviteInput.NotificationId,
+            GetUserName());
     }
     
     /// <summary>
@@ -101,8 +102,9 @@ public class NotificationsController : BaseController
             await _logService.LogErrorAsync(ex);
             throw ex;
         }
-        
-        await _projectNotificationsService.RejectProjectInviteAsync(rejectProjectInviteInput.NotificationId);
+
+        await _projectNotificationsService.RejectProjectInviteAsync(rejectProjectInviteInput.NotificationId,
+            GetUserName());
     }
 
     /// <summary>

@@ -32,7 +32,7 @@ public class ProjectInviteTeamEmailStrategy : BaseProjectInviteTeamStrategy
             await ProjectNotificationsService.SendNotificationErrorProjectInviteTeamByEmailAsync(
                 "Внимание",
                 "Не удалось пригласить пользователя по Email. Проверьте корректность Email пользователя.",
-                NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING);
+                NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, result);
         }
 
         return result;

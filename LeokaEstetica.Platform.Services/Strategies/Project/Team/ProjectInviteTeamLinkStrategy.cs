@@ -32,7 +32,7 @@ public class ProjectInviteTeamLinkStrategy : BaseProjectInviteTeamStrategy
             await ProjectNotificationsService.SendNotificationErrorProjectInviteTeamByLinkAsync(
                 "Внимание",
                 "Не удалось пригласить пользователя по ссылке. Проверьте корректность ссылки.",
-                NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING);
+                NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, result);
         }
 
         return result;
