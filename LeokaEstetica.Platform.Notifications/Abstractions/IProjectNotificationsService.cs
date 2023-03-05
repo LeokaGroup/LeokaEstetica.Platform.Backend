@@ -247,4 +247,14 @@ public interface IProjectNotificationsService
     /// <param name="userId">Id пользователя.</param>
     Task SendNotificationErrorProjectInviteTeamByPhoneNumberAsync(string title, string notifyText,
         string notificationLevel, long userId);
+    
+    /// <summary>
+    /// Метод отправляет уведомление предупреждения об при инвайте в проект, который находится на модерации.
+    /// </summary>
+    /// <param name="title">Заголовок уведомления.</param>
+    /// <param name="notifyText">Текст уведомления.</param>
+    /// <param name="notificationLevel">Уровень уведомления.</param>
+    /// <param name="userId">Id пользователя.</param>
+    Task SendNotificationWarningProjectInviteTeamAsync(string title, string notifyText, string notificationLevel,
+        long userId);
 }

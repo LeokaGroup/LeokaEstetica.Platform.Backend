@@ -689,7 +689,7 @@ public class ProjectRepository : IProjectRepository
                 _pgContext.ProjectsTeams.Remove(projectTeam);
             }
 
-            // Дропаем комментарии проекта.
+            // Получаем комментарии проекта.
             var projectComments = await GetProjectCommentsAsync(projectId);
 
             if (projectComments.Any())
@@ -767,7 +767,7 @@ public class ProjectRepository : IProjectRepository
     }
 
     /// <summary>
-    /// Метод удаляет комментарии проекта.
+    /// Метод получает комментарии проекта.
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
     /// <returns>Список комментариев проекта.</returns>
@@ -792,6 +792,19 @@ public class ProjectRepository : IProjectRepository
             .Where(p => p.ProjectId == projectId)
             .Select(p => p.Project.ProjectName)
             .FirstOrDefaultAsync();
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод првоеряет, находится ли проект на модерации.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Признак модерации.</returns>
+    public async Task<bool> CheckProjectModerationAsync(long projectId)
+    {
+        var result = await _pgContext.ModerationProjects
+            .AnyAsync(p => p.ProjectId == projectId);
 
         return result;
     }

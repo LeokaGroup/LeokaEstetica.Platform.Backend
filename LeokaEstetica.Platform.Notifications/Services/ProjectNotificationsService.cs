@@ -696,6 +696,29 @@ public class ProjectNotificationsService : IProjectNotificationsService
                 });
     }
 
+    /// <summary>
+    /// Метод отправляет уведомление предупреждения об при инвайте в проект, который находится на модерации.
+    /// </summary>
+    /// <param name="title">Заголовок уведомления.</param>
+    /// <param name="notifyText">Текст уведомления.</param>
+    /// <param name="notificationLevel">Уровень уведомления.</param>
+    /// <param name="userId">Id пользователя.</param>
+    public async Task SendNotificationWarningProjectInviteTeamAsync(string title, string notifyText,
+        string notificationLevel, long userId)
+    {
+        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(userId.ToString());
+
+        await _hubContext.Clients
+            .Client(connectionId)
+            .SendAsync("SendNotificationWarningProjectInviteTeam",
+                new NotificationOutput
+                {
+                    Title = title,
+                    Message = notifyText,
+                    NotificationLevel = notificationLevel
+                });
+    }
+
     #endregion
 
     #region Приватные методы.

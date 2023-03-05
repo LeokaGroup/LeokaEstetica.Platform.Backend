@@ -797,21 +797,36 @@ public class ProjectService : IProjectService
         try
         {
             await ValidateInviteProjectTeamParams(inviteText, inviteType, projectId, vacancyId, account);
-
-            var userId = await GetUserIdAsync(inviteText, inviteType);
-
-            if (userId <= 0)
+            
+            var currentUserId = await _userRepository.GetUserIdByEmailAsync(account);
+            
+            if (currentUserId <= 0)
             {
                 var ex = new NotFoundUserIdByAccountException(inviteText);
-                await _logService.LogErrorAsync(ex);
                 throw ex;
+            }
+
+            var inviteUserId = await GetUserIdAsync(inviteText, inviteType);
+
+            // Проверяем нахождение проекта на модерации.
+            var isProjectModeration = await _projectRepository.CheckProjectModerationAsync(projectId);
+
+            // Если он там есть, то не даем пригласить в него.
+            if (isProjectModeration)
+            {
+                await _projectNotificationsService.SendNotificationWarningProjectInviteTeamAsync(
+                    "Внимание",
+                    "Проект еще на модерации. Нельзя пригласить пользователей, пока проект не пройдет модерацию.",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, currentUserId);
+                
+                return null;
             }
 
             // Получаем Id команды проекта.
             var teamId = await _projectRepository.GetProjectTeamIdAsync(projectId);
 
             // Добавляем пользователя в команду проекта.
-            var result = await _projectRepository.AddProjectTeamMemberAsync(userId, vacancyId, teamId);
+            var result = await _projectRepository.AddProjectTeamMemberAsync(inviteUserId, vacancyId, teamId);
 
             return result;
         }
@@ -1320,6 +1335,12 @@ public class ProjectService : IProjectService
 
             _ => 0
         };
+        
+        if (userId <= 0)
+        {
+            var ex = new NotFoundUserIdByAccountException(inviteText);
+            throw ex;
+        }
 
         return userId;
     }

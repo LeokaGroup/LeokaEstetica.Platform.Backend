@@ -187,16 +187,16 @@ public interface IProjectRepository
     Task<bool> DeleteProjectAsync(long projectId, long userId);
 
     /// <summary>
-    /// Метод удаляет комментарии проекта.
-    /// </summary>
-    /// <param name="projectId">Id проекта.</param>
-    /// <returns>Список комментариев проекта.</returns>
-    Task<ICollection<ProjectCommentEntity>> GetProjectCommentsAsync(long projectId);
-
-    /// <summary>
     /// Метод получает название проекта по его Id.
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
     /// <returns>Название проекта.</returns>
     Task<string> GetProjectNameByProjectIdAsync(long projectId);
+
+    /// <summary>
+    /// Метод првоеряет, находится ли проект на модерации.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Признак модерации.</returns>
+    Task<bool> CheckProjectModerationAsync(long projectId);
 }
