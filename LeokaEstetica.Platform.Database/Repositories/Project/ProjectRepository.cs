@@ -379,9 +379,9 @@ public class ProjectRepository : IProjectRepository
             .Select(p => p.VacancyId)
             .AsQueryable();
         
-        // Получаем Id вакансий, которые еще на модерации, так как их нельзя атачить.
+        // Получаем Id вакансий, которые еще на модерации либо отклонены модератором, так как их нельзя атачить.
         var moderationVacanciesIds = _pgContext.ModerationVacancies
-            .Where(v => !_excludedVacanciesStatuses.Contains(v.ModerationStatusId))
+            .Where(v => _excludedVacanciesStatuses.Contains(v.ModerationStatusId))
             .Select(v => v.VacancyId)
             .AsQueryable();
 
