@@ -105,7 +105,7 @@ public class BaseServiceTest
                 null);
         var vacancyRepository = new VacancyRepository(pgContext);
         var vacancyModerationRepository = new VacancyModerationRepository(pgContext);
-        var vacancyNotificationsService = new VacancyNotificationsService(null);
+        var vacancyNotificationsService = new VacancyNotificationsService(null, null);
         var fareRuleRepository = new FareRuleRepository(pgContext);
         var availableLimitsRepository = new AvailableLimitsRepository(pgContext);
         var availableLimitsService = new AvailableLimitsService(logService, availableLimitsRepository);

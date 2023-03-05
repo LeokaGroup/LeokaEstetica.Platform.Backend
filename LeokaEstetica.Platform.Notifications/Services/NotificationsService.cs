@@ -1,6 +1,7 @@
 using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Notifications.Data;
 using LeokaEstetica.Platform.Notifications.Models.Output;
+using LeokaEstetica.Platform.Redis.Abstractions.Notification;
 using Microsoft.AspNetCore.SignalR;
 
 namespace LeokaEstetica.Platform.Notifications.Services;
@@ -11,26 +12,39 @@ namespace LeokaEstetica.Platform.Notifications.Services;
 public sealed class NotificationsService : INotificationsService
 {
     private readonly IHubContext<NotifyHub> _hubContext;
+    private readonly INotificationsRedisService _notificationsRedisService;
 
-    public NotificationsService(IHubContext<NotifyHub> hubContext)
+    /// <summary>
+    /// Конструктор.
+    /// </summary>
+    /// <param name="hubContext">Контекст хаба.</param>
+    /// <param name="notificationsRedisService">Сервис уведомлений кэша.</param>
+    public NotificationsService(IHubContext<NotifyHub> hubContext, 
+        INotificationsRedisService notificationsRedisService)
     {
         _hubContext = hubContext;
+        _notificationsRedisService = notificationsRedisService;
     }
 
     /// <summary>
-    /// TODO: Будет изменяттся еще возможно. После тестирования уведомлений через All, иначе возможно придется слать через Clients.Client с userCode.
     /// Метод отправляет уведомление об успешном сохранении.
     /// </summary>
     /// <param name="title">Заголовок уведомления.</param>
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
-    public async Task SendNotifySuccessSaveAsync(string title, string notifyText, string notificationLevel)
+    /// <param name="userId">Id пользователя.</param>
+    public async Task SendNotifySuccessSaveAsync(string title, string notifyText, string notificationLevel, 
+        long userId)
     {
-        await _hubContext.Clients.All.SendAsync("SendNotifySuccessSave", new NotificationOutput
-        {
-            Title = title,
-            Message = notifyText,
-            NotificationLevel = notificationLevel
-        });
+        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(userId.ToString());
+
+        await _hubContext.Clients
+            .Client(connectionId)
+            .SendAsync("SendNotifySuccessSave", new NotificationOutput
+            {
+                Title = title,
+                Message = notifyText,
+                NotificationLevel = notificationLevel
+            });
     }
 }
