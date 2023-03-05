@@ -1,6 +1,7 @@
 using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Notifications.Data;
 using LeokaEstetica.Platform.Notifications.Models.Output;
+using LeokaEstetica.Platform.Redis.Abstractions.Notification;
 using Microsoft.AspNetCore.SignalR;
 
 namespace LeokaEstetica.Platform.Notifications.Services;
@@ -11,14 +12,18 @@ namespace LeokaEstetica.Platform.Notifications.Services;
 public class VacancyNotificationsService : IVacancyNotificationsService
 {
     private readonly IHubContext<NotifyHub> _hubContext;
+    private readonly INotificationsRedisService _notificationsRedisService;
 
     /// <summary>
     /// Конструктор.
     /// </summary>
     /// <param name="hubContext">Контекст хаба.</param>
-    public VacancyNotificationsService(IHubContext<NotifyHub> hubContext)
+    /// <param name="notificationsRedisService">Сервис уведомлений кэша.</param>
+    public VacancyNotificationsService(IHubContext<NotifyHub> hubContext, 
+        INotificationsRedisService notificationsRedisService)
     {
         _hubContext = hubContext;
+        _notificationsRedisService = notificationsRedisService;
     }
 
     /// <summary>
@@ -27,15 +32,20 @@ public class VacancyNotificationsService : IVacancyNotificationsService
     /// <param name="title">Заголовок уведомления.</param>
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
+    /// <param name="userId">Id пользователя.</param>
     public async Task SendNotificationSuccessCreatedUserVacancyAsync(string title, string notifyText,
-        string notificationLevel)
+        string notificationLevel, long userId)
     {
-        await _hubContext.Clients.All.SendAsync("SendNotificationSuccessCreatedUserVacancy", new NotificationOutput
-        {
-            Title = title,
-            Message = notifyText,
-            NotificationLevel = notificationLevel
-        });
+        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(userId.ToString());
+
+        await _hubContext.Clients
+            .Client(connectionId)
+            .SendAsync("SendNotificationSuccessCreatedUserVacancy", new NotificationOutput
+            {
+                Title = title,
+                Message = notifyText,
+                NotificationLevel = notificationLevel
+            });
     }
 
     /// <summary>
@@ -44,15 +54,20 @@ public class VacancyNotificationsService : IVacancyNotificationsService
     /// <param name="title">Заголовок уведомления.</param>
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
+    /// <param name="userId">Id пользователя.</param>
     public async Task SendNotificationErrorCreatedUserVacancyAsync(string title, string notifyText,
-        string notificationLevel)
+        string notificationLevel, long userId)
     {
-        await _hubContext.Clients.All.SendAsync("SendNotificationErrorCreatedUserVacancy", new NotificationOutput
-        {
-            Title = title,
-            Message = notifyText,
-            NotificationLevel = notificationLevel
-        });
+        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(userId.ToString());
+
+        await _hubContext.Clients
+            .Client(connectionId)
+            .SendAsync("SendNotificationErrorCreatedUserVacancy", new NotificationOutput
+            {
+                Title = title,
+                Message = notifyText,
+                NotificationLevel = notificationLevel
+            });
     }
 
     /// <summary>
@@ -61,16 +76,21 @@ public class VacancyNotificationsService : IVacancyNotificationsService
     /// <param name="title">Заголовок уведомления.</param>
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
+    /// <param name="userId">Id пользователя.</param>
     public async Task SendNotificationWarningLimitFareRuleVacanciesAsync(string title, string notifyText,
-        string notificationLevel)
+        string notificationLevel, long userId)
     {
-        await _hubContext.Clients.All.SendAsync("SendNotificationWarningLimitFareRuleVacancies",
-            new NotificationOutput
-            {
-                Title = title,
-                Message = notifyText,
-                NotificationLevel = notificationLevel
-            });
+        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(userId.ToString());
+
+        await _hubContext.Clients
+            .Client(connectionId)
+            .SendAsync("SendNotificationWarningLimitFareRuleVacancies",
+                new NotificationOutput
+                {
+                    Title = title,
+                    Message = notifyText,
+                    NotificationLevel = notificationLevel
+                });
     }
 
     /// <summary>
@@ -79,16 +99,21 @@ public class VacancyNotificationsService : IVacancyNotificationsService
     /// <param name="title">Заголовок уведомления.</param>
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
+    /// <param name="userId">Id пользователя.</param>
     public async Task SendNotificationErrorDeleteVacancyAsync(string title, string notifyText, 
-        string notificationLevel)
+        string notificationLevel, long userId)
     {
-        await _hubContext.Clients.All.SendAsync("SendNotificationErrorDeleteVacancy",
-            new NotificationOutput
-            {
-                Title = title,
-                Message = notifyText,
-                NotificationLevel = notificationLevel
-            });
+        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(userId.ToString());
+
+        await _hubContext.Clients
+            .Client(connectionId)
+            .SendAsync("SendNotificationErrorDeleteVacancy",
+                new NotificationOutput
+                {
+                    Title = title,
+                    Message = notifyText,
+                    NotificationLevel = notificationLevel
+                });
     }
 
     /// <summary>
@@ -97,15 +122,20 @@ public class VacancyNotificationsService : IVacancyNotificationsService
     /// <param name="title">Заголовок уведомления.</param>
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
+    /// <param name="userId">Id пользователя.</param>
     public async Task SendNotificationSuccessDeleteVacancyAsync(string title, string notifyText,
-        string notificationLevel)
+        string notificationLevel, long userId)
     {
-        await _hubContext.Clients.All.SendAsync("SendNotificationSuccessDeleteVacancy",
-            new NotificationOutput
-            {
-                Title = title,
-                Message = notifyText,
-                NotificationLevel = notificationLevel
-            });
+        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(userId.ToString());
+
+        await _hubContext.Clients
+            .Client(connectionId)
+            .SendAsync("SendNotificationSuccessDeleteVacancy",
+                new NotificationOutput
+                {
+                    Title = title,
+                    Message = notifyText,
+                    NotificationLevel = notificationLevel
+                });
     }
 }

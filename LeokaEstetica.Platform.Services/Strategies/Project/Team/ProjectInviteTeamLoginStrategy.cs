@@ -31,7 +31,7 @@ public class ProjectInviteTeamLoginStrategy : BaseProjectInviteTeamStrategy
         {
             await ProjectNotificationsService.SendNotificationErrorProjectInviteTeamByLoginAsync("Внимание",
                 "Не удалось пригласить пользователя по логину. " + "Проверьте корректность логина пользователя.", 
-                NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING);
+                NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, result);
         }
 
         return result;

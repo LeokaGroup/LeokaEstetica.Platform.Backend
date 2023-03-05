@@ -46,7 +46,9 @@ public class SearchController : BaseController
         // Если поисковая строка невалидна, то не дергаем поиск.
         await new SearchInviteProjectMembersValidator().ValidateAndThrowAsync(searchProjectMemberInput);
 
-        var items = await _projectFinderService.SearchInviteProjectMembersAsync(searchProjectMemberInput.SearchText);
+        var items = await _projectFinderService.SearchInviteProjectMembersAsync(searchProjectMemberInput.SearchText,
+            GetUserName());
+        
         var result = _mapper.Map<IEnumerable<SearchProjectMemberOutput>>(items);
         
         return result;

@@ -174,9 +174,11 @@ public class VacancyService : IVacancyService
     public async Task<UserVacancyEntity> CreateVacancyAsync(string vacancyName, string vacancyText,
         string workExperience, string employment, string payment, string account)
     {
+        long userId = 0;
+        
         try
         {
-            var userId = await _userRepository.GetUserByEmailAsync(account);
+            userId = await _userRepository.GetUserByEmailAsync(account);
 
             if (userId <= 0)
             {
@@ -202,7 +204,7 @@ public class VacancyService : IVacancyService
                 await _vacancyNotificationsService.SendNotificationWarningLimitFareRuleVacanciesAsync(
                     "Что то пошло не так",
                     "Превышен лимит вакансий по тарифу.",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING);
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, userId);
 
                 return null;
             }
@@ -217,7 +219,7 @@ public class VacancyService : IVacancyService
             // Отправляем уведомление об успешном создании вакансии и отправки ее на модерацию.
             await _vacancyNotificationsService.SendNotificationSuccessCreatedUserVacancyAsync("Все хорошо",
                 "Данные успешно сохранены. Вакансия отправлена на модерацию.",
-                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS);
+                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, userId);
 
             return createdVacancy;
         }
@@ -227,7 +229,7 @@ public class VacancyService : IVacancyService
             await _vacancyNotificationsService.SendNotificationErrorCreatedUserVacancyAsync("Ошибка",
                 "Ошибка при создании вакансии. Мы уже знаем о ней и разбираемся. " +
                 "А пока, попробуйте еще раз.",
-                NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR);
+                NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, userId);
             
             await _logService.LogErrorAsync(ex);
             throw;
@@ -411,7 +413,7 @@ public class VacancyService : IVacancyService
             // Отправляем уведомление об успешном изменении вакансии и отправки ее на модерацию.
             await _vacancyNotificationsService.SendNotificationSuccessCreatedUserVacancyAsync("Все хорошо",
                 "Данные успешно сохранены. Вакансия отправлена на модерацию.",
-                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS);
+                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, userId);
 
             return createdVacancy;
         }
@@ -490,7 +492,7 @@ public class VacancyService : IVacancyService
                 await _vacancyNotificationsService.SendNotificationErrorDeleteVacancyAsync(
                     "Ошибка",
                     "Ошибка при удалении вакансии.",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR);
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, userId);
             
                 await _logService.LogErrorAsync(ex);
                 throw ex;
@@ -499,7 +501,7 @@ public class VacancyService : IVacancyService
             await _vacancyNotificationsService.SendNotificationSuccessDeleteVacancyAsync(
                 "Все хорошо",
                 "Вакансия успешно удалена.",
-                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS);
+                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, userId);
         }
         
         catch (Exception ex)

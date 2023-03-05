@@ -19,34 +19,6 @@ public sealed class ProfileRedisService : IProfileRedisService
     }
 
     /// <summary>
-    /// Метод сохраняет ConnectionId подключения SignalR в кэш.
-    /// </summary>
-    /// <param name="connectionId">Id подключения, который создает SignalR.</param>
-    /// <param name="userCode">Код пользователя.</param>
-    // public async Task SaveConnectionIdCacheAsync(string connectionId, string userCode)
-    // {
-    //     // Записываем ConnectionId в кэш редиса.
-    //     await _redis.SetStringAsync(userCode,
-    //         ProtoBufExtensions.Serialize(connectionId),
-    //         new DistributedCacheEntryOptions
-    //         {
-    //             AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(12)
-    //         });
-    // }
-
-    /// <summary>
-    /// Метод получает ConnectionId подключения для SignalR.
-    /// </summary>
-    /// <param name="key">Ключ поиска.</param>
-    /// <returns>ConnectionId.</returns>
-    // public async Task<string> GetConnectionIdCacheAsync(string key)
-    // {
-    //     var result = await _redis.GetStringAsync(key);
-    //
-    //     return result;
-    // }
-
-    /// <summary>
     /// Метод сохраняет в кэш меню профиля пользователя.
     /// </summary>
     /// <param name="profileMenuRedis">Класс для кэша.</param>
