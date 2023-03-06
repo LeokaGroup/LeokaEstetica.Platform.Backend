@@ -215,16 +215,20 @@ public class ProjectService : IProjectService
                 ProjectStatusNameEnum.Moderation.ToString(), statusName, projectStage);
 
             // Если что то пошло не так при создании проекта.
-            if (project?.ProjectId <= 0)
+            if (project is null || project.ProjectId <= 0)
             {
                 var ex = new Exception("Ошибка при создании проекта.");
                 await _logService.LogErrorAsync(ex);
+                
                 await _projectNotificationsService.SendNotificationErrorCreatedUserProjectAsync("Что то пошло не так",
                     "Ошибка при создании проекта. Мы уже знаем о проблеме и уже занимаемся ей.",
                     NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, userId);
 
                 return null;
             }
+            
+            // Добавляем владельца в участники проекта по дефолту.
+            await AddProjectOwnerToTeamMembersAsync(userId, project.ProjectId);
 
             // Отправляем уведомление об успешном создании проекта.
             await _projectNotificationsService.SendNotificationSuccessCreatedUserProjectAsync("Все хорошо",
@@ -1343,6 +1347,25 @@ public class ProjectService : IProjectService
         }
 
         return userId;
+    }
+
+    /// <summary>
+    /// Метод добавляет владельца проекта в команду своего проекта по дефолту.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <param name="projectId">Id проекта.</param>
+    private async Task AddProjectOwnerToTeamMembersAsync(long userId, long projectId)
+    {
+        var team = await _projectRepository.GetProjectTeamAsync(projectId);
+
+        if (team is null)
+        {
+            var ex = new InvalidOperationException("Ошибка добавления владельца проекта в команду.");
+            await _logService.LogErrorAsync(ex);
+            throw ex;
+        }
+        
+        _ = await _projectRepository.AddProjectTeamMemberAsync(userId, null, team.TeamId);
     }
     
     #endregion
