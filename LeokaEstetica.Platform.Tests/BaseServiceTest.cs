@@ -111,9 +111,12 @@ public class BaseServiceTest
         var availableLimitsService = new AvailableLimitsService(logService, availableLimitsRepository);
 
         VacancyModerationService = new VacancyModerationService(vacancyModerationRepository, logService, mapper);
+        
+        // Тут если нужен будет ProjectService, то тут проблема с порядком следования.
+        // Не получится сделать просто, VacancyService и ProjectService нужны друг другу тесно.
         VacancyService = new VacancyService(logService, vacancyRepository, mapper, null, userRepository,
             VacancyModerationService, subscriptionRepository, fareRuleRepository, availableLimitsService,
-            vacancyNotificationsService);
+            vacancyNotificationsService, null);
 
         ChatService = new ChatService(logService, userRepository, projectRepository, vacancyRepository, chatRepository,
             mapper);

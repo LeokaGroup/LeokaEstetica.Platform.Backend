@@ -25,9 +25,10 @@ public interface IVacancyService
     /// <param name="employment">Занятость у вакансии.</param>
     /// <param name="payment">Оплата у вакансии.</param>
     /// <param name="account">Аккаунт пользователя.</param>
+    /// <param name="projectId">Id проекта.</param>
     /// <returns>Данные созданной вакансии.</returns>
     Task<UserVacancyEntity> CreateVacancyAsync(string vacancyName, string vacancyText, string workExperience,
-        string employment, string payment, string account);
+        string employment, string payment, string account, long projectId);
     
     /// <summary>
     /// Метод обновляет вакансию.

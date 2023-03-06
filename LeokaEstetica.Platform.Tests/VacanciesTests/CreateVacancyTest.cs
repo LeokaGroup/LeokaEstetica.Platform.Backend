@@ -10,7 +10,7 @@ public class CreateVacancyTest : BaseServiceTest
     {
         var result = await VacancyService
             .CreateVacancyAsync("Тестовая вакансий", "Тестовое описание вакансии", "Без опыта", "Свободная",
-                "Без оплаты", "sierra_93@mail.ru");
+                "Без оплаты", "sierra_93@mail.ru", 60);
 
         Assert.IsNotNull(result);
         Assert.Positive(result.VacancyId);

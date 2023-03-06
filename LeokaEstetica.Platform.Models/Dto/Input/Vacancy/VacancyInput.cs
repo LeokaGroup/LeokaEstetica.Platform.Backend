@@ -40,4 +40,9 @@ public class VacancyInput
     /// Id вакансии.
     /// </summary>
     public long VacancyId { get; set; }
+
+    /// <summary>
+    /// Id проекта.
+    /// </summary>
+    public long ProjectId { get; set; }
 }
