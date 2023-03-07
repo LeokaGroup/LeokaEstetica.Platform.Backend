@@ -4,6 +4,7 @@ using LeokaEstetica.Platform.Access.Enums;
 using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.FareRule;
+using LeokaEstetica.Platform.Database.Abstractions.Project;
 using LeokaEstetica.Platform.Database.Abstractions.Subscription;
 using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Database.Abstractions.Vacancy;
@@ -18,6 +19,7 @@ using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Notifications.Consts;
 using LeokaEstetica.Platform.Redis.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Redis.Models.Vacancy;
+using LeokaEstetica.Platform.Services.Abstractions.Project;
 using LeokaEstetica.Platform.Services.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Services.Builders;
 using VacancyItems = LeokaEstetica.Platform.Redis.Models.Vacancy.VacancyItems;
@@ -77,6 +79,8 @@ public class VacancyService : IVacancyService
     private readonly IVacancyNotificationsService _vacancyNotificationsService;
     
     private static readonly string _approveVacancy = "Опубликована";
+
+    private readonly IProjectRepository _projectRepository;
     
     /// <summary>
     /// Список названий тарифов, которые дают выделение цветом.
@@ -105,7 +109,8 @@ public class VacancyService : IVacancyService
         ISubscriptionRepository subscriptionRepository,
         IFareRuleRepository fareRuleRepository,
         IAvailableLimitsService availableLimitsService,
-        IVacancyNotificationsService vacancyNotificationsService)
+        IVacancyNotificationsService vacancyNotificationsService, 
+        IProjectRepository projectRepository)
     {
         _logService = logService;
         _vacancyRepository = vacancyRepository;
@@ -117,6 +122,7 @@ public class VacancyService : IVacancyService
         _fareRuleRepository = fareRuleRepository;
         _availableLimitsService = availableLimitsService;
         _vacancyNotificationsService = vacancyNotificationsService;
+        _projectRepository = projectRepository;
 
         // Определяем обработчики цепочки фильтров.
         _salaryFilterVacanciesChain.Successor = _descSalaryVacanciesFilterChain;
@@ -170,9 +176,10 @@ public class VacancyService : IVacancyService
     /// <param name="employment">Занятость у вакансии.</param>
     /// <param name="payment">Оплата у вакансии.</param>
     /// <param name="account">Аккаунт пользователя.</param>
+    /// <param name="projectId">Id проекта.</param>
     /// <returns>Данные созданной вакансии.</returns>
     public async Task<UserVacancyEntity> CreateVacancyAsync(string vacancyName, string vacancyText,
-        string workExperience, string employment, string payment, string account)
+        string workExperience, string employment, string payment, string account, long projectId)
     {
         long userId = 0;
         
@@ -201,6 +208,7 @@ public class VacancyService : IVacancyService
             {
                 var ex = new Exception($"Превышен лимит вакансий по тарифу. UserId: {userId}. Тариф: {fareRule.Name}");
                 await _logService.LogErrorAsync(ex);
+                
                 await _vacancyNotificationsService.SendNotificationWarningLimitFareRuleVacanciesAsync(
                     "Что то пошло не так",
                     "Превышен лимит вакансий по тарифу.",
@@ -212,6 +220,9 @@ public class VacancyService : IVacancyService
             // Добавляем вакансию в таблицу вакансий пользователя.
             var createdVacancy = await _vacancyRepository
                 .CreateVacancyAsync(vacancyName, vacancyText, workExperience, employment, payment, userId);
+            
+            // Привязываем вакансию к проекту.
+            await _projectRepository.AttachProjectVacancyAsync(projectId, createdVacancy.VacancyId);
 
             // Отправляем вакансию на модерацию.
             await _vacancyModerationService.AddVacancyModerationAsync(createdVacancy.VacancyId);

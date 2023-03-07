@@ -575,7 +575,7 @@ public class ProjectService : IProjectService
 
             // Создаем вакансию.
             var createdVacancy = await _vacancyService.CreateVacancyAsync(vacancyName, vacancyText, workExperience,
-                employment, payment, account);
+                employment, payment, account, projectId);
 
             // Автоматически привязываем вакансию к проекту.
             await AttachProjectVacancyAsync(projectId, createdVacancy.VacancyId, account);
