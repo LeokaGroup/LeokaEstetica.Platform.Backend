@@ -15,7 +15,8 @@ public class AuthFilter : Attribute, IAuthorizationFilter
     {
         "SignIn",
         "CreateUser",
-        "GetFareRules" // Получение правил тарифов.
+        "GetFareRules", // Получение правил тарифов.
+        "AddConnectionIdCache"
     };
     
     /// <summary>

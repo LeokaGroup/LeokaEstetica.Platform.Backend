@@ -48,12 +48,12 @@ public class NotificationsRedisService : INotificationsRedisService
 
         if (!string.IsNullOrEmpty(connectionId))
         {
-            connectionId = ProtoBufExtensions.Deserialize<string>(connectionId);
+            var newConnectionId = ProtoBufExtensions.Deserialize<string>(connectionId);
             
             // Данные нашли, продлеваем время жизни ключа.
             await _redisCache.RefreshAsync(searchKey);
 
-            return connectionId;
+            return newConnectionId;
         }
 
         // В кэше нет ключа, добавляем.

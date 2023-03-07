@@ -15,7 +15,9 @@ using LeokaEstetica.Platform.Database.Abstractions.Resume;
 using LeokaEstetica.Platform.Database.Abstractions.Subscription;
 using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Database.Abstractions.Vacancy;
+using LeokaEstetica.Platform.Database.Access.User;
 using LeokaEstetica.Platform.Database.Chat;
+using LeokaEstetica.Platform.Database.Repositories.Access.User;
 using LeokaEstetica.Platform.Database.Repositories.AvailableLimits;
 using LeokaEstetica.Platform.Database.Repositories.Chat;
 using LeokaEstetica.Platform.Database.Repositories.Commerce;
@@ -218,6 +220,16 @@ public class RepositoriesModule : Module
         builder
             .RegisterType<ProjectNotificationsRepository>()
             .As<IProjectNotificationsRepository>()
+            .InstancePerLifetimeScope();
+        
+        // Репозиторий проверки доступа пользователей. 
+        builder
+            .RegisterType<AccessUserRepository>()
+            .Named<IAccessUserRepository>("AccessUserRepository")
+            .InstancePerLifetimeScope();
+        builder
+            .RegisterType<AccessUserRepository>()
+            .As<IAccessUserRepository>()
             .InstancePerLifetimeScope();
     }
 }
