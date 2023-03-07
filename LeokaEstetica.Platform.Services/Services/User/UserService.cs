@@ -2,9 +2,11 @@ using System.Data;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using AutoMapper;
+using LeokaEstetica.Platform.Access.Abstractions.User;
 using LeokaEstetica.Platform.Access.Helpers;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Enums;
+using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Resume;
 using LeokaEstetica.Platform.Database.Abstractions.Profile;
 using LeokaEstetica.Platform.Database.Abstractions.Subscription;
@@ -33,7 +35,8 @@ public sealed class UserService : IUserService
     private readonly IProfileRepository _profileRepository;
     private readonly ISubscriptionRepository _subscriptionRepository;
     private readonly IResumeModerationRepository _resumeModerationRepository;
-    
+    private readonly IAccessUserService _accessUserService;
+
     /// <summary>
     /// Конструктор.
     /// </summary>
@@ -52,7 +55,8 @@ public sealed class UserService : IUserService
         PgContext pgContext, 
         IProfileRepository profileRepository, 
         ISubscriptionRepository subscriptionRepository, 
-        IResumeModerationRepository resumeModerationRepository)
+        IResumeModerationRepository resumeModerationRepository, 
+        IAccessUserService accessUserService)
     {
         _logger = logger;
         _userRepository = userRepository;
@@ -62,7 +66,10 @@ public sealed class UserService : IUserService
         _profileRepository = profileRepository;
         _subscriptionRepository = subscriptionRepository;
         _resumeModerationRepository = resumeModerationRepository;
+        _accessUserService = accessUserService;
     }
+
+    #region Публичные методы.
 
     /// <summary>
     /// Метод создает нового пользователя.
@@ -222,7 +229,7 @@ public sealed class UserService : IUserService
     {
         try
         {
-            var result = new UserSignInOutput();
+            var result = new UserSignInOutput { Errors = new List<ValidationFailure>() };
 
             var passwordHash = await _userRepository.GetPasswordHashByEmailAsync(email);
 
@@ -235,7 +242,24 @@ public sealed class UserService : IUserService
 
             if (!checkPassword)
             {
-                throw new UnauthorizedAccessException("Пользователь не прошел проверку по паролю!");
+                throw new UnauthorizedAccessException("Пользователь не прошел проверку по паролю.");
+            }
+
+            try
+            {
+                // Проверяем пользователя на блокировку.
+                await CheckUserBlackListAsync(email);
+            }
+            
+            catch (InvalidOperationException ex)
+            {
+                result.Errors.Add(new ValidationFailure
+                {
+                    ErrorMessage = ex.Message,
+                    CustomState = "warn" // Чтобы на фронте отобразить как Warning.
+                });
+
+                return result;
             }
 
             var userCode = await _userRepository.GetUserCodeByEmailAsync(email);
@@ -257,6 +281,10 @@ public sealed class UserService : IUserService
             throw;
         }
     }
+    
+    #endregion
+
+    #region Приватные методы.
 
     /// <summary>
     /// Метод выдает токен пользователю, если он прошел авторизацию.
@@ -322,4 +350,42 @@ public sealed class UserService : IUserService
             throw;
         }
     }
+
+    /// <summary>
+    /// Метод проверяет блокировку пользователя по параметру, который передали.
+    /// Поочередно проверяем по почте, номеру телефона.
+    /// </summary>
+    /// <param name="availableBlockedText">Почта или номер телефона для проверки блокировки.</param>
+    private async Task CheckUserBlackListAsync(string availableBlockedText)
+    {
+        var isBlockedUser = await _accessUserService.CheckBlockedUserAsync(availableBlockedText);
+        
+        // Если пользователь заблокирован, выводим предупреждение об этом.
+        if (isBlockedUser)
+        {
+            // Ищем пользователя по почте.
+            var userId = await _userRepository.GetUserByEmailAsync(availableBlockedText);
+
+            // Не нашли по почте, пойдем искать по номеру телефона.
+            if (userId <= 0)
+            {
+                userId = await _userRepository.GetUserIdByPhoneNumberAsync(availableBlockedText);
+                
+                if (userId <= 0)
+                {
+                    var ex = new NotFoundUserIdByAccountException(availableBlockedText);
+                    throw ex;
+                }
+            }
+
+            var logError = new InvalidOperationException(
+                $"Пользователь заблокирован и пытался пройти авторизацию. Пользователь: {availableBlockedText}");
+            await _logger.LogErrorAsync(logError);
+
+            throw new InvalidOperationException(
+                "Пользователь заблокирован. Причины блокировки можно узнать у тех.поддержки.");
+        }
+    }
+    
+    #endregion
 }

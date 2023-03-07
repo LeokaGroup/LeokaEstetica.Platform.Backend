@@ -2,9 +2,11 @@ using Autofac;
 using LeokaEstetica.Platform.Access.Abstractions.AvailableLimits;
 using LeokaEstetica.Platform.Access.Abstractions.Moderation;
 using LeokaEstetica.Platform.Access.Abstractions.Resume;
+using LeokaEstetica.Platform.Access.Abstractions.User;
 using LeokaEstetica.Platform.Access.Services.AvailableLimits;
 using LeokaEstetica.Platform.Access.Services.Moderation;
 using LeokaEstetica.Platform.Access.Services.Resume;
+using LeokaEstetica.Platform.Access.Services.User;
 using LeokaEstetica.Platform.Core.Attributes;
 
 namespace LeokaEstetica.Platform.Access.AutofacModules;
@@ -52,6 +54,16 @@ public class AccessModule : Module
         builder
             .RegisterType<UserBlackListService>()
             .As<IUserBlackListService>()
+            .InstancePerLifetimeScope();
+        
+        // Сервис проверки блокировки пользователей.
+        builder
+            .RegisterType<AccessUserService>()
+            .Named<IAccessUserService>("AccessUserService")
+            .InstancePerLifetimeScope();
+        builder
+            .RegisterType<AccessUserService>()
+            .As<IAccessUserService>()
             .InstancePerLifetimeScope();
     }
 }
