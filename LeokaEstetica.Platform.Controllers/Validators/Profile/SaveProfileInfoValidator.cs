@@ -43,5 +43,13 @@ public class SaveProfileInfoValidator : AbstractValidator<ProfileInfoInput>
             .NotEmpty()
             .WithMessage(ValidationConsts.EMPTY_PHONE_NUMBER_ERROR)
             .Matches(@"^((8|\+7)[\- ]?)?(\(?\d{3}\)?[\- ]?)?[\d\- ]{7,10}$");
+
+        RuleFor(x => x.UserSkills)
+            .NotNull()
+            .WithMessage(ValidationConsts.EMPTY_USERS_SKILLS);
+
+        RuleFor(x => x.UserIntents)
+            .NotNull()
+            .WithMessage(ValidationConsts.EMPTY_USER_INTENTS);
     }
 }

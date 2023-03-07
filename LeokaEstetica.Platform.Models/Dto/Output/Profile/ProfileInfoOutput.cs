@@ -84,7 +84,12 @@ public class ProfileInfoOutput : IFrontError
     public bool IsSuccess { get; set; }
 
     /// <summary>
-    /// Список ошибок.
+    /// Предупреждение.
+    /// </summary>
+    public string WarningComment { get; set; } = "Ваша анкета не попадет в базу резюме, пока не будут заполнены поля:";
+
+    /// <summary>
+    /// Список ошибок FluentValidation.
     /// </summary>
     public List<ValidationFailure> Errors { get; set; }
 }

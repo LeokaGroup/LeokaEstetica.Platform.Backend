@@ -72,4 +72,14 @@ public static class ValidationConsts
     /// Если некорректный Id пользователя.
     /// </summary>
     public const string ACCESS_NOT_VALID_USER_ID = "Id пользователя <= 0.";
+
+    /// <summary>
+    /// Если пользователь не выбрал скиллы.
+    /// </summary>
+    public const string EMPTY_USERS_SKILLS = "Ваши цели на платформе не указаны.";
+
+    /// <summary>
+    /// Если пользователь не выбрал цели на платформе.
+    /// </summary>
+    public const string EMPTY_USER_INTENTS = "Ваши навыки не указаны.";
 }

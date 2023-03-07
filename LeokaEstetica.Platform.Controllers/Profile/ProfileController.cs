@@ -46,7 +46,6 @@ public class ProfileController : BaseController
     public async Task<ProfileInfoOutput> GetProfileInfoAsync()
     {
         var result = await _profileService.GetProfileInfoAsync(GetUserName());
-
         return result;
     }
 
@@ -124,7 +123,20 @@ public class ProfileController : BaseController
         if (validator.Errors.Any())
         {
             result.Errors = await _validationExcludeErrorsService.ExcludeAsync(validator.Errors);
+            foreach (var error in result.Errors)
+            {
+                var str = error.ErrorMessage;
+                if (str.Contains("не указаны"))
+                {
+                    result.WarningComment += str.Substring(0, str.IndexOf("не")) + ",";
+                }
+                else
+                {
+                    result.WarningComment += str.Split().First() + ", ";
+                }
+            }
 
+            result.WarningComment = result.WarningComment.Remove(result.WarningComment.Count() - 2) + ".";
             return result;
         }
         
