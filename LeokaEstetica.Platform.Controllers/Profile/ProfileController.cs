@@ -130,7 +130,7 @@ public class ProfileController : BaseController
                 var str = error.ErrorMessage;
                 if (str.Contains("не указаны"))
                 {
-                    result.WarningComment += str.Substring(0, str.IndexOf("не")) + ",";
+                    result.WarningComment += str.Substring(0, str.IndexOf("не")) + ", ";
                 }
                 else
                 {
