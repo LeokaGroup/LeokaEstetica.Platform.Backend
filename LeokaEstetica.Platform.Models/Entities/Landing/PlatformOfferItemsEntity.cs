@@ -24,4 +24,9 @@ public class PlatformOfferItemsEntity
     /// Позиция элемента в списке.
     /// </summary>
     public int Position { get; set; }
+    
+    /// <summary>
+    /// Признак функционала, который будет позже.
+    /// </summary>
+    public bool IsLater { get; set; }
 }

@@ -64,7 +64,7 @@ public sealed class LandingService : ILandingService
 
             if (fon is null)
             {
-                throw new InvalidOperationException($"Нет данных фона для предложений платформы!");
+                throw new InvalidOperationException("Нет данных фона для предложений платформы.");
             }
 
             var result = _mapper.Map<PlatformOfferOutput>(fon);
@@ -76,7 +76,7 @@ public sealed class LandingService : ILandingService
             
             if (!platformOfferItemsEntities.Any())
             {
-                throw new InvalidOperationException($"Нет данных списка элементов для предложений платформы!");
+                throw new InvalidOperationException("Нет данных списка элементов для предложений платформы.");
             }
 
             // Наполняем список элементов в выходной модели.

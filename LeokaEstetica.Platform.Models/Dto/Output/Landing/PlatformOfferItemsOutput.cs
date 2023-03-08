@@ -14,4 +14,9 @@ public class PlatformOfferItemsOutput
     /// Иконка элемента.
     /// </summary>
     public string ItemIcon { get; set; }
+
+    /// <summary>
+    /// Признак функционала, который будет позже.
+    /// </summary>
+    public bool IsLater { get; set; }
 }

@@ -28,6 +28,11 @@ public partial class PlatformOfferItemsConfiguration : IEntityTypeConfiguration<
         entity.Property(e => e.Position)
             .HasColumnName("Position")
             .HasColumnType("int");
+        
+        entity.Property(e => e.IsLater)
+            .HasColumnName("IsLater")
+            .HasColumnType("bool")
+            .IsRequired();
 
         entity.HasIndex(u => u.ItemId)
             .HasDatabaseName("PlatformOffersItems_pkey")
