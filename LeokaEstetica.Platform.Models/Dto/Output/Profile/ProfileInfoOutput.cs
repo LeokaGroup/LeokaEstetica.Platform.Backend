@@ -86,7 +86,7 @@ public class ProfileInfoOutput : IFrontError
     /// <summary>
     /// Предупреждение.
     /// </summary>
-    public string WarningComment { get; set; } = "Ваша анкета не попадет в базу резюме, пока не будут заполнены поля: ";
+    public string WarningComment { get; set; }
 
     /// <summary>
     /// Список ошибок FluentValidation.

@@ -72,6 +72,7 @@ public sealed class ProfileService : IProfileService
 
             var result = _mapper.Map<ProfileInfoOutput>(profileInfo);
 
+
             // Получаем основную информацию профиля пользователя.
             var userData = await _userRepository.GetUserPhoneEmailByUserIdAsync(userId);
 
@@ -82,6 +83,8 @@ public sealed class ProfileService : IProfileService
 
             result.Email = userData.Email;
             result.PhoneNumber = userData.PhoneNumber;
+            //Заполняем строку WarningsCommments если есть незаполеннные поля.
+            result.WarningComment = SetWarningCommentAsync(result, account).Result;
 
             return result;
         }
@@ -497,5 +500,57 @@ public sealed class ProfileService : IProfileService
             await _logger.LogErrorAsync(ex);
             throw;
         }
+    }
+
+    /// <summary>
+    /// Метод возвращает строку warnings если некоторые поля у выходной модели не заполнены.
+    /// </summary>
+    /// <param name="profilefoOutput">Возвращаемая модель профиля.</param>
+    /// <param name="account">Аккаунт пользователя.</param>
+    /// <returns>Строка предупреждения.</returns>
+    private async Task<string> SetWarningCommentAsync(ProfileInfoOutput profilefoOutput, string account)
+    {
+        // Получаем скиллы и целт пользователя
+        var skills = SelectedProfileUserSkillsAsync(account).Result.ToList();
+        var intents = SelectedProfileUserIntentsAsync(account).Result.ToList();
+
+        string warnings = "Ваша анкета не попадет в базу резюме, пока не будут заполнены поля: ";
+
+        if (string.IsNullOrEmpty(profilefoOutput.FirstName))
+        {
+            warnings += "имя, ";
+        }
+        if (string.IsNullOrEmpty(profilefoOutput.LastName))
+        {
+            warnings += "фамилия, ";
+        }
+        if (string.IsNullOrEmpty(profilefoOutput.Email))
+        {
+            warnings += "email, ";
+        }
+        if (string.IsNullOrEmpty(profilefoOutput.PhoneNumber))
+        {
+            warnings += "номер телефона, ";
+        }
+        if (string.IsNullOrEmpty(profilefoOutput.Aboutme))
+        {
+            warnings += "опыт (стаж), ";
+        }
+        if (string.IsNullOrEmpty(profilefoOutput.Job))
+        {
+            warnings += "должность, ";
+        }
+        if (skills.Count() < 1)
+        {
+            warnings += "ваши навыки, ";
+        }
+        if (intents.Count() < 1)
+        {
+            warnings += "ваши цели на платформе, ";
+        }
+        warnings = warnings.Remove(warnings.Count() - 2);
+        warnings += ".";
+
+        return warnings;
     }
 }
