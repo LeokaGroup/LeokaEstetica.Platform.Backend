@@ -514,7 +514,7 @@ public sealed class ProfileService : IProfileService
         var skills = SelectedProfileUserSkillsAsync(account).Result.ToList();
         var intents = SelectedProfileUserIntentsAsync(account).Result.ToList();
 
-        string warnings = "Ваша анкета не попадет в базу резюме, пока не будут заполнены поля: ";
+        string warnings = "";
 
         if (string.IsNullOrEmpty(profilefoOutput.FirstName))
         {
@@ -549,13 +549,16 @@ public sealed class ProfileService : IProfileService
             warnings += "ваши цели на платформе, ";
         }
 
-        if (warnings.Count() < 69)
+        if (string.IsNullOrEmpty(warnings))
         {
             return null;
         }
 
-        warnings = warnings.Remove(warnings.Count() - 2);
-        warnings += ".";
-        return warnings;
+        string warningComment = "Ваша анкета не попадет в базу резюме, пока не будут заполнены поля: " + warnings;
+        warningComment = warningComment.Remove(warningComment.Count() - 2);
+        warningComment += ".";
+
+
+        return warningComment;
     }
 }
