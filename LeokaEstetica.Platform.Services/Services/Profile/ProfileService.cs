@@ -548,9 +548,14 @@ public sealed class ProfileService : IProfileService
         {
             warnings += "ваши цели на платформе, ";
         }
+
+        if (warnings.Count() < 69)
+        {
+            return null;
+        }
+
         warnings = warnings.Remove(warnings.Count() - 2);
         warnings += ".";
-
         return warnings;
     }
 }
