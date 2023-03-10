@@ -13,6 +13,7 @@ using LeokaEstetica.Platform.Database.Abstractions.Subscription;
 using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Messaging.Abstractions.Mail;
+using LeokaEstetica.Platform.Models.Dto.Input.User;
 using LeokaEstetica.Platform.Models.Dto.Output.User;
 using LeokaEstetica.Platform.Models.Entities.User;
 using LeokaEstetica.Platform.Services.Abstractions.User;
@@ -25,7 +26,7 @@ namespace LeokaEstetica.Platform.Services.Services.User;
 /// <summary>
 /// Класс реализует методы сервиса пользователей.
 /// </summary>
-public sealed class UserService : IUserService
+public class UserService : IUserService
 {
     private readonly ILogService _logger;
     private readonly IUserRepository _userRepository;
@@ -102,7 +103,7 @@ public sealed class UserService : IUserService
             
             if (addedUser is null)
             {
-                throw new InvalidOperationException("Ошибка добавления пользователя!");
+                throw new InvalidOperationException("Ошибка добавления пользователя.");
             }
             
             result = _mapper.Map<UserSignUpOutput>(addedUser);
@@ -293,7 +294,8 @@ public sealed class UserService : IUserService
     /// <returns>Токен пользователя.</returns>
     private ClaimsIdentity GetIdentityClaim(string email)
     {
-        var claims = new List<Claim> {
+        var claims = new List<Claim>
+        {
             new(ClaimsIdentity.DefaultNameClaimType, email)
         };
 
@@ -352,6 +354,79 @@ public sealed class UserService : IUserService
     }
 
     /// <summary>
+    /// Метод авторизации через Google. Если аккаунт не зарегистрирован в системе,
+    /// то создаем также аккаунт используя данные аккаунта Google пользователя.
+    /// </summary>
+    /// <param name="userSignInGoogleInput">Входная модель.</param>
+    /// <returns>Данные пользователя.</returns>
+    public async Task<UserSignInOutput> SignInAsync(string googleAuthToken)
+    {
+        var tran = await _pgContext.Database
+            .BeginTransactionAsync(IsolationLevel.ReadCommitted);
+        
+        try
+        {
+            var claims = DecodeJwtGoogleData(googleAuthToken);
+            var googleUserData = CreateGoogleDataFactory(claims);
+            
+            // Првоеряем, существует ли такой пользователь в системе.
+            var isUserExists = await _userRepository.CheckUserByEmailAsync(googleUserData.Email);
+            
+            // Пользователя нет, регистрируем его и выдаем доступ.
+            if (!isUserExists)
+            {
+                var userModel = CreateSignUpUserModel(string.Empty, googleUserData.Email);
+                userModel.EmailConfirmed = true; // Почта и так подтверждена, раз это Google аккаунт.
+            
+                var userId = await _userRepository.AddUserAsync(userModel);
+
+                if (userId <= 0)
+                {
+                    throw new InvalidOperationException("Ошибка добавления пользователя.");
+                }
+
+                // Добавляет данные о пользователе в таблицу профиля.
+                var profileInfoId = await _profileRepository.AddUserInfoAsync(userId);
+
+                var confirmationEmailCode = Guid.NewGuid();
+            
+                // Записываем пользавателю код подтверждения для проверки его позже из его почты по ссылке.
+                await _userRepository.SetConfirmAccountCodeAsync(confirmationEmailCode, userId);
+
+                // Добавляем пользователю бесплатную подписку.
+                await _subscriptionRepository.AddUserSubscriptionAsync(userId, SubscriptionTypeEnum.FareRule, 1);
+            
+                // Отправляем анкету на модерацию.
+                await _resumeModerationRepository.AddResumeModerationAsync(profileInfoId);
+            }
+
+            // Если пользователь уже существует, то выдаем ему доступ.
+            var userCode = await _userRepository.GetUserCodeByEmailAsync(googleUserData.Email);
+            var claim = GetIdentityClaim(googleUserData.Email);
+            var token = CreateTokenFactory(claim);
+
+            var result = new UserSignInOutput
+            {
+                Errors = new List<ValidationFailure>(),
+                Email = googleUserData.Email,
+                Token = token,
+                IsSuccess = true,
+                UserCode = userCode
+            };
+
+            await tran.CommitAsync();
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            await _logger.LogErrorAsync(ex);
+            throw;
+        }
+    }
+
+    /// <summary>
     /// Метод проверяет блокировку пользователя по параметру, который передали.
     /// Поочередно проверяем по почте, номеру телефона.
     /// </summary>
@@ -385,6 +460,38 @@ public sealed class UserService : IUserService
             throw new InvalidOperationException(
                 "Пользователь заблокирован. Причины блокировки можно узнать у тех.поддержки.");
         }
+    }
+
+    /// <summary>
+    /// Метод парсит строку токена с данными Google аккаунта пользователя.
+    /// </summary>
+    /// <param name="googleAuthToken">Токен с данными аккаунта.</param>
+    /// <returns>Список с результатами после парсинга.</returns>
+    private List<Claim> DecodeJwtGoogleData(string googleAuthToken)
+    {
+        var handler = new JwtSecurityTokenHandler();
+        var jwtSecurityToken = handler.ReadJwtToken(googleAuthToken);
+        var result = jwtSecurityToken.Claims.ToList();
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод создает модель с данными аккаунта Google.
+    /// </summary>
+    /// <param name="claims">Список результатов парсинга.</param>
+    /// <returns>Данные аккаунта Google.</returns>
+    private UserGoogleInput CreateGoogleDataFactory(List<Claim> claims)
+    {
+        var result = new UserGoogleInput
+        {
+            Email =  claims.Find(f => f.Type.Equals("email"))?.Value,
+            EmailVerified = Convert.ToBoolean(claims.Find(f => f.Type.Equals("email_verified"))?.Value),
+            GivenName = claims.Find(f => f.Type.Equals("given_name"))?.Value,
+            FamilyName = claims.Find(f => f.Type.Equals("family_name"))?.Value
+        };
+
+        return result;
     }
     
     #endregion

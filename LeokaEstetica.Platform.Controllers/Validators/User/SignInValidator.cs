@@ -10,6 +10,9 @@ namespace LeokaEstetica.Platform.Controllers.Validators.User;
 /// </summary>
 public class SignInValidator : AbstractValidator<UserSignInInput>
 {
+    /// <summary>
+    /// Конструктор.
+    /// </summary>
     public SignInValidator()
     {
         RuleFor(p => p.Email)
