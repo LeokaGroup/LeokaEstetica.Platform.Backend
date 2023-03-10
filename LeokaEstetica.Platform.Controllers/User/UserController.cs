@@ -130,4 +130,35 @@ public class UserController : BaseController
 
         return result;
     }
+
+    /// <summary>
+    /// Метод авторизации через Google. Если аккаунт не зарегистрирован в системе,
+    /// то создаем также аккаунт используя данные аккаунта Google пользователя.
+    /// </summary>
+    /// <param name="userSignInGoogleInput">Входная модель.</param>
+    /// <returns>Данные пользователя.</returns>
+    [AllowAnonymous]
+    [HttpPost]
+    [Route("signin-google")]
+    [ProducesResponseType(200, Type = typeof(UserSignInOutput))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<UserSignInOutput> SignInAsync([FromBody] UserSignInGoogleInput userSignInGoogleInput)
+    {
+        var result = new UserSignInOutput();
+        var validator = await new SignInGoogleValidator().ValidateAsync(userSignInGoogleInput);
+
+        if (validator.Errors.Any())
+        {
+            result.Errors = validator.Errors;
+
+            return result;
+        }
+
+        result = await _userService.SignInAsync(userSignInGoogleInput.GoogleAuthToken);
+
+        return result;
+    }
 }

@@ -77,4 +77,15 @@ public static class ValidationConsts
     /// Если некорректный Id пользователя.
     /// </summary>
     public const string ACCESS_NOT_VALID_USER_ID = "Id пользователя <= 0.";
+
+    /// <summary>
+    /// Класс описывает константы валидации Google.
+    /// </summary>
+    public static class Google
+    {
+        /// <summary>
+        /// Если не передали токен с данными аккаунта Google.
+        /// </summary>
+        public const string EMPTY_GOOGLE_AUTH_CODE = "Токен не может быть пустым.";
+    }
 }

@@ -36,4 +36,12 @@ public interface IUserService
     /// <param name="account">Аккаунт.</param>
     /// <returns>Новые данные авторизации.</returns>
     Task<UserSignInOutput> RefreshTokenAsync(string account);
+
+    /// <summary>
+    /// Метод авторизации через Google. Если аккаунт не зарегистрирован в системе,
+    /// то создаем также аккаунт используя данные аккаунта Google пользователя.
+    /// </summary>
+    /// <param name="userSignInGoogleInput">Входная модель.</param>
+    /// <returns>Данные пользователя.</returns>
+    Task<UserSignInOutput> SignInAsync(string googleAuthToken);
 }
