@@ -122,26 +122,11 @@ public class ProfileController : BaseController
 
         if (validator.Errors.Any())
         {
-            // Получаем список всех не заполненных полей.
             result.Errors = await _validationExcludeErrorsService.ExcludeAsync(validator.Errors);
-            foreach (var error in result.Errors)
-            {
-                // достаем из error сообщения и делим его так, как нам нужно
-                var str = error.ErrorMessage;
-                if (str.Contains("не указаны"))
-                {
-                    result.WarningComment += str.Substring(0, str.IndexOf("не")) + ", ";
-                }
-                else
-                {
-                    result.WarningComment += str.Split().First() + ", ";
-                }
-            }
-            // Добавляем в конце точку
-            result.WarningComment = result.WarningComment.Remove(result.WarningComment.Count() - 2) + ".";
+
             return result;
         }
-        
+
         result = await _profileService.SaveProfileInfoAsync(profileInfoInput, GetUserName());
 
         return result;
