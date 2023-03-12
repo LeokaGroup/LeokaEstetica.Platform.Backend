@@ -88,4 +88,25 @@ public static class ValidationConsts
         /// </summary>
         public const string EMPTY_GOOGLE_AUTH_CODE = "Токен не может быть пустым.";
     }
+    
+    /// <summary>
+    /// Класс описывает константы валидации Google.
+    /// </summary>
+    public static class Vk
+    {
+        /// <summary>
+        /// Если не передали имя пользователя.
+        /// </summary>
+        public const string EMPTY_FIRST_NAME = "Имя пользователя не может быть пустым.";
+        
+        /// <summary>
+        /// Если не передали фамилию пользователя.
+        /// </summary>
+        public const string EMPTY_LAST_NAME = "Фамилия пользователя не может быть пустым.";
+
+        /// <summary>
+        /// Если передали невалидный UserId..
+        /// </summary>
+        public const string NOT_VALID_USER_ID = "Если передали невалидный UserId.";
+    }
 }
