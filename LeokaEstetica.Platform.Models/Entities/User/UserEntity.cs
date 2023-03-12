@@ -114,6 +114,16 @@ public class UserEntity
     public DateTime? LockoutEndDate { get; set; }
 
     /// <summary>
+    /// Признак регистрации через ВК.
+    /// </summary>
+    public bool IsVkAuth { get; set; }
+
+    /// <summary>
+    /// Id пользователя в системе ВК.
+    /// </summary>
+    public long? VkUserId { get; set; }
+
+    /// <summary>
     /// Сообщения диалога.
     /// </summary>
     public ICollection<DialogMessageEntity> DialogMessages { get; set; }
