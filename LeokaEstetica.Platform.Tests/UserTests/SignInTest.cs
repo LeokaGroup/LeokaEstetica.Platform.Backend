@@ -24,4 +24,12 @@ public class SignInTest : BaseServiceTest
 
         Assert.NotNull(result);
     }
+    
+    [Test]
+    public async Task SignInVkAsyncTest()
+    {
+        var result = await UserService.SignInAsync(139362343, "Антон", "Тимошенко");
+
+        Assert.NotNull(result);
+    }
 }

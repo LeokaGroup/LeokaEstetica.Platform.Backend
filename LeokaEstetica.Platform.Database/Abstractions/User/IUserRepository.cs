@@ -63,6 +63,13 @@ public interface IUserRepository
     /// <param name="email">Почта.</param>
     /// <returns>Хэш пароля.</returns>
     Task<Guid> GetUserCodeByEmailAsync(string email);
+    
+    /// <summary>
+    /// Метод получает код пользователя по его VkUserId.
+    /// </summary>
+    /// <param name="vkUserId">VkUserId пользователя.</param>
+    /// <returns>Хэш пароля.</returns>
+    Task<Guid> GetUserCodeByVkUserIdAsync(long vkUserId);
 
     /// <summary>
     /// Метод получает недостающую информацию профиля по UserId.
@@ -131,4 +138,11 @@ public interface IUserRepository
     /// <param name="phoneNumber">Логин пользователя.</param>
     /// <returns>Id пользователя.</returns>
     Task<long> GetUserIdByLoginAsync(string login);
+
+    /// <summary>
+    /// Метод проверет существование пользователя по VkUserId в базе.
+    /// </summary>
+    /// <param name="userId">VkUserId пользователя.</param>
+    /// <returns>Флаг проверки.</returns>
+    Task<bool> CheckUserByVkUserIdAsync(long userId);
 }

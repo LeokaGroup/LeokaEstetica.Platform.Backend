@@ -161,4 +161,36 @@ public class UserController : BaseController
 
         return result;
     }
+
+    /// <summary>
+    /// Метод авторизации через ВК. Если аккаунт не зарегистрирован в системе,
+    /// то создаем также аккаунт используя данные аккаунта ВК пользователя.
+    /// </summary>
+    /// <param name="userSignInVkInput">Входная модель.</param>
+    /// <returns>Данные пользователя.</returns>
+    [AllowAnonymous]
+    [HttpPost]
+    [Route("signin-vk")]
+    [ProducesResponseType(200, Type = typeof(UserSignInOutput))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<UserSignInOutput> SignInAsync([FromBody] UserSignInVkInput userSignInVkInput)
+    {
+        var result = new UserSignInOutput();
+        var validator = await new SignInVkValidator().ValidateAsync(userSignInVkInput);
+
+        if (validator.Errors.Any())
+        {
+            result.Errors = validator.Errors;
+
+            return result;
+        }
+
+        result = await _userService.SignInAsync(userSignInVkInput.VkUserId, userSignInVkInput.FirstName,
+            userSignInVkInput.LastName);
+
+        return result;
+    }
 }

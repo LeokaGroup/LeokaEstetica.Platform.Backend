@@ -41,7 +41,17 @@ public interface IUserService
     /// Метод авторизации через Google. Если аккаунт не зарегистрирован в системе,
     /// то создаем также аккаунт используя данные аккаунта Google пользователя.
     /// </summary>
-    /// <param name="userSignInGoogleInput">Входная модель.</param>
+    /// <param name="googleAuthToken">Токен с данными пользователя.</param>
     /// <returns>Данные пользователя.</returns>
     Task<UserSignInOutput> SignInAsync(string googleAuthToken);
+
+    /// <summary>
+    /// Метод авторизации через DR. Если аккаунт не зарегистрирован в системе,
+    /// то создаем также аккаунт используя данные аккаунта DR пользователя.
+    /// </summary>
+    /// <param name="vkUserId">Id пользователя в системе ВК.</param>
+    /// <param name="firstName">Имя пользователя в системе ВК.</param>
+    /// <param name="firstName">Фамилия пользователя в системе ВК.</param>
+    /// <returns>Данные пользователя.</returns>
+    Task<UserSignInOutput> SignInAsync(long vkUserId, string firstName, string lastName);
 }

@@ -96,6 +96,15 @@ public partial class UserConfiguration : IEntityTypeConfiguration<UserEntity>
         entity.Property(e => e.LockoutEndDate)
             .HasColumnName("LockoutEndDate")
             .HasColumnType("timestamp");
+        
+        entity.Property(e => e.IsVkAuth)
+            .HasColumnName("IsVkAuth")
+            .HasColumnType("bool")
+            .IsRequired();
+        
+        entity.Property(e => e.VkUserId)
+            .HasColumnName("VkUserId")
+            .HasColumnType("bigint");
 
         entity.HasIndex(u => u.UserId)
             .HasDatabaseName("PK_Users_UserId")
