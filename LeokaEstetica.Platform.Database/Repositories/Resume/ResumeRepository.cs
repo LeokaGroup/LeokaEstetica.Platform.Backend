@@ -32,12 +32,7 @@ public class ResumeRepository : IResumeRepository
             .AsQueryable();
 
         var result = await _pgContext.ProfilesInfo
-            .Where(r => !string.IsNullOrEmpty(r.FirstName)
-                        && !string.IsNullOrEmpty(r.LastName)
-                        && !string.IsNullOrEmpty(r.Patronymic)
-                        && !string.IsNullOrEmpty(r.Job)
-                        && !string.IsNullOrEmpty(r.Aboutme)
-                        && !excludedResumes.Contains(r.ProfileInfoId))
+            .Where(r => !excludedResumes.Contains(r.ProfileInfoId))
             .ToListAsync();
 
         return result;
