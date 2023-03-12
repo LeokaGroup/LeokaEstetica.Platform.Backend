@@ -174,6 +174,30 @@ public class UserService : IUserService
 
         return model;
     }
+    
+    /// <summary>
+    /// Метод создает модель для регистрации пользователя.
+    /// </summary>
+    /// <param name="vkUserId">Id пользователя в системе ВК.</param>
+    /// <param name="firstName">Имя пользователя в системе ВК.</param>
+    /// <param name="firstName">Фамилия пользователя в системе ВК.</param>
+    /// <returns>Модель с данными.</returns>
+    private UserEntity CreateSignUpVkUserModel(long vkUserId, string firstName, string lastName)
+    {
+        var model = new UserEntity
+        {
+            PasswordHash = string.Empty,
+            Email = string.Empty,
+            DateRegister = DateTime.Now,
+            UserCode = Guid.NewGuid(),
+            VkUserId = vkUserId,
+            FirstName = firstName,
+            LastName = lastName,
+            EmailConfirmed = true
+        };
+
+        return model;
+    }
 
     /// <summary>
     /// Метод проверяет UserId. Сроздает исключение, если с ним проблемы.
@@ -307,6 +331,25 @@ public class UserService : IUserService
     }
     
     /// <summary>
+    /// Метод выдает токен пользователю, если он прошел авторизацию.
+    /// </summary>
+    /// <param name="vkUserId">VkUserId пользователя.</param>
+    /// <returns>Токен пользователя.</returns>
+    private ClaimsIdentity GetIdentityClaimVkUser(long vkUserId)
+    {
+        var claims = new List<Claim>
+        {
+            new(ClaimsIdentity.DefaultNameClaimType, vkUserId.ToString())
+        };
+
+        var claimsIdentity = new ClaimsIdentity(claims, "Token", 
+            ClaimsIdentity.DefaultNameClaimType, 
+            ClaimsIdentity.DefaultRoleClaimType);
+
+        return claimsIdentity;
+    }
+    
+    /// <summary>
     /// Метод создает токен пользователю.
     /// </summary>
     /// <param name="claimsIdentity">Объект полномочий.</param>
@@ -357,7 +400,7 @@ public class UserService : IUserService
     /// Метод авторизации через Google. Если аккаунт не зарегистрирован в системе,
     /// то создаем также аккаунт используя данные аккаунта Google пользователя.
     /// </summary>
-    /// <param name="userSignInGoogleInput">Входная модель.</param>
+    /// <param name="googleAuthToken">Токен с данными пользователя.</param>
     /// <returns>Данные пользователя.</returns>
     public async Task<UserSignInOutput> SignInAsync(string googleAuthToken)
     {
@@ -412,6 +455,77 @@ public class UserService : IUserService
                 Token = token,
                 IsSuccess = true,
                 UserCode = userCode
+            };
+
+            await tran.CommitAsync();
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            await _logger.LogErrorAsync(ex);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Метод авторизации через DR. Если аккаунт не зарегистрирован в системе,
+    /// то создаем также аккаунт используя данные аккаунта DR пользователя.
+    /// </summary>
+    /// <param name="vkUserId">Id пользователя в системе ВК.</param>
+    /// <param name="firstName">Имя пользователя в системе ВК.</param>
+    /// <param name="firstName">Фамилия пользователя в системе ВК.</param>
+    /// <returns>Данные пользователя.</returns>
+    public async Task<UserSignInOutput> SignInAsync(long vkUserId, string firstName, string lastName)
+    {
+        var tran = await _pgContext.Database
+            .BeginTransactionAsync(IsolationLevel.ReadCommitted);
+        
+        try
+        {
+            // Првоеряем, существует ли такой пользователь в системе.
+            var isUserExists = await _userRepository.CheckUserByVkUserIdAsync(vkUserId);
+            
+            // Пользователя нет, регистрируем его и выдаем доступ.
+            if (!isUserExists)
+            {
+                var userModel = CreateSignUpVkUserModel(vkUserId, firstName, lastName);
+
+                var userId = await _userRepository.AddUserAsync(userModel);
+
+                if (userId <= 0)
+                {
+                    throw new InvalidOperationException("Ошибка добавления пользователя.");
+                }
+
+                // Добавляет данные о пользователе в таблицу профиля.
+                var profileInfoId = await _profileRepository.AddUserInfoAsync(userId);
+
+                var confirmationEmailCode = Guid.NewGuid();
+            
+                // Записываем пользавателю код подтверждения для проверки его позже из его почты по ссылке.
+                await _userRepository.SetConfirmAccountCodeAsync(confirmationEmailCode, userId);
+
+                // Добавляем пользователю бесплатную подписку.
+                await _subscriptionRepository.AddUserSubscriptionAsync(userId, SubscriptionTypeEnum.FareRule, 1);
+            
+                // Отправляем анкету на модерацию.
+                await _resumeModerationRepository.AddResumeModerationAsync(profileInfoId);
+            }
+
+            // Если пользователь уже существует, то выдаем ему доступ.
+            var userCode = await _userRepository.GetUserCodeByVkUserIdAsync(vkUserId);
+            var claim = GetIdentityClaimVkUser(vkUserId);
+            var token = CreateTokenFactory(claim);
+
+            var result = new UserSignInOutput
+            {
+                Errors = new List<ValidationFailure>(),
+                Token = token,
+                IsSuccess = true,
+                UserCode = userCode,
+                VkUserId = vkUserId
             };
 
             await tran.CommitAsync();

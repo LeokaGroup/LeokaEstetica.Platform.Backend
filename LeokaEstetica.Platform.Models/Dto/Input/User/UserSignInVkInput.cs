@@ -8,10 +8,10 @@ namespace LeokaEstetica.Platform.Models.Dto.Input.User;
 public class UserSignInVkInput
 {
     /// <summary>
-    /// Id пользователя.
+    /// Id пользователя в системе ВК.
     /// </summary>
     [JsonProperty("uid")]
-    public long UserId { get; set; }
+    public long VkUserId { get; set; }
     
     /// <summary>
     /// Имя.

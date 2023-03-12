@@ -32,4 +32,9 @@ public class UserSignInOutput : IFrontError
     /// Список ошибок.
     /// </summary>
     public List<ValidationFailure> Errors { get; set; }
+
+    /// <summary>
+    /// Id пользователя в системе ВК.
+    /// </summary>
+    public long? VkUserId { get; set; }
 }

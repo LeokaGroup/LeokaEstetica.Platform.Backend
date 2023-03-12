@@ -26,7 +26,7 @@ public class SignInVkValidator : AbstractValidator<UserSignInVkInput>
             .NotEmpty()
             .WithMessage(ValidationConsts.Vk.EMPTY_LAST_NAME);
 
-        RuleFor(p => p.UserId)
+        RuleFor(p => p.VkUserId)
             .Must(p => p > 0)
             .WithMessage(ValidationConsts.Vk.NOT_VALID_USER_ID);
     }

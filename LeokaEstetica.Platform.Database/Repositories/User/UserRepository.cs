@@ -160,6 +160,21 @@ public class UserRepository : IUserRepository
     }
 
     /// <summary>
+    /// Метод получает код пользователя по его VkUserId.
+    /// </summary>
+    /// <param name="vkUserId">VkUserId пользователя.</param>
+    /// <returns>Хэш пароля.</returns>
+    public async Task<Guid> GetUserCodeByVkUserIdAsync(long vkUserId)
+    {
+        var result = await _pgContext.Users
+            .Where(u => u.VkUserId == vkUserId)
+            .Select(u => u.UserCode)
+            .FirstOrDefaultAsync();
+
+        return result;
+    }
+
+    /// <summary>
     /// Метод получает недостающую информацию профиля по UserId.
     /// </summary>
     /// <param name="userId">Id пользователя.</param>
@@ -305,6 +320,19 @@ public class UserRepository : IUserRepository
             .Where(u => u.Login.Equals(login))
             .Select(u => u.UserId)
             .FirstOrDefaultAsync();
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод проверет существование пользователя по VkUserId в базе.
+    /// </summary>
+    /// <param name="userId">VkUserId пользователя.</param>
+    /// <returns>Флаг проверки.</returns>
+    public async Task<bool> CheckUserByVkUserIdAsync(long userId)
+    {
+        var result = await _pgContext.Users
+            .AnyAsync(u => u.VkUserId == userId);
 
         return result;
     }
