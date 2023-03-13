@@ -1,9 +1,9 @@
-namespace LeokaEstetica.Platform.Models.Entities.Landing;
+namespace LeokaEstetica.Platform.Models.Dto.Output.Landing;
 
 /// <summary>
-/// Класс сопоставляется с таблицей таймлайнов dbo.Timelines.
+/// Класс выходной модели таймлайна.
 /// </summary>
-public class TimelineEntity
+public class TimelineOutput
 {
     /// <summary>
     /// PK.
@@ -29,9 +29,4 @@ public class TimelineEntity
     /// Название типа таймлайна.
     /// </summary>
     public string TimelineTypeName { get; set; }
-
-    /// <summary>
-    /// Позиция в списке.
-    /// </summary>
-    public short Position { get; set; }
 }

@@ -8,7 +8,7 @@ namespace LeokaEstetica.Platform.Database.Repositories.Landing;
 /// <summary>
 /// Класс реализует методы репозитория лендингов.
 /// </summary>
-public sealed class LandingRepository : ILandingRepository
+public class LandingRepository : ILandingRepository
 {
     private readonly PgContext _pgContext;
     
@@ -50,6 +50,27 @@ public sealed class LandingRepository : ILandingRepository
         var result = await _pgContext.PlatformOfferItems
             .OrderBy(o => o.Position)
             .ToListAsync();
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод получает список таймлайнов.
+    /// </summary>
+    /// <returns>Список таймлайнов.</returns>
+    public async Task<Dictionary<string, List<TimelineEntity>>> GetTimelinesAsync()
+    {
+        var result = await _pgContext.Timelines
+            .GroupBy(g => g.TimelineSysType)
+            .Select(s => new
+            {
+                TimelineSysType = s.Key,
+                Timelines = s
+                    .Select(p => p)
+                    .OrderBy(o => o.Position)
+                    .ToList()
+            })
+            .ToDictionaryAsync(k => k.TimelineSysType, v => v.Timelines);
 
         return result;
     }
