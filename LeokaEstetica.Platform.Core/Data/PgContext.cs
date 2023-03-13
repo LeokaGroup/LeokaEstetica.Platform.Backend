@@ -308,4 +308,9 @@ public class PgContext : DbContext
     /// Таблица уведомлений.
     /// </summary>
     public DbSet<NotificationEntity> Notifications { get; set; }
+
+    /// <summary>
+    /// Таблица таймлайнов.
+    /// </summary>
+    public DbSet<TimelineEntity> Timelines { get; set; }
 }

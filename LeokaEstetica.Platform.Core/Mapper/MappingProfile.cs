@@ -113,5 +113,7 @@ public class MappingProfile : Profile
         CreateMap<ModerationResumeEntity, ResumeModerationOutput>();
         
         CreateMap<NotificationEntity, NotificationOutput>();
+        
+        CreateMap<TimelineEntity, TimelineOutput>();
     }
 }

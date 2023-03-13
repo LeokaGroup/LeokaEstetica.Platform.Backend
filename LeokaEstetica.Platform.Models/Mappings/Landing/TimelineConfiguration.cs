@@ -34,6 +34,10 @@ public partial class TimelineConfiguration : IEntityTypeConfiguration<TimelineEn
         entity.Property(e => e.TimelineTypeName)
             .HasColumnName("TimelineTypeName")
             .HasColumnType("varchar(150)");
+        
+        entity.Property(e => e.Position)
+            .HasColumnName("Position")
+            .HasColumnType("smallint");
 
         entity.HasIndex(u => u.TimelineId)
             .HasDatabaseName("PK_TimelineId")
