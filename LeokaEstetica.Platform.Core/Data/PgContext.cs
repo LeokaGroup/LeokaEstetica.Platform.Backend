@@ -5,7 +5,6 @@ using LeokaEstetica.Platform.Models.Entities.Common;
 using LeokaEstetica.Platform.Models.Entities.Communication;
 using LeokaEstetica.Platform.Models.Entities.Configs;
 using LeokaEstetica.Platform.Models.Entities.FareRule;
-using LeokaEstetica.Platform.Models.Entities.Knowlege;
 using LeokaEstetica.Platform.Models.Entities.Landing;
 using LeokaEstetica.Platform.Models.Entities.Logs;
 using LeokaEstetica.Platform.Models.Entities.Moderation;
@@ -314,24 +313,4 @@ public class PgContext : DbContext
     /// Таблица таймлайнов.
     /// </summary>
     public DbSet<TimelineEntity> Timelines { get; set; }
-
-    /// <summary>
-    /// Стартовая таблица БЗ.
-    /// </summary>
-    public DbSet<KnowledgeStartEntity> KnowledgeStart { get; set; }
-
-    /// <summary>
-    /// Таблица категорий.
-    /// </summary>
-    public DbSet<KnowledgeCategoryEntity> KnowledgeCategories { get; set; }
-
-    /// <summary>
-    /// Таблица подкатегорий.
-    /// </summary>
-    public DbSet<KnowledgeSubCategoryEntity> KnowledgeSubCategories { get; set; }
-
-    /// <summary>
-    /// Таблица тем подкатегории.
-    /// </summary>
-    public DbSet<KnowledgeSubCategoryThemeEntity> KnowledgeSubCategoryThemes { get; set; }
 }
