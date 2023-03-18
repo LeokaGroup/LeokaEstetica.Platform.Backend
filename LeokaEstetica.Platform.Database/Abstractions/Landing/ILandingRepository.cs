@@ -24,10 +24,4 @@ public interface ILandingRepository
     /// </summary>
     /// <returns>Данные для фона.</returns>
     Task<IEnumerable<PlatformOfferItemsEntity>> GetPlatformItemsAsync();
-    
-    /// <summary>
-    /// Метод получает список таймлайнов.
-    /// </summary>
-    /// <returns>Список таймлайнов.</returns>
-    Task<Dictionary<string, List<TimelineEntity>>> GetTimelinesAsync();
 }
