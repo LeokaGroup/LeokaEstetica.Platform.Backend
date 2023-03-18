@@ -8,7 +8,6 @@ using LeokaEstetica.Platform.Database.Repositories.AvailableLimits;
 using LeokaEstetica.Platform.Database.Repositories.Chat;
 using LeokaEstetica.Platform.Database.Repositories.Commerce;
 using LeokaEstetica.Platform.Database.Repositories.FareRule;
-using LeokaEstetica.Platform.Database.Repositories.Landing;
 using LeokaEstetica.Platform.Database.Repositories.Moderation.Access;
 using LeokaEstetica.Platform.Database.Repositories.Moderation.Project;
 using LeokaEstetica.Platform.Database.Repositories.Moderation.Resume;
@@ -32,7 +31,6 @@ using LeokaEstetica.Platform.Moderation.Services.Vacancy;
 using LeokaEstetica.Platform.Notifications.Services;
 using LeokaEstetica.Platform.Processing.Services.PayMaster;
 using LeokaEstetica.Platform.Services.Services.FareRule;
-using LeokaEstetica.Platform.Services.Services.Landing;
 using LeokaEstetica.Platform.Services.Services.Profile;
 using LeokaEstetica.Platform.Services.Services.Project;
 using LeokaEstetica.Platform.Services.Services.Resume;
@@ -73,7 +71,6 @@ public class BaseServiceTest
     protected readonly SubscriptionService SubscriptionService;
     protected readonly UserBlackListService UserBlackListService;
     protected readonly ResumeModerationService ResumeModerationService;
-    protected readonly LandingService LandingService;
 
     protected BaseServiceTest()
     {
@@ -163,8 +160,5 @@ public class BaseServiceTest
         UserBlackListService = new UserBlackListService(logService, userBlackListService);
         ResumeModerationService =
             new ResumeModerationService(logService, resumeModerationRepository, mapper, userRepository);
-
-        var landingRepository = new LandingRepository(pgContext);
-        LandingService = new LandingService(logService, landingRepository, mapper);
     }
 }

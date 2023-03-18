@@ -2,7 +2,6 @@
 using LeokaEstetica.Platform.Database.Abstractions.Landing;
 using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Models.Dto.Output.Landing;
-using LeokaEstetica.Platform.Models.Entities.Landing;
 using LeokaEstetica.Platform.Services.Abstractions.Landing;
 
 namespace LeokaEstetica.Platform.Services.Services.Landing;
@@ -10,7 +9,7 @@ namespace LeokaEstetica.Platform.Services.Services.Landing;
 /// <summary>
 /// Класс реализует методы сервиса лендингов.
 /// </summary>
-public class LandingService : ILandingService
+public sealed class LandingService : ILandingService
 {
     private readonly ILogService _logger;
     private readonly ILandingRepository _landingRepository;
@@ -24,8 +23,6 @@ public class LandingService : ILandingService
         _landingRepository = landingRepository;
         _mapper = mapper;
     }
-
-    #region Публичные методы.
 
     /// <summary>
     /// Метод получает данные для блока фона для главного лендоса.
@@ -94,26 +91,4 @@ public class LandingService : ILandingService
             throw;
         }
     }
-
-    /// <summary>
-    /// Метод получает список таймлайнов.
-    /// </summary>
-    /// <returns>Список таймлайнов.</returns>
-    public async Task<Dictionary<string, List<TimelineEntity>>> GetTimelinesAsync()
-    {
-        try
-        {
-            var result = await _landingRepository.GetTimelinesAsync();
-
-            return result;
-        }
-        
-        catch (Exception ex)
-        {
-            await _logger.LogErrorAsync(ex);
-            throw;
-        }
-    }
-    
-    #endregion
 }
