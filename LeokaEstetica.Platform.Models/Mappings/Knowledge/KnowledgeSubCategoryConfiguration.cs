@@ -45,7 +45,7 @@ public partial class KnowledgeSubCategoryConfiguration : IEntityTypeConfiguratio
         entity.HasOne(p => p.KnowledgeSubCategoryTheme)
             .WithMany(b => b.KnowledgeSubCategories)
             .HasForeignKey(p => p.SubCategoryThemeId)
-            .HasConstraintName("FK_KnowledgeCategories_CategoryId");
+            .HasConstraintName("FK_KnowledgeSubCategoriesThemes_SubCategoryThemeId");
 
         OnConfigurePartial(entity);
     }
