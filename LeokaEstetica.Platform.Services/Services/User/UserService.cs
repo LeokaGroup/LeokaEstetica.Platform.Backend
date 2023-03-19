@@ -274,7 +274,7 @@ public class UserService : IUserService
             try
             {
                 // Проверяем пользователя на блокировку.
-                await CheckUserBlackListAsync(email);
+                await CheckUserBlackListAsync(email, false);
             }
             
             catch (InvalidOperationException ex)
@@ -480,6 +480,8 @@ public class UserService : IUserService
     /// <returns>Данные пользователя.</returns>
     public async Task<UserSignInOutput> SignInAsync(long vkUserId, string firstName, string lastName)
     {
+        var result = new UserSignInOutput { Errors = new List<ValidationFailure>() };
+        
         var tran = await _pgContext.Database
             .BeginTransactionAsync(IsolationLevel.ReadCommitted);
         
@@ -491,6 +493,23 @@ public class UserService : IUserService
             // Пользователя нет, регистрируем его и выдаем доступ.
             if (!isUserExists)
             {
+                try
+                {
+                    // Проверяем пользователя на блокировку.
+                    await CheckUserBlackListAsync(vkUserId.ToString(), true);
+                }
+            
+                catch (InvalidOperationException ex)
+                {
+                    result.Errors.Add(new ValidationFailure
+                    {
+                        ErrorMessage = ex.Message,
+                        CustomState = "warn" // Чтобы на фронте отобразить как Warning.
+                    });
+
+                    return result;
+                }
+                
                 var userModel = CreateSignUpVkUserModel(vkUserId, firstName, lastName);
 
                 var userId = await _userRepository.AddUserAsync(userModel);
@@ -518,14 +537,10 @@ public class UserService : IUserService
             var claim = GetIdentityClaimVkUser(vkUserId);
             var token = CreateTokenFactory(claim);
 
-            var result = new UserSignInOutput
-            {
-                Errors = new List<ValidationFailure>(),
-                Token = token,
-                IsSuccess = true,
-                UserCode = userCode,
-                VkUserId = vkUserId
-            };
+            result.Token = token;
+            result.IsSuccess = true;
+            result.UserCode = userCode;
+            result.VkUserId = vkUserId;
 
             await tran.CommitAsync();
 
@@ -544,9 +559,10 @@ public class UserService : IUserService
     /// Поочередно проверяем по почте, номеру телефона.
     /// </summary>
     /// <param name="availableBlockedText">Почта или номер телефона для проверки блокировки.</param>
-    private async Task CheckUserBlackListAsync(string availableBlockedText)
+    /// <param name="isVkAuth">Признак блокировки через ВК.</param>
+    private async Task CheckUserBlackListAsync(string availableBlockedText, bool isVkAuth)
     {
-        var isBlockedUser = await _accessUserService.CheckBlockedUserAsync(availableBlockedText);
+        var isBlockedUser = await _accessUserService.CheckBlockedUserAsync(availableBlockedText, isVkAuth);
         
         // Если пользователь заблокирован, выводим предупреждение об этом.
         if (isBlockedUser)

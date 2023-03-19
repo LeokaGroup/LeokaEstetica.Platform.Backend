@@ -334,4 +334,14 @@ public class PgContext : DbContext
     /// Таблица тем подкатегории.
     /// </summary>
     public DbSet<KnowledgeSubCategoryThemeEntity> KnowledgeSubCategoryThemes { get; set; }
+
+    /// <summary>
+    /// Таблица ЧС VK.
+    /// </summary>
+    public DbSet<UserVkBlackListEntity> UserVkBlackList { get; set; }
+
+    /// <summary>
+    /// Теневая таблица ЧС VK.
+    /// </summary>
+    public DbSet<UserVkBlackListShadowEntity> UserVkBlackListShadow { get; set; }
 }

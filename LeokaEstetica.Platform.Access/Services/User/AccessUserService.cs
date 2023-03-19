@@ -20,10 +20,11 @@ public class AccessUserService : IAccessUserService
     /// Поочередно проверяем по почте, номеру телефона.
     /// </summary>
     /// <param name="availableBlockedText">Почта или номер телефона для проверки блокировки.</param>
+    /// <param name="isVkAuth">Признак блокировки через ВК.</param>
     /// <returns>Признак блокировки.</returns>
-    public async Task<bool> CheckBlockedUserAsync(string availableBlockedText)
+    public async Task<bool> CheckBlockedUserAsync(string availableBlockedText, bool isVkAuth)
     {
-        var blockedUser = await _accessUserRepository.CheckBlockedUserAsync(availableBlockedText);
+        var blockedUser = await _accessUserRepository.CheckBlockedUserAsync(availableBlockedText, isVkAuth);
 
         return blockedUser;
     }
