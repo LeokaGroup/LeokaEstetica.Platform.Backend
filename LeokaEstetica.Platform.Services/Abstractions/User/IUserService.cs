@@ -46,7 +46,7 @@ public interface IUserService
     Task<UserSignInOutput> SignInAsync(string googleAuthToken);
 
     /// <summary>
-    /// Метод авторизации через DR. Если аккаунт не зарегистрирован в системе,
+    /// Метод авторизации через VK. Если аккаунт не зарегистрирован в системе,
     /// то создаем также аккаунт используя данные аккаунта DR пользователя.
     /// </summary>
     /// <param name="vkUserId">Id пользователя в системе ВК.</param>

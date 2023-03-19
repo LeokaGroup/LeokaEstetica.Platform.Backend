@@ -193,7 +193,8 @@ public class UserService : IUserService
             VkUserId = vkUserId,
             FirstName = firstName,
             LastName = lastName,
-            EmailConfirmed = true
+            EmailConfirmed = true,
+            IsVkAuth = true
         };
 
         return model;
@@ -470,7 +471,7 @@ public class UserService : IUserService
     }
 
     /// <summary>
-    /// Метод авторизации через DR. Если аккаунт не зарегистрирован в системе,
+    /// Метод авторизации через VK. Если аккаунт не зарегистрирован в системе,
     /// то создаем также аккаунт используя данные аккаунта DR пользователя.
     /// </summary>
     /// <param name="vkUserId">Id пользователя в системе ВК.</param>
@@ -502,10 +503,8 @@ public class UserService : IUserService
                 // Добавляет данные о пользователе в таблицу профиля.
                 var profileInfoId = await _profileRepository.AddUserInfoAsync(userId);
 
-                var confirmationEmailCode = Guid.NewGuid();
-            
                 // Записываем пользавателю код подтверждения для проверки его позже из его почты по ссылке.
-                await _userRepository.SetConfirmAccountCodeAsync(confirmationEmailCode, userId);
+                await _userRepository.SetConfirmAccountCodeAsync(Guid.NewGuid(), userId);
 
                 // Добавляем пользователю бесплатную подписку.
                 await _subscriptionRepository.AddUserSubscriptionAsync(userId, SubscriptionTypeEnum.FareRule, 1);
