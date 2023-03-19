@@ -34,12 +34,6 @@ public partial class KnowledgeStartConfiguration : IEntityTypeConfiguration<Know
             .HasMaxLength(200)
             .IsRequired();
         
-        entity.Property(e => e.CategoryTypeName)
-            .HasColumnName("CategoryTypeName")
-            .HasColumnType("varchar(200)")
-            .HasMaxLength(200)
-            .IsRequired();
-        
         entity.Property(e => e.Position)
             .HasColumnName("Position")
             .HasColumnType("int")
