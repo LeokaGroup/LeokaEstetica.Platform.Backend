@@ -2,6 +2,7 @@
 using LeokaEstetica.Platform.Core.Attributes;
 using LeokaEstetica.Platform.Services.Abstractions.FareRule;
 using LeokaEstetica.Platform.Services.Abstractions.Header;
+using LeokaEstetica.Platform.Services.Abstractions.Knowledge;
 using LeokaEstetica.Platform.Services.Abstractions.Landing;
 using LeokaEstetica.Platform.Services.Abstractions.Profile;
 using LeokaEstetica.Platform.Services.Abstractions.Project;
@@ -12,6 +13,7 @@ using LeokaEstetica.Platform.Services.Abstractions.User;
 using LeokaEstetica.Platform.Services.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Services.Services.FareRule;
 using LeokaEstetica.Platform.Services.Services.Header;
+using LeokaEstetica.Platform.Services.Services.Knowledge;
 using LeokaEstetica.Platform.Services.Services.Landing;
 using LeokaEstetica.Platform.Services.Services.Profile;
 using LeokaEstetica.Platform.Services.Services.Project;
@@ -167,6 +169,16 @@ public class ServicesModule : Module
         builder
             .RegisterType<ProjectInviteTeamLoginStrategy>()
             .As<BaseProjectInviteTeamStrategy>()
+            .InstancePerLifetimeScope();
+        
+        // Сервис БЗ.
+        builder
+            .RegisterType<KnowledgeService>()
+            .Named<IKnowledgeService>("KnowledgeService")
+            .InstancePerLifetimeScope();
+        builder
+            .RegisterType<KnowledgeService>()
+            .As<IKnowledgeService>()
             .InstancePerLifetimeScope();
     }
 }

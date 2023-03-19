@@ -3,6 +3,7 @@ using LeokaEstetica.Platform.Core.Attributes;
 using LeokaEstetica.Platform.Database.Abstractions.AvailableLimits;
 using LeokaEstetica.Platform.Database.Abstractions.Commerce;
 using LeokaEstetica.Platform.Database.Abstractions.Header;
+using LeokaEstetica.Platform.Database.Abstractions.Knowledge;
 using LeokaEstetica.Platform.Database.Abstractions.Landing;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Access;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Project;
@@ -22,6 +23,7 @@ using LeokaEstetica.Platform.Database.Repositories.AvailableLimits;
 using LeokaEstetica.Platform.Database.Repositories.Chat;
 using LeokaEstetica.Platform.Database.Repositories.Commerce;
 using LeokaEstetica.Platform.Database.Repositories.Header;
+using LeokaEstetica.Platform.Database.Repositories.Knowledge;
 using LeokaEstetica.Platform.Database.Repositories.Landing;
 using LeokaEstetica.Platform.Database.Repositories.Moderation.Access;
 using LeokaEstetica.Platform.Database.Repositories.Moderation.Project;
@@ -230,6 +232,16 @@ public class RepositoriesModule : Module
         builder
             .RegisterType<AccessUserRepository>()
             .As<IAccessUserRepository>()
+            .InstancePerLifetimeScope();
+        
+        // Репозиторий БЗ.
+        builder
+            .RegisterType<KnowledgeRepository>()
+            .Named<IKnowledgeRepository>("KnowledgeRepository")
+            .InstancePerLifetimeScope();
+        builder
+            .RegisterType<KnowledgeRepository>()
+            .As<IKnowledgeRepository>()
             .InstancePerLifetimeScope();
     }
 }
