@@ -249,6 +249,9 @@ public class ProjectRepository : IProjectRepository
                 ProjectIcon = project.ProjectIcon,
                 ProjectId = project.ProjectId
             };
+
+            await _pgContext.SaveChangesAsync();
+            
             await transaction.CommitAsync();
 
             return result;
