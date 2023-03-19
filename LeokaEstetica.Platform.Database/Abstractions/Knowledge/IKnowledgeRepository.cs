@@ -1,4 +1,4 @@
-using LeokaEstetica.Platform.Models.Entities.Knowlege;
+using LeokaEstetica.Platform.Models.Dto.Output.Knowledge;
 
 namespace LeokaEstetica.Platform.Database.Abstractions.Knowledge;
 
@@ -7,9 +7,5 @@ namespace LeokaEstetica.Platform.Database.Abstractions.Knowledge;
 /// </summary>
 public interface IKnowledgeRepository
 {
-    /// <summary>
-    /// Метод получает данные из стартовой таблицы БЗ.
-    /// </summary>
-    /// <returns>Данные из стартовой таблицы БЗ.</returns>
-    Task<List<KnowledgeStartEntity>> GetKnowlegeStartAsync();
+    Task<IEnumerable<KnowledgeLandingOutput>> GetKnowlegeLandingAsync();
 }

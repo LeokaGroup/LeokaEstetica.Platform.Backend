@@ -11,5 +11,5 @@ public interface IKnowledgeService
     /// Метод получает частые вопросы для лендинга.
     /// </summary>
     /// <returns>Список частых вопросов.</returns>
-    Task<IEnumerable<KnowledgeLandingOutput>> GetLandingKnowledgeAsync();
+    Task<KnowledgeLandingResult> GetLandingKnowledgeAsync();
 }

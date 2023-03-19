@@ -31,11 +31,17 @@ public class KnowledgeService : IKnowledgeService
     /// Метод получает частые вопросы для лендинга.
     /// </summary>
     /// <returns>Список частых вопросов.</returns>
-    public async Task<IEnumerable<KnowledgeLandingOutput>> GetLandingKnowledgeAsync()
+    public async Task<KnowledgeLandingResult> GetLandingKnowledgeAsync()
     {
         try
         {
-            
+            var result = new KnowledgeLandingResult
+            {
+                Title = "Частые вопросы",
+                KnowledgeLanding = await _knowledgeRepository.GetKnowlegeLandingAsync()
+            };
+
+            return result;
         }
         
         catch (Exception ex)

@@ -1,5 +1,6 @@
 using LeokaEstetica.Platform.Base;
 using LeokaEstetica.Platform.Models.Dto.Output.Knowledge;
+using LeokaEstetica.Platform.Services.Abstractions.Knowledge;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LeokaEstetica.Platform.Controllers.Knowledge;
@@ -11,11 +12,15 @@ namespace LeokaEstetica.Platform.Controllers.Knowledge;
 [Route("knowledge")]
 public class KnowledgeController : BaseController
 {
+    private readonly IKnowledgeService _knowledgeService;
+    
     /// <summary>
     /// Конструктор.
+    /// <param name="knowledgeService">Сервис БЗ.</param>
     /// </summary>
-    public KnowledgeController()
+    public KnowledgeController(IKnowledgeService knowledgeService)
     {
+        _knowledgeService = knowledgeService;
     }
 
     /// <summary>
@@ -29,8 +34,10 @@ public class KnowledgeController : BaseController
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<IEnumerable<KnowledgeLandingOutput>> GetLandingKnowledgeAsync()
+    public async Task<KnowledgeLandingResult> GetLandingKnowledgeAsync()
     {
-        
+        var result = await _knowledgeService.GetLandingKnowledgeAsync();
+
+        return result;
     }
 }
