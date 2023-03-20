@@ -1,5 +1,6 @@
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using LeokaEstetica.Platform.Access.Abstractions.User;
 using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.Commerce;
 using LeokaEstetica.Platform.Database.Abstractions.FareRule;
@@ -27,18 +28,30 @@ public class PayMasterService : IPayMasterService
     private readonly IFareRuleRepository _fareRuleRepository;
     private readonly IUserRepository _userRepository;
     private readonly IPayMasterRepository _payMasterRepository;
+    public readonly IAccessUserService _accessUserService;
 
+    /// <summary>
+    /// Конструктор.
+    /// </summary>
+    /// <param name="logService">Сервис логера.</param>
+    /// <param name="configuration">Конфигурация внедренная через DI.</param>
+    /// <param name="fareRuleRepository">Репозиторий правил.</param>
+    /// <param name="userRepository">Репозиторий пользователя.</param>
+    /// <param name="payMasterRepository">Сервис ПС PayMaster.</param>
+    /// <param name="accessUserService">Сервис доступа пользователя.</param>
     public PayMasterService(ILogService logService,
         IConfiguration configuration,
         IFareRuleRepository fareRuleRepository,
         IUserRepository userRepository,
-        IPayMasterRepository payMasterRepository)
+        IPayMasterRepository payMasterRepository, 
+        IAccessUserService accessUserService)
     {
         _logService = logService;
         _configuration = configuration;
         _fareRuleRepository = fareRuleRepository;
         _userRepository = userRepository;
         _payMasterRepository = payMasterRepository;
+        _accessUserService = accessUserService;
     }
 
     /// <summary>
@@ -53,6 +66,16 @@ public class PayMasterService : IPayMasterService
         {
             using var httpClient = new HttpClient();
             var userId = await _userRepository.GetUserByEmailAsync(account);
+            
+            // Проверяем заполнение анкеты и даем доступ либо нет.
+            var isEmptyProfile = await _accessUserService.IsProfileEmptyAsync(userId);
+
+            // Если нет доступа, то не даем оплатить платный тариф.
+            if (isEmptyProfile)
+            {
+                var ex = new InvalidOperationException($"Анкета пользователя не заполнена. UserId был: {userId}");
+                throw ex;
+            }
 
             // Находим тариф, который оплачивает пользователь.
             var fareRule = await _fareRuleRepository.GetByIdAsync(createOrderInput.FareRuleId);

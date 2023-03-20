@@ -1,5 +1,6 @@
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Database.Access.User;
+using LeokaEstetica.Platform.Models.Entities.Profile;
 using Microsoft.EntityFrameworkCore;
 
 namespace LeokaEstetica.Platform.Database.Repositories.Access.User;
@@ -61,5 +62,19 @@ public class AccessUserRepository : IAccessUserRepository
         }
 
         return false;
+    }
+
+    /// <summary>
+    /// Метод проверяет, заполнена ли анкета пользователя.
+    /// Если не заполнена, то запрещаем доступ к ключевому функционалу.
+    /// </summary>
+    /// <param name="userId">ID пользователя.</param>
+    /// <returns>Признак проверки.</returns>
+    public async Task<ProfileInfoEntity> IsProfileEmptyAsync(long userId)
+    {
+        var result = await _pgContext.ProfilesInfo
+            .FirstOrDefaultAsync(p => p.UserId == userId);
+
+        return result;
     }
 }

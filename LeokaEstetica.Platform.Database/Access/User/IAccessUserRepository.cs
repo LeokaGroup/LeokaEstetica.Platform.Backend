@@ -1,3 +1,5 @@
+using LeokaEstetica.Platform.Models.Entities.Profile;
+
 namespace LeokaEstetica.Platform.Database.Access.User;
 
 /// <summary>
@@ -13,4 +15,12 @@ public interface IAccessUserRepository
     /// <param name="isVkAuth">Признак блокировки через ВК.</param>
     /// <returns>Признак блокировки.</returns>
     Task<bool> CheckBlockedUserAsync(string availableBlockedText, bool isVkAuth);
+    
+    /// <summary>
+    /// Метод проверяет, заполнена ли анкета пользователя.
+    /// Если не заполнена, то запрещаем доступ к ключевому функционалу.
+    /// </summary>
+    /// <param name="userId">ID пользователя.</param>
+    /// <returns>Признак проверки.</returns>
+    Task<ProfileInfoEntity> IsProfileEmptyAsync(long userId);
 }
