@@ -8,6 +8,8 @@ using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Models.Dto.Input.Commerce.PayMaster;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce.PayMaster;
+using LeokaEstetica.Platform.Notifications.Abstractions;
+using LeokaEstetica.Platform.Notifications.Consts;
 using LeokaEstetica.Platform.Processing.Abstractions.PayMaster;
 using LeokaEstetica.Platform.Processing.Consts;
 using LeokaEstetica.Platform.Processing.Enums;
@@ -28,7 +30,8 @@ public class PayMasterService : IPayMasterService
     private readonly IFareRuleRepository _fareRuleRepository;
     private readonly IUserRepository _userRepository;
     private readonly IPayMasterRepository _payMasterRepository;
-    public readonly IAccessUserService _accessUserService;
+    private readonly IAccessUserService _accessUserService;
+    private readonly IAccessUserNotificationsService _accessUserNotificationsService;
 
     /// <summary>
     /// Конструктор.
@@ -39,12 +42,14 @@ public class PayMasterService : IPayMasterService
     /// <param name="userRepository">Репозиторий пользователя.</param>
     /// <param name="payMasterRepository">Сервис ПС PayMaster.</param>
     /// <param name="accessUserService">Сервис доступа пользователя.</param>
+    /// <param name="accessUserNotificationsService">Сервис уведомлений доступа пользователя.</param>
     public PayMasterService(ILogService logService,
         IConfiguration configuration,
         IFareRuleRepository fareRuleRepository,
         IUserRepository userRepository,
         IPayMasterRepository payMasterRepository, 
-        IAccessUserService accessUserService)
+        IAccessUserService accessUserService, 
+        IAccessUserNotificationsService accessUserNotificationsService)
     {
         _logService = logService;
         _configuration = configuration;
@@ -52,6 +57,7 @@ public class PayMasterService : IPayMasterService
         _userRepository = userRepository;
         _payMasterRepository = payMasterRepository;
         _accessUserService = accessUserService;
+        _accessUserNotificationsService = accessUserNotificationsService;
     }
 
     /// <summary>
@@ -74,6 +80,11 @@ public class PayMasterService : IPayMasterService
             if (isEmptyProfile)
             {
                 var ex = new InvalidOperationException($"Анкета пользователя не заполнена. UserId был: {userId}");
+
+                await _accessUserNotificationsService.SendNotificationWarningEmptyUserProfileAsync("Внимание",
+                    "Для продолжения должна быть заполнена основная информация вашей анкеты.",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, userId);
+                
                 throw ex;
             }
 
