@@ -718,6 +718,21 @@ public class ProjectService : IProjectService
                 await _logService.LogErrorAsync(ex);
                 throw ex;
             }
+            
+            // Проверяем заполнение анкеты и даем доступ либо нет.
+            var isEmptyProfile = await _accessUserService.IsProfileEmptyAsync(userId);
+
+            // Если нет доступа, то не даем оплатить платный тариф.
+            if (isEmptyProfile)
+            {
+                var ex = new InvalidOperationException($"Анкета пользователя не заполнена. UserId был: {userId}");
+
+                await _accessUserNotificationsService.SendNotificationWarningEmptyUserProfileAsync("Внимание",
+                    "Для отклика на проект должна быть заполнена основная информация вашей анкеты.",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, userId);
+                
+                throw ex;
+            }
 
             var result = await _projectRepository.WriteProjectResponseAsync(projectId, vacancyId, userId);
 
