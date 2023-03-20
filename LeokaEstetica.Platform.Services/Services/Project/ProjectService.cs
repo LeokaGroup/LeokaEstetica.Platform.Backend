@@ -1,6 +1,7 @@
 using System.Globalization;
 using AutoMapper;
 using LeokaEstetica.Platform.Access.Abstractions.AvailableLimits;
+using LeokaEstetica.Platform.Access.Abstractions.User;
 using LeokaEstetica.Platform.Access.Enums;
 using LeokaEstetica.Platform.Core.Constants;
 using LeokaEstetica.Platform.Core.Enums;
@@ -100,6 +101,8 @@ public class ProjectService : IProjectService
     private static readonly string _approveVacancy = "Опубликована";
 
     private readonly IProjectNotificationsRepository _projectNotificationsRepository;
+    private readonly IAccessUserNotificationsService _accessUserNotificationsService;
+    private readonly IAccessUserService _accessUserService;
 
     /// <summary>
     /// Конструктор.
@@ -114,6 +117,8 @@ public class ProjectService : IProjectService
     /// <param name="availableLimitsService">Сервис проверки лимитов.</param>
     /// <param name="vacancyModerationService">Сервис модерации вакансий проектов.</param>
     /// <param name="notificationsRepository">Репозиторий уведомлений.</param>
+    /// <param name="accessUserNotificationsService">Сервис уведомлений доступа пользователя.</param>
+    /// <param name="accessUserService">Сервис доступа пользователя.</param>
     public ProjectService(IProjectRepository projectRepository,
         ILogService logService,
         IUserRepository userRepository,
@@ -125,7 +130,9 @@ public class ProjectService : IProjectService
         ISubscriptionRepository subscriptionRepository, 
         IFareRuleRepository fareRuleRepository, 
         IVacancyModerationService vacancyModerationService, 
-        IProjectNotificationsRepository projectNotificationsRepository)
+        IProjectNotificationsRepository projectNotificationsRepository, 
+        IAccessUserNotificationsService accessUserNotificationsService, 
+        IAccessUserService accessUserService)
     {
         _projectRepository = projectRepository;
         _logService = logService;
@@ -139,6 +146,8 @@ public class ProjectService : IProjectService
         _fareRuleRepository = fareRuleRepository;
         _vacancyModerationService = vacancyModerationService;
         _projectNotificationsRepository = projectNotificationsRepository;
+        _accessUserNotificationsService = accessUserNotificationsService;
+        _accessUserService = accessUserService;
 
         // Определяем обработчики цепочки фильтров.
         _dateProjectsFilterChain.Successor = _projectsVacanciesFilterChain;
@@ -175,6 +184,21 @@ public class ProjectService : IProjectService
                 throw ex;
             }
             
+            // Проверяем заполнение анкеты и даем доступ либо нет.
+            var isEmptyProfile = await _accessUserService.IsProfileEmptyAsync(userId);
+
+            // Если нет доступа, то не даем оплатить платный тариф.
+            if (isEmptyProfile)
+            {
+                var ex = new InvalidOperationException($"Анкета пользователя не заполнена. UserId был: {userId}");
+
+                await _accessUserNotificationsService.SendNotificationWarningEmptyUserProfileAsync("Внимание",
+                    "Для создания проекта должна быть заполнена основная информация вашей анкеты.",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, userId);
+                
+                throw ex;
+            }
+            
             // Получаем подписку пользователя.
             var userSubscription = await _subscriptionRepository.GetUserSubscriptionAsync(userId);
             
@@ -190,7 +214,9 @@ public class ProjectService : IProjectService
             {
                 var ex = new Exception($"Превышен лимит проектов по тарифу. UserId: {userId}. Тариф: {fareRule.Name}");
                 await _logService.LogErrorAsync(ex);
-                await _projectNotificationsService.SendNotificationWarningLimitFareRuleProjectsAsync("Что то пошло не так",
+                
+                await _projectNotificationsService.SendNotificationWarningLimitFareRuleProjectsAsync(
+                    "Что то пошло не так",
                     "Превышен лимит проектов по тарифу.",
                     NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, userId);
 

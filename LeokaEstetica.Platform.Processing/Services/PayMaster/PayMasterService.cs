@@ -82,7 +82,7 @@ public class PayMasterService : IPayMasterService
                 var ex = new InvalidOperationException($"Анкета пользователя не заполнена. UserId был: {userId}");
 
                 await _accessUserNotificationsService.SendNotificationWarningEmptyUserProfileAsync("Внимание",
-                    "Для продолжения должна быть заполнена основная информация вашей анкеты.",
+                    "Для покупки тарифа должна быть заполнена основная информация вашей анкеты.",
                     NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, userId);
                 
                 throw ex;
