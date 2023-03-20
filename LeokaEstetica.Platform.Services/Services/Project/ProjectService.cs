@@ -193,7 +193,7 @@ public class ProjectService : IProjectService
                 var ex = new InvalidOperationException($"Анкета пользователя не заполнена. UserId был: {userId}");
 
                 await _accessUserNotificationsService.SendNotificationWarningEmptyUserProfileAsync("Внимание",
-                    "Для создания проекта должна быть заполнена основная информация вашей анкеты.",
+                    "Для создания проекта должна быть заполнена информация вашей анкеты.",
                     NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, userId);
                 
                 throw ex;
@@ -728,7 +728,7 @@ public class ProjectService : IProjectService
                 var ex = new InvalidOperationException($"Анкета пользователя не заполнена. UserId был: {userId}");
 
                 await _accessUserNotificationsService.SendNotificationWarningEmptyUserProfileAsync("Внимание",
-                    "Для отклика на проект должна быть заполнена основная информация вашей анкеты.",
+                    "Для отклика на проект должна быть заполнена информация вашей анкеты.",
                     NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, userId);
                 
                 throw ex;
@@ -848,6 +848,21 @@ public class ProjectService : IProjectService
             if (currentUserId <= 0)
             {
                 var ex = new NotFoundUserIdByAccountException(inviteText);
+                throw ex;
+            }
+            
+            // Проверяем заполнение анкеты и даем доступ либо нет.
+            var isEmptyProfile = await _accessUserService.IsProfileEmptyAsync(currentUserId);
+
+            // Если нет доступа, то не даем оплатить платный тариф.
+            if (isEmptyProfile)
+            {
+                var ex = new InvalidOperationException($"Анкета пользователя не заполнена. UserId был: {currentUserId}");
+
+                await _accessUserNotificationsService.SendNotificationWarningEmptyUserProfileAsync("Внимание",
+                    "Для приглашения пользователей в проект должна быть заполнена информация вашей анкеты.",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, currentUserId);
+                
                 throw ex;
             }
 
