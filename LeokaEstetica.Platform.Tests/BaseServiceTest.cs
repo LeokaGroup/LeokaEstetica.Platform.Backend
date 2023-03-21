@@ -137,14 +137,15 @@ public class BaseServiceTest
 
         var projectCommentsRepository = new ProjectCommentsRepository(pgContext);
 
-        ProjectCommentsService = new ProjectCommentsService(logService, userRepository, projectCommentsRepository);
+        ProjectCommentsService = new ProjectCommentsService(logService, userRepository, projectCommentsRepository, null, null);
         ProjectFinderService = new ProjectFinderService(logService, userRepository, projectNotificationsService);
 
         var resumeRepository = new ResumeRepository(pgContext);
 
         ProjectService = new ProjectService(projectRepository, logService, userRepository, mapper,
             projectNotificationsService, VacancyService, vacancyRepository, availableLimitsService,
-            subscriptionRepository, fareRuleRepository, VacancyModerationService, projectNotificationsRepository);
+            subscriptionRepository, fareRuleRepository, VacancyModerationService, projectNotificationsRepository, null,
+            null);
 
         SubscriptionService =
             new SubscriptionService(logService, userRepository, subscriptionRepository, fareRuleRepository);
@@ -160,7 +161,7 @@ public class BaseServiceTest
 
         FareRuleService = new FareRuleService(fareRuleRepository, logService);
         PayMasterService = new PayMasterService(logService, AppConfiguration, fareRuleRepository, userRepository,
-            payMasterRepository);
+            payMasterRepository, null, null);
 
         var userBlackListService = new UserBlackListRepository(pgContext);
         UserBlackListService = new UserBlackListService(logService, userBlackListService);

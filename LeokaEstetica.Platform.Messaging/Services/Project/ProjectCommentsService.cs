@@ -1,9 +1,12 @@
+using LeokaEstetica.Platform.Access.Abstractions.User;
 using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
 using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Messaging.Abstractions.Project;
 using LeokaEstetica.Platform.Models.Entities.Communication;
+using LeokaEstetica.Platform.Notifications.Abstractions;
+using LeokaEstetica.Platform.Notifications.Consts;
 
 namespace LeokaEstetica.Platform.Messaging.Services.Project;
 
@@ -15,14 +18,20 @@ public sealed class ProjectCommentsService : IProjectCommentsService
     private readonly ILogService _logService;
     private readonly IUserRepository _userRepository;
     private readonly IProjectCommentsRepository _projectCommentsRepository;
-
+    private readonly IAccessUserService _accessUserService;
+    private readonly IAccessUserNotificationsService _accessUserNotificationsService;
+    
     public ProjectCommentsService(ILogService logService, 
         IUserRepository userRepository, 
-        IProjectCommentsRepository projectCommentsRepository)
+        IProjectCommentsRepository projectCommentsRepository, 
+        IAccessUserService accessUserService, 
+        IAccessUserNotificationsService accessUserNotificationsService)
     {
         _logService = logService;
         _userRepository = userRepository;
         _projectCommentsRepository = projectCommentsRepository;
+        _accessUserService = accessUserService;
+        _accessUserNotificationsService = accessUserNotificationsService;
     }
 
     /// <summary>
@@ -41,6 +50,21 @@ public sealed class ProjectCommentsService : IProjectCommentsService
             {
                 var ex = new NotFoundUserIdByAccountException(account);
                 await _logService.LogErrorAsync(ex);
+                throw ex;
+            }
+            
+            // Проверяем заполнение анкеты и даем доступ либо нет.
+            var isEmptyProfile = await _accessUserService.IsProfileEmptyAsync(userId);
+
+            // Если нет доступа, то не даем оплатить платный тариф.
+            if (isEmptyProfile)
+            {
+                var ex = new InvalidOperationException($"Анкета пользователя не заполнена. UserId был: {userId}");
+
+                await _accessUserNotificationsService.SendNotificationWarningEmptyUserProfileAsync("Внимание",
+                    "Для оставления комментария к проекту должна быть заполнена информация вашей анкеты.",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, userId);
+                
                 throw ex;
             }
             
