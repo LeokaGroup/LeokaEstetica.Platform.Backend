@@ -18,9 +18,10 @@ public interface IAccessUserRepository
     
     /// <summary>
     /// Метод проверяет, заполнена ли анкета пользователя.
-    /// Если не заполнена, то запрещаем доступ к ключевому функционалу.
+    /// Если не заполнена, то запрещаем доступ к ключевому функционалу. 
     /// </summary>
     /// <param name="userId">ID пользователя.</param>
     /// <returns>Признак проверки.</returns>
-    Task<ProfileInfoEntity> IsProfileEmptyAsync(long userId);
+    Task<(ProfileInfoEntity UserProfile, List<UserIntentEntity> UserIntents, List<UserSkillEntity> UserSkills)>
+        IsProfileEmptyAsync(long userId);
 }

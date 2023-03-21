@@ -11,7 +11,7 @@ namespace LeokaEstetica.Platform.Database.Repositories.Access.User;
 public class AccessUserRepository : IAccessUserRepository
 {
     private readonly PgContext _pgContext;
-    
+
     /// <summary>
     /// Конструктор.
     /// </summary>
@@ -36,13 +36,13 @@ public class AccessUserRepository : IAccessUserRepository
         {
             var blockedVkUser = await _pgContext.UserVkBlackList
                 .AnyAsync(u => u.VkUserId == long.Parse(availableBlockedText));
-            
+
             if (blockedVkUser)
             {
                 return true;
             }
         }
-        
+
         // Проверяем блокировку пользрвателя по почте.
         var blockedEmailUser = await _pgContext.UserEmailBlackList
             .AnyAsync(u => u.Email.Equals(availableBlockedText));
@@ -51,11 +51,11 @@ public class AccessUserRepository : IAccessUserRepository
         {
             return true;
         }
-        
+
         // Проверяем блокировку пользрвателя по номеру телефона.
         var blockedUserPhoneNumber = await _pgContext.UserPhoneBlackList
             .AnyAsync(u => u.PhoneNumber.Equals(availableBlockedText));
-        
+
         if (blockedUserPhoneNumber)
         {
             return true;
@@ -70,10 +70,22 @@ public class AccessUserRepository : IAccessUserRepository
     /// </summary>
     /// <param name="userId">ID пользователя.</param>
     /// <returns>Признак проверки.</returns>
-    public async Task<ProfileInfoEntity> IsProfileEmptyAsync(long userId)
+    public async Task<(ProfileInfoEntity, List<UserIntentEntity>, List<UserSkillEntity>)>
+        IsProfileEmptyAsync(long userId)
     {
-        var result = await _pgContext.ProfilesInfo
+        var result = (UserProfile: new ProfileInfoEntity(), UserIntents: new List<UserIntentEntity>(),
+            UserSkills: new List<UserSkillEntity>());
+
+        result.UserProfile = await _pgContext.ProfilesInfo
             .FirstOrDefaultAsync(p => p.UserId == userId);
+
+        result.UserIntents = await _pgContext.UserIntents
+            .Where(i => i.UserId == userId)
+            .ToListAsync();
+
+        result.UserSkills = await _pgContext.UserSkills
+            .Where(i => i.UserId == userId)
+            .ToListAsync();
 
         return result;
     }
