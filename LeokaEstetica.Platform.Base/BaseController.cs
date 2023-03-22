@@ -15,15 +15,20 @@ public class BaseController : ControllerBase
     [ApiExplorerSettings(IgnoreApi = true)]
     protected string GetUserName()
     {
+        var user = HttpContext.User?.Identity?.Name ?? GetLoginFromCookie() ?? GetLoginFromHeaders();
+
+        if (user is null)
+        {
+            return null;
+        }
+        
         // Запишет логин в куки и вернет фронту.
         if (!HttpContext.Request.Cookies.ContainsKey("name"))
         {
-            HttpContext.Response.Cookies.Append("user", HttpContext?.User?.Identity?.Name
-                                                        ?? GetLoginFromCookie()
-                                                        ?? GetLoginFromHeaders());
+            HttpContext.Response.Cookies.Append("user", user);
         }
 
-        return HttpContext?.User?.Identity?.Name ?? GetLoginFromCookie() ?? GetLoginFromHeaders();
+        return user;
     }
     
     /// <summary>
