@@ -479,6 +479,17 @@ public class VacancyService : IVacancyService
                 var ex = new NotFoundUserIdByAccountException(account);
                 throw ex;
             }
+            
+            if (vacancyId <= 0)
+            {
+                var ex = new ArgumentNullException($"Id вакансии не может быть пустым. VacancyId: {vacancyId}");
+                
+                await _vacancyNotificationsService.SendNotificationErrorDeleteVacancyAsync("Что то пошло не так",
+                    "Ошибка при удалении вакансии. Мы уже знаем о проблеме и уже занимаемся ей.",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, userId);
+                
+                throw ex;
+            }
 
             // Только владелец вакансии может удалять вакансии проекта.
             var isOwner = await _vacancyRepository.CheckProjectOwnerAsync(vacancyId, userId);
