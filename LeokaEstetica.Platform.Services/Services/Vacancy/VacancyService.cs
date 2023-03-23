@@ -278,6 +278,7 @@ public class VacancyService : IVacancyService
             var fareRules = await _fareRuleRepository.GetFareRulesAsync();
             var fareRulesList = fareRules.ToList();
 
+            // TODO: Вынести в отдельный сервис эту логику.
             // Выбираем пользователей, у которых есть подписка выше бизнеса. Только их выделяем цветом.
             foreach (var v in result.CatalogVacancies)
             {
