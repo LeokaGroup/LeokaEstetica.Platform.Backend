@@ -344,4 +344,9 @@ public class PgContext : DbContext
     /// Теневая таблица ЧС VK.
     /// </summary>
     public DbSet<UserVkBlackListShadowEntity> UserVkBlackListShadow { get; set; }
+
+    /// <summary>
+    /// Таблица архива вакансий
+    /// </summary>
+    public DbSet<UserVkBlackListShadowEntity> ArchivedVacancies { get; set; }
 }
