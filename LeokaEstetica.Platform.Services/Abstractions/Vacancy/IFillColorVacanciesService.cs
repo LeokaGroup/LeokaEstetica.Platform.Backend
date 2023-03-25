@@ -10,9 +10,9 @@ namespace LeokaEstetica.Platform.Services.Abstractions.Vacancy;
 public interface IFillColorVacanciesService
 {
     /// <summary>
-    /// Метод выделяет цветом пользователей у которых есть подписка выше бизнеса и возвращает измененный каталог.
+    /// Метод выделяет цветом пользователей у которых есть подписка выше бизнеса.
     /// </summary>
-    public Task<IEnumerable<CatalogVacancyOutput>> SetColorBusinessVacanciesAsync(IEnumerable<CatalogVacancyOutput> vacancies,
+    public void SetColorBusinessVacancies(ref IEnumerable<CatalogVacancyOutput> vacancies,
         List<UserSubscriptionEntity> userSubscriptions,
         List<SubscriptionEntity> subscriptions,
         List<FareRuleEntity> fareRulesList);

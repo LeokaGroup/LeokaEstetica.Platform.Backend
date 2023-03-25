@@ -272,11 +272,8 @@ public class VacancyService : IVacancyService
             var fareRulesList = fareRules.ToList();
 
             // Выбираем пользователей, у которых есть подписка выше бизнеса. Только их выделяем цветом.
-            result.CatalogVacancies= await _fillColorVacanciesService
-                .SetColorBusinessVacanciesAsync(result.CatalogVacancies, 
-                userSubscriptions,
-                subscriptions, 
-                fareRulesList);         
+            var catalogVacancies = result.CatalogVacancies;
+            _fillColorVacanciesService.SetColorBusinessVacancies(ref catalogVacancies, userSubscriptions, subscriptions, fareRulesList);         
 
             result.CatalogVacancies = ClearCatalogVacanciesHtmlTags(result.CatalogVacancies.ToList());
 

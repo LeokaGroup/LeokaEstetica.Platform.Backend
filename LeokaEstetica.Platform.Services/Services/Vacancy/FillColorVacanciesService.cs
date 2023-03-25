@@ -25,7 +25,7 @@ public class FillColorVacanciesService : IFillColorVacanciesService
     /// <summary>
     /// Метод выделяет цветом пользователей у которых есть подписка выше бизнеса и возвращает измененный каталог.
     /// </summary>
-    public async Task<IEnumerable<CatalogVacancyOutput>> SetColorBusinessVacanciesAsync(IEnumerable<CatalogVacancyOutput> vacancies,
+    public void SetColorBusinessVacancies(ref IEnumerable<CatalogVacancyOutput> vacancies,
         List<UserSubscriptionEntity> userSubscriptions,
         List<SubscriptionEntity> subscriptions,
         List<FareRuleEntity> fareRulesList)
@@ -63,7 +63,5 @@ public class FillColorVacanciesService : IFillColorVacanciesService
                 vacancy.IsSelectedColor = true;
             }
         }
-
-        return vacancies;
     }
 }
