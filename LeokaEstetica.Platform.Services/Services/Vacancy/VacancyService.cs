@@ -82,6 +82,7 @@ public class VacancyService : IVacancyService
 
     private readonly IProjectRepository _projectRepository;
     
+
     /// <summary>
     /// Конструктор.
     /// </summary>
@@ -257,9 +258,25 @@ public class VacancyService : IVacancyService
             {
                 return result;
             }
-                
+            // Получаем список юзеров для проставления цветов.
+            var userIds = result.CatalogVacancies.Select(p => p.UserId).Distinct();
+
+            // Выбираем список подписок пользователей.
+            var userSubscriptions = await _subscriptionRepository.GetUsersSubscriptionsAsync(userIds);
+
+            // Получаем список подписок.
+            var subscriptions = await _subscriptionRepository.GetSubscriptionsAsync();
+
+            // Получаем список тарифов, чтобы взять названия тарифов.
+            var fareRules = await _fareRuleRepository.GetFareRulesAsync();
+            var fareRulesList = fareRules.ToList();
+
             // Выбираем пользователей, у которых есть подписка выше бизнеса. Только их выделяем цветом.
-            await _fillColorVacanciesService.SetColorBusinessVacanciesAsync(result.CatalogVacancies);         
+            result.CatalogVacancies= await _fillColorVacanciesService
+                .SetColorBusinessVacanciesAsync(result.CatalogVacancies, 
+                userSubscriptions,
+                subscriptions, 
+                fareRulesList);         
 
             result.CatalogVacancies = ClearCatalogVacanciesHtmlTags(result.CatalogVacancies.ToList());
 
