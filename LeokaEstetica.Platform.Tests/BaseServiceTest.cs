@@ -122,7 +122,7 @@ public class BaseServiceTest
         // Не получится сделать просто, VacancyService и ProjectService нужны друг другу тесно.
         VacancyService = new VacancyService(logService, vacancyRepository, mapper, null, userRepository,
             VacancyModerationService, subscriptionRepository, fareRuleRepository, availableLimitsService,
-            vacancyNotificationsService, null);
+            vacancyNotificationsService, null, null);
 
         ChatService = new ChatService(logService, userRepository, projectRepository, vacancyRepository, chatRepository,
             mapper);

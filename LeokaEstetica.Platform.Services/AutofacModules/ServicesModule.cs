@@ -90,7 +90,17 @@ public class ServicesModule : Module
             .RegisterType<VacancyService>()
             .As<IVacancyService>()
             .InstancePerLifetimeScope();
-        
+
+        // Сервис выделение цветом пользователей, у которых подписка выше уровня бизнес.
+        builder
+            .RegisterType<FillColorVacanciesService>()
+            .Named<IFillColorVacanciesService>("FillColorVacanciesService")
+            .InstancePerLifetimeScope();
+        builder
+            .RegisterType<FillColorVacanciesService>()
+            .As<IFillColorVacanciesService>()
+            .InstancePerLifetimeScope();
+
         // Сервис поиска в проектах.
         builder
             .RegisterType<ProjectFinderService>()
