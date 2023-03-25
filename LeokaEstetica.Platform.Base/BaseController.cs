@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using LeokaEstetica.Platform.Core.Extensions;
+using Microsoft.AspNetCore.Mvc;
 
 namespace LeokaEstetica.Platform.Base;
 
@@ -14,13 +15,20 @@ public class BaseController : ControllerBase
     [ApiExplorerSettings(IgnoreApi = true)]
     protected string GetUserName()
     {
+        var user = HttpContext.User?.Identity?.Name ?? GetLoginFromCookie() ?? GetLoginFromHeaders();
+
+        if (user is null)
+        {
+            return null;
+        }
+        
         // Запишет логин в куки и вернет фронту.
         if (!HttpContext.Request.Cookies.ContainsKey("name"))
         {
-            HttpContext.Response.Cookies.Append("user", HttpContext?.User?.Identity?.Name ?? GetLoginFromCookie());
+            HttpContext.Response.Cookies.Append("user", user);
         }
 
-        return HttpContext?.User?.Identity?.Name ?? GetLoginFromCookie();
+        return user;
     }
     
     /// <summary>
@@ -31,5 +39,23 @@ public class BaseController : ControllerBase
     private string GetLoginFromCookie()
     {
         return HttpContext.Request.Cookies["user"];
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <returns></returns>
+    [ApiExplorerSettings(IgnoreApi = true)]
+    private string GetLoginFromHeaders()
+    {
+        if (HttpContext.Request.Headers.TryGetValue("c_dt", out _))
+        {
+            // Внутри есть элементы.
+            // [0] - ConnectionId.
+            // [1] - Email.
+            return HttpContext.Request.Headers.TryGet("c_dt").ToString().Split(":")[1];
+        }
+
+        return null;
     }
 }
