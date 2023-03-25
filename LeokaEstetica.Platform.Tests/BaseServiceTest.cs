@@ -77,6 +77,7 @@ public class BaseServiceTest
     protected readonly ResumeModerationService ResumeModerationService;
     protected readonly LandingService LandingService;
     protected readonly KnowledgeService KnowledgeService;
+    protected readonly PgContext PgContext;
 
     protected BaseServiceTest()
     {
@@ -173,5 +174,7 @@ public class BaseServiceTest
 
         var KnowledgeRepository = new KnowledgeRepository(pgContext);
         KnowledgeService = new KnowledgeService(KnowledgeRepository, logService);
+
+        PgContext = pgContext;
     }
 }
