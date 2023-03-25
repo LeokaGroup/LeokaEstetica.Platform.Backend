@@ -23,7 +23,7 @@ public class FillColorVacanciesService : IFillColorVacanciesService
 
 
     /// <summary>
-    /// Метод выделяет цветом пользователей у которых есть подписка выше бизнеса и возвращает измененный каталог.
+    /// Метод выделяет цветом пользователей у которых есть подписка выше бизнеса.
     /// </summary>
     public void SetColorBusinessVacancies(ref IEnumerable<CatalogVacancyOutput> vacancies,
         List<UserSubscriptionEntity> userSubscriptions,
