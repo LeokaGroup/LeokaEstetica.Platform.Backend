@@ -278,6 +278,7 @@ public class VacancyService : IVacancyService
             var fareRules = await _fareRuleRepository.GetFareRulesAsync();
             var fareRulesList = fareRules.ToList();
 
+            // TODO: Вынести в отдельный сервис эту логику.
             // Выбираем пользователей, у которых есть подписка выше бизнеса. Только их выделяем цветом.
             foreach (var v in result.CatalogVacancies)
             {
@@ -477,6 +478,17 @@ public class VacancyService : IVacancyService
             if (userId <= 0)
             {
                 var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+            
+            if (vacancyId <= 0)
+            {
+                var ex = new ArgumentNullException($"Id вакансии не может быть пустым. VacancyId: {vacancyId}");
+                
+                await _vacancyNotificationsService.SendNotificationErrorDeleteVacancyAsync("Что то пошло не так",
+                    "Ошибка при удалении вакансии. Мы уже знаем о проблеме и уже занимаемся ей.",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, userId);
+                
                 throw ex;
             }
 

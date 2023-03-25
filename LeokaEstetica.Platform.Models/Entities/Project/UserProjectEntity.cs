@@ -13,6 +13,7 @@ public class UserProjectEntity
         ModerationProjects = new HashSet<ModerationProjectEntity>();
         ProjectStatuses = new HashSet<ProjectStatusEntity>();
         UserProjectsStages = new HashSet<UserProjectStageEntity>();
+        ArchivedProjects = new HashSet<ArchivedProjectEntity>();
     }
 
     /// <summary>
@@ -60,4 +61,6 @@ public class UserProjectEntity
     public ICollection<ProjectStatusEntity> ProjectStatuses { get; set; }
 
     public ICollection<UserProjectStageEntity> UserProjectsStages { get; set; }
+
+    public ICollection<ArchivedProjectEntity> ArchivedProjects { get; set; }
 }

@@ -346,7 +346,7 @@ public class PgContext : DbContext
     public DbSet<UserVkBlackListShadowEntity> UserVkBlackListShadow { get; set; }
 
     /// <summary>
-    /// Таблица архива вакансий
+    /// Таблица архива проектов
     /// </summary>
-    public DbSet<UserVkBlackListShadowEntity> ArchivedVacancies { get; set; }
+    public DbSet<ArchivedProjectEntity> ArchivedProjects { get; set; }
 }

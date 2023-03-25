@@ -78,6 +78,7 @@ public class BaseServiceTest
     protected readonly LandingService LandingService;
     protected readonly KnowledgeService KnowledgeService;
     protected readonly PgContext PgContext;
+
     protected BaseServiceTest()
     {
         // Настройка тестовых строк подключения.

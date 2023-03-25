@@ -364,6 +364,7 @@ public class ProjectService : IProjectService
             var fareRules = await _fareRuleRepository.GetFareRulesAsync();
             var fareRulesList = fareRules.ToList();
 
+            // TODO: Вынести в отдельный сервис эту логику.
             // Выбираем пользователей, у которых есть подписка выше бизнеса. Только их выделяем цветом.
             foreach (var prj in result.CatalogProjects)
             {
@@ -397,6 +398,8 @@ public class ProjectService : IProjectService
                     prj.IsSelectedColor = true;
                 }
             }
+            
+            result.CatalogProjects = ClearCatalogVacanciesHtmlTags(result.CatalogProjects.ToList());
 
             return result;
         }
@@ -1422,6 +1425,22 @@ public class ProjectService : IProjectService
         }
         
         _ = await _projectRepository.AddProjectTeamMemberAsync(userId, null, team.TeamId);
+    }
+    
+    /// <summary>
+    /// Метод чистит описание от тегов список проектов для каталога.
+    /// </summary>
+    /// <param name="projects">Список проектов.</param>
+    /// <returns>Список проектов после очистки.</returns>
+    private IEnumerable<CatalogProjectOutput> ClearCatalogVacanciesHtmlTags(List<CatalogProjectOutput> projects)
+    {
+        // Чистим описание проекта от html-тегов.
+        foreach (var prj in projects)
+        {
+            prj.ProjectDetails = ClearHtmlBuilder.Clear(prj.ProjectDetails);
+        }
+
+        return projects;
     }
     
     #endregion

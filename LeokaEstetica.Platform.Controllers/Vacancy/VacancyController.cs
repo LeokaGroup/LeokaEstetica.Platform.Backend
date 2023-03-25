@@ -4,7 +4,6 @@ using LeokaEstetica.Platform.Base.Abstractions.Services.Validation;
 using LeokaEstetica.Platform.Controllers.Filters;
 using LeokaEstetica.Platform.Controllers.Validators.Vacancy;
 using LeokaEstetica.Platform.Finder.Abstractions.Vacancy;
-using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Models.Dto.Input.Vacancy;
 using LeokaEstetica.Platform.Models.Dto.Output.Configs;
 using LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
@@ -26,7 +25,6 @@ public class VacancyController : BaseController
     private readonly IValidationExcludeErrorsService _validationExcludeErrorsService;
     private readonly IVacancyFinderService _vacancyFinderService;
     private readonly IVacancyPaginationService _vacancyPaginationService;
-    private readonly ILogService _logService;
 
     /// <summary>
     /// Конструктор.
@@ -36,20 +34,17 @@ public class VacancyController : BaseController
     /// <param name="validationExcludeErrorsService">Сервис исключения параметров валидации.</param>
     /// <param name="vacancyFinderService">Поисковый сервис вакансий.</param>
     /// <param name="vacancyPaginationService">Сервис пагинации вакансий.</param>
-    /// <param name="logService">Сервис логов.</param>
     public VacancyController(IVacancyService vacancyService,
         IMapper mapper,
         IValidationExcludeErrorsService validationExcludeErrorsService, 
         IVacancyFinderService vacancyFinderService, 
-        IVacancyPaginationService vacancyPaginationService, 
-        ILogService logService)
+        IVacancyPaginationService vacancyPaginationService)
     {
         _vacancyService = vacancyService;
         _mapper = mapper;
         _validationExcludeErrorsService = validationExcludeErrorsService;
         _vacancyFinderService = vacancyFinderService;
         _vacancyPaginationService = vacancyPaginationService;
-        _logService = logService;
     }
 
     /// <summary>
@@ -261,12 +256,6 @@ public class VacancyController : BaseController
     [ProducesResponseType(404)]
     public async Task DeleteVacancyAsync([FromRoute] long vacancyId)
     {
-        if (vacancyId <= 0)
-        {
-            var ex = new ArgumentNullException($"Id вакансии не может быть пустым. VacancyId: {vacancyId}");
-            await _logService.LogErrorAsync(ex);
-        }
-
         await _vacancyService.DeleteVacancyAsync(vacancyId, GetUserName());
     }
 
