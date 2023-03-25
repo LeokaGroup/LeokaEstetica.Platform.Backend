@@ -49,6 +49,7 @@ public class ProjectService : IProjectService
     private readonly IProjectNotificationsService _projectNotificationsService;
     private readonly IVacancyService _vacancyService;
     private readonly IVacancyRepository _vacancyRepository;
+    private readonly IFillColorProjectsService _fillColorProjectsService;
 
     // Определяем всю цепочку фильтров.
     private readonly BaseProjectsFilterChain _dateProjectsFilterChain = new DateProjectsFilterChain();
@@ -77,15 +78,7 @@ public class ProjectService : IProjectService
     private readonly ISubscriptionRepository _subscriptionRepository;
     private readonly IFareRuleRepository _fareRuleRepository;
 
-    /// <summary>
-    /// Список названий тарифов, которые дают выделение цветом.
-    /// </summary>
-    private static readonly List<string> _fareRuleTypesNames = new()
-    {
-        FareRuleTypeEnum.Business.GetEnumDescription(),
-        FareRuleTypeEnum.Professional.GetEnumDescription()
-    };
-
+   
     /// <summary>
     /// Список типов приглашений в проект.
     /// </summary>
@@ -132,7 +125,8 @@ public class ProjectService : IProjectService
         IVacancyModerationService vacancyModerationService, 
         IProjectNotificationsRepository projectNotificationsRepository, 
         IAccessUserNotificationsService accessUserNotificationsService, 
-        IAccessUserService accessUserService)
+        IAccessUserService accessUserService,
+        IFillColorProjectsService fillColorProjectsService)
     {
         _projectRepository = projectRepository;
         _logService = logService;
@@ -148,6 +142,7 @@ public class ProjectService : IProjectService
         _projectNotificationsRepository = projectNotificationsRepository;
         _accessUserNotificationsService = accessUserNotificationsService;
         _accessUserService = accessUserService;
+        _fillColorProjectsService = fillColorProjectsService;
 
         // Определяем обработчики цепочки фильтров.
         _dateProjectsFilterChain.Successor = _projectsVacanciesFilterChain;
@@ -364,41 +359,10 @@ public class ProjectService : IProjectService
             var fareRules = await _fareRuleRepository.GetFareRulesAsync();
             var fareRulesList = fareRules.ToList();
 
-            // TODO: Вынести в отдельный сервис эту логику.
             // Выбираем пользователей, у которых есть подписка выше бизнеса. Только их выделяем цветом.
-            foreach (var prj in result.CatalogProjects)
-            {
-                // Смотрим подписку пользователя.
-                var userSubscription = userSubscriptions.Find(s => s.UserId == prj.UserId);
+            var catalogProjects = result.CatalogProjects;
+            _fillColorProjectsService.SetColorBusinessProjects(ref catalogProjects, userSubscriptions, subscriptions, fareRulesList);
 
-                if (userSubscription is null)
-                {
-                    continue;
-                }
-                
-                var subscriptionId = userSubscription.SubscriptionId;
-                var s = subscriptions.Find(s => s.ObjectId == subscriptionId);
-
-                if (s is null)
-                {
-                    continue;
-                }
-                
-                // Получаем название тарифа подписки.
-                var sn = fareRulesList.Find(fr => fr.RuleId == s.ObjectId);
-                
-                if (sn is null)
-                {
-                    continue;
-                }
-                        
-                // Подписка позволяет. Проставляем выделение цвета.
-                if (_fareRuleTypesNames.Contains(sn.Name))
-                {
-                    prj.IsSelectedColor = true;
-                }
-            }
-            
             result.CatalogProjects = ClearCatalogVacanciesHtmlTags(result.CatalogProjects.ToList());
 
             return result;
