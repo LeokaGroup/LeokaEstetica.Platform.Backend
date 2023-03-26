@@ -16,6 +16,7 @@ using LeokaEstetica.Platform.Messaging.Abstractions.Mail;
 using LeokaEstetica.Platform.Models.Dto.Input.User;
 using LeokaEstetica.Platform.Models.Dto.Output.User;
 using LeokaEstetica.Platform.Models.Entities.User;
+using LeokaEstetica.Platform.Redis.Abstractions.User;
 using LeokaEstetica.Platform.Services.Abstractions.User;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -37,6 +38,7 @@ public class UserService : IUserService
     private readonly ISubscriptionRepository _subscriptionRepository;
     private readonly IResumeModerationRepository _resumeModerationRepository;
     private readonly IAccessUserService _accessUserService;
+    private readonly IUserRedisService _userRedisService;
 
     /// <summary>
     /// Конструктор.
@@ -57,7 +59,8 @@ public class UserService : IUserService
         IProfileRepository profileRepository, 
         ISubscriptionRepository subscriptionRepository, 
         IResumeModerationRepository resumeModerationRepository, 
-        IAccessUserService accessUserService)
+        IAccessUserService accessUserService, 
+        IUserRedisService userRedisService)
     {
         _logger = logger;
         _userRepository = userRepository;
@@ -68,6 +71,7 @@ public class UserService : IUserService
         _subscriptionRepository = subscriptionRepository;
         _resumeModerationRepository = resumeModerationRepository;
         _accessUserService = accessUserService;
+        _userRedisService = userRedisService;
     }
 
     #region Публичные методы.
@@ -297,6 +301,11 @@ public class UserService : IUserService
             result.Token = token;
             result.IsSuccess = true;
             result.UserCode = userCode;
+
+            var userId = await _userRepository.GetUserIdByEmailAsync(email);
+            
+            // Записываем токен пользователя в кэш.
+            await _userRedisService.AddUserTokenAndUserIdCacheAsync(userId, result.Token);
 
             return result;
         }
