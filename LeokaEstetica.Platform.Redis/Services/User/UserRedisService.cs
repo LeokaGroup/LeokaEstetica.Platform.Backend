@@ -1,4 +1,5 @@
 using LeokaEstetica.Platform.Redis.Abstractions.User;
+using LeokaEstetica.Platform.Redis.Consts;
 using LeokaEstetica.Platform.Redis.Extensions;
 using Microsoft.Extensions.Caching.Distributed;
 
@@ -42,7 +43,7 @@ public class UserRedisService : IUserRedisService
     /// <returns>Id пользователя из кэша.</returns>
     public async Task<string> GetUserIdCacheAsync(string token)
     {
-        var redisResult = await _redisCache.GetStringAsync(token);
+        var redisResult = await _redisCache.GetStringAsync(string.Concat(CacheKeysConsts.ADD_CONNECTION_ID, token));
     
         if (string.IsNullOrEmpty(redisResult))
         {
