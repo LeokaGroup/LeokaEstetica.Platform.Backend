@@ -5,6 +5,7 @@ using LeokaEstetica.Platform.Controllers.Filters;
 using LeokaEstetica.Platform.Controllers.ModelsValidation.Project;
 using LeokaEstetica.Platform.Controllers.Validators.Project;
 using LeokaEstetica.Platform.Core.Enums;
+using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Finder.Abstractions.Project;
 using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Messaging.Abstractions.Project;
@@ -109,7 +110,9 @@ public class ProjectController : BaseController
 
         var project = await _projectService.CreateProjectAsync(createProjectInput.ProjectName,
             createProjectInput.ProjectDetails, GetUserName(),
-            Enum.Parse<ProjectStageEnum>(createProjectInput.ProjectStage));
+            Enum.Parse<ProjectStageEnum>(createProjectInput.ProjectStage),
+            HttpContext.Request.Headers.TryGet("Authorization").ToString().Substring(7));
+        
         result = _mapper.Map<CreateProjectOutput>(project);
 
         return result;
@@ -553,6 +556,7 @@ public class ProjectController : BaseController
             await _logService.LogErrorAsync(ex);
         }
 
-        await _projectService.DeleteProjectAsync(projectId, GetUserName());
+        await _projectService.DeleteProjectAsync(projectId, GetUserName(),
+            HttpContext.Request.Headers.TryGet("Authorization").ToString().Substring(7));
     }
 }

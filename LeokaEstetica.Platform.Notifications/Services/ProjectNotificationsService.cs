@@ -60,9 +60,9 @@ public class ProjectNotificationsService : IProjectNotificationsService
     /// <param name="notificationLevel">Уровень уведомления.</param>
     /// <param name="userId">Id пользователя.</param>
     public async Task SendNotificationSuccessCreatedUserProjectAsync(string title, string notifyText,
-        string notificationLevel, long userId)
+        string notificationLevel, string userId)
     {
-        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(userId.ToString());
+        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(userId);
 
         await _hubContext.Clients
             .Client(connectionId)
@@ -422,9 +422,9 @@ public class ProjectNotificationsService : IProjectNotificationsService
     /// <param name="notificationLevel">Уровень уведомления.</param>
     /// <param name="userId">Id пользователя.</param>
     public async Task SendNotificationSuccessDeleteProjectAsync(string title, string notifyText,
-        string notificationLevel, long userId)
+        string notificationLevel, string userId)
     {
-        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(userId.ToString());
+        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(userId);
 
         await _hubContext.Clients
             .Client(connectionId)

@@ -15,7 +15,7 @@ public interface IProjectNotificationsService
     /// <param name="notificationLevel">Уровень уведомления.</param>
     /// <param name="userId">Id пользователя.</param>
     Task SendNotificationSuccessCreatedUserProjectAsync(string title, string notifyText, string notificationLevel,
-        long userId);
+        string token);
 
     /// <summary>
     /// Метод отправляет уведомление об ошибке при создании проекта пользователя.
@@ -185,7 +185,7 @@ public interface IProjectNotificationsService
     /// <param name="notificationLevel">Уровень уведомления.</param>
     /// <param name="userId">Id пользователя.</param>
     Task SendNotificationSuccessDeleteProjectAsync(string title, string notifyText, string notificationLevel,
-        long userId);
+        string userId);
 
     /// <summary>
     /// Метод получает список уведомлений в проекты пользователя.

@@ -26,7 +26,7 @@ public interface IProjectService
     /// <param name="projectStage">Стадия проекта.</param>
     /// <returns>Данные нового проекта.</returns>
     Task<UserProjectEntity> CreateProjectAsync(string projectName, string projectDetails, string account,
-        ProjectStageEnum projectStage);
+        ProjectStageEnum projectStage, string token);
 
     /// <summary>
     /// Метод получает названия полей для таблицы проектов пользователя.
@@ -170,5 +170,5 @@ public interface IProjectService
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
     /// <param name="account">Аккаунт.</param>
-    Task DeleteProjectAsync(long projectId, string account);
+    Task DeleteProjectAsync(long projectId, string account, string token);
 }

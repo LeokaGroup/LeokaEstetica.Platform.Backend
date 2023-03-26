@@ -172,7 +172,7 @@ public class ProjectService : IProjectService
     /// <param name="projectStage">Стадия проекта.</param>
     /// <returns>Данные нового проекта.</returns>
     public async Task<UserProjectEntity> CreateProjectAsync(string projectName, string projectDetails, string account,
-        ProjectStageEnum projectStage)
+        ProjectStageEnum projectStage, string token)
     {
         try
         {
@@ -259,7 +259,7 @@ public class ProjectService : IProjectService
             // Отправляем уведомление об успешном создании проекта.
             await _projectNotificationsService.SendNotificationSuccessCreatedUserProjectAsync("Все хорошо",
                 "Данные успешно сохранены. Проект отправлен на модерацию.",
-                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, userId);
+                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);
 
             return project;
         }
@@ -996,7 +996,7 @@ public class ProjectService : IProjectService
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
     /// <param name="account">Аккаунт.</param>
-    public async Task DeleteProjectAsync(long projectId, string account)
+    public async Task DeleteProjectAsync(long projectId, string account, string token)
     {
         try
         {
@@ -1039,7 +1039,7 @@ public class ProjectService : IProjectService
             await _projectNotificationsService.SendNotificationSuccessDeleteProjectAsync(
                 "Все хорошо",
                 "Проект успешно удален.",
-                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, userId);
+                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);
         }
         
         catch (Exception ex)
