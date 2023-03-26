@@ -1,15 +1,13 @@
 using AutoMapper;
 using LeokaEstetica.Platform.Access.Abstractions.AvailableLimits;
-using LeokaEstetica.Platform.Access.Enums;
 using LeokaEstetica.Platform.Core.Exceptions;
-using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.FareRule;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
 using LeokaEstetica.Platform.Database.Abstractions.Subscription;
 using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Database.Abstractions.Vacancy;
-using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Finder.Chains.Vacancy;
+using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Models.Dto.Input.Vacancy;
 using LeokaEstetica.Platform.Models.Dto.Output.Configs;
 using LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
@@ -36,6 +34,7 @@ public class VacancyService : IVacancyService
     private readonly IVacancyRedisService _vacancyRedisService;
     private readonly IUserRepository _userRepository;
     private readonly IVacancyModerationService _vacancyModerationService;
+    private readonly IFillColorVacanciesService _fillColorVacanciesService;
 
     // Определяем всю цепочку фильтров.
     private readonly BaseVacanciesFilterChain _salaryFilterVacanciesChain = new DateVacanciesFilterChain();
@@ -81,14 +80,6 @@ public class VacancyService : IVacancyService
 
     private readonly IProjectRepository _projectRepository;
     
-    /// <summary>
-    /// Список названий тарифов, которые дают выделение цветом.
-    /// </summary>
-    private static readonly List<string> _fareRuleTypesNames = new()
-    {
-        FareRuleTypeEnum.Business.GetEnumDescription(),
-        FareRuleTypeEnum.Professional.GetEnumDescription()
-    };
 
     /// <summary>
     /// Конструктор.
@@ -109,7 +100,8 @@ public class VacancyService : IVacancyService
         IFareRuleRepository fareRuleRepository,
         IAvailableLimitsService availableLimitsService,
         IVacancyNotificationsService vacancyNotificationsService, 
-        IProjectRepository projectRepository)
+        IProjectRepository projectRepository,
+        IFillColorVacanciesService fillColorVacanciesService)
     {
         _logService = logService;
         _vacancyRepository = vacancyRepository;
@@ -122,6 +114,7 @@ public class VacancyService : IVacancyService
         _availableLimitsService = availableLimitsService;
         _vacancyNotificationsService = vacancyNotificationsService;
         _projectRepository = projectRepository;
+        _fillColorVacanciesService = fillColorVacanciesService;
 
         // Определяем обработчики цепочки фильтров.
         _salaryFilterVacanciesChain.Successor = _descSalaryVacanciesFilterChain;
@@ -254,65 +247,20 @@ public class VacancyService : IVacancyService
     {
         try
         {
-            var result = new CatalogVacancyResultOutput
-            {
-                CatalogVacancies = await _vacancyRepository.CatalogVacanciesAsync()
-            };
-            
-            if (!result.CatalogVacancies.Any())
+            var catalogVacancies = await _vacancyRepository.CatalogVacanciesAsync();
+            var result = new CatalogVacancyResultOutput { CatalogVacancies = new List<CatalogVacancyOutput>() };
+
+            if (!catalogVacancies.Any())
             {
                 return result;
             }
-            
-            // Получаем список юзеров для проставления цветов.
-            var userIds = result.CatalogVacancies.Select(p => p.UserId).Distinct();
-            
-            // Выбираем список подписок пользователей.
-            var userSubscriptions = await _subscriptionRepository.GetUsersSubscriptionsAsync(userIds);
 
-            // Получаем список подписок.
-            var subscriptions = await _subscriptionRepository.GetSubscriptionsAsync();
-            
-            // Получаем список тарифов, чтобы взять названия тарифов.
-            var fareRules = await _fareRuleRepository.GetFareRulesAsync();
-            var fareRulesList = fareRules.ToList();
-
-            // TODO: Вынести в отдельный сервис эту логику.
             // Выбираем пользователей, у которых есть подписка выше бизнеса. Только их выделяем цветом.
-            foreach (var v in result.CatalogVacancies)
-            {
-                // Смотрим подписку пользователя.
-                var userSubscription = userSubscriptions.Find(s => s.UserId == v.UserId);
+            result.CatalogVacancies = await _fillColorVacanciesService.SetColorBusinessVacancies(catalogVacancies,
+                _subscriptionRepository, _fareRuleRepository);
 
-                if (userSubscription is null)
-                {
-                    continue;
-                }
-                
-                var subscriptionId = userSubscription.SubscriptionId;
-                var s = subscriptions.Find(s => s.ObjectId == subscriptionId);
-
-                if (s is null)
-                {
-                    continue;
-                }
-                
-                // Получаем название тарифа подписки.
-                var sn = fareRulesList.Find(fr => fr.RuleId == s.ObjectId);
-                
-                if (sn is null)
-                {
-                    continue;
-                }
-                        
-                // Подписка позволяет. Проставляем выделение цвета.
-                if (_fareRuleTypesNames.Contains(sn.Name))
-                {
-                    v.IsSelectedColor = true;
-                }
-            }
-
-            result.CatalogVacancies = ClearCatalogVacanciesHtmlTags(result.CatalogVacancies.ToList());
+            // Очистка описание от тегов список вакансий для каталога
+            ClearCatalogVacanciesHtmlTags(ref catalogVacancies);
 
             return result;
         }
@@ -638,15 +586,13 @@ public class VacancyService : IVacancyService
     /// </summary>
     /// <param name="vacancies">Список вакансий.</param>
     /// <returns>Список вакансий после очистки.</returns>
-    private IEnumerable<CatalogVacancyOutput> ClearCatalogVacanciesHtmlTags(List<CatalogVacancyOutput> vacancies)
+    private void ClearCatalogVacanciesHtmlTags(ref List<CatalogVacancyOutput> vacancies)
     {
         // Чистим описание вакансии от html-тегов.
         foreach (var vac in vacancies)
         {
             vac.VacancyText = ClearHtmlBuilder.Clear(vac.VacancyText);
         }
-
-        return vacancies;
     }
     
     /// <summary>
