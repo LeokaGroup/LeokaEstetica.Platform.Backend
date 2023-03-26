@@ -12,8 +12,7 @@ public interface IFillColorVacanciesService
     /// <summary>
     /// Метод выделяет цветом пользователей у которых есть подписка выше бизнеса.
     /// </summary>
-    public void SetColorBusinessVacancies(ref IEnumerable<CatalogVacancyOutput> vacancies,
-        List<UserSubscriptionEntity> userSubscriptions,
-        List<SubscriptionEntity> subscriptions,
+    void SetColorBusinessVacancies(ref List<CatalogVacancyOutput> vacancies,
+        List<UserSubscriptionEntity> userSubscriptions, List<SubscriptionEntity> subscriptions,
         List<FareRuleEntity> fareRulesList);
 }

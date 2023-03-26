@@ -249,17 +249,15 @@ public class VacancyService : IVacancyService
     {
         try
         {
-            var result = new CatalogVacancyResultOutput
-            {
-                CatalogVacancies = await _vacancyRepository.CatalogVacanciesAsync()
-            };
+            var catalogVacancies = await _vacancyRepository.CatalogVacanciesAsync();
+            var result = new CatalogVacancyResultOutput { CatalogVacancies = new List<CatalogVacancyOutput>() };
             
-            if (!result.CatalogVacancies.Any())
+            if (!catalogVacancies.Any())
             {
                 return result;
             }
             // Получаем список юзеров для проставления цветов.
-            var userIds = result.CatalogVacancies.Select(p => p.UserId).Distinct();
+            var userIds = catalogVacancies.Select(p => p.UserId).Distinct();
 
             // Выбираем список подписок пользователей.
             var userSubscriptions = await _subscriptionRepository.GetUsersSubscriptionsAsync(userIds);
@@ -269,13 +267,14 @@ public class VacancyService : IVacancyService
 
             // Получаем список тарифов, чтобы взять названия тарифов.
             var fareRules = await _fareRuleRepository.GetFareRulesAsync();
-            var fareRulesList = fareRules.ToList();
 
             // Выбираем пользователей, у которых есть подписка выше бизнеса. Только их выделяем цветом.
-            //var catalogVacancies = result.CatalogVacancies;
-            _fillColorVacanciesService.SetColorBusinessVacancies(ref result.CatalogVacancies, userSubscriptions, subscriptions, fareRulesList); // ???????       
+            _fillColorVacanciesService.SetColorBusinessVacancies(ref catalogVacancies, userSubscriptions,
+                subscriptions, fareRules.ToList());      
 
-            result.CatalogVacancies = ClearCatalogVacanciesHtmlTags(result.CatalogVacancies.ToList());
+            ClearCatalogVacanciesHtmlTags(ref catalogVacancies);
+
+            result.CatalogVacancies = catalogVacancies;
 
             return result;
         }
@@ -601,15 +600,13 @@ public class VacancyService : IVacancyService
     /// </summary>
     /// <param name="vacancies">Список вакансий.</param>
     /// <returns>Список вакансий после очистки.</returns>
-    private IEnumerable<CatalogVacancyOutput> ClearCatalogVacanciesHtmlTags(List<CatalogVacancyOutput> vacancies)
+    private void ClearCatalogVacanciesHtmlTags(ref List<CatalogVacancyOutput> vacancies)
     {
         // Чистим описание вакансии от html-тегов.
         foreach (var vac in vacancies)
         {
             vac.VacancyText = ClearHtmlBuilder.Clear(vac.VacancyText);
         }
-
-        return vacancies;
     }
     
     /// <summary>
