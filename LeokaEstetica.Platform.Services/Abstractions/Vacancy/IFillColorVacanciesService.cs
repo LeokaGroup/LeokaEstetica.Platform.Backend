@@ -16,6 +16,6 @@ public interface IFillColorVacanciesService
     /// <param name="subscriptionRepository">Сервис подписок.</param>
     /// <param name="fareRuleRepository">Сервис правил тарифа.</param>
     /// <returns>Каталог вакансий с выделеным цветом цветом пользователей.</returns>
-    Task<List<CatalogVacancyOutput>> SetColorBusinessVacancies(List<CatalogVacancyOutput> vacancies,
+    Task<IEnumerable<CatalogVacancyOutput>> SetColorBusinessVacancies(List<CatalogVacancyOutput> vacancies,
         ISubscriptionRepository subscriptionRepository, IFareRuleRepository fareRuleRepository);
 }

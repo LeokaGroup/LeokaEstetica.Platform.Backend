@@ -24,7 +24,7 @@ public class FillColorVacanciesService : IFillColorVacanciesService
     /// <summary>
     /// Метод выделяет цветом пользователей у которых есть подписка выше бизнеса.
     /// </summary>
-    public async Task<List<CatalogVacancyOutput>> SetColorBusinessVacancies(List<CatalogVacancyOutput> vacancies,
+    public async Task<IEnumerable<CatalogVacancyOutput>> SetColorBusinessVacancies(List<CatalogVacancyOutput> vacancies,
         ISubscriptionRepository subscriptionRepository, IFareRuleRepository fareRuleRepository)
     {
         // Получаем список юзеров для проставления цветов.
@@ -38,6 +38,7 @@ public class FillColorVacanciesService : IFillColorVacanciesService
 
         // Получаем список тарифов, чтобы взять названия тарифов.
         var fareRules = await fareRuleRepository.GetFareRulesAsync();
+        var rules = fareRules.ToList();
 
         //Выбираем пользователей, у которых есть подписка выше бизнеса.Только их выделяем цветом.
         foreach (var vacancy in vacancies)
@@ -59,7 +60,7 @@ public class FillColorVacanciesService : IFillColorVacanciesService
             }
 
             // Получаем название тарифа подписки.
-            var fareRule = fareRules.ToList().Find(fr => fr.RuleId == subscription.ObjectId);
+            var fareRule = rules.Find(fr => fr.RuleId == subscription.ObjectId);
 
             if (fareRule is null)
             {
@@ -72,6 +73,7 @@ public class FillColorVacanciesService : IFillColorVacanciesService
                 vacancy.IsSelectedColor = true;
             }
         }
+        
         return vacancies;
     }
 }

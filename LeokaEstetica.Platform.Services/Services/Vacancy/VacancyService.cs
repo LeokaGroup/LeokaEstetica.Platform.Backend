@@ -259,7 +259,7 @@ public class VacancyService : IVacancyService
             result.CatalogVacancies = await _fillColorVacanciesService.SetColorBusinessVacancies(catalogVacancies,
                 _subscriptionRepository, _fareRuleRepository);
 
-            ///Очистка описание от тегов список вакансий для каталога
+            // Очистка описание от тегов список вакансий для каталога
             ClearCatalogVacanciesHtmlTags(ref catalogVacancies);
 
             return result;
