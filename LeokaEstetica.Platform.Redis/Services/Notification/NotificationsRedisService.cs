@@ -1,4 +1,5 @@
 using LeokaEstetica.Platform.Redis.Abstractions.Notification;
+using LeokaEstetica.Platform.Redis.Abstractions.User;
 using LeokaEstetica.Platform.Redis.Consts;
 using LeokaEstetica.Platform.Redis.Extensions;
 using Microsoft.Extensions.Caching.Distributed;
@@ -11,24 +12,28 @@ namespace LeokaEstetica.Platform.Redis.Services.Notification;
 public class NotificationsRedisService : INotificationsRedisService
 {
     private readonly IDistributedCache _redisCache;
+    private readonly IUserRedisService _userRedisService;
     
     /// <summary>
     /// Конструктор.
     /// </summary>
     /// <param name="redisCache">Кэш редиса.</param>
-    public NotificationsRedisService(IDistributedCache redisCache)
+    public NotificationsRedisService(IDistributedCache redisCache, 
+        IUserRedisService userRedisService)
     {
         _redisCache = redisCache;
+        _userRedisService = userRedisService;
     }
 
     /// <summary>
     /// Метод сохраняет ConnectionId подключения SignalR в кэш.
     /// </summary>
     /// <param name="connectionId">Id подключения, который создает SignalR.</param>
-    /// <param name="userId">Id пользователя.</param>
-    public async Task AddConnectionIdCacheAsync(string connectionId, long userId)
+    /// <param name="token">Токен пользователя.</param>
+    public async Task AddConnectionIdCacheAsync(string connectionId, string token)
     {
-        await _redisCache.SetStringAsync(string.Concat(CacheKeysConsts.ADD_CONNECTION_ID, userId.ToString()),
+        var userId = await _userRedisService.GetUserIdCacheAsync(token);
+        await _redisCache.SetStringAsync(string.Concat(CacheKeysConsts.ADD_CONNECTION_ID, userId),
             ProtoBufExtensions.Serialize(connectionId),
             new DistributedCacheEntryOptions
             {

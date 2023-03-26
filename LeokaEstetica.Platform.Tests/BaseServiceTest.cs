@@ -102,7 +102,7 @@ public class BaseServiceTest
         var resumeModerationRepository = new ResumeModerationRepository(pgContext);
 
         UserService = new UserService(logService, userRepository, mapper, null, pgContext, profileRepository,
-            subscriptionRepository, resumeModerationRepository, null);
+            subscriptionRepository, resumeModerationRepository, null, null);
         ProfileService = new ProfileService(logService, profileRepository, userRepository, mapper, null, null);
 
         var projectRepository = new ProjectRepository(pgContext, chatRepository);

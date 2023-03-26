@@ -1,6 +1,6 @@
 using LeokaEstetica.Platform.Base;
 using LeokaEstetica.Platform.Controllers.Filters;
-using LeokaEstetica.Platform.Database.Abstractions.User;
+using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Models.Dto.Input.Notification;
 using LeokaEstetica.Platform.Models.Dto.Output.Notification;
@@ -21,7 +21,6 @@ public class NotificationsController : BaseController
     private readonly IProjectNotificationsService _projectNotificationsService;
     private readonly ILogService _logService;
     private readonly INotificationsRedisService _notificationsRedisService;
-    private readonly IUserRepository _userRepository;
 
     /// <summary>
     /// Конструктор.
@@ -29,16 +28,13 @@ public class NotificationsController : BaseController
     /// <param name="projectNotificationsService">Сервис уведомлений проектов.</param>
     /// <param name="logService">Сервис логгера.</param>
     /// <param name="notificationsRedisService">Сервис уведомлений кэша.</param>
-    /// <param name="userRepository">Репозиторий пользователя.</param>
     public NotificationsController(IProjectNotificationsService projectNotificationsService, 
         ILogService logService, 
-        INotificationsRedisService notificationsRedisService, 
-        IUserRepository userRepository)
+        INotificationsRedisService notificationsRedisService)
     {
         _projectNotificationsService = projectNotificationsService;
         _logService = logService;
         _notificationsRedisService = notificationsRedisService;
-        _userRepository = userRepository;
     }
 
     /// <summary>
@@ -120,8 +116,7 @@ public class NotificationsController : BaseController
     [ProducesResponseType(404)]
     public async Task AddConnectionIdCacheAsync([FromBody] CommitConnectionInput commitConnectionInput)
     {
-        var userId = await _userRepository.GetUserByEmailAsync(GetUserName());
-        
-        await _notificationsRedisService.AddConnectionIdCacheAsync(commitConnectionInput.ConnectionId, userId);
+        await _notificationsRedisService.AddConnectionIdCacheAsync(commitConnectionInput.ConnectionId,
+            HttpContext.Request.Headers.TryGet("c_dt").ToString().Split(":")[1]);
     }
 }

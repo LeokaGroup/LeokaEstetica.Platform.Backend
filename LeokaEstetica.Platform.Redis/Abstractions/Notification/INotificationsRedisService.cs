@@ -9,8 +9,8 @@ public interface INotificationsRedisService
     /// Метод сохраняет ConnectionId подключения SignalR в кэш.
     /// </summary>
     /// <param name="connectionId">Id подключения, который создает SignalR.</param>
-    /// <param name="userId">Id пользователя.</param>
-    Task AddConnectionIdCacheAsync(string connectionId, long userId);
+    /// <param name="token">Токен пользователя.</param>
+    Task AddConnectionIdCacheAsync(string connectionId, string token);
     //
     // /// <summary>
     // /// Метод получает ConnectionId подключения для SignalR.

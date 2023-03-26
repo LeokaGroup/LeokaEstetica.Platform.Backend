@@ -1,5 +1,4 @@
-﻿using LeokaEstetica.Platform.Core.Extensions;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 
 namespace LeokaEstetica.Platform.Base;
 
@@ -15,7 +14,7 @@ public class BaseController : ControllerBase
     [ApiExplorerSettings(IgnoreApi = true)]
     protected string GetUserName()
     {
-        var user = HttpContext.User?.Identity?.Name ?? GetLoginFromCookie() ?? GetLoginFromHeaders();
+        var user = HttpContext.User?.Identity?.Name ?? GetLoginFromCookie();
 
         if (user is null)
         {
@@ -39,23 +38,5 @@ public class BaseController : ControllerBase
     private string GetLoginFromCookie()
     {
         return HttpContext.Request.Cookies["user"];
-    }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <returns></returns>
-    [ApiExplorerSettings(IgnoreApi = true)]
-    private string GetLoginFromHeaders()
-    {
-        if (HttpContext.Request.Headers.TryGetValue("c_dt", out _))
-        {
-            // Внутри есть элементы.
-            // [0] - ConnectionId.
-            // [1] - Email.
-            return HttpContext.Request.Headers.TryGet("c_dt").ToString().Split(":")[1];
-        }
-
-        return null;
     }
 }
