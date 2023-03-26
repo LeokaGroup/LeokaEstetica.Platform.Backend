@@ -1,8 +1,8 @@
 ﻿using LeokaEstetica.Platform.Access.Enums;
 using LeokaEstetica.Platform.Core.Extensions;
+using LeokaEstetica.Platform.Database.Abstractions.FareRule;
+using LeokaEstetica.Platform.Database.Abstractions.Subscription;
 using LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
-using LeokaEstetica.Platform.Models.Entities.FareRule;
-using LeokaEstetica.Platform.Models.Entities.Subscription;
 using LeokaEstetica.Platform.Services.Abstractions.Vacancy;
 
 namespace LeokaEstetica.Platform.Services.Services.Vacancy;
@@ -11,7 +11,7 @@ namespace LeokaEstetica.Platform.Services.Services.Vacancy;
 /// Класс реализует методы сервиса выделение цветом пользователей.
 /// </summary>
 public class FillColorVacanciesService : IFillColorVacanciesService
-{   
+{
     /// <summary>
     /// Список названий тарифов, которые дают выделение цветом.
     /// </summary>
@@ -25,10 +25,21 @@ public class FillColorVacanciesService : IFillColorVacanciesService
     /// <summary>
     /// Метод выделяет цветом пользователей у которых есть подписка выше бизнеса.
     /// </summary>
-    public void SetColorBusinessVacancies(ref List<CatalogVacancyOutput> vacancies,
-        List<UserSubscriptionEntity> userSubscriptions, List<SubscriptionEntity> subscriptions,
-        List<FareRuleEntity> fareRulesList)
+    public async Task<List<CatalogVacancyOutput>> SetColorBusinessVacancies(List<CatalogVacancyOutput> vacancies,
+        ISubscriptionRepository subscriptionRepository, IFareRuleRepository fareRuleRepository)
     {
+        // Получаем список юзеров для проставления цветов.
+        var userIds = vacancies.Select(p => p.UserId).Distinct();
+
+        // Выбираем список подписок пользователей.
+        var userSubscriptions = await subscriptionRepository.GetUsersSubscriptionsAsync(userIds);
+
+        // Получаем список подписок.
+        var subscriptions = await subscriptionRepository.GetSubscriptionsAsync();
+
+        // Получаем список тарифов, чтобы взять названия тарифов.
+        var fareRules = await fareRuleRepository.GetFareRulesAsync();
+
         //Выбираем пользователей, у которых есть подписка выше бизнеса.Только их выделяем цветом.
         foreach (var vacancy in vacancies)
         {
@@ -49,7 +60,7 @@ public class FillColorVacanciesService : IFillColorVacanciesService
             }
 
             // Получаем название тарифа подписки.
-            var fareRule = fareRulesList.Find(fr => fr.RuleId == subscription.ObjectId);
+            var fareRule = fareRules.ToList().Find(fr => fr.RuleId == subscription.ObjectId);
 
             if (fareRule is null)
             {
@@ -62,5 +73,6 @@ public class FillColorVacanciesService : IFillColorVacanciesService
                 vacancy.IsSelectedColor = true;
             }
         }
+        return vacancies;
     }
 }

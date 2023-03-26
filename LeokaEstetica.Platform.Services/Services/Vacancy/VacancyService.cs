@@ -1,8 +1,6 @@
 using AutoMapper;
 using LeokaEstetica.Platform.Access.Abstractions.AvailableLimits;
-using LeokaEstetica.Platform.Access.Enums;
 using LeokaEstetica.Platform.Core.Exceptions;
-using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.FareRule;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
 using LeokaEstetica.Platform.Database.Abstractions.Subscription;
@@ -251,30 +249,19 @@ public class VacancyService : IVacancyService
         {
             var catalogVacancies = await _vacancyRepository.CatalogVacanciesAsync();
             var result = new CatalogVacancyResultOutput { CatalogVacancies = new List<CatalogVacancyOutput>() };
-            
+
             if (!catalogVacancies.Any())
             {
                 return result;
             }
-            // Получаем список юзеров для проставления цветов.
-            var userIds = catalogVacancies.Select(p => p.UserId).Distinct();
 
-            // Выбираем список подписок пользователей.
-            var userSubscriptions = await _subscriptionRepository.GetUsersSubscriptionsAsync(userIds);
-
-            // Получаем список подписок.
-            var subscriptions = await _subscriptionRepository.GetSubscriptionsAsync();
-
-            // Получаем список тарифов, чтобы взять названия тарифов.
-            var fareRules = await _fareRuleRepository.GetFareRulesAsync();
 
             // Выбираем пользователей, у которых есть подписка выше бизнеса. Только их выделяем цветом.
-            _fillColorVacanciesService.SetColorBusinessVacancies(ref catalogVacancies, userSubscriptions,
-                subscriptions, fareRules.ToList());      
+            result.CatalogVacancies = await _fillColorVacanciesService.SetColorBusinessVacancies(catalogVacancies,
+                _subscriptionRepository, _fareRuleRepository);
 
+            ///Очистка описание от тегов список вакансий для каталога
             ClearCatalogVacanciesHtmlTags(ref catalogVacancies);
-
-            result.CatalogVacancies = catalogVacancies;
 
             return result;
         }
