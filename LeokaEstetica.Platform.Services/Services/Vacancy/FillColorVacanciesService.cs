@@ -21,7 +21,6 @@ public class FillColorVacanciesService : IFillColorVacanciesService
         FareRuleTypeEnum.Professional.GetEnumDescription()
     };
 
-
     /// <summary>
     /// Метод выделяет цветом пользователей у которых есть подписка выше бизнеса.
     /// </summary>

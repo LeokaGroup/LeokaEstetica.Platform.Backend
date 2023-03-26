@@ -255,7 +255,6 @@ public class VacancyService : IVacancyService
                 return result;
             }
 
-
             // Выбираем пользователей, у которых есть подписка выше бизнеса. Только их выделяем цветом.
             result.CatalogVacancies = await _fillColorVacanciesService.SetColorBusinessVacancies(catalogVacancies,
                 _subscriptionRepository, _fareRuleRepository);

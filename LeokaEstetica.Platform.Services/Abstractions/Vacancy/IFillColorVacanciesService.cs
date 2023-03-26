@@ -12,7 +12,7 @@ public interface IFillColorVacanciesService
     /// <summary>
     /// Метод выделяет цветом пользователей у которых есть подписка выше бизнеса.
     /// </summary>
-    /// /// <param name="vacancies">каталог вакансий.</param>
+    /// <param name="vacancies">каталог вакансий.</param>
     /// <param name="subscriptionRepository">Сервис подписок.</param>
     /// <param name="fareRuleRepository">Сервис правил тарифа.</param>
     /// <returns>Каталог вакансий с выделеным цветом цветом пользователей.</returns>
