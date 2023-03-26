@@ -336,34 +336,21 @@ public class ProjectService : IProjectService
     {
         try
         {
-            var result = new CatalogProjectResultOutput
-            {
-                CatalogProjects = await _projectRepository.CatalogProjectsAsync()
-            };
+            // Получаем список проектов для каталога.
+            var catalogProjects = await _projectRepository.CatalogProjectsAsync();
+            var result = new CatalogProjectResultOutput { CatalogProjects = new List<CatalogProjectOutput>() };
             
-            if (!result.CatalogProjects.Any())
+            if (!catalogProjects.Any())
             {
                 return result;
             }
             
-            // Получаем список юзеров для проставления цветов.
-            var userIds = result.CatalogProjects.Select(p => p.UserId).Distinct();
-            
-            // Выбираем список подписок пользователей.
-            var userSubscriptions = await _subscriptionRepository.GetUsersSubscriptionsAsync(userIds);
-
-            // Получаем список подписок.
-            var subscriptions = await _subscriptionRepository.GetSubscriptionsAsync();
-            
-            // Получаем список тарифов, чтобы взять названия тарифов.
-            var fareRules = await _fareRuleRepository.GetFareRulesAsync();
-            var fareRulesList = fareRules.ToList();
-
             // Выбираем пользователей, у которых есть подписка выше бизнеса. Только их выделяем цветом.
-            var catalogProjects = result.CatalogProjects;
-            _fillColorProjectsService.SetColorBusinessProjects(ref catalogProjects, userSubscriptions, subscriptions, fareRulesList);
+            result.CatalogProjects = await _fillColorProjectsService.SetColorBusinessProjects(catalogProjects,
+            _subscriptionRepository, _fareRuleRepository);
 
-            result.CatalogProjects = ClearCatalogVacanciesHtmlTags(result.CatalogProjects.ToList());
+            // Очистка описание от тегов список проектов для каталога.
+            result.CatalogProjects = ClearCatalogVacanciesHtmlTags(catalogProjects.ToList());
 
             return result;
         }

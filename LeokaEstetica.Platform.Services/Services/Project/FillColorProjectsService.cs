@@ -1,8 +1,8 @@
 ﻿using LeokaEstetica.Platform.Access.Enums;
 using LeokaEstetica.Platform.Core.Extensions;
+using LeokaEstetica.Platform.Database.Abstractions.FareRule;
+using LeokaEstetica.Platform.Database.Abstractions.Subscription;
 using LeokaEstetica.Platform.Models.Dto.Output.Project;
-using LeokaEstetica.Platform.Models.Entities.FareRule;
-using LeokaEstetica.Platform.Models.Entities.Subscription;
 using LeokaEstetica.Platform.Services.Abstractions.Project;
 
 namespace LeokaEstetica.Platform.Services.Services.Project;
@@ -24,11 +24,22 @@ public class FillColorProjectsService : IFillColorProjectsService
     /// <summary>
     /// Метод выделяет цветом пользователей у которых есть подписка выше бизнеса.
     /// </summary>
-    public void SetColorBusinessProjects(ref IEnumerable<CatalogProjectOutput> projects,
-        List<UserSubscriptionEntity> userSubscriptions,
-        List<SubscriptionEntity> subscriptions,
-        List<FareRuleEntity> fareRulesList)
+    public async Task<IEnumerable<CatalogProjectOutput>> SetColorBusinessProjects(IEnumerable<CatalogProjectOutput> projects,
+        ISubscriptionRepository subscriptionRepository, IFareRuleRepository fareRuleRepository)
+
     {
+        // Получаем список юзеров для проставления цветов.
+        var userIds = projects.Select(p => p.UserId).Distinct();
+
+        // Выбираем список подписок пользователей.
+        var userSubscriptions = await subscriptionRepository.GetUsersSubscriptionsAsync(userIds);
+
+        // Получаем список подписок.
+        var subscriptions = await subscriptionRepository.GetSubscriptionsAsync();
+
+        // Получаем список тарифов, чтобы взять названия тарифов.
+        var fareRules = await fareRuleRepository.GetFareRulesAsync();
+        var rules = fareRules.ToList();
 
         // Выбираем пользователей, у которых есть подписка выше бизнеса. Только их выделяем цветом.
         foreach (var project in projects)
@@ -50,7 +61,7 @@ public class FillColorProjectsService : IFillColorProjectsService
             }
 
             // Получаем название тарифа подписки.
-            var fareRule = fareRulesList.Find(fr => fr.RuleId == subscription.ObjectId);
+            var fareRule = rules.Find(fr => fr.RuleId == subscription.ObjectId);
 
             if (fareRule is null)
             {
@@ -63,5 +74,6 @@ public class FillColorProjectsService : IFillColorProjectsService
                 project.IsSelectedColor = true;
             }
         }
+        return projects;
     }
 }

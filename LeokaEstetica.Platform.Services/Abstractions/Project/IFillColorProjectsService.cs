@@ -1,6 +1,6 @@
-﻿using LeokaEstetica.Platform.Models.Dto.Output.Project;
-using LeokaEstetica.Platform.Models.Entities.FareRule;
-using LeokaEstetica.Platform.Models.Entities.Subscription;
+﻿using LeokaEstetica.Platform.Database.Abstractions.FareRule;
+using LeokaEstetica.Platform.Database.Abstractions.Subscription;
+using LeokaEstetica.Platform.Models.Dto.Output.Project;
 
 namespace LeokaEstetica.Platform.Services.Abstractions.Project;
 
@@ -12,8 +12,10 @@ public interface IFillColorProjectsService
     /// <summary>
     /// Метод выделяет цветом пользователей у которых есть подписка выше бизнеса.
     /// </summary>
-    public void SetColorBusinessProjects(ref IEnumerable<CatalogProjectOutput> projects,
-        List<UserSubscriptionEntity> userSubscriptions,
-        List<SubscriptionEntity> subscriptions,
-        List<FareRuleEntity> fareRulesList);
+    /// <param name="projects">каталог проектов.</param>
+    /// <param name="subscriptionRepository">Сервис подписок.</param>
+    /// <param name="fareRuleRepository">Сервис правил тарифа.</param>
+    /// <returns>Каталог проектов с выделеным цветом пользователей.</returns>
+    Task<IEnumerable<CatalogProjectOutput>> SetColorBusinessProjects(IEnumerable<CatalogProjectOutput> projects,
+        ISubscriptionRepository subscriptionRepository, IFareRuleRepository fareRuleRepository);
 }
