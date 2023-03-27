@@ -8,6 +8,7 @@ using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Notifications.Consts;
 using LeokaEstetica.Platform.Notifications.Data;
 using LeokaEstetica.Platform.Redis.Abstractions.Notification;
+using LeokaEstetica.Platform.Redis.Extensions;
 using Microsoft.AspNetCore.SignalR;
 using NotificationOutput = LeokaEstetica.Platform.Notifications.Models.Output.NotificationOutput;
 using NotificationProjectOutput = LeokaEstetica.Platform.Models.Dto.Output.Notification.NotificationOutput;
@@ -63,6 +64,7 @@ public class ProjectNotificationsService : IProjectNotificationsService
         string notificationLevel, string userId)
     {
         var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(userId);
+        // var res = ProtoBufExtensions.Deserialize<string>(connectionId);
 
         await _hubContext.Clients
             .Client(connectionId)

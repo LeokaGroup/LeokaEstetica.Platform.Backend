@@ -117,6 +117,6 @@ public class NotificationsController : BaseController
     public async Task AddConnectionIdCacheAsync([FromBody] CommitConnectionInput commitConnectionInput)
     {
         await _notificationsRedisService.AddConnectionIdCacheAsync(commitConnectionInput.ConnectionId,
-            HttpContext.Request.Headers.TryGet("c_dt").ToString().Split(":")[1]);
+            HttpContext.Request.Headers.TryGet("Authorization").ToString());
     }
 }
