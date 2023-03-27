@@ -24,8 +24,9 @@ public class FillColorProjectsService : IFillColorProjectsService
     /// <summary>
     /// Метод выделяет цветом пользователей у которых есть подписка выше бизнеса.
     /// </summary>
-    public async Task<IEnumerable<CatalogProjectOutput>> SetColorBusinessProjects(IEnumerable<CatalogProjectOutput> projects,
-        ISubscriptionRepository subscriptionRepository, IFareRuleRepository fareRuleRepository)
+    public async Task<IEnumerable<CatalogProjectOutput>> SetColorBusinessProjects(
+        List<CatalogProjectOutput> projects, ISubscriptionRepository subscriptionRepository,
+        IFareRuleRepository fareRuleRepository)
 
     {
         // Получаем список юзеров для проставления цветов.

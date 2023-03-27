@@ -339,18 +339,20 @@ public class ProjectService : IProjectService
             // Получаем список проектов для каталога.
             var catalogProjects = await _projectRepository.CatalogProjectsAsync();
             var result = new CatalogProjectResultOutput { CatalogProjects = new List<CatalogProjectOutput>() };
-            
-            if (!catalogProjects.Any())
+            var catalogs = catalogProjects.ToList();
+
+
+            if (!catalogs.Any())
             {
                 return result;
             }
             
             // Выбираем пользователей, у которых есть подписка выше бизнеса. Только их выделяем цветом.
-            result.CatalogProjects = await _fillColorProjectsService.SetColorBusinessProjects(catalogProjects,
+            result.CatalogProjects = await _fillColorProjectsService.SetColorBusinessProjects(catalogs,
             _subscriptionRepository, _fareRuleRepository);
 
             // Очистка описание от тегов список проектов для каталога.
-            result.CatalogProjects = ClearCatalogVacanciesHtmlTags(catalogProjects.ToList());
+            result.CatalogProjects = ClearCatalogVacanciesHtmlTags(catalogs);
 
             return result;
         }
