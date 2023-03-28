@@ -162,26 +162,19 @@ public class VacancyService : IVacancyService
     /// <summary>
     /// Метод создает вакансию.
     /// </summary>
-    /// <param name="vacancyName">Название вакансии.</param>
-    /// <param name="vacancyText">Описание вакансии.</param>
-    /// <param name="workExperience">Опыт работы.</param>
-    /// <param name="employment">Занятость у вакансии.</param>
-    /// <param name="payment">Оплата у вакансии.</param>
-    /// <param name="account">Аккаунт пользователя.</param>
-    /// <param name="projectId">Id проекта.</param>
+    /// <param name="vacancyInput">Входная модель.</param>
     /// <returns>Данные созданной вакансии.</returns>
-    public async Task<UserVacancyEntity> CreateVacancyAsync(string vacancyName, string vacancyText,
-        string workExperience, string employment, string payment, string account, long projectId)
+    public async Task<UserVacancyEntity> CreateVacancyAsync(VacancyInput vacancyInput)
     {
         long userId = 0;
         
         try
         {
-            userId = await _userRepository.GetUserByEmailAsync(account);
+            userId = await _userRepository.GetUserByEmailAsync(vacancyInput.Account);
 
             if (userId <= 0)
             {
-                var ex = new NotFoundUserIdByAccountException(account);
+                var ex = new NotFoundUserIdByAccountException(vacancyInput.Account);
                 throw ex;
             }
 
@@ -192,8 +185,8 @@ public class VacancyService : IVacancyService
             var fareRule = await _fareRuleRepository.GetByIdAsync(userSubscription.ObjectId);
 
             // Проверяем доступо ли пользователю создание вакансии.
-            var availableCreateProjectLimit =
-                await _availableLimitsService.CheckAvailableCreateVacancyAsync(userId, fareRule.Name);
+            var availableCreateProjectLimit = await _availableLimitsService
+                .CheckAvailableCreateVacancyAsync(userId, fareRule.Name);
 
             // Если лимит по тарифу превышен.
             if (!availableCreateProjectLimit)
@@ -210,11 +203,12 @@ public class VacancyService : IVacancyService
             }
 
             // Добавляем вакансию в таблицу вакансий пользователя.
-            var createdVacancy = await _vacancyRepository
-                .CreateVacancyAsync(vacancyName, vacancyText, workExperience, employment, payment, userId);
+            var createdVacancy = await _vacancyRepository.CreateVacancyAsync(vacancyInput.VacancyName,
+                vacancyInput.VacancyText, vacancyInput.WorkExperience, vacancyInput.Employment, vacancyInput.Payment,
+                userId);
             
             // Привязываем вакансию к проекту.
-            await _projectRepository.AttachProjectVacancyAsync(projectId, createdVacancy.VacancyId);
+            await _projectRepository.AttachProjectVacancyAsync(vacancyInput.ProjectId, createdVacancy.VacancyId);
 
             // Отправляем вакансию на модерацию.
             await _vacancyModerationService.AddVacancyModerationAsync(createdVacancy.VacancyId);

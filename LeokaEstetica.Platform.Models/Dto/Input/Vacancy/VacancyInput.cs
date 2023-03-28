@@ -45,4 +45,14 @@ public class VacancyInput
     /// Id проекта.
     /// </summary>
     public long ProjectId { get; set; }
+
+    /// <summary>
+    /// Аккаунт.
+    /// </summary>
+    public string Account { get; set; }
+
+    /// <summary>
+    /// Токен пользователя.
+    /// </summary>
+    public string Token { get; set; }
 }

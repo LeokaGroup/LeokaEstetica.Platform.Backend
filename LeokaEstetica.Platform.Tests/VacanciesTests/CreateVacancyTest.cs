@@ -1,3 +1,4 @@
+using LeokaEstetica.Platform.Models.Dto.Input.Vacancy;
 using NUnit.Framework;
 
 namespace LeokaEstetica.Platform.Tests.VacanciesTests;
@@ -8,9 +9,16 @@ public class CreateVacancyTest : BaseServiceTest
     [Test]
     public async Task CreateVacancyAsyncTest()
     {
-        var result = await VacancyService
-            .CreateVacancyAsync("Тестовая вакансий", "Тестовое описание вакансии", "Без опыта", "Свободная",
-                "Без оплаты", "sierra_93@mail.ru", 60);
+        var result = await VacancyService.CreateVacancyAsync(new VacancyInput
+        {
+            VacancyName = "Тестовая вакансия",
+            VacancyText = "Тестовое описание вакансии",
+            WorkExperience = "Без опыта",
+            Payment = "Без оплаты",
+            Account = "sierra_93@mail.ru",
+            Employment = "Свободная",
+            ProjectId = 60
+        });
 
         Assert.IsNotNull(result);
         Assert.Positive(result.VacancyId);

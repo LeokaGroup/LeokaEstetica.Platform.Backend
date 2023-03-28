@@ -17,6 +17,7 @@ using LeokaEstetica.Platform.Database.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Finder.Chains.Project;
 using LeokaEstetica.Platform.Models.Dto.Input.Project;
+using LeokaEstetica.Platform.Models.Dto.Input.Vacancy;
 using LeokaEstetica.Platform.Models.Dto.Output.Configs;
 using LeokaEstetica.Platform.Models.Dto.Output.Project;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectTeam;
@@ -556,8 +557,16 @@ public class ProjectService : IProjectService
             }
 
             // Создаем вакансию.
-            var createdVacancy = await _vacancyService.CreateVacancyAsync(vacancyName, vacancyText, workExperience,
-                employment, payment, account, projectId);
+            var createdVacancy = await _vacancyService.CreateVacancyAsync(new VacancyInput
+            {
+                VacancyName = vacancyName,
+                VacancyText = vacancyText,
+                WorkExperience = workExperience,
+                Employment = employment,
+                Payment = payment,
+                Account = account,
+                ProjectId = projectId
+            });
 
             // Автоматически привязываем вакансию к проекту.
             await AttachProjectVacancyAsync(projectId, createdVacancy.VacancyId, account);

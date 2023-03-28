@@ -107,9 +107,10 @@ public class VacancyController : BaseController
             return result;
         }
 
-        var createdVacancy = await _vacancyService.CreateVacancyAsync(vacancyInput.VacancyName,
-            vacancyInput.VacancyText, vacancyInput.WorkExperience, vacancyInput.Employment, vacancyInput.Payment,
-            GetUserName(), vacancyInput.ProjectId);
+        vacancyInput.Token = CreateTokenFromHeader();
+        
+        var createdVacancy = await _vacancyService.CreateVacancyAsync(vacancyInput);
+        
         result = _mapper.Map<VacancyOutput>(createdVacancy);
 
         return result;
