@@ -179,7 +179,7 @@ public class VacancyController : BaseController
         }
 
         vacancyInput.Account = GetUserName();
-        vacancyInput.Token = GetTokenFromHeader();
+        vacancyInput.Token = CreateTokenFromHeader();
 
         var createdVacancy = await _vacancyService.UpdateVacancyAsync(vacancyInput);
         
@@ -259,7 +259,7 @@ public class VacancyController : BaseController
     [ProducesResponseType(404)]
     public async Task DeleteVacancyAsync([FromRoute] long vacancyId)
     {
-        await _vacancyService.DeleteVacancyAsync(vacancyId, GetUserName(), GetTokenFromHeader());
+        await _vacancyService.DeleteVacancyAsync(vacancyId, GetUserName(), CreateTokenFromHeader());
     }
 
     /// <summary>

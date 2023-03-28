@@ -179,7 +179,7 @@ public class ProjectController : BaseController
 
         result = await _projectService.UpdateProjectAsync(createProjectInput.ProjectName,
             createProjectInput.ProjectDetails, GetUserName(), createProjectInput.ProjectId,
-            Enum.Parse<ProjectStageEnum>(createProjectInput.ProjectStage), GetTokenFromHeader());
+            Enum.Parse<ProjectStageEnum>(createProjectInput.ProjectStage), CreateTokenFromHeader());
 
         return result;
     }
@@ -246,7 +246,7 @@ public class ProjectController : BaseController
     [ProducesResponseType(404)]
     public async Task<ProjectVacancyResultOutput> ProjectVacanciesAsync([FromQuery] long projectId)
     {
-        var result = await _projectService.ProjectVacanciesAsync(projectId, GetUserName(), GetTokenFromHeader());
+        var result = await _projectService.ProjectVacanciesAsync(projectId, GetUserName(), CreateTokenFromHeader());
 
         return result;
     }
@@ -277,7 +277,7 @@ public class ProjectController : BaseController
         }
 
         createProjectVacancyInput.Account = GetUserName();
-        createProjectVacancyInput.Token = GetTokenFromHeader();
+        createProjectVacancyInput.Token = CreateTokenFromHeader();
 
         var createdVacancy = await _projectService.CreateProjectVacancyAsync(createProjectVacancyInput);
         
@@ -301,7 +301,7 @@ public class ProjectController : BaseController
     public async Task AttachProjectVacancyAsync([FromBody] AttachProjectVacancyInput attachProjectVacancyInput)
     {
         await _projectService.AttachProjectVacancyAsync(attachProjectVacancyInput.ProjectId,
-            attachProjectVacancyInput.VacancyId, GetUserName(), GetTokenFromHeader());
+            attachProjectVacancyInput.VacancyId, GetUserName(), CreateTokenFromHeader());
     }
 
     /// <summary>
@@ -343,7 +343,7 @@ public class ProjectController : BaseController
         [FromBody] ProjectResponseInput projectResponseInput)
     {
         var projectResponse = await _projectService.WriteProjectResponseAsync(projectResponseInput.ProjectId,
-            projectResponseInput.VacancyId, GetUserName(), GetTokenFromHeader());
+            projectResponseInput.VacancyId, GetUserName(), CreateTokenFromHeader());
         
         var result = _mapper.Map<ProjectResponseOutput>(projectResponse);
 
@@ -364,7 +364,7 @@ public class ProjectController : BaseController
     public async Task CreateProjectCommentAsync([FromBody] ProjectCommentInput projectCommentInput)
     {
         await _projectCommentsService.CreateProjectCommentAsync(projectCommentInput.ProjectId,
-            projectCommentInput.Comment, GetUserName(), GetTokenFromHeader());
+            projectCommentInput.Comment, GetUserName(), CreateTokenFromHeader());
     }
 
     /// <summary>
@@ -443,7 +443,7 @@ public class ProjectController : BaseController
     {
         var invitedUser = await _projectService.InviteProjectTeamAsync(inviteProjectMemberInput.InviteText,
             Enum.Parse<ProjectInviteTypeEnum>(inviteProjectMemberInput.InviteType), inviteProjectMemberInput.ProjectId,
-            inviteProjectMemberInput.VacancyId, GetUserName(), GetTokenFromHeader());
+            inviteProjectMemberInput.VacancyId, GetUserName(), CreateTokenFromHeader());
         
         var result = _mapper.Map<ProjectTeamMemberOutput>(invitedUser);
 
@@ -534,7 +534,7 @@ public class ProjectController : BaseController
             await _logService.LogErrorAsync(ex);
         }
 
-        await _projectService.DeleteProjectVacancyAsync(vacancyId, projectId, GetUserName(), GetTokenFromHeader());
+        await _projectService.DeleteProjectVacancyAsync(vacancyId, projectId, GetUserName(), CreateTokenFromHeader());
     }
 
     /// <summary>

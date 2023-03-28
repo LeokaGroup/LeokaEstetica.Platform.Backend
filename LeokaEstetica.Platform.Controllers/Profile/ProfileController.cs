@@ -128,7 +128,7 @@ public class ProfileController : BaseController
             return result;
         }
         
-        result = await _profileService.SaveProfileInfoAsync(profileInfoInput, GetUserName(), GetTokenFromHeader());
+        result = await _profileService.SaveProfileInfoAsync(profileInfoInput, GetUserName(), CreateTokenFromHeader());
 
         return result;
     }
