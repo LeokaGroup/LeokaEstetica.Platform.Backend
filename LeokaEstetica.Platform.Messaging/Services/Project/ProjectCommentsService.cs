@@ -40,7 +40,8 @@ public sealed class ProjectCommentsService : IProjectCommentsService
     /// <param name="projectId">Id проекта.</param>
     /// <param name="comment">Текст комментария.</param>
     /// <param name="account">Аккаунт.</param>
-    public async Task CreateProjectCommentAsync(long projectId, string comment, string account)
+    /// <param name="token">Токен пользователя.</param>
+    public async Task CreateProjectCommentAsync(long projectId, string comment, string account, string token)
     {
         try
         {
@@ -63,7 +64,7 @@ public sealed class ProjectCommentsService : IProjectCommentsService
 
                 await _accessUserNotificationsService.SendNotificationWarningEmptyUserProfileAsync("Внимание",
                     "Для оставления комментария к проекту должна быть заполнена информация вашей анкеты.",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, userId);
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
                 
                 throw ex;
             }

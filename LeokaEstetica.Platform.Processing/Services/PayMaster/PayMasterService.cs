@@ -66,7 +66,8 @@ public class PayMasterService : IPayMasterService
     /// <param name="createOrderInput">Входная модель.</param>
     /// <param name="account">Аккаунт.</param>
     /// <returns>Данные платежа.</returns>
-    public async Task<CreateOrderOutput> CreateOrderAsync(CreateOrderInput createOrderInput, string account)
+    public async Task<CreateOrderOutput> CreateOrderAsync(CreateOrderInput createOrderInput, string account,
+        string token)
     {
         try
         {
@@ -83,7 +84,7 @@ public class PayMasterService : IPayMasterService
 
                 await _accessUserNotificationsService.SendNotificationWarningEmptyUserProfileAsync("Внимание",
                     "Для покупки тарифа должна быть заполнена информация вашей анкеты.",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, userId);
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
                 
                 throw ex;
             }

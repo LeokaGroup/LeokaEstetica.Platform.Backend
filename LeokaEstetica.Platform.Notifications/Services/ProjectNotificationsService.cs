@@ -81,11 +81,11 @@ public class ProjectNotificationsService : IProjectNotificationsService
     /// <param name="title">Заголовок уведомления.</param>
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="userId">Id пользователя.</param>
+    /// <param name="token">Токен пользователя.</param>
     public async Task SendNotificationErrorCreatedUserProjectAsync(string title, string notifyText,
-        string notificationLevel, long userId)
+        string notificationLevel, string token)
     {
-        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(userId.ToString());
+        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(token);
 
         await _hubContext.Clients
             .Client(connectionId)
@@ -103,11 +103,11 @@ public class ProjectNotificationsService : IProjectNotificationsService
     /// <param name="title">Заголовок уведомления.</param>
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="userId">Id пользователя.</param>
+    /// <param name="token">Токен пользователя.</param>
     public async Task SendNotificationWarningDublicateUserProjectAsync(string title, string notifyText,
-        string notificationLevel, long userId)
+        string notificationLevel, string token)
     {
-        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(userId.ToString());
+        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(token);
 
         await _hubContext.Clients
             .Client(connectionId)
@@ -329,11 +329,11 @@ public class ProjectNotificationsService : IProjectNotificationsService
     /// <param name="title">Заголовок уведомления.</param>
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="userId">Id пользователя.</param>
+    /// <param name="token">Токен пользователя.</param>
     public async Task SendNotificationWarningLimitFareRuleProjectsAsync(string title, string notifyText,
-        string notificationLevel, long userId)
+        string notificationLevel, string token)
     {
-        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(userId.ToString());
+        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(token);
 
         await _hubContext.Clients
             .Client(connectionId)

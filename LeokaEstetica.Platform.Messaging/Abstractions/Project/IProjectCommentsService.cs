@@ -13,7 +13,8 @@ public interface IProjectCommentsService
     /// <param name="projectId">Id проекта.</param>
     /// <param name="comment">Текст комментария.</param>
     /// <param name="account">Аккаунт.</param>
-    Task CreateProjectCommentAsync(long projectId, string comment, string account);
+    /// <param name="token">Токен пользователя.</param>
+    Task CreateProjectCommentAsync(long projectId, string comment, string account, string token);
 
     /// <summary>
     /// Метод получает список комментариев проекта.

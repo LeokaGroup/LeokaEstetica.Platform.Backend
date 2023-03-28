@@ -190,7 +190,7 @@ public class ProjectService : IProjectService
 
                 await _accessUserNotificationsService.SendNotificationWarningEmptyUserProfileAsync("Внимание",
                     "Для создания проекта должна быть заполнена информация вашей анкеты.",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, userId);
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
                 
                 throw ex;
             }
@@ -214,7 +214,7 @@ public class ProjectService : IProjectService
                 await _projectNotificationsService.SendNotificationWarningLimitFareRuleProjectsAsync(
                     "Что то пошло не так",
                     "Превышен лимит проектов по тарифу.",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, userId);
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
 
                 return null;
             }
@@ -227,7 +227,7 @@ public class ProjectService : IProjectService
             {
                 await _projectNotificationsService
                     .SendNotificationWarningDublicateUserProjectAsync("Увы...", "Такой проект у вас уже существует.",
-                        NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, userId);
+                        NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
 
                 return null;
             }
@@ -244,7 +244,7 @@ public class ProjectService : IProjectService
                 
                 await _projectNotificationsService.SendNotificationErrorCreatedUserProjectAsync("Что то пошло не так",
                     "Ошибка при создании проекта. Мы уже знаем о проблеме и уже занимаемся ей.",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, userId);
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, token);
 
                 return null;
             }
@@ -668,8 +668,10 @@ public class ProjectService : IProjectService
     /// <param name="projectId">Id проекта.</param>
     /// <param name="vacancyId">Id вакансии.</param>
     /// <param name="account">Аккаунт пользователя.</param>
+    /// <param name="token">Токен пользователя.</param>
     /// <returns>Выходная модель с записанным откликом.</returns>
-    public async Task<ProjectResponseEntity> WriteProjectResponseAsync(long projectId, long? vacancyId, string account)
+    public async Task<ProjectResponseEntity> WriteProjectResponseAsync(long projectId, long? vacancyId, string account,
+        string token)
     {
         long userId = 0;
         
@@ -694,7 +696,7 @@ public class ProjectService : IProjectService
 
                 await _accessUserNotificationsService.SendNotificationWarningEmptyUserProfileAsync("Внимание",
                     "Для отклика на проект должна быть заполнена информация вашей анкеты.",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, userId);
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
                 
                 throw ex;
             }
@@ -800,9 +802,10 @@ public class ProjectService : IProjectService
     /// <param name="projectId">Id проекта.</param>
     /// <param name="vacancyId">Id вакансии.</param>
     /// <param name="account">Аккаунт пользователя.</param>
+    /// <param name="token">Токен пользователя.</param>
     /// <returns>Добавленный пользователь.</returns>
     public async Task<ProjectTeamMemberEntity> InviteProjectTeamAsync(string inviteText,
-        ProjectInviteTypeEnum inviteType, long projectId, long? vacancyId, string account)
+        ProjectInviteTypeEnum inviteType, long projectId, long? vacancyId, string account, string token)
     {
         try
         {
@@ -826,7 +829,7 @@ public class ProjectService : IProjectService
 
                 await _accessUserNotificationsService.SendNotificationWarningEmptyUserProfileAsync("Внимание",
                     "Для приглашения пользователей в проект должна быть заполнена информация вашей анкеты.",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, currentUserId);
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
                 
                 throw ex;
             }

@@ -13,6 +13,7 @@ public interface IPayMasterService
     /// </summary>
     /// <param name="createOrderInput">Входная модель.</param>
     /// <param name="account">Аккаунт.</param>
+    /// <param name="token">Токен пользователя.</param>
     /// <returns>Данные платежа.</returns>
-    Task<CreateOrderOutput> CreateOrderAsync(CreateOrderInput createOrderInput, string account);
+    Task<CreateOrderOutput> CreateOrderAsync(CreateOrderInput createOrderInput, string account, string token);
 }

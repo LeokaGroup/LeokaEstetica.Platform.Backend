@@ -24,7 +24,7 @@ public class CreateOrderTest : BaseServiceTest
             {
                 Description = "Оплата тарифа \"Тариф Базовый\""
             }
-        }, "sierra_93@mail.ru");
+        }, "sierra_93@mail.ru", string.Empty);
 
         NotNull(result);
         IsTrue(long.Parse(result.PaymentId) > 0);

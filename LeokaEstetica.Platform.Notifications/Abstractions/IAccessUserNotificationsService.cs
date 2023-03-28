@@ -11,7 +11,7 @@ public interface IAccessUserNotificationsService
     /// <param name="title">Заголовок уведомления.</param>
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="userId">Id пользователя.</param>
+    /// <param name="token">Токен пользователя.</param>
     Task SendNotificationWarningEmptyUserProfileAsync(string title, string notifyText, string notificationLevel,
-        long userId);
+        string token);
 }

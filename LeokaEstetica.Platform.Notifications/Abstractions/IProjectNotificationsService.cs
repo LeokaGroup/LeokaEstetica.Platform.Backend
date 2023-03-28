@@ -23,9 +23,9 @@ public interface IProjectNotificationsService
     /// <param name="title">Заголовок уведомления.</param>
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="userId">Id пользователя.</param>
+    /// <param name="token">Токен пользователя.</param>
     Task SendNotificationErrorCreatedUserProjectAsync(string title, string notifyText, string notificationLevel,
-        long userId);
+        string token);
 
     /// <summary>
     /// Метод отправляет уведомление о дубликате проекта пользователя.
@@ -33,9 +33,9 @@ public interface IProjectNotificationsService
     /// <param name="title">Заголовок уведомления.</param>
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="userId">Id пользователя.</param>
+    /// <param name="token">Токен пользователя.</param>
     Task SendNotificationWarningDublicateUserProjectAsync(string title, string notifyText, string notificationLevel,
-        long userId);
+        string token);
 
     /// <summary>
     /// Метод отправляет уведомление об успехе при изменении проекта пользователя.
@@ -143,9 +143,9 @@ public interface IProjectNotificationsService
     /// <param name="title">Заголовок уведомления.</param>
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="userId">Id пользователя.</param>
+    /// <param name="token">Токен пользователя.</param>
     Task SendNotificationWarningLimitFareRuleProjectsAsync(string title, string notifyText, string notificationLevel,
-        long userId);
+        string token);
 
     /// <summary>
     /// Метод отправляет уведомление об ошибке при удалении вакансии проекта.

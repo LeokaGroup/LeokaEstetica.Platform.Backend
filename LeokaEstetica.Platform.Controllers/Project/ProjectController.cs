@@ -342,7 +342,8 @@ public class ProjectController : BaseController
         [FromBody] ProjectResponseInput projectResponseInput)
     {
         var projectResponse = await _projectService.WriteProjectResponseAsync(projectResponseInput.ProjectId,
-            projectResponseInput.VacancyId, GetUserName());
+            projectResponseInput.VacancyId, GetUserName(), GetTokenFromHeader());
+        
         var result = _mapper.Map<ProjectResponseOutput>(projectResponse);
 
         return result;
@@ -362,7 +363,7 @@ public class ProjectController : BaseController
     public async Task CreateProjectCommentAsync([FromBody] ProjectCommentInput projectCommentInput)
     {
         await _projectCommentsService.CreateProjectCommentAsync(projectCommentInput.ProjectId,
-            projectCommentInput.Comment, GetUserName());
+            projectCommentInput.Comment, GetUserName(), GetTokenFromHeader());
     }
 
     /// <summary>
@@ -441,7 +442,7 @@ public class ProjectController : BaseController
     {
         var invitedUser = await _projectService.InviteProjectTeamAsync(inviteProjectMemberInput.InviteText,
             Enum.Parse<ProjectInviteTypeEnum>(inviteProjectMemberInput.InviteType), inviteProjectMemberInput.ProjectId,
-            inviteProjectMemberInput.VacancyId, GetUserName());
+            inviteProjectMemberInput.VacancyId, GetUserName(), GetTokenFromHeader());
         
         var result = _mapper.Map<ProjectTeamMemberOutput>(invitedUser);
 
