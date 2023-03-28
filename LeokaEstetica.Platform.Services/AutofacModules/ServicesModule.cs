@@ -80,7 +80,17 @@ public class ServicesModule : Module
             .RegisterType<ProjectService>()
             .As<IProjectService>()
             .SingleInstance();
-        
+
+        // Сервис выделение цветом пользователей, у которых подписка выше уровня бизнес.
+        builder
+            .RegisterType<FillColorProjectsService>()
+            .Named<IFillColorProjectsService>("FillColorProjectsService")
+            .InstancePerLifetimeScope();
+        builder
+            .RegisterType<FillColorProjectsService>()
+            .As<IFillColorProjectsService>()
+            .InstancePerLifetimeScope();
+
         // Сервис вакансий.
         builder
             .RegisterType<VacancyService>()
