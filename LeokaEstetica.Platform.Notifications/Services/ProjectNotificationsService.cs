@@ -59,12 +59,11 @@ public class ProjectNotificationsService : IProjectNotificationsService
     /// <param name="title">Заголовок уведомления.</param>
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="userId">Id пользователя.</param>
+    /// <param name="token">Токен пользователя.</param>
     public async Task SendNotificationSuccessCreatedUserProjectAsync(string title, string notifyText,
-        string notificationLevel, string userId)
+        string notificationLevel, string token)
     {
-        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(userId);
-        // var res = ProtoBufExtensions.Deserialize<string>(connectionId);
+        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(token);
 
         await _hubContext.Clients
             .Client(connectionId)

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using LeokaEstetica.Platform.Core.Extensions;
+using Microsoft.AspNetCore.Mvc;
 
 namespace LeokaEstetica.Platform.Base;
 
@@ -38,5 +39,25 @@ public class BaseController : ControllerBase
     private string GetLoginFromCookie()
     {
         return HttpContext.Request.Cookies["user"];
+    }
+    
+    /// <summary>
+    /// Метод вернет токен пользователя из хидера и обрезает строку для получения нужной части.
+    /// </summary>  
+    /// <returns>Токен пользователя.</returns>
+    [ApiExplorerSettings(IgnoreApi = true)]
+    public string CreateTokenFromHeader()
+    {
+        return HttpContext.Request.Headers.TryGet("Authorization").ToString().Substring(7);
+    }
+    
+    /// <summary>
+    /// Метод вернет токен пользователя из хидера в исходном виде.
+    /// </summary>  
+    /// <returns>Токен пользователя.</returns>
+    [ApiExplorerSettings(IgnoreApi = true)]
+    public string GetTokenFromHeader()
+    {
+        return HttpContext.Request.Headers.TryGet("Authorization").ToString();
     }
 }

@@ -1,6 +1,5 @@
 using LeokaEstetica.Platform.Base;
 using LeokaEstetica.Platform.Controllers.Filters;
-using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Models.Dto.Input.Notification;
 using LeokaEstetica.Platform.Models.Dto.Output.Notification;
@@ -117,6 +116,6 @@ public class NotificationsController : BaseController
     public async Task AddConnectionIdCacheAsync([FromBody] CommitConnectionInput commitConnectionInput)
     {
         await _notificationsRedisService.AddConnectionIdCacheAsync(commitConnectionInput.ConnectionId,
-            HttpContext.Request.Headers.TryGet("Authorization").ToString());
+            GetTokenFromHeader());
     }
 }

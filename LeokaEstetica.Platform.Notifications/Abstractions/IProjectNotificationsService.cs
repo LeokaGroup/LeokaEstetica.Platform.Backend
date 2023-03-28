@@ -13,7 +13,7 @@ public interface IProjectNotificationsService
     /// <param name="title">Заголовок уведомления.</param>
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="userId">Id пользователя.</param>
+    /// <param name="token">Токен пользователя.</param>
     Task SendNotificationSuccessCreatedUserProjectAsync(string title, string notifyText, string notificationLevel,
         string token);
 

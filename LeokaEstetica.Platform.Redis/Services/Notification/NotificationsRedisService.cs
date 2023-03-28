@@ -1,5 +1,4 @@
 using LeokaEstetica.Platform.Redis.Abstractions.Notification;
-using LeokaEstetica.Platform.Redis.Abstractions.User;
 using LeokaEstetica.Platform.Redis.Extensions;
 using Microsoft.Extensions.Caching.Distributed;
 
@@ -11,17 +10,14 @@ namespace LeokaEstetica.Platform.Redis.Services.Notification;
 public class NotificationsRedisService : INotificationsRedisService
 {
     private readonly IDistributedCache _redisCache;
-    private readonly IUserRedisService _userRedisService;
-    
+
     /// <summary>
     /// Конструктор.
     /// </summary>
     /// <param name="redisCache">Кэш редиса.</param>
-    public NotificationsRedisService(IDistributedCache redisCache, 
-        IUserRedisService userRedisService)
+    public NotificationsRedisService(IDistributedCache redisCache)
     {
         _redisCache = redisCache;
-        _userRedisService = userRedisService;
     }
 
     /// <summary>
@@ -31,8 +27,6 @@ public class NotificationsRedisService : INotificationsRedisService
     /// <param name="token">Токен пользователя.</param>
     public async Task AddConnectionIdCacheAsync(string connectionId, string token)
     {
-        // var userId = await _userRedisService.GetUserIdCacheAsync(token);
-        // var key = token + ":" + userId;
         await _redisCache.SetStringAsync(token, ProtoBufExtensions.Serialize(connectionId),
             new DistributedCacheEntryOptions
             {
@@ -47,7 +41,6 @@ public class NotificationsRedisService : INotificationsRedisService
     /// <returns>ConnectionId.</returns>
     public async Task<string> GetConnectionIdCacheAsync(string key)
     {
-        // var searchKey = string.Concat(CacheKeysConsts.ADD_CONNECTION_ID, key);
         var connectionId = await _redisCache.GetStringAsync(key);
 
         if (!string.IsNullOrEmpty(connectionId))
