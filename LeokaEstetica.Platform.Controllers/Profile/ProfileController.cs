@@ -1,7 +1,5 @@
 using LeokaEstetica.Platform.Base;
-using LeokaEstetica.Platform.Base.Abstractions.Services.Validation;
 using LeokaEstetica.Platform.Controllers.Filters;
-using LeokaEstetica.Platform.Controllers.Validators.Profile;
 using LeokaEstetica.Platform.Models.Dto.Input.Profile;
 using LeokaEstetica.Platform.Models.Dto.Output.Profile;
 using LeokaEstetica.Platform.Services.Abstractions.Profile;
@@ -18,18 +16,14 @@ namespace LeokaEstetica.Platform.Controllers.Profile;
 public class ProfileController : BaseController
 {
     private readonly IProfileService _profileService;
-    private readonly IValidationExcludeErrorsService _validationExcludeErrorsService;
 
     /// <summary>
     /// Конструктор.
     /// </summary>
     /// <param name="profileService">Сервис профиля.</param>
-    /// <param name="validationExcludeErrorsService">Сервис исключения параметров валидации.</param>
-    public ProfileController(IProfileService profileService, 
-        IValidationExcludeErrorsService validationExcludeErrorsService)
+    public ProfileController(IProfileService profileService)
     {
         _profileService = profileService;
-        _validationExcludeErrorsService = validationExcludeErrorsService;
     }
 
     /// <summary>
@@ -118,17 +112,8 @@ public class ProfileController : BaseController
     [ProducesResponseType(404)]
     public async Task<ProfileInfoOutput> SaveProfileInfoAsync([FromBody] ProfileInfoInput profileInfoInput)
     {
-        var result = new ProfileInfoOutput();
-        var validator = await new SaveProfileInfoValidator().ValidateAsync(profileInfoInput);
-
-        if (validator.Errors.Any())
-        {
-            result.Errors = await _validationExcludeErrorsService.ExcludeAsync(validator.Errors);
-
-            return result;
-        }
-        
-        result = await _profileService.SaveProfileInfoAsync(profileInfoInput, GetUserName(), CreateTokenFromHeader());
+        var result = await _profileService.SaveProfileInfoAsync(profileInfoInput, GetUserName(),
+            CreateTokenFromHeader());
 
         return result;
     }
