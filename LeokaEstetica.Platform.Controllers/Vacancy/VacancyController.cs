@@ -282,7 +282,7 @@ public class VacancyController : BaseController
     /// </summary>
     /// <param name="vacancy">Входная модель.</param>
     [HttpPost]
-    [Route("archive/{vacancyId}")]
+    [Route("archive")]
     [ProducesResponseType(200)]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]
