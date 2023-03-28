@@ -24,16 +24,12 @@ public class FillColorProjectsService : IFillColorProjectsService
     /// <summary>
     /// Метод выделяет цветом пользователей у которых есть подписка выше бизнеса.
     /// </summary>
-    public async Task<IEnumerable<CatalogProjectOutput>> SetColorBusinessProjects(
-        List<CatalogProjectOutput> projects, ISubscriptionRepository subscriptionRepository,
-        IFareRuleRepository fareRuleRepository)
+    public async Task<IEnumerable<CatalogProjectOutput>> SetColorBusinessProjects(List<CatalogProjectOutput> projects,
+        ISubscriptionRepository subscriptionRepository, IFareRuleRepository fareRuleRepository)
 
     {
         // Получаем список юзеров для проставления цветов.
         var userIds = projects.Select(p => p.UserId).Distinct();
-
-        // Выбираем список подписок пользователей.
-        var userSubscriptions = await subscriptionRepository.GetUsersSubscriptionsAsync(userIds);
 
         // Получаем список подписок.
         var subscriptions = await subscriptionRepository.GetSubscriptionsAsync();
@@ -41,6 +37,9 @@ public class FillColorProjectsService : IFillColorProjectsService
         // Получаем список тарифов, чтобы взять названия тарифов.
         var fareRules = await fareRuleRepository.GetFareRulesAsync();
         var rules = fareRules.ToList();
+        
+        // Выбираем список подписок пользователей.
+        var userSubscriptions = await subscriptionRepository.GetUsersSubscriptionsAsync(userIds);
 
         // Выбираем пользователей, у которых есть подписка выше бизнеса. Только их выделяем цветом.
         foreach (var project in projects)
@@ -52,9 +51,8 @@ public class FillColorProjectsService : IFillColorProjectsService
             {
                 continue;
             }
-
-            var subscriptionId = userSubscription.SubscriptionId;
-            var subscription = subscriptions.Find(s => s.ObjectId == subscriptionId);
+            
+            var subscription = subscriptions.Find(s => s.ObjectId == userSubscription.SubscriptionId);
 
             if (subscription is null)
             {
@@ -75,6 +73,7 @@ public class FillColorProjectsService : IFillColorProjectsService
                 project.IsSelectedColor = true;
             }
         }
+        
         return projects;
     }
 }
