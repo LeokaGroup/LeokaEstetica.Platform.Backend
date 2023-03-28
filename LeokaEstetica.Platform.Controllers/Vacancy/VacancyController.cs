@@ -280,7 +280,7 @@ public class VacancyController : BaseController
     /// <summary>
     /// Метод добавляет вакансию в архив.
     /// </summary>
-    /// <param name="vacancyId">Id вакансии.</param>
+    /// <param name="vacancy">Входная модель.</param>
     [HttpPost]
     [Route("archive/{vacancyId}")]
     [ProducesResponseType(200)]
@@ -288,8 +288,8 @@ public class VacancyController : BaseController
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task AddVacancyArchiveAsync([FromRoute] long vacancyId)
+    public async Task AddVacancyArchiveAsync([FromBody] ArchiveVacancyInput vacancy)
     {
-        await _vacancyService.AddVacancyArchiveAsync(vacancyId, GetUserName());
+        await _vacancyService.AddVacancyArchiveAsync(vacancy.VacancyId, GetUserName());
     }
 }

@@ -529,7 +529,7 @@ public class VacancyService : IVacancyService
     }
 
     /// <summary>
-    /// Метод добавляет вакансию в таблицу архивов.
+    /// Метод добавляет вакансию в архив.
     /// </summary>
     /// <param name="vacancyId">Id вакансии.</param>
     /// <param name="account">Аккаунт.</param>
@@ -540,26 +540,15 @@ public class VacancyService : IVacancyService
             //Получаем id пользователя
             var userId = await _userRepository.GetUserIdByEmailOrLoginAsync(account);
 
-            if (userId <= 0)
-            {
-                var ex = new NotFoundUserIdByAccountException(account);
-                throw ex;
-            }
-
             if (vacancyId <= 0)
             {
                 var ex = new ArgumentNullException($"Id вакансии не может быть пустым. VacancyId: {vacancyId}");
-
-                await _logService.LogErrorAsync(ex);
                 throw ex;
             }
 
-            //Получаем вакансию по Id
-            var vacancy = await _vacancyRepository.GetVacancyByVacancyIdAsync(vacancyId, userId);
-
-            if (vacancy is null)
+            if (userId <= 0)
             {
-                var ex = new NotFoundVacancyByIdException(vacancyId);
+                var ex = new NotFoundUserIdByAccountException(account);
                 throw ex;
             }
 
@@ -570,23 +559,11 @@ public class VacancyService : IVacancyService
             {
                 var ex = new InvalidOperationException(
                     $"Пользователь не является владельцем вакансии. VacancyId: {vacancyId}. UserId: {userId}");
-                await _logService.LogErrorAsync(ex);
                 throw ex;
             }
 
             //Добавляем вакансию в таблицу архивов
-            var isAddedArchive = await _vacancyRepository.AddVacancyArchiveAsync(vacancyId, userId);
-
-            if (!isAddedArchive)
-            {
-                var ex = new InvalidOperationException(
-                    "Ошибка добавления вакансии в архив. " +
-                    $"VacancyId: {vacancyId}. " +
-                    $"UserId: {userId}");
-
-                await _logService.LogErrorAsync(ex);
-                throw ex;
-            }
+            await _vacancyRepository.AddVacancyArchiveAsync(vacancyId, userId);
         }
 
         catch (Exception ex)

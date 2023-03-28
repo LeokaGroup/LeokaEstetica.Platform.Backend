@@ -117,10 +117,9 @@ public interface IVacancyRepository
     Task<IEnumerable<UserVacancyEntity>> GetUserVacanciesAsync(long userId);
 
     /// <summary>
-    /// Добавляет вакансию в таблицу архивов.
+    /// Метод Добавляет вакансию в архив.
     /// </summary>
     /// <param name="vacancyId">Id вакансии.</param>
     /// <param name="userId">Id пользователя.</param>
-    /// <returns>Признак добавления в архив.</returns>
-    Task<bool> AddVacancyArchiveAsync(long vacancyId, long userId);
+    Task AddVacancyArchiveAsync(long vacancyId, long userId);
 }

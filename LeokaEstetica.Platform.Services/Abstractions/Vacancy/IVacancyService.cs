@@ -86,7 +86,7 @@ public interface IVacancyService
     Task<VacancyResultOutput> GetUserVacanciesAsync(string account);
 
     /// <summary>
-    /// Метод добавляет в вакансию в таблицу архивов.
+    /// Метод добавляет в вакансию в архив.
     /// </summary>
     /// <param name="vacancyId">Id вакансии.</param>
     /// <param name="account">Аккаунт.</param>

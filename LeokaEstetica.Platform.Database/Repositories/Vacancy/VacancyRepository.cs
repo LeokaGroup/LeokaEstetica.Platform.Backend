@@ -357,16 +357,12 @@ public class VacancyRepository : IVacancyRepository
     }
 
     /// <summary>
-    /// Метод добавляет вакансию в таблицу архивов.
+    /// Метод добавляет вакансию в архив.
     /// </summary>
     /// <param name="vacancyId">Id вакансии.</param>
     /// <param name="userId">Id пользователя.</param>
-    /// <returns>Признак добавления в архив.</returns>
-    public async Task<bool> AddVacancyArchiveAsync(long vacancyId, long userId)
+    public async Task AddVacancyArchiveAsync(long vacancyId, long userId)
     {
-        var tran = await _pgContext.Database
-            .BeginTransactionAsync(IsolationLevel.ReadCommitted);
-
         try
         {
             var arvhivedVacancy = new ArchivedVacancyEntity
@@ -379,14 +375,10 @@ public class VacancyRepository : IVacancyRepository
             await _pgContext.ArchivedVacancies.AddAsync(arvhivedVacancy);
 
             await _pgContext.SaveChangesAsync();
-            await tran.CommitAsync();
-
-            return true;
         }
 
         catch
         {
-            await tran.RollbackAsync();
             throw;
         }
     }
