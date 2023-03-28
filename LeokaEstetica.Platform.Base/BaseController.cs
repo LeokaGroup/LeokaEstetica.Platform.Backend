@@ -48,7 +48,14 @@ public class BaseController : ControllerBase
     [ApiExplorerSettings(IgnoreApi = true)]
     public string CreateTokenFromHeader()
     {
-        return HttpContext.Request.Headers.TryGet("Authorization").ToString().Substring(7);
+        var token = HttpContext.Request.Headers.TryGet("Authorization").ToString();
+
+        if (token.Contains("Bearer"))
+        {
+            return HttpContext.Request.Headers.TryGet("Authorization").ToString().Substring(7);
+        }
+
+        return GetTokenFromHeader();
     }
     
     /// <summary>
@@ -58,6 +65,13 @@ public class BaseController : ControllerBase
     [ApiExplorerSettings(IgnoreApi = true)]
     public string GetTokenFromHeader()
     {
-        return HttpContext.Request.Headers.TryGet("Authorization").ToString();
+        var token = HttpContext.Request.Headers.TryGet("Authorization").ToString();
+        
+        if (!token.Contains("Bearer"))
+        {
+            return HttpContext.Request.Headers.TryGet("Authorization").ToString();
+        }
+        
+        return CreateTokenFromHeader();
     }
 }

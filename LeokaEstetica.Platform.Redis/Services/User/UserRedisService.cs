@@ -27,7 +27,6 @@ public class UserRedisService : IUserRedisService
     /// <param name="token">Токен пользователя.</param>
     public async Task AddUserTokenAndUserIdCacheAsync(long userId, string token)
     {
-        // var toRedis = token + ":" + userId;
         await _redisCache.SetStringAsync(token, ProtoBufExtensions.Serialize(userId.ToString()),
             new DistributedCacheEntryOptions
             {
