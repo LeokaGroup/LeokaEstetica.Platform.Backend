@@ -38,8 +38,9 @@ public interface IProfileService
     /// </summary>
     /// <param name="profileInfoInput">Входная модель.</param>
     /// <param name="account">ккаунт пользователя.</param>
+    /// <param name="token">Токен пользователя.</param>
     /// <returns>Сохраненные данные.</returns>
-    Task<ProfileInfoOutput> SaveProfileInfoAsync(ProfileInfoInput profileInfoInput, string account);
+    Task<ProfileInfoOutput> SaveProfileInfoAsync(ProfileInfoInput profileInfoInput, string account, string token);
 
     /// <summary>
     /// Метод выбирает пункт меню профиля пользователя. Производит действия, если нужны. 

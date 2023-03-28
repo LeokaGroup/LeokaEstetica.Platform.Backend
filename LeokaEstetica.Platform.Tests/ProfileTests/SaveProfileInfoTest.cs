@@ -21,7 +21,7 @@ public class SaveProfileInfoTest : BaseServiceTest
             Telegram = "@vano",
             Vkontakte = "https://vk.com/vano",
             OtherLink = "Нету..."
-        }, "sierra_93@mail.ru");
+        }, "sierra_93@mail.ru", string.Empty);
 
         Assert.IsNotNull(profileInfo);
         Assert.IsTrue(profileInfo.ProfileInfoId > 0);

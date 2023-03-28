@@ -181,8 +181,10 @@ public sealed class ProfileService : IProfileService
     /// </summary>
     /// <param name="profileInfoInput">Входная модель.</param>
     /// <param name="account">ккаунт пользователя.</param>
+    /// <param name="token">Токен пользователя.</param>
     /// <returns>Сохраненные данные.</returns>
-    public async Task<ProfileInfoOutput> SaveProfileInfoAsync(ProfileInfoInput profileInfoInput, string account)
+    public async Task<ProfileInfoOutput> SaveProfileInfoAsync(ProfileInfoInput profileInfoInput, string account,
+        string token)
     {
         try
         {
@@ -219,7 +221,7 @@ public sealed class ProfileService : IProfileService
 
             // Отправляем уведомление о сохранении фронту.
             await _notificationsService.SendNotifySuccessSaveAsync("Все хорошо", "Данные успешно сохранены.",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, userId);
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);
 
             result.IsSuccess = true;
 
@@ -453,7 +455,9 @@ public sealed class ProfileService : IProfileService
             }
 
             // Получаем всю информацию о навыках наполняя список.
-            var skillsInfo = await _profileRepository.GetProfileSkillsBySkillIdAsync(items.Select(i => i.SkillId).ToArray());
+            var skillsInfo = await _profileRepository.GetProfileSkillsBySkillIdAsync(items.Select(i => i.SkillId)
+                .ToArray());
+            
             var result = _mapper.Map<List<SkillOutput>>(skillsInfo);
 
             return result;
@@ -486,7 +490,8 @@ public sealed class ProfileService : IProfileService
             }
 
             // Получаем всю информацию о навыках наполняя список.
-            var skillsInfo = await _profileRepository.GetProfileIntentsByIntentIdAsync(items.Select(i => i.IntentId).ToArray());
+            var skillsInfo = await _profileRepository.GetProfileIntentsByIntentIdAsync(items.Select(i => i.IntentId)
+                .ToArray());
             var result = _mapper.Map<List<IntentOutput>>(skillsInfo);
 
             return result;

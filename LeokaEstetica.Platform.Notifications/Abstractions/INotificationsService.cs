@@ -11,6 +11,6 @@ public interface INotificationsService
     /// <param name="title">Заголовок уведомления.</param>
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="userId">Id пользователя.</param>
-    Task SendNotifySuccessSaveAsync(string title, string notifyText, string notificationLevel, long userId);
+    /// <param name="token">Токен пользователя.</param>
+    Task SendNotifySuccessSaveAsync(string title, string notifyText, string notificationLevel, string token);
 }
