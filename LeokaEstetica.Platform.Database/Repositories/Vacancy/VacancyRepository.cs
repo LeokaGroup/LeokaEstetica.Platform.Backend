@@ -332,7 +332,7 @@ public class VacancyRepository : IVacancyRepository
     /// <param name="vacancyId">Id вакансии.</param>
     /// <param name="userId">Id пользователя.</param>
     /// <returns>Признак является ли пользователь владельцем вакансии.</returns>
-    public async Task<bool> CheckProjectOwnerAsync(long vacancyId, long userId)
+    public async Task<bool> CheckVacancyOwnerAsync(long vacancyId, long userId)
     {
         var result = await _pgContext.UserVacancies
             .AnyAsync(p => p.VacancyId == vacancyId
@@ -354,5 +354,38 @@ public class VacancyRepository : IVacancyRepository
             .ToListAsync();
 
         return result;
+    }
+
+    /// <summary>
+    /// Метод добавляет вакансию в архив.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Признак добавления в архив.</returns>
+    public async Task<bool> AddVacancyArchiveAsync(long vacancyId, long userId)
+    {
+        var tran = await _pgContext.Database
+            .BeginTransactionAsync(IsolationLevel.ReadCommitted);
+
+        try
+        {
+            var arvhivedVacancy = new ArchivedVacancyEntity
+            {
+                VacancyId = vacancyId,
+                DateArchived = DateTime.Now,                
+            };
+            await _pgContext.ArchivedVacancies.AddAsync(arvhivedVacancy);
+
+            await _pgContext.SaveChangesAsync();
+            await tran.CommitAsync();
+
+            return true;
+        }
+
+        catch
+        {
+            await tran.RollbackAsync();
+            throw;
+        }
     }
 }

@@ -276,4 +276,20 @@ public class VacancyController : BaseController
 
         return result;
     }
+
+    /// <summary>
+    /// Метод добавляет вакансию в архив.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    [HttpPost]
+    [Route("archive/{vacancyId}")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task AddVacancyArchiveAsync([FromRoute] long vacancyId)
+    {
+        await _vacancyService.AddVacancyArchiveAsync(vacancyId, GetUserName());
+    }
 }
