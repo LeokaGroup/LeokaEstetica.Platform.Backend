@@ -26,16 +26,9 @@ public interface IVacancyService
     /// <summary>
     /// Метод обновляет вакансию.
     /// </summary>
-    /// <param name="vacancyName">Название вакансии.</param>
-    /// <param name="vacancyText">Описание вакансии.</param>
-    /// <param name="workExperience">Опыт работы.</param>
-    /// <param name="employment">Занятость у вакансии.</param>
-    /// <param name="payment">Оплата у вакансии.</param>
-    /// <param name="account">Аккаунт пользователя.</param>
-    /// <param name="vacancyId">Id вакансии.</param>
+    /// <param name="vacancyInput">Входная модель.</param>
     /// <returns>Данные созданной вакансии.</returns>
-    Task<UserVacancyEntity> UpdateVacancyAsync(string vacancyName, string vacancyText, string workExperience,
-        string employment, string payment, string account, long vacancyId);
+    Task<UserVacancyEntity> UpdateVacancyAsync(VacancyInput vacancyInput);
 
     /// <summary>
     /// Метод получает список вакансий для каталога.
@@ -70,7 +63,8 @@ public interface IVacancyService
     /// </summary>
     /// <param name="vacancyId">Id вакансии.</param>
     /// <param name="account">Аккаунт.</param>
-    Task DeleteVacancyAsync(long vacancyId, string account);
+    /// <param name="token">Токен пользователя.</param>
+    Task DeleteVacancyAsync(long vacancyId, string account, string token);
 
     /// <summary>
     /// Метод получает список вакансий пользователя.

@@ -32,11 +32,11 @@ public class VacancyNotificationsService : IVacancyNotificationsService
     /// <param name="title">Заголовок уведомления.</param>
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="userId">Id пользователя.</param>
+    /// <param name="token">Токен пользователя.</param>
     public async Task SendNotificationSuccessCreatedUserVacancyAsync(string title, string notifyText,
-        string notificationLevel, long userId)
+        string notificationLevel, string token)
     {
-        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(userId.ToString());
+        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(token);
 
         await _hubContext.Clients
             .Client(connectionId)
@@ -54,11 +54,11 @@ public class VacancyNotificationsService : IVacancyNotificationsService
     /// <param name="title">Заголовок уведомления.</param>
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="userId">Id пользователя.</param>
+    /// <param name="token">Токен пользователя.</param>
     public async Task SendNotificationErrorCreatedUserVacancyAsync(string title, string notifyText,
-        string notificationLevel, long userId)
+        string notificationLevel, string token)
     {
-        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(userId.ToString());
+        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(token);
 
         await _hubContext.Clients
             .Client(connectionId)
@@ -76,11 +76,11 @@ public class VacancyNotificationsService : IVacancyNotificationsService
     /// <param name="title">Заголовок уведомления.</param>
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="userId">Id пользователя.</param>
+    /// <param name="token">Токен пользователя.</param>
     public async Task SendNotificationWarningLimitFareRuleVacanciesAsync(string title, string notifyText,
-        string notificationLevel, long userId)
+        string notificationLevel, string token)
     {
-        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(userId.ToString());
+        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(token);
 
         await _hubContext.Clients
             .Client(connectionId)
@@ -99,11 +99,11 @@ public class VacancyNotificationsService : IVacancyNotificationsService
     /// <param name="title">Заголовок уведомления.</param>
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="userId">Id пользователя.</param>
+    /// <param name="token">Токен пользователя.</param>
     public async Task SendNotificationErrorDeleteVacancyAsync(string title, string notifyText, 
-        string notificationLevel, long userId)
+        string notificationLevel, string token)
     {
-        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(userId.ToString());
+        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(token);
 
         await _hubContext.Clients
             .Client(connectionId)
@@ -122,11 +122,11 @@ public class VacancyNotificationsService : IVacancyNotificationsService
     /// <param name="title">Заголовок уведомления.</param>
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="userId">Id пользователя.</param>
+    /// <param name="token">Токен пользователя.</param>
     public async Task SendNotificationSuccessDeleteVacancyAsync(string title, string notifyText,
-        string notificationLevel, long userId)
+        string notificationLevel, string token)
     {
-        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(userId.ToString());
+        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(token);
 
         await _hubContext.Clients
             .Client(connectionId)

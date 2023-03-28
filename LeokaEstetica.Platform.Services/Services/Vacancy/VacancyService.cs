@@ -166,11 +166,9 @@ public class VacancyService : IVacancyService
     /// <returns>Данные созданной вакансии.</returns>
     public async Task<UserVacancyEntity> CreateVacancyAsync(VacancyInput vacancyInput)
     {
-        long userId = 0;
-        
         try
         {
-            userId = await _userRepository.GetUserByEmailAsync(vacancyInput.Account);
+            var userId = await _userRepository.GetUserByEmailAsync(vacancyInput.Account);
 
             if (userId <= 0)
             {
@@ -192,14 +190,13 @@ public class VacancyService : IVacancyService
             if (!availableCreateProjectLimit)
             {
                 var ex = new Exception($"Превышен лимит вакансий по тарифу. UserId: {userId}. Тариф: {fareRule.Name}");
-                await _logService.LogErrorAsync(ex);
-                
+
                 await _vacancyNotificationsService.SendNotificationWarningLimitFareRuleVacanciesAsync(
                     "Что то пошло не так",
                     "Превышен лимит вакансий по тарифу.",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, userId);
-
-                return null;
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, vacancyInput.Token);
+                
+                throw ex;
             }
 
             // Добавляем вакансию в таблицу вакансий пользователя.
@@ -216,7 +213,7 @@ public class VacancyService : IVacancyService
             // Отправляем уведомление об успешном создании вакансии и отправки ее на модерацию.
             await _vacancyNotificationsService.SendNotificationSuccessCreatedUserVacancyAsync("Все хорошо",
                 "Данные успешно сохранены. Вакансия отправлена на модерацию.",
-                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, userId);
+                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, vacancyInput.Token);
 
             return createdVacancy;
         }
@@ -226,7 +223,7 @@ public class VacancyService : IVacancyService
             await _vacancyNotificationsService.SendNotificationErrorCreatedUserVacancyAsync("Ошибка",
                 "Ошибка при создании вакансии. Мы уже знаем о ней и разбираемся. " +
                 "А пока, попробуйте еще раз.",
-                NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, userId);
+                NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, vacancyInput.Token);
             
             await _logService.LogErrorAsync(ex);
             throw;
@@ -335,30 +332,24 @@ public class VacancyService : IVacancyService
     /// <summary>
     /// Метод обновляет вакансию.
     /// </summary>
-    /// <param name="vacancyName">Название вакансии.</param>
-    /// <param name="vacancyText">Описание вакансии.</param>
-    /// <param name="workExperience">Опыт работы.</param>
-    /// <param name="employment">Занятость у вакансии.</param>
-    /// <param name="payment">Оплата у вакансии.</param>
-    /// <param name="account">Аккаунт пользователя.</param>
+    /// <param name="vacancyInput">Входная модель.</param>
     /// <returns>Данные созданной вакансии.</returns>
-    public async Task<UserVacancyEntity> UpdateVacancyAsync(string vacancyName, string vacancyText,
-        string workExperience, string employment, string payment, string account, long vacancyId)
+    public async Task<UserVacancyEntity> UpdateVacancyAsync(VacancyInput vacancyInput)
     {
         try
         {
-            var userId = await _userRepository.GetUserByEmailAsync(account);
+            var userId = await _userRepository.GetUserByEmailAsync(vacancyInput.Account);
 
             if (userId <= 0)
             {
-                var ex = new NotFoundUserIdByAccountException(account);
-                await _logService.LogErrorAsync(ex);
+                var ex = new NotFoundUserIdByAccountException(vacancyInput.Account);
                 throw ex;
             }
 
             // Добавляем вакансию в таблицу вакансий пользователя.
-            var createdVacancy = await _vacancyRepository.UpdateVacancyAsync(vacancyName, vacancyText, workExperience,
-                employment, payment, userId, vacancyId);
+            var createdVacancy = await _vacancyRepository.UpdateVacancyAsync(vacancyInput.VacancyName,
+                vacancyInput.VacancyText, vacancyInput.WorkExperience, vacancyInput.Employment, vacancyInput.Payment,
+                userId, vacancyInput.VacancyId);
 
             // Отправляем вакансию на модерацию.
             await _vacancyModerationService.AddVacancyModerationAsync(createdVacancy.VacancyId);
@@ -366,7 +357,7 @@ public class VacancyService : IVacancyService
             // Отправляем уведомление об успешном изменении вакансии и отправки ее на модерацию.
             await _vacancyNotificationsService.SendNotificationSuccessCreatedUserVacancyAsync("Все хорошо",
                 "Данные успешно сохранены. Вакансия отправлена на модерацию.",
-                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, userId);
+                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, vacancyInput.Token);
 
             return createdVacancy;
         }
@@ -390,9 +381,10 @@ public class VacancyService : IVacancyService
             var result = new CatalogVacancyResultOutput();
 
             // Разбиваем строку занятости, так как там может приходить несколько значений в строке.
-            filters.Employments =
-                CreateEmploymentsBuilder.CreateEmploymentsResult(filters.EmploymentsValues);
+            filters.Employments = CreateEmploymentsBuilder.CreateEmploymentsResult(filters.EmploymentsValues);
+            
             var items = await _vacancyRepository.GetFiltersVacanciesAsync();
+            
             result.CatalogVacancies = await _salaryFilterVacanciesChain.FilterVacanciesAsync(filters, items);
 
             return result;
@@ -410,7 +402,8 @@ public class VacancyService : IVacancyService
     /// </summary>
     /// <param name="vacancyId">Id вакансии.</param>
     /// <param name="account">Аккаунт.</param>
-    public async Task DeleteVacancyAsync(long vacancyId, string account)
+    /// <param name="token">Токен пользователя.</param>
+    public async Task DeleteVacancyAsync(long vacancyId, string account, string token)
     {
         try
         {
@@ -428,7 +421,7 @@ public class VacancyService : IVacancyService
                 
                 await _vacancyNotificationsService.SendNotificationErrorDeleteVacancyAsync("Что то пошло не так",
                     "Ошибка при удалении вакансии. Мы уже знаем о проблеме и уже занимаемся ей.",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, userId);
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, token);
                 
                 throw ex;
             }
@@ -440,7 +433,6 @@ public class VacancyService : IVacancyService
             {
                 var ex = new InvalidOperationException(
                     $"Пользователь не является владельцем вакансии. UserId: {userId}");
-                await _logService.LogErrorAsync(ex);
                 throw ex;
             }
             
@@ -456,16 +448,14 @@ public class VacancyService : IVacancyService
                 await _vacancyNotificationsService.SendNotificationErrorDeleteVacancyAsync(
                     "Ошибка",
                     "Ошибка при удалении вакансии.",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, userId);
-            
-                await _logService.LogErrorAsync(ex);
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, token);
                 throw ex;
             }
         
             await _vacancyNotificationsService.SendNotificationSuccessDeleteVacancyAsync(
                 "Все хорошо",
                 "Вакансия успешно удалена.",
-                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, userId);
+                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);
         }
         
         catch (Exception ex)
