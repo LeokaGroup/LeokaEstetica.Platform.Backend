@@ -363,23 +363,15 @@ public class VacancyRepository : IVacancyRepository
     /// <param name="userId">Id пользователя.</param>
     public async Task AddVacancyArchiveAsync(long vacancyId, long userId)
     {
-        try
+        var arvhivedVacancy = new ArchivedVacancyEntity
         {
-            var arvhivedVacancy = new ArchivedVacancyEntity
-            {
-                VacancyId = vacancyId,
-                DateArchived = DateTime.Now,                
-            };
+            VacancyId = vacancyId,
+            DateArchived = DateTime.Now,
+        };
 
-            // Добавляем вакансию в таблицу архивов.
-            await _pgContext.ArchivedVacancies.AddAsync(arvhivedVacancy);
+        // Добавляем вакансию в таблицу архивов.
+        await _pgContext.ArchivedVacancies.AddAsync(arvhivedVacancy);
 
-            await _pgContext.SaveChangesAsync();
-        }
-
-        catch
-        {
-            throw;
-        }
+        await _pgContext.SaveChangesAsync();
     }
 }
