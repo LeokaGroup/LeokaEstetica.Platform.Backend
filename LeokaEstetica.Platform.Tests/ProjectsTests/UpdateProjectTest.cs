@@ -10,7 +10,8 @@ public class UpdateProjectTest : BaseServiceTest
     [Test]
     public async Task UpdateProjectAsyncTest()
     {
-        var result = await ProjectService.UpdateProjectAsync("Новое название проекта1", "Новое описание проекта", "sierra_93@mail.ru", 5, ProjectStageEnum.Concept);
+        var result = await ProjectService.UpdateProjectAsync("Новое название проекта1", "Новое описание проекта",
+            "sierra_93@mail.ru", 5, ProjectStageEnum.Concept, string.Empty);
         
         IsNotNull(result);
         IsNotEmpty(result.ProjectName);

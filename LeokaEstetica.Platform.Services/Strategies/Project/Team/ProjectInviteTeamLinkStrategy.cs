@@ -22,8 +22,9 @@ public class ProjectInviteTeamLinkStrategy : BaseProjectInviteTeamStrategy
     /// Метод находит Id пользователя по его коду.
     /// </summary>
     /// <param name="inviteText">Поисковый параметр.</param>
+    /// <param name="token">Токен пользователя.</param>
     /// <returns>Id пользователя.</returns>
-    public override async Task<long> GetUserId(string inviteText)
+    public override async Task<long> GetUserId(string inviteText, string token)
     {
         var result = await UserRepository.GetUserIdByCodeAsync(inviteText);
 
@@ -32,7 +33,7 @@ public class ProjectInviteTeamLinkStrategy : BaseProjectInviteTeamStrategy
             await ProjectNotificationsService.SendNotificationErrorProjectInviteTeamByLinkAsync(
                 "Внимание",
                 "Не удалось пригласить пользователя по ссылке. Проверьте корректность ссылки.",
-                NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, result);
+                NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
         }
 
         return result;

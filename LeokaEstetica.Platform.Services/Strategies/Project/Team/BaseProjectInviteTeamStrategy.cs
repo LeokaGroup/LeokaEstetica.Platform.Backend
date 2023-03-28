@@ -27,6 +27,7 @@ public abstract class BaseProjectInviteTeamStrategy
     /// Метод находит Id пользователя по выбранной стратегии.
     /// </summary>
     /// <param name="inviteText">Текст, который будет использоваться для поиска пользователя для приглашения.</param>
+    /// <param name="Токен пользователя."></param>
     /// <returns>Id пользователя</returns>
-    public abstract Task<long> GetUserId(string inviteText);
+    public abstract Task<long> GetUserId(string inviteText, string token);
 }

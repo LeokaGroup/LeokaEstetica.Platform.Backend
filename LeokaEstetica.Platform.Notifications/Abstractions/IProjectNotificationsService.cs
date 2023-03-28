@@ -43,9 +43,9 @@ public interface IProjectNotificationsService
     /// <param name="title">Заголовок уведомления.</param>
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="userId">Id пользователя.</param>
+    /// <param name="token">Токен пользователя.</param>
     Task SendNotificationSuccessUpdatedUserProjectAsync(string title, string notifyText, string notificationLevel,
-        long userId);
+        string token);
 
     /// <summary>
     /// Метод отправляет уведомление об ошибке при изменении проекта пользователя.
@@ -53,9 +53,9 @@ public interface IProjectNotificationsService
     /// <param name="title">Заголовок уведомления.</param>
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="userId">Id пользователя.</param>
+    /// <param name="token">Токен пользователя.</param>
     Task SendNotificationErrorUpdatedUserProjectAsync(string title, string notifyText, string notificationLevel,
-        long userId);
+        string token);
 
     /// <summary>
     /// Метод отправляет уведомление об успешной привязке вакансии к проекту.
@@ -63,9 +63,9 @@ public interface IProjectNotificationsService
     /// <param name="title">Заголовок уведомления.</param>
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="userId">Id пользователя.</param>
+    /// <param name="token">Токен пользователя.</param>
     Task SendNotificationSuccessAttachProjectVacancyAsync(string title, string notifyText, string notificationLevel,
-        long userId);
+        string token);
 
     /// <summary>
     /// Метод отправляет уведомление об дубликате при привязке вакансии к проекту.
@@ -73,9 +73,9 @@ public interface IProjectNotificationsService
     /// <param name="title">Заголовок уведомления.</param>
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="userId">Id пользователя.</param>
+    /// <param name="token">Токен пользователя.</param>
     Task SendNotificationErrorDublicateAttachProjectVacancyAsync(string title, string notifyText,
-        string notificationLevel, long userId);
+        string notificationLevel, string token);
 
     /// <summary>
     /// Метод отправляет уведомление об отклике на проект.
@@ -83,9 +83,9 @@ public interface IProjectNotificationsService
     /// <param name="title">Заголовок уведомления.</param>
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="userId">Id пользователя.</param>
+    /// <param name="token">Токен пользователя.</param>
     Task SendNotificationSuccessProjectResponseAsync(string title, string notifyText, string notificationLevel,
-        long userId);
+        string token);
 
     /// <summary>
     /// Метод отправляет уведомление об ошибке при отклике на проект.
@@ -93,9 +93,9 @@ public interface IProjectNotificationsService
     /// <param name="title">Заголовок уведомления.</param>
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="userId">Id пользователя.</param>
+    /// <param name="token">Токен пользователя.</param>
     Task SendNotificationErrorProjectResponseAsync(string title, string notifyText, string notificationLevel,
-        long userId);
+        string token);
 
     /// <summary>
     /// Метод отправляет уведомление предупреждения об отклике на проект.
@@ -103,9 +103,9 @@ public interface IProjectNotificationsService
     /// <param name="title">Заголовок уведомления.</param>
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="userId">Id пользователя.</param>
+    /// <param name="token">Токен пользователя.</param>
     Task SendNotificationWarningProjectResponseAsync(string title, string notifyText, string notificationLevel,
-        long userId);
+        string token);
 
     /// <summary>
     /// Метод отправляет уведомление предупреждения о не найденных пользователях по поисковому запросу.
@@ -113,9 +113,9 @@ public interface IProjectNotificationsService
     /// <param name="title">Заголовок уведомления.</param>
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="userId">Id пользователя.</param>
+    /// <param name="token">Токен пользователя.</param>
     Task SendNotificationWarningSearchProjectTeamMemberAsync(string title, string notifyText, string notificationLevel,
-        long userId);
+        string token);
 
     /// <summary>
     /// Метод отправляет уведомление предупреждения об ошибке при добавлении пользователей в команду проекта.
@@ -123,9 +123,9 @@ public interface IProjectNotificationsService
     /// <param name="title">Заголовок уведомления.</param>
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="userId">Id пользователя.</param>
+    /// <param name="token">Токен пользователя.</param>
     Task SendNotificationWarningInviteProjectTeamMembersAsync(string title, string notifyText,
-        string notificationLevel, long userId);
+        string notificationLevel, string token);
 
     /// <summary>
     /// Метод отправляет уведомление ошибки об ошибке при добавлении пользователей в команду проекта.
@@ -133,9 +133,9 @@ public interface IProjectNotificationsService
     /// <param name="title">Заголовок уведомления.</param>
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="userId">Id пользователя.</param>
+    /// <param name="token">Токен пользователя.</param>
     Task SendNotificationErrorInviteProjectTeamMembersAsync(string title, string notifyText, string notificationLevel,
-        long userId);
+        string token);
 
     /// <summary>
     /// Метод отправляет уведомление об предупреждении лимите проектов по тарифу.
@@ -153,9 +153,9 @@ public interface IProjectNotificationsService
     /// <param name="title">Заголовок уведомления.</param>
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="userId">Id пользователя.</param>
+    /// <param name="token">Токен пользователя.</param>
     Task SendNotificationErrorDeleteProjectVacancyAsync(string title, string notifyText, string notificationLevel,
-        long userId);
+        string token);
 
     /// <summary>
     /// Метод отправляет уведомление об успехе при удалении вакансии проекта.
@@ -163,9 +163,9 @@ public interface IProjectNotificationsService
     /// <param name="title">Заголовок уведомления.</param>
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="userId">Id пользователя.</param>
+    /// <param name="token">Токен пользователя.</param>
     Task SendNotificationSuccessDeleteProjectVacancyAsync(string title, string notifyText, string notificationLevel,
-        long userId);
+        string token);
 
     /// <summary>
     /// Метод отправляет уведомление об ошибке при удалении проекта.
@@ -173,9 +173,9 @@ public interface IProjectNotificationsService
     /// <param name="title">Заголовок уведомления.</param>
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="userId">Id пользователя.</param>
+    /// <param name="token">Токен пользователя.</param>
     Task SendNotificationErrorDeleteProjectAsync(string title, string notifyText, string notificationLevel,
-        long userId);
+        string token);
 
     /// <summary>
     /// Метод отправляет уведомление об успехе при удалении проекта.
@@ -183,9 +183,9 @@ public interface IProjectNotificationsService
     /// <param name="title">Заголовок уведомления.</param>
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="userId">Id пользователя.</param>
+    /// <param name="token">Токен пользователя.</param>
     Task SendNotificationSuccessDeleteProjectAsync(string title, string notifyText, string notificationLevel,
-        string userId);
+        string token);
 
     /// <summary>
     /// Метод получает список уведомлений в проекты пользователя.
@@ -199,14 +199,16 @@ public interface IProjectNotificationsService
     /// </summary>
     /// <param name="notificationId">Id уведомления.</param>
     /// <param name="account">Аккаунт пользователя.</param>
-    Task ApproveProjectInviteAsync(long notificationId, string account);
+    /// <param name="token">Токен пользователя.</param>
+    Task ApproveProjectInviteAsync(long notificationId, string account, string token);
 
     /// <summary>
     /// Метод реджектит приглашение в проект.
     /// </summary>
     /// <param name="notificationId">Id уведомления.</param>
     /// <param name="account">Аккаунт пользователя.</param>
-    Task RejectProjectInviteAsync(long notificationId, string account);
+    /// <param name="token">Токен пользователя.</param>
+    Task RejectProjectInviteAsync(long notificationId, string account, string token);
 
     /// <summary>
     /// Метод отправляет уведомление об ошибке при приглашении в проект по ссылке.
@@ -214,9 +216,9 @@ public interface IProjectNotificationsService
     /// <param name="title">Заголовок уведомления.</param>
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="userId">Id пользователя.</param>
+    /// <param name="token">Токен пользователя.</param>
     Task SendNotificationErrorProjectInviteTeamByLinkAsync(string title, string notifyText, string notificationLevel,
-        long userId);
+        string token);
 
     /// <summary>
     /// Метод отправляет уведомление об ошибке при приглашении в проект по логину.
@@ -224,9 +226,9 @@ public interface IProjectNotificationsService
     /// <param name="title">Заголовок уведомления.</param>
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="userId">Id пользователя.</param>
+    /// <param name="token">Токен пользователя.</param>
     Task SendNotificationErrorProjectInviteTeamByLoginAsync(string title, string notifyText, string notificationLevel,
-        long userId);
+        string token);
 
     /// <summary>
     /// Метод отправляет уведомление об ошибке при приглашении в проект по почте.
@@ -234,9 +236,9 @@ public interface IProjectNotificationsService
     /// <param name="title">Заголовок уведомления.</param>
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="userId">Id пользователя.</param>
+    /// <param name="token">Токен пользователя.</param>
     Task SendNotificationErrorProjectInviteTeamByEmailAsync(string title, string notifyText, string notificationLevel,
-        long userId);
+        string token);
 
     /// <summary>
     /// Метод отправляет уведомление об ошибке при приглашении в проект по номеру телефону.
@@ -244,9 +246,9 @@ public interface IProjectNotificationsService
     /// <param name="title">Заголовок уведомления.</param>
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="userId">Id пользователя.</param>
+    /// <param name="token">Токен пользователя.</param>
     Task SendNotificationErrorProjectInviteTeamByPhoneNumberAsync(string title, string notifyText,
-        string notificationLevel, long userId);
+        string notificationLevel, string token);
     
     /// <summary>
     /// Метод отправляет уведомление предупреждения об при инвайте в проект, который находится на модерации.
@@ -254,7 +256,7 @@ public interface IProjectNotificationsService
     /// <param name="title">Заголовок уведомления.</param>
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="userId">Id пользователя.</param>
+    /// <param name="token">Токен пользователя.</param>
     Task SendNotificationWarningProjectInviteTeamAsync(string title, string notifyText, string notificationLevel,
-        long userId);
+        string token);
 }

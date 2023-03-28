@@ -7,8 +7,5 @@ namespace LeokaEstetica.Platform.Models.Dto.Input.Project;
 /// </summary>
 public class CreateProjectVacancyInput : VacancyInput
 {
-    /// <summary>
-    /// Id проекта.
-    /// </summary>
-    public long ProjectId { get; set; }
+    
 }

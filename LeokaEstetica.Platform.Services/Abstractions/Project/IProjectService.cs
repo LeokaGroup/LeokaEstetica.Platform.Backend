@@ -57,9 +57,10 @@ public interface IProjectService
     /// <param name="account">Аккаунт пользователя.</param>
     /// <param name="projectId">Id проекта.</param>
     /// <param name="projectStage">Стадия проекта.</param>
+    /// <param name="token">Токен пользователя.</param>
     /// <returns>Данные нового проекта.</returns>
     Task<UpdateProjectOutput> UpdateProjectAsync(string projectName, string projectDetails, string account,
-        long projectId, ProjectStageEnum projectStage);
+        long projectId, ProjectStageEnum projectStage, string token);
 
     /// <summary>
     /// Метод получает проект для изменения или просмотра.
@@ -81,22 +82,16 @@ public interface IProjectService
     /// </summary>
     /// <param name="projectId">Id проекта, вакансии которого нужно получить.</param>
     /// <param name="account">Аккаунт пользователя.</param>
+    /// <param name="token">Токен пользователя.</param>
     /// <returns>Список вакансий.</returns>
-    Task<ProjectVacancyResultOutput> ProjectVacanciesAsync(long projectId, string account);
+    Task<ProjectVacancyResultOutput> ProjectVacanciesAsync(long projectId, string account, string token);
 
     /// <summary>
     /// Метод создает вакансию проекта. При этом автоматически происходит привязка к проекту.
     /// </summary>
-    /// <param name="vacancyName">Название вакансии.</param>
-    /// <param name="vacancyText">Описание вакансии.</param>
-    /// <param name="projectId">Id проекта.</param>
-    /// <param name="workExperience">Опыт работы.</param>
-    /// <param name="employment">Занятость у вакансии.</param>
-    /// <param name="payment">Оплата у вакансии.</param>
-    /// <param name="account">Аккаунт пользователя.</param>
+    /// <param name="createProjectVacancyInput">Входная модель.</param>
     /// <returns>Данные вакансии.</returns>
-    Task<UserVacancyEntity> CreateProjectVacancyAsync(string vacancyName, string vacancyText, long projectId,
-        string employment, string payment, string workExperience, string account);
+    Task<UserVacancyEntity> CreateProjectVacancyAsync(CreateProjectVacancyInput createProjectVacancyInput);
 
     /// <summary>
     /// Метод получает список вакансий проекта, которые могут быть прикреплены у проекту пользователя.
@@ -112,7 +107,8 @@ public interface IProjectService
     /// <param name="projectId">Id проекта.</param>
     /// <param name="vacancyId">Id вакансии.</param>
     /// <param name="account">Аккаунт пользователя.</param>
-    Task AttachProjectVacancyAsync(long projectId, long vacancyId, string account);
+    /// <param name="token">Токен пользователя.</param>
+    Task AttachProjectVacancyAsync(long projectId, long vacancyId, string account, string token);
 
     /// <summary>
     /// Метод записывает отклик на проект.
@@ -166,12 +162,14 @@ public interface IProjectService
     /// <param name="vacancyId">Id вакансии.</param>
     /// <param name="projectId">Id проекта.</param>
     /// <param name="account">Аккаунт.</param>
-    Task DeleteProjectVacancyAsync(long vacancyId, long projectId, string account);
+    /// <param name="token">Токен пользователя.</param>
+    Task DeleteProjectVacancyAsync(long vacancyId, long projectId, string account, string token);
 
     /// <summary>
     /// Метод удаляет проект и все, что с ним связано.
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
     /// <param name="account">Аккаунт.</param>
+    /// <param name="token">Токен пользователя.</param>
     Task DeleteProjectAsync(long projectId, string account, string token);
 }

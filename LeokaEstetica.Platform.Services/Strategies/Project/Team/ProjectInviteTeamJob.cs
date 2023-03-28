@@ -6,7 +6,7 @@ public class ProjectInviteTeamJob
     {
         if (job is not null)
         {
-            return await job.GetUserId(inviteText);
+            return await job.GetUserId(inviteText, string.Empty);
         }
 
         return 0;

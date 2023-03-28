@@ -179,7 +179,7 @@ public class ProjectController : BaseController
 
         result = await _projectService.UpdateProjectAsync(createProjectInput.ProjectName,
             createProjectInput.ProjectDetails, GetUserName(), createProjectInput.ProjectId,
-            Enum.Parse<ProjectStageEnum>(createProjectInput.ProjectStage));
+            Enum.Parse<ProjectStageEnum>(createProjectInput.ProjectStage), GetTokenFromHeader());
 
         return result;
     }
@@ -246,7 +246,7 @@ public class ProjectController : BaseController
     [ProducesResponseType(404)]
     public async Task<ProjectVacancyResultOutput> ProjectVacanciesAsync([FromQuery] long projectId)
     {
-        var result = await _projectService.ProjectVacanciesAsync(projectId, GetUserName());
+        var result = await _projectService.ProjectVacanciesAsync(projectId, GetUserName(), GetTokenFromHeader());
 
         return result;
     }
@@ -276,10 +276,11 @@ public class ProjectController : BaseController
             return result;
         }
 
-        var createdVacancy = await _projectService.CreateProjectVacancyAsync(createProjectVacancyInput.VacancyName,
-            createProjectVacancyInput.VacancyText, createProjectVacancyInput.ProjectId,
-            createProjectVacancyInput.Employment, createProjectVacancyInput.Payment,
-            createProjectVacancyInput.WorkExperience, GetUserName());
+        createProjectVacancyInput.Account = GetUserName();
+        createProjectVacancyInput.Token = GetTokenFromHeader();
+
+        var createdVacancy = await _projectService.CreateProjectVacancyAsync(createProjectVacancyInput);
+        
         result = _mapper.Map<CreateProjectVacancyOutput>(createdVacancy);
 
         return result;
@@ -300,7 +301,7 @@ public class ProjectController : BaseController
     public async Task AttachProjectVacancyAsync([FromBody] AttachProjectVacancyInput attachProjectVacancyInput)
     {
         await _projectService.AttachProjectVacancyAsync(attachProjectVacancyInput.ProjectId,
-            attachProjectVacancyInput.VacancyId, GetUserName());
+            attachProjectVacancyInput.VacancyId, GetUserName(), GetTokenFromHeader());
     }
 
     /// <summary>
@@ -533,7 +534,7 @@ public class ProjectController : BaseController
             await _logService.LogErrorAsync(ex);
         }
 
-        await _projectService.DeleteProjectVacancyAsync(vacancyId, projectId, GetUserName());
+        await _projectService.DeleteProjectVacancyAsync(vacancyId, projectId, GetUserName(), GetTokenFromHeader());
     }
 
     /// <summary>

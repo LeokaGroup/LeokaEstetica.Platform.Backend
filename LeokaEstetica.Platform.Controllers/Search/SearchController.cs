@@ -47,7 +47,7 @@ public class SearchController : BaseController
         await new SearchInviteProjectMembersValidator().ValidateAndThrowAsync(searchProjectMemberInput);
 
         var items = await _projectFinderService.SearchInviteProjectMembersAsync(searchProjectMemberInput.SearchText,
-            GetUserName());
+            GetUserName(), GetTokenFromHeader());
         
         var result = _mapper.Map<IEnumerable<SearchProjectMemberOutput>>(items);
         

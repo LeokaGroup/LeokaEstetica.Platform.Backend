@@ -22,8 +22,9 @@ public class ProjectInviteTeamEmailStrategy : BaseProjectInviteTeamStrategy
     /// Метод находит Id пользователя по его Email.
     /// </summary>
     /// <param name="inviteText">Поисковый параметр.</param>
-    /// <returns>Id пользователя.</returns>
-    public override async Task<long> GetUserId(string inviteText)
+    /// <param name="token">Токен пользователя.></param>
+    /// <returns>Токен пользователя.</returns>
+    public override async Task<long> GetUserId(string inviteText, string token)
     {
         var result = await UserRepository.GetUserIdByEmailAsync(inviteText);
         
@@ -32,7 +33,7 @@ public class ProjectInviteTeamEmailStrategy : BaseProjectInviteTeamStrategy
             await ProjectNotificationsService.SendNotificationErrorProjectInviteTeamByEmailAsync(
                 "Внимание",
                 "Не удалось пригласить пользователя по Email. Проверьте корректность Email пользователя.",
-                NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, result);
+                NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
         }
 
         return result;

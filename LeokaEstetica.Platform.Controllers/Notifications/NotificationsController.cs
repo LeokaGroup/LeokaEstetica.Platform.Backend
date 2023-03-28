@@ -75,7 +75,7 @@ public class NotificationsController : BaseController
         }
 
         await _projectNotificationsService.ApproveProjectInviteAsync(approveProjectInviteInput.NotificationId,
-            GetUserName());
+            GetUserName(), GetTokenFromHeader());
     }
     
     /// <summary>
@@ -99,7 +99,7 @@ public class NotificationsController : BaseController
         }
 
         await _projectNotificationsService.RejectProjectInviteAsync(rejectProjectInviteInput.NotificationId,
-            GetUserName());
+            GetUserName(), GetTokenFromHeader());
     }
 
     /// <summary>

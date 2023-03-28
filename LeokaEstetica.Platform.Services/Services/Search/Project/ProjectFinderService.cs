@@ -31,8 +31,10 @@ public sealed class ProjectFinderService : IProjectFinderService
     /// </summary>
     /// <param name="searchText">Поисковый запрос.</param>
     /// <param name="account">Аккаунт.</param>
+    /// <param name="token">Токен пользователя.</param>
     /// <returns>Список пользователей, которых можно пригласить в команду проекта.</returns>
-    public async Task<IEnumerable<UserEntity>> SearchInviteProjectMembersAsync(string searchText, string account)
+    public async Task<IEnumerable<UserEntity>> SearchInviteProjectMembersAsync(string searchText, string account,
+        string token)
     {
         try
         {
@@ -45,7 +47,7 @@ public sealed class ProjectFinderService : IProjectFinderService
 
                 if (userId <= 0)
                 {
-                    throw new NotFoundUserIdByAccountException(account);;
+                    throw new NotFoundUserIdByAccountException(account);
                 }
                 
                 var ex = new InvalidOperationException($"Пользователя по поисковому запросу {searchText} не найдено.");
@@ -54,7 +56,7 @@ public sealed class ProjectFinderService : IProjectFinderService
                 await _projectNotificationsService.SendNotificationWarningSearchProjectTeamMemberAsync(
                     "Внимание",
                     $"По запросу \"{searchText}\" не удалось найти пользователей. Попробуйте изменить запрос.",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, userId);
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
                 throw ex;
             }
 

@@ -375,7 +375,7 @@ public class ProjectService : IProjectService
     /// <param name="projectStage">Стадия проекта.</param>
     /// <returns>Данные нового проекта.</returns>
     public async Task<UpdateProjectOutput> UpdateProjectAsync(string projectName, string projectDetails, string account,
-        long projectId, ProjectStageEnum projectStage)
+        long projectId, ProjectStageEnum projectStage, string token)
     {
         try
         {
@@ -386,13 +386,13 @@ public class ProjectService : IProjectService
                 var ex = new NotFoundUserIdByAccountException(account);
                 await _projectNotificationsService.SendNotificationErrorUpdatedUserProjectAsync("Что то не так...",
                     "Ошибка при обновлении проекта. Мы уже знаем о проблеме и уже занимаемся ей.",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, userId);
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, token);
                 throw ex;
             }
 
             if (projectId <= 0)
             {
-                await ValidateProjectIdAsync(projectId, userId);
+                await ValidateProjectIdAsync(projectId, token);
             }
 
             // Изменяем проект в БД.
@@ -403,7 +403,7 @@ public class ProjectService : IProjectService
             // TODO: Добавить отправку проекта на модерацию тут. Также удалять проект из каталога проектов на время модерации.
             await _projectNotificationsService.SendNotificationSuccessUpdatedUserProjectAsync("Все хорошо",
                 "Данные успешно изменены. Проект отправлен на модерацию.",
-                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, userId);
+                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);
 
             return result;
         }
@@ -481,8 +481,9 @@ public class ProjectService : IProjectService
     /// </summary>
     /// <param name="projectId">Id проекта, вакансии которого нужно получить.</param>
     /// <param name="account">Аккаунт пользователя.</param>
+    /// <param name="token">Токен пользователя.</param>
     /// <returns>Список вакансий.</returns>
-    public async Task<ProjectVacancyResultOutput> ProjectVacanciesAsync(long projectId, string account)
+    public async Task<ProjectVacancyResultOutput> ProjectVacanciesAsync(long projectId, string account, string token)
     {
         try
         {
@@ -496,7 +497,7 @@ public class ProjectService : IProjectService
             
             if (projectId <= 0)
             {
-                await ValidateProjectIdAsync(projectId, userId);
+                await ValidateProjectIdAsync(projectId, token);
             }
 
             var result = new ProjectVacancyResultOutput
@@ -536,40 +537,35 @@ public class ProjectService : IProjectService
     /// <summary>
     /// Метод создает вакансию проекта. При этом автоматически происходит привязка к проекту.
     /// </summary>
-    /// <param name="vacancyName">Название вакансии.</param>
-    /// <param name="vacancyText">Описание вакансии.</param>
-    /// <param name="projectId">Id проекта.</param>
-    /// <param name="workExperience">Опыт работы.</param>
-    /// <param name="employment">Занятость у вакансии.</param>
-    /// <param name="payment">Оплата у вакансии.</param>
-    /// <param name="account">Аккаунт пользователя.</param>
+    /// <param name="createProjectVacancyInput">Входная модель.</param>
     /// <returns>Данные вакансии.</returns>
-    public async Task<UserVacancyEntity> CreateProjectVacancyAsync(string vacancyName, string vacancyText,
-        long projectId, string employment, string payment, string workExperience, string account)
+    public async Task<UserVacancyEntity> CreateProjectVacancyAsync(CreateProjectVacancyInput createProjectVacancyInput)
     {
         try
         {
             // Если невалидный Id проекта.
-            if (projectId <= 0)
+            if (createProjectVacancyInput.ProjectId <= 0)
             {
-                var ex = new ArgumentException("Невалидный Id проекта. ProjectId был " + projectId);
+                var ex = new ArgumentException("Невалидный Id проекта. ProjectId был " +
+                                               createProjectVacancyInput.ProjectId);
                 throw ex;
             }
 
             // Создаем вакансию.
             var createdVacancy = await _vacancyService.CreateVacancyAsync(new VacancyInput
             {
-                VacancyName = vacancyName,
-                VacancyText = vacancyText,
-                WorkExperience = workExperience,
-                Employment = employment,
-                Payment = payment,
-                Account = account,
-                ProjectId = projectId
+                VacancyName = createProjectVacancyInput.VacancyName,
+                VacancyText = createProjectVacancyInput.VacancyText,
+                WorkExperience = createProjectVacancyInput.WorkExperience,
+                Employment = createProjectVacancyInput.Employment,
+                Payment = createProjectVacancyInput.Payment,
+                Account = createProjectVacancyInput.Account,
+                ProjectId = createProjectVacancyInput.ProjectId
             });
 
             // Автоматически привязываем вакансию к проекту.
-            await AttachProjectVacancyAsync(projectId, createdVacancy.VacancyId, account);
+            await AttachProjectVacancyAsync(createProjectVacancyInput.ProjectId, createdVacancy.VacancyId,
+                createProjectVacancyInput.Account, createProjectVacancyInput.Token);
 
             return createdVacancy;
         }
@@ -620,7 +616,8 @@ public class ProjectService : IProjectService
     /// <param name="projectId">Id проекта.</param>
     /// <param name="vacancyId">Id вакансии.</param>
     /// <param name="account">Аккаунт пользователя.</param>
-    public async Task AttachProjectVacancyAsync(long projectId, long vacancyId, string account)
+    /// <param name="token">Токен пользователя.</param>
+    public async Task AttachProjectVacancyAsync(long projectId, long vacancyId, string account, string token)
     {
         try
         {
@@ -631,18 +628,16 @@ public class ProjectService : IProjectService
             if (userId <= 0)
             {
                 var ex = new NotFoundUserIdByAccountException(account);
-                await _logService.LogErrorAsync(ex);
                 throw ex;
             }
 
             if (isDublicate)
             {
                 var ex = new DublicateProjectVacancyException();
-                await _logService.LogErrorAsync(ex);
                 await _projectNotificationsService.SendNotificationErrorDublicateAttachProjectVacancyAsync(
                     "Что то не так...",
                     GlobalConfigKeys.ProjectVacancy.DUBLICATE_PROJECT_VACANCY,
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, userId);
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, token);
                 throw ex;
             }
 
@@ -650,7 +645,7 @@ public class ProjectService : IProjectService
                 "Все хорошо",
                 "Вакансия успешно привязана к проекту.",
                 NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS,
-                userId);
+                token);
         }
 
         catch (Exception ex)
@@ -704,7 +699,7 @@ public class ProjectService : IProjectService
             var result = await _projectRepository.WriteProjectResponseAsync(projectId, vacancyId, userId);
 
             // Показываем уведомления.
-            await DisplayNotificationsAfterResponseProjectAsync(vacancyId, result.ResponseId, userId);
+            await DisplayNotificationsAfterResponseProjectAsync(vacancyId, result.ResponseId, token);
 
             var projectName = await _projectRepository.GetProjectNameByProjectIdAsync(projectId);
 
@@ -720,7 +715,7 @@ public class ProjectService : IProjectService
             await _projectNotificationsService.SendNotificationWarningProjectResponseAsync(
                 "Внимание",
                 "Вы уже откликались на этот проект.",
-                NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, userId);
+                NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
             await _logService.LogErrorAsync(ex);
             throw;
         }
@@ -809,7 +804,7 @@ public class ProjectService : IProjectService
     {
         try
         {
-            await ValidateInviteProjectTeamParams(inviteText, inviteType, projectId, vacancyId, account);
+            await ValidateInviteProjectTeamParams(inviteText, inviteType, projectId, vacancyId, account, token);
             
             var currentUserId = await _userRepository.GetUserIdByEmailAsync(account);
             
@@ -845,7 +840,7 @@ public class ProjectService : IProjectService
                 await _projectNotificationsService.SendNotificationWarningProjectInviteTeamAsync(
                     "Внимание",
                     "Проект еще на модерации. Нельзя пригласить пользователей, пока проект не пройдет модерацию.",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, currentUserId);
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
                 
                 return null;
             }
@@ -901,7 +896,8 @@ public class ProjectService : IProjectService
     /// <param name="vacancyId">Id вакансии.</param>
     /// <param name="projectId">Id проекта.</param>
     /// <param name="account">Аккаунт.</param>
-    public async Task DeleteProjectVacancyAsync(long vacancyId, long projectId, string account)
+    /// <param name="token">Токен пользователя.</param>
+    public async Task DeleteProjectVacancyAsync(long vacancyId, long projectId, string account, string token)
     {
         try
         {
@@ -939,14 +935,14 @@ public class ProjectService : IProjectService
                 await _projectNotificationsService.SendNotificationErrorDeleteProjectVacancyAsync(
                     "Ошибка",
                     "Ошибка при удалении вакансии проекта.",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, userId);
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, token);
                 throw ex;
             }
         
             await _projectNotificationsService.SendNotificationSuccessDeleteProjectVacancyAsync(
                 "Все хорошо",
                 "Вакансия успешно удалена из проекта.",
-                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, userId);
+                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);
         }
         
         catch (Exception ex)
@@ -997,7 +993,7 @@ public class ProjectService : IProjectService
                 await _projectNotificationsService.SendNotificationErrorDeleteProjectAsync(
                     "Ошибка",
                     "Ошибка при удалении проекта.",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, userId);
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, token);
                 throw ex;
             }
         
@@ -1067,8 +1063,9 @@ public class ProjectService : IProjectService
     /// <param name="projectId">Id проекта.</param>
     /// <param name="vacancyId">Id вакансии.</param>
     /// <param name="account">Аккаунт пользователя.</param>
+    /// <param name="token">Токен пользователя.</param>
     private async Task ValidateInviteProjectTeamParams(string inviteText, ProjectInviteTypeEnum inviteType,
-        long projectId, long? vacancyId, string account)
+        long projectId, long? vacancyId, string account, string token)
     {
         var isError = false;
 
@@ -1114,7 +1111,7 @@ public class ProjectService : IProjectService
             await _projectNotificationsService.SendNotificationErrorInviteProjectTeamMembersAsync("Ошибка",
                 "Ошибка при добавлении пользователя в команду проекта. Мы уже знаем о ней и разбираемся. " +
                 "А пока, попробуйте еще раз.",
-                NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, userId);
+                NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, token);
         }
     }
     
@@ -1122,14 +1119,14 @@ public class ProjectService : IProjectService
     /// Метод валидирует Id проекта. Выбрасываем исклчюение, если он невалидный.
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
-    /// <param name="userId">Id пользователя.</param>
-    private async Task ValidateProjectIdAsync(long projectId, long userId)
+    /// <param name="token">Токен пользователя.</param>
+    private async Task ValidateProjectIdAsync(long projectId, string token)
     {
         var ex = new ArgumentNullException(string.Concat(ValidationConsts.NOT_VALID_PROJECT_ID, projectId));
         await _logService.LogErrorAsync(ex);
         await _projectNotificationsService.SendNotificationErrorUpdatedUserProjectAsync("Что то не так...",
             "Ошибка при обновлении проекта. Мы уже знаем о проблеме и уже занимаемся ей.",
-            NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, userId);
+            NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, token);
         throw ex;
     }
 
@@ -1306,15 +1303,15 @@ public class ProjectService : IProjectService
     /// Метод отправляет уведомления после отклика на проект.
     /// </summary>
     /// <param name="vacancyId">Id вакансии.</param>
-    /// <param name="userId">Id пользователя.</param>
-    private async Task DisplayNotificationsAfterResponseProjectAsync(long? vacancyId, long responseId, long userId)
+    /// <param name="token">Токен пользователя.</param>
+    private async Task DisplayNotificationsAfterResponseProjectAsync(long? vacancyId, long responseId, string token)
     {
         if (responseId > 0)
         {
             await _projectNotificationsService.SendNotificationSuccessProjectResponseAsync(
                 "Все хорошо",
                 "Отклик на проект успешно оставлен. Вы получите уведомление о решении владельца проекта.",
-                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, userId);
+                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);
         }
 
         else
@@ -1324,7 +1321,7 @@ public class ProjectService : IProjectService
                 await _projectNotificationsService.SendNotificationErrorProjectResponseAsync("Ошибка",
                     "Ошибка при отклике на проект с указанием вакансии. Мы уже знаем о ней и разбираемся. " +
                     "А пока, попробуйте еще раз.",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, userId);
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, token);
             }
 
             else
@@ -1332,7 +1329,7 @@ public class ProjectService : IProjectService
                 await _projectNotificationsService.SendNotificationErrorProjectResponseAsync("Ошибка",
                     "Ошибка при отклике на проект без указания вакансии. Мы уже знаем о ней и разбираемся. " +
                     "А пока, попробуйте еще раз.",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, userId);
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, token);
             }
         }
     }

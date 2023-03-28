@@ -23,7 +23,7 @@ public class ProjectInviteTeamPhoneNumberStrategy : BaseProjectInviteTeamStrateg
     /// </summary>
     /// <param name="inviteText">Поисковый параметр.</param>
     /// <returns>Id пользователя.</returns>
-    public override async Task<long> GetUserId(string inviteText)
+    public override async Task<long> GetUserId(string inviteText, string token)
     {
         var result = await UserRepository.GetUserIdByPhoneNumberAsync(inviteText);
         
@@ -32,7 +32,7 @@ public class ProjectInviteTeamPhoneNumberStrategy : BaseProjectInviteTeamStrateg
             await ProjectNotificationsService.SendNotificationErrorProjectInviteTeamByPhoneNumberAsync("Внимание",
                 "Не удалось пригласить пользователя по номеру телефона. " +
                 "Проверьте корректность номера телефона пользователя.",
-                NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, result);
+                NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
         }
 
         return result;
