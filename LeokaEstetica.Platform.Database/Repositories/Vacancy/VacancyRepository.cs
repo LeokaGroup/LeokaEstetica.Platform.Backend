@@ -357,7 +357,7 @@ public class VacancyRepository : IVacancyRepository
     }
 
     /// <summary>
-    /// Метод добавляет вакансию в архив.
+    /// Метод добавляет вакансию в таблицу архивов.
     /// </summary>
     /// <param name="vacancyId">Id вакансии.</param>
     /// <param name="userId">Id пользователя.</param>
@@ -374,6 +374,8 @@ public class VacancyRepository : IVacancyRepository
                 VacancyId = vacancyId,
                 DateArchived = DateTime.Now,                
             };
+
+            // Добавляем вакансию в таблицу архивов.
             await _pgContext.ArchivedVacancies.AddAsync(arvhivedVacancy);
 
             await _pgContext.SaveChangesAsync();
