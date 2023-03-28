@@ -529,7 +529,7 @@ public class VacancyService : IVacancyService
     }
 
     /// <summary>
-    /// Метод добавляет вакансию в архив.
+    /// Метод добавляет вакансию в таблицу архивов.
     /// </summary>
     /// <param name="vacancyId">Id вакансии.</param>
     /// <param name="account">Аккаунт.</param>
