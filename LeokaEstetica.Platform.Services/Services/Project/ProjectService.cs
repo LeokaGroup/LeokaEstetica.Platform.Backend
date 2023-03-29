@@ -396,11 +396,9 @@ public class ProjectService : IProjectService
             }
 
             // Изменяем проект в БД.
-            var result =
-                await _projectRepository.UpdateProjectAsync(projectName, projectDetails, userId, projectId,
-                    projectStage);
-
-            // TODO: Добавить отправку проекта на модерацию тут. Также удалять проект из каталога проектов на время модерации.
+            var result = await _projectRepository.UpdateProjectAsync(projectName, projectDetails, userId, projectId, 
+                projectStage);
+            
             await _projectNotificationsService.SendNotificationSuccessUpdatedUserProjectAsync("Все хорошо",
                 "Данные успешно изменены. Проект отправлен на модерацию.",
                 NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);
