@@ -108,6 +108,7 @@ public class VacancyController : BaseController
         }
 
         vacancyInput.Token = CreateTokenFromHeader();
+        vacancyInput.Account = GetUserName();
         
         var createdVacancy = await _vacancyService.CreateVacancyAsync(vacancyInput);
         
