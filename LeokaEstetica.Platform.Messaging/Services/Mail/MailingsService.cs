@@ -28,7 +28,8 @@ public sealed class MailingsService : IMailingsService
     public async Task SendConfirmEmailAsync(string mailTo, Guid confirmEmailCode)
     {
         var mailModel = CreateMailopostModelConfirmEmail(mailTo, confirmEmailCode);
-        var request = WebRequest.Create(_configuration["MailingsSettings:Mailopost:ApiUrl"] + ApiMailopostConsts.SEND_MESSAGE);
+        var request = WebRequest.Create(_configuration["MailingsSettings:Mailopost:ApiUrl"]
+                                        + ApiMailopostConsts.SEND_MESSAGE);
         request.Method = "POST";
         request.Headers.Add("Authorization", "Bearer " + _configuration["MailingsSettings:Mailopost:ApiKey"]);
         var json = JsonConvert.SerializeObject(mailModel);
