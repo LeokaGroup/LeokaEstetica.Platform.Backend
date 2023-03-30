@@ -2,6 +2,7 @@
 using LeokaEstetica.Platform.Core.Attributes;
 using LeokaEstetica.Platform.Database.Abstractions.AvailableLimits;
 using LeokaEstetica.Platform.Database.Abstractions.Commerce;
+using LeokaEstetica.Platform.Database.Abstractions.Config;
 using LeokaEstetica.Platform.Database.Abstractions.Header;
 using LeokaEstetica.Platform.Database.Abstractions.Knowledge;
 using LeokaEstetica.Platform.Database.Abstractions.Landing;
@@ -22,6 +23,7 @@ using LeokaEstetica.Platform.Database.Repositories.Access.User;
 using LeokaEstetica.Platform.Database.Repositories.AvailableLimits;
 using LeokaEstetica.Platform.Database.Repositories.Chat;
 using LeokaEstetica.Platform.Database.Repositories.Commerce;
+using LeokaEstetica.Platform.Database.Repositories.Config;
 using LeokaEstetica.Platform.Database.Repositories.Header;
 using LeokaEstetica.Platform.Database.Repositories.Knowledge;
 using LeokaEstetica.Platform.Database.Repositories.Landing;
@@ -242,6 +244,16 @@ public class RepositoriesModule : Module
         builder
             .RegisterType<KnowledgeRepository>()
             .As<IKnowledgeRepository>()
+            .InstancePerLifetimeScope();
+        
+        // Репозиторий глобал конфига.
+        builder
+            .RegisterType<GlobalConfigRepository>()
+            .Named<IGlobalConfigRepository>("GlobalConfigRepository")
+            .InstancePerLifetimeScope();
+        builder
+            .RegisterType<GlobalConfigRepository>()
+            .As<IGlobalConfigRepository>()
             .InstancePerLifetimeScope();
     }
 }

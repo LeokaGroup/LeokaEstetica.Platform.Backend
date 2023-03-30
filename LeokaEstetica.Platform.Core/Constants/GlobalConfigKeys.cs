@@ -132,4 +132,15 @@ public static class GlobalConfigKeys
         /// </summary>
         public const string DUBLICATE_PROJECT_RESPONSE = "Вы уже откликались на этот проект.";
     }
+
+    /// <summary>
+    /// Класс описывает ключи для Email-писем.
+    /// </summary>
+    public static class EmailNotifications
+    {
+        /// <summary>
+        /// Ключ для вкл/выкл отправку уведомлений на почту пользователей.
+        /// </summary>
+        public const string EMAIL_NOTIFICATIONS_DISABLE_MODE_ENABLED = "EmailNotificationsDisableModeEnabled";
+    }
 }

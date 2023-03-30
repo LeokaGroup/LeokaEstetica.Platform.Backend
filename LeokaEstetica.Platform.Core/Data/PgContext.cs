@@ -354,4 +354,9 @@ public class PgContext : DbContext
     /// Таблица архива вакансий.
     /// </summary>
     public DbSet<ArchivedVacancyEntity> ArchivedVacancies { get; set; }
+
+    /// <summary>
+    /// Таблица глобал конфига.
+    /// </summary>
+    public DbSet<GlobalConfigEntity> GlobalConfig { get; set; }
 }
