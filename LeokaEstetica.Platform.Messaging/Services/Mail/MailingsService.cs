@@ -34,26 +34,20 @@ public class MailingsService : IMailingsService
     /// <param name="confirmEmailCode">Код подтверждения почты.</param>
     public async Task SendConfirmEmailAsync(string mailTo, Guid confirmEmailCode)
     {
-        var isEnabledEmailNotifications = await _globalConfigRepository
-            .GetValueByKeyAsync<bool>(GlobalConfigKeys.EmailNotifications.EMAIL_NOTIFICATIONS_DISABLE_MODE_ENABLED);
+        var html = "Рады вас видеть на Leoka Estetica!" +
+                   "<br/><br/>" +
+                   $"Для завершения регистрации перейдите по ссылке <a href='https://leoka-estetica-dev.ru/user/account/confirm?code={confirmEmailCode}'>Подтвердить почту</a>" +
+                   "<br/>-----<br/>" +
+                   "С уважением, команда Leoka Estetica";
+        var subject = "Активация аккаунта на leoka-estetica.ru";
+        var text = "Рады вас видеть на Leoka Estetica!" +
+                   "<br/><br/>" +
+                   $"Для завершения регистрации перейдите по ссылке <a href='https://leoka-estetica-dev.ru/user/confirm-email?code={confirmEmailCode}'>Подтвердить почту</a>" +
+                   "<br/>-----<br/>" +
+                   "С уважением, команда Leoka Estetica";
 
-        if (isEnabledEmailNotifications)
-        {
-            var html = "Рады вас видеть на Leoka Estetica!" +
-                       "<br/><br/>" +
-                       $"Для завершения регистрации перейдите по ссылке <a href='https://leoka-estetica-dev.ru/user/account/confirm?code={confirmEmailCode}'>Подтвердить почту</a>" +
-                       "<br/>-----<br/>" +
-                       "С уважением, команда Leoka Estetica";
-            var subject = "Активация аккаунта на leoka-estetica.ru";
-            var text = "Рады вас видеть на Leoka Estetica!" +
-                       "<br/><br/>" +
-                       $"Для завершения регистрации перейдите по ссылке <a href='https://leoka-estetica-dev.ru/user/confirm-email?code={confirmEmailCode}'>Подтвердить почту</a>" +
-                       "<br/>-----<br/>" +
-                       "С уважением, команда Leoka Estetica";
-            
-            var mailModel = CreateMailopostModelConfirmEmail(mailTo, html, subject, text);
-            await SendEmailNotificationAsync(mailModel);
-        }
+        var mailModel = CreateMailopostModelConfirmEmail(mailTo, html, subject, text);
+        await SendEmailNotificationAsync(mailModel);
     }
 
     /// <summary>
