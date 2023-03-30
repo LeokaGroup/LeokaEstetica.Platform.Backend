@@ -1,5 +1,7 @@
 using System.Net;
 using System.Text;
+using LeokaEstetica.Platform.Core.Constants;
+using LeokaEstetica.Platform.Database.Abstractions.Config;
 using LeokaEstetica.Platform.Messaging.Abstractions.Mail;
 using LeokaEstetica.Platform.Messaging.Consts;
 using LeokaEstetica.Platform.Messaging.Models.Mail.Input.Mailopost;
@@ -11,13 +13,16 @@ namespace LeokaEstetica.Platform.Messaging.Services.Mail;
 /// <summary>
 /// Класс реализует методы сервиса работы с сообщениями.
 /// </summary>
-public sealed class MailingsService : IMailingsService
+public class MailingsService : IMailingsService
 {
     private readonly IConfiguration _configuration;
+    private readonly IGlobalConfigRepository _globalConfigRepository;
 
-    public MailingsService(IConfiguration configuration)
+    public MailingsService(IConfiguration configuration, 
+        IGlobalConfigRepository globalConfigRepository)
     {
         _configuration = configuration;
+        _globalConfigRepository = globalConfigRepository;
     }
 
     /// <summary>
@@ -27,22 +32,28 @@ public sealed class MailingsService : IMailingsService
     /// <param name="confirmEmailCode">Код подтверждения почты.</param>
     public async Task SendConfirmEmailAsync(string mailTo, Guid confirmEmailCode)
     {
-        var mailModel = CreateMailopostModelConfirmEmail(mailTo, confirmEmailCode);
-        var request = WebRequest.Create(_configuration["MailingsSettings:Mailopost:ApiUrl"]
-                                        + ApiMailopostConsts.SEND_MESSAGE);
-        request.Method = "POST";
-        request.Headers.Add("Authorization", "Bearer " + _configuration["MailingsSettings:Mailopost:ApiKey"]);
-        var json = JsonConvert.SerializeObject(mailModel);
-        var byteArray = Encoding.UTF8.GetBytes(json);
-        request.ContentType = "application/json";
-        request.ContentLength = byteArray.Length;
+        var isEnabledEmailNotifications = await _globalConfigRepository
+            .GetValueByKeyAsync<bool>(GlobalConfigKeys.EmailNotifications.EMAIL_NOTIFICATIONS_DISABLE_MODE_ENABLED);
+
+        if (isEnabledEmailNotifications)
+        {
+            var mailModel = CreateMailopostModelConfirmEmail(mailTo, confirmEmailCode);
+            var request = WebRequest.Create(_configuration["MailingsSettings:Mailopost:ApiUrl"]
+                                            + ApiMailopostConsts.SEND_MESSAGE);
+            request.Method = "POST";
+            request.Headers.Add("Authorization", "Bearer " + _configuration["MailingsSettings:Mailopost:ApiKey"]);
+            var json = JsonConvert.SerializeObject(mailModel);
+            var byteArray = Encoding.UTF8.GetBytes(json);
+            request.ContentType = "application/json";
+            request.ContentLength = byteArray.Length;
         
-        // Записываем данные в поток.
-        await using var dataStream = await request.GetRequestStreamAsync();
-        await dataStream.WriteAsync(byteArray);
-        using var response = await request.GetResponseAsync();
-        await using var stream = response.GetResponseStream();
-        using var reader = new StreamReader(stream);
+            // Записываем данные в поток.
+            await using var dataStream = await request.GetRequestStreamAsync();
+            await dataStream.WriteAsync(byteArray);
+            using var response = await request.GetResponseAsync();
+            await using var stream = response.GetResponseStream();
+            using var reader = new StreamReader(stream);   
+        }
     }
 
     /// <summary>
