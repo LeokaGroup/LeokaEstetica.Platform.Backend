@@ -55,7 +55,7 @@ public class ResumeController : BaseController
     /// </summary>
     /// <returns>Список резюме.</returns>
     [HttpGet]
-    [Route("")]
+    [Route("catalog")]
     [ProducesResponseType(200, Type = typeof(ResumeResultOutput))]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]

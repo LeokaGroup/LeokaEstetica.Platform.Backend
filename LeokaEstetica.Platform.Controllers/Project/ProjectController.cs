@@ -69,7 +69,7 @@ public class ProjectController : BaseController
     /// </summary>
     /// <returns>Список проектов.</returns>
     [HttpGet]
-    [Route("")]
+    [Route("catalog")]
     [ProducesResponseType(200, Type = typeof(CatalogProjectResultOutput))]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]
