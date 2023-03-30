@@ -70,18 +70,21 @@ public class MailingsService : IMailingsService
 
         if (isEnabledEmailNotifications)
         {
-            var html = $"Вы создали новый проект: <strong>{projectName}</strong>" +
-                       "<br/>-----<br/>" +
-                       "С уважением, команда Leoka Estetica";
-            var subject = $"Вы создали новый проект: <strong>{projectName}</strong>";
-            
             // TODO: Заменить на получение ссылки из БД.
             var text = $"<a href='https://leoka-estetica-dev.ru/projects/project?projectId={projectId}&mode=view'>" +
                        "Перейти к проекту" +
-                       "</a>" +
+                       "</a>";
+            
+            var html = $"Вы создали новый проект: \"{projectName}\"" +
+                       "<br/>" +
+                       text +
+                       "<br/>" +
+                       "<br/>" +
+                       "<br/>" +
                        "<br/>-----<br/>" +
                        "С уважением, команда Leoka Estetica";
-            
+            var subject = $"Создан новый проект: \"{projectName}\"";
+
             var mailModel = CreateMailopostModelConfirmEmail(mailTo, html, subject, text);
             await SendEmailNotificationAsync(mailModel);
         }
