@@ -11,7 +11,7 @@ using Newtonsoft.Json;
 namespace LeokaEstetica.Platform.Messaging.Services.Mail;
 
 /// <summary>
-/// Класс реализует методы сервиса работы с сообщениями.
+/// Класс реализует методы сервиса работы с уведомлениями на почту.
 /// </summary>
 public class MailingsService : IMailingsService
 {
@@ -78,6 +78,39 @@ public class MailingsService : IMailingsService
                        "<br/>-----<br/>" +
                        "С уважением, команда Leoka Estetica";
             var subject = $"Создан новый проект: \"{projectName}\"";
+
+            var mailModel = CreateMailopostModelConfirmEmail(mailTo, html, subject, text);
+            await SendEmailNotificationAsync(mailModel);
+        }
+    }
+
+    /// <summary>
+    /// Метод отправляет уведомление на почту. владельца вакансии.
+    /// </summary>
+    /// <param name="mailTo">Почта владельца проекта.</param>
+    /// <param name="vacancyName">Название вакансии.</param>
+    /// <param name="vacancyId">Id вакансии.</param>
+    public async Task SendNotificationCreateVacancyAsync(string mailTo, string vacancyName, long vacancyId)
+    {
+        var isEnabledEmailNotifications = await _globalConfigRepository
+            .GetValueByKeyAsync<bool>(GlobalConfigKeys.EmailNotifications.EMAIL_NOTIFICATIONS_DISABLE_MODE_ENABLED);
+
+        if (isEnabledEmailNotifications)
+        {
+            // TODO: Заменить на получение ссылки из БД.
+            var text = $"<a href='https://leoka-estetica-dev.ru/vacancies/vacancy?vacancyId={vacancyId}&mode=view'>" +
+                       "Перейти к вакансии" +
+                       "</a>";
+            
+            var html = $"Вы создали новую вакансию: \"{vacancyName}\"" +
+                       "<br/>" +
+                       text +
+                       "<br/>" +
+                       "<br/>" +
+                       "<br/>" +
+                       "<br/>-----<br/>" +
+                       "С уважением, команда Leoka Estetica";
+            var subject = $"Создана новая вакансия: \"{vacancyName}\"";
 
             var mailModel = CreateMailopostModelConfirmEmail(mailTo, html, subject, text);
             await SendEmailNotificationAsync(mailModel);

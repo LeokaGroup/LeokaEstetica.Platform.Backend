@@ -8,6 +8,7 @@ using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Database.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Finder.Chains.Vacancy;
 using LeokaEstetica.Platform.Logs.Abstractions;
+using LeokaEstetica.Platform.Messaging.Abstractions.Mail;
 using LeokaEstetica.Platform.Models.Dto.Input.Vacancy;
 using LeokaEstetica.Platform.Models.Dto.Output.Configs;
 using LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
@@ -79,7 +80,7 @@ public class VacancyService : IVacancyService
     private static readonly string _approveVacancy = "Опубликована";
 
     private readonly IProjectRepository _projectRepository;
-    
+    private readonly IMailingsService _mailingsService;
 
     /// <summary>
     /// Конструктор.
@@ -101,7 +102,8 @@ public class VacancyService : IVacancyService
         IAvailableLimitsService availableLimitsService,
         IVacancyNotificationsService vacancyNotificationsService, 
         IProjectRepository projectRepository,
-        IFillColorVacanciesService fillColorVacanciesService)
+        IFillColorVacanciesService fillColorVacanciesService, 
+        IMailingsService mailingsService)
     {
         _logService = logService;
         _vacancyRepository = vacancyRepository;
@@ -115,6 +117,7 @@ public class VacancyService : IVacancyService
         _vacancyNotificationsService = vacancyNotificationsService;
         _projectRepository = projectRepository;
         _fillColorVacanciesService = fillColorVacanciesService;
+        _mailingsService = mailingsService;
 
         // Определяем обработчики цепочки фильтров.
         _salaryFilterVacanciesChain.Successor = _descSalaryVacanciesFilterChain;
@@ -214,6 +217,12 @@ public class VacancyService : IVacancyService
             await _vacancyNotificationsService.SendNotificationSuccessCreatedUserVacancyAsync("Все хорошо",
                 "Данные успешно сохранены. Вакансия отправлена на модерацию.",
                 NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, vacancyInput.Token);
+            
+            var user = await _userRepository.GetUserPhoneEmailByUserIdAsync(userId);
+            
+            // Отправляем уведомление о созданной вакансии владельцу.
+            await _mailingsService.SendNotificationCreateVacancyAsync(user.Email, createdVacancy.VacancyName,
+                createdVacancy.VacancyId);
 
             return createdVacancy;
         }

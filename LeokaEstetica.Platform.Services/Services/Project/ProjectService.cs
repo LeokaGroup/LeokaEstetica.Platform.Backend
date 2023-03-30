@@ -261,10 +261,10 @@ public class ProjectService : IProjectService
                 "Данные успешно сохранены. Проект отправлен на модерацию.",
                 NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);
 
-            var userEmail = await _userRepository.GetUserPhoneEmailByUserIdAsync(userId);
+            var user = await _userRepository.GetUserPhoneEmailByUserIdAsync(userId);
             
             // Отправляем уведомление о созданном проекте владельцу проекта.
-            await _mailingsService.SendNotificationCreatedProjectAsync(userEmail.Email, project.ProjectName,
+            await _mailingsService.SendNotificationCreatedProjectAsync(user.Email, project.ProjectName,
                 project.ProjectId);
 
             return project;
