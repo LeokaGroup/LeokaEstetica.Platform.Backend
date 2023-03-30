@@ -7,7 +7,6 @@ using LeokaEstetica.Platform.Core.Constants;
 using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Core.Helpers;
 using LeokaEstetica.Platform.Core.Exceptions;
-using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.FareRule;
 using LeokaEstetica.Platform.Database.Abstractions.Notification;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
@@ -16,6 +15,7 @@ using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Database.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Finder.Chains.Project;
+using LeokaEstetica.Platform.Messaging.Abstractions.Mail;
 using LeokaEstetica.Platform.Models.Dto.Input.Project;
 using LeokaEstetica.Platform.Models.Dto.Input.Vacancy;
 using LeokaEstetica.Platform.Models.Dto.Output.Configs;
@@ -78,6 +78,7 @@ public class ProjectService : IProjectService
     private readonly IAvailableLimitsService _availableLimitsService;
     private readonly ISubscriptionRepository _subscriptionRepository;
     private readonly IFareRuleRepository _fareRuleRepository;
+    private readonly IMailingsService _mailingsService;
 
    
     /// <summary>
@@ -127,7 +128,8 @@ public class ProjectService : IProjectService
         IProjectNotificationsRepository projectNotificationsRepository, 
         IAccessUserNotificationsService accessUserNotificationsService, 
         IAccessUserService accessUserService,
-        IFillColorProjectsService fillColorProjectsService)
+        IFillColorProjectsService fillColorProjectsService, 
+        IMailingsService mailingsService)
     {
         _projectRepository = projectRepository;
         _logService = logService;
@@ -144,6 +146,7 @@ public class ProjectService : IProjectService
         _accessUserNotificationsService = accessUserNotificationsService;
         _accessUserService = accessUserService;
         _fillColorProjectsService = fillColorProjectsService;
+        _mailingsService = mailingsService;
 
         // Определяем обработчики цепочки фильтров.
         _dateProjectsFilterChain.Successor = _projectsVacanciesFilterChain;
@@ -209,14 +212,13 @@ public class ProjectService : IProjectService
             if (!availableCreateProjectLimit)
             {
                 var ex = new Exception($"Превышен лимит проектов по тарифу. UserId: {userId}. Тариф: {fareRule.Name}");
-                await _logService.LogErrorAsync(ex);
-                
+
                 await _projectNotificationsService.SendNotificationWarningLimitFareRuleProjectsAsync(
                     "Что то пошло не так",
                     "Превышен лимит проектов по тарифу.",
                     NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
 
-                return null;
+                throw ex;
             }
 
             // Проверяем существование такого проекта у текущего пользователя.
@@ -225,11 +227,13 @@ public class ProjectService : IProjectService
             // Есть дубликат, нельзя создать проект.
             if (isCreatedProject)
             {
+                var ex = new InvalidOperationException($"Попытка создать дубликат проекта. UserId: {userId}");
+                
                 await _projectNotificationsService
                     .SendNotificationWarningDublicateUserProjectAsync("Увы...", "Такой проект у вас уже существует.",
                         NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
 
-                return null;
+                throw ex;
             }
 
             var statusName = ProjectStatus.GetProjectStatusNameBySysName(ProjectStatusNameEnum.Moderation.ToString());
@@ -246,7 +250,7 @@ public class ProjectService : IProjectService
                     "Ошибка при создании проекта. Мы уже знаем о проблеме и уже занимаемся ей.",
                     NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, token);
 
-                return null;
+                throw ex;
             }
             
             // Добавляем владельца в участники проекта по дефолту.
@@ -256,6 +260,12 @@ public class ProjectService : IProjectService
             await _projectNotificationsService.SendNotificationSuccessCreatedUserProjectAsync("Все хорошо",
                 "Данные успешно сохранены. Проект отправлен на модерацию.",
                 NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);
+
+            var userEmail = await _userRepository.GetUserPhoneEmailByUserIdAsync(userId);
+            
+            // Отправляем уведомление о созданном проекте владельцу проекта.
+            await _mailingsService.SendNotificationCreatedProjectAsync(userEmail.Email, project.ProjectName,
+                project.ProjectId);
 
             return project;
         }
