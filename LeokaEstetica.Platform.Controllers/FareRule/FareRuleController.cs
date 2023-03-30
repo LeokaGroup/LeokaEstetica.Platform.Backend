@@ -31,7 +31,7 @@ public class FareRuleController : BaseController
     /// </summary>
     /// <returns>Список тарифов.</returns>
     [HttpGet]
-    [Route("")]
+    [Route("get-rules")]
     [ProducesResponseType(200, Type = typeof(IEnumerable<FareRuleOutput>))]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]
