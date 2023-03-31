@@ -550,12 +550,6 @@ public class ProjectController : BaseController
     [ProducesResponseType(404)]
     public async Task DeleteProjectAsync([FromRoute] long projectId)
     {
-        if (projectId <= 0)
-        {
-            var ex = new ArgumentNullException($"Id проекта не может быть пустым. ProjectId: {projectId}");
-            await _logService.LogErrorAsync(ex);
-        }
-
         await _projectService.DeleteProjectAsync(projectId, GetUserName(), CreateTokenFromHeader());
     }
 }

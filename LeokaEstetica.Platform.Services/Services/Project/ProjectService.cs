@@ -969,6 +969,12 @@ public class ProjectService : IProjectService
     {
         try
         {
+            if (projectId <= 0)
+            {
+                var ex = new ArgumentNullException($"Id проекта не может быть пустым. ProjectId: {projectId}");
+                throw ex;
+            }
+            
             var userId = await _userRepository.GetUserIdByEmailOrLoginAsync(account);
 
             if (userId <= 0)
@@ -989,9 +995,9 @@ public class ProjectService : IProjectService
                 throw ex;
             }
 
-            var isRemoved = await _projectRepository.DeleteProjectAsync(projectId, userId);
+            var removedProject = await _projectRepository.DeleteProjectAsync(projectId, userId);
             
-            if (!isRemoved)
+            if (!removedProject.Success)
             {
                 var ex = new InvalidOperationException(
                     "Ошибка удаления проекта. " +
@@ -1009,6 +1015,12 @@ public class ProjectService : IProjectService
                 "Все хорошо",
                 "Проект успешно удален.",
                 NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);
+            
+            var user = await _userRepository.GetUserPhoneEmailByUserIdAsync(userId);
+
+            // Отправляем уведомление на почту владельца об удаленном проекте и вакансиях привязанных к проекту.
+            await _mailingsService.SendNotificationDeleteProjectAsync(user.Email, removedProject.ProjectName,
+                removedProject.RemovedVacancies);
         }
         
         catch (Exception ex)

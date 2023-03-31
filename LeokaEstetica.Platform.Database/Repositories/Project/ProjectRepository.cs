@@ -631,10 +631,12 @@ public class ProjectRepository : IProjectRepository
     /// <param name="projectId">Id проекта.</param>
     /// <param name="userId">Id пользователя.</param>
     /// <returns>Признак результата удаления.</returns>
-    public async Task<bool> DeleteProjectAsync(long projectId, long userId)
+    public async Task<(bool, List<string>, string)> DeleteProjectAsync(long projectId, long userId)
     {
         var tran = await _pgContext.Database
             .BeginTransactionAsync(IsolationLevel.ReadCommitted);
+        
+        var result = (Success: false, RemovedVacancies: new List<string>(), ProjectName: string.Empty);
 
         try
         {
@@ -645,6 +647,10 @@ public class ProjectRepository : IProjectRepository
 
             if (await projectVacancies.AnyAsync())
             {
+                // Записываем названия вакансий, которые будут удалены.
+                var removedVacanciesNames = projectVacancies.Select(v => v.UserVacancy.VacancyName);
+                result.RemovedVacancies.AddRange(removedVacanciesNames);
+                
                 _pgContext.ProjectVacancies.RemoveRange(projectVacancies);
             }
 
@@ -753,6 +759,9 @@ public class ProjectRepository : IProjectRepository
 
             if (userProject is not null)
             {
+                // Записываем название проекта, который будет удален.
+                result.ProjectName = userProject.ProjectName;
+                
                 _pgContext.UserProjects.Remove(userProject);
             }
 
@@ -766,7 +775,9 @@ public class ProjectRepository : IProjectRepository
             throw;
         }
 
-        return true;
+        result.Success = true;
+
+        return result;
     }
 
     /// <summary>

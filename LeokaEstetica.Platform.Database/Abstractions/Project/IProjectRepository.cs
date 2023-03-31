@@ -183,7 +183,8 @@ public interface IProjectRepository
     /// <param name="projectId">Id проекта.</param>
     /// <param name="userId">Id пользователя.</param>
     /// <returns>Признак результата удаления.</returns>
-    Task<bool> DeleteProjectAsync(long projectId, long userId);
+    Task<(bool Success, List<string> RemovedVacancies, string ProjectName)> DeleteProjectAsync(long projectId,
+        long userId);
 
     /// <summary>
     /// Метод получает название проекта по его Id.

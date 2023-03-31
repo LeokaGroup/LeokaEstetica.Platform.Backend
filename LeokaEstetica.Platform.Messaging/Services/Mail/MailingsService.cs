@@ -11,7 +11,7 @@ using Newtonsoft.Json;
 namespace LeokaEstetica.Platform.Messaging.Services.Mail;
 
 /// <summary>
-/// Класс реализует методы сервиса работы с уведомлениями на почту.
+/// Класс реализует методы сервиса работы с сообщениями.
 /// </summary>
 public class MailingsService : IMailingsService
 {
@@ -34,6 +34,7 @@ public class MailingsService : IMailingsService
     /// <param name="confirmEmailCode">Код подтверждения почты.</param>
     public async Task SendConfirmEmailAsync(string mailTo, Guid confirmEmailCode)
     {
+        // TODO: Заменить на получение ссылки из БД.
         var html = "Рады вас видеть на Leoka Estetica!" +
                    "<br/><br/>" +
                    $"Для завершения регистрации перейдите по ссылке <a href='https://leoka-estetica-dev.ru/user/account/confirm?code={confirmEmailCode}'>Подтвердить почту</a>" +
@@ -51,7 +52,7 @@ public class MailingsService : IMailingsService
     }
 
     /// <summary>
-    /// Метод отправляет уведомление на почту владельца проекта.
+    /// Метод отправляет уведомление на почту владельца проекта о создании проекта.
     /// Указывается вакансия, если она заполнена.
     /// </summary>
     /// <param name="mailTo">Почта владельца проекта.</param>
@@ -113,6 +114,50 @@ public class MailingsService : IMailingsService
             var subject = $"Создана новая вакансия: \"{vacancyName}\"";
 
             var mailModel = CreateMailopostModelConfirmEmail(mailTo, html, subject, text);
+            await SendEmailNotificationAsync(mailModel);
+        }
+    }
+
+    /// <summary>
+    /// Метод отправляет уведомление на почту владельца проекта о удалении проекта и всего связанного с ним.
+    /// </summary>
+    /// <param name="mailTo">Почта владельца проекта.</param>
+    /// <param name="projectName">Название проекта.</param>
+    /// <param name="vacanciesNames">Список названий вакансий, которые были также удалены.</param>
+    public async Task SendNotificationDeleteProjectAsync(string mailTo, string projectName, 
+        List<string> vacanciesNames)
+    {
+        var isEnabledEmailNotifications = await _globalConfigRepository
+            .GetValueByKeyAsync<bool>(GlobalConfigKeys.EmailNotifications.EMAIL_NOTIFICATIONS_DISABLE_MODE_ENABLED);
+
+        if (isEnabledEmailNotifications)
+        {
+            var deleteVacanciesBuilder = new StringBuilder();
+            
+            if (vacanciesNames.Any())
+            {
+                deleteVacanciesBuilder.AppendLine("<br/>");
+                deleteVacanciesBuilder.AppendLine("Удалена связь следующих вакансий с проектом: ");
+                deleteVacanciesBuilder.AppendLine("<br/>");
+                
+                foreach (var vac in vacanciesNames)
+                {
+                    deleteVacanciesBuilder.AppendLine("- " + vac);
+                    deleteVacanciesBuilder.AppendLine("<br/>");
+                }
+            }
+            
+            // TODO: Заменить на получение ссылки из БД.
+            var text = $"Вы удалили проект: \"{projectName}\"." +
+                       deleteVacanciesBuilder +
+                       "<br/>" +
+                       "<br/>" +
+                       "<br/>" +
+                       "<br/>-----<br/>" +
+                       "С уважением, команда Leoka Estetica";
+            var subject = $"Удален проект: \"{projectName}\"";
+
+            var mailModel = CreateMailopostModelConfirmEmail(mailTo, text, subject, text);
             await SendEmailNotificationAsync(mailModel);
         }
     }
