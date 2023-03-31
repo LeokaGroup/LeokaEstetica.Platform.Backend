@@ -98,8 +98,8 @@ public interface IVacancyRepository
     /// </summary>
     /// <param name="vacancyId">Id вакансии.</param>
     /// <param name="userId">Id пользователя.</param>
-    /// <returns>Признак удаления.</returns>
-    Task<bool> DeleteVacancyAsync(long vacancyId, long userId);
+    /// <returns>Признак удаления и название вакансии.</returns>
+    Task<(bool Success, string VacancyName)> DeleteVacancyAsync(long vacancyId, long userId);
 
     /// <summary>
     /// Метод првоеряет владельца вакансии.

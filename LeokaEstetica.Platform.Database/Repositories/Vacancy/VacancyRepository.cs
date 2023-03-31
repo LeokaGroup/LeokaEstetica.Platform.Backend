@@ -267,8 +267,8 @@ public class VacancyRepository : IVacancyRepository
     /// </summary>
     /// <param name="vacancyId">Id вакансии.</param>
     /// <param name="userId">Id пользователя.</param>
-    /// <returns>Признак удаления.</returns>
-    public async Task<bool> DeleteVacancyAsync(long vacancyId, long userId)
+    /// <returns>Признак удаления и название вакансии.</returns>
+    public async Task<(bool Success, string VacancyName)> DeleteVacancyAsync(long vacancyId, long userId)
     {
         var tran = await _pgContext.Database
             .BeginTransactionAsync(IsolationLevel.ReadCommitted);
@@ -307,16 +307,23 @@ public class VacancyRepository : IVacancyRepository
                 .FirstOrDefaultAsync(v => v.VacancyId == vacancyId 
                                           && v.UserId == userId);
 
+            var result = (Success: false , VacancyName: string.Empty);
+
             // Удаляем вакансию пользователя.
             if (userVacancy is not null)
             {
+                // Записываем название вакансии, которая будет удалена.
+                result.VacancyName = userVacancy.VacancyName;
+                
                 _pgContext.UserVacancies.Remove(userVacancy);
             }
 
             await _pgContext.SaveChangesAsync();
             await tran.CommitAsync();
 
-            return true;
+            result.Success = true;
+
+            return result;
         }
         
         catch

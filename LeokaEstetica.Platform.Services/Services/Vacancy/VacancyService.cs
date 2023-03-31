@@ -445,9 +445,9 @@ public class VacancyService : IVacancyService
                 throw ex;
             }
             
-            var isRemoved = await _vacancyRepository.DeleteVacancyAsync(vacancyId, userId);
+            var removedVacancy = await _vacancyRepository.DeleteVacancyAsync(vacancyId, userId);
             
-            if (!isRemoved)
+            if (!removedVacancy.Success)
             {
                 var ex = new InvalidOperationException(
                     "Ошибка удаления вакансии. " +
@@ -465,6 +465,11 @@ public class VacancyService : IVacancyService
                 "Все хорошо",
                 "Вакансия успешно удалена.",
                 NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);
+            
+            var user = await _userRepository.GetUserPhoneEmailByUserIdAsync(userId);
+            
+            // Отправляем уведомление на почту владельцу вакансии.
+            await _mailingsService.SendNotificationDeleteVacancyAsync(user.Email, removedVacancy.VacancyName);
         }
         
         catch (Exception ex)

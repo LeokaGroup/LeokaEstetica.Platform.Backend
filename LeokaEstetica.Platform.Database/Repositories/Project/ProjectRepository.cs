@@ -630,8 +630,9 @@ public class ProjectRepository : IProjectRepository
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
     /// <param name="userId">Id пользователя.</param>
-    /// <returns>Признак результата удаления.</returns>
-    public async Task<(bool, List<string>, string)> DeleteProjectAsync(long projectId, long userId)
+    /// <returns>Признак результата удаления, список вакансий, которые отвязаны от проекта, название проекта.</returns>
+    public async Task<(bool Success, List<string> RemovedVacancies, string ProjectName)> DeleteProjectAsync(
+        long projectId, long userId)
     {
         var tran = await _pgContext.Database
             .BeginTransactionAsync(IsolationLevel.ReadCommitted);

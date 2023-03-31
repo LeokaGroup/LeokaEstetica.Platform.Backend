@@ -1,7 +1,7 @@
 namespace LeokaEstetica.Platform.Messaging.Abstractions.Mail;
 
 /// <summary>
-/// Абстракция сервиса работы с сообщениями.
+/// Абстракция сервиса работы с сообщениями почты.
 /// </summary>
 public interface IMailingsService
 {
@@ -31,10 +31,17 @@ public interface IMailingsService
     Task SendNotificationDeleteProjectAsync(string mailTo, string projectName, List<string> vacanciesNames);
     
     /// <summary>
-    /// Метод отправляет уведомление на почту. владельца вакансии.
+    /// Метод отправляет уведомление на почту. владельца вакансии о создании новой вакансии.
     /// </summary>
     /// <param name="mailTo">Почта владельца проекта.</param>
     /// <param name="vacancyName">Название вакансии.</param>
     /// <param name="vacancyId">Id вакансии.</param>
     Task SendNotificationCreateVacancyAsync(string mailTo, string vacancyName, long vacancyId);
+
+    /// <summary>
+    /// Метод отправляет уведомление на почту владельца вакансии об удалении вакансии.
+    /// </summary>
+    /// <param name="mailTo">Почта владельца проекта.</param>
+    /// <param name="vacancyName">Название вакансии.</param>
+    Task SendNotificationDeleteVacancyAsync(string mailTo, string vacancyName);
 }

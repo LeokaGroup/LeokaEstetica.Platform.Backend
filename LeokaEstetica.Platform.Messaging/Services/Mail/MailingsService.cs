@@ -11,7 +11,7 @@ using Newtonsoft.Json;
 namespace LeokaEstetica.Platform.Messaging.Services.Mail;
 
 /// <summary>
-/// Класс реализует методы сервиса работы с сообщениями.
+/// Класс реализует методы сервиса работы с сообщениями почты.
 /// </summary>
 public class MailingsService : IMailingsService
 {
@@ -86,7 +86,7 @@ public class MailingsService : IMailingsService
     }
 
     /// <summary>
-    /// Метод отправляет уведомление на почту. владельца вакансии.
+    /// Метод отправляет уведомление на почту. владельца вакансии о создании новой вакансии.
     /// </summary>
     /// <param name="mailTo">Почта владельца проекта.</param>
     /// <param name="vacancyName">Название вакансии.</param>
@@ -114,6 +114,32 @@ public class MailingsService : IMailingsService
             var subject = $"Создана новая вакансия: \"{vacancyName}\"";
 
             var mailModel = CreateMailopostModelConfirmEmail(mailTo, html, subject, text);
+            await SendEmailNotificationAsync(mailModel);
+        }
+    }
+
+    /// <summary>
+    /// Метод отправляет уведомление на почту владельца вакансии об удалении вакансии.
+    /// </summary>
+    /// <param name="mailTo">Почта владельца проекта.</param>
+    /// <param name="vacancyName">Название вакансии.</param>
+    public async Task SendNotificationDeleteVacancyAsync(string mailTo, string vacancyName)
+    {
+        var isEnabledEmailNotifications = await _globalConfigRepository
+            .GetValueByKeyAsync<bool>(GlobalConfigKeys.EmailNotifications.EMAIL_NOTIFICATIONS_DISABLE_MODE_ENABLED);
+
+        if (isEnabledEmailNotifications)
+        {
+            // TODO: Заменить на получение ссылки из БД.
+            var text = $"Вы удалили вакансию: \"{vacancyName}\"." +
+                       "<br/>" +
+                       "<br/>" +
+                       "<br/>" +
+                       "<br/>-----<br/>" +
+                       "С уважением, команда Leoka Estetica";
+            var subject = $"Удалена вакансия: \"{vacancyName}\"";
+
+            var mailModel = CreateMailopostModelConfirmEmail(mailTo, text, subject, text);
             await SendEmailNotificationAsync(mailModel);
         }
     }
