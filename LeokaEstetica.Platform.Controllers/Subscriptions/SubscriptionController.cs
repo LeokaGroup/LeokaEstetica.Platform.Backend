@@ -31,7 +31,7 @@ public class SubscriptionController : BaseController
     /// </summary>
     /// <returns>Список подписок.</returns>
     [HttpGet]
-    [Route("")]
+    [Route("all-subscriptions")]
     [ProducesResponseType(200, Type = typeof(IEnumerable<SubscriptionOutput>))]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]
