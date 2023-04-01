@@ -42,4 +42,15 @@ public interface IMailingsService
     /// <param name="mailTo">Почта владельца проекта.</param>
     /// <param name="vacancyName">Название вакансии.</param>
     Task SendNotificationDeleteVacancyAsync(string mailTo, string vacancyName);
+
+    /// <summary>
+    /// Метод отправляет уведомление на почту владельца проекта об отклике на его проект.
+    /// </summary>
+    /// <param name="mailTo">Почта владельца проекта.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="projectName">Название проекта.</param>
+    /// <param name="vacancyName">Название вакансии.</param>
+    /// <param name="otherUser">Логин или почта пользователя, который оставил отклик.</param>
+    Task SendNotificationWriteResponseProjectAsync(string mailTo, long projectId, string projectName,
+        string vacancyName, string otherUser);
 }

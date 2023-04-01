@@ -188,26 +188,39 @@ public class MailingsService : IMailingsService
     }
 
     /// <summary>
-    /// Метод отправляет уведомление на почту владельца проекта о одобрении проекта модератором.
+    /// Метод отправляет уведомление на почту владельца проекта об отклике на его проект.
     /// </summary>
     /// <param name="mailTo">Почта владельца проекта.</param>
-    /// <param name="projectName">Название проекта.</param>
     /// <param name="projectId">Id проекта.</param>
-    public async Task SendNotificationApproveProjectAsync(string mailTo, string projectName, long projectId)
+    /// <param name="projectName">Название проекта.</param>
+    /// <param name="vacancyName">Название вакансии.</param>
+    /// <param name="otherUser">Логин или почта пользователя, который оставил отклик.</param>
+    public async Task SendNotificationWriteResponseProjectAsync(string mailTo, long projectId, string projectName,
+        string vacancyName, string otherUser)
     {
         var isEnabledEmailNotifications = await _globalConfigRepository
             .GetValueByKeyAsync<bool>(GlobalConfigKeys.EmailNotifications.EMAIL_NOTIFICATIONS_DISABLE_MODE_ENABLED);
 
         if (isEnabledEmailNotifications)
         {
+            var withVacancy = !string.IsNullOrEmpty(vacancyName)
+                ? $"Отклик на вакансию: \"{vacancyName}\""
+                : null;
+            
             // TODO: Заменить на получение ссылки из БД.
-            var text = $"Ваш проект одобрен модератором: \"{projectName}\"." +
+            var text = $"Пользователь {otherUser} оставил отклик на ваш проект: \"{projectName}\"." +
+                       "<br/>" +
+                        withVacancy +
+                       "<br/>" +
+                       $"<a href='https://leoka-estetica-dev.ru/projects/project?projectId={projectId}&mode=view'>" +
+                       "Перейти к проекту" +
+                       "</a>" +
                        "<br/>" +
                        "<br/>" +
                        "<br/>" +
                        "<br/>-----<br/>" +
                        "С уважением, команда Leoka Estetica";
-            var subject = $"Проект: \"{projectName}\" одобрен модератором";
+            var subject = $"Новый отклик на ваш проект: \"{projectName}\"";
 
             var mailModel = CreateMailopostModelConfirmEmail(mailTo, text, subject, text);
             await SendEmailNotificationAsync(mailModel);

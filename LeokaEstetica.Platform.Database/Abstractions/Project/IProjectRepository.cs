@@ -199,4 +199,18 @@ public interface IProjectRepository
     /// <param name="projectId">Id проекта.</param>
     /// <returns>Признак модерации.</returns>
     Task<bool> CheckProjectModerationAsync(long projectId);
+
+    /// <summary>
+    /// Метод получает название вакансии проекта по ее Id.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <returns>Название вакансии.</returns>
+    Task<string> GetProjectVacancyNameByIdAsync(long vacancyId);
+    
+    /// <summary>
+    /// Метод находит почту владельца проекта по Id проекта.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Почта владельца проекта.</returns>
+    Task<string> GetProjectOwnerEmailByProjectIdAsync(long projectId);
 }

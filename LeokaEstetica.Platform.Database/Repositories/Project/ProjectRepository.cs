@@ -786,7 +786,7 @@ public class ProjectRepository : IProjectRepository
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
     /// <returns>Список комментариев проекта.</returns>
-    public async Task<ICollection<ProjectCommentEntity>> GetProjectCommentsAsync(long projectId)
+    private async Task<ICollection<ProjectCommentEntity>> GetProjectCommentsAsync(long projectId)
     {
         var result = await _pgContext.ProjectComments
             .Where(c => c.ProjectId == projectId)
@@ -820,6 +820,41 @@ public class ProjectRepository : IProjectRepository
     {
         var result = await _pgContext.ModerationProjects
             .AnyAsync(p => p.ProjectId == projectId);
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод получает название вакансии проекта по ее Id.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <returns>Название вакансии.</returns>
+    public async Task<string> GetProjectVacancyNameByIdAsync(long vacancyId)
+    {
+        var result = await _pgContext.UserVacancies
+            .Where(v => v.VacancyId == vacancyId)
+            .Select(v => v.VacancyName)
+            .FirstOrDefaultAsync();
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод находит почту владельца проекта по Id проекта.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Почта владельца проекта.</returns>
+    public async Task<string> GetProjectOwnerEmailByProjectIdAsync(long projectId)
+    {
+        var ownerId = await _pgContext.CatalogProjects
+            .Where(v => v.ProjectId == projectId)
+            .Select(v => v.Project.UserId)
+            .FirstOrDefaultAsync();
+
+        var result = await _pgContext.Users
+            .Where(u => u.UserId == ownerId)
+            .Select(u => u.Email)
+            .FirstOrDefaultAsync();
 
         return result;
     }
