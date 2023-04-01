@@ -34,6 +34,7 @@ public interface IProjectModerationService
     /// Метод отклоняет проект на модерации.
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
+    /// <param name="account">Аккаунт.</param>
     /// <returns>Выходная модель модерации.</returns>
-    Task<RejectProjectOutput> RejectProjectAsync(long projectId);
+    Task<RejectProjectOutput> RejectProjectAsync(long projectId, string account);
 }

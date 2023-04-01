@@ -130,8 +130,9 @@ public sealed class ProjectModerationService : IProjectModerationService
     /// Метод отклоняет проект на модерации.
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
+    /// <param name="account">Аккаунт.</param>
     /// <returns>Выходная модель модерации.</returns>
-    public async Task<RejectProjectOutput> RejectProjectAsync(long projectId)
+    public async Task<RejectProjectOutput> RejectProjectAsync(long projectId, string account)
     {
         try
         {
@@ -139,6 +140,21 @@ public sealed class ProjectModerationService : IProjectModerationService
             {
                 IsSuccess = await _projectModerationRepository.RejectProjectAsync(projectId)
             };
+            
+            var userId = await _userRepository.GetUserIdByEmailOrLoginAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+            
+            var user = await _userRepository.GetUserPhoneEmailByUserIdAsync(userId);
+
+            var projectName = await _projectModerationRepository.GetProjectNameByIdAsync(projectId);
+            
+            // Отправляем уведомление на почту владельца проекта.
+            await _moderationMailingsService.SendNotificationRejectProjectAsync(user.Email, projectName, projectId);
 
             return result;
         }

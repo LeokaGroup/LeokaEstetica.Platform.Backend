@@ -53,7 +53,37 @@ public class ModerationMailingsService : IModerationMailingsService
             await SendEmailNotificationAsync(mailModel);
         }
     }
-    
+
+    /// <summary>
+    /// Метод отправляет уведомление на почту владельца проекта о одобрении проекта модератором.
+    /// </summary>
+    /// <param name="mailTo">Почта владельца проекта.</param>
+    /// <param name="projectName">Название проекта.</param>
+    /// <param name="projectId">Id проекта.</param>
+    public async Task SendNotificationRejectProjectAsync(string mailTo, string projectName, long projectId)
+    {
+        var isEnabledEmailNotifications = await _globalConfigRepository
+            .GetValueByKeyAsync<bool>(GlobalConfigKeys.EmailNotifications.EMAIL_NOTIFICATIONS_DISABLE_MODE_ENABLED);
+
+        if (isEnabledEmailNotifications)
+        {
+            // TODO: Заменить на получение ссылки из БД.
+            var text = $"Модератор отклонил ваш проект: \"{projectName}\"." +
+                       "<br/>" +
+                       $"<a href='https://leoka-estetica-dev.ru/projects/project?projectId={projectId}&mode=view'>" +
+                       "Перейти к проекту" +
+                       "</a>" +
+                       "<br/>" +
+                       "<br/>" +
+                       "<br/>-----<br/>" +
+                       "С уважением, команда Leoka Estetica";
+            var subject = $"Ваш проект: \"{projectName}\" отклонен модератором";
+
+            var mailModel = CreateMailopostModelConfirmEmail(mailTo, text, subject, text);
+            await SendEmailNotificationAsync(mailModel);
+        }
+    }
+
     #region Приватные методы.
 
         /// <summary>
