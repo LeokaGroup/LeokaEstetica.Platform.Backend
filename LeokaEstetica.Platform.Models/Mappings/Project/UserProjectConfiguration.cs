@@ -49,7 +49,7 @@ public partial class UserProjectConfiguration : IEntityTypeConfiguration<UserPro
             .IsRequired();
 
         entity.Property(e => e.PublicId)
-            .HasColumnName("DateCreated")
+            .HasColumnName("PublicId")
             .HasColumnType("uuid")
             .HasMaxLength(36)
             .IsRequired();
