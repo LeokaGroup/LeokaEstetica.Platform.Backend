@@ -34,8 +34,7 @@ public partial class UserProjectConfiguration : IEntityTypeConfiguration<UserPro
 
         entity.Property(e => e.ProjectIcon)
             .HasColumnName("ProjectIcon")
-            .HasColumnType("text")
-            .IsRequired();
+            .HasColumnType("text");
 
         entity.Property(e => e.ProjectCode)
             .HasColumnName("ProjectCode")
