@@ -52,6 +52,11 @@ public class UserProjectEntity
     public DateTime DateCreated { get; set; }
 
     /// <summary>
+    /// Публичный код проекта для публичного отображения.
+    /// </summary>
+    public Guid PublicId { get; set; }
+
+    /// <summary>
     /// FK каталога проектов.
     /// </summary>
     public ICollection<CatalogProjectEntity> CatalogProjects { get; set; }

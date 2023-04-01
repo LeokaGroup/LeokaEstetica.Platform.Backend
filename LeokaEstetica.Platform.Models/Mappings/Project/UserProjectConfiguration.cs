@@ -14,31 +14,45 @@ public partial class UserProjectConfiguration : IEntityTypeConfiguration<UserPro
 
         entity.Property(e => e.ProjectId)
             .HasColumnName("ProjectId")
-            .HasColumnType("bigserial");
-        
+            .HasColumnType("bigserial")
+            .IsRequired();
+
         entity.Property(e => e.ProjectName)
             .HasColumnName("ProjectName")
-            .HasColumnType("varchar(200)");
-        
+            .HasColumnType("varchar(200)")
+            .IsRequired();
+
         entity.Property(e => e.UserId)
             .HasColumnName("UserId")
-            .HasColumnType("bigint");
-        
+            .HasColumnType("bigint")
+            .IsRequired();
+
         entity.Property(e => e.ProjectDetails)
             .HasColumnName("ProjectDetails")
-            .HasColumnType("text");
-        
+            .HasColumnType("text")
+            .IsRequired();
+
         entity.Property(e => e.ProjectIcon)
             .HasColumnName("ProjectIcon")
-            .HasColumnType("text");
-        
+            .HasColumnType("text")
+            .IsRequired();
+
         entity.Property(e => e.ProjectCode)
             .HasColumnName("ProjectCode")
-            .HasColumnType("uuid");
-        
+            .HasColumnType("uuid")
+            .HasMaxLength(36)
+            .IsRequired();
+
         entity.Property(e => e.DateCreated)
             .HasColumnName("DateCreated")
-            .HasColumnType("timestamp");
+            .HasColumnType("timestamp")
+            .IsRequired();
+
+        entity.Property(e => e.PublicId)
+            .HasColumnName("DateCreated")
+            .HasColumnType("uuid")
+            .HasMaxLength(36)
+            .IsRequired();
 
         entity.HasIndex(u => u.ProjectId)
             .HasDatabaseName("PK_UserProjects_ProjectId")
