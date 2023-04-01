@@ -1,8 +1,11 @@
 using AutoMapper;
+using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Project;
+using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Project;
 using LeokaEstetica.Platform.Models.Entities.Project;
+using LeokaEstetica.Platform.Moderation.Abstractions.Messaging.Mail;
 using LeokaEstetica.Platform.Moderation.Abstractions.Project;
 using LeokaEstetica.Platform.Moderation.Builders;
 using LeokaEstetica.Platform.Moderation.Models.Dto.Output.Project;
@@ -17,14 +20,20 @@ public sealed class ProjectModerationService : IProjectModerationService
     private readonly IProjectModerationRepository _projectModerationRepository;
     private readonly ILogService _logService;
     private readonly IMapper _mapper;
+    private readonly IModerationMailingsService _moderationMailingsService;
+    private readonly IUserRepository _userRepository;
 
     public ProjectModerationService(IProjectModerationRepository projectModerationRepository,
         ILogService logService,
-        IMapper mapper)
+        IMapper mapper, 
+        IModerationMailingsService moderationMailingsService, 
+        IUserRepository userRepository)
     {
         _projectModerationRepository = projectModerationRepository;
         _logService = logService;
         _mapper = mapper;
+        _moderationMailingsService = moderationMailingsService;
+        _userRepository = userRepository;
     }
 
     /// <summary>
@@ -74,8 +83,9 @@ public sealed class ProjectModerationService : IProjectModerationService
     /// Метод одобряет проект на модерации.
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
+    /// <param name="account">Аккаунт.</param>
     /// <returns>Выходная модель модерации.</returns>
-    public async Task<ApproveProjectOutput> ApproveProjectAsync(long projectId)
+    public async Task<ApproveProjectOutput> ApproveProjectAsync(long projectId, string account)
     {
         try
         {
@@ -89,13 +99,29 @@ public sealed class ProjectModerationService : IProjectModerationService
                 var ex = new InvalidOperationException($"Ошибка при одобрении проекта. ProjectId: {projectId}");
                 throw ex;
             }
+            
+            var userId = await _userRepository.GetUserIdByEmailOrLoginAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+            
+            var user = await _userRepository.GetUserPhoneEmailByUserIdAsync(userId);
+
+            var projectName = await _projectModerationRepository.GetProjectNameByIdAsync(projectId);
+            
+            // Отправляем уведомление на почту владельца проекта.
+            await _moderationMailingsService.SendNotificationApproveProjectAsync(user.Email, projectName, projectId);
 
             return result;
         }
 
         catch (Exception ex)
         {
-            await _logService.LogErrorAsync(ex, $"Ошибка при одобрении проекта при модерации. ProjectId = {projectId}");
+            await _logService.LogErrorAsync(ex, "Ошибка при одобрении проекта при модерации. " +
+                                                $"ProjectId = {projectId}");
             throw;
         }
     }

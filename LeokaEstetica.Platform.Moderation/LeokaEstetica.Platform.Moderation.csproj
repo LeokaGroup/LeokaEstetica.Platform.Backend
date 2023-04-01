@@ -12,4 +12,9 @@
       <ProjectReference Include="..\LeokaEstetica.Platform.Logs\LeokaEstetica.Platform.Logs.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Abstractions\Messaging" />
+      <Folder Include="Services\Messaging" />
+    </ItemGroup>
+
 </Project>

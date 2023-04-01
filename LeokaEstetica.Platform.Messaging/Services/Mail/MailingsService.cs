@@ -3,7 +3,6 @@ using System.Text;
 using LeokaEstetica.Platform.Core.Constants;
 using LeokaEstetica.Platform.Database.Abstractions.Config;
 using LeokaEstetica.Platform.Messaging.Abstractions.Mail;
-using LeokaEstetica.Platform.Messaging.Consts;
 using LeokaEstetica.Platform.Messaging.Models.Mail.Input.Mailopost;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
@@ -188,6 +187,33 @@ public class MailingsService : IMailingsService
         }
     }
 
+    /// <summary>
+    /// Метод отправляет уведомление на почту владельца проекта о одобрении проекта модератором.
+    /// </summary>
+    /// <param name="mailTo">Почта владельца проекта.</param>
+    /// <param name="projectName">Название проекта.</param>
+    /// <param name="projectId">Id проекта.</param>
+    public async Task SendNotificationApproveProjectAsync(string mailTo, string projectName, long projectId)
+    {
+        var isEnabledEmailNotifications = await _globalConfigRepository
+            .GetValueByKeyAsync<bool>(GlobalConfigKeys.EmailNotifications.EMAIL_NOTIFICATIONS_DISABLE_MODE_ENABLED);
+
+        if (isEnabledEmailNotifications)
+        {
+            // TODO: Заменить на получение ссылки из БД.
+            var text = $"Ваш проект одобрен модератором: \"{projectName}\"." +
+                       "<br/>" +
+                       "<br/>" +
+                       "<br/>" +
+                       "<br/>-----<br/>" +
+                       "С уважением, команда Leoka Estetica";
+            var subject = $"Проект: \"{projectName}\" одобрен модератором";
+
+            var mailModel = CreateMailopostModelConfirmEmail(mailTo, text, subject, text);
+            await SendEmailNotificationAsync(mailModel);
+        }
+    }
+
     #endregion
 
     #region Приватные методы.
@@ -214,6 +240,7 @@ public class MailingsService : IMailingsService
     }
 
     /// <summary>
+    /// TODO: Вынести куда то, так как дубли в модерации есть у этого метода.
     /// Метод отправляет уведомление на почту пользователя.
     /// </summary>
     /// <param name="serializeObject">Сериализованный объект для отправки.</param>

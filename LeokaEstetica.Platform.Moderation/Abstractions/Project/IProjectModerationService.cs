@@ -26,8 +26,9 @@ public interface IProjectModerationService
     /// Метод одобряет проект на модерации.
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
+    /// <param name="account">Аккаунт.</param>
     /// <returns>Выходная модель модерации.</returns>
-    Task<ApproveProjectOutput> ApproveProjectAsync(long projectId);
+    Task<ApproveProjectOutput> ApproveProjectAsync(long projectId, string account);
     
     /// <summary>
     /// Метод отклоняет проект на модерации.

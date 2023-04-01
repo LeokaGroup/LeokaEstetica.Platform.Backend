@@ -14,13 +14,11 @@ public interface IMailingsService
 
     /// <summary>
     /// Метод отправляет уведомление на почту владельца проекта о создании проекта.
-    /// Указывается вакансия, если она заполнена.
     /// </summary>
     /// <param name="mailTo">Почта владельца проекта.</param>
     /// <param name="projectName">Название проекта.</param>
-    /// <param name="publicId">Код гуида проекта для публичного отображения в роуте.</param>
-    Task SendNotificationCreatedProjectAsync(string mailTo, string projectName,
-        long projectId);
+    /// <param name="projectId">Id проекта.</param>
+    Task SendNotificationCreatedProjectAsync(string mailTo, string projectName, long projectId);
 
     /// <summary>
     /// Метод отправляет уведомление на почту владельца проекта о удалении проекта и всего связанного с ним.

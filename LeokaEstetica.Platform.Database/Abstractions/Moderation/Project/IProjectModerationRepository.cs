@@ -34,4 +34,11 @@ public interface IProjectModerationRepository
     /// <param name="projectId">Id проекта.</param>
     /// <returns>Признак отклонения проекта.</returns>
     Task<bool> RejectProjectAsync(long projectId);
+
+    /// <summary>
+    /// Метод получает название проекта по его Id.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Название проекта.</returns>
+    Task<string> GetProjectNameByIdAsync(long projectId);
 }

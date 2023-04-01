@@ -133,7 +133,7 @@ public class ModerationController : BaseController
     [ProducesResponseType(404)]
     public async Task<ApproveProjectOutput> ApproveProjectAsync([FromBody] ApproveProjectInput approveProjectInput)
     {
-        var result = await _projectModerationService.ApproveProjectAsync(approveProjectInput.ProjectId);
+        var result = await _projectModerationService.ApproveProjectAsync(approveProjectInput.ProjectId, GetUserName());
 
         return result;
     }

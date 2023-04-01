@@ -1,8 +1,10 @@
 using Autofac;
 using LeokaEstetica.Platform.Core.Attributes;
+using LeokaEstetica.Platform.Moderation.Abstractions.Messaging.Mail;
 using LeokaEstetica.Platform.Moderation.Abstractions.Project;
 using LeokaEstetica.Platform.Moderation.Abstractions.Resume;
 using LeokaEstetica.Platform.Moderation.Abstractions.Vacancy;
+using LeokaEstetica.Platform.Moderation.Services.Messaging.Mail;
 using LeokaEstetica.Platform.Moderation.Services.Project;
 using LeokaEstetica.Platform.Moderation.Services.Resume;
 using LeokaEstetica.Platform.Moderation.Services.Vacancy;
@@ -42,6 +44,16 @@ public class ModerationModule : Module
         builder
             .RegisterType<ResumeModerationService>()
             .As<IResumeModerationService>()
+            .InstancePerLifetimeScope();
+        
+        // Сервис уведомлений почты модерации.
+        builder
+            .RegisterType<ModerationMailingsService>()
+            .Named<IModerationMailingsService>("ModerationMailingsService")
+            .InstancePerLifetimeScope();
+        builder
+            .RegisterType<ModerationMailingsService>()
+            .As<IModerationMailingsService>()
             .InstancePerLifetimeScope();
     }
 }

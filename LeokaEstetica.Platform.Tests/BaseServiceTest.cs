@@ -134,7 +134,8 @@ public class BaseServiceTest
 
         var projectModerationRepository = new ProjectModerationRepository(pgContext);
 
-        ProjectModerationService = new ProjectModerationService(projectModerationRepository, logService, mapper);
+        ProjectModerationService = new ProjectModerationService(projectModerationRepository, logService, mapper, null, 
+            userRepository);
 
         var projectCommentsRepository = new ProjectCommentsRepository(pgContext);
 
