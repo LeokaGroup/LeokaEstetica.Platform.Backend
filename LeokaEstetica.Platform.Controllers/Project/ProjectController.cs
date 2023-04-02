@@ -552,4 +552,31 @@ public class ProjectController : BaseController
     {
         await _projectService.DeleteProjectAsync(projectId, GetUserName(), CreateTokenFromHeader());
     }
+
+    /// <summary>
+    /// Метод получает список вакансий доступных к отклику.
+    /// Для владельца проекта будет возвращаться пустой список.
+    /// </summary>
+    /// <returns>Список вакансий доступных к отклику.</returns>
+    [HttpGet]
+    [Route("available-response-vacancies")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<ProjectVacancyOutput>))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<IEnumerable<ProjectVacancyOutput>> GetAvailableResponseProjectVacancies(
+        [FromQuery] long projectId)
+    {
+        var items = await _projectService.GetAvailableResponseProjectVacancies(projectId, GetUserName());
+
+        if (items is null)
+        {
+            return Enumerable.Empty<ProjectVacancyOutput>();
+        }
+        
+        var result = _mapper.Map<IEnumerable<ProjectVacancyOutput>>(items);
+
+        return result;
+    }
 }

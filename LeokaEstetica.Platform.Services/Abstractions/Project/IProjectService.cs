@@ -172,4 +172,13 @@ public interface IProjectService
     /// <param name="account">Аккаунт.</param>
     /// <param name="token">Токен пользователя.</param>
     Task DeleteProjectAsync(long projectId, string account, string token);
+
+    /// <summary>
+    /// Метод получает список вакансий доступных к отклику.
+    /// Для владельца проекта будет возвращаться пустой список.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="account">Аккаунт.</param>
+    /// <returns>Список вакансий доступных к отклику.</returns>
+    Task<IEnumerable<ProjectVacancyEntity>> GetAvailableResponseProjectVacancies(long projectId, string account);
 }

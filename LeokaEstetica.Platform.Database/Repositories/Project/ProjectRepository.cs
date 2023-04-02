@@ -823,4 +823,46 @@ public class ProjectRepository : IProjectRepository
 
         return result;
     }
+
+    /// <summary>
+    /// Метод получает список вакансий доступных к отклику.
+    /// Для владельца проекта будет возвращаться пустой список.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Список вакансий доступных к отклику.</returns>
+    public async Task<IEnumerable<ProjectVacancyEntity>> GetAvailableResponseProjectVacancies(long userId,
+        long projectId)
+    {
+        // Получаем Id вакансий, которые еще на модерации либо отклонены модератором, так как их нельзя показывать.
+        var moderationVacanciesIds = _pgContext.ModerationVacancies
+            .Where(v => _excludedVacanciesStatuses.Contains(v.ModerationStatusId))
+            .Select(v => v.VacancyId)
+            .AsQueryable();
+
+        // Получаем вакансии, на которые можно отправить отклики.
+        var result = await _pgContext.UserVacancies
+            .Where(v => v.UserId == userId
+                        && !moderationVacanciesIds.Contains(v.VacancyId))
+            .Select(v => new ProjectVacancyEntity
+            {
+                ProjectId = projectId,
+                VacancyId = v.VacancyId,
+                UserVacancy = new UserVacancyEntity
+                {
+                    VacancyName = v.VacancyName,
+                    VacancyText = v.VacancyText,
+                    Employment = v.Employment,
+                    WorkExperience = v.WorkExperience,
+                    DateCreated = v.DateCreated,
+                    Payment = v.Payment,
+                    UserId = userId,
+                    VacancyId = v.VacancyId,
+                }
+            })
+            .OrderBy(o => o.VacancyId)
+            .ToListAsync();
+
+        return result;
+    }
 }
