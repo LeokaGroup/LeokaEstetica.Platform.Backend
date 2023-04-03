@@ -825,6 +825,49 @@ public class ProjectRepository : IProjectRepository
     }
 
     /// <summary>
+    /// Метод получает список вакансий доступных к отклику.
+    /// Для владельца проекта будет возвращаться пустой список.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Список вакансий доступных к отклику.</returns>
+    public async Task<IEnumerable<ProjectVacancyEntity>> GetAvailableResponseProjectVacanciesAsync(long userId,
+        long projectId)
+    {
+        // Получаем Id вакансий, которые еще на модерации либо отклонены модератором, так как их нельзя показывать.
+        var moderationVacanciesIds = _pgContext.ModerationVacancies
+            .Where(v => _excludedVacanciesStatuses.Contains(v.ModerationStatusId))
+            .Select(v => v.VacancyId)
+            .AsQueryable();
+
+        // Получаем вакансии, на которые можно отправить отклики.
+        var result = await _pgContext.ProjectVacancies
+            .Where(v => v.ProjectId == projectId 
+                        && v.UserVacancy.UserId == userId
+                        && !moderationVacanciesIds.Contains(v.VacancyId))
+            .Select(v => new ProjectVacancyEntity
+            {
+                ProjectId = projectId,
+                VacancyId = v.VacancyId,
+                UserVacancy = new UserVacancyEntity
+                {
+                    VacancyName = v.UserVacancy.VacancyName,
+                    VacancyText = v.UserVacancy.VacancyText,
+                    Employment = v.UserVacancy.Employment,
+                    WorkExperience = v.UserVacancy.WorkExperience,
+                    DateCreated = v.UserVacancy.DateCreated,
+                    Payment = v.UserVacancy.Payment,
+                    UserId = userId,
+                    VacancyId = v.VacancyId,
+                }
+            })
+            .OrderBy(o => o.VacancyId)
+            .ToListAsync();
+
+        return result;
+    }
+
+    /// <summary>
     /// Метод получает название вакансии проекта по ее Id.
     /// </summary>
     /// <param name="vacancyId">Id вакансии.</param>

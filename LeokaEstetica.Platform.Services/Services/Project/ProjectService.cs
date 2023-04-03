@@ -683,7 +683,6 @@ public class ProjectService : IProjectService
             if (userId <= 0)
             {
                 var ex = new NotFoundUserIdByAccountException(account);
-                await _logService.LogErrorAsync(ex);
                 throw ex;
             }
             
@@ -740,6 +739,7 @@ public class ProjectService : IProjectService
                 "Внимание",
                 "Вы уже откликались на этот проект.",
                 NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
+            
             await _logService.LogErrorAsync(ex);
             throw;
         }
@@ -1045,7 +1045,57 @@ public class ProjectService : IProjectService
             throw;
         }
     }
-    
+
+    /// <summary>
+    /// Метод получает список вакансий доступных к отклику.
+    /// Для владельца проекта будет возвращаться пустой список.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="account">Аккаунт.</param>
+    /// <returns>Список вакансий доступных к отклику.</returns>
+    public async Task<IEnumerable<ProjectVacancyEntity>> GetAvailableResponseProjectVacanciesAsync(long projectId,
+        string account)
+    {
+        try
+        {
+            if (projectId <= 0)
+            {
+                var ex = new ArgumentNullException($"Id проекта не может быть <= 0. ProjectId: {projectId}");
+                throw ex;
+            }
+            
+            var userId = await _userRepository.GetUserIdByEmailOrLoginAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+        
+            // Проверяем, является ли текущий пользователь владельцем проекта.
+            var isOwner = await _projectRepository.CheckProjectOwnerAsync(projectId, userId);
+
+            // Владелец не отправляет заявки на отклики на свой же проект.
+            if (isOwner)
+            {
+                return null;
+            }
+
+            // Получаем Id владельца проекта.
+            var ownerId = await _projectRepository.GetProjectOwnerIdAsync(projectId);
+
+            var result = await _projectRepository.GetAvailableResponseProjectVacanciesAsync(ownerId, projectId);
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            await _logService.LogErrorAsync(ex);
+            throw;
+        }
+    }
+
     #endregion
 
     #region Приватные методы.
