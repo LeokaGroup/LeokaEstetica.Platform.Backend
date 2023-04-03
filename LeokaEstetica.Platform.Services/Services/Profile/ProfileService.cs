@@ -284,6 +284,7 @@ public sealed class ProfileService : IProfileService
         profileInfo.Telegram = profileInfoInput.Telegram;
         profileInfo.Vkontakte = profileInfoInput.Vkontakte;
         profileInfo.OtherLink = profileInfoInput.OtherLink;
+        profileInfo.WorkExperience = profileInfoInput.WorkExperience;
     }
 
     /// <summary>

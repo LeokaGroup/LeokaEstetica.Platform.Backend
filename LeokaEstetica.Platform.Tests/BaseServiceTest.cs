@@ -30,8 +30,10 @@ using LeokaEstetica.Platform.Messaging.Services.Project;
 using LeokaEstetica.Platform.Moderation.Services.Project;
 using LeokaEstetica.Platform.Moderation.Services.Resume;
 using LeokaEstetica.Platform.Moderation.Services.Vacancy;
+using LeokaEstetica.Platform.Notifications.Data;
 using LeokaEstetica.Platform.Notifications.Services;
 using LeokaEstetica.Platform.Processing.Services.PayMaster;
+using LeokaEstetica.Platform.Redis.Services.Notification;
 using LeokaEstetica.Platform.Services.Services.FareRule;
 using LeokaEstetica.Platform.Services.Services.Knowledge;
 using LeokaEstetica.Platform.Services.Services.Landing;
@@ -41,8 +43,12 @@ using LeokaEstetica.Platform.Services.Services.Resume;
 using LeokaEstetica.Platform.Services.Services.Subscription;
 using LeokaEstetica.Platform.Services.Services.User;
 using LeokaEstetica.Platform.Services.Services.Vacancy;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using ProjectFinderService = LeokaEstetica.Platform.Services.Services.Search.Project.ProjectFinderService;
 
 namespace LeokaEstetica.Platform.Tests;
@@ -79,6 +85,8 @@ public class BaseServiceTest
     protected readonly KnowledgeService KnowledgeService;
     protected readonly PgContext PgContext;
 
+    private readonly NotificationsService notificationsService;
+    protected readonly NotificationsRedisService notificationsRedisService;
     protected BaseServiceTest()
     {
         // Настройка тестовых строк подключения.
@@ -100,10 +108,15 @@ public class BaseServiceTest
         var subscriptionRepository = new SubscriptionRepository(pgContext);
         var chatRepository = new ChatRepository(pgContext);
         var resumeModerationRepository = new ResumeModerationRepository(pgContext);
+        var opts = Options.Create<MemoryDistributedCacheOptions>(new MemoryDistributedCacheOptions());
+        var cache = new MemoryDistributedCache(opts);
 
         UserService = new UserService(logService, userRepository, mapper, null, pgContext, profileRepository,
             subscriptionRepository, resumeModerationRepository, null, null);
         ProfileService = new ProfileService(logService, profileRepository, userRepository, mapper, null, null);
+        notificationsRedisService = new NotificationsRedisService(cache);
+        notificationsService = new NotificationsService(null, notificationsRedisService);
+        ProfileService = new ProfileService(logService, profileRepository, userRepository, mapper, null, notificationsService);
 
         var projectRepository = new ProjectRepository(pgContext, chatRepository);
         var projectNotificationsRepository = new ProjectNotificationsRepository(pgContext);
