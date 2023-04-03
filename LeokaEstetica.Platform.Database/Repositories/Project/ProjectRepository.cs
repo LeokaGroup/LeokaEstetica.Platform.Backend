@@ -831,7 +831,7 @@ public class ProjectRepository : IProjectRepository
     /// <param name="userId">Id пользователя.</param>
     /// <param name="projectId">Id проекта.</param>
     /// <returns>Список вакансий доступных к отклику.</returns>
-    public async Task<IEnumerable<ProjectVacancyEntity>> GetAvailableResponseProjectVacancies(long userId,
+    public async Task<IEnumerable<ProjectVacancyEntity>> GetAvailableResponseProjectVacanciesAsync(long userId,
         long projectId)
     {
         // Получаем Id вакансий, которые еще на модерации либо отклонены модератором, так как их нельзя показывать.
@@ -841,8 +841,9 @@ public class ProjectRepository : IProjectRepository
             .AsQueryable();
 
         // Получаем вакансии, на которые можно отправить отклики.
-        var result = await _pgContext.UserVacancies
-            .Where(v => v.UserId == userId
+        var result = await _pgContext.ProjectVacancies
+            .Where(v => v.ProjectId == projectId 
+                        && v.UserVacancy.UserId == userId
                         && !moderationVacanciesIds.Contains(v.VacancyId))
             .Select(v => new ProjectVacancyEntity
             {
@@ -850,12 +851,12 @@ public class ProjectRepository : IProjectRepository
                 VacancyId = v.VacancyId,
                 UserVacancy = new UserVacancyEntity
                 {
-                    VacancyName = v.VacancyName,
-                    VacancyText = v.VacancyText,
-                    Employment = v.Employment,
-                    WorkExperience = v.WorkExperience,
-                    DateCreated = v.DateCreated,
-                    Payment = v.Payment,
+                    VacancyName = v.UserVacancy.VacancyName,
+                    VacancyText = v.UserVacancy.VacancyText,
+                    Employment = v.UserVacancy.Employment,
+                    WorkExperience = v.UserVacancy.WorkExperience,
+                    DateCreated = v.UserVacancy.DateCreated,
+                    Payment = v.UserVacancy.Payment,
                     UserId = userId,
                     VacancyId = v.VacancyId,
                 }

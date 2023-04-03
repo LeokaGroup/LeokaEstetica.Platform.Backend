@@ -1037,7 +1037,7 @@ public class ProjectService : IProjectService
     /// <param name="projectId">Id проекта.</param>
     /// <param name="account">Аккаунт.</param>
     /// <returns>Список вакансий доступных к отклику.</returns>
-    public async Task<IEnumerable<ProjectVacancyEntity>> GetAvailableResponseProjectVacancies(long projectId,
+    public async Task<IEnumerable<ProjectVacancyEntity>> GetAvailableResponseProjectVacanciesAsync(long projectId,
         string account)
     {
         try
@@ -1065,7 +1065,10 @@ public class ProjectService : IProjectService
                 return null;
             }
 
-            var result = await _projectRepository.GetAvailableResponseProjectVacancies(userId, projectId);
+            // Получаем Id владельца проекта.
+            var ownerId = await _projectRepository.GetProjectOwnerIdAsync(projectId);
+
+            var result = await _projectRepository.GetAvailableResponseProjectVacanciesAsync(ownerId, projectId);
 
             return result;
         }

@@ -565,10 +565,10 @@ public class ProjectController : BaseController
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<IEnumerable<ProjectVacancyOutput>> GetAvailableResponseProjectVacancies(
+    public async Task<IEnumerable<ProjectVacancyOutput>> GetAvailableResponseProjectVacanciesAsync(
         [FromQuery] long projectId)
     {
-        var items = await _projectService.GetAvailableResponseProjectVacancies(projectId, GetUserName());
+        var items = await _projectService.GetAvailableResponseProjectVacanciesAsync(projectId, GetUserName());
 
         if (items is null)
         {

@@ -207,5 +207,5 @@ public interface IProjectRepository
     /// <param name="userId">Id пользователя.</param>
     /// <param name="projectId">Id проекта.</param>
     /// <returns>Список вакансий доступных к отклику.</returns>
-    Task<IEnumerable<ProjectVacancyEntity>> GetAvailableResponseProjectVacancies(long userId, long projectId);
+    Task<IEnumerable<ProjectVacancyEntity>> GetAvailableResponseProjectVacanciesAsync(long userId, long projectId);
 }

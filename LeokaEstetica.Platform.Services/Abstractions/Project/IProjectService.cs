@@ -180,5 +180,5 @@ public interface IProjectService
     /// <param name="projectId">Id проекта.</param>
     /// <param name="account">Аккаунт.</param>
     /// <returns>Список вакансий доступных к отклику.</returns>
-    Task<IEnumerable<ProjectVacancyEntity>> GetAvailableResponseProjectVacancies(long projectId, string account);
+    Task<IEnumerable<ProjectVacancyEntity>> GetAvailableResponseProjectVacanciesAsync(long projectId, string account);
 }
