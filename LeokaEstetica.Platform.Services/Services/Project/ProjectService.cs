@@ -712,6 +712,24 @@ public class ProjectService : IProjectService
             await _projectNotificationsRepository.AddNotificationInviteProjectAsync(
                 projectId, vacancyId, userId, projectName);
             
+            // Находим данные о пользователе, который оставляет отклик на проект.
+            var otherUser = await _userRepository.GetUserPhoneEmailByUserIdAsync(userId);
+            
+            // Находим почту владельца проекта для отправки ему уведомления.
+            var projectOwnerEmail = await _projectRepository.GetProjectOwnerEmailByProjectIdAsync(projectId);
+
+            var vacancyName = string.Empty;
+
+            if (vacancyId > 0)
+            {
+                // Находим название вакансии.
+                vacancyName = await _projectRepository.GetProjectVacancyNameByIdAsync((long)vacancyId);   
+            }
+
+            // Отправляем уведомление на почту владельцу проекта.
+            await _mailingsService.SendNotificationWriteResponseProjectAsync(projectOwnerEmail, projectId, projectName,
+                vacancyName, otherUser.Email);
+            
             return result;
         }
 
