@@ -676,16 +676,13 @@ public class ProjectService : IProjectService
     public async Task<ProjectResponseEntity> WriteProjectResponseAsync(long projectId, long? vacancyId, string account,
         string token)
     {
-        long userId = 0;
-        
         try
         {
-            userId = await _userRepository.GetUserByEmailAsync(account);
+            var userId = await _userRepository.GetUserByEmailAsync(account);
 
             if (userId <= 0)
             {
                 var ex = new NotFoundUserIdByAccountException(account);
-                await _logService.LogErrorAsync(ex);
                 throw ex;
             }
             
@@ -724,6 +721,7 @@ public class ProjectService : IProjectService
                 "Внимание",
                 "Вы уже откликались на этот проект.",
                 NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
+            
             await _logService.LogErrorAsync(ex);
             throw;
         }
