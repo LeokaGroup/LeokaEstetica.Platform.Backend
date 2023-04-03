@@ -199,4 +199,13 @@ public interface IProjectRepository
     /// <param name="projectId">Id проекта.</param>
     /// <returns>Признак модерации.</returns>
     Task<bool> CheckProjectModerationAsync(long projectId);
+    
+    /// <summary>
+    /// Метод получает список вакансий доступных к отклику.
+    /// Для владельца проекта будет возвращаться пустой список.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Список вакансий доступных к отклику.</returns>
+    Task<IEnumerable<ProjectVacancyEntity>> GetAvailableResponseProjectVacanciesAsync(long userId, long projectId);
 }
