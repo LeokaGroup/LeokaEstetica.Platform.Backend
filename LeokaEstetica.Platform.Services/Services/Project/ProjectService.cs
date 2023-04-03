@@ -844,7 +844,8 @@ public class ProjectService : IProjectService
             // Если нет доступа, то не даем оплатить платный тариф.
             if (isEmptyProfile)
             {
-                var ex = new InvalidOperationException($"Анкета пользователя не заполнена. UserId был: {currentUserId}");
+                var ex = new InvalidOperationException(
+                    $"Анкета пользователя не заполнена. UserId был: {currentUserId}");
 
                 await _accessUserNotificationsService.SendNotificationWarningEmptyUserProfileAsync("Внимание",
                     "Для приглашения пользователей в проект должна быть заполнена информация вашей анкеты.",
@@ -853,6 +854,7 @@ public class ProjectService : IProjectService
                 throw ex;
             }
 
+            // Находим Id пользователя, которого приглашаем в проект.
             var inviteUserId = await GetUserIdAsync(inviteText, inviteType);
 
             // Проверяем нахождение проекта на модерации.
@@ -861,12 +863,15 @@ public class ProjectService : IProjectService
             // Если он там есть, то не даем пригласить в него.
             if (isProjectModeration)
             {
+                var ex = new InvalidOperationException(
+                    "Проект еще на модерации. Нельзя пригласить пользователей, пока проект не пройдет модерацию.");
+                
                 await _projectNotificationsService.SendNotificationWarningProjectInviteTeamAsync(
                     "Внимание",
                     "Проект еще на модерации. Нельзя пригласить пользователей, пока проект не пройдет модерацию.",
                     NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
                 
-                return null;
+                throw ex;
             }
 
             // Получаем Id команды проекта.
@@ -874,6 +879,19 @@ public class ProjectService : IProjectService
 
             // Добавляем пользователя в команду проекта.
             var result = await _projectRepository.AddProjectTeamMemberAsync(inviteUserId, vacancyId, teamId);
+
+            // Находим название проекта.
+            var projectName = await _projectRepository.GetProjectNameByProjectIdAsync(projectId);
+            
+            // Находим данные пользователя.
+            var user = await _userRepository.GetUserPhoneEmailByUserIdAsync(currentUserId);
+            
+            // Находим почту владельца проекта.
+            var projectOwnerEmail = await _projectRepository.GetProjectOwnerEmailByProjectIdAsync(projectId);
+            
+            // Отправляем пользователю уведомление на почту о приглашении его в проект.
+            await _mailingsService.SendNotificationInviteTeamProjectAsync(user.Email, projectId, projectName,
+                projectOwnerEmail);
 
             return result;
         }

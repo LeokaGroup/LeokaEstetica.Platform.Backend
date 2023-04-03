@@ -227,6 +227,39 @@ public class MailingsService : IMailingsService
         }
     }
 
+    /// <summary>
+    /// Метод отправляет уведомление на почту пользователя о приглашении его в проект.
+    /// </summary>
+    /// <param name="mailTo">Почта пользователя.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="projectName">Название проекта.</param>
+    /// <param name="projectOwnerName">Логин или почта владельца проекта, который пригласил пользователя в команду проекта.</param>
+    public async Task SendNotificationInviteTeamProjectAsync(string mailTo, long projectId, string projectName,
+        string projectOwnerName)
+    {
+        var isEnabledEmailNotifications = await _globalConfigRepository
+            .GetValueByKeyAsync<bool>(GlobalConfigKeys.EmailNotifications.EMAIL_NOTIFICATIONS_DISABLE_MODE_ENABLED);
+
+        if (isEnabledEmailNotifications)
+        {
+            // TODO: Заменить на получение ссылки из БД.
+            var text = $"Пользователь {projectOwnerName} пригласил Вас в команду проекта: \"{projectName}\"." +
+                       "<br/>" +
+                       $"<a href='https://leoka-estetica-dev.ru/projects/project?projectId={projectId}&mode=view'>" +
+                       "Перейти к проекту" +
+                       "</a>" +
+                       "<br/>" +
+                       "<br/>" +
+                       "<br/>" +
+                       "<br/>-----<br/>" +
+                       "С уважением, команда Leoka Estetica";
+            var subject = $"Приглашение в команду проекта: \"{projectName}\"";
+
+            var mailModel = CreateMailopostModelConfirmEmail(mailTo, text, subject, text);
+            await SendEmailNotificationAsync(mailModel);
+        }
+    }
+
     #endregion
 
     #region Приватные методы.
