@@ -41,7 +41,7 @@ public class NotificationsController : BaseController
     /// </summary>
     /// <returns>Список уведомлений.</returns>
     [HttpGet]
-    [Route("")]
+    [Route("all-notifications")]
     [ProducesResponseType(200, Type = typeof(NotificationResultOutput))]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]
