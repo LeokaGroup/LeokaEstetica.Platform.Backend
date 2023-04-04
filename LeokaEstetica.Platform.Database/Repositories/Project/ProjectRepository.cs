@@ -528,8 +528,7 @@ public class ProjectRepository : IProjectRepository
     /// <param name="userId">Id пользователя, который будет добавлен в команду проекта.</param>
     /// <param name="vacancyId">Id вакансии.</param>
     /// <returns>Данные добавленного пользователя.</returns>
-    public async Task<ProjectTeamMemberEntity> AddProjectTeamMemberAsync(long userId, long? vacancyId,
-        long teamId)
+    public async Task<ProjectTeamMemberEntity> AddProjectTeamMemberAsync(long userId, long? vacancyId, long teamId)
     {
         var result = new ProjectTeamMemberEntity
         {
@@ -900,6 +899,21 @@ public class ProjectRepository : IProjectRepository
             .Where(u => u.UserId == ownerId)
             .Select(u => u.Email)
             .FirstOrDefaultAsync();
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод проверяет добавляли ли уже пользоваетля в команду проекта.
+    /// Если да, то не даем добавить повторно, чтобы не было дублей.
+    /// </summary>
+    /// <param name="teamId">Id команды проекта.</param>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Признак проверки.</returns>
+    public async Task<bool> CheckProjectTeamMemberAsync(long teamId, long userId)
+    {
+        var result = await _pgContext.ProjectTeamMembers.AnyAsync(m => m.UserId == userId
+                                                                       && m.TeamId == teamId);
 
         return result;
     }

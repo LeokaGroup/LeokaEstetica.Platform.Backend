@@ -259,4 +259,15 @@ public interface IProjectNotificationsService
     /// <param name="token">Токен пользователя.</param>
     Task SendNotificationWarningProjectInviteTeamAsync(string title, string notifyText, string notificationLevel,
         string token);
+    
+    /// <summary>
+    /// Метод отправляет уведомление предупреждения о приглашенном пользователе в команде проекта.
+    /// Повторно нельзя приглашать для избежания дублей.
+    /// </summary>
+    /// <param name="title">Заголовок уведомления.</param>
+    /// <param name="notifyText">Текст уведомления.</param>
+    /// <param name="notificationLevel">Уровень уведомления.</param>
+    /// <param name="token">Токен пользователя.</param>
+    Task SendNotificationWarningUserAlreadyProjectInvitedTeamAsync(string title, string notifyText,
+        string notificationLevel, string token);
 }

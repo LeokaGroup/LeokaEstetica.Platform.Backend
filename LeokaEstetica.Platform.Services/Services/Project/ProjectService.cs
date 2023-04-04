@@ -876,6 +876,24 @@ public class ProjectService : IProjectService
 
             // Получаем Id команды проекта.
             var teamId = await _projectRepository.GetProjectTeamIdAsync(projectId);
+            
+            var isInvitedUser = await _projectRepository.CheckProjectTeamMemberAsync(teamId, inviteUserId);
+
+            // Проверяем, не приглашали ли уже пользователя в команду проекта. Если да, то не даем пригласить повторно.
+            if (isInvitedUser)
+            {
+                var ex = new InvalidOperationException("Пользователь уже был приглашен в команду проекта. " +
+                                                       $"TeamId: {teamId}. " +
+                                                       $"InvitedUserId: {inviteUserId}. " +
+                                                       $"CurrentUserId: {currentUserId}");
+                
+                await _projectNotificationsService.SendNotificationWarningUserAlreadyProjectInvitedTeamAsync(
+                    "Внимание",
+                    "Пользователь уже был добавлен в команду проекта.",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
+                
+                throw ex;
+            }
 
             // Добавляем пользователя в команду проекта.
             var result = await _projectRepository.AddProjectTeamMemberAsync(inviteUserId, vacancyId, teamId);

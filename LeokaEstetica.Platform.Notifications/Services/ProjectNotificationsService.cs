@@ -8,7 +8,6 @@ using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Notifications.Consts;
 using LeokaEstetica.Platform.Notifications.Data;
 using LeokaEstetica.Platform.Redis.Abstractions.Notification;
-using LeokaEstetica.Platform.Redis.Extensions;
 using Microsoft.AspNetCore.SignalR;
 using NotificationOutput = LeokaEstetica.Platform.Notifications.Models.Output.NotificationOutput;
 using NotificationProjectOutput = LeokaEstetica.Platform.Models.Dto.Output.Notification.NotificationOutput;
@@ -714,6 +713,30 @@ public class ProjectNotificationsService : IProjectNotificationsService
         await _hubContext.Clients
             .Client(connectionId)
             .SendAsync("SendNotificationWarningProjectInviteTeam",
+                new NotificationOutput
+                {
+                    Title = title,
+                    Message = notifyText,
+                    NotificationLevel = notificationLevel
+                });
+    }
+
+    /// <summary>
+    /// Метод отправляет уведомление предупреждения о приглашенном пользователе в команде проекта.
+    /// Повторно нельзя приглашать для избежания дублей.
+    /// </summary>
+    /// <param name="title">Заголовок уведомления.</param>
+    /// <param name="notifyText">Текст уведомления.</param>
+    /// <param name="notificationLevel">Уровень уведомления.</param>
+    /// <param name="token">Токен пользователя.</param>
+    public async Task SendNotificationWarningUserAlreadyProjectInvitedTeamAsync(string title, string notifyText,
+        string notificationLevel, string token)
+    {
+        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(token);
+
+        await _hubContext.Clients
+            .Client(connectionId)
+            .SendAsync("SendNotificationWarningUserAlreadyProjectInvitedTeam",
                 new NotificationOutput
                 {
                     Title = title,
