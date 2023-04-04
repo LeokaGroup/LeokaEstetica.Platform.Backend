@@ -154,23 +154,20 @@ public class ProjectRepository : IProjectRepository
     {
         var result = new UserProjectResultOutput
         {
-            UserProjects = await (from ps in _pgContext.ProjectStatuses
-                    join up in _pgContext.UserProjects
-                        on ps.ProjectId
-                        equals up.ProjectId
-                    join pm in _pgContext.ModerationProjects
-                        on ps.ProjectId
-                        equals pm.ProjectId
-                    select new UserProjectOutput
-                    {
-                        ProjectName = up.ProjectName,
-                        ProjectDetails = up.ProjectDetails,
-                        ProjectIcon = up.ProjectIcon,
-                        ProjectStatusName = pm.ModerationStatus.StatusName,
-                        ProjectStatusSysName = pm.ModerationStatus.StatusSysName,
-                        ProjectCode = up.ProjectCode,
-                        ProjectId = up.ProjectId
-                    })
+            UserProjects = await _pgContext.ModerationProjects
+                .Include(ms => ms.ModerationStatus)
+                .Include(up => up.UserProject)
+                .Where(u => u.UserProject.UserId == userId)
+                .Select(p => new UserProjectOutput
+                {
+                    ProjectName = p.UserProject.ProjectName,
+                    ProjectDetails = p.UserProject.ProjectDetails,
+                    ProjectIcon = p.UserProject.ProjectIcon,
+                    ProjectStatusName = p.ModerationStatus.StatusName,
+                    ProjectStatusSysName = p.ModerationStatus.StatusSysName,
+                    ProjectCode = p.UserProject.ProjectCode,
+                    ProjectId = p.UserProject.ProjectId
+                })
                 .ToListAsync()
         };
 
