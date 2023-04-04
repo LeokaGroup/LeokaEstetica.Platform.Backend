@@ -104,7 +104,6 @@ public class BaseServiceTest
         UserService = new UserService(logService, userRepository, mapper, null, pgContext, profileRepository,
             subscriptionRepository, resumeModerationRepository, null, null);
         ProfileService = new ProfileService(logService, profileRepository, userRepository, mapper, null, null);
-        ProfileService = new ProfileService(logService, profileRepository, userRepository, mapper, null, null);
 
         var projectRepository = new ProjectRepository(pgContext, chatRepository);
         var projectNotificationsRepository = new ProjectNotificationsRepository(pgContext);
