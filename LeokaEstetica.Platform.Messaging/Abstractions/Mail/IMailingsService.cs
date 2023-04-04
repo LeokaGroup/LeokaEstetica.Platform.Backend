@@ -53,4 +53,14 @@ public interface IMailingsService
     /// <param name="otherUser">Логин или почта пользователя, который оставил отклик.</param>
     Task SendNotificationWriteResponseProjectAsync(string mailTo, long projectId, string projectName,
         string vacancyName, string otherUser);
+
+    /// <summary>
+    /// Метод отправляет уведомление на почту пользователя о приглашении его в проект.
+    /// </summary>
+    /// <param name="mailTo">Почта пользователя.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="projectName">Название проекта.</param>
+    /// <param name="projectOwnerName">Логин или почта владельца проекта, который пригласил пользователя в команду проекта.</param>
+    Task SendNotificationInviteTeamProjectAsync(string mailTo, long projectId, string projectName,
+        string projectOwnerName);
 }

@@ -222,4 +222,13 @@ public interface IProjectRepository
     /// <param name="projectId">Id проекта.</param>
     /// <returns>Почта владельца проекта.</returns>
     Task<string> GetProjectOwnerEmailByProjectIdAsync(long projectId);
+
+    /// <summary>
+    /// Метод проверяет добавляли ли уже пользоваетля в команду проекта.
+    /// Если да, то не даем добавить повторно, чтобы не было дублей.
+    /// </summary>
+    /// <param name="teamId">Id команды проекта.</param>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Признак проверки.</returns>
+    Task<bool> CheckProjectTeamMemberAsync(long teamId, long userId);
 }
