@@ -820,7 +820,8 @@ public class ProjectRepository : IProjectRepository
     public async Task<bool> CheckProjectModerationAsync(long projectId)
     {
         var result = await _pgContext.ModerationProjects
-            .AnyAsync(p => p.ProjectId == projectId);
+            .AnyAsync(p => p.ProjectId == projectId
+                           && p.ModerationStatusId == (int)ProjectModerationStatusEnum.ModerationProject);
 
         return result;
     }
