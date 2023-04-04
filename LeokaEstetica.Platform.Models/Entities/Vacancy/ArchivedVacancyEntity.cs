@@ -21,6 +21,11 @@ public class ArchivedVacancyEntity
     public DateTime DateArchived { get; set; }
 
     /// <summary>
+    /// Id пользователя.
+    /// </summary>
+    public long UserId { get; set; }
+
+    /// <summary>
     /// FK на вакансию пользователя.
     /// </summary>
     public UserVacancyEntity UserVacancy { get; set; }

@@ -367,6 +367,7 @@ public class VacancyRepository : IVacancyRepository
         {
             VacancyId = vacancyId,
             DateArchived = DateTime.Now,
+            UserId = userId
         };
 
         // Добавляем вакансию в таблицу архивов.

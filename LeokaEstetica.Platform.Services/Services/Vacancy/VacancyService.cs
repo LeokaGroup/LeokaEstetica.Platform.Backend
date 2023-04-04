@@ -537,14 +537,14 @@ public class VacancyService : IVacancyService
     {
         try
         {
-            //Получаем id пользователя
-            var userId = await _userRepository.GetUserIdByEmailOrLoginAsync(account);
-
             if (vacancyId <= 0)
             {
                 var ex = new ArgumentNullException($"Id вакансии не может быть пустым. VacancyId: {vacancyId}");
                 throw ex;
             }
+
+            //Получаем id пользователя
+            var userId = await _userRepository.GetUserIdByEmailOrLoginAsync(account);
 
             if (userId <= 0)
             {
