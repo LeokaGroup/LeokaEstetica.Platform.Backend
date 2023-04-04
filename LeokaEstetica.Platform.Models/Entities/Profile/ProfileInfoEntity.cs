@@ -76,4 +76,9 @@ public class ProfileInfoEntity
     /// Список анкет.
     /// </summary>
     public ICollection<ModerationResumeEntity> ModerationResumes { get; set; }
+
+    /// <summary>
+    /// Опыт работы.
+    /// </summary>
+    public string WorkExperience { get; set; }
 }
