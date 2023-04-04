@@ -14,4 +14,4 @@
 <strong>Хранение логов и метрики:</strong> ClickHouse (в перспективе).<br/>
 <strong>Мониторинг:</strong> Grafana, Kibana (пока в процессе выбора, в перспективе).<br/>
 <strong>Для поиска в памяти используем:</strong> Lucene.NET.<br/>
-<strong>Ведение задач и управление проектом, командой:</strong> YouGile.<br/>
+<strong>Ведение задач и управление проектом, командой:</strong> Redmine.<br/>
