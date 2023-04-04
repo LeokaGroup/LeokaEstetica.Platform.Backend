@@ -42,10 +42,7 @@ using LeokaEstetica.Platform.Services.Services.Subscription;
 using LeokaEstetica.Platform.Services.Services.User;
 using LeokaEstetica.Platform.Services.Services.Vacancy;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Options;
 using ProjectFinderService = LeokaEstetica.Platform.Services.Services.Search.Project.ProjectFinderService;
 
 namespace LeokaEstetica.Platform.Tests;
@@ -103,8 +100,6 @@ public class BaseServiceTest
         var subscriptionRepository = new SubscriptionRepository(pgContext);
         var chatRepository = new ChatRepository(pgContext);
         var resumeModerationRepository = new ResumeModerationRepository(pgContext);
-        var opts = Options.Create<MemoryDistributedCacheOptions>(new MemoryDistributedCacheOptions());
-        var cache = new MemoryDistributedCache(opts);
 
         UserService = new UserService(logService, userRepository, mapper, null, pgContext, profileRepository,
             subscriptionRepository, resumeModerationRepository, null, null);

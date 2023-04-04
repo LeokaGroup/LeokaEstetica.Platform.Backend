@@ -25,7 +25,6 @@ public class SaveProfileInfoTest : BaseServiceTest
             UserSkills = new List<SkillInput>(),
             UserIntents = new List<IntentOutput>(),
             WorkExperience = "Test"
-
         }, "sierra_93@mail.ru", string.Empty);
 
         Assert.IsNotNull(profileInfo);
