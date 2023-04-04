@@ -76,4 +76,9 @@ public class ProfileInfoInput
     /// Список целей пользователя, которые он выбрал.
     /// </summary>
     public IEnumerable<IntentOutput> UserIntents { get; set; }
+
+    /// <summary>
+    /// Опыт работы.
+    /// </summary>
+    public string WorkExperience { get; set; }
 }
