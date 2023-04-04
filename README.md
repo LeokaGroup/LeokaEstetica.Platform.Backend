@@ -11,7 +11,7 @@
 <strong>Работа с очередями сообщений:</strong> RabbitMQ.<br/>
 <strong>Real-time:</strong> SignalR.<br/>
 <strong>OC:</strong> Linux (CentOS 7).<br/>
-<strong>Хранение логов и метрики:</strong> ClickHouse (в перспективе).<br/>
-<strong>Мониторинг:</strong> Grafana, Kibana (пока в процессе выбора, в перспективе).<br/>
+<strong>Хранение логов и метрики:</strong> ClickHouse.<br/>
+<strong>Мониторинг:</strong> Grafana.<br/>
 <strong>Для поиска в памяти используем:</strong> Lucene.NET.<br/>
 <strong>Ведение задач и управление проектом, командой:</strong> Redmine.<br/>
