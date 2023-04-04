@@ -87,4 +87,9 @@ public class ProfileInfoOutput : IFrontError
     /// Список ошибок.
     /// </summary>
     public List<ValidationFailure> Errors { get; set; }
+
+    /// <summary>
+    /// Опыт работы.
+    /// </summary>
+    public string WorkExperience { get; set; }
 }
