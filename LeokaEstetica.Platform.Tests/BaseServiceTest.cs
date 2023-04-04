@@ -85,8 +85,6 @@ public class BaseServiceTest
     protected readonly KnowledgeService KnowledgeService;
     protected readonly PgContext PgContext;
 
-    private readonly NotificationsService notificationsService;
-    protected readonly NotificationsRedisService notificationsRedisService;
     protected BaseServiceTest()
     {
         // Настройка тестовых строк подключения.
@@ -114,9 +112,7 @@ public class BaseServiceTest
         UserService = new UserService(logService, userRepository, mapper, null, pgContext, profileRepository,
             subscriptionRepository, resumeModerationRepository, null, null);
         ProfileService = new ProfileService(logService, profileRepository, userRepository, mapper, null, null);
-        notificationsRedisService = new NotificationsRedisService(cache);
-        notificationsService = new NotificationsService(null, notificationsRedisService);
-        ProfileService = new ProfileService(logService, profileRepository, userRepository, mapper, null, notificationsService);
+        ProfileService = new ProfileService(logService, profileRepository, userRepository, mapper, null, null);
 
         var projectRepository = new ProjectRepository(pgContext, chatRepository);
         var projectNotificationsRepository = new ProjectNotificationsRepository(pgContext);
