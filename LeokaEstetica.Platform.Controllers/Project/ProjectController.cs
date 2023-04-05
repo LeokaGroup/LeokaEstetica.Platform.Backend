@@ -446,6 +446,7 @@ public class ProjectController : BaseController
             inviteProjectMemberInput.VacancyId, GetUserName(), CreateTokenFromHeader());
         
         var result = _mapper.Map<ProjectTeamMemberOutput>(invitedUser);
+        result.SuccessMessage = "Пользователь успешно приглашен в команду проекта.";
 
         return result;
     }

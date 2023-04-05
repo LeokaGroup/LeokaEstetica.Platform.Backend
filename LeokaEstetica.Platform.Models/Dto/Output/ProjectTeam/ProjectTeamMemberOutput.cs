@@ -1,9 +1,11 @@
+using LeokaEstetica.Platform.Models.Dto.Common;
+
 namespace LeokaEstetica.Platform.Models.Dto.Output.ProjectTeam;
 
 /// <summary>
 /// Класс выходной модели участника команды проекта.
 /// </summary>
-public class ProjectTeamMemberOutput
+public class ProjectTeamMemberOutput : IFrontSuccess
 {
     /// <summary>
     /// PK.
@@ -29,4 +31,9 @@ public class ProjectTeamMemberOutput
     /// Id вакансии.
     /// </summary>
     public long VacancyId { get; set; }
+
+    /// <summary>
+    /// Текст успеха, который будем выводить на фронт.
+    /// </summary>
+    public string SuccessMessage { get; set; }
 }
