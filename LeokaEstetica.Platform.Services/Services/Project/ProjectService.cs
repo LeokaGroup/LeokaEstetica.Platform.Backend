@@ -898,18 +898,7 @@ public class ProjectService : IProjectService
             // Добавляем пользователя в команду проекта.
             var result = await _projectRepository.AddProjectTeamMemberAsync(inviteUserId, vacancyId, teamId);
 
-            // Находим название проекта.
-            var projectName = await _projectRepository.GetProjectNameByProjectIdAsync(projectId);
-            
-            // Находим данные пользователя.
-            var user = await _userRepository.GetUserPhoneEmailByUserIdAsync(currentUserId);
-            
-            // Находим почту владельца проекта.
-            var projectOwnerEmail = await _projectRepository.GetProjectOwnerEmailByProjectIdAsync(projectId);
-            
-            // Отправляем пользователю уведомление на почту о приглашении его в проект.
-            await _mailingsService.SendNotificationInviteTeamProjectAsync(user.Email, projectId, projectName,
-                projectOwnerEmail);
+            await SendEmailNotificationInviteTeamProjectAsync(projectId, inviteUserId);
 
             return result;
         }
@@ -1525,6 +1514,26 @@ public class ProjectService : IProjectService
         }
 
         return projects;
+    }
+
+    /// <summary>
+    /// Метод отправляет пользователю уведомление на почту о приглашении его в проект.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="inviteUserId">Id пользователя, которого пригласили в проект.</param>
+    private async Task SendEmailNotificationInviteTeamProjectAsync(long projectId, long inviteUserId)
+    {
+        // Находим название проекта.
+        var projectName = await _projectRepository.GetProjectNameByProjectIdAsync(projectId);
+            
+        // Находим данные пользователя.
+        var user = await _userRepository.GetUserPhoneEmailByUserIdAsync(inviteUserId);
+            
+        // Находим почту владельца проекта.
+        var projectOwnerEmail = await _projectRepository.GetProjectOwnerEmailByProjectIdAsync(projectId);
+        
+        await _mailingsService.SendNotificationInviteTeamProjectAsync(user.Email, projectId, projectName,
+            projectOwnerEmail);
     }
     
     #endregion
