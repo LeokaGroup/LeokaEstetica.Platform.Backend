@@ -897,8 +897,15 @@ public class ProjectService : IProjectService
 
             // Добавляем пользователя в команду проекта.
             var result = await _projectRepository.AddProjectTeamMemberAsync(inviteUserId, vacancyId, teamId);
+            
+            // Находим название проекта.
+            var projectName = await _projectRepository.GetProjectNameByProjectIdAsync(projectId);
 
-            await SendEmailNotificationInviteTeamProjectAsync(projectId, inviteUserId);
+            await SendEmailNotificationInviteTeamProjectAsync(projectId, inviteUserId, projectName);
+            
+            // Записываем уведомления о приглашении в проект.
+            await _projectNotificationsRepository.AddNotificationInviteProjectAsync(projectId, vacancyId, inviteUserId,
+                projectName);
 
             return result;
         }
@@ -1521,11 +1528,9 @@ public class ProjectService : IProjectService
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
     /// <param name="inviteUserId">Id пользователя, которого пригласили в проект.</param>
-    private async Task SendEmailNotificationInviteTeamProjectAsync(long projectId, long inviteUserId)
+    private async Task SendEmailNotificationInviteTeamProjectAsync(long projectId, long inviteUserId,
+        string projectName)
     {
-        // Находим название проекта.
-        var projectName = await _projectRepository.GetProjectNameByProjectIdAsync(projectId);
-            
         // Находим данные пользователя.
         var user = await _userRepository.GetUserPhoneEmailByUserIdAsync(inviteUserId);
             
