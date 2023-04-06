@@ -8,7 +8,7 @@ namespace LeokaEstetica.Platform.Core.Enums;
 public enum ProjectModerationStatusEnum
 {
     [Description("Одобрен")]
-    ApproveProject = 1,
+    ApproveProject = 4,
     
     [Description("На модерации")]
     ModerationProject = 2,
