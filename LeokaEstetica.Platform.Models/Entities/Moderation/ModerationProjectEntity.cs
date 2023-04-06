@@ -23,7 +23,7 @@ public class ModerationProjectEntity
     public DateTime DateModeration { get; set; }
 
     /// <summary>
-    /// Id статуса момодерации.
+    /// Id статуса модерации.
     /// </summary>
     public int ModerationStatusId { get; set; }
 
