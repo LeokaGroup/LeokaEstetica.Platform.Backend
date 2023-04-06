@@ -14,5 +14,5 @@ public enum ProjectModerationStatusEnum
     ModerationProject = 2,
     
     [Description("Отклонен")]
-    RejectedProject = 3
+    RejectedProject = 6
 }
