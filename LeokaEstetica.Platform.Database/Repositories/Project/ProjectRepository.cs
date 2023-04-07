@@ -2,7 +2,6 @@ using System.Data;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Core.Exceptions;
-using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
 using LeokaEstetica.Platform.Database.Chat;
 using LeokaEstetica.Platform.Models.Dto.Output.Project;
@@ -273,17 +272,25 @@ public class ProjectRepository : IProjectRepository
     public async Task<(UserProjectEntity, ProjectStageEntity)> GetProjectAsync(long projectId)
     {
         (UserProjectEntity, ProjectStageEntity) result = (null, null);
-        
+
         result.Item1 = await _pgContext.UserProjects
             .FirstOrDefaultAsync(p => p.ProjectId == projectId);
 
-        result.Item2 = await (from ps in _pgContext.ProjectStages
-                select new ProjectStageEntity
-                {
-                    StageId = ps.StageId,
-                    StageName = ps.StageName,
-                    StageSysName = ps.StageSysName
-                })
+        // Получаем стадию проекта пользователя.
+        var projectStageId = await _pgContext.UserProjectsStages
+            .Where(p => p.ProjectId == projectId)
+            .Select(p => p.StageId)
+            .FirstOrDefaultAsync();
+
+        // Берем полные данные о стадии проекта.
+        result.Item2 = await _pgContext.ProjectStages
+            .Where(ps => ps.StageId == projectStageId)
+            .Select(ps => new ProjectStageEntity
+            {
+                StageName = ps.StageName,
+                StageSysName = ps.StageSysName,
+                StageId = ps.StageId
+            })
             .FirstOrDefaultAsync();
 
         return result;
@@ -301,13 +308,6 @@ public class ProjectRepository : IProjectRepository
             DateModeration = DateTime.Now,
             ProjectId = projectId,
             ModerationStatusId = (int)ProjectModerationStatusEnum.ModerationProject
-        });
-
-        // Проставляем статус модерации проекта "На модерации".
-        await _pgContext.ModerationStatuses.AddAsync(new ModerationStatusEntity
-        {
-            StatusName = ProjectModerationStatusEnum.ModerationProject.GetEnumDescription(),
-            StatusSysName = ProjectModerationStatusEnum.ModerationProject.ToString()
         });
     }
 

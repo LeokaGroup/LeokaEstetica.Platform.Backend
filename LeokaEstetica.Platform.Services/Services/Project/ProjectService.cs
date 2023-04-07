@@ -1337,6 +1337,8 @@ public class ProjectService : IProjectService
             result.IsVisibleActionProjectButtons = true;
         }
 
+        result.IsSuccess = true;
+
         return result;
     }
 
