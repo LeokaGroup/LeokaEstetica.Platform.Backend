@@ -27,7 +27,7 @@ using LeokaEstetica.Platform.Models.Entities.ProjectTeam;
 using LeokaEstetica.Platform.Models.Entities.User;
 using LeokaEstetica.Platform.Models.Entities.Vacancy;
 using LeokaEstetica.Platform.Models.Enums;
-using LeokaEstetica.Platform.Moderation.Abstractions.Vacancy;
+using LeokaEstetica.Platform.CallCenter.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Notifications.Consts;
 using LeokaEstetica.Platform.Services.Abstractions.Project;

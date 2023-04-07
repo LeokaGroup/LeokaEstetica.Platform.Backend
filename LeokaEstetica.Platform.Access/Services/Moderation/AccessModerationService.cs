@@ -4,7 +4,7 @@ using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Access;
 using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Logs.Abstractions;
-using LeokaEstetica.Platform.Moderation.Models.Dto.Output.Role;
+using LeokaEstetica.Platform.CallCenter.Models.Dto.Output.Role;
 
 namespace LeokaEstetica.Platform.Access.Services.Moderation;
 

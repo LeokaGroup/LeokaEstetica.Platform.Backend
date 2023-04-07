@@ -36,9 +36,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LeokaEstetica.Platform.Noti
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LeokaEstetica.Platform.Redis", "LeokaEstetica.Platform.Redis\LeokaEstetica.Platform.Redis.csproj", "{3A019A5C-2688-4D2F-BCB2-FC23326B5026}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Moderation", "Moderation", "{F3870F02-8BFA-4F9D-8CE2-520E5371B44C}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CallCenter", "CallCenter", "{F3870F02-8BFA-4F9D-8CE2-520E5371B44C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LeokaEstetica.Platform.Moderation", "LeokaEstetica.Platform.Moderation\LeokaEstetica.Platform.Moderation.csproj", "{F7F0A173-7414-467C-AE03-2C818071BC05}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LeokaEstetica.Platform.CallCenter", "LeokaEstetica.Platform.CallCenter\LeokaEstetica.Platform.CallCenter.csproj", "{F7F0A173-7414-467C-AE03-2C818071BC05}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LeokaEstetica.Platform.Finder", "LeokaEstetica.Platform.Finder\LeokaEstetica.Platform.Finder.csproj", "{A1721B16-3838-4DAF-B9B6-0A8758025202}"
 EndProject

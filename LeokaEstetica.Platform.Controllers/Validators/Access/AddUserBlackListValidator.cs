@@ -1,5 +1,5 @@
 using FluentValidation;
-using LeokaEstetica.Platform.Moderation.Models.Dto.Input.Access;
+using LeokaEstetica.Platform.CallCenter.Models.Dto.Input.Access;
 using LeokaEstetica.Platform.Services.Consts;
 
 namespace LeokaEstetica.Platform.Controllers.Validators.Access;
