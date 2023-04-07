@@ -183,6 +183,8 @@ public class ProjectRepository : IProjectRepository
     {
         var result = await _pgContext.CatalogProjects
             .Include(p => p.Project)
+            .Where(p => !p.Project.ArchivedProjects
+            .Any(a => a.ProjectId == p.ProjectId))
             .Select(p => new CatalogProjectOutput
             {
                 ProjectId = p.Project.ProjectId,
