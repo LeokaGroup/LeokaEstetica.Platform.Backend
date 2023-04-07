@@ -480,10 +480,10 @@ public class ProjectNotificationsService : IProjectNotificationsService
             // Получаем список уведомлений инвайтов в проект пользователя.
             var items = await _projectNotificationsRepository.GetUserProjectsNotificationsAsync(userId);
 
+            var notificationsCount = items.UserNotifications.Count + items.OwnerNotifications.Count;
             var result = new NotificationResultOutput
             {
-                Notifications =
-                    new List<NotificationProjectOutput>(items.UserNotifications.Count + items.OwnerNotifications.Count)
+                Notifications = new List<NotificationProjectOutput>(notificationsCount)
             };
 
             if (items.Item1.Any())
@@ -495,9 +495,11 @@ public class ProjectNotificationsService : IProjectNotificationsService
             if (items.Item2.Any())
             {
                 var newOwnerNotifications = _mapper.Map<List<NotificationProjectOutput>>(items.OwnerNotifications);
-                var ownerNotifications = FillOwnerNotificationsFlags(newOwnerNotifications);
-                result.Notifications.AddRange(ownerNotifications);
+                result.Notifications.AddRange(newOwnerNotifications);
             }
+
+            var resultNotifications = result.Notifications;
+            FillUserNotificationsButtonsFlags(ref resultNotifications);
 
             return result;
         }
@@ -750,20 +752,17 @@ public class ProjectNotificationsService : IProjectNotificationsService
     #region Приватные методы.
     
     /// <summary>
-    /// Метод проставляет признак отображения кнопок уведомлений для владельцев.
+    /// Метод проставляет признак отображения кнопок уведомлений для пользователей.
     /// </summary>
-    /// <param name="ownerNotifications">Уведомления владельцев.</param>
+    /// <param name="ownerNotifications">Уведомления пользователей.</param>
     /// <returns>Список уведомлений.</returns>
-    private List<NotificationProjectOutput> FillOwnerNotificationsFlags(
-        List<NotificationProjectOutput> ownerNotifications)
+    private void FillUserNotificationsButtonsFlags(ref List<NotificationProjectOutput> ownerNotifications)
     {
-        // Проставляем признак отображения кнопок для владельцев.
+        // Проставляем признак отображения кнопок.
         foreach (var notification in ownerNotifications)
         {
             notification.IsVisibleNotificationsButtons = true;
         }
-
-        return ownerNotifications;
     }
     
     /// <summary>
