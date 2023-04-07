@@ -107,7 +107,7 @@ public interface IVacancyRepository
     /// <param name="vacancyId">Id вакансии.</param>
     /// <param name="userId">Id пользователя.</param>
     /// <returns>Признак является ли пользователь владельцем вакансии.</returns>
-    Task<bool> CheckProjectOwnerAsync(long vacancyId, long userId);
+    Task<bool> CheckVacancyOwnerAsync(long vacancyId, long userId);
 
     /// <summary>
     /// Метод получает список вакансий пользователя.
@@ -115,4 +115,11 @@ public interface IVacancyRepository
     /// <param name="userId">Id пользователя.</param>
     /// <returns>Список вакансий.</returns>
     Task<IEnumerable<UserVacancyEntity>> GetUserVacanciesAsync(long userId);
+
+    /// <summary>
+    /// Метод Добавляет вакансию в архив.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <param name="userId">Id пользователя.</param>
+    Task AddVacancyArchiveAsync(long vacancyId, long userId);
 }

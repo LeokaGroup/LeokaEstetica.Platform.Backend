@@ -436,7 +436,7 @@ public class VacancyService : IVacancyService
             }
 
             // Только владелец вакансии может удалять вакансии проекта.
-            var isOwner = await _vacancyRepository.CheckProjectOwnerAsync(vacancyId, userId);
+            var isOwner = await _vacancyRepository.CheckVacancyOwnerAsync(vacancyId, userId);
 
             if (!isOwner)
             {
@@ -519,6 +519,51 @@ public class VacancyService : IVacancyService
             return result;
         }
         
+        catch (Exception ex)
+        {
+            await _logService.LogErrorAsync(ex);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Метод добавляет вакансию в архив.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <param name="account">Аккаунт.</param>
+    public async Task AddVacancyArchiveAsync(long vacancyId, string account)
+    {
+        try
+        {
+            if (vacancyId <= 0)
+            {
+                var ex = new ArgumentNullException($"Id вакансии не может быть пустым. VacancyId: {vacancyId}");
+                throw ex;
+            }
+
+            //Получаем id пользователя
+            var userId = await _userRepository.GetUserIdByEmailOrLoginAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+
+            // Только владелец вакансии может добавлять вакансию в архив.
+            var isOwner = await _vacancyRepository.CheckVacancyOwnerAsync(vacancyId, userId);
+
+            if (!isOwner)
+            {
+                var ex = new InvalidOperationException(
+                    $"Пользователь не является владельцем вакансии. VacancyId: {vacancyId}. UserId: {userId}");
+                throw ex;
+            }
+
+            //Добавляем вакансию в таблицу архивов
+            await _vacancyRepository.AddVacancyArchiveAsync(vacancyId, userId);
+        }
+
         catch (Exception ex)
         {
             await _logService.LogErrorAsync(ex);
