@@ -917,4 +917,27 @@ public class ProjectRepository : IProjectRepository
 
         return result;
     }
+
+    /// <summary>
+    /// Метод получает список проектов пользователя из архива.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Список архивированных проектов.</returns>
+    public async Task<List<ProjectArchiveOutput>> GetUserProjectsArchiveAsync(long userId)
+    {
+        var result = await  _pgContext.ArchivedProjects
+            .Include(a=>a.UserProject)
+            .Where(a => a.UserId == userId)
+            .Select(a=> new ProjectArchiveOutput
+            {
+                ProjectId = a.ProjectId,
+                ProjectDetails = a.UserProject.ProjectDetails,
+                DateArchived = a.DateArchived,
+                ProjectStatusName = a.UserProject.ProjectName,
+                ProjectName = a.UserProject.ProjectName,
+            })
+            .ToListAsync();
+
+        return result;
+    }
 }

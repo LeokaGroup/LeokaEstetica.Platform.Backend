@@ -35,6 +35,7 @@ using LeokaEstetica.Platform.Services.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Services.Builders;
 using LeokaEstetica.Platform.Services.Consts;
 using LeokaEstetica.Platform.Services.Strategies.Project.Team;
+using LeokaEstetica.Platform.Core.Extensions;
 
 namespace LeokaEstetica.Platform.Services.Services.Project;
 
@@ -1540,6 +1541,43 @@ public class ProjectService : IProjectService
         await _mailingsService.SendNotificationInviteTeamProjectAsync(user.Email, projectId, projectName,
             projectOwnerEmail);
     }
-    
+
+    /// <summary>
+    /// Метод получает список проектов пользователя из архива.
+    /// </summary>
+    /// <param name="account">Аккаунт пользователя.</param>
+    /// <returns>Список архивированных проектов.</returns>
+    public async Task<List<ProjectArchiveOutput>> GetUserProjectsArchiveAsync(string account)
+    {
+        try
+        {
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId <= 0)
+            {
+                throw new NotFoundUserIdByAccountException(account);
+            }
+
+            // Находим проекты в архиве
+            var archivedProjects = await _projectRepository.GetUserProjectsArchiveAsync(userId);
+
+            // Проставляем статусы
+            archivedProjects.ForEach(P => P.ProjectStatusName = ProjectStatusNameEnum.Archived.GetEnumDescription());
+
+            foreach (var prj in archivedProjects)
+            {
+                prj.ProjectDetails = ClearHtmlBuilder.Clear(prj.ProjectDetails);
+            }
+
+            return archivedProjects;
+        }
+
+        catch (Exception ex)
+        {
+            await _logService.LogErrorAsync(ex);
+            throw;
+        }
+    }
+
     #endregion
 }

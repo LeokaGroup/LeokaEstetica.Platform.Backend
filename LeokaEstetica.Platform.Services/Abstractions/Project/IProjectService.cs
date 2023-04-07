@@ -181,4 +181,11 @@ public interface IProjectService
     /// <param name="account">Аккаунт.</param>
     /// <returns>Список вакансий доступных к отклику.</returns>
     Task<IEnumerable<ProjectVacancyEntity>> GetAvailableResponseProjectVacanciesAsync(long projectId, string account);
+
+    /// <summary>
+    /// Метод получает список проектов пользователя из архива.
+    /// </summary>
+    /// <param name="account">Аккаунт пользователя.</param>
+    /// <returns>Список архивированных проектов.</returns>
+    Task<List<ProjectArchiveOutput>> GetUserProjectsArchiveAsync(string account);
 }
