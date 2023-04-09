@@ -25,9 +25,9 @@ using LeokaEstetica.Platform.Models.Entities.Configs;
 using LeokaEstetica.Platform.Models.Entities.Project;
 using LeokaEstetica.Platform.Models.Entities.ProjectTeam;
 using LeokaEstetica.Platform.Models.Entities.User;
-using LeokaEstetica.Platform.Models.Entities.Vacancy;
 using LeokaEstetica.Platform.Models.Enums;
 using LeokaEstetica.Platform.CallCenter.Abstractions.Vacancy;
+using LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
 using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Notifications.Consts;
 using LeokaEstetica.Platform.Services.Abstractions.Project;
@@ -547,7 +547,7 @@ public class ProjectService : IProjectService
     /// </summary>
     /// <param name="createProjectVacancyInput">Входная модель.</param>
     /// <returns>Данные вакансии.</returns>
-    public async Task<UserVacancyEntity> CreateProjectVacancyAsync(CreateProjectVacancyInput createProjectVacancyInput)
+    public async Task<VacancyOutput> CreateProjectVacancyAsync(CreateProjectVacancyInput createProjectVacancyInput)
     {
         try
         {

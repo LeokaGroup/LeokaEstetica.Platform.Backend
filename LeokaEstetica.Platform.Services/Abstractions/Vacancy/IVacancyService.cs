@@ -21,7 +21,7 @@ public interface IVacancyService
     /// </summary>
     /// <param name="vacancyInput">Входная модель.</param>
     /// <returns>Данные созданной вакансии.</returns>
-    Task<UserVacancyEntity> CreateVacancyAsync(VacancyInput vacancyInput);
+    Task<VacancyOutput> CreateVacancyAsync(VacancyInput vacancyInput);
     
     /// <summary>
     /// Метод обновляет вакансию.

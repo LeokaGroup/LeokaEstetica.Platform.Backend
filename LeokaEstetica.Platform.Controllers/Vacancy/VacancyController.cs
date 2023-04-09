@@ -111,8 +111,6 @@ public class VacancyController : BaseController
         vacancyInput.Account = GetUserName();
         
         var createdVacancy = await _vacancyService.CreateVacancyAsync(vacancyInput);
-        
-        result = _mapper.Map<VacancyOutput>(createdVacancy);
 
         return result;
     }

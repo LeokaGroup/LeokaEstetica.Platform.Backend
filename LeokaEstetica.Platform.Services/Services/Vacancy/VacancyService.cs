@@ -167,7 +167,7 @@ public class VacancyService : IVacancyService
     /// </summary>
     /// <param name="vacancyInput">Входная модель.</param>
     /// <returns>Данные созданной вакансии.</returns>
-    public async Task<UserVacancyEntity> CreateVacancyAsync(VacancyInput vacancyInput)
+    public async Task<VacancyOutput> CreateVacancyAsync(VacancyInput vacancyInput)
     {
         try
         {
@@ -223,8 +223,10 @@ public class VacancyService : IVacancyService
             // Отправляем уведомление о созданной вакансии владельцу.
             await _mailingsService.SendNotificationCreateVacancyAsync(user.Email, createdVacancy.VacancyName,
                 createdVacancy.VacancyId);
+            
+            var result = _mapper.Map<VacancyOutput>(createdVacancy);
 
-            return createdVacancy;
+            return result;
         }
 
         catch (Exception ex)
@@ -261,6 +263,9 @@ public class VacancyService : IVacancyService
 
             // Очистка описание от тегов список вакансий для каталога
             ClearCatalogVacanciesHtmlTags(ref catalogVacancies);
+            
+            // Проставляем вакансиям теги, в зависимости от подписки владельца вакансии.
+            result.CatalogVacancies = await SetVacanciesTags(result.CatalogVacancies.ToList());
 
             return result;
         }
@@ -692,6 +697,42 @@ public class VacancyService : IVacancyService
                     pv.VacancyStatusName = _approveVacancy;
                 }
             }
+        }
+
+        return vacancies;
+    }
+
+    /// <summary>
+    /// Метод проставляет флаги вакансиям пользователя в зависимости от его подписки.
+    /// </summary>
+    /// <param name="vacancyOutput">Список вакансий каталога.</param>
+    /// <returns>Список вакансий каталога с проставленными тегами.</returns>
+    private async Task<IEnumerable<CatalogVacancyOutput>> SetVacanciesTags(List<CatalogVacancyOutput> vacancies)
+    {
+        foreach (var v in vacancies)
+        {
+            // Получаем подписку пользователя.
+            var userSubscription = await _subscriptionRepository.GetUserSubscriptionAsync(v.UserId);
+
+            // Такая подписка не дает тегов.
+            if (userSubscription.ObjectId < 3)
+            {
+                continue;
+            }
+            
+            // Если подписка бизнес.
+            if (userSubscription.ObjectId == 3)
+            {
+                v.TagColor = "primary";
+                v.TagValue = "Business";
+            }
+        
+            // Если подписка профессиональный.
+            if (userSubscription.ObjectId == 4)
+            {
+                v.TagColor = "success";
+                v.TagValue = "Professional";
+            }   
         }
 
         return vacancies;
