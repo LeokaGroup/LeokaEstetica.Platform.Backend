@@ -705,7 +705,7 @@ public class VacancyService : IVacancyService
     /// <summary>
     /// Метод проставляет флаги вакансиям пользователя в зависимости от его подписки.
     /// </summary>
-    /// <param name="vacancyOutput">Список вакансий каталога.</param>
+    /// <param name="vacancies">Список вакансий каталога.</param>
     /// <returns>Список вакансий каталога с проставленными тегами.</returns>
     private async Task<IEnumerable<CatalogVacancyOutput>> SetVacanciesTags(List<CatalogVacancyOutput> vacancies)
     {
@@ -724,14 +724,14 @@ public class VacancyService : IVacancyService
             if (userSubscription.ObjectId == 3)
             {
                 v.TagColor = "primary";
-                v.TagValue = "Business";
+                v.TagValue = "Бизнес";
             }
         
             // Если подписка профессиональный.
             if (userSubscription.ObjectId == 4)
             {
-                v.TagColor = "success";
-                v.TagValue = "Professional";
+                v.TagColor = "primary";
+                v.TagValue = "Профессиональный";
             }   
         }
 

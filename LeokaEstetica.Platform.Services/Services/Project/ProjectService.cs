@@ -365,6 +365,9 @@ public class ProjectService : IProjectService
             // Очистка описание от тегов список проектов для каталога.
             result.CatalogProjects = ClearCatalogVacanciesHtmlTags(catalogs);
 
+            // Проставляем проектам теги, в зависимости от подписки владельца проекта.
+            result.CatalogProjects = await SetProjectsTags(result.CatalogProjects.ToList());
+
             return result;
         }
 
@@ -1541,6 +1544,42 @@ public class ProjectService : IProjectService
         
         await _mailingsService.SendNotificationInviteTeamProjectAsync(user.Email, projectId, projectName,
             projectOwnerEmail);
+    }
+    
+    /// <summary>
+    /// Метод проставляет флаги проектам пользователя в зависимости от его подписки.
+    /// </summary>
+    /// <param name="projects">Список проектов каталога.</param>
+    /// <returns>Список проектов каталога с проставленными тегами.</returns>
+    private async Task<IEnumerable<CatalogProjectOutput>> SetProjectsTags(List<CatalogProjectOutput> projects)
+    {
+        foreach (var p in projects)
+        {
+            // Получаем подписку пользователя.
+            var userSubscription = await _subscriptionRepository.GetUserSubscriptionAsync(p.UserId);
+
+            // Такая подписка не дает тегов.
+            if (userSubscription.ObjectId < 3)
+            {
+                continue;
+            }
+            
+            // Если подписка бизнес.
+            if (userSubscription.ObjectId == 3)
+            {
+                p.TagColor = "primary";
+                p.TagValue = "Бизнес";
+            }
+        
+            // Если подписка профессиональный.
+            if (userSubscription.ObjectId == 4)
+            {
+                p.TagColor = "success";
+                p.TagValue = "Профессиональный";
+            }   
+        }
+
+        return projects;
     }
     
     #endregion
