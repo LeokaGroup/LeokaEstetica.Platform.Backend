@@ -22,9 +22,8 @@ public class GetModerationRolesTest : BaseServiceTest
                 u.User.Email,
                 u.ModerationRole.RoleId
             })
-            .ToListAsync();
+            .FirstOrDefaultAsync();
         
         Assert.NotNull(result);
-        Assert.IsNotEmpty(result);
     }
 }
