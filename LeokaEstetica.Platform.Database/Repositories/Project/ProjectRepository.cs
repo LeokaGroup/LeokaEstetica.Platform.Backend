@@ -237,9 +237,21 @@ public class ProjectRepository : IProjectRepository
             }
 
             stage.StageId = (int)projectStage;
-
-            // Отправляем проект на модерацию.
-            await SendModerationProjectAsync(project.ProjectId);
+            
+            // Если проект уже был на модерации, то обновим статус.
+            var isModerationExists = await IsModerationExistsProjectAsync(project.ProjectId);
+            
+            if (!isModerationExists)
+            {
+                // Отправляем проект на модерацию.
+                await SendModerationProjectAsync(project.ProjectId);
+            }
+            
+            else
+            {
+                await UpdateModerationProjectStatusAsync(project.ProjectId,
+                    ProjectModerationStatusEnum.ModerationProject);
+            }
 
             var result = new UpdateProjectOutput
             {
@@ -916,5 +928,35 @@ public class ProjectRepository : IProjectRepository
                                                                        && m.TeamId == teamId);
 
         return result;
+    }
+
+    /// <summary>
+    /// Метод првоеряет, был ли уже такой проект на модерации. 
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Признак модерации.</returns>
+    private async Task<bool> IsModerationExistsProjectAsync(long projectId)
+    {
+        var result = await _pgContext.ModerationProjects
+            .AnyAsync(p => p.ProjectId == projectId);
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод обновляет статус проекта на модерации.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="status">Статус проекта.</param>
+    private async Task UpdateModerationProjectStatusAsync(long projectId, ProjectModerationStatusEnum status)
+    {
+        var prj = await _pgContext.ModerationProjects.FirstOrDefaultAsync(p => p.ProjectId == projectId);
+
+        if (prj is null)
+        {
+            throw new InvalidOperationException($"Не найден проект для модерации. ProjectId: {projectId}");
+        }
+        
+        prj.ModerationStatusId = (int)status;
     }
 }
