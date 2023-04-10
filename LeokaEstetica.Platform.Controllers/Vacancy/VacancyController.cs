@@ -111,8 +111,6 @@ public class VacancyController : BaseController
         vacancyInput.Account = GetUserName();
         
         var createdVacancy = await _vacancyService.CreateVacancyAsync(vacancyInput);
-        
-        result = _mapper.Map<VacancyOutput>(createdVacancy);
 
         return result;
     }
@@ -279,5 +277,21 @@ public class VacancyController : BaseController
         var result = await _vacancyService.GetUserVacanciesAsync(GetUserName());
 
         return result;
+    }
+
+    /// <summary>
+    /// Метод добавляет вакансию в архив.
+    /// </summary>
+    /// <param name="vacancy">Входная модель.</param>
+    [HttpPost]
+    [Route("archive")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task AddVacancyArchiveAsync([FromBody] ArchiveVacancyInput vacancy)
+    {
+        await _vacancyService.AddVacancyArchiveAsync(vacancy.VacancyId, GetUserName());
     }
 }

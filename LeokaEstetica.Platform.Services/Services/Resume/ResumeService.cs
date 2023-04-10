@@ -4,6 +4,7 @@ using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.FareRule;
 using LeokaEstetica.Platform.Database.Abstractions.Resume;
 using LeokaEstetica.Platform.Database.Abstractions.Subscription;
+using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Models.Dto.Output.Resume;
 using LeokaEstetica.Platform.Models.Entities.Profile;
@@ -21,6 +22,7 @@ public class ResumeService : IResumeService
     private readonly IMapper _mapper;
     private readonly ISubscriptionRepository _subscriptionRepository;
     private readonly IFareRuleRepository _fareRuleRepository;
+    private readonly IUserRepository _userRepository;
     
     /// <summary>
     /// Список названий тарифов, которые дают выделение цветом.
@@ -42,14 +44,18 @@ public class ResumeService : IResumeService
         IResumeRepository resumeRepository, 
         IMapper mapper, 
         ISubscriptionRepository subscriptionRepository, 
-        IFareRuleRepository fareRuleRepository)
+        IFareRuleRepository fareRuleRepository, 
+        IUserRepository userRepository)
     {
         _logService = logService;
         _resumeRepository = resumeRepository;
         _mapper = mapper;
         _subscriptionRepository = subscriptionRepository;
         _fareRuleRepository = fareRuleRepository;
+        _userRepository = userRepository;
     }
+
+    #region Публичные методы.
 
     /// <summary>
     /// Метод получает список резюме.
@@ -85,6 +91,7 @@ public class ResumeService : IResumeService
             var fareRules = await _fareRuleRepository.GetFareRulesAsync();
             var fareRulesList = fareRules.ToList();
 
+            // TODO: Отрефачить и вынести в отдельный сервис.
             // Выбираем пользователей, у которых есть подписка выше бизнеса. Только их выделяем цветом.
             foreach (var r in result.CatalogResumes)
             {
@@ -119,6 +126,10 @@ public class ResumeService : IResumeService
                 }
             }
 
+            var catalogResumes = result.CatalogResumes.ToList();
+            result.CatalogResumes = await SetUserCodes(catalogResumes);
+            result.CatalogResumes = await SetVacanciesTags(catalogResumes);
+
             return result;
         }
         
@@ -149,4 +160,67 @@ public class ResumeService : IResumeService
             throw;
         }
     }
+
+    #endregion
+
+    #region Приватные методы.
+
+    /// <summary>
+    /// Метод записывает коды пользователей.
+    /// </summary>
+    /// <param name="resumes">Список анкет пользователей.</param>
+    /// <returns>Результирующий список.</returns>
+    private async Task<IEnumerable<ResumeOutput>> SetUserCodes(List<ResumeOutput> resumes)
+    {
+        // Получаем словарь пользователей для поиска кодов, чтобы получить скорость поиска O(1).
+        var userCodesDict = await _userRepository.GetUsersCodesAsync();
+        
+        foreach (var r in resumes)
+        {
+            if (userCodesDict.TryGetValue(r.UserId, out var code))
+            {
+                r.UserCode = code;   
+            }
+        }
+
+        return resumes;
+    }
+    
+    /// <summary>
+    /// Метод проставляет флаги вакансиям пользователя в зависимости от его подписки.
+    /// </summary>
+    /// <param name="vacancies">Список вакансий каталога.</param>
+    /// <returns>Список вакансий каталога с проставленными тегами.</returns>
+    private async Task<IEnumerable<ResumeOutput>> SetVacanciesTags(List<ResumeOutput> vacancies)
+    {
+        foreach (var v in vacancies)
+        {
+            // Получаем подписку пользователя.
+            var userSubscription = await _subscriptionRepository.GetUserSubscriptionAsync(v.UserId);
+
+            // Такая подписка не дает тегов.
+            if (userSubscription.ObjectId < 3)
+            {
+                continue;
+            }
+            
+            // Если подписка бизнес.
+            if (userSubscription.ObjectId == 3)
+            {
+                v.TagColor = "warning";
+                v.TagValue = "Бизнес";
+            }
+        
+            // Если подписка профессиональный.
+            if (userSubscription.ObjectId == 4)
+            {
+                v.TagColor = "warning";
+                v.TagValue = "Профессиональный";
+            }   
+        }
+
+        return vacancies;
+    }
+
+    #endregion
 }

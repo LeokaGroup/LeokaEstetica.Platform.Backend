@@ -8,7 +8,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\LeokaEstetica.Platform.Core\LeokaEstetica.Platform.Core.csproj" />
-      <ProjectReference Include="..\LeokaEstetica.Platform.Moderation\LeokaEstetica.Platform.Moderation.csproj" />
+      <ProjectReference Include="..\LeokaEstetica.Platform.CallCenter\LeokaEstetica.Platform.CallCenter.csproj" />
     </ItemGroup>
 
 </Project>

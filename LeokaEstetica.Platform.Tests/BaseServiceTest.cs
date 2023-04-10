@@ -27,9 +27,9 @@ using LeokaEstetica.Platform.Finder.Services.Vacancy;
 using LeokaEstetica.Platform.Logs.Services;
 using LeokaEstetica.Platform.Messaging.Services.Chat;
 using LeokaEstetica.Platform.Messaging.Services.Project;
-using LeokaEstetica.Platform.Moderation.Services.Project;
-using LeokaEstetica.Platform.Moderation.Services.Resume;
-using LeokaEstetica.Platform.Moderation.Services.Vacancy;
+using LeokaEstetica.Platform.CallCenter.Services.Project;
+using LeokaEstetica.Platform.CallCenter.Services.Resume;
+using LeokaEstetica.Platform.CallCenter.Services.Vacancy;
 using LeokaEstetica.Platform.Notifications.Services;
 using LeokaEstetica.Platform.Processing.Services.PayMaster;
 using LeokaEstetica.Platform.Services.Services.FareRule;
@@ -152,7 +152,7 @@ public class BaseServiceTest
         SubscriptionService =
             new SubscriptionService(logService, userRepository, subscriptionRepository, fareRuleRepository);
         ResumeService = new ResumeService(logService, resumeRepository, mapper, subscriptionRepository,
-            fareRuleRepository);
+            fareRuleRepository, userRepository);
         VacancyFinderService = new VacancyFinderService(vacancyRepository, logService);
         FinderProjectService = new Finder.Services.Project.ProjectFinderService(projectRepository, logService);
         ResumeFinderService = new ResumeFinderService(logService, resumeRepository);
