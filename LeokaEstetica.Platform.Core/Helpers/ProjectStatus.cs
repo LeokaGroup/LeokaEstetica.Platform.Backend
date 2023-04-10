@@ -17,7 +17,8 @@ public static class ProjectStatus
         ["Approved"] = 2,
         ["Rejected"] = 3,
         ["Draft"] = 4,
-        ["Removed"] = 5
+        ["Removed"] = 5,
+        ["Archived"] = 6,
     };
     
     /// <summary>
@@ -29,7 +30,8 @@ public static class ProjectStatus
         ["Approved"] = "Одобрен",
         ["Rejected"] = "Отклонен",
         ["Draft"] = "В черновике",
-        ["Removed"] = "Удален"
+        ["Removed"] = "Удален",
+        ["Archived"] = "В архиве",
     };
 
     /// <summary>
@@ -71,5 +73,8 @@ public enum ProjectStatusNameEnum
     Draft = 4,
     
     [Description("Удален")]
-    Removed = 5
+    Removed = 5,
+
+    [Description("В архиве")]
+    Archived = 6,
 }

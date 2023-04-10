@@ -21,6 +21,11 @@ public partial class ArchivedProjectConfiguration : IEntityTypeConfiguration<Arc
             .HasColumnType("bigint")
             .IsRequired();
 
+        entity.Property(e => e.UserId)
+            .HasColumnName("UserId")
+            .HasColumnType("bigint")
+            .IsRequired();
+
         entity.Property(e => e.DateArchived)
            .HasColumnName("DateArchived")
            .HasColumnType("timestamp")

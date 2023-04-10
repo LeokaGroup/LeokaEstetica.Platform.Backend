@@ -931,6 +931,20 @@ public class ProjectRepository : IProjectRepository
     }
 
     /// <summary>
+    /// Метод получает список проектов пользователя из архива.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Список архивированных проектов.</returns>
+    public async Task<IEnumerable<ArchivedProjectEntity>> GetUserProjectsArchiveAsync(long userId)
+    {
+        var result = await _pgContext.ArchivedProjects
+            .Include(a => a.UserProject)
+            .Where(a => a.UserId == userId)
+            .ToListAsync();
+
+        return result;
+    }
+
     /// Метод првоеряет, был ли уже такой проект на модерации. 
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
@@ -959,4 +973,5 @@ public class ProjectRepository : IProjectRepository
         
         prj.ModerationStatusId = (int)status;
     }
+
 }

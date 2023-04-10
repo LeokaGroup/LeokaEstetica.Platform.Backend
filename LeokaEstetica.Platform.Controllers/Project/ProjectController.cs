@@ -580,4 +580,22 @@ public class ProjectController : BaseController
 
         return result;
     }
+
+    /// <summary>
+    /// Метод получает список проектов пользователя из архива.
+    /// </summary>
+    /// <returns>Список архивированных проектов.</returns>
+    [HttpGet]
+    [Route("projects/archive")]
+    [ProducesResponseType(200, Type = typeof(UserProjectArchiveResultOutput))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<UserProjectArchiveResultOutput> GetUserProjectsArchiveAsync()
+    {
+        var result = await _projectService.GetUserProjectsArchiveAsync(GetUserName());
+
+        return result;
+    }
 }

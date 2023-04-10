@@ -35,6 +35,7 @@ using LeokaEstetica.Platform.Services.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Services.Builders;
 using LeokaEstetica.Platform.Services.Consts;
 using LeokaEstetica.Platform.Services.Strategies.Project.Team;
+using LeokaEstetica.Platform.Core.Extensions;
 
 namespace LeokaEstetica.Platform.Services.Services.Project;
 
@@ -1545,7 +1546,53 @@ public class ProjectService : IProjectService
         await _mailingsService.SendNotificationInviteTeamProjectAsync(user.Email, projectId, projectName,
             projectOwnerEmail);
     }
-    
+
+    /// <summary>
+    /// Метод получает список проектов пользователя из архива.
+    /// </summary>
+    /// <param name="account">Аккаунт пользователя.</param>
+    /// <returns>Список архивированных проектов.</returns>
+    public async Task<UserProjectArchiveResultOutput> GetUserProjectsArchiveAsync(string account)
+    {
+        try
+        {
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId <= 0)
+            {
+                throw new NotFoundUserIdByAccountException(account);
+            }
+
+            // Находим проекты в архиве
+            var archivedProjects = await _projectRepository.GetUserProjectsArchiveAsync(userId);
+
+            var archivedProjectsOutput = _mapper.Map<List<ProjectArchiveOutput>>(archivedProjects);
+
+            // Проставляем статусы
+            archivedProjectsOutput.ForEach(p => p.ProjectStatusName = ProjectStatusNameEnum.Archived
+                .GetEnumDescription());
+
+            // Формируем выходную модель
+            var resultOutput = new UserProjectArchiveResultOutput
+            {
+                ProjectArchiveOutputs = archivedProjectsOutput
+            };
+
+            foreach (var prj in archivedProjectsOutput)
+            {
+                prj.ProjectDetails = ClearHtmlBuilder.Clear(prj.ProjectDetails);
+            }
+
+            return resultOutput;
+        }
+
+        catch (Exception ex)
+        {
+            await _logService.LogErrorAsync(ex);
+            throw;
+        }
+    }
+
     /// <summary>
     /// Метод проставляет флаги проектам пользователя в зависимости от его подписки.
     /// </summary>
