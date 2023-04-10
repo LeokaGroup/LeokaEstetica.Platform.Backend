@@ -294,4 +294,20 @@ public class VacancyController : BaseController
     {
         await _vacancyService.AddVacancyArchiveAsync(vacancy.VacancyId, GetUserName());
     }
+
+    /// <summary>
+    /// Метод удаляет вакансию из архива.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    [HttpDelete]
+    [Route("archive/{vacancyId}")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task DeleteArchiveVacancyAsync([FromRoute] long vacancyId)
+    {
+        await _vacancyService.DeleteArchiveVacancyAsync(vacancyId, GetUserName());
+    }
 }

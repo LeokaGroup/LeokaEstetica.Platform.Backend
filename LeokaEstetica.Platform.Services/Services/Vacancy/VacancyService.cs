@@ -576,6 +576,51 @@ public class VacancyService : IVacancyService
         }
     }
 
+    /// <summary>
+    /// Метод удаляет вакансию из архива.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <param name="account">Аккаунт.</param>
+    public async Task DeleteArchiveVacancyAsync(long vacancyId, string account)
+    {
+        try
+        {
+            if (vacancyId <= 0)
+            {
+                var ex = new ArgumentNullException($"Id вакансии не может быть пустым. VacancyId: {vacancyId}");
+                throw ex;
+            }
+
+            //Получаем id пользователя
+            var userId = await _userRepository.GetUserIdByEmailOrLoginAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+
+            // Только владелец вакансии может удалить вакансию из архива.
+            var isOwner = await _vacancyRepository.CheckVacancyOwnerAsync(vacancyId, userId);
+
+            if (!isOwner)
+            {
+                var ex = new InvalidOperationException(
+                    $"Пользователь не является владельцем вакансии. VacancyId: {vacancyId}. UserId: {userId}");
+                throw ex;
+            }
+
+            //Удаляем вакансию из архива
+            await _vacancyRepository.DeleteArchiveVacancyAsync(vacancyId);
+        }
+
+        catch (Exception ex)
+        {
+            await _logService.LogErrorAsync(ex);
+            throw;
+        }
+    }
+
     #endregion
 
     #region Приватные методы.

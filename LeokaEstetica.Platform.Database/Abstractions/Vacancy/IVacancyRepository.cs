@@ -122,4 +122,10 @@ public interface IVacancyRepository
     /// <param name="vacancyId">Id вакансии.</param>
     /// <param name="userId">Id пользователя.</param>
     Task AddVacancyArchiveAsync(long vacancyId, long userId);
+
+    /// <summary>
+    /// Метод удаляет вакансию из архива.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    Task DeleteArchiveVacancyAsync(long vacancyId);
 }

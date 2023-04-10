@@ -382,4 +382,20 @@ public class VacancyRepository : IVacancyRepository
 
         await _pgContext.SaveChangesAsync();
     }
+
+    /// <summary>
+    /// Метод удаляет вакансию из архива.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    public async Task DeleteArchiveVacancyAsync(long vacancyId)
+    {
+        // Находим вакансию.
+        var archivedVacancy = await _pgContext.ArchivedVacancies
+                .FirstOrDefaultAsync(v => v.VacancyId == vacancyId);
+
+        // Удаляем вакансию из архива.
+        _pgContext.ArchivedVacancies.Remove(archivedVacancy);
+
+        await _pgContext.SaveChangesAsync();
+    }
 }

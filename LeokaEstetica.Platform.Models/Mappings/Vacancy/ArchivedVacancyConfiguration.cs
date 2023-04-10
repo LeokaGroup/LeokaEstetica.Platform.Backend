@@ -36,6 +36,9 @@ public partial class ArchivedVacancyConfiguration : IEntityTypeConfiguration<Arc
             .HasDatabaseName("PK_ArchivedVacancies_ArchiveId")
             .IsUnique();
 
+        entity.Property(e => e.UserId)
+           .HasColumnName("UserId")
+           .HasColumnType("bigserial");
         OnConfigurePartial(entity);
     }
 
