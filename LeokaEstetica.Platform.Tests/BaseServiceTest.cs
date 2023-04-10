@@ -78,6 +78,7 @@ public class BaseServiceTest
     protected readonly LandingService LandingService;
     protected readonly KnowledgeService KnowledgeService;
     protected readonly PgContext PgContext;
+    protected readonly FillColorProjectsService FillColorProjectsService;
 
     protected BaseServiceTest()
     {
@@ -144,10 +145,12 @@ public class BaseServiceTest
 
         var resumeRepository = new ResumeRepository(pgContext);
 
+        FillColorProjectsService = new FillColorProjectsService();
+
         ProjectService = new ProjectService(projectRepository, logService, userRepository, mapper,
             projectNotificationsService, VacancyService, vacancyRepository, availableLimitsService,
             subscriptionRepository, fareRuleRepository, VacancyModerationService, projectNotificationsRepository, null,
-            null, null, null);
+            null, FillColorProjectsService, null);
 
         SubscriptionService =
             new SubscriptionService(logService, userRepository, subscriptionRepository, fareRuleRepository);
@@ -177,5 +180,7 @@ public class BaseServiceTest
         KnowledgeService = new KnowledgeService(KnowledgeRepository, logService);
 
         PgContext = pgContext;
+
+        
     }
 }
