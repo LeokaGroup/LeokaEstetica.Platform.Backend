@@ -359,4 +359,9 @@ public class PgContext : DbContext
     /// Таблица глобал конфига.
     /// </summary>
     public DbSet<GlobalConfigEntity> GlobalConfig { get; set; }
+
+    /// <summary>
+    /// Таблица пользователей с доступом к КЦ.
+    /// </summary>
+    public DbSet<ModerationUserEntity> ModerationUsers { get; set; }
 }
