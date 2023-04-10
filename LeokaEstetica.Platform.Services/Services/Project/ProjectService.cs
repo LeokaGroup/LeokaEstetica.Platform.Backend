@@ -1547,7 +1547,7 @@ public class ProjectService : IProjectService
     /// </summary>
     /// <param name="account">Аккаунт пользователя.</param>
     /// <returns>Список архивированных проектов.</returns>
-    public async Task<List<ProjectArchiveOutput>> GetUserProjectsArchiveAsync(string account)
+    public async Task<UserProjectArchiveResultOutput> GetUserProjectsArchiveAsync(string account)
     {
         try
         {
@@ -1561,15 +1561,24 @@ public class ProjectService : IProjectService
             // Находим проекты в архиве
             var archivedProjects = await _projectRepository.GetUserProjectsArchiveAsync(userId);
 
-            // Проставляем статусы
-            archivedProjects.ForEach(P => P.ProjectStatusName = ProjectStatusNameEnum.Archived.GetEnumDescription());
+            var archivedProjectsOutput = _mapper.Map<List<ProjectArchiveOutput>>(archivedProjects);
 
-            foreach (var prj in archivedProjects)
+            // Проставляем статусы
+            archivedProjectsOutput
+                .ForEach(p => p.ProjectStatusName = ProjectStatusNameEnum.Archived.GetEnumDescription());
+
+            // Формируем выходную модель
+            var resultOutput = new UserProjectArchiveResultOutput
+            {
+                ProjectArchiveOutputs = archivedProjectsOutput
+            };
+
+            foreach (var prj in archivedProjectsOutput)
             {
                 prj.ProjectDetails = ClearHtmlBuilder.Clear(prj.ProjectDetails);
             }
 
-            return archivedProjects;
+            return resultOutput;
         }
 
         catch (Exception ex)

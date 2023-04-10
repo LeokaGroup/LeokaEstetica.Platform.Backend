@@ -587,12 +587,12 @@ public class ProjectController : BaseController
     /// <returns>Список архивированных проектов.</returns>
     [HttpGet]
     [Route("projects/archive")]
-    [ProducesResponseType(200, Type = typeof(UserProjectResultOutput))]
+    [ProducesResponseType(200, Type = typeof(UserProjectArchiveResultOutput))]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<List<ProjectArchiveOutput>> GetUserProjectsArchiveAsync()
+    public async Task<UserProjectArchiveResultOutput> GetUserProjectsArchiveAsync()
     {
         var result = await _projectService.GetUserProjectsArchiveAsync(GetUserName());
 

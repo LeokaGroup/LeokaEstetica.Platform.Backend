@@ -187,5 +187,5 @@ public interface IProjectService
     /// </summary>
     /// <param name="account">Аккаунт пользователя.</param>
     /// <returns>Список архивированных проектов.</returns>
-    Task<List<ProjectArchiveOutput>> GetUserProjectsArchiveAsync(string account);
+    Task<UserProjectArchiveResultOutput> GetUserProjectsArchiveAsync(string account);
 }

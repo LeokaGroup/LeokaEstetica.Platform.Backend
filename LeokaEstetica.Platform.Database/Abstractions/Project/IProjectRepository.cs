@@ -237,5 +237,5 @@ public interface IProjectRepository
     /// </summary>
     /// <param name="userId">Id пользователя.</param>
     /// <returns>Список архивированных проектов.</returns>
-    Task<List<ProjectArchiveOutput>> GetUserProjectsArchiveAsync(long userId);
+    Task<IQueryable<ArchivedProjectEntity>> GetUserProjectsArchiveAsync(long userId);
 }

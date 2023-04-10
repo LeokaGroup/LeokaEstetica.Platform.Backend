@@ -923,20 +923,12 @@ public class ProjectRepository : IProjectRepository
     /// </summary>
     /// <param name="userId">Id пользователя.</param>
     /// <returns>Список архивированных проектов.</returns>
-    public async Task<List<ProjectArchiveOutput>> GetUserProjectsArchiveAsync(long userId)
+    public async Task<IQueryable<ArchivedProjectEntity>> GetUserProjectsArchiveAsync(long userId)
     {
-        var result = await  _pgContext.ArchivedProjects
-            .Include(a=>a.UserProject)
+        var result = _pgContext.ArchivedProjects
+            .Include(a => a.UserProject)
             .Where(a => a.UserId == userId)
-            .Select(a=> new ProjectArchiveOutput
-            {
-                ProjectId = a.ProjectId,
-                ProjectDetails = a.UserProject.ProjectDetails,
-                DateArchived = a.DateArchived,
-                ProjectStatusName = a.UserProject.ProjectName,
-                ProjectName = a.UserProject.ProjectName,
-            })
-            .ToListAsync();
+            .AsQueryable();
 
         return result;
     }

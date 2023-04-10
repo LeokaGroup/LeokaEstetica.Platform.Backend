@@ -115,5 +115,11 @@ public class MappingProfile : Profile
         CreateMap<NotificationEntity, NotificationOutput>();
         
         CreateMap<TimelineEntity, TimelineOutput>();
+
+        CreateMap<ArchivedProjectEntity, ProjectArchiveOutput>()
+            .ForMember(a => a.ProjectName,
+            a => a.MapFrom(src => src.UserProject.ProjectName))
+            .ForMember(a => a.ProjectDetails,
+            a => a.MapFrom(src => src.UserProject.ProjectDetails));
     }
 }
