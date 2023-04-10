@@ -1569,8 +1569,8 @@ public class ProjectService : IProjectService
             var archivedProjectsOutput = _mapper.Map<List<ProjectArchiveOutput>>(archivedProjects);
 
             // Проставляем статусы
-            archivedProjectsOutput
-                .ForEach(p => p.ProjectStatusName = ProjectStatusNameEnum.Archived.GetEnumDescription());
+            archivedProjectsOutput.ForEach(p => p.ProjectStatusName = ProjectStatusNameEnum.Archived
+                .GetEnumDescription());
 
             // Формируем выходную модель
             var resultOutput = new UserProjectArchiveResultOutput

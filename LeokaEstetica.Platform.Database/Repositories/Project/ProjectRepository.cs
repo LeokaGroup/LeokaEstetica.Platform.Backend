@@ -935,12 +935,12 @@ public class ProjectRepository : IProjectRepository
     /// </summary>
     /// <param name="userId">Id пользователя.</param>
     /// <returns>Список архивированных проектов.</returns>
-    public async Task<IQueryable<ArchivedProjectEntity>> GetUserProjectsArchiveAsync(long userId)
+    public async Task<IEnumerable<ArchivedProjectEntity>> GetUserProjectsArchiveAsync(long userId)
     {
-        var result = _pgContext.ArchivedProjects
+        var result = await _pgContext.ArchivedProjects
             .Include(a => a.UserProject)
             .Where(a => a.UserId == userId)
-            .AsQueryable();
+            .ToListAsync();
 
         return result;
     }
