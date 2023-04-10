@@ -723,14 +723,14 @@ public class VacancyService : IVacancyService
             // Если подписка бизнес.
             if (userSubscription.ObjectId == 3)
             {
-                v.TagColor = "primary";
+                v.TagColor = "warning";
                 v.TagValue = "Бизнес";
             }
         
             // Если подписка профессиональный.
             if (userSubscription.ObjectId == 4)
             {
-                v.TagColor = "primary";
+                v.TagColor = "warning";
                 v.TagValue = "Профессиональный";
             }   
         }

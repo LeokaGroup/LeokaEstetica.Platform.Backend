@@ -1567,14 +1567,14 @@ public class ProjectService : IProjectService
             // Если подписка бизнес.
             if (userSubscription.ObjectId == 3)
             {
-                p.TagColor = "primary";
+                p.TagColor = "warning";
                 p.TagValue = "Бизнес";
             }
         
             // Если подписка профессиональный.
             if (userSubscription.ObjectId == 4)
             {
-                p.TagColor = "success";
+                p.TagColor = "warning";
                 p.TagValue = "Профессиональный";
             }   
         }
