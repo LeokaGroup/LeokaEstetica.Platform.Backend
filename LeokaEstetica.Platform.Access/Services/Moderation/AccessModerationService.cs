@@ -1,4 +1,3 @@
-using FluentValidation.Results;
 using LeokaEstetica.Platform.Access.Abstractions.Moderation;
 using LeokaEstetica.Platform.Access.Helpers;
 using LeokaEstetica.Platform.Core.Exceptions;
@@ -6,7 +5,6 @@ using LeokaEstetica.Platform.Database.Abstractions.Moderation.Access;
 using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.CallCenter.Models.Dto.Output.Role;
-using LeokaEstetica.Platform.Models.Dto.Output.User;
 
 namespace LeokaEstetica.Platform.Access.Services.Moderation;
 
