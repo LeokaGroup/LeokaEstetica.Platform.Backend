@@ -8,9 +8,11 @@ namespace LeokaEstetica.Platform.Access.Abstractions.Moderation;
 public interface IAccessModerationService
 {
     /// <summary>
-    /// Метод проверяет, имеет ли пользователь роль, которая дает доступ к модерации.
+    /// Метод проверяет доступ пользователя к КЦ.
     /// </summary>
+    /// <param name="email">Почта.</param>
+    /// <param name="password">Пароль.</param>
     /// <param name="account">Аккаунт.</param>
     /// <returns>Данные выходной модели.</returns>
-    Task<ModerationRoleOutput> CheckUserRoleModerationAsync(string account);
+    Task<ModerationRoleOutput> CheckUserRoleModerationAsync(string email, string password, string account);
 }

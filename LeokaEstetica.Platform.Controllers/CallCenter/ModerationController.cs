@@ -76,7 +76,8 @@ public class ModerationController : BaseController
     public async Task<ModerationRoleOutput> CheckUserRoleModerationAsync(
         [FromBody] ModerationRoleInput moderationRoleInput)
     {
-        var result = await _accessModerationService.CheckUserRoleModerationAsync(moderationRoleInput.Email);
+        var result = await _accessModerationService.CheckUserRoleModerationAsync(moderationRoleInput.Email,
+            moderationRoleInput.Password, GetUserName());
 
         return result;
     }

@@ -8,28 +8,45 @@ namespace LeokaEstetica.Platform.Database.Repositories.Moderation.Access;
 /// <summary>
 /// Абстракция репозитория проверки доступа к модерации.
 /// </summary>
-public sealed class AccessModerationRepository : IAccessModerationRepository
+public class AccessModerationRepository : IAccessModerationRepository
 {
     private readonly PgContext _pgContext;
+
+    /// <summary>
+    /// Список разрешенных ролей для допуска в КЦ.
+    /// </summary>
+    private readonly List<int> _moderationRoles = new()
+    {
+        (int)ModerationRoleEnum.Moderator,
+        (int)ModerationRoleEnum.Administrator
+    };
     
+    /// <summary>
+    /// Конструктор.
+    /// </summary>
+    /// <param name="pgContext">Датаконтекст.</param>
     public AccessModerationRepository(PgContext pgContext)
     {
         _pgContext = pgContext;
     }
 
+    #region Публичные методы.
+
     /// <summary>
-    /// Метод првоеряет доступ пользователя к модерации.
-    /// Идет проверка на наличие допустимой роли.
+    /// Метод проверяет доступ пользователя к КЦ.
     /// </summary>
+    /// <param name="email">Почта.</param>
+    /// <param name="password">Пароль.</param>
     /// <param name="userId">Id пользователя.</param>
     /// <returns>Признак результата проверки.</returns>
-    public async Task<bool> CheckAccessUserRoleModerationAsync(long userId)
+    public async Task<bool> CheckAccessUserRoleModerationAsync(string email, string password, long userId)
     {
         var isRole = await _pgContext.ModerationUserRoles
             .AnyAsync(m => m.UserId == userId
-                           && new[] { (int)ModerationRoleEnum.Moderator, (int)ModerationRoleEnum.Administrator }
-                               .Contains(m.RoleId));
+                           && _moderationRoles.Contains(m.RoleId));
 
         return isRole;
     }
+
+    #endregion
 }

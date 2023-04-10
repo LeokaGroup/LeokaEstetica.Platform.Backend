@@ -11,7 +11,7 @@ namespace LeokaEstetica.Platform.Access.Services.Moderation;
 /// <summary>
 /// Класс реализует методы сервиса проверки доступа к модерации.
 /// </summary>
-public sealed class AccessModerationService : IAccessModerationService
+public class AccessModerationService : IAccessModerationService
 {
     private readonly ILogService _logService;
     private readonly IAccessModerationRepository _accessModerationRepository;
@@ -27,11 +27,13 @@ public sealed class AccessModerationService : IAccessModerationService
     }
 
     /// <summary>
-    /// Метод проверяет, имеет ли пользователь роль, которая дает доступ к модерации.
+    /// Метод проверяет доступ пользователя к КЦ.
     /// </summary>
+    /// <param name="email">Почта.</param>
+    /// <param name="password">Пароль.</param>
     /// <param name="account">Аккаунт.</param>
     /// <returns>Данные выходной модели.</returns>
-    public async Task<ModerationRoleOutput> CheckUserRoleModerationAsync(string account)
+    public async Task<ModerationRoleOutput> CheckUserRoleModerationAsync(string email, string password, string account)
     {
         try
         {
@@ -42,7 +44,7 @@ public sealed class AccessModerationService : IAccessModerationService
                 throw new NotFoundUserIdByAccountException(account);
             }
 
-            var isRole = await _accessModerationRepository.CheckAccessUserRoleModerationAsync(userId);
+            var isRole = await _accessModerationRepository.CheckAccessUserRoleModerationAsync(email, password, userId);
 
             // Если нет нужной роли, не пускаем к модерации.
             if (!isRole)

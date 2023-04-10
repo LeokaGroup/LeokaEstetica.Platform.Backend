@@ -12,7 +12,7 @@ public class CheckUserRoleModerationTest : BaseServiceTest
     [Test]
     public async Task CheckUserRoleModerationSuccessAsyncTest()
     {
-        var result = await AccessModerationService.CheckUserRoleModerationAsync("sierra_93@mail.ru");
+        var result = await AccessModerationService.CheckUserRoleModerationAsync(null, null, "sierra_93@mail.ru");
 
         IsTrue(result.AccessModeration);
     }
@@ -23,7 +23,7 @@ public class CheckUserRoleModerationTest : BaseServiceTest
     [Test]
     public async Task CheckUserRoleModerationErrorAsyncTest()
     {
-        var result = await AccessModerationService.CheckUserRoleModerationAsync("alisaiva931@mail.ru");
+        var result = await AccessModerationService.CheckUserRoleModerationAsync(null, null, "alisaiva931@mail.ru");
 
         IsFalse(result.AccessModeration);
     }
