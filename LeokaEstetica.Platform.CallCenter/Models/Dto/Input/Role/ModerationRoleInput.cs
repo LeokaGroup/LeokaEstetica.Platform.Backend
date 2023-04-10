@@ -11,4 +11,11 @@ public class ModerationRoleInput
     /// Не зависит от базовой авторизации.
     /// </summary>
     public string Email { get; set; }
+
+    /// <summary>
+    /// Пароль пользователя.
+    /// Передается отдельно для повышенной безопасности.
+    /// Не зависит от базовой авторизации.
+    /// </summary>
+    public string Password { get; set; }
 }

@@ -12,18 +12,20 @@ public class CheckUserRoleModerationTest : BaseServiceTest
     [Test]
     public async Task CheckUserRoleModerationSuccessAsyncTest()
     {
-        var result = await AccessModerationService.CheckUserRoleModerationAsync("sierra_93@mail.ru");
+        var result = await AccessModerationService.CheckUserRoleModerationAsync("sierra_93@mail.ru",
+            "AO3hJ7GC+ApCO4mpmXxd9u7sbiregX0mDha1JSdTbVAdztUV+/TgDelb2yA7ZFM+Ag==");
 
         IsTrue(result.AccessModeration);
     }
-    
+
     /// <summary>
     /// Метод проверяет пользователя, у которого нет роли для модерации.
     /// </summary>
     [Test]
     public async Task CheckUserRoleModerationErrorAsyncTest()
     {
-        var result = await AccessModerationService.CheckUserRoleModerationAsync("alisaiva931@mail.ru");
+        var result = await AccessModerationService.CheckUserRoleModerationAsync("sierra_93@mail.ru",
+            "AO3hJ7GC+ApCO4mpmXxd9u7sbiregX0mDha1JSdTbVAdztUV+/TgDelb2yA7ZFM+Ag==");
 
         IsFalse(result.AccessModeration);
     }
