@@ -23,7 +23,7 @@ public enum ProjectResponseStatusEnum
     /// Если статус отклонен.
     /// </summary>
     [Description("Отклонен")]
-    Rejected = 3,
+    Rejected = 6,
     
     /// <summary>
     /// Если статус отклонен модератором.
