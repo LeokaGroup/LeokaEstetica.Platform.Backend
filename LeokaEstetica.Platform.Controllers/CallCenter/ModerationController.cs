@@ -20,6 +20,7 @@ using LeokaEstetica.Platform.CallCenter.Models.Dto.Output.Access;
 using LeokaEstetica.Platform.CallCenter.Models.Dto.Output.Project;
 using LeokaEstetica.Platform.CallCenter.Models.Dto.Output.Role;
 using LeokaEstetica.Platform.CallCenter.Models.Dto.Output.Vacancy;
+using LeokaEstetica.Platform.Controllers.Filters;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LeokaEstetica.Platform.Controllers.CallCenter;
@@ -27,6 +28,7 @@ namespace LeokaEstetica.Platform.Controllers.CallCenter;
 /// <summary>
 /// Контроллер модерации (отвечает за весь функционал модерации).
 /// </summary>
+[AuthFilter]
 [ApiController]
 [Route("moderation")]
 public class ModerationController : BaseController
@@ -76,8 +78,8 @@ public class ModerationController : BaseController
     public async Task<ModerationRoleOutput> CheckUserRoleModerationAsync(
         [FromBody] ModerationRoleInput moderationRoleInput)
     {
-        var result = await _accessModerationService.CheckUserRoleModerationAsync(moderationRoleInput.Email,
-            moderationRoleInput.Password, GetUserName());
+        var result = await _accessModerationService.CheckUserRoleModerationAsync(GetUserName(), 
+            moderationRoleInput.Password);
 
         return result;
     }

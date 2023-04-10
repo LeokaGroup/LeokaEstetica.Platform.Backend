@@ -10,9 +10,8 @@ public interface IAccessModerationService
     /// <summary>
     /// Метод проверяет доступ пользователя к КЦ.
     /// </summary>
-    /// <param name="email">Почта.</param>
-    /// <param name="password">Пароль.</param>
     /// <param name="account">Аккаунт.</param>
+    /// <param name="password">Пароль.</param>
     /// <returns>Данные выходной модели.</returns>
-    Task<ModerationRoleOutput> CheckUserRoleModerationAsync(string email, string password, string account);
+    Task<ModerationRoleOutput> CheckUserRoleModerationAsync(string account, string password);
 }

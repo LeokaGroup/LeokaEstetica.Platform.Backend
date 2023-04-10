@@ -39,13 +39,28 @@ public class AccessModerationRepository : IAccessModerationRepository
     /// <param name="password">Пароль.</param>
     /// <param name="userId">Id пользователя.</param>
     /// <returns>Признак результата проверки.</returns>
-    public async Task<bool> CheckAccessUserRoleModerationAsync(string email, string password, long userId)
+    public async Task<bool> CheckAccessUserRoleModerationAsync(long userId)
     {
         var isRole = await _pgContext.ModerationUserRoles
             .AnyAsync(m => m.UserId == userId
                            && _moderationRoles.Contains(m.RoleId));
 
         return isRole;
+    }
+    
+    /// <summary>
+    /// Метод получает хэш пароля для проверки пользователя.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Хэш пароля.</returns>
+    public async Task<string> GetPasswordHashByEmailAsync(long userId)
+    {
+        var result = await _pgContext.ModerationUsers
+            .Where(u => u.UserId == userId)
+            .Select(u => u.PasswordHash)
+            .FirstOrDefaultAsync();
+
+        return result;
     }
 
     #endregion

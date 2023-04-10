@@ -8,9 +8,14 @@ public interface IAccessModerationRepository
     /// <summary>
     /// Метод проверяет доступ пользователя к КЦ.
     /// </summary>
-    /// <param name="email">Почта.</param>
-    /// <param name="password">Пароль.</param>
     /// <param name="userId">Id пользователя.</param>
     /// <returns>Признак результата проверки.</returns>
-    Task<bool> CheckAccessUserRoleModerationAsync(string email, string password, long userId);
+    Task<bool> CheckAccessUserRoleModerationAsync(long userId);
+
+    /// <summary>
+    /// Метод получает хэш пароля.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Хэш пароля.</returns>
+    Task<string> GetPasswordHashByEmailAsync(long userId);
 }
