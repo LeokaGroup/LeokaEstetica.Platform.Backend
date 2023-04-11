@@ -946,6 +946,26 @@ public class ProjectRepository : IProjectRepository
         return result;
     }
 
+    /// <summary>
+    /// Метод получает Id проекта по Id вакансии, которая принадлежит этому проекту.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <returns>Id проекта.</returns>
+    public async Task<long> GetProjectIdByVacancyIdAsync(long vacancyId)
+    {
+        var userId = await _pgContext.UserVacancies
+            .Where(v => v.VacancyId == vacancyId)
+            .Select(v => v.UserId)
+            .FirstOrDefaultAsync();
+
+        var result = await _pgContext.UserProjects
+            .Where(p => p.UserId == userId)
+            .Select(p => p.ProjectId)
+            .FirstOrDefaultAsync();
+
+        return result;
+    }
+
     /// Метод првоеряет, был ли уже такой проект на модерации. 
     /// </summary>
     /// <param name="projectId">Id проекта.</param>

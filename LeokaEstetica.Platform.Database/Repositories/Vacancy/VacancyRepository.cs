@@ -159,9 +159,8 @@ public class VacancyRepository : IVacancyRepository
     /// Метод получает вакансию по ее Id.
     /// </summary>
     /// <param name="vacancyId">Id вакансии.</param>
-    /// <param name="userId">Id пользователя.</param>
     /// <returns>Данные вакансии.</returns>
-    public async Task<UserVacancyEntity> GetVacancyByVacancyIdAsync(long vacancyId, long userId)
+    public async Task<UserVacancyEntity> GetVacancyByVacancyIdAsync(long vacancyId)
     {
         var result = await _pgContext.UserVacancies
             .FirstOrDefaultAsync(v => v.VacancyId == vacancyId);
@@ -381,5 +380,20 @@ public class VacancyRepository : IVacancyRepository
         await _pgContext.ArchivedVacancies.AddAsync(arvhivedVacancy);
 
         await _pgContext.SaveChangesAsync();
+    }
+    
+    /// <summary>
+    /// Метод находит название вакансии по ее Id.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <returns>Название вакансии.</returns>
+    public async Task<string> GetVacancyNameByIdAsync(long vacancyId)
+    {
+        var result = await _pgContext.UserVacancies
+            .Where(v => v.VacancyId == vacancyId)
+            .Select(v => v.VacancyName)
+            .FirstOrDefaultAsync();
+
+        return result;
     }
 }

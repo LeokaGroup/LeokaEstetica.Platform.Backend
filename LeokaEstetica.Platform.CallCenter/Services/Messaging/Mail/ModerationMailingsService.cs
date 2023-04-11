@@ -84,6 +84,66 @@ public class ModerationMailingsService : IModerationMailingsService
         }
     }
 
+    /// <summary>
+    /// Метод отправляет уведомление на почту владельца вакансии о одобрении вакансии модератором.
+    /// </summary>
+    /// <param name="mailTo">Почта владельца вакансии.</param>
+    /// <param name="vacancyName">Название вакансии.</param>
+    /// <param name="vacancyId">Id вакансии.</param>
+    public async Task SendNotificationApproveVacancyAsync(string mailTo, string vacancyName, long vacancyId)
+    {
+        var isEnabledEmailNotifications = await _globalConfigRepository
+            .GetValueByKeyAsync<bool>(GlobalConfigKeys.EmailNotifications.EMAIL_NOTIFICATIONS_DISABLE_MODE_ENABLED);
+
+        if (isEnabledEmailNotifications)
+        {
+            // TODO: Заменить на получение ссылки из БД.
+            var text = $"Модератор одобрил вашу вакансию: \"{vacancyName}\"." +
+                       "<br/>" +
+                       $"<a href='https://leoka-estetica-dev.ru/vacancies/vacancy?vacancyId={vacancyId}&mode=view'>" +
+                       "Перейти к вакансии" +
+                       "</a>" +
+                       "<br/>" +
+                       "<br/>" +
+                       "<br/>-----<br/>" +
+                       "С уважением, команда Leoka Estetica";
+            var subject = $"Ваша вакансия: \"{vacancyName}\" одобрена модератором";
+
+            var mailModel = CreateMailopostModelConfirmEmail(mailTo, text, subject, text);
+            await SendEmailNotificationAsync(mailModel);
+        }
+    }
+
+    /// <summary>
+    /// Метод отправляет уведомление на почту владельца вакансии о отклонении вакансии модератором.
+    /// </summary>
+    /// <param name="mailTo">Почта владельца вакансии.</param>
+    /// <param name="vacancyName">Название вакансии.</param>
+    /// <param name="vacancyId">Id вакансии.</param>
+    public async Task SendNotificationRejectVacancyAsync(string mailTo, string vacancyName, long vacancyId)
+    {
+        var isEnabledEmailNotifications = await _globalConfigRepository
+            .GetValueByKeyAsync<bool>(GlobalConfigKeys.EmailNotifications.EMAIL_NOTIFICATIONS_DISABLE_MODE_ENABLED);
+
+        if (isEnabledEmailNotifications)
+        {
+            // TODO: Заменить на получение ссылки из БД.
+            var text = $"Модератор отклонил вашу вакансию: \"{vacancyName}\"." +
+                       "<br/>" +
+                       $"<a href='https://leoka-estetica-dev.ru/vacancies/vacancy?vacancyId={vacancyId}&mode=view'>" +
+                       "Перейти к вакансии" +
+                       "</a>" +
+                       "<br/>" +
+                       "<br/>" +
+                       "<br/>-----<br/>" +
+                       "С уважением, команда Leoka Estetica";
+            var subject = $"Ваша вакансия: \"{vacancyName}\" отклонена модератором";
+
+            var mailModel = CreateMailopostModelConfirmEmail(mailTo, text, subject, text);
+            await SendEmailNotificationAsync(mailModel);
+        }
+    }
+
     #region Приватные методы.
 
         /// <summary>

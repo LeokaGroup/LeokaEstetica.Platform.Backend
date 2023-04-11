@@ -238,4 +238,11 @@ public interface IProjectRepository
     /// <param name="userId">Id пользователя.</param>
     /// <returns>Список архивированных проектов.</returns>
     Task<IEnumerable<ArchivedProjectEntity>> GetUserProjectsArchiveAsync(long userId);
+
+    /// <summary>
+    /// Метод получает Id проекта по Id вакансии, которая принадлежит этому проекту.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <returns>Id проекта.</returns>
+    Task<long> GetProjectIdByVacancyIdAsync(long vacancyId);
 }

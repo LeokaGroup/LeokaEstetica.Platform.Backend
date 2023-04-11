@@ -4,6 +4,7 @@ using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Vacancy;
 using LeokaEstetica.Platform.Models.Entities.Moderation;
+using LeokaEstetica.Platform.Models.Entities.Notification;
 using LeokaEstetica.Platform.Models.Entities.Vacancy;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,7 +13,7 @@ namespace LeokaEstetica.Platform.Database.Repositories.Moderation.Vacancy;
 /// <summary>
 /// Класс реализует методы репозитория модерации вакансий.
 /// </summary>
-public sealed class VacancyModerationRepository : IVacancyModerationRepository
+public class VacancyModerationRepository : IVacancyModerationRepository
 {
     private readonly PgContext _pgContext;
     
@@ -142,6 +143,66 @@ public sealed class VacancyModerationRepository : IVacancyModerationRepository
         var result = await SetVacancyStatus(vacancyId, VacancyModerationStatusEnum.RejectedVacancy);
 
         return result;
+    }
+
+    /// <summary>
+    /// Метод отправляет уведомление в приложении при одобрении вакансии модератором.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <param name="userId">Id пользователя, которому отправим уведомление в приложении.</param>
+    /// <param name="vacancyName">Название вакансии.</param>
+    /// <param name="projectId">Id проекта.</param>
+    public async Task AddNotificationApproveVacancyAsync(long vacancyId, long userId, string vacancyName,
+        long projectId)
+    {
+        await _pgContext.Notifications.AddAsync(new NotificationEntity
+        {
+            ProjectId = projectId,
+            VacancyId = vacancyId,
+            UserId = userId,
+            NotificationName = NotificationTypeEnum.ApproveModerationVacancy.GetEnumDescription(),
+            NotificationSysName = NotificationTypeEnum.ApproveModerationVacancy.ToString(),
+            IsNeedAccepted = true,
+            Approved = false,
+            Rejected = false,
+            NotificationText = $"Вакансия \"{vacancyName}\" одобрена модератором",
+            Created = DateTime.Now,
+            NotificationType = NotificationTypeEnum.ApproveModerationVacancy.ToString(),
+            IsShow = true,
+            IsOwner = false
+        });
+        
+        await _pgContext.SaveChangesAsync();
+    }
+
+    /// <summary>
+    /// Метод отправляет уведомление в приложении при отклонении вакансии модератором.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <param name="userId">Id пользователя, которому отправим уведомление в приложении.</param>
+    /// <param name="vacancyName">Название вакансии.</param>
+    /// <param name="projectId">Id проекта.</param>
+    public async Task AddNotificationRejectVacancyAsync(long vacancyId, long userId, string vacancyName, 
+        long projectId)
+    {
+        await _pgContext.Notifications.AddAsync(new NotificationEntity
+        {
+            ProjectId = projectId,
+            VacancyId = vacancyId,
+            UserId = userId,
+            NotificationName = NotificationTypeEnum.RejectModerationVacancy.GetEnumDescription(),
+            NotificationSysName = NotificationTypeEnum.RejectModerationVacancy.ToString(),
+            IsNeedAccepted = true,
+            Approved = false,
+            Rejected = false,
+            NotificationText = $"Вакансия \"{vacancyName}\" отклонена модератором",
+            Created = DateTime.Now,
+            NotificationType = NotificationTypeEnum.RejectModerationVacancy.ToString(),
+            IsShow = true,
+            IsOwner = false
+        });
+        
+        await _pgContext.SaveChangesAsync();
     }
 
     /// <summary>

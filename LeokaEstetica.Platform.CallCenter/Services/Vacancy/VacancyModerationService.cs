@@ -1,12 +1,15 @@
 using AutoMapper;
+using LeokaEstetica.Platform.CallCenter.Abstractions.Messaging.Mail;
 using LeokaEstetica.Platform.CallCenter.Abstractions.Vacancy;
 using LeokaEstetica.Platform.CallCenter.Builders;
 using LeokaEstetica.Platform.CallCenter.Models.Dto.Output.Vacancy;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Vacancy;
+using LeokaEstetica.Platform.Database.Abstractions.Project;
+using LeokaEstetica.Platform.Database.Abstractions.User;
+using LeokaEstetica.Platform.Database.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Vacancy;
 using LeokaEstetica.Platform.Models.Entities.Vacancy;
-using LeokaEstetica.Platform.CallCenter.Models.Dto.Output.Project;
 
 namespace LeokaEstetica.Platform.CallCenter.Services.Vacancy;
 
@@ -18,14 +21,26 @@ public sealed class VacancyModerationService : IVacancyModerationService
     private readonly IVacancyModerationRepository _vacancyModerationRepository;
     private readonly ILogService _logService;
     private readonly IMapper _mapper;
+    private readonly IModerationMailingsService _moderationMailingsService;
+    private readonly IVacancyRepository _vacancyRepository;
+    private readonly IUserRepository _userRepository;
+    private readonly IProjectRepository _projectRepository;
 
     public VacancyModerationService(IVacancyModerationRepository vacancyModerationRepository,
         ILogService logService, 
-        IMapper mapper)
+        IMapper mapper, 
+        IModerationMailingsService moderationMailingsService, 
+        IVacancyRepository vacancyRepository, 
+        IUserRepository userRepository, 
+        IProjectRepository projectRepository)
     {
         _vacancyModerationRepository = vacancyModerationRepository;
         _logService = logService;
         _mapper = mapper;
+        _moderationMailingsService = moderationMailingsService;
+        _vacancyRepository = vacancyRepository;
+        _userRepository = userRepository;
+        _projectRepository = projectRepository;
     }
 
     /// <summary>
@@ -101,6 +116,18 @@ public sealed class VacancyModerationService : IVacancyModerationService
                 var ex = new InvalidOperationException($"Ошибка при одобрении вакансии. VacancyId: {vacancyId}");
                 throw ex;
             }
+            
+            var vacancyOwnerId = await _vacancyRepository.GetVacancyOwnerIdAsync(vacancyId);
+            var user = await _userRepository.GetUserPhoneEmailByUserIdAsync(vacancyOwnerId);
+            var vacancyName = await _vacancyRepository.GetVacancyNameByIdAsync(vacancyId);
+            var projectId = await _projectRepository.GetProjectIdByVacancyIdAsync(vacancyId);
+            
+            // Отправляем уведомление на почту владельца вакансии.
+            await _moderationMailingsService.SendNotificationApproveVacancyAsync(user.Email, vacancyName, vacancyId);
+            
+            // Отправляем уведомление в приложении об одобрении вакансии модератором.
+            await _vacancyModerationRepository.AddNotificationApproveVacancyAsync(vacancyId, vacancyOwnerId,
+                vacancyName, projectId);
 
             return result;
         }
@@ -126,6 +153,18 @@ public sealed class VacancyModerationService : IVacancyModerationService
             {
                 IsSuccess = await _vacancyModerationRepository.RejectVacancyAsync(vacancyId)
             };
+            
+            var vacancyOwnerId = await _vacancyRepository.GetVacancyOwnerIdAsync(vacancyId);
+            var user = await _userRepository.GetUserPhoneEmailByUserIdAsync(vacancyOwnerId);
+            var vacancyName = await _vacancyRepository.GetVacancyNameByIdAsync(vacancyId);
+            var projectId = await _projectRepository.GetProjectIdByVacancyIdAsync(vacancyId);
+            
+            // Отправляем уведомление на почту владельца вакансии.
+            await _moderationMailingsService.SendNotificationRejectVacancyAsync(user.Email, vacancyName, vacancyId);
+            
+            // Отправляем уведомление в приложении об отклонении вакансии модератором.
+            await _vacancyModerationRepository.AddNotificationRejectVacancyAsync(vacancyId, vacancyOwnerId,
+                vacancyName, projectId);
 
             return result;
         }

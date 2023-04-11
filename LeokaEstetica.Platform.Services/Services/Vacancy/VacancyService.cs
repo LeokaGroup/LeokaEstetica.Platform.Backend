@@ -323,7 +323,7 @@ public class VacancyService : IVacancyService
                 throw ex;
             }
 
-            var vacancy = await _vacancyRepository.GetVacancyByVacancyIdAsync(vacancyId, userId);
+            var vacancy = await _vacancyRepository.GetVacancyByVacancyIdAsync(vacancyId);
 
             if (vacancy is null)
             {

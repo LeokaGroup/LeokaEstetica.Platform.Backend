@@ -23,5 +23,17 @@ public enum NotificationTypeEnum
     /// Отклонение проекта модератором.
     /// </summary>
     [Description("Отклонение проекта модератором")]
-    RejectModerationProject = 3
+    RejectModerationProject = 3,
+    
+    /// <summary>
+    /// Одобрение вакансии модератором.
+    /// </summary>
+    [Description("Одобрение вакансии модератором")]
+    ApproveModerationVacancy = 4,
+    
+    /// <summary>
+    /// Отклонение вакансии модератором.
+    /// </summary>
+    [Description("Отклонение вакансии модератором")]
+    RejectModerationVacancy = 5
 }

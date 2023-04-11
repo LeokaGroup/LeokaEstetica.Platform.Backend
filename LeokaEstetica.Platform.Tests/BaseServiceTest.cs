@@ -118,7 +118,8 @@ public class BaseServiceTest
         var availableLimitsRepository = new AvailableLimitsRepository(pgContext);
         var availableLimitsService = new AvailableLimitsService(logService, availableLimitsRepository);
 
-        VacancyModerationService = new VacancyModerationService(vacancyModerationRepository, logService, mapper);
+        VacancyModerationService = new VacancyModerationService(vacancyModerationRepository, logService, mapper, null,
+            vacancyRepository, userRepository, projectRepository);
         
         // Тут если нужен будет ProjectService, то тут проблема с порядком следования.
         // Не получится сделать просто, VacancyService и ProjectService нужны друг другу тесно.
