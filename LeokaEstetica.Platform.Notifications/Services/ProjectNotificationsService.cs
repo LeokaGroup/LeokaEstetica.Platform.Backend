@@ -33,7 +33,7 @@ public class ProjectNotificationsService : IProjectNotificationsService
     private readonly IProjectRepository _projectRepository;
     private readonly IMailingsService _mailingsService;
     private readonly IGlobalConfigRepository _globalConfigRepository;
-    public readonly IVacancyRepository _vacancyRepository;
+    private readonly IVacancyRepository _vacancyRepository;
 
     /// <summary>
     /// Конструктор.
