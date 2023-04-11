@@ -570,8 +570,8 @@ public class ProjectNotificationsService : IProjectNotificationsService
         try
         {
             // Проверяем существование уведомления.
-            var isExistsNotification =
-                await _projectNotificationsRepository.CheckExistsNotificationByIdAsync(notificationId);
+            var isExistsNotification = await _projectNotificationsRepository
+                .CheckExistsNotificationByIdAsync(notificationId);
             
             var userId = await _userRepository.GetUserByEmailAsync(account);
 

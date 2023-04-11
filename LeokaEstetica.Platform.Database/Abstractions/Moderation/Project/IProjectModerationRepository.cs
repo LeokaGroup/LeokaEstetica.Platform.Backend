@@ -41,4 +41,20 @@ public interface IProjectModerationRepository
     /// <param name="projectId">Id проекта.</param>
     /// <returns>Название проекта.</returns>
     Task<string> GetProjectNameByIdAsync(long projectId);
+    
+    /// <summary>
+    /// Метод отправляет уведомление в приложении при одобрении проекта модератором.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="userId">Id пользователя, которому отправим уведомление в приложении.</param>
+    /// <param name="projectName">Название проекта.</param>
+    Task AddNotificationApproveProjectAsync(long projectId, long userId, string projectName);
+    
+    /// <summary>
+    /// Метод отправляет уведомление в приложении при отклонении проекта модератором.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="userId">Id пользователя, которому отправим уведомление в приложении.</param>
+    /// <param name="projectName">Название проекта.</param>
+    Task AddNotificationRejectProjectAsync(long projectId, long userId, string projectName);
 }

@@ -7,6 +7,21 @@ namespace LeokaEstetica.Platform.Core.Enums;
 /// </summary>
 public enum NotificationTypeEnum
 {
-    [Description("Приглашение в проект.")]
-    ProjectInvite = 1
+    /// <summary>
+    /// Приглашение в проект.
+    /// </summary>
+    [Description("Приглашение в проект")]
+    ProjectInvite = 1,
+    
+    /// <summary>
+    /// Одобрение проекта модератором.
+    /// </summary>
+    [Description("Одобрение проекта модератором")]
+    ApproveModerationProject = 2,
+    
+    /// <summary>
+    /// Отклонение проекта модератором.
+    /// </summary>
+    [Description("Отклонение проекта модератором")]
+    RejectModerationProject = 3
 }

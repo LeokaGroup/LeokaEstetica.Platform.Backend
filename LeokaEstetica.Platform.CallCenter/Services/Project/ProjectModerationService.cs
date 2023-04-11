@@ -114,6 +114,9 @@ public sealed class ProjectModerationService : IProjectModerationService
             
             // Отправляем уведомление на почту владельца проекта.
             await _moderationMailingsService.SendNotificationApproveProjectAsync(user.Email, projectName, projectId);
+            
+            // Отправляем уведомление в приложении об одобрении проекта модератором.
+            await _projectModerationRepository.AddNotificationApproveProjectAsync(projectId, userId, projectName);
 
             return result;
         }
@@ -155,6 +158,9 @@ public sealed class ProjectModerationService : IProjectModerationService
             
             // Отправляем уведомление на почту владельца проекта.
             await _moderationMailingsService.SendNotificationRejectProjectAsync(user.Email, projectName, projectId);
+            
+            // Отправляем уведомление в приложении об отклонении проекта модератором.
+            await _projectModerationRepository.AddNotificationRejectProjectAsync(projectId, userId, projectName);
 
             return result;
         }
