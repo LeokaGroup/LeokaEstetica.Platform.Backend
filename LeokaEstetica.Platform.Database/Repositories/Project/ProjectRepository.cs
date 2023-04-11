@@ -966,6 +966,21 @@ public class ProjectRepository : IProjectRepository
         return result;
     }
 
+    /// <summary>
+    /// Метод получает название проекта по его Id.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Название проекта.</returns>
+    public async Task<string> GetProjectNameByIdAsync(long projectId)
+    {
+        var result = await _pgContext.UserProjects
+            .Where(p => p.ProjectId == projectId)
+            .Select(p => p.ProjectName)
+            .FirstOrDefaultAsync();
+
+        return result;
+    }
+
     /// Метод првоеряет, был ли уже такой проект на модерации. 
     /// </summary>
     /// <param name="projectId">Id проекта.</param>

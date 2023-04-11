@@ -105,21 +105,6 @@ public class ProjectModerationRepository : IProjectModerationRepository
     }
 
     /// <summary>
-    /// Метод получает название проекта по его Id.
-    /// </summary>
-    /// <param name="projectId">Id проекта.</param>
-    /// <returns>Название проекта.</returns>
-    public async Task<string> GetProjectNameByIdAsync(long projectId)
-    {
-        var result = await _pgContext.UserProjects
-            .Where(p => p.ProjectId == projectId)
-            .Select(p => p.ProjectName)
-            .FirstOrDefaultAsync();
-
-        return result;
-    }
-
-    /// <summary>
     /// Метод отправляет уведомление в приложении при одобрении проекта модератором.
     /// </summary>
     /// <param name="projectId">Id проекта.</param>

@@ -108,10 +108,9 @@ public class BaseServiceTest
 
         var projectRepository = new ProjectRepository(pgContext, chatRepository);
         var projectNotificationsRepository = new ProjectNotificationsRepository(pgContext);
-        var projectNotificationsService =
-            new ProjectNotificationsService(null, logService, userRepository, mapper, projectNotificationsRepository,
-                null);
         var vacancyRepository = new VacancyRepository(pgContext);
+        var projectNotificationsService = new ProjectNotificationsService(null, logService, userRepository, mapper,
+            projectNotificationsRepository, null, projectRepository, null, null, vacancyRepository);
         var vacancyModerationRepository = new VacancyModerationRepository(pgContext);
         var vacancyNotificationsService = new VacancyNotificationsService(null, null);
         var fareRuleRepository = new FareRuleRepository(pgContext);
@@ -137,7 +136,7 @@ public class BaseServiceTest
         var projectModerationRepository = new ProjectModerationRepository(pgContext);
 
         ProjectModerationService = new ProjectModerationService(projectModerationRepository, logService, mapper, null, 
-            userRepository);
+            userRepository, projectRepository);
 
         var projectCommentsRepository = new ProjectCommentsRepository(pgContext);
 

@@ -5,6 +5,7 @@ using LeokaEstetica.Platform.CallCenter.Builders;
 using LeokaEstetica.Platform.CallCenter.Models.Dto.Output.Project;
 using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Project;
+using LeokaEstetica.Platform.Database.Abstractions.Project;
 using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Project;
@@ -22,18 +23,21 @@ public sealed class ProjectModerationService : IProjectModerationService
     private readonly IMapper _mapper;
     private readonly IModerationMailingsService _moderationMailingsService;
     private readonly IUserRepository _userRepository;
+    private readonly IProjectRepository _projectRepository;
 
     public ProjectModerationService(IProjectModerationRepository projectModerationRepository,
         ILogService logService,
         IMapper mapper, 
         IModerationMailingsService moderationMailingsService, 
-        IUserRepository userRepository)
+        IUserRepository userRepository, 
+        IProjectRepository projectRepository)
     {
         _projectModerationRepository = projectModerationRepository;
         _logService = logService;
         _mapper = mapper;
         _moderationMailingsService = moderationMailingsService;
         _userRepository = userRepository;
+        _projectRepository = projectRepository;
     }
 
     /// <summary>
@@ -110,7 +114,7 @@ public sealed class ProjectModerationService : IProjectModerationService
             
             var user = await _userRepository.GetUserPhoneEmailByUserIdAsync(userId);
 
-            var projectName = await _projectModerationRepository.GetProjectNameByIdAsync(projectId);
+            var projectName = await _projectRepository.GetProjectNameByIdAsync(projectId);
             
             // Отправляем уведомление на почту владельца проекта.
             await _moderationMailingsService.SendNotificationApproveProjectAsync(user.Email, projectName, projectId);
@@ -154,7 +158,7 @@ public sealed class ProjectModerationService : IProjectModerationService
             
             var user = await _userRepository.GetUserPhoneEmailByUserIdAsync(userId);
 
-            var projectName = await _projectModerationRepository.GetProjectNameByIdAsync(projectId);
+            var projectName = await _projectRepository.GetProjectNameByIdAsync(projectId);
             
             // Отправляем уведомление на почту владельца проекта.
             await _moderationMailingsService.SendNotificationRejectProjectAsync(user.Email, projectName, projectId);

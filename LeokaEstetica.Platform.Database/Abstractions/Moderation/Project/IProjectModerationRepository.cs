@@ -36,13 +36,6 @@ public interface IProjectModerationRepository
     Task<bool> RejectProjectAsync(long projectId);
 
     /// <summary>
-    /// Метод получает название проекта по его Id.
-    /// </summary>
-    /// <param name="projectId">Id проекта.</param>
-    /// <returns>Название проекта.</returns>
-    Task<string> GetProjectNameByIdAsync(long projectId);
-    
-    /// <summary>
     /// Метод отправляет уведомление в приложении при одобрении проекта модератором.
     /// </summary>
     /// <param name="projectId">Id проекта.</param>

@@ -1,11 +1,9 @@
 using Autofac;
-using LeokaEstetica.Platform.Base.Abstractions.Repositories;
+using LeokaEstetica.Platform.Base.Abstractions.Messaging.Mail;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.Validation;
-using LeokaEstetica.Platform.Base.Abstractions.Services;
+using LeokaEstetica.Platform.Base.Abstractions.Services.Messaging.Mail;
 using LeokaEstetica.Platform.Base.Abstractions.Services.Validation;
-using LeokaEstetica.Platform.Base.Repositories;
 using LeokaEstetica.Platform.Base.Repositories.Validation;
-using LeokaEstetica.Platform.Base.Services;
 using LeokaEstetica.Platform.Base.Services.Validation;
 using LeokaEstetica.Platform.Core.Attributes;
 
@@ -34,6 +32,16 @@ public class BaseModule : Module
         builder
             .RegisterType<ValidationExcludeErrorsRepository>()
             .As<IValidationExcludeErrorsRepository>()
+            .InstancePerLifetimeScope();
+        
+        // Сервис уведомлений.
+        builder
+            .RegisterType<MailingsService>()
+            .Named<IMailingsService>("MailingsService")
+            .InstancePerLifetimeScope();
+        builder
+            .RegisterType<MailingsService>()
+            .As<IMailingsService>()
             .InstancePerLifetimeScope();
     }
 }

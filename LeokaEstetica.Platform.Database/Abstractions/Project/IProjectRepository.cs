@@ -245,4 +245,11 @@ public interface IProjectRepository
     /// <param name="vacancyId">Id вакансии.</param>
     /// <returns>Id проекта.</returns>
     Task<long> GetProjectIdByVacancyIdAsync(long vacancyId);
+    
+    /// <summary>
+    /// Метод получает название проекта по его Id.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Название проекта.</returns>
+    Task<string> GetProjectNameByIdAsync(long projectId);
 }
