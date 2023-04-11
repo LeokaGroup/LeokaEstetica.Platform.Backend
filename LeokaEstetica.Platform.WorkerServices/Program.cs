@@ -1,7 +1,11 @@
-using LeokaEstetica.Platform.WorkerServices;
+using LeokaEstetica.Platform.WorkerServices.User;
 
-IHost host = Host.CreateDefaultBuilder(args)
-    .ConfigureServices(services => { services.AddHostedService<Worker>(); })
+var host = Host.CreateDefaultBuilder(args)
+    .ConfigureServices(services =>
+    {
+        // Воркер-сервис активности пользователей.
+        services.AddHostedService<UserActivityWorker>();
+    })
     .Build();
 
 await host.RunAsync();
