@@ -27,9 +27,9 @@ using LeokaEstetica.Platform.Finder.Services.Vacancy;
 using LeokaEstetica.Platform.Logs.Services;
 using LeokaEstetica.Platform.Messaging.Services.Chat;
 using LeokaEstetica.Platform.Messaging.Services.Project;
-using LeokaEstetica.Platform.Moderation.Services.Project;
-using LeokaEstetica.Platform.Moderation.Services.Resume;
-using LeokaEstetica.Platform.Moderation.Services.Vacancy;
+using LeokaEstetica.Platform.CallCenter.Services.Project;
+using LeokaEstetica.Platform.CallCenter.Services.Resume;
+using LeokaEstetica.Platform.CallCenter.Services.Vacancy;
 using LeokaEstetica.Platform.Notifications.Services;
 using LeokaEstetica.Platform.Processing.Services.PayMaster;
 using LeokaEstetica.Platform.Services.Services.FareRule;
@@ -78,6 +78,7 @@ public class BaseServiceTest
     protected readonly LandingService LandingService;
     protected readonly KnowledgeService KnowledgeService;
     protected readonly PgContext PgContext;
+    protected readonly FillColorProjectsService FillColorProjectsService;
 
     protected BaseServiceTest()
     {
@@ -107,17 +108,17 @@ public class BaseServiceTest
 
         var projectRepository = new ProjectRepository(pgContext, chatRepository);
         var projectNotificationsRepository = new ProjectNotificationsRepository(pgContext);
-        var projectNotificationsService =
-            new ProjectNotificationsService(null, logService, userRepository, mapper, projectNotificationsRepository,
-                null);
         var vacancyRepository = new VacancyRepository(pgContext);
+        var projectNotificationsService = new ProjectNotificationsService(null, logService, userRepository, mapper,
+            projectNotificationsRepository, null, projectRepository, null, null, vacancyRepository);
         var vacancyModerationRepository = new VacancyModerationRepository(pgContext);
         var vacancyNotificationsService = new VacancyNotificationsService(null, null);
         var fareRuleRepository = new FareRuleRepository(pgContext);
         var availableLimitsRepository = new AvailableLimitsRepository(pgContext);
         var availableLimitsService = new AvailableLimitsService(logService, availableLimitsRepository);
 
-        VacancyModerationService = new VacancyModerationService(vacancyModerationRepository, logService, mapper);
+        VacancyModerationService = new VacancyModerationService(vacancyModerationRepository, logService, mapper, null,
+            vacancyRepository, userRepository, projectRepository);
         
         // Тут если нужен будет ProjectService, то тут проблема с порядком следования.
         // Не получится сделать просто, VacancyService и ProjectService нужны друг другу тесно.
@@ -135,7 +136,7 @@ public class BaseServiceTest
         var projectModerationRepository = new ProjectModerationRepository(pgContext);
 
         ProjectModerationService = new ProjectModerationService(projectModerationRepository, logService, mapper, null, 
-            userRepository);
+            userRepository, projectRepository);
 
         var projectCommentsRepository = new ProjectCommentsRepository(pgContext);
 
@@ -144,15 +145,17 @@ public class BaseServiceTest
 
         var resumeRepository = new ResumeRepository(pgContext);
 
+        FillColorProjectsService = new FillColorProjectsService();
+
         ProjectService = new ProjectService(projectRepository, logService, userRepository, mapper,
             projectNotificationsService, VacancyService, vacancyRepository, availableLimitsService,
             subscriptionRepository, fareRuleRepository, VacancyModerationService, projectNotificationsRepository, null,
-            null, null, null);
+            null, FillColorProjectsService, null);
 
         SubscriptionService =
             new SubscriptionService(logService, userRepository, subscriptionRepository, fareRuleRepository);
         ResumeService = new ResumeService(logService, resumeRepository, mapper, subscriptionRepository,
-            fareRuleRepository);
+            fareRuleRepository, userRepository);
         VacancyFinderService = new VacancyFinderService(vacancyRepository, logService);
         FinderProjectService = new Finder.Services.Project.ProjectFinderService(projectRepository, logService);
         ResumeFinderService = new ResumeFinderService(logService, resumeRepository);
@@ -177,5 +180,7 @@ public class BaseServiceTest
         KnowledgeService = new KnowledgeService(KnowledgeRepository, logService);
 
         PgContext = pgContext;
+
+        
     }
 }

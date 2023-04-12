@@ -2,7 +2,6 @@ using System.Data;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Core.Exceptions;
-using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
 using LeokaEstetica.Platform.Database.Chat;
 using LeokaEstetica.Platform.Models.Dto.Output.Project;
@@ -183,6 +182,7 @@ public class ProjectRepository : IProjectRepository
     {
         var result = await _pgContext.CatalogProjects
             .Include(p => p.Project)
+            .Where(p => p.Project.ArchivedProjects.All(a => a.ProjectId != p.ProjectId))
             .Select(p => new CatalogProjectOutput
             {
                 ProjectId = p.Project.ProjectId,
@@ -238,9 +238,21 @@ public class ProjectRepository : IProjectRepository
             }
 
             stage.StageId = (int)projectStage;
-
-            // Отправляем проект на модерацию.
-            await SendModerationProjectAsync(project.ProjectId);
+            
+            // Если проект уже был на модерации, то обновим статус.
+            var isModerationExists = await IsModerationExistsProjectAsync(project.ProjectId);
+            
+            if (!isModerationExists)
+            {
+                // Отправляем проект на модерацию.
+                await SendModerationProjectAsync(project.ProjectId);
+            }
+            
+            else
+            {
+                await UpdateModerationProjectStatusAsync(project.ProjectId,
+                    ProjectModerationStatusEnum.ModerationProject);
+            }
 
             var result = new UpdateProjectOutput
             {
@@ -273,17 +285,25 @@ public class ProjectRepository : IProjectRepository
     public async Task<(UserProjectEntity, ProjectStageEntity)> GetProjectAsync(long projectId)
     {
         (UserProjectEntity, ProjectStageEntity) result = (null, null);
-        
+
         result.Item1 = await _pgContext.UserProjects
             .FirstOrDefaultAsync(p => p.ProjectId == projectId);
 
-        result.Item2 = await (from ps in _pgContext.ProjectStages
-                select new ProjectStageEntity
-                {
-                    StageId = ps.StageId,
-                    StageName = ps.StageName,
-                    StageSysName = ps.StageSysName
-                })
+        // Получаем стадию проекта пользователя.
+        var projectStageId = await _pgContext.UserProjectsStages
+            .Where(p => p.ProjectId == projectId)
+            .Select(p => p.StageId)
+            .FirstOrDefaultAsync();
+
+        // Берем полные данные о стадии проекта.
+        result.Item2 = await _pgContext.ProjectStages
+            .Where(ps => ps.StageId == projectStageId)
+            .Select(ps => new ProjectStageEntity
+            {
+                StageName = ps.StageName,
+                StageSysName = ps.StageSysName,
+                StageId = ps.StageId
+            })
             .FirstOrDefaultAsync();
 
         return result;
@@ -301,13 +321,6 @@ public class ProjectRepository : IProjectRepository
             DateModeration = DateTime.Now,
             ProjectId = projectId,
             ModerationStatusId = (int)ProjectModerationStatusEnum.ModerationProject
-        });
-
-        // Проставляем статус модерации проекта "На модерации".
-        await _pgContext.ModerationStatuses.AddAsync(new ModerationStatusEntity
-        {
-            StatusName = ProjectModerationStatusEnum.ModerationProject.GetEnumDescription(),
-            StatusSysName = ProjectModerationStatusEnum.ModerationProject.ToString()
         });
     }
 
@@ -917,4 +930,84 @@ public class ProjectRepository : IProjectRepository
 
         return result;
     }
+
+    /// <summary>
+    /// Метод получает список проектов пользователя из архива.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Список архивированных проектов.</returns>
+    public async Task<IEnumerable<ArchivedProjectEntity>> GetUserProjectsArchiveAsync(long userId)
+    {
+        var result = await _pgContext.ArchivedProjects
+            .Include(a => a.UserProject)
+            .Where(a => a.UserId == userId)
+            .ToListAsync();
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод получает Id проекта по Id вакансии, которая принадлежит этому проекту.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <returns>Id проекта.</returns>
+    public async Task<long> GetProjectIdByVacancyIdAsync(long vacancyId)
+    {
+        var userId = await _pgContext.UserVacancies
+            .Where(v => v.VacancyId == vacancyId)
+            .Select(v => v.UserId)
+            .FirstOrDefaultAsync();
+
+        var result = await _pgContext.UserProjects
+            .Where(p => p.UserId == userId)
+            .Select(p => p.ProjectId)
+            .FirstOrDefaultAsync();
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод получает название проекта по его Id.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Название проекта.</returns>
+    public async Task<string> GetProjectNameByIdAsync(long projectId)
+    {
+        var result = await _pgContext.UserProjects
+            .Where(p => p.ProjectId == projectId)
+            .Select(p => p.ProjectName)
+            .FirstOrDefaultAsync();
+
+        return result;
+    }
+
+    /// Метод првоеряет, был ли уже такой проект на модерации. 
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Признак модерации.</returns>
+    private async Task<bool> IsModerationExistsProjectAsync(long projectId)
+    {
+        var result = await _pgContext.ModerationProjects
+            .AnyAsync(p => p.ProjectId == projectId);
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод обновляет статус проекта на модерации.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="status">Статус проекта.</param>
+    private async Task UpdateModerationProjectStatusAsync(long projectId, ProjectModerationStatusEnum status)
+    {
+        var prj = await _pgContext.ModerationProjects.FirstOrDefaultAsync(p => p.ProjectId == projectId);
+
+        if (prj is null)
+        {
+            throw new InvalidOperationException($"Не найден проект для модерации. ProjectId: {projectId}");
+        }
+        
+        prj.ModerationStatusId = (int)status;
+    }
+
 }

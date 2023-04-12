@@ -1,3 +1,5 @@
+using LeokaEstetica.Platform.Models.Entities.Moderation;
+
 namespace LeokaEstetica.Platform.Models.Entities.Role;
 
 /// <summary>
@@ -7,7 +9,7 @@ public class ModerationRoleEntity
 {
     public ModerationRoleEntity()
     {
-        ModerationUserRoles = new HashSet<ModerationUserRoleEntity>();
+        ModerationUsers = new HashSet<ModerationUserEntity>();
     }
 
     /// <summary>
@@ -26,7 +28,7 @@ public class ModerationRoleEntity
     public string RoleSysName { get; set; }
 
     /// <summary>
-    /// Список ролей модерации.
+    /// Список пользователей, имеющих доступ к КЦ.
     /// </summary>
-    public ICollection<ModerationUserRoleEntity> ModerationUserRoles { get; set; }
+    public ICollection<ModerationUserEntity> ModerationUsers { get; set; }
 }

@@ -1,4 +1,4 @@
-using LeokaEstetica.Platform.Moderation.Models.Dto.Output.Role;
+using LeokaEstetica.Platform.CallCenter.Models.Dto.Output.Role;
 
 namespace LeokaEstetica.Platform.Access.Abstractions.Moderation;
 
@@ -8,9 +8,10 @@ namespace LeokaEstetica.Platform.Access.Abstractions.Moderation;
 public interface IAccessModerationService
 {
     /// <summary>
-    /// Метод проверяет, имеет ли пользователь роль, которая дает доступ к модерации.
+    /// Метод проверяет доступ пользователя к КЦ.
     /// </summary>
     /// <param name="account">Аккаунт.</param>
+    /// <param name="password">Пароль.</param>
     /// <returns>Данные выходной модели.</returns>
-    Task<ModerationRoleOutput> CheckUserRoleModerationAsync(string account);
+    Task<ModerationRoleOutput> CheckUserRoleModerationAsync(string account, string password);
 }

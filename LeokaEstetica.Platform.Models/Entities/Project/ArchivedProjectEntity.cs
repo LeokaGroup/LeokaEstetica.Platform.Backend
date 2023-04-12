@@ -21,6 +21,11 @@ public class ArchivedProjectEntity
     public DateTime DateArchived { get; set; }
 
     /// <summary>
+    /// Id пользователя.
+    /// </summary>
+    public long UserId { get; set; }
+
+    /// <summary>
     /// FK на проекты пользователя.
     /// </summary>
     public UserProjectEntity UserProject { get; set; }

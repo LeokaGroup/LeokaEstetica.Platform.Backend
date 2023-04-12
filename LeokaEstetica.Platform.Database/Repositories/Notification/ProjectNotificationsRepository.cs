@@ -133,6 +133,98 @@ public class ProjectNotificationsRepository : IProjectNotificationsRepository
         await UpdateProjectInviteAsync(notificationId, false, true);
     }
 
+    /// <summary>
+    /// Метод записывает уведомление о принятии приглашения пользователя в проект.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <param name="userId">Id пользователя.</param>
+    /// <param name="projectName">Название проекта.</param>
+    /// <param name="isProjectOwner">Признак владельца проекта.</param>
+    public async Task AddNotificationApproveInviteProjectAsync(long projectId, long? vacancyId, long userId,
+        string projectName, bool isProjectOwner)
+    {
+        await _pgContext.Notifications.AddAsync(new NotificationEntity
+        {
+            ProjectId = projectId,
+            VacancyId = vacancyId,
+            UserId = userId,
+            NotificationName = NotificationTypeEnum.ApproveInviteProject.GetEnumDescription(),
+            NotificationSysName = NotificationTypeEnum.ApproveInviteProject.ToString(),
+            IsNeedAccepted = true,
+            Approved = false,
+            Rejected = false,
+            NotificationText = $"Приглашение в проект \"{projectName}\" принято",
+            Created = DateTime.Now,
+            NotificationType = NotificationTypeEnum.ApproveInviteProject.ToString(),
+            IsShow = true,
+            IsOwner = isProjectOwner
+        });
+        
+        await _pgContext.SaveChangesAsync();
+    }
+
+    /// <summary>
+    /// Метод записывает уведомление о отклонении приглашения пользователя в проект.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <param name="userId">Id пользователя.</param>
+    /// <param name="projectName">Название проекта.</param>
+    /// <param name="isProjectOwner">Признак владельца проекта.</param>
+    public async Task AddNotificationRejectInviteProjectAsync(long projectId, long? vacancyId, long userId,
+        string projectName, bool isProjectOwner)
+    {
+        await _pgContext.Notifications.AddAsync(new NotificationEntity
+        {
+            ProjectId = projectId,
+            VacancyId = vacancyId,
+            UserId = userId,
+            NotificationName = NotificationTypeEnum.RejectInviteProject.GetEnumDescription(),
+            NotificationSysName = NotificationTypeEnum.RejectInviteProject.ToString(),
+            IsNeedAccepted = true,
+            Approved = false,
+            Rejected = false,
+            NotificationText = $"Приглашение в проект \"{projectName}\" отклонено",
+            Created = DateTime.Now,
+            NotificationType = NotificationTypeEnum.RejectInviteProject.ToString(),
+            IsShow = true,
+            IsOwner = isProjectOwner
+        });
+        
+        await _pgContext.SaveChangesAsync();
+    }
+
+    /// <summary>
+    /// Метод получает Id проекта по Id уведомления.
+    /// </summary>
+    /// <param name="notificationId">Id уведомления.</param>
+    /// <returns>Id проекта.</returns>
+    public async Task<long> GetProjectIdByNotificationIdAsync(long notificationId)
+    {
+        var result = await _pgContext.Notifications
+            .Where(n => n.NotificationId == notificationId)
+            .Select(n => (long)n.ProjectId)
+            .FirstOrDefaultAsync();
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод получает Id вакансии по Id уведомления.
+    /// </summary>
+    /// <param name="notificationId">Id уведомления.</param>
+    /// <returns>Id вакансии.</returns>
+    public async Task<long?> GetVacancyIdByNotificationIdAsync(long notificationId)
+    {
+        var result = await _pgContext.Notifications
+            .Where(n => n.NotificationId == notificationId)
+            .Select(n => n.VacancyId)
+            .FirstOrDefaultAsync();
+
+        return result;
+    }
+
     #endregion
 
     #region Приватные методы.

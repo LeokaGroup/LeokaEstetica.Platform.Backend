@@ -2,11 +2,9 @@ using AutoMapper;
 using LeokaEstetica.Platform.Access.Abstractions.Resume;
 using LeokaEstetica.Platform.Base;
 using LeokaEstetica.Platform.Controllers.Filters;
-using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Finder.Abstractions.Resume;
 using LeokaEstetica.Platform.Models.Dto.Output.Resume;
 using LeokaEstetica.Platform.Services.Abstractions.Resume;
-using LeokaEstetica.Platform.Services.Builders;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LeokaEstetica.Platform.Controllers.Resume;
@@ -23,7 +21,6 @@ public class ResumeController : BaseController
     private readonly IMapper _mapper;
     private readonly IResumeFinderService _resumeFinderService;
     private readonly IResumePaginationService _resumePaginationService;
-    private readonly IUserRepository _userRepository;
     private readonly IAccessResumeService _accessResumeService;
 
     /// <summary>
@@ -33,20 +30,17 @@ public class ResumeController : BaseController
     /// <param name="mapper">Автомаппер.</param>
     /// <param name="resumeFinderService">Поисковый сервис резюме.</param>
     /// <param name="resumePaginationService">Сервис пагинации резюме.</param>
-    /// <param name="userRepository">Репозиторий пользователя.</param>
     /// <param name="accessResumeService">Сервис проверки доступа к базе резюме.</param>
     public ResumeController(IResumeService resumeService, 
         IMapper mapper, 
         IResumeFinderService resumeFinderService, 
         IResumePaginationService resumePaginationService, 
-        IUserRepository userRepository, 
         IAccessResumeService accessResumeService)
     {
         _resumeService = resumeService;
         _mapper = mapper;
         _resumeFinderService = resumeFinderService;
         _resumePaginationService = resumePaginationService;
-        _userRepository = userRepository;
         _accessResumeService = accessResumeService;
     }
 
@@ -64,9 +58,6 @@ public class ResumeController : BaseController
     public async Task<ResumeResultOutput> GetProfileInfosAsync()
     {
         var result = await _resumeService.GetProfileInfosAsync();
-
-        // Записываем коды пользователей.
-        result.CatalogResumes = await FillUserCodesBuilder.Fill(result.CatalogResumes, _userRepository);
 
         return result;
     }

@@ -42,4 +42,40 @@ public interface IProjectNotificationsRepository
     /// </summary>
     /// <param name="notificationId">Id уведомления.</param>
     Task RejectProjectInviteAsync(long notificationId);
+    
+    /// <summary>
+    /// Метод записывает уведомление о принятии приглашения пользователя в проект.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <param name="userId">Id пользователя.</param>
+    /// <param name="projectName">Название проекта.</param>
+    /// <param name="isProjectOwner">Признак владельца проекта.</param>
+    Task AddNotificationApproveInviteProjectAsync(long projectId, long? vacancyId, long userId, string projectName,
+        bool isProjectOwner);
+    
+    /// <summary>
+    /// Метод записывает уведомление о отклонении приглашения пользователя в проект.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <param name="userId">Id пользователя.</param>
+    /// <param name="projectName">Название проекта.</param>
+    /// <param name="isProjectOwner">Признак владельца проекта.</param>
+    Task AddNotificationRejectInviteProjectAsync(long projectId, long? vacancyId, long userId, string projectName,
+        bool isProjectOwner);
+
+    /// <summary>
+    /// Метод получает Id проекта по Id уведомления.
+    /// </summary>
+    /// <param name="notificationId">Id уведомления.</param>
+    /// <returns>Id проекта.</returns>
+    Task<long> GetProjectIdByNotificationIdAsync(long notificationId);
+
+    /// <summary>
+    /// Метод получает Id вакансии по Id уведомления.
+    /// </summary>
+    /// <param name="notificationId">Id уведомления.</param>
+    /// <returns>Id вакансии.</returns>
+    Task<long?> GetVacancyIdByNotificationIdAsync(long notificationId);
 }

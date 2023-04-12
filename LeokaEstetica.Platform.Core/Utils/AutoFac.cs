@@ -85,7 +85,7 @@ public static class AutoFac
 
         var assemblies9 =
             GetAssembliesFromApplicationBaseDirectory(x =>
-                x.FullName.StartsWith("LeokaEstetica.Platform.Moderation"));
+                x.FullName.StartsWith("LeokaEstetica.Platform.CallCenter"));
 
         var assemblies10 =
             GetAssembliesFromApplicationBaseDirectory(x =>

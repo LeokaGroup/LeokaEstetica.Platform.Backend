@@ -25,9 +25,9 @@ using LeokaEstetica.Platform.Models.Entities.Configs;
 using LeokaEstetica.Platform.Models.Entities.Project;
 using LeokaEstetica.Platform.Models.Entities.ProjectTeam;
 using LeokaEstetica.Platform.Models.Entities.User;
-using LeokaEstetica.Platform.Models.Entities.Vacancy;
 using LeokaEstetica.Platform.Models.Enums;
-using LeokaEstetica.Platform.Moderation.Abstractions.Vacancy;
+using LeokaEstetica.Platform.CallCenter.Abstractions.Vacancy;
+using LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
 using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Notifications.Consts;
 using LeokaEstetica.Platform.Services.Abstractions.Project;
@@ -35,6 +35,7 @@ using LeokaEstetica.Platform.Services.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Services.Builders;
 using LeokaEstetica.Platform.Services.Consts;
 using LeokaEstetica.Platform.Services.Strategies.Project.Team;
+using LeokaEstetica.Platform.Core.Extensions;
 
 namespace LeokaEstetica.Platform.Services.Services.Project;
 
@@ -365,6 +366,9 @@ public class ProjectService : IProjectService
             // Очистка описание от тегов список проектов для каталога.
             result.CatalogProjects = ClearCatalogVacanciesHtmlTags(catalogs);
 
+            // Проставляем проектам теги, в зависимости от подписки владельца проекта.
+            result.CatalogProjects = await SetProjectsTags(result.CatalogProjects.ToList());
+
             return result;
         }
 
@@ -547,7 +551,7 @@ public class ProjectService : IProjectService
     /// </summary>
     /// <param name="createProjectVacancyInput">Входная модель.</param>
     /// <returns>Данные вакансии.</returns>
-    public async Task<UserVacancyEntity> CreateProjectVacancyAsync(CreateProjectVacancyInput createProjectVacancyInput)
+    public async Task<VacancyOutput> CreateProjectVacancyAsync(CreateProjectVacancyInput createProjectVacancyInput)
     {
         try
         {
@@ -1337,6 +1341,8 @@ public class ProjectService : IProjectService
             result.IsVisibleActionProjectButtons = true;
         }
 
+        result.IsSuccess = true;
+
         return result;
     }
 
@@ -1539,6 +1545,88 @@ public class ProjectService : IProjectService
         
         await _mailingsService.SendNotificationInviteTeamProjectAsync(user.Email, projectId, projectName,
             projectOwnerEmail);
+    }
+
+    /// <summary>
+    /// Метод получает список проектов пользователя из архива.
+    /// </summary>
+    /// <param name="account">Аккаунт пользователя.</param>
+    /// <returns>Список архивированных проектов.</returns>
+    public async Task<UserProjectArchiveResultOutput> GetUserProjectsArchiveAsync(string account)
+    {
+        try
+        {
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId <= 0)
+            {
+                throw new NotFoundUserIdByAccountException(account);
+            }
+
+            // Находим проекты в архиве
+            var archivedProjects = await _projectRepository.GetUserProjectsArchiveAsync(userId);
+
+            var archivedProjectsOutput = _mapper.Map<List<ProjectArchiveOutput>>(archivedProjects);
+
+            // Проставляем статусы
+            archivedProjectsOutput.ForEach(p => p.ProjectStatusName = ProjectStatusNameEnum.Archived
+                .GetEnumDescription());
+
+            // Формируем выходную модель
+            var resultOutput = new UserProjectArchiveResultOutput
+            {
+                ProjectArchiveOutputs = archivedProjectsOutput
+            };
+
+            foreach (var prj in archivedProjectsOutput)
+            {
+                prj.ProjectDetails = ClearHtmlBuilder.Clear(prj.ProjectDetails);
+            }
+
+            return resultOutput;
+        }
+
+        catch (Exception ex)
+        {
+            await _logService.LogErrorAsync(ex);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Метод проставляет флаги проектам пользователя в зависимости от его подписки.
+    /// </summary>
+    /// <param name="projects">Список проектов каталога.</param>
+    /// <returns>Список проектов каталога с проставленными тегами.</returns>
+    private async Task<IEnumerable<CatalogProjectOutput>> SetProjectsTags(List<CatalogProjectOutput> projects)
+    {
+        foreach (var p in projects)
+        {
+            // Получаем подписку пользователя.
+            var userSubscription = await _subscriptionRepository.GetUserSubscriptionAsync(p.UserId);
+
+            // Такая подписка не дает тегов.
+            if (userSubscription.ObjectId < 3)
+            {
+                continue;
+            }
+            
+            // Если подписка бизнес.
+            if (userSubscription.ObjectId == 3)
+            {
+                p.TagColor = "warning";
+                p.TagValue = "Бизнес";
+            }
+        
+            // Если подписка профессиональный.
+            if (userSubscription.ObjectId == 4)
+            {
+                p.TagColor = "warning";
+                p.TagValue = "Профессиональный";
+            }   
+        }
+
+        return projects;
     }
     
     #endregion

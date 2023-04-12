@@ -13,7 +13,7 @@ using LeokaEstetica.Platform.Models.Dto.Input.Vacancy;
 using LeokaEstetica.Platform.Models.Dto.Output.Configs;
 using LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
 using LeokaEstetica.Platform.Models.Entities.Vacancy;
-using LeokaEstetica.Platform.Moderation.Abstractions.Vacancy;
+using LeokaEstetica.Platform.CallCenter.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Notifications.Consts;
 using LeokaEstetica.Platform.Redis.Abstractions.Vacancy;
@@ -167,7 +167,7 @@ public class VacancyService : IVacancyService
     /// </summary>
     /// <param name="vacancyInput">Входная модель.</param>
     /// <returns>Данные созданной вакансии.</returns>
-    public async Task<UserVacancyEntity> CreateVacancyAsync(VacancyInput vacancyInput)
+    public async Task<VacancyOutput> CreateVacancyAsync(VacancyInput vacancyInput)
     {
         try
         {
@@ -223,8 +223,10 @@ public class VacancyService : IVacancyService
             // Отправляем уведомление о созданной вакансии владельцу.
             await _mailingsService.SendNotificationCreateVacancyAsync(user.Email, createdVacancy.VacancyName,
                 createdVacancy.VacancyId);
+            
+            var result = _mapper.Map<VacancyOutput>(createdVacancy);
 
-            return createdVacancy;
+            return result;
         }
 
         catch (Exception ex)
@@ -261,6 +263,9 @@ public class VacancyService : IVacancyService
 
             // Очистка описание от тегов список вакансий для каталога
             ClearCatalogVacanciesHtmlTags(ref catalogVacancies);
+            
+            // Проставляем вакансиям теги, в зависимости от подписки владельца вакансии.
+            result.CatalogVacancies = await SetVacanciesTags(result.CatalogVacancies.ToList());
 
             return result;
         }
@@ -318,7 +323,7 @@ public class VacancyService : IVacancyService
                 throw ex;
             }
 
-            var vacancy = await _vacancyRepository.GetVacancyByVacancyIdAsync(vacancyId, userId);
+            var vacancy = await _vacancyRepository.GetVacancyByVacancyIdAsync(vacancyId);
 
             if (vacancy is null)
             {
@@ -436,7 +441,7 @@ public class VacancyService : IVacancyService
             }
 
             // Только владелец вакансии может удалять вакансии проекта.
-            var isOwner = await _vacancyRepository.CheckProjectOwnerAsync(vacancyId, userId);
+            var isOwner = await _vacancyRepository.CheckVacancyOwnerAsync(vacancyId, userId);
 
             if (!isOwner)
             {
@@ -519,6 +524,51 @@ public class VacancyService : IVacancyService
             return result;
         }
         
+        catch (Exception ex)
+        {
+            await _logService.LogErrorAsync(ex);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Метод добавляет вакансию в архив.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <param name="account">Аккаунт.</param>
+    public async Task AddVacancyArchiveAsync(long vacancyId, string account)
+    {
+        try
+        {
+            if (vacancyId <= 0)
+            {
+                var ex = new ArgumentNullException($"Id вакансии не может быть пустым. VacancyId: {vacancyId}");
+                throw ex;
+            }
+
+            //Получаем id пользователя
+            var userId = await _userRepository.GetUserIdByEmailOrLoginAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+
+            // Только владелец вакансии может добавлять вакансию в архив.
+            var isOwner = await _vacancyRepository.CheckVacancyOwnerAsync(vacancyId, userId);
+
+            if (!isOwner)
+            {
+                var ex = new InvalidOperationException(
+                    $"Пользователь не является владельцем вакансии. VacancyId: {vacancyId}. UserId: {userId}");
+                throw ex;
+            }
+
+            //Добавляем вакансию в таблицу архивов
+            await _vacancyRepository.AddVacancyArchiveAsync(vacancyId, userId);
+        }
+
         catch (Exception ex)
         {
             await _logService.LogErrorAsync(ex);
@@ -647,6 +697,42 @@ public class VacancyService : IVacancyService
                     pv.VacancyStatusName = _approveVacancy;
                 }
             }
+        }
+
+        return vacancies;
+    }
+
+    /// <summary>
+    /// Метод проставляет флаги вакансиям пользователя в зависимости от его подписки.
+    /// </summary>
+    /// <param name="vacancies">Список вакансий каталога.</param>
+    /// <returns>Список вакансий каталога с проставленными тегами.</returns>
+    private async Task<IEnumerable<CatalogVacancyOutput>> SetVacanciesTags(List<CatalogVacancyOutput> vacancies)
+    {
+        foreach (var v in vacancies)
+        {
+            // Получаем подписку пользователя.
+            var userSubscription = await _subscriptionRepository.GetUserSubscriptionAsync(v.UserId);
+
+            // Такая подписка не дает тегов.
+            if (userSubscription.ObjectId < 3)
+            {
+                continue;
+            }
+            
+            // Если подписка бизнес.
+            if (userSubscription.ObjectId == 3)
+            {
+                v.TagColor = "warning";
+                v.TagValue = "Бизнес";
+            }
+        
+            // Если подписка профессиональный.
+            if (userSubscription.ObjectId == 4)
+            {
+                v.TagColor = "warning";
+                v.TagValue = "Профессиональный";
+            }   
         }
 
         return vacancies;

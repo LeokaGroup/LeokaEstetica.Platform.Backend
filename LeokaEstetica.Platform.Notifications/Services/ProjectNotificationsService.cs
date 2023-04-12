@@ -1,7 +1,12 @@
 using AutoMapper;
+using LeokaEstetica.Platform.Base.Abstractions.Messaging.Mail;
+using LeokaEstetica.Platform.Core.Constants;
 using LeokaEstetica.Platform.Core.Exceptions;
+using LeokaEstetica.Platform.Database.Abstractions.Config;
 using LeokaEstetica.Platform.Database.Abstractions.Notification;
+using LeokaEstetica.Platform.Database.Abstractions.Project;
 using LeokaEstetica.Platform.Database.Abstractions.User;
+using LeokaEstetica.Platform.Database.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Models.Dto.Output.Notification;
 using LeokaEstetica.Platform.Notifications.Abstractions;
@@ -25,6 +30,10 @@ public class ProjectNotificationsService : IProjectNotificationsService
     private readonly IProjectNotificationsRepository _projectNotificationsRepository;
     private readonly IMapper _mapper;
     private readonly INotificationsRedisService _notificationsRedisService;
+    private readonly IProjectRepository _projectRepository;
+    private readonly IMailingsService _mailingsService;
+    private readonly IGlobalConfigRepository _globalConfigRepository;
+    private readonly IVacancyRepository _vacancyRepository;
 
     /// <summary>
     /// Конструктор.
@@ -40,7 +49,11 @@ public class ProjectNotificationsService : IProjectNotificationsService
         IUserRepository userRepository,
         IMapper mapper, 
         IProjectNotificationsRepository projectNotificationsRepository, 
-        INotificationsRedisService notificationsRedisService)
+        INotificationsRedisService notificationsRedisService, 
+        IProjectRepository projectRepository, 
+        IMailingsService mailingsService, 
+        IGlobalConfigRepository globalConfigRepository, 
+        IVacancyRepository vacancyRepository)
     {
         _hubContext = hubContext;
         _logService = logService;
@@ -48,6 +61,10 @@ public class ProjectNotificationsService : IProjectNotificationsService
         _mapper = mapper;
         _projectNotificationsRepository = projectNotificationsRepository;
         _notificationsRedisService = notificationsRedisService;
+        _projectRepository = projectRepository;
+        _mailingsService = mailingsService;
+        _globalConfigRepository = globalConfigRepository;
+        _vacancyRepository = vacancyRepository;
     }
 
     #region Публичные методы.
@@ -521,9 +538,15 @@ public class ProjectNotificationsService : IProjectNotificationsService
     {
         try
         {
+            if (notificationId <= 0)
+            {
+                var ex = new InvalidOperationException("Id уведомления был <= 0.");
+                throw ex;
+            }
+            
             // Проверяем существование уведомления.
-            var isExistsNotification =
-                await _projectNotificationsRepository.CheckExistsNotificationByIdAsync(notificationId);
+            var isExistsNotification = await _projectNotificationsRepository
+                .CheckExistsNotificationByIdAsync(notificationId);
             
             var userId = await _userRepository.GetUserByEmailAsync(account);
 
@@ -550,6 +573,13 @@ public class ProjectNotificationsService : IProjectNotificationsService
 
             await SendNotificationSuccessApproveProjectInviteAsync("Все хорошо", "Приглашение в проект успешно.",
                 NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);
+            
+            var projectId = await _projectNotificationsRepository.GetProjectIdByNotificationIdAsync(notificationId);
+            var projectName = await _projectRepository.GetProjectNameByProjectIdAsync(projectId);
+
+            await AddNotificationApproveInviteProjectAsync(userId, projectId, projectName);
+            
+            await SendNotificationApproveInviteProjectAsync(notificationId, userId, projectId, projectName, account);
         }
         
         catch (Exception ex)
@@ -569,9 +599,15 @@ public class ProjectNotificationsService : IProjectNotificationsService
     {
         try
         {
+            if (notificationId <= 0)
+            {
+                var ex = new InvalidOperationException("Id уведомления был <= 0.");
+                throw ex;
+            }
+            
             // Проверяем существование уведомления.
-            var isExistsNotification =
-                await _projectNotificationsRepository.CheckExistsNotificationByIdAsync(notificationId);
+            var isExistsNotification = await _projectNotificationsRepository
+                .CheckExistsNotificationByIdAsync(notificationId);
             
             var userId = await _userRepository.GetUserByEmailAsync(account);
 
@@ -599,6 +635,13 @@ public class ProjectNotificationsService : IProjectNotificationsService
             await SendNotificationSuccessRejectProjectInviteAsync("Все хорошо",
                 "Отклонение приглашения в проект успешно.",
                 NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);
+            
+            var projectId = await _projectNotificationsRepository.GetProjectIdByNotificationIdAsync(notificationId);
+            var projectName = await _projectRepository.GetProjectNameByProjectIdAsync(projectId);
+
+            await AddNotificationRejectInviteProjectAsync(projectId, userId, projectName);
+
+            await SendNotificationRejectInviteProjectAsync(notificationId, userId, projectId, projectName, account);
         }
         
         catch (Exception ex)
@@ -855,6 +898,92 @@ public class ProjectNotificationsService : IProjectNotificationsService
                     Message = notifyText,
                     NotificationLevel = notificationLevel
                 });
+    }
+
+    /// <summary>
+    /// Метод отправляет уведомление в приложении о принятом приглашении в проект.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="account">Аккаунт.</param>
+    private async Task AddNotificationApproveInviteProjectAsync(long userId, long projectId, string projectName)
+    {
+        var isProjectOwner = await _projectRepository.CheckProjectOwnerAsync(projectId, userId);
+        
+        await _projectNotificationsRepository.AddNotificationApproveInviteProjectAsync(projectId, null, userId,
+            projectName, isProjectOwner);
+    }
+
+    /// <summary>
+    /// Метод отправляет уведомление на почту о принятом приглашении в проект.
+    /// </summary>
+    /// <param name="notificationId">Id уведомление.</param>
+    /// <param name="userId">Id пользователя.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="projectName">Название проекта.</param>
+    /// <param name="account">Аккаунт.</param>
+    private async Task SendNotificationApproveInviteProjectAsync(long notificationId, long userId, long projectId,
+        string projectName, string account)
+    {
+        var vacancyId = await _projectNotificationsRepository.GetVacancyIdByNotificationIdAsync(notificationId);
+
+        var vacancyName = string.Empty;
+            
+        if (vacancyId is not null)
+        {
+            vacancyName = await _vacancyRepository.GetVacancyNameByIdAsync((long)vacancyId);   
+        }
+
+        var user = await _userRepository.GetUserPhoneEmailByUserIdAsync(userId);
+            
+        var isEnabledEmailNotifications = await _globalConfigRepository
+            .GetValueByKeyAsync<bool>(GlobalConfigKeys.EmailNotifications.EMAIL_NOTIFICATIONS_DISABLE_MODE_ENABLED);
+        
+        await _mailingsService.SendNotificationApproveInviteProjectAsync(user.Email, projectId, projectName,
+            vacancyName, account, isEnabledEmailNotifications);
+    }
+
+    /// <summary>
+    /// Метод отправляет уведомление в приложении о отклонении приглашения в проект.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="userId">Id пользователя.</param>
+    /// <param name="projectName">Название проекта.</param>
+    private async Task AddNotificationRejectInviteProjectAsync(long projectId, long userId, string projectName)
+    {
+        var isProjectOwner = await _projectRepository.CheckProjectOwnerAsync(projectId, userId);
+        
+        await _projectNotificationsRepository.AddNotificationRejectInviteProjectAsync(projectId, null, userId,
+            projectName, isProjectOwner);
+    }
+
+    /// <summary>
+    /// Метод отправляет уведомление на почту о отклонении приглашения в проект.
+    /// </summary>
+    /// <param name="notificationId">Id уведомление.</param>
+    /// <param name="userId">Id пользователя.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="projectName">Название проекта.</param>
+    /// <param name="account">Аккаунт.</param>
+    private async Task SendNotificationRejectInviteProjectAsync(long notificationId, long userId, long projectId,
+        string projectName, string account)
+    {
+        var vacancyId = await _projectNotificationsRepository.GetVacancyIdByNotificationIdAsync(notificationId);
+
+        var vacancyName = string.Empty;
+            
+        if (vacancyId is not null)
+        {
+            vacancyName = await _vacancyRepository.GetVacancyNameByIdAsync((long)vacancyId);   
+        }
+
+        var user = await _userRepository.GetUserPhoneEmailByUserIdAsync(userId);
+            
+        var isEnabledEmailNotifications = await _globalConfigRepository
+            .GetValueByKeyAsync<bool>(GlobalConfigKeys.EmailNotifications.EMAIL_NOTIFICATIONS_DISABLE_MODE_ENABLED);
+        
+        await _mailingsService.SendNotificationRejectInviteProjectAsync(user.Email, projectId, projectName,
+            vacancyName, account, isEnabledEmailNotifications);
     }
 
     #endregion

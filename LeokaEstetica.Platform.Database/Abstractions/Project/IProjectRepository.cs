@@ -231,4 +231,25 @@ public interface IProjectRepository
     /// <param name="userId">Id пользователя.</param>
     /// <returns>Признак проверки.</returns>
     Task<bool> CheckProjectTeamMemberAsync(long teamId, long userId);
+
+    /// <summary>
+    /// Метод получает список проектов пользователя из архива.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Список архивированных проектов.</returns>
+    Task<IEnumerable<ArchivedProjectEntity>> GetUserProjectsArchiveAsync(long userId);
+
+    /// <summary>
+    /// Метод получает Id проекта по Id вакансии, которая принадлежит этому проекту.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <returns>Id проекта.</returns>
+    Task<long> GetProjectIdByVacancyIdAsync(long vacancyId);
+    
+    /// <summary>
+    /// Метод получает название проекта по его Id.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Название проекта.</returns>
+    Task<string> GetProjectNameByIdAsync(long projectId);
 }

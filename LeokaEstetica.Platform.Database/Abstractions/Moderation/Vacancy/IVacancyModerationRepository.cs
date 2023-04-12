@@ -41,4 +41,22 @@ public interface IVacancyModerationRepository
     /// <param name="vacancyId">Id вакансии.</param>
     /// <returns>Признак подтверждения вакансии.</returns>
     Task<bool> RejectVacancyAsync(long vacancyId);
+
+    /// <summary>
+    /// Метод отправляет уведомление в приложении при одобрении вакансии модератором.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <param name="userId">Id пользователя, которому отправим уведомление в приложении.</param>
+    /// <param name="vacancyName">Название вакансии.</param>
+    /// <param name="projectId">Id проекта.</param>
+    Task AddNotificationApproveVacancyAsync(long vacancyId, long userId, string vacancyName, long projectId);
+    
+    /// <summary>
+    /// Метод отправляет уведомление в приложении при отклонении вакансии модератором.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <param name="userId">Id пользователя, которому отправим уведомление в приложении.</param>
+    /// <param name="vacancyName">Название вакансии.</param>
+    /// <param name="projectId">Id проекта.</param>
+    Task AddNotificationRejectVacancyAsync(long vacancyId, long userId, string vacancyName, long projectId);
 }

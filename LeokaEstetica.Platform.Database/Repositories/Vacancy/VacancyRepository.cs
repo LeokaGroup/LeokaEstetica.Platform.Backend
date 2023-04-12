@@ -160,9 +160,8 @@ public class VacancyRepository : IVacancyRepository
     /// Метод получает вакансию по ее Id.
     /// </summary>
     /// <param name="vacancyId">Id вакансии.</param>
-    /// <param name="userId">Id пользователя.</param>
     /// <returns>Данные вакансии.</returns>
-    public async Task<UserVacancyEntity> GetVacancyByVacancyIdAsync(long vacancyId, long userId)
+    public async Task<UserVacancyEntity> GetVacancyByVacancyIdAsync(long vacancyId)
     {
         var result = await _pgContext.UserVacancies
             .FirstOrDefaultAsync(v => v.VacancyId == vacancyId);
@@ -340,7 +339,7 @@ public class VacancyRepository : IVacancyRepository
     /// <param name="vacancyId">Id вакансии.</param>
     /// <param name="userId">Id пользователя.</param>
     /// <returns>Признак является ли пользователь владельцем вакансии.</returns>
-    public async Task<bool> CheckProjectOwnerAsync(long vacancyId, long userId)
+    public async Task<bool> CheckVacancyOwnerAsync(long vacancyId, long userId)
     {
         var result = await _pgContext.UserVacancies
             .AnyAsync(p => p.VacancyId == vacancyId
@@ -360,6 +359,41 @@ public class VacancyRepository : IVacancyRepository
             .Where(v => v.UserId == userId)
             .OrderBy(v => v.VacancyId)
             .ToListAsync();
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод добавляет вакансию в архив.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <param name="userId">Id пользователя.</param>
+    public async Task AddVacancyArchiveAsync(long vacancyId, long userId)
+    {
+        var arvhivedVacancy = new ArchivedVacancyEntity
+        {
+            VacancyId = vacancyId,
+            DateArchived = DateTime.Now,
+            UserId = userId
+        };
+
+        // Добавляем вакансию в таблицу архивов.
+        await _pgContext.ArchivedVacancies.AddAsync(arvhivedVacancy);
+
+        await _pgContext.SaveChangesAsync();
+    }
+    
+    /// <summary>
+    /// Метод находит название вакансии по ее Id.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <returns>Название вакансии.</returns>
+    public async Task<string> GetVacancyNameByIdAsync(long vacancyId)
+    {
+        var result = await _pgContext.UserVacancies
+            .Where(v => v.VacancyId == vacancyId)
+            .Select(v => v.VacancyName)
+            .FirstOrDefaultAsync();
 
         return result;
     }

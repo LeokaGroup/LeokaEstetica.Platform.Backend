@@ -4,6 +4,7 @@ using LeokaEstetica.Platform.Models.Dto.Input.Project;
 using LeokaEstetica.Platform.Models.Dto.Output.Configs;
 using LeokaEstetica.Platform.Models.Dto.Output.Project;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectTeam;
+using LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
 using LeokaEstetica.Platform.Models.Entities.Configs;
 using LeokaEstetica.Platform.Models.Entities.Project;
 using LeokaEstetica.Platform.Models.Entities.ProjectTeam;
@@ -91,7 +92,7 @@ public interface IProjectService
     /// </summary>
     /// <param name="createProjectVacancyInput">Входная модель.</param>
     /// <returns>Данные вакансии.</returns>
-    Task<UserVacancyEntity> CreateProjectVacancyAsync(CreateProjectVacancyInput createProjectVacancyInput);
+    Task<VacancyOutput> CreateProjectVacancyAsync(CreateProjectVacancyInput createProjectVacancyInput);
 
     /// <summary>
     /// Метод получает список вакансий проекта, которые могут быть прикреплены у проекту пользователя.
@@ -181,4 +182,11 @@ public interface IProjectService
     /// <param name="account">Аккаунт.</param>
     /// <returns>Список вакансий доступных к отклику.</returns>
     Task<IEnumerable<ProjectVacancyEntity>> GetAvailableResponseProjectVacanciesAsync(long projectId, string account);
+
+    /// <summary>
+    /// Метод получает список проектов пользователя из архива.
+    /// </summary>
+    /// <param name="account">Аккаунт пользователя.</param>
+    /// <returns>Список архивированных проектов.</returns>
+    Task<UserProjectArchiveResultOutput> GetUserProjectsArchiveAsync(string account);
 }

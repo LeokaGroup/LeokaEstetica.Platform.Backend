@@ -21,7 +21,7 @@ public interface IVacancyService
     /// </summary>
     /// <param name="vacancyInput">Входная модель.</param>
     /// <returns>Данные созданной вакансии.</returns>
-    Task<UserVacancyEntity> CreateVacancyAsync(VacancyInput vacancyInput);
+    Task<VacancyOutput> CreateVacancyAsync(VacancyInput vacancyInput);
     
     /// <summary>
     /// Метод обновляет вакансию.
@@ -71,4 +71,11 @@ public interface IVacancyService
     /// </summary>
     /// <returns>Список вакансий.</returns>
     Task<VacancyResultOutput> GetUserVacanciesAsync(string account);
+
+    /// <summary>
+    /// Метод добавляет вакансию в архив.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <param name="account">Аккаунт.</param>
+    Task AddVacancyArchiveAsync(long vacancyId, string account);
 }

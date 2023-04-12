@@ -26,7 +26,10 @@ public class ResumeRepository : IResumeRepository
     {
         var excludedResumes = _pgContext.ModerationResumes
             .Where(r => !new[]
-                    { (int)ResumeModerationStatusEnum.ModerationResume, (int)ResumeModerationStatusEnum.RejectedResume }
+                {
+                    (int)ResumeModerationStatusEnum.ModerationResume,
+                    (int)ResumeModerationStatusEnum.RejectedResume
+                }
                 .Contains(r.ModerationStatusId))
             .Select(r => r.ProfileInfoId)
             .AsQueryable();

@@ -54,4 +54,14 @@ public class ResumeOutput
     /// Признак выделения цветом.
     /// </summary>
     public bool IsSelectedColor { get; set; }
+    
+    /// <summary>
+    /// Цвет тега.
+    /// </summary>
+    public string TagColor { get; set; }
+
+    /// <summary>
+    /// Значение тега.
+    /// </summary>
+    public string TagValue { get; set; }
 }

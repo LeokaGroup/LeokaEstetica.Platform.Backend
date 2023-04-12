@@ -1,7 +1,9 @@
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Enums;
+using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Project;
 using LeokaEstetica.Platform.Models.Entities.Moderation;
+using LeokaEstetica.Platform.Models.Entities.Notification;
 using LeokaEstetica.Platform.Models.Entities.Project;
 using Microsoft.EntityFrameworkCore;
 
@@ -84,6 +86,7 @@ public class ProjectModerationRepository : IProjectModerationRepository
         {
             ProjectId = projectId
         });
+        
         await _pgContext.SaveChangesAsync();
 
         return true;
@@ -102,18 +105,59 @@ public class ProjectModerationRepository : IProjectModerationRepository
     }
 
     /// <summary>
-    /// Метод получает название проекта по его Id.
+    /// Метод отправляет уведомление в приложении при одобрении проекта модератором.
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
-    /// <returns>Название проекта.</returns>
-    public async Task<string> GetProjectNameByIdAsync(long projectId)
+    /// <param name="userId">Id пользователя, которому отправим уведомление в приложении.</param>
+    /// <param name="projectName">Название проекта.</param>
+    public async Task AddNotificationApproveProjectAsync(long projectId, long userId, string projectName)
     {
-        var result = await _pgContext.UserProjects
-            .Where(p => p.ProjectId == projectId)
-            .Select(p => p.ProjectName)
-            .FirstOrDefaultAsync();
+        await _pgContext.Notifications.AddAsync(new NotificationEntity
+        {
+            ProjectId = projectId,
+            VacancyId = null,
+            UserId = userId,
+            NotificationName = NotificationTypeEnum.ApproveModerationProject.GetEnumDescription(),
+            NotificationSysName = NotificationTypeEnum.ApproveModerationProject.ToString(),
+            IsNeedAccepted = true,
+            Approved = false,
+            Rejected = false,
+            NotificationText = $"Проект \"{projectName}\" одобрен модератором",
+            Created = DateTime.Now,
+            NotificationType = NotificationTypeEnum.ApproveModerationProject.ToString(),
+            IsShow = true,
+            IsOwner = false
+        });
+        
+        await _pgContext.SaveChangesAsync();
+    }
 
-        return result;
+    /// <summary>
+    /// Метод отправляет уведомление в приложении при отклонении проекта модератором.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="userId">Id пользователя, которому отправим уведомление в приложении.</param>
+    /// <param name="projectName">Название проекта.</param>
+    public async Task AddNotificationRejectProjectAsync(long projectId, long userId, string projectName)
+    {
+        await _pgContext.Notifications.AddAsync(new NotificationEntity
+        {
+            ProjectId = projectId,
+            VacancyId = null,
+            UserId = userId,
+            NotificationName = NotificationTypeEnum.RejectModerationProject.GetEnumDescription(),
+            NotificationSysName = NotificationTypeEnum.RejectModerationProject.ToString(),
+            IsNeedAccepted = true,
+            Approved = false,
+            Rejected = false,
+            NotificationText = $"Проект \"{projectName}\" отклонен модератором",
+            Created = DateTime.Now,
+            NotificationType = NotificationTypeEnum.RejectModerationProject.ToString(),
+            IsShow = true,
+            IsOwner = false
+        });
+        
+        await _pgContext.SaveChangesAsync();
     }
 
     /// <summary>
@@ -133,6 +177,7 @@ public class ProjectModerationRepository : IProjectModerationRepository
         }
 
         prj.ModerationStatusId = (int)projectModerationStatus;
+        
         await _pgContext.SaveChangesAsync();
 
         return true;
