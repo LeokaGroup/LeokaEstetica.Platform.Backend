@@ -40,10 +40,10 @@ public class UserActivityMarkDeactivateJob : IJob
     {
         try
         {
-            var markedUsers = new List<UserEntity>();
-            var deletedUsers = new List<UserEntity>();
             var users = await _userRepository.GetAllAsync();
             var now = DateTime.Now;
+            var markedUsers = new List<UserEntity>();
+            var deletedUsers = new List<UserEntity>();
 
             foreach (var u in users)
             {
@@ -78,7 +78,7 @@ public class UserActivityMarkDeactivateJob : IJob
             // Нет аккаунтов для пометок.
             if (!markedUsers.Any())
             {
-                return;
+                await Task.CompletedTask;
             }
 
             // Проставляем метки в БД.
@@ -91,7 +91,7 @@ public class UserActivityMarkDeactivateJob : IJob
             // Нет аккаунтов для удаления.
             if (!deletedUsers.Any())
             {
-                return;
+                await Task.CompletedTask;
             }
             
             // Записываем в кэш для удаления аккаунтов.
