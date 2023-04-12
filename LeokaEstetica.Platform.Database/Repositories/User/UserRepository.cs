@@ -336,4 +336,19 @@ public class UserRepository : IUserRepository
 
         return result;
     }
+
+    /// <summary>
+    /// Метод находит Id пользователя по vk id.
+    /// </summary>
+    /// <param name="vkId">Id вконтакте.</param>
+    /// <returns>Id пользователя.</returns>
+    public async Task<long> GetUserIdByVkIdAsync(long vkId)
+    {
+        var result = await _pgContext.Users
+            .Where(u => u.VkUserId.Equals(vkId))
+            .Select(u => u.UserId)
+            .FirstOrDefaultAsync();
+
+        return result;
+    }
 }

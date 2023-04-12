@@ -145,4 +145,11 @@ public interface IUserRepository
     /// <param name="userId">VkUserId пользователя.</param>
     /// <returns>Флаг проверки.</returns>
     Task<bool> CheckUserByVkUserIdAsync(long userId);
+
+    /// <summary>
+    /// Метод находит Id пользователя по его vk id.
+    /// </summary>
+    /// <param name="vkId">Id вконтакте.</param>
+    /// <returns>Id пользователя.</returns>
+    Task<long> GetUserIdByVkIdAsync(long vkId);
 }
