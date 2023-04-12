@@ -1,6 +1,7 @@
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using FluentValidation.AspNetCore;
+using LeokaEstetica.Platform.Backend.Loaders.HostedWorkerServices;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Utils;
 using LeokaEstetica.Platform.Notifications.Data;
@@ -97,6 +98,9 @@ builder.Services.AddFluentValidation(conf =>
     conf.RegisterValidatorsFromAssembly(typeof(Program).Assembly);
     conf.AutomaticValidationEnabled = false;
 });
+
+// Регистрация всех воркер-сервисов ядра.
+HostedWorkerServices.AddHostedServices(builder.Services);
 
 var app = builder.Build();
 
