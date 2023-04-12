@@ -108,6 +108,7 @@ public class VacancyRepository : IVacancyRepository
                         (int)VacancyModerationStatusEnum.RejectedVacancy
                     }
                     .Contains(tbl.ModerationStatusId)
+                    where cv.Vacancy.ArchivedVacancies.All(a => a.VacancyId!= cv.Vacancy.VacancyId)
                 select new CatalogVacancyOutput
                 {
                     VacancyName = cv.Vacancy.VacancyName,
