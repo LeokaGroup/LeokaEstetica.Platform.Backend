@@ -13,7 +13,6 @@ public class StartJobs
     /// </summary>
     public static void Start()
     {
-        // Джоба отслеживания активности пользователя раз в сутки.
-        UserActivityScheduler.Start();
+        CheckActivityMarkDeactivateScheduler.Start();
     }
 }

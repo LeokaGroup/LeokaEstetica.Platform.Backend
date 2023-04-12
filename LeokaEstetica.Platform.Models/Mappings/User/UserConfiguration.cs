@@ -105,6 +105,23 @@ public partial class UserConfiguration : IEntityTypeConfiguration<UserEntity>
         entity.Property(e => e.VkUserId)
             .HasColumnName("VkUserId")
             .HasColumnType("bigint");
+        
+        entity.Property(e => e.LastAutorization)
+            .HasColumnName("LastAutorization")
+            .HasColumnType("timestamp")
+            .HasDefaultValue(DateTime.Now)
+            .IsRequired();
+        
+        entity.Property(e => e.DateCreatedMark)
+            .HasColumnName("DateCreatedMark")
+            .HasColumnType("timestamp")
+            .HasDefaultValue(DateTime.Now)
+            .IsRequired();
+        
+        entity.Property(e => e.IsMarkDeactivate)
+            .HasColumnName("IsMarkDeactivate")
+            .HasColumnType("bool")
+            .IsRequired();
 
         entity.HasIndex(u => u.UserId)
             .HasDatabaseName("PK_Users_UserId")

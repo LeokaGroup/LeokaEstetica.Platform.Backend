@@ -15,4 +15,9 @@
     <ItemGroup>
       <Folder Include="Jobs" />
     </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\LeokaEstetica.Platform.Database\LeokaEstetica.Platform.Database.csproj" />
+      <ProjectReference Include="..\LeokaEstetica.Platform.Messaging\LeokaEstetica.Platform.Messaging.csproj" />
+    </ItemGroup>
 </Project>

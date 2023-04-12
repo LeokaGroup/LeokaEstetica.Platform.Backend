@@ -1,6 +1,9 @@
+using LeokaEstetica.Platform.Models.Entities.User;
 using LeokaEstetica.Platform.Redis.Abstractions.User;
+using LeokaEstetica.Platform.Redis.Consts;
 using LeokaEstetica.Platform.Redis.Extensions;
 using Microsoft.Extensions.Caching.Distributed;
+using Newtonsoft.Json;
 
 namespace LeokaEstetica.Platform.Redis.Services.User;
 
@@ -59,5 +62,51 @@ public class UserRedisService : IUserRedisService
         await _redisCache.RefreshAsync(token);
     
         return result;
+    }
+
+    /// <summary>
+    /// Метод добавляет в кэш пользователей, аккаунты которых нужно удалить и все их данные.
+    /// </summary>
+    /// <param name="users">Список пользователей.</param>
+    public async Task AddMarkDeactivateUserAccountsAsync(List<UserEntity> users)
+    {
+        if (!users.Any())
+        {
+            return;
+        }
+
+        await _redisCache.SetStringAsync(CacheKeysConsts.DEACTIVATE_USER_ACCOUNTS, ProtoBufExtensions.Serialize(users),
+            new DistributedCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(30)
+            });
+    }
+
+    /// <summary>
+    /// Метод получает из кэша пользователей, аккаунты которых нужно удалить и все их данные.
+    /// </summary>
+    /// <param name="key">Ключ для получения списка аккаунтов.</param>
+    /// <returns>Список пользователей для удаления их аккаунтов.</returns>
+    public async Task<List<UserEntity>> GetMarkDeactivateUserAccountsAsync(string key)
+    {
+        var redisResult = await _redisCache.GetStringAsync(key);
+
+        // Нет аккаунтов для удаления.
+        if (string.IsNullOrEmpty(redisResult))
+        {
+            return null;
+        }
+
+        var result = ProtoBufExtensions.Deserialize<string>(redisResult);
+        
+        if (string.IsNullOrEmpty(result))
+        {
+            throw new InvalidOperationException(
+                "Не удалось получить список аккаунтов пользователей из кэша для удаления.");
+        }
+
+        var finalResult = JsonConvert.DeserializeObject<List<UserEntity>>(result);
+
+        return finalResult;
     }
 }
