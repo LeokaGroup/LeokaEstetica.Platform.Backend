@@ -128,4 +128,11 @@ public interface IVacancyRepository
     /// <param name="vacancyId">Id вакансии.</param>
     /// <returns>Название вакансии.</returns>
     Task<string> GetVacancyNameByIdAsync(long vacancyId);
+
+    /// <summary>
+    /// Метод получает список вакансий пользователя из архива.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Список архивированных проектов.</returns>
+    Task<IEnumerable<ArchivedVacancyEntity>> GetUserVacanciesArchiveAsync(long userId);
 }

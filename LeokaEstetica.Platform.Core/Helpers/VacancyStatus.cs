@@ -17,7 +17,8 @@ public static class VacancyStatus
         ["Approved"] = 2,
         ["Rejected"] = 3,
         ["Draft"] = 4,
-        ["Removed"] = 5
+        ["Removed"] = 5,
+        ["Archived"] = 6,
     };
     
     /// <summary>
@@ -29,7 +30,8 @@ public static class VacancyStatus
         ["Approved"] = "Одобрена",
         ["Rejected"] = "Отклонена",
         ["Draft"] = "В черновике",
-        ["Removed"] = "Удалена"
+        ["Removed"] = "Удалена",
+        ["Archived"] = "В архиве",
     };
 
     /// <summary>
@@ -71,5 +73,8 @@ public enum VacancyStatusNameEnum
     Draft = 4,
     
     [Description("Удалена")]
-    Removed = 5
+    Removed = 5,
+
+    [Description("В архиве")]
+    Archived = 6,
 }

@@ -1,4 +1,5 @@
 using LeokaEstetica.Platform.Models.Dto.Output.User;
+using LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
 using LeokaEstetica.Platform.Models.Entities.User;
 
 namespace LeokaEstetica.Platform.Database.Abstractions.User;

@@ -21,6 +21,8 @@ using LeokaEstetica.Platform.Redis.Models.Vacancy;
 using LeokaEstetica.Platform.Services.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Services.Builders;
 using VacancyItems = LeokaEstetica.Platform.Redis.Models.Vacancy.VacancyItems;
+using LeokaEstetica.Platform.Core.Helpers;
+using LeokaEstetica.Platform.Core.Extensions;
 
 namespace LeokaEstetica.Platform.Services.Services.Vacancy;
 
@@ -576,6 +578,52 @@ public class VacancyService : IVacancyService
         }
     }
 
+    /// <summary>
+    /// Метод получает список вакансий пользователя из архива.
+    /// </summary>
+    /// <param name="account">Аккаунт пользователя.</param>
+    /// <returns>Список архивированных проектов.</returns>
+    public async Task<VacancyArchiveResultOutput> GetUserVacanciesArchiveAsync(string account)
+    {
+        try
+        {
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId <= 0)
+            {
+                throw new NotFoundUserIdByAccountException(account);
+            }
+
+            // Находим вакансии в архиве
+            var archivedVacancies = await _vacancyRepository.GetUserVacanciesArchiveAsync(userId);
+
+            var archivedVacanciesOutput = _mapper.Map<List<VacancyArchiveOutput>>(archivedVacancies);
+
+            // Проставляем статусы
+            archivedVacanciesOutput.ForEach(p => p.VacancyStatusName = VacancyStatusNameEnum.Archived
+                .GetEnumDescription());
+
+            // Формируем выходную модель
+            var resultOutput = new VacancyArchiveResultOutput
+            {
+                Vacancies = archivedVacanciesOutput
+            };
+
+            // Очищаем теги
+            foreach (var vacancy in archivedVacanciesOutput)
+            {
+                vacancy.VacancyText = ClearHtmlBuilder.Clear(vacancy.VacancyText);
+            }
+
+            return resultOutput;
+        }
+
+        catch (Exception ex)
+        {
+            await _logService.LogErrorAsync(ex);
+            throw;
+        }
+    }
     #endregion
 
     #region Приватные методы.

@@ -294,4 +294,22 @@ public class VacancyController : BaseController
     {
         await _vacancyService.AddVacancyArchiveAsync(vacancy.VacancyId, GetUserName());
     }
+
+    /// <summary>
+    /// Метод получает список вакансий пользователя из архива.
+    /// </summary>
+    /// <returns>Список архивированных проектов.</returns>
+    [HttpGet]
+    [Route("archive")]
+    [ProducesResponseType(200, Type = typeof(VacancyArchiveResultOutput))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<VacancyArchiveResultOutput> GetUserVacancyArchiveAsync()
+    {
+        var result = await _vacancyService.GetUserVacanciesArchiveAsync(GetUserName());
+
+        return result;
+    }
 }

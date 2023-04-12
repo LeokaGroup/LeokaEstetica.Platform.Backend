@@ -121,5 +121,11 @@ public class MappingProfile : Profile
             a => a.MapFrom(src => src.UserProject.ProjectName))
             .ForMember(a => a.ProjectDetails,
             a => a.MapFrom(src => src.UserProject.ProjectDetails));
+
+        CreateMap<ArchivedVacancyEntity, VacancyArchiveOutput>()
+            .ForMember(a=>a.VacancyName,
+            a=>a.MapFrom(src=>src.UserVacancy.VacancyName))
+            .ForMember(v => v.VacancyText,
+            v => v.MapFrom(src => src.UserVacancy.VacancyText));
     }
 }
