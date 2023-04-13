@@ -82,7 +82,8 @@ public class VacancyModerationRepository : IVacancyModerationRepository
     {
         var result = await _pgContext.ModerationVacancies
             .Include(up => up.UserVacancy)
-            .Where(p => p.ModerationStatus.StatusId == (int)VacancyModerationStatusEnum.ModerationVacancy)
+            .Where(p => p.ModerationStatus.StatusId == (int)VacancyModerationStatusEnum.ModerationVacancy &&
+            _pgContext.ArchivedVacancies.All(a=>a.VacancyId != p.VacancyId))
             .Select(p => new ModerationVacancyEntity
             {
                 ModerationId = p.ModerationId,
