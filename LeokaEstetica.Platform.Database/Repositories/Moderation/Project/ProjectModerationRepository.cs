@@ -29,7 +29,8 @@ public class ProjectModerationRepository : IProjectModerationRepository
     {
         var result = await _pgContext.ModerationProjects
             .Include(up => up.UserProject)
-            .Where(p => p.ModerationStatus.StatusId == (int)ProjectModerationStatusEnum.ModerationProject)
+            .Where(p => p.ModerationStatus.StatusId == (int)ProjectModerationStatusEnum.ModerationProject &&
+            _pgContext.ArchivedProjects.All(a=>a.ProjectId != p.ProjectId))
             .Select(p => new ModerationProjectEntity
             {
                 ModerationId = p.ModerationId,
