@@ -151,4 +151,10 @@ public interface IUserRepository
     /// </summary>
     /// <param name="users">Список пользователей, которых предупредим.</param>
     Task SetMarkDeactivateAccountsAsync(List<UserEntity> users);
+    
+    /// <summary>
+    /// Метод удаляет аккаунты пользователей.
+    /// </summary>
+    /// <param name="users">Список пользователей, которых предупредим.</param>
+    Task DeleteDeactivateAccountsAsync(List<UserEntity> users);
 }

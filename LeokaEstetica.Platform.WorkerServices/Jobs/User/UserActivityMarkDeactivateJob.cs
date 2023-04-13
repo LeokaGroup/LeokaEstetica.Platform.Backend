@@ -21,6 +21,9 @@ public class UserActivityMarkDeactivateJob : IJob
     /// Конструктор.
     /// </summary>
     /// <param name="userRepository">Репозиторий пользователя.</param>
+    /// <param name="userRedisService">Сервис кэша.</param>
+    /// <param name="logService">Сервис логов.</param>
+    /// <param name="mailingsService">Сервис уведомлений на почту.</param>
     public UserActivityMarkDeactivateJob(IUserRepository userRepository, 
         IUserRedisService userRedisService, 
         ILogService logService, 

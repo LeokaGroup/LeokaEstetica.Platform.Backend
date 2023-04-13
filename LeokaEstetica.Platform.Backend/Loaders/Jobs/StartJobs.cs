@@ -13,6 +13,10 @@ public class StartJobs
     /// </summary>
     public static void Start()
     {
+        // Запускаем планировщик активностей аккаунтов пользователей.
         CheckActivityMarkDeactivateScheduler.Start();
+        
+        // Запускаем планировщик удаления аккаунтов пользователей.
+        DeleteDeactivatedAccountsScheduler.Start();
     }
 }

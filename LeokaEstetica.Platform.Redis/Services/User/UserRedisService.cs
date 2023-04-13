@@ -94,7 +94,7 @@ public class UserRedisService : IUserRedisService
         // Нет аккаунтов для удаления.
         if (string.IsNullOrEmpty(redisResult))
         {
-            return null;
+            return new List<UserEntity>();
         }
 
         var result = ProtoBufExtensions.Deserialize<string>(redisResult);

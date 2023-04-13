@@ -346,4 +346,14 @@ public class UserRepository : IUserRepository
         _pgContext.Users.UpdateRange(users);
         await _pgContext.SaveChangesAsync();
     }
+
+    /// <summary>
+    /// Метод удаляет аккаунты пользователей.
+    /// </summary>
+    /// <param name="users">Список пользователей, которых предупредим.</param>
+    public async Task DeleteDeactivateAccountsAsync(List<UserEntity> users)
+    {
+        _pgContext.Users.RemoveRange(users);
+        await _pgContext.SaveChangesAsync();
+    }
 }

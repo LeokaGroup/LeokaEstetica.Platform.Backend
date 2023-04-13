@@ -19,5 +19,6 @@
     <ItemGroup>
       <ProjectReference Include="..\LeokaEstetica.Platform.Database\LeokaEstetica.Platform.Database.csproj" />
       <ProjectReference Include="..\LeokaEstetica.Platform.Messaging\LeokaEstetica.Platform.Messaging.csproj" />
+      <ProjectReference Include="..\LeokaEstetica.Platform.Services\LeokaEstetica.Platform.Services.csproj" />
     </ItemGroup>
 </Project>
