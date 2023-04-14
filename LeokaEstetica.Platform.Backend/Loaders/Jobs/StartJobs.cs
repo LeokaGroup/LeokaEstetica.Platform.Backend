@@ -1,22 +1,22 @@
-using LeokaEstetica.Platform.WorkerServices.Schedulers.User;
+using LeokaEstetica.Platform.WorkerServices.Jobs.User;
 
 namespace LeokaEstetica.Platform.Backend.Loaders.Jobs;
 
 /// <summary>
 /// Класс с джобами, которые должны выполняться при запуске ядра системы.
 /// </summary>
-public class StartJobs
+public static class StartJobs
 {
     /// <summary>
     /// Метод запускает джобы.
     /// По дефолту все воркер сервисы зареганы как сингтон.
     /// </summary>
-    public static void Start()
+    public static void Start(IServiceCollection services)
     {
         // Запускаем планировщик активностей аккаунтов пользователей.
-        CheckActivityMarkDeactivateScheduler.Start();
+        services.AddHostedService<UserActivityMarkDeactivateJob>();
         
         // Запускаем планировщик удаления аккаунтов пользователей.
-        DeleteDeactivatedAccountsScheduler.Start();
+        services.AddHostedService<DeleteDeactivatedAccountsJob>();
     }
 }

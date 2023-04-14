@@ -3,28 +3,28 @@ using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Redis.Abstractions.User;
 using LeokaEstetica.Platform.Redis.Consts;
 using LeokaEstetica.Platform.Services.Abstractions.Project;
-using Quartz;
 
 namespace LeokaEstetica.Platform.WorkerServices.Jobs.User;
 
 /// <summary>
 /// Класс джобы удаления аккаунтов пользователей и всех связанных данных.
 /// </summary>
-public class DeleteDeactivatedAccountsJob : IJob
+public class DeleteDeactivatedAccountsJob : BackgroundService
 {
+    private Timer _timer;
     private readonly ILogService _logService;
     private readonly IUserRedisService _userRedisService;
     private readonly IProjectService _projectService;
     private readonly IUserRepository _userRepository;
-    
+
     /// <summary>
     /// Конструктор.
     /// <param name="Сервис логов."></param>
     /// <param name="userRedisService">Сервис кэша.</param>
     /// </summary>
-    public DeleteDeactivatedAccountsJob(ILogService logService, 
-        IUserRedisService userRedisService, 
-        IProjectService projectService, 
+    public DeleteDeactivatedAccountsJob(ILogService logService,
+        IUserRedisService userRedisService,
+        IProjectService projectService,
         IUserRepository userRepository)
     {
         _logService = logService;
@@ -37,7 +37,18 @@ public class DeleteDeactivatedAccountsJob : IJob
     /// Метод выполняет логику фоновой задачи.
     /// </summary>
     /// <param name="IJobExecutionContext">Контекст джобы.</param>
-    public async Task Execute(IJobExecutionContext context)
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        _timer = new Timer(DoWork, null, TimeSpan.Zero, TimeSpan.FromSeconds(5));
+
+        await Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Метод выполняет логику фоновой задачи.
+    /// </summary>
+    /// <param name="state">Состояние.</param>
+    private async void DoWork(object state)
     {
         try
         {
@@ -71,11 +82,23 @@ public class DeleteDeactivatedAccountsJob : IJob
             // Удаляем все аккаунты.
             await _userRepository.DeleteDeactivateAccountsAsync(deleteUsers);
         }
-        
+
         catch (Exception ex)
         {
             await _logService.LogCriticalAsync(ex, "Ошибка при выполнении фоновой задачи DeleteDeactivatedAccounts.");
             throw;
         }
+    }
+
+    public override Task StopAsync(CancellationToken stoppingToken)
+    {
+        _timer?.Change(Timeout.Infinite, 0);
+
+        return Task.CompletedTask;
+    }
+
+    public override void Dispose()
+    {
+        _timer?.Dispose();
     }
 }

@@ -100,7 +100,7 @@ builder.Services.AddFluentValidation(conf =>
 });
 
 // Запуск джоб при старте ядра системы.
-StartJobs.Start();
+StartJobs.Start(builder.Services);
 
 var app = builder.Build();
 
