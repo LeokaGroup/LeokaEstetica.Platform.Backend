@@ -1,3 +1,5 @@
+using AutoMapper;
+using LeokaEstetica.Platform.Models.Dto.Input.User;
 using LeokaEstetica.Platform.Models.Entities.User;
 using LeokaEstetica.Platform.Redis.Abstractions.User;
 using LeokaEstetica.Platform.Redis.Consts;
@@ -13,14 +15,17 @@ namespace LeokaEstetica.Platform.Redis.Services.User;
 public class UserRedisService : IUserRedisService
 {
     private readonly IDistributedCache _redisCache;
+    private readonly IMapper _mapper;
     
     /// <summary>
     /// Конструктор.
     /// </summary>
     /// <param name="redisCache">Кэш редиса.</param>
-    public UserRedisService(IDistributedCache redisCache)
+    public UserRedisService(IDistributedCache redisCache, 
+        IMapper mapper)
     {
         _redisCache = redisCache;
+        _mapper = mapper;
     }
 
     /// <summary>
@@ -75,7 +80,10 @@ public class UserRedisService : IUserRedisService
             return;
         }
 
-        await _redisCache.SetStringAsync(CacheKeysConsts.DEACTIVATE_USER_ACCOUNTS, ProtoBufExtensions.Serialize(users),
+        var mapItems = _mapper.Map<List<UserActivityMarkDeactivate>>(users);
+
+        await _redisCache.SetStringAsync(CacheKeysConsts.DEACTIVATE_USER_ACCOUNTS,
+            ProtoBufExtensions.Serialize(mapItems),
             new DistributedCacheEntryOptions
             {
                 AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(30)
@@ -89,24 +97,25 @@ public class UserRedisService : IUserRedisService
     /// <returns>Список пользователей для удаления их аккаунтов.</returns>
     public async Task<List<UserEntity>> GetMarkDeactivateUserAccountsAsync(string key)
     {
-        var redisResult = await _redisCache.GetStringAsync(key);
+        var items = await _redisCache.GetStringAsync(key);
 
         // Нет аккаунтов для удаления.
-        if (string.IsNullOrEmpty(redisResult))
+        if (string.IsNullOrEmpty(items))
         {
             return new List<UserEntity>();
         }
 
-        var result = ProtoBufExtensions.Deserialize<string>(redisResult);
+        var redisResult = ProtoBufExtensions.Deserialize<string>(items);
         
-        if (string.IsNullOrEmpty(result))
+        if (string.IsNullOrEmpty(redisResult))
         {
             throw new InvalidOperationException(
                 "Не удалось получить список аккаунтов пользователей из кэша для удаления.");
         }
 
-        var finalResult = JsonConvert.DeserializeObject<List<UserEntity>>(result);
+        var finalResult = JsonConvert.DeserializeObject<List<UserEntity>>(redisResult);
+        var result = _mapper.Map<List<UserEntity>>(finalResult);
 
-        return finalResult;
+        return result;
     }
 }

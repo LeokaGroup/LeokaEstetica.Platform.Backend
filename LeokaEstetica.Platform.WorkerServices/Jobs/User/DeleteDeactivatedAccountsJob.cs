@@ -39,7 +39,7 @@ public class DeleteDeactivatedAccountsJob : BackgroundService
     /// <param name="IJobExecutionContext">Контекст джобы.</param>
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        _timer = new Timer(DoWork, null, TimeSpan.Zero, TimeSpan.FromSeconds(5));
+        _timer = new Timer(DoWork, null, TimeSpan.Zero, TimeSpan.FromMinutes(30)); // TODO: После тестов на 24 ч.
 
         await Task.CompletedTask;
     }
@@ -90,6 +90,10 @@ public class DeleteDeactivatedAccountsJob : BackgroundService
         }
     }
 
+    /// <summary>
+    /// Метод останавливает фоновую задачу.
+    /// </summary>
+    /// <param name="stoppingToken">Токен остановки.</param>
     public override Task StopAsync(CancellationToken stoppingToken)
     {
         _timer?.Change(Timeout.Infinite, 0);
@@ -97,6 +101,9 @@ public class DeleteDeactivatedAccountsJob : BackgroundService
         return Task.CompletedTask;
     }
 
+    /// <summary>
+    /// Метод освобождает ресурсы таймера.
+    /// </summary>
     public override void Dispose()
     {
         _timer?.Dispose();

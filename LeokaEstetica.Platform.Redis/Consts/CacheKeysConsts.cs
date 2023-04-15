@@ -8,5 +8,5 @@ public static class CacheKeysConsts
     /// <summary>
     /// Ключ для удаления аккаунтов пользователей.
     /// </summary>
-    public const string DEACTIVATE_USER_ACCOUNTS = "DeactivateUserAccounts";
+    public const string DEACTIVATE_USER_ACCOUNTS = "DeactivatedUserAccounts";
 }

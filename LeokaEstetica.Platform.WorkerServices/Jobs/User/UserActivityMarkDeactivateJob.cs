@@ -41,7 +41,7 @@ public class UserActivityMarkDeactivateJob : BackgroundService
     /// <param name="stoppingToken">Токен отмены.</param>
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        _timer = new Timer(DoWork, null, TimeSpan.Zero, TimeSpan.FromSeconds(5));
+        _timer = new Timer(DoWork, null, TimeSpan.Zero, TimeSpan.FromMinutes(30)); // TODO: После тестов на 24 ч.
 
         await Task.CompletedTask;
     }
@@ -54,15 +54,16 @@ public class UserActivityMarkDeactivateJob : BackgroundService
     {
         try
         {
-            var users = await _userRepository.GetAllAsync();
             var now = DateTime.Now;
             var markedUsers = new List<UserEntity>();
             var deletedUsers = new List<UserEntity>();
+            
+            var users = await _userRepository.GetAllAsync();
 
             foreach (var u in users)
             {
                 // Вычисляемм разницу дат.
-                var diffDates = now.Subtract(u.LastAutorization).TotalDays;
+                var diffDates = now.Subtract(u.LastAutorization).Days;
 
                 // Если дата последней авторизации > 30 дней,
                 // то вышлем на почту предупреждение о удалении аккаунта пользователя через 1 неделю.
@@ -76,9 +77,6 @@ public class UserActivityMarkDeactivateJob : BackgroundService
                 // То есть +1 неделя к 30 дням.
                 if (diffDates is > 30 and <= 37)
                 {
-                    // Помечаем пользователей, которым проставим метку в БД и отправим предупреждение на почту.
-                    u.IsMarkDeactivate = true;
-                    u.DateCreatedMark = DateTime.Now;
                     markedUsers.Add(u);
                 }
 
@@ -87,25 +85,27 @@ public class UserActivityMarkDeactivateJob : BackgroundService
                 {
                     deletedUsers.Add(u);
                 }
+                
+                // Помечаем пользователей, которым проставим метку в БД и отправим предупреждение на почту.
+                u.IsMarkDeactivate = true;
+                u.DateCreatedMark = DateTime.Now;
             }
 
             // Нет аккаунтов для пометок.
-            if (!markedUsers.Any())
+            // Нет аккаунтов для удаления.
+            if (!markedUsers.Any() && !deletedUsers.Any())
             {
                 await Task.CompletedTask;
             }
 
-            // Проставляем метки в БД.
-            await _userRepository.SetMarkDeactivateAccountsAsync(markedUsers);
-
-            // Отправляем пользователям предупреждение на почту.
-            var mailsTo = markedUsers.Select(u => u.Email).ToList();
-            await _mailingsService.SendNotificationDeactivateAccountAsync(mailsTo);
-
-            // Нет аккаунтов для удаления.
-            if (!deletedUsers.Any())
+            if (markedUsers.Any())
             {
-                await Task.CompletedTask;
+                // Проставляем метки в БД.
+                await _userRepository.SetMarkDeactivateAccountsAsync(markedUsers);
+
+                // Отправляем пользователям предупреждение на почту.
+                var mailsTo = markedUsers.Select(u => u.Email).ToList();
+                await _mailingsService.SendNotificationDeactivateAccountAsync(mailsTo);
             }
 
             // Записываем в кэш для удаления аккаунтов.
@@ -119,6 +119,10 @@ public class UserActivityMarkDeactivateJob : BackgroundService
         }
     }
 
+    /// <summary>
+    /// Метод останавливает фоновую задачу.
+    /// </summary>
+    /// <param name="stoppingToken">Токен остановки.</param>
     public override Task StopAsync(CancellationToken stoppingToken)
     {
         _timer?.Change(Timeout.Infinite, 0);
@@ -126,6 +130,9 @@ public class UserActivityMarkDeactivateJob : BackgroundService
         return Task.CompletedTask;
     }
 
+    /// <summary>
+    /// Метод освобождает ресурсы таймера.
+    /// </summary>
     public override void Dispose()
     {
         _timer?.Dispose();
