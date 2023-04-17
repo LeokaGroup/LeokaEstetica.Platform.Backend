@@ -1055,19 +1055,26 @@ public class ProjectService : IProjectService
                     "Ошибка удаления проекта. " +
                     $"ProjectId: {projectId}. " +
                     $"UserId: {userId}");
-            
-                await _projectNotificationsService.SendNotificationErrorDeleteProjectAsync(
-                    "Ошибка",
-                    "Ошибка при удалении проекта.",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, token);
+
+                if (!string.IsNullOrEmpty(token))
+                {
+                    await _projectNotificationsService.SendNotificationErrorDeleteProjectAsync(
+                        "Ошибка",
+                        "Ошибка при удалении проекта.",
+                        NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, token);    
+                }
+                
                 throw ex;
             }
         
-            await _projectNotificationsService.SendNotificationSuccessDeleteProjectAsync(
-                "Все хорошо",
-                "Проект успешно удален.",
-                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);
-            
+            if (!string.IsNullOrEmpty(token))
+            {
+                await _projectNotificationsService.SendNotificationSuccessDeleteProjectAsync(
+                    "Все хорошо",
+                    "Проект успешно удален.",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);  
+            }
+
             var user = await _userRepository.GetUserPhoneEmailByUserIdAsync(userId);
 
             // Отправляем уведомление на почту владельца об удаленном проекте и вакансиях привязанных к проекту.

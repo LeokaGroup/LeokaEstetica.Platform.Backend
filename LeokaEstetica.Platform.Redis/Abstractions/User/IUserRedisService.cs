@@ -1,3 +1,5 @@
+using LeokaEstetica.Platform.Models.Entities.User;
+
 namespace LeokaEstetica.Platform.Redis.Abstractions.User;
 
 /// <summary>
@@ -18,4 +20,17 @@ public interface IUserRedisService
     /// <param name="token">Токен пользователя.</param>
     /// <returns>Id пользователя из кэша.</returns>
     Task<string> GetUserIdCacheAsync(string token);
+
+    /// <summary>
+    /// Метод добавляет в кэш пользователей, аккаунты которых нужно удалить и все их данные.
+    /// </summary>
+    /// <param name="users">Список пользователей.</param>
+    Task AddMarkDeactivateUserAccountsAsync(List<UserEntity> users);
+    
+    /// <summary>
+    /// Метод получает из кэша пользователей, аккаунты которых нужно удалить и все их данные.
+    /// </summary>
+    /// <param name="key">Ключ для получения списка аккаунтов.</param>
+    /// <returns>Список пользователей для удаления их аккаунтов.</returns>
+    Task<List<UserEntity>> GetMarkDeactivateUserAccountsAsync(string key);
 }

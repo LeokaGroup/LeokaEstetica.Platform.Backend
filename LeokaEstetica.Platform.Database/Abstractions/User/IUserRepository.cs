@@ -145,4 +145,16 @@ public interface IUserRepository
     /// <param name="userId">VkUserId пользователя.</param>
     /// <returns>Флаг проверки.</returns>
     Task<bool> CheckUserByVkUserIdAsync(long userId);
+
+    /// <summary>
+    /// Метод проставляет пользователям метку к удалению аккаунтов.
+    /// </summary>
+    /// <param name="users">Список пользователей, которых предупредим.</param>
+    Task SetMarkDeactivateAccountsAsync(List<UserEntity> users);
+    
+    /// <summary>
+    /// Метод удаляет аккаунты пользователей.
+    /// </summary>
+    /// <param name="users">Список пользователей, которых предупредим.</param>
+    Task DeleteDeactivateAccountsAsync(List<UserEntity> users);
 }
