@@ -41,23 +41,31 @@ public class VacancyModerationRepository : IVacancyModerationRepository
                 DateModeration = DateTime.Now,
                 ModerationStatusId = (int)VacancyModerationStatusEnum.ModerationVacancy
             };
-            await _pgContext.ModerationVacancies.AddAsync(vacancy);
-
-            // Проставляем статус модерации проекта "На модерации".
-            await _pgContext.ModerationStatuses.AddAsync(new ModerationStatusEntity
+            
+            // Если вакансия уже была на модерации, то обновим статус.
+            var isModerationExists = await IsModerationExistsVacancyAsync(vacancy.VacancyId);
+            
+            if (!isModerationExists)
             {
-                StatusName = VacancyModerationStatusEnum.ModerationVacancy.GetEnumDescription(),
-                StatusSysName = VacancyModerationStatusEnum.ModerationVacancy.ToString()
-            });
-                
+                // Отправляем вакансию на модерацию.
+                await SendModerationVacancyAsync(vacancy.VacancyId);
+            }
+            
+            else
+            {
+                await UpdateModerationVacancyStatusAsync(vacancy.VacancyId,
+                    VacancyModerationStatusEnum.ModerationVacancy);
+            }
+
             await _pgContext.SaveChangesAsync();
             
             await transaction.CommitAsync();
         }
         
-        catch 
+        catch
         {
             await transaction.RollbackAsync();
+            throw;
         }
     }
 
@@ -225,5 +233,49 @@ public class VacancyModerationRepository : IVacancyModerationRepository
         await _pgContext.SaveChangesAsync();
 
         return true;
+    }
+    
+    /// Метод проверяет, была ли уже такая вакансия на модерации. 
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <returns>Признак модерации.</returns>
+    private async Task<bool> IsModerationExistsVacancyAsync(long vacancyId)
+    {
+        var result = await _pgContext.ModerationVacancies
+            .AnyAsync(p => p.VacancyId == vacancyId);
+
+        return result;
+    }
+    
+    /// <summary>
+    /// Метод отправляет вакансию на модерацию.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    private async Task SendModerationVacancyAsync(long vacancyId)
+    {
+        // Добавляем проект в таблицу модерации вакансий.
+        await _pgContext.ModerationVacancies.AddAsync(new ModerationVacancyEntity
+        {
+            DateModeration = DateTime.Now,
+            VacancyId = vacancyId,
+            ModerationStatusId = (int)VacancyModerationStatusEnum.ModerationVacancy
+        });
+    }
+    
+    /// <summary>
+    /// Метод обновляет статус вакансии на модерации.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <param name="status">Статус вакансии.</param>
+    private async Task UpdateModerationVacancyStatusAsync(long vacancyId, VacancyModerationStatusEnum status)
+    {
+        var vac = await _pgContext.ModerationVacancies.FirstOrDefaultAsync(p => p.VacancyId == vacancyId);
+
+        if (vac is null)
+        {
+            throw new InvalidOperationException($"Не найдена вакансия для модерации. VacancyId: {vacancyId}");
+        }
+        
+        vac.ModerationStatusId = (int)status;
     }
 }
