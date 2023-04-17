@@ -1,4 +1,5 @@
 using AutoMapper;
+using LeokaEstetica.Platform.Models.Dto.Common.Cache;
 using LeokaEstetica.Platform.Models.Dto.Input.User;
 using LeokaEstetica.Platform.Models.Entities.User;
 using LeokaEstetica.Platform.Redis.Abstractions.User;
@@ -105,16 +106,15 @@ public class UserRedisService : IUserRedisService
             return new List<UserEntity>();
         }
 
-        var redisResult = ProtoBufExtensions.Deserialize<string>(items);
+        var redisResult = ProtoBufExtensions.Deserialize<List<UserActivityMarkDeactivate>>(items);
         
-        if (string.IsNullOrEmpty(redisResult))
+        if (redisResult is null || !redisResult.Any())
         {
             throw new InvalidOperationException(
                 "Не удалось получить список аккаунтов пользователей из кэша для удаления.");
         }
-
-        var finalResult = JsonConvert.DeserializeObject<List<UserEntity>>(redisResult);
-        var result = _mapper.Map<List<UserEntity>>(finalResult);
+        
+        var result = _mapper.Map<List<UserEntity>>(redisResult);
 
         return result;
     }

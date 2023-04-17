@@ -1,6 +1,6 @@
 using ProtoBuf;
 
-namespace LeokaEstetica.Platform.Models.Dto.Input.User;
+namespace LeokaEstetica.Platform.Models.Dto.Common.Cache;
 
 /// <summary>
 /// Класс модели для хранения в кэше пользователей предупрежденных об удалении аккаунтов.
@@ -14,4 +14,10 @@ public class UserActivityMarkDeactivate
     /// </summary>
     [ProtoMember(1)]
     public long UserId { get; set; }
+
+    /// <summary>
+    /// Почта пользователя.
+    /// </summary>
+    [ProtoMember(2)]
+    public string Email { get; set; }
 }

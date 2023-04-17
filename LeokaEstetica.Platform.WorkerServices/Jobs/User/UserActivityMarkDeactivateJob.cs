@@ -41,7 +41,7 @@ public class UserActivityMarkDeactivateJob : BackgroundService
     /// <param name="stoppingToken">Токен отмены.</param>
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        _timer = new Timer(DoWork, null, TimeSpan.Zero, TimeSpan.FromMinutes(30)); // TODO: После тестов на 24 ч.
+        _timer = new Timer(DoWork, null, TimeSpan.Zero, TimeSpan.FromHours(24));
 
         await Task.CompletedTask;
     }

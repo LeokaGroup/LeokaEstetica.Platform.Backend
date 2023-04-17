@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using LeokaEstetica.Platform.Models.Dto.Chat.Output;
+using LeokaEstetica.Platform.Models.Dto.Common.Cache;
 using LeokaEstetica.Platform.Models.Dto.Input.User;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce.PayMaster;
 using LeokaEstetica.Platform.Models.Dto.Output.Configs;

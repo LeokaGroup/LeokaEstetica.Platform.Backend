@@ -3,6 +3,7 @@ using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Redis.Abstractions.User;
 using LeokaEstetica.Platform.Redis.Consts;
 using LeokaEstetica.Platform.Services.Abstractions.Project;
+using LeokaEstetica.Platform.Services.Abstractions.Vacancy;
 
 namespace LeokaEstetica.Platform.WorkerServices.Jobs.User;
 
@@ -16,6 +17,7 @@ public class DeleteDeactivatedAccountsJob : BackgroundService
     private readonly IUserRedisService _userRedisService;
     private readonly IProjectService _projectService;
     private readonly IUserRepository _userRepository;
+    private readonly IVacancyService _vacancyService;
 
     /// <summary>
     /// Конструктор.
@@ -25,12 +27,14 @@ public class DeleteDeactivatedAccountsJob : BackgroundService
     public DeleteDeactivatedAccountsJob(ILogService logService,
         IUserRedisService userRedisService,
         IProjectService projectService,
-        IUserRepository userRepository)
+        IUserRepository userRepository, 
+        IVacancyService vacancyService)
     {
         _logService = logService;
         _userRedisService = userRedisService;
         _projectService = projectService;
         _userRepository = userRepository;
+        _vacancyService = vacancyService;
     }
 
     /// <summary>
@@ -39,7 +43,7 @@ public class DeleteDeactivatedAccountsJob : BackgroundService
     /// <param name="IJobExecutionContext">Контекст джобы.</param>
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        _timer = new Timer(DoWork, null, TimeSpan.Zero, TimeSpan.FromMinutes(30)); // TODO: После тестов на 24 ч.
+        _timer = new Timer(DoWork, null, TimeSpan.Zero, TimeSpan.FromHours(24));
 
         await Task.CompletedTask;
     }
@@ -63,24 +67,39 @@ public class DeleteDeactivatedAccountsJob : BackgroundService
             foreach (var u in deleteUsers)
             {
                 var userProjects = await _projectService.UserProjectsAsync(u.Email);
-
+                
                 // Пропускем, если нет проектов для удаления.
-                if (!userProjects.UserProjects.Any())
+                if (userProjects.UserProjects.Any())
                 {
-                    continue;
+                    // Перебираем все проекты для удаления.
+                    foreach (var p in userProjects.UserProjects)
+                    {
+                        // Удаляем проект и все связанное с ним.
+                        // Токен не передаем, так как уведомления показывать не надо в этом кейсе.
+                        await _projectService.DeleteProjectAsync(p.ProjectId, u.Email, null);
+                    }
                 }
 
-                // Перебираем все проекты для удаления.
-                foreach (var p in userProjects.UserProjects)
+                // Проектов то нет, но надо бы проверить вакансии пользователей, которые не были привязаны к проектам.
+                else
                 {
-                    // Удаляем проект и все связанное с ним.
-                    // Токен не передаем, так как уведомления показывать не надо в этом кейсе.
-                    await _projectService.DeleteProjectAsync(p.ProjectId, u.Email, null);
+                    var vacancies = await _vacancyService.GetUserVacanciesAsync(u.Email);
+
+                    if (vacancies.Vacancies.Any())
+                    {
+                        foreach (var v in vacancies.Vacancies)
+                        {
+                            await _vacancyService.DeleteVacancyAsync(v.VacancyId, u.Email, null);
+                        }
+                    }
                 }
             }
 
-            // Удаляем все аккаунты.
-            await _userRepository.DeleteDeactivateAccountsAsync(deleteUsers);
+            if (deleteUsers.Any())
+            {
+                // Удаляем все аккаунты.
+                await _userRepository.DeleteDeactivateAccountsAsync(deleteUsers);   
+            }
         }
 
         catch (Exception ex)
