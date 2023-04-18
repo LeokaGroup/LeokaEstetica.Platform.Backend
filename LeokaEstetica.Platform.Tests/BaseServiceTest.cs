@@ -83,7 +83,9 @@ public class BaseServiceTest
     protected BaseServiceTest()
     {
         // Настройка тестовых строк подключения.
-        var builder = new ConfigurationBuilder().AddJsonFile("appsettings.json");
+        var builder = new ConfigurationBuilder()
+            .SetBasePath(Directory.GetCurrentDirectory())
+            .AddJsonFile("appsettings.json");
         AppConfiguration = builder.Build();
         PostgreConfigString = AppConfiguration["ConnectionStrings:NpgDevSqlConnection"] ?? string.Empty;
         var container = new ContainerBuilder();
