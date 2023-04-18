@@ -15,7 +15,7 @@ public class UserVacancyEntity
         VacancyStatuses = new HashSet<VacancyStatusEntity>();
         ModerationVacancy = new HashSet<ModerationVacancyEntity>();
         ProjectVacancies = new HashSet<ProjectVacancyEntity>();
-        ProjectTeamVacancies = new List<ProjectTeamVacancyEntity>();
+        // ProjectTeamVacancies = new List<ProjectTeamVacancyEntity>();
         ProjectTeamMembers = new List<ProjectTeamMemberEntity>();
         ArchivedVacancies = new HashSet<ArchivedVacancyEntity>();
     }
@@ -89,7 +89,7 @@ public class UserVacancyEntity
     /// <summary>
     /// Список вакансий в команде проекта.
     /// </summary>
-    public ICollection<ProjectTeamVacancyEntity> ProjectTeamVacancies { get; set; }
+    // public ICollection<ProjectTeamVacancyEntity> ProjectTeamVacancies { get; set; }
     
     /// <summary>
     /// Список участников команд проектов.

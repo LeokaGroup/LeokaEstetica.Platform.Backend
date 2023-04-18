@@ -506,17 +506,19 @@ public class ProjectRepository : IProjectRepository
     /// <returns>Список участников команды проекта.</returns>
     public async Task<List<ProjectTeamMemberEntity>> GetProjectTeamMembersAsync(long teamId)
     {
-        var result = await _pgContext.ProjectTeamMembers
-            .Include(tm => tm.UserVacancy)
-            .Where(tm => tm.TeamId == teamId)
-            .Select(tm => new ProjectTeamMemberEntity
-            {
-                UserId = tm.UserId,
-                Joined = tm.Joined,
-                UserVacancy = tm.UserVacancy,
-                TeamId = tm.TeamId,
-                MemberId = tm.MemberId
-            })
+        var result = await (from ptm in _pgContext.ProjectTeamMembers
+                where ptm.TeamId == teamId
+                select new ProjectTeamMemberEntity
+                {
+                    UserId = ptm.UserId,
+                    Joined = ptm.Joined,
+                    TeamId = ptm.TeamId,
+                    MemberId = ptm.MemberId,
+                    UserVacancy = new UserVacancyEntity
+                    {
+                        VacancyId = ptm.VacancyId ?? 0
+                    }
+                })
             .ToListAsync();
 
         return result;
@@ -550,7 +552,22 @@ public class ProjectRepository : IProjectRepository
             VacancyId = vacancyId,
             TeamId = teamId
         };
+        
         await _pgContext.ProjectTeamMembers.AddAsync(result);
+        
+        // Добавляем вакансию отклика.
+        if (vacancyId is not null)
+        {
+            var vacancy = new ProjectTeamVacancyEntity
+            {
+                VacancyId = (long)vacancyId,
+                IsActive = true,
+                TeamId = teamId
+            };
+            
+            await _pgContext.ProjectsTeamsVacancies.AddAsync(vacancy);
+        }
+        
         await _pgContext.SaveChangesAsync();
 
         return result;
@@ -701,12 +718,12 @@ public class ProjectRepository : IProjectRepository
             if (projectTeam is not null)
             {
                 // Дропаем участников команды.
-                var projectTeamMembers = await GetProjectTeamMembersAsync(projectTeam.TeamId);
-
-                if (projectTeamMembers.Any())
-                {
-                    _pgContext.ProjectTeamMembers.RemoveRange(projectTeamMembers);
-                }
+                // var projectTeamMembers = await GetProjectTeamMembersAsync(projectTeam.TeamId);
+                //
+                // if (projectTeamMembers.Any())
+                // {
+                //     _pgContext.ProjectTeamMembers.RemoveRange(projectTeamMembers);
+                // }
 
                 // Дропаем команду проекта.
                 _pgContext.ProjectsTeams.Remove(projectTeam);

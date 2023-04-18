@@ -17,7 +17,7 @@ public partial class ProjectTeamVacancyConfiguration : IEntityTypeConfiguration<
             .HasColumnType("bigserial");
         
         entity.Property(e => e.VacancyId)
-            .HasColumnName("ProjectId")
+            .HasColumnName("VacancyId")
             .HasColumnType("bigint")
             .IsRequired();
         
@@ -25,16 +25,6 @@ public partial class ProjectTeamVacancyConfiguration : IEntityTypeConfiguration<
             .HasColumnName("IsActive")
             .HasColumnType("bool")
             .IsRequired();
-
-        entity.HasOne(p => p.UserVacancy)
-            .WithMany(b => b.ProjectTeamVacancies)
-            .HasForeignKey(p => p.VacancyId)
-            .HasConstraintName("FK_UserVacancies_VacancyId");
-        
-        entity.HasOne(p => p.ProjectTeam)
-            .WithMany(b => b.ProjectTeamVacancies)
-            .HasForeignKey(p => p.TeamId)
-            .HasConstraintName("FK_ProjectsTeams_TeamId");
 
         entity.HasIndex(u => u.TeamVacancyId)
             .HasDatabaseName("PK_ProjectsTeamsVacancies_TeamVacancyId")

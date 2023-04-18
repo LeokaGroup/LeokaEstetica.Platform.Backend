@@ -1152,17 +1152,27 @@ public class ProjectService : IProjectService
         IEnumerable<ProjectTeamMemberEntity> teamMembers)
     {
         var result = new List<ProjectTeamOutput>();
-        
+
         foreach (var member in teamMembers)
         {
+            var vacancyName = string.Empty;
+            
             // Заполняем название вакансии.
-            var vacancyName = await _vacancyRepository.GetVacancyNameByVacancyIdAsync(member.UserVacancy.VacancyId);
+            if (member.UserVacancy.VacancyId > 0)
+            {
+                vacancyName = await _vacancyRepository.GetVacancyNameByVacancyIdAsync(member.UserVacancy.VacancyId);   
+            }
+
+            // Если владелец, то у него не обязательно требовать вакансию.
+            else if (member.UserVacancy.VacancyId == 0)
+            {
+                vacancyName = "-";
+            }
 
             if (string.IsNullOrEmpty(vacancyName))
             {
                 var ex = new InvalidOperationException(
                     $"Ошибка получения названия вакансии. VacancyId = {member.UserVacancy.VacancyId}");
-                await _logService.LogErrorAsync(ex);
                 throw ex;
             }
             

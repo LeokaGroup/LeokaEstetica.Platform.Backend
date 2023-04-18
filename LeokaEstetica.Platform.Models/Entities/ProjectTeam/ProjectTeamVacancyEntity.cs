@@ -1,5 +1,3 @@
-using LeokaEstetica.Platform.Models.Entities.Vacancy;
-
 namespace LeokaEstetica.Platform.Models.Entities.ProjectTeam;
 
 /// <summary>
@@ -27,14 +25,4 @@ public class ProjectTeamVacancyEntity
     /// Например, если вакансия находится в архиве, то она не активна.
     /// </summary>
     public bool IsActive { get; set; }
-
-    /// <summary>
-    /// FK.
-    /// </summary>
-    public UserVacancyEntity UserVacancy { get; set; }
-
-    /// <summary>
-    /// FK.
-    /// </summary>
-    public ProjectTeamEntity ProjectTeam { get; set; }
 }
