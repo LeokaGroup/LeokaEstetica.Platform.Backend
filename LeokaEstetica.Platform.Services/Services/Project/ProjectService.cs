@@ -1611,6 +1611,74 @@ public class ProjectService : IProjectService
     }
 
     /// <summary>
+    /// Метод удаляет участника проекта из команды.
+    /// </summary>
+    /// <param name="projectId">Id проекта</param>
+    /// <param name="userId">Id пользователя, которого будем удалять из команды</param>
+    /// <param name="token">Токен.</param>
+    /// <param name="account">Аккаунт пользователя.</param>
+    public async Task DeleteProjectTeamMemberAsync(long projectId, long userId, string token, string account)
+    {
+        try
+        {
+            if (projectId <= 0)
+            {
+                throw new ArgumentNullException(
+                    $"Не передан Id проекта для удаления из команды. ProjectId: {projectId}");
+            }
+
+            if (userId <= 0)
+            {
+                throw new ArgumentNullException(
+                    $"Не передан Id пользователя для удаления из команды. UserId: {userId}");
+            }
+            
+            var currentUserId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (currentUserId <= 0)
+            {
+                throw new NotFoundUserIdByAccountException(account);
+            }
+            
+            await _projectRepository.DeleteProjectTeamMemberAsync(userId);
+
+            if (!string.IsNullOrEmpty(token))
+            {
+                await _projectNotificationsService.SendNotificationSuccessCreatedUserProjectAsync("Все хорошо",
+                    "Пользователь исключен из команды проекта.",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);
+            }
+            
+            var projectName = await _projectRepository.GetProjectNameByProjectIdAsync(projectId);
+            
+            // Записываем уведомления о исключении из команды проекта.
+            await _projectNotificationsRepository.AddNotificationDeleteProjectTeamMemberAsync(
+                projectId, null, userId, projectName);
+            
+            // Находим данные о пользователе, который оставляет отклик на проект.
+            var otherUser = await _userRepository.GetUserPhoneEmailByUserIdAsync(userId);
+            
+            // Отправляем уведомление на почту пользователя, которого исключили.
+            await _mailingsService.SendNotificationDeleteProjectTeamMemberAsync(otherUser.Email, projectId,
+                projectName);
+        }
+        
+        catch (Exception ex)
+        {
+            if (!string.IsNullOrEmpty(token))
+            {
+                await _projectNotificationsService.SendNotificationErrorInviteProjectTeamMembersAsync("Ошибка",
+                    "Ошибка при удалении пользователя из команды проекта. Мы уже знаем о ней и разбираемся. " +
+                    "А пока, попробуйте еще раз.",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, token);
+            }
+
+            await _logService.LogErrorAsync(ex);
+            throw;
+        }
+    }
+
+    /// <summary>
     /// Метод проставляет флаги проектам пользователя в зависимости от его подписки.
     /// </summary>
     /// <param name="projects">Список проектов каталога.</param>

@@ -78,4 +78,13 @@ public interface IProjectNotificationsRepository
     /// <param name="notificationId">Id уведомления.</param>
     /// <returns>Id вакансии.</returns>
     Task<long?> GetVacancyIdByNotificationIdAsync(long notificationId);
+    
+    /// <summary>
+    /// Метод записывает уведомление о исключении пользователя из команды проекта.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <param name="userId">Id пользователя.</param>
+    /// <param name="projectName">Название проекта.</param>
+    Task AddNotificationDeleteProjectTeamMemberAsync(long projectId, long? vacancyId, long userId, string projectName);
 }

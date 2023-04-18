@@ -225,6 +225,36 @@ public class ProjectNotificationsRepository : IProjectNotificationsRepository
         return result;
     }
 
+    /// <summary>
+    /// Метод записывает уведомление о исключении пользователя из команды проекта.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <param name="userId">Id пользователя.</param>
+    /// <param name="projectName">Название проекта.</param>
+    public async Task AddNotificationDeleteProjectTeamMemberAsync(long projectId, long? vacancyId, long userId,
+        string projectName)
+    {
+        await _pgContext.Notifications.AddAsync(new NotificationEntity
+        {
+            ProjectId = projectId,
+            VacancyId = vacancyId,
+            UserId = userId,
+            NotificationName = NotificationTypeEnum.RejectInviteProject.GetEnumDescription(),
+            NotificationSysName = NotificationTypeEnum.RejectInviteProject.ToString(),
+            IsNeedAccepted = true,
+            Approved = false,
+            Rejected = false,
+            NotificationText = $"Исключение из проекта \"{projectName}\"",
+            Created = DateTime.Now,
+            NotificationType = NotificationTypeEnum.DeleteProjectTeamMember.ToString(),
+            IsShow = true,
+            IsOwner = true
+        });
+        
+        await _pgContext.SaveChangesAsync();
+    }
+
     #endregion
 
     #region Приватные методы.

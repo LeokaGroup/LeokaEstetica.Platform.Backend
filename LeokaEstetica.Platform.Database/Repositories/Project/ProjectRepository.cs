@@ -998,6 +998,32 @@ public class ProjectRepository : IProjectRepository
         return result;
     }
 
+    /// <summary>
+    /// Метод удаляет участника проекта из команды.
+    /// </summary>
+    /// <param name="userId">Id пользователя</param>
+    public async Task DeleteProjectTeamMemberAsync(long userId)
+    {
+        var teamMember = await _pgContext.ProjectTeamMembers.FirstOrDefaultAsync(m => m.UserId == userId);
+
+        // Удаляем участника команды.
+        if (teamMember is not null)
+        {
+            _pgContext.ProjectTeamMembers.Remove(teamMember);
+        }
+        
+        var projectTeamVacancy = await _pgContext.ProjectsTeamsVacancies
+            .FirstOrDefaultAsync(v => v.VacancyId == teamMember.VacancyId);
+
+        // Удаляем вакансию из ProjectsTeamsVacancies.
+        if (projectTeamVacancy is not null)
+        {
+            _pgContext.ProjectsTeamsVacancies.Remove(projectTeamVacancy);
+        }
+
+        await _pgContext.SaveChangesAsync();
+    }
+
     /// Метод првоеряет, был ли уже такой проект на модерации. 
     /// </summary>
     /// <param name="projectId">Id проекта.</param>

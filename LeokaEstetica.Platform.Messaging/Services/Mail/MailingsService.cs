@@ -313,6 +313,37 @@ public class MailingsService : IMailingsService
         }
     }
 
+    /// <summary>
+    /// Метод отправляет уведомление на почту пользователя, которого исключили из команды проекта.
+    /// </summary>
+    /// <param name="mailTo">Почта пользователя, которого исключили.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="projectName">Название проекта.</param>
+    public async Task SendNotificationDeleteProjectTeamMemberAsync(string mailTo, long projectId, string projectName)
+    {
+        var isEnabledEmailNotifications = await _globalConfigRepository
+            .GetValueByKeyAsync<bool>(GlobalConfigKeys.EmailNotifications.EMAIL_NOTIFICATIONS_DISABLE_MODE_ENABLED);
+
+        if (isEnabledEmailNotifications)
+        {
+            // TODO: Заменить на получение ссылки из БД.
+            var text = $"Вы были исключены из команды проекта: \"{projectName}\"." +
+                       "<br/>" +
+                       $"<a href='https://leoka-estetica-dev.ru/projects/project?projectId={projectId}&mode=view'>" +
+                       "Перейти к проекту" +
+                       "</a>" +
+                       "<br/>" +
+                       "<br/>" +
+                       "<br/>" +
+                       "<br/>-----<br/>" +
+                       "С уважением, команда Leoka Estetica";
+            var subject = $"Исключение из команды проекта: \"{projectName}\"";
+
+            var mailModel = CreateMailopostModelConfirmEmail(mailTo, text, subject, text);
+            await SendEmailNotificationAsync(mailModel);
+        }
+    }
+
     #endregion
 
     #region Приватные методы.
