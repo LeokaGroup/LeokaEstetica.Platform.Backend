@@ -257,5 +257,6 @@ public interface IProjectRepository
     /// Метод удаляет участника проекта из команды.
     /// </summary>
     /// <param name="userId">Id пользователя</param>
-    Task DeleteProjectTeamMemberAsync(long userId);
+    /// <param name="projectTeamId">Id команды проекта.</param>
+    Task DeleteProjectTeamMemberAsync(long userId, long projectTeamId);
 }

@@ -1639,8 +1639,12 @@ public class ProjectService : IProjectService
             {
                 throw new NotFoundUserIdByAccountException(account);
             }
+
+            // Находим Id команды проекта.
+            var projectTeamId = await _projectRepository.GetProjectTeamIdAsync(projectId);
             
-            await _projectRepository.DeleteProjectTeamMemberAsync(userId);
+            // Удаляем участника команды проекта.
+            await _projectRepository.DeleteProjectTeamMemberAsync(userId, projectTeamId);
 
             if (!string.IsNullOrEmpty(token))
             {

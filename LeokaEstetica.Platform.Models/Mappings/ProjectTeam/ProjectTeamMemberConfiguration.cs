@@ -18,8 +18,7 @@ public partial class ProjectTeamMemberConfiguration : IEntityTypeConfiguration<P
         
         entity.Property(e => e.VacancyId)
             .HasColumnName("VacancyId")
-            .HasColumnType("bigint")
-            .IsRequired();
+            .HasColumnType("bigint");
         
         entity.Property(e => e.Joined)
             .HasColumnName("Joined")
