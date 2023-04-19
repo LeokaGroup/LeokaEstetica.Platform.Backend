@@ -259,4 +259,11 @@ public interface IProjectRepository
     /// <param name="userId">Id пользователя</param>
     /// <param name="projectTeamId">Id команды проекта.</param>
     Task DeleteProjectTeamMemberAsync(long userId, long projectTeamId);
+
+    /// <summary>
+    /// Метод покидания команды проекта.
+    /// </summary>
+    /// <param name="userId">Id пользователя</param>
+    /// <param name="projectTeamId">Id команды проекта.</param>
+    Task LeaveProjectTeamAsync(long userId, long projectTeamId);
 }
