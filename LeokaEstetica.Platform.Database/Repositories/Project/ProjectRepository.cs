@@ -1002,9 +1002,11 @@ public class ProjectRepository : IProjectRepository
     /// Метод удаляет участника проекта из команды.
     /// </summary>
     /// <param name="userId">Id пользователя</param>
-    public async Task DeleteProjectTeamMemberAsync(long userId)
+    /// <param name="projectTeamId">Id команды проекта.</param>
+    public async Task DeleteProjectTeamMemberAsync(long userId, long projectTeamId)
     {
-        var teamMember = await _pgContext.ProjectTeamMembers.FirstOrDefaultAsync(m => m.UserId == userId);
+        var teamMember = await _pgContext.ProjectTeamMembers
+            .FirstOrDefaultAsync(m => m.UserId == userId && m.TeamId == projectTeamId);
 
         // Удаляем участника команды.
         if (teamMember is not null)
