@@ -1644,7 +1644,7 @@ public class ProjectService : IProjectService
 
             if (!string.IsNullOrEmpty(token))
             {
-                await _projectNotificationsService.SendNotificationSuccessCreatedUserProjectAsync("Все хорошо",
+                await _projectNotificationsService.SendNotificationSuccessDeleteProjectTeamMemberAsync("Все хорошо",
                     "Пользователь исключен из команды проекта.",
                     NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);
             }
