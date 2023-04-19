@@ -8,6 +8,6 @@ public class DeleteProjectTeamMemberTest : BaseServiceTest
     [Test]
     public async Task DeleteProjectTeamMemberAsyncTest()
     {
-        await ProjectService.DeleteProjectTeamMemberAsync(246, 96, null, "sierra_93@mail.ru");
+        await ProjectService.DeleteProjectTeamMemberAsync(246, 96, "sierra_93@mail.ru");
     }
 }

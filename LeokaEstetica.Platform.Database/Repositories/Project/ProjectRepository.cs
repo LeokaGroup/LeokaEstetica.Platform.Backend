@@ -1005,25 +1005,17 @@ public class ProjectRepository : IProjectRepository
     /// <param name="projectTeamId">Id команды проекта.</param>
     public async Task DeleteProjectTeamMemberAsync(long userId, long projectTeamId)
     {
-        var teamMember = await _pgContext.ProjectTeamMembers
-            .FirstOrDefaultAsync(m => m.UserId == userId && m.TeamId == projectTeamId);
+        await DeleteTeamMemberAsync(userId, projectTeamId);
+    }
 
-        // Удаляем участника команды.
-        if (teamMember is not null)
-        {
-            _pgContext.ProjectTeamMembers.Remove(teamMember);
-        }
-        
-        var projectTeamVacancy = await _pgContext.ProjectsTeamsVacancies
-            .FirstOrDefaultAsync(v => v.VacancyId == teamMember.VacancyId);
-
-        // Удаляем вакансию из ProjectsTeamsVacancies.
-        if (projectTeamVacancy is not null)
-        {
-            _pgContext.ProjectsTeamsVacancies.Remove(projectTeamVacancy);
-        }
-
-        await _pgContext.SaveChangesAsync();
+    /// <summary>
+    /// Метод покидания команды проекта.
+    /// </summary>
+    /// <param name="userId">Id пользователя</param>
+    /// <param name="projectTeamId">Id команды проекта.</param>
+    public async Task LeaveProjectTeamAsync(long userId, long projectTeamId)
+    {
+        await DeleteTeamMemberAsync(userId, projectTeamId);
     }
 
     /// Метод првоеряет, был ли уже такой проект на модерации. 
@@ -1053,5 +1045,33 @@ public class ProjectRepository : IProjectRepository
         }
         
         prj.ModerationStatusId = (int)status;
+    }
+
+    /// <summary>
+    /// Метод удаляет участника проекта.
+    /// </summary>
+    /// <param name="userId">Id пользователя</param>
+    /// <param name="projectTeamId">Id команды проекта.</param>
+    private async Task DeleteTeamMemberAsync(long userId, long projectTeamId)
+    {
+        var teamMember = await _pgContext.ProjectTeamMembers
+            .FirstOrDefaultAsync(m => m.UserId == userId && m.TeamId == projectTeamId);
+
+        // Удаляем участника команды.
+        if (teamMember is not null)
+        {
+            _pgContext.ProjectTeamMembers.Remove(teamMember);
+        }
+        
+        var projectTeamVacancy = await _pgContext.ProjectsTeamsVacancies
+            .FirstOrDefaultAsync(v => v.VacancyId == teamMember.VacancyId);
+
+        // Удаляем вакансию из ProjectsTeamsVacancies.
+        if (projectTeamVacancy is not null)
+        {
+            _pgContext.ProjectsTeamsVacancies.Remove(projectTeamVacancy);
+        }
+
+        await _pgContext.SaveChangesAsync();
     }
 }

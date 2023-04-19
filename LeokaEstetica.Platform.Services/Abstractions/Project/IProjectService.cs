@@ -195,6 +195,13 @@ public interface IProjectService
     /// <param name="projectId">Id проекта</param>
     /// <param name="userId">Id пользователя, которого будем удалять из команды</param>
     /// <param name="token">Токен.</param>
+    Task DeleteProjectTeamMemberAsync(long projectId, long userId, string token);
+
+    /// <summary>
+    /// Метод покидания команды проекта.
+    /// </summary>
+    /// <param name="projectId">Id проекта</param>
     /// <param name="account">Аккаунт пользователя.</param>
-    Task DeleteProjectTeamMemberAsync(long projectId, long userId, string token, string account);
+    /// <param name="token">Токен.</param>
+    Task LeaveProjectTeamAsync(long projectId, string account, string token);
 }

@@ -613,6 +613,22 @@ public class ProjectController : BaseController
     [ProducesResponseType(404)]
     public async Task DeleteProjectTeamMemberAsync([FromRoute] long projectId, [FromRoute] long userId)
     {
-        await _projectService.DeleteProjectTeamMemberAsync(projectId, userId, CreateTokenFromHeader(), GetUserName());
+        await _projectService.DeleteProjectTeamMemberAsync(projectId, userId, CreateTokenFromHeader());
+    }
+
+    /// <summary>
+    /// Метод покидания команды проекта.
+    /// </summary>
+    /// <param name="projectId">Id проекта</param>
+    [HttpDelete]
+    [Route("team-leave/{projectId}")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task LeaveProjectTeamAsync([FromRoute] long projectId)
+    {
+        await _projectService.LeaveProjectTeamAsync(projectId, GetUserName(), CreateTokenFromHeader());
     }
 }
