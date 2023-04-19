@@ -598,4 +598,21 @@ public class ProjectController : BaseController
 
         return result;
     }
+
+    /// <summary>
+    /// Метод удаляет участника проекта из команды.
+    /// </summary>
+    /// <param name="projectId">Id проекта</param>
+    /// <param name="userId">Id пользователя, которого будем удалять из команды</param>
+    [HttpDelete]
+    [Route("{projectId}/team-member/{userId}")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task DeleteProjectTeamMemberAsync([FromRoute] long projectId, [FromRoute] long userId)
+    {
+        await _projectService.DeleteProjectTeamMemberAsync(projectId, userId, CreateTokenFromHeader(), GetUserName());
+    }
 }

@@ -47,5 +47,11 @@ public enum NotificationTypeEnum
     /// Отклонение приглашения в проект.
     /// </summary>
     [Description("Отклонение приглашения в проект")]
-    RejectInviteProject = 7
+    RejectInviteProject = 7,
+    
+    /// <summary>
+    /// Исключение из команды проекта.
+    /// </summary>
+    [Description("Исключение из команды проекта")]
+    DeleteProjectTeamMember = 8
 }

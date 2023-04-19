@@ -188,4 +188,13 @@ public interface IProjectService
     /// <param name="account">Аккаунт пользователя.</param>
     /// <returns>Список архивированных проектов.</returns>
     Task<UserProjectArchiveResultOutput> GetUserProjectsArchiveAsync(string account);
+
+    /// <summary>
+    /// Метод удаляет участника проекта из команды.
+    /// </summary>
+    /// <param name="projectId">Id проекта</param>
+    /// <param name="userId">Id пользователя, которого будем удалять из команды</param>
+    /// <param name="token">Токен.</param>
+    /// <param name="account">Аккаунт пользователя.</param>
+    Task DeleteProjectTeamMemberAsync(long projectId, long userId, string token, string account);
 }
