@@ -1416,7 +1416,7 @@ public class ProjectService : IProjectService
     /// <returns>Дата в нужном виде.</returns>
     private string CreateDateResult(DateTime date)
     {
-        return date.ToString("g", CultureInfo.GetCultureInfo("ru"));
+        return date.ToString("dd/MM/yyyy", CultureInfo.GetCultureInfo("ru"));
     }
 
     /// <summary>
