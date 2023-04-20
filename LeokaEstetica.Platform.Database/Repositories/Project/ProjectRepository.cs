@@ -1018,6 +1018,22 @@ public class ProjectRepository : IProjectRepository
         await DeleteTeamMemberAsync(userId, projectTeamId);
     }
 
+    /// <summary>
+    /// Метод проверяет, есть ли пользователь в команде проекта.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Признак проверки.</returns>
+    public async Task<bool> CheckExistsProjectTeamMemberAsync(long projectId, long userId)
+    {
+        var result = await _pgContext.ProjectTeamMembers
+            .AnyAsync(m => m.ProjectTeam.ProjectId == projectId && m.UserId == userId);
+
+        return result;
+    }
+
+    #region Приватные методы.
+
     /// Метод првоеряет, был ли уже такой проект на модерации. 
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
@@ -1074,4 +1090,6 @@ public class ProjectRepository : IProjectRepository
 
         await _pgContext.SaveChangesAsync();
     }
+
+    #endregion
 }

@@ -266,4 +266,12 @@ public interface IProjectRepository
     /// <param name="userId">Id пользователя</param>
     /// <param name="projectTeamId">Id команды проекта.</param>
     Task LeaveProjectTeamAsync(long userId, long projectTeamId);
+    
+    /// <summary>
+    /// Метод проверяет, есть ли пользователь в команде проекта.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Признак проверки.</returns>
+    Task<bool> CheckExistsProjectTeamMemberAsync(long projectId, long userId);
 }

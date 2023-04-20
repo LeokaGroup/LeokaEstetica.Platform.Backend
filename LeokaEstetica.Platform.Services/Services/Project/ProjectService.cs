@@ -1350,12 +1350,22 @@ public class ProjectService : IProjectService
         if (projectOwnerId == userId)
         {
             result.IsVisibleDeleteButton = true;
+            result.IsVisibleActionDeleteProjectTeamMember = true;
         }
 
         else
         {
             // Просматривает не владелец, допускаем видимость кнопок действий проекта.
             result.IsVisibleActionProjectButtons = true;
+            
+            // Отображаем кнопку покидания проекта, если участник есть в команде проекта.
+            var isExistsProjectTeamMember = await _projectRepository.CheckExistsProjectTeamMemberAsync(projectId,
+                userId);
+
+            if (isExistsProjectTeamMember)
+            {
+                result.IsVisibleActionLeaveProjectTeam = true;   
+            }
         }
 
         result.IsSuccess = true;
@@ -1702,7 +1712,7 @@ public class ProjectService : IProjectService
             var projectTeamId = await _projectRepository.GetProjectTeamIdAsync(projectId);
 
             // Удаляем участника команды проекта.
-            await _projectRepository.DeleteProjectTeamMemberAsync(userId, projectTeamId);
+            await _projectRepository.LeaveProjectTeamAsync(userId, projectTeamId);
 
             if (!string.IsNullOrEmpty(token))
             {
