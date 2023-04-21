@@ -4,6 +4,9 @@ using LeokaEstetica.Platform.Models.Dto.Output.Resume;
 
 namespace LeokaEstetica.Platform.Services.Abstractions.Resume;
 
+/// <summary>
+/// Абстракция сервиса выделение цветом резюме пользователей.
+/// </summary>
 public interface IFillColorResumeService
 {
     /// <summary>
