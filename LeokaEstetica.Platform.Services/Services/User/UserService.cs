@@ -153,9 +153,9 @@ public class UserService : IUserService
         // Пользователь уже есть, не даем регистрировать.
         if (isUser)
         {
-            result.Errors = new List<ValidationFailure>()
+            result.Errors = new List<ValidationFailure>
             {
-                new() { ErrorMessage = $"Пользователь с Email {email} уже зарегистрирован в системе!" }
+                new() { ErrorMessage = $"Пользователь с Email {email} уже зарегистрирован в системе" }
             };
         }
     }
