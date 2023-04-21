@@ -21,6 +21,11 @@ public class SearchController : BaseController
     private readonly IProjectFinderService _projectFinderService;
     private readonly IMapper _mapper;
 
+    /// <summary>
+    /// Конструктор.
+    /// </summary>
+    /// <param name="projectFinderService">Сервис поиска в проектах.</param>
+    /// <param name="mapper">Автомаппер.</param>
     public SearchController(IProjectFinderService projectFinderService, 
         IMapper mapper)
     {

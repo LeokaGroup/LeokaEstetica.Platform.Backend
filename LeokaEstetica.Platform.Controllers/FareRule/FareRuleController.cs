@@ -18,7 +18,11 @@ public class FareRuleController : BaseController
     private readonly IFareRuleService _fareRuleService;
     private readonly IMapper _mapper;
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Конструктор.
+    /// </summary>
+    /// <param name="fareRuleService">Сервис правил тарифов.</param>
+    /// <param name="mapper">Автомаппер.</param>
     public FareRuleController(IFareRuleService fareRuleService,
         IMapper mapper)
     {
