@@ -21,10 +21,10 @@ public class FillColorResumeService : IFillColorResumeService
     /// <summary>
     /// Метод устанавливает свойство IsSelectedColor = true для резюме пользователей с подпиской выше бизнес.
     /// </summary>
-    /// <param name="resumesList">Список ризюме.</param>
+    /// <param name="resumesList">Список резюме.</param>
     /// <param name="subscriptionRepository">Сервис подписок.</param>
     /// <param name="fareRuleRepository">Сервис правил тарифов.</param>
-    /// <returns>Список ризюме, с проставленным флагом IsSelectedColor.</returns>
+    /// <returns>Список резюме, с проставленным флагом IsSelectedColor.</returns>
     public async Task<IEnumerable<ResumeOutput>> SetColorBusinessResume(List<ResumeOutput> resumesList,
         ISubscriptionRepository subscriptionRepository, IFareRuleRepository fareRuleRepository)
     {
