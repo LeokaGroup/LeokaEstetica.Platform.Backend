@@ -15,6 +15,10 @@ public class HeaderController : BaseController
 {
     private readonly IHeaderService _headerService;
     
+    /// <summary>
+    /// Конструктор.
+    /// </summary>
+    /// <param name="headerService">Сервис работы с хидером</param>
     public HeaderController(IHeaderService headerService)
     {
         _headerService = headerService;
