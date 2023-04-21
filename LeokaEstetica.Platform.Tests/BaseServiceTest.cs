@@ -79,6 +79,7 @@ public class BaseServiceTest
     protected readonly KnowledgeService KnowledgeService;
     protected readonly PgContext PgContext;
     protected readonly FillColorProjectsService FillColorProjectsService;
+    protected readonly FillColorResumeService FillColorResumeService;
 
     protected BaseServiceTest()
     {
@@ -156,8 +157,9 @@ public class BaseServiceTest
 
         SubscriptionService =
             new SubscriptionService(logService, userRepository, subscriptionRepository, fareRuleRepository);
+        FillColorResumeService = new FillColorResumeService();
         ResumeService = new ResumeService(logService, resumeRepository, mapper, subscriptionRepository,
-            fareRuleRepository, userRepository);
+            fareRuleRepository, userRepository, FillColorResumeService);
         VacancyFinderService = new VacancyFinderService(vacancyRepository, logService);
         FinderProjectService = new Finder.Services.Project.ProjectFinderService(projectRepository, logService);
         ResumeFinderService = new ResumeFinderService(logService, resumeRepository);
