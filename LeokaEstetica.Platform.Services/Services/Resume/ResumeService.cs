@@ -1,6 +1,4 @@
 using AutoMapper;
-using LeokaEstetica.Platform.Access.Enums;
-using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.FareRule;
 using LeokaEstetica.Platform.Database.Abstractions.Resume;
 using LeokaEstetica.Platform.Database.Abstractions.Subscription;
@@ -24,24 +22,17 @@ public class ResumeService : IResumeService
     private readonly IFareRuleRepository _fareRuleRepository;
     private readonly IUserRepository _userRepository;
     private readonly IFillColorResumeService _fillColorResumeService;
-
+    
     /// <summary>
-    /// Список названий тарифов, которые дают выделение цветом.
-    /// </summary>
-    private static readonly List<string> _fareRuleTypesNames = new()
-    {
-        FareRuleTypeEnum.Business.GetEnumDescription(),
-        FareRuleTypeEnum.Professional.GetEnumDescription()
-    };
-
-    /// <summary>
-    /// Конструктор.
+    /// Конструктор
     /// </summary>
     /// <param name="logService">Сервис логов.</param>
     /// <param name="resumeRepository">Репозиторий базы резюме.</param>
-    /// <param name="accessResumeService">Сервис проверки доступа к базе резюме.</param>
-    /// <param name="_mapper">Автомаппер.</param>
-    /// <param name="fillColorResumeService"></param>
+    /// <param name="mapper">Автомаппер.</param>
+    /// <param name="subscriptionRepository">Репозиторий подписок.</param>
+    /// <param name="fareRuleRepository">Репозиторий правил тарифа</param>
+    /// <param name="userRepository">Репозиторий пользователей.</param>
+    /// <param name="fillColorResumeService">Сервис выделение цветом резюме пользователей.</param>
     public ResumeService(ILogService logService, 
         IResumeRepository resumeRepository, 
         IMapper mapper, 
