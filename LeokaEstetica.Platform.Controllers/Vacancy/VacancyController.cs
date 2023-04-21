@@ -4,6 +4,7 @@ using LeokaEstetica.Platform.Base.Abstractions.Services.Validation;
 using LeokaEstetica.Platform.Controllers.Filters;
 using LeokaEstetica.Platform.Controllers.Validators.Vacancy;
 using LeokaEstetica.Platform.Finder.Abstractions.Vacancy;
+using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Models.Dto.Input.Vacancy;
 using LeokaEstetica.Platform.Models.Dto.Output.Configs;
 using LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
@@ -22,6 +23,7 @@ public class VacancyController : BaseController
 {
     private readonly IVacancyService _vacancyService;
     private readonly IMapper _mapper;
+    private readonly ILogService _logService;
     private readonly IValidationExcludeErrorsService _validationExcludeErrorsService;
     private readonly IVacancyFinderService _vacancyFinderService;
     private readonly IVacancyPaginationService _vacancyPaginationService;
@@ -31,17 +33,20 @@ public class VacancyController : BaseController
     /// </summary>
     /// <param name="vacancyService">Сервис вакансий.</param>
     /// <param name="mapper">Автомаппер.</param>
+    /// <param name="logService">Сервис логера.</param>
     /// <param name="validationExcludeErrorsService">Сервис исключения параметров валидации.</param>
     /// <param name="vacancyFinderService">Поисковый сервис вакансий.</param>
     /// <param name="vacancyPaginationService">Сервис пагинации вакансий.</param>
     public VacancyController(IVacancyService vacancyService,
         IMapper mapper,
+        ILogService logService,
         IValidationExcludeErrorsService validationExcludeErrorsService, 
         IVacancyFinderService vacancyFinderService, 
         IVacancyPaginationService vacancyPaginationService)
     {
         _vacancyService = vacancyService;
         _mapper = mapper;
+        _logService = logService;
         _validationExcludeErrorsService = validationExcludeErrorsService;
         _vacancyFinderService = vacancyFinderService;
         _vacancyPaginationService = vacancyPaginationService;
@@ -97,22 +102,30 @@ public class VacancyController : BaseController
     [ProducesResponseType(404)]
     public async Task<VacancyOutput> CreateVacancyAsync([FromBody] VacancyInput vacancyInput)
     {
-        var result = new VacancyOutput();
-        var validator = await new CreateVacancyValidator().ValidateAsync(vacancyInput);
-
-        if (validator.Errors.Any())
+        try
         {
-            result.Errors = await _validationExcludeErrorsService.ExcludeAsync(validator.Errors);
+            var result = new VacancyOutput();
+            var validator = await new CreateVacancyValidator().ValidateAsync(vacancyInput);
+
+            if (validator.Errors.Any())
+            {
+                result.Errors = await _validationExcludeErrorsService.ExcludeAsync(validator.Errors);
+
+                return result;
+            }
+
+            vacancyInput.Token = CreateTokenFromHeader();
+            vacancyInput.Account = GetUserName();
+        
+            var createdVacancy = await _vacancyService.CreateVacancyAsync(vacancyInput);
 
             return result;
         }
-
-        vacancyInput.Token = CreateTokenFromHeader();
-        vacancyInput.Account = GetUserName();
-        
-        var createdVacancy = await _vacancyService.CreateVacancyAsync(vacancyInput);
-
-        return result;
+        catch (Exception ex)
+        {
+            await _logService.LogErrorAsync(ex);
+            throw;
+        }
     }
 
     /// <summary>
@@ -167,24 +180,32 @@ public class VacancyController : BaseController
     [ProducesResponseType(404)]
     public async Task<VacancyOutput> UpdateVacancyAsync([FromBody] VacancyInput vacancyInput)
     {
-        var result = new VacancyOutput();
-        var validator = await new CreateVacancyValidator().ValidateAsync(vacancyInput);
-
-        if (validator.Errors.Any())
+        try
         {
-            result.Errors = await _validationExcludeErrorsService.ExcludeAsync(validator.Errors);
+            var result = new VacancyOutput();
+            var validator = await new CreateVacancyValidator().ValidateAsync(vacancyInput);
+
+            if (validator.Errors.Any())
+            {
+                result.Errors = await _validationExcludeErrorsService.ExcludeAsync(validator.Errors);
+
+                return result;
+            }
+
+            vacancyInput.Account = GetUserName();
+            vacancyInput.Token = CreateTokenFromHeader();
+
+            var createdVacancy = await _vacancyService.UpdateVacancyAsync(vacancyInput);
+        
+            result = _mapper.Map<VacancyOutput>(createdVacancy);
 
             return result;
         }
-
-        vacancyInput.Account = GetUserName();
-        vacancyInput.Token = CreateTokenFromHeader();
-
-        var createdVacancy = await _vacancyService.UpdateVacancyAsync(vacancyInput);
-        
-        result = _mapper.Map<VacancyOutput>(createdVacancy);
-
-        return result;
+        catch (Exception ex)
+        {
+            await _logService.LogErrorAsync(ex);
+            throw;
+        }
     }
 
     /// <summary>

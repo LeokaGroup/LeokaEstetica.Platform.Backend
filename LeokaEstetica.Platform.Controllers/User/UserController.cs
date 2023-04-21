@@ -2,6 +2,7 @@ using LeokaEstetica.Platform.Base;
 using LeokaEstetica.Platform.Base.Abstractions.Services.Validation;
 using LeokaEstetica.Platform.Controllers.Filters;
 using LeokaEstetica.Platform.Controllers.Validators.User;
+using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Models.Dto.Input.User;
 using LeokaEstetica.Platform.Models.Dto.Output.User;
 using LeokaEstetica.Platform.Services.Abstractions.User;
@@ -19,17 +20,21 @@ namespace LeokaEstetica.Platform.Controllers.User;
 public class UserController : BaseController
 {
     private readonly IUserService _userService;
+    private readonly ILogService _logService;
     private readonly IValidationExcludeErrorsService _validationExcludeErrorsService;
     
     /// <summary>
     /// Конструктор.
     /// </summary>
     /// <param name="userService">Сервис пользователя.</param>
+    /// <param name="logService">Сервис логера.</param>
     /// <param name="validationExcludeErrorsService">Сервис исключения ошибок, которые не надо проверять.</param>
     public UserController(IUserService userService, 
-        IValidationExcludeErrorsService validationExcludeErrorsService)
+        IValidationExcludeErrorsService validationExcludeErrorsService,
+        ILogService logService)
     {
         _userService = userService;
+        _logService = logService;
         _validationExcludeErrorsService = validationExcludeErrorsService;
     }
 
@@ -48,19 +53,27 @@ public class UserController : BaseController
     [ProducesResponseType(404)]
     public async Task<UserSignUpOutput> CreateUserAsync([FromBody] UserSignUpInput userSignUpInput)
     {
-        var result = new UserSignUpOutput();
-        var validator = await new CreateUserValidator().ValidateAsync(userSignUpInput);
-
-        if (validator.Errors.Any())
+        try
         {
-            result.Errors = await _validationExcludeErrorsService.ExcludeAsync(validator.Errors);
+            var result = new UserSignUpOutput();
+            var validator = await new CreateUserValidator().ValidateAsync(userSignUpInput);
+
+            if (validator.Errors.Any())
+            {
+                result.Errors = await _validationExcludeErrorsService.ExcludeAsync(validator.Errors);
+
+                return result;
+            }
+        
+            result = await _userService.CreateUserAsync(userSignUpInput.Password, userSignUpInput.Email);
 
             return result;
         }
-        
-        result = await _userService.CreateUserAsync(userSignUpInput.Password, userSignUpInput.Email);
-
-        return result;
+        catch (Exception ex)
+        {
+            await _logService.LogErrorAsync(ex);
+            throw;
+        }
     }
 
     /// <summary>
@@ -98,19 +111,27 @@ public class UserController : BaseController
     [ProducesResponseType(404)]
     public async Task<UserSignInOutput> SignInAsync([FromBody] UserSignInInput userSignInInput)
     {
-        var result = new UserSignInOutput();
-        var validator = await new SignInValidator().ValidateAsync(userSignInInput);
+        try 
+        { 
+            var result = new UserSignInOutput();
+            var validator = await new SignInValidator().ValidateAsync(userSignInInput);
 
-        if (validator.Errors.Any())
-        {
-            result.Errors = await _validationExcludeErrorsService.ExcludeAsync(validator.Errors);
+            if (validator.Errors.Any())
+            {
+                result.Errors = await _validationExcludeErrorsService.ExcludeAsync(validator.Errors);
+
+                return result;
+            }
+        
+            result = await _userService.SignInAsync(userSignInInput.Email, userSignInInput.Password);
 
             return result;
         }
-        
-        result = await _userService.SignInAsync(userSignInInput.Email, userSignInInput.Password);
-
-        return result;
+        catch (Exception ex)
+        {
+            await _logService.LogErrorAsync(ex);
+            throw;
+        }
     }
 
     /// <summary>
@@ -147,19 +168,27 @@ public class UserController : BaseController
     [ProducesResponseType(404)]
     public async Task<UserSignInOutput> SignInAsync([FromBody] UserSignInGoogleInput userSignInGoogleInput)
     {
-        var result = new UserSignInOutput();
-        var validator = await new SignInGoogleValidator().ValidateAsync(userSignInGoogleInput);
-
-        if (validator.Errors.Any())
+        try
         {
-            result.Errors = validator.Errors;
+            var result = new UserSignInOutput();
+            var validator = await new SignInGoogleValidator().ValidateAsync(userSignInGoogleInput);
+
+            if (validator.Errors.Any())
+            {
+                result.Errors = validator.Errors;
+
+                return result;
+            }
+
+            result = await _userService.SignInAsync(userSignInGoogleInput.GoogleAuthToken);
 
             return result;
         }
-
-        result = await _userService.SignInAsync(userSignInGoogleInput.GoogleAuthToken);
-
-        return result;
+        catch (Exception ex)
+        {
+            await _logService.LogErrorAsync(ex);
+            throw;
+        }
     }
 
     /// <summary>
@@ -178,19 +207,27 @@ public class UserController : BaseController
     [ProducesResponseType(404)]
     public async Task<UserSignInOutput> SignInAsync([FromBody] UserSignInVkInput userSignInVkInput)
     {
-        var result = new UserSignInOutput();
-        var validator = await new SignInVkValidator().ValidateAsync(userSignInVkInput);
+        try 
+        { 
+            var result = new UserSignInOutput();
+            var validator = await new SignInVkValidator().ValidateAsync(userSignInVkInput);
 
-        if (validator.Errors.Any())
-        {
-            result.Errors = validator.Errors;
+            if (validator.Errors.Any())
+            {
+                result.Errors = validator.Errors;
+
+                return result;
+            }
+
+            result = await _userService.SignInAsync(userSignInVkInput.VkUserId, userSignInVkInput.FirstName,
+                userSignInVkInput.LastName);
 
             return result;
         }
-
-        result = await _userService.SignInAsync(userSignInVkInput.VkUserId, userSignInVkInput.FirstName,
-            userSignInVkInput.LastName);
-
-        return result;
+        catch (Exception ex)
+        {
+            await _logService.LogErrorAsync(ex);
+            throw;
+        }
     }
 }

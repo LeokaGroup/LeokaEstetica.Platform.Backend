@@ -2,6 +2,7 @@ using FluentValidation.Results;
 using LeokaEstetica.Platform.Base;
 using LeokaEstetica.Platform.Controllers.Filters;
 using LeokaEstetica.Platform.Controllers.Validators.Chat;
+using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Messaging.Abstractions.Chat;
 using LeokaEstetica.Platform.Messaging.Models.Chat.Output;
 using LeokaEstetica.Platform.Models.Dto.Chat.Input;
@@ -20,14 +21,18 @@ namespace LeokaEstetica.Platform.Controllers.Chat;
 public class ChatController : BaseController
 {
     private readonly IChatService _chatService;
+    private readonly ILogService _logService;
 
     /// <summary>
     /// Конструктор.
     /// </summary>
     /// <param name="chatService">Чат сервиса.</param>
-    public ChatController(IChatService chatService)
+    /// <param name="logService">Сервис логирования</param>
+    public ChatController(IChatService chatService,
+                          ILogService logService)
     {
         _chatService = chatService;
+        _logService = logService;
     }
 
     /// <summary>
@@ -44,19 +49,28 @@ public class ChatController : BaseController
     [ProducesResponseType(404)]
     public async Task<DialogResultOutput> GetDialogAsync([FromQuery] DialogInput dialogInput)
     {
-        var result = new DialogResultOutput { Errors = new List<ValidationFailure>() };
-        var validator = await new GetDialogValidator().ValidateAsync(dialogInput);
 
-        if (validator.Errors.Any())
+        try
         {
+            var result = new DialogResultOutput { Errors = new List<ValidationFailure>() };
+            var validator = await new GetDialogValidator().ValidateAsync(dialogInput);
+
+            if (validator.Errors.Any())
+            {
+                return result;
+            }
+
+            Enum.TryParse(dialogInput.DiscussionType, out DiscussionTypeEnum discussionType);
+            result = await _chatService.GetDialogAsync(dialogInput.DialogId, discussionType, GetUserName(),
+                dialogInput.DiscussionTypeId);
+
             return result;
         }
-
-        Enum.TryParse(dialogInput.DiscussionType, out DiscussionTypeEnum discussionType);
-        result = await _chatService.GetDialogAsync(dialogInput.DialogId, discussionType, GetUserName(),
-            dialogInput.DiscussionTypeId);
-
-        return result;
+        catch (Exception ex)
+        {
+            await _logService.LogErrorAsync(ex);
+            throw;
+        }
     }
 
     /// <summary>
@@ -93,19 +107,27 @@ public class ChatController : BaseController
     [ProducesResponseType(404)]
     public async Task<DialogResultOutput> WriteProjectDialogOwnerAsync([FromBody] DialogInput dialogInput)
     {
-        var result = new DialogResultOutput { Errors = new List<ValidationFailure>() };
-        var validator = await new GetDialogValidator().ValidateAsync(dialogInput);
-
-        if (validator.Errors.Any())
+        try
         {
+            var result = new DialogResultOutput { Errors = new List<ValidationFailure>() };
+            var validator = await new GetDialogValidator().ValidateAsync(dialogInput);
+
+            if (validator.Errors.Any())
+            {
+                return result;
+            }
+
+            Enum.TryParse(dialogInput.DiscussionType, out DiscussionTypeEnum discussionType);
+            result = await _chatService.WriteProjectDialogOwnerAsync(discussionType, GetUserName(),
+                dialogInput.DiscussionTypeId);
+
             return result;
         }
-
-        Enum.TryParse(dialogInput.DiscussionType, out DiscussionTypeEnum discussionType);
-        result = await _chatService.WriteProjectDialogOwnerAsync(discussionType, GetUserName(),
-            dialogInput.DiscussionTypeId);
-
-        return result;
+        catch (Exception ex)
+        {
+            await _logService.LogErrorAsync(ex);
+            throw;
+        }
     }
 
     /// <summary>

@@ -97,23 +97,31 @@ public class ProjectController : BaseController
     [ProducesResponseType(404)]
     public async Task<CreateProjectOutput> CreateProjectAsync([FromBody] CreateProjectInput createProjectInput)
     {
-        var result = new CreateProjectOutput();
-        var validator = await new CreateProjectValidator().ValidateAsync(createProjectInput);
-
-        if (validator.Errors.Any())
+        try
         {
-            result.Errors = await _validationExcludeErrorsService.ExcludeAsync(validator.Errors);
+            var result = new CreateProjectOutput();
+            var validator = await new CreateProjectValidator().ValidateAsync(createProjectInput);
+
+            if (validator.Errors.Any())
+            {
+                result.Errors = await _validationExcludeErrorsService.ExcludeAsync(validator.Errors);
+
+                return result;
+            }
+
+            var project = await _projectService.CreateProjectAsync(createProjectInput.ProjectName,
+                createProjectInput.ProjectDetails, GetUserName(),
+                Enum.Parse<ProjectStageEnum>(createProjectInput.ProjectStage), CreateTokenFromHeader());
+
+            result = _mapper.Map<CreateProjectOutput>(project);
 
             return result;
         }
-
-        var project = await _projectService.CreateProjectAsync(createProjectInput.ProjectName,
-            createProjectInput.ProjectDetails, GetUserName(),
-            Enum.Parse<ProjectStageEnum>(createProjectInput.ProjectStage), CreateTokenFromHeader());
-        
-        result = _mapper.Map<CreateProjectOutput>(project);
-
-        return result;
+        catch(Exception ex)
+        {
+            await _logService.LogErrorAsync(ex);
+            throw;
+        }
     }
 
     /// <summary>
@@ -167,21 +175,29 @@ public class ProjectController : BaseController
     [ProducesResponseType(404)]
     public async Task<UpdateProjectOutput> UpdateProjectAsync([FromBody] UpdateProjectInput createProjectInput)
     {
-        var result = new UpdateProjectOutput();
-        var validator = await new UpdateProjectValidator().ValidateAsync(createProjectInput);
-
-        if (validator.Errors.Any())
+        try
         {
-            result.Errors = await _validationExcludeErrorsService.ExcludeAsync(validator.Errors);
+            var result = new UpdateProjectOutput();
+            var validator = await new UpdateProjectValidator().ValidateAsync(createProjectInput);
+
+            if (validator.Errors.Any())
+            {
+                result.Errors = await _validationExcludeErrorsService.ExcludeAsync(validator.Errors);
+
+                return result;
+            }
+
+            result = await _projectService.UpdateProjectAsync(createProjectInput.ProjectName,
+                createProjectInput.ProjectDetails, GetUserName(), createProjectInput.ProjectId,
+                Enum.Parse<ProjectStageEnum>(createProjectInput.ProjectStage), CreateTokenFromHeader());
 
             return result;
         }
-
-        result = await _projectService.UpdateProjectAsync(createProjectInput.ProjectName,
-            createProjectInput.ProjectDetails, GetUserName(), createProjectInput.ProjectId,
-            Enum.Parse<ProjectStageEnum>(createProjectInput.ProjectStage), CreateTokenFromHeader());
-
-        return result;
+        catch (Exception ex)
+        {
+            await _logService.LogErrorAsync(ex);
+            throw;
+        }
     }
 
     /// <summary>
@@ -198,20 +214,28 @@ public class ProjectController : BaseController
     [ProducesResponseType(404)]
     public async Task<ProjectOutput> GetProjectAsync([FromQuery] GetProjectValidationModel getProjectValidation)
     {
-        var result = new ProjectOutput();
-        var validator = await new GetProjectValidator().ValidateAsync(getProjectValidation);
+        try 
+        { 
+            var result = new ProjectOutput();
+            var validator = await new GetProjectValidator().ValidateAsync(getProjectValidation);
 
-        if (validator.Errors.Any())
-        {
-            result.Errors = await _validationExcludeErrorsService.ExcludeAsync(validator.Errors);
+            if (validator.Errors.Any())
+            {
+                result.Errors = await _validationExcludeErrorsService.ExcludeAsync(validator.Errors);
+
+                return result;
+            }
+
+            result = await _projectService.GetProjectAsync(getProjectValidation.ProjectId, getProjectValidation.Mode,
+                GetUserName());
 
             return result;
         }
-
-        result = await _projectService.GetProjectAsync(getProjectValidation.ProjectId, getProjectValidation.Mode,
-            GetUserName());
-
-        return result;
+        catch (Exception ex)
+        {
+            await _logService.LogErrorAsync(ex);
+            throw;
+        }
     }
 
     /// <summary>
@@ -266,24 +290,32 @@ public class ProjectController : BaseController
     public async Task<CreateProjectVacancyOutput> CreateProjectVacancyAsync(
         [FromBody] CreateProjectVacancyInput createProjectVacancyInput)
     {
-        var result = new CreateProjectVacancyOutput();
-        var validator = await new CreateProjectVacancyValidator().ValidateAsync(createProjectVacancyInput);
+        try 
+        { 
+            var result = new CreateProjectVacancyOutput();
+            var validator = await new CreateProjectVacancyValidator().ValidateAsync(createProjectVacancyInput);
 
-        if (validator.Errors.Any())
-        {
-            result.Errors = await _validationExcludeErrorsService.ExcludeAsync(validator.Errors);
+            if (validator.Errors.Any())
+            {
+                result.Errors = await _validationExcludeErrorsService.ExcludeAsync(validator.Errors);
+
+                return result;
+            }
+
+            createProjectVacancyInput.Account = GetUserName();
+            createProjectVacancyInput.Token = CreateTokenFromHeader();
+
+            var createdVacancy = await _projectService.CreateProjectVacancyAsync(createProjectVacancyInput);
+        
+            result = _mapper.Map<CreateProjectVacancyOutput>(createdVacancy);
 
             return result;
         }
-
-        createProjectVacancyInput.Account = GetUserName();
-        createProjectVacancyInput.Token = CreateTokenFromHeader();
-
-        var createdVacancy = await _projectService.CreateProjectVacancyAsync(createProjectVacancyInput);
-        
-        result = _mapper.Map<CreateProjectVacancyOutput>(createdVacancy);
-
-        return result;
+        catch (Exception ex)
+        {
+            await _logService.LogErrorAsync(ex);
+            throw;
+        }
     }
 
     /// <summary>
