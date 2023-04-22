@@ -28,13 +28,14 @@ public interface IVacancyModerationService
     /// </summary>
     /// <returns>Список вакансий.</returns>
     Task<VacanciesModerationResult> VacanciesModerationAsync();
-    
+
     /// <summary>
     /// Метод одобряет вакансию на модерации.
     /// </summary>
-    /// <param name="projectId">Id вакансии.</param>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <param name="userToken">Токен модератора отправившего запрос</param>
     /// <returns>Выходная модель модерации.</returns>
-    Task<ApproveVacancyOutput> ApproveVacancyAsync(long vacancyId);
+    Task<ApproveVacancyOutput> ApproveVacancyAsync(long vacancyId, string userToken);
     
     /// <summary>
     /// Метод отклоняет вакансию на модерации.
