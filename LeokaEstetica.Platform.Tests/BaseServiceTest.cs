@@ -80,6 +80,7 @@ public class BaseServiceTest
     protected readonly PgContext PgContext;
     protected readonly FillColorProjectsService FillColorProjectsService;
     protected readonly FillColorResumeService FillColorResumeService;
+    protected readonly VacancyModerationNotificationsService VacancyModerationNotificationsService;
 
     protected BaseServiceTest()
     {
@@ -120,8 +121,10 @@ public class BaseServiceTest
         var availableLimitsRepository = new AvailableLimitsRepository(pgContext);
         var availableLimitsService = new AvailableLimitsService(logService, availableLimitsRepository);
 
+        VacancyModerationNotificationsService = new VacancyModerationNotificationsService(null, null);
+        
         VacancyModerationService = new VacancyModerationService(vacancyModerationRepository, logService, mapper, null,
-            vacancyRepository, userRepository, projectRepository);
+            vacancyRepository, userRepository, projectRepository, VacancyModerationNotificationsService);
         
         // Тут если нужен будет ProjectService, то тут проблема с порядком следования.
         // Не получится сделать просто, VacancyService и ProjectService нужны друг другу тесно.
@@ -184,7 +187,5 @@ public class BaseServiceTest
         KnowledgeService = new KnowledgeService(KnowledgeRepository, logService);
 
         PgContext = pgContext;
-
-        
     }
 }
