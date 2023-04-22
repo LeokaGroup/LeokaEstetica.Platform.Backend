@@ -24,13 +24,13 @@ public class ResumeService : IResumeService
     private readonly IFillColorResumeService _fillColorResumeService;
     
     /// <summary>
-    /// Конструктор
+    /// Конструктор.
     /// </summary>
     /// <param name="logService">Сервис логов.</param>
     /// <param name="resumeRepository">Репозиторий базы резюме.</param>
     /// <param name="mapper">Автомаппер.</param>
     /// <param name="subscriptionRepository">Репозиторий подписок.</param>
-    /// <param name="fareRuleRepository">Репозиторий правил тарифа</param>
+    /// <param name="fareRuleRepository">Репозиторий правил тарифа.</param>
     /// <param name="userRepository">Репозиторий пользователей.</param>
     /// <param name="fillColorResumeService">Сервис выделение цветом резюме пользователей.</param>
     public ResumeService(ILogService logService, 
