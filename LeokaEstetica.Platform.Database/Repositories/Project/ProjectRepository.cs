@@ -842,7 +842,7 @@ public class ProjectRepository : IProjectRepository
     }
 
     /// <summary>
-    /// Метод првоеряет, находится ли проект на модерации.
+    /// Метод проверяет, находится ли проект на модерации.
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
     /// <returns>Признак модерации.</returns>
@@ -1032,8 +1032,23 @@ public class ProjectRepository : IProjectRepository
         return result;
     }
 
+    /// <summary>
+    /// Метод проверяет, отклонён ли проект.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Отклонён ли проект.</returns>
+    public async Task<bool> CheckProjectRejected(long projectId)
+    {
+        var result = await _pgContext.ModerationProjects
+            .AnyAsync(p => p.ProjectId == projectId
+                           && p.ModerationStatusId == (int)ProjectModerationStatusEnum.RejectedProject);
+
+        return result;
+    }
+
     #region Приватные методы.
 
+    /// <summary>
     /// Метод првоеряет, был ли уже такой проект на модерации. 
     /// </summary>
     /// <param name="projectId">Id проекта.</param>

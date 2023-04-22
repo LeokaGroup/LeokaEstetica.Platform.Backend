@@ -274,4 +274,11 @@ public interface IProjectRepository
     /// <param name="userId">Id пользователя.</param>
     /// <returns>Признак проверки.</returns>
     Task<bool> CheckExistsProjectTeamMemberAsync(long projectId, long userId);
+
+    /// <summary>
+    /// Метод проверяет, отклонён ли проект.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Отклонён ли проект.</returns>
+    Task<bool> CheckProjectRejected(long projectId);
 }
