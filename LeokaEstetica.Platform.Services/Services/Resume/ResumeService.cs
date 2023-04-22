@@ -1,6 +1,4 @@
 using AutoMapper;
-using LeokaEstetica.Platform.Access.Enums;
-using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.FareRule;
 using LeokaEstetica.Platform.Database.Abstractions.Resume;
 using LeokaEstetica.Platform.Database.Abstractions.Subscription;
@@ -23,29 +21,25 @@ public class ResumeService : IResumeService
     private readonly ISubscriptionRepository _subscriptionRepository;
     private readonly IFareRuleRepository _fareRuleRepository;
     private readonly IUserRepository _userRepository;
+    private readonly IFillColorResumeService _fillColorResumeService;
     
-    /// <summary>
-    /// Список названий тарифов, которые дают выделение цветом.
-    /// </summary>
-    private static readonly List<string> _fareRuleTypesNames = new()
-    {
-        FareRuleTypeEnum.Business.GetEnumDescription(),
-        FareRuleTypeEnum.Professional.GetEnumDescription()
-    };
-
     /// <summary>
     /// Конструктор.
     /// </summary>
     /// <param name="logService">Сервис логов.</param>
     /// <param name="resumeRepository">Репозиторий базы резюме.</param>
-    /// <param name="accessResumeService">Сервис проверки доступа к базе резюме.</param>
-    /// <param name="_mapper">Автомаппер.</param>
+    /// <param name="mapper">Автомаппер.</param>
+    /// <param name="subscriptionRepository">Репозиторий подписок.</param>
+    /// <param name="fareRuleRepository">Репозиторий правил тарифа.</param>
+    /// <param name="userRepository">Репозиторий пользователей.</param>
+    /// <param name="fillColorResumeService">Сервис выделение цветом резюме пользователей.</param>
     public ResumeService(ILogService logService, 
         IResumeRepository resumeRepository, 
         IMapper mapper, 
         ISubscriptionRepository subscriptionRepository, 
         IFareRuleRepository fareRuleRepository, 
-        IUserRepository userRepository)
+        IUserRepository userRepository,
+        IFillColorResumeService fillColorResumeService)
     {
         _logService = logService;
         _resumeRepository = resumeRepository;
@@ -53,24 +47,25 @@ public class ResumeService : IResumeService
         _subscriptionRepository = subscriptionRepository;
         _fareRuleRepository = fareRuleRepository;
         _userRepository = userRepository;
+        _fillColorResumeService = fillColorResumeService;
     }
 
     #region Публичные методы.
 
     /// <summary>
-    /// Метод получает список резюме.
+    /// Метод возвращает список резюме.
     /// </summary>
     /// <returns>Список резюме.</returns>
     public async Task<ResumeResultOutput> GetProfileInfosAsync()
     {
         try
         {
-            var resumes = await _resumeRepository.GetProfileInfosAsync();
+            var profiles = await _resumeRepository.GetProfileInfosAsync();
 
             var result = new ResumeResultOutput
             {
                 // Приводим к выходной модели.
-                CatalogResumes = _mapper.Map<IEnumerable<ResumeOutput>>(resumes)
+                CatalogResumes = _mapper.Map<IEnumerable<ResumeOutput>>(profiles)
             };
             
             if (!result.CatalogResumes.Any())
@@ -78,57 +73,12 @@ public class ResumeService : IResumeService
                 return result;
             }
             
-            // Получаем список юзеров для проставления цветов.
-            var userIds = result.CatalogResumes.Select(p => p.UserId).Distinct();
+            result.CatalogResumes = await _fillColorResumeService.SetColorBusinessResume(result.CatalogResumes.ToList(),
+                _subscriptionRepository, _fareRuleRepository);
             
-            // Выбираем список подписок пользователей.
-            var userSubscriptions = await _subscriptionRepository.GetUsersSubscriptionsAsync(userIds);
-
-            // Получаем список подписок.
-            var subscriptions = await _subscriptionRepository.GetSubscriptionsAsync();
+            result.CatalogResumes = await SetUserCodes(result.CatalogResumes.ToList());
             
-            // Получаем список тарифов, чтобы взять названия тарифов.
-            var fareRules = await _fareRuleRepository.GetFareRulesAsync();
-            var fareRulesList = fareRules.ToList();
-
-            // TODO: Отрефачить и вынести в отдельный сервис.
-            // Выбираем пользователей, у которых есть подписка выше бизнеса. Только их выделяем цветом.
-            foreach (var r in result.CatalogResumes)
-            {
-                // Смотрим подписку пользователя.
-                var userSubscription = userSubscriptions.Find(s => s.UserId == r.UserId);
-
-                if (userSubscription is null)
-                {
-                    continue;
-                }
-                
-                var subscriptionId = userSubscription.SubscriptionId;
-                var s = subscriptions.Find(s => s.ObjectId == subscriptionId);
-
-                if (s is null)
-                {
-                    continue;
-                }
-                
-                // Получаем название тарифа подписки.
-                var sn = fareRulesList.Find(fr => fr.RuleId == s.ObjectId);
-                
-                if (sn is null)
-                {
-                    continue;
-                }
-                        
-                // Подписка позволяет. Проставляем выделение цвета.
-                if (_fareRuleTypesNames.Contains(sn.Name))
-                {
-                    r.IsSelectedColor = true;
-                }
-            }
-
-            var catalogResumes = result.CatalogResumes.ToList();
-            result.CatalogResumes = await SetUserCodes(catalogResumes);
-            result.CatalogResumes = await SetVacanciesTags(catalogResumes);
+            result.CatalogResumes = await SetVacanciesTags(result.CatalogResumes.ToList());
 
             return result;
         }
