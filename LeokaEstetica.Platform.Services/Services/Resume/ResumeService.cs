@@ -72,14 +72,13 @@ public class ResumeService : IResumeService
             {
                 return result;
             }
-
-            var resumes = result.CatalogResumes.ToList();
-            result.CatalogResumes = await _fillColorResumeService.SetColorBusinessResume(resumes,
+            
+            result.CatalogResumes = await _fillColorResumeService.SetColorBusinessResume(result.CatalogResumes.ToList(),
                 _subscriptionRepository, _fareRuleRepository);
-
-            var catalogResumes = result.CatalogResumes.ToList();
-            result.CatalogResumes = await SetUserCodes(catalogResumes);
-            result.CatalogResumes = await SetVacanciesTags(catalogResumes);
+            
+            result.CatalogResumes = await SetUserCodes(result.CatalogResumes.ToList());
+            
+            result.CatalogResumes = await SetVacanciesTags(result.CatalogResumes.ToList());
 
             return result;
         }
