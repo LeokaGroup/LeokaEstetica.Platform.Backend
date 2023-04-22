@@ -6,7 +6,7 @@ namespace LeokaEstetica.Platform.CallCenter.Models.Dto.Output.Vacancy;
 public class ApproveVacancyOutput
 {
     /// <summary>
-    /// Признак успешного апрува проекта.
+    /// Признак успешного апрува вакансии.
     /// </summary>
     public bool IsSuccess { get; set; }
 }

@@ -18,7 +18,7 @@ public class ModerationVacancyEntity
     public long VacancyId { get; set; }
     
     /// <summary>
-    /// Id статуса момодерации.
+    /// Id статуса модерации.
     /// </summary>
     public int ModerationStatusId { get; set; }
 

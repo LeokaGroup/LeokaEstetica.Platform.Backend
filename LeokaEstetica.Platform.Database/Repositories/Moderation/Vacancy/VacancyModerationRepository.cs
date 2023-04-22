@@ -217,7 +217,7 @@ public class VacancyModerationRepository : IVacancyModerationRepository
     /// Метод устанавливает статус вакансии.
     /// </summary>
     /// <param name="vacancyId">Id вакансии.</param>
-    /// <param name="projectModerationStatus">Статус.</param>
+    /// <param name="vacancyModerationStatus">Статус.</param>
     /// <returns>Признак подвверждения вакансии.</returns>
     private async Task<bool> SetVacancyStatus(long vacancyId, VacancyModerationStatusEnum vacancyModerationStatus)
     {
@@ -234,7 +234,8 @@ public class VacancyModerationRepository : IVacancyModerationRepository
 
         return true;
     }
-    
+
+    /// <summary>
     /// Метод проверяет, была ли уже такая вакансия на модерации. 
     /// </summary>
     /// <param name="vacancyId">Id вакансии.</param>
