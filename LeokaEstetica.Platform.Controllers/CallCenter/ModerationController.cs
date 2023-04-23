@@ -212,7 +212,8 @@ public class ModerationController : BaseController
     [ProducesResponseType(404)]
     public async Task<ApproveVacancyOutput> ApproveVacancyAsync([FromBody] ApproveVacancyInput approveVacancyInput)
     {
-        var result = await _vacancyModerationService.ApproveVacancyAsync(approveVacancyInput.VacancyId, GetTokenFromHeader());
+        var result = await _vacancyModerationService.ApproveVacancyAsync(approveVacancyInput.VacancyId, 
+            GetTokenFromHeader());
 
         return result;
     }
