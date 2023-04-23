@@ -34,16 +34,20 @@ public class ProjectNotificationsService : IProjectNotificationsService
     private readonly IMailingsService _mailingsService;
     private readonly IGlobalConfigRepository _globalConfigRepository;
     private readonly IVacancyRepository _vacancyRepository;
-
+    
     /// <summary>
     /// Конструктор.
     /// </summary>
     /// <param name="hubContext">Контекст хаба.</param>
     /// <param name="logService">Сервис логера.</param>
     /// <param name="userRepository">Репозиторий пользователя.</param>
-    /// <param name="_projectNotificationsRepository">Репозиторий уведомлений проектов.</param>
     /// <param name="mapper">Автомаппер.</param>
+    /// <param name="projectNotificationsRepository">Репозиторий уведомлений проектов.</param>
     /// <param name="notificationsRedisService">Сервис уведомлений кэша.</param>
+    /// <param name="projectRepository">Репозиторий проектов.</param>
+    /// <param name="mailingsService">Сервис для уведомлений на почту.</param>
+    /// <param name="globalConfigRepository">Репозиторий глобал конфига.</param>
+    /// <param name="vacancyRepository">Репозиторий вакансий.</param>
     public ProjectNotificationsService(IHubContext<NotifyHub> hubContext, 
         ILogService logService, 
         IUserRepository userRepository,
