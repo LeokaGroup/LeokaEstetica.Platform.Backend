@@ -59,6 +59,7 @@ public sealed class ProjectCommentsRepository : IProjectCommentsRepository
         catch
         {
             await transaction.RollbackAsync();
+            throw;
         }
     }
 
