@@ -448,7 +448,7 @@ public class ProjectService : IProjectService
 
             var prj = await _projectRepository.GetProjectAsync(projectId);
 
-            if (prj.Item1 is null)
+            if (prj.UserProject is null)
             {
                 var ex = new InvalidOperationException(
                     $"Не удалось найти проект с ProjectId {projectId} и UserId {userId}");

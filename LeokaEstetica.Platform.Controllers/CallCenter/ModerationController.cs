@@ -114,10 +114,9 @@ public class ModerationController : BaseController
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<UserProjectOutput> GetProjectModerationByProjectIdAsync([FromRoute] long projectId)
+    public async Task<ProjectOutput> GetProjectModerationByProjectIdAsync([FromRoute] long projectId)
     {
-        var prj = await _projectModerationService.GetProjectModerationByProjectIdAsync(projectId);
-        var result = _mapper.Map<UserProjectOutput>(prj);
+        var result = await _projectModerationService.GetProjectModerationByProjectIdAsync(projectId);
 
         return result;
     }

@@ -9,6 +9,7 @@ using LeokaEstetica.Platform.Database.Abstractions.Project;
 using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Project;
+using LeokaEstetica.Platform.Models.Dto.Output.Project;
 using LeokaEstetica.Platform.Models.Entities.Project;
 
 namespace LeokaEstetica.Platform.CallCenter.Services.Project;
@@ -16,7 +17,7 @@ namespace LeokaEstetica.Platform.CallCenter.Services.Project;
 /// <summary>
 /// Класс реализует методы сервиса модерации проектов.
 /// </summary>
-public sealed class ProjectModerationService : IProjectModerationService
+public class ProjectModerationService : IProjectModerationService
 {
     private readonly IProjectModerationRepository _projectModerationRepository;
     private readonly ILogService _logService;
@@ -25,6 +26,15 @@ public sealed class ProjectModerationService : IProjectModerationService
     private readonly IUserRepository _userRepository;
     private readonly IProjectRepository _projectRepository;
 
+    /// <summary>
+    /// Конструктор.
+    /// </summary>
+    /// <param name="projectModerationRepository">Репозиторий модерации проектов.</param>
+    /// <param name="logService">Сервис логов.</param>
+    /// <param name="mapper">Автомаппер.</param>
+    /// <param name="moderationMailingsService">Сервис уведомлений модерации на почту.</param>
+    /// <param name="userRepository">Репозиторий пользователя.</param>
+    /// <param name="projectRepository">Репозиторий проектов.</param>
     public ProjectModerationService(IProjectModerationRepository projectModerationRepository,
         ILogService logService,
         IMapper mapper, 
@@ -39,6 +49,8 @@ public sealed class ProjectModerationService : IProjectModerationService
         _userRepository = userRepository;
         _projectRepository = projectRepository;
     }
+
+    #region Публичные методы.
 
     /// <summary>
     /// Метод получает список проектов для модерации.
@@ -67,18 +79,20 @@ public sealed class ProjectModerationService : IProjectModerationService
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
     /// <returns>Данные проекта.</returns>
-    public async Task<UserProjectEntity> GetProjectModerationByProjectIdAsync(long projectId)
+    public async Task<ProjectOutput> GetProjectModerationByProjectIdAsync(long projectId)
     {
         try
         {
-            var result = await _projectModerationRepository.GetProjectModerationByProjectIdAsync(projectId);
+            var prj = await _projectRepository.GetProjectAsync(projectId);
+            var result = await CreateProjectResultAsync(prj);
 
             return result;
         }
 
         catch (Exception ex)
         {
-            await _logService.LogErrorAsync(ex, $"Ошибка при получении проекта для модерации. ProjectId = {projectId}");
+            await _logService.LogErrorAsync(ex, "Ошибка при получении проекта для модерации. " +
+                                                $"ProjectId = {projectId}");
             throw;
         }
     }
@@ -176,4 +190,27 @@ public sealed class ProjectModerationService : IProjectModerationService
             throw;
         }
     }
+
+    #endregion
+
+    #region Приватные методы.
+
+    /// <summary>
+    /// Метод создает результаты проекта. 
+    /// </summary>
+    /// <param name="prj">Данные проекта.</param>
+    /// <returns>Результаты проекта.</returns>
+    private async Task<ProjectOutput> CreateProjectResultAsync(
+        (UserProjectEntity UserProject, ProjectStageEntity ProjectStage) prj)
+    {
+        var result = _mapper.Map<ProjectOutput>(prj.UserProject);
+        result.StageId = prj.ProjectStage.StageId;
+        result.StageName = prj.ProjectStage.StageName;
+        result.StageSysName = prj.ProjectStage.StageSysName;
+        result.IsSuccess = true;
+
+        return await Task.FromResult(result);
+    }
+
+    #endregion
 }

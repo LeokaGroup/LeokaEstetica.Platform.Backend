@@ -1,5 +1,4 @@
 using LeokaEstetica.Platform.Models.Entities.Moderation;
-using LeokaEstetica.Platform.Models.Entities.Project;
 
 namespace LeokaEstetica.Platform.Database.Abstractions.Moderation.Project;
 
@@ -13,13 +12,6 @@ public interface IProjectModerationRepository
     /// </summary>
     /// <returns>Список проектов.</returns>
     Task<IEnumerable<ModerationProjectEntity>> ProjectsModerationAsync();
-    
-    /// <summary>
-    /// Метод получает проект для просмотра/изменения.
-    /// </summary>
-    /// <param name="projectId">Id проекта.</param>
-    /// <returns>Данные проекта.</returns>
-    Task<UserProjectEntity> GetProjectModerationByProjectIdAsync(long projectId);
 
     /// <summary>
     /// Метод одобряет проект на модерации.
