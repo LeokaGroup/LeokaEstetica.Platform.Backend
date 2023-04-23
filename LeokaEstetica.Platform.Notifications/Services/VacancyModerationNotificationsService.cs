@@ -6,11 +6,19 @@ using Microsoft.AspNetCore.SignalR;
 
 namespace LeokaEstetica.Platform.Notifications.Services;
 
+/// <summary>
+/// Класс уведомлений модераторов.
+/// </summary>
 public class VacancyModerationNotificationsService : IVacancyModerationNotificationsService
 {
-    readonly IHubContext<NotifyHub> _hubContext;
+    private readonly IHubContext<NotifyHub> _hubContext;
     private readonly INotificationsRedisService _notificationsRedisService;
 
+    /// <summary>
+    /// Конструктор.
+    /// </summary>
+    /// <param name="hubContext">Контекст хаба.</param>
+    /// <param name="notificationsRedisService">Сервси уведомлений кеша.</param>
     public VacancyModerationNotificationsService(IHubContext<NotifyHub> hubContext, 
         INotificationsRedisService notificationsRedisService)
     {
@@ -18,7 +26,14 @@ public class VacancyModerationNotificationsService : IVacancyModerationNotificat
         _notificationsRedisService = notificationsRedisService;
     }
 
-    public async Task SendNotificationErrorApproveProjectAsync(string title, string message, string notificationLevel, 
+    /// <summary>
+    /// Отправляет уведомление модератору.
+    /// </summary>
+    /// <param name="title">Заголовок уведомления.</param>
+    /// <param name="message">Текст уведомления.</param>
+    /// <param name="notificationLevel">Уровень уведомления.</param>
+    /// <param name="token">Токен модератора.</param>
+    public async Task SendNotificationWarningApproveVacancyAsync(string title, string message, string notificationLevel, 
         string token)
     {
         var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(token);
