@@ -41,5 +41,10 @@ public class NotificationsModule : Module
         builder.RegisterType<AccessUserNotificationsService>()
             .As<IAccessUserNotificationsService>()
             .InstancePerLifetimeScope();
+        
+        // Сервис уведомлений модераторов.
+        builder.RegisterType<VacancyModerationNotificationsService>()
+            .Named<IVacancyModerationNotificationsService>(nameof(VacancyModerationNotificationsService))
+            .InstancePerLifetimeScope();
     }
 }
