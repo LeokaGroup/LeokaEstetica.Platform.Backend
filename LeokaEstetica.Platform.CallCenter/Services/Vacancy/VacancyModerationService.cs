@@ -3,6 +3,7 @@ using LeokaEstetica.Platform.CallCenter.Abstractions.Messaging.Mail;
 using LeokaEstetica.Platform.CallCenter.Abstractions.Vacancy;
 using LeokaEstetica.Platform.CallCenter.Builders;
 using LeokaEstetica.Platform.CallCenter.Models.Dto.Output.Vacancy;
+using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Vacancy;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
 using LeokaEstetica.Platform.Database.Abstractions.User;
@@ -114,16 +115,34 @@ public sealed class VacancyModerationService : IVacancyModerationService
         try
         {
             var vacancyProjectId = await _projectRepository.GetProjectIdByVacancyIdAsync(vacancyId);
+            if (vacancyProjectId <= 0)
+            {
+                if (!string.IsNullOrEmpty(userToken))
+                {
+                    await _vacancyModerationNotificationsService
+                        .SendNotificationWarningApproveVacancyAsync("Внимание",
+                            $"Проект для текущей вакансии не найден",
+                            NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING,
+                            userToken);
+                }
+
+                var ex = new NotFoundProjectException($"Проект для вакансии с Id: {vacancyId} не найден");
+                throw ex;
+            }
+
             var isProjectOnModeration = await _projectRepository.CheckProjectModerationAsync(vacancyProjectId);
 
-            // Если проект вакансии на модерации возвращаем НЕ успех и отправляем уведомление в Hub
+            // Если проект вакансии на модерации отправляем информацию на фронт и выбрасываем исключение 
             if (isProjectOnModeration)
             {
-                await _vacancyModerationNotificationsService
-                    .SendNotificationErrorApproveProjectAsync("Ошибка",
-                        "Вакансия не может быть одобрнена пока проект находится на рассмотрении",
-                        NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING,
-                        userToken);
+                if (!string.IsNullOrEmpty(userToken))
+                {
+                    await _vacancyModerationNotificationsService
+                        .SendNotificationWarningApproveVacancyAsync("Внимание",
+                            "Вакансия не может быть одобрнена пока проект находится на модерации",
+                            NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING,
+                            userToken);
+                }
 
                 var ex = new InvalidOperationException(
                     "Вакансия не может быть одобрена, пока проект, к которому привязана вакансия находится на модерации");
@@ -131,16 +150,19 @@ public sealed class VacancyModerationService : IVacancyModerationService
                 throw ex;
             }
 
-            var isProjectRejected = await _projectRepository.CheckProjectRejected(vacancyProjectId);
+            var isProjectRejected = await _projectRepository.CheckProjectRejectedAsync(vacancyProjectId);
 
-            // Если проект вакансии отклонён возвращаем НЕ успех и отправляем уведомление в Hub
+            // Если проект вакансии отклонён отправляем информацию на фронт и выбрасываем исключение 
             if (isProjectRejected)
             {
-                await _vacancyModerationNotificationsService
-                    .SendNotificationErrorApproveProjectAsync("Ошибка",
-                        "Вакансия не может быть одобрена, пока проект, к которому привязана вакансия не одобрен",
-                        NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING,
-                        userToken);
+                if (!string.IsNullOrEmpty(userToken))
+                {
+                    await _vacancyModerationNotificationsService
+                        .SendNotificationWarningApproveVacancyAsync("Внимание",
+                            "Проект был отклонен модератором. Вакансия не может быть одобрена",
+                            NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING,
+                            userToken);
+                }
 
                 var ex = new InvalidOperationException(
                     "Вакансия не может быть одобрена, пока проект, к которому привязана вакансия не одобрен");
@@ -170,11 +192,6 @@ public sealed class VacancyModerationService : IVacancyModerationService
                 vacancyName, vacancyProjectId);
 
             return result;
-        }
-        catch (InvalidOperationException invalidOperationException)
-        {
-            await _logService.LogWarningAsync(invalidOperationException, $"Vacancy ID = {vacancyId}");
-            throw;
         }
         catch (Exception ex)
         {
