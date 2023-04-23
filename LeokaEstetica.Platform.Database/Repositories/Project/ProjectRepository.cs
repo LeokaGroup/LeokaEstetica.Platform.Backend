@@ -1037,7 +1037,7 @@ public class ProjectRepository : IProjectRepository
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
     /// <returns>Отклонён ли проект.</returns>
-    public async Task<bool> CheckProjectRejected(long projectId)
+    public async Task<bool> CheckProjectRejectedAsync(long projectId)
     {
         var result = await _pgContext.ModerationProjects
             .AnyAsync(p => p.ProjectId == projectId

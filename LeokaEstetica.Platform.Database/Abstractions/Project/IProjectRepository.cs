@@ -280,5 +280,5 @@ public interface IProjectRepository
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
     /// <returns>Отклонён ли проект.</returns>
-    Task<bool> CheckProjectRejected(long projectId);
+    Task<bool> CheckProjectRejectedAsync(long projectId);
 }
