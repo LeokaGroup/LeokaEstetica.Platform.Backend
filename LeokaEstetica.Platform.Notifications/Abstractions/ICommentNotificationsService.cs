@@ -1,5 +1,8 @@
 ﻿namespace LeokaEstetica.Platform.Notifications.Abstractions;
 
+/// <summary>
+/// Абстракция сервиса уведомлений комментариев.
+/// </summary>
 public interface ICommentNotificationsService
 {
     /// <summary>

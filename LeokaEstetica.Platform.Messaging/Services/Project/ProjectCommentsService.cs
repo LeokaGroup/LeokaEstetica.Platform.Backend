@@ -75,7 +75,7 @@ public sealed class ProjectCommentsService : IProjectCommentsService
             // Проверяем наличие комментария
             if (string.IsNullOrEmpty(comment))
             {
-                var ex = new InvalidOperationException($"Комментарий к проекту не может быть пустым." +
+                var ex = new InvalidOperationException("Комментарий к проекту не может быть пустым." +
                     $"ProjectId: {projectId}");
 
                 await _commentNotificationsService.SendNotificationCommentProjectIsNotEmptyAsync("Внимание",

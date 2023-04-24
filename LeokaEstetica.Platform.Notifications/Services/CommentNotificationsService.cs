@@ -6,6 +6,9 @@ using LeokaEstetica.Platform.Notifications.Models.Output;
 
 namespace LeokaEstetica.Platform.Notifications.Services;
 
+/// <summary>
+/// Класс реализует методы уведомлений комментариев.
+/// </summary>
 public class CommentNotificationsService : ICommentNotificationsService
 {
     private readonly IHubContext<NotifyHub> _hubContext;

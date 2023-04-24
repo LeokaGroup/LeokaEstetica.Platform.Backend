@@ -41,5 +41,13 @@ public class NotificationsModule : Module
         builder.RegisterType<AccessUserNotificationsService>()
             .As<IAccessUserNotificationsService>()
             .InstancePerLifetimeScope();
+
+        // Сервис уведомлений комметариев.
+        builder.RegisterType<CommentNotificationsService>()
+            .Named<ICommentNotificationsService>("CommentNotificationsService")
+            .InstancePerLifetimeScope();
+        builder.RegisterType<CommentNotificationsService>()
+            .As<ICommentNotificationsService>()
+            .InstancePerLifetimeScope();
     }
 }
