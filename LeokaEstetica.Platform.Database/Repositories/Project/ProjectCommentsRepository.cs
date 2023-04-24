@@ -70,11 +70,11 @@ public sealed class ProjectCommentsRepository : IProjectCommentsRepository
     public async Task<IEnumerable<ProjectCommentEntity>> GetProjectCommentsAsync(long projectId)
     {
         var result = await (from pc in _pgContext.ProjectComments
-                where pc.ProjectId == projectId
                 join pcm in _pgContext.ProjectCommentsModeration
                     on pc.CommentId
                     equals pcm.CommentId
-                where !new[]
+                where pc.ProjectId == projectId && 
+                !new[]
                     {
                         (int)ProjectModerationStatusEnum.ModerationProject, // На модерации.
                         (int)ProjectModerationStatusEnum.RejectedProject // Отклонен.
