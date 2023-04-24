@@ -3,6 +3,7 @@ using AutoMapper;
 using LeokaEstetica.Platform.Access.Services.AvailableLimits;
 using LeokaEstetica.Platform.Access.Services.Moderation;
 using LeokaEstetica.Platform.Access.Services.User;
+using LeokaEstetica.Platform.CallCenter.Services.Messaging.Mail;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Utils;
 using LeokaEstetica.Platform.Database.Repositories.AvailableLimits;
@@ -32,6 +33,7 @@ using LeokaEstetica.Platform.CallCenter.Services.Project;
 using LeokaEstetica.Platform.CallCenter.Services.Resume;
 using LeokaEstetica.Platform.CallCenter.Services.Vacancy;
 using LeokaEstetica.Platform.Database.Repositories.Access.User;
+using LeokaEstetica.Platform.Database.Repositories.Config;
 using LeokaEstetica.Platform.Notifications.Services;
 using LeokaEstetica.Platform.Processing.Services.PayMaster;
 using LeokaEstetica.Platform.Services.Services.FareRule;
@@ -84,6 +86,7 @@ public class BaseServiceTest
     protected readonly FillColorResumeService FillColorResumeService;
     protected readonly VacancyModerationNotificationsService VacancyModerationNotificationsService;
     protected readonly AccessUserService AccessUserService;
+    protected readonly ModerationMailingsService ModerationMailingsService;
 
     protected BaseServiceTest()
     {
@@ -123,12 +126,16 @@ public class BaseServiceTest
         var fareRuleRepository = new FareRuleRepository(pgContext);
         var availableLimitsRepository = new AvailableLimitsRepository(pgContext);
         var availableLimitsService = new AvailableLimitsService(logService, availableLimitsRepository);
-
+        
         VacancyModerationNotificationsService = new VacancyModerationNotificationsService(null, null);
         
-        VacancyModerationService = new VacancyModerationService(vacancyModerationRepository, logService, mapper, null,
-            vacancyRepository, userRepository, projectRepository, VacancyModerationNotificationsService);
+        ModerationMailingsService = new ModerationMailingsService(new GlobalConfigRepository(pgContext, logService),
+            AppConfiguration);
         
+        VacancyModerationService = new VacancyModerationService(vacancyModerationRepository, logService, 
+            mapper, ModerationMailingsService, vacancyRepository, userRepository, 
+            projectRepository, VacancyModerationNotificationsService);
+
         // Тут если нужен будет ProjectService, то тут проблема с порядком следования.
         // Не получится сделать просто, VacancyService и ProjectService нужны друг другу тесно.
         VacancyService = new VacancyService(logService, vacancyRepository, mapper, null, userRepository,
