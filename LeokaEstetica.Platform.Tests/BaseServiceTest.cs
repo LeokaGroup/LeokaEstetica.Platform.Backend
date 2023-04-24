@@ -2,6 +2,7 @@
 using AutoMapper;
 using LeokaEstetica.Platform.Access.Services.AvailableLimits;
 using LeokaEstetica.Platform.Access.Services.Moderation;
+using LeokaEstetica.Platform.Access.Services.User;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Utils;
 using LeokaEstetica.Platform.Database.Repositories.AvailableLimits;
@@ -30,6 +31,7 @@ using LeokaEstetica.Platform.Messaging.Services.Project;
 using LeokaEstetica.Platform.CallCenter.Services.Project;
 using LeokaEstetica.Platform.CallCenter.Services.Resume;
 using LeokaEstetica.Platform.CallCenter.Services.Vacancy;
+using LeokaEstetica.Platform.Database.Repositories.Access.User;
 using LeokaEstetica.Platform.Notifications.Services;
 using LeokaEstetica.Platform.Processing.Services.PayMaster;
 using LeokaEstetica.Platform.Services.Services.FareRule;
@@ -81,6 +83,7 @@ public class BaseServiceTest
     protected readonly FillColorProjectsService FillColorProjectsService;
     protected readonly FillColorResumeService FillColorResumeService;
     protected readonly VacancyModerationNotificationsService VacancyModerationNotificationsService;
+    protected readonly AccessUserService AccessUserService;
 
     protected BaseServiceTest()
     {
@@ -153,10 +156,12 @@ public class BaseServiceTest
 
         FillColorProjectsService = new FillColorProjectsService();
 
+        AccessUserService = new AccessUserService(new AccessUserRepository(pgContext));
+        
         ProjectService = new ProjectService(projectRepository, logService, userRepository, mapper,
             projectNotificationsService, VacancyService, vacancyRepository, availableLimitsService,
             subscriptionRepository, fareRuleRepository, VacancyModerationService, projectNotificationsRepository, null,
-            null, FillColorProjectsService, null);
+            AccessUserService, FillColorProjectsService, null);
 
         SubscriptionService =
             new SubscriptionService(logService, userRepository, subscriptionRepository, fareRuleRepository);
