@@ -64,10 +64,14 @@ public class UserBlackListService : IUserBlackListService
         }
         catch(Exception ex) 
         {
-            await _notificationsService.SendNotifyUserNotFoundBlackListAsync("Ошибка.", 
-                "Пользователя нет в чёрном списке.", 
-                NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, 
-                token);
+            if (!string.IsNullOrEmpty(token)) 
+            {
+                await _notificationsService.SendNotifyUserNotFoundBlackListAsync("Внимание.",
+                    "Пользователя нет в чёрном списке.",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING,
+                    token);
+            }
+
             await _logService.LogErrorAsync(ex);
             throw;
         }
