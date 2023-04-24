@@ -18,6 +18,7 @@ public class UserEntity
         ProjectTeamMembers = new HashSet<ProjectTeamMemberEntity>();
         ProjectComments = new HashSet<ProjectCommentEntity>();
         ModerationUsers = new HashSet<ModerationUserEntity>();
+        ProjectRemarks = new HashSet<ProjectRemarkEntity>();
     }
 
     /// <summary>
@@ -169,4 +170,9 @@ public class UserEntity
     /// Список пользователей, имеющих доступ к КЦ.
     /// </summary>
     public ICollection<ModerationUserEntity> ModerationUsers { get; set; }
+
+    /// <summary>
+    /// Список замечаний проекта.
+    /// </summary>
+    public ICollection<ProjectRemarkEntity> ProjectRemarks { get; set; }
 }

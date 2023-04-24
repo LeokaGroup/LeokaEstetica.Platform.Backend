@@ -14,6 +14,7 @@ public class UserProjectEntity
         ProjectStatuses = new HashSet<ProjectStatusEntity>();
         UserProjectsStages = new HashSet<UserProjectStageEntity>();
         ArchivedProjects = new HashSet<ArchivedProjectEntity>();
+        ProjectRemarks = new HashSet<ProjectRemarkEntity>();
     }
 
     /// <summary>
@@ -61,11 +62,28 @@ public class UserProjectEntity
     /// </summary>
     public ICollection<CatalogProjectEntity> CatalogProjects { get; set; }
     
+    /// <summary>
+    /// Список проектов на модерации.
+    /// </summary>
     public ICollection<ModerationProjectEntity> ModerationProjects { get; set; }
     
+    /// <summary>
+    /// Список статусов проектов.
+    /// </summary>
     public ICollection<ProjectStatusEntity> ProjectStatuses { get; set; }
 
+    /// <summary>
+    /// Список стадий проектов пользователя.
+    /// </summary>
     public ICollection<UserProjectStageEntity> UserProjectsStages { get; set; }
 
+    /// <summary>
+    /// Список проектов в архиве.
+    /// </summary>
     public ICollection<ArchivedProjectEntity> ArchivedProjects { get; set; }
+
+    /// <summary>
+    /// Список замечаний проекта.
+    /// </summary>
+    public ICollection<ProjectRemarkEntity> ProjectRemarks { get; set; }
 }
