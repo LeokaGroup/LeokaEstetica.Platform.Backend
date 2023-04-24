@@ -73,8 +73,8 @@ public class NotificationEntity
     public bool IsShow { get; set; }
 
     /// <summary>
-    /// Признак владельца приглашения.
-    /// Если true, то инициатором приглашения был владелец, при false другой пользователь.
+    /// Признак владельца уведомления.
+    /// Если true, то инициатором уведомления был владелец, при false другой пользователь.
     /// </summary>
     public bool IsOwner { get; set; }
 }

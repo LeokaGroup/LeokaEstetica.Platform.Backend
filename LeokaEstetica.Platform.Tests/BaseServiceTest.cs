@@ -79,11 +79,14 @@ public class BaseServiceTest
     protected readonly KnowledgeService KnowledgeService;
     protected readonly PgContext PgContext;
     protected readonly FillColorProjectsService FillColorProjectsService;
+    protected readonly FillColorResumeService FillColorResumeService;
 
     protected BaseServiceTest()
     {
         // Настройка тестовых строк подключения.
-        var builder = new ConfigurationBuilder().AddJsonFile("appsettings.json");
+        var builder = new ConfigurationBuilder()
+            .SetBasePath(Directory.GetCurrentDirectory())
+            .AddJsonFile("appsettings.json");
         AppConfiguration = builder.Build();
         PostgreConfigString = AppConfiguration["ConnectionStrings:NpgDevSqlConnection"] ?? string.Empty;
         var container = new ContainerBuilder();
@@ -154,8 +157,9 @@ public class BaseServiceTest
 
         SubscriptionService =
             new SubscriptionService(logService, userRepository, subscriptionRepository, fareRuleRepository);
+        FillColorResumeService = new FillColorResumeService();
         ResumeService = new ResumeService(logService, resumeRepository, mapper, subscriptionRepository,
-            fareRuleRepository, userRepository);
+            fareRuleRepository, userRepository, FillColorResumeService);
         VacancyFinderService = new VacancyFinderService(vacancyRepository, logService);
         FinderProjectService = new Finder.Services.Project.ProjectFinderService(projectRepository, logService);
         ResumeFinderService = new ResumeFinderService(logService, resumeRepository);

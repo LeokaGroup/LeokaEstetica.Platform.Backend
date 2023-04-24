@@ -1,5 +1,6 @@
 using LeokaEstetica.Platform.CallCenter.Models.Dto.Output.Project;
 using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Project;
+using LeokaEstetica.Platform.Models.Dto.Output.Project;
 using LeokaEstetica.Platform.Models.Entities.Project;
 
 namespace LeokaEstetica.Platform.CallCenter.Abstractions.Project;
@@ -20,7 +21,7 @@ public interface IProjectModerationService
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
     /// <returns>Данные проекта.</returns>
-    Task<UserProjectEntity> GetProjectModerationByProjectIdAsync(long projectId);
+    Task<ProjectOutput> GetProjectModerationByProjectIdAsync(long projectId);
 
     /// <summary>
     /// Метод одобряет проект на модерации.

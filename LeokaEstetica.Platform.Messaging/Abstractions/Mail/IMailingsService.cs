@@ -60,7 +60,23 @@ public interface IMailingsService
     /// <param name="mailTo">Почта пользователя.</param>
     /// <param name="projectId">Id проекта.</param>
     /// <param name="projectName">Название проекта.</param>
-    /// <param name="projectOwnerName">Логин или почта владельца проекта, который пригласил пользователя в команду проекта.</param>
+    /// <param name="projectOwnerName">Логин или почта владельца проекта,
+    /// который пригласил пользователя в команду проекта.</param>
     Task SendNotificationInviteTeamProjectAsync(string mailTo, long projectId, string projectName,
         string projectOwnerName);
+
+    /// <summary>
+    /// Метод отправляет пользователю на почту предупреждении об удалении его аккаунта через 1 неделю,
+    /// пока он не авторизуется.
+    /// </summary>
+    /// <param name="mailsTo">Список email пользователей.</param>
+    Task SendNotificationDeactivateAccountAsync(List<string> mailsTo);
+    
+    /// <summary>
+    /// Метод отправляет уведомление на почту пользователя, которого исключили из команды проекта.
+    /// </summary>
+    /// <param name="mailTo">Почта пользователя, которого исключили.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="projectName">Название проекта.</param>
+    Task SendNotificationDeleteProjectTeamMemberAsync(string mailTo, long projectId, string projectName);
 }

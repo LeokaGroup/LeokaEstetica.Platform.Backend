@@ -70,7 +70,7 @@ public interface IProjectRepository
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
     /// <returns>Данные проекта.</returns>
-    Task<(UserProjectEntity, ProjectStageEntity)> GetProjectAsync(long projectId);
+    Task<(UserProjectEntity UserProject, ProjectStageEntity ProjectStage)> GetProjectAsync(long projectId);
 
     /// <summary>
     /// Метод получает стадии проекта для выбора.
@@ -252,4 +252,26 @@ public interface IProjectRepository
     /// <param name="projectId">Id проекта.</param>
     /// <returns>Название проекта.</returns>
     Task<string> GetProjectNameByIdAsync(long projectId);
+
+    /// <summary>
+    /// Метод удаляет участника проекта из команды.
+    /// </summary>
+    /// <param name="userId">Id пользователя</param>
+    /// <param name="projectTeamId">Id команды проекта.</param>
+    Task DeleteProjectTeamMemberAsync(long userId, long projectTeamId);
+
+    /// <summary>
+    /// Метод покидания команды проекта.
+    /// </summary>
+    /// <param name="userId">Id пользователя</param>
+    /// <param name="projectTeamId">Id команды проекта.</param>
+    Task LeaveProjectTeamAsync(long userId, long projectTeamId);
+    
+    /// <summary>
+    /// Метод проверяет, есть ли пользователь в команде проекта.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Признак проверки.</returns>
+    Task<bool> CheckExistsProjectTeamMemberAsync(long projectId, long userId);
 }

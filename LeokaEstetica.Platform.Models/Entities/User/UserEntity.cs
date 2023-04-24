@@ -126,6 +126,21 @@ public class UserEntity
     public long? VkUserId { get; set; }
 
     /// <summary>
+    /// Дата последней авторизации на платформе.
+    /// </summary>
+    public DateTime LastAutorization { get; set; }
+
+    /// <summary>
+    /// Признак метки предупреждения об удалении аккаунта.
+    /// </summary>
+    public bool IsMarkDeactivate { get; set; }
+
+    /// <summary>
+    /// Дата создания метки предупреждения об удалении аккаунта.
+    /// </summary>
+    public DateTime DateCreatedMark { get; set; }
+
+    /// <summary>
     /// Сообщения диалога.
     /// </summary>
     public ICollection<DialogMessageEntity> DialogMessages { get; set; }

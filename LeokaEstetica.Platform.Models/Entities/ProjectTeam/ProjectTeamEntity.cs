@@ -9,7 +9,6 @@ public class ProjectTeamEntity
 {
     public ProjectTeamEntity()
     {
-        ProjectTeamVacancies = new HashSet<ProjectTeamVacancyEntity>();
         ProjectTeamMembers = new HashSet<ProjectTeamMemberEntity>();
     }
 
@@ -32,11 +31,6 @@ public class ProjectTeamEntity
     /// FK.
     /// </summary>
     public CatalogProjectEntity CatalogProject { get; set; }
-
-    /// <summary>
-    /// Список вакансий в командах проектов.
-    /// </summary>
-    public ICollection<ProjectTeamVacancyEntity> ProjectTeamVacancies { get; set; }
 
     /// <summary>
     /// Список участников команд проектов.

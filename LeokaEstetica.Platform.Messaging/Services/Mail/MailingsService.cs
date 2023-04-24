@@ -260,6 +260,90 @@ public class MailingsService : IMailingsService
         }
     }
 
+    /// <summary>
+    /// Метод отправляет пользователю на почту предупреждении об удалении его аккаунта через 1 неделю,
+    /// пока он не авторизуется.
+    /// </summary>
+    /// <param name="mailsTo">Список email пользователей.</param>
+    public async Task SendNotificationDeactivateAccountAsync(List<string> mailsTo)
+    {
+        if (!mailsTo.Any())
+        {
+            return;
+        }
+
+        var isEnabledEmailNotifications = await _globalConfigRepository
+            .GetValueByKeyAsync<bool>(GlobalConfigKeys.EmailNotifications.EMAIL_NOTIFICATIONS_DISABLE_MODE_ENABLED);
+
+        if (isEnabledEmailNotifications)
+        {
+            // TODO: Заменить на получение ссылки из БД.
+            var text = "Здравствуйте!" +
+                       "<br/>" +
+                       "<br/>" +
+                       "Мы заметили, что вы почти месяц не заходили в leoka-estetica-dev.ru. Возможно, по какой-то причине вы решили больше не использовать нашу платформу Leoka Estetica. Нам очень грустно это слышать, мы очень старались быть для вас полезными." +
+                       "<br/>" +
+                       "<br/>" +
+                       "Сообщаем, что мы удалим ваш аккаунт через 7 дней, если вы больше в нем не нуждаетесь :(" +
+                       "<br/>" +
+                       "<br/>" +
+                       "Если вы хотите вернуться к работе с Leoka Estetica, то вам необходимо перейти " +
+                       "<br/>" +
+                       "<a href='https://leoka-estetica-dev.ru/user/signin'>" +
+                       "по этой ссылке и авторизоваться" +
+                       "</a>" +
+                       "<br/>" +
+                       "<br/>" +
+                       "После этого ваш аккаунт снова будет активен, и вы сможете продолжить работу на платформе." +
+                       "<br/>" +
+                       "<br/>" +
+                       "Если вы решили отказаться от использования Leoka Estetica, просто проигнорируйте это письмо." +
+                       "<br/>" +
+                       "<br/>" +
+                       "<br/>" +
+                       "<br/>-----<br/>" +
+                       "С уважением, команда Leoka Estetica";
+            var subject = "Нам придется удалить Ваш аккаунт Leoka Estetica через 7 дней";
+
+            foreach (var um in mailsTo)
+            {
+                var mailModel = CreateMailopostModelConfirmEmail(um, text, subject, text);
+                await SendEmailNotificationAsync(mailModel);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Метод отправляет уведомление на почту пользователя, которого исключили из команды проекта.
+    /// </summary>
+    /// <param name="mailTo">Почта пользователя, которого исключили.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="projectName">Название проекта.</param>
+    public async Task SendNotificationDeleteProjectTeamMemberAsync(string mailTo, long projectId, string projectName)
+    {
+        var isEnabledEmailNotifications = await _globalConfigRepository
+            .GetValueByKeyAsync<bool>(GlobalConfigKeys.EmailNotifications.EMAIL_NOTIFICATIONS_DISABLE_MODE_ENABLED);
+
+        if (isEnabledEmailNotifications)
+        {
+            // TODO: Заменить на получение ссылки из БД.
+            var text = $"Вы были исключены из команды проекта: \"{projectName}\"." +
+                       "<br/>" +
+                       $"<a href='https://leoka-estetica-dev.ru/projects/project?projectId={projectId}&mode=view'>" +
+                       "Перейти к проекту" +
+                       "</a>" +
+                       "<br/>" +
+                       "<br/>" +
+                       "<br/>" +
+                       "<br/>-----<br/>" +
+                       "С уважением, команда Leoka Estetica";
+            var subject = $"Исключение из команды проекта: \"{projectName}\"";
+
+            var mailModel = CreateMailopostModelConfirmEmail(mailTo, text, subject, text);
+            await SendEmailNotificationAsync(mailModel);
+        }
+    }
+
     #endregion
 
     #region Приватные методы.

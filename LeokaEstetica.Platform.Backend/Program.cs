@@ -1,6 +1,7 @@
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using FluentValidation.AspNetCore;
+using LeokaEstetica.Platform.Backend.Loaders.Jobs;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Utils;
 using LeokaEstetica.Platform.Notifications.Data;
@@ -27,13 +28,15 @@ builder.Services.AddCors(options => options.AddPolicy("ApiCorsPolicy", b =>
 if (builder.Environment.IsDevelopment())
 {
     builder.Services.AddDbContext<PgContext>(options =>
-        options.UseNpgsql(configuration.GetConnectionString("NpgDevSqlConnection") ?? string.Empty));
+            options.UseNpgsql(configuration.GetConnectionString("NpgDevSqlConnection") ?? string.Empty),
+        ServiceLifetime.Transient);
 }
       
 if (builder.Environment.IsStaging())
 {
     builder.Services.AddDbContext<PgContext>(options =>
-        options.UseNpgsql(configuration.GetConnectionString("NpgTestSqlConnection") ?? string.Empty));
+            options.UseNpgsql(configuration.GetConnectionString("NpgTestSqlConnection") ?? string.Empty),
+        ServiceLifetime.Transient);
 }
 
 builder.Services.AddSwaggerGen(c =>
@@ -97,6 +100,9 @@ builder.Services.AddFluentValidation(conf =>
     conf.RegisterValidatorsFromAssembly(typeof(Program).Assembly);
     conf.AutomaticValidationEnabled = false;
 });
+
+// Запуск джоб при старте ядра системы.
+StartJobs.Start(builder.Services);
 
 var app = builder.Build();
 

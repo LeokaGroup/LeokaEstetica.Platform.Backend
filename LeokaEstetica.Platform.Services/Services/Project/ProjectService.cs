@@ -448,7 +448,7 @@ public class ProjectService : IProjectService
 
             var prj = await _projectRepository.GetProjectAsync(projectId);
 
-            if (prj.Item1 is null)
+            if (prj.UserProject is null)
             {
                 var ex = new InvalidOperationException(
                     $"Не удалось найти проект с ProjectId {projectId} и UserId {userId}");
@@ -1055,19 +1055,26 @@ public class ProjectService : IProjectService
                     "Ошибка удаления проекта. " +
                     $"ProjectId: {projectId}. " +
                     $"UserId: {userId}");
-            
-                await _projectNotificationsService.SendNotificationErrorDeleteProjectAsync(
-                    "Ошибка",
-                    "Ошибка при удалении проекта.",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, token);
+
+                if (!string.IsNullOrEmpty(token))
+                {
+                    await _projectNotificationsService.SendNotificationErrorDeleteProjectAsync(
+                        "Ошибка",
+                        "Ошибка при удалении проекта.",
+                        NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, token);    
+                }
+                
                 throw ex;
             }
         
-            await _projectNotificationsService.SendNotificationSuccessDeleteProjectAsync(
-                "Все хорошо",
-                "Проект успешно удален.",
-                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);
-            
+            if (!string.IsNullOrEmpty(token))
+            {
+                await _projectNotificationsService.SendNotificationSuccessDeleteProjectAsync(
+                    "Все хорошо",
+                    "Проект успешно удален.",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);  
+            }
+
             var user = await _userRepository.GetUserPhoneEmailByUserIdAsync(userId);
 
             // Отправляем уведомление на почту владельца об удаленном проекте и вакансиях привязанных к проекту.
@@ -1145,17 +1152,27 @@ public class ProjectService : IProjectService
         IEnumerable<ProjectTeamMemberEntity> teamMembers)
     {
         var result = new List<ProjectTeamOutput>();
-        
+
         foreach (var member in teamMembers)
         {
+            var vacancyName = string.Empty;
+            
             // Заполняем название вакансии.
-            var vacancyName = await _vacancyRepository.GetVacancyNameByVacancyIdAsync(member.UserVacancy.VacancyId);
+            if (member.UserVacancy.VacancyId > 0)
+            {
+                vacancyName = await _vacancyRepository.GetVacancyNameByVacancyIdAsync(member.UserVacancy.VacancyId);   
+            }
+
+            // Если владелец, то у него не обязательно требовать вакансию.
+            else if (member.UserVacancy.VacancyId == 0)
+            {
+                vacancyName = "-";
+            }
 
             if (string.IsNullOrEmpty(vacancyName))
             {
                 var ex = new InvalidOperationException(
                     $"Ошибка получения названия вакансии. VacancyId = {member.UserVacancy.VacancyId}");
-                await _logService.LogErrorAsync(ex);
                 throw ex;
             }
             
@@ -1333,12 +1350,22 @@ public class ProjectService : IProjectService
         if (projectOwnerId == userId)
         {
             result.IsVisibleDeleteButton = true;
+            result.IsVisibleActionDeleteProjectTeamMember = true;
         }
 
         else
         {
             // Просматривает не владелец, допускаем видимость кнопок действий проекта.
             result.IsVisibleActionProjectButtons = true;
+            
+            // Отображаем кнопку покидания проекта, если участник есть в команде проекта.
+            var isExistsProjectTeamMember = await _projectRepository.CheckExistsProjectTeamMemberAsync(projectId,
+                userId);
+
+            if (isExistsProjectTeamMember)
+            {
+                result.IsVisibleActionLeaveProjectTeam = true;   
+            }
         }
 
         result.IsSuccess = true;
@@ -1399,7 +1426,7 @@ public class ProjectService : IProjectService
     /// <returns>Дата в нужном виде.</returns>
     private string CreateDateResult(DateTime date)
     {
-        return date.ToString("g", CultureInfo.GetCultureInfo("ru"));
+        return date.ToString("dd/MM/yyyy", CultureInfo.GetCultureInfo("ru"));
     }
 
     /// <summary>
@@ -1588,6 +1615,129 @@ public class ProjectService : IProjectService
 
         catch (Exception ex)
         {
+            await _logService.LogErrorAsync(ex);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Метод удаляет участника проекта из команды.
+    /// </summary>
+    /// <param name="projectId">Id проекта</param>
+    /// <param name="userId">Id пользователя, которого будем удалять из команды</param>
+    /// <param name="token">Токен.</param>
+    public async Task DeleteProjectTeamMemberAsync(long projectId, long userId, string token)
+    {
+        try
+        {
+            if (projectId <= 0)
+            {
+                throw new ArgumentNullException(
+                    $"Не передан Id проекта для удаления из команды. ProjectId: {projectId}");
+            }
+
+            if (userId <= 0)
+            {
+                throw new ArgumentNullException(
+                    $"Не передан Id пользователя для удаления из команды. UserId: {userId}");
+            }
+
+            // Находим Id команды проекта.
+            var projectTeamId = await _projectRepository.GetProjectTeamIdAsync(projectId);
+            
+            // Удаляем участника команды проекта.
+            await _projectRepository.DeleteProjectTeamMemberAsync(userId, projectTeamId);
+
+            if (!string.IsNullOrEmpty(token))
+            {
+                await _projectNotificationsService.SendNotificationSuccessDeleteProjectTeamMemberAsync("Все хорошо",
+                    "Пользователь исключен из команды проекта.",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);
+            }
+            
+            var projectName = await _projectRepository.GetProjectNameByProjectIdAsync(projectId);
+            
+            // Записываем уведомления о исключении из команды проекта.
+            await _projectNotificationsRepository.AddNotificationDeleteProjectTeamMemberAsync(
+                projectId, null, userId, projectName);
+            
+            // Находим данные о пользователе, который оставляет отклик на проект.
+            var otherUser = await _userRepository.GetUserPhoneEmailByUserIdAsync(userId);
+            
+            // Отправляем уведомление на почту пользователя, которого исключили.
+            await _mailingsService.SendNotificationDeleteProjectTeamMemberAsync(otherUser.Email, projectId,
+                projectName);
+        }
+        
+        catch (Exception ex)
+        {
+            if (!string.IsNullOrEmpty(token))
+            {
+                await _projectNotificationsService.SendNotificationErrorInviteProjectTeamMembersAsync("Ошибка",
+                    "Ошибка при удалении пользователя из команды проекта. Мы уже знаем о ней и разбираемся. " +
+                    "А пока, попробуйте еще раз.",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, token);
+            }
+
+            await _logService.LogErrorAsync(ex);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Метод покидания команды проекта.
+    /// </summary>
+    /// <param name="projectId">Id проекта</param>
+    /// <param name="account">Аккаунт пользователя.</param>
+    /// <param name="token">Токен.</param>
+    public async Task LeaveProjectTeamAsync(long projectId, string account, string token)
+    {
+        try
+        {
+            if (projectId <= 0)
+            {
+                throw new ArgumentNullException(
+                    $"Не передан Id проекта для удаления из команды. ProjectId: {projectId}");
+            }
+
+            var userId = await _userRepository.GetUserIdByEmailAsync(account);
+            
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+
+            // Находим Id команды проекта.
+            var projectTeamId = await _projectRepository.GetProjectTeamIdAsync(projectId);
+
+            // Удаляем участника команды проекта.
+            await _projectRepository.LeaveProjectTeamAsync(userId, projectTeamId);
+
+            if (!string.IsNullOrEmpty(token))
+            {
+                await _projectNotificationsService.SendNotificationSuccessDeleteProjectTeamMemberAsync("Все хорошо",
+                    "Вы успешно покинули проект.",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);
+            }
+
+            var projectName = await _projectRepository.GetProjectNameByProjectIdAsync(projectId);
+
+            // Записываем уведомления о исключении из команды проекта.
+            await _projectNotificationsRepository.AddNotificationLeaveProjectTeamMemberAsync(projectId, null, userId,
+                projectName);
+        }
+        
+        catch (Exception ex)
+        {
+            if (!string.IsNullOrEmpty(token))
+            {
+                await _projectNotificationsService.SendNotificationErrorInviteProjectTeamMembersAsync("Ошибка",
+                    "Ошибка при покидании проекта. Мы уже знаем о ней и разбираемся. " +
+                    "А пока, попробуйте еще раз.",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, token);
+            }
+            
             await _logService.LogErrorAsync(ex);
             throw;
         }

@@ -47,19 +47,6 @@ public class ProjectModerationRepository : IProjectModerationRepository
     }
 
     /// <summary>
-    /// Метод получает проект для просмотра/изменения.
-    /// </summary>
-    /// <param name="projectId">Id проекта.</param>
-    /// <returns>Данные проекта.</returns>
-    public async Task<UserProjectEntity> GetProjectModerationByProjectIdAsync(long projectId)
-    {
-        var result = await _pgContext.UserProjects
-            .FirstOrDefaultAsync(p => p.ProjectId == projectId);
-
-        return result;
-    }
-
-    /// <summary>
     /// Метод одобряет проект на модерации.
     /// </summary>
     /// <param name="projectId">Id проекта.</param>

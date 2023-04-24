@@ -18,7 +18,11 @@ public class SubscriptionController : BaseController
     private readonly ISubscriptionService _subscriptionService;
     private readonly IMapper _mapper;
     
-    /// <inheritdoc />
+    /// <summary>
+    /// Конструктор.
+    /// </summary>
+    /// <param name="subscriptionService">Сервис подписок.</param>
+    /// <param name="mapper">Автомаппер.</param>
     public SubscriptionController(ISubscriptionService subscriptionService, 
         IMapper mapper)
     {

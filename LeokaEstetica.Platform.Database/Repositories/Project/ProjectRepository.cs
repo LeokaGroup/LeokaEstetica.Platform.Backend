@@ -282,9 +282,9 @@ public class ProjectRepository : IProjectRepository
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
     /// <returns>Данные проекта.</returns>
-    public async Task<(UserProjectEntity, ProjectStageEntity)> GetProjectAsync(long projectId)
+    public async Task<(UserProjectEntity UserProject, ProjectStageEntity ProjectStage)> GetProjectAsync(long projectId)
     {
-        (UserProjectEntity, ProjectStageEntity) result = (null, null);
+        (UserProjectEntity UserProject, ProjectStageEntity ProjectStage) result = (null, null);
 
         result.Item1 = await _pgContext.UserProjects
             .FirstOrDefaultAsync(p => p.ProjectId == projectId);
@@ -506,17 +506,19 @@ public class ProjectRepository : IProjectRepository
     /// <returns>Список участников команды проекта.</returns>
     public async Task<List<ProjectTeamMemberEntity>> GetProjectTeamMembersAsync(long teamId)
     {
-        var result = await _pgContext.ProjectTeamMembers
-            .Include(tm => tm.UserVacancy)
-            .Where(tm => tm.TeamId == teamId)
-            .Select(tm => new ProjectTeamMemberEntity
-            {
-                UserId = tm.UserId,
-                Joined = tm.Joined,
-                UserVacancy = tm.UserVacancy,
-                TeamId = tm.TeamId,
-                MemberId = tm.MemberId
-            })
+        var result = await (from ptm in _pgContext.ProjectTeamMembers
+                where ptm.TeamId == teamId
+                select new ProjectTeamMemberEntity
+                {
+                    UserId = ptm.UserId,
+                    Joined = ptm.Joined,
+                    TeamId = ptm.TeamId,
+                    MemberId = ptm.MemberId,
+                    UserVacancy = new UserVacancyEntity
+                    {
+                        VacancyId = ptm.VacancyId ?? 0
+                    }
+                })
             .ToListAsync();
 
         return result;
@@ -550,7 +552,22 @@ public class ProjectRepository : IProjectRepository
             VacancyId = vacancyId,
             TeamId = teamId
         };
+        
         await _pgContext.ProjectTeamMembers.AddAsync(result);
+        
+        // Добавляем вакансию отклика.
+        if (vacancyId is not null)
+        {
+            var vacancy = new ProjectTeamVacancyEntity
+            {
+                VacancyId = (long)vacancyId,
+                IsActive = true,
+                TeamId = teamId
+            };
+            
+            await _pgContext.ProjectsTeamsVacancies.AddAsync(vacancy);
+        }
+        
         await _pgContext.SaveChangesAsync();
 
         return result;
@@ -701,12 +718,12 @@ public class ProjectRepository : IProjectRepository
             if (projectTeam is not null)
             {
                 // Дропаем участников команды.
-                var projectTeamMembers = await GetProjectTeamMembersAsync(projectTeam.TeamId);
-
-                if (projectTeamMembers.Any())
-                {
-                    _pgContext.ProjectTeamMembers.RemoveRange(projectTeamMembers);
-                }
+                // var projectTeamMembers = await GetProjectTeamMembersAsync(projectTeam.TeamId);
+                //
+                // if (projectTeamMembers.Any())
+                // {
+                //     _pgContext.ProjectTeamMembers.RemoveRange(projectTeamMembers);
+                // }
 
                 // Дропаем команду проекта.
                 _pgContext.ProjectsTeams.Remove(projectTeam);
@@ -981,6 +998,42 @@ public class ProjectRepository : IProjectRepository
         return result;
     }
 
+    /// <summary>
+    /// Метод удаляет участника проекта из команды.
+    /// </summary>
+    /// <param name="userId">Id пользователя</param>
+    /// <param name="projectTeamId">Id команды проекта.</param>
+    public async Task DeleteProjectTeamMemberAsync(long userId, long projectTeamId)
+    {
+        await DeleteTeamMemberAsync(userId, projectTeamId);
+    }
+
+    /// <summary>
+    /// Метод покидания команды проекта.
+    /// </summary>
+    /// <param name="userId">Id пользователя</param>
+    /// <param name="projectTeamId">Id команды проекта.</param>
+    public async Task LeaveProjectTeamAsync(long userId, long projectTeamId)
+    {
+        await DeleteTeamMemberAsync(userId, projectTeamId);
+    }
+
+    /// <summary>
+    /// Метод проверяет, есть ли пользователь в команде проекта.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Признак проверки.</returns>
+    public async Task<bool> CheckExistsProjectTeamMemberAsync(long projectId, long userId)
+    {
+        var result = await _pgContext.ProjectTeamMembers
+            .AnyAsync(m => m.ProjectTeam.ProjectId == projectId && m.UserId == userId);
+
+        return result;
+    }
+
+    #region Приватные методы.
+
     /// Метод првоеряет, был ли уже такой проект на модерации. 
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
@@ -1010,4 +1063,33 @@ public class ProjectRepository : IProjectRepository
         prj.ModerationStatusId = (int)status;
     }
 
+    /// <summary>
+    /// Метод удаляет участника проекта.
+    /// </summary>
+    /// <param name="userId">Id пользователя</param>
+    /// <param name="projectTeamId">Id команды проекта.</param>
+    private async Task DeleteTeamMemberAsync(long userId, long projectTeamId)
+    {
+        var teamMember = await _pgContext.ProjectTeamMembers
+            .FirstOrDefaultAsync(m => m.UserId == userId && m.TeamId == projectTeamId);
+
+        // Удаляем участника команды.
+        if (teamMember is not null)
+        {
+            _pgContext.ProjectTeamMembers.Remove(teamMember);
+        }
+        
+        var projectTeamVacancy = await _pgContext.ProjectsTeamsVacancies
+            .FirstOrDefaultAsync(v => v.VacancyId == teamMember.VacancyId);
+
+        // Удаляем вакансию из ProjectsTeamsVacancies.
+        if (projectTeamVacancy is not null)
+        {
+            _pgContext.ProjectsTeamsVacancies.Remove(projectTeamVacancy);
+        }
+
+        await _pgContext.SaveChangesAsync();
+    }
+
+    #endregion
 }

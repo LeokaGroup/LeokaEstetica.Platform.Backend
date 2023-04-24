@@ -6,7 +6,7 @@ namespace LeokaEstetica.Platform.Redis.Consts;
 public static class CacheKeysConsts
 {
     /// <summary>
-    /// Ключ ConnectionId.
+    /// Ключ для удаления аккаунтов пользователей.
     /// </summary>
-    public const string ADD_CONNECTION_ID = "ConnectionId_";
+    public const string DEACTIVATE_USER_ACCOUNTS = "DeactivatedUserAccounts";
 }

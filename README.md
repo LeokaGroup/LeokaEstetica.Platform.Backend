@@ -14,4 +14,5 @@
 <strong>Хранение логов и метрики:</strong> ClickHouse.<br/>
 <strong>Мониторинг:</strong> Grafana.<br/>
 <strong>Для поиска в памяти используем:</strong> Lucene.NET.<br/>
-<strong>Ведение задач и управление проектом, командой:</strong> Redmine.<br/>
+<strong>Работа в фоне:</strong> Worker Services (BackgroundService).<br/>
+<strong>Ведение задач и управление проектом, командой:</strong> Kaiten.<br/>
