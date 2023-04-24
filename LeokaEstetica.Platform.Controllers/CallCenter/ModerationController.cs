@@ -255,6 +255,22 @@ public class ModerationController : BaseController
     }
 
     /// <summary>
+    /// Метод удаляет пользователя из ЧС.
+    /// </summary>
+    /// <param name="userId">ID пользователя.</param>
+    [HttpDelete]
+    [Route("blacklist")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task RemoveUserBlackListAsync([FromRoute] long userId)
+    {
+        await _userBlackListService.RemoveUserBlackListAsync(userId, CreateTokenFromHeader());
+    }
+
+    /// <summary>
     /// Метод получает список пользователей в ЧС.
     /// </summary>
     /// <returns>Список пользователей в ЧС.</returns>

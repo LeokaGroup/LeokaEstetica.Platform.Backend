@@ -16,6 +16,13 @@ public interface IUserBlackListService
     Task AddUserBlackListAsync(long userId, string email, string phoneNumber);
 
     /// <summary>
+    /// Метод удаляет пользователя из ЧС.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <param name="token">Токен пользователя.</param>
+    Task RemoveUserBlackListAsync(long userId, string token);
+
+    /// <summary>
     /// Метод получает список пользователей в ЧС.
     /// </summary>
     /// <returns>Список пользователей в ЧС.</returns>

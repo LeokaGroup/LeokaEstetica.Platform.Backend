@@ -2,6 +2,8 @@ using LeokaEstetica.Platform.Access.Abstractions.Moderation;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Access;
 using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.CallCenter.Models.Dto.Output.Access;
+using LeokaEstetica.Platform.Notifications.Abstractions;
+using LeokaEstetica.Platform.Notifications.Consts;
 
 namespace LeokaEstetica.Platform.Access.Services.Moderation;
 
@@ -12,17 +14,21 @@ public class UserBlackListService : IUserBlackListService
 {
     private readonly ILogService _logService;
     private readonly IUserBlackListRepository _userBlackListRepository;
-    
+    private readonly INotificationsService _notificationsService;
+
     /// <summary>
     /// Конструктор.
     /// <param name="logService">Сервис логера.</param>
     /// <param name="userBlackListRepository">Репозиторий ЧС пользователей.</param>
+    /// <param name="notificationsService">Сервис уведомлений.</param>
     /// </summary>
     public UserBlackListService(ILogService logService, 
-        IUserBlackListRepository userBlackListRepository)
+        IUserBlackListRepository userBlackListRepository,
+        INotificationsService notificationsService)
     {
         _logService = logService;
         _userBlackListRepository = userBlackListRepository;
+        _notificationsService = notificationsService;
     }
 
     /// <summary>
@@ -40,6 +46,28 @@ public class UserBlackListService : IUserBlackListService
         
         catch (Exception ex)
         {
+            await _logService.LogErrorAsync(ex);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Метод удаляет пользователя из ЧС.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <param name="token">Токен пользователя.</param>
+    public async Task RemoveUserBlackListAsync(long userId, string token)
+    {
+        try
+        {
+            await _userBlackListRepository.RemoveUserBlackListAsync(userId);
+        }
+        catch(Exception ex) 
+        {
+            await _notificationsService.SendNotifyUserNotFoundBlackListAsync("Ошибка.", 
+                "Пользователя нет в чёрном списке.", 
+                NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, 
+                token);
             await _logService.LogErrorAsync(ex);
             throw;
         }
