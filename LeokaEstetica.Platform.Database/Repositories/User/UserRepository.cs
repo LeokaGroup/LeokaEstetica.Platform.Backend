@@ -350,7 +350,8 @@ public class UserRepository : IUserRepository
             .FirstOrDefaultAsync();
 
         return result;
-		
+    }
+    
     /// Метод проставляет пользователям метку к удалению аккаунтов.
     /// </summary>
     /// <param name="users">Список пользователей, которых предупредим.</param>

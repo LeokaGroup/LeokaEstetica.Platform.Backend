@@ -2,8 +2,13 @@
 using AutoMapper;
 using LeokaEstetica.Platform.Access.Services.AvailableLimits;
 using LeokaEstetica.Platform.Access.Services.Moderation;
+using LeokaEstetica.Platform.Access.Services.User;
+using LeokaEstetica.Platform.CallCenter.Services.Project;
+using LeokaEstetica.Platform.CallCenter.Services.Resume;
+using LeokaEstetica.Platform.CallCenter.Services.Vacancy;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Utils;
+using LeokaEstetica.Platform.Database.Repositories.Access.User;
 using LeokaEstetica.Platform.Database.Repositories.AvailableLimits;
 using LeokaEstetica.Platform.Database.Repositories.Chat;
 using LeokaEstetica.Platform.Database.Repositories.Commerce;
@@ -27,11 +32,9 @@ using LeokaEstetica.Platform.Finder.Services.Vacancy;
 using LeokaEstetica.Platform.Logs.Services;
 using LeokaEstetica.Platform.Messaging.Services.Chat;
 using LeokaEstetica.Platform.Messaging.Services.Project;
-using LeokaEstetica.Platform.CallCenter.Services.Project;
-using LeokaEstetica.Platform.CallCenter.Services.Resume;
-using LeokaEstetica.Platform.CallCenter.Services.Vacancy;
 using LeokaEstetica.Platform.Notifications.Services;
 using LeokaEstetica.Platform.Processing.Services.PayMaster;
+using LeokaEstetica.Platform.Redis.Services.User;
 using LeokaEstetica.Platform.Services.Services.FareRule;
 using LeokaEstetica.Platform.Services.Services.Knowledge;
 using LeokaEstetica.Platform.Services.Services.Landing;
@@ -42,7 +45,10 @@ using LeokaEstetica.Platform.Services.Services.Subscription;
 using LeokaEstetica.Platform.Services.Services.User;
 using LeokaEstetica.Platform.Services.Services.Vacancy;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using ProjectFinderService = LeokaEstetica.Platform.Services.Services.Search.Project.ProjectFinderService;
 
 namespace LeokaEstetica.Platform.Tests;
@@ -104,9 +110,14 @@ public class BaseServiceTest
         var subscriptionRepository = new SubscriptionRepository(pgContext);
         var chatRepository = new ChatRepository(pgContext);
         var resumeModerationRepository = new ResumeModerationRepository(pgContext);
+        var accessUserRepository = new AccessUserRepository(pgContext);
+        var accessUserService = new AccessUserService(accessUserRepository);
+        var optionsForCache = new OptionsWrapper<MemoryDistributedCacheOptions>(new MemoryDistributedCacheOptions());
+        var distributedCache = new MemoryDistributedCache(optionsForCache);
+        var userRedisService = new UserRedisService(distributedCache, mapper);
 
         UserService = new UserService(logService, userRepository, mapper, null, pgContext, profileRepository,
-            subscriptionRepository, resumeModerationRepository, null, null);
+            subscriptionRepository, resumeModerationRepository, accessUserService, userRedisService);
         ProfileService = new ProfileService(logService, profileRepository, userRepository, mapper, null, null);
 
         var projectRepository = new ProjectRepository(pgContext, chatRepository);
