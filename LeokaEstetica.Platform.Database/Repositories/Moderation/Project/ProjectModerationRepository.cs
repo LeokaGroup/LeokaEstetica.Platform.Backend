@@ -16,10 +16,16 @@ public class ProjectModerationRepository : IProjectModerationRepository
 {
     private readonly PgContext _pgContext;
 
+    /// <summary>
+    /// Конструктор.
+    /// </summary>
+    /// <param name="pgContext">Датаконтекст.</param>
     public ProjectModerationRepository(PgContext pgContext)
     {
         _pgContext = pgContext;
     }
+
+    #region Публичные методы.
 
     /// <summary>
     /// Метод получает список проектов для модерации.
@@ -148,6 +154,21 @@ public class ProjectModerationRepository : IProjectModerationRepository
     }
 
     /// <summary>
+    /// Метод создает замечания проекта.
+    /// </summary>
+    /// <param name="createProjectRemarkInput">Список замечаний.</param>
+    /// <param name="account">Аккаунт.</param>
+    public async Task CreateProjectRemarksAsync(List<ProjectRemarkEntity> projectRemarks)
+    {
+        await _pgContext.ProjectRemarks.AddRangeAsync(projectRemarks);
+        await _pgContext.SaveChangesAsync();
+    }
+
+    #endregion
+
+    #region Приватные методы.
+
+    /// <summary>
     /// Метод устанавливает статус проекту.
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
@@ -169,4 +190,6 @@ public class ProjectModerationRepository : IProjectModerationRepository
 
         return true;
     }
+
+    #endregion
 }

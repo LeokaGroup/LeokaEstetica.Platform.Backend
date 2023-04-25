@@ -17,10 +17,12 @@ using LeokaEstetica.Platform.CallCenter.Models.Dto.Input.Resume;
 using LeokaEstetica.Platform.CallCenter.Models.Dto.Input.Role;
 using LeokaEstetica.Platform.CallCenter.Models.Dto.Input.Vacancy;
 using LeokaEstetica.Platform.CallCenter.Models.Dto.Output.Access;
+using LeokaEstetica.Platform.CallCenter.Models.Dto.Output.Moderation;
 using LeokaEstetica.Platform.CallCenter.Models.Dto.Output.Project;
 using LeokaEstetica.Platform.CallCenter.Models.Dto.Output.Role;
 using LeokaEstetica.Platform.CallCenter.Models.Dto.Output.Vacancy;
 using LeokaEstetica.Platform.Controllers.Filters;
+using LeokaEstetica.Platform.Models.Dto.Input.Moderation;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LeokaEstetica.Platform.Controllers.CallCenter;
@@ -319,5 +321,26 @@ public class ModerationController : BaseController
     public async Task RejectResumeAsync([FromBody] RejectResumeInput rejectResumeInput)
     {
         await _resumeModerationService.RejectResumeAsync(rejectResumeInput.ProfileInfoId);
+    }
+
+    /// <summary>
+    /// Метод создает замечания проекта.
+    /// </summary>
+    /// <param name="createProjectRemarkInput">Входная модель.</param>
+    /// <returns>Список замечаний проекта.</returns>
+    [HttpPost]
+    [Route("project/remarks")]
+    [ProducesResponseType(200, Type = typeof(ProjectRemarkResult))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<ProjectRemarkResult> CreateProjectRemarksAsync(
+        [FromBody] CreateProjectRemarkInput createProjectRemarkInput)
+    {
+        var resukt = await _projectModerationService.CreateProjectRemarksAsync(createProjectRemarkInput, 
+            GetUserName());
+
+        return null;
     }
 }

@@ -42,4 +42,11 @@ public interface IProjectModerationRepository
     /// <param name="userId">Id пользователя, которому отправим уведомление в приложении.</param>
     /// <param name="projectName">Название проекта.</param>
     Task AddNotificationRejectProjectAsync(long projectId, long userId, string projectName);
+
+    /// <summary>
+    /// Метод создает замечания проекта.
+    /// </summary>
+    /// <param name="createProjectRemarkInput">Список замечаний.</param>
+    /// <param name="account">Аккаунт.</param>
+    Task CreateProjectRemarksAsync(List<ProjectRemarkEntity> projectRemarks);
 }

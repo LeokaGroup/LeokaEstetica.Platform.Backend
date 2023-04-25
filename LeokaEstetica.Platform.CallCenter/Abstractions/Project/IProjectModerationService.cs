@@ -1,7 +1,8 @@
 using LeokaEstetica.Platform.CallCenter.Models.Dto.Output.Project;
+using LeokaEstetica.Platform.Models.Dto.Input.Moderation;
 using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Project;
 using LeokaEstetica.Platform.Models.Dto.Output.Project;
-using LeokaEstetica.Platform.Models.Entities.Project;
+using LeokaEstetica.Platform.Models.Entities.Moderation;
 
 namespace LeokaEstetica.Platform.CallCenter.Abstractions.Project;
 
@@ -38,4 +39,12 @@ public interface IProjectModerationService
     /// <param name="account">Аккаунт.</param>
     /// <returns>Выходная модель модерации.</returns>
     Task<RejectProjectOutput> RejectProjectAsync(long projectId, string account);
+
+    /// <summary>
+    /// Метод создает результаты проекта. 
+    /// </summary>
+    /// <param name="prj">Данные проекта.</param>
+    /// <returns>Результаты проекта.</returns>
+    Task<IEnumerable<ProjectRemarkEntity>> CreateProjectRemarksAsync(
+        CreateProjectRemarkInput createProjectRemarkInput, string account);
 }

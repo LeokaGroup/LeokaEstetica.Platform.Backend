@@ -3,13 +3,16 @@ using LeokaEstetica.Platform.CallCenter.Abstractions.Messaging.Mail;
 using LeokaEstetica.Platform.CallCenter.Abstractions.Project;
 using LeokaEstetica.Platform.CallCenter.Builders;
 using LeokaEstetica.Platform.CallCenter.Models.Dto.Output.Project;
+using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Project;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
 using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Logs.Abstractions;
+using LeokaEstetica.Platform.Models.Dto.Input.Moderation;
 using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Project;
 using LeokaEstetica.Platform.Models.Dto.Output.Project;
+using LeokaEstetica.Platform.Models.Entities.Moderation;
 using LeokaEstetica.Platform.Models.Entities.Project;
 
 namespace LeokaEstetica.Platform.CallCenter.Services.Project;
@@ -191,6 +194,53 @@ public class ProjectModerationService : IProjectModerationService
         }
     }
 
+    /// <summary>
+    /// Метод создает замечания проекта.
+    /// </summary>
+    /// <param name="createProjectRemarkInput">Список замечаний.</param>
+    /// <param name="account">Аккаунт.</param>
+    /// <returns>Список замечаний проекта.</returns>
+    public async Task<IEnumerable<ProjectRemarkEntity>> CreateProjectRemarksAsync(
+        CreateProjectRemarkInput createProjectRemarkInput, string account)
+    {
+        try
+        {
+            var userId = await _userRepository.GetUserIdByEmailOrLoginAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+            
+            var projectRemarks = createProjectRemarkInput.ProjectRemarks.ToList();
+            
+            // Проверяем входные параметры.
+            await ValidateProjectRemarksParamsAsync(projectRemarks);
+
+            var addedProjectRemarks = _mapper.Map<List<ProjectRemarkEntity>>(projectRemarks);
+            var now = DateTime.Now;
+            
+            // Задаем модератора замечаниям и задаем статус замечаниям.
+            foreach (var pr in addedProjectRemarks)
+            {
+                pr.ModerationUserId = userId;
+                pr.RemarkStatusId = (int)RemarkStatusEnum.AwaitingCorrection;
+                pr.DateCreated = now;
+            }
+
+            await _projectModerationRepository.CreateProjectRemarksAsync(addedProjectRemarks);
+
+            return addedProjectRemarks;
+        }
+        
+        catch (Exception ex)
+        {
+            await _logService.LogErrorAsync(ex);
+            throw;
+        }
+    }
+
     #endregion
 
     #region Приватные методы.
@@ -210,6 +260,51 @@ public class ProjectModerationService : IProjectModerationService
         result.IsSuccess = true;
 
         return await Task.FromResult(result);
+    }
+
+    /// <summary>
+    /// Метод валидирует входные параметры замечаний проекта.
+    /// </summary>
+    /// <param name="projectRemarks">Список замечаний проекта.</param>
+    private Task ValidateProjectRemarksParamsAsync(IReadOnlyCollection<ProjectRemarkInput> projectRemarks)
+    {
+        if (!projectRemarks.Any())
+        {
+            var ex = new InvalidOperationException("Не передано замечаний проекта.");
+            throw ex;
+        }
+        
+        if (projectRemarks.Any(p => p.ProjectId <= 0))
+        {
+            var ex = new InvalidOperationException("Среди замечаний проекта Id проекта был <= 0.");
+            throw ex;
+        }
+
+        if (projectRemarks.Any(p => string.IsNullOrEmpty(p.FieldName)))
+        {
+            var ex = new InvalidOperationException("Среди замечаний проекта было пустое название поля замечания.");
+            throw ex;
+        }
+
+        if (projectRemarks.Any(p => string.IsNullOrEmpty(p.RemarkText)))
+        {
+            var ex = new InvalidOperationException("Среди замечаний проекта был пустой текст замечания.");
+            throw ex;
+        }
+        
+        if (projectRemarks.Any(p => string.IsNullOrEmpty(p.RemarkText)))
+        {
+            var ex = new InvalidOperationException("Среди замечаний проекта был пустой текст замечания.");
+            throw ex;
+        }
+        
+        if (projectRemarks.Any(p => string.IsNullOrEmpty(p.RussianName)))
+        {
+            var ex = new InvalidOperationException("Среди замечаний проекта было пустое русское название поля.");
+            throw ex;
+        }
+
+        return Task.CompletedTask;
     }
 
     #endregion
