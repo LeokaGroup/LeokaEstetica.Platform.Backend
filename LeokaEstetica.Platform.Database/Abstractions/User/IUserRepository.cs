@@ -147,6 +147,12 @@ public interface IUserRepository
     Task<bool> CheckUserByVkUserIdAsync(long userId);
 
     /// <summary>
+    /// Метод находит Id пользователя по его vk id.
+    /// </summary>
+    /// <param name="vkId">Id вконтакте.</param>
+    /// <returns>Id пользователя.</returns>
+    Task<long> GetUserIdByVkIdAsync(long vkId);
+
     /// Метод проставляет пользователям метку к удалению аккаунтов.
     /// </summary>
     /// <param name="users">Список пользователей, которых предупредим.</param>
