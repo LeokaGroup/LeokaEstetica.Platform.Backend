@@ -143,7 +143,8 @@ public class BaseServiceTest
 
         var projectCommentsRepository = new ProjectCommentsRepository(pgContext);
 
-        ProjectCommentsService = new ProjectCommentsService(logService, userRepository, projectCommentsRepository, null, null);
+        ProjectCommentsService = new ProjectCommentsService(logService, userRepository, projectCommentsRepository, null, null,
+            null);
         ProjectFinderService = new ProjectFinderService(logService, userRepository, projectNotificationsService);
 
         var resumeRepository = new ResumeRepository(pgContext);
