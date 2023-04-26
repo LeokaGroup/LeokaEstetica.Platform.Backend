@@ -56,27 +56,9 @@ public sealed class ProfileService : IProfileService
                 throw new ArgumentException("Имя аккаунта не передано.");
             }
 
-            // Ищем userId по VK Id если, передано числовое значение.
-            if (long.TryParse(account, out long userId))
-            {
-                userId = await _userRepository.GetUserIdByVkIdAsync(userId);
-                if (userId <= 0)
-                {
-                    throw new InvalidOperationException($"Пользователя с VK Id {userId} не существует в системе.");
-                }
-            }
+            // Получаем id пользоввателя.
+            var userId = await GetUserIdByEmailOrVkId(account);
 
-            // Ищем userId по email, если передано строковое значение.
-            if(userId == 0)
-            {
-                userId = await _userRepository.GetUserByEmailAsync(account);
-
-                if (userId <= 0)
-                {
-                    throw new InvalidOperationException($"Пользователя с почтой {account} не существует в системе.");
-                }
-            }
-            
             var profileInfo = await _profileRepository.GetProfileInfoAsync(userId);
 
             if (profileInfo is null)
@@ -202,7 +184,8 @@ public sealed class ProfileService : IProfileService
     {
         try
         {
-            var userId = await _userRepository.GetUserByEmailAsync(account);
+            // Получаем id пользоввателя.
+            var userId = await GetUserIdByEmailOrVkId(account);
 
             if (userId == 0)
             {
@@ -518,4 +501,38 @@ public sealed class ProfileService : IProfileService
             throw;
         }
     }
+
+    #region Приватные методы.
+
+    /// <summary>
+    /// Метод вовзаращет id пользователя.
+    /// </summary>
+    /// <param name="account">Аккаунт пользователя.</param>
+    /// <returns>Id пользователя.</returns>
+    private async Task<long> GetUserIdByEmailOrVkId(string account)
+    {
+        // Ищем userId по VK Id если, передано числовое значение.
+        if (long.TryParse(account, out long userId))
+        {
+            userId = await _userRepository.GetUserIdByVkIdAsync(userId);
+            if (userId <= 0)
+            {
+                throw new InvalidOperationException($"Пользователя с VK Id {userId} не существует в системе.");
+            }
+        }
+
+        // Ищем userId по email, если передано строковое значение.
+        if (userId == 0)
+        {
+            userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId <= 0)
+            {
+                throw new InvalidOperationException($"Пользователя с почтой {account} не существует в системе.");
+            }
+        }
+
+        return userId;
+    }
+    #endregion
 }
