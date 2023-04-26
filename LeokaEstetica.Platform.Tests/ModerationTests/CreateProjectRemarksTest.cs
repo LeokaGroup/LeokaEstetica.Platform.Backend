@@ -11,7 +11,8 @@ public class CreateProjectRemarksTest : BaseServiceTest
     public async Task CreateProjectRemarksAsyncTest()
     {
         var projectRemarks = CreateProjectRemarksRequest();
-        var result = await ProjectModerationService.CreateProjectRemarksAsync(projectRemarks, "sierra_93@mail.ru");
+        var result = await ProjectModerationService.CreateProjectRemarksAsync(projectRemarks, "sierra_93@mail.ru", 
+            null);
 
         var items = result.ToList();
         

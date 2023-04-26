@@ -14,6 +14,8 @@ using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Project;
 using LeokaEstetica.Platform.Models.Dto.Output.Project;
 using LeokaEstetica.Platform.Models.Entities.Moderation;
 using LeokaEstetica.Platform.Models.Entities.Project;
+using LeokaEstetica.Platform.Notifications.Abstractions;
+using LeokaEstetica.Platform.Notifications.Consts;
 
 namespace LeokaEstetica.Platform.CallCenter.Services.Project;
 
@@ -28,6 +30,7 @@ public class ProjectModerationService : IProjectModerationService
     private readonly IModerationMailingsService _moderationMailingsService;
     private readonly IUserRepository _userRepository;
     private readonly IProjectRepository _projectRepository;
+    private readonly IProjectModerationNotificationService _projectModerationNotificationService;
 
     /// <summary>
     /// Конструктор.
@@ -38,12 +41,14 @@ public class ProjectModerationService : IProjectModerationService
     /// <param name="moderationMailingsService">Сервис уведомлений модерации на почту.</param>
     /// <param name="userRepository">Репозиторий пользователя.</param>
     /// <param name="projectRepository">Репозиторий проектов.</param>
+    /// <param name="projectModerationNotificationService">Сервис уведомлений модерации проектов.</param>
     public ProjectModerationService(IProjectModerationRepository projectModerationRepository,
         ILogService logService,
         IMapper mapper, 
         IModerationMailingsService moderationMailingsService, 
         IUserRepository userRepository, 
-        IProjectRepository projectRepository)
+        IProjectRepository projectRepository, 
+        IProjectModerationNotificationService projectModerationNotificationService)
     {
         _projectModerationRepository = projectModerationRepository;
         _logService = logService;
@@ -51,6 +56,7 @@ public class ProjectModerationService : IProjectModerationService
         _moderationMailingsService = moderationMailingsService;
         _userRepository = userRepository;
         _projectRepository = projectRepository;
+        _projectModerationNotificationService = projectModerationNotificationService;
     }
 
     #region Публичные методы.
@@ -199,9 +205,10 @@ public class ProjectModerationService : IProjectModerationService
     /// </summary>
     /// <param name="createProjectRemarkInput">Список замечаний.</param>
     /// <param name="account">Аккаунт.</param>
+    /// <param name="token">Токен.</param>
     /// <returns>Список замечаний проекта.</returns>
     public async Task<IEnumerable<ProjectRemarkEntity>> CreateProjectRemarksAsync(
-        CreateProjectRemarkInput createProjectRemarkInput, string account)
+        CreateProjectRemarkInput createProjectRemarkInput, string account, string token)
     {
         try
         {
@@ -281,6 +288,14 @@ public class ProjectModerationService : IProjectModerationService
             }
 
             var result = addProjectRemarks.Union(updateProjectRemarks);
+
+            if (!string.IsNullOrEmpty(token))
+            {
+                // Отправляем уведомление о сохранении замечаний проекта.
+                await _projectModerationNotificationService.SendNotificationSuccessCreateProjectRemarksAsync(
+                    "Все хорошо", "Данные успешно сохранены.", NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS,
+                    token);
+            }
 
             return result;
         }

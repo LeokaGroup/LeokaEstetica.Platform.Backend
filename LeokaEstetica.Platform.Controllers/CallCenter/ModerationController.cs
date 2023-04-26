@@ -338,7 +338,7 @@ public class ModerationController : BaseController
         [FromBody] CreateProjectRemarkInput createProjectRemarkInput)
     {
         var projectRemarks = await _projectModerationService.CreateProjectRemarksAsync(createProjectRemarkInput, 
-            GetUserName());
+            GetUserName(), GetTokenFromHeader());
         
         var result = new ProjectRemarkResult
         {

@@ -44,7 +44,8 @@ public interface IProjectModerationService
     /// Метод создает результаты проекта. 
     /// </summary>
     /// <param name="prj">Данные проекта.</param>
+    /// <param name="token">Токен.</param>
     /// <returns>Результаты проекта.</returns>
     Task<IEnumerable<ProjectRemarkEntity>> CreateProjectRemarksAsync(
-        CreateProjectRemarkInput createProjectRemarkInput, string account);
+        CreateProjectRemarkInput createProjectRemarkInput, string account, string token);
 }
