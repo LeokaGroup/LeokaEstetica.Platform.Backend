@@ -338,9 +338,14 @@ public class ModerationController : BaseController
     public async Task<ProjectRemarkResult> CreateProjectRemarksAsync(
         [FromBody] CreateProjectRemarkInput createProjectRemarkInput)
     {
-        var resukt = await _projectModerationService.CreateProjectRemarksAsync(createProjectRemarkInput, 
+        var projectRemarks = await _projectModerationService.CreateProjectRemarksAsync(createProjectRemarkInput, 
             GetUserName());
+        
+        var result = new ProjectRemarkResult
+        {
+            ProjectRemark = _mapper.Map<List<ProjectRemarkOutput>>(projectRemarks)
+        };
 
-        return null;
+        return result;
     }
 }

@@ -218,20 +218,71 @@ public class ProjectModerationService : IProjectModerationService
             // Проверяем входные параметры.
             await ValidateProjectRemarksParamsAsync(projectRemarks);
 
-            var addedProjectRemarks = _mapper.Map<List<ProjectRemarkEntity>>(projectRemarks);
+            var mapProjectRemarks = _mapper.Map<List<ProjectRemarkEntity>>(projectRemarks);
             var now = DateTime.Now;
             
             // Задаем модератора замечаниям и задаем статус замечаниям.
-            foreach (var pr in addedProjectRemarks)
+            foreach (var pr in mapProjectRemarks)
             {
                 pr.ModerationUserId = userId;
                 pr.RemarkStatusId = (int)RemarkStatusEnum.AwaitingCorrection;
                 pr.DateCreated = now;
             }
 
-            await _projectModerationRepository.CreateProjectRemarksAsync(addedProjectRemarks);
+            // Получаем названия полей.
+            var fields = projectRemarks.Select(pr => pr.FieldName);
+            
+            // Оставляем лишь те замечания, которые не были добавлены к проекту.
+            // Проверяем по названию замечания и по статусу.
+            // Тут First можем, так как валидацию на ProjectId проводили выше.
+            var projectId = createProjectRemarkInput.ProjectRemarks.First().ProjectId;
+            
+            // Получаем замечания, которые модератор уже сохранял в рамках текущего проекта.
+            var existsProjectRemarks = await _projectModerationRepository.GetExistsProjectRemarksAsync(projectId,
+                fields);
 
-            return addedProjectRemarks;
+            var addProjectRemarks = new List<ProjectRemarkEntity>();
+            var updateProjectRemarks = new List<ProjectRemarkEntity>();
+
+            foreach (var pr in mapProjectRemarks)
+            {
+                // Если есть замечания проекта сохраненные ранее.
+                if (existsProjectRemarks.Any())
+                {
+                    // К обновлению.
+                    if (existsProjectRemarks.Select(x => x.FieldName).Contains(pr.FieldName))
+                    {
+                        updateProjectRemarks.Add(pr);   
+                    }
+                    
+                    // К добавлению.
+                    else
+                    {
+                        addProjectRemarks.Add(pr);
+                    }
+                }
+
+                else
+                {
+                    addProjectRemarks.Add(pr);
+                }
+            }
+
+            // Добавляем новые замечания проекта.
+            if (addProjectRemarks.Any())
+            {
+                await _projectModerationRepository.CreateProjectRemarksAsync(addProjectRemarks);   
+            }
+            
+            // Изменяем замечания проекта, которые ранее были сохранены.
+            if (updateProjectRemarks.Any())
+            {
+                await _projectModerationRepository.UpdateProjectRemarksAsync(updateProjectRemarks);   
+            }
+
+            var result = addProjectRemarks.Union(updateProjectRemarks);
+
+            return result;
         }
         
         catch (Exception ex)
