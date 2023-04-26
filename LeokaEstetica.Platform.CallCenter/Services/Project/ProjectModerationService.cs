@@ -219,15 +219,6 @@ public class ProjectModerationService : IProjectModerationService
             await ValidateProjectRemarksParamsAsync(projectRemarks);
 
             var mapProjectRemarks = _mapper.Map<List<ProjectRemarkEntity>>(projectRemarks);
-            var now = DateTime.Now;
-            
-            // Задаем модератора замечаниям и задаем статус замечаниям.
-            foreach (var pr in mapProjectRemarks)
-            {
-                pr.ModerationUserId = userId;
-                pr.RemarkStatusId = (int)RemarkStatusEnum.AwaitingCorrection;
-                pr.DateCreated = now;
-            }
 
             // Получаем названия полей.
             var fields = projectRemarks.Select(pr => pr.FieldName);
@@ -240,18 +231,27 @@ public class ProjectModerationService : IProjectModerationService
             // Получаем замечания, которые модератор уже сохранял в рамках текущего проекта.
             var existsProjectRemarks = await _projectModerationRepository.GetExistsProjectRemarksAsync(projectId,
                 fields);
-
+            
+            var now = DateTime.Now;
             var addProjectRemarks = new List<ProjectRemarkEntity>();
             var updateProjectRemarks = new List<ProjectRemarkEntity>();
-
+            
+            // Задаем модератора замечаниям и задаем статус замечаниям.
             foreach (var pr in mapProjectRemarks)
             {
+                pr.ModerationUserId = userId;
+                pr.RemarkStatusId = (int)RemarkStatusEnum.AwaitingCorrection;
+                pr.DateCreated = now;
+                
                 // Если есть замечания проекта сохраненные ранее.
                 if (existsProjectRemarks.Any())
                 {
+                    var getProjectRemarks = existsProjectRemarks.Find(x => x.FieldName.Equals(pr.FieldName));
+                    
                     // К обновлению.
-                    if (existsProjectRemarks.Select(x => x.FieldName).Contains(pr.FieldName))
+                    if (getProjectRemarks is not null)
                     {
+                        pr.RemarkId = getProjectRemarks.RemarkId;
                         updateProjectRemarks.Add(pr);   
                     }
                     

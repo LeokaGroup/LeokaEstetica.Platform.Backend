@@ -32,6 +32,14 @@ public class CreateProjectRemarksTest : BaseServiceTest
                     FieldName = "RemarkProjectName",
                     RemarkText = "Название проекта не соответствует действительности. Заполните его более объективно.",
                     RussianName = "Название проекта"
+                },
+                
+                new()
+                {
+                    ProjectId = 214,
+                    FieldName = "RemarkProjectDetails",
+                    RemarkText = "Описание проекта не соответствует действительности. Заполните его более объективно.",
+                    RussianName = "Описание проекта"
                 }
             }
         };
