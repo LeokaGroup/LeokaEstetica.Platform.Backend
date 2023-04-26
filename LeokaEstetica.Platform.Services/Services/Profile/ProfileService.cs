@@ -56,13 +56,27 @@ public sealed class ProfileService : IProfileService
                 throw new ArgumentException("Имя аккаунта не передано.");
             }
 
-            var userId = await _userRepository.GetUserByEmailAsync(account);
-
-            if (userId <= 0)
+            // Ищем userId по VK Id если, передано числовое значение.
+            if (long.TryParse(account, out long userId))
             {
-                throw new InvalidOperationException($"Пользователя с почтой {account} не существует в системе.");
+                userId = await _userRepository.GetUserIdByVkIdAsync(userId);
+                if (userId <= 0)
+                {
+                    throw new InvalidOperationException($"Пользователя с VK Id {userId} не существует в системе.");
+                }
             }
 
+            // Ищем userId по email, если передано строковое значение.
+            if(userId == 0)
+            {
+                userId = await _userRepository.GetUserByEmailAsync(account);
+
+                if (userId <= 0)
+                {
+                    throw new InvalidOperationException($"Пользователя с почтой {account} не существует в системе.");
+                }
+            }
+            
             var profileInfo = await _profileRepository.GetProfileInfoAsync(userId);
 
             if (profileInfo is null)
