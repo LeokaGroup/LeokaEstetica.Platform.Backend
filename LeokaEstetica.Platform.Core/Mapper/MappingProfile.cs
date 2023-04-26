@@ -127,5 +127,6 @@ public class MappingProfile : Profile
         
         CreateMap<ProjectRemarkInput, ProjectRemarkEntity>();
         CreateMap<ProjectRemarkEntity, ProjectRemarkInput>();
+        CreateMap<ProjectRemarkEntity, ProjectRemarkOutput>();
     }
 }

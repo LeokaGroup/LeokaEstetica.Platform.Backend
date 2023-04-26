@@ -1,4 +1,4 @@
-namespace LeokaEstetica.Platform.CallCenter.Models.Dto.Output.Moderation;
+namespace LeokaEstetica.Platform.Models.Dto.Output.Moderation.Project;
 
 /// <summary>
 /// Класс результата списка замечаний проекта.
@@ -13,5 +13,5 @@ public class ProjectRemarkResult
     /// <summary>
     /// Кол-во замечаний всего.
     /// </summary>
-    public int Total { get; set; }
+    public int Total => ProjectRemark.Count();
 }

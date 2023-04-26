@@ -1,4 +1,4 @@
-namespace LeokaEstetica.Platform.CallCenter.Models.Dto.Output.Moderation;
+namespace LeokaEstetica.Platform.Models.Dto.Output.Moderation.Project;
 
 /// <summary>
 /// Класс выходной модели замечания проекта.

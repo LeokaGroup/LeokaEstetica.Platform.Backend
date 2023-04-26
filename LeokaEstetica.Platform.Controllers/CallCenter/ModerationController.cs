@@ -17,7 +17,6 @@ using LeokaEstetica.Platform.CallCenter.Models.Dto.Input.Resume;
 using LeokaEstetica.Platform.CallCenter.Models.Dto.Input.Role;
 using LeokaEstetica.Platform.CallCenter.Models.Dto.Input.Vacancy;
 using LeokaEstetica.Platform.CallCenter.Models.Dto.Output.Access;
-using LeokaEstetica.Platform.CallCenter.Models.Dto.Output.Moderation;
 using LeokaEstetica.Platform.CallCenter.Models.Dto.Output.Project;
 using LeokaEstetica.Platform.CallCenter.Models.Dto.Output.Role;
 using LeokaEstetica.Platform.CallCenter.Models.Dto.Output.Vacancy;
