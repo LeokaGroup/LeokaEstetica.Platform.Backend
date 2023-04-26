@@ -293,8 +293,8 @@ public class ProjectModerationService : IProjectModerationService
             {
                 // Отправляем уведомление о сохранении замечаний проекта.
                 await _projectModerationNotificationService.SendNotificationSuccessCreateProjectRemarksAsync(
-                    "Все хорошо", "Данные успешно сохранены.", NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS,
-                    token);
+                    "Все хорошо", "Замечания успешно внесены. Теперь вы можете их отправить.",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);
             }
 
             return result;
