@@ -42,4 +42,32 @@ public interface IProjectModerationRepository
     /// <param name="userId">Id пользователя, которому отправим уведомление в приложении.</param>
     /// <param name="projectName">Название проекта.</param>
     Task AddNotificationRejectProjectAsync(long projectId, long userId, string projectName);
+
+    /// <summary>
+    /// Метод создает замечания проекта.
+    /// </summary>
+    /// <param name="createProjectRemarkInput">Список замечаний.</param>
+    /// <param name="account">Аккаунт.</param>
+    Task CreateProjectRemarksAsync(IEnumerable<ProjectRemarkEntity> projectRemarks);
+
+    /// <summary>
+    /// Метод получает замечания проекта.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Список замечаний.</returns>
+    Task<List<ProjectRemarkEntity>> GetProjectRemarksAsync(long projectId);
+
+    /// <summary>
+    /// Метод получает замечания проекта, которые ранее были сохранены модератором.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="fields">Список названий полей..</param>
+    /// <returns>Список замечаний.</returns>
+    Task<List<ProjectRemarkEntity>> GetExistsProjectRemarksAsync(long projectId, IEnumerable<string> fields);
+
+    /// <summary>
+    /// Метод обновляет замечания проекта.
+    /// </summary>
+    /// <param name="projectRemarks">Список замечаний для обновления.</param>
+    Task UpdateProjectRemarksAsync(List<ProjectRemarkEntity> projectRemarks);
 }

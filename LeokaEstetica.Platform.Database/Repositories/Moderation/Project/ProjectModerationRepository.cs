@@ -16,10 +16,16 @@ public class ProjectModerationRepository : IProjectModerationRepository
 {
     private readonly PgContext _pgContext;
 
+    /// <summary>
+    /// Конструктор.
+    /// </summary>
+    /// <param name="pgContext">Датаконтекст.</param>
     public ProjectModerationRepository(PgContext pgContext)
     {
         _pgContext = pgContext;
     }
+
+    #region Публичные методы.
 
     /// <summary>
     /// Метод получает список проектов для модерации.
@@ -148,6 +154,62 @@ public class ProjectModerationRepository : IProjectModerationRepository
     }
 
     /// <summary>
+    /// Метод создает замечания проекта.
+    /// </summary>
+    /// <param name="createProjectRemarkInput">Список замечаний.</param>
+    /// <param name="account">Аккаунт.</param>
+    public async Task CreateProjectRemarksAsync(IEnumerable<ProjectRemarkEntity> projectRemarks)
+    {
+        await _pgContext.ProjectRemarks.AddRangeAsync(projectRemarks);
+        await _pgContext.SaveChangesAsync();
+    }
+
+    /// <summary>
+    /// Метод получает замечания проекта.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Список замечаний.</returns>
+    public async Task<List<ProjectRemarkEntity>> GetProjectRemarksAsync(long projectId)
+    {
+        var result = await _pgContext.ProjectRemarks
+            .Where(p => p.ProjectId == projectId)
+            .ToListAsync();
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод получает замечания проекта, которые ранее были сохранены модератором.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="fields">Список названий полей..</param>
+    /// <returns>Список замечаний.</returns>
+    public async Task<List<ProjectRemarkEntity>> GetExistsProjectRemarksAsync(long projectId,
+        IEnumerable<string> fields)
+    {
+        var result = await _pgContext.ProjectRemarks
+            .Where(p => p.ProjectId == projectId
+                        && fields.Contains(p.FieldName))
+            .ToListAsync();
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод обновляет замечания проекта.
+    /// </summary>
+    /// <param name="projectRemarks">Список замечаний для обновления.</param>
+    public async Task UpdateProjectRemarksAsync(List<ProjectRemarkEntity> projectRemarks)
+    {
+        _pgContext.ProjectRemarks.UpdateRange(projectRemarks);
+        await _pgContext.SaveChangesAsync();
+    }
+
+    #endregion
+
+    #region Приватные методы.
+
+    /// <summary>
     /// Метод устанавливает статус проекту.
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
@@ -169,4 +231,6 @@ public class ProjectModerationRepository : IProjectModerationRepository
 
         return true;
     }
+
+    #endregion
 }

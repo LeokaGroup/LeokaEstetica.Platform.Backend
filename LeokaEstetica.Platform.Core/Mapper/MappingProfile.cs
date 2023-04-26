@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using LeokaEstetica.Platform.Models.Dto.Chat.Output;
 using LeokaEstetica.Platform.Models.Dto.Common.Cache;
-using LeokaEstetica.Platform.Models.Dto.Input.User;
+using LeokaEstetica.Platform.Models.Dto.Input.Moderation;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce.PayMaster;
 using LeokaEstetica.Platform.Models.Dto.Output.Configs;
 using LeokaEstetica.Platform.Models.Dto.Output.FareRule;
@@ -124,5 +124,9 @@ public class MappingProfile : Profile
         
         CreateMap<UserEntity, UserActivityMarkDeactivate>();
         CreateMap<UserActivityMarkDeactivate, UserEntity>();
+        
+        CreateMap<ProjectRemarkInput, ProjectRemarkEntity>();
+        CreateMap<ProjectRemarkEntity, ProjectRemarkInput>();
+        CreateMap<ProjectRemarkEntity, ProjectRemarkOutput>();
     }
 }
