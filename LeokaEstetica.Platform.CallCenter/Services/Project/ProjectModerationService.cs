@@ -85,6 +85,7 @@ public class ProjectModerationService : IProjectModerationService
         {
             var prj = await _projectRepository.GetProjectAsync(projectId);
             var result = await CreateProjectResultAsync(prj);
+            result.ProjectDetails = ClearHtmlBuilder.Clear(prj.UserProject.ProjectDetails);
 
             return result;
         }
