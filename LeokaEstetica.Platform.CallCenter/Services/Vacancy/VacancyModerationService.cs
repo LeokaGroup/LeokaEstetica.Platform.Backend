@@ -3,7 +3,6 @@ using LeokaEstetica.Platform.CallCenter.Abstractions.Messaging.Mail;
 using LeokaEstetica.Platform.CallCenter.Abstractions.Vacancy;
 using LeokaEstetica.Platform.CallCenter.Builders;
 using LeokaEstetica.Platform.CallCenter.Models.Dto.Output.Vacancy;
-using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Vacancy;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
 using LeokaEstetica.Platform.Database.Abstractions.User;
@@ -28,7 +27,7 @@ public sealed class VacancyModerationService : IVacancyModerationService
     private readonly IVacancyRepository _vacancyRepository;
     private readonly IUserRepository _userRepository;
     private readonly IProjectRepository _projectRepository;
-    private readonly IVacancyModerationNotificationsService _vacancyModerationNotificationsService;
+    private readonly IProjectModerationNotificationService _projectModerationNotificationService;
 
     public VacancyModerationService(IVacancyModerationRepository vacancyModerationRepository,
         ILogService logService, 
@@ -37,7 +36,7 @@ public sealed class VacancyModerationService : IVacancyModerationService
         IVacancyRepository vacancyRepository, 
         IUserRepository userRepository, 
         IProjectRepository projectRepository, 
-        IVacancyModerationNotificationsService vacancyModerationNotificationsService)
+        IProjectModerationNotificationService projectModerationNotificationService)
     {
         _vacancyModerationRepository = vacancyModerationRepository;
         _logService = logService;
@@ -46,7 +45,7 @@ public sealed class VacancyModerationService : IVacancyModerationService
         _vacancyRepository = vacancyRepository;
         _userRepository = userRepository;
         _projectRepository = projectRepository;
-        _vacancyModerationNotificationsService = vacancyModerationNotificationsService;
+        _projectModerationNotificationService = projectModerationNotificationService;
     }
 
     /// <summary>
@@ -119,7 +118,7 @@ public sealed class VacancyModerationService : IVacancyModerationService
             {
                 if (!string.IsNullOrEmpty(userToken))
                 {
-                    await _vacancyModerationNotificationsService
+                    await _projectModerationNotificationService
                         .SendNotificationWarningApproveVacancyAsync("Внимание",
                             "Проект для текущей вакансии не найден.", NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING,
                             userToken);
@@ -136,7 +135,7 @@ public sealed class VacancyModerationService : IVacancyModerationService
             {
                 if (!string.IsNullOrEmpty(userToken))
                 {
-                    await _vacancyModerationNotificationsService
+                    await _projectModerationNotificationService
                         .SendNotificationWarningApproveVacancyAsync("Внимание",
                             "Вакансия не может быть одобрена пока проект находится на модерации.", NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING,
                             userToken);
@@ -154,7 +153,7 @@ public sealed class VacancyModerationService : IVacancyModerationService
             {
                 if (!string.IsNullOrEmpty(userToken))
                 {
-                    await _vacancyModerationNotificationsService
+                    await _projectModerationNotificationService
                         .SendNotificationWarningApproveVacancyAsync("Внимание",
                             "Проект был отклонен модератором. Вакансия не может быть одобрена.", NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING,
                             userToken);
