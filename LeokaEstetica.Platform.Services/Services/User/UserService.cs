@@ -92,6 +92,11 @@ public class UserService : IUserService
             var result = new UserSignUpOutput { Errors = new List<ValidationFailure>() };
             await CheckUserByEmailAsync(result, email);
 
+            if (result.Errors.Any())
+            {
+                return result;
+            }
+
             var userModel = CreateSignUpUserModel(password, email);
             
             var userId = await _userRepository.AddUserAsync(userModel);
