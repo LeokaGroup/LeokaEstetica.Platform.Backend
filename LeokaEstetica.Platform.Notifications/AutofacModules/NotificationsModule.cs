@@ -41,10 +41,21 @@ public class NotificationsModule : Module
         builder.RegisterType<AccessUserNotificationsService>()
             .As<IAccessUserNotificationsService>()
             .InstancePerLifetimeScope();
+
+        // Сервис уведомлений комметариев.
+        builder.RegisterType<CommentNotificationsService>()
+            .Named<ICommentNotificationsService>("CommentNotificationsService")
+            .InstancePerLifetimeScope();
+        builder.RegisterType<CommentNotificationsService>()
+            .As<ICommentNotificationsService>()
+            .InstancePerLifetimeScope();
         
-        // Сервис уведомлений модераторов.
-        builder.RegisterType<VacancyModerationNotificationsService>()
-            .Named<IVacancyModerationNotificationsService>(nameof(VacancyModerationNotificationsService))
+        // Сервис уведомлений модерации проектов.
+        builder.RegisterType<ProjectModerationNotificationService>()
+            .Named<IProjectModerationNotificationService>("ProjectModerationNotificationService")
+            .InstancePerLifetimeScope();
+        builder.RegisterType<ProjectModerationNotificationService>()
+            .As<IProjectModerationNotificationService>()
             .InstancePerLifetimeScope();
     }
 }

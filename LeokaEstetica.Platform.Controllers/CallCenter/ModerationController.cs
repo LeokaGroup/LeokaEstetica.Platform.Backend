@@ -21,6 +21,7 @@ using LeokaEstetica.Platform.CallCenter.Models.Dto.Output.Project;
 using LeokaEstetica.Platform.CallCenter.Models.Dto.Output.Role;
 using LeokaEstetica.Platform.CallCenter.Models.Dto.Output.Vacancy;
 using LeokaEstetica.Platform.Controllers.Filters;
+using LeokaEstetica.Platform.Models.Dto.Input.Moderation;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LeokaEstetica.Platform.Controllers.CallCenter;
@@ -114,10 +115,9 @@ public class ModerationController : BaseController
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<UserProjectOutput> GetProjectModerationByProjectIdAsync([FromRoute] long projectId)
+    public async Task<ProjectOutput> GetProjectModerationByProjectIdAsync([FromRoute] long projectId)
     {
-        var prj = await _projectModerationService.GetProjectModerationByProjectIdAsync(projectId);
-        var result = _mapper.Map<UserProjectOutput>(prj);
+        var result = await _projectModerationService.GetProjectModerationByProjectIdAsync(projectId);
 
         return result;
     }
@@ -321,5 +321,31 @@ public class ModerationController : BaseController
     public async Task RejectResumeAsync([FromBody] RejectResumeInput rejectResumeInput)
     {
         await _resumeModerationService.RejectResumeAsync(rejectResumeInput.ProfileInfoId);
+    }
+
+    /// <summary>
+    /// Метод создает замечания проекта.
+    /// </summary>
+    /// <param name="createProjectRemarkInput">Входная модель.</param>
+    /// <returns>Список замечаний проекта.</returns>
+    [HttpPost]
+    [Route("project/remarks")]
+    [ProducesResponseType(200, Type = typeof(ProjectRemarkResult))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<ProjectRemarkResult> CreateProjectRemarksAsync(
+        [FromBody] CreateProjectRemarkInput createProjectRemarkInput)
+    {
+        var projectRemarks = await _projectModerationService.CreateProjectRemarksAsync(createProjectRemarkInput, 
+            GetUserName(), GetTokenFromHeader());
+        
+        var result = new ProjectRemarkResult
+        {
+            ProjectRemark = _mapper.Map<List<ProjectRemarkOutput>>(projectRemarks)
+        };
+
+        return result;
     }
 }

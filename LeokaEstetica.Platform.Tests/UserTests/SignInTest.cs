@@ -26,9 +26,17 @@ public class SignInTest : BaseServiceTest
     }
     
     [Test]
-    public async Task SignInVkAsyncTest()
+    public async Task SignInVkIfEmailSaveInDbAsyncTest()
     {
-        var result = await UserService.SignInAsync(139362343, "Антон", "Тимошенко");
+        var result = await UserService.SignInAsync(5728800, "Антон", "Тимошенко");
+
+        Assert.NotNull(result);
+    }
+
+    [Test]
+    public async Task SignInVkIfEmailDontSaveDbAsyncTest()
+    {
+        var result = await UserService.SignInAsync(795806417, "Test", "Tes");
 
         Assert.NotNull(result);
     }

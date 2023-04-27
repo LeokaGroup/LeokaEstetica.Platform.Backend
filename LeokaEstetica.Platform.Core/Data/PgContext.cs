@@ -364,4 +364,14 @@ public class PgContext : DbContext
     /// Таблица пользователей с доступом к КЦ.
     /// </summary>
     public DbSet<ModerationUserEntity> ModerationUsers { get; set; }
+
+    /// <summary>
+    /// Таблица статусов замечаний.
+    /// </summary>
+    public DbSet<RemarkStatuseEntity> RemarkStatuses { get; set; }
+
+    /// <summary>
+    /// Таблица замечаний проекта.
+    /// </summary>
+    public DbSet<ProjectRemarkEntity> ProjectRemarks { get; set; }
 }

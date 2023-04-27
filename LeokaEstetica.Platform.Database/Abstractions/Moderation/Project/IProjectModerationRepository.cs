@@ -1,5 +1,4 @@
 using LeokaEstetica.Platform.Models.Entities.Moderation;
-using LeokaEstetica.Platform.Models.Entities.Project;
 
 namespace LeokaEstetica.Platform.Database.Abstractions.Moderation.Project;
 
@@ -13,13 +12,6 @@ public interface IProjectModerationRepository
     /// </summary>
     /// <returns>Список проектов.</returns>
     Task<IEnumerable<ModerationProjectEntity>> ProjectsModerationAsync();
-    
-    /// <summary>
-    /// Метод получает проект для просмотра/изменения.
-    /// </summary>
-    /// <param name="projectId">Id проекта.</param>
-    /// <returns>Данные проекта.</returns>
-    Task<UserProjectEntity> GetProjectModerationByProjectIdAsync(long projectId);
 
     /// <summary>
     /// Метод одобряет проект на модерации.
@@ -50,4 +42,32 @@ public interface IProjectModerationRepository
     /// <param name="userId">Id пользователя, которому отправим уведомление в приложении.</param>
     /// <param name="projectName">Название проекта.</param>
     Task AddNotificationRejectProjectAsync(long projectId, long userId, string projectName);
+
+    /// <summary>
+    /// Метод создает замечания проекта.
+    /// </summary>
+    /// <param name="createProjectRemarkInput">Список замечаний.</param>
+    /// <param name="account">Аккаунт.</param>
+    Task CreateProjectRemarksAsync(IEnumerable<ProjectRemarkEntity> projectRemarks);
+
+    /// <summary>
+    /// Метод получает замечания проекта.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Список замечаний.</returns>
+    Task<List<ProjectRemarkEntity>> GetProjectRemarksAsync(long projectId);
+
+    /// <summary>
+    /// Метод получает замечания проекта, которые ранее были сохранены модератором.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="fields">Список названий полей..</param>
+    /// <returns>Список замечаний.</returns>
+    Task<List<ProjectRemarkEntity>> GetExistsProjectRemarksAsync(long projectId, IEnumerable<string> fields);
+
+    /// <summary>
+    /// Метод обновляет замечания проекта.
+    /// </summary>
+    /// <param name="projectRemarks">Список замечаний для обновления.</param>
+    Task UpdateProjectRemarksAsync(List<ProjectRemarkEntity> projectRemarks);
 }

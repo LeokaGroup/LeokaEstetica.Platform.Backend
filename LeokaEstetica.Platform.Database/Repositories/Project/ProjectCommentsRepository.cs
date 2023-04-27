@@ -59,6 +59,7 @@ public sealed class ProjectCommentsRepository : IProjectCommentsRepository
         catch
         {
             await transaction.RollbackAsync();
+            throw;
         }
     }
 
@@ -73,7 +74,8 @@ public sealed class ProjectCommentsRepository : IProjectCommentsRepository
                 join pcm in _pgContext.ProjectCommentsModeration
                     on pc.CommentId
                     equals pcm.CommentId
-                where !new[]
+                where pc.ProjectId == projectId && 
+                !new[]
                     {
                         (int)ProjectModerationStatusEnum.ModerationProject, // На модерации.
                         (int)ProjectModerationStatusEnum.RejectedProject // Отклонен.

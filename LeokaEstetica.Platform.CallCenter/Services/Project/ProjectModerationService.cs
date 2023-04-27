@@ -3,20 +3,26 @@ using LeokaEstetica.Platform.CallCenter.Abstractions.Messaging.Mail;
 using LeokaEstetica.Platform.CallCenter.Abstractions.Project;
 using LeokaEstetica.Platform.CallCenter.Builders;
 using LeokaEstetica.Platform.CallCenter.Models.Dto.Output.Project;
+using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Project;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
 using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Logs.Abstractions;
+using LeokaEstetica.Platform.Models.Dto.Input.Moderation;
 using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Project;
+using LeokaEstetica.Platform.Models.Dto.Output.Project;
+using LeokaEstetica.Platform.Models.Entities.Moderation;
 using LeokaEstetica.Platform.Models.Entities.Project;
+using LeokaEstetica.Platform.Notifications.Abstractions;
+using LeokaEstetica.Platform.Notifications.Consts;
 
 namespace LeokaEstetica.Platform.CallCenter.Services.Project;
 
 /// <summary>
 /// Класс реализует методы сервиса модерации проектов.
 /// </summary>
-public sealed class ProjectModerationService : IProjectModerationService
+public class ProjectModerationService : IProjectModerationService
 {
     private readonly IProjectModerationRepository _projectModerationRepository;
     private readonly ILogService _logService;
@@ -24,13 +30,25 @@ public sealed class ProjectModerationService : IProjectModerationService
     private readonly IModerationMailingsService _moderationMailingsService;
     private readonly IUserRepository _userRepository;
     private readonly IProjectRepository _projectRepository;
+    private readonly IProjectModerationNotificationService _projectModerationNotificationService;
 
+    /// <summary>
+    /// Конструктор.
+    /// </summary>
+    /// <param name="projectModerationRepository">Репозиторий модерации проектов.</param>
+    /// <param name="logService">Сервис логов.</param>
+    /// <param name="mapper">Автомаппер.</param>
+    /// <param name="moderationMailingsService">Сервис уведомлений модерации на почту.</param>
+    /// <param name="userRepository">Репозиторий пользователя.</param>
+    /// <param name="projectRepository">Репозиторий проектов.</param>
+    /// <param name="projectModerationNotificationService">Сервис уведомлений модерации проектов.</param>
     public ProjectModerationService(IProjectModerationRepository projectModerationRepository,
         ILogService logService,
         IMapper mapper, 
         IModerationMailingsService moderationMailingsService, 
         IUserRepository userRepository, 
-        IProjectRepository projectRepository)
+        IProjectRepository projectRepository, 
+        IProjectModerationNotificationService projectModerationNotificationService)
     {
         _projectModerationRepository = projectModerationRepository;
         _logService = logService;
@@ -38,7 +56,10 @@ public sealed class ProjectModerationService : IProjectModerationService
         _moderationMailingsService = moderationMailingsService;
         _userRepository = userRepository;
         _projectRepository = projectRepository;
+        _projectModerationNotificationService = projectModerationNotificationService;
     }
+
+    #region Публичные методы.
 
     /// <summary>
     /// Метод получает список проектов для модерации.
@@ -67,18 +88,20 @@ public sealed class ProjectModerationService : IProjectModerationService
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
     /// <returns>Данные проекта.</returns>
-    public async Task<UserProjectEntity> GetProjectModerationByProjectIdAsync(long projectId)
+    public async Task<ProjectOutput> GetProjectModerationByProjectIdAsync(long projectId)
     {
         try
         {
-            var result = await _projectModerationRepository.GetProjectModerationByProjectIdAsync(projectId);
+            var prj = await _projectRepository.GetProjectAsync(projectId);
+            var result = await CreateProjectResultAsync(prj);
 
             return result;
         }
 
         catch (Exception ex)
         {
-            await _logService.LogErrorAsync(ex, $"Ошибка при получении проекта для модерации. ProjectId = {projectId}");
+            await _logService.LogErrorAsync(ex, "Ошибка при получении проекта для модерации. " +
+                                                $"ProjectId = {projectId}");
             throw;
         }
     }
@@ -176,4 +199,179 @@ public sealed class ProjectModerationService : IProjectModerationService
             throw;
         }
     }
+
+    /// <summary>
+    /// Метод создает замечания проекта.
+    /// </summary>
+    /// <param name="createProjectRemarkInput">Список замечаний.</param>
+    /// <param name="account">Аккаунт.</param>
+    /// <param name="token">Токен.</param>
+    /// <returns>Список замечаний проекта.</returns>
+    public async Task<IEnumerable<ProjectRemarkEntity>> CreateProjectRemarksAsync(
+        CreateProjectRemarkInput createProjectRemarkInput, string account, string token)
+    {
+        try
+        {
+            var userId = await _userRepository.GetUserIdByEmailOrLoginAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+            
+            var projectRemarks = createProjectRemarkInput.ProjectRemarks.ToList();
+            
+            // Проверяем входные параметры.
+            await ValidateProjectRemarksParamsAsync(projectRemarks);
+
+            var mapProjectRemarks = _mapper.Map<List<ProjectRemarkEntity>>(projectRemarks);
+
+            // Получаем названия полей.
+            var fields = projectRemarks.Select(pr => pr.FieldName);
+            
+            // Оставляем лишь те замечания, которые не были добавлены к проекту.
+            // Проверяем по названию замечания и по статусу.
+            // Тут First можем, так как валидацию на ProjectId проводили выше.
+            var projectId = createProjectRemarkInput.ProjectRemarks.First().ProjectId;
+            
+            // Получаем замечания, которые модератор уже сохранял в рамках текущего проекта.
+            var existsProjectRemarks = await _projectModerationRepository.GetExistsProjectRemarksAsync(projectId,
+                fields);
+            
+            var now = DateTime.Now;
+            var addProjectRemarks = new List<ProjectRemarkEntity>();
+            var updateProjectRemarks = new List<ProjectRemarkEntity>();
+            
+            // Задаем модератора замечаниям и задаем статус замечаниям.
+            foreach (var pr in mapProjectRemarks)
+            {
+                pr.ModerationUserId = userId;
+                pr.RemarkStatusId = (int)RemarkStatusEnum.AwaitingCorrection;
+                pr.DateCreated = now;
+                
+                // Если есть замечания проекта сохраненные ранее.
+                if (existsProjectRemarks.Any())
+                {
+                    var getProjectRemarks = existsProjectRemarks.Find(x => x.FieldName.Equals(pr.FieldName));
+                    
+                    // К обновлению.
+                    if (getProjectRemarks is not null)
+                    {
+                        pr.RemarkId = getProjectRemarks.RemarkId;
+                        updateProjectRemarks.Add(pr);   
+                    }
+                    
+                    // К добавлению.
+                    else
+                    {
+                        addProjectRemarks.Add(pr);
+                    }
+                }
+
+                else
+                {
+                    addProjectRemarks.Add(pr);
+                }
+            }
+
+            // Добавляем новые замечания проекта.
+            if (addProjectRemarks.Any())
+            {
+                await _projectModerationRepository.CreateProjectRemarksAsync(addProjectRemarks);   
+            }
+            
+            // Изменяем замечания проекта, которые ранее были сохранены.
+            if (updateProjectRemarks.Any())
+            {
+                await _projectModerationRepository.UpdateProjectRemarksAsync(updateProjectRemarks);   
+            }
+
+            var result = addProjectRemarks.Union(updateProjectRemarks);
+
+            if (!string.IsNullOrEmpty(token))
+            {
+                // Отправляем уведомление о сохранении замечаний проекта.
+                await _projectModerationNotificationService.SendNotificationSuccessCreateProjectRemarksAsync(
+                    "Все хорошо", "Замечания успешно внесены. Теперь вы можете их отправить.",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);
+            }
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            await _logService.LogErrorAsync(ex);
+            throw;
+        }
+    }
+
+    #endregion
+
+    #region Приватные методы.
+
+    /// <summary>
+    /// Метод создает результаты проекта. 
+    /// </summary>
+    /// <param name="prj">Данные проекта.</param>
+    /// <returns>Результаты проекта.</returns>
+    private async Task<ProjectOutput> CreateProjectResultAsync(
+        (UserProjectEntity UserProject, ProjectStageEntity ProjectStage) prj)
+    {
+        var result = _mapper.Map<ProjectOutput>(prj.UserProject);
+        result.StageId = prj.ProjectStage.StageId;
+        result.StageName = prj.ProjectStage.StageName;
+        result.StageSysName = prj.ProjectStage.StageSysName;
+        result.IsSuccess = true;
+
+        return await Task.FromResult(result);
+    }
+
+    /// <summary>
+    /// Метод валидирует входные параметры замечаний проекта.
+    /// </summary>
+    /// <param name="projectRemarks">Список замечаний проекта.</param>
+    private Task ValidateProjectRemarksParamsAsync(IReadOnlyCollection<ProjectRemarkInput> projectRemarks)
+    {
+        if (!projectRemarks.Any())
+        {
+            var ex = new InvalidOperationException("Не передано замечаний проекта.");
+            throw ex;
+        }
+        
+        if (projectRemarks.Any(p => p.ProjectId <= 0))
+        {
+            var ex = new InvalidOperationException("Среди замечаний проекта Id проекта был <= 0.");
+            throw ex;
+        }
+
+        if (projectRemarks.Any(p => string.IsNullOrEmpty(p.FieldName)))
+        {
+            var ex = new InvalidOperationException("Среди замечаний проекта было пустое название поля замечания.");
+            throw ex;
+        }
+
+        if (projectRemarks.Any(p => string.IsNullOrEmpty(p.RemarkText)))
+        {
+            var ex = new InvalidOperationException("Среди замечаний проекта был пустой текст замечания.");
+            throw ex;
+        }
+        
+        if (projectRemarks.Any(p => string.IsNullOrEmpty(p.RemarkText)))
+        {
+            var ex = new InvalidOperationException("Среди замечаний проекта был пустой текст замечания.");
+            throw ex;
+        }
+        
+        if (projectRemarks.Any(p => string.IsNullOrEmpty(p.RussianName)))
+        {
+            var ex = new InvalidOperationException("Среди замечаний проекта было пустое русское название поля.");
+            throw ex;
+        }
+
+        return Task.CompletedTask;
+    }
+
+    #endregion
 }

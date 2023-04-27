@@ -282,9 +282,9 @@ public class ProjectRepository : IProjectRepository
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
     /// <returns>Данные проекта.</returns>
-    public async Task<(UserProjectEntity, ProjectStageEntity)> GetProjectAsync(long projectId)
+    public async Task<(UserProjectEntity UserProject, ProjectStageEntity ProjectStage)> GetProjectAsync(long projectId)
     {
-        (UserProjectEntity, ProjectStageEntity) result = (null, null);
+        (UserProjectEntity UserProject, ProjectStageEntity ProjectStage) result = (null, null);
 
         result.Item1 = await _pgContext.UserProjects
             .FirstOrDefaultAsync(p => p.ProjectId == projectId);

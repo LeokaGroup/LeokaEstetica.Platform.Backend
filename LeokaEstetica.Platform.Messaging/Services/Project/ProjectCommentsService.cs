@@ -20,18 +20,21 @@ public sealed class ProjectCommentsService : IProjectCommentsService
     private readonly IProjectCommentsRepository _projectCommentsRepository;
     private readonly IAccessUserService _accessUserService;
     private readonly IAccessUserNotificationsService _accessUserNotificationsService;
-    
+    private readonly ICommentNotificationsService _commentNotificationsService;
+
     public ProjectCommentsService(ILogService logService, 
         IUserRepository userRepository, 
         IProjectCommentsRepository projectCommentsRepository, 
         IAccessUserService accessUserService, 
-        IAccessUserNotificationsService accessUserNotificationsService)
+        IAccessUserNotificationsService accessUserNotificationsService,
+        ICommentNotificationsService commentNotificationsService)
     {
         _logService = logService;
         _userRepository = userRepository;
         _projectCommentsRepository = projectCommentsRepository;
         _accessUserService = accessUserService;
         _accessUserNotificationsService = accessUserNotificationsService;
+        _commentNotificationsService = commentNotificationsService;
     }
 
     /// <summary>
@@ -66,6 +69,19 @@ public sealed class ProjectCommentsService : IProjectCommentsService
                     "Для оставления комментария к проекту должна быть заполнена информация вашей анкеты.",
                     NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
                 
+                throw ex;
+            }
+
+            // Проверяем наличие комментария
+            if (string.IsNullOrEmpty(comment))
+            {
+                var ex = new InvalidOperationException("Комментарий к проекту не может быть пустым." +
+                    $"ProjectId: {projectId}");
+
+                await _commentNotificationsService.SendNotificationCommentProjectIsNotEmptyAsync("Внимание",
+                    "Комментарий к проекту не может быть пустым.",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
+
                 throw ex;
             }
             
