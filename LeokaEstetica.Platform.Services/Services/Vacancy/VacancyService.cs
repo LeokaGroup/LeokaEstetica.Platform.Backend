@@ -21,6 +21,7 @@ using LeokaEstetica.Platform.Redis.Models.Vacancy;
 using LeokaEstetica.Platform.Services.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Services.Builders;
 using VacancyItems = LeokaEstetica.Platform.Redis.Models.Vacancy.VacancyItems;
+using LeokaEstetica.Platform.Base.Extensions.HtmlExtensions;
 
 namespace LeokaEstetica.Platform.Services.Services.Vacancy;
 

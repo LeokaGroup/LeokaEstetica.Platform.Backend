@@ -7,6 +7,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\LeokaEstetica.Platform.Base\LeokaEstetica.Platform.Base.csproj" />
       <ProjectReference Include="..\LeokaEstetica.Platform.Core\LeokaEstetica.Platform.Core.csproj" />
       <ProjectReference Include="..\LeokaEstetica.Platform.Database\LeokaEstetica.Platform.Database.csproj" />
       <ProjectReference Include="..\LeokaEstetica.Platform.Logs\LeokaEstetica.Platform.Logs.csproj" />
