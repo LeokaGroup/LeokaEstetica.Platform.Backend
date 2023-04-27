@@ -48,4 +48,26 @@ public class ProjectModerationNotificationService : IProjectModerationNotificati
                     NotificationLevel = notificationLevel
                 });
     }
+    
+    /// <summary>
+    /// Отправляет уведомление модератору об ошибке одобрения вакансии.
+    /// </summary>
+    /// <param name="title">Заголовок уведомления.</param>
+    /// <param name="message">Текст уведомления.</param>
+    /// <param name="notificationLevel">Уровень уведомления.</param>
+    /// <param name="token">Токен модератора.</param>
+    public async Task SendNotificationWarningApproveVacancyAsync(string title, string message, string notificationLevel, 
+        string token)
+    {
+        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(token);
+
+        await _hubContext.Clients
+            .Client(connectionId)
+            .SendAsync("SendNotificationWarningApproveVacancy", new NotificationOutput
+            {
+                Title = title,
+                Message = message,
+                NotificationLevel = notificationLevel
+            });
+    }
 }
