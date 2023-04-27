@@ -30,4 +30,28 @@ public class SaveProfileInfoTest : BaseServiceTest
         Assert.IsNotNull(profileInfo);
         Assert.IsTrue(profileInfo.ProfileInfoId > 0);
     }
+
+    [Test]
+    public async Task SaveProfileInfoByVkIdAsyncTest()
+    {
+        var profileInfo = await ProfileService.SaveProfileInfoAsync(new ProfileInfoInput
+        {
+            FirstName = "Петр",
+            LastName = "Петров",
+            Patronymic = "Петрович",
+            IsShortFirstName = false,
+            Aboutme = "Тестовая информация о пользователе.",
+            Job = "Работник",
+            WhatsApp = "89543567834",
+            Telegram = "@petro",
+            Vkontakte = "https://vk.com/Petro",
+            OtherLink = "Нету...",
+            UserSkills = new List<SkillInput>(),
+            UserIntents = new List<IntentOutput>(),
+            WorkExperience = "Test"
+        }, "798589660", string.Empty);
+
+        Assert.IsNotNull(profileInfo);
+        Assert.IsTrue(profileInfo.ProfileInfoId > 0);
+    }
 }
