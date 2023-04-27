@@ -70,4 +70,20 @@ public interface IProjectModerationRepository
     /// </summary>
     /// <param name="projectRemarks">Список замечаний для обновления.</param>
     Task UpdateProjectRemarksAsync(List<ProjectRemarkEntity> projectRemarks);
+
+    /// <summary>
+    /// Метод отправляет замечания проекта владельцу проекта.
+    /// Отправка замечаний проекту подразумевает просто изменение статуса замечаниям проекта.
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="userId">Id пользователя.</param>
+    /// </summary>
+    Task SendProjectRemarksAsync(long projectId, long userId);
+
+    /// <summary>
+    /// Метод проверяет, были ли внесены замечания проекта.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Признак внесения замечаний.</returns>
+    Task<bool> CheckExistsProjectRemarksAsync(long projectId, long userId);
 }

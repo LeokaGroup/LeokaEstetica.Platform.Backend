@@ -48,4 +48,13 @@ public interface IProjectModerationService
     /// <returns>Результаты проекта.</returns>
     Task<IEnumerable<ProjectRemarkEntity>> CreateProjectRemarksAsync(
         CreateProjectRemarkInput createProjectRemarkInput, string account, string token);
+
+    /// <summary>
+    /// Метод отправляет замечания проекта владельцу проекта.
+    /// Отправка замечаний проекту подразумевает просто изменение статуса замечаниям проекта.
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="account">Аккаунт.</param>
+    /// <param name="token">Токен.</param>
+    /// </summary>
+    Task SendProjectRemarksAsync(long projectId, string account, string token);
 }
