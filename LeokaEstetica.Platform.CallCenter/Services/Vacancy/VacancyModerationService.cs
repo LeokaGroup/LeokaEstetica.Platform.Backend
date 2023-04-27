@@ -121,51 +121,47 @@ public sealed class VacancyModerationService : IVacancyModerationService
                 {
                     await _vacancyModerationNotificationsService
                         .SendNotificationWarningApproveVacancyAsync("Внимание",
-                            $"Проект для текущей вакансии не найден",
-                            NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING,
+                            "Проект для текущей вакансии не найден.", NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING,
                             userToken);
                 }
 
-                var ex = new NotFoundProjectException($"Проект для вакансии с Id: {vacancyId} не найден");
+                var ex = new InvalidOperationException($"Проект для вакансии с VacancyId: {vacancyId} не найден.");
                 throw ex;
             }
 
             var isProjectOnModeration = await _projectRepository.CheckProjectModerationAsync(vacancyProjectId);
 
-            // Если проект вакансии на модерации отправляем информацию на фронт и выбрасываем исключение 
+            // Если проект вакансии на модерации, то отправляем уведомление об этом и не даем апрувить вакансию.
             if (isProjectOnModeration)
             {
                 if (!string.IsNullOrEmpty(userToken))
                 {
                     await _vacancyModerationNotificationsService
                         .SendNotificationWarningApproveVacancyAsync("Внимание",
-                            "Вакансия не может быть одобрнена пока проект находится на модерации",
-                            NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING,
+                            "Вакансия не может быть одобрена пока проект находится на модерации.", NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING,
                             userToken);
                 }
 
-                var ex = new InvalidOperationException(
-                    "Вакансия не может быть одобрена, пока проект, к которому привязана вакансия находится на модерации");
-
+                var ex = new InvalidOperationException("Вакансия не может быть одобрена, пока проект, " +
+                                                       "к которому привязана вакансия находится на модерации.");
                 throw ex;
             }
 
             var isProjectRejected = await _projectRepository.CheckProjectRejectedAsync(vacancyProjectId);
 
-            // Если проект вакансии отклонён отправляем информацию на фронт и выбрасываем исключение 
+            // Если проект вакансии отклонён, то отправляем уведомление об этом и не даем апрувить вакансию.
             if (isProjectRejected)
             {
                 if (!string.IsNullOrEmpty(userToken))
                 {
                     await _vacancyModerationNotificationsService
                         .SendNotificationWarningApproveVacancyAsync("Внимание",
-                            "Проект был отклонен модератором. Вакансия не может быть одобрена",
-                            NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING,
+                            "Проект был отклонен модератором. Вакансия не может быть одобрена.", NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING,
                             userToken);
                 }
 
-                var ex = new InvalidOperationException(
-                    "Вакансия не может быть одобрена, пока проект, к которому привязана вакансия не одобрен");
+                var ex = new InvalidOperationException("Вакансия не может быть одобрена, пока проект, " +
+                                                       "к которому привязана вакансия не одобрен");
                 throw ex;
             }
 

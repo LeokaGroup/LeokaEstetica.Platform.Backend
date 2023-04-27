@@ -13,8 +13,7 @@ public class ApproveVacancyTest : BaseServiceTest
     [Test]
     public async Task ApproveVacancyAsyncTest()
     {
-        var result = await VacancyModerationService.ApproveVacancyAsync(299, 
-            null);
+        var result = await VacancyModerationService.ApproveVacancyAsync(299, null);
         
         Assert.IsTrue(result.IsSuccess);
     }
@@ -25,8 +24,6 @@ public class ApproveVacancyTest : BaseServiceTest
     [Test]
     public void ApproveVacancyAsyncThrowNotFoundExceptionTest()
     {
-        Assert.ThrowsAsync<NotFoundProjectException>(async () =>
-            await VacancyModerationService.ApproveVacancyAsync(15, 
-                null));
+        Assert.ThrowsAsync<InvalidOperationException>(async () => await VacancyModerationService.ApproveVacancyAsync(15, null));
     }
 }
