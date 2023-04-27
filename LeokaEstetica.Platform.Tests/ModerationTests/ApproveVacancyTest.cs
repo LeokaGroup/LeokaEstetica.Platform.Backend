@@ -22,7 +22,7 @@ public class ApproveVacancyTest : BaseServiceTest
     /// Тест-кейс с ID несуществующей вакансии
     /// </summary>
     [Test]
-    public void ApproveVacancyAsyncThrowNotFoundExceptionTest()
+    public void ApproveVacancyAsyncThrowInvalidOperationExceptionTest()
     {
         Assert.ThrowsAsync<InvalidOperationException>(async () => await VacancyModerationService.ApproveVacancyAsync(15, null));
     }

@@ -3,6 +3,7 @@ using AutoMapper;
 using LeokaEstetica.Platform.Access.Services.AvailableLimits;
 using LeokaEstetica.Platform.Access.Services.Moderation;
 using LeokaEstetica.Platform.Access.Services.User;
+using LeokaEstetica.Platform.CallCenter.Services.Messaging.Mail;
 using LeokaEstetica.Platform.CallCenter.Services.Project;
 using LeokaEstetica.Platform.CallCenter.Services.Resume;
 using LeokaEstetica.Platform.CallCenter.Services.Vacancy;
@@ -12,6 +13,7 @@ using LeokaEstetica.Platform.Database.Repositories.Access.User;
 using LeokaEstetica.Platform.Database.Repositories.AvailableLimits;
 using LeokaEstetica.Platform.Database.Repositories.Chat;
 using LeokaEstetica.Platform.Database.Repositories.Commerce;
+using LeokaEstetica.Platform.Database.Repositories.Config;
 using LeokaEstetica.Platform.Database.Repositories.FareRule;
 using LeokaEstetica.Platform.Database.Repositories.Knowledge;
 using LeokaEstetica.Platform.Database.Repositories.Landing;
@@ -86,7 +88,10 @@ public class BaseServiceTest
     protected readonly PgContext PgContext;
     protected readonly FillColorProjectsService FillColorProjectsService;
     protected readonly FillColorResumeService FillColorResumeService;
-
+    protected readonly ProjectModerationNotificationService ProjectModerationNotificationService;
+    protected readonly ModerationMailingsService ModerationMailingsService;
+    protected readonly GlobalConfigRepository GlobalConfigRepository;
+        
     protected BaseServiceTest()
     {
         // Настройка тестовых строк подключения.
@@ -130,9 +135,16 @@ public class BaseServiceTest
         var fareRuleRepository = new FareRuleRepository(pgContext);
         var availableLimitsRepository = new AvailableLimitsRepository(pgContext);
         var availableLimitsService = new AvailableLimitsService(logService, availableLimitsRepository);
+        
+        PgContext = pgContext;
 
-        VacancyModerationService = new VacancyModerationService(vacancyModerationRepository, logService, mapper, null,
-            vacancyRepository, userRepository, projectRepository);
+        GlobalConfigRepository = new GlobalConfigRepository(PgContext, logService);
+        ProjectModerationNotificationService = new ProjectModerationNotificationService(null, null);
+
+        ModerationMailingsService = new ModerationMailingsService(GlobalConfigRepository, AppConfiguration);
+        
+        VacancyModerationService = new VacancyModerationService(vacancyModerationRepository, logService, mapper, ModerationMailingsService,
+            vacancyRepository, userRepository, projectRepository, ProjectModerationNotificationService);
         
         // Тут если нужен будет ProjectService, то тут проблема с порядком следования.
         // Не получится сделать просто, VacancyService и ProjectService нужны друг другу тесно.
@@ -194,9 +206,5 @@ public class BaseServiceTest
 
         var KnowledgeRepository = new KnowledgeRepository(pgContext);
         KnowledgeService = new KnowledgeService(KnowledgeRepository, logService);
-
-        PgContext = pgContext;
-
-        
     }
 }
