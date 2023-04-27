@@ -222,9 +222,12 @@ public sealed class ProfileService : IProfileService
             await SaveUserIntentsAsync(profileInfoInput, userId);
 
             // Отправляем уведомление о сохранении фронту.
-            await _notificationsService.SendNotifySuccessSaveAsync("Все хорошо", "Данные успешно сохранены.",
+            if(token is not null)
+            {
+                await _notificationsService.SendNotifySuccessSaveAsync("Все хорошо", "Данные успешно сохранены.",
                     NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);
-
+            }
+            
             result.IsSuccess = true;
 
             return result;

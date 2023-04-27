@@ -25,7 +25,7 @@ public class SaveProfileInfoTest : BaseServiceTest
             UserSkills = new List<SkillInput>(),
             UserIntents = new List<IntentOutput>(),
             WorkExperience = "Test"
-        }, "sierra_93@mail.ru", string.Empty);
+        }, "sierra_93@mail.ru", null);
 
         Assert.IsNotNull(profileInfo);
         Assert.IsTrue(profileInfo.ProfileInfoId > 0);
@@ -49,9 +49,9 @@ public class SaveProfileInfoTest : BaseServiceTest
             UserSkills = new List<SkillInput>(),
             UserIntents = new List<IntentOutput>(),
             WorkExperience = "Test"
-        }, "798589660", string.Empty);
+        }, "798589660", null);
 
         Assert.IsNotNull(profileInfo);
         Assert.IsTrue(profileInfo.ProfileInfoId > 0);
     }
-}
+    }

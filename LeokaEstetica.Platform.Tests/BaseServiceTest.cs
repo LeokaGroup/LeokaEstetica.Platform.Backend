@@ -50,7 +50,6 @@ using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
-using Moq;
 using ProjectFinderService = LeokaEstetica.Platform.Services.Services.Search.Project.ProjectFinderService;
 
 namespace LeokaEstetica.Platform.Tests;
@@ -117,11 +116,10 @@ public class BaseServiceTest
         var optionsForCache = new OptionsWrapper<MemoryDistributedCacheOptions>(new MemoryDistributedCacheOptions());
         var distributedCache = new MemoryDistributedCache(optionsForCache);
         var userRedisService = new UserRedisService(distributedCache, mapper);
-        var notificationsService = new Mock<INotificationsService>();
 
         UserService = new UserService(logService, userRepository, mapper, null, pgContext, profileRepository,
             subscriptionRepository, resumeModerationRepository, accessUserService, userRedisService);
-        ProfileService = new ProfileService(logService, profileRepository, userRepository, mapper, null, notificationsService.Object);
+        ProfileService = new ProfileService(logService, profileRepository, userRepository, mapper, null, null);
 
         var projectRepository = new ProjectRepository(pgContext, chatRepository);
         var projectNotificationsRepository = new ProjectNotificationsRepository(pgContext);
