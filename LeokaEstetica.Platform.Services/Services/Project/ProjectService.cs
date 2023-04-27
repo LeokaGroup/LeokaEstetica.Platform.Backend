@@ -36,6 +36,7 @@ using LeokaEstetica.Platform.Services.Builders;
 using LeokaEstetica.Platform.Services.Consts;
 using LeokaEstetica.Platform.Services.Strategies.Project.Team;
 using LeokaEstetica.Platform.Core.Extensions;
+using LeokaEstetica.Platform.Base.Extensions.HtmlExtensions;
 
 namespace LeokaEstetica.Platform.Services.Services.Project;
 

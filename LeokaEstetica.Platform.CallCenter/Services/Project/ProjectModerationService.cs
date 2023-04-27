@@ -1,4 +1,5 @@
 using AutoMapper;
+using LeokaEstetica.Platform.Base.Extensions.HtmlExtensions;
 using LeokaEstetica.Platform.CallCenter.Abstractions.Messaging.Mail;
 using LeokaEstetica.Platform.CallCenter.Abstractions.Project;
 using LeokaEstetica.Platform.CallCenter.Builders;
@@ -94,6 +95,7 @@ public class ProjectModerationService : IProjectModerationService
         {
             var prj = await _projectRepository.GetProjectAsync(projectId);
             var result = await CreateProjectResultAsync(prj);
+            result.ProjectDetails = ClearHtmlBuilder.Clear(prj.UserProject.ProjectDetails);
 
             return result;
         }
