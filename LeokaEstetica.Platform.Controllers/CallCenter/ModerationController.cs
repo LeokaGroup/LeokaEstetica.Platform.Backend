@@ -328,7 +328,7 @@ public class ModerationController : BaseController
     /// <param name="createProjectRemarkInput">Входная модель.</param>
     /// <returns>Список замечаний проекта.</returns>
     [HttpPost]
-    [Route("project/remarks")]
+    [Route("project-remarks")]
     [ProducesResponseType(200, Type = typeof(ProjectRemarkResult))]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]
@@ -346,5 +346,22 @@ public class ModerationController : BaseController
         };
 
         return result;
+    }
+
+    /// <summary>
+    /// Метод отправляет замечания проекта владельцу проекта.
+    /// Отправка замечаний проекту подразумевает просто изменение статуса замечаниям проекта.
+    /// </summary>
+    [HttpPatch]
+    [Route("send-project-remarks")]
+    [ProducesResponseType(200, Type = typeof(ProjectRemarkResult))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task SendProjectRemarksAsync([FromBody] SendProjectRemarkInput sendProjectRemarkInput)
+    {
+        await _projectModerationService.SendProjectRemarksAsync(sendProjectRemarkInput.ProjectId, GetUserName(),
+            GetTokenFromHeader());
     }
 }

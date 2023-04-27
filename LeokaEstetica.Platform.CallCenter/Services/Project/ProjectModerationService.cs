@@ -33,6 +33,9 @@ public class ProjectModerationService : IProjectModerationService
     private readonly IProjectRepository _projectRepository;
     private readonly IProjectModerationNotificationService _projectModerationNotificationService;
 
+    private const string WarnText = "Замечания не были внесены. Для отправки замечаний сначала они должны " +
+                                    "быть внесены.";
+
     /// <summary>
     /// Конструктор.
     /// </summary>
@@ -249,7 +252,7 @@ public class ProjectModerationService : IProjectModerationService
             foreach (var pr in mapProjectRemarks)
             {
                 pr.ModerationUserId = userId;
-                pr.RemarkStatusId = (int)RemarkStatusEnum.AwaitingCorrection;
+                pr.RemarkStatusId = (int)RemarkStatusEnum.NotAssigned;
                 pr.DateCreated = now;
                 
                 // Если есть замечания проекта сохраненные ранее.
@@ -300,6 +303,65 @@ public class ProjectModerationService : IProjectModerationService
             }
 
             return result;
+        }
+        
+        catch (Exception ex)
+        {
+            await _logService.LogErrorAsync(ex);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Метод отправляет замечания проекта владельцу проекта.
+    /// Отправка замечаний проекту подразумевает просто изменение статуса замечаниям проекта.
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="account">Аккаунт.</param>
+    /// <param name="token">Токен.</param>
+    /// </summary>
+    public async Task SendProjectRemarksAsync(long projectId, string account, string token)
+    {
+        try
+        {
+            var userId = await _userRepository.GetUserIdByEmailOrLoginAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+
+            if (projectId <= 0)
+            {
+                var ex = new InvalidOperationException($"Id проекта не был передан. ProjectId: {projectId}");
+                throw ex;
+            }
+            
+            // Проверяем, были ли внесены замечания проекта.
+            var isExists = await _projectModerationRepository.CheckExistsProjectRemarksAsync(projectId, userId);
+
+            if (!isExists && !string.IsNullOrEmpty(token))
+            {
+                var ex = new InvalidOperationException(WarnText + $" ProjectId: {projectId}");
+                await _logService.LogWarningAsync(ex);
+                
+                // Отправляем уведомление о предупреждении, что замечания проекта не были внесены.
+                await _projectModerationNotificationService.SendNotificationWarningSendProjectRemarksAsync(
+                    "Внимание", WarnText,
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
+
+                return;
+            }
+            
+            await _projectModerationRepository.SendProjectRemarksAsync(projectId, userId);   
+            
+            if (!string.IsNullOrEmpty(token))
+            {
+                // Отправляем уведомление об отправке замечаний проекта.
+                await _projectModerationNotificationService.SendNotificationSuccessSendProjectRemarksAsync(
+                    "Все хорошо", "Замечания успешно отправлены.",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);
+            }
         }
         
         catch (Exception ex)

@@ -205,6 +205,45 @@ public class ProjectModerationRepository : IProjectModerationRepository
         await _pgContext.SaveChangesAsync();
     }
 
+    /// <summary>
+    /// Метод отправляет замечания проекта владельцу проекта.
+    /// Отправка замечаний проекту подразумевает просто изменение статуса замечаниям проекта.
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="userId">Id пользователя.</param>
+    /// </summary>
+    public async Task SendProjectRemarksAsync(long projectId, long userId)
+    {
+        var projectRemarks = await _pgContext.ProjectRemarks
+            .Where(pr => pr.ProjectId == projectId
+                         && pr.ModerationUserId == userId)
+            .ToListAsync();
+
+        if (projectRemarks.Any())
+        {
+            foreach (var pr in projectRemarks)
+            {
+                pr.RemarkStatusId = (int)RemarkStatusEnum.AwaitingCorrection;
+            }
+            
+            _pgContext.ProjectRemarks.UpdateRange(projectRemarks);
+            await _pgContext.SaveChangesAsync();
+        }
+    }
+
+    /// <summary>
+    /// Метод проверяет, были ли внесены замечания проекта.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Признак внесения замечаний.</returns>
+    public async Task<bool> CheckExistsProjectRemarksAsync(long projectId, long userId)
+    {
+        var result = await _pgContext.ProjectRemarks.AnyAsync(pr => pr.ProjectId == projectId
+                                                                    && pr.ModerationUserId == userId);
+
+        return result;
+    }
+
     #endregion
 
     #region Приватные методы.
