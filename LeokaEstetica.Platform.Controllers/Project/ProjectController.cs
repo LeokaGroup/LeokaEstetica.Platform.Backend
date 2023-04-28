@@ -631,4 +631,24 @@ public class ProjectController : BaseController
     {
         await _projectService.LeaveProjectTeamAsync(projectId, GetUserName(), CreateTokenFromHeader());
     }
+
+    /// <summary>
+    /// Метод получает список замечаний проекта, если они есть.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Список замечаний проекта.</returns>
+    [HttpGet]
+    [Route("{projectId}/remarks")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<GetProjectRemarkOutput>))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<IEnumerable<GetProjectRemarkOutput>> GetProjectRemarksAsync([FromRoute] long projectId)
+    {
+        var items = await _projectService.GetProjectRemarksAsync(projectId, GetUserName());
+        var result = _mapper.Map<IEnumerable<GetProjectRemarkOutput>>(items);
+
+        return result;
+    }
 }

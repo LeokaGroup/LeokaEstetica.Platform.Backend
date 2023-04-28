@@ -172,7 +172,8 @@ public class ProjectModerationRepository : IProjectModerationRepository
     public async Task<List<ProjectRemarkEntity>> GetProjectRemarksAsync(long projectId)
     {
         var result = await _pgContext.ProjectRemarks
-            .Where(p => p.ProjectId == projectId)
+            .Where(pr => pr.ProjectId == projectId
+                         && pr.RemarkStatusId == (int)RemarkStatusEnum.AwaitingCorrection)
             .ToListAsync();
 
         return result;

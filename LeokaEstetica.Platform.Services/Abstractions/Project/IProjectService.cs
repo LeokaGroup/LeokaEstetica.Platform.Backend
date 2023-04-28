@@ -6,6 +6,7 @@ using LeokaEstetica.Platform.Models.Dto.Output.Project;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectTeam;
 using LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
 using LeokaEstetica.Platform.Models.Entities.Configs;
+using LeokaEstetica.Platform.Models.Entities.Moderation;
 using LeokaEstetica.Platform.Models.Entities.Project;
 using LeokaEstetica.Platform.Models.Entities.ProjectTeam;
 using LeokaEstetica.Platform.Models.Enums;
@@ -204,4 +205,12 @@ public interface IProjectService
     /// <param name="account">Аккаунт пользователя.</param>
     /// <param name="token">Токен.</param>
     Task LeaveProjectTeamAsync(long projectId, string account, string token);
+
+    /// <summary>
+    /// Метод получает список замечаний проекта, если они есть.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="account">Аккаунт пользователя.</param>
+    /// <returns>Список замечаний проекта.</returns>
+    Task<IEnumerable<ProjectRemarkEntity>> GetProjectRemarksAsync(long projectId, string account);
 }
