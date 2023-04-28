@@ -33,8 +33,8 @@ public class ProjectModerationService : IProjectModerationService
     private readonly IProjectRepository _projectRepository;
     private readonly IProjectModerationNotificationService _projectModerationNotificationService;
 
-    private const string WarnText = "Замечания не были внесены. Для отправки замечаний сначала они должны " +
-                                    "быть внесены.";
+    private const string SEND_PROJECT_REMARKS_WARNING = "Замечания не были внесены. Для отправки замечаний сначала " +
+                                                        "они должны быть внесены.";
 
     /// <summary>
     /// Конструктор.
@@ -342,12 +342,12 @@ public class ProjectModerationService : IProjectModerationService
 
             if (!isExists && !string.IsNullOrEmpty(token))
             {
-                var ex = new InvalidOperationException(WarnText + $" ProjectId: {projectId}");
+                var ex = new InvalidOperationException(SEND_PROJECT_REMARKS_WARNING + $" ProjectId: {projectId}");
                 await _logService.LogWarningAsync(ex);
                 
                 // Отправляем уведомление о предупреждении, что замечания проекта не были внесены.
                 await _projectModerationNotificationService.SendNotificationWarningSendProjectRemarksAsync(
-                    "Внимание", WarnText,
+                    "Внимание", SEND_PROJECT_REMARKS_WARNING,
                     NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
 
                 return;
