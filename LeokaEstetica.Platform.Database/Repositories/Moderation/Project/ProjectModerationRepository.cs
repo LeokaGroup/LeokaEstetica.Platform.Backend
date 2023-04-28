@@ -173,7 +173,11 @@ public class ProjectModerationRepository : IProjectModerationRepository
     {
         var result = await _pgContext.ProjectRemarks
             .Where(pr => pr.ProjectId == projectId
-                         && pr.RemarkStatusId == (int)RemarkStatusEnum.AwaitingCorrection)
+                         && new[]
+                         {
+                             (int)RemarkStatusEnum.AwaitingCorrection,
+                             (int)RemarkStatusEnum.AgainAssigned
+                         }.Contains(pr.RemarkStatusId))
             .ToListAsync();
 
         return result;

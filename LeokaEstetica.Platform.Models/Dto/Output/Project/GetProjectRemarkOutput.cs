@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace LeokaEstetica.Platform.Models.Dto.Output.Project;
 
 /// <summary>
@@ -6,17 +8,18 @@ namespace LeokaEstetica.Platform.Models.Dto.Output.Project;
 public class GetProjectRemarkOutput
 {
     /// <summary>
-    /// PK.
-    /// </summary>
-    public long RemarkId { get; set; }
-
-    /// <summary>
-    /// Id проекта.
-    /// </summary>
-    public long ProjectId { get; set; }
-
-    /// <summary>
     /// Текст замечания.
     /// </summary>
+    [JsonPropertyName("detail")]
     public string RemarkText { get; set; }
+
+    /// <summary>
+    /// Уровень замечания.
+    /// </summary>
+    public string Severity { get; set; }
+    
+    public GetProjectRemarkOutput()
+    {
+        Severity = "warn";
+    }
 }
