@@ -37,6 +37,8 @@ using LeokaEstetica.Platform.Services.Consts;
 using LeokaEstetica.Platform.Services.Strategies.Project.Team;
 using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Base.Extensions.HtmlExtensions;
+using LeokaEstetica.Platform.Database.Abstractions.Moderation.Project;
+using LeokaEstetica.Platform.Models.Entities.Moderation;
 
 namespace LeokaEstetica.Platform.Services.Services.Project;
 
@@ -100,6 +102,7 @@ public class ProjectService : IProjectService
     private readonly IProjectNotificationsRepository _projectNotificationsRepository;
     private readonly IAccessUserNotificationsService _accessUserNotificationsService;
     private readonly IAccessUserService _accessUserService;
+    private readonly IProjectModerationRepository _projectModerationRepository;
 
     /// <summary>
     /// Конструктор.
@@ -116,6 +119,7 @@ public class ProjectService : IProjectService
     /// <param name="notificationsRepository">Репозиторий уведомлений.</param>
     /// <param name="accessUserNotificationsService">Сервис уведомлений доступа пользователя.</param>
     /// <param name="accessUserService">Сервис доступа пользователя.</param>
+    /// <param name="projectModerationRepository">Репозиторий модерации проектов.</param>
     public ProjectService(IProjectRepository projectRepository,
         ILogService logService,
         IUserRepository userRepository,
@@ -131,7 +135,8 @@ public class ProjectService : IProjectService
         IAccessUserNotificationsService accessUserNotificationsService, 
         IAccessUserService accessUserService,
         IFillColorProjectsService fillColorProjectsService, 
-        IMailingsService mailingsService)
+        IMailingsService mailingsService, 
+        IProjectModerationRepository projectModerationRepository)
     {
         _projectRepository = projectRepository;
         _logService = logService;
@@ -149,6 +154,7 @@ public class ProjectService : IProjectService
         _accessUserService = accessUserService;
         _fillColorProjectsService = fillColorProjectsService;
         _mailingsService = mailingsService;
+        _projectModerationRepository = projectModerationRepository;
 
         // Определяем обработчики цепочки фильтров.
         _dateProjectsFilterChain.Successor = _projectsVacanciesFilterChain;
@@ -213,7 +219,9 @@ public class ProjectService : IProjectService
             // Если лимит по тарифу превышен.
             if (!availableCreateProjectLimit)
             {
-                var ex = new Exception($"Превышен лимит проектов по тарифу. UserId: {userId}. Тариф: {fareRule.Name}");
+                var ex = new InvalidOperationException("Превышен лимит проектов по тарифу. " +
+                                                       $"UserId: {userId}. " +
+                                                       $"Тариф: {fareRule.Name}");
 
                 await _projectNotificationsService.SendNotificationWarningLimitFareRuleProjectsAsync(
                     "Что то пошло не так",
@@ -245,7 +253,7 @@ public class ProjectService : IProjectService
             // Если что то пошло не так при создании проекта.
             if (project is null || project.ProjectId <= 0)
             {
-                var ex = new Exception("Ошибка при создании проекта.");
+                var ex = new InvalidOperationException("Ошибка при создании проекта.");
                 await _logService.LogErrorAsync(ex);
                 
                 await _projectNotificationsService.SendNotificationErrorCreatedUserProjectAsync("Что то пошло не так",
@@ -1742,6 +1750,40 @@ public class ProjectService : IProjectService
             await _logService.LogErrorAsync(ex);
             throw;
         }
+    }
+
+    /// <summary>
+    /// Метод получает список замечаний проекта, если они есть.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="account">Аккаунт пользователя.</param>
+    /// <returns>Список замечаний проекта.</returns>
+    public async Task<IEnumerable<ProjectRemarkEntity>> GetProjectRemarksAsync(long projectId, string account)
+    {
+        if (projectId <= 0)
+        {
+            var ex = new InvalidOperationException($"Ошибка при получении замечаний проекта. ProjectId: {projectId}");
+            throw ex;
+        }
+        
+        var userId = await _userRepository.GetUserIdByEmailAsync(account);
+            
+        if (userId <= 0)
+        {
+            var ex = new NotFoundUserIdByAccountException(account);
+            throw ex;
+        }
+
+        var isProjectOwner = await _projectRepository.CheckProjectOwnerAsync(projectId, userId);
+
+        if (!isProjectOwner)
+        {
+            return Enumerable.Empty<ProjectRemarkEntity>();
+        }
+
+        var result = await _projectModerationRepository.GetProjectRemarksAsync(projectId);
+
+        return result;
     }
 
     /// <summary>
