@@ -372,6 +372,9 @@ public class MailingsService : IMailingsService
     /// Метод создает входную модель с параметрами для отправки письма подтверждения почты.
     /// </summary>
     /// <param name="mailTo">Кому отправить.</param>
+    /// <param name="html">HTML-контент письма.</param>
+    /// <param name="subject">Заголовок письма.</param>
+    /// <param name="text">Текст письма.</param>
     /// <returns>Модель с данными.</returns>
     private MailopostInput CreateMailopostModelConfirmEmail(string mailTo, string html, string subject, string text)
     {
