@@ -1,3 +1,5 @@
+using LeokaEstetica.Platform.Models.Entities.Moderation;
+
 namespace LeokaEstetica.Platform.CallCenter.Abstractions.Messaging.Mail;
 
 /// <summary>
@@ -36,4 +38,12 @@ public interface IModerationMailingsService
     /// <param name="vacancyName">Название вакансии.</param>
     /// <param name="vacancyId">Id вакансии.</param>
     Task SendNotificationRejectVacancyAsync(string mailTo, string vacancyName, long vacancyId);
+
+    /// <summary>
+    /// Метод отправляет уведомление на почту владельца проекта о замечаниях проекта.
+    /// </summary>
+    /// <param name="mailTo">Кому отправить?</param>
+    /// <param name="projectName">Название проекта.</param>
+    /// <param name="remarks">Список замечаний.</param>
+    Task SendNotificationAboutRemarkAsync(string mailTo, string projectName, List<ProjectRemarkEntity> remarks);
 }
