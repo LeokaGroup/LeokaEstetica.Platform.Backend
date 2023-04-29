@@ -143,6 +143,26 @@ public class ModerationMailingsService : IModerationMailingsService
             await SendEmailNotificationAsync(mailModel);
         }
     }
+    
+    /// <summary>
+    /// Метод отправляет уведомление на почту пользователя, которого внесли в чёрный список.
+    /// </summary>
+    /// <param name="mailTo"></param>
+    public async Task SendNotificationBlockUserAccountAsync(string mailTo)
+    {
+        var isEnabledEmailNotifications = await _globalConfigRepository
+            .GetValueByKeyAsync<bool>(GlobalConfigKeys.EmailNotifications.EMAIL_NOTIFICATIONS_DISABLE_MODE_ENABLED);
+
+        if (isEnabledEmailNotifications)
+        {
+            var subject = "Блокировка аккаунта Leoka Estetica.";
+            var html = "Ваш аккаунт на Leoka Estetica был заблокирован администратором. " +
+                       "О причинах вы можете узнать у тех.поддержки.";
+
+            var mailModel = CreateMailopostModelConfirmEmail(mailTo, html, subject, html);
+            await SendEmailNotificationAsync(mailModel);
+        }
+    }
 
     #region Приватные методы.
 

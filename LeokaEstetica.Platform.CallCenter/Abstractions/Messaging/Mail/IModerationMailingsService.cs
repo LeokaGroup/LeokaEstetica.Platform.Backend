@@ -36,4 +36,10 @@ public interface IModerationMailingsService
     /// <param name="vacancyName">Название вакансии.</param>
     /// <param name="vacancyId">Id вакансии.</param>
     Task SendNotificationRejectVacancyAsync(string mailTo, string vacancyName, long vacancyId);
+
+    /// <summary>
+    /// Метод отправляет уведомление на почту пользователя, которого внесли в чёрный список.
+    /// </summary>
+    /// <param name="mailTo"></param>
+    Task SendNotificationBlockUserAccountAsync(string mailTo);
 }

@@ -79,10 +79,4 @@ public interface IMailingsService
     /// <param name="projectId">Id проекта.</param>
     /// <param name="projectName">Название проекта.</param>
     Task SendNotificationDeleteProjectTeamMemberAsync(string mailTo, long projectId, string projectName);
-
-    /// <summary>
-    /// Метод отправляет уведомление на почту пользователя, которого внесли в чёрный список.
-    /// </summary>
-    /// <param name="mailTo"></param>
-    public Task SendNotificationBlockUserAccountAsync(string mailTo);
 }
