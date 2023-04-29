@@ -3,6 +3,7 @@ using AutoMapper;
 using LeokaEstetica.Platform.Access.Services.AvailableLimits;
 using LeokaEstetica.Platform.Access.Services.Moderation;
 using LeokaEstetica.Platform.Access.Services.User;
+using LeokaEstetica.Platform.CallCenter.Services.Messaging.Mail;
 using LeokaEstetica.Platform.CallCenter.Services.Project;
 using LeokaEstetica.Platform.CallCenter.Services.Resume;
 using LeokaEstetica.Platform.CallCenter.Services.Vacancy;
@@ -86,6 +87,7 @@ public class BaseServiceTest
     protected readonly PgContext PgContext;
     protected readonly FillColorProjectsService FillColorProjectsService;
     protected readonly FillColorResumeService FillColorResumeService;
+    protected readonly ModerationMailingsService ModerationMailingsService;
 
     protected BaseServiceTest()
     {
@@ -184,8 +186,10 @@ public class BaseServiceTest
         PayMasterService = new PayMasterService(logService, AppConfiguration, fareRuleRepository, userRepository,
             payMasterRepository, null, null);
 
+        ModerationMailingsService = new ModerationMailingsService(null, AppConfiguration);
+        
         var userBlackListService = new UserBlackListRepository(pgContext);
-        UserBlackListService = new UserBlackListService(logService, userBlackListService);
+        UserBlackListService = new UserBlackListService(logService, userBlackListService, ModerationMailingsService);
         ResumeModerationService =
             new ResumeModerationService(logService, resumeModerationRepository, mapper, userRepository);
 
