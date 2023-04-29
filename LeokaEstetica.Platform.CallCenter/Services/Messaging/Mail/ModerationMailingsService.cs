@@ -157,7 +157,11 @@ public class ModerationMailingsService : IModerationMailingsService
         {
             var subject = "Блокировка аккаунта Leoka Estetica.";
             var html = "Ваш аккаунт на Leoka Estetica был заблокирован администратором. " +
-                       "О причинах вы можете узнать у тех.поддержки.";
+                       "О причинах вы можете узнать у тех.поддержки." +
+                       "<br/>" +
+                       "<br/>" +
+                       "<br/>-----<br/>" +
+                       "С уважением, команда Leoka Estetica";
 
             var mailModel = CreateMailopostModelConfirmEmail(mailTo, html, subject, html);
             await SendEmailNotificationAsync(mailModel);
