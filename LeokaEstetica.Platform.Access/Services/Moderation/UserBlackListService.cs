@@ -1,4 +1,5 @@
 using LeokaEstetica.Platform.Access.Abstractions.Moderation;
+using LeokaEstetica.Platform.CallCenter.Abstractions.Messaging.Mail;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Access;
 using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.CallCenter.Models.Dto.Output.Access;
@@ -12,17 +13,21 @@ public class UserBlackListService : IUserBlackListService
 {
     private readonly ILogService _logService;
     private readonly IUserBlackListRepository _userBlackListRepository;
+    private readonly IModerationMailingsService _moderationMailingsService;
     
     /// <summary>
     /// Конструктор.
     /// <param name="logService">Сервис логера.</param>
     /// <param name="userBlackListRepository">Репозиторий ЧС пользователей.</param>
+    /// <param name="moderationMailingsService">Сервис уведомлений почты модерации.</param>
     /// </summary>
     public UserBlackListService(ILogService logService, 
-        IUserBlackListRepository userBlackListRepository)
+        IUserBlackListRepository userBlackListRepository, 
+        IModerationMailingsService moderationMailingsService)
     {
         _logService = logService;
         _userBlackListRepository = userBlackListRepository;
+        _moderationMailingsService = moderationMailingsService;
     }
 
     /// <summary>
@@ -36,6 +41,7 @@ public class UserBlackListService : IUserBlackListService
         try
         {
             await _userBlackListRepository.AddUserBlackListAsync(userId, email, phoneNumber);
+            await _moderationMailingsService.SendNotificationBlockUserAccountAsync(email);
         }
         
         catch (Exception ex)
