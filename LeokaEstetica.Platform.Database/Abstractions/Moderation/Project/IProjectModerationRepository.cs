@@ -86,4 +86,11 @@ public interface IProjectModerationRepository
     /// <param name="userId">Id пользователя.</param>
     /// <returns>Признак внесения замечаний.</returns>
     Task<bool> CheckExistsProjectRemarksAsync(long projectId, long userId);
+
+    /// <summary>
+    /// Метод возвращает название проекта по его Id.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns></returns>
+    Task<string> GetProjectNameAsync(long projectId);
 }
