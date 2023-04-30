@@ -54,4 +54,13 @@ public interface IVacancyModerationService
     /// <returns>Список замечаний вакансии.</returns>
     Task<IEnumerable<VacancyRemarkEntity>> CreateVacancyRemarksAsync(
         CreateVacancyRemarkInput createVacancyRemarkInput, string account, string token);
+    
+    /// <summary>
+    /// Метод отправляет замечания вакансии владельцу вакансии.
+    /// Отправка замечаний вакансии подразумевает просто изменение статуса замечаниям вакансии.
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <param name="account">Аккаунт.</param>
+    /// <param name="token">Токен.</param>
+    /// </summary>
+    Task SendVacancyRemarksAsync(long vacancyId, string account, string token);
 }

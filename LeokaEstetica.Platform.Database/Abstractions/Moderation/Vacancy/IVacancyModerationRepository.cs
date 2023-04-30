@@ -80,4 +80,12 @@ public interface IVacancyModerationRepository
     /// </summary>
     /// <param name="vacancyRemarks">Список замечаний для обновления.</param>
     Task UpdateVacancyRemarksAsync(List<VacancyRemarkEntity> vacancyRemarks);
+    
+    /// <summary>
+    /// Метод отправляет замечания вакансии владельцу вакансии.
+    /// Отправка замечаний вакансии подразумевает просто изменение статуса замечаниям вакансии.
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <param name="userId">Id пользователя.</param>
+    /// </summary>
+    Task SendProjectRemarksAsync(long vacancyId, long userId);
 }

@@ -390,4 +390,21 @@ public class CallCenterController : BaseController
 
         return result;
     }
+    
+    /// <summary>
+    /// Метод отправляет замечания вакансии владельцу проекта.
+    /// Отправка замечаний проекту подразумевает просто изменение статуса замечаниям проекта.
+    /// </summary>
+    [HttpPatch]
+    [Route("send-vacancy-remarks")]
+    [ProducesResponseType(200, Type = typeof(ProjectRemarkResult))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task SendVacancyRemarksAsync([FromBody] SendVacancyRemarkInput sendVacancyRemarkInput)
+    {
+        await _vacancyModerationService.SendVacancyRemarksAsync(sendVacancyRemarkInput.VacancyId, GetUserName(),
+            GetTokenFromHeader());
+    }
 }

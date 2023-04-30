@@ -3,6 +3,7 @@ using LeokaEstetica.Platform.Base.Extensions.HtmlExtensions;
 using LeokaEstetica.Platform.CallCenter.Abstractions.Messaging.Mail;
 using LeokaEstetica.Platform.CallCenter.Abstractions.Project;
 using LeokaEstetica.Platform.CallCenter.Builders;
+using LeokaEstetica.Platform.CallCenter.Consts;
 using LeokaEstetica.Platform.CallCenter.Models.Dto.Output.Project;
 using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Core.Exceptions;
@@ -32,9 +33,6 @@ public class ProjectModerationService : IProjectModerationService
     private readonly IUserRepository _userRepository;
     private readonly IProjectRepository _projectRepository;
     private readonly IProjectModerationNotificationService _projectModerationNotificationService;
-
-    private const string SEND_PROJECT_REMARKS_WARNING = "Замечания не были внесены. Для отправки замечаний сначала " +
-                                                        "они должны быть внесены.";
 
     /// <summary>
     /// Конструктор.
@@ -347,12 +345,13 @@ public class ProjectModerationService : IProjectModerationService
 
             if (!isExists && !string.IsNullOrEmpty(token))
             {
-                var ex = new InvalidOperationException(SEND_PROJECT_REMARKS_WARNING + $" ProjectId: {projectId}");
+                var ex = new InvalidOperationException(RemarkConst.SEND_PROJECT_REMARKS_WARNING +
+                                                       $" ProjectId: {projectId}");
                 await _logService.LogWarningAsync(ex);
                 
                 // Отправляем уведомление о предупреждении, что замечания проекта не были внесены.
                 await _projectModerationNotificationService.SendNotificationWarningSendProjectRemarksAsync(
-                    "Внимание", SEND_PROJECT_REMARKS_WARNING,
+                    "Внимание", RemarkConst.SEND_PROJECT_REMARKS_WARNING,
                     NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
 
                 return;

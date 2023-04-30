@@ -257,6 +257,31 @@ public class VacancyModerationRepository : IVacancyModerationRepository
         await _pgContext.SaveChangesAsync();
     }
 
+    /// <summary>
+    /// Метод отправляет замечания вакансии владельцу вакансии.
+    /// Отправка замечаний вакансии подразумевает просто изменение статуса замечаниям вакансии.
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <param name="userId">Id пользователя.</param>
+    /// </summary>
+    public async Task SendProjectRemarksAsync(long vacancyId, long userId)
+    {
+        var vacancyRemarks = await _pgContext.VacancyRemarks
+            .Where(pr => pr.VacancyId == vacancyId
+                         && pr.ModerationUserId == userId)
+            .ToListAsync();
+
+        if (vacancyRemarks.Any())
+        {
+            foreach (var pr in vacancyRemarks)
+            {
+                pr.RemarkStatusId = (int)RemarkStatusEnum.AwaitingCorrection;
+            }
+            
+            _pgContext.VacancyRemarks.UpdateRange(vacancyRemarks);
+            await _pgContext.SaveChangesAsync();
+        }
+    }
+
     #endregion
 
     #region Приватные методы.

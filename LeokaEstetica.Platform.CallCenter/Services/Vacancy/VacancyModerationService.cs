@@ -2,6 +2,7 @@ using AutoMapper;
 using LeokaEstetica.Platform.CallCenter.Abstractions.Messaging.Mail;
 using LeokaEstetica.Platform.CallCenter.Abstractions.Vacancy;
 using LeokaEstetica.Platform.CallCenter.Builders;
+using LeokaEstetica.Platform.CallCenter.Consts;
 using LeokaEstetica.Platform.CallCenter.Models.Dto.Output.Vacancy;
 using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Core.Exceptions;
@@ -302,6 +303,66 @@ public class VacancyModerationService : IVacancyModerationService
             }
 
             return result;
+        }
+        
+        catch (Exception ex)
+        {
+            await _logService.LogErrorAsync(ex);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Метод отправляет замечания вакансии владельцу вакансии.
+    /// Отправка замечаний вакансии подразумевает просто изменение статуса замечаниям вакансии.
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <param name="account">Аккаунт.</param>
+    /// <param name="token">Токен.</param>
+    /// </summary>
+    public async Task SendVacancyRemarksAsync(long vacancyId, string account, string token)
+    {
+        try
+        {
+            var userId = await _userRepository.GetUserIdByEmailOrLoginAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+
+            if (vacancyId <= 0)
+            {
+                var ex = new InvalidOperationException($"Id вакансии не был передан. VacancyId: {vacancyId}");
+                throw ex;
+            }
+            
+            // Проверяем, были ли внесены замечания вакансии.
+            var isExists = await _vacancyRepository.CheckVacancyOwnerAsync(vacancyId, userId);
+
+            if (!isExists && !string.IsNullOrEmpty(token))
+            {
+                var ex = new InvalidOperationException(RemarkConst.SEND_PROJECT_REMARKS_WARNING +
+                                                       $" VacancyId: {vacancyId}");
+                await _logService.LogWarningAsync(ex);
+                
+                // Отправляем уведомление о предупреждении, что замечания вакансии не были внесены.
+                await _vacancyModerationNotificationService.SendNotificationWarningSendVacancyRemarksAsync(
+                    "Внимание", RemarkConst.SEND_PROJECT_REMARKS_WARNING,
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
+
+                return;
+            }
+            
+            await _vacancyModerationRepository.SendProjectRemarksAsync(vacancyId, userId);   
+            
+            if (!string.IsNullOrEmpty(token))
+            {
+                // Отправляем уведомление об отправке замечаний вакансии.
+                await _vacancyModerationNotificationService.SendNotificationSuccessSendVacancyRemarksAsync(
+                    "Все хорошо", "Замечания успешно отправлены.",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);
+            }
         }
         
         catch (Exception ex)
