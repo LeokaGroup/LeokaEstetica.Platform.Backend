@@ -206,9 +206,9 @@ public class ProjectModerationService : IProjectModerationService
     }
 
     /// <summary>
-    /// Метод создает замечания проекта.
+    /// Метод создает замечания проекта. 
     /// </summary>
-    /// <param name="createProjectRemarkInput">Список замечаний.</param>
+    /// <param name="createProjectRemarkInput">Входная модель.</param>
     /// <param name="account">Аккаунт.</param>
     /// <param name="token">Токен.</param>
     /// <returns>Список замечаний проекта.</returns>
@@ -230,23 +230,28 @@ public class ProjectModerationService : IProjectModerationService
             // Проверяем входные параметры.
             await ValidateProjectRemarksParamsAsync(projectRemarks);
 
-            var mapProjectRemarks = _mapper.Map<List<ProjectRemarkEntity>>(projectRemarks);
-
-            // Получаем названия полей.
-            var fields = projectRemarks.Select(pr => pr.FieldName);
-            
             // Оставляем лишь те замечания, которые не были добавлены к проекту.
             // Проверяем по названию замечания и по статусу.
-            // Тут First можем, так как валидацию на ProjectId проводили выше.
-            var projectId = createProjectRemarkInput.ProjectRemarks.First().ProjectId;
-            
-            // Получаем замечания, которые модератор уже сохранял в рамках текущего проекта.
-            var existsProjectRemarks = await _projectModerationRepository.GetExistsProjectRemarksAsync(projectId,
-                fields);
-            
+            var projectId = projectRemarks.FirstOrDefault()?.ProjectId;
+
+            if (projectId is null or <= 0)
+            {
+                var ex = new InvalidOperationException($"Id проекта не был передан. ProjectId: {projectId}");
+                throw ex;
+            }
+
             var now = DateTime.Now;
             var addProjectRemarks = new List<ProjectRemarkEntity>();
             var updateProjectRemarks = new List<ProjectRemarkEntity>();
+            
+            var mapProjectRemarks = _mapper.Map<List<ProjectRemarkEntity>>(projectRemarks);
+            
+            // Получаем названия полей.
+            var fields = projectRemarks.Select(pr => pr.FieldName);
+            
+            // Получаем замечания, которые модератор уже сохранял в рамках текущего проекта.
+            var existsProjectRemarks = await _projectModerationRepository.GetExistsProjectRemarksAsync((long)projectId,
+                fields);
             
             // Задаем модератора замечаниям и задаем статус замечаниям.
             foreach (var pr in mapProjectRemarks)

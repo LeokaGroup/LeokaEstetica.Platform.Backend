@@ -364,4 +364,30 @@ public class CallCenterController : BaseController
         await _projectModerationService.SendProjectRemarksAsync(sendProjectRemarkInput.ProjectId, GetUserName(),
             GetTokenFromHeader());
     }
+    
+    /// <summary>
+    /// Метод создает замечания вакансии.
+    /// </summary>
+    /// <param name="createVacancyRemarkInput">Входная модель.</param>
+    /// <returns>Список замечаний вакансии.</returns>
+    [HttpPost]
+    [Route("vacancy-remarks")]
+    [ProducesResponseType(200, Type = typeof(ProjectRemarkResult))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<VacancyRemarkResult> CreateVacancyRemarksAsync(
+        [FromBody] CreateVacancyRemarkInput createVacancyRemarkInput)
+    {
+        // var vacancyRemarks = await _projectModerationService.CreateProjectRemarksAsync(createVacancyRemarkInput, 
+        //     GetUserName(), GetTokenFromHeader());
+        //
+        // var result = new VacancyRemarkResult
+        // {
+        //     VacancyRemark = _mapper.Map<List<VacancyRemarkOutput>>(vacancyRemarks)
+        // };
+
+        return null;
+    }
 }
