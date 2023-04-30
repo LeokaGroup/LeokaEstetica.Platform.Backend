@@ -27,12 +27,12 @@ using Microsoft.AspNetCore.Mvc;
 namespace LeokaEstetica.Platform.Controllers.CallCenter;
 
 /// <summary>
-/// Контроллер модерации (отвечает за весь функционал модерации).
+/// Контроллер КЦ (отвечает за весь функционал КЦ).
 /// </summary>
 [AuthFilter]
 [ApiController]
-[Route("moderation")]
-public class ModerationController : BaseController
+[Route("callcenter")]
+public class CallCenterController : BaseController
 {
     private readonly IAccessModerationService _accessModerationService;
     private readonly IProjectModerationService _projectModerationService;
@@ -50,7 +50,7 @@ public class ModerationController : BaseController
     /// <param name="vacancyModerationService">Сервис модерации вакансий.</param>
     /// <param name="userBlackListService">Сервис ЧС пользователей.</param>
     /// <param name="resumeModerationService">Сервис модерации анкет.</param>
-    public ModerationController(IAccessModerationService accessModerationService,
+    public CallCenterController(IAccessModerationService accessModerationService,
         IProjectModerationService projectModerationService,
         IMapper mapper,
         IVacancyModerationService vacancyModerationService, 
