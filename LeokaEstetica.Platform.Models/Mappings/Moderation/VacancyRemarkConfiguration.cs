@@ -8,7 +8,7 @@ public partial class VacancyRemarkConfiguration : IEntityTypeConfiguration<Vacan
 {
      public void Configure(EntityTypeBuilder<VacancyRemarkEntity> entity)
     {
-        entity.ToTable("ProjectsRemarks", "Moderation");
+        entity.ToTable("VacanciesRemarks", "Moderation");
 
         entity.HasKey(e => e.RemarkId);
 
