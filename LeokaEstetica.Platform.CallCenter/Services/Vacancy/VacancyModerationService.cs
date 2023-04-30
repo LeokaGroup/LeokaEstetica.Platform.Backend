@@ -3,20 +3,26 @@ using LeokaEstetica.Platform.CallCenter.Abstractions.Messaging.Mail;
 using LeokaEstetica.Platform.CallCenter.Abstractions.Vacancy;
 using LeokaEstetica.Platform.CallCenter.Builders;
 using LeokaEstetica.Platform.CallCenter.Models.Dto.Output.Vacancy;
+using LeokaEstetica.Platform.Core.Enums;
+using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Vacancy;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
 using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Database.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Logs.Abstractions;
+using LeokaEstetica.Platform.Models.Dto.Input.Moderation;
 using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Vacancy;
+using LeokaEstetica.Platform.Models.Entities.Moderation;
 using LeokaEstetica.Platform.Models.Entities.Vacancy;
+using LeokaEstetica.Platform.Notifications.Abstractions;
+using LeokaEstetica.Platform.Notifications.Consts;
 
 namespace LeokaEstetica.Platform.CallCenter.Services.Vacancy;
 
 /// <summary>
 /// Класс реализует методы сервиса модерации вакансий.
 /// </summary>
-public sealed class VacancyModerationService : IVacancyModerationService
+public class VacancyModerationService : IVacancyModerationService
 {
     private readonly IVacancyModerationRepository _vacancyModerationRepository;
     private readonly ILogService _logService;
@@ -25,14 +31,27 @@ public sealed class VacancyModerationService : IVacancyModerationService
     private readonly IVacancyRepository _vacancyRepository;
     private readonly IUserRepository _userRepository;
     private readonly IProjectRepository _projectRepository;
+    private readonly IVacancyModerationNotificationService _vacancyModerationNotificationService;
 
+    /// <summary>
+    /// Конструктор.
+    /// </summary>
+    /// <param name="vacancyModerationRepository">Репозиторий модерации вакансий.</param>
+    /// <param name="logService">Сервис логов.</param>
+    /// <param name="mapper">Автомаппер.</param>
+    /// <param name="moderationMailingsService">Сервис модерации уведомлений на почту.</param>
+    /// <param name="vacancyRepository">Репозиторий вакансий.</param>
+    /// <param name="userRepository">Репозиторий пользователя.</param>
+    /// <param name="projectRepository">Репозиторий проектов.</param>
+    /// <param name="vacancyModerationNotificationService">Сервис уведомлений модерации вакансий.</param>
     public VacancyModerationService(IVacancyModerationRepository vacancyModerationRepository,
         ILogService logService, 
         IMapper mapper, 
         IModerationMailingsService moderationMailingsService, 
         IVacancyRepository vacancyRepository, 
         IUserRepository userRepository, 
-        IProjectRepository projectRepository)
+        IProjectRepository projectRepository, 
+        IVacancyModerationNotificationService vacancyModerationNotificationService)
     {
         _vacancyModerationRepository = vacancyModerationRepository;
         _logService = logService;
@@ -41,7 +60,10 @@ public sealed class VacancyModerationService : IVacancyModerationService
         _vacancyRepository = vacancyRepository;
         _userRepository = userRepository;
         _projectRepository = projectRepository;
+        _vacancyModerationNotificationService = vacancyModerationNotificationService;
     }
+
+    #region Публичные методы.
 
     /// <summary>
     /// Метод отправляет вакансию на модерацию. Это происходит через добавление в таблицу модерации вакансий.
@@ -176,4 +198,167 @@ public sealed class VacancyModerationService : IVacancyModerationService
             throw;
         }
     }
+
+    /// <summary>
+    /// Метод создает замечания вакансии. 
+    /// </summary>
+    /// <param name="createVacancyRemarkInput">Входная модель.</param>
+    /// <param name="account">Аккаунт.</param>
+    /// <param name="token">Токен.</param>
+    /// <returns>Список замечаний вакансии.</returns>
+    public async Task<IEnumerable<VacancyRemarkEntity>> CreateVacancyRemarksAsync(
+        CreateVacancyRemarkInput createVacancyRemarkInput, string account, string token)
+    {
+        try
+        {
+            var userId = await _userRepository.GetUserIdByEmailOrLoginAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+            
+            var vacancyRemarks = createVacancyRemarkInput.VacanciesRemarks.ToList();
+            
+            // Проверяем входные параметры.
+            await ValidateVacancyRemarksParamsAsync(vacancyRemarks);
+            
+            // Оставляем лишь те замечания, которые не были добавлены к вакансии.
+            // Проверяем по названию замечания и по статусу.
+            var vacancyId = vacancyRemarks.FirstOrDefault()?.VacancyId;
+
+            if (vacancyId is null or <= 0)
+            {
+                var ex = new InvalidOperationException($"Id вакансии не был передан. VacancyId: {vacancyId}");
+                throw ex;
+            }
+
+            var now = DateTime.Now;
+            var addVacancyRemarks = new List<VacancyRemarkEntity>();
+            var updateVacancyRemarks = new List<VacancyRemarkEntity>();
+            
+            var mapVacancyRemarks = _mapper.Map<List<VacancyRemarkEntity>>(vacancyRemarks);
+            
+            // Получаем названия полей.
+            var fields = vacancyRemarks.Select(pr => pr.FieldName);
+            
+            // Получаем замечания, которые модератор уже сохранял в рамках текущей вакансии.
+            var existsProjectRemarks = await _vacancyModerationRepository.GetExistsVacancyRemarksAsync((long)vacancyId,
+                fields);
+            
+            // Задаем модератора замечаниям и задаем статус замечаниям.
+            foreach (var pr in mapVacancyRemarks)
+            {
+                pr.ModerationUserId = userId;
+                pr.RemarkStatusId = (int)RemarkStatusEnum.NotAssigned;
+                pr.DateCreated = now;
+                
+                // Если есть замечания вакансии сохраненные ранее.
+                if (existsProjectRemarks.Any())
+                {
+                    var getProjectRemarks = existsProjectRemarks.Find(x => x.FieldName.Equals(pr.FieldName));
+                    
+                    // К обновлению.
+                    if (getProjectRemarks is not null)
+                    {
+                        pr.RemarkId = getProjectRemarks.RemarkId;
+                        updateVacancyRemarks.Add(pr);   
+                    }
+                    
+                    // К добавлению.
+                    else
+                    {
+                        addVacancyRemarks.Add(pr);
+                    }
+                }
+
+                else
+                {
+                    addVacancyRemarks.Add(pr);
+                }
+            }
+
+            // Добавляем новые замечания вакансии.
+            if (addVacancyRemarks.Any())
+            {
+                await _vacancyModerationRepository.CreateVacancyRemarksAsync(addVacancyRemarks);   
+            }
+            
+            // Изменяем замечания вакансии, которые ранее были сохранены.
+            if (updateVacancyRemarks.Any())
+            {
+                await _vacancyModerationRepository.UpdateVacancyRemarksAsync(updateVacancyRemarks);   
+            }
+
+            var result = addVacancyRemarks.Union(updateVacancyRemarks);
+
+            if (!string.IsNullOrEmpty(token))
+            {
+                // Отправляем уведомление о сохранении замечаний вакансии.
+                await _vacancyModerationNotificationService.SendNotificationSuccessCreateVacancyRemarksAsync(
+                    "Все хорошо", "Замечания успешно внесены. Теперь вы можете их отправить.",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);
+            }
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            await _logService.LogErrorAsync(ex);
+            throw;
+        }
+    }
+
+    #endregion
+
+    #region Приватные методы.
+
+    /// <summary>
+    /// Метод валидирует входные параметры замечаний проекта.
+    /// </summary>
+    /// <param name="projectRemarks">Список замечаний проекта.</param>
+    private Task ValidateVacancyRemarksParamsAsync(IReadOnlyCollection<VacancyRemarkInput> vacancyRemarks)
+    {
+        if (!vacancyRemarks.Any())
+        {
+            var ex = new InvalidOperationException("Не передано замечаний вакансии.");
+            throw ex;
+        }
+        
+        if (vacancyRemarks.Any(p => p.VacancyId <= 0))
+        {
+            var ex = new InvalidOperationException("Среди замечаний вакансии Id вакансии был <= 0.");
+            throw ex;
+        }
+
+        if (vacancyRemarks.Any(p => string.IsNullOrEmpty(p.FieldName)))
+        {
+            var ex = new InvalidOperationException("Среди замечаний вакансии было пустое название поля замечания.");
+            throw ex;
+        }
+
+        if (vacancyRemarks.Any(p => string.IsNullOrEmpty(p.RemarkText)))
+        {
+            var ex = new InvalidOperationException("Среди замечаний вакансии был пустой текст замечания.");
+            throw ex;
+        }
+        
+        if (vacancyRemarks.Any(p => string.IsNullOrEmpty(p.RemarkText)))
+        {
+            var ex = new InvalidOperationException("Среди замечаний вакансии был пустой текст замечания.");
+            throw ex;
+        }
+        
+        if (vacancyRemarks.Any(p => string.IsNullOrEmpty(p.RussianName)))
+        {
+            var ex = new InvalidOperationException("Среди замечаний вакансии было пустое русское название поля.");
+            throw ex;
+        }
+
+        return Task.CompletedTask;
+    }
+
+    #endregion
 }

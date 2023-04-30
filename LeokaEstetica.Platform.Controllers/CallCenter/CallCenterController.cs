@@ -380,14 +380,14 @@ public class CallCenterController : BaseController
     public async Task<VacancyRemarkResult> CreateVacancyRemarksAsync(
         [FromBody] CreateVacancyRemarkInput createVacancyRemarkInput)
     {
-        // var vacancyRemarks = await _projectModerationService.CreateProjectRemarksAsync(createVacancyRemarkInput, 
-        //     GetUserName(), GetTokenFromHeader());
-        //
-        // var result = new VacancyRemarkResult
-        // {
-        //     VacancyRemark = _mapper.Map<List<VacancyRemarkOutput>>(vacancyRemarks)
-        // };
+        var vacancyRemarks = await _vacancyModerationService.CreateVacancyRemarksAsync(createVacancyRemarkInput, 
+            GetUserName(), GetTokenFromHeader());
+        
+        var result = new VacancyRemarkResult
+        {
+            VacancyRemark = _mapper.Map<List<VacancyRemarkOutput>>(vacancyRemarks)
+        };
 
-        return null;
+        return result;
     }
 }

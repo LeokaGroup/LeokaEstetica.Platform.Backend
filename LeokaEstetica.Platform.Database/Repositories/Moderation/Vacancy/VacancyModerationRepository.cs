@@ -17,10 +17,16 @@ public class VacancyModerationRepository : IVacancyModerationRepository
 {
     private readonly PgContext _pgContext;
     
+    /// <summary>
+    /// Конструктор.
+    /// </summary>
+    /// <param name="pgContext">Датаконтекст.</param>
     public VacancyModerationRepository(PgContext pgContext)
     {
         _pgContext = pgContext;
     }
+
+    #region Публичные методы.
 
     /// <summary>
     /// Метод отправляет вакансию на модерацию. Это происходит через добавление в таблицу модерации вакансий.
@@ -214,6 +220,48 @@ public class VacancyModerationRepository : IVacancyModerationRepository
     }
 
     /// <summary>
+    /// Метод получает замечания вакансии, которые ранее были сохранены модератором.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <param name="fields">Список названий полей..</param>
+    /// <returns>Список замечаний.</returns>
+    public async Task<List<VacancyRemarkEntity>> GetExistsVacancyRemarksAsync(long vacancyId,
+        IEnumerable<string> fields)
+    {
+        var result = await _pgContext.VacancyRemarks
+            .Where(p => p.VacancyId == vacancyId
+                        && fields.Contains(p.FieldName))
+            .ToListAsync();
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод создает замечания вакансии.
+    /// </summary>
+    /// <param name="createVacancyRemarkInput">Список замечаний.</param>
+    /// <param name="account">Аккаунт.</param>
+    public async Task CreateVacancyRemarksAsync(IEnumerable<VacancyRemarkEntity> vacancyRemarks)
+    {
+        await _pgContext.VacancyRemarks.AddRangeAsync(vacancyRemarks);
+        await _pgContext.SaveChangesAsync();
+    }
+
+    /// <summary>
+    /// Метод обновляет замечания вакансии.
+    /// </summary>
+    /// <param name="vacancyRemarks">Список замечаний для обновления.</param>
+    public async Task UpdateVacancyRemarksAsync(List<VacancyRemarkEntity> vacancyRemarks)
+    {
+        _pgContext.VacancyRemarks.UpdateRange(vacancyRemarks);
+        await _pgContext.SaveChangesAsync();
+    }
+
+    #endregion
+
+    #region Приватные методы.
+
+    /// <summary>
     /// Метод устанавливает статус вакансии.
     /// </summary>
     /// <param name="vacancyId">Id вакансии.</param>
@@ -278,4 +326,6 @@ public class VacancyModerationRepository : IVacancyModerationRepository
         
         vac.ModerationStatusId = (int)status;
     }
+
+    #endregion
 }

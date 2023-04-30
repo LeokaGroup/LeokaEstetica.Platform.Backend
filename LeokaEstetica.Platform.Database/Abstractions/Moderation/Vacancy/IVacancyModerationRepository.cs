@@ -59,4 +59,25 @@ public interface IVacancyModerationRepository
     /// <param name="vacancyName">Название вакансии.</param>
     /// <param name="projectId">Id проекта.</param>
     Task AddNotificationRejectVacancyAsync(long vacancyId, long userId, string vacancyName, long projectId);
+    
+    /// <summary>
+    /// Метод получает замечания вакансии, которые ранее были сохранены модератором.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <param name="fields">Список названий полей..</param>
+    /// <returns>Список замечаний.</returns>
+    Task<List<VacancyRemarkEntity>> GetExistsVacancyRemarksAsync(long vacancyId, IEnumerable<string> fields);
+    
+    /// <summary>
+    /// Метод создает замечания вакансии.
+    /// </summary>
+    /// <param name="createVacancyRemarkInput">Список замечаний.</param>
+    /// <param name="account">Аккаунт.</param>
+    Task CreateVacancyRemarksAsync(IEnumerable<VacancyRemarkEntity> vacancyRemarks);
+    
+    /// <summary>
+    /// Метод обновляет замечания вакансии.
+    /// </summary>
+    /// <param name="vacancyRemarks">Список замечаний для обновления.</param>
+    Task UpdateVacancyRemarksAsync(List<VacancyRemarkEntity> vacancyRemarks);
 }

@@ -57,5 +57,13 @@ public class NotificationsModule : Module
         builder.RegisterType<ProjectModerationNotificationService>()
             .As<IProjectModerationNotificationService>()
             .InstancePerLifetimeScope();
+        
+        // Сервис уведомлений модерации вакансий.
+        builder.RegisterType<VacancyModerationNotificationService>()
+            .Named<IVacancyModerationNotificationService>("VacancyModerationNotificationService")
+            .InstancePerLifetimeScope();
+        builder.RegisterType<VacancyModerationNotificationService>()
+            .As<IVacancyModerationNotificationService>()
+            .InstancePerLifetimeScope();
     }
 }
