@@ -15,6 +15,7 @@ public class UserProjectEntity
         UserProjectsStages = new HashSet<UserProjectStageEntity>();
         ArchivedProjects = new HashSet<ArchivedProjectEntity>();
         ProjectRemarks = new HashSet<ProjectRemarkEntity>();
+        VacancyRemarks = new HashSet<VacancyRemarkEntity>();
     }
 
     /// <summary>
@@ -86,4 +87,9 @@ public class UserProjectEntity
     /// Список замечаний проекта.
     /// </summary>
     public ICollection<ProjectRemarkEntity> ProjectRemarks { get; set; }
+
+    /// <summary>
+    /// Список замечаний вакансии.
+    /// </summary>
+    public ICollection<VacancyRemarkEntity> VacancyRemarks { get; set; }
 }
