@@ -54,12 +54,6 @@ public partial class ProjectRemarkConfiguration : IEntityTypeConfiguration<Proje
             .HasColumnName("RemarkStatusId")
             .HasColumnType("int")
             .IsRequired();
-        
-        entity.Property(e => e.RejectReason)
-            .HasColumnName("RejectReason")
-            .HasColumnType("varchar(300)")
-            .HasMaxLength(300)
-            .IsRequired();
 
         entity.HasIndex(u => u.RemarkId)
             .HasDatabaseName("PK_RemarkId")

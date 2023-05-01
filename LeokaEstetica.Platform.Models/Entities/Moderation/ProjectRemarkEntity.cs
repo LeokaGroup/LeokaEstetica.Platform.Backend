@@ -62,9 +62,4 @@ public class ProjectRemarkEntity
     /// FK на статус замечания.
     /// </summary>
     public RemarkStatuseEntity RemarkStatuse { get; set; }
-    
-    /// <summary>
-    /// Причина отклонения проекта.
-    /// </summary>
-    public string RejectReason { get; set; }
 }
