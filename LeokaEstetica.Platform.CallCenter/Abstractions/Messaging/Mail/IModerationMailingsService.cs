@@ -43,9 +43,7 @@ public interface IModerationMailingsService
     /// Метод отправляет уведомление на почту владельца проекта о замечаниях проекта.
     /// </summary>
     /// <param name="mailTo">Кому отправить?</param>
-    /// <param name="projectId">Id проекта.</param>
     /// <param name="projectName">Название проекта.</param>
     /// <param name="remarks">Список замечаний.</param>
-    Task SendNotificationAboutRemarkAsync(string mailTo, long projectId, string projectName, 
-        List<ProjectRemarkEntity> remarks);
+    Task SendNotificationAboutRemarkAsync(string mailTo, string projectName, List<ProjectRemarkEntity> remarks);
 }
