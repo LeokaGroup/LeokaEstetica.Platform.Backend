@@ -357,7 +357,7 @@ public class ProjectModerationService : IProjectModerationService
 
             var projectName = await _projectModerationRepository.GetProjectNameAsync(projectId);
             var remarks = await _projectModerationRepository.GetProjectRemarksAsync(projectId);
-            await _moderationMailingsService.SendNotificationAboutRemarkAsync(account, projectId, projectName, remarks);
+            await _moderationMailingsService.SendNotificationAboutRemarkAsync(account, projectName, remarks);
             
             if (!string.IsNullOrEmpty(token))
             {
