@@ -354,9 +354,13 @@ public class ProjectModerationService : IProjectModerationService
             }
             
             await _projectModerationRepository.SendProjectRemarksAsync(projectId, userId);
-
             var remarks = await _projectModerationRepository.GetProjectRemarksAsync(projectId);
-            await _moderationMailingsService.SendNotificationAboutRemarkAsync(account, projectId, remarks);
+
+            if (remarks.Any())
+            {
+                var projectName = await _projectRepository.GetProjectNameByIdAsync(projectId);
+                await _moderationMailingsService.SendNotificationProjectRemarkAsync(account, projectId, projectName, remarks);
+            }
             
             if (!string.IsNullOrEmpty(token))
             {
