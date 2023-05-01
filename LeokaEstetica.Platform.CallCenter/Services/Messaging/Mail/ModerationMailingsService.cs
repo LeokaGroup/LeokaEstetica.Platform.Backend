@@ -4,6 +4,7 @@ using LeokaEstetica.Platform.CallCenter.Abstractions.Messaging.Mail;
 using LeokaEstetica.Platform.CallCenter.Models.Dto.Input.Messaging.Mail;
 using LeokaEstetica.Platform.Core.Constants;
 using LeokaEstetica.Platform.Database.Abstractions.Config;
+using LeokaEstetica.Platform.Models.Entities.Moderation;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 
@@ -141,6 +142,48 @@ public class ModerationMailingsService : IModerationMailingsService
 
             var mailModel = CreateMailopostModelConfirmEmail(mailTo, text, subject, text);
             await SendEmailNotificationAsync(mailModel);
+        }
+    }
+
+    /// <summary>
+    /// Метод отправляет уведомление на почту владельца проекта о замечаниях проекта.
+    /// </summary>
+    /// <param name="mailTo">Кому отправить?</param>
+    /// <param name="projectName">Название проекта.</param>
+    /// <param name="remarks">Список замечаний.</param>
+    public async Task SendNotificationAboutRemarkAsync(string mailTo, string projectName, 
+        List<ProjectRemarkEntity> remarks)
+    {
+        var isEnabledEmailNotifications = await _globalConfigRepository
+            .GetValueByKeyAsync<bool>(GlobalConfigKeys.EmailNotifications.EMAIL_NOTIFICATIONS_DISABLE_MODE_ENABLED);
+
+        if (isEnabledEmailNotifications)
+        { 
+            if (!remarks.Any())
+            {
+                return;
+            }
+        
+            var remarksStringBuilder = new StringBuilder();
+        
+            foreach (var remark in remarks)
+            {
+                remarksStringBuilder.AppendLine("<br/>");
+                remarksStringBuilder.AppendLine($"{remark.FieldName}: {remark.RemarkText}");
+                remarksStringBuilder.AppendLine("<br/>");
+            }
+        
+            var text = $"К вашему проекту {projectName} есть замечания:" +
+                       remarksStringBuilder +
+                       "<br/>" +
+                       "<br/>" +
+                       "<br/>" +
+                       "<br/>-----<br/>" +
+                       "С уважением, команда Leoka Estetica";
+        
+            var subject = "Замечания к проекту";
+            var mailModel = CreateMailopostModelConfirmEmail(mailTo, text, subject, text);
+            await SendEmailNotificationAsync(mailModel);   
         }
     }
 

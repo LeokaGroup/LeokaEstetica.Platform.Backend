@@ -265,6 +265,17 @@ public class ProjectModerationRepository : IProjectModerationRepository
         return result;
     }
 
+    /// <summary>
+    /// Метод возвращает название проекта по его Id.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns></returns>
+    public async Task<string> GetProjectNameAsync(long projectId)
+    {
+        var projectEntity = await _pgContext.ModerationProjects.FirstOrDefaultAsync(pr => pr.ProjectId == projectId);
+        return projectEntity?.UserProject?.ProjectName;
+    }
+
     #endregion
 
     #region Приватные методы.
