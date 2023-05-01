@@ -313,6 +313,25 @@ public class VacancyModerationRepository : IVacancyModerationRepository
         return result;
     }
 
+    /// <summary>
+    /// Метод получает замечания вакансии.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <returns>Список замечаний.</returns>
+    public async Task<List<VacancyRemarkEntity>> GetVacancyRemarksAsync(long vacancyId)
+    {
+        var result = await _pgContext.VacancyRemarks
+            .Where(pr => pr.VacancyId == vacancyId
+                         && new[]
+                         {
+                             (int)RemarkStatusEnum.AwaitingCorrection,
+                             (int)RemarkStatusEnum.AgainAssigned
+                         }.Contains(pr.RemarkStatusId))
+            .ToListAsync();
+
+        return result;
+    }
+
     #endregion
 
     #region Приватные методы.

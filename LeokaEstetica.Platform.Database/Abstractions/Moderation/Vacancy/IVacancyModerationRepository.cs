@@ -95,4 +95,11 @@ public interface IVacancyModerationRepository
     /// <param name="vacancyId">Id вакансии.</param>
     /// <returns>Признак раннего сохранения замечаний.</returns>
     Task<bool> CheckVacancyRemarksAsync(long vacancyId);
+
+    /// <summary>
+    /// Метод получает замечания вакансии.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <returns>Список замечаний.</returns>
+    Task<List<VacancyRemarkEntity>> GetVacancyRemarksAsync(long vacancyId);
 }
