@@ -44,6 +44,8 @@ public interface IModerationMailingsService
     /// </summary>
     /// <param name="mailTo">Кому отправить?</param>
     /// <param name="projectId">Id проекта.</param>
+    /// <param name="projectName">Имя проекта..</param>
     /// <param name="remarks">Список замечаний.</param>
-    Task SendNotificationAboutRemarkAsync(string mailTo, long projectId, List<ProjectRemarkEntity> remarks);
+    Task SendNotificationProjectRemarkAsync(string mailTo, long projectId, string projectName,
+        List<ProjectRemarkEntity> remarks);
 }

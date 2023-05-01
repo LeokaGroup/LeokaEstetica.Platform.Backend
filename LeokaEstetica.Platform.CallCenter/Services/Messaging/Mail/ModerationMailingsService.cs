@@ -18,14 +18,12 @@ public class ModerationMailingsService : IModerationMailingsService
 {
     private readonly IGlobalConfigRepository _globalConfigRepository;
     private readonly IConfiguration _configuration;
-    private readonly IProjectRepository _projectRepository;
     
     public ModerationMailingsService(IGlobalConfigRepository globalConfigRepository, 
-        IConfiguration configuration, IProjectRepository projectRepository)
+        IConfiguration configuration)
     {
         _globalConfigRepository = globalConfigRepository;
         _configuration = configuration;
-        _projectRepository = projectRepository;
     }
 
     /// <summary>
@@ -153,20 +151,16 @@ public class ModerationMailingsService : IModerationMailingsService
     /// </summary>
     /// <param name="mailTo">Кому отправить?</param>
     /// <param name="projectId">Id проекта.</param>
+    /// <param name="projectName">Имя проекта..</param>
     /// <param name="remarks">Список замечаний.</param>
-    public async Task SendNotificationAboutRemarkAsync(string mailTo, long projectId,
+    public async Task SendNotificationProjectRemarkAsync(string mailTo, long projectId, string projectName,
         List<ProjectRemarkEntity> remarks)
     {
         var isEnabledEmailNotifications = await _globalConfigRepository
             .GetValueByKeyAsync<bool>(GlobalConfigKeys.EmailNotifications.EMAIL_NOTIFICATIONS_DISABLE_MODE_ENABLED);
 
         if (isEnabledEmailNotifications)
-        { 
-            if (!remarks.Any())
-            {
-                return;
-            }
-        
+        {
             var remarksStringBuilder = new StringBuilder();
         
             foreach (var remark in remarks)
@@ -175,9 +169,8 @@ public class ModerationMailingsService : IModerationMailingsService
                 remarksStringBuilder.AppendLine($"- {remark.RemarkText}");
                 remarksStringBuilder.AppendLine("<br/>");
             }
-            
-            var projectName = await _projectRepository.GetProjectNameByIdAsync(projectId);
-        
+
+            // TODO: Заменить на получение ссылки из БД.
             var text = $"К вашему проекту {projectName} есть замечания:" +
                        "<br/>" +
                        remarksStringBuilder +
@@ -190,8 +183,7 @@ public class ModerationMailingsService : IModerationMailingsService
                        "<br/>-----<br/>" +
                        "С уважением, команда Leoka Estetica";
         
-            var subject = "Замечания к проекту";
-            var mailModel = CreateMailopostModelConfirmEmail(mailTo, text, subject, text);
+            var mailModel = CreateMailopostModelConfirmEmail(mailTo, text, "Замечания к проекту", text);
             await SendEmailNotificationAsync(mailModel);   
         }
     }
