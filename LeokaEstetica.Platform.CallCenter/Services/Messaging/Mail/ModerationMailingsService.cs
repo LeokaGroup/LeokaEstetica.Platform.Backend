@@ -4,6 +4,7 @@ using LeokaEstetica.Platform.CallCenter.Abstractions.Messaging.Mail;
 using LeokaEstetica.Platform.CallCenter.Models.Dto.Input.Messaging.Mail;
 using LeokaEstetica.Platform.Core.Constants;
 using LeokaEstetica.Platform.Database.Abstractions.Config;
+using LeokaEstetica.Platform.Database.Abstractions.Project;
 using LeokaEstetica.Platform.Models.Entities.Moderation;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
@@ -17,12 +18,14 @@ public class ModerationMailingsService : IModerationMailingsService
 {
     private readonly IGlobalConfigRepository _globalConfigRepository;
     private readonly IConfiguration _configuration;
+    private readonly IProjectRepository _projectRepository;
     
     public ModerationMailingsService(IGlobalConfigRepository globalConfigRepository, 
-        IConfiguration configuration)
+        IConfiguration configuration, IProjectRepository projectRepository)
     {
         _globalConfigRepository = globalConfigRepository;
         _configuration = configuration;
+        _projectRepository = projectRepository;
     }
 
     /// <summary>
@@ -150,9 +153,8 @@ public class ModerationMailingsService : IModerationMailingsService
     /// </summary>
     /// <param name="mailTo">Кому отправить?</param>
     /// <param name="projectId">Id проекта.</param>
-    /// <param name="projectName">Название проекта.</param>
     /// <param name="remarks">Список замечаний.</param>
-    public async Task SendNotificationAboutRemarkAsync(string mailTo, long projectId, string projectName, 
+    public async Task SendNotificationAboutRemarkAsync(string mailTo, long projectId,
         List<ProjectRemarkEntity> remarks)
     {
         var isEnabledEmailNotifications = await _globalConfigRepository
@@ -173,6 +175,8 @@ public class ModerationMailingsService : IModerationMailingsService
                 remarksStringBuilder.AppendLine($"- {remark.RemarkText}");
                 remarksStringBuilder.AppendLine("<br/>");
             }
+            
+            var projectName = await _projectRepository.GetProjectNameByIdAsync(projectId);
         
             var text = $"К вашему проекту {projectName} есть замечания:" +
                        "<br/>" +
