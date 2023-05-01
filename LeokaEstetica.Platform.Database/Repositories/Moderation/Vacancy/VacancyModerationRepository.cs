@@ -253,13 +253,14 @@ public class VacancyModerationRepository : IVacancyModerationRepository
     /// <param name="vacancyRemarks">Список замечаний для обновления.</param>
     public async Task UpdateVacancyRemarksAsync(List<VacancyRemarkEntity> vacancyRemarks)
     {
+        // TODO: #10343304 Позже надо отрефачить, чтобы не нарушать DRY.
         // Проводим все эти манипуляции, чтобы избежать ошибки при обновлении замечаний, которые уже были внесены.
         foreach (var vr in vacancyRemarks)
         {
             var local = _pgContext.Set<VacancyRemarkEntity>()
                 .Local
                 .FirstOrDefault(entry => entry.RemarkId == vr.RemarkId);
-
+        
             // Если локальная сущность != null.
             if (local != null)
             {

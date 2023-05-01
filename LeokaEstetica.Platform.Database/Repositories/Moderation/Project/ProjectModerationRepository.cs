@@ -206,6 +206,7 @@ public class ProjectModerationRepository : IProjectModerationRepository
     /// <param name="projectRemarks">Список замечаний для обновления.</param>
     public async Task UpdateProjectRemarksAsync(List<ProjectRemarkEntity> projectRemarks)
     {
+        // TODO: #10343304 Позже надо отрефачить, чтобы не нарушать DRY.
         // Проводим все эти манипуляции, чтобы избежать ошибки при обновлении замечаний, которые уже были внесены.
         foreach (var pr in projectRemarks)
         {
