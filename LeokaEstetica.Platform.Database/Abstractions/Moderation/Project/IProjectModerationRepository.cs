@@ -83,7 +83,6 @@ public interface IProjectModerationRepository
     /// Метод проверяет, были ли внесены замечания проекта.
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
-    /// <param name="userId">Id пользователя.</param>
     /// <returns>Признак внесения замечаний.</returns>
-    Task<bool> CheckExistsProjectRemarksAsync(long projectId, long userId);
+    Task<bool> CheckExistsProjectRemarksAsync(long projectId);
 }

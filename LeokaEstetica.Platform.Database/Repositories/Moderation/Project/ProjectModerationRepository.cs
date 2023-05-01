@@ -206,7 +206,24 @@ public class ProjectModerationRepository : IProjectModerationRepository
     /// <param name="projectRemarks">Список замечаний для обновления.</param>
     public async Task UpdateProjectRemarksAsync(List<ProjectRemarkEntity> projectRemarks)
     {
-        _pgContext.ProjectRemarks.UpdateRange(projectRemarks);
+        // Проводим все эти манипуляции, чтобы избежать ошибки при обновлении замечаний, которые уже были внесены.
+        foreach (var pr in projectRemarks)
+        {
+            var local = _pgContext.Set<ProjectRemarkEntity>()
+                .Local
+                .FirstOrDefault(entry => entry.RemarkId == pr.RemarkId);
+
+            // Если локальная сущность != null.
+            if (local != null)
+            {
+                // Отсоединяем контекст устанавливая флаг Detached.
+                _pgContext.Entry(local).State = EntityState.Detached;
+            }
+
+            // Проставляем обновляемой сущности флаг Modified.
+            _pgContext.Entry(pr).State = EntityState.Modified;
+        }
+        
         await _pgContext.SaveChangesAsync();
     }
 
@@ -239,12 +256,10 @@ public class ProjectModerationRepository : IProjectModerationRepository
     /// Метод проверяет, были ли внесены замечания проекта.
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
-    /// <param name="userId">Id пользователя.</param>
     /// <returns>Признак внесения замечаний.</returns>
-    public async Task<bool> CheckExistsProjectRemarksAsync(long projectId, long userId)
+    public async Task<bool> CheckExistsProjectRemarksAsync(long projectId)
     {
-        var result = await _pgContext.ProjectRemarks.AnyAsync(pr => pr.ProjectId == projectId
-                                                                    && pr.ModerationUserId == userId);
+        var result = await _pgContext.ProjectRemarks.AnyAsync(pr => pr.ProjectId == projectId);
 
         return result;
     }

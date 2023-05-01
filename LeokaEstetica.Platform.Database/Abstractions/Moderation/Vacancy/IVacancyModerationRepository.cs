@@ -87,5 +87,12 @@ public interface IVacancyModerationRepository
     /// <param name="vacancyId">Id вакансии.</param>
     /// <param name="userId">Id пользователя.</param>
     /// </summary>
-    Task SendProjectRemarksAsync(long vacancyId, long userId);
+    Task SendVacancyRemarksAsync(long vacancyId, long userId);
+
+    /// <summary>
+    /// Метод проверяет, были ли сохранены замечания вакансии.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <returns>Признак раннего сохранения замечаний.</returns>
+    Task<bool> CheckVacancyRemarksAsync(long vacancyId);
 }

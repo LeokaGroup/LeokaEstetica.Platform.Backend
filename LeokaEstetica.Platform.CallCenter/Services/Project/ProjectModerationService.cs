@@ -341,18 +341,21 @@ public class ProjectModerationService : IProjectModerationService
             }
             
             // Проверяем, были ли внесены замечания проекта.
-            var isExists = await _projectModerationRepository.CheckExistsProjectRemarksAsync(projectId, userId);
+            var isExists = await _projectModerationRepository.CheckExistsProjectRemarksAsync(projectId);
 
-            if (!isExists && !string.IsNullOrEmpty(token))
+            if (!isExists)
             {
                 var ex = new InvalidOperationException(RemarkConst.SEND_PROJECT_REMARKS_WARNING +
                                                        $" ProjectId: {projectId}");
                 await _logService.LogWarningAsync(ex);
-                
-                // Отправляем уведомление о предупреждении, что замечания проекта не были внесены.
-                await _projectModerationNotificationService.SendNotificationWarningSendProjectRemarksAsync(
-                    "Внимание", RemarkConst.SEND_PROJECT_REMARKS_WARNING,
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
+
+                if (!string.IsNullOrEmpty(token))
+                {
+                    // Отправляем уведомление о предупреждении, что замечания проекта не были внесены.
+                    await _projectModerationNotificationService.SendNotificationWarningSendProjectRemarksAsync(
+                        "Внимание", RemarkConst.SEND_PROJECT_REMARKS_WARNING,
+                        NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
+                }
 
                 return;
             }

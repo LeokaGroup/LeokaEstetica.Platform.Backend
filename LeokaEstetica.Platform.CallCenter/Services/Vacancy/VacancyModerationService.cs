@@ -338,23 +338,26 @@ public class VacancyModerationService : IVacancyModerationService
             }
             
             // Проверяем, были ли внесены замечания вакансии.
-            var isExists = await _vacancyRepository.CheckVacancyOwnerAsync(vacancyId, userId);
+            var isExists = await _vacancyModerationRepository.CheckVacancyRemarksAsync(vacancyId);
 
-            if (!isExists && !string.IsNullOrEmpty(token))
+            if (!isExists)
             {
                 var ex = new InvalidOperationException(RemarkConst.SEND_PROJECT_REMARKS_WARNING +
                                                        $" VacancyId: {vacancyId}");
                 await _logService.LogWarningAsync(ex);
                 
-                // Отправляем уведомление о предупреждении, что замечания вакансии не были внесены.
-                await _vacancyModerationNotificationService.SendNotificationWarningSendVacancyRemarksAsync(
-                    "Внимание", RemarkConst.SEND_PROJECT_REMARKS_WARNING,
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
+                if (!string.IsNullOrEmpty(token))
+                {
+                    // Отправляем уведомление о предупреждении, что замечания вакансии не были внесены.
+                    await _vacancyModerationNotificationService.SendNotificationWarningSendVacancyRemarksAsync(
+                        "Внимание", RemarkConst.SEND_PROJECT_REMARKS_WARNING,
+                        NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
+                }
 
                 return;
             }
-            
-            await _vacancyModerationRepository.SendProjectRemarksAsync(vacancyId, userId);   
+
+            await _vacancyModerationRepository.SendVacancyRemarksAsync(vacancyId, userId);   
             
             if (!string.IsNullOrEmpty(token))
             {

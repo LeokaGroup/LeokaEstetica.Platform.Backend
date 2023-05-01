@@ -253,7 +253,24 @@ public class VacancyModerationRepository : IVacancyModerationRepository
     /// <param name="vacancyRemarks">Список замечаний для обновления.</param>
     public async Task UpdateVacancyRemarksAsync(List<VacancyRemarkEntity> vacancyRemarks)
     {
-        _pgContext.VacancyRemarks.UpdateRange(vacancyRemarks);
+        // Проводим все эти манипуляции, чтобы избежать ошибки при обновлении замечаний, которые уже были внесены.
+        foreach (var vr in vacancyRemarks)
+        {
+            var local = _pgContext.Set<VacancyRemarkEntity>()
+                .Local
+                .FirstOrDefault(entry => entry.RemarkId == vr.RemarkId);
+
+            // Если локальная сущность != null.
+            if (local != null)
+            {
+                // Отсоединяем контекст устанавливая флаг Detached.
+                _pgContext.Entry(local).State = EntityState.Detached;
+            }
+            
+            // Проставляем обновляемой сущности флаг Modified.
+            _pgContext.Entry(vr).State = EntityState.Modified;
+        }
+        
         await _pgContext.SaveChangesAsync();
     }
 
@@ -263,7 +280,7 @@ public class VacancyModerationRepository : IVacancyModerationRepository
     /// <param name="vacancyId">Id вакансии.</param>
     /// <param name="userId">Id пользователя.</param>
     /// </summary>
-    public async Task SendProjectRemarksAsync(long vacancyId, long userId)
+    public async Task SendVacancyRemarksAsync(long vacancyId, long userId)
     {
         var vacancyRemarks = await _pgContext.VacancyRemarks
             .Where(pr => pr.VacancyId == vacancyId
@@ -280,6 +297,20 @@ public class VacancyModerationRepository : IVacancyModerationRepository
             _pgContext.VacancyRemarks.UpdateRange(vacancyRemarks);
             await _pgContext.SaveChangesAsync();
         }
+    }
+
+    /// <summary>
+    /// Метод проверяет, были ли сохранены замечания вакансии.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <returns>Признак раннего сохранения замечаний.</returns>
+    public async Task<bool> CheckVacancyRemarksAsync(long vacancyId)
+    {
+        var result = await _pgContext.VacancyRemarks
+            .Where(pr => pr.VacancyId == vacancyId)
+            .AnyAsync();
+
+        return result;
     }
 
     #endregion
