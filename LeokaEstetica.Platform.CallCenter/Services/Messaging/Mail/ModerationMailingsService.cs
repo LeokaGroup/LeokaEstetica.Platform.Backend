@@ -149,9 +149,10 @@ public class ModerationMailingsService : IModerationMailingsService
     /// Метод отправляет уведомление на почту владельца проекта о замечаниях проекта.
     /// </summary>
     /// <param name="mailTo">Кому отправить?</param>
+    /// <param name="projectId">Id проекта.</param>
     /// <param name="projectName">Название проекта.</param>
     /// <param name="remarks">Список замечаний.</param>
-    public async Task SendNotificationAboutRemarkAsync(string mailTo, string projectName, 
+    public async Task SendNotificationAboutRemarkAsync(string mailTo, long projectId, string projectName, 
         List<ProjectRemarkEntity> remarks)
     {
         var isEnabledEmailNotifications = await _globalConfigRepository
@@ -169,13 +170,17 @@ public class ModerationMailingsService : IModerationMailingsService
             foreach (var remark in remarks)
             {
                 remarksStringBuilder.AppendLine("<br/>");
-                remarksStringBuilder.AppendLine($"{remark.FieldName}: {remark.RemarkText}");
+                remarksStringBuilder.AppendLine($"- {remark.RemarkText}");
                 remarksStringBuilder.AppendLine("<br/>");
             }
         
             var text = $"К вашему проекту {projectName} есть замечания:" +
+                       "<br/>" +
                        remarksStringBuilder +
                        "<br/>" +
+                       $"<a href='https://leoka-estetica-dev.ru/projects/project?projectId={projectId}&mode=view'>" +
+                       "Перейти к проекту" +
+                       "</a>" +
                        "<br/>" +
                        "<br/>" +
                        "<br/>-----<br/>" +
