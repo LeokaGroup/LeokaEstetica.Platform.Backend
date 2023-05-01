@@ -46,7 +46,8 @@ public interface IProjectModerationRepository
     /// <summary>
     /// Метод создает замечания проекта.
     /// </summary>
-    /// <param name="projectRemarks">Список замечаний.</param>
+    /// <param name="createProjectRemarkInput">Список замечаний.</param>
+    /// <param name="account">Аккаунт.</param>
     Task CreateProjectRemarksAsync(IEnumerable<ProjectRemarkEntity> projectRemarks);
 
     /// <summary>

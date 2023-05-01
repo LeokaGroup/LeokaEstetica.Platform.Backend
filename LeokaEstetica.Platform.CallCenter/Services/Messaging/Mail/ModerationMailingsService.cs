@@ -4,7 +4,6 @@ using LeokaEstetica.Platform.CallCenter.Abstractions.Messaging.Mail;
 using LeokaEstetica.Platform.CallCenter.Models.Dto.Input.Messaging.Mail;
 using LeokaEstetica.Platform.Core.Constants;
 using LeokaEstetica.Platform.Database.Abstractions.Config;
-using LeokaEstetica.Platform.Database.Abstractions.Project;
 using LeokaEstetica.Platform.Models.Entities.Moderation;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
@@ -151,7 +150,7 @@ public class ModerationMailingsService : IModerationMailingsService
     /// </summary>
     /// <param name="mailTo">Кому отправить?</param>
     /// <param name="projectId">Id проекта.</param>
-    /// <param name="projectName">Имя проекта..</param>
+    /// <param name="projectName">Имя проекта.</param>
     /// <param name="remarks">Список замечаний.</param>
     public async Task SendNotificationProjectRemarkAsync(string mailTo, long projectId, string projectName,
         List<ProjectRemarkEntity> remarks)
@@ -166,18 +165,14 @@ public class ModerationMailingsService : IModerationMailingsService
             foreach (var remark in remarks)
             {
                 remarksStringBuilder.AppendLine("<br/>");
-                remarksStringBuilder.AppendLine($"- {remark.RemarkText}");
+                remarksStringBuilder.AppendLine($"{remark.FieldName}: {remark.RemarkText}");
                 remarksStringBuilder.AppendLine("<br/>");
             }
 
             // TODO: Заменить на получение ссылки из БД.
             var text = $"К вашему проекту {projectName} есть замечания:" +
-                       "<br/>" +
                        remarksStringBuilder +
                        "<br/>" +
-                       $"<a href='https://leoka-estetica-dev.ru/projects/project?projectId={projectId}&mode=view'>" +
-                       "Перейти к проекту" +
-                       "</a>" +
                        "<br/>" +
                        "<br/>" +
                        "<br/>-----<br/>" +

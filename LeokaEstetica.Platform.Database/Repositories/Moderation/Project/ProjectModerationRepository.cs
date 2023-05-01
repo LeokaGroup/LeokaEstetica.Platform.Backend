@@ -156,7 +156,8 @@ public class ProjectModerationRepository : IProjectModerationRepository
     /// <summary>
     /// Метод создает замечания проекта.
     /// </summary>
-    /// <param name="projectRemarks">Список замечаний.</param>
+    /// <param name="createProjectRemarkInput">Список замечаний.</param>
+    /// <param name="account">Аккаунт.</param>
     public async Task CreateProjectRemarksAsync(IEnumerable<ProjectRemarkEntity> projectRemarks)
     {
         await _pgContext.ProjectRemarks.AddRangeAsync(projectRemarks);
