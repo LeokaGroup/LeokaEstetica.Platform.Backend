@@ -8,6 +8,7 @@ public class RemarkStatuseEntity
     public RemarkStatuseEntity()
     {
         ProjectRemarks = new HashSet<ProjectRemarkEntity>();
+        VacancyRemarks = new HashSet<VacancyRemarkEntity>();
     }
 
     /// <summary>
@@ -29,4 +30,9 @@ public class RemarkStatuseEntity
     /// Список замечаний проектов.
     /// </summary>
     public ICollection<ProjectRemarkEntity> ProjectRemarks { get; set; }
+
+    /// <summary>
+    /// Список замечаний вакансий.
+    /// </summary>
+    public ICollection<VacancyRemarkEntity> VacancyRemarks { get; set; }
 }

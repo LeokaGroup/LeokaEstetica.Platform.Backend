@@ -27,12 +27,12 @@ using Microsoft.AspNetCore.Mvc;
 namespace LeokaEstetica.Platform.Controllers.CallCenter;
 
 /// <summary>
-/// Контроллер модерации (отвечает за весь функционал модерации).
+/// Контроллер КЦ (отвечает за весь функционал КЦ).
 /// </summary>
 [AuthFilter]
 [ApiController]
-[Route("moderation")]
-public class ModerationController : BaseController
+[Route("callcenter")]
+public class CallCenterController : BaseController
 {
     private readonly IAccessModerationService _accessModerationService;
     private readonly IProjectModerationService _projectModerationService;
@@ -50,7 +50,7 @@ public class ModerationController : BaseController
     /// <param name="vacancyModerationService">Сервис модерации вакансий.</param>
     /// <param name="userBlackListService">Сервис ЧС пользователей.</param>
     /// <param name="resumeModerationService">Сервис модерации анкет.</param>
-    public ModerationController(IAccessModerationService accessModerationService,
+    public CallCenterController(IAccessModerationService accessModerationService,
         IProjectModerationService projectModerationService,
         IMapper mapper,
         IVacancyModerationService vacancyModerationService, 
@@ -362,6 +362,49 @@ public class ModerationController : BaseController
     public async Task SendProjectRemarksAsync([FromBody] SendProjectRemarkInput sendProjectRemarkInput)
     {
         await _projectModerationService.SendProjectRemarksAsync(sendProjectRemarkInput.ProjectId, GetUserName(),
+            GetTokenFromHeader());
+    }
+    
+    /// <summary>
+    /// Метод создает замечания вакансии.
+    /// </summary>
+    /// <param name="createVacancyRemarkInput">Входная модель.</param>
+    /// <returns>Список замечаний вакансии.</returns>
+    [HttpPost]
+    [Route("vacancy-remarks")]
+    [ProducesResponseType(200, Type = typeof(ProjectRemarkResult))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<VacancyRemarkResult> CreateVacancyRemarksAsync(
+        [FromBody] CreateVacancyRemarkInput createVacancyRemarkInput)
+    {
+        var vacancyRemarks = await _vacancyModerationService.CreateVacancyRemarksAsync(createVacancyRemarkInput, 
+            GetUserName(), GetTokenFromHeader());
+        
+        var result = new VacancyRemarkResult
+        {
+            VacancyRemark = _mapper.Map<List<VacancyRemarkOutput>>(vacancyRemarks)
+        };
+
+        return result;
+    }
+    
+    /// <summary>
+    /// Метод отправляет замечания вакансии владельцу проекта.
+    /// Отправка замечаний проекту подразумевает просто изменение статуса замечаниям проекта.
+    /// </summary>
+    [HttpPatch]
+    [Route("send-vacancy-remarks")]
+    [ProducesResponseType(200, Type = typeof(ProjectRemarkResult))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task SendVacancyRemarksAsync([FromBody] SendVacancyRemarkInput sendVacancyRemarkInput)
+    {
+        await _vacancyModerationService.SendVacancyRemarksAsync(sendVacancyRemarkInput.VacancyId, GetUserName(),
             GetTokenFromHeader());
     }
 }

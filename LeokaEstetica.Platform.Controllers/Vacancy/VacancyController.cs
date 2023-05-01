@@ -294,4 +294,24 @@ public class VacancyController : BaseController
     {
         await _vacancyService.AddVacancyArchiveAsync(vacancy.VacancyId, GetUserName());
     }
+    
+    /// <summary>
+    /// Метод получает список замечаний вакансии, если они есть.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <returns>Список замечаний вакансии.</returns>
+    [HttpGet]
+    [Route("{vacancyId}/remarks")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<GetVacancyRemarkOutput>))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<IEnumerable<GetVacancyRemarkOutput>> GetVacancyRemarksAsync([FromRoute] long vacancyId)
+    {
+        var items = await _vacancyService.GetVacancyRemarksAsync(vacancyId, GetUserName());
+        var result = _mapper.Map<IEnumerable<GetVacancyRemarkOutput>>(items);
+
+        return result;
+    }
 }

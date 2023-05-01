@@ -43,5 +43,21 @@ public class BaseModule : Module
             .RegisterType<MailingsService>()
             .As<IMailingsService>()
             .InstancePerLifetimeScope();
+        
+        // Репозиторий обновления сущностей generic-типов.
+        // builder
+        //     .RegisterGeneric(typeof(UpdateDetachedEntitiesRepository<>))
+        //     .As(typeof(IUpdateDetachedEntitiesRepository<>))
+        //     .InstancePerLifetimeScope();
+        
+        // builder
+        //     .RegisterType<UpdateDetachedEntitiesRepository<VacancyRemarkEntity>>()
+        //     .As<IUpdateDetachedEntitiesRepository<VacancyRemarkEntity>>()
+        //     .InstancePerLifetimeScope();
+        //
+        // builder
+        //     .RegisterType<UpdateDetachedEntitiesRepository<ProjectRemarkEntity>>()
+        //     .As<IUpdateDetachedEntitiesRepository<ProjectRemarkEntity>>()
+        //     .InstancePerLifetimeScope();
     }
 }

@@ -17,10 +17,16 @@ public class VacancyModerationRepository : IVacancyModerationRepository
 {
     private readonly PgContext _pgContext;
     
+    /// <summary>
+    /// Конструктор.
+    /// </summary>
+    /// <param name="pgContext">Датаконтекст.</param>
     public VacancyModerationRepository(PgContext pgContext)
     {
         _pgContext = pgContext;
     }
+
+    #region Публичные методы.
 
     /// <summary>
     /// Метод отправляет вакансию на модерацию. Это происходит через добавление в таблицу модерации вакансий.
@@ -214,6 +220,123 @@ public class VacancyModerationRepository : IVacancyModerationRepository
     }
 
     /// <summary>
+    /// Метод получает замечания вакансии, которые ранее были сохранены модератором.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <param name="fields">Список названий полей..</param>
+    /// <returns>Список замечаний.</returns>
+    public async Task<List<VacancyRemarkEntity>> GetExistsVacancyRemarksAsync(long vacancyId,
+        IEnumerable<string> fields)
+    {
+        var result = await _pgContext.VacancyRemarks
+            .Where(p => p.VacancyId == vacancyId
+                        && fields.Contains(p.FieldName))
+            .ToListAsync();
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод создает замечания вакансии.
+    /// </summary>
+    /// <param name="createVacancyRemarkInput">Список замечаний.</param>
+    /// <param name="account">Аккаунт.</param>
+    public async Task CreateVacancyRemarksAsync(IEnumerable<VacancyRemarkEntity> vacancyRemarks)
+    {
+        await _pgContext.VacancyRemarks.AddRangeAsync(vacancyRemarks);
+        await _pgContext.SaveChangesAsync();
+    }
+
+    /// <summary>
+    /// Метод обновляет замечания вакансии.
+    /// </summary>
+    /// <param name="vacancyRemarks">Список замечаний для обновления.</param>
+    public async Task UpdateVacancyRemarksAsync(List<VacancyRemarkEntity> vacancyRemarks)
+    {
+        // Проводим все эти манипуляции, чтобы избежать ошибки при обновлении замечаний, которые уже были внесены.
+        foreach (var vr in vacancyRemarks)
+        {
+            var local = _pgContext.Set<VacancyRemarkEntity>()
+                .Local
+                .FirstOrDefault(entry => entry.RemarkId == vr.RemarkId);
+
+            // Если локальная сущность != null.
+            if (local != null)
+            {
+                // Отсоединяем контекст устанавливая флаг Detached.
+                _pgContext.Entry(local).State = EntityState.Detached;
+            }
+            
+            // Проставляем обновляемой сущности флаг Modified.
+            _pgContext.Entry(vr).State = EntityState.Modified;
+        }
+        
+        await _pgContext.SaveChangesAsync();
+    }
+
+    /// <summary>
+    /// Метод отправляет замечания вакансии владельцу вакансии.
+    /// Отправка замечаний вакансии подразумевает просто изменение статуса замечаниям вакансии.
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <param name="userId">Id пользователя.</param>
+    /// </summary>
+    public async Task SendVacancyRemarksAsync(long vacancyId, long userId)
+    {
+        var vacancyRemarks = await _pgContext.VacancyRemarks
+            .Where(pr => pr.VacancyId == vacancyId
+                         && pr.ModerationUserId == userId)
+            .ToListAsync();
+
+        if (vacancyRemarks.Any())
+        {
+            foreach (var pr in vacancyRemarks)
+            {
+                pr.RemarkStatusId = (int)RemarkStatusEnum.AwaitingCorrection;
+            }
+            
+            _pgContext.VacancyRemarks.UpdateRange(vacancyRemarks);
+            await _pgContext.SaveChangesAsync();
+        }
+    }
+
+    /// <summary>
+    /// Метод проверяет, были ли сохранены замечания вакансии.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <returns>Признак раннего сохранения замечаний.</returns>
+    public async Task<bool> CheckVacancyRemarksAsync(long vacancyId)
+    {
+        var result = await _pgContext.VacancyRemarks
+            .Where(pr => pr.VacancyId == vacancyId)
+            .AnyAsync();
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод получает замечания вакансии.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <returns>Список замечаний.</returns>
+    public async Task<List<VacancyRemarkEntity>> GetVacancyRemarksAsync(long vacancyId)
+    {
+        var result = await _pgContext.VacancyRemarks
+            .Where(pr => pr.VacancyId == vacancyId
+                         && new[]
+                         {
+                             (int)RemarkStatusEnum.AwaitingCorrection,
+                             (int)RemarkStatusEnum.AgainAssigned
+                         }.Contains(pr.RemarkStatusId))
+            .ToListAsync();
+
+        return result;
+    }
+
+    #endregion
+
+    #region Приватные методы.
+
+    /// <summary>
     /// Метод устанавливает статус вакансии.
     /// </summary>
     /// <param name="vacancyId">Id вакансии.</param>
@@ -278,4 +401,6 @@ public class VacancyModerationRepository : IVacancyModerationRepository
         
         vac.ModerationStatusId = (int)status;
     }
+
+    #endregion
 }

@@ -41,11 +41,12 @@ public interface IProjectModerationService
     Task<RejectProjectOutput> RejectProjectAsync(long projectId, string account);
 
     /// <summary>
-    /// Метод создает результаты проекта. 
+    /// Метод создает замечания проекта. 
     /// </summary>
-    /// <param name="prj">Данные проекта.</param>
+    /// <param name="createProjectRemarkInput">Входная модель.</param>
+    /// <param name="account">Аккаунт.</param>
     /// <param name="token">Токен.</param>
-    /// <returns>Результаты проекта.</returns>
+    /// <returns>Список замечаний проекта.</returns>
     Task<IEnumerable<ProjectRemarkEntity>> CreateProjectRemarksAsync(
         CreateProjectRemarkInput createProjectRemarkInput, string account, string token);
 

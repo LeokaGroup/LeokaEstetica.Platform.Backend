@@ -1,5 +1,7 @@
 using LeokaEstetica.Platform.CallCenter.Models.Dto.Output.Vacancy;
+using LeokaEstetica.Platform.Models.Dto.Input.Moderation;
 using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Vacancy;
+using LeokaEstetica.Platform.Models.Entities.Moderation;
 using LeokaEstetica.Platform.Models.Entities.Vacancy;
 
 namespace LeokaEstetica.Platform.CallCenter.Abstractions.Vacancy;
@@ -42,4 +44,23 @@ public interface IVacancyModerationService
     /// <param name="vacancyId">Id вакансии.</param>
     /// <returns>Выходная модель модерации.</returns>
     Task<RejectVacancyOutput> RejectVacancyAsync(long vacancyId);
+    
+    /// <summary>
+    /// Метод создает замечания вакансии. 
+    /// </summary>
+    /// <param name="createVacancyRemarkInput">Входная модель.</param>
+    /// <param name="account">Аккаунт.</param>
+    /// <param name="token">Токен.</param>
+    /// <returns>Список замечаний вакансии.</returns>
+    Task<IEnumerable<VacancyRemarkEntity>> CreateVacancyRemarksAsync(
+        CreateVacancyRemarkInput createVacancyRemarkInput, string account, string token);
+    
+    /// <summary>
+    /// Метод отправляет замечания вакансии владельцу вакансии.
+    /// Отправка замечаний вакансии подразумевает просто изменение статуса замечаниям вакансии.
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <param name="account">Аккаунт.</param>
+    /// <param name="token">Токен.</param>
+    /// </summary>
+    Task SendVacancyRemarksAsync(long vacancyId, string account, string token);
 }

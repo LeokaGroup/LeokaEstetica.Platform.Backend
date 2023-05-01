@@ -1,7 +1,7 @@
 namespace LeokaEstetica.Platform.Models.Dto.Input.Moderation;
 
 /// <summary>
-/// Класс списка замечаний входной модели.
+/// Класс списка замечаний проекта входной модели.
 /// </summary>
 public class CreateProjectRemarkInput
 {

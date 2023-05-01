@@ -1,6 +1,7 @@
 using LeokaEstetica.Platform.Models.Dto.Input.Vacancy;
 using LeokaEstetica.Platform.Models.Dto.Output.Configs;
 using LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
+using LeokaEstetica.Platform.Models.Entities.Moderation;
 using LeokaEstetica.Platform.Models.Entities.Vacancy;
 
 namespace LeokaEstetica.Platform.Services.Abstractions.Vacancy;
@@ -78,4 +79,12 @@ public interface IVacancyService
     /// <param name="vacancyId">Id вакансии.</param>
     /// <param name="account">Аккаунт.</param>
     Task AddVacancyArchiveAsync(long vacancyId, string account);
+
+    /// <summary>
+    /// Метод получает список замечаний вакансии, если они есть.
+    /// </summary>
+    /// <param name="projectId">Id вакансии.</param>
+    /// <param name="account">Аккаунт пользователя.</param>
+    /// <returns>Список замечаний вакансии.</returns>
+    Task<IEnumerable<VacancyRemarkEntity>> GetVacancyRemarksAsync(long vacancyId, string account);
 }

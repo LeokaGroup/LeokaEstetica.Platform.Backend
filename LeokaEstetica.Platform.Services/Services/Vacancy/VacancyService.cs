@@ -22,6 +22,8 @@ using LeokaEstetica.Platform.Services.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Services.Builders;
 using VacancyItems = LeokaEstetica.Platform.Redis.Models.Vacancy.VacancyItems;
 using LeokaEstetica.Platform.Base.Extensions.HtmlExtensions;
+using LeokaEstetica.Platform.Database.Abstractions.Moderation.Vacancy;
+using LeokaEstetica.Platform.Models.Entities.Moderation;
 
 namespace LeokaEstetica.Platform.Services.Services.Vacancy;
 
@@ -82,6 +84,7 @@ public class VacancyService : IVacancyService
 
     private readonly IProjectRepository _projectRepository;
     private readonly IMailingsService _mailingsService;
+    private readonly IVacancyModerationRepository _vacancyModerationRepository;
 
     /// <summary>
     /// Конструктор.
@@ -104,7 +107,8 @@ public class VacancyService : IVacancyService
         IVacancyNotificationsService vacancyNotificationsService, 
         IProjectRepository projectRepository,
         IFillColorVacanciesService fillColorVacanciesService, 
-        IMailingsService mailingsService)
+        IMailingsService mailingsService, 
+        IVacancyModerationRepository vacancyModerationRepository)
     {
         _logService = logService;
         _vacancyRepository = vacancyRepository;
@@ -119,6 +123,7 @@ public class VacancyService : IVacancyService
         _projectRepository = projectRepository;
         _fillColorVacanciesService = fillColorVacanciesService;
         _mailingsService = mailingsService;
+        _vacancyModerationRepository = vacancyModerationRepository;
 
         // Определяем обработчики цепочки фильтров.
         _salaryFilterVacanciesChain.Successor = _descSalaryVacanciesFilterChain;
@@ -570,6 +575,50 @@ public class VacancyService : IVacancyService
             await _vacancyRepository.AddVacancyArchiveAsync(vacancyId, userId);
         }
 
+        catch (Exception ex)
+        {
+            await _logService.LogErrorAsync(ex);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Метод получает список замечаний вакансии, если они есть.
+    /// </summary>
+    /// <param name="projectId">Id вакансии.</param>
+    /// <param name="account">Аккаунт пользователя.</param>
+    /// <returns>Список замечаний вакансии.</returns>
+    public async Task<IEnumerable<VacancyRemarkEntity>> GetVacancyRemarksAsync(long vacancyId, string account)
+    {
+        try
+        {
+            if (vacancyId <= 0)
+            {
+                var ex = new InvalidOperationException("Ошибка при получении замечаний вакансии. " +
+                                                       $"VacancyId: {vacancyId}");
+                throw ex;
+            }
+        
+            var userId = await _userRepository.GetUserIdByEmailAsync(account);
+            
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+
+            var isVacancyOwner = await _vacancyRepository.CheckVacancyOwnerAsync(vacancyId, userId);
+
+            if (!isVacancyOwner)
+            {
+                return Enumerable.Empty<VacancyRemarkEntity>();
+            }
+
+            var result = await _vacancyModerationRepository.GetVacancyRemarksAsync(vacancyId);
+
+            return result;
+        }
+        
         catch (Exception ex)
         {
             await _logService.LogErrorAsync(ex);
