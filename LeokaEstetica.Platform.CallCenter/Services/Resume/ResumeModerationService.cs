@@ -25,7 +25,7 @@ public class ResumeModerationService : IResumeModerationService
     private readonly IMapper _mapper;
     private readonly IUserRepository _userRepository;
     private readonly IResumeModerationNotificationService _resumeModerationNotificationService;
-    
+
     /// <summary>
     /// Конструктор.
     /// </summary>

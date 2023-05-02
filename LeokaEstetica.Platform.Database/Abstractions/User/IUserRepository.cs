@@ -163,4 +163,18 @@ public interface IUserRepository
     /// </summary>
     /// <param name="users">Список пользователей, которых предупредим.</param>
     Task DeleteDeactivateAccountsAsync(List<UserEntity> users);
+    
+    /// <summary>
+    /// Метод находит Id пользователя по его Id анкеты.
+    /// </summary>
+    /// <param name="profileInfoId">Id анкеты.</param>
+    /// <returns>Id пользователя.</returns>
+    Task<long> GetUserIdByProfileInfoIdAsync(long profileInfoId);
+    
+    /// <summary>
+    /// Метод находит аккаунт пользователя по его Id анкеты.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Аккаунт пользователя.</returns>
+    Task<string> GetUserAccountByUserIdAsync(long userId);
 }

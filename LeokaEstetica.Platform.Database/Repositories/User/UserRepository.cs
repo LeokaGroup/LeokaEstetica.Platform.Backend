@@ -28,6 +28,8 @@ public class UserRepository : IUserRepository
         _logger = logger;
     }
 
+    #region Публичные методы.
+
     /// <summary>
     /// Метод сохраняет нового пользователя в базу.
     /// </summary>
@@ -345,7 +347,7 @@ public class UserRepository : IUserRepository
     public async Task<long> GetUserIdByVkIdAsync(long vkId)
     {
         var result = await _pgContext.Users
-            .Where(u => u.VkUserId.Equals(vkId))
+            .Where(u => u.VkUserId == vkId)
             .Select(u => u.UserId)
             .FirstOrDefaultAsync();
 
@@ -370,4 +372,42 @@ public class UserRepository : IUserRepository
         _pgContext.Users.RemoveRange(users);
         await _pgContext.SaveChangesAsync();
     }
+
+    /// <summary>
+    /// Метод находит Id пользователя по его Id анкеты.
+    /// </summary>
+    /// <param name="profileInfoId">Id анкеты.</param>
+    /// <returns>Id пользователя.</returns>
+    public async Task<long> GetUserIdByProfileInfoIdAsync(long profileInfoId)
+    {
+        var result = await _pgContext.ProfilesInfo
+            .Where(u => u.ProfileInfoId == profileInfoId)
+            .Select(u => u.UserId)
+            .FirstOrDefaultAsync();
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод находит аккаунт пользователя по его Id анкеты.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Аккаунт пользователя.</returns>
+    public async Task<string> GetUserAccountByUserIdAsync(long userId)
+    {
+        var result = await _pgContext.Users
+            .Where(u => u.UserId == userId)
+            .Select(u => u.Email)
+            .FirstOrDefaultAsync();
+
+        return result;
+    }
+
+    #endregion
+
+    #region Приватные методы.
+
+    
+
+    #endregion
 }

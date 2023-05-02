@@ -18,7 +18,7 @@ namespace LeokaEstetica.Platform.Services.Services.Profile;
 /// <summary>
 /// Класс реализует методы сервиса профиля пользователя.
 /// </summary>
-public sealed class ProfileService : IProfileService
+public class ProfileService : IProfileService
 {
     private readonly ILogService _logger;
     private readonly IProfileRepository _profileRepository;
@@ -27,6 +27,15 @@ public sealed class ProfileService : IProfileService
     private readonly IProfileRedisService _profileRedisService;
     private readonly INotificationsService _notificationsService;
 
+    /// <summary>
+    /// Конструктор.
+    /// </summary>
+    /// <param name="logger">Сервис логов.</param>
+    /// <param name="profileRepository">Репозиторий профиля пользователя.</param>
+    /// <param name="userRepository">Репозиторий пользователя.</param>
+    /// <param name="mapper">Автомаппер.</param>
+    /// <param name="profileRedisService">Сервис кэша.</param>
+    /// <param name="notificationsService">Сервис уведомлений.</param>
     public ProfileService(ILogService logger,
         IProfileRepository profileRepository,
         IUserRepository userRepository,
@@ -60,6 +69,7 @@ public sealed class ProfileService : IProfileService
             if (long.TryParse(account, out long userId))
             {
                 userId = await _userRepository.GetUserIdByVkIdAsync(userId);
+                
                 if (userId <= 0)
                 {
                     throw new InvalidOperationException($"Пользователя с VK Id {userId} не существует в системе.");
@@ -512,6 +522,51 @@ public sealed class ProfileService : IProfileService
             return result;
         }
 
+        catch (Exception ex)
+        {
+            await _logger.LogErrorAsync(ex);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Метод получает данные профиля.
+    /// </summary>
+    /// <param name="profileInfoId">Id анкеты.</param>
+    /// <returns>Данные профиля.</returns>
+    public async Task<ProfileInfoOutput> GetProfileInfoAsync(long profileInfoId)
+    {
+        try
+        {
+            if (profileInfoId <= 0)
+            {
+                var ex = new ArgumentNullException($"Не передан ProfileInfoId. ProfileInfoId: {profileInfoId}");
+                throw ex;
+            }
+
+            var userId = await _userRepository.GetUserIdByProfileInfoIdAsync(profileInfoId);
+
+            if (userId <= 0)
+            {
+                var ex = new InvalidOperationException($"Не найдено пользователя с ProfileInfoId: {profileInfoId}");
+                throw ex;
+            }
+
+            var account = await _userRepository.GetUserAccountByUserIdAsync(userId);
+
+            if (string.IsNullOrEmpty(account))
+            {
+                var ex = new InvalidOperationException("Не найдено аккаунта пользователя с " +
+                                                       $"UserId: {userId}. " +
+                                                       $"ProfileInfoId: {profileInfoId}");
+                throw ex;
+            }
+
+            var result = await GetProfileInfoAsync(account);
+
+            return result;
+        }
+        
         catch (Exception ex)
         {
             await _logger.LogErrorAsync(ex);
