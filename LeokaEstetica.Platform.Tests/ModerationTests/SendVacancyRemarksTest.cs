@@ -8,8 +8,7 @@ public class SendVacancyRemarksTest : BaseServiceTest
     [Test]
     public Task SendVacancyRemarksAsyncTest()
     {
-        Assert.DoesNotThrowAsync(async () => await VacancyModerationService.SendVacancyRemarksAsync(264,
-            "sierra_93@mail.ru", null));
+        Assert.DoesNotThrowAsync(async () => await VacancyModerationService.SendVacancyRemarksAsync(264, null));
         
         return Task.CompletedTask;
     }

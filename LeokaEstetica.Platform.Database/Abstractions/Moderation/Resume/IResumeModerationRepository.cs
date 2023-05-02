@@ -51,4 +51,18 @@ public interface IResumeModerationRepository
     /// <param name="fields">Список названий полей.</param>
     /// <returns>Список замечаний.</returns>
     Task<List<ResumeRemarkEntity>> GetExistsResumeRemarksAsync(long profileInfoId, IEnumerable<string> fields);
+    
+    /// <summary>
+    /// Метод отправляет замечания вакансии владельцу анкеты.
+    /// Отправка замечаний вакансии подразумевает просто изменение статуса замечаниям анкеты.
+    /// <param name="profileInfoId">Id анкеты.</param>
+    /// </summary>
+    Task SendResumeRemarksAsync(long profileInfoId);
+
+    /// <summary>
+    /// Метод проверяет, были ли сохранены замечания анкеты.
+    /// </summary>
+    /// <param name="profileInfoId">Id анкеты.</param>
+    /// <returns>Признак раннего сохранения замечаний.</returns>
+    Task<bool> CheckResumeRemarksAsync(long profileInfoId);
 }

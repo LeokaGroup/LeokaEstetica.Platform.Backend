@@ -232,13 +232,11 @@ public class ProjectModerationRepository : IProjectModerationRepository
     /// Метод отправляет замечания проекта владельцу проекта.
     /// Отправка замечаний проекту подразумевает просто изменение статуса замечаниям проекта.
     /// <param name="projectId">Id проекта.</param>
-    /// <param name="userId">Id пользователя.</param>
     /// </summary>
-    public async Task SendProjectRemarksAsync(long projectId, long userId)
+    public async Task SendProjectRemarksAsync(long projectId)
     {
         var projectRemarks = await _pgContext.ProjectRemarks
-            .Where(pr => pr.ProjectId == projectId
-                         && pr.ModerationUserId == userId)
+            .Where(pr => pr.ProjectId == projectId)
             .ToListAsync();
 
         if (projectRemarks.Any())

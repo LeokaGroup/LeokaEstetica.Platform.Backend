@@ -84,9 +84,8 @@ public interface IVacancyModerationRepository
     /// Метод отправляет замечания вакансии владельцу вакансии.
     /// Отправка замечаний вакансии подразумевает просто изменение статуса замечаниям вакансии.
     /// <param name="vacancyId">Id вакансии.</param>
-    /// <param name="userId">Id пользователя.</param>
     /// </summary>
-    Task SendVacancyRemarksAsync(long vacancyId, long userId);
+    Task SendVacancyRemarksAsync(long vacancyId);
 
     /// <summary>
     /// Метод проверяет, были ли сохранены замечания вакансии.

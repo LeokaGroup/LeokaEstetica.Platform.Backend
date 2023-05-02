@@ -168,6 +168,43 @@ public class ResumeModerationRepository : IResumeModerationRepository
         return result;
     }
 
+    /// <summary>
+    /// Метод отправляет замечания вакансии владельцу анкеты.
+    /// Отправка замечаний вакансии подразумевает просто изменение статуса замечаниям анкеты.
+    /// <param name="profileInfoId">Id анкеты.</param>
+    /// </summary>
+    public async Task SendResumeRemarksAsync(long profileInfoId)
+    {
+        var resumeRemarks = await _pgContext.ResumeRemarks
+            .Where(pr => pr.ProfileInfoId == profileInfoId)
+            .ToListAsync();
+
+        if (resumeRemarks.Any())
+        {
+            foreach (var rr in resumeRemarks)
+            {
+                rr.RemarkStatusId = (int)RemarkStatusEnum.AwaitingCorrection;
+            }
+            
+            _pgContext.ResumeRemarks.UpdateRange(resumeRemarks);
+            await _pgContext.SaveChangesAsync();
+        }
+    }
+
+    //// <summary>
+    /// Метод проверяет, были ли сохранены замечания анкеты.
+    /// </summary>
+    /// <param name="profileInfoId">Id анкеты.</param>
+    /// <returns>Признак раннего сохранения замечаний.</returns>
+    public async Task<bool> CheckResumeRemarksAsync(long profileInfoId)
+    {
+        var result = await _pgContext.ResumeRemarks
+            .Where(pr => pr.ProfileInfoId == profileInfoId)
+            .AnyAsync();
+
+        return result;
+    }
+
     #endregion
 
     #region Приватные методы.

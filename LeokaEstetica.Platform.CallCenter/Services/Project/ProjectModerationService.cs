@@ -326,14 +326,6 @@ public class ProjectModerationService : IProjectModerationService
     {
         try
         {
-            var userId = await _userRepository.GetUserIdByEmailOrLoginAsync(account);
-
-            if (userId <= 0)
-            {
-                var ex = new NotFoundUserIdByAccountException(account);
-                throw ex;
-            }
-
             if (projectId <= 0)
             {
                 var ex = new InvalidOperationException($"Id проекта не был передан. ProjectId: {projectId}");
@@ -360,7 +352,7 @@ public class ProjectModerationService : IProjectModerationService
                 return;
             }
             
-            await _projectModerationRepository.SendProjectRemarksAsync(projectId, userId);
+            await _projectModerationRepository.SendProjectRemarksAsync(projectId);
 
             var projectName = await _projectModerationRepository.GetProjectNameAsync(projectId);
             var remarks = await _projectModerationRepository.GetProjectRemarksAsync(projectId);

@@ -1,6 +1,7 @@
 using AutoMapper;
 using LeokaEstetica.Platform.CallCenter.Abstractions.Resume;
 using LeokaEstetica.Platform.CallCenter.Builders;
+using LeokaEstetica.Platform.CallCenter.Consts;
 using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Resume;
@@ -209,6 +210,60 @@ public class ResumeModerationService : IResumeModerationService
             }
 
             return result;
+        }
+        
+        catch (Exception ex)
+        {
+            await _logService.LogErrorAsync(ex);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Метод отправляет замечания вакансии владельцу анкеты.
+    /// Отправка замечаний вакансии подразумевает просто изменение статуса замечаниям анкеты.
+    /// <param name="profileInfoId">Id анкеты.</param>
+    /// <param name="token">Токен.</param>
+    /// </summary>
+    public async Task SendResumeRemarksAsync(long profileInfoId, string token)
+    {
+        try
+        {
+            if (profileInfoId <= 0)
+            {
+                var ex = new InvalidOperationException($"Id анкеты не был передан. ProfileInfoId: {profileInfoId}");
+                throw ex;
+            }
+            
+            // Проверяем, были ли внесены замечания анкеты.
+            var isExists = await _resumeModerationRepository.CheckResumeRemarksAsync(profileInfoId);
+
+            if (!isExists)
+            {
+                var ex = new InvalidOperationException(RemarkConst.SEND_PROJECT_REMARKS_WARNING +
+                                                       $" ProfileInfoId: {profileInfoId}");
+                await _logService.LogWarningAsync(ex);
+                
+                if (!string.IsNullOrEmpty(token))
+                {
+                    // Отправляем уведомление о предупреждении, что замечания анкеты не были внесены.
+                    await _resumeModerationNotificationService.SendNotificationWarningSendResumeRemarksAsync(
+                        "Внимание", RemarkConst.SEND_PROJECT_REMARKS_WARNING,
+                        NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
+                }
+
+                return;
+            }
+
+            await _resumeModerationRepository.SendResumeRemarksAsync(profileInfoId);   
+            
+            if (!string.IsNullOrEmpty(token))
+            {
+                // Отправляем уведомление об отправке замечаний анкеты.
+                await _resumeModerationNotificationService.SendNotificationSuccessSendResumeRemarksAsync(
+                    "Все хорошо", "Замечания успешно отправлены.",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);
+            }
         }
         
         catch (Exception ex)

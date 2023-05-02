@@ -351,10 +351,11 @@ public class CallCenterController : BaseController
     /// <summary>
     /// Метод отправляет замечания проекта владельцу проекта.
     /// Отправка замечаний проекту подразумевает просто изменение статуса замечаниям проекта.
+    /// <param name="sendProjectRemarkInput">Входная модель.</param>
     /// </summary>
     [HttpPatch]
     [Route("send-project-remarks")]
-    [ProducesResponseType(200, Type = typeof(ProjectRemarkResult))]
+    [ProducesResponseType(200)]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
@@ -394,17 +395,18 @@ public class CallCenterController : BaseController
     /// <summary>
     /// Метод отправляет замечания вакансии владельцу проекта.
     /// Отправка замечаний проекту подразумевает просто изменение статуса замечаниям проекта.
+    /// <param name="sendVacancyRemarkInput">Входная модель.</param>
     /// </summary>
     [HttpPatch]
     [Route("send-vacancy-remarks")]
-    [ProducesResponseType(200, Type = typeof(ProjectRemarkResult))]
+    [ProducesResponseType(200)]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
     public async Task SendVacancyRemarksAsync([FromBody] SendVacancyRemarkInput sendVacancyRemarkInput)
     {
-        await _vacancyModerationService.SendVacancyRemarksAsync(sendVacancyRemarkInput.VacancyId, GetUserName(),
+        await _vacancyModerationService.SendVacancyRemarksAsync(sendVacancyRemarkInput.VacancyId, 
             GetTokenFromHeader());
     }
     
@@ -432,5 +434,23 @@ public class CallCenterController : BaseController
         };
 
         return result;
+    }
+    
+    /// <summary>
+    /// Метод отправляет замечания вакансии владельцу проекта.
+    /// Отправка замечаний проекту подразумевает просто изменение статуса замечаниям проекта.
+    /// <param name="sendResumeRemarkInput">Входная модель.</param>
+    /// </summary>
+    [HttpPatch]
+    [Route("send-resume-remarks")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task SendResumeRemarksAsync([FromBody] SendResumeRemarkInput sendResumeRemarkInput)
+    {
+        await _resumeModerationService.SendResumeRemarksAsync(sendResumeRemarkInput.ProfileInfoId,
+            GetTokenFromHeader());
     }
 }
