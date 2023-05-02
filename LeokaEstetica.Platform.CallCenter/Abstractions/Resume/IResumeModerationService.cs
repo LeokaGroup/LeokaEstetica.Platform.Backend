@@ -1,4 +1,6 @@
+using LeokaEstetica.Platform.Models.Dto.Input.Moderation;
 using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Resume;
+using LeokaEstetica.Platform.Models.Entities.Moderation;
 
 namespace LeokaEstetica.Platform.CallCenter.Abstractions.Resume;
 
@@ -24,4 +26,14 @@ public interface IResumeModerationService
     /// </summary>
     /// <param name="profileInfoId">Id анкеты.</param>
     Task RejectResumeAsync(long profileInfoId);
+    
+    /// <summary>
+    /// Метод создает замечания анкет. 
+    /// </summary>
+    /// <param name="createResumeRemarkInput">Входная модель.</param>
+    /// <param name="account">Аккаунт.</param>
+    /// <param name="token">Токен.</param>
+    /// <returns>Список замечаний анкет.</returns>
+    Task<IEnumerable<ResumeRemarkEntity>> CreateResumeRemarksAsync(
+        CreateResumeRemarkInput createResumeRemarkInput, string account, string token);
 }

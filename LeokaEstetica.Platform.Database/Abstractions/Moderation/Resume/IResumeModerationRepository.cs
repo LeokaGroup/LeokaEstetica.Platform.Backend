@@ -31,4 +31,24 @@ public interface IResumeModerationRepository
     /// </summary>
     /// <param name="profileInfoId">Id анкеты.</param>
     Task RejectResumeAsync(long profileInfoId);
+    
+    /// <summary>
+    /// Метод создает замечания анкеты.
+    /// </summary>
+    /// <param name="createResumeRemarkInput">Список замечаний.</param>
+    Task CreateResumeRemarksAsync(IEnumerable<ResumeRemarkEntity> createResumeRemarkInput);
+    
+    /// <summary>
+    /// Метод обновляет замечания анкеты.
+    /// </summary>
+    /// <param name="resumeRemarks">Список замечаний для обновления.</param>
+    Task UpdateResumeRemarksAsync(List<ResumeRemarkEntity> resumeRemarks);
+    
+    /// <summary>
+    /// Метод получает замечания анкеты, которые ранее были сохранены модератором.
+    /// </summary>
+    /// <param name="profileInfoId">Id анкеты.</param>
+    /// <param name="fields">Список названий полей.</param>
+    /// <returns>Список замечаний.</returns>
+    Task<List<ResumeRemarkEntity>> GetExistsResumeRemarksAsync(long profileInfoId, IEnumerable<string> fields);
 }

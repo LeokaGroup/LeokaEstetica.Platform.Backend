@@ -23,6 +23,8 @@ public class ResumeModerationRepository : IResumeModerationRepository
         _pgContext = pgContext;
     }
 
+    #region Публичные методы.
+
     /// <summary>
     /// Метод получает список анкет для модерации.
     /// </summary>
@@ -109,4 +111,68 @@ public class ResumeModerationRepository : IResumeModerationRepository
         profileInfo.ModerationStatusId = (int)ResumeModerationStatusEnum.RejectedResume;
         await _pgContext.SaveChangesAsync();
     }
+
+    /// <summary>
+    /// Метод обновляет замечания анкеты.
+    /// </summary>
+    /// <param name="resumeRemarks">Список замечаний для обновления.</param>
+    public async Task CreateResumeRemarksAsync(IEnumerable<ResumeRemarkEntity> resumeRemarks)
+    {
+        await _pgContext.ResumeRemarks.AddRangeAsync(resumeRemarks);
+        await _pgContext.SaveChangesAsync();
+    }
+
+    /// <summary>
+    /// Метод получает замечания анкеты, которые ранее были сохранены модератором.
+    /// </summary>
+    /// <param name="profileInfoId">Id анкеты.</param>
+    /// <param name="fields">Список названий полей.</param>
+    /// <returns>Список замечаний.</returns>
+    public async Task UpdateResumeRemarksAsync(List<ResumeRemarkEntity> resumeRemarks)
+    {
+        // Проводим все эти манипуляции, чтобы избежать ошибки при обновлении замечаний, которые уже были внесены.
+        foreach (var rr in resumeRemarks)
+        {
+            var local = _pgContext.Set<VacancyRemarkEntity>()
+                .Local
+                .FirstOrDefault(entry => entry.RemarkId == rr.RemarkId);
+
+            // Если локальная сущность != null.
+            if (local != null)
+            {
+                // Отсоединяем контекст устанавливая флаг Detached.
+                _pgContext.Entry(local).State = EntityState.Detached;
+            }
+            
+            // Проставляем обновляемой сущности флаг Modified.
+            _pgContext.Entry(rr).State = EntityState.Modified;
+        }
+        
+        await _pgContext.SaveChangesAsync();
+    }
+
+    /// <summary>
+    /// Метод получает замечания анкеты, которые ранее были сохранены модератором.
+    /// </summary>
+    /// <param name="profileInfoId">Id анкеты.</param>
+    /// <param name="fields">Список названий полей.</param>
+    /// <returns>Список замечаний.</returns>
+    public async Task<List<ResumeRemarkEntity>> GetExistsResumeRemarksAsync(long profileInfoId,
+        IEnumerable<string> fields)
+    {
+        var result = await _pgContext.ResumeRemarks
+            .Where(p => p.ProfileInfoId == profileInfoId
+                        && fields.Contains(p.FieldName))
+            .ToListAsync();
+
+        return result;
+    }
+
+    #endregion
+
+    #region Приватные методы.
+
+    
+
+    #endregion
 }

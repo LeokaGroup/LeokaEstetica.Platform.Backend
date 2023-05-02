@@ -136,5 +136,11 @@ public class MappingProfile : Profile
         CreateMap<VacancyRemarkEntity, VacancyRemarkOutput>();
         
         CreateMap<VacancyRemarkEntity, GetVacancyRemarkOutput>();
+        
+        CreateMap<ResumeRemarkInput, ResumeRemarkEntity>();
+        CreateMap<ResumeRemarkEntity, ResumeRemarkInput>();
+        CreateMap<ResumeRemarkEntity, ResumeRemarkOutput>();
+        
+        CreateMap<ResumeRemarkEntity, GetResumeRemarkOutput>();
     }
 }
