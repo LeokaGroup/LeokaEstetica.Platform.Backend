@@ -20,6 +20,7 @@ public class UserEntity
         ModerationUsers = new HashSet<ModerationUserEntity>();
         ProjectRemarks = new HashSet<ProjectRemarkEntity>();
         VacancyRemarks = new HashSet<VacancyRemarkEntity>();
+        ResumeRemarks = new HashSet<ResumeRemarkEntity>();
     }
 
     /// <summary>
@@ -181,4 +182,9 @@ public class UserEntity
     /// Список замечаний вакансии.
     /// </summary>
     public ICollection<VacancyRemarkEntity> VacancyRemarks { get; set; }
+
+    /// <summary>
+    /// Список замечаний анкет.
+    /// </summary>
+    public ICollection<ResumeRemarkEntity> ResumeRemarks { get; set; }
 }

@@ -84,8 +84,6 @@ public class BaseServiceTest
     protected readonly LandingService LandingService;
     protected readonly KnowledgeService KnowledgeService;
     protected readonly PgContext PgContext;
-    protected readonly FillColorProjectsService FillColorProjectsService;
-    protected readonly FillColorResumeService FillColorResumeService;
 
     protected BaseServiceTest()
     {
@@ -104,6 +102,9 @@ public class BaseServiceTest
         var optionsBuilder = new DbContextOptionsBuilder<PgContext>();
         optionsBuilder.UseNpgsql(PostgreConfigString);
         var pgContext = new PgContext(optionsBuilder.Options);
+        
+        PgContext = pgContext;
+        
         var logService = new LogService(pgContext);
         var userRepository = new UserRepository(pgContext, logService);
         var profileRepository = new ProfileRepository(pgContext);
@@ -160,18 +161,18 @@ public class BaseServiceTest
 
         var resumeRepository = new ResumeRepository(pgContext);
 
-        FillColorProjectsService = new FillColorProjectsService();
+        var fillColorProjectsService = new FillColorProjectsService();
 
         ProjectService = new ProjectService(projectRepository, logService, userRepository, mapper,
             projectNotificationsService, VacancyService, vacancyRepository, availableLimitsService,
             subscriptionRepository, fareRuleRepository, VacancyModerationService, projectNotificationsRepository, null,
-            null, FillColorProjectsService, null, projectModerationRepository);
+            null, fillColorProjectsService, null, projectModerationRepository);
 
         SubscriptionService =
             new SubscriptionService(logService, userRepository, subscriptionRepository, fareRuleRepository);
-        FillColorResumeService = new FillColorResumeService();
+        var fillColorResumeService = new FillColorResumeService();
         ResumeService = new ResumeService(logService, resumeRepository, mapper, subscriptionRepository,
-            fareRuleRepository, userRepository, FillColorResumeService);
+            fareRuleRepository, userRepository, fillColorResumeService);
         VacancyFinderService = new VacancyFinderService(vacancyRepository, logService);
         FinderProjectService = new Finder.Services.Project.ProjectFinderService(projectRepository, logService);
         ResumeFinderService = new ResumeFinderService(logService, resumeRepository);
@@ -186,17 +187,13 @@ public class BaseServiceTest
 
         var userBlackListService = new UserBlackListRepository(pgContext);
         UserBlackListService = new UserBlackListService(logService, userBlackListService);
-        ResumeModerationService =
-            new ResumeModerationService(logService, resumeModerationRepository, mapper, userRepository);
+        ResumeModerationService = new ResumeModerationService(logService, resumeModerationRepository, mapper,
+            userRepository, null);
 
         var landingRepository = new LandingRepository(pgContext);
         LandingService = new LandingService(logService, landingRepository, mapper);
 
         var KnowledgeRepository = new KnowledgeRepository(pgContext);
         KnowledgeService = new KnowledgeService(KnowledgeRepository, logService);
-
-        PgContext = pgContext;
-
-        
     }
 }

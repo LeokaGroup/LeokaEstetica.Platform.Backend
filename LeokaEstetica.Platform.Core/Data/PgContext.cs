@@ -379,4 +379,9 @@ public class PgContext : DbContext
     /// Список замечаний вакансий.
     /// </summary>
     public DbSet<VacancyRemarkEntity> VacancyRemarks { get; set; }
+
+    /// <summary>
+    /// Таблица замечаний анкет.
+    /// </summary>
+    public DbSet<ResumeRemarkEntity> ResumeRemarks { get; set; }
 }

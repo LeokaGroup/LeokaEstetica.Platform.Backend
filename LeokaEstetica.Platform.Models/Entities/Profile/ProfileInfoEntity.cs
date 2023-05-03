@@ -81,4 +81,9 @@ public class ProfileInfoEntity
     /// Опыт работы.
     /// </summary>
     public string WorkExperience { get; set; }
+
+    /// <summary>
+    /// Список замечаний анкет.
+    /// </summary>
+    public ICollection<ResumeRemarkEntity> ResumeRemarks { get; set; }
 }

@@ -316,21 +316,12 @@ public class VacancyModerationService : IVacancyModerationService
     /// Метод отправляет замечания вакансии владельцу вакансии.
     /// Отправка замечаний вакансии подразумевает просто изменение статуса замечаниям вакансии.
     /// <param name="vacancyId">Id вакансии.</param>
-    /// <param name="account">Аккаунт.</param>
     /// <param name="token">Токен.</param>
     /// </summary>
-    public async Task SendVacancyRemarksAsync(long vacancyId, string account, string token)
+    public async Task SendVacancyRemarksAsync(long vacancyId, string token)
     {
         try
         {
-            var userId = await _userRepository.GetUserIdByEmailOrLoginAsync(account);
-
-            if (userId <= 0)
-            {
-                var ex = new NotFoundUserIdByAccountException(account);
-                throw ex;
-            }
-
             if (vacancyId <= 0)
             {
                 var ex = new InvalidOperationException($"Id вакансии не был передан. VacancyId: {vacancyId}");
@@ -357,7 +348,7 @@ public class VacancyModerationService : IVacancyModerationService
                 return;
             }
 
-            await _vacancyModerationRepository.SendVacancyRemarksAsync(vacancyId, userId);   
+            await _vacancyModerationRepository.SendVacancyRemarksAsync(vacancyId);   
             
             if (!string.IsNullOrEmpty(token))
             {

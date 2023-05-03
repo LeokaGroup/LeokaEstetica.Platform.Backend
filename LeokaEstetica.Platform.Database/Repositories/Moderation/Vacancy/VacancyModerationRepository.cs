@@ -278,13 +278,11 @@ public class VacancyModerationRepository : IVacancyModerationRepository
     /// Метод отправляет замечания вакансии владельцу вакансии.
     /// Отправка замечаний вакансии подразумевает просто изменение статуса замечаниям вакансии.
     /// <param name="vacancyId">Id вакансии.</param>
-    /// <param name="userId">Id пользователя.</param>
     /// </summary>
-    public async Task SendVacancyRemarksAsync(long vacancyId, long userId)
+    public async Task SendVacancyRemarksAsync(long vacancyId)
     {
         var vacancyRemarks = await _pgContext.VacancyRemarks
-            .Where(pr => pr.VacancyId == vacancyId
-                         && pr.ModerationUserId == userId)
+            .Where(pr => pr.VacancyId == vacancyId)
             .ToListAsync();
 
         if (vacancyRemarks.Any())

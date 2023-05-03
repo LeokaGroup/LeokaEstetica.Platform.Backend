@@ -22,6 +22,7 @@ using LeokaEstetica.Platform.CallCenter.Models.Dto.Output.Role;
 using LeokaEstetica.Platform.CallCenter.Models.Dto.Output.Vacancy;
 using LeokaEstetica.Platform.Controllers.Filters;
 using LeokaEstetica.Platform.Models.Dto.Input.Moderation;
+using LeokaEstetica.Platform.Services.Abstractions.Profile;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LeokaEstetica.Platform.Controllers.CallCenter;
@@ -40,6 +41,7 @@ public class CallCenterController : BaseController
     private readonly IVacancyModerationService _vacancyModerationService;
     private readonly IUserBlackListService _userBlackListService;
     private readonly IResumeModerationService _resumeModerationService;
+    private readonly IProfileService _profileService;
 
     /// <summary>
     /// Конструктор.
@@ -50,12 +52,14 @@ public class CallCenterController : BaseController
     /// <param name="vacancyModerationService">Сервис модерации вакансий.</param>
     /// <param name="userBlackListService">Сервис ЧС пользователей.</param>
     /// <param name="resumeModerationService">Сервис модерации анкет.</param>
+    /// <param name="profileService">Сервис профиля пользователя.</param>
     public CallCenterController(IAccessModerationService accessModerationService,
         IProjectModerationService projectModerationService,
         IMapper mapper,
         IVacancyModerationService vacancyModerationService, 
         IUserBlackListService userBlackListService, 
-        IResumeModerationService resumeModerationService)
+        IResumeModerationService resumeModerationService, 
+        IProfileService profileService)
     {
         _accessModerationService = accessModerationService;
         _projectModerationService = projectModerationService;
@@ -63,6 +67,7 @@ public class CallCenterController : BaseController
         _vacancyModerationService = vacancyModerationService;
         _userBlackListService = userBlackListService;
         _resumeModerationService = resumeModerationService;
+        _profileService = profileService;
     }
 
     /// <summary>
@@ -351,10 +356,11 @@ public class CallCenterController : BaseController
     /// <summary>
     /// Метод отправляет замечания проекта владельцу проекта.
     /// Отправка замечаний проекту подразумевает просто изменение статуса замечаниям проекта.
+    /// <param name="sendProjectRemarkInput">Входная модель.</param>
     /// </summary>
     [HttpPatch]
     [Route("send-project-remarks")]
-    [ProducesResponseType(200, Type = typeof(ProjectRemarkResult))]
+    [ProducesResponseType(200)]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
@@ -394,17 +400,88 @@ public class CallCenterController : BaseController
     /// <summary>
     /// Метод отправляет замечания вакансии владельцу проекта.
     /// Отправка замечаний проекту подразумевает просто изменение статуса замечаниям проекта.
+    /// <param name="sendVacancyRemarkInput">Входная модель.</param>
     /// </summary>
     [HttpPatch]
     [Route("send-vacancy-remarks")]
-    [ProducesResponseType(200, Type = typeof(ProjectRemarkResult))]
+    [ProducesResponseType(200)]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
     public async Task SendVacancyRemarksAsync([FromBody] SendVacancyRemarkInput sendVacancyRemarkInput)
     {
-        await _vacancyModerationService.SendVacancyRemarksAsync(sendVacancyRemarkInput.VacancyId, GetUserName(),
+        await _vacancyModerationService.SendVacancyRemarksAsync(sendVacancyRemarkInput.VacancyId, 
             GetTokenFromHeader());
+    }
+    
+    /// <summary>
+    /// Метод создает замечания анкеты.
+    /// </summary>
+    /// <param name="createResumeRemarkInput">Входная модель.</param>
+    /// <returns>Список замечаний анкеты.</returns>
+    [HttpPost]
+    [Route("resume-remarks")]
+    [ProducesResponseType(200, Type = typeof(ResumeRemarkResult))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<ResumeRemarkResult> CreateVacancyRemarksAsync(
+        [FromBody] CreateResumeRemarkInput createResumeRemarkInput)
+    {
+        var vacancyRemarks = await _resumeModerationService.CreateResumeRemarksAsync(createResumeRemarkInput, 
+            GetUserName(), GetTokenFromHeader());
+        
+        var result = new ResumeRemarkResult
+        {
+            ResumeRemark = _mapper.Map<List<ResumeRemarkOutput>>(vacancyRemarks)
+        };
+
+        return result;
+    }
+    
+    /// <summary>
+    /// Метод отправляет замечания вакансии владельцу проекта.
+    /// Отправка замечаний проекту подразумевает просто изменение статуса замечаниям проекта.
+    /// <param name="sendResumeRemarkInput">Входная модель.</param>
+    /// </summary>
+    [HttpPatch]
+    [Route("send-resume-remarks")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task SendResumeRemarksAsync([FromBody] SendResumeRemarkInput sendResumeRemarkInput)
+    {
+        await _resumeModerationService.SendResumeRemarksAsync(sendResumeRemarkInput.ProfileInfoId,
+            GetTokenFromHeader());
+    }
+
+    /// <summary>
+    /// Метод получает данные профиля пользователя для модерации (композитная модель собирает результаты).
+    /// </summary>
+    /// <param name="profileInfoId">Id анкеты пользователя.</param>
+    /// <returns>Композитная модель с результатами.</returns>
+    [HttpGet]
+    [Route("resume/{profileInfoId}/preview")]
+    [ProducesResponseType(200, Type = typeof(ProfileInfoCompositeOutput))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<ProfileInfoCompositeOutput> GetProfileInfoAsync([FromRoute] long profileInfoId)
+    {
+        var result = new ProfileInfoCompositeOutput
+        {
+            ProfileInfo = await _profileService.GetProfileInfoAsync(profileInfoId)
+        };
+
+        var account = result.ProfileInfo.Email;
+        result.Skills = await _profileService.SelectedProfileUserSkillsAsync(account);
+        result.Intents = await _profileService.SelectedProfileUserIntentsAsync(account);
+
+        return result;
     }
 }
