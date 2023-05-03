@@ -177,4 +177,11 @@ public interface IUserRepository
     /// <param name="userId">Id пользователя.</param>
     /// <returns>Аккаунт пользователя.</returns>
     Task<string> GetUserAccountByUserIdAsync(long userId);
+    
+    /// <summary>
+    /// Метод находит Id анкеты по Id пользователя.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Id анкеты.</returns>
+    Task<long> GetProfileInfoIdByUserIdAsync(long userId);
 }

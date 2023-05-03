@@ -403,6 +403,21 @@ public class UserRepository : IUserRepository
         return result;
     }
 
+    /// <summary>
+    /// Метод находит Id анкеты по Id пользователя.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Id анкеты.</returns>
+    public async Task<long> GetProfileInfoIdByUserIdAsync(long userId)
+    {
+        var result = await _pgContext.ProfilesInfo
+            .Where(u => u.UserId == userId)
+            .Select(u => u.ProfileInfoId)
+            .FirstOrDefaultAsync();
+
+        return result;
+    }
+
     #endregion
 
     #region Приватные методы.

@@ -137,4 +137,23 @@ public class ResumeController : BaseController
 
         return result;
     }
+    
+    /// <summary>
+    /// Метод получает список замечаний анкеты, если они есть.
+    /// </summary>
+    /// <returns>Список замечаний анкеты.</returns>
+    [HttpGet]
+    [Route("remarks")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<GetResumeRemarkOutput>))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<IEnumerable<GetResumeRemarkOutput>> GetResumeRemarksAsync()
+    {
+        var items = await _resumeService.GetResumeRemarksAsync(GetUserName());
+        var result = _mapper.Map<IEnumerable<GetResumeRemarkOutput>>(items);
+
+        return result;
+    }
 }

@@ -25,4 +25,12 @@ public interface IResumeRepository
     /// <param name="resumeId">Id анкеты пользователя.</param>
     /// <returns>Данные анкеты.</returns>
     Task<ProfileInfoEntity> GetResumeAsync(long resumeId);
+    
+    /// <summary>
+    /// Метод првоеряет владельца анкеты.
+    /// </summary>
+    /// <param name="profileInfoId">Id анкеты.</param>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Признак является ли пользователь владельцем анкеты.</returns>
+    Task<bool> CheckResumeOwnerAsync(long profileInfoId, long userId);
 }

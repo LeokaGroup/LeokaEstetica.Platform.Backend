@@ -65,4 +65,11 @@ public interface IResumeModerationRepository
     /// <param name="profileInfoId">Id анкеты.</param>
     /// <returns>Признак раннего сохранения замечаний.</returns>
     Task<bool> CheckResumeRemarksAsync(long profileInfoId);
+    
+    /// <summary>
+    /// Метод получает замечания анкеты.
+    /// </summary>
+    /// <param name="profileInfoId">Id анкеты.</param>
+    /// <returns>Список замечаний.</returns>
+    Task<List<ResumeRemarkEntity>> GetResumeRemarksAsync(long profileInfoId);
 }

@@ -205,6 +205,25 @@ public class ResumeModerationRepository : IResumeModerationRepository
         return result;
     }
 
+    /// <summary>
+    /// Метод получает замечания анкеты.
+    /// </summary>
+    /// <param name="profileInfoId">Id анкеты.</param>
+    /// <returns>Список замечаний.</returns>
+    public async Task<List<ResumeRemarkEntity>> GetResumeRemarksAsync(long profileInfoId)
+    {
+        var result = await _pgContext.ResumeRemarks
+            .Where(pr => pr.ProfileInfoId == profileInfoId
+                         && new[]
+                         {
+                             (int)RemarkStatusEnum.AwaitingCorrection,
+                             (int)RemarkStatusEnum.AgainAssigned
+                         }.Contains(pr.RemarkStatusId))
+            .ToListAsync();
+
+        return result;
+    }
+
     #endregion
 
     #region Приватные методы.

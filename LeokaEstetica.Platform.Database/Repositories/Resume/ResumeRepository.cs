@@ -13,10 +13,16 @@ public class ResumeRepository : IResumeRepository
 {
     private readonly PgContext _pgContext;
     
+    /// <summary>
+    /// Конструктор.
+    /// </summary>
+    /// <param name="pgContext">Датаконтекст.</param>
     public ResumeRepository(PgContext pgContext)
     {
         _pgContext = pgContext;
     }
+
+    #region Публичные методы.
 
     /// <summary>
     /// Метод получает список резюме.
@@ -75,4 +81,27 @@ public class ResumeRepository : IResumeRepository
 
         return result;
     }
+
+    /// <summary>
+    /// Метод првоеряет владельца анкеты.
+    /// </summary>
+    /// <param name="profileInfoId">Id анкеты.</param>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Признак является ли пользователь владельцем анкеты.</returns>
+    public async Task<bool> CheckResumeOwnerAsync(long profileInfoId, long userId)
+    {
+        var result = await _pgContext.ProfilesInfo
+            .AnyAsync(p => p.ProfileInfoId == profileInfoId
+                           && p.UserId == userId);
+
+        return result;
+    }
+
+    #endregion
+
+    #region Приватные методы.
+
+    
+
+    #endregion
 }
