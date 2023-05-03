@@ -276,6 +276,22 @@ public class ProjectModerationRepository : IProjectModerationRepository
         return projectEntity?.UserProject?.ProjectName;
     }
 
+    /// <summary>
+    /// Метод получает список комментариев проекта для модерации.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Список комментариев.</returns>
+    public async Task<IEnumerable<ProjectCommentModerationEntity>> GetProjectCommentsModerationAsync(long projectId)
+    {
+        var result = await _pgContext.ProjectCommentsModeration
+            .Include(p => p.ProjectComment)
+            .Where(p => p.ProjectComment.ProjectId == projectId && 
+            p.ModerationStatuses.StatusId == (int)CommentModerationStatusEnum.ModerationComment)
+            .ToListAsync();
+
+        return result;
+    }
+
     #endregion
 
     #region Приватные методы.

@@ -85,10 +85,17 @@ public interface IProjectModerationRepository
     /// <param name="projectId">Id проекта.</param>
     /// <returns>Признак внесения замечаний.</returns>
     Task<bool> CheckExistsProjectRemarksAsync(long projectId);
+
     /// <summary>
     /// Метод возвращает название проекта по его Id.
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
     /// <returns></returns>
     Task<string> GetProjectNameAsync(long projectId);
+
+    /// <summary>
+    /// Метод получает список комментариев проекта для модерации.
+    /// </summary>
+    /// <returns>Список комментариев.</returns>
+    Task<IEnumerable<ProjectCommentModerationEntity>> GetProjectCommentsModerationAsync(long projectId);
 }

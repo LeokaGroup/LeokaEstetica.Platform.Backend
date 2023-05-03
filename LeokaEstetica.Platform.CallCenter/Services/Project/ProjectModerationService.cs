@@ -12,6 +12,7 @@ using LeokaEstetica.Platform.Database.Abstractions.Project;
 using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Models.Dto.Input.Moderation;
+using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Comment;
 using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Project;
 using LeokaEstetica.Platform.Models.Dto.Output.Project;
 using LeokaEstetica.Platform.Models.Entities.Moderation;
@@ -375,6 +376,28 @@ public class ProjectModerationService : IProjectModerationService
             }
         }
         
+        catch (Exception ex)
+        {
+            await _logService.LogErrorAsync(ex);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Метод получает список комментариев проекта для модерации.
+    /// </summary>
+    /// <returns>Список комментариев.</returns>
+    public async Task<CommentsProjectModerationResult> GetProjectCommentsModerationAsync(long projectId)
+    {
+        try
+        {
+            var result = new CommentsProjectModerationResult();
+            var items = await _projectModerationRepository.GetProjectCommentsModerationAsync(projectId);
+            result.Comments = _mapper.Map<List<CommentProjectModerationOutput>>(items);
+
+            return result;
+        }
+
         catch (Exception ex)
         {
             await _logService.LogErrorAsync(ex);

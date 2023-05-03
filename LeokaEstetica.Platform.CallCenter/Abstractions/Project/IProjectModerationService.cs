@@ -1,5 +1,6 @@
 using LeokaEstetica.Platform.CallCenter.Models.Dto.Output.Project;
 using LeokaEstetica.Platform.Models.Dto.Input.Moderation;
+using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Comment;
 using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Project;
 using LeokaEstetica.Platform.Models.Dto.Output.Project;
 using LeokaEstetica.Platform.Models.Entities.Moderation;
@@ -58,4 +59,11 @@ public interface IProjectModerationService
     /// <param name="token">Токен.</param>
     /// </summary>
     Task SendProjectRemarksAsync(long projectId, string account, string token);
+
+    /// <summary>
+    /// Метод получает список комментариев проекта для модерации.
+    /// </summary>
+    /// <param name="ProjectId">Id проекта.</param>
+    /// <returns>Список комментариев.</returns>
+    Task<CommentsProjectModerationResult> GetProjectCommentsModerationAsync(long projectId);
 }

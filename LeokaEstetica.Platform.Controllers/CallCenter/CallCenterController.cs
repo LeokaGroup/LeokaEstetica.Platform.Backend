@@ -23,6 +23,7 @@ using LeokaEstetica.Platform.CallCenter.Models.Dto.Output.Vacancy;
 using LeokaEstetica.Platform.Controllers.Filters;
 using LeokaEstetica.Platform.Models.Dto.Input.Moderation;
 using Microsoft.AspNetCore.Mvc;
+using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Comment;
 
 namespace LeokaEstetica.Platform.Controllers.CallCenter;
 
@@ -406,5 +407,24 @@ public class CallCenterController : BaseController
     {
         await _vacancyModerationService.SendVacancyRemarksAsync(sendVacancyRemarkInput.VacancyId, GetUserName(),
             GetTokenFromHeader());
+    }
+
+    /// <summary>
+    /// Метод получает список комментариев проекта для модерации.
+    /// </summary>
+    /// <param name="ProjectId">Id проекта.</param>
+    /// <returns>Список комментариев.</returns>
+    [HttpGet]
+    [Route("projects/{projectId}/comments")]
+    [ProducesResponseType(200, Type = typeof(CommentsProjectModerationResult))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<CommentsProjectModerationResult> GetCommentsProjectModerationAsync([FromRoute] long projectId)
+    {
+        var result = await _projectModerationService.GetProjectCommentsModerationAsync(projectId);
+
+        return result;
     }
 }

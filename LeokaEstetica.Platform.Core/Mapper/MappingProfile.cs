@@ -7,6 +7,7 @@ using LeokaEstetica.Platform.Models.Dto.Output.Configs;
 using LeokaEstetica.Platform.Models.Dto.Output.FareRule;
 using LeokaEstetica.Platform.Models.Dto.Output.Header;
 using LeokaEstetica.Platform.Models.Dto.Output.Landing;
+using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Comment;
 using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Project;
 using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Resume;
 using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Vacancy;
@@ -33,6 +34,7 @@ using LeokaEstetica.Platform.Models.Entities.ProjectTeam;
 using LeokaEstetica.Platform.Models.Entities.Subscription;
 using LeokaEstetica.Platform.Models.Entities.User;
 using LeokaEstetica.Platform.Models.Entities.Vacancy;
+using System.Globalization;
 
 namespace LeokaEstetica.Platform.Core.Mapper;
 
@@ -136,5 +138,10 @@ public class MappingProfile : Profile
         CreateMap<VacancyRemarkEntity, VacancyRemarkOutput>();
         
         CreateMap<VacancyRemarkEntity, GetVacancyRemarkOutput>();
+
+        CreateMap<ProjectCommentModerationEntity, CommentProjectModerationOutput>()
+            .ForMember(a => a.DateCreated, a => a.MapFrom(src => src.ProjectComment.Created.ToString("g", CultureInfo.GetCultureInfo("ru"))))
+            .ForMember(a => a.DateModeration, a => a.MapFrom(src => src.DateModeration.ToString("g", CultureInfo.GetCultureInfo("ru"))))
+            .ForMember(a => a.Comment, a => a.MapFrom(src => src.ProjectComment.Comment));
     }
 }
