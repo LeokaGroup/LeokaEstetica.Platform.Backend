@@ -497,7 +497,7 @@ public class CallCenterController : BaseController
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<IEnumerable<GetProjectRemarkOutput>> GetProjectRemarksAsync([FromRoute] long projectId)
+    public async Task<IEnumerable<GetProjectRemarkOutput>> GetProjectUnShippedRemarksAsync([FromRoute] long projectId)
     {
         var items = await _projectModerationService.GetProjectUnShippedRemarksAsync(projectId);
         var result = _mapper.Map<IEnumerable<GetProjectRemarkOutput>>(items);
