@@ -143,5 +143,11 @@ public class MappingProfile : Profile
             .ForMember(a => a.DateCreated, a => a.MapFrom(src => src.ProjectComment.Created.ToString("g", CultureInfo.GetCultureInfo("ru"))))
             .ForMember(a => a.DateModeration, a => a.MapFrom(src => src.DateModeration.ToString("g", CultureInfo.GetCultureInfo("ru"))))
             .ForMember(a => a.Comment, a => a.MapFrom(src => src.ProjectComment.Comment));
+        
+        CreateMap<ResumeRemarkInput, ResumeRemarkEntity>();
+        CreateMap<ResumeRemarkEntity, ResumeRemarkInput>();
+        CreateMap<ResumeRemarkEntity, ResumeRemarkOutput>();
+        
+        CreateMap<ResumeRemarkEntity, GetResumeRemarkOutput>();
     }
 }

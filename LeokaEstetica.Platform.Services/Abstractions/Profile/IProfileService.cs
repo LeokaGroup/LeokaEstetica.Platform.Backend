@@ -62,4 +62,11 @@ public interface IProfileService
     /// <param name="account">Аккаунт пользователя.</param>
     /// <returns>Список целей.</returns>
     Task<List<IntentOutput>> SelectedProfileUserIntentsAsync(string account);
+    
+    /// <summary>
+    /// Метод получает данные профиля.
+    /// </summary>
+    /// <param name="profileInfoId">Id анкеты.</param>
+    /// <returns>Данные профиля.</returns>
+    Task<ProfileInfoOutput> GetProfileInfoAsync(long profileInfoId);
 }

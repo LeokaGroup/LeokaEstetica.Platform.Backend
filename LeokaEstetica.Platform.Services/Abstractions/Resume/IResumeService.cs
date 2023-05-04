@@ -1,4 +1,5 @@
 using LeokaEstetica.Platform.Models.Dto.Output.Resume;
+using LeokaEstetica.Platform.Models.Entities.Moderation;
 using LeokaEstetica.Platform.Models.Entities.Profile;
 
 namespace LeokaEstetica.Platform.Services.Abstractions.Resume;
@@ -20,4 +21,11 @@ public interface IResumeService
     /// <param name="resumeId">Id анкеты пользователя.</param>
     /// <returns>Данные анкеты.</returns>
     Task<ProfileInfoEntity> GetResumeAsync(long resumeId);
+    
+    /// <summary>
+    /// Метод получает список замечаний анкеты, если они есть.
+    /// </summary>
+    /// <param name="account">Аккаунт пользователя.</param>
+    /// <returns>Список замечаний анкеты.</returns>
+    Task<IEnumerable<ResumeRemarkEntity>> GetResumeRemarksAsync(string account);
 }

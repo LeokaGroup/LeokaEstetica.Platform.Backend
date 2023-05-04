@@ -1,10 +1,13 @@
 using AutoMapper;
+using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.FareRule;
+using LeokaEstetica.Platform.Database.Abstractions.Moderation.Resume;
 using LeokaEstetica.Platform.Database.Abstractions.Resume;
 using LeokaEstetica.Platform.Database.Abstractions.Subscription;
 using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Models.Dto.Output.Resume;
+using LeokaEstetica.Platform.Models.Entities.Moderation;
 using LeokaEstetica.Platform.Models.Entities.Profile;
 using LeokaEstetica.Platform.Services.Abstractions.Resume;
 
@@ -22,6 +25,7 @@ public class ResumeService : IResumeService
     private readonly IFareRuleRepository _fareRuleRepository;
     private readonly IUserRepository _userRepository;
     private readonly IFillColorResumeService _fillColorResumeService;
+    private readonly IResumeModerationRepository _resumeModerationRepository;
     
     /// <summary>
     /// Конструктор.
@@ -33,13 +37,15 @@ public class ResumeService : IResumeService
     /// <param name="fareRuleRepository">Репозиторий правил тарифа.</param>
     /// <param name="userRepository">Репозиторий пользователей.</param>
     /// <param name="fillColorResumeService">Сервис выделение цветом резюме пользователей.</param>
+    /// <param name="resumeModerationRepository">Репозиторий модерации анкет.</param>
     public ResumeService(ILogService logService, 
         IResumeRepository resumeRepository, 
         IMapper mapper, 
         ISubscriptionRepository subscriptionRepository, 
         IFareRuleRepository fareRuleRepository, 
         IUserRepository userRepository,
-        IFillColorResumeService fillColorResumeService)
+        IFillColorResumeService fillColorResumeService, 
+        IResumeModerationRepository resumeModerationRepository)
     {
         _logService = logService;
         _resumeRepository = resumeRepository;
@@ -48,6 +54,7 @@ public class ResumeService : IResumeService
         _fareRuleRepository = fareRuleRepository;
         _userRepository = userRepository;
         _fillColorResumeService = fillColorResumeService;
+        _resumeModerationRepository = resumeModerationRepository;
     }
 
     #region Публичные методы.
@@ -109,6 +116,42 @@ public class ResumeService : IResumeService
             await _logService.LogErrorAsync(ex);
             throw;
         }
+    }
+
+    /// <summary>
+    /// Метод получает список замечаний анкеты, если они есть.
+    /// </summary>
+    /// <param name="account">Аккаунт пользователя.</param>
+    /// <returns>Список замечаний анкеты.</returns>
+    public async Task<IEnumerable<ResumeRemarkEntity>> GetResumeRemarksAsync(string account)
+    {
+        var userId = await _userRepository.GetUserIdByEmailAsync(account);
+            
+        if (userId <= 0)
+        {
+            var ex = new NotFoundUserIdByAccountException(account);
+            throw ex;
+        }
+
+        var profileInfoId = await _userRepository.GetProfileInfoIdByUserIdAsync(userId);
+        
+        if (profileInfoId <= 0)
+        {
+            var ex = new InvalidOperationException("Ошибка при получении замечаний анкеты. " +
+                                                   $"ProfileInfoId: {profileInfoId}");
+            throw ex;
+        }
+
+        var isProjectOwner = await _resumeRepository.CheckResumeOwnerAsync(profileInfoId, userId);
+
+        if (!isProjectOwner)
+        {
+            return Enumerable.Empty<ResumeRemarkEntity>();
+        }
+
+        var result = await _resumeModerationRepository.GetResumeRemarksAsync(profileInfoId);
+
+        return result;
     }
 
     #endregion

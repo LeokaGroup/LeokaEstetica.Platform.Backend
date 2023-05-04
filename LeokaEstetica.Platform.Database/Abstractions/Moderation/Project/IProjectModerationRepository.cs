@@ -75,9 +75,8 @@ public interface IProjectModerationRepository
     /// Метод отправляет замечания проекта владельцу проекта.
     /// Отправка замечаний проекту подразумевает просто изменение статуса замечаниям проекта.
     /// <param name="projectId">Id проекта.</param>
-    /// <param name="userId">Id пользователя.</param>
     /// </summary>
-    Task SendProjectRemarksAsync(long projectId, long userId);
+    Task SendProjectRemarksAsync(long projectId);
 
     /// <summary>
     /// Метод проверяет, были ли внесены замечания проекта.
