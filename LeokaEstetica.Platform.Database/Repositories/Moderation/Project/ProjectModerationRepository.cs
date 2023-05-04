@@ -274,6 +274,25 @@ public class ProjectModerationRepository : IProjectModerationRepository
         return projectEntity?.UserProject?.ProjectName;
     }
 
+    /// <summary>
+    /// Метод получает список замечаний проекта (не отправленные), если они есть.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Список замечаний проекта.</returns>
+    public async Task<IEnumerable<ProjectRemarkEntity>> GetProjectUnShippedRemarksAsync(long projectId)
+    {
+        var result = await _pgContext.ProjectRemarks
+            .Where(pr => new[]
+                {
+                    (int)RemarkStatusEnum.NotAssigned,
+                    (int)RemarkStatusEnum.Review
+                }
+                .Contains(pr.RemarkStatusId))
+            .ToListAsync();
+
+        return result;
+    }
+
     #endregion
 
     #region Приватные методы.

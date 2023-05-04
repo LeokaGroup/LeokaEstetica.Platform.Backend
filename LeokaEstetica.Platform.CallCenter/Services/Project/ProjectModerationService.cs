@@ -374,6 +374,24 @@ public class ProjectModerationService : IProjectModerationService
         }
     }
 
+    /// <summary>
+    /// Метод получает список замечаний проекта (не отправленные), если они есть.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Список замечаний проекта.</returns>
+    public async Task<IEnumerable<ProjectRemarkEntity>> GetProjectUnShippedRemarksAsync(long projectId)
+    {
+        if (projectId <= 0)
+        {
+            var ex = new InvalidOperationException($"Id проекта не был передан. ProjectId: {projectId}");
+            throw ex;
+        }
+        
+        var result = await _projectModerationRepository.GetProjectUnShippedRemarksAsync(projectId);
+
+        return result;
+    }
+
     #endregion
 
     #region Приватные методы.

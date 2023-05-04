@@ -484,4 +484,24 @@ public class CallCenterController : BaseController
 
         return result;
     }
+    
+    /// <summary>
+    /// Метод получает список замечаний проекта (не отправленные), если они есть.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Список замечаний проекта.</returns>
+    [HttpGet]
+    [Route("{projectId}/remarks/unshipped")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<GetProjectRemarkOutput>))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<IEnumerable<GetProjectRemarkOutput>> GetProjectRemarksAsync([FromRoute] long projectId)
+    {
+        var items = await _projectModerationService.GetProjectUnShippedRemarksAsync(projectId);
+        var result = _mapper.Map<IEnumerable<GetProjectRemarkOutput>>(items);
+
+        return result;
+    }
 }
