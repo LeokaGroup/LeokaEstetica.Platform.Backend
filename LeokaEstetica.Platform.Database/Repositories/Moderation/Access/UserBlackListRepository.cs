@@ -3,6 +3,7 @@ using LeokaEstetica.Platform.Database.Abstractions.Moderation.Access;
 using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Models.Entities.Access;
 using Microsoft.EntityFrameworkCore;
+using System.Drawing;
 using System.Net.Sockets;
 using System.Security.Cryptography.X509Certificates;
 
@@ -64,22 +65,28 @@ public class UserBlackListRepository : IUserBlackListRepository
     public async Task RemoveUserBlackListAsync(long userId)
     {
         bool IsEmailExist = await IsEmailUserExistAsync(userId);
-        bool IsPhoneExist = await IsPhonelUserExistAsync(userId);
+        bool IsPhoneExist = await IsPhoneUserExistAsync(userId);
 
-        if (IsEmailExist == false && IsPhoneExist == false)
-        {
-            throw new ArgumentNullException($"Пользователя {userId} нет в черном списке");
-        }
+        if (!IsEmailExist && !IsPhoneExist)
+            throw new InvalidOperationException($"Пользователя нет в черном списке. UserId: {userId}");
 
         if (IsEmailExist)
         {
-            var entity = await _pgContext.UserEmailBlackList.FirstAsync(x => x.UserId == userId);
+            var entity = await _pgContext.UserEmailBlackList.FirstOrDefaultAsync(x => x.UserId == userId);
+
+            if (entity == null)
+                throw new ArgumentNullException($"Пользователя нет в черном списке. UserId: {userId}");
+
             _pgContext.UserEmailBlackList.Remove(entity);
         }
 
         if (IsPhoneExist)
         {
-            var entity = await _pgContext.UserPhoneBlackList.FirstAsync(x => x.UserId == userId);
+            var entity = await _pgContext.UserPhoneBlackList.FirstOrDefaultAsync(x => x.UserId == userId);
+
+            if (entity == null)
+                throw new ArgumentNullException($"Пользователя нет в черном списке. UserId: {userId}");
+
             _pgContext.UserPhoneBlackList.Remove(entity);
         }
 
@@ -102,10 +109,28 @@ public class UserBlackListRepository : IUserBlackListRepository
     }
 
     /// <summary>
+    /// Метод проверяет наличие пользователя в ЧС.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Наличие пользователя в чс.</returns>
+    public async Task<bool> IsUserExistAsync(long userId)
+    {
+        var result = false;
+
+        var emailExist = await IsEmailUserExistAsync(userId);
+        var phoneExist = await IsPhoneUserExistAsync(userId);
+
+        if(emailExist == true || phoneExist == true)
+            result = true;
+
+        return result;
+    }
+
+    /// <summary>
     /// Метод проверяет наличие пользователя в ЧС по почте.
     /// </summary>
     /// <param name="userId">Id пользователя.</param>
-    /// <returns>Наличие пользователя в чс</returns>
+    /// <returns>Наличие пользователя в чс.</returns>
     private async Task<bool> IsEmailUserExistAsync(long userId)
     {
         var result = await _pgContext.UserEmailBlackList.AnyAsync(row => row.UserId == userId);
@@ -117,8 +142,8 @@ public class UserBlackListRepository : IUserBlackListRepository
     /// Метод проверяет наличие пользователя в ЧС по номеру телефона.
     /// </summary>
     /// <param name="userId">Id пользователя.</param>
-    /// <returns>Наличие пользователя в чс</returns>
-    private async Task<bool> IsPhonelUserExistAsync(long userId)
+    /// <returns>Наличие пользователя в чс.</returns>
+    private async Task<bool> IsPhoneUserExistAsync(long userId)
     {
         var result = await _pgContext.UserPhoneBlackList.AnyAsync(row => row.UserId == userId);
 

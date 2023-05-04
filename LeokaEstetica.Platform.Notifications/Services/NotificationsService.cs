@@ -55,7 +55,7 @@ public sealed class NotificationsService : INotificationsService
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
     /// <param name="token">Токен пользователя.</param>
-    public async Task SendNotifyUserNotFoundBlackListAsync(string title, string notifyText, string notificationLevel,
+    public async Task SendNotifyWarningUserNotFoundBlackListAsync(string title, string notifyText, string notificationLevel,
         string token)
     {
         var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(token);
@@ -63,6 +63,28 @@ public sealed class NotificationsService : INotificationsService
         await _hubContext.Clients
             .Client(connectionId)
             .SendAsync("SendNotifyWarning", new NotificationOutput
+            {
+                Title = title,
+                Message = notifyText,
+                NotificationLevel = notificationLevel
+            });
+    }
+
+    /// <summary>
+    /// Метод отправляет уведомление о том, что пользователь успешно удален из ЧС.
+    /// </summary>
+    /// <param name="title">Заголовок уведомления.</param>
+    /// <param name="notifyText">Текст уведомления.</param>
+    /// <param name="notificationLevel">Уровень уведомления.</param>
+    /// <param name="token">Токен пользователя.</param>
+    public async Task SendNotifySuccessUserRemovedBlackListAsync(string title, string notifyText, string notificationLevel,
+        string token)
+    {
+        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(token);
+
+        await _hubContext.Clients.
+            Client(connectionId)
+            .SendAsync("SendNotifySuccess", new NotificationOutput
             {
                 Title = title,
                 Message = notifyText,

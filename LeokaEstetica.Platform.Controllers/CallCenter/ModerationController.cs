@@ -259,7 +259,7 @@ public class ModerationController : BaseController
     /// </summary>
     /// <param name="userId">ID пользователя.</param>
     [HttpDelete]
-    [Route("blacklist")]
+    [Route("blacklist/{userId}")]
     [ProducesResponseType(200)]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]

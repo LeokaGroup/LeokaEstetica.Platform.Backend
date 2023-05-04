@@ -60,17 +60,27 @@ public class UserBlackListService : IUserBlackListService
     {
         try
         {
+            if (!string.IsNullOrEmpty(token))
+                throw new ArgumentNullException("Пользователя не существует");
+
+            var exist = await _userBlackListRepository.IsUserExistAsync(userId);
+
+            if (!exist)
+                throw new ArgumentNullException("Пользователя в чс не существует.");
+                
             await _userBlackListRepository.RemoveUserBlackListAsync(userId);
+            await _notificationsService.SendNotifySuccessUserRemovedBlackListAsync("Успешно.",
+                "Пользователь был успешно удален из чёрного списка.",
+                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS,
+                token);
         }
+
         catch(Exception ex) 
         {
-            if (!string.IsNullOrEmpty(token)) 
-            {
-                await _notificationsService.SendNotifyUserNotFoundBlackListAsync("Внимание.",
-                    "Пользователя нет в чёрном списке.",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING,
-                    token);
-            }
+            await _notificationsService.SendNotifyWarningUserNotFoundBlackListAsync("Внимание.",
+                "Возникла ошибка при удалении пользователя.",
+                NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING,
+                token);
 
             await _logService.LogErrorAsync(ex);
             throw;
