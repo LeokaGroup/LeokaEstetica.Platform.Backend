@@ -44,4 +44,11 @@ public interface IResumeModerationService
     /// <param name="token">Токен.</param>
     /// </summary>
     Task SendResumeRemarksAsync(long profileInfoId, string token);
+    
+    /// <summary>
+    /// Метод получает список замечаний анкеты (не отправленные), если они есть.
+    /// </summary>
+    /// <param name="profileInfoId">Id анкеты.</param>
+    /// <returns>Список замечаний анкеты.</returns>
+    Task<IEnumerable<ResumeRemarkEntity>> GetResumeUnShippedRemarksAsync(long profileInfoId);
 }

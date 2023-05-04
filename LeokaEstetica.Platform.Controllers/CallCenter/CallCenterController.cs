@@ -22,6 +22,7 @@ using LeokaEstetica.Platform.CallCenter.Models.Dto.Output.Role;
 using LeokaEstetica.Platform.CallCenter.Models.Dto.Output.Vacancy;
 using LeokaEstetica.Platform.Controllers.Filters;
 using LeokaEstetica.Platform.Models.Dto.Input.Moderation;
+using LeokaEstetica.Platform.Models.Dto.Output.Resume;
 using LeokaEstetica.Platform.Services.Abstractions.Profile;
 using Microsoft.AspNetCore.Mvc;
 
@@ -511,8 +512,8 @@ public class CallCenterController : BaseController
     /// <param name="vacancyId">Id вакансии.</param>
     /// <returns>Список замечаний вакансии.</returns>
     [HttpGet]
-    [Route("{projectId}/remarks/unshipped")]
-    [ProducesResponseType(200, Type = typeof(IEnumerable<GetProjectRemarkOutput>))]
+    [Route("{vacancyId}/remarks/unshipped")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<GetVacancyRemarkOutput>))]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
@@ -521,6 +522,26 @@ public class CallCenterController : BaseController
     {
         var items = await _vacancyModerationService.GetVacancyUnShippedRemarksAsync(vacancyId);
         var result = _mapper.Map<IEnumerable<GetVacancyRemarkOutput>>(items);
+
+        return result;
+    }
+    
+    /// <summary>
+    /// Метод получает список замечаний анкеты (не отправленные), если они есть.
+    /// </summary>
+    /// <param name="vacancyId">Id анкеты.</param>
+    /// <returns>Список замечаний анкеты.</returns>
+    [HttpGet]
+    [Route("{projectId}/remarks/unshipped")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<GetResumeRemarkOutput>))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<IEnumerable<GetResumeRemarkOutput>> GetResumeUnShippedRemarksAsync([FromRoute] long vacancyId)
+    {
+        var items = await _resumeModerationService.GetResumeUnShippedRemarksAsync(vacancyId);
+        var result = _mapper.Map<IEnumerable<GetResumeRemarkOutput>>(items);
 
         return result;
     }

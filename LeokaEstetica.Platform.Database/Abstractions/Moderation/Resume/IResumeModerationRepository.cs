@@ -72,4 +72,11 @@ public interface IResumeModerationRepository
     /// <param name="profileInfoId">Id анкеты.</param>
     /// <returns>Список замечаний.</returns>
     Task<List<ResumeRemarkEntity>> GetResumeRemarksAsync(long profileInfoId);
+    
+    /// <summary>
+    /// Метод получает список замечаний анкеты (не отправленные), если они есть.
+    /// </summary>
+    /// <param name="profileInfoId">Id анкеты.</param>
+    /// <returns>Список замечаний анкеты.</returns>
+    Task<IEnumerable<ResumeRemarkEntity>> GetResumeUnShippedRemarksAsync(long profileInfoId);
 }

@@ -224,6 +224,25 @@ public class ResumeModerationRepository : IResumeModerationRepository
         return result;
     }
 
+    /// <summary>
+    /// Метод получает список замечаний анкеты (не отправленные), если они есть.
+    /// </summary>
+    /// <param name="profileInfoId">Id анкеты.</param>
+    /// <returns>Список замечаний анкеты.</returns>
+    public async Task<IEnumerable<ResumeRemarkEntity>> GetResumeUnShippedRemarksAsync(long profileInfoId)
+    {
+        var result = await _pgContext.ResumeRemarks
+            .Where(pr => pr.ProfileInfoId == profileInfoId
+                         && new[]
+                         {
+                             (int)RemarkStatusEnum.AwaitingCorrection,
+                             (int)RemarkStatusEnum.NotAssigned
+                         }.Contains(pr.RemarkStatusId))
+            .ToListAsync();
+
+        return result;
+    }
+
     #endregion
 
     #region Приватные методы.
