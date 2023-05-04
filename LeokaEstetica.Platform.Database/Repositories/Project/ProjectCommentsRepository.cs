@@ -49,7 +49,7 @@ public sealed class ProjectCommentsRepository : IProjectCommentsRepository
             {
                 CommentId = prj.CommentId,
                 DateModeration = DateTime.Now,
-                StatusId = (int)ProjectModerationStatusEnum.ModerationProject
+                StatusId = (int)CommentModerationStatusEnum.ModerationComment
             });
             await _pgContext.SaveChangesAsync();
             
