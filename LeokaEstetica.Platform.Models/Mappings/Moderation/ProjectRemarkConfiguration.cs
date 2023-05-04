@@ -59,6 +59,7 @@ public partial class ProjectRemarkConfiguration : IEntityTypeConfiguration<Proje
             .HasColumnName("RejectReason")
             .HasColumnType("varchar(300)")
             .HasMaxLength(300)
+            .HasDefaultValue(string.Empty)
             .IsRequired();
 
         entity.HasIndex(u => u.RemarkId)
