@@ -330,6 +330,25 @@ public class VacancyModerationRepository : IVacancyModerationRepository
         return result;
     }
 
+    /// <summary>
+    /// Метод получает список замечаний вакансии (не отправленные), если они есть.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <returns>Список замечаний вакансии.</returns>
+    public async Task<IEnumerable<VacancyRemarkEntity>> GetVacancyUnShippedRemarksAsync(long vacancyId)
+    {
+        var result = await _pgContext.VacancyRemarks
+            .Where(pr => new[]
+                {
+                    (int)RemarkStatusEnum.NotAssigned,
+                    (int)RemarkStatusEnum.Review
+                }
+                .Contains(pr.RemarkStatusId))
+            .ToListAsync();
+
+        return result;
+    }
+
     #endregion
 
     #region Приватные методы.

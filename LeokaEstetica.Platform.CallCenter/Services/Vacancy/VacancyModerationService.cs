@@ -366,6 +366,24 @@ public class VacancyModerationService : IVacancyModerationService
         }
     }
 
+    /// <summary>
+    /// Метод получает список замечаний вакансии (не отправленные), если они есть.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <returns>Список замечаний вакансии.</returns>
+    public async Task<IEnumerable<VacancyRemarkEntity>> GetVacancyUnShippedRemarksAsync(long vacancyId)
+    {
+        if (vacancyId <= 0)
+        {
+            var ex = new InvalidOperationException($"Id вакансии не был передан. VacancyId: {vacancyId}");
+            throw ex;
+        }
+
+        var result = await _vacancyModerationRepository.GetVacancyUnShippedRemarksAsync(vacancyId);
+
+        return result;
+    }
+
     #endregion
 
     #region Приватные методы.

@@ -100,4 +100,11 @@ public interface IVacancyModerationRepository
     /// <param name="vacancyId">Id вакансии.</param>
     /// <returns>Список замечаний.</returns>
     Task<List<VacancyRemarkEntity>> GetVacancyRemarksAsync(long vacancyId);
+    
+    /// <summary>
+    /// Метод получает список замечаний вакансии (не отправленные), если они есть.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <returns>Список замечаний вакансии.</returns>
+    Task<IEnumerable<VacancyRemarkEntity>> GetVacancyUnShippedRemarksAsync(long vacancyId);
 }

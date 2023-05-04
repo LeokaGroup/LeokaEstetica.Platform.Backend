@@ -504,4 +504,24 @@ public class CallCenterController : BaseController
 
         return result;
     }
+    
+    /// <summary>
+    /// Метод получает список замечаний вакансии (не отправленные), если они есть.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <returns>Список замечаний вакансии.</returns>
+    [HttpGet]
+    [Route("{projectId}/remarks/unshipped")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<GetProjectRemarkOutput>))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<IEnumerable<GetVacancyRemarkOutput>> GetVacancyUnShippedRemarksAsync([FromRoute] long vacancyId)
+    {
+        var items = await _vacancyModerationService.GetVacancyUnShippedRemarksAsync(vacancyId);
+        var result = _mapper.Map<IEnumerable<GetVacancyRemarkOutput>>(items);
+
+        return result;
+    }
 }
