@@ -1,3 +1,4 @@
+using LeokaEstetica.Platform.Core.Enums;
 using NUnit.Framework;
 using static NUnit.Framework.Assert;
 
@@ -12,6 +13,16 @@ public class GetProjectUnShippedRemarksTest : BaseServiceTest
         var result = await ProjectModerationService.GetProjectUnShippedRemarksAsync(209);
         
         NotNull(result);
-        IsNotEmpty(result);
+
+        var items = result.ToList();
+        
+        IsNotEmpty(items);
+
+        IsTrue(items.All(x => new[]
+            {
+                (int)RemarkStatusEnum.AwaitingCorrection,
+                (int)RemarkStatusEnum.NotAssigned
+            }
+            .Contains(x.RemarkStatusId)));
     }
 }
