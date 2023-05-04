@@ -140,8 +140,8 @@ public class MappingProfile : Profile
         CreateMap<VacancyRemarkEntity, GetVacancyRemarkOutput>();
 
         CreateMap<ProjectCommentModerationEntity, CommentProjectModerationOutput>()
-            .ForMember(a => a.DateCreated, a => a.MapFrom(src => src.ProjectComment.Created.ToString("g", CultureInfo.GetCultureInfo("ru"))))
-            .ForMember(a => a.DateModeration, a => a.MapFrom(src => src.DateModeration.ToString("g", CultureInfo.GetCultureInfo("ru"))))
+            .ForMember(a => a.DateCreated, a => a.MapFrom(src => src.ProjectComment.Created))
+            .ForMember(a => a.DateModeration, a => a.MapFrom(src => src.DateModeration))
             .ForMember(a => a.Comment, a => a.MapFrom(src => src.ProjectComment.Comment));
         
         CreateMap<ResumeRemarkInput, ResumeRemarkEntity>();

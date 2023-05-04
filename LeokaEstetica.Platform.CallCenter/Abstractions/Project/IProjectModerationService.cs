@@ -63,7 +63,7 @@ public interface IProjectModerationService
     /// <summary>
     /// Метод получает список комментариев проекта для модерации.
     /// </summary>
-    /// <param name="ProjectId">Id проекта.</param>
+    /// <param name="projectId">Id проекта.</param>
     /// <returns>Список комментариев.</returns>
-    Task<CommentsProjectModerationResult> GetProjectCommentsModerationAsync(long projectId);
+    Task<IEnumerable<CommentProjectModerationOutput>> GetProjectCommentsModerationAsync(long projectId);
 }

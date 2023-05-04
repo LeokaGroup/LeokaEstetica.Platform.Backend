@@ -419,7 +419,7 @@ public class CallCenterController : BaseController
     /// <summary>
     /// Метод получает список комментариев проекта для модерации.
     /// </summary>
-    /// <param name="ProjectId">Id проекта.</param>
+    /// <param name="projectId">Id проекта.</param>
     /// <returns>Список комментариев.</returns>
     [HttpGet]
     [Route("projects/{projectId}/comments")]
@@ -430,7 +430,14 @@ public class CallCenterController : BaseController
     [ProducesResponseType(404)]
     public async Task<CommentsProjectModerationResult> GetCommentsProjectModerationAsync([FromRoute] long projectId)
     {
-        var result = await _projectModerationService.GetProjectCommentsModerationAsync(projectId);
+        
+        var comments = await _projectModerationService.GetProjectCommentsModerationAsync(projectId);
+
+        var result = new CommentsProjectModerationResult
+        {
+            Comments = comments
+        };
+
         return result;
     }
     

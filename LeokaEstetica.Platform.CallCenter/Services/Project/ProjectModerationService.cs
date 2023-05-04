@@ -378,16 +378,16 @@ public class ProjectModerationService : IProjectModerationService
     /// <summary>
     /// Метод получает список комментариев проекта для модерации.
     /// </summary>
+    /// <param name="projectId">Id проекта.</param>
     /// <returns>Список комментариев.</returns>
-    public async Task<CommentsProjectModerationResult> GetProjectCommentsModerationAsync(long projectId)
+    public async Task<IEnumerable<CommentProjectModerationOutput>> GetProjectCommentsModerationAsync(long projectId)
     {
         try
         {
-            var result = new CommentsProjectModerationResult();
             var items = await _projectModerationRepository.GetProjectCommentsModerationAsync(projectId);
-            result.Comments = _mapper.Map<List<CommentProjectModerationOutput>>(items);
+            var comments = CreateCommentsProjectModerationDatesBuilder.Create(items, _mapper);
 
-            return result;
+            return comments;
         }
 
         catch (Exception ex)
