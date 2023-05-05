@@ -497,16 +497,16 @@ public class CallCenterController : BaseController
     /// <param name="projectId">Id проекта.</param>
     /// <returns>Список замечаний проекта.</returns>
     [HttpGet]
-    [Route("{projectId}/remarks/unshipped")]
-    [ProducesResponseType(200, Type = typeof(IEnumerable<GetProjectRemarkOutput>))]
+    [Route("project/{projectId}/remarks/unshipped")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<ProjectRemarkOutput>))]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<IEnumerable<GetProjectRemarkOutput>> GetProjectUnShippedRemarksAsync([FromRoute] long projectId)
+    public async Task<IEnumerable<ProjectRemarkOutput>> GetProjectUnShippedRemarksAsync([FromRoute] long projectId)
     {
         var items = await _projectModerationService.GetProjectUnShippedRemarksAsync(projectId);
-        var result = _mapper.Map<IEnumerable<GetProjectRemarkOutput>>(items);
+        var result = _mapper.Map<IEnumerable<ProjectRemarkOutput>>(items);
 
         return result;
     }
