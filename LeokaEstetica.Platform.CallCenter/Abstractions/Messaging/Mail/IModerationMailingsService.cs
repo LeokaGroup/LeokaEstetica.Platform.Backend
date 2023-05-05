@@ -46,4 +46,14 @@ public interface IModerationMailingsService
     /// <param name="projectName">Название проекта.</param>
     /// <param name="remarks">Список замечаний.</param>
     Task SendNotificationAboutRemarkAsync(string mailTo, string projectName, List<ProjectRemarkEntity> remarks);
+
+    /// <summary>
+    /// Метод отправляет уведомления на почту владельца вакансии информацию о замечаниях вакансии.
+    /// </summary>
+    /// <param name="mailTo">Кому отправить?</param>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <param name="vacancyName">Название вакансии.</param>
+    /// <param name="remarks">Список замечаний.</param>
+    Task SendNotificationVacancyRemarksAsync(string mailTo, long vacancyId, string vacancyName,
+        List<VacancyRemarkEntity> remarks);
 }
