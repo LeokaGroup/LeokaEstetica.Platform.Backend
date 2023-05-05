@@ -100,11 +100,4 @@ public interface IVacancyModerationRepository
     /// <param name="vacancyId">Id вакансии.</param>
     /// <returns>Список замечаний.</returns>
     Task<List<VacancyRemarkEntity>> GetVacancyRemarksAsync(long vacancyId);
-
-    /// <summary>
-    /// Метод получает название вакансии по её Id.
-    /// </summary>
-    /// <param name="vacancyId">Id вакансии.</param>
-    /// <returns>Название вакансии.</returns>
-    Task<string> GetVacancyNameByIdAsync(long vacancyId);
 }

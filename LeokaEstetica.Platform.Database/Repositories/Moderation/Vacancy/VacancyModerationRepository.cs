@@ -328,20 +328,6 @@ public class VacancyModerationRepository : IVacancyModerationRepository
 
         return result;
     }
-
-    /// <summary>
-    /// Метод получает название вакансии по её Id.
-    /// </summary>
-    /// <param name="vacancyId">Id вакансии.</param>
-    /// <returns>Название вакансии.</returns>
-    public async Task<string> GetVacancyNameByIdAsync(long vacancyId)
-    {
-        var result = await _pgContext.ModerationVacancies
-            .Include(v => v.UserVacancy)
-            .FirstOrDefaultAsync(v => v.VacancyId == vacancyId);
-
-        return result.UserVacancy.VacancyName;
-    }
     
     #endregion
 
