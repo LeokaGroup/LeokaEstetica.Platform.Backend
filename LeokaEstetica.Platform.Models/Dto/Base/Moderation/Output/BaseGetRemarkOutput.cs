@@ -11,10 +11,10 @@ public class BaseGetRemarkOutput
     /// Текст замечания.
     /// </summary>
     [JsonPropertyName("detail")]
-    public string RemarkText { get; set; }
+    protected string RemarkText { get; set; }
 
     /// <summary>
     /// Уровень замечания.
     /// </summary>
-    public string Severity { get; set; }
+    protected string Severity { get; set; }
 }

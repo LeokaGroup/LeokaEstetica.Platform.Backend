@@ -538,7 +538,8 @@ public class CallCenterController : BaseController
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<IEnumerable<GetResumeRemarkOutput>> GetResumeUnShippedRemarksAsync([FromRoute] long profileInfoId)
+    public async Task<IEnumerable<GetResumeRemarkOutput>> GetResumeUnShippedRemarksAsync(
+        [FromRoute] long profileInfoId)
     {
         var items = await _resumeModerationService.GetResumeUnShippedRemarksAsync(profileInfoId);
         var result = _mapper.Map<IEnumerable<GetResumeRemarkOutput>>(items);
