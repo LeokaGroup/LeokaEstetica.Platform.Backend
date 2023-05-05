@@ -71,7 +71,7 @@ public interface IVacancyModerationRepository
     /// <summary>
     /// Метод создает замечания вакансии.
     /// </summary>
-    /// <param name="createVacancyRemarkInput">Список замечаний.</param>
+    /// <param name="vacancyRemarks">Список замечаний.</param>
     Task CreateVacancyRemarksAsync(IEnumerable<VacancyRemarkEntity> vacancyRemarks);
     
     /// <summary>
@@ -100,4 +100,11 @@ public interface IVacancyModerationRepository
     /// <param name="vacancyId">Id вакансии.</param>
     /// <returns>Список замечаний.</returns>
     Task<List<VacancyRemarkEntity>> GetVacancyRemarksAsync(long vacancyId);
+
+    /// <summary>
+    /// Метод получает название вакансии по её Id.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <returns>Название вакансии.</returns>
+    Task<string> GetVacancyNameByIdAsync(long vacancyId);
 }

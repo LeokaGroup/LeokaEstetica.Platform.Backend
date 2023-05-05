@@ -6,6 +6,7 @@ using LeokaEstetica.Platform.Database.Abstractions.Moderation.Vacancy;
 using LeokaEstetica.Platform.Models.Entities.Moderation;
 using LeokaEstetica.Platform.Models.Entities.Notification;
 using LeokaEstetica.Platform.Models.Entities.Vacancy;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 
 namespace LeokaEstetica.Platform.Database.Repositories.Moderation.Vacancy;
@@ -330,6 +331,20 @@ public class VacancyModerationRepository : IVacancyModerationRepository
         return result;
     }
 
+    /// <summary>
+    /// Метод получает название вакансии по её Id.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <returns>Название вакансии.</returns>
+    public async Task<string> GetVacancyNameByIdAsync(long vacancyId)
+    {
+        var result = await _pgContext.ModerationVacancies
+            .Include(v => v.UserVacancy)
+            .FirstOrDefaultAsync(v => v.VacancyId == vacancyId);
+
+        return result.UserVacancy.VacancyName;
+    }
+    
     #endregion
 
     #region Приватные методы.
@@ -356,6 +371,7 @@ public class VacancyModerationRepository : IVacancyModerationRepository
         return true;
     }
     
+    /// <summary>
     /// Метод проверяет, была ли уже такая вакансия на модерации. 
     /// </summary>
     /// <param name="vacancyId">Id вакансии.</param>
