@@ -529,18 +529,18 @@ public class CallCenterController : BaseController
     /// <summary>
     /// Метод получает список замечаний анкеты (не отправленные), если они есть.
     /// </summary>
-    /// <param name="vacancyId">Id анкеты.</param>
+    /// <param name="profileInfoId">Id анкеты.</param>
     /// <returns>Список замечаний анкеты.</returns>
     [HttpGet]
-    [Route("{projectId}/remarks/unshipped")]
+    [Route("{profileInfoId}/remarks/unshipped")]
     [ProducesResponseType(200, Type = typeof(IEnumerable<GetResumeRemarkOutput>))]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<IEnumerable<GetResumeRemarkOutput>> GetResumeUnShippedRemarksAsync([FromRoute] long vacancyId)
+    public async Task<IEnumerable<GetResumeRemarkOutput>> GetResumeUnShippedRemarksAsync([FromRoute] long profileInfoId)
     {
-        var items = await _resumeModerationService.GetResumeUnShippedRemarksAsync(vacancyId);
+        var items = await _resumeModerationService.GetResumeUnShippedRemarksAsync(profileInfoId);
         var result = _mapper.Map<IEnumerable<GetResumeRemarkOutput>>(items);
 
         return result;
