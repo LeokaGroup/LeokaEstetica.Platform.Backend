@@ -84,6 +84,7 @@ public class BaseServiceTest
     protected readonly LandingService LandingService;
     protected readonly KnowledgeService KnowledgeService;
     protected readonly PgContext PgContext;
+    protected readonly ProjectModerationRepository ProjectModerationRepository;
 
     protected BaseServiceTest()
     {
@@ -148,9 +149,9 @@ public class BaseServiceTest
 
         AccessModerationService = new AccessModerationService(logService, accessModerationRepository, userRepository);
 
-        var projectModerationRepository = new ProjectModerationRepository(pgContext);
+        ProjectModerationRepository = new ProjectModerationRepository(pgContext);
 
-        ProjectModerationService = new ProjectModerationService(projectModerationRepository, logService, mapper, null, 
+        ProjectModerationService = new ProjectModerationService(ProjectModerationRepository, logService, mapper, null, 
             userRepository, projectRepository, null);
 
         var projectCommentsRepository = new ProjectCommentsRepository(pgContext);
@@ -166,7 +167,7 @@ public class BaseServiceTest
         ProjectService = new ProjectService(projectRepository, logService, userRepository, mapper,
             projectNotificationsService, VacancyService, vacancyRepository, availableLimitsService,
             subscriptionRepository, fareRuleRepository, VacancyModerationService, projectNotificationsRepository, null,
-            null, fillColorProjectsService, null, projectModerationRepository);
+            null, fillColorProjectsService, null, ProjectModerationRepository);
 
         SubscriptionService =
             new SubscriptionService(logService, userRepository, subscriptionRepository, fareRuleRepository);

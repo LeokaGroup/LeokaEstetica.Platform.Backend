@@ -21,6 +21,7 @@ using LeokaEstetica.Platform.CallCenter.Models.Dto.Output.Project;
 using LeokaEstetica.Platform.CallCenter.Models.Dto.Output.Role;
 using LeokaEstetica.Platform.CallCenter.Models.Dto.Output.Vacancy;
 using LeokaEstetica.Platform.Controllers.Filters;
+using LeokaEstetica.Platform.Database.Abstractions.Moderation.Project;
 using LeokaEstetica.Platform.Models.Dto.Input.Moderation;
 using LeokaEstetica.Platform.Models.Dto.Output.Resume;
 using LeokaEstetica.Platform.Services.Abstractions.Profile;
@@ -43,6 +44,7 @@ public class CallCenterController : BaseController
     private readonly IUserBlackListService _userBlackListService;
     private readonly IResumeModerationService _resumeModerationService;
     private readonly IProfileService _profileService;
+    private readonly IProjectModerationRepository _projectModerationRepository;
 
     /// <summary>
     /// Конструктор.
@@ -54,13 +56,15 @@ public class CallCenterController : BaseController
     /// <param name="userBlackListService">Сервис ЧС пользователей.</param>
     /// <param name="resumeModerationService">Сервис модерации анкет.</param>
     /// <param name="profileService">Сервис профиля пользователя.</param>
+    /// <param name="projectModerationRepository">Репозиторий модерации проектов.</param>
     public CallCenterController(IAccessModerationService accessModerationService,
         IProjectModerationService projectModerationService,
         IMapper mapper,
         IVacancyModerationService vacancyModerationService, 
         IUserBlackListService userBlackListService, 
         IResumeModerationService resumeModerationService, 
-        IProfileService profileService)
+        IProfileService profileService, 
+        IProjectModerationRepository projectModerationRepository)
     {
         _accessModerationService = accessModerationService;
         _projectModerationService = projectModerationService;
@@ -69,6 +73,7 @@ public class CallCenterController : BaseController
         _userBlackListService = userBlackListService;
         _resumeModerationService = resumeModerationService;
         _profileService = profileService;
+        _projectModerationRepository = projectModerationRepository;
     }
 
     /// <summary>
@@ -543,6 +548,26 @@ public class CallCenterController : BaseController
     {
         var items = await _resumeModerationService.GetResumeUnShippedRemarksAsync(profileInfoId);
         var result = _mapper.Map<IEnumerable<GetResumeRemarkOutput>>(items);
+
+        return result;
+    }
+    
+    /// <summary>
+    /// Метод получает список замечаний проекта (не отправленные), если они есть.
+    /// Выводим эти данные в таблицу замечаний проектов журнала модерации.
+    /// </summary>
+    /// <returns>Список замечаний проекта.</returns>
+    [HttpGet]
+    [Route("{profileInfoId}/remarks/unshipped-table")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<ProjectRemarkTableOutput>))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<IEnumerable<ProjectRemarkTableOutput>> GetProjectUnShippedRemarksTableAsync()
+    {
+        var items = await _projectModerationRepository.GetProjectUnShippedRemarksTableAsync();
+        var result = _mapper.Map<IEnumerable<ProjectRemarkTableOutput>>(items);
 
         return result;
     }
