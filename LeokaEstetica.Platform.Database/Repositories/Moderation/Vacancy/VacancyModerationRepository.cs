@@ -6,7 +6,6 @@ using LeokaEstetica.Platform.Database.Abstractions.Moderation.Vacancy;
 using LeokaEstetica.Platform.Models.Entities.Moderation;
 using LeokaEstetica.Platform.Models.Entities.Notification;
 using LeokaEstetica.Platform.Models.Entities.Vacancy;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 
 namespace LeokaEstetica.Platform.Database.Repositories.Moderation.Vacancy;
@@ -240,8 +239,7 @@ public class VacancyModerationRepository : IVacancyModerationRepository
     /// <summary>
     /// Метод создает замечания вакансии.
     /// </summary>
-    /// <param name="createVacancyRemarkInput">Список замечаний.</param>
-    /// <param name="account">Аккаунт.</param>
+    /// <param name="vacancyRemarks">Список замечаний.</param>
     public async Task CreateVacancyRemarksAsync(IEnumerable<VacancyRemarkEntity> vacancyRemarks)
     {
         await _pgContext.VacancyRemarks.AddRangeAsync(vacancyRemarks);
@@ -353,7 +351,7 @@ public class VacancyModerationRepository : IVacancyModerationRepository
     /// Метод устанавливает статус вакансии.
     /// </summary>
     /// <param name="vacancyId">Id вакансии.</param>
-    /// <param name="projectModerationStatus">Статус.</param>
+    /// <param name="vacancyModerationStatus">Статус.</param>
     /// <returns>Признак подвверждения вакансии.</returns>
     private async Task<bool> SetVacancyStatus(long vacancyId, VacancyModerationStatusEnum vacancyModerationStatus)
     {
