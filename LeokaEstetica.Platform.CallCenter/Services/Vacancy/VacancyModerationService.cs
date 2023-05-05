@@ -353,12 +353,14 @@ public class VacancyModerationService : IVacancyModerationService
             var vacancyRemarks = await _vacancyModerationRepository.GetVacancyRemarksAsync(vacancyId);
             if (vacancyRemarks.Any())
             {
+                var vacancyRemarksText = vacancyRemarks.Select(v => v.RemarkText).ToList();
+                
                 var vacancyOwnerId = await _vacancyRepository.GetVacancyOwnerIdAsync(vacancyId);
                 var vacancyOwner = await _userRepository.GetUserByUserIdAsync(vacancyOwnerId);
-                var vacancyName = await _vacancyModerationRepository.GetVacancyNameByIdAsync(vacancyId);
+                var vacancyName = await _vacancyRepository.GetVacancyNameByVacancyIdAsync(vacancyId);
                 
                 await _moderationMailingsService.SendNotificationVacancyRemarksAsync(vacancyOwner.Email, vacancyId,
-                    vacancyName, vacancyRemarks);
+                    vacancyName, vacancyRemarksText);
             }
             
             if (!string.IsNullOrEmpty(token))
