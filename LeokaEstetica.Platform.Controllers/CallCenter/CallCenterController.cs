@@ -558,7 +558,7 @@ public class CallCenterController : BaseController
     /// </summary>
     /// <returns>Список замечаний проекта.</returns>
     [HttpGet]
-    [Route("{profileInfoId}/remarks/unshipped-table")]
+    [Route("projects/remarks/unshipped-table")]
     [ProducesResponseType(200, Type = typeof(IEnumerable<ProjectRemarkTableOutput>))]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]
