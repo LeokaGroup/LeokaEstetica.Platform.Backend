@@ -571,4 +571,24 @@ public class CallCenterController : BaseController
 
         return result;
     }
+    
+    /// <summary>
+    /// Метод получает список замечаний вакансии (не отправленные), если они есть.
+    /// Выводим эти данные в таблицу замечаний вакансии журнала модерации.
+    /// </summary>
+    /// <returns>Список замечаний вакансии.</returns>
+    [HttpGet]
+    [Route("vacancies/remarks/unshipped-table")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<VacancyRemarkTableOutput>))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<IEnumerable<VacancyRemarkTableOutput>> GetVacancyUnShippedRemarksTableAsync()
+    {
+        var items = await _projectModerationRepository.GetVacancyUnShippedRemarksTableAsync();
+        var result = _mapper.Map<IEnumerable<VacancyRemarkTableOutput>>(items);
+
+        return result;
+    }
 }
