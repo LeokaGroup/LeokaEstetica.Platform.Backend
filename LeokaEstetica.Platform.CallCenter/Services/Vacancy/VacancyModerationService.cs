@@ -351,9 +351,10 @@ public class VacancyModerationService : IVacancyModerationService
             await _vacancyModerationRepository.SendVacancyRemarksAsync(vacancyId);
             
             var vacancyRemarks = await _vacancyModerationRepository.GetVacancyRemarksAsync(vacancyId);
+            
             if (vacancyRemarks.Any())
             {
-                var vacancyRemarksText = vacancyRemarks.Select(v => v.RemarkText).ToList();
+                var vacancyRemarksText = vacancyRemarks.Select(v => v.RemarkText);
                 
                 var vacancyOwnerId = await _vacancyRepository.GetVacancyOwnerIdAsync(vacancyId);
                 var vacancyOwner = await _userRepository.GetUserByUserIdAsync(vacancyOwnerId);
