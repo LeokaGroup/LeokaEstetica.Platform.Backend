@@ -144,6 +144,9 @@ public class MappingProfile : Profile
         CreateMap<ResumeRemarkEntity, GetResumeRemarkOutput>();
 
         CreateMap<UserProjectEntity, ProjectRemarkTableOutput>();
+        
         CreateMap<UserVacancyEntity, VacancyRemarkTableOutput>();
+        
+        CreateMap<ProfileInfoEntity, ResumeRemarkTableOutput>();
     }
 }

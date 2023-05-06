@@ -22,9 +22,9 @@ using LeokaEstetica.Platform.CallCenter.Models.Dto.Output.Role;
 using LeokaEstetica.Platform.CallCenter.Models.Dto.Output.Vacancy;
 using LeokaEstetica.Platform.Controllers.Filters;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Project;
+using LeokaEstetica.Platform.Database.Abstractions.Moderation.Resume;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Vacancy;
 using LeokaEstetica.Platform.Models.Dto.Input.Moderation;
-using LeokaEstetica.Platform.Models.Dto.Output.Resume;
 using LeokaEstetica.Platform.Services.Abstractions.Profile;
 using Microsoft.AspNetCore.Mvc;
 
@@ -47,6 +47,7 @@ public class CallCenterController : BaseController
     private readonly IProfileService _profileService;
     private readonly IProjectModerationRepository _projectModerationRepository;
     private readonly IVacancyModerationRepository _vacancyModerationRepository;
+    private readonly IResumeModerationRepository _resumeModerationRepository;
 
     /// <summary>
     /// Конструктор.
@@ -60,6 +61,7 @@ public class CallCenterController : BaseController
     /// <param name="profileService">Сервис профиля пользователя.</param>
     /// <param name="projectModerationRepository">Репозиторий модерации проектов.</param>
     /// <param name="vacancyModerationRepository">Репозиторий модерации вакансий.</param>
+    /// <param name="resumeModerationRepository">Репозиторий модерации анкет.</param>
     public CallCenterController(IAccessModerationService accessModerationService,
         IProjectModerationService projectModerationService,
         IMapper mapper,
@@ -68,7 +70,8 @@ public class CallCenterController : BaseController
         IResumeModerationService resumeModerationService, 
         IProfileService profileService, 
         IProjectModerationRepository projectModerationRepository, 
-        IVacancyModerationRepository vacancyModerationRepository)
+        IVacancyModerationRepository vacancyModerationRepository, 
+        IResumeModerationRepository resumeModerationRepository)
     {
         _accessModerationService = accessModerationService;
         _projectModerationService = projectModerationService;
@@ -79,6 +82,7 @@ public class CallCenterController : BaseController
         _profileService = profileService;
         _projectModerationRepository = projectModerationRepository;
         _vacancyModerationRepository = vacancyModerationRepository;
+        _resumeModerationRepository = resumeModerationRepository;
     }
 
     /// <summary>
@@ -593,6 +597,26 @@ public class CallCenterController : BaseController
     {
         var items = await _vacancyModerationRepository.GetVacancyUnShippedRemarksTableAsync();
         var result = _mapper.Map<IEnumerable<VacancyRemarkTableOutput>>(items);
+
+        return result;
+    }
+    
+    /// <summary>
+    /// Метод получает список замечаний анкеты (не отправленные), если они есть.
+    /// Выводим эти данные в таблицу замечаний анкет журнала модерации.
+    /// </summary>
+    /// <returns>Список замечаний анкеты.</returns>
+    [HttpGet]
+    [Route("profile/remarks/unshipped-table")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<ResumeRemarkTableOutput>))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<IEnumerable<ResumeRemarkTableOutput>> GetResumeUnShippedRemarksTableAsync()
+    {
+        var items = await _resumeModerationRepository.GetResumeUnShippedRemarksTableAsync();
+        var result = _mapper.Map<IEnumerable<ResumeRemarkTableOutput>>(items);
 
         return result;
     }
