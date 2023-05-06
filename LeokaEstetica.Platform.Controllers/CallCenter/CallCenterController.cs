@@ -522,16 +522,16 @@ public class CallCenterController : BaseController
     /// <param name="vacancyId">Id вакансии.</param>
     /// <returns>Список замечаний вакансии.</returns>
     [HttpGet]
-    [Route("{vacancyId}/remarks/unshipped")]
-    [ProducesResponseType(200, Type = typeof(IEnumerable<GetVacancyRemarkOutput>))]
+    [Route("vacancy/{vacancyId}/remarks/unshipped")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<VacancyRemarkOutput>))]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<IEnumerable<GetVacancyRemarkOutput>> GetVacancyUnShippedRemarksAsync([FromRoute] long vacancyId)
+    public async Task<IEnumerable<VacancyRemarkOutput>> GetVacancyUnShippedRemarksAsync([FromRoute] long vacancyId)
     {
         var items = await _vacancyModerationService.GetVacancyUnShippedRemarksAsync(vacancyId);
-        var result = _mapper.Map<IEnumerable<GetVacancyRemarkOutput>>(items);
+        var result = _mapper.Map<IEnumerable<VacancyRemarkOutput>>(items);
 
         return result;
     }
@@ -542,17 +542,17 @@ public class CallCenterController : BaseController
     /// <param name="profileInfoId">Id анкеты.</param>
     /// <returns>Список замечаний анкеты.</returns>
     [HttpGet]
-    [Route("{profileInfoId}/remarks/unshipped")]
-    [ProducesResponseType(200, Type = typeof(IEnumerable<GetResumeRemarkOutput>))]
+    [Route("profile/{profileInfoId}/remarks/unshipped")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<ResumeRemarkOutput>))]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<IEnumerable<GetResumeRemarkOutput>> GetResumeUnShippedRemarksAsync(
+    public async Task<IEnumerable<ResumeRemarkOutput>> GetResumeUnShippedRemarksAsync(
         [FromRoute] long profileInfoId)
     {
         var items = await _resumeModerationService.GetResumeUnShippedRemarksAsync(profileInfoId);
-        var result = _mapper.Map<IEnumerable<GetResumeRemarkOutput>>(items);
+        var result = _mapper.Map<IEnumerable<ResumeRemarkOutput>>(items);
 
         return result;
     }

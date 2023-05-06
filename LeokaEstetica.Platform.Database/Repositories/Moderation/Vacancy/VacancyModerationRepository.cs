@@ -339,11 +339,12 @@ public class VacancyModerationRepository : IVacancyModerationRepository
     {
         var result = await _pgContext.VacancyRemarks
             .Where(pr => new[]
-                {
-                    (int)RemarkStatusEnum.NotAssigned,
-                    (int)RemarkStatusEnum.Review
-                }
-                .Contains(pr.RemarkStatusId))
+                             {
+                                 (int)RemarkStatusEnum.NotAssigned,
+                                 (int)RemarkStatusEnum.Review
+                             }
+                             .Contains(pr.RemarkStatusId)
+                         && pr.VacancyId == vacancyId)
             .ToListAsync();
 
         return result;

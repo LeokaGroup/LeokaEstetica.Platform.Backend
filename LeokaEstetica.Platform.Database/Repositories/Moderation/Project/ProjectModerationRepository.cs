@@ -283,11 +283,12 @@ public class ProjectModerationRepository : IProjectModerationRepository
     {
         var result = await _pgContext.ProjectRemarks
             .Where(pr => new[]
-                {
-                    (int)RemarkStatusEnum.NotAssigned,
-                    (int)RemarkStatusEnum.Review
-                }
-                .Contains(pr.RemarkStatusId))
+                             {
+                                 (int)RemarkStatusEnum.NotAssigned,
+                                 (int)RemarkStatusEnum.Review
+                             }
+                             .Contains(pr.RemarkStatusId)
+                         && pr.ProjectId == projectId)
             .ToListAsync();
 
         return result;
