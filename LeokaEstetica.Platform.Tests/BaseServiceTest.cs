@@ -44,6 +44,7 @@ using LeokaEstetica.Platform.Services.Services.Vacancy;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using ProjectFinderService = LeokaEstetica.Platform.Services.Services.Search.Project.ProjectFinderService;
+using LeokaEstetica.Platform.Redis.Services.Notification;
 
 namespace LeokaEstetica.Platform.Tests;
 
@@ -170,8 +171,8 @@ public class BaseServiceTest
         PayMasterService = new PayMasterService(logService, AppConfiguration, fareRuleRepository, userRepository,
             payMasterRepository, null, null);
 
-        var userBlackListService = new UserBlackListRepository(pgContext);
-        UserBlackListService = new UserBlackListService(logService, userBlackListService);
+        var userBlackListService = new UserBlackListRepository(pgContext, logService);
+        UserBlackListService = new UserBlackListService(logService, userBlackListService, null);
         ResumeModerationService =
             new ResumeModerationService(logService, resumeModerationRepository, mapper, userRepository);
 

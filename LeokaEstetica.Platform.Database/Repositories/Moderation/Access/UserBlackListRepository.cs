@@ -77,7 +77,7 @@ public class UserBlackListRepository : IUserBlackListRepository
             if (entity == null)
                 throw new ArgumentNullException($"Пользователя нет в черном списке. UserId: {userId}");
 
-            _pgContext.UserEmailBlackList.Remove(entity);
+            _pgContext.UserEmailBlackList.RemoveRange(entity);
         }
 
         if (IsPhoneExist)

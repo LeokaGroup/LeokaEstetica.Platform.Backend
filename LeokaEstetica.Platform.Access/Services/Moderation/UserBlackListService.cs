@@ -60,7 +60,7 @@ public class UserBlackListService : IUserBlackListService
     {
         try
         {
-            if (!string.IsNullOrEmpty(token))
+            if (string.IsNullOrEmpty(token))
                 throw new ArgumentNullException("Пользователя не существует");
 
             var exist = await _userBlackListRepository.IsUserExistAsync(userId);
@@ -77,10 +77,13 @@ public class UserBlackListService : IUserBlackListService
 
         catch(Exception ex) 
         {
-            await _notificationsService.SendNotifyWarningUserNotFoundBlackListAsync("Внимание.",
+            if (!string.IsNullOrEmpty(token))
+            {
+                await _notificationsService.SendNotifyWarningUserNotFoundBlackListAsync("Внимание.",
                 "Возникла ошибка при удалении пользователя.",
                 NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING,
                 token);
+            }
 
             await _logService.LogErrorAsync(ex);
             throw;
