@@ -71,7 +71,7 @@ public interface IVacancyModerationRepository
     /// <summary>
     /// Метод создает замечания вакансии.
     /// </summary>
-    /// <param name="createVacancyRemarkInput">Список замечаний.</param>
+    /// <param name="vacancyRemarks">Список замечаний.</param>
     Task CreateVacancyRemarksAsync(IEnumerable<VacancyRemarkEntity> vacancyRemarks);
     
     /// <summary>

@@ -55,6 +55,12 @@ public partial class VacancyRemarkConfiguration : IEntityTypeConfiguration<Vacan
             .HasColumnType("int")
             .IsRequired();
 
+        entity.Property(e => e.RejectReason)
+            .HasColumnName("RejectReason")
+            .HasColumnType("varchar(300)")
+            .HasDefaultValue(string.Empty)
+            .IsRequired();
+
         entity.HasIndex(u => u.RemarkId)
             .HasDatabaseName("PK_RemarkId")
             .IsUnique();

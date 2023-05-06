@@ -187,6 +187,54 @@ public class ModerationMailingsService : IModerationMailingsService
         }
     }
 
+    /// <summary>
+    /// Метод отправляет уведомления на почту владельца вакансии информацию о замечаниях вакансии.
+    /// </summary>
+    /// <param name="mailTo">Кому отправить?</param>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <param name="vacancyName">Название вакансии.</param>
+    /// <param name="remarks">Список замечаний.</param>
+    public async Task SendNotificationVacancyRemarksAsync(string mailTo, long vacancyId, string vacancyName, 
+        IEnumerable<string> remarks)
+    {
+        var isEnabledEmailNotifications = await _globalConfigRepository
+            .GetValueByKeyAsync<bool>(GlobalConfigKeys.EmailNotifications.EMAIL_NOTIFICATIONS_DISABLE_MODE_ENABLED);
+
+        if (isEnabledEmailNotifications)
+        {
+            var vacancyRemarkStringBuilder = new StringBuilder();
+
+            foreach (var remark in remarks)
+            {
+                vacancyRemarkStringBuilder.AppendLine("<br/>");
+                vacancyRemarkStringBuilder.AppendLine(remark);
+                vacancyRemarkStringBuilder.AppendLine("<br/>");
+            }
+        
+            // TODO: Заменить на получение ссылки из БД.
+            var text = "Здравствуйте! <br/>" +
+                       $"Ваша вакансия {vacancyName} имеет замечания." +
+                       "После их исправления и проверки модератором ваша вакансия будет отображаться в каталоге вакансий." +
+                       "<br/>" +
+                       "После исправления замечаний просто сохраните изменения для их дальнейшей проверки модератором." +
+                       "<br/>" +
+                       $"<a href='https://leoka-estetica-dev.ru/vacancies/vacancy?vacancyId={vacancyId}&mode=view'>" +
+                       "Перейти к вакансии" +
+                       "</a>" +
+                       "<br/>" +
+                       "Замечания:" +
+                       $"{vacancyRemarkStringBuilder}" +
+                       "<br/>" +
+                       "<br/>" +
+                       "<br/>-----<br/>" +
+                       "С уважением, команда Leoka Estetica";
+
+            var subject = $"Замечания по вакансии {vacancyName}";
+            var mailModel = CreateMailopostModelConfirmEmail(mailTo, text, subject, text);
+            await SendEmailNotificationAsync(mailModel);   
+        }
+    }
+
     #region Приватные методы.
 
         /// <summary>

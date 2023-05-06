@@ -348,7 +348,21 @@ public class VacancyModerationService : IVacancyModerationService
                 return;
             }
 
-            await _vacancyModerationRepository.SendVacancyRemarksAsync(vacancyId);   
+            await _vacancyModerationRepository.SendVacancyRemarksAsync(vacancyId);
+            
+            var vacancyRemarks = await _vacancyModerationRepository.GetVacancyRemarksAsync(vacancyId);
+            
+            if (vacancyRemarks.Any())
+            {
+                var vacancyRemarksText = vacancyRemarks.Select(v => v.RemarkText);
+                
+                var vacancyOwnerId = await _vacancyRepository.GetVacancyOwnerIdAsync(vacancyId);
+                var vacancyOwner = await _userRepository.GetUserByUserIdAsync(vacancyOwnerId);
+                var vacancyName = await _vacancyRepository.GetVacancyNameByVacancyIdAsync(vacancyId);
+                
+                await _moderationMailingsService.SendNotificationVacancyRemarksAsync(vacancyOwner.Email, vacancyId,
+                    vacancyName, vacancyRemarksText);
+            }
             
             if (!string.IsNullOrEmpty(token))
             {

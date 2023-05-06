@@ -62,4 +62,9 @@ public class VacancyRemarkEntity
     /// FK на статус замечания.
     /// </summary>
     public RemarkStatuseEntity RemarkStatuse { get; set; }
+    
+    /// <summary>
+    /// Причина отклонения вакансии.
+    /// </summary>
+    public string RejectReason { get; set; }
 }
