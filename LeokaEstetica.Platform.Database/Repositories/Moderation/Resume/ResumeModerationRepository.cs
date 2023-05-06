@@ -237,7 +237,8 @@ public class ResumeModerationRepository : IResumeModerationRepository
                          {
                              (int)RemarkStatusEnum.AwaitingCorrection,
                              (int)RemarkStatusEnum.NotAssigned
-                         }.Contains(pr.RemarkStatusId))
+                         }.Contains(pr.RemarkStatusId)
+                         && pr.ProfileInfoId == profileInfoId)
             .ToListAsync();
 
         return result;

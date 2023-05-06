@@ -146,7 +146,9 @@ public class MappingProfile : Profile
         CreateMap<UserProjectEntity, ProjectRemarkTableOutput>();
         
         CreateMap<UserVacancyEntity, VacancyRemarkTableOutput>();
-        
-        CreateMap<ProfileInfoEntity, ResumeRemarkTableOutput>();
+
+        CreateMap<ProfileInfoEntity, ResumeRemarkTableOutput>()
+            .ForMember(e => e.ProfileName,
+                e => e.MapFrom(src => src.FirstName + " " + src.LastName + " " + src.Patronymic));
     }
 }

@@ -13,5 +13,5 @@ public class ResumeRemarkTableOutput
     /// <summary>
     /// Название анкеты (ФИО).
     /// </summary>
-    public string VacancyName { get; set; }
+    public string ProfileName { get; set; }
 }
