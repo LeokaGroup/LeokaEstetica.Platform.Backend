@@ -349,6 +349,39 @@ public class VacancyModerationRepository : IVacancyModerationRepository
         return result;
     }
 
+    /// <summary>
+    /// Метод получает список замечаний вакансии (не отправленные), если они есть.
+    /// Выводим эти данные в таблицу замечаний вакансии журнала модерации.
+    /// </summary>
+    /// <returns>Список замечаний вакансии.</returns>
+    public async Task<IEnumerable<UserVacancyEntity>> GetVacancyUnShippedRemarksTableAsync()
+    {
+        var projectRemarksIds = _pgContext.VacancyRemarks
+            .Where(pr => new[]
+                {
+                    (int)RemarkStatusEnum.NotAssigned,
+                    (int)RemarkStatusEnum.Review
+                }
+                .Contains(pr.RemarkStatusId))
+            .Select(pr => pr.VacancyId)
+            .AsQueryable();
+
+        var result = await (from v in _pgContext.UserVacancies
+                join vr in _pgContext.VacancyRemarks
+                    on v.VacancyId
+                    equals vr.VacancyId
+                where projectRemarksIds.Contains(vr.VacancyId)
+                select new UserVacancyEntity
+                {
+                    VacancyId = vr.VacancyId,
+                    VacancyName = v.VacancyName
+                })
+            .Distinct()
+            .ToListAsync();
+
+        return result;
+    }
+
     #endregion
 
     #region Приватные методы.

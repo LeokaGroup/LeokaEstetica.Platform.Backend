@@ -107,4 +107,11 @@ public interface IVacancyModerationRepository
     /// <param name="vacancyId">Id вакансии.</param>
     /// <returns>Список замечаний вакансии.</returns>
     Task<IEnumerable<VacancyRemarkEntity>> GetVacancyUnShippedRemarksAsync(long vacancyId);
+    
+    /// <summary>
+    /// Метод получает список замечаний вакансии (не отправленные), если они есть.
+    /// Выводим эти данные в таблицу замечаний вакансии журнала модерации.
+    /// </summary>
+    /// <returns>Список замечаний вакансии.</returns>
+    Task<IEnumerable<UserVacancyEntity>> GetVacancyUnShippedRemarksTableAsync();
 }

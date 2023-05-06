@@ -1,6 +1,5 @@
 using LeokaEstetica.Platform.Models.Entities.Moderation;
 using LeokaEstetica.Platform.Models.Entities.Project;
-using LeokaEstetica.Platform.Models.Entities.Vacancy;
 
 namespace LeokaEstetica.Platform.Database.Abstractions.Moderation.Project;
 
@@ -106,11 +105,4 @@ public interface IProjectModerationRepository
     /// </summary>
     /// <returns>Список замечаний проекта.</returns>
     Task<IEnumerable<UserProjectEntity>> GetProjectUnShippedRemarksTableAsync();
-
-    /// <summary>
-    /// Метод получает список замечаний вакансии (не отправленные), если они есть.
-    /// Выводим эти данные в таблицу замечаний вакансии журнала модерации.
-    /// </summary>
-    /// <returns>Список замечаний вакансии.</returns>
-    Task<IEnumerable<UserVacancyEntity>> GetVacancyUnShippedRemarksTableAsync();
 }
