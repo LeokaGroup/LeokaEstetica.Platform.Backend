@@ -1,4 +1,5 @@
 using LeokaEstetica.Platform.Models.Entities.Moderation;
+using LeokaEstetica.Platform.Models.Entities.Profile;
 
 namespace LeokaEstetica.Platform.Database.Abstractions.Moderation.Resume;
 
@@ -72,4 +73,18 @@ public interface IResumeModerationRepository
     /// <param name="profileInfoId">Id анкеты.</param>
     /// <returns>Список замечаний.</returns>
     Task<List<ResumeRemarkEntity>> GetResumeRemarksAsync(long profileInfoId);
+    
+    /// <summary>
+    /// Метод получает список замечаний анкеты (не отправленные), если они есть.
+    /// </summary>
+    /// <param name="profileInfoId">Id анкеты.</param>
+    /// <returns>Список замечаний анкеты.</returns>
+    Task<IEnumerable<ResumeRemarkEntity>> GetResumeUnShippedRemarksAsync(long profileInfoId);
+
+    /// <summary>
+    /// Метод получает список замечаний анкеты (не отправленные), если они есть.
+    /// Выводим эти данные в таблицу замечаний анкет журнала модерации.
+    /// </summary>
+    /// <returns>Список замечаний анкеты.</returns>
+    Task<IEnumerable<ProfileInfoEntity>> GetResumeUnShippedRemarksTableAsync();
 }

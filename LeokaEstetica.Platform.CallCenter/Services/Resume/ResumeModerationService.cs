@@ -273,6 +273,24 @@ public class ResumeModerationService : IResumeModerationService
         }
     }
 
+    /// <summary>
+    /// Метод получает список замечаний анкеты (не отправленные), если они есть.
+    /// </summary>
+    /// <param name="profileInfoId">Id анкеты.</param>
+    /// <returns>Список замечаний анкеты.</returns>
+    public async Task<IEnumerable<ResumeRemarkEntity>> GetResumeUnShippedRemarksAsync(long profileInfoId)
+    {
+        if (profileInfoId <= 0)
+        {
+            var ex = new InvalidOperationException($"Id анкеты не был передан. ProfileInfoId: {profileInfoId}");
+            throw ex;
+        }
+        
+        var result = await _resumeModerationRepository.GetResumeUnShippedRemarksAsync(profileInfoId);
+
+        return result;
+    }
+
     #endregion
 
     #region Приватные методы.

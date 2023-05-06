@@ -60,12 +60,12 @@ public class ProjectModerationRepository : IProjectModerationRepository
     public async Task<bool> ApproveProjectAsync(long projectId)
     {
         var isSuccessSetStatus = await SetProjectStatus(projectId, ProjectModerationStatusEnum.ApproveProject);
-        
+
         if (!isSuccessSetStatus)
         {
             return false;
         }
-        
+
         var project = await _pgContext.UserProjects
             .FirstOrDefaultAsync(v => v.ProjectId == projectId);
 
@@ -73,13 +73,13 @@ public class ProjectModerationRepository : IProjectModerationRepository
         {
             throw new InvalidOperationException($"Не удалось найти проект. ProjectId = {projectId}");
         }
-        
+
         // Добавляем проект в каталог.
         await _pgContext.CatalogProjects.AddAsync(new CatalogProjectEntity
         {
             ProjectId = projectId
         });
-        
+
         await _pgContext.SaveChangesAsync();
 
         return true;
@@ -121,7 +121,7 @@ public class ProjectModerationRepository : IProjectModerationRepository
             IsShow = true,
             IsOwner = false
         });
-        
+
         await _pgContext.SaveChangesAsync();
     }
 
@@ -149,7 +149,7 @@ public class ProjectModerationRepository : IProjectModerationRepository
             IsShow = true,
             IsOwner = false
         });
-        
+
         await _pgContext.SaveChangesAsync();
     }
 
@@ -224,7 +224,7 @@ public class ProjectModerationRepository : IProjectModerationRepository
             // Проставляем обновляемой сущности флаг Modified.
             _pgContext.Entry(pr).State = EntityState.Modified;
         }
-        
+
         await _pgContext.SaveChangesAsync();
     }
 
@@ -245,7 +245,7 @@ public class ProjectModerationRepository : IProjectModerationRepository
             {
                 pr.RemarkStatusId = (int)RemarkStatusEnum.AwaitingCorrection;
             }
-            
+
             _pgContext.ProjectRemarks.UpdateRange(projectRemarks);
             await _pgContext.SaveChangesAsync();
         }
@@ -274,6 +274,59 @@ public class ProjectModerationRepository : IProjectModerationRepository
         return projectEntity?.UserProject?.ProjectName;
     }
 
+    /// <summary>
+    /// Метод получает список замечаний проекта (не отправленные), если они есть.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Список замечаний проекта.</returns>
+    public async Task<IEnumerable<ProjectRemarkEntity>> GetProjectUnShippedRemarksAsync(long projectId)
+    {
+        var result = await _pgContext.ProjectRemarks
+            .Where(pr => new[]
+                             {
+                                 (int)RemarkStatusEnum.NotAssigned,
+                                 (int)RemarkStatusEnum.Review
+                             }
+                             .Contains(pr.RemarkStatusId)
+                         && pr.ProjectId == projectId)
+            .ToListAsync();
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод получает список замечаний проекта (не отправленные), если они есть.
+    /// Выводим эти данные в таблицу замечаний проектов журнала модерации.
+    /// </summary>
+    /// <returns>Список замечаний проекта.</returns>
+    public async Task<IEnumerable<UserProjectEntity>> GetProjectUnShippedRemarksTableAsync()
+    {
+        var projectRemarksIds = _pgContext.ProjectRemarks
+            .Where(pr => new[]
+                {
+                    (int)RemarkStatusEnum.NotAssigned,
+                    (int)RemarkStatusEnum.Review
+                }
+                .Contains(pr.RemarkStatusId))
+            .Select(pr => pr.ProjectId)
+            .AsQueryable();
+
+        var result = await (from p in _pgContext.UserProjects
+                join pr in _pgContext.ProjectRemarks
+                    on p.ProjectId
+                    equals pr.ProjectId
+                where projectRemarksIds.Contains(pr.ProjectId)
+                select new UserProjectEntity
+                {
+                    ProjectId = pr.ProjectId,
+                    ProjectName = p.ProjectName
+                })
+            .Distinct()
+            .ToListAsync();
+
+        return result;
+    }
+
     #endregion
 
     #region Приватные методы.
@@ -295,7 +348,7 @@ public class ProjectModerationRepository : IProjectModerationRepository
         }
 
         prj.ModerationStatusId = (int)projectModerationStatus;
-        
+
         await _pgContext.SaveChangesAsync();
 
         return true;

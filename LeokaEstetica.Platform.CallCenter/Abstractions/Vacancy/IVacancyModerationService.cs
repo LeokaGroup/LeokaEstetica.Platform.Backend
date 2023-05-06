@@ -62,4 +62,11 @@ public interface IVacancyModerationService
     /// <param name="token">Токен.</param>
     /// </summary>
     Task SendVacancyRemarksAsync(long vacancyId, string token);
+    
+    /// <summary>
+    /// Метод получает список замечаний вакансии (не отправленные), если они есть.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <returns>Список замечаний вакансии.</returns>
+    Task<IEnumerable<VacancyRemarkEntity>> GetVacancyUnShippedRemarksAsync(long vacancyId);
 }

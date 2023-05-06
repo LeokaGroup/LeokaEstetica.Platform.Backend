@@ -1,4 +1,5 @@
 using LeokaEstetica.Platform.Models.Entities.Moderation;
+using LeokaEstetica.Platform.Models.Entities.Project;
 
 namespace LeokaEstetica.Platform.Database.Abstractions.Moderation.Project;
 
@@ -90,4 +91,18 @@ public interface IProjectModerationRepository
     /// <param name="projectId">Id проекта.</param>
     /// <returns></returns>
     Task<string> GetProjectNameAsync(long projectId);
+    
+    /// <summary>
+    /// Метод получает список замечаний проекта (не отправленные), если они есть.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Список замечаний проекта.</returns>
+    Task<IEnumerable<ProjectRemarkEntity>> GetProjectUnShippedRemarksAsync(long projectId);
+    
+    /// <summary>
+    /// Метод получает список замечаний проекта (не отправленные), если они есть.
+    /// Выводим эти данные в таблицу замечаний проектов журнала модерации.
+    /// </summary>
+    /// <returns>Список замечаний проекта.</returns>
+    Task<IEnumerable<UserProjectEntity>> GetProjectUnShippedRemarksTableAsync();
 }

@@ -21,6 +21,9 @@ using LeokaEstetica.Platform.CallCenter.Models.Dto.Output.Project;
 using LeokaEstetica.Platform.CallCenter.Models.Dto.Output.Role;
 using LeokaEstetica.Platform.CallCenter.Models.Dto.Output.Vacancy;
 using LeokaEstetica.Platform.Controllers.Filters;
+using LeokaEstetica.Platform.Database.Abstractions.Moderation.Project;
+using LeokaEstetica.Platform.Database.Abstractions.Moderation.Resume;
+using LeokaEstetica.Platform.Database.Abstractions.Moderation.Vacancy;
 using LeokaEstetica.Platform.Models.Dto.Input.Moderation;
 using LeokaEstetica.Platform.Services.Abstractions.Profile;
 using Microsoft.AspNetCore.Mvc;
@@ -42,6 +45,9 @@ public class CallCenterController : BaseController
     private readonly IUserBlackListService _userBlackListService;
     private readonly IResumeModerationService _resumeModerationService;
     private readonly IProfileService _profileService;
+    private readonly IProjectModerationRepository _projectModerationRepository;
+    private readonly IVacancyModerationRepository _vacancyModerationRepository;
+    private readonly IResumeModerationRepository _resumeModerationRepository;
 
     /// <summary>
     /// Конструктор.
@@ -53,13 +59,19 @@ public class CallCenterController : BaseController
     /// <param name="userBlackListService">Сервис ЧС пользователей.</param>
     /// <param name="resumeModerationService">Сервис модерации анкет.</param>
     /// <param name="profileService">Сервис профиля пользователя.</param>
+    /// <param name="projectModerationRepository">Репозиторий модерации проектов.</param>
+    /// <param name="vacancyModerationRepository">Репозиторий модерации вакансий.</param>
+    /// <param name="resumeModerationRepository">Репозиторий модерации анкет.</param>
     public CallCenterController(IAccessModerationService accessModerationService,
         IProjectModerationService projectModerationService,
         IMapper mapper,
         IVacancyModerationService vacancyModerationService, 
         IUserBlackListService userBlackListService, 
         IResumeModerationService resumeModerationService, 
-        IProfileService profileService)
+        IProfileService profileService, 
+        IProjectModerationRepository projectModerationRepository, 
+        IVacancyModerationRepository vacancyModerationRepository, 
+        IResumeModerationRepository resumeModerationRepository)
     {
         _accessModerationService = accessModerationService;
         _projectModerationService = projectModerationService;
@@ -68,6 +80,9 @@ public class CallCenterController : BaseController
         _userBlackListService = userBlackListService;
         _resumeModerationService = resumeModerationService;
         _profileService = profileService;
+        _projectModerationRepository = projectModerationRepository;
+        _vacancyModerationRepository = vacancyModerationRepository;
+        _resumeModerationRepository = resumeModerationRepository;
     }
 
     /// <summary>
@@ -481,6 +496,127 @@ public class CallCenterController : BaseController
         var account = result.ProfileInfo.Email;
         result.Skills = await _profileService.SelectedProfileUserSkillsAsync(account);
         result.Intents = await _profileService.SelectedProfileUserIntentsAsync(account);
+
+        return result;
+    }
+    
+    /// <summary>
+    /// Метод получает список замечаний проекта (не отправленные), если они есть.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Список замечаний проекта.</returns>
+    [HttpGet]
+    [Route("project/{projectId}/remarks/unshipped")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<ProjectRemarkOutput>))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<IEnumerable<ProjectRemarkOutput>> GetProjectUnShippedRemarksAsync([FromRoute] long projectId)
+    {
+        var items = await _projectModerationService.GetProjectUnShippedRemarksAsync(projectId);
+        var result = _mapper.Map<IEnumerable<ProjectRemarkOutput>>(items);
+
+        return result;
+    }
+    
+    /// <summary>
+    /// Метод получает список замечаний вакансии (не отправленные), если они есть.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <returns>Список замечаний вакансии.</returns>
+    [HttpGet]
+    [Route("vacancy/{vacancyId}/remarks/unshipped")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<VacancyRemarkOutput>))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<IEnumerable<VacancyRemarkOutput>> GetVacancyUnShippedRemarksAsync([FromRoute] long vacancyId)
+    {
+        var items = await _vacancyModerationService.GetVacancyUnShippedRemarksAsync(vacancyId);
+        var result = _mapper.Map<IEnumerable<VacancyRemarkOutput>>(items);
+
+        return result;
+    }
+    
+    /// <summary>
+    /// Метод получает список замечаний анкеты (не отправленные), если они есть.
+    /// </summary>
+    /// <param name="profileInfoId">Id анкеты.</param>
+    /// <returns>Список замечаний анкеты.</returns>
+    [HttpGet]
+    [Route("profile/{profileInfoId}/remarks/unshipped")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<ResumeRemarkOutput>))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<IEnumerable<ResumeRemarkOutput>> GetResumeUnShippedRemarksAsync(
+        [FromRoute] long profileInfoId)
+    {
+        var items = await _resumeModerationService.GetResumeUnShippedRemarksAsync(profileInfoId);
+        var result = _mapper.Map<IEnumerable<ResumeRemarkOutput>>(items);
+
+        return result;
+    }
+    
+    /// <summary>
+    /// Метод получает список замечаний проекта (не отправленные), если они есть.
+    /// Выводим эти данные в таблицу замечаний проектов журнала модерации.
+    /// </summary>
+    /// <returns>Список замечаний проекта.</returns>
+    [HttpGet]
+    [Route("projects/remarks/unshipped-table")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<ProjectRemarkTableOutput>))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<IEnumerable<ProjectRemarkTableOutput>> GetProjectUnShippedRemarksTableAsync()
+    {
+        var items = await _projectModerationRepository.GetProjectUnShippedRemarksTableAsync();
+        var result = _mapper.Map<IEnumerable<ProjectRemarkTableOutput>>(items);
+
+        return result;
+    }
+    
+    /// <summary>
+    /// Метод получает список замечаний вакансии (не отправленные), если они есть.
+    /// Выводим эти данные в таблицу замечаний вакансии журнала модерации.
+    /// </summary>
+    /// <returns>Список замечаний вакансии.</returns>
+    [HttpGet]
+    [Route("vacancies/remarks/unshipped-table")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<VacancyRemarkTableOutput>))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<IEnumerable<VacancyRemarkTableOutput>> GetVacancyUnShippedRemarksTableAsync()
+    {
+        var items = await _vacancyModerationRepository.GetVacancyUnShippedRemarksTableAsync();
+        var result = _mapper.Map<IEnumerable<VacancyRemarkTableOutput>>(items);
+
+        return result;
+    }
+    
+    /// <summary>
+    /// Метод получает список замечаний анкеты (не отправленные), если они есть.
+    /// Выводим эти данные в таблицу замечаний анкет журнала модерации.
+    /// </summary>
+    /// <returns>Список замечаний анкеты.</returns>
+    [HttpGet]
+    [Route("profile/remarks/unshipped-table")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<ResumeRemarkTableOutput>))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<IEnumerable<ResumeRemarkTableOutput>> GetResumeUnShippedRemarksTableAsync()
+    {
+        var items = await _resumeModerationRepository.GetResumeUnShippedRemarksTableAsync();
+        var result = _mapper.Map<IEnumerable<ResumeRemarkTableOutput>>(items);
 
         return result;
     }

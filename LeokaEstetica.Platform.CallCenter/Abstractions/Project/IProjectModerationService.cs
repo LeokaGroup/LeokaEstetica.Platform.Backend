@@ -58,4 +58,11 @@ public interface IProjectModerationService
     /// <param name="token">Токен.</param>
     /// </summary>
     Task SendProjectRemarksAsync(long projectId, string account, string token);
+    
+    /// <summary>
+    /// Метод получает список замечаний проекта (не отправленные), если они есть.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Список замечаний проекта.</returns>
+    Task<IEnumerable<ProjectRemarkEntity>> GetProjectUnShippedRemarksAsync(long projectId);
 }
