@@ -55,5 +55,5 @@ public interface IModerationMailingsService
     /// <param name="vacancyName">Название вакансии.</param>
     /// <param name="remarks">Список замечаний.</param>
     Task SendNotificationVacancyRemarksAsync(string mailTo, long vacancyId, string vacancyName,
-        List<string> remarks);
+        IEnumerable<string> remarks);
 }

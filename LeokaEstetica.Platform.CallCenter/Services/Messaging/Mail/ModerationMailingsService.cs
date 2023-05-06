@@ -195,7 +195,7 @@ public class ModerationMailingsService : IModerationMailingsService
     /// <param name="vacancyName">Название вакансии.</param>
     /// <param name="remarks">Список замечаний.</param>
     public async Task SendNotificationVacancyRemarksAsync(string mailTo, long vacancyId, string vacancyName, 
-        List<string> remarks)
+        IEnumerable<string> remarks)
     {
         var isEnabledEmailNotifications = await _globalConfigRepository
             .GetValueByKeyAsync<bool>(GlobalConfigKeys.EmailNotifications.EMAIL_NOTIFICATIONS_DISABLE_MODE_ENABLED);
