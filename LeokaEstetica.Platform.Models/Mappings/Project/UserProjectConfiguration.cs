@@ -56,7 +56,6 @@ public partial class UserProjectConfiguration : IEntityTypeConfiguration<UserPro
         entity.Property(e => e.Conditions)
             .HasColumnName("Conditions")
             .HasColumnType("text");
-            
 
         entity.HasIndex(u => u.ProjectId)
             .HasDatabaseName("PK_UserProjects_ProjectId")
