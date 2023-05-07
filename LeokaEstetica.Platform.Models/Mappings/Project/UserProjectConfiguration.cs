@@ -53,6 +53,11 @@ public partial class UserProjectConfiguration : IEntityTypeConfiguration<UserPro
             .HasMaxLength(36)
             .IsRequired();
 
+        entity.Property(e => e.Conditions)
+            .HasColumnName("Conditions")
+            .HasColumnType("text");
+            
+
         entity.HasIndex(u => u.ProjectId)
             .HasDatabaseName("PK_UserProjects_ProjectId")
             .IsUnique();
