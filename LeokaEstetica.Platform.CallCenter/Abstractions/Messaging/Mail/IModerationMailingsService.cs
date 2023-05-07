@@ -56,4 +56,11 @@ public interface IModerationMailingsService
     /// <param name="remarks">Список замечаний.</param>
     Task SendNotificationVacancyRemarksAsync(string mailTo, long vacancyId, string vacancyName,
         IEnumerable<string> remarks);
+
+    /// <summary>
+    /// Метод отправляет уведомления на почту владельца анкеты информацию о замечаниях анкеты.
+    /// </summary>
+    /// <param name="mailTo">Кому отправить?</param>
+    /// <param name="remarks">Список замечаний.</param>
+    Task SendNotificationResumeRemarksAsync(string mailTo, IEnumerable<string> remarks);
 }

@@ -235,6 +235,51 @@ public class ModerationMailingsService : IModerationMailingsService
         }
     }
 
+    /// <summary>
+    /// Метод отправляет уведомления на почту владельца анкеты информацию о замечаниях анкеты.
+    /// </summary>
+    /// <param name="mailTo">Кому отправить?</param>
+    /// <param name="remarks">Список замечаний.</param>
+    public async Task SendNotificationResumeRemarksAsync(string mailTo, IEnumerable<string> remarks)
+    {
+        var isEnabledEmailNotifications = await _globalConfigRepository
+            .GetValueByKeyAsync<bool>(GlobalConfigKeys.EmailNotifications.EMAIL_NOTIFICATIONS_DISABLE_MODE_ENABLED);
+
+        if (isEnabledEmailNotifications)
+        {
+            var resumeRemarksStringBuilder = new StringBuilder();
+
+            foreach (var remark in remarks)
+            {
+                resumeRemarksStringBuilder.AppendLine("<br/>");
+                resumeRemarksStringBuilder.AppendLine(remark);
+                resumeRemarksStringBuilder.AppendLine("<br/>");
+            }
+            
+            var text = "Здравствуйте! <br/>" +
+                       "Ваше резюме имеет замечания." +
+                       "После их исправления и проверки модератором ваше резюме будет отображаться в каталоге резюме." +
+                       "<br/>" +
+                       "После исправления замечаний просто сохраните изменения для их дальнейшей проверки модератором." +
+                       "<br/>" +
+                       "<br/>" +
+                       "<a href='https://leoka-estetica-dev.ru/profile/aboutme?mode=view'>" +
+                       "Перейти к резюме" +
+                       "</a>" +
+                       "<br/>" +
+                       "Замечания:" +
+                       "<br/>" +
+                       $"{resumeRemarksStringBuilder}" +
+                       "<br/>" +
+                       "<br/>" +
+                       "<br/>-----<br/>" +
+                       "С уважением, команда Leoka Estetica";
+
+            var mailModel = CreateMailopostModelConfirmEmail(mailTo, text, "Замечания по резюме", text);
+            await SendEmailNotificationAsync(mailModel);
+        }
+    }
+
     #region Приватные методы.
 
         /// <summary>
