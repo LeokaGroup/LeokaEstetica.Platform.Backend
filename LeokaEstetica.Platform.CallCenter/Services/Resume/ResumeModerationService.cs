@@ -1,4 +1,5 @@
 using AutoMapper;
+using LeokaEstetica.Platform.CallCenter.Abstractions.Messaging.Mail;
 using LeokaEstetica.Platform.CallCenter.Abstractions.Resume;
 using LeokaEstetica.Platform.CallCenter.Builders;
 using LeokaEstetica.Platform.CallCenter.Consts;
@@ -25,6 +26,7 @@ public class ResumeModerationService : IResumeModerationService
     private readonly IMapper _mapper;
     private readonly IUserRepository _userRepository;
     private readonly IResumeModerationNotificationService _resumeModerationNotificationService;
+    private readonly IModerationMailingsService _moderationMailingsService;
 
     /// <summary>
     /// Конструктор.
@@ -32,18 +34,22 @@ public class ResumeModerationService : IResumeModerationService
     /// <param name="logService">Сервис логера.</param>
     /// <param name="resumeModerationRepository">Репозиторий анкет.</param>
     /// <param name="mapper">Автомаппер.</param>
-    /// <param name="userRepository">Репозиторий пользователя..</param>
+    /// <param name="userRepository">Репозиторий пользователя.</param>
+    /// <param name="resumeModerationNotificationService">Сервис уведомлений модерации анкет.</param>
+    /// <param name="moderationMailingsService">Сервис уведомления почты модерации.</param>
     public ResumeModerationService(ILogService logService, 
         IResumeModerationRepository resumeModerationRepository, 
         IMapper mapper, 
         IUserRepository userRepository, 
-        IResumeModerationNotificationService resumeModerationNotificationService)
+        IResumeModerationNotificationService resumeModerationNotificationService, 
+        IModerationMailingsService moderationMailingsService)
     {
         _logService = logService;
         _resumeModerationRepository = resumeModerationRepository;
         _mapper = mapper;
         _userRepository = userRepository;
         _resumeModerationNotificationService = resumeModerationNotificationService;
+        _moderationMailingsService = moderationMailingsService;
     }
 
     #region Публичные методы.
@@ -255,7 +261,18 @@ public class ResumeModerationService : IResumeModerationService
                 return;
             }
 
-            await _resumeModerationRepository.SendResumeRemarksAsync(profileInfoId);   
+            await _resumeModerationRepository.SendResumeRemarksAsync(profileInfoId);
+
+            var resumeRemarks = await _resumeModerationRepository.GetResumeRemarksAsync(profileInfoId);
+            
+            if (resumeRemarks.Any())
+            {
+                var resumeRemarksText = resumeRemarks.Select(r => r.RemarkText);
+                var resumeOwnerId = await _userRepository.GetUserIdByProfileInfoIdAsync(profileInfoId);
+                var resumeOwnerEmail = await _userRepository.GetUserAccountByUserIdAsync(resumeOwnerId);
+                
+                await _moderationMailingsService.SendNotificationResumeRemarksAsync(resumeOwnerEmail, resumeRemarksText);
+            }
             
             if (!string.IsNullOrEmpty(token))
             {
