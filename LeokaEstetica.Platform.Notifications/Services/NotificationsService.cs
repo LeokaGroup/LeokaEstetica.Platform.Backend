@@ -47,4 +47,49 @@ public sealed class NotificationsService : INotificationsService
                 NotificationLevel = notificationLevel
             });
     }
+
+    /// <summary>
+    /// Метод отправляет уведомление об успешной блокировке.
+    /// </summary>
+    /// <param name="title"></param>
+    /// <param name="notifyText"></param>
+    /// <param name="notificationLevel"></param>
+    /// <param name="token"></param>
+    /// <returns></returns>
+    public async Task SendNotifySuccessBlockAsync(string title, string notifyText, string notificationLevel,
+        string token)
+    {
+        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(token);
+
+        await _hubContext.Clients
+            .Client(connectionId)
+            .SendAsync("SendNotifySuccessBlock", new NotificationOutput
+            {
+                Title = title,
+                Message = notifyText,
+                NotificationLevel = notificationLevel
+            });
+    }
+
+    /// <summary>
+    /// Метод отправляет предупреждение во время блокирования пользователя.
+    /// </summary>
+    /// <param name="title">Заголовок уведомления.</param>
+    /// <param name="notifyText">Текст уведомления.</param>
+    /// <param name="notificationLevel">Уровень уведомления.</param>
+    /// <param name="token">Токен пользователя.</param>
+    public async Task SendNotifyWarningBlockAsync(string title, string notifyText, string notificationLevel,
+        string token)
+    {
+        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(token);
+
+        await _hubContext.Clients
+            .Client(connectionId)
+            .SendAsync("SendNotifyWarningBlock", new NotificationOutput
+            {
+                Title = title,
+                Message = notifyText,
+                NotificationLevel = notificationLevel
+            });
+    }
 }

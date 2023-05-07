@@ -13,7 +13,7 @@ public interface IUserBlackListService
     /// <param name="userId">Id пользователя.</param>
     /// <param name="email">Почта для блока..</param>
     /// <param name="phoneNumber">Номер телефона для блока.</param>
-    Task AddUserBlackListAsync(long userId, string email, string phoneNumber);
+    Task AddUserBlackListAsync(long userId, string email, string phoneNumber, string token);
 
     /// <summary>
     /// Метод получает список пользователей в ЧС.

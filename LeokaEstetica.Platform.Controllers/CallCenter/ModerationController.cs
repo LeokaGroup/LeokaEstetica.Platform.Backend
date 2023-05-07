@@ -251,7 +251,7 @@ public class ModerationController : BaseController
     {
         await new AddUserBlackListValidator().ValidateAndThrowAsync(addUserBlackListInput);
         await _userBlackListService.AddUserBlackListAsync(addUserBlackListInput.UserId, addUserBlackListInput.Email,
-            addUserBlackListInput.PhoneNumber);
+            addUserBlackListInput.PhoneNumber, CreateTokenFromHeader());
     }
 
     /// <summary>

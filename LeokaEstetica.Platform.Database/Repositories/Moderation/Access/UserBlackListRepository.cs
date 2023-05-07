@@ -1,6 +1,7 @@
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Access;
 using LeokaEstetica.Platform.Models.Entities.Access;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace LeokaEstetica.Platform.Database.Repositories.Moderation.Access;
@@ -29,22 +30,31 @@ public class UserBlackListRepository : IUserBlackListRepository
     /// <param name="phoneNumber">Номер телефона для блока.</param>
     public async Task AddUserBlackListAsync(long userId, string email, string phoneNumber)
     {
-        if (!string.IsNullOrEmpty(email))
+        var isEmailExist = await IsEmailUserExistAsync(userId);
+        var isPhoneExist = await IsPhoneUserExistAsync(userId);
+
+        if (!isEmailExist)
         {
-            await _pgContext.UserEmailBlackList.AddAsync(new UserEmailBlackListEntity
+            if (!string.IsNullOrEmpty(email))
             {
-                UserId = userId,
-                Email = email
-            });
+                await _pgContext.UserEmailBlackList.AddAsync(new UserEmailBlackListEntity
+                {
+                    UserId = userId,
+                    Email = email
+                });
+            }
         }
 
-        if (!string.IsNullOrEmpty(phoneNumber))
+        if (!isPhoneExist)
         {
-            await _pgContext.UserPhoneBlackList.AddAsync(new UserPhoneBlackListEntity
+            if (!string.IsNullOrEmpty(phoneNumber))
             {
-                UserId = userId,
-                PhoneNumber = phoneNumber
-            });
+                await _pgContext.UserPhoneBlackList.AddAsync(new UserPhoneBlackListEntity
+                {
+                    UserId = userId,
+                    PhoneNumber = phoneNumber
+                });
+            }
         }
 
         await _pgContext.SaveChangesAsync();
@@ -61,6 +71,66 @@ public class UserBlackListRepository : IUserBlackListRepository
 
         result.Item1 = await _pgContext.UserEmailBlackList.ToListAsync();
         result.Item2 = await _pgContext.UserPhoneBlackList.ToListAsync();
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод проверяет наличие пользователя в ЧС по email или phone number.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Наличие пользователя в чс по email или phone number.</returns>
+    public async Task<bool> IsUserExistAsync(long userId)
+    {
+        var result = false;
+
+        var emailExist = await IsEmailUserExistAsync(userId);
+        var phoneExist = await IsPhoneUserExistAsync(userId);
+
+        if (emailExist || phoneExist)
+            result = true;
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод проверяет, заблокирован ли пользователь по email и phone number
+    /// </summary>
+    /// <param name="userId"></param>
+    /// <returns>Признак наличия пользователя в чс по email и phone number</returns>
+    public async Task<bool> IsUserBlocked(long userId)
+    {
+        var result = false;
+
+        var emailExist = await IsEmailUserExistAsync(userId);
+        var phoneExist = await IsPhoneUserExistAsync(userId);
+
+        if (emailExist && phoneExist)
+            result = true;
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод проверяет наличие пользователя в ЧС по почте.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Наличие пользователя в чс.</returns>
+    private async Task<bool> IsEmailUserExistAsync(long userId)
+    {
+        var result = await _pgContext.UserEmailBlackList.AnyAsync(row => row.UserId == userId);
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод проверяет наличие пользователя в ЧС по номеру телефона.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Наличие пользователя в чс.</returns>
+    private async Task<bool> IsPhoneUserExistAsync(long userId)
+    {
+        var result = await _pgContext.UserPhoneBlackList.AnyAsync(row => row.UserId == userId);
 
         return result;
     }

@@ -20,4 +20,19 @@ public interface IUserBlackListRepository
     /// </summary>
     /// <returns>Список пользователей в ЧС.</returns>
     Task<(IEnumerable<UserEmailBlackListEntity>, IEnumerable<UserPhoneBlackListEntity>)> GetUsersBlackListAsync();
+
+    /// <summary>
+    /// Метод проверяет наличие пользователя в ЧС.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Наличие пользователя в чс.</returns>
+    Task<bool> IsUserExistAsync(long userId);
+
+
+    /// <summary>
+    /// Метод проверяет, заблокирован ли пользователь по email и phone number
+    /// </summary>
+    /// <param name="userId"></param>
+    /// <returns>Признак наличия пользователя в чс по email и phone number</returns>
+    Task<bool> IsUserBlocked(long userId);
 }
