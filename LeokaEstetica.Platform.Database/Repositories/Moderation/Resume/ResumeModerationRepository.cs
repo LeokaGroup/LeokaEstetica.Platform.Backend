@@ -191,7 +191,7 @@ public class ResumeModerationRepository : IResumeModerationRepository
         }
     }
 
-    //// <summary>
+    /// <summary>
     /// Метод проверяет, были ли сохранены замечания анкеты.
     /// </summary>
     /// <param name="profileInfoId">Id анкеты.</param>
