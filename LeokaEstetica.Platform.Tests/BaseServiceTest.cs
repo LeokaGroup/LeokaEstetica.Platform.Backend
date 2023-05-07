@@ -189,7 +189,7 @@ public class BaseServiceTest
         var userBlackListService = new UserBlackListRepository(pgContext);
         UserBlackListService = new UserBlackListService(logService, userBlackListService);
         ResumeModerationService = new ResumeModerationService(logService, resumeModerationRepository, mapper,
-            userRepository, null);
+            userRepository, null, null);
 
         var landingRepository = new LandingRepository(pgContext);
         LandingService = new LandingService(logService, landingRepository, mapper);
