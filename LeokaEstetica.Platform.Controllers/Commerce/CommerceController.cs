@@ -21,7 +21,7 @@ public class CommerceController : BaseController
     /// <summary>
     /// Конструктор.
     /// </summary>
-    /// <param name="payMasterService">Зависимость сервиса платежей через ПС PayMaster.</param>
+    /// <param name="payMasterService">Сервис платежей через ПС PayMaster.</param>
     public CommerceController(IPayMasterService payMasterService)
     {
         _payMasterService = payMasterService;
