@@ -5,8 +5,13 @@ namespace LeokaEstetica.Platform.Models.Entities.FareRule;
 /// </summary>
 public class FareRuleEntity
 {
-    public FareRuleEntity()
+    /// <summary>
+    /// Конструктор.
+    /// </summary>
+    /// <param name="publicId">Публичный ключ тарифа для отображения в строке URL.</param>
+    public FareRuleEntity(Guid publicId)
     {
+        PublicId = publicId;
         FareRuleItems = new HashSet<FareRuleItemEntity>();
     }
 
@@ -53,7 +58,7 @@ public class FareRuleEntity
     /// <summary>
     /// Публичный код для отображения в строке URL.
     /// </summary>
-    public Guid PublicId { get; set; }
+    public Guid PublicId { get; }
 
     /// <summary>
     /// Список элементов тарифов.

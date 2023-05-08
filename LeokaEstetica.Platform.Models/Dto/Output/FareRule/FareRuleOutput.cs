@@ -6,6 +6,15 @@ namespace LeokaEstetica.Platform.Models.Dto.Output.FareRule;
 public class FareRuleOutput
 {
     /// <summary>
+    /// Конструктор.
+    /// </summary>
+    /// <param name="publicId">Публичный ключ тарифа для отображения в строке URL.</param>
+    public FareRuleOutput(Guid publicId)
+    {
+        PublicId = publicId;
+    }
+
+    /// <summary>
     /// PK.
     /// </summary>
     public int RuleId { get; set; }
@@ -39,6 +48,11 @@ public class FareRuleOutput
     /// Признак популярного тарифа.
     /// </summary>
     public bool IsPopular { get; set; }
+    
+    /// <summary>
+    /// Публичный код для отображения в строке URL.
+    /// </summary>
+    public Guid PublicId { get; }
 
     /// <summary>
     /// Список элементов правил тарифов.

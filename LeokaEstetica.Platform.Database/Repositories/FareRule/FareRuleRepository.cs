@@ -24,7 +24,7 @@ public class FareRuleRepository : IFareRuleRepository
     public async Task<IEnumerable<FareRuleEntity>> GetFareRulesAsync()
     {
         var result = await _pgContext.FareRules
-            .Select(fr => new FareRuleEntity
+            .Select(fr => new FareRuleEntity(fr.PublicId)
             {
                 RuleId = fr.RuleId,
                 Name = fr.Name,
@@ -53,7 +53,7 @@ public class FareRuleRepository : IFareRuleRepository
     {
         var result = await _pgContext.FareRules
             .Where(fr => fr.RuleId == fareRuleId)
-            .Select(fr => new FareRuleEntity
+            .Select(fr => new FareRuleEntity(fr.PublicId)
             {
                 RuleId = fr.RuleId,
                 Name = fr.Name,
@@ -80,7 +80,7 @@ public class FareRuleRepository : IFareRuleRepository
     {
         var result = await _pgContext.FareRules
             .Where(fr => fareRuleIds.Contains(fr.RuleId))
-            .Select(fr => new FareRuleEntity
+            .Select(fr => new FareRuleEntity(fr.PublicId)
             {
                 RuleId = fr.RuleId,
                 Name = fr.Name,
