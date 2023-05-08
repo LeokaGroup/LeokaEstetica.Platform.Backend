@@ -43,6 +43,12 @@ public partial class FareRuleConfiguration : IEntityTypeConfiguration<FareRuleEn
         entity.Property(e => e.IsFree)
             .HasColumnName("IsFree")
             .HasColumnType("bool");
+        
+        entity.Property(e => e.PublicId)
+            .HasColumnName("PublicId")
+            .HasColumnType("uuid")
+            .HasDefaultValue(Guid.NewGuid())
+            .IsRequired();
 
         entity.HasIndex(u => u.RuleId)
             .HasDatabaseName("PK_FareRules_RuleId")

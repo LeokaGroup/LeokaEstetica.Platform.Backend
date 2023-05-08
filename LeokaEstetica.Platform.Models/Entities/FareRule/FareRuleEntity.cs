@@ -51,6 +51,11 @@ public class FareRuleEntity
     public bool IsFree { get; set; }
 
     /// <summary>
+    /// Публичный код для отображения в строке URL.
+    /// </summary>
+    public Guid PublicId { get; set; }
+
+    /// <summary>
     /// Список элементов тарифов.
     /// </summary>
     public ICollection<FareRuleItemEntity> FareRuleItems { get; set; }
