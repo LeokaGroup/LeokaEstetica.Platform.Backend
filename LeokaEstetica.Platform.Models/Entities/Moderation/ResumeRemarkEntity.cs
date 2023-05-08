@@ -52,6 +52,11 @@ public class ResumeRemarkEntity
     /// Id статуса замечания.
     /// </summary>
     public int RemarkStatusId { get; set; }
+    
+    /// <summary>
+    /// Причина отклонения анкеты.
+    /// </summary>
+    public string RejectReason { get; set; }
 
     /// <summary>
     /// FK на статус замечания.
