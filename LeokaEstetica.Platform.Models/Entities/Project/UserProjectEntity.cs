@@ -57,6 +57,11 @@ public class UserProjectEntity
     /// Публичный код проекта для публичного отображения.
     /// </summary>
     public Guid PublicId { get; set; }
+    
+    /// <summary>
+    /// Условия проекта.
+    /// </summary>
+    public string Conditions { get; set; }
 
     /// <summary>
     /// FK каталога проектов.
