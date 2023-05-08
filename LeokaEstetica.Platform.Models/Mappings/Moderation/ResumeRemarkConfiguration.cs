@@ -55,6 +55,12 @@ public partial class ResumeRemarkConfiguration : IEntityTypeConfiguration<Resume
             .HasColumnType("int")
             .IsRequired();
 
+        entity.Property(e => e.RejectReason)
+            .HasColumnName("RejectReason")
+            .HasColumnType("varchar(300)")
+            .HasDefaultValue(string.Empty)
+            .IsRequired();
+
         entity.HasIndex(u => u.RemarkId)
             .HasDatabaseName("PK_RemarkId")
             .IsUnique();
