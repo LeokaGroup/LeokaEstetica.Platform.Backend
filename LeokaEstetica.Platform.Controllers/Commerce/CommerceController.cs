@@ -3,7 +3,9 @@ using LeokaEstetica.Platform.Base;
 using LeokaEstetica.Platform.Controllers.Filters;
 using LeokaEstetica.Platform.Controllers.Validators.Commerce;
 using LeokaEstetica.Platform.Database.Abstractions.FareRule;
+using LeokaEstetica.Platform.Models.Dto.Input.Commerce;
 using LeokaEstetica.Platform.Models.Dto.Input.Commerce.PayMaster;
+using LeokaEstetica.Platform.Models.Dto.Output.Commerce;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce.PayMaster;
 using LeokaEstetica.Platform.Models.Dto.Output.FareRule;
 using LeokaEstetica.Platform.Processing.Abstractions.PayMaster;
@@ -85,5 +87,23 @@ public class CommerceController : BaseController
         var result = _mapper.Map<FareRuleOutput>(fareRule);
 
         return result;
+    }
+
+    /// <summary>
+    /// Метод создает заказ в кэше и хранит его 2 часа.
+    /// </summary>
+    /// <param name="createOrderCacheInput">Входная модель.</param>
+    /// <returns>Данные заказа, которые хранятся в кэше.</returns>
+    [HttpPost]
+    [Route("fare-rule/order-form/products")]
+    [ProducesResponseType(200, Type = typeof(CreateOrderCacheOutput))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public Task<CreateOrderCacheOutput> CreateOrderCacheAsync(
+        [FromBody] CreateOrderCacheInput createOrderCacheInput)
+    {
+        throw new NotImplementedException();
     }
 }

@@ -384,4 +384,9 @@ public class PgContext : DbContext
     /// Таблица замечаний анкет.
     /// </summary>
     public DbSet<ResumeRemarkEntity> ResumeRemarks { get; set; }
+
+    /// <summary>
+    /// Таблица сервисов и услуг.
+    /// </summary>
+    public DbSet<ProductEntity> Products { get; set; }
 }
