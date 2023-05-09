@@ -17,7 +17,7 @@ public static class CreateOrderRequestFactory
     /// <param name="createOrderInput">Входная модель.</param>
     /// <param name="configuration"></param>
     /// <param name="fareRule">Данные тарифа.</param>
-    public static void Create(ref CreateOrderInput createOrderInput, IConfiguration configuration,
+    public static void Create(CreateOrderInput createOrderInput, IConfiguration configuration,
         FareRuleEntity fareRule)
     {
         // Задаем Id мерчанта (магазина).

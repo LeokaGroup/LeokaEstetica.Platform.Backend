@@ -13,6 +13,7 @@ using LeokaEstetica.Platform.Notifications.Consts;
 using LeokaEstetica.Platform.Processing.Abstractions.PayMaster;
 using LeokaEstetica.Platform.Processing.Consts;
 using LeokaEstetica.Platform.Processing.Enums;
+using LeokaEstetica.Platform.Processing.Extensions;
 using LeokaEstetica.Platform.Processing.Factories;
 using LeokaEstetica.Platform.Processing.Models.Output;
 using Microsoft.Extensions.Configuration;
@@ -71,9 +72,8 @@ public class PayMasterService : IPayMasterService
     {
         try
         {
-            using var httpClient = new HttpClient();
             var userId = await _userRepository.GetUserByEmailAsync(account);
-            
+
             // Проверяем заполнение анкеты и даем доступ либо нет.
             var isEmptyProfile = await _accessUserService.IsProfileEmptyAsync(userId);
 
@@ -85,7 +85,7 @@ public class PayMasterService : IPayMasterService
                 await _accessUserNotificationsService.SendNotificationWarningEmptyUserProfileAsync("Внимание",
                     "Для покупки тарифа должна быть заполнена информация вашей анкеты.",
                     NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
-                
+
                 throw ex;
             }
 
@@ -100,13 +100,12 @@ public class PayMasterService : IPayMasterService
             }
 
             // Заполняем модель для запроса в ПС.
-            CreateOrderRequestFactory.Create(ref createOrderInput, _configuration, fareRule);
-
-            // Устанавливаем заголовки.
-            httpClient.DefaultRequestHeaders.Authorization =
-                new AuthenticationHeaderValue("Bearer", _configuration["Commerce:PayMaster:ApiToken"]);
+            CreateOrderRequestFactory.Create(createOrderInput, _configuration, fareRule);
 
             await _logService.LogInfoAsync(new ApplicationException("Начало создания заказа."));
+
+            using var httpClient = new HttpClient();
+            httpClient.SetPayMasterRequestAuthorizationHeader(_configuration);
             
             // Создаем платеж в ПС.
             var responseCreateOrder = await httpClient.PostAsJsonAsync(ApiConsts.CREATE_PAYMENT, createOrderInput);
@@ -116,7 +115,6 @@ public class PayMasterService : IPayMasterService
             {
                 var ex = new InvalidOperationException(
                     $"Ошибка создания платежа в ПС. Данные платежа: {JsonConvert.SerializeObject(createOrderInput)}");
-                await _logService.LogErrorAsync(ex);
                 throw ex;
             }
 
@@ -128,13 +126,12 @@ public class PayMasterService : IPayMasterService
             {
                 var ex = new InvalidOperationException(
                     $"Ошибка парсинга данных из ПС. Данные платежа: {JsonConvert.SerializeObject(createOrderInput)}");
-                await _logService.LogErrorAsync(ex);
                 throw ex;
             }
 
             // Проверяем статус заказа в ПС.
-            var responseCheckStatusOrder =
-                await httpClient.GetStringAsync(string.Concat(ApiConsts.CHECK_PAYMENT_STATUS, order.PaymentId));
+            var responseCheckStatusOrder = await httpClient.GetStringAsync(string.Concat(ApiConsts.CHECK_PAYMENT_STATUS,
+                order.PaymentId));
 
             // Если ошибка получения данных платежа.
             if (string.IsNullOrEmpty(responseCheckStatusOrder))
@@ -142,7 +139,6 @@ public class PayMasterService : IPayMasterService
                 var ex = new InvalidOperationException(
                     "Ошибка проверки статуса платежа в ПС. " +
                     $"Данные платежа: {JsonConvert.SerializeObject(createOrderInput)}");
-                await _logService.LogErrorAsync(ex);
                 throw ex;
             }
 
@@ -154,10 +150,10 @@ public class PayMasterService : IPayMasterService
 
             // Создаем заказ в БД.
             var createdOrderResult = await _payMasterRepository.CreateOrderAsync(createdOrder);
-            
+
             // Приводим к нужному виду.
             var result = CreateOrderResultFactory.Create(createdOrderResult.OrderId.ToString(), order.Url);
-            
+
             await _logService.LogInfoAsync(new ApplicationException("Конец создания заказа."));
             await _logService.LogInfoAsync(new ApplicationException("Создание заказа успешно."));
 
