@@ -389,4 +389,9 @@ public class PgContext : DbContext
     /// Таблица сервисов и услуг.
     /// </summary>
     public DbSet<ProductEntity> Products { get; set; }
+
+    /// <summary>
+    /// Таблица правил скидок.
+    /// </summary>
+    public DbSet<DiscountRuleEntity> DiscountRules { get; set; }
 }
