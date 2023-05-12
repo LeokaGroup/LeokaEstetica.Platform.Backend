@@ -6,7 +6,7 @@ namespace LeokaEstetica.Platform.Database.Abstractions.Commerce;
 /// <summary>
 /// Абстракция репозитория заказов.
 /// </summary>
-public interface IPayMasterRepository
+public interface ICommerceRepository
 {
     /// <summary>
     /// Метод создает заказ в БД.

@@ -1,4 +1,3 @@
-using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using LeokaEstetica.Platform.Access.Abstractions.User;
 using LeokaEstetica.Platform.Core.Extensions;
@@ -30,7 +29,7 @@ public class PayMasterService : IPayMasterService
     private readonly IConfiguration _configuration;
     private readonly IFareRuleRepository _fareRuleRepository;
     private readonly IUserRepository _userRepository;
-    private readonly IPayMasterRepository _payMasterRepository;
+    private readonly ICommerceRepository _commerceRepository;
     private readonly IAccessUserService _accessUserService;
     private readonly IAccessUserNotificationsService _accessUserNotificationsService;
 
@@ -41,14 +40,14 @@ public class PayMasterService : IPayMasterService
     /// <param name="configuration">Конфигурация внедренная через DI.</param>
     /// <param name="fareRuleRepository">Репозиторий правил.</param>
     /// <param name="userRepository">Репозиторий пользователя.</param>
-    /// <param name="payMasterRepository">Сервис ПС PayMaster.</param>
+    /// <param name="commerceRepository">Репозиторий коммерции.</param>
     /// <param name="accessUserService">Сервис доступа пользователя.</param>
     /// <param name="accessUserNotificationsService">Сервис уведомлений доступа пользователя.</param>
     public PayMasterService(ILogService logService,
         IConfiguration configuration,
         IFareRuleRepository fareRuleRepository,
         IUserRepository userRepository,
-        IPayMasterRepository payMasterRepository, 
+        ICommerceRepository commerceRepository, 
         IAccessUserService accessUserService, 
         IAccessUserNotificationsService accessUserNotificationsService)
     {
@@ -56,7 +55,7 @@ public class PayMasterService : IPayMasterService
         _configuration = configuration;
         _fareRuleRepository = fareRuleRepository;
         _userRepository = userRepository;
-        _payMasterRepository = payMasterRepository;
+        _commerceRepository = commerceRepository;
         _accessUserService = accessUserService;
         _accessUserNotificationsService = accessUserNotificationsService;
     }
@@ -149,7 +148,7 @@ public class PayMasterService : IPayMasterService
                 PaymentStatusEnum.Pending.GetEnumDescription());
 
             // Создаем заказ в БД.
-            var createdOrderResult = await _payMasterRepository.CreateOrderAsync(createdOrder);
+            var createdOrderResult = await _commerceRepository.CreateOrderAsync(createdOrder);
 
             // Приводим к нужному виду.
             var result = CreateOrderResultFactory.Create(createdOrderResult.OrderId.ToString(), order.Url);

@@ -8,11 +8,11 @@ namespace LeokaEstetica.Platform.Database.Repositories.Commerce;
 /// <summary>
 /// Класс реализует методы репозитория заказов.
 /// </summary>
-public class PayMasterRepository : IPayMasterRepository
+public class CommerceRepository : ICommerceRepository
 {
     private readonly PgContext _pgContext;
 
-    public PayMasterRepository(PgContext pgContext)
+    public CommerceRepository(PgContext pgContext)
     {
         _pgContext = pgContext;
     }

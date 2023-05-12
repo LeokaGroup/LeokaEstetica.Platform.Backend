@@ -180,11 +180,11 @@ public class BaseServiceTest
         VacancyPaginationService = new VacancyPaginationService(vacancyRepository, logService);
         ProjectPaginationService = new ProjectPaginationService(projectRepository, logService);
 
-        var payMasterRepository = new PayMasterRepository(pgContext);
+        var commerceRepository = new CommerceRepository(pgContext);
 
         FareRuleService = new FareRuleService(fareRuleRepository, logService);
         PayMasterService = new PayMasterService(logService, AppConfiguration, fareRuleRepository, userRepository,
-            payMasterRepository, null, null);
+            commerceRepository, null, null);
 
         var userBlackListService = new UserBlackListRepository(pgContext);
         UserBlackListService = new UserBlackListService(logService, userBlackListService);
