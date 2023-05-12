@@ -3,6 +3,7 @@ namespace LeokaEstetica.Platform.Models.Dto.Input.Commerce;
 /// <summary>
 /// Класс входной модели создания заказа в кэше.
 /// </summary>
+[Serializable]
 public class CreateOrderCacheInput
 {
     /// <summary>
