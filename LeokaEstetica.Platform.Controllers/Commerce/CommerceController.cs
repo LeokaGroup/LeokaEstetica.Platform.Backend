@@ -106,7 +106,7 @@ public class CommerceController : BaseController
     /// <param name="createOrderCacheInput">Входная модель.</param>
     /// <returns>Данные заказа, которые хранятся в кэше.</returns>
     [HttpPost]
-    [Route("orders/pre")]
+    [Route("fare-rule/order-form/pre")]
     [ProducesResponseType(200, Type = typeof(CreateOrderCacheOutput))]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]
