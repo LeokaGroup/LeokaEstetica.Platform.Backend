@@ -164,7 +164,7 @@ public class CommerceService : ICommerceService
             return price;
         }
         
-        var result = price * percent / 100;
+        var result = price - Math.Round(price * percent / 100);
 
         return await Task.FromResult(result);
     }

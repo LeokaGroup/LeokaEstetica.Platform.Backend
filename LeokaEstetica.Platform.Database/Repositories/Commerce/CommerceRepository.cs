@@ -62,8 +62,8 @@ public class CommerceRepository : ICommerceRepository
     {
         var result = await _pgContext.DiscountRules
             .Where(d => d.Month == paymentMonth
-                        && d.Type.Equals(discountTypeEnum))
-            .Select(d => d.Percent)
+                        && d.Type.Equals(discountTypeEnum.ToString()))
+            .Select(d => Math.Round(d.Percent))
             .FirstOrDefaultAsync();
 
         return result;

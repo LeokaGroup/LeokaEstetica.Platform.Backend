@@ -32,7 +32,7 @@ public class CommerceRedisService : ICommerceRedisService
     /// <returns>Данные заказа добавленного в кэш.</returns>
     public async Task<CreateOrderCache> CreateOrderCacheAsync(string key, CreateOrderCache createOrderCache)
     {
-        await _redisCache.SetStringAsync(CacheKeysConsts.DEACTIVATE_USER_ACCOUNTS,
+        await _redisCache.SetStringAsync(CacheKeysConsts.ORDER_CACHE,
             ProtoBufExtensions.Serialize(createOrderCache),
             new DistributedCacheEntryOptions
             {
