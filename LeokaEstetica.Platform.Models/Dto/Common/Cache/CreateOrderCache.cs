@@ -22,10 +22,10 @@ public class CreateOrderCache
     public decimal Percent { get; set; }
 
     /// <summary>
-    /// Сумма скидки.
+    /// Сумма.
     /// </summary>
     [ProtoMember(3)]
-    public decimal? Price { get; set; }
+    public decimal Price { get; set; }
 
     /// <summary>
     /// Месяц.

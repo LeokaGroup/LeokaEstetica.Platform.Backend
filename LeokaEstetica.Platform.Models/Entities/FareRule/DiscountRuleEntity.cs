@@ -16,11 +16,6 @@ public class DiscountRuleEntity
     public decimal Percent { get; set; }
 
     /// <summary>
-    /// Сумма скидки.
-    /// </summary>
-    public decimal? Price { get; set; }
-
-    /// <summary>
     /// Тип скидки.
     /// </summary>
     public string Type { get; set; }

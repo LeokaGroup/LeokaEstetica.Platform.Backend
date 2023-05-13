@@ -1,7 +1,6 @@
 using LeokaEstetica.Platform.Base.Models.Input.Processing;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Enums;
-using LeokaEstetica.Platform.Core.Structs;
 using LeokaEstetica.Platform.Database.Abstractions.Commerce;
 using LeokaEstetica.Platform.Models.Entities.Commerce;
 using Microsoft.EntityFrameworkCore;
@@ -9,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 namespace LeokaEstetica.Platform.Database.Repositories.Commerce;
 
 /// <summary>
+/// TODO: Отрефачить разбив логику заказов в отдельный репозиторий OrderRepository.
 /// Класс реализует методы репозитория коммерции.
 /// </summary>
 public class CommerceRepository : ICommerceRepository
@@ -58,12 +58,12 @@ public class CommerceRepository : ICommerceRepository
     /// <param name="paymentMonth">Кол-во месяцев.</param>
     /// <param name="discountTypeEnum">Тип скидки на услугу</param>
     /// <returns>Скидка на услугу.</returns>
-    public async Task<DiscountStruct> GetPercentDiscountAsync(short paymentMonth, DiscountTypeEnum discountTypeEnum)
+    public async Task<decimal> GetPercentDiscountAsync(short paymentMonth, DiscountTypeEnum discountTypeEnum)
     {
         var result = await _pgContext.DiscountRules
             .Where(d => d.Month == paymentMonth
                         && d.Type.Equals(discountTypeEnum))
-            .Select(d => new DiscountStruct(d.Percent, d.Price))
+            .Select(d => d.Percent)
             .FirstOrDefaultAsync();
 
         return result;

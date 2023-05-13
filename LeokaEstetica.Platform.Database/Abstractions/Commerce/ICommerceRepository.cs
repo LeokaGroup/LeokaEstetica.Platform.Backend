@@ -1,11 +1,11 @@
 using LeokaEstetica.Platform.Base.Models.Input.Processing;
 using LeokaEstetica.Platform.Core.Enums;
-using LeokaEstetica.Platform.Core.Structs;
 using LeokaEstetica.Platform.Models.Entities.Commerce;
 
 namespace LeokaEstetica.Platform.Database.Abstractions.Commerce;
 
 /// <summary>
+/// TODO: Отрефачить разбив логику заказов в отдельный репозиторий OrderRepository.
 /// Абстракция репозитория коммерции.
 /// </summary>
 public interface ICommerceRepository
@@ -23,5 +23,5 @@ public interface ICommerceRepository
     /// <param name="paymentMonth">Кол-во месяцев.</param>
     /// <param name="discountTypeEnum">Тип скидки на услугу</param>
     /// <returns>Скидка на услугу.</returns>
-    Task<DiscountStruct> GetPercentDiscountAsync(short paymentMonth, DiscountTypeEnum discountTypeEnum);
+    Task<decimal> GetPercentDiscountAsync(short paymentMonth, DiscountTypeEnum discountTypeEnum);
 }

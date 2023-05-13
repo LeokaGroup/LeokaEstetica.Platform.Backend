@@ -19,9 +19,9 @@ public class CreateOrderCacheOutput : IFrontError
     public decimal Percent { get; set; }
 
     /// <summary>
-    /// Сумма скидки.
+    /// Сумма.
     /// </summary>
-    public decimal? Price { get; set; }
+    public decimal Price { get; set; }
 
     /// <summary>
     /// Месяц.

@@ -4,6 +4,7 @@ using LeokaEstetica.Platform.Models.Dto.Input.Commerce;
 namespace LeokaEstetica.Platform.Processing.Abstractions.Commerce;
 
 /// <summary>
+/// TODO: Отрефачить разбив логику заказов в отдельный сервис OrderService.
 /// Абстракция сервиса коммерции.
 /// </summary>
 public interface ICommerceService

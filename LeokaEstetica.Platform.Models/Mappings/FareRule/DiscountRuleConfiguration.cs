@@ -27,11 +27,7 @@ public partial class DiscountRuleConfiguration : IEntityTypeConfiguration<Discou
             .HasColumnName("Percent")
             .HasColumnType("decimal(5,4)")
             .IsRequired();
-        
-        entity.Property(e => e.Price)
-            .HasColumnName("Price")
-            .HasColumnType("decimal(12,2)");
-        
+
         entity.Property(e => e.Type)
             .HasColumnName("Type")
             .HasColumnType("varchar(150)")
