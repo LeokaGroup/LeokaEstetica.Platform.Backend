@@ -9,14 +9,29 @@ namespace LeokaEstetica.Platform.Models.Dto.Output.Commerce;
 public class CreateOrderCacheOutput : IFrontError
 {
     /// <summary>
-    /// Название тарифа.
+    /// PK.
     /// </summary>
-    public string Name { get; set; }
-    
+    public int RuleId { get; set; }
+
     /// <summary>
-    /// Стоимость тарифа (с учетом всех скидок, сервисов, акций).
+    /// Процент скидки.
     /// </summary>
-    public decimal Price { get; set; }
+    public decimal Percent { get; set; }
+
+    /// <summary>
+    /// Сумма скидки.
+    /// </summary>
+    public decimal? Price { get; set; }
+
+    /// <summary>
+    /// Месяц.
+    /// </summary>
+    public int Month { get; set; }
+
+    /// <summary>
+    /// Id пользователя, которому принадлежит заказ.
+    /// </summary>
+    public long UserId { get; set; }
 
     /// <summary>
     /// Список ошибок.

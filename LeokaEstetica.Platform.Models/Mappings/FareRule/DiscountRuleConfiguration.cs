@@ -20,7 +20,7 @@ public partial class DiscountRuleConfiguration : IEntityTypeConfiguration<Discou
         
         entity.Property(e => e.Month)
             .HasColumnName("Month")
-            .HasColumnType("int")
+            .HasColumnType("smallint")
             .IsRequired();
 
         entity.Property(e => e.Percent)

@@ -1,21 +1,30 @@
 using LeokaEstetica.Platform.Base.Models.Input.Processing;
 using LeokaEstetica.Platform.Core.Data;
+using LeokaEstetica.Platform.Core.Enums;
+using LeokaEstetica.Platform.Core.Structs;
 using LeokaEstetica.Platform.Database.Abstractions.Commerce;
 using LeokaEstetica.Platform.Models.Entities.Commerce;
+using Microsoft.EntityFrameworkCore;
 
 namespace LeokaEstetica.Platform.Database.Repositories.Commerce;
 
 /// <summary>
-/// Класс реализует методы репозитория заказов.
+/// Класс реализует методы репозитория коммерции.
 /// </summary>
 public class CommerceRepository : ICommerceRepository
 {
     private readonly PgContext _pgContext;
 
+    /// <summary>
+    /// Конструктор.
+    /// </summary>
+    /// <param name="pgContext">Датаконтекст.</param>
     public CommerceRepository(PgContext pgContext)
     {
         _pgContext = pgContext;
     }
+
+    #region Публичные методы.
 
     /// <summary>
     /// Метод создает заказ в БД.
@@ -42,4 +51,29 @@ public class CommerceRepository : ICommerceRepository
 
         return order;
     }
+
+    /// <summary>
+    /// Метод получает скидку на услугу по ее типу и кол-ву месяцев.
+    /// </summary>
+    /// <param name="paymentMonth">Кол-во месяцев.</param>
+    /// <param name="discountTypeEnum">Тип скидки на услугу</param>
+    /// <returns>Скидка на услугу.</returns>
+    public async Task<DiscountStruct> GetPercentDiscountAsync(short paymentMonth, DiscountTypeEnum discountTypeEnum)
+    {
+        var result = await _pgContext.DiscountRules
+            .Where(d => d.Month == paymentMonth
+                        && d.Type.Equals(discountTypeEnum))
+            .Select(d => new DiscountStruct(d.Percent, d.Price))
+            .FirstOrDefaultAsync();
+
+        return result;
+    }
+
+    #endregion
+
+    #region Приватные методы.
+
+    
+
+    #endregion
 }

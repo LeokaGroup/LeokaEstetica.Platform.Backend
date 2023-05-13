@@ -16,6 +16,8 @@ public class CreateOrderCacheValidator : AbstractValidator<CreateOrderCacheInput
     {
         RuleFor(p => p.PublicId)
             .NotNull()
+            .WithMessage(CommerceConst.EMPTY_PUBLIC_ID)
+            .Must(p => p != Guid.Empty)
             .WithMessage(CommerceConst.EMPTY_PUBLIC_ID);
         
         RuleFor(p => p.PaymentMonth)

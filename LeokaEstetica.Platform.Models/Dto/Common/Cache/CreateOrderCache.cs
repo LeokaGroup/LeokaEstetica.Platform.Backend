@@ -31,5 +31,5 @@ public class CreateOrderCache
     /// Месяц.
     /// </summary>
     [ProtoMember(4)]
-    public int Month { get; set; }
+    public short Month { get; set; }
 }

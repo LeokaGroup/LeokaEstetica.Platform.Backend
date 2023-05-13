@@ -9,7 +9,7 @@ public class CreateOrderCacheInput
     /// <summary>
     /// Публичный ключ тарифа.
     /// </summary>
-    public string PublicId { get; set; }
+    public Guid PublicId { get; set; }
 
     /// <summary>
     /// Кол-во месяцев, на которые оформляется подписка на тариф.

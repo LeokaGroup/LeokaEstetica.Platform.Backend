@@ -22,12 +22,15 @@ public class CommerceRedisService : ICommerceRedisService
         _redisCache = redisCache;
     }
 
+    #region Публичные методы.
+
     /// <summary>
     /// Метод создает заказ в кэше.
     /// </summary>
     /// <param name="key">Ключ добавленного заказа.</param>
     /// <param name="createOrderCache">Модель заказа для хранения в кэше.</param>
-    public async Task CreateOrderCacheAsync(string key, CreateOrderCache createOrderCache)
+    /// <returns>Данные заказа добавленного в кэш.</returns>
+    public async Task<CreateOrderCache> CreateOrderCacheAsync(string key, CreateOrderCache createOrderCache)
     {
         await _redisCache.SetStringAsync(CacheKeysConsts.DEACTIVATE_USER_ACCOUNTS,
             ProtoBufExtensions.Serialize(createOrderCache),
@@ -35,6 +38,8 @@ public class CommerceRedisService : ICommerceRedisService
             {
                 AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(2)
             });
+
+        return createOrderCache;
     }
 
     /// <summary>
@@ -61,4 +66,12 @@ public class CommerceRedisService : ICommerceRedisService
 
         return result;
     }
+
+    #endregion
+
+    #region Приватные методы.
+
+    
+
+    #endregion
 }

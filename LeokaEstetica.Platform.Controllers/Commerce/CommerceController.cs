@@ -9,6 +9,7 @@ using LeokaEstetica.Platform.Models.Dto.Input.Commerce.PayMaster;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce.PayMaster;
 using LeokaEstetica.Platform.Models.Dto.Output.FareRule;
+using LeokaEstetica.Platform.Processing.Abstractions.Commerce;
 using LeokaEstetica.Platform.Processing.Abstractions.PayMaster;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
@@ -27,6 +28,7 @@ public class CommerceController : BaseController
     private readonly IFareRuleRepository _fareRuleRepository;
     private readonly IMapper _mapper;
     private readonly ILogService _logService;
+    private readonly ICommerceService _commerceService;
 
     /// <summary>
     /// Конструктор.
@@ -35,15 +37,18 @@ public class CommerceController : BaseController
     /// <param name="fareRuleRepository">Репозиторий правил тарифов.</param>
     /// <param name="mapper">Автомаппер.</param>
     /// <param name="logService">Сервис логера.</param>
+    /// <param name="commerceService">Сервис коммерции.</param>
     public CommerceController(IPayMasterService payMasterService, 
         IFareRuleRepository fareRuleRepository, 
         IMapper mapper, 
-        ILogService logService)
+        ILogService logService, 
+        ICommerceService commerceService)
     {
         _payMasterService = payMasterService;
         _fareRuleRepository = fareRuleRepository;
         _mapper = mapper;
         _logService = logService;
+        _commerceService = commerceService;
     }
 
     /// <summary>
@@ -124,6 +129,9 @@ public class CommerceController : BaseController
 
             return result;
         }
+
+        var orderFromCache = await _commerceService.CreateOrderCacheAsync(createOrderCacheInput, GetUserName());
+        result = _mapper.Map<CreateOrderCacheOutput>(orderFromCache);
 
         return result;
     }
