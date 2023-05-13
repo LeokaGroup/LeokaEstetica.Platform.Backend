@@ -70,7 +70,7 @@ public class CommerceService : ICommerceService
             // Сохраняем заказ в кэш сроком на 2 часа.
             var publicId = createOrderCacheInput.PublicId;
             var key = CreateOrderCacheKey(userId, publicId);
-            var orderToCache = await CreateOrderCacheResult(publicId, createOrderCacheInput.PaymentMonth);
+            var orderToCache = await CreateOrderCacheResult(publicId, createOrderCacheInput.PaymentMonth, userId);
             
             var result = await _commerceRedisService.CreateOrderCacheAsync(key, orderToCache);
 
@@ -110,8 +110,9 @@ public class CommerceService : ICommerceService
     /// </summary>
     /// <param name="publicId">Публичный код тарифа.</param>
     /// <param name="paymentMonth">Кол-во месяцев подписки.</param>
+    /// <param name="userId">Id пользователя.</param>
     /// <returns>Результирующая модель.</returns>
-    private async Task<CreateOrderCache> CreateOrderCacheResult(Guid publicId, short paymentMonth)
+    private async Task<CreateOrderCache> CreateOrderCacheResult(Guid publicId, short paymentMonth, long userId)
     {
         var rule = await _fareRuleRepository.GetByPublicIdAsync(publicId);
 
@@ -130,7 +131,8 @@ public class CommerceService : ICommerceService
             RuleId = rule.RuleId,
             Month = paymentMonth,
             Percent = discount,
-            Price = discountPrice
+            Price = discountPrice,
+            UserId = userId
         };
 
         return result;

@@ -32,4 +32,10 @@ public class CreateOrderCache
     /// </summary>
     [ProtoMember(4)]
     public short Month { get; set; }
+
+    /// <summary>
+    /// Id пользователя.
+    /// </summary>
+    [ProtoMember(5)]
+    public long UserId { get; set; }
 }

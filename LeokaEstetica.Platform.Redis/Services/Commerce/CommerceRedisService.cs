@@ -1,6 +1,5 @@
 using LeokaEstetica.Platform.Models.Dto.Common.Cache;
 using LeokaEstetica.Platform.Redis.Abstractions.Commerce;
-using LeokaEstetica.Platform.Redis.Consts;
 using LeokaEstetica.Platform.Redis.Extensions;
 using Microsoft.Extensions.Caching.Distributed;
 
@@ -32,7 +31,7 @@ public class CommerceRedisService : ICommerceRedisService
     /// <returns>Данные заказа добавленного в кэш.</returns>
     public async Task<CreateOrderCache> CreateOrderCacheAsync(string key, CreateOrderCache createOrderCache)
     {
-        await _redisCache.SetStringAsync(CacheKeysConsts.ORDER_CACHE,
+        await _redisCache.SetStringAsync(key,
             ProtoBufExtensions.Serialize(createOrderCache),
             new DistributedCacheEntryOptions
             {

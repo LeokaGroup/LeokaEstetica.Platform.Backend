@@ -91,7 +91,6 @@ builder.Services.AddSignalR();
 // Подключаем кэш Redis.
 builder.Services.AddStackExchangeRedisCache(options => {
     options.Configuration = configuration["Redis:RedisCacheUrl"] ?? string.Empty;
-    options.InstanceName = "LeokaEstetica_";
 });
 
 // Добавляем Fluent Validation.
