@@ -152,6 +152,6 @@ public class MappingProfile : Profile
             .ForMember(e => e.ProfileName,
                 e => e.MapFrom(src => src.FirstName + " " + src.LastName + " " + src.Patronymic));
         
-        CreateMap<CreateOrderCache, CreateOrderCacheOutput>();
+        CreateMap<CreateOrderCache, OrderCacheOutput>();
     }
 }

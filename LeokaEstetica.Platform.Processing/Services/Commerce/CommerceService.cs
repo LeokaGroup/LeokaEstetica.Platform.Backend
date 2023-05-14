@@ -84,6 +84,37 @@ public class CommerceService : ICommerceService
         }
     }
 
+    /// <summary>
+    /// Метод получает услуги и сервисы заказа из кэша.
+    /// </summary>
+    /// <param name="publicId">Публичный код тарифа.</param>
+    /// <param name="account">Аккаунт.</param>
+    /// <returns>Услуги и сервисы заказа.</returns>
+    public async Task<CreateOrderCache> GetOrderProductsCacheAsync(Guid publicId, string account)
+    {
+        try
+        {
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+            
+            var key = CreateOrderCacheKey(userId, publicId);
+            var result = await _commerceRedisService.GetOrderCacheAsync(key);
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            await _logService.LogErrorAsync(ex);
+            throw;
+        }
+    }
+
     #endregion
 
     #region Приватные методы.
@@ -122,9 +153,18 @@ public class CommerceService : ICommerceService
             throw ex;
         }
 
+        var products = new List<string>();
+
         var discount = await GetPercentDiscountAsync(paymentMonth, DiscountTypeEnum.Service);
-        var servicePrice = await CalculateServicePriceAsync(paymentMonth, rule.Price);
-        var discountPrice = await CalculatePercentPriceAsync(discount, servicePrice);
+        var rulePrice = rule.Price;
+        var servicePrice = CalculateServicePriceAsync(paymentMonth, rulePrice);
+        var discountPrice = CalculatePercentPriceAsync(discount, servicePrice);
+
+        // Если была применена скидка.
+        if (discountPrice < servicePrice)
+        {
+            products.Add($"Скидка на тариф {discount}");
+        }
 
         var result = new CreateOrderCache
         {
@@ -132,7 +172,8 @@ public class CommerceService : ICommerceService
             Month = paymentMonth,
             Percent = discount,
             Price = discountPrice,
-            UserId = userId
+            UserId = userId,
+            Products = products
         };
 
         return result;
@@ -158,17 +199,15 @@ public class CommerceService : ICommerceService
     /// <param name="percent">% скидки.</param>
     /// <param name="price">Сумму без скидки.</param>
     /// <returns>Сумма с учетом скидки.</returns>
-    private async Task<decimal> CalculatePercentPriceAsync(decimal percent, decimal price)
+    private decimal CalculatePercentPriceAsync(decimal percent, decimal price)
     {
         // Если нет скидки, то оставляем цену такой же.
         if (percent == 0)
         {
             return price;
         }
-        
-        var result = price - Math.Round(price * percent / 100);
 
-        return await Task.FromResult(result);
+        return price - Math.Round(price * percent / 100);
     }
 
     /// <summary>
@@ -177,11 +216,9 @@ public class CommerceService : ICommerceService
     /// <param name="month">Кол-во месяцев подписки.</param>
     /// <param name="price">Цена.</param>
     /// <returns>Цена.</returns>
-    private async Task<decimal> CalculateServicePriceAsync(short month, decimal price)
+    private decimal CalculateServicePriceAsync(short month, decimal price)
     {
-        var result = price * month;
-
-        return await Task.FromResult(result);
+        return price * month;
     }
 
     #endregion

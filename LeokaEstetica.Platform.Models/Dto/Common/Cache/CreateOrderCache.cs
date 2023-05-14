@@ -38,4 +38,10 @@ public class CreateOrderCache
     /// </summary>
     [ProtoMember(5)]
     public long UserId { get; set; }
+
+    /// <summary>
+    /// Список сервисов для услуг.
+    /// </summary>
+    [ProtoMember(6)]
+    public List<string> Products { get; set; }
 }

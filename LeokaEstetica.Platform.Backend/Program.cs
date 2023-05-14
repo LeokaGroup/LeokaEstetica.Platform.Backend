@@ -39,6 +39,13 @@ if (builder.Environment.IsStaging())
         ServiceLifetime.Transient);
 }
 
+if (builder.Environment.IsProduction())
+{
+    builder.Services.AddDbContext<PgContext>(options =>
+            options.UseNpgsql(configuration.GetConnectionString("NpgSqlConnection") ?? string.Empty),
+        ServiceLifetime.Transient);
+}
+
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "Leoka.Estetica.Platform" });

@@ -16,4 +16,12 @@ public interface ICommerceService
     /// <param name="account">Аккаунт.</param>
     /// <returns>Данные заказа добавленного в кэш.</returns>
     Task<CreateOrderCache> CreateOrderCacheAsync(CreateOrderCacheInput createOrderCacheInput, string account);
+
+    /// <summary>
+    /// Метод получает услуги и сервисы заказа из кэша.
+    /// </summary>
+    /// <param name="publicId">Публичный код тарифа.</param>
+    /// <param name="account">Аккаунт.</param>
+    /// <returns>Услуги и сервисы заказа.</returns>
+    Task<CreateOrderCache> GetOrderProductsCacheAsync(Guid publicId, string account);
 }

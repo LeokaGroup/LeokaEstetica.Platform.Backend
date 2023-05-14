@@ -1,12 +1,9 @@
-using FluentValidation.Results;
-using LeokaEstetica.Platform.Models.Dto.Common;
-
 namespace LeokaEstetica.Platform.Models.Dto.Output.Commerce;
 
 /// <summary>
-/// Класс выходной модели создания заказа в кэше.
+/// Класс выходной модели заказа в кэше.
 /// </summary>
-public class CreateOrderCacheOutput : IFrontError
+public class OrderCacheOutput
 {
     /// <summary>
     /// PK.
@@ -34,7 +31,7 @@ public class CreateOrderCacheOutput : IFrontError
     public long UserId { get; set; }
 
     /// <summary>
-    /// Список ошибок.
+    /// Список сервисов услуг.
     /// </summary>
-    public List<ValidationFailure> Errors { get; set; }
+    public List<string> Products { get; set; }
 }

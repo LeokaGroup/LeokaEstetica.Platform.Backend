@@ -107,31 +107,48 @@ public class CommerceController : BaseController
     /// <returns>Данные заказа, которые хранятся в кэше.</returns>
     [HttpPost]
     [Route("fare-rule/order-form/pre")]
-    [ProducesResponseType(200, Type = typeof(CreateOrderCacheOutput))]
+    [ProducesResponseType(200, Type = typeof(OrderCacheOutput))]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<CreateOrderCacheOutput> CreateOrderCacheAsync(
+    public async Task<OrderCacheOutput> CreateOrderCacheAsync(
         [FromBody] CreateOrderCacheInput createOrderCacheInput)
     {
-        var result = new CreateOrderCacheOutput();
         var validator = await new CreateOrderCacheValidator().ValidateAsync(createOrderCacheInput);
         
         if (validator.Errors.Any())
         {
-            result.Errors = validator.Errors;
-
             var ex = new InvalidOperationException(
                 "Переданы некорректные параметры. " +
                 $"CreateOrderCacheInput: {JsonConvert.SerializeObject(createOrderCacheInput)}");
             await _logService.LogErrorAsync(ex);
 
-            return result;
+            throw ex;
         }
 
         var orderFromCache = await _commerceService.CreateOrderCacheAsync(createOrderCacheInput, GetUserName());
-        result = _mapper.Map<CreateOrderCacheOutput>(orderFromCache);
+        var result = _mapper.Map<OrderCacheOutput>(orderFromCache);
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод получает услуги и сервисы заказа из кэша.
+    /// </summary>
+    /// <param name="publicId">Публичный код тарифа.</param>
+    /// <returns>Услуги и сервисы заказа.</returns>
+    [HttpGet]
+    [Route("fare-rule/order-form/products")]
+    [ProducesResponseType(200, Type = typeof(OrderCacheOutput))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<OrderCacheOutput> GetOrderProductsCacheAsync([FromQuery] Guid publicId)
+    {
+        var orderFromCache = await _commerceService.GetOrderProductsCacheAsync(publicId, GetUserName());
+        var result = _mapper.Map<OrderCacheOutput>(orderFromCache);
 
         return result;
     }
