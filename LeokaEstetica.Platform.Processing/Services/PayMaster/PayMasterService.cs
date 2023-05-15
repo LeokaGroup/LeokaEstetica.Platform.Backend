@@ -67,13 +67,11 @@ public class PayMasterService : IPayMasterService
     /// <summary>
     /// Метод создает заказ.
     /// </summary>
-    /// <param name="createOrderInput">Входная модель.</param>
-    /// <param name="account">Аккаунт.</param>
-    /// <param name="token">Токен.</param>
     /// <param name="publicId">Публичный ключ тарифа.</param>
+    /// <param name="account">Аккаунт.</param>
+    /// <param name="token">Токен пользователя.</param>
     /// <returns>Данные платежа.</returns>
-    public async Task<CreateOrderOutput> CreateOrderAsync(CreateOrderInput createOrderInput, string account,
-        string token, Guid publicId)
+    public async Task<CreateOrderOutput> CreateOrderAsync(Guid publicId, string account, string token)
     {
         try
         {
@@ -99,8 +97,7 @@ public class PayMasterService : IPayMasterService
             var orderCache = await _commerceRedisService.GetOrderCacheAsync(key);
             
             // Заполняем модель для запроса в ПС.
-            createOrderInput = await CreateOrderRequestAsync(createOrderInput, orderCache.FareRuleName,
-                orderCache.Price);
+            var createOrderInput = await CreateOrderRequestAsync(orderCache.FareRuleName, orderCache.Price);
 
             await _logService.LogInfoAsync(new ApplicationException("Начало создания заказа."));
             
@@ -150,28 +147,32 @@ public class PayMasterService : IPayMasterService
     /// <summary>
     /// Метод создает модель запроса в ПС PayMaster.
     /// </summary>
-    /// <param name="createOrderInput">Входная модель для запроса в ПС.</param>
     /// <param name="fareRuleName">Название тарифа.</param>
     /// <param name="price">Цена.</param>
     /// <returns>Модель запроса в ПС PayMaster.</returns>
-    private async Task<CreateOrderInput> CreateOrderRequestAsync(CreateOrderInput createOrderInput,
-        string fareRuleName, decimal price)
+    private async Task<CreateOrderInput> CreateOrderRequestAsync(string fareRuleName, decimal price)
     {
-        // Задаем Id мерчанта (магазина).
-        createOrderInput.CreateOrderRequest.MerchantId = new Guid(_configuration["Commerce:PayMaster:MerchantId"]);
-        createOrderInput.CreateOrderRequest.TestMode = true; // TODO: Добавить управляющий ключ в таблицу конфигов.
-        createOrderInput.CreateOrderRequest.Invoice = new Invoice
+        var result = new CreateOrderInput
         {
-            Description = "Оплата тарифа: " + fareRuleName
+            CreateOrderRequest =
+            {
+                // Задаем Id мерчанта (магазина).
+                MerchantId = new Guid(_configuration["Commerce:PayMaster:MerchantId"]),
+                TestMode = true, // TODO: Добавить управляющий ключ в таблицу конфигов.
+                Invoice = new Invoice
+                {
+                    Description = "Оплата тарифа: " + fareRuleName
+                },
+                Amount = new Amount
+                {
+                    Value = price,
+                    Currency = PaymentCurrencyEnum.RUB.ToString()
+                },
+                PaymentMethod = "BankCard"
+            }
         };
-        createOrderInput.CreateOrderRequest.Amount = new Amount
-        {
-            Value = price,
-            Currency = PaymentCurrencyEnum.RUB.ToString()
-        };
-        createOrderInput.CreateOrderRequest.PaymentMethod = "BankCard";
 
-        return await Task.FromResult(createOrderInput);
+        return await Task.FromResult(result);
     }
 
     /// <summary>
