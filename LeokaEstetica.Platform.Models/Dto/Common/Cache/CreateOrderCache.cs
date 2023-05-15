@@ -44,4 +44,10 @@ public class CreateOrderCache
     /// </summary>
     [ProtoMember(6)]
     public List<string> Products { get; set; }
+
+    /// <summary>
+    /// Название тарифа.
+    /// </summary>
+    [ProtoMember(7)]
+    public string FareRuleName { get; set; }
 }

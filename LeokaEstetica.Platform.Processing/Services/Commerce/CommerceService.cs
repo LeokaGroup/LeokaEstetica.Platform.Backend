@@ -1,4 +1,3 @@
-using System.Text;
 using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.Commerce;
@@ -9,7 +8,6 @@ using LeokaEstetica.Platform.Models.Dto.Common.Cache;
 using LeokaEstetica.Platform.Models.Dto.Input.Commerce;
 using LeokaEstetica.Platform.Processing.Abstractions.Commerce;
 using LeokaEstetica.Platform.Redis.Abstractions.Commerce;
-using LeokaEstetica.Platform.Redis.Consts;
 
 namespace LeokaEstetica.Platform.Processing.Services.Commerce;
 
@@ -69,7 +67,7 @@ public class CommerceService : ICommerceService
             
             // Сохраняем заказ в кэш сроком на 2 часа.
             var publicId = createOrderCacheInput.PublicId;
-            var key = CreateOrderCacheKey(userId, publicId);
+            var key = await _commerceRedisService.CreateOrderCacheKeyAsync(userId, publicId);
             var orderToCache = await CreateOrderCacheResult(publicId, createOrderCacheInput.PaymentMonth, userId);
             
             var result = await _commerceRedisService.CreateOrderCacheAsync(key, orderToCache);
@@ -102,7 +100,7 @@ public class CommerceService : ICommerceService
                 throw ex;
             }
             
-            var key = CreateOrderCacheKey(userId, publicId);
+            var key = await _commerceRedisService.CreateOrderCacheKeyAsync(userId, publicId);
             var result = await _commerceRedisService.GetOrderCacheAsync(key);
 
             return result;
@@ -118,24 +116,7 @@ public class CommerceService : ICommerceService
     #endregion
 
     #region Приватные методы.
-
-    /// <summary>
-    /// Метод создает ключ для добавления заказа в кэш.
-    /// </summary>
-    /// <param name="userId">Id пользователя.</param>
-    /// <param name="publicId">Публичный код тарифа.</param>
-    /// <returns>Ключ для добавления заказа в кэш.</returns>
-    private string CreateOrderCacheKey(long userId, Guid publicId)
-    {
-        var builder = new StringBuilder();
-        builder.Append(CacheKeysConsts.ORDER_CACHE);
-        builder.Append(userId);
-        builder.Append('_');
-        builder.Append(publicId);
-
-        return builder.ToString();
-    }
-
+    
     /// <summary>
     /// Метод создает модель заказа для кэша.
     /// </summary>
@@ -173,7 +154,8 @@ public class CommerceService : ICommerceService
             Percent = discount,
             Price = discountPrice,
             UserId = userId,
-            Products = products
+            Products = products,
+            FareRuleName = rule.Name
         };
 
         return result;

@@ -1,5 +1,7 @@
+using System.Text;
 using LeokaEstetica.Platform.Models.Dto.Common.Cache;
 using LeokaEstetica.Platform.Redis.Abstractions.Commerce;
+using LeokaEstetica.Platform.Redis.Consts;
 using LeokaEstetica.Platform.Redis.Extensions;
 using Microsoft.Extensions.Caching.Distributed;
 
@@ -64,6 +66,23 @@ public class CommerceRedisService : ICommerceRedisService
         }
 
         return result;
+    }
+
+    /// <summary>
+    /// Метод создает ключ для работы с заказом, который в кэше.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <param name="publicId">Публичный код тарифа.</param>
+    /// <returns>Ключ для добавления заказа в кэш.</returns>
+    public async Task<string> CreateOrderCacheKeyAsync(long userId, Guid publicId)
+    {
+        var builder = new StringBuilder();
+        builder.Append(CacheKeysConsts.ORDER_CACHE);
+        builder.Append(userId);
+        builder.Append('_');
+        builder.Append(publicId);
+
+        return await Task.FromResult(builder.ToString());
     }
 
     #endregion

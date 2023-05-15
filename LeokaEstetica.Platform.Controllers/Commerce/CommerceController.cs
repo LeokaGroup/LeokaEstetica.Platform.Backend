@@ -74,8 +74,9 @@ public class CommerceController : BaseController
 
             return result;
         }
-        
-        result = await _payMasterService.CreateOrderAsync(createOrderInput, GetUserName(), GetTokenFromHeader());
+
+        result = await _payMasterService.CreateOrderAsync(createOrderInput, GetUserName(), GetTokenFromHeader(),
+            createOrderInput.PublicId);
 
         return result;
     }

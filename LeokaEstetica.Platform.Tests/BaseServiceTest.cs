@@ -185,10 +185,11 @@ public class BaseServiceTest
         ProjectPaginationService = new ProjectPaginationService(projectRepository, logService);
 
         var commerceRepository = new CommerceRepository(pgContext);
+        var commerceRedisService = new CommerceRedisService(distributedCache);
 
         FareRuleService = new FareRuleService(fareRuleRepository, logService);
-        PayMasterService = new PayMasterService(logService, AppConfiguration, fareRuleRepository, userRepository,
-            commerceRepository, null, null);
+        PayMasterService = new PayMasterService(logService, AppConfiguration, userRepository,
+            commerceRepository, null, null, commerceRedisService);
 
         var userBlackListService = new UserBlackListRepository(pgContext);
         UserBlackListService = new UserBlackListService(logService, userBlackListService);
@@ -200,8 +201,7 @@ public class BaseServiceTest
 
         var KnowledgeRepository = new KnowledgeRepository(pgContext);
         KnowledgeService = new KnowledgeService(KnowledgeRepository, logService);
-
-        var commerceRedisService = new CommerceRedisService(distributedCache);
+        
         CommerceService = new CommerceService(commerceRedisService, logService, userRepository, fareRuleRepository,
             commerceRepository);
     }

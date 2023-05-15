@@ -14,7 +14,7 @@ public class CreateOrderValidator : AbstractValidator<CreateOrderInput>
     /// </summary>
     public CreateOrderValidator()
     {
-        RuleFor(p => p.FareRuleId)
+        RuleFor(p => p.CreateOrderRequest.FareRuleId)
             .Must(p => p > 0)
             .WithMessage(CommerceConst.NOT_VALID_FARE_RULE_ID);
     }

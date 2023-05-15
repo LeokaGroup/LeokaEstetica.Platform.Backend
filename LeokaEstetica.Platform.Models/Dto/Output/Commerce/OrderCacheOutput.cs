@@ -34,4 +34,9 @@ public class OrderCacheOutput
     /// Список сервисов услуг.
     /// </summary>
     public List<string> Products { get; set; }
+
+    /// <summary>
+    /// Название тарифа.
+    /// </summary>
+    public string FareRuleName { get; set; }
 }

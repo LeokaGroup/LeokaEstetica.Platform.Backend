@@ -1,6 +1,3 @@
-using LeokaEstetica.Platform.Models.Dto.Base.Commerce.PayMaster;
-using Newtonsoft.Json;
-
 namespace LeokaEstetica.Platform.Models.Dto.Input.Commerce.PayMaster;
 
 /// <summary>
@@ -10,35 +7,12 @@ namespace LeokaEstetica.Platform.Models.Dto.Input.Commerce.PayMaster;
 public class CreateOrderInput 
 {
     /// <summary>
-    /// Ключ мерчанта (магазина).
+    /// Модель запроса к ПС для создания заказа.
     /// </summary>
-    public Guid MerchantId { get; set; }
+    public CreateOrderRequest CreateOrderRequest { get; set; }
 
     /// <summary>
-    /// Id тарифа.
+    /// Публичный ключ тарифа.
     /// </summary>
-    public long FareRuleId { get; set; }
-
-    /// <summary>
-    /// Признак тестового режима.
-    /// </summary>
-    public bool TestMode { get; set; }
-    
-    /// <summary>
-    /// Детали счета.
-    /// </summary>
-    [JsonProperty("invoice")]
-    public Invoice Invoice { get; set; }
-
-    /// <summary>
-    /// Цена.
-    /// </summary>
-    [JsonProperty("amount")]
-    public Amount Amount { get; set; }
-
-    /// <summary>
-    /// Метод оплаты.
-    /// </summary>
-    [JsonProperty("paymentMethod")]
-    public string PaymentMethod { get; set; }
+    public Guid PublicId { get; set; }
 }
