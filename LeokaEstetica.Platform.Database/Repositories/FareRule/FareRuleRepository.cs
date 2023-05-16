@@ -12,6 +12,10 @@ public class FareRuleRepository : IFareRuleRepository
 {
     private readonly PgContext _pgContext;
     
+    /// <summary>
+    /// Конструктор.
+    /// </summary>
+    /// <param name="pgContext">Датаконтекст.</param>
     public FareRuleRepository(PgContext pgContext)
     {
         _pgContext = pgContext;
@@ -88,6 +92,34 @@ public class FareRuleRepository : IFareRuleRepository
             })
             .OrderBy(o => o.Position)
             .ToListAsync();
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод получает тариф по его PublicId.
+    /// </summary>
+    /// <param name="publicId">Публичный ключ тарифа.</param>
+    /// <returns>Данные тарифа.</returns>
+    public async Task<FareRuleEntity> GetByPublicIdAsync(Guid publicId)
+    {
+        var result = await _pgContext.FareRules
+            .Where(fr => fr.PublicId == publicId)
+            .Select(fr => new FareRuleEntity(fr.PublicId)
+            {
+                RuleId = fr.RuleId,
+                Name = fr.Name,
+                Label = fr.Label,
+                Currency = fr.Currency,
+                Price = fr.Price,
+                FareRuleItems = _pgContext.FareRuleItems
+                    .Where(fri => fri.RuleId == fr.RuleId)
+                    .OrderBy(o => o.Position)
+                    .ToList(),
+                Position = fr.Position,
+                IsPopular = fr.IsPopular
+            })
+            .FirstOrDefaultAsync();
 
         return result;
     }

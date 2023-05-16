@@ -43,6 +43,7 @@ public class AccessResumeService : IAccessResumeService
                 var ex = new NotFoundUserIdByAccountException(account);
                 throw ex;
             }
+            
             var userSubscription = await _subscriptionRepository.GetUserSubscriptionAsync(userId);
 
             // Не даем доступ.

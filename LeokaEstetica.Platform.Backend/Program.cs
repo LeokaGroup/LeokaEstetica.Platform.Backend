@@ -39,6 +39,13 @@ if (builder.Environment.IsStaging())
         ServiceLifetime.Transient);
 }
 
+if (builder.Environment.IsProduction())
+{
+    builder.Services.AddDbContext<PgContext>(options =>
+            options.UseNpgsql(configuration.GetConnectionString("NpgSqlConnection") ?? string.Empty),
+        ServiceLifetime.Transient);
+}
+
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "Leoka.Estetica.Platform" });
@@ -91,7 +98,6 @@ builder.Services.AddSignalR();
 // Подключаем кэш Redis.
 builder.Services.AddStackExchangeRedisCache(options => {
     options.Configuration = configuration["Redis:RedisCacheUrl"] ?? string.Empty;
-    options.InstanceName = "LeokaEstetica_";
 });
 
 // Добавляем Fluent Validation.

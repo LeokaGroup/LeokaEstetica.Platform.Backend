@@ -33,7 +33,9 @@ using LeokaEstetica.Platform.Logs.Services;
 using LeokaEstetica.Platform.Messaging.Services.Chat;
 using LeokaEstetica.Platform.Messaging.Services.Project;
 using LeokaEstetica.Platform.Notifications.Services;
+using LeokaEstetica.Platform.Processing.Services.Commerce;
 using LeokaEstetica.Platform.Processing.Services.PayMaster;
+using LeokaEstetica.Platform.Redis.Services.Commerce;
 using LeokaEstetica.Platform.Redis.Services.User;
 using LeokaEstetica.Platform.Services.Services.FareRule;
 using LeokaEstetica.Platform.Services.Services.Knowledge;
@@ -85,6 +87,7 @@ public class BaseServiceTest
     protected readonly KnowledgeService KnowledgeService;
     protected readonly PgContext PgContext;
     protected readonly ProjectModerationRepository ProjectModerationRepository;
+    protected readonly CommerceService CommerceService;
 
     protected BaseServiceTest()
     {
@@ -106,6 +109,9 @@ public class BaseServiceTest
         
         PgContext = pgContext;
         
+        var optionsForCache = new OptionsWrapper<MemoryDistributedCacheOptions>(new MemoryDistributedCacheOptions());
+        var distributedCache = new MemoryDistributedCache(optionsForCache);
+        
         var logService = new LogService(pgContext);
         var userRepository = new UserRepository(pgContext, logService);
         var profileRepository = new ProfileRepository(pgContext);
@@ -114,8 +120,6 @@ public class BaseServiceTest
         var resumeModerationRepository = new ResumeModerationRepository(pgContext);
         var accessUserRepository = new AccessUserRepository(pgContext);
         var accessUserService = new AccessUserService(accessUserRepository);
-        var optionsForCache = new OptionsWrapper<MemoryDistributedCacheOptions>(new MemoryDistributedCacheOptions());
-        var distributedCache = new MemoryDistributedCache(optionsForCache);
         var userRedisService = new UserRedisService(distributedCache, mapper);
 
         UserService = new UserService(logService, userRepository, mapper, null, pgContext, profileRepository,
@@ -180,11 +184,12 @@ public class BaseServiceTest
         VacancyPaginationService = new VacancyPaginationService(vacancyRepository, logService);
         ProjectPaginationService = new ProjectPaginationService(projectRepository, logService);
 
-        var payMasterRepository = new PayMasterRepository(pgContext);
+        var commerceRepository = new CommerceRepository(pgContext);
+        var commerceRedisService = new CommerceRedisService(distributedCache);
 
         FareRuleService = new FareRuleService(fareRuleRepository, logService);
-        PayMasterService = new PayMasterService(logService, AppConfiguration, fareRuleRepository, userRepository,
-            payMasterRepository, null, null);
+        PayMasterService = new PayMasterService(logService, AppConfiguration, userRepository,
+            commerceRepository, null, null, commerceRedisService);
 
         var userBlackListService = new UserBlackListRepository(pgContext);
         UserBlackListService = new UserBlackListService(logService, userBlackListService);
@@ -196,5 +201,8 @@ public class BaseServiceTest
 
         var KnowledgeRepository = new KnowledgeRepository(pgContext);
         KnowledgeService = new KnowledgeService(KnowledgeRepository, logService);
+        
+        CommerceService = new CommerceService(commerceRedisService, logService, userRepository, fareRuleRepository,
+            commerceRepository);
     }
 }

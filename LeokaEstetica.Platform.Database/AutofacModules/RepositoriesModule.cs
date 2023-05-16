@@ -168,12 +168,12 @@ public class RepositoriesModule : Module
         
         // Репозиторий заказов.
         builder
-            .RegisterType<PayMasterRepository>()
-            .Named<IPayMasterRepository>("PayMasterRepository")
+            .RegisterType<CommerceRepository>()
+            .Named<ICommerceRepository>("CommerceRepository")
             .InstancePerLifetimeScope();
         builder
-            .RegisterType<PayMasterRepository>()
-            .As<IPayMasterRepository>()
+            .RegisterType<CommerceRepository>()
+            .As<ICommerceRepository>()
             .InstancePerLifetimeScope();
         
         // Репозиторий подписок.

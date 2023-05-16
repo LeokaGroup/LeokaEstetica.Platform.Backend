@@ -1,6 +1,7 @@
 namespace LeokaEstetica.Platform.Models.Entities.Commerce;
 
 /// <summary>
+/// TODO: Пока не используется.
 /// Класс сопоставляется с таблицей чеков Commerce.Receipts.
 /// </summary>
 public class ReceiptEntity
