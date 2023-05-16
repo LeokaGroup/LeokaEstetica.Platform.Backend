@@ -97,14 +97,16 @@ public class PayMasterService : IPayMasterService
             var orderCache = await _commerceRedisService.GetOrderCacheAsync(key);
             
             // Заполняем модель для запроса в ПС.
-            var createOrderInput = await CreateOrderRequestAsync(orderCache.FareRuleName, orderCache.Price);
+            var createOrderInput = await CreateOrderRequestAsync(orderCache.FareRuleName, orderCache.Price,
+                orderCache.RuleId, publicId, orderCache.Month);
 
             await _logService.LogInfoAsync(new ApplicationException("Начало создания заказа."));
             
-            var httpClient = await SetPayMasterRequestAuthorizationHeader();
+            using var httpClient = await SetPayMasterRequestAuthorizationHeader();
             
             // Создаем платеж в ПС.
-            var responseCreateOrder = await httpClient.PostAsJsonAsync(ApiConsts.CREATE_PAYMENT, createOrderInput);
+            var responseCreateOrder = await httpClient.PostAsJsonAsync(ApiConsts.CREATE_PAYMENT,
+                createOrderInput.CreateOrderRequest);
 
             // Если ошибка при создании платежа в ПС.
             if (!responseCreateOrder.IsSuccessStatusCode)
@@ -149,27 +151,33 @@ public class PayMasterService : IPayMasterService
     /// </summary>
     /// <param name="fareRuleName">Название тарифа.</param>
     /// <param name="price">Цена.</param>
+    /// <param name="ruleId">Id тарифа.</param>
+    /// <param name="publicId">Публичный ключ тарифа.</param>
+    /// <param name="month">Кол-во мес, на которые оплачивается тариф.</param>
     /// <returns>Модель запроса в ПС PayMaster.</returns>
-    private async Task<CreateOrderInput> CreateOrderRequestAsync(string fareRuleName, decimal price)
+    private async Task<CreateOrderInput> CreateOrderRequestAsync(string fareRuleName, decimal price, int ruleId,
+        Guid publicId, short month)
     {
         var result = new CreateOrderInput
         {
-            CreateOrderRequest =
+            CreateOrderRequest = new CreateOrderRequest
             {
                 // Задаем Id мерчанта (магазина).
                 MerchantId = new Guid(_configuration["Commerce:PayMaster:MerchantId"]),
                 TestMode = true, // TODO: Добавить управляющий ключ в таблицу конфигов.
                 Invoice = new Invoice
                 {
-                    Description = "Оплата тарифа: " + fareRuleName
+                    Description = "Оплата тарифа: " + fareRuleName + $" (на {month} мес.)"
                 },
                 Amount = new Amount
                 {
                     Value = price,
                     Currency = PaymentCurrencyEnum.RUB.ToString()
                 },
-                PaymentMethod = "BankCard"
-            }
+                PaymentMethod = "BankCard",
+                FareRuleId = ruleId
+            },
+            PublicId = publicId
         };
 
         return await Task.FromResult(result);
@@ -212,7 +220,7 @@ public class PayMasterService : IPayMasterService
     /// <returns>HttpClient для запроса в ПС.</returns>
     private async Task<HttpClient> SetPayMasterRequestAuthorizationHeader()
     {
-        using var httpClient = new HttpClient();
+        var httpClient = new HttpClient();
         
         // Устанавливаем заголовки запросу.
         httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer",
