@@ -176,15 +176,15 @@ public class PayMasterService : IPayMasterService
     }
 
     /// <summary>
-    /// Метод 
+    /// Метод парсит результат для сохранения заказа в БД.
     /// </summary>
-    /// <param name="paymentId"></param>
-    /// <param name="orderCache"></param>
-    /// <param name="createOrderRequest"></param>
-    /// <param name="userId"></param>
-    /// <param name="responseCheckStatusOrder"></param>
-    /// <returns></returns>
-    private async Task<CreatePaymentOrderInput> CreatePaymentOrderRequestAsync(string paymentId,
+    /// <param name="paymentId">Id платежа в ПС.</param>
+    /// <param name="orderCache">Заказ в кэше.</param>
+    /// <param name="createOrderRequest">Модель запроса.</param>
+    /// <param name="userId">Id пользователя.</param>
+    /// <param name="responseCheckStatusOrder">Статус ответа из ПС.</param>
+    /// <returns>Результирующая модель для сохранения в БД.</returns>
+    private async Task<CreatePaymentOrderInput> CreatePaymentOrderAsync(string paymentId,
         CreateOrderCache orderCache, CreateOrderRequest createOrderRequest, long userId,
         string responseCheckStatusOrder)
     {
@@ -247,7 +247,7 @@ public class PayMasterService : IPayMasterService
             throw ex;
         }
         
-        var createdOrder = await CreatePaymentOrderRequestAsync(order.PaymentId, orderCache,
+        var createdOrder = await CreatePaymentOrderAsync(order.PaymentId, orderCache,
             createOrderInput.CreateOrderRequest, userId, responseCheckStatusOrder);
 
         // Создаем заказ в БД.
