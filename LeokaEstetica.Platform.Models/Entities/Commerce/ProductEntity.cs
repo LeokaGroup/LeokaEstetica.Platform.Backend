@@ -1,6 +1,8 @@
 namespace LeokaEstetica.Platform.Models.Entities.Commerce;
 
 /// <summary>
+/// TODO: Проверить, будет ли использоваться вообще.
+/// TODO: Если нет, то удалить и из БД тоже.
 /// Класс сопоставляется с таблицей сервисов к тарифам Commerce.Products.
 /// </summary>
 public class ProductEntity

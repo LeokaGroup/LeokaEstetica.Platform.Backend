@@ -386,6 +386,8 @@ public class PgContext : DbContext
     public DbSet<ResumeRemarkEntity> ResumeRemarks { get; set; }
 
     /// <summary>
+    /// TODO: Проверить, будет ли использоваться вообще.
+    /// TODO: Если нет, то удалить и из БД тоже.
     /// Таблица сервисов и услуг.
     /// </summary>
     public DbSet<ProductEntity> Products { get; set; }
