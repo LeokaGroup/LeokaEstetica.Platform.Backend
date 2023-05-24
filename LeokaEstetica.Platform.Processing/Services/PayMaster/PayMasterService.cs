@@ -101,8 +101,9 @@ public class PayMasterService : IPayMasterService
                 orderCache.RuleId, publicId, orderCache.Month);
 
             await _logService.LogInfoAsync(new ApplicationException("Начало создания заказа."));
-            
-            using var httpClient = await SetPayMasterRequestAuthorizationHeader();
+
+            using var httpClient = new HttpClient();
+            await SetPayMasterRequestAuthorizationHeader(httpClient);
             
             // Создаем платеж в ПС.
             var responseCreateOrder = await httpClient.PostAsJsonAsync(ApiConsts.CREATE_PAYMENT,
@@ -135,6 +136,61 @@ public class PayMasterService : IPayMasterService
             return result;
         }
 
+        catch (Exception ex)
+        {
+            await _logService.LogCriticalAsync(ex);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Метод проверяет статус платежа в ПС.
+    /// </summary>
+    /// <param name="paymentId">Id платежа.</param>
+    /// <returns>Статус платежа.</returns>
+    public async Task<PaymentStatusEnum> CheckOrderStatusAsync(string paymentId, HttpClient httpClient)
+    {
+        try
+        {
+            await _logService.LogInfoAsync(new ApplicationException($"Начало проверки статуса заказа {paymentId}."));
+            
+            await SetPayMasterRequestAuthorizationHeader(httpClient);
+            
+            var responseCreateOrder = await httpClient.GetAsync(string.Concat(ApiConsts.CHECK_PAYMENT_STATUS, 
+                paymentId));
+            
+            // Если ошибка при создании платежа в ПС.
+            if (!responseCreateOrder.IsSuccessStatusCode)
+            {
+                var ex = new InvalidOperationException("Ошибка проверки статуса платежа в ПС. " +
+                                                       $"PaymentId платежа: {paymentId}");
+                throw ex;
+            }
+
+            // Парсим результат из ПС.
+            var order = await responseCreateOrder.Content.ReadFromJsonAsync<CheckStatusOrderOutput>();
+
+            // Если ошибка при парсинге заказа из ПС, то не даем создать заказ.
+            if (string.IsNullOrEmpty(order?.PaymentId))
+            {
+                var ex = new InvalidOperationException("Ошибка парсинга данных из ПС. " +
+                                                       $"PaymentId платежа: {paymentId}");
+                throw ex;
+            }
+
+            var result = PaymentStatus.GetPaymentStatusBySysName(order.StatusSysName);
+
+            if (result == PaymentStatusEnum.None)
+            {
+                var ex = new InvalidOperationException("Неизвестный статус заказа." +
+                                                       $"Статус заказа в ПС: {order.StatusSysName}." +
+                                                       "Необходимо добавить маппинги для этого статуса заказа.");
+                throw ex;
+            }
+
+            return result;
+        }
+        
         catch (Exception ex)
         {
             await _logService.LogCriticalAsync(ex);
@@ -217,16 +273,13 @@ public class PayMasterService : IPayMasterService
     /// <summary>
     /// Метод устанавливает запросу заголовки авторизации.
     /// </summary>
-    /// <returns>HttpClient для запроса в ПС.</returns>
-    private async Task<HttpClient> SetPayMasterRequestAuthorizationHeader()
+    private async Task SetPayMasterRequestAuthorizationHeader(HttpClient httpClient)
     {
-        var httpClient = new HttpClient();
-        
         // Устанавливаем заголовки запросу.
         httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer",
             _configuration["Commerce:PayMaster:ApiToken"]);
 
-        return await Task.FromResult(httpClient);
+        await Task.CompletedTask;
     }
 
     /// <summary>

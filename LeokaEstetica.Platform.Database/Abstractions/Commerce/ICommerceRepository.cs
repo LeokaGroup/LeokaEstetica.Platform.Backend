@@ -24,4 +24,12 @@ public interface ICommerceRepository
     /// <param name="discountTypeEnum">Тип скидки на услугу</param>
     /// <returns>Скидка на услугу.</returns>
     Task<decimal> GetPercentDiscountAsync(short paymentMonth, DiscountTypeEnum discountTypeEnum);
+
+    /// <summary>
+    /// Метод обновляет статус заказа.
+    /// </summary>
+    /// <param name="paymentStatusSysName">Системное название статуса заказа.</param>
+    /// <param name="paymentId">Id платежа в ПС.</param>
+    /// <param name="orderId">Id заказа в БД.</param>
+    Task<bool> UpdateOrderStatusAsync(string paymentStatusSysName, string paymentId, long orderId);
 }

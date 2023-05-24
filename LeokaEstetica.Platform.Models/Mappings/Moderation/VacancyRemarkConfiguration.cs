@@ -68,7 +68,8 @@ public partial class VacancyRemarkConfiguration : IEntityTypeConfiguration<Vacan
         entity.HasOne(p => p.UserProject)
             .WithMany(b => b.VacancyRemarks)
             .HasForeignKey(p => p.VacancyId)
-            .HasConstraintName("FK_Vacancies_UserVacancies_VacancyId");
+            .HasConstraintName("FK_Vacancies_UserVacancies_VacancyId")
+            .OnDelete(DeleteBehavior.Cascade);
         
         entity.HasOne(p => p.ModerationUser)
             .WithMany(b => b.VacancyRemarks)

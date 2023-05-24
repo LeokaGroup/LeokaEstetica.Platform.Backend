@@ -8,19 +8,29 @@ namespace LeokaEstetica.Platform.Processing.Enums;
 /// </summary>
 public enum PaymentStatusEnum
 {
+    None = 0,
+    
     [Description("Новый")]
     Pending = 1
 }
 
+/// <summary>
+/// Класс статусов заказа.
+/// </summary>
 public static class PaymentStatus
 {
-    public static readonly Dictionary<string, PaymentStatusEnum> PaymentStatuses = new()
+    private static readonly Dictionary<string, PaymentStatusEnum> _paymentStatuses = new()
     {
         { PaymentStatusEnum.Pending.ToString(), PaymentStatusEnum.Pending }
     };
 
-    public static PaymentStatusEnum GetPaymentStatusByName(string statusName)
+    public static PaymentStatusEnum GetPaymentStatusBySysName(string statusName)
     {
-        return PaymentStatuses.TryGet(statusName);
+        return _paymentStatuses.TryGet(statusName);
+    }
+
+    public static bool IfExistPaymentStatusBySysName(string statusName)
+    {
+        return _paymentStatuses.ContainsKey(statusName);
     }
 }
