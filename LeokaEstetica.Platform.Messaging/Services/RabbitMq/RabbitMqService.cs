@@ -3,6 +3,7 @@ using LeokaEstetica.Platform.Base.Abstractions.Messaging.EventBus;
 using LeokaEstetica.Platform.Base.Enums;
 using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Messaging.Abstractions.RabbitMq;
+using LeokaEstetica.Platform.Messaging.Consts;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using RabbitMQ.Client;
@@ -46,7 +47,8 @@ public class RabbitMqService : IRabbitMqService
         var message = JsonConvert.SerializeObject(@event);
         var body = Encoding.UTF8.GetBytes(message);
 
-        channel.BasicPublish(exchange: string.Empty, routingKey: queueName, basicProperties: null, body: body);
+        channel.BasicPublish(exchange: ExchangeTypeConst.Direct, routingKey: queueName, basicProperties: null,
+            body: body);
         
         return Task.CompletedTask;
     }

@@ -4,7 +4,6 @@ using LeokaEstetica.Platform.Controllers.Filters;
 using LeokaEstetica.Platform.Controllers.Validators.Commerce;
 using LeokaEstetica.Platform.Database.Abstractions.FareRule;
 using LeokaEstetica.Platform.Logs.Abstractions;
-using LeokaEstetica.Platform.Messaging.Abstractions.RabbitMq;
 using LeokaEstetica.Platform.Models.Dto.Input.Commerce;
 using LeokaEstetica.Platform.Models.Dto.Input.Commerce.PayMaster;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce;
@@ -30,7 +29,6 @@ public class CommerceController : BaseController
     private readonly IMapper _mapper;
     private readonly ILogService _logService;
     private readonly ICommerceService _commerceService;
-    private readonly IRabbitMqService _mqService;
 
     /// <summary>
     /// Конструктор.
@@ -40,20 +38,17 @@ public class CommerceController : BaseController
     /// <param name="mapper">Автомаппер.</param>
     /// <param name="logService">Сервис логера.</param>
     /// <param name="commerceService">Сервис коммерции.</param>
-    /// <param name="mqService">Сервис кролика.</param>
     public CommerceController(IPayMasterService payMasterService, 
         IFareRuleRepository fareRuleRepository, 
         IMapper mapper, 
         ILogService logService, 
-        ICommerceService commerceService,
-        IRabbitMqService mqService)
+        ICommerceService commerceService)
     {
         _payMasterService = payMasterService;
         _fareRuleRepository = fareRuleRepository;
         _mapper = mapper;
         _logService = logService;
         _commerceService = commerceService;
-        _mqService = mqService;
     }
 
     /// <summary>

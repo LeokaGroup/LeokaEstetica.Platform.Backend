@@ -1,5 +1,8 @@
 namespace LeokaEstetica.Platform.Messaging.Consts;
 
+/// <summary>
+/// Класс описывает типы точек обмена кролика.
+/// </summary>
 internal static class ExchangeTypeConst
 {
     public const string Direct = "direct";
