@@ -44,7 +44,7 @@ public class OrdersJob : BackgroundService
 
         var factory = new ConnectionFactory
         {
-            HostName = configuration["RabbitMq:LocalHostName"],
+            HostName = configuration["RabbitMq:HostName"],
             DispatchConsumersAsync = true
         };
         

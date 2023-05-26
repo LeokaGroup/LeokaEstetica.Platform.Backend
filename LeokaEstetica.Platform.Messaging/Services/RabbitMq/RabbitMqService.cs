@@ -35,7 +35,7 @@ public class RabbitMqService : IRabbitMqService
     {
         var factory = new ConnectionFactory
         {
-            HostName = _configuration["RabbitMq:LocalHostName"],
+            HostName = _configuration["RabbitMq:HostName"],
             DispatchConsumersAsync = true
         };
         using var connection = factory.CreateConnection();
