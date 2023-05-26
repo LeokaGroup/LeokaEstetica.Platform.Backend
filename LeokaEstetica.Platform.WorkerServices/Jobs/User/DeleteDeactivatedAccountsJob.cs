@@ -56,6 +56,9 @@ public class DeleteDeactivatedAccountsJob : BackgroundService
     {
         try
         {
+            await _logService.LogInfoAsync(new ApplicationException(
+                "Начало работы джобы DeleteDeactivatedAccountsJob."));
+            
             var deleteUsers = await _userRedisService.GetMarkDeactivateUserAccountsAsync(
                 CacheKeysConsts.DEACTIVATE_USER_ACCOUNTS);
 
@@ -100,6 +103,8 @@ public class DeleteDeactivatedAccountsJob : BackgroundService
                 // Удаляем все аккаунты.
                 await _userRepository.DeleteDeactivateAccountsAsync(deleteUsers);   
             }
+
+            await _logService.LogInfoAsync(new ApplicationException("Отработала джоба DeleteDeactivatedAccountsJob."));
         }
 
         catch (Exception ex)

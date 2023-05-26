@@ -69,7 +69,8 @@ public partial class ProjectRemarkConfiguration : IEntityTypeConfiguration<Proje
         entity.HasOne(p => p.UserProject)
             .WithMany(b => b.ProjectRemarks)
             .HasForeignKey(p => p.ProjectId)
-            .HasConstraintName("FK_Projects_UserProjects_ProjectId");
+            .HasConstraintName("FK_Projects_UserProjects_ProjectId")
+            .OnDelete(DeleteBehavior.Cascade);
         
         entity.HasOne(p => p.ModerationUser)
             .WithMany(b => b.ProjectRemarks)

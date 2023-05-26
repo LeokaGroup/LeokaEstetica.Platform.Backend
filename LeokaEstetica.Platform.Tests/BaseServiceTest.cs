@@ -32,6 +32,7 @@ using LeokaEstetica.Platform.Finder.Services.Vacancy;
 using LeokaEstetica.Platform.Logs.Services;
 using LeokaEstetica.Platform.Messaging.Services.Chat;
 using LeokaEstetica.Platform.Messaging.Services.Project;
+using LeokaEstetica.Platform.Messaging.Services.RabbitMq;
 using LeokaEstetica.Platform.Notifications.Services;
 using LeokaEstetica.Platform.Processing.Services.Commerce;
 using LeokaEstetica.Platform.Processing.Services.PayMaster;
@@ -188,8 +189,10 @@ public class BaseServiceTest
         var commerceRedisService = new CommerceRedisService(distributedCache);
 
         FareRuleService = new FareRuleService(fareRuleRepository, logService);
+
+        var rabbitMqService = new RabbitMqService(AppConfiguration);
         PayMasterService = new PayMasterService(logService, AppConfiguration, userRepository,
-            commerceRepository, null, null, commerceRedisService);
+            commerceRepository, accessUserService, null, commerceRedisService, rabbitMqService);
 
         var userBlackListService = new UserBlackListRepository(pgContext);
         UserBlackListService = new UserBlackListService(logService, userBlackListService);

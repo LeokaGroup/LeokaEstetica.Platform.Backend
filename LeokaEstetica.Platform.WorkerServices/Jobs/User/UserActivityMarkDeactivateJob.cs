@@ -54,6 +54,9 @@ public class UserActivityMarkDeactivateJob : BackgroundService
     {
         try
         {
+            await _logService.LogInfoAsync(new ApplicationException(
+                "Начало работы джобы UserActivityMarkDeactivateJob."));
+            
             var now = DateTime.Now;
             var markedUsers = new List<UserEntity>();
             var deletedUsers = new List<UserEntity>();
@@ -110,6 +113,8 @@ public class UserActivityMarkDeactivateJob : BackgroundService
 
             // Записываем в кэш для удаления аккаунтов.
             await _userRedisService.AddMarkDeactivateUserAccountsAsync(deletedUsers);
+            
+            await _logService.LogInfoAsync(new ApplicationException("Отработала джоба UserActivityMarkDeactivateJob."));
         }
 
         catch (Exception ex)

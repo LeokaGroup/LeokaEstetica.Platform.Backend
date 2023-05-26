@@ -69,6 +69,29 @@ public class CommerceRepository : ICommerceRepository
         return result;
     }
 
+    /// <summary>
+    /// Метод обновляет статус заказа.
+    /// </summary>
+    /// <param name="paymentStatusSysName">Системное название статуса заказа.</param>
+    /// <param name="paymentId">Id платежа в ПС.</param>
+    /// <param name="orderId">Id заказа в БД.</param>
+    public async Task<bool> UpdateOrderStatusAsync(string paymentStatusSysName, string paymentId, long orderId)
+    {
+        var updateOrder = await _pgContext.Orders
+            .FirstOrDefaultAsync(o => o.OrderId == orderId 
+                                      && o.PaymentId.Equals(paymentId));
+
+        if (updateOrder is null)
+        {
+            return false;
+        }
+
+        updateOrder.StatusSysName = paymentStatusSysName;
+        await _pgContext.SaveChangesAsync();
+
+        return true;
+    }
+
     #endregion
 
     #region Приватные методы.

@@ -3,9 +3,11 @@ using LeokaEstetica.Platform.Core.Attributes;
 using LeokaEstetica.Platform.Messaging.Abstractions.Chat;
 using LeokaEstetica.Platform.Messaging.Abstractions.Mail;
 using LeokaEstetica.Platform.Messaging.Abstractions.Project;
+using LeokaEstetica.Platform.Messaging.Abstractions.RabbitMq;
 using LeokaEstetica.Platform.Messaging.Services.Chat;
 using LeokaEstetica.Platform.Messaging.Services.Mail;
 using LeokaEstetica.Platform.Messaging.Services.Project;
+using LeokaEstetica.Platform.Messaging.Services.RabbitMq;
 
 namespace LeokaEstetica.Platform.Messaging.AutofacModules;
 
@@ -28,5 +30,10 @@ public class MessagingModule : Module
         builder.RegisterType<ProjectCommentsService>()
             .Named<IProjectCommentsService>("ProjectCommentsService")
             .InstancePerLifetimeScope();
+        
+        // Сервис RabbitMQ.
+        builder.RegisterType<RabbitMqService>()
+            .Named<IRabbitMqService>("RabbitMqService")
+            .SingleInstance();
     }
 }
