@@ -1,11 +1,14 @@
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using LeokaEstetica.Platform.Access.Abstractions.User;
+using LeokaEstetica.Platform.Base.Enums;
+using LeokaEstetica.Platform.Base.Helpers;
 using LeokaEstetica.Platform.Base.Models.Input.Processing;
 using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.Commerce;
 using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Logs.Abstractions;
+using LeokaEstetica.Platform.Messaging.Abstractions.RabbitMq;
 using LeokaEstetica.Platform.Models.Dto.Base.Commerce.PayMaster;
 using LeokaEstetica.Platform.Models.Dto.Common.Cache;
 using LeokaEstetica.Platform.Models.Dto.Input.Commerce.PayMaster;
@@ -34,6 +37,7 @@ public class PayMasterService : IPayMasterService
     private readonly IAccessUserService _accessUserService;
     private readonly IAccessUserNotificationsService _accessUserNotificationsService;
     private readonly ICommerceRedisService _commerceRedisService;
+    private readonly IRabbitMqService _rabbitMqService;
 
     /// <summary>
     /// Конструктор.
@@ -45,13 +49,15 @@ public class PayMasterService : IPayMasterService
     /// <param name="accessUserService">Сервис доступа пользователя.</param>
     /// <param name="accessUserNotificationsService">Сервис уведомлений доступа пользователя.</param>
     /// <param name="commerceRedisService">Сервис кэша коммерции.</param>
+    /// <param name="rabbitMqService">Сервис кролика.</param>
     public PayMasterService(ILogService logService,
         IConfiguration configuration,
         IUserRepository userRepository,
         ICommerceRepository commerceRepository, 
         IAccessUserService accessUserService, 
         IAccessUserNotificationsService accessUserNotificationsService, 
-        ICommerceRedisService commerceRedisService)
+        ICommerceRedisService commerceRedisService, 
+        IRabbitMqService rabbitMqService)
     {
         _logService = logService;
         _configuration = configuration;
@@ -60,6 +66,7 @@ public class PayMasterService : IPayMasterService
         _accessUserService = accessUserService;
         _accessUserNotificationsService = accessUserNotificationsService;
         _commerceRedisService = commerceRedisService;
+        _rabbitMqService = rabbitMqService;
     }
 
     #region Публичные методы.
@@ -296,8 +303,9 @@ public class PayMasterService : IPayMasterService
         CreateOrderCache orderCache, CreateOrderInput createOrderInput, long userId, HttpClient httpClient)
     {
         // Проверяем статус заказа в ПС.
+        var paymentId = order.PaymentId;
         var responseCheckStatusOrder = await httpClient
-            .GetStringAsync(string.Concat(ApiConsts.CHECK_PAYMENT_STATUS, order.PaymentId));
+            .GetStringAsync(string.Concat(ApiConsts.CHECK_PAYMENT_STATUS, paymentId));
 
         // Если ошибка получения данных платежа.
         if (string.IsNullOrEmpty(responseCheckStatusOrder))
@@ -308,15 +316,20 @@ public class PayMasterService : IPayMasterService
             throw ex;
         }
         
-        var createdOrder = await CreatePaymentOrderAsync(order.PaymentId, orderCache,
+        var createdOrder = await CreatePaymentOrderAsync(paymentId, orderCache,
             createOrderInput.CreateOrderRequest, userId, responseCheckStatusOrder);
 
         // Создаем заказ в БД.
         var createdOrderResult = await _commerceRepository.CreateOrderAsync(createdOrder);
         
+        // Отправляем заказ в очередь для отслеживания его статуса.
+        var orderEvent = OrderEventFactory.CreateOrderEvent(createdOrderResult.OrderId,
+            createdOrderResult.StatusSysName, paymentId);
+        await _rabbitMqService.PublishAsync(orderEvent, QueueTypeEnum.OrdersQueue);
+        
         var result = new CreateOrderOutput
         {
-            PaymentId = createdOrderResult.OrderId.ToString(),
+            PaymentId = paymentId,
             Url = order.Url
         };
 

@@ -47,7 +47,7 @@ public class RabbitMqService : IRabbitMqService
         var message = JsonConvert.SerializeObject(@event);
         var body = Encoding.UTF8.GetBytes(message);
 
-        channel.BasicPublish(exchange: ExchangeTypeConst.Direct, routingKey: queueName, basicProperties: null,
+        channel.BasicPublish(exchange: string.Empty, routingKey: queueName, basicProperties: null,
             body: body);
         
         return Task.CompletedTask;
