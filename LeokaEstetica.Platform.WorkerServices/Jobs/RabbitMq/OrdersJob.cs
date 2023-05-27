@@ -96,6 +96,9 @@ public class OrdersJob : BackgroundService
                 // Если статус не изменился в ПС, то оставляем сообщение в очереди.
                 if (newOrderStatus == oldStatusSysName)
                 {
+                    await _logService.LogInfoAsync(
+                        new ApplicationException("Оставили сообщение в очереди заказов..."));
+                    
                     return;
                 }
 
