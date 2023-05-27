@@ -77,6 +77,9 @@ public class OrdersJob : BackgroundService
         var consumer = new AsyncEventingBasicConsumer(_channel);
         consumer.Received += async (_, ea) =>
         {
+            await _logService.LogInfoAsync(
+                new ApplicationException("Начали обработку сообщения из очереди заказов..."));
+            
             // Если очередь не пуста, то будем парсить результат для проверки статуса заказов.
             if (!ea.Body.IsEmpty)
             {
@@ -114,13 +117,16 @@ public class OrdersJob : BackgroundService
                 
                 catch (Exception ex)
                 {
-                    await _logService.LogCriticalAsync(ex);
+                    await _logService.LogCriticalAsync(ex, "Ошибка при чтении очереди заказов.");
                     throw;
                 }
             }
 
             // Подтверждаем сообщение, чтобы дропнуть его из очереди.
             _channel.BasicAck(ea.DeliveryTag, false);
+            
+            await _logService.LogInfoAsync(
+                new ApplicationException("Закончили обработку сообщения из очереди заказов..."));
 
             await Task.Yield();
         };
