@@ -1,11 +1,13 @@
 ﻿using System.Reflection;
 using Autofac;
+using AutoMapper;
 using LeokaEstetica.Platform.Core.Attributes;
 using LeokaEstetica.Platform.Core.Data;
+using LeokaEstetica.Platform.Core.Mapper;
 using Microsoft.EntityFrameworkCore;
+using Module = Autofac.Module;
 
 namespace LeokaEstetica.Platform.Core.Utils;
-using Module = Autofac.Module;
 
 /// <summary>
 /// Класс конфигурации и зависимостей автофака.
@@ -32,11 +34,12 @@ public static class AutoFac
     public static Assembly[] GetAssembliesFromApplicationBaseDirectory(Func<AssemblyName, bool> condition)
     {
         var baseDirectoryPath = AppDomain.CurrentDomain.BaseDirectory;
-        Func<string, bool> isAssembly = file =>
+
+        bool IsAssembly(string file) =>
             string.Equals(Path.GetExtension(file), ".dll", StringComparison.OrdinalIgnoreCase);
 
         return Directory.GetFiles(baseDirectoryPath)
-            .Where(isAssembly)
+            .Where((Func<string, bool>)IsAssembly)
             .Where(f => condition(AssemblyName.GetAssemblyName(f)))
             .Select(Assembly.LoadFrom)
             .ToArray();
@@ -50,43 +53,47 @@ public static class AutoFac
     {
         var assemblies1 =
             GetAssembliesFromApplicationBaseDirectory(x =>
-                x.FullName.StartsWith("Leoka.Elementary.Platform.Services"));
+                x.FullName.StartsWith("LeokaEstetica.Platform.Logs"));
 
         var assemblies2 =
             GetAssembliesFromApplicationBaseDirectory(x =>
-                x.FullName.StartsWith("Leoka.Elementary.Platform.Mailings"));
+                x.FullName.StartsWith("LeokaEstetica.Platform.Services"));
 
         var assemblies3 =
             GetAssembliesFromApplicationBaseDirectory(x =>
-                x.FullName.StartsWith("Leoka.Elementary.Platform.FTP"));
+                x.FullName.StartsWith("LeokaEstetica.Platform.Base"));
 
         var assemblies4 =
             GetAssembliesFromApplicationBaseDirectory(x =>
-                x.FullName.StartsWith("Leoka.Elementary.Platform.Base"));
+                x.FullName.StartsWith("LeokaEstetica.Platform.Database"));
 
         var assemblies5 =
             GetAssembliesFromApplicationBaseDirectory(x =>
-                x.FullName.StartsWith("Leoka.Elementary.Platform.Integrations"));
+                x.FullName.StartsWith("LeokaEstetica.Platform.Access"));
 
         var assemblies6 =
             GetAssembliesFromApplicationBaseDirectory(x =>
-                x.FullName.StartsWith("Leoka.Elementary.Platform.Commerce"));
+                x.FullName.StartsWith("LeokaEstetica.Platform.Messaging"));
 
         var assemblies7 =
             GetAssembliesFromApplicationBaseDirectory(x =>
-                x.FullName.StartsWith("Leoka.Elementary.Platform.Messagings"));
+                x.FullName.StartsWith("LeokaEstetica.Platform.Notifications"));
 
         var assemblies8 =
             GetAssembliesFromApplicationBaseDirectory(x =>
-                x.FullName.StartsWith("Leoka.Elementary.Platform.Configurator"));
+                x.FullName.StartsWith("LeokaEstetica.Platform.Redis"));
 
         var assemblies9 =
             GetAssembliesFromApplicationBaseDirectory(x =>
-                x.FullName.StartsWith("Leoka.Elementary.Platform.Access"));
-        
+                x.FullName.StartsWith("LeokaEstetica.Platform.CallCenter"));
+
         var assemblies10 =
             GetAssembliesFromApplicationBaseDirectory(x =>
-                x.FullName.StartsWith("Leoka.Elementary.Platform.LessonTemplates"));
+                x.FullName.StartsWith("LeokaEstetica.Platform.Finder"));
+        
+        var assemblies11 =
+            GetAssembliesFromApplicationBaseDirectory(x =>
+                x.FullName.StartsWith("LeokaEstetica.Platform.Processing"));
 
         b.RegisterAssemblyTypes(assemblies1).AsImplementedInterfaces();
         b.RegisterAssemblyTypes(assemblies2).AsImplementedInterfaces();
@@ -98,6 +105,7 @@ public static class AutoFac
         b.RegisterAssemblyTypes(assemblies8).AsImplementedInterfaces();
         b.RegisterAssemblyTypes(assemblies9).AsImplementedInterfaces();
         b.RegisterAssemblyTypes(assemblies10).AsImplementedInterfaces();
+        b.RegisterAssemblyTypes(assemblies11).AsImplementedInterfaces();
 
         var assemblies = assemblies1
             .Union(assemblies2)
@@ -108,9 +116,10 @@ public static class AutoFac
             .Union(assemblies7)
             .Union(assemblies8)
             .Union(assemblies9)
-            .Union(assemblies10);
+            .Union(assemblies10)
+            .Union(assemblies11);
 
-        // RegisterMapper(b);
+        RegisterMapper(b);
 
         _typeModules = (from assembly in assemblies
             from type in assembly.GetTypes()
@@ -121,7 +130,7 @@ public static class AutoFac
         {
             if (module is not null)
             {
-                b.RegisterModule(Activator.CreateInstance(module) as Module);   
+                b.RegisterModule(Activator.CreateInstance(module) as Module);
             }
         }
     }
@@ -140,8 +149,8 @@ public static class AutoFac
 
             RegisterAllAssemblyTypes(_builder);
             RegisterDbContext(_builder);
-            // RegisterMapper(_builder);
-            
+            RegisterMapper(_builder);
+
             _container = _builder.Build();
         }
 
@@ -160,7 +169,7 @@ public static class AutoFac
 
         RegisterAllAssemblyTypes(_builder);
         RegisterDbContext(_builder);
-        // RegisterMapper(_builder);
+        RegisterMapper(_builder);
 
         return _container.BeginLifetimeScope();
     }
@@ -197,17 +206,25 @@ public static class AutoFac
             .InstancePerLifetimeScope();
     }
 
-    // private static void RegisterMapper(ContainerBuilder builder)
-    // {
-    //     builder.RegisterType<MappingProfile>().As<Profile>();
-    //     builder.Register(c => new MapperConfiguration(cfg =>
-    //     {
-    //         foreach (var profile in c.Resolve<IEnumerable<Profile>>())
-    //         {
-    //             cfg.AddProfile(profile);
-    //         }
-    //     })).AsSelf().SingleInstance();
-    //
-    //     builder.Register(c => c.Resolve<MapperConfiguration>().CreateMapper(c.Resolve)).As<IMapper>().InstancePerLifetimeScope();
-    // }
+    /// <summary>
+    /// Метод регистрирует маппер.
+    /// </summary>
+    /// <param name="builder">Билдер контейнера, который наполнять регистрациями.</param>
+    public static void RegisterMapper(ContainerBuilder builder)
+    {
+        builder.RegisterType<MappingProfile>().As<Profile>();
+        builder.Register(c => new MapperConfiguration(cfg =>
+            {
+                foreach (var profile in c.Resolve<IEnumerable<Profile>>())
+                {
+                    cfg.AddProfile(profile);
+                }
+            }))
+            .AsSelf()
+            .SingleInstance();
+
+        builder.Register(c => c.Resolve<MapperConfiguration>().CreateMapper(c.Resolve))
+            .As<IMapper>()
+            .InstancePerLifetimeScope();
+    }
 }
