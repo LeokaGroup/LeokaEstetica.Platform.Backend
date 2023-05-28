@@ -23,7 +23,6 @@ public class OrdersJob : BackgroundService
     private readonly HttpClient _httpClient;
     private readonly ICommerceRepository _commerceRepository;
     private readonly ILogService _logService;
-    private Timer _timer;
 
     /// <summary>
     /// Конструктор.
@@ -62,25 +61,16 @@ public class OrdersJob : BackgroundService
     /// <param name="stoppingToken">Токен отмены.</param>
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        _timer = new Timer(PrivateCheckOrderStatusAsync, null, TimeSpan.Zero, TimeSpan.FromMinutes(3));
+        await CheckOrderStatusAsync(stoppingToken);
 
         await Task.CompletedTask;
-    }
-
-    /// <summary>
-    /// Метод прокси для запуска джобы првоерки статуса заказов.
-    /// </summary>
-    /// <param name="state">Состояние.</param>
-    private async void PrivateCheckOrderStatusAsync(object state)
-    {
-        await CheckOrderStatusAsync();
     }
 
     /// <summary>
     /// Метод выполняет работу джобы.
     /// </summary>
     /// <param name="stoppingToken">Токен отмены таски.</param>
-    private async Task CheckOrderStatusAsync(CancellationToken stoppingToken = default)
+    private async Task CheckOrderStatusAsync(CancellationToken stoppingToken)
     {
         stoppingToken.ThrowIfCancellationRequested();
 
@@ -103,41 +93,44 @@ public class OrdersJob : BackgroundService
                 // Получаем старый статус платежа до проверки в ПС.
                 var oldStatusSysName = PaymentStatus.GetPaymentStatusBySysName(orderEvent.StatusSysName);
 
-                // Если статус не изменился в ПС, то оставляем сообщение в очереди.
-                if (newOrderStatus == oldStatusSysName)
+                // Если статус заказа изменился в ПС, то обновляем его статус в БД.
+                if (newOrderStatus != oldStatusSysName)
+                {
+                    try
+                    {
+                        var orderId = orderEvent.OrderId;
+                        var updatedOrderStatus = await _commerceRepository.UpdateOrderStatusAsync(
+                            newOrderStatus.GetEnumDescription(), paymentId, orderId);
+
+                        if (!updatedOrderStatus)
+                        {
+                            var ex = new InvalidOperationException("Не удалось найти заказ для обновления статуса. " +
+                                                                   $"OrderId: {orderId}." +
+                                                                   $"PaymentId: {paymentId}");
+                            throw ex;
+                        }
+                    }
+                
+                    catch (Exception ex)
+                    {
+                        await _logService.LogCriticalAsync(ex, "Ошибка при чтении очереди заказов.");
+                        throw;
+                    }
+                    
+                    // Подтверждаем сообщение, чтобы дропнуть его из очереди.
+                    _channel.BasicAck(ea.DeliveryTag, false);
+                }
+
+                // Статус в ПС не изменился, оставляем его в очереди.
+                else
                 {
                     await _logService.LogInfoAsync(
                         new ApplicationException("Оставили сообщение в очереди заказов..."));
                     
-                    return;
-                }
-
-                try
-                {
-                    // Статус изменился, проставляем его в БД.
-                    var orderId = orderEvent.OrderId;
-                    var updatedOrderStatus = await _commerceRepository.UpdateOrderStatusAsync(
-                        newOrderStatus.GetEnumDescription(), paymentId, orderId);
-
-                    if (!updatedOrderStatus)
-                    {
-                        var ex = new InvalidOperationException("Не удалось найти заказ для обновления статуса. " +
-                                                               $"OrderId: {orderId}." +
-                                                               $"PaymentId: {paymentId}");
-                        throw ex;
-                    }
-                }
-                
-                catch (Exception ex)
-                {
-                    await _logService.LogCriticalAsync(ex, "Ошибка при чтении очереди заказов.");
-                    throw;
+                    _channel.BasicRecoverAsync(false);
                 }
             }
 
-            // Подтверждаем сообщение, чтобы дропнуть его из очереди.
-            _channel.BasicAck(ea.DeliveryTag, false);
-            
             await _logService.LogInfoAsync(
                 new ApplicationException("Закончили обработку сообщения из очереди заказов..."));
 
@@ -148,17 +141,6 @@ public class OrdersJob : BackgroundService
 
         await Task.CompletedTask;
     }
-    
-    /// <summary>
-    /// Метод останавливает фоновую задачу.
-    /// </summary>
-    /// <param name="stoppingToken">Токен остановки.</param>
-    public override Task StopAsync(CancellationToken stoppingToken)
-    {
-        _timer?.Change(Timeout.Infinite, 0);
-
-        return Task.CompletedTask;
-    }
 
     /// <summary>
     /// Метод очищает ресурсы.
@@ -168,7 +150,6 @@ public class OrdersJob : BackgroundService
         _channel.Close();
         _connection.Close();
         _httpClient?.Dispose();
-        _timer?.Dispose();
         base.Dispose();
     }
 }
