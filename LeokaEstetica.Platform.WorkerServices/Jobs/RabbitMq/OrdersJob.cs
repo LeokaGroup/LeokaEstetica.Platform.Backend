@@ -23,6 +23,7 @@ public class OrdersJob : BackgroundService
     private readonly HttpClient _httpClient;
     private readonly ICommerceRepository _commerceRepository;
     private readonly ILogService _logService;
+    private Timer _timer;
 
     /// <summary>
     /// Конструктор.
@@ -61,16 +62,25 @@ public class OrdersJob : BackgroundService
     /// <param name="stoppingToken">Токен отмены.</param>
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        await CheckOrderStatus(stoppingToken);
+        _timer = new Timer(PrivateCheckOrderStatusAsync, null, TimeSpan.Zero, TimeSpan.FromMinutes(3));
 
         await Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Метод прокси для запуска джобы првоерки статуса заказов.
+    /// </summary>
+    /// <param name="state">Состояние.</param>
+    private async void PrivateCheckOrderStatusAsync(object state)
+    {
+        await CheckOrderStatusAsync();
     }
 
     /// <summary>
     /// Метод выполняет работу джобы.
     /// </summary>
     /// <param name="stoppingToken">Токен отмены таски.</param>
-    private async Task CheckOrderStatus(CancellationToken stoppingToken)
+    private async Task CheckOrderStatusAsync(CancellationToken stoppingToken = default)
     {
         stoppingToken.ThrowIfCancellationRequested();
 
@@ -138,6 +148,17 @@ public class OrdersJob : BackgroundService
 
         await Task.CompletedTask;
     }
+    
+    /// <summary>
+    /// Метод останавливает фоновую задачу.
+    /// </summary>
+    /// <param name="stoppingToken">Токен остановки.</param>
+    public override Task StopAsync(CancellationToken stoppingToken)
+    {
+        _timer?.Change(Timeout.Infinite, 0);
+
+        return Task.CompletedTask;
+    }
 
     /// <summary>
     /// Метод очищает ресурсы.
@@ -146,7 +167,8 @@ public class OrdersJob : BackgroundService
     {
         _channel.Close();
         _connection.Close();
-        _httpClient.Dispose();
+        _httpClient?.Dispose();
+        _timer?.Dispose();
         base.Dispose();
     }
 }
