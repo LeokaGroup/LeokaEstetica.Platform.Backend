@@ -10,4 +10,10 @@
         <ProjectReference Include="..\LeokaEstetica.Platform.Core\LeokaEstetica.Platform.Core.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <PackageReference Include="Serilog" Version="3.0.0-dev-02012" />
+      <PackageReference Include="Serilog.Sinks.File" Version="5.0.1-dev-00947" />
+      <PackageReference Include="Serilog.Sinks.PostgreSQL" Version="2.3.0" />
+    </ItemGroup>
+
 </Project>

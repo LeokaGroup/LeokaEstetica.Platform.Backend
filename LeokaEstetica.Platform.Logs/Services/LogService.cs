@@ -8,7 +8,7 @@ namespace LeokaEstetica.Platform.Logs.Services;
 /// <summary>
 /// Сервис реализует методы логирования.
 /// </summary>
-public sealed class LogService : ILogService
+public class LogService : ILogService
 {
     private readonly PgContext _pgContext;
     

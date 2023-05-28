@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(new WebApplicationOptions
 {
@@ -30,6 +31,13 @@ if (builder.Environment.IsDevelopment())
     builder.Services.AddDbContext<PgContext>(options =>
             options.UseNpgsql(configuration.GetConnectionString("NpgDevSqlConnection") ?? string.Empty),
         ServiceLifetime.Transient);
+    
+    // Подключаем логирование через Serilog.
+    builder.Host.UseSerilog((context, config) =>
+    {
+        var connString = context.Configuration["ConnectionStrings:LogDevConnection"];
+        config.WriteTo.PostgreSQL(connString, "Logs.LogInfo").MinimumLevel.Information();
+    });
 }
       
 if (builder.Environment.IsStaging())
