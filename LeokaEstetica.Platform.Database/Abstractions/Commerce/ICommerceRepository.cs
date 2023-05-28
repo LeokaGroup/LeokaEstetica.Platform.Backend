@@ -29,7 +29,9 @@ public interface ICommerceRepository
     /// Метод обновляет статус заказа.
     /// </summary>
     /// <param name="paymentStatusSysName">Системное название статуса заказа.</param>
+    /// <param name="paymentStatusName">Русское название статуса заказа.</param>
     /// <param name="paymentId">Id платежа в ПС.</param>
     /// <param name="orderId">Id заказа в БД.</param>
-    Task<bool> UpdateOrderStatusAsync(string paymentStatusSysName, string paymentId, long orderId);
+    Task<bool> UpdateOrderStatusAsync(string paymentStatusSysName, string paymentStatusName, string paymentId,
+        long orderId);
 }

@@ -73,9 +73,11 @@ public class CommerceRepository : ICommerceRepository
     /// Метод обновляет статус заказа.
     /// </summary>
     /// <param name="paymentStatusSysName">Системное название статуса заказа.</param>
+    /// <param name="paymentStatusName">Русское название статуса заказа.</param>
     /// <param name="paymentId">Id платежа в ПС.</param>
     /// <param name="orderId">Id заказа в БД.</param>
-    public async Task<bool> UpdateOrderStatusAsync(string paymentStatusSysName, string paymentId, long orderId)
+    public async Task<bool> UpdateOrderStatusAsync(string paymentStatusSysName, string paymentStatusName,
+        string paymentId, long orderId)
     {
         var updateOrder = await _pgContext.Orders
             .FirstOrDefaultAsync(o => o.OrderId == orderId 
@@ -87,6 +89,7 @@ public class CommerceRepository : ICommerceRepository
         }
 
         updateOrder.StatusSysName = paymentStatusSysName;
+        updateOrder.StatusName = paymentStatusName;
         await _pgContext.SaveChangesAsync();
 
         return true;
