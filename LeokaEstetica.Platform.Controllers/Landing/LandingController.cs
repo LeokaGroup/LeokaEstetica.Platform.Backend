@@ -3,7 +3,6 @@ using LeokaEstetica.Platform.Base;
 using LeokaEstetica.Platform.Models.Dto.Output.Landing;
 using LeokaEstetica.Platform.Services.Abstractions.Landing;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 
 namespace LeokaEstetica.Platform.Controllers.Landing;
 
@@ -16,7 +15,6 @@ public class LandingController : BaseController
 {
     private readonly ILandingService _landingService;
     private readonly IMapper _mapper;
-    private readonly ILogger<LandingController> _logger;
 
     /// <summary>
     /// Конструктор.
@@ -24,12 +22,10 @@ public class LandingController : BaseController
     /// <param name="landingService">Сервис лендинга.</param>
     /// <param name="mapper">Автомаппер.</param>
     public LandingController(ILandingService landingService, 
-        IMapper mapper, 
-        ILogger<LandingController> logger)
+        IMapper mapper)
     {
         _landingService = landingService;
         _mapper = mapper;
-        _logger = logger;
     }
 
     /// <summary>
@@ -45,8 +41,6 @@ public class LandingController : BaseController
     [ProducesResponseType(404)]
     public async Task<LandingStartFonOutput> LandingStartFonAsync()
     {
-        _logger.LogInformation("nlog test warn");
-        throw new Exception("nlog test error");
         var result = await _landingService.LandingStartFonAsync();
 
         return result;
