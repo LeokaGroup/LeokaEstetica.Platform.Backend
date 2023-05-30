@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using NLog.Web;
 
 var builder = WebApplication.CreateBuilder(new WebApplicationOptions
 {
@@ -110,6 +111,9 @@ builder.Services.AddFluentValidation(conf =>
 // Запуск джоб при старте ядра системы.
 StartJobs.Start(builder.Services);
 
+builder.Logging.ClearProviders();
+builder.Host.UseNLog();
+    
 var app = builder.Build();
 
 app.UseHttpsRedirection();

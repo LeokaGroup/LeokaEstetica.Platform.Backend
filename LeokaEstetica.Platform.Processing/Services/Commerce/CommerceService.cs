@@ -3,11 +3,11 @@ using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.Commerce;
 using LeokaEstetica.Platform.Database.Abstractions.FareRule;
 using LeokaEstetica.Platform.Database.Abstractions.User;
-using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Models.Dto.Common.Cache;
 using LeokaEstetica.Platform.Models.Dto.Input.Commerce;
 using LeokaEstetica.Platform.Processing.Abstractions.Commerce;
 using LeokaEstetica.Platform.Redis.Abstractions.Commerce;
+using Microsoft.Extensions.Logging;
 
 namespace LeokaEstetica.Platform.Processing.Services.Commerce;
 
@@ -18,7 +18,7 @@ namespace LeokaEstetica.Platform.Processing.Services.Commerce;
 public class CommerceService : ICommerceService
 {
     private readonly ICommerceRedisService _commerceRedisService;
-    private readonly ILogService _logService;
+    private readonly ILogger<CommerceService> _logger;
     private readonly IUserRepository _userRepository;
     private readonly IFareRuleRepository _fareRuleRepository;
     private readonly ICommerceRepository _commerceRepository;
@@ -26,19 +26,19 @@ public class CommerceService : ICommerceService
     /// <summary>
     /// Конструктор.
     /// <param name="commerceRedisService">Сервис кэша коммерции.</param>
-    /// <param name="logService">Сервис логера.</param>
+    /// <param name="logger">Сервис логера.</param>
     /// <param name="userRepository">Репозиторий пользователя.</param>
     /// <param name="fareRuleRepository">Репозиторий правил тарифов.</param>
     /// <param name="fareRuleRepository">Репозиторий коммерции.</param>
     /// </summary>
     public CommerceService(ICommerceRedisService commerceRedisService, 
-        ILogService logService, 
+        ILogger<CommerceService> logger, 
         IUserRepository userRepository, 
         IFareRuleRepository fareRuleRepository, 
         ICommerceRepository commerceRepository)
     {
         _commerceRedisService = commerceRedisService;
-        _logService = logService;
+        _logger = logger;
         _userRepository = userRepository;
         _fareRuleRepository = fareRuleRepository;
         _commerceRepository = commerceRepository;
@@ -77,7 +77,7 @@ public class CommerceService : ICommerceService
         
         catch (Exception ex)
         {
-            await _logService.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             throw;
         }
     }
@@ -108,7 +108,7 @@ public class CommerceService : ICommerceService
         
         catch (Exception ex)
         {
-            await _logService.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             throw;
         }
     }

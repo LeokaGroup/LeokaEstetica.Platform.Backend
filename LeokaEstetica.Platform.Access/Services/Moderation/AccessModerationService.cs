@@ -3,8 +3,8 @@ using LeokaEstetica.Platform.Access.Helpers;
 using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Access;
 using LeokaEstetica.Platform.Database.Abstractions.User;
-using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.CallCenter.Models.Dto.Output.Role;
+using Microsoft.Extensions.Logging;
 
 namespace LeokaEstetica.Platform.Access.Services.Moderation;
 
@@ -13,15 +13,15 @@ namespace LeokaEstetica.Platform.Access.Services.Moderation;
 /// </summary>
 public class AccessModerationService : IAccessModerationService
 {
-    private readonly ILogService _logService;
+    private readonly ILogger<AccessModerationService> _logger;
     private readonly IAccessModerationRepository _accessModerationRepository;
     private readonly IUserRepository _userRepository;
 
-    public AccessModerationService(ILogService logService, 
+    public AccessModerationService(ILogger<AccessModerationService> logger, 
         IAccessModerationRepository accessModerationRepository, 
         IUserRepository userRepository)
     {
-        _logService = logService;
+        _logger = logger;
         _accessModerationRepository = accessModerationRepository;
         _userRepository = userRepository;
     }
@@ -74,7 +74,7 @@ public class AccessModerationService : IAccessModerationService
 
         catch (Exception ex)
         {
-            await _logService.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             throw;
         }
     }

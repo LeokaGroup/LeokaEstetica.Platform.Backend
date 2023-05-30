@@ -7,13 +7,13 @@ using LeokaEstetica.Platform.Database.Abstractions.Notification;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
 using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Database.Abstractions.Vacancy;
-using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Models.Dto.Output.Notification;
 using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Notifications.Consts;
 using LeokaEstetica.Platform.Notifications.Data;
 using LeokaEstetica.Platform.Redis.Abstractions.Notification;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Logging;
 using NotificationOutput = LeokaEstetica.Platform.Notifications.Models.Output.NotificationOutput;
 using NotificationProjectOutput = LeokaEstetica.Platform.Models.Dto.Output.Notification.NotificationOutput;
 
@@ -25,7 +25,7 @@ namespace LeokaEstetica.Platform.Notifications.Services;
 public class ProjectNotificationsService : IProjectNotificationsService
 {
     private readonly IHubContext<NotifyHub> _hubContext;
-    private readonly ILogService _logService;
+    private readonly ILogger<ProjectNotificationsService> _logger;
     private readonly IUserRepository _userRepository;
     private readonly IProjectNotificationsRepository _projectNotificationsRepository;
     private readonly IMapper _mapper;
@@ -45,7 +45,7 @@ public class ProjectNotificationsService : IProjectNotificationsService
     /// <param name="mapper">Автомаппер.</param>
     /// <param name="notificationsRedisService">Сервис уведомлений кэша.</param>
     public ProjectNotificationsService(IHubContext<NotifyHub> hubContext, 
-        ILogService logService, 
+        ILogger<ProjectNotificationsService> logger, 
         IUserRepository userRepository,
         IMapper mapper, 
         IProjectNotificationsRepository projectNotificationsRepository, 
@@ -56,7 +56,7 @@ public class ProjectNotificationsService : IProjectNotificationsService
         IVacancyRepository vacancyRepository)
     {
         _hubContext = hubContext;
-        _logService = logService;
+        _logger = logger;
         _userRepository = userRepository;
         _mapper = mapper;
         _projectNotificationsRepository = projectNotificationsRepository;
@@ -523,7 +523,7 @@ public class ProjectNotificationsService : IProjectNotificationsService
         
         catch (Exception ex)
         {
-            await _logService.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             throw;
         }
     }
@@ -584,7 +584,7 @@ public class ProjectNotificationsService : IProjectNotificationsService
         
         catch (Exception ex)
         {
-            await _logService.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             throw;
         }
     }
@@ -646,7 +646,7 @@ public class ProjectNotificationsService : IProjectNotificationsService
         
         catch (Exception ex)
         {
-            await _logService.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             throw;
         }
     }

@@ -4,13 +4,13 @@ using LeokaEstetica.Platform.Database.Abstractions.Project;
 using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Database.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Database.Chat;
-using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Messaging.Abstractions.Chat;
 using LeokaEstetica.Platform.Messaging.Builders;
 using LeokaEstetica.Platform.Messaging.Enums;
 using LeokaEstetica.Platform.Messaging.Models.Chat.Output;
 using LeokaEstetica.Platform.Models.Dto.Chat.Output;
 using LeokaEstetica.Platform.Models.Enums;
+using Microsoft.Extensions.Logging;
 
 namespace LeokaEstetica.Platform.Messaging.Services.Chat;
 
@@ -19,21 +19,21 @@ namespace LeokaEstetica.Platform.Messaging.Services.Chat;
 /// </summary>
 public sealed class ChatService : IChatService
 {
-    private readonly ILogService _logService;
+    private readonly ILogger<ChatService> _logger;
     private readonly IUserRepository _userRepository;
     private readonly IProjectRepository _projectRepository;
     private readonly IVacancyRepository _vacancyRepository;
     private readonly IChatRepository _chatRepository;
     private readonly IMapper _mapper;
 
-    public ChatService(ILogService logService,
+    public ChatService(ILogger<ChatService> logger,
         IUserRepository userRepository,
         IProjectRepository projectRepository,
         IVacancyRepository vacancyRepository,
         IChatRepository chatRepository,
         IMapper mapper)
     {
-        _logService = logService;
+        _logger = logger;
         _userRepository = userRepository;
         _projectRepository = projectRepository;
         _vacancyRepository = vacancyRepository;
@@ -191,7 +191,7 @@ public sealed class ChatService : IChatService
 
         catch (Exception ex)
         {
-            await _logService.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             throw;
         }
     }
@@ -247,7 +247,7 @@ public sealed class ChatService : IChatService
 
         catch (Exception ex)
         {
-            await _logService.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             throw;
         }
     }
@@ -318,7 +318,7 @@ public sealed class ChatService : IChatService
 
         catch (Exception ex)
         {
-            await _logService.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             throw;
         }
     }
@@ -401,7 +401,7 @@ public sealed class ChatService : IChatService
 
         catch (Exception ex)
         {
-            await _logService.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             throw;
         }
     }

@@ -2,9 +2,9 @@ using FluentValidation.Results;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.Validation;
 using LeokaEstetica.Platform.Base.Abstractions.Services.Validation;
 using LeokaEstetica.Platform.Core.Constants;
-using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Redis.Abstractions.Validation;
 using LeokaEstetica.Platform.Redis.Models;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
 namespace LeokaEstetica.Platform.Base.Services.Validation;
@@ -15,16 +15,16 @@ namespace LeokaEstetica.Platform.Base.Services.Validation;
 public sealed class ValidationExcludeErrorsService : IValidationExcludeErrorsService
 {
     private readonly IValidationExcludeErrorsRepository _validationExcludeErrorsRepository;
-    private readonly ILogService _logService;
     private readonly IValidationExcludeErrorsCacheService _validationExcludeErrorsCacheService;
+    private readonly ILogger<ValidationExcludeErrorsService> _logger;
     
-    public ValidationExcludeErrorsService(IValidationExcludeErrorsRepository validationExcludeErrorsRepository, 
-        ILogService logService, 
-        IValidationExcludeErrorsCacheService validationExcludeErrorsCacheService)
+    public ValidationExcludeErrorsService(IValidationExcludeErrorsRepository validationExcludeErrorsRepository,
+        IValidationExcludeErrorsCacheService validationExcludeErrorsCacheService, 
+        ILogger<ValidationExcludeErrorsService> logger)
     {
         _validationExcludeErrorsRepository = validationExcludeErrorsRepository;
-        _logService = logService;
         _validationExcludeErrorsCacheService = validationExcludeErrorsCacheService;
+        _logger = logger;
     }
 
     /// <summary>
@@ -73,7 +73,7 @@ public sealed class ValidationExcludeErrorsService : IValidationExcludeErrorsSer
         
         catch (Exception ex)
         {
-            await _logService.LogErrorAsync(ex);
+            _logger.LogError(ex.Message);
             throw;
         }
     }

@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.Header;
-using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Models.Dto.Output.Header;
 using LeokaEstetica.Platform.Models.Enums;
 using LeokaEstetica.Platform.Services.Abstractions.Header;

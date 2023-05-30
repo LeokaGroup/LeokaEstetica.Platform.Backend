@@ -6,7 +6,6 @@ using LeokaEstetica.Platform.Controllers.ModelsValidation.Project;
 using LeokaEstetica.Platform.Controllers.Validators.Project;
 using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Finder.Abstractions.Project;
-using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Messaging.Abstractions.Project;
 using LeokaEstetica.Platform.Messaging.Builders;
 using LeokaEstetica.Platform.Models.Dto.Input.Project;
@@ -17,6 +16,7 @@ using LeokaEstetica.Platform.Models.Dto.Output.ProjectTeam;
 using LeokaEstetica.Platform.Models.Enums;
 using LeokaEstetica.Platform.Services.Abstractions.Project;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
 namespace LeokaEstetica.Platform.Controllers.Project;
 
@@ -34,7 +34,7 @@ public class ProjectController : BaseController
     private readonly IProjectCommentsService _projectCommentsService;
     private readonly IProjectFinderService _projectFinderService;
     private readonly IProjectPaginationService _projectPaginationService;
-    private readonly ILogService _logService;
+    private readonly ILogger<ProjectController> _logger;
 
     /// <summary>
     /// Конструктор.
@@ -45,14 +45,14 @@ public class ProjectController : BaseController
     /// <param name="projectCommentsService">Сервис комментариев проектов.</param>
     /// <param name="projectFinderService">Поисковый сервис проектов.</param>
     /// <param name="projectPaginationService">Сервис пагинации проектов.</param>
-    /// <param name="logService">Сервис логера.</param>
+    /// <param name="logger">Сервис логера.</param>
     public ProjectController(IProjectService projectService,
         IMapper mapper,
         IValidationExcludeErrorsService validationExcludeErrorsService,
         IProjectCommentsService projectCommentsService, 
         IProjectFinderService projectFinderService, 
         IProjectPaginationService projectPaginationService, 
-        ILogService logService)
+        ILogger<ProjectController> logger)
     {
         _projectService = projectService;
         _mapper = mapper;
@@ -60,7 +60,7 @@ public class ProjectController : BaseController
         _projectCommentsService = projectCommentsService;
         _projectFinderService = projectFinderService;
         _projectPaginationService = projectPaginationService;
-        _logService = logService;
+        _logger = logger;
     }
 
     /// <summary>
@@ -526,13 +526,13 @@ public class ProjectController : BaseController
         if (vacancyId <= 0)
         {
             var ex = new ArgumentNullException($"Id вакансии не может быть пустым. VacancyId: {vacancyId}");
-            await _logService.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
         }
         
         if (projectId <= 0)
         {
             var ex = new ArgumentNullException($"Id проекта не может быть пустым. ProjectId: {projectId}");
-            await _logService.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
         }
 
         await _projectService.DeleteProjectVacancyAsync(vacancyId, projectId, GetUserName(), CreateTokenFromHeader());

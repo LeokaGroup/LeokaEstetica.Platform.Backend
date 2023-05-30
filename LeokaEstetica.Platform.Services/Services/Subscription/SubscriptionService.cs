@@ -2,11 +2,11 @@ using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.FareRule;
 using LeokaEstetica.Platform.Database.Abstractions.Subscription;
 using LeokaEstetica.Platform.Database.Abstractions.User;
-using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Models.Dto.Output.Subscription;
 using LeokaEstetica.Platform.Models.Entities.Subscription;
 using LeokaEstetica.Platform.Services.Abstractions.Subscription;
 using LeokaEstetica.Platform.Services.Builders;
+using Microsoft.Extensions.Logging;
 
 namespace LeokaEstetica.Platform.Services.Services.Subscription;
 
@@ -15,17 +15,17 @@ namespace LeokaEstetica.Platform.Services.Services.Subscription;
 /// </summary>
 public class SubscriptionService : ISubscriptionService
 {
-    private readonly ILogService _logService;
+    private readonly ILogger<SubscriptionService> _logger;
     private readonly IUserRepository _userRepository;
     private readonly ISubscriptionRepository _subscriptionRepository;
     private readonly IFareRuleRepository _fareRuleRepository;
 
-    public SubscriptionService(ILogService logService,
+    public SubscriptionService(ILogger<SubscriptionService> logger,
         IUserRepository userRepository,
         ISubscriptionRepository subscriptionRepository, 
         IFareRuleRepository fareRuleRepository)
     {
-        _logService = logService;
+        _logger = logger;
         _userRepository = userRepository;
         _subscriptionRepository = subscriptionRepository;
         _fareRuleRepository = fareRuleRepository;
@@ -47,7 +47,7 @@ public class SubscriptionService : ISubscriptionService
 
         catch (Exception ex)
         {
-            await _logService.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             throw;
         }
     }
@@ -90,7 +90,7 @@ public class SubscriptionService : ISubscriptionService
 
         catch (Exception ex)
         {
-            await _logService.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             throw;
         }
     }

@@ -1,9 +1,9 @@
 ﻿using AutoMapper;
 using LeokaEstetica.Platform.Database.Abstractions.Landing;
-using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Models.Dto.Output.Landing;
 using LeokaEstetica.Platform.Models.Entities.Landing;
 using LeokaEstetica.Platform.Services.Abstractions.Landing;
+using Microsoft.Extensions.Logging;
 
 namespace LeokaEstetica.Platform.Services.Services.Landing;
 
@@ -12,11 +12,11 @@ namespace LeokaEstetica.Platform.Services.Services.Landing;
 /// </summary>
 public class LandingService : ILandingService
 {
-    private readonly ILogService _logger;
+    private readonly ILogger<LandingService> _logger;
     private readonly ILandingRepository _landingRepository;
     private readonly IMapper _mapper;
 
-    public LandingService(ILogService logger,
+    public LandingService(ILogger<LandingService> logger,
         ILandingRepository landingRepository,
         IMapper mapper)
     {
@@ -49,7 +49,7 @@ public class LandingService : ILandingService
 
         catch (Exception ex)
         {
-            await _logger.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             throw;
         }
     }
@@ -90,7 +90,7 @@ public class LandingService : ILandingService
 
         catch (Exception ex)
         {
-            await _logger.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             throw;
         }
     }
@@ -110,7 +110,7 @@ public class LandingService : ILandingService
         
         catch (Exception ex)
         {
-            await _logger.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             throw;
         }
     }

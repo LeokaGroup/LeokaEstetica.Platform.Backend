@@ -1,10 +1,10 @@
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.User;
-using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Models.Dto.Output.User;
 using LeokaEstetica.Platform.Models.Entities.User;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace LeokaEstetica.Platform.Database.Repositories.User;
 
@@ -14,7 +14,7 @@ namespace LeokaEstetica.Platform.Database.Repositories.User;
 public class UserRepository : IUserRepository
 {
     private readonly PgContext _pgContext;
-    private readonly ILogService _logger;
+    private readonly ILogger<UserRepository> _logger;
     
     /// <summary>
     /// Конструктор.
@@ -22,7 +22,7 @@ public class UserRepository : IUserRepository
     /// <param name="pgContext">Датаконтекст.</param>
     /// <param name="logger">Сервис логгера.</param>
     public UserRepository(PgContext pgContext, 
-        ILogService logger)
+        ILogger<UserRepository> logger)
     {
         _pgContext = pgContext;
         _logger = logger;
@@ -141,7 +141,7 @@ public class UserRepository : IUserRepository
         
         catch (Exception ex)
         {
-            await _logger.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             throw;
         }
     }

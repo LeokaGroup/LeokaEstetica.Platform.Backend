@@ -2,11 +2,11 @@ using LeokaEstetica.Platform.Access.Abstractions.User;
 using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
 using LeokaEstetica.Platform.Database.Abstractions.User;
-using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Messaging.Abstractions.Project;
 using LeokaEstetica.Platform.Models.Entities.Communication;
 using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Notifications.Consts;
+using Microsoft.Extensions.Logging;
 
 namespace LeokaEstetica.Platform.Messaging.Services.Project;
 
@@ -15,21 +15,21 @@ namespace LeokaEstetica.Platform.Messaging.Services.Project;
 /// </summary>
 public sealed class ProjectCommentsService : IProjectCommentsService
 {
-    private readonly ILogService _logService;
+    private readonly ILogger<ProjectCommentsService> _logger;
     private readonly IUserRepository _userRepository;
     private readonly IProjectCommentsRepository _projectCommentsRepository;
     private readonly IAccessUserService _accessUserService;
     private readonly IAccessUserNotificationsService _accessUserNotificationsService;
     private readonly ICommentNotificationsService _commentNotificationsService;
 
-    public ProjectCommentsService(ILogService logService, 
+    public ProjectCommentsService(ILogger<ProjectCommentsService> logger, 
         IUserRepository userRepository, 
         IProjectCommentsRepository projectCommentsRepository, 
         IAccessUserService accessUserService, 
         IAccessUserNotificationsService accessUserNotificationsService,
         ICommentNotificationsService commentNotificationsService)
     {
-        _logService = logService;
+        _logger = logger;
         _userRepository = userRepository;
         _projectCommentsRepository = projectCommentsRepository;
         _accessUserService = accessUserService;
@@ -53,7 +53,7 @@ public sealed class ProjectCommentsService : IProjectCommentsService
             if (userId <= 0)
             {
                 var ex = new NotFoundUserIdByAccountException(account);
-                await _logService.LogErrorAsync(ex);
+                _logger.LogError(ex, ex.Message);
                 throw ex;
             }
             
@@ -90,7 +90,7 @@ public sealed class ProjectCommentsService : IProjectCommentsService
         
         catch (Exception ex)
         {
-            await _logService.LogErrorAsync(ex,
+            _logger.LogError(ex,
                 "Ошибка при создании комментария к проекту. " +
                 $"ProjectId = {projectId}. " +
                 $"Comment = {comment}. Account = {account}");
@@ -114,7 +114,7 @@ public sealed class ProjectCommentsService : IProjectCommentsService
         
         catch (Exception ex)
         {
-            await _logService.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             throw;
         }
     }

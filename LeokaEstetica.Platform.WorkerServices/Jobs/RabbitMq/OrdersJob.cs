@@ -3,7 +3,6 @@ using LeokaEstetica.Platform.Base.Enums;
 using LeokaEstetica.Platform.Base.Models.IntegrationEvents.Orders;
 using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.Commerce;
-using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Processing.Abstractions.PayMaster;
 using LeokaEstetica.Platform.Processing.Enums;
 using Newtonsoft.Json;
@@ -22,7 +21,7 @@ public class OrdersJob : BackgroundService
     private readonly IPayMasterService _payMasterService;
     private readonly HttpClient _httpClient;
     private readonly ICommerceRepository _commerceRepository;
-    private readonly ILogService _logService;
+    private readonly ILogger<OrdersJob> _logger;
 
     /// <summary>
     /// Конструктор.
@@ -31,16 +30,16 @@ public class OrdersJob : BackgroundService
     /// <param name="payMasterService">Сервис ПС PayMaster.</param>
     /// <param name="httpClient">HttpClient.</param>
     /// <param name="commerceRepository">Репозиторий коммерции.</param>
-    /// <param name="logService">Сервис логов.</param>
+    /// <param name="logger">Сервис логов.</param>
     public OrdersJob(IConfiguration configuration, 
         IPayMasterService payMasterService,
         ICommerceRepository commerceRepository, 
-        ILogService logService)
+        ILogger<OrdersJob> logger)
     {
         _payMasterService = payMasterService;
         _httpClient = new HttpClient();
         _commerceRepository = commerceRepository;
-        _logService = logService;
+        _logger = logger;
 
         var factory = new ConnectionFactory
         {
@@ -77,8 +76,7 @@ public class OrdersJob : BackgroundService
         var consumer = new AsyncEventingBasicConsumer(_channel);
         consumer.Received += async (_, ea) =>
         {
-            await _logService.LogInfoAsync(
-                new ApplicationException("Начали обработку сообщения из очереди заказов..."));
+            _logger.LogInformation("Начали обработку сообщения из очереди заказов...");
             
             // Если очередь не пуста, то будем парсить результат для проверки статуса заказов.
             if (!ea.Body.IsEmpty)
@@ -113,7 +111,7 @@ public class OrdersJob : BackgroundService
                 
                     catch (Exception ex)
                     {
-                        await _logService.LogCriticalAsync(ex, "Ошибка при чтении очереди заказов.");
+                        _logger.LogCritical(ex, "Ошибка при чтении очереди заказов.");
                         throw;
                     }
                     
@@ -124,15 +122,13 @@ public class OrdersJob : BackgroundService
                 // Статус в ПС не изменился, оставляем его в очереди.
                 else
                 {
-                    await _logService.LogInfoAsync(
-                        new ApplicationException("Оставили сообщение в очереди заказов..."));
+                    _logger.LogInformation("Оставили сообщение в очереди заказов...");
                     
                     _channel.BasicRecoverAsync(false);
                 }
             }
-
-            await _logService.LogInfoAsync(
-                new ApplicationException("Закончили обработку сообщения из очереди заказов..."));
+            
+            _logger.LogInformation("Закончили обработку сообщения из очереди заказов...");
 
             await Task.Yield();
         };

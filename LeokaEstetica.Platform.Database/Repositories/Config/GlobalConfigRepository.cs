@@ -2,9 +2,9 @@ using System.Globalization;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.Config;
-using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Models.Entities.Configs;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace LeokaEstetica.Platform.Database.Repositories.Config;
 
@@ -14,13 +14,13 @@ namespace LeokaEstetica.Platform.Database.Repositories.Config;
 public class GlobalConfigRepository : IGlobalConfigRepository
 {
     private readonly PgContext _pgContext;
-    private readonly ILogService _logService;
+    private readonly ILogger<GlobalConfigRepository> _logger;
 
     public GlobalConfigRepository(PgContext pgContext,
-        ILogService logService)
+        ILogger<GlobalConfigRepository> logger)
     {
         _pgContext = pgContext;
-        _logService = logService;
+        _logger = logger;
     }
 
     /// <summary>
@@ -118,9 +118,9 @@ public class GlobalConfigRepository : IGlobalConfigRepository
         
         catch (Exception ex)
         {
-            await _logService.LogErrorAsync(ex, "Ошибка конвертации значения глобал конфига. " +
-                                                $"Ключ = {key}; " +
-                                                $"Значение = {config.ParamValue}");
+            _logger.LogError(ex, "Ошибка конвертации значения глобал конфига. " +
+                                            $"Ключ = {key}; " +
+                                            $"Значение = {config.ParamValue}");
         }
 
         return result;

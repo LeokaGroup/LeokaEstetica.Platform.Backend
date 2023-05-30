@@ -29,7 +29,6 @@ using LeokaEstetica.Platform.Database.Repositories.Vacancy;
 using LeokaEstetica.Platform.Finder.Services.Project;
 using LeokaEstetica.Platform.Finder.Services.Resume;
 using LeokaEstetica.Platform.Finder.Services.Vacancy;
-using LeokaEstetica.Platform.Logs.Services;
 using LeokaEstetica.Platform.Messaging.Services.Chat;
 using LeokaEstetica.Platform.Messaging.Services.Project;
 using LeokaEstetica.Platform.Messaging.Services.RabbitMq;
@@ -107,14 +106,12 @@ public class BaseServiceTest
         var optionsBuilder = new DbContextOptionsBuilder<PgContext>();
         optionsBuilder.UseNpgsql(PostgreConfigString);
         var pgContext = new PgContext(optionsBuilder.Options);
-        
+
         PgContext = pgContext;
         
         var optionsForCache = new OptionsWrapper<MemoryDistributedCacheOptions>(new MemoryDistributedCacheOptions());
         var distributedCache = new MemoryDistributedCache(optionsForCache);
-        
-        var logService = new LogService(pgContext);
-        var userRepository = new UserRepository(pgContext, logService);
+        var userRepository = new UserRepository(pgContext, null);
         var profileRepository = new ProfileRepository(pgContext);
         var subscriptionRepository = new SubscriptionRepository(pgContext);
         var chatRepository = new ChatRepository(pgContext);
@@ -123,89 +120,89 @@ public class BaseServiceTest
         var accessUserService = new AccessUserService(accessUserRepository);
         var userRedisService = new UserRedisService(distributedCache, mapper);
 
-        UserService = new UserService(logService, userRepository, mapper, null, pgContext, profileRepository,
+        UserService = new UserService(null, userRepository, mapper, null, pgContext, profileRepository,
             subscriptionRepository, resumeModerationRepository, accessUserService, userRedisService);
-        ProfileService = new ProfileService(logService, profileRepository, userRepository, mapper, null, null);
+        ProfileService = new ProfileService(null, profileRepository, userRepository, mapper, null, null);
 
         var projectRepository = new ProjectRepository(pgContext, chatRepository);
         var projectNotificationsRepository = new ProjectNotificationsRepository(pgContext);
         var vacancyRepository = new VacancyRepository(pgContext);
-        var projectNotificationsService = new ProjectNotificationsService(null, logService, userRepository, mapper,
+        var projectNotificationsService = new ProjectNotificationsService(null, null, userRepository, mapper,
             projectNotificationsRepository, null, projectRepository, null, null, vacancyRepository);
         var vacancyModerationRepository = new VacancyModerationRepository(pgContext);
         var vacancyNotificationsService = new VacancyNotificationsService(null, null);
         var fareRuleRepository = new FareRuleRepository(pgContext);
         var availableLimitsRepository = new AvailableLimitsRepository(pgContext);
-        var availableLimitsService = new AvailableLimitsService(logService, availableLimitsRepository);
+        var availableLimitsService = new AvailableLimitsService(null, availableLimitsRepository);
 
-        VacancyModerationService = new VacancyModerationService(vacancyModerationRepository, logService, mapper, null,
+        VacancyModerationService = new VacancyModerationService(vacancyModerationRepository, null, mapper, null,
             vacancyRepository, userRepository, projectRepository, null);
         
         // Тут если нужен будет ProjectService, то тут проблема с порядком следования.
         // Не получится сделать просто, VacancyService и ProjectService нужны друг другу тесно.
-        VacancyService = new VacancyService(logService, vacancyRepository, mapper, null, userRepository,
+        VacancyService = new VacancyService(null, vacancyRepository, mapper, null, userRepository,
             VacancyModerationService, subscriptionRepository, fareRuleRepository, availableLimitsService,
             vacancyNotificationsService, null, null, null, vacancyModerationRepository);
 
-        ChatService = new ChatService(logService, userRepository, projectRepository, vacancyRepository, chatRepository,
+        ChatService = new ChatService(null, userRepository, projectRepository, vacancyRepository, chatRepository,
             mapper);
 
         var accessModerationRepository = new AccessModerationRepository(pgContext);
 
-        AccessModerationService = new AccessModerationService(logService, accessModerationRepository, userRepository);
+        AccessModerationService = new AccessModerationService(null, accessModerationRepository, userRepository);
 
         ProjectModerationRepository = new ProjectModerationRepository(pgContext);
 
-        ProjectModerationService = new ProjectModerationService(ProjectModerationRepository, logService, mapper, null, 
+        ProjectModerationService = new ProjectModerationService(ProjectModerationRepository, null, mapper, null, 
             userRepository, projectRepository, null);
 
         var projectCommentsRepository = new ProjectCommentsRepository(pgContext);
 
-        ProjectCommentsService = new ProjectCommentsService(logService, userRepository, projectCommentsRepository, null, null,
+        ProjectCommentsService = new ProjectCommentsService(null, userRepository, projectCommentsRepository, null, null,
             null);
-        ProjectFinderService = new ProjectFinderService(logService, userRepository, projectNotificationsService);
+        ProjectFinderService = new ProjectFinderService(null, userRepository, projectNotificationsService);
 
         var resumeRepository = new ResumeRepository(pgContext);
 
         var fillColorProjectsService = new FillColorProjectsService();
 
-        ProjectService = new ProjectService(projectRepository, logService, userRepository, mapper,
+        ProjectService = new ProjectService(projectRepository, null, userRepository, mapper,
             projectNotificationsService, VacancyService, vacancyRepository, availableLimitsService,
             subscriptionRepository, fareRuleRepository, VacancyModerationService, projectNotificationsRepository, null,
             null, fillColorProjectsService, null, ProjectModerationRepository);
 
         SubscriptionService =
-            new SubscriptionService(logService, userRepository, subscriptionRepository, fareRuleRepository);
+            new SubscriptionService(null, userRepository, subscriptionRepository, fareRuleRepository);
         var fillColorResumeService = new FillColorResumeService();
-        ResumeService = new ResumeService(logService, resumeRepository, mapper, subscriptionRepository,
+        ResumeService = new ResumeService(null, resumeRepository, mapper, subscriptionRepository,
             fareRuleRepository, userRepository, fillColorResumeService, resumeModerationRepository);
-        VacancyFinderService = new VacancyFinderService(vacancyRepository, logService);
-        FinderProjectService = new Finder.Services.Project.ProjectFinderService(projectRepository, logService);
-        ResumeFinderService = new ResumeFinderService(logService, resumeRepository);
-        VacancyPaginationService = new VacancyPaginationService(vacancyRepository, logService);
-        ProjectPaginationService = new ProjectPaginationService(projectRepository, logService);
+        VacancyFinderService = new VacancyFinderService(vacancyRepository, null);
+        FinderProjectService = new Finder.Services.Project.ProjectFinderService(projectRepository, null);
+        ResumeFinderService = new ResumeFinderService(null, resumeRepository);
+        VacancyPaginationService = new VacancyPaginationService(vacancyRepository, null);
+        ProjectPaginationService = new ProjectPaginationService(projectRepository, null);
 
         var commerceRepository = new CommerceRepository(pgContext);
         var commerceRedisService = new CommerceRedisService(distributedCache);
 
-        FareRuleService = new FareRuleService(fareRuleRepository, logService);
+        FareRuleService = new FareRuleService(fareRuleRepository, null);
 
         var rabbitMqService = new RabbitMqService(AppConfiguration);
-        PayMasterService = new PayMasterService(logService, AppConfiguration, userRepository,
+        PayMasterService = new PayMasterService(null, AppConfiguration, userRepository,
             commerceRepository, accessUserService, null, commerceRedisService, rabbitMqService);
 
         var userBlackListService = new UserBlackListRepository(pgContext);
-        UserBlackListService = new UserBlackListService(logService, userBlackListService);
-        ResumeModerationService = new ResumeModerationService(logService, resumeModerationRepository, mapper,
+        UserBlackListService = new UserBlackListService(null, userBlackListService);
+        ResumeModerationService = new ResumeModerationService(null, resumeModerationRepository, mapper,
             userRepository, null);
 
         var landingRepository = new LandingRepository(pgContext);
-        LandingService = new LandingService(logService, landingRepository, mapper);
+        LandingService = new LandingService(null, landingRepository, mapper);
 
         var KnowledgeRepository = new KnowledgeRepository(pgContext);
-        KnowledgeService = new KnowledgeService(KnowledgeRepository, logService);
+        KnowledgeService = new KnowledgeService(KnowledgeRepository, null);
         
-        CommerceService = new CommerceService(commerceRedisService, logService, userRepository, fareRuleRepository,
+        CommerceService = new CommerceService(commerceRedisService, null, userRepository, fareRuleRepository,
             commerceRepository);
     }
 }

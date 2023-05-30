@@ -1,7 +1,7 @@
 using LeokaEstetica.Platform.Access.Abstractions.Moderation;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Access;
-using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.CallCenter.Models.Dto.Output.Access;
+using Microsoft.Extensions.Logging;
 
 namespace LeokaEstetica.Platform.Access.Services.Moderation;
 
@@ -10,18 +10,18 @@ namespace LeokaEstetica.Platform.Access.Services.Moderation;
 /// </summary>
 public class UserBlackListService : IUserBlackListService
 {
-    private readonly ILogService _logService;
+    private readonly ILogger<UserBlackListService> _logger;
     private readonly IUserBlackListRepository _userBlackListRepository;
     
     /// <summary>
     /// Конструктор.
-    /// <param name="logService">Сервис логера.</param>
+    /// <param name="logger">Сервис логера.</param>
     /// <param name="userBlackListRepository">Репозиторий ЧС пользователей.</param>
     /// </summary>
-    public UserBlackListService(ILogService logService, 
+    public UserBlackListService(ILogger<UserBlackListService> logger, 
         IUserBlackListRepository userBlackListRepository)
     {
-        _logService = logService;
+        _logger = logger;
         _userBlackListRepository = userBlackListRepository;
     }
 
@@ -40,7 +40,7 @@ public class UserBlackListService : IUserBlackListService
         
         catch (Exception ex)
         {
-            await _logService.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             throw;
         }
     }
@@ -75,7 +75,7 @@ public class UserBlackListService : IUserBlackListService
         
         catch (Exception ex)
         {
-            await _logService.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             throw;
         }
     }

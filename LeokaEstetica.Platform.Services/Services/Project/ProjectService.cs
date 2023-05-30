@@ -13,7 +13,6 @@ using LeokaEstetica.Platform.Database.Abstractions.Project;
 using LeokaEstetica.Platform.Database.Abstractions.Subscription;
 using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Database.Abstractions.Vacancy;
-using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Finder.Chains.Project;
 using LeokaEstetica.Platform.Messaging.Abstractions.Mail;
 using LeokaEstetica.Platform.Models.Dto.Input.Project;
@@ -39,6 +38,7 @@ using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Base.Extensions.HtmlExtensions;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Project;
 using LeokaEstetica.Platform.Models.Entities.Moderation;
+using Microsoft.Extensions.Logging;
 
 namespace LeokaEstetica.Platform.Services.Services.Project;
 
@@ -48,7 +48,7 @@ namespace LeokaEstetica.Platform.Services.Services.Project;
 public class ProjectService : IProjectService
 {
     private readonly IProjectRepository _projectRepository;
-    private readonly ILogService _logService;
+    private readonly ILogger<ProjectService> _logger;
     private readonly IUserRepository _userRepository;
     private readonly IMapper _mapper;
     private readonly IProjectNotificationsService _projectNotificationsService;
@@ -108,7 +108,7 @@ public class ProjectService : IProjectService
     /// Конструктор.
     /// </summary>
     /// <param name="projectRepository">Репозиторий проектов.</param>
-    /// <param name="logService">Сервис логера.</param>
+    /// <param name="_logger">Сервис логера.</param>
     /// <param name="userRepository">Репозиторий пользователя.</param>
     /// <param name="mapper">Автомаппер.</param>
     /// <param name="projectNotificationsService">Сервис уведомлений.</param>
@@ -121,7 +121,7 @@ public class ProjectService : IProjectService
     /// <param name="accessUserService">Сервис доступа пользователя.</param>
     /// <param name="projectModerationRepository">Репозиторий модерации проектов.</param>
     public ProjectService(IProjectRepository projectRepository,
-        ILogService logService,
+        ILogger<ProjectService> logger,
         IUserRepository userRepository,
         IMapper mapper,
         IProjectNotificationsService projectNotificationsService,
@@ -139,7 +139,7 @@ public class ProjectService : IProjectService
         IProjectModerationRepository projectModerationRepository)
     {
         _projectRepository = projectRepository;
-        _logService = logService;
+        _logger = logger;
         _userRepository = userRepository;
         _mapper = mapper;
         _projectNotificationsService = projectNotificationsService;
@@ -254,7 +254,7 @@ public class ProjectService : IProjectService
             if (project is null || project.ProjectId <= 0)
             {
                 var ex = new InvalidOperationException("Ошибка при создании проекта.");
-                await _logService.LogErrorAsync(ex);
+                _logger.LogError(ex, ex.Message);
                 
                 await _projectNotificationsService.SendNotificationErrorCreatedUserProjectAsync("Что то пошло не так",
                     "Ошибка при создании проекта. Мы уже знаем о проблеме и уже занимаемся ей.",
@@ -282,7 +282,7 @@ public class ProjectService : IProjectService
 
         catch (Exception ex)
         {
-            await _logService.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             throw;
         }
     }
@@ -310,7 +310,7 @@ public class ProjectService : IProjectService
 
         catch (Exception ex)
         {
-            await _logService.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             throw;
         }
     }
@@ -343,7 +343,7 @@ public class ProjectService : IProjectService
 
         catch (Exception ex)
         {
-            await _logService.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             throw;
         }
     }
@@ -383,7 +383,7 @@ public class ProjectService : IProjectService
 
         catch (Exception ex)
         {
-            await _logService.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             throw;
         }
     }
@@ -431,7 +431,7 @@ public class ProjectService : IProjectService
 
         catch (Exception ex)
         {
-            await _logService.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             throw;
         }
     }
@@ -471,7 +471,7 @@ public class ProjectService : IProjectService
 
         catch (Exception ex)
         {
-            await _logService.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             throw;
         }
     }
@@ -492,7 +492,7 @@ public class ProjectService : IProjectService
 
         catch (Exception ex)
         {
-            await _logService.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             throw;
         }
     }
@@ -550,7 +550,7 @@ public class ProjectService : IProjectService
 
         catch (Exception ex)
         {
-            await _logService.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             throw;
         }
     }
@@ -593,7 +593,7 @@ public class ProjectService : IProjectService
 
         catch (Exception ex)
         {
-            await _logService.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             throw;
         }
     }
@@ -626,7 +626,7 @@ public class ProjectService : IProjectService
 
         catch (Exception ex)
         {
-            await _logService.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             throw;
         }
     }
@@ -671,7 +671,7 @@ public class ProjectService : IProjectService
 
         catch (Exception ex)
         {
-            await _logService.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             throw;
         }
     }
@@ -753,13 +753,13 @@ public class ProjectService : IProjectService
                 "Вы уже откликались на этот проект.",
                 NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
             
-            await _logService.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             throw;
         }
 
         catch (Exception ex)
         {
-            await _logService.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             throw;
         }
     }
@@ -801,7 +801,7 @@ public class ProjectService : IProjectService
 
         catch (Exception ex)
         {
-            await _logService.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             throw;
         }
     }
@@ -821,7 +821,7 @@ public class ProjectService : IProjectService
 
         catch (Exception ex)
         {
-            await _logService.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             throw;
         }
     }
@@ -925,12 +925,11 @@ public class ProjectService : IProjectService
 
         catch (Exception ex)
         {
-            await _logService.LogErrorAsync(ex,
-                "Ошибка добавления пользователя в команду проекта. " +
-                $"InviteText был {inviteText}. " +
-                $"InviteType был {inviteType}. " +
-                $"ProjectId был {projectId}. " +
-                $"VacancyId был {vacancyId}");
+            _logger.LogError(ex, "Ошибка добавления пользователя в команду проекта. " +
+                                 $"InviteText был {inviteText}. " +
+                                 $"InviteType был {inviteType}. " +
+                                 $"ProjectId был {projectId}. " +
+                                 $"VacancyId был {vacancyId}");
             throw;
         }
     }
@@ -954,7 +953,7 @@ public class ProjectService : IProjectService
 
         catch (Exception ex)
         {
-            await _logService.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             throw;
         }
     }
@@ -1016,7 +1015,7 @@ public class ProjectService : IProjectService
         
         catch (Exception ex)
         {
-            await _logService.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             throw;
         }
     }
@@ -1093,7 +1092,7 @@ public class ProjectService : IProjectService
         
         catch (Exception ex)
         {
-            await _logService.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             throw;
         }
     }
@@ -1143,7 +1142,7 @@ public class ProjectService : IProjectService
         
         catch (Exception ex)
         {
-            await _logService.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             throw;
         }
     }
@@ -1220,28 +1219,28 @@ public class ProjectService : IProjectService
         if (string.IsNullOrEmpty(inviteText))
         {
             var ex = new ArgumentException(ValidationConsts.NOT_VALID_INVITE_PROJECT_TEAM_USER);
-            await _logService.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             isError = true;
         }
         
         if (!_projectInviteTypes.Contains(inviteType))
         {
             var ex = new ArgumentException(ValidationConsts.NOT_VALID_INVITE_TYPE);
-            await _logService.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             isError = true;
         }
 
         if (projectId <= 0)
         {
             var ex = new ArgumentException(ValidationConsts.NOT_VALID_INVITE_PROJECT_TEAM_PROJECT_ID);
-            await _logService.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             isError = true;
         }
 
         if (vacancyId <= 0)
         {
             var ex = new ArgumentException(ValidationConsts.NOT_VALID_INVITE_PROJECT_TEAM_VACANCY_ID);
-            await _logService.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             isError = true;
         }
         
@@ -1271,7 +1270,8 @@ public class ProjectService : IProjectService
     private async Task ValidateProjectIdAsync(long projectId, string token)
     {
         var ex = new ArgumentNullException(string.Concat(ValidationConsts.NOT_VALID_PROJECT_ID, projectId));
-        await _logService.LogErrorAsync(ex);
+        _logger.LogError(ex, ex.Message);
+        
         await _projectNotificationsService.SendNotificationErrorUpdatedUserProjectAsync("Что то не так...",
             "Ошибка при обновлении проекта. Мы уже знаем о проблеме и уже занимаемся ей.",
             NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, token);
@@ -1542,7 +1542,7 @@ public class ProjectService : IProjectService
         if (team is null)
         {
             var ex = new InvalidOperationException("Ошибка добавления владельца проекта в команду.");
-            await _logService.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             throw ex;
         }
         
@@ -1624,7 +1624,7 @@ public class ProjectService : IProjectService
 
         catch (Exception ex)
         {
-            await _logService.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             throw;
         }
     }
@@ -1688,7 +1688,7 @@ public class ProjectService : IProjectService
                     NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, token);
             }
 
-            await _logService.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             throw;
         }
     }
@@ -1747,7 +1747,7 @@ public class ProjectService : IProjectService
                     NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, token);
             }
             
-            await _logService.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             throw;
         }
     }

@@ -3,7 +3,6 @@ using LeokaEstetica.Platform.Base;
 using LeokaEstetica.Platform.Controllers.Filters;
 using LeokaEstetica.Platform.Controllers.Validators.Commerce;
 using LeokaEstetica.Platform.Database.Abstractions.FareRule;
-using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Models.Dto.Input.Commerce;
 using LeokaEstetica.Platform.Models.Dto.Input.Commerce.PayMaster;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce;
@@ -12,6 +11,7 @@ using LeokaEstetica.Platform.Models.Dto.Output.FareRule;
 using LeokaEstetica.Platform.Processing.Abstractions.Commerce;
 using LeokaEstetica.Platform.Processing.Abstractions.PayMaster;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
 namespace LeokaEstetica.Platform.Controllers.Commerce;
@@ -27,7 +27,7 @@ public class CommerceController : BaseController
     private readonly IPayMasterService _payMasterService;
     private readonly IFareRuleRepository _fareRuleRepository;
     private readonly IMapper _mapper;
-    private readonly ILogService _logService;
+    private readonly ILogger<CommerceController> _logger;
     private readonly ICommerceService _commerceService;
 
     /// <summary>
@@ -36,18 +36,18 @@ public class CommerceController : BaseController
     /// <param name="payMasterService">Сервис платежей через ПС PayMaster.</param>
     /// <param name="fareRuleRepository">Репозиторий правил тарифов.</param>
     /// <param name="mapper">Автомаппер.</param>
-    /// <param name="logService">Сервис логера.</param>
+    /// <param name="logger">Сервис логера.</param>
     /// <param name="commerceService">Сервис коммерции.</param>
     public CommerceController(IPayMasterService payMasterService, 
         IFareRuleRepository fareRuleRepository, 
         IMapper mapper, 
-        ILogService logService, 
+        ILogger<CommerceController> logger, 
         ICommerceService commerceService)
     {
         _payMasterService = payMasterService;
         _fareRuleRepository = fareRuleRepository;
         _mapper = mapper;
-        _logService = logService;
+        _logger = logger;
         _commerceService = commerceService;
     }
 
@@ -123,7 +123,7 @@ public class CommerceController : BaseController
             var ex = new InvalidOperationException(
                 "Переданы некорректные параметры. " +
                 $"CreateOrderCacheInput: {JsonConvert.SerializeObject(createOrderCacheInput)}");
-            await _logService.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
 
             throw ex;
         }
