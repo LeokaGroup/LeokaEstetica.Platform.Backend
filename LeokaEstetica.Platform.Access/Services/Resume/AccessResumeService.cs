@@ -3,8 +3,8 @@ using LeokaEstetica.Platform.Access.Enums;
 using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.Subscription;
 using LeokaEstetica.Platform.Database.Abstractions.User;
-using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Models.Dto.Output.Resume;
+using Microsoft.Extensions.Logging;
 
 namespace LeokaEstetica.Platform.Access.Services.Resume;
 
@@ -13,15 +13,15 @@ namespace LeokaEstetica.Platform.Access.Services.Resume;
 /// </summary>
 public class AccessResumeService : IAccessResumeService
 {
-    private readonly ILogService _logService;
+    private readonly ILogger<AccessResumeService> _logger;
     private readonly ISubscriptionRepository _subscriptionRepository;
     private readonly IUserRepository _userRepository;
     
-    public AccessResumeService(ILogService logService, 
+    public AccessResumeService(ILogger<AccessResumeService> logger, 
         ISubscriptionRepository subscriptionRepository, 
         IUserRepository userRepository)
     {
-        _logService = logService;
+        _logger = logger;
         _subscriptionRepository = subscriptionRepository;
         _userRepository = userRepository;
     }
@@ -81,7 +81,7 @@ public class AccessResumeService : IAccessResumeService
         
         catch (Exception ex)
         {
-            await _logService.LogErrorAsync(ex, "Ошибка проверки доступа пользователя.");
+            _logger.LogError(ex, "Ошибка проверки доступа пользователя.");
             throw;
         }
     }

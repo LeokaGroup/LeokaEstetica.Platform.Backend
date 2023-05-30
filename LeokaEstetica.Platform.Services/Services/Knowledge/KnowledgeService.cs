@@ -1,7 +1,7 @@
 using LeokaEstetica.Platform.Database.Abstractions.Knowledge;
-using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Models.Dto.Output.Knowledge;
 using LeokaEstetica.Platform.Services.Abstractions.Knowledge;
+using Microsoft.Extensions.Logging;
 
 namespace LeokaEstetica.Platform.Services.Services.Knowledge;
 
@@ -11,18 +11,18 @@ namespace LeokaEstetica.Platform.Services.Services.Knowledge;
 public class KnowledgeService : IKnowledgeService
 {
     private readonly IKnowledgeRepository _knowledgeRepository;
-    private readonly ILogService _logService;
+    private readonly ILogger<KnowledgeService> _logger;
     
     /// <summary>
     /// Конструктор.</param>
     /// <param name="knowledgeRepository">Репозиторий БЗ.</param>
-    /// <param name="logService">Сервис логирования.</param>
+    /// <param name="logger">Сервис логирования.</param>
     /// </summary>
     public KnowledgeService(IKnowledgeRepository knowledgeRepository, 
-        ILogService logService)
+        ILogger<KnowledgeService> logger)
     {
         _knowledgeRepository = knowledgeRepository;
-        _logService = logService;
+        _logger = logger;
     }
 
     #region Публичные методы.
@@ -46,7 +46,7 @@ public class KnowledgeService : IKnowledgeService
         
         catch (Exception ex)
         {
-            await _logService.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             throw;
         }
     }

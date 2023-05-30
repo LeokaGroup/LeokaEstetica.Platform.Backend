@@ -10,7 +10,6 @@ using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Project;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
 using LeokaEstetica.Platform.Database.Abstractions.User;
-using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Models.Dto.Input.Moderation;
 using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Project;
 using LeokaEstetica.Platform.Models.Dto.Output.Project;
@@ -18,6 +17,7 @@ using LeokaEstetica.Platform.Models.Entities.Moderation;
 using LeokaEstetica.Platform.Models.Entities.Project;
 using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Notifications.Consts;
+using Microsoft.Extensions.Logging;
 
 namespace LeokaEstetica.Platform.CallCenter.Services.Project;
 
@@ -27,7 +27,7 @@ namespace LeokaEstetica.Platform.CallCenter.Services.Project;
 public class ProjectModerationService : IProjectModerationService
 {
     private readonly IProjectModerationRepository _projectModerationRepository;
-    private readonly ILogService _logService;
+    private readonly ILogger<ProjectModerationService> _logger;
     private readonly IMapper _mapper;
     private readonly IModerationMailingsService _moderationMailingsService;
     private readonly IUserRepository _userRepository;
@@ -38,14 +38,14 @@ public class ProjectModerationService : IProjectModerationService
     /// Конструктор.
     /// </summary>
     /// <param name="projectModerationRepository">Репозиторий модерации проектов.</param>
-    /// <param name="logService">Сервис логов.</param>
+    /// <param name="logger">Сервис логов.</param>
     /// <param name="mapper">Автомаппер.</param>
     /// <param name="moderationMailingsService">Сервис уведомлений модерации на почту.</param>
     /// <param name="userRepository">Репозиторий пользователя.</param>
     /// <param name="projectRepository">Репозиторий проектов.</param>
     /// <param name="projectModerationNotificationService">Сервис уведомлений модерации проектов.</param>
     public ProjectModerationService(IProjectModerationRepository projectModerationRepository,
-        ILogService logService,
+        ILogger<ProjectModerationService> logger,
         IMapper mapper, 
         IModerationMailingsService moderationMailingsService, 
         IUserRepository userRepository, 
@@ -53,7 +53,7 @@ public class ProjectModerationService : IProjectModerationService
         IProjectModerationNotificationService projectModerationNotificationService)
     {
         _projectModerationRepository = projectModerationRepository;
-        _logService = logService;
+        _logger = logger;
         _mapper = mapper;
         _moderationMailingsService = moderationMailingsService;
         _userRepository = userRepository;
@@ -80,7 +80,7 @@ public class ProjectModerationService : IProjectModerationService
 
         catch (Exception ex)
         {
-            await _logService.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             throw;
         }
     }
@@ -103,7 +103,7 @@ public class ProjectModerationService : IProjectModerationService
 
         catch (Exception ex)
         {
-            await _logService.LogErrorAsync(ex, "Ошибка при получении проекта для модерации. " +
+            _logger.LogError(ex, "Ошибка при получении проекта для модерации. " +
                                                 $"ProjectId = {projectId}");
             throw;
         }
@@ -153,8 +153,8 @@ public class ProjectModerationService : IProjectModerationService
 
         catch (Exception ex)
         {
-            await _logService.LogErrorAsync(ex, "Ошибка при одобрении проекта при модерации. " +
-                                                $"ProjectId = {projectId}");
+            _logger.LogError(ex, "Ошибка при одобрении проекта при модерации. " +
+                                      $"ProjectId = {projectId}");
             throw;
         }
     }
@@ -197,8 +197,7 @@ public class ProjectModerationService : IProjectModerationService
 
         catch (Exception ex)
         {
-            await _logService.LogErrorAsync(ex,
-                $"Ошибка при отклонении проекта при модерации. ProjectId = {projectId}");
+            _logger.LogError(ex, $"Ошибка при отклонении проекта при модерации. ProjectId = {projectId}");
             throw;
         }
     }
@@ -310,7 +309,7 @@ public class ProjectModerationService : IProjectModerationService
         
         catch (Exception ex)
         {
-            await _logService.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             throw;
         }
     }
@@ -339,7 +338,7 @@ public class ProjectModerationService : IProjectModerationService
             {
                 var ex = new InvalidOperationException(RemarkConst.SEND_PROJECT_REMARKS_WARNING +
                                                        $" ProjectId: {projectId}");
-                await _logService.LogWarningAsync(ex);
+                _logger.LogWarning(ex, ex.Message);
 
                 if (!string.IsNullOrEmpty(token))
                 {
@@ -369,7 +368,7 @@ public class ProjectModerationService : IProjectModerationService
         
         catch (Exception ex)
         {
-            await _logService.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             throw;
         }
     }

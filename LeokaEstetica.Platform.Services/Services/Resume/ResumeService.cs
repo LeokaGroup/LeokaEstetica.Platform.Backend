@@ -5,11 +5,11 @@ using LeokaEstetica.Platform.Database.Abstractions.Moderation.Resume;
 using LeokaEstetica.Platform.Database.Abstractions.Resume;
 using LeokaEstetica.Platform.Database.Abstractions.Subscription;
 using LeokaEstetica.Platform.Database.Abstractions.User;
-using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Models.Dto.Output.Resume;
 using LeokaEstetica.Platform.Models.Entities.Moderation;
 using LeokaEstetica.Platform.Models.Entities.Profile;
 using LeokaEstetica.Platform.Services.Abstractions.Resume;
+using Microsoft.Extensions.Logging;
 
 namespace LeokaEstetica.Platform.Services.Services.Resume;
 
@@ -18,7 +18,7 @@ namespace LeokaEstetica.Platform.Services.Services.Resume;
 /// </summary>
 public class ResumeService : IResumeService
 {
-    private readonly ILogService _logService;
+    private readonly ILogger<ResumeService> _logger;
     private readonly IResumeRepository _resumeRepository;
     private readonly IMapper _mapper;
     private readonly ISubscriptionRepository _subscriptionRepository;
@@ -38,7 +38,7 @@ public class ResumeService : IResumeService
     /// <param name="userRepository">Репозиторий пользователей.</param>
     /// <param name="fillColorResumeService">Сервис выделение цветом резюме пользователей.</param>
     /// <param name="resumeModerationRepository">Репозиторий модерации анкет.</param>
-    public ResumeService(ILogService logService, 
+    public ResumeService(ILogger<ResumeService> logger, 
         IResumeRepository resumeRepository, 
         IMapper mapper, 
         ISubscriptionRepository subscriptionRepository, 
@@ -47,7 +47,7 @@ public class ResumeService : IResumeService
         IFillColorResumeService fillColorResumeService, 
         IResumeModerationRepository resumeModerationRepository)
     {
-        _logService = logService;
+        _logger = logger;
         _resumeRepository = resumeRepository;
         _mapper = mapper;
         _subscriptionRepository = subscriptionRepository;
@@ -92,7 +92,7 @@ public class ResumeService : IResumeService
         
         catch (Exception ex)
         {
-            await _logService.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             throw;
         }
     }
@@ -113,7 +113,7 @@ public class ResumeService : IResumeService
         
         catch (Exception ex)
         {
-            await _logService.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             throw;
         }
     }

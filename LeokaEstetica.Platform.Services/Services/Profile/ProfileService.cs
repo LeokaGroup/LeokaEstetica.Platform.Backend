@@ -1,7 +1,6 @@
 using AutoMapper;
 using LeokaEstetica.Platform.Database.Abstractions.Profile;
 using LeokaEstetica.Platform.Database.Abstractions.User;
-using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Models.Dto.Input.Profile;
 using LeokaEstetica.Platform.Models.Dto.Output.Profile;
 using LeokaEstetica.Platform.Models.Entities.Profile;
@@ -10,6 +9,7 @@ using LeokaEstetica.Platform.Notifications.Consts;
 using LeokaEstetica.Platform.Redis.Abstractions.Profile;
 using LeokaEstetica.Platform.Redis.Models.Profile;
 using LeokaEstetica.Platform.Services.Abstractions.Profile;
+using Microsoft.Extensions.Logging;
 using Items = LeokaEstetica.Platform.Models.Dto.Output.Profile.ProfileItems;
 using ProfileItems = LeokaEstetica.Platform.Redis.Models.Profile.ProfileItems;
 
@@ -20,7 +20,7 @@ namespace LeokaEstetica.Platform.Services.Services.Profile;
 /// </summary>
 public class ProfileService : IProfileService
 {
-    private readonly ILogService _logger;
+    private readonly ILogger<ProfileService> _logger;
     private readonly IProfileRepository _profileRepository;
     private readonly IUserRepository _userRepository;
     private readonly IMapper _mapper;
@@ -36,7 +36,7 @@ public class ProfileService : IProfileService
     /// <param name="mapper">Автомаппер.</param>
     /// <param name="profileRedisService">Сервис кэша.</param>
     /// <param name="notificationsService">Сервис уведомлений.</param>
-    public ProfileService(ILogService logger,
+    public ProfileService(ILogger<ProfileService> logger,
         IProfileRepository profileRepository,
         IUserRepository userRepository,
         IMapper mapper,
@@ -112,7 +112,7 @@ public class ProfileService : IProfileService
 
         catch (Exception ex)
         {
-            await _logger.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             throw;
         }
     }
@@ -137,7 +137,7 @@ public class ProfileService : IProfileService
 
         catch (Exception ex)
         {
-            await _logger.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             throw;
         }
     }
@@ -166,7 +166,7 @@ public class ProfileService : IProfileService
 
         catch (Exception ex)
         {
-            await _logger.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             throw;
         }
     }
@@ -195,7 +195,7 @@ public class ProfileService : IProfileService
 
         catch (Exception ex)
         {
-            await _logger.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             throw;
         }
     }
@@ -254,7 +254,7 @@ public class ProfileService : IProfileService
 
         catch (Exception ex)
         {
-            await _logger.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             throw;
         }
     }
@@ -394,7 +394,7 @@ public class ProfileService : IProfileService
 
         catch (Exception ex)
         {
-            await _logger.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             throw;
         }
     }
@@ -490,7 +490,7 @@ public class ProfileService : IProfileService
 
         catch (Exception ex)
         {
-            await _logger.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             throw;
         }
     }
@@ -524,7 +524,7 @@ public class ProfileService : IProfileService
 
         catch (Exception ex)
         {
-            await _logger.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             throw;
         }
     }
@@ -569,7 +569,7 @@ public class ProfileService : IProfileService
         
         catch (Exception ex)
         {
-            await _logger.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             throw;
         }
     }

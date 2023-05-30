@@ -10,13 +10,13 @@ using LeokaEstetica.Platform.Database.Abstractions.Moderation.Vacancy;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
 using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Database.Abstractions.Vacancy;
-using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Models.Dto.Input.Moderation;
 using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Vacancy;
 using LeokaEstetica.Platform.Models.Entities.Moderation;
 using LeokaEstetica.Platform.Models.Entities.Vacancy;
 using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Notifications.Consts;
+using Microsoft.Extensions.Logging;
 
 namespace LeokaEstetica.Platform.CallCenter.Services.Vacancy;
 
@@ -26,7 +26,7 @@ namespace LeokaEstetica.Platform.CallCenter.Services.Vacancy;
 public class VacancyModerationService : IVacancyModerationService
 {
     private readonly IVacancyModerationRepository _vacancyModerationRepository;
-    private readonly ILogService _logService;
+    private readonly ILogger<VacancyModerationService> _logger;
     private readonly IMapper _mapper;
     private readonly IModerationMailingsService _moderationMailingsService;
     private readonly IVacancyRepository _vacancyRepository;
@@ -38,7 +38,7 @@ public class VacancyModerationService : IVacancyModerationService
     /// Конструктор.
     /// </summary>
     /// <param name="vacancyModerationRepository">Репозиторий модерации вакансий.</param>
-    /// <param name="logService">Сервис логов.</param>
+    /// <param name="logger">Сервис логов.</param>
     /// <param name="mapper">Автомаппер.</param>
     /// <param name="moderationMailingsService">Сервис модерации уведомлений на почту.</param>
     /// <param name="vacancyRepository">Репозиторий вакансий.</param>
@@ -46,7 +46,7 @@ public class VacancyModerationService : IVacancyModerationService
     /// <param name="projectRepository">Репозиторий проектов.</param>
     /// <param name="vacancyModerationNotificationService">Сервис уведомлений модерации вакансий.</param>
     public VacancyModerationService(IVacancyModerationRepository vacancyModerationRepository,
-        ILogService logService, 
+        ILogger<VacancyModerationService> logger, 
         IMapper mapper, 
         IModerationMailingsService moderationMailingsService, 
         IVacancyRepository vacancyRepository, 
@@ -55,7 +55,7 @@ public class VacancyModerationService : IVacancyModerationService
         IVacancyModerationNotificationService vacancyModerationNotificationService)
     {
         _vacancyModerationRepository = vacancyModerationRepository;
-        _logService = logService;
+        _logger = logger;
         _mapper = mapper;
         _moderationMailingsService = moderationMailingsService;
         _vacancyRepository = vacancyRepository;
@@ -92,7 +92,7 @@ public class VacancyModerationService : IVacancyModerationService
 
         catch (Exception ex)
         {
-            await _logService.LogErrorAsync(ex,
+            _logger.LogError(ex,
                 $"Ошибка при получении вакансии для модерации. VacancyId = {vacancyId}");
             throw;
         }
@@ -115,7 +115,7 @@ public class VacancyModerationService : IVacancyModerationService
         
         catch (Exception ex)
         {
-            await _logService.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             throw;
         }
     }
@@ -157,8 +157,7 @@ public class VacancyModerationService : IVacancyModerationService
         
         catch (Exception ex)
         {
-            await _logService.LogErrorAsync(ex,
-                $"Ошибка при одобрении вакансии при модерации. VacancyId = {vacancyId}");
+            _logger.LogError(ex, $"Ошибка при одобрении вакансии при модерации. VacancyId = {vacancyId}");
             throw;
         }
     }
@@ -194,8 +193,7 @@ public class VacancyModerationService : IVacancyModerationService
         
         catch (Exception ex)
         {
-            await _logService.LogErrorAsync(ex,
-                $"Ошибка при отклонении вакансии при модерации. VacancyId = {vacancyId}");
+            _logger.LogError(ex, $"Ошибка при отклонении вакансии при модерации. VacancyId = {vacancyId}");
             throw;
         }
     }
@@ -307,7 +305,7 @@ public class VacancyModerationService : IVacancyModerationService
         
         catch (Exception ex)
         {
-            await _logService.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             throw;
         }
     }
@@ -335,7 +333,7 @@ public class VacancyModerationService : IVacancyModerationService
             {
                 var ex = new InvalidOperationException(RemarkConst.SEND_PROJECT_REMARKS_WARNING +
                                                        $" VacancyId: {vacancyId}");
-                await _logService.LogWarningAsync(ex);
+                _logger.LogWarning(ex, ex.Message);
                 
                 if (!string.IsNullOrEmpty(token))
                 {
@@ -375,7 +373,7 @@ public class VacancyModerationService : IVacancyModerationService
         
         catch (Exception ex)
         {
-            await _logService.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             throw;
         }
     }

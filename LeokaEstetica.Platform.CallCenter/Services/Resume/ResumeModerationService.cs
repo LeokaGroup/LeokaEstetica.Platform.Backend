@@ -6,12 +6,12 @@ using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Resume;
 using LeokaEstetica.Platform.Database.Abstractions.User;
-using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Models.Dto.Input.Moderation;
 using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Resume;
 using LeokaEstetica.Platform.Models.Entities.Moderation;
 using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Notifications.Consts;
+using Microsoft.Extensions.Logging;
 
 namespace LeokaEstetica.Platform.CallCenter.Services.Resume;
 
@@ -20,7 +20,7 @@ namespace LeokaEstetica.Platform.CallCenter.Services.Resume;
 /// </summary>
 public class ResumeModerationService : IResumeModerationService
 {
-    private readonly ILogService _logService;
+    private readonly ILogger<ResumeModerationService> _logger;
     private readonly IResumeModerationRepository _resumeModerationRepository;
     private readonly IMapper _mapper;
     private readonly IUserRepository _userRepository;
@@ -29,17 +29,17 @@ public class ResumeModerationService : IResumeModerationService
     /// <summary>
     /// Конструктор.
     /// </summary>
-    /// <param name="logService">Сервис логера.</param>
+    /// <param name="logger">Сервис логера.</param>
     /// <param name="resumeModerationRepository">Репозиторий анкет.</param>
     /// <param name="mapper">Автомаппер.</param>
     /// <param name="userRepository">Репозиторий пользователя..</param>
-    public ResumeModerationService(ILogService logService, 
+    public ResumeModerationService(ILogger<ResumeModerationService> logger, 
         IResumeModerationRepository resumeModerationRepository, 
         IMapper mapper, 
         IUserRepository userRepository, 
         IResumeModerationNotificationService resumeModerationNotificationService)
     {
-        _logService = logService;
+        _logger = logger;
         _resumeModerationRepository = resumeModerationRepository;
         _mapper = mapper;
         _userRepository = userRepository;
@@ -66,7 +66,7 @@ public class ResumeModerationService : IResumeModerationService
         
         catch (Exception ex)
         {
-            await _logService.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             throw;
         }
     }
@@ -84,7 +84,7 @@ public class ResumeModerationService : IResumeModerationService
         
         catch (Exception ex)
         {
-            await _logService.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             throw;
         }
     }
@@ -102,7 +102,7 @@ public class ResumeModerationService : IResumeModerationService
         
         catch (Exception ex)
         {
-            await _logService.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             throw;
         }
     }
@@ -214,7 +214,7 @@ public class ResumeModerationService : IResumeModerationService
         
         catch (Exception ex)
         {
-            await _logService.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             throw;
         }
     }
@@ -242,7 +242,7 @@ public class ResumeModerationService : IResumeModerationService
             {
                 var ex = new InvalidOperationException(RemarkConst.SEND_PROJECT_REMARKS_WARNING +
                                                        $" ProfileInfoId: {profileInfoId}");
-                await _logService.LogWarningAsync(ex);
+                _logger.LogWarning(ex, ex.Message);
                 
                 if (!string.IsNullOrEmpty(token))
                 {
@@ -268,7 +268,7 @@ public class ResumeModerationService : IResumeModerationService
         
         catch (Exception ex)
         {
-            await _logService.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             throw;
         }
     }

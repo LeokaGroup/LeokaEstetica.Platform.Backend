@@ -1,9 +1,9 @@
 ﻿using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Database.Abstractions.Header;
-using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Models.Entities.Common;
 using LeokaEstetica.Platform.Models.Enums;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace LeokaEstetica.Platform.Database.Repositories.Header;
 
@@ -13,10 +13,10 @@ namespace LeokaEstetica.Platform.Database.Repositories.Header;
 public sealed class HeaderRepository : IHeaderRepository
 {
     private readonly PgContext _pgContext;
-    private readonly ILogService _logger;
-    
+    private readonly ILogger<HeaderRepository> _logger;
+
     public HeaderRepository(PgContext pgContext, 
-        ILogService logger)
+        ILogger<HeaderRepository> logger)
     {
         _pgContext = pgContext;
         _logger = logger;
@@ -41,7 +41,7 @@ public sealed class HeaderRepository : IHeaderRepository
         
         catch (Exception ex)
         {
-            await _logger.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             throw;
         }
     }

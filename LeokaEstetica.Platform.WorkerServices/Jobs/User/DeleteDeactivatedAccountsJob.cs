@@ -1,5 +1,4 @@
 using LeokaEstetica.Platform.Database.Abstractions.User;
-using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Redis.Abstractions.User;
 using LeokaEstetica.Platform.Redis.Consts;
 using LeokaEstetica.Platform.Services.Abstractions.Project;
@@ -13,7 +12,7 @@ namespace LeokaEstetica.Platform.WorkerServices.Jobs.User;
 public class DeleteDeactivatedAccountsJob : BackgroundService
 {
     private Timer _timer;
-    private readonly ILogService _logService;
+    private readonly ILogger<DeleteDeactivatedAccountsJob> _logger;
     private readonly IUserRedisService _userRedisService;
     private readonly IProjectService _projectService;
     private readonly IUserRepository _userRepository;
@@ -21,16 +20,16 @@ public class DeleteDeactivatedAccountsJob : BackgroundService
 
     /// <summary>
     /// Конструктор.
-    /// <param name="Сервис логов."></param>
+    /// <param name="logger">Сервис логов.</param>
     /// <param name="userRedisService">Сервис кэша.</param>
     /// </summary>
-    public DeleteDeactivatedAccountsJob(ILogService logService,
+    public DeleteDeactivatedAccountsJob(ILogger<DeleteDeactivatedAccountsJob> logger,
         IUserRedisService userRedisService,
         IProjectService projectService,
         IUserRepository userRepository, 
         IVacancyService vacancyService)
     {
-        _logService = logService;
+        _logger = logger;
         _userRedisService = userRedisService;
         _projectService = projectService;
         _userRepository = userRepository;
@@ -56,8 +55,7 @@ public class DeleteDeactivatedAccountsJob : BackgroundService
     {
         try
         {
-            await _logService.LogInfoAsync(new ApplicationException(
-                "Начало работы джобы DeleteDeactivatedAccountsJob."));
+            _logger.LogInformation("Начало работы джобы DeleteDeactivatedAccountsJob.");
             
             var deleteUsers = await _userRedisService.GetMarkDeactivateUserAccountsAsync(
                 CacheKeysConsts.DEACTIVATE_USER_ACCOUNTS);
@@ -103,13 +101,13 @@ public class DeleteDeactivatedAccountsJob : BackgroundService
                 // Удаляем все аккаунты.
                 await _userRepository.DeleteDeactivateAccountsAsync(deleteUsers);   
             }
-
-            await _logService.LogInfoAsync(new ApplicationException("Отработала джоба DeleteDeactivatedAccountsJob."));
+            
+            _logger.LogInformation("Отработала джоба DeleteDeactivatedAccountsJob.");
         }
 
         catch (Exception ex)
         {
-            await _logService.LogCriticalAsync(ex, "Ошибка при выполнении фоновой задачи DeleteDeactivatedAccounts.");
+            _logger.LogCritical(ex, "Ошибка при выполнении фоновой задачи DeleteDeactivatedAccounts.");
             throw;
         }
     }

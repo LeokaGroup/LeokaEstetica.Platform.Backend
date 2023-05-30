@@ -4,11 +4,11 @@ using LeokaEstetica.Platform.Finder.Builders;
 using LeokaEstetica.Platform.Finder.Chains;
 using LeokaEstetica.Platform.Finder.Consts;
 using LeokaEstetica.Platform.Finder.Loaders;
-using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Models.Dto.Output.Pagination;
 using LeokaEstetica.Platform.Models.Dto.Output.Project;
 using Lucene.Net.Index;
 using Lucene.Net.Search;
+using Microsoft.Extensions.Logging;
 
 namespace LeokaEstetica.Platform.Finder.Services.Project;
 
@@ -18,13 +18,13 @@ namespace LeokaEstetica.Platform.Finder.Services.Project;
 public class ProjectPaginationService : BaseIndexRamDirectory, IProjectPaginationService
 {
     private readonly IProjectRepository _projectRepository;
-    private readonly ILogService _logService;
+    private readonly ILogger<ProjectPaginationService> _logger;
 
     public ProjectPaginationService(IProjectRepository projectRepository,
-        ILogService logService)
+        ILogger<ProjectPaginationService> logger)
     {
         _projectRepository = projectRepository;
-        _logService = logService;
+        _logger = logger;
     }
     
     /// <summary>
@@ -67,7 +67,7 @@ public class ProjectPaginationService : BaseIndexRamDirectory, IProjectPaginatio
 
         catch (Exception ex)
         {
-            await _logService.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             throw;
         }
     }

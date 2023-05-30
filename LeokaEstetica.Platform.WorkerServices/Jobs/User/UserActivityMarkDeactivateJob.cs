@@ -1,5 +1,4 @@
 using LeokaEstetica.Platform.Database.Abstractions.User;
-using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Messaging.Abstractions.Mail;
 using LeokaEstetica.Platform.Models.Entities.User;
 using LeokaEstetica.Platform.Redis.Abstractions.User;
@@ -14,7 +13,7 @@ public class UserActivityMarkDeactivateJob : BackgroundService
     private Timer _timer;
     private readonly IUserRepository _userRepository;
     private readonly IUserRedisService _userRedisService;
-    private readonly ILogService _logService;
+    private readonly ILogger<UserActivityMarkDeactivateJob> _logger;
     private readonly IMailingsService _mailingsService;
 
     /// <summary>
@@ -22,16 +21,16 @@ public class UserActivityMarkDeactivateJob : BackgroundService
     /// </summary>
     /// <param name="userRepository">Репозиторий пользователя.</param>
     /// <param name="userRedisService">Сервис кэша.</param>
-    /// <param name="logService">Сервис логов.</param>
+    /// <param name="logger">Сервис логов.</param>
     /// <param name="mailingsService">Сервис уведомлений на почту.</param>
     public UserActivityMarkDeactivateJob(IUserRepository userRepository,
         IUserRedisService userRedisService,
-        ILogService logService,
+        ILogger<UserActivityMarkDeactivateJob> logger,
         IMailingsService mailingsService)
     {
         _userRepository = userRepository;
         _userRedisService = userRedisService;
-        _logService = logService;
+        _logger = logger;
         _mailingsService = mailingsService;
     }
 
@@ -54,8 +53,7 @@ public class UserActivityMarkDeactivateJob : BackgroundService
     {
         try
         {
-            await _logService.LogInfoAsync(new ApplicationException(
-                "Начало работы джобы UserActivityMarkDeactivateJob."));
+            _logger.LogInformation("Начало работы джобы UserActivityMarkDeactivateJob.");
             
             var now = DateTime.Now;
             var markedUsers = new List<UserEntity>();
@@ -114,12 +112,12 @@ public class UserActivityMarkDeactivateJob : BackgroundService
             // Записываем в кэш для удаления аккаунтов.
             await _userRedisService.AddMarkDeactivateUserAccountsAsync(deletedUsers);
             
-            await _logService.LogInfoAsync(new ApplicationException("Отработала джоба UserActivityMarkDeactivateJob."));
+            _logger.LogInformation("Отработала джоба UserActivityMarkDeactivateJob.");
         }
 
         catch (Exception ex)
         {
-            await _logService.LogCriticalAsync(ex, "Ошибка при выполнении фоновой задачи UserActivityMarkDeactivate.");
+            _logger.LogCritical(ex, "Ошибка при выполнении фоновой задачи UserActivityMarkDeactivate.");
             throw;
         }
     }

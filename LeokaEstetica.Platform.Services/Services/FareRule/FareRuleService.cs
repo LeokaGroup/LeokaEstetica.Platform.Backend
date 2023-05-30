@@ -1,7 +1,7 @@
 using LeokaEstetica.Platform.Database.Abstractions.FareRule;
-using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Models.Entities.FareRule;
 using LeokaEstetica.Platform.Services.Abstractions.FareRule;
+using Microsoft.Extensions.Logging;
 
 namespace LeokaEstetica.Platform.Services.Services.FareRule;
 
@@ -11,13 +11,13 @@ namespace LeokaEstetica.Platform.Services.Services.FareRule;
 public class FareRuleService : IFareRuleService
 {
     private readonly IFareRuleRepository _fareRuleRepository;
-    private readonly ILogService _logService;
+    private readonly ILogger<FareRuleService> _logger;
     
     public FareRuleService(IFareRuleRepository fareRuleRepository, 
-        ILogService logService)
+        ILogger<FareRuleService> logger)
     {
         _fareRuleRepository = fareRuleRepository;
-        _logService = logService;
+        _logger = logger;
     }
 
     /// <summary>
@@ -35,7 +35,7 @@ public class FareRuleService : IFareRuleService
         
         catch (Exception ex)
         {
-            await _logService.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             throw;
         }
     }

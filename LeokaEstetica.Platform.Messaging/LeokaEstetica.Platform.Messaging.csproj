@@ -10,7 +10,6 @@
       <ProjectReference Include="..\LeokaEstetica.Platform.Access\LeokaEstetica.Platform.Access.csproj" />
       <ProjectReference Include="..\LeokaEstetica.Platform.Core\LeokaEstetica.Platform.Core.csproj" />
       <ProjectReference Include="..\LeokaEstetica.Platform.Database\LeokaEstetica.Platform.Database.csproj" />
-      <ProjectReference Include="..\LeokaEstetica.Platform.Logs\LeokaEstetica.Platform.Logs.csproj" />
       <ProjectReference Include="..\LeokaEstetica.Platform.Notifications\LeokaEstetica.Platform.Notifications.csproj" />
     </ItemGroup>
 

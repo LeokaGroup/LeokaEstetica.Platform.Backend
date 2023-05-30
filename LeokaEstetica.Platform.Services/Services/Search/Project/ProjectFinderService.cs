@@ -1,10 +1,10 @@
 using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.User;
-using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Models.Entities.User;
 using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Notifications.Consts;
 using LeokaEstetica.Platform.Services.Abstractions.Search.Project;
+using Microsoft.Extensions.Logging;
 
 namespace LeokaEstetica.Platform.Services.Services.Search.Project;
 
@@ -13,15 +13,15 @@ namespace LeokaEstetica.Platform.Services.Services.Search.Project;
 /// </summary>
 public sealed class ProjectFinderService : IProjectFinderService
 {
-    private readonly ILogService _logService;
+    private readonly ILogger<ProjectFinderService> _logger;
     private readonly IUserRepository _userRepository;
     private readonly IProjectNotificationsService _projectNotificationsService;
 
-    public ProjectFinderService(ILogService logService,
+    public ProjectFinderService(ILogger<ProjectFinderService> logger,
         IUserRepository userRepository,
         IProjectNotificationsService projectNotificationsService)
     {
-        _logService = logService;
+        _logger = logger;
         _userRepository = userRepository;
         _projectNotificationsService = projectNotificationsService;
     }
@@ -51,8 +51,9 @@ public sealed class ProjectFinderService : IProjectFinderService
                 }
                 
                 var ex = new InvalidOperationException($"Пользователя по поисковому запросу {searchText} не найдено.");
-                await _logService.LogErrorAsync(ex,
-                    $"Ошибка поиска пользователей для приглашения в команду проекта. Поисковая строка была {searchText}");
+                _logger.LogError(ex, "Ошибка поиска пользователей для приглашения в команду проекта. " +
+                                     $"Поисковая строка была {searchText}");
+                
                 await _projectNotificationsService.SendNotificationWarningSearchProjectTeamMemberAsync(
                     "Внимание",
                     $"По запросу \"{searchText}\" не удалось найти пользователей. Попробуйте изменить запрос.",
@@ -65,7 +66,7 @@ public sealed class ProjectFinderService : IProjectFinderService
 
         catch (Exception ex)
         {
-            await _logService.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             throw;
         }
     }

@@ -11,7 +11,6 @@ using LeokaEstetica.Platform.Database.Abstractions.Moderation.Resume;
 using LeokaEstetica.Platform.Database.Abstractions.Profile;
 using LeokaEstetica.Platform.Database.Abstractions.Subscription;
 using LeokaEstetica.Platform.Database.Abstractions.User;
-using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Messaging.Abstractions.Mail;
 using LeokaEstetica.Platform.Models.Dto.Input.User;
 using LeokaEstetica.Platform.Models.Dto.Output.User;
@@ -19,6 +18,7 @@ using LeokaEstetica.Platform.Models.Entities.User;
 using LeokaEstetica.Platform.Redis.Abstractions.User;
 using LeokaEstetica.Platform.Services.Abstractions.User;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using ValidationFailure = FluentValidation.Results.ValidationFailure;
 
@@ -29,7 +29,7 @@ namespace LeokaEstetica.Platform.Services.Services.User;
 /// </summary>
 public class UserService : IUserService
 {
-    private readonly ILogService _logger;
+    private readonly ILogger<UserService> _logger;
     private readonly IUserRepository _userRepository;
     private readonly IMapper _mapper;
     private readonly IMailingsService _mailingsService;
@@ -51,7 +51,7 @@ public class UserService : IUserService
     /// <param name="profileRepository">Репозиторий профиля.</param>
     /// <param name="profileRepository">Репозиторий подписок.</param>
     /// <param name="resumeModerationRepository">Репозиторий модерации анкет.</param>
-    public UserService(ILogService logger, 
+    public UserService(ILogger<UserService> logger, 
         IUserRepository userRepository, 
         IMapper mapper, 
         IMailingsService mailingsService, 
@@ -142,7 +142,7 @@ public class UserService : IUserService
         catch (Exception ex)
         {
             await tran.RollbackAsync();
-            await _logger.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             throw;
         }
     }
@@ -229,7 +229,7 @@ public class UserService : IUserService
             {
                 new() { ErrorMessage = "Id пользователя был <= 0!" }
             };
-            _logger.LogCritical(ex);
+            _logger.LogCritical(ex, ex.Message);
         }
     }
     
@@ -249,7 +249,7 @@ public class UserService : IUserService
         
         catch (Exception ex)
         {
-            await _logger.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             throw;
         }
     }
@@ -317,7 +317,7 @@ public class UserService : IUserService
         
         catch (Exception ex)
         {
-            await _logger.LogCriticalAsync(ex);
+            _logger.LogCritical(ex, ex.Message);
             throw;
         }
     }
@@ -406,7 +406,7 @@ public class UserService : IUserService
         
         catch (Exception ex)
         {
-            await _logger.LogCriticalAsync(ex);
+            _logger.LogCritical(ex, ex.Message);
             throw;
         }
     }
@@ -479,7 +479,7 @@ public class UserService : IUserService
         
         catch (Exception ex)
         {
-            await _logger.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             throw;
         }
     }
@@ -563,7 +563,7 @@ public class UserService : IUserService
         
         catch (Exception ex)
         {
-            await _logger.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             throw;
         }
     }
@@ -598,7 +598,7 @@ public class UserService : IUserService
 
             var logError = new InvalidOperationException(
                 $"Пользователь заблокирован и пытался пройти авторизацию. Пользователь: {availableBlockedText}");
-            await _logger.LogErrorAsync(logError);
+            _logger.LogError(logError, logError.Message);
 
             throw new InvalidOperationException(
                 "Пользователь заблокирован. Причины блокировки можно узнать у тех.поддержки.");

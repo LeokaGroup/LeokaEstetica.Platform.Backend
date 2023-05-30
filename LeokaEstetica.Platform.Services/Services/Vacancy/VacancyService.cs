@@ -7,7 +7,6 @@ using LeokaEstetica.Platform.Database.Abstractions.Subscription;
 using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Database.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Finder.Chains.Vacancy;
-using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Messaging.Abstractions.Mail;
 using LeokaEstetica.Platform.Models.Dto.Input.Vacancy;
 using LeokaEstetica.Platform.Models.Dto.Output.Configs;
@@ -24,6 +23,7 @@ using VacancyItems = LeokaEstetica.Platform.Redis.Models.Vacancy.VacancyItems;
 using LeokaEstetica.Platform.Base.Extensions.HtmlExtensions;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Vacancy;
 using LeokaEstetica.Platform.Models.Entities.Moderation;
+using Microsoft.Extensions.Logging;
 
 namespace LeokaEstetica.Platform.Services.Services.Vacancy;
 
@@ -32,7 +32,7 @@ namespace LeokaEstetica.Platform.Services.Services.Vacancy;
 /// </summary>
 public class VacancyService : IVacancyService
 {
-    private readonly ILogService _logService;
+    private readonly ILogger<VacancyService> _logger;
     private readonly IVacancyRepository _vacancyRepository;
     private readonly IMapper _mapper;
     private readonly IVacancyRedisService _vacancyRedisService;
@@ -89,13 +89,13 @@ public class VacancyService : IVacancyService
     /// <summary>
     /// Конструктор.
     /// </summary>
-    /// <param name="logService">Сервис логера.</param>
+    /// <param name="logger">Сервис логера.</param>
     /// <param name="vacancyRepository">Репозиторий вакансий.</param>
     /// <param name="mapper">Автомаппер.</param>
     /// <param name="vacancyRedisService">Сервис вакансий кэша.</param>
     /// <param name="userRepository">Репозиторий пользователя.</param>
     /// <param name="vacancyModerationService">Сервис модерации вакансий.</param>
-    public VacancyService(ILogService logService,
+    public VacancyService(ILogger<VacancyService> logger,
         IVacancyRepository vacancyRepository,
         IMapper mapper,
         IVacancyRedisService vacancyRedisService,
@@ -110,7 +110,7 @@ public class VacancyService : IVacancyService
         IMailingsService mailingsService, 
         IVacancyModerationRepository vacancyModerationRepository)
     {
-        _logService = logService;
+        _logger = logger;
         _vacancyRepository = vacancyRepository;
         _mapper = mapper;
         _vacancyRedisService = vacancyRedisService;
@@ -163,7 +163,7 @@ public class VacancyService : IVacancyService
 
         catch (Exception ex)
         {
-            await _logService.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             throw;
         }
     }
@@ -242,7 +242,7 @@ public class VacancyService : IVacancyService
                 "А пока, попробуйте еще раз.",
                 NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, vacancyInput.Token);
             
-            await _logService.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             throw;
         }
     }
@@ -278,7 +278,7 @@ public class VacancyService : IVacancyService
 
         catch (Exception ex)
         {
-            await _logService.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             throw;
         }
     }
@@ -306,7 +306,7 @@ public class VacancyService : IVacancyService
 
         catch (Exception ex)
         {
-            await _logService.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             throw;
         }
     }
@@ -344,7 +344,7 @@ public class VacancyService : IVacancyService
 
         catch (Exception ex)
         {
-            await _logService.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             throw;
         }
     }
@@ -384,7 +384,7 @@ public class VacancyService : IVacancyService
 
         catch (Exception ex)
         {
-            await _logService.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             throw;
         }
     }
@@ -412,7 +412,7 @@ public class VacancyService : IVacancyService
 
         catch (Exception ex)
         {
-            await _logService.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             throw;
         }
     }
@@ -485,7 +485,7 @@ public class VacancyService : IVacancyService
         
         catch (Exception ex)
         {
-            await _logService.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             throw;
         }
     }
@@ -532,7 +532,7 @@ public class VacancyService : IVacancyService
         
         catch (Exception ex)
         {
-            await _logService.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             throw;
         }
     }
@@ -577,7 +577,7 @@ public class VacancyService : IVacancyService
 
         catch (Exception ex)
         {
-            await _logService.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             throw;
         }
     }
@@ -621,7 +621,7 @@ public class VacancyService : IVacancyService
         
         catch (Exception ex)
         {
-            await _logService.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             throw;
         }
     }

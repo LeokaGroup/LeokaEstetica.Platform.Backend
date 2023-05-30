@@ -7,7 +7,6 @@ using LeokaEstetica.Platform.Base.Models.Input.Processing;
 using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.Commerce;
 using LeokaEstetica.Platform.Database.Abstractions.User;
-using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Messaging.Abstractions.RabbitMq;
 using LeokaEstetica.Platform.Models.Dto.Base.Commerce.PayMaster;
 using LeokaEstetica.Platform.Models.Dto.Common.Cache;
@@ -21,6 +20,7 @@ using LeokaEstetica.Platform.Processing.Enums;
 using LeokaEstetica.Platform.Processing.Models.Output;
 using LeokaEstetica.Platform.Redis.Abstractions.Commerce;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
 namespace LeokaEstetica.Platform.Processing.Services.PayMaster;
@@ -30,7 +30,7 @@ namespace LeokaEstetica.Platform.Processing.Services.PayMaster;
 /// </summary>
 public class PayMasterService : IPayMasterService
 {
-    private readonly ILogService _logService;
+    private readonly ILogger<PayMasterService> _logger;
     private readonly IConfiguration _configuration;
     private readonly IUserRepository _userRepository;
     private readonly ICommerceRepository _commerceRepository;
@@ -42,7 +42,7 @@ public class PayMasterService : IPayMasterService
     /// <summary>
     /// Конструктор.
     /// </summary>
-    /// <param name="logService">Сервис логера.</param>
+    /// <param name="logger">Сервис логера.</param>
     /// <param name="configuration">Конфигурация внедренная через DI.</param>
     /// <param name="userRepository">Репозиторий пользователя.</param>
     /// <param name="commerceRepository">Репозиторий коммерции.</param>
@@ -50,7 +50,7 @@ public class PayMasterService : IPayMasterService
     /// <param name="accessUserNotificationsService">Сервис уведомлений доступа пользователя.</param>
     /// <param name="commerceRedisService">Сервис кэша коммерции.</param>
     /// <param name="rabbitMqService">Сервис кролика.</param>
-    public PayMasterService(ILogService logService,
+    public PayMasterService(ILogger<PayMasterService> logger,
         IConfiguration configuration,
         IUserRepository userRepository,
         ICommerceRepository commerceRepository, 
@@ -59,7 +59,7 @@ public class PayMasterService : IPayMasterService
         ICommerceRedisService commerceRedisService, 
         IRabbitMqService rabbitMqService)
     {
-        _logService = logService;
+        _logger = logger;
         _configuration = configuration;
         _userRepository = userRepository;
         _commerceRepository = commerceRepository;
@@ -107,7 +107,7 @@ public class PayMasterService : IPayMasterService
             var createOrderInput = await CreateOrderRequestAsync(orderCache.FareRuleName, orderCache.Price,
                 orderCache.RuleId, publicId, orderCache.Month);
 
-            await _logService.LogInfoAsync(new ApplicationException("Начало создания заказа."));
+            _logger.LogInformation("Начало создания заказа.");
 
             using var httpClient = new HttpClient();
             await SetPayMasterRequestAuthorizationHeader(httpClient);
@@ -137,15 +137,15 @@ public class PayMasterService : IPayMasterService
 
             var result = await CreatePaymentOrderResultAsync(order, orderCache, createOrderInput, userId, httpClient);
 
-            await _logService.LogInfoAsync(new ApplicationException("Конец создания заказа."));
-            await _logService.LogInfoAsync(new ApplicationException("Создание заказа успешно."));
+            _logger.LogInformation("Конец создания заказа.");
+            _logger.LogInformation("Создание заказа успешно.");
 
             return result;
         }
 
         catch (Exception ex)
         {
-            await _logService.LogCriticalAsync(ex);
+            _logger.LogCritical(ex, ex.Message);
             throw;
         }
     }
@@ -159,7 +159,7 @@ public class PayMasterService : IPayMasterService
     {
         try
         {
-            await _logService.LogInfoAsync(new ApplicationException($"Начало проверки статуса заказа {paymentId}."));
+            _logger.LogInformation($"Начало проверки статуса заказа {paymentId}.");
             
             await SetPayMasterRequestAuthorizationHeader(httpClient);
             
@@ -200,7 +200,7 @@ public class PayMasterService : IPayMasterService
         
         catch (Exception ex)
         {
-            await _logService.LogCriticalAsync(ex);
+            _logger.LogCritical(ex, ex.Message);
             throw;
         }
     }

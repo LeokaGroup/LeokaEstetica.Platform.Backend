@@ -4,11 +4,11 @@ using LeokaEstetica.Platform.Finder.Builders;
 using LeokaEstetica.Platform.Finder.Chains;
 using LeokaEstetica.Platform.Finder.Consts;
 using LeokaEstetica.Platform.Finder.Loaders;
-using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Models.Dto.Output.Pagination;
 using LeokaEstetica.Platform.Models.Dto.Output.Resume;
 using Lucene.Net.Index;
 using Lucene.Net.Search;
+using Microsoft.Extensions.Logging;
 
 namespace LeokaEstetica.Platform.Finder.Services.Resume;
 
@@ -18,13 +18,13 @@ namespace LeokaEstetica.Platform.Finder.Services.Resume;
 public class ResumePaginationService : BaseIndexRamDirectory, IResumePaginationService
 {
     private readonly IResumeRepository _resumeRepository;
-    private readonly ILogService _logService;
+    private readonly ILogger<ResumePaginationService> _logger;
 
     public ResumePaginationService(IResumeRepository resumeRepository,
-        ILogService logService)
+        ILogger<ResumePaginationService> logger)
     {
         _resumeRepository = resumeRepository;
-        _logService = logService;
+        _logger = logger;
     }
     
     /// <summary>
@@ -65,7 +65,7 @@ public class ResumePaginationService : BaseIndexRamDirectory, IResumePaginationS
 
         catch (Exception ex)
         {
-            await _logService.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             throw;
         }
     }

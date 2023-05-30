@@ -2,7 +2,7 @@ using LeokaEstetica.Platform.Access.Abstractions.AvailableLimits;
 using LeokaEstetica.Platform.Access.Enums;
 using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.AvailableLimits;
-using LeokaEstetica.Platform.Logs.Abstractions;
+using Microsoft.Extensions.Logging;
 
 namespace LeokaEstetica.Platform.Access.Services.AvailableLimits;
 
@@ -11,7 +11,7 @@ namespace LeokaEstetica.Platform.Access.Services.AvailableLimits;
 /// </summary>
 public class AvailableLimitsService : IAvailableLimitsService
 {
-    private readonly ILogService _logService;
+    private readonly ILogger<AvailableLimitsService> _logger;
     private readonly IAvailableLimitsRepository _availableLimitsRepository;
     
     private const int AVAILABLE_PROJECT_START_COUNT = 4; // Кол-во у тарифа старта.
@@ -25,11 +25,12 @@ public class AvailableLimitsService : IAvailableLimitsService
     /// <summary>
     /// Конструктор.
     /// </summary>
-    /// <param name="logService">Сервис логера.</param>
-    public AvailableLimitsService(ILogService logService, 
+    /// <param name="logger">Сервис логера.</param>
+    /// <param name="availableLimitsRepository">Репозиторий лимитов.</param>
+    public AvailableLimitsService(ILogger<AvailableLimitsService> logger, 
         IAvailableLimitsRepository availableLimitsRepository)
     {
-        _logService = logService;
+        _logger = logger;
         _availableLimitsRepository = availableLimitsRepository;
     }
 
@@ -70,7 +71,7 @@ public class AvailableLimitsService : IAvailableLimitsService
 
         catch (Exception ex)
         {
-            await _logService.LogErrorAsync(ex, $"Ошибка проверки лимитов проектов пользователя. UserId был {userId}");
+            _logger.LogError(ex, $"Ошибка проверки лимитов проектов пользователя. UserId был {userId}");
             throw;
         }
     }
@@ -112,7 +113,7 @@ public class AvailableLimitsService : IAvailableLimitsService
         
         catch (Exception ex)
         {
-            await _logService.LogErrorAsync(ex, $"Ошибка проверки лимитов вакансий пользователя. UserId был {userId}");
+            _logger.LogError(ex, $"Ошибка проверки лимитов вакансий пользователя. UserId был {userId}");
             throw;
         }
     }

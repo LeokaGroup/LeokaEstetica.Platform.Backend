@@ -4,11 +4,11 @@ using LeokaEstetica.Platform.Finder.Builders;
 using LeokaEstetica.Platform.Finder.Chains;
 using LeokaEstetica.Platform.Finder.Consts;
 using LeokaEstetica.Platform.Finder.Loaders;
-using LeokaEstetica.Platform.Logs.Abstractions;
 using LeokaEstetica.Platform.Models.Dto.Output.Resume;
 using Lucene.Net.Index;
 using Lucene.Net.QueryParsers;
 using Lucene.Net.Search;
+using Microsoft.Extensions.Logging;
 
 namespace LeokaEstetica.Platform.Finder.Services.Resume;
 
@@ -17,13 +17,13 @@ namespace LeokaEstetica.Platform.Finder.Services.Resume;
 /// </summary>
 public class ResumeFinderService : BaseIndexRamDirectory, IResumeFinderService
 {
-    private readonly ILogService _logService;
+    private readonly ILogger<ResumeFinderService> _logger;
     private readonly IResumeRepository _resumeRepository;
     
-    public ResumeFinderService(ILogService logService, 
+    public ResumeFinderService(ILogger<ResumeFinderService> logger, 
         IResumeRepository resumeRepository)
     {
-        _logService = logService;
+        _logger = logger;
         _resumeRepository = resumeRepository;
     }
 
@@ -57,7 +57,7 @@ public class ResumeFinderService : BaseIndexRamDirectory, IResumeFinderService
         
         catch (Exception ex)
         {
-            await _logService.LogErrorAsync(ex);
+            _logger.LogError(ex, ex.Message);
             throw;
         }
     }

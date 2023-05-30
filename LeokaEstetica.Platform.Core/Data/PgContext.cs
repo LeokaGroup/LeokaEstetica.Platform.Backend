@@ -7,7 +7,6 @@ using LeokaEstetica.Platform.Models.Entities.Configs;
 using LeokaEstetica.Platform.Models.Entities.FareRule;
 using LeokaEstetica.Platform.Models.Entities.Knowlege;
 using LeokaEstetica.Platform.Models.Entities.Landing;
-using LeokaEstetica.Platform.Models.Entities.Logs;
 using LeokaEstetica.Platform.Models.Entities.Moderation;
 using LeokaEstetica.Platform.Models.Entities.Notification;
 using LeokaEstetica.Platform.Models.Entities.Profile;
@@ -44,11 +43,6 @@ public class PgContext : DbContext
     /// Таблица фона.
     /// </summary>
     public DbSet<FonEntity> Fons { get; set; }
-
-    /// <summary>
-    /// Таблица логов.
-    /// </summary>
-    public DbSet<LogInfoEntity> LogInfos { get; set; }
 
     /// <summary>
     /// Таблица хидера.
