@@ -3,6 +3,7 @@ using LeokaEstetica.Platform.Base;
 using LeokaEstetica.Platform.Controllers.Filters;
 using LeokaEstetica.Platform.Models.Dto.Output.Orders;
 using LeokaEstetica.Platform.Services.Abstractions.Orders;
+using LeokaEstetica.Platform.Services.Builders;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LeokaEstetica.Platform.Controllers.Orders;
@@ -44,14 +45,21 @@ public class OrdersController : BaseController
     public async Task<GetOrderResult> GetUserOrdersAsync()
     {
         var result = new GetOrderResult { Orders = new List<OrderOutput>() };
-        var orders = await _ordersService.GetUserOrdersAsync(GetUserName());
+        var items = await _ordersService.GetUserOrdersAsync(GetUserName());
 
-        if (orders is null || !orders.Any())
+        if (items is null)
+        {
+            return result;
+        }
+        
+        var orders = items.ToList();
+        
+        if (!orders.Any())
         {
             return result;
         }
 
-        result.Orders = _mapper.Map<IEnumerable<OrderOutput>>(orders);
+        result.Orders = CreateUserOrdersBuilder.Create(orders, _mapper);
 
         return result;
     }

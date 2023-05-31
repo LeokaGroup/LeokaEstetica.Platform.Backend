@@ -23,7 +23,7 @@ public class OrderOutput
     /// <summary>
     /// Дата создания заказа.
     /// </summary>
-    public DateTime DateCreated { get; set; }
+    public string DateCreated { get; set; }
 
     /// <summary>
     /// Статус заказа.

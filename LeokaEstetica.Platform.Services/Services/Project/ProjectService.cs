@@ -362,7 +362,6 @@ public class ProjectService : IProjectService
             var result = new CatalogProjectResultOutput { CatalogProjects = new List<CatalogProjectOutput>() };
             var catalogs = catalogProjects.ToList();
 
-
             if (!catalogs.Any())
             {
                 return result;
