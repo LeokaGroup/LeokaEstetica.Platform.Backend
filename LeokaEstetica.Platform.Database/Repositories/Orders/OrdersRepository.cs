@@ -39,6 +39,7 @@ public class OrdersRepository : IOrdersRepository
                 DateCreated = o.DateCreated,
                 StatusName = o.StatusName
             })
+            .OrderByDescending(o => o.DateCreated)
             .ToListAsync();
 
         return result;
