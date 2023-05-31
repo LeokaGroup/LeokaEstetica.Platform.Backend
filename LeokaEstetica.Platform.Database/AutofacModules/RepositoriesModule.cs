@@ -11,6 +11,7 @@ using LeokaEstetica.Platform.Database.Abstractions.Moderation.Project;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Resume;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Vacancy;
 using LeokaEstetica.Platform.Database.Abstractions.Notification;
+using LeokaEstetica.Platform.Database.Abstractions.Orders;
 using LeokaEstetica.Platform.Database.Abstractions.Profile;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
 using LeokaEstetica.Platform.Database.Abstractions.Resume;
@@ -32,6 +33,7 @@ using LeokaEstetica.Platform.Database.Repositories.Moderation.Project;
 using LeokaEstetica.Platform.Database.Repositories.Moderation.Resume;
 using LeokaEstetica.Platform.Database.Repositories.Moderation.Vacancy;
 using LeokaEstetica.Platform.Database.Repositories.Notification;
+using LeokaEstetica.Platform.Database.Repositories.Orders;
 using LeokaEstetica.Platform.Database.Repositories.Profile;
 using LeokaEstetica.Platform.Database.Repositories.Project;
 using LeokaEstetica.Platform.Database.Repositories.Resume;
@@ -254,6 +256,16 @@ public class RepositoriesModule : Module
         builder
             .RegisterType<GlobalConfigRepository>()
             .As<IGlobalConfigRepository>()
+            .InstancePerLifetimeScope();
+        
+        // Репозиторий заказов пользователя.
+        builder
+            .RegisterType<OrdersRepository>()
+            .Named<IOrdersRepository>("OrdersRepository")
+            .InstancePerLifetimeScope();
+        builder
+            .RegisterType<OrdersRepository>()
+            .As<IOrdersRepository>()
             .InstancePerLifetimeScope();
     }
 }

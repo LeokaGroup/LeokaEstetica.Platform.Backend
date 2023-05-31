@@ -12,6 +12,7 @@ using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Project;
 using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Resume;
 using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Vacancy;
 using LeokaEstetica.Platform.Models.Dto.Output.Notification;
+using LeokaEstetica.Platform.Models.Dto.Output.Orders;
 using LeokaEstetica.Platform.Models.Dto.Output.Profile;
 using LeokaEstetica.Platform.Models.Dto.Output.Project;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectTeam;
@@ -153,5 +154,7 @@ public class MappingProfile : Profile
                 e => e.MapFrom(src => src.FirstName + " " + src.LastName + " " + src.Patronymic));
         
         CreateMap<CreateOrderCache, OrderCacheOutput>();
+        
+        CreateMap<OrderEntity, OrderOutput>();
     }
 }
