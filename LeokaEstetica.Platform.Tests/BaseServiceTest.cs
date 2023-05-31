@@ -20,6 +20,7 @@ using LeokaEstetica.Platform.Database.Repositories.Moderation.Project;
 using LeokaEstetica.Platform.Database.Repositories.Moderation.Resume;
 using LeokaEstetica.Platform.Database.Repositories.Moderation.Vacancy;
 using LeokaEstetica.Platform.Database.Repositories.Notification;
+using LeokaEstetica.Platform.Database.Repositories.Orders;
 using LeokaEstetica.Platform.Database.Repositories.Profile;
 using LeokaEstetica.Platform.Database.Repositories.Project;
 using LeokaEstetica.Platform.Database.Repositories.Resume;
@@ -40,6 +41,7 @@ using LeokaEstetica.Platform.Redis.Services.User;
 using LeokaEstetica.Platform.Services.Services.FareRule;
 using LeokaEstetica.Platform.Services.Services.Knowledge;
 using LeokaEstetica.Platform.Services.Services.Landing;
+using LeokaEstetica.Platform.Services.Services.Orders;
 using LeokaEstetica.Platform.Services.Services.Profile;
 using LeokaEstetica.Platform.Services.Services.Project;
 using LeokaEstetica.Platform.Services.Services.Resume;
@@ -88,6 +90,7 @@ public class BaseServiceTest
     protected readonly PgContext PgContext;
     protected readonly ProjectModerationRepository ProjectModerationRepository;
     protected readonly CommerceService CommerceService;
+    protected readonly OrdersService OrdersService;
 
     protected BaseServiceTest()
     {
@@ -204,5 +207,8 @@ public class BaseServiceTest
         
         CommerceService = new CommerceService(commerceRedisService, null, userRepository, fareRuleRepository,
             commerceRepository);
+
+        var ordersRepository = new OrdersRepository(pgContext);
+        OrdersService = new OrdersService(null, ordersRepository, userRepository);
     }
 }
