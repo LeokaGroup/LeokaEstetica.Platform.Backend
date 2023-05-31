@@ -98,7 +98,7 @@ public class OrdersJob : BackgroundService
                     {
                         var orderId = orderEvent.OrderId;
                         var updatedOrderStatus = await _commerceRepository.UpdateOrderStatusAsync(
-                            newOrderStatus.GetEnumDescription(), newOrderStatus.ToString(), paymentId, orderId);
+                            newOrderStatus.ToString(), newOrderStatus.GetEnumDescription(), paymentId, orderId);
 
                         if (!updatedOrderStatus)
                         {
