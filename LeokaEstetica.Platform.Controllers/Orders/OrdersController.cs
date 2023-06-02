@@ -65,7 +65,7 @@ public class OrdersController : BaseController
             return result;
         }
 
-        result.Orders = CreateUserOrdersBuilder.Create(orders, _mapper);
+        result.Orders = UserOrdersBuilder.CreateUserOrdersResult(orders, _mapper);
 
         return result;
     }
@@ -113,15 +113,16 @@ public class OrdersController : BaseController
     [ProducesResponseType(404)]
     public async Task<HistoryResult> GetHistoryAsync()
     {
-        var transactions = await _ordersService.GetHistoryAsync(GetUserName());
+        var items = await _ordersService.GetHistoryAsync(GetUserName());
         var result = new HistoryResult { Histories = new List<HistoryOutput>() };
+        var transactions = items.ToList();
 
         if (!transactions.Any())
         {
             return result;
         }
 
-        result.Histories = _mapper.Map<IEnumerable<HistoryOutput>>(transactions);
+        result.Histories = UserOrdersBuilder.CreateHistoryResult(transactions, _mapper);
 
         return result;
     }

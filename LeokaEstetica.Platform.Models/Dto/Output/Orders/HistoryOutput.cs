@@ -13,7 +13,7 @@ public class HistoryOutput
     /// <summary>
     /// Дата транзакции.
     /// </summary>
-    public DateTime DateCreated { get; set; }
+    public string DateCreated { get; set; }
 
     /// <summary>
     /// Текст события.
