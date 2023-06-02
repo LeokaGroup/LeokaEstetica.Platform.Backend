@@ -76,7 +76,7 @@ public class OrdersController : BaseController
     /// <param name="orderId"></param>
     /// <returns>Детали заказа.</returns>
     [HttpGet]
-    [Route("{orderId}")]
+    [Route("details")]
     [ProducesResponseType(200, Type = typeof(OrderOutput))]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]
