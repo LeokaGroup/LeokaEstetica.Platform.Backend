@@ -31,6 +31,8 @@ public class OrdersService : IOrdersService
         _userRepository = userRepository;
     }
 
+    #region Публичные методы.
+
     /// <summary>
     /// Метод получает список заказов пользователя.
     /// </summary>
@@ -59,4 +61,48 @@ public class OrdersService : IOrdersService
             throw;
         }
     }
+
+    /// <summary>
+    /// Метод получает детали заказа по его Id.
+    /// </summary>
+    /// <param name="orderId">Id заказа.</param>
+    /// <param name="account">Аккаунт.</param>
+    /// <returns>Детали заказа.</returns>
+    public async Task<OrderEntity> GetOrderDetailsAsync(long orderId, string account)
+    {
+        try
+        {
+            var userId = await _userRepository.GetUserIdByEmailAsync(account);
+            
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+
+            var result = await _ordersRepository.GetOrderDetailsAsync(orderId, userId);
+
+            if (result is null)
+            {
+                var ex = new InvalidOperationException($"Не удалось получить детали заказа. Id заказа: {orderId}");
+                throw ex;
+            }
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
+    #endregion
+
+    #region Приватные методы.
+
+    
+
+    #endregion
 }
