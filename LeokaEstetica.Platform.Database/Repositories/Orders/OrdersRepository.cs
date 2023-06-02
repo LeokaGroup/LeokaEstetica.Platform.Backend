@@ -44,4 +44,18 @@ public class OrdersRepository : IOrdersRepository
 
         return result;
     }
+
+    /// <summary>
+    /// Метод получает детали заказа по его Id.
+    /// </summary>
+    /// <param name="orderId">Id заказа.</param>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Детали заказа.</returns>
+    public async Task<OrderEntity> GetOrderDetailsAsync(long orderId, long userId)
+    {
+        var result = await _pgContext.Orders.FirstOrDefaultAsync(o => o.OrderId == orderId
+                                                                      && o.UserId == userId);
+
+        return result;
+    }
 }
