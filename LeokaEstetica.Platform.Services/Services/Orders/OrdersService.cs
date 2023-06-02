@@ -98,6 +98,35 @@ public class OrdersService : IOrdersService
         }
     }
 
+    /// <summary>
+    /// Метод получает список транзакций по заказам пользователя.
+    /// </summary>
+    /// <param name="account">Аккаунт.</param>
+    /// <returns>Список транзакций.</returns>
+    public async Task<IEnumerable<HistoryEntity>> GetHistoryAsync(string account)
+    {
+        try
+        {
+            var userId = await _userRepository.GetUserIdByEmailAsync(account);
+            
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+
+            var result = await _ordersRepository.GetHistoryAsync(userId);
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
     #endregion
 
     #region Приватные методы.

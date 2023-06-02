@@ -156,5 +156,7 @@ public class MappingProfile : Profile
         CreateMap<CreateOrderCache, OrderCacheOutput>();
         
         CreateMap<OrderEntity, OrderOutput>();
+        
+        CreateMap<HistoryEntity, HistoryOutput>();
     }
 }

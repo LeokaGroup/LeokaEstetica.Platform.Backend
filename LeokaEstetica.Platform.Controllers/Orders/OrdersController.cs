@@ -99,4 +99,30 @@ public class OrdersController : BaseController
 
         return result;
     }
+
+    /// <summary>
+    /// Метод получает список транзакций по заказам пользователя.
+    /// </summary>
+    /// <returns>Список транзакций.</returns>
+    [HttpGet]
+    [Route("history")]
+    [ProducesResponseType(200, Type = typeof(HistoryResult))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<HistoryResult> GetHistoryAsync()
+    {
+        var transactions = await _ordersService.GetHistoryAsync(GetUserName());
+        var result = new HistoryResult { Histories = new List<HistoryOutput>() };
+
+        if (!transactions.Any())
+        {
+            return result;
+        }
+
+        result.Histories = _mapper.Map<IEnumerable<HistoryOutput>>(transactions);
+
+        return result;
+    }
 }
