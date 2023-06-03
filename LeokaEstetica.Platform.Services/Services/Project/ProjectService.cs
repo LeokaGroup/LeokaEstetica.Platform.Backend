@@ -458,7 +458,7 @@ public class ProjectService : IProjectService
 
             if (prj.UserProject is null)
             {
-                var ex = new InvalidOperationException(
+                var ex = new InvalidOperationException( 
                     $"Не удалось найти проект с ProjectId {projectId} и UserId {userId}");
                 throw ex;
             }

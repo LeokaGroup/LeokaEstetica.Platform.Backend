@@ -77,4 +77,14 @@ public class ProjectOutput : IFrontError
     /// Признак видимости кнопки покидания проекта.
     /// </summary>
     public bool IsVisibleActionLeaveProjectTeam { get; set; }
+    
+    /// <summary>
+    /// Условия проекта.
+    /// </summary>
+    public string Conditions { get; set; }
+
+    /// <summary>
+    /// Требования проекта.
+    /// </summary>
+    public string Demands { get; set; }
 }

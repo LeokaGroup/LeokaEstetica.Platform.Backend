@@ -9,7 +9,7 @@ public class GetProjectTest : BaseServiceTest
     [Test]
     public async Task GetProjectAsyncTest()
     {
-        var result = await ProjectService.GetProjectAsync(10, ModeEnum.Edit, "sierra_93@mail.ru");
+        var result = await ProjectService.GetProjectAsync(260, ModeEnum.Edit, "sierra_93@mail.ru");
         
         Assert.IsNotNull(result);
         Assert.Positive(result.ProjectId);
