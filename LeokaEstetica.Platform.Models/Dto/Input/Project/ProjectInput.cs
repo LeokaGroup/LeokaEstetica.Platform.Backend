@@ -29,4 +29,14 @@ public class ProjectInput
     /// Стадия проекта.
     /// </summary>
     public string ProjectStage { get; set; }
+
+    /// <summary>
+    /// Условия.
+    /// </summary>
+    public string Conditions { get; set; }
+
+    /// <summary>
+    /// Требования.
+    /// </summary>
+    public string Demands { get; set; }
 }

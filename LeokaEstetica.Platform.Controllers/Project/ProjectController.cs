@@ -109,7 +109,8 @@ public class ProjectController : BaseController
 
         var project = await _projectService.CreateProjectAsync(createProjectInput.ProjectName,
             createProjectInput.ProjectDetails, GetUserName(),
-            Enum.Parse<ProjectStageEnum>(createProjectInput.ProjectStage), CreateTokenFromHeader());
+            Enum.Parse<ProjectStageEnum>(createProjectInput.ProjectStage), CreateTokenFromHeader(),
+            createProjectInput.Conditions, createProjectInput.Demands);
         
         result = _mapper.Map<CreateProjectOutput>(project);
 

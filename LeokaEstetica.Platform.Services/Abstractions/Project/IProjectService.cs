@@ -25,9 +25,11 @@ public interface IProjectService
     /// <param name="projectDetails">Описание проекта.</param>
     /// <param name="account">Аккаунт пользователя.</param>
     /// <param name="projectStage">Стадия проекта.</param>
+    /// <param name="demands">Требования проекта.</param>
+    /// <param name="conditions">Условия проекта.</param>
     /// <returns>Данные нового проекта.</returns>
     Task<UserProjectEntity> CreateProjectAsync(string projectName, string projectDetails, string account,
-        ProjectStageEnum projectStage, string token);
+        ProjectStageEnum projectStage, string token, string demands, string conditions);
 
     /// <summary>
     /// Метод получает названия полей для таблицы проектов пользователя.

@@ -54,9 +54,11 @@ public class ProjectRepository : IProjectRepository
     /// <param name="statusSysName">Системное название статуса.</param>
     /// <param name="statusName">Русское название статуса.</param>
     /// <param name="projectStage">Стадия проекта.</param>
+    /// <param name="demands">Требования проекта.</param>
+    /// <param name="conditions">Условия проекта.</param>
     /// <returns>Данные нового проекта.</returns>
     public async Task<UserProjectEntity> CreateProjectAsync(string projectName, string projectDetails, long userId,
-        string statusSysName, string statusName, ProjectStageEnum projectStage)
+        string statusSysName, string statusName, ProjectStageEnum projectStage, string demands, string conditions)
     {
         var transaction = await _pgContext.Database
             .BeginTransactionAsync(IsolationLevel.ReadCommitted);
@@ -69,7 +71,9 @@ public class ProjectRepository : IProjectRepository
                 ProjectDetails = projectDetails,
                 UserId = userId,
                 ProjectCode = Guid.NewGuid(),
-                DateCreated = DateTime.Now
+                DateCreated = DateTime.Now,
+                Conditions = conditions,
+                Demands = demands
             };
             await _pgContext.UserProjects.AddAsync(project);
 

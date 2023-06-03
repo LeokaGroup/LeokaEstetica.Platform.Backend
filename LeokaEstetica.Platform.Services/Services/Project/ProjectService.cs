@@ -177,9 +177,11 @@ public class ProjectService : IProjectService
     /// <param name="projectDetails">Описание проекта.</param>
     /// <param name="account">Аккаунт пользователя.</param>
     /// <param name="projectStage">Стадия проекта.</param>
+    /// <param name="demands">Требования проекта.</param>
+    /// <param name="conditions">Условия проекта.</param>
     /// <returns>Данные нового проекта.</returns>
     public async Task<UserProjectEntity> CreateProjectAsync(string projectName, string projectDetails, string account,
-        ProjectStageEnum projectStage, string token)
+        ProjectStageEnum projectStage, string token, string demands, string conditions)
     {
         try
         {
@@ -247,8 +249,10 @@ public class ProjectService : IProjectService
             }
 
             var statusName = ProjectStatus.GetProjectStatusNameBySysName(ProjectStatusNameEnum.Moderation.ToString());
+            
+            // Создаем проект.
             var project = await _projectRepository.CreateProjectAsync(projectName, projectDetails, userId,
-                ProjectStatusNameEnum.Moderation.ToString(), statusName, projectStage);
+                ProjectStatusNameEnum.Moderation.ToString(), statusName, projectStage, demands, conditions);
 
             // Если что то пошло не так при создании проекта.
             if (project is null || project.ProjectId <= 0)
