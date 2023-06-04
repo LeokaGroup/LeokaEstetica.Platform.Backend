@@ -364,21 +364,22 @@ public class VacancyService : IVacancyService
     {
         try
         {
-            var userId = await _userRepository.GetUserByEmailAsync(vacancyInput.Account);
+            var account = vacancyInput.Account;
+            var userId = await _userRepository.GetUserByEmailAsync(account);
 
             if (userId <= 0)
             {
-                var ex = new NotFoundUserIdByAccountException(vacancyInput.Account);
+                var ex = new NotFoundUserIdByAccountException(account);
                 throw ex;
             }
 
-            // Добавляем вакансию в таблицу вакансий пользователя.
-            var createdVacancy = await _vacancyRepository.UpdateVacancyAsync(vacancyInput.VacancyName,
-                vacancyInput.VacancyText, vacancyInput.WorkExperience, vacancyInput.Employment, vacancyInput.Payment,
-                userId, vacancyInput.VacancyId);
+            vacancyInput.UserId = userId;
+
+            // Создаем вакансию.
+            var createdVacancy = await _vacancyRepository.UpdateVacancyAsync(vacancyInput);
 
             // Отправляем вакансию на модерацию.
-            await _vacancyModerationService.AddVacancyModerationAsync(createdVacancy.VacancyId);
+            await _vacancyModerationService.AddVacancyModerationAsync(vacancyInput.VacancyId);
 
             // Отправляем уведомление об успешном изменении вакансии и отправки ее на модерацию.
             await _vacancyNotificationsService.SendNotificationSuccessCreatedUserVacancyAsync("Все хорошо",
