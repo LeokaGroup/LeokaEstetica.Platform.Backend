@@ -55,15 +55,9 @@ public interface IProjectService
     /// <summary>
     /// Метод обновляет проект пользователя.
     /// </summary>
-    /// <param name="projectName">Название проекта.</param>
-    /// <param name="projectDetails">Описание проекта.</param>
-    /// <param name="account">Аккаунт пользователя.</param>
-    /// <param name="projectId">Id проекта.</param>
-    /// <param name="projectStage">Стадия проекта.</param>
-    /// <param name="token">Токен пользователя.</param>
+    /// <param name="updateProjectInput">Входная модель.</param>
     /// <returns>Данные нового проекта.</returns>
-    Task<UpdateProjectOutput> UpdateProjectAsync(string projectName, string projectDetails, string account,
-        long projectId, ProjectStageEnum projectStage, string token);
+    Task<UpdateProjectOutput> UpdateProjectAsync(UpdateProjectInput updateProjectInput);
 
     /// <summary>
     /// Метод получает проект для изменения или просмотра.

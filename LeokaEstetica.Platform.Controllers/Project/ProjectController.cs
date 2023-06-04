@@ -157,7 +157,7 @@ public class ProjectController : BaseController
     /// <summary>
     /// Метод обновляет проект.
     /// </summary>
-    /// <param name="createProjectInput">Входная модель.</param>
+    /// <param name="updateProjectInput">Входная модель.</param>
     /// <returns>Обновленные данные.</returns>
     [HttpPut]
     [Route("project")]
@@ -166,10 +166,10 @@ public class ProjectController : BaseController
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<UpdateProjectOutput> UpdateProjectAsync([FromBody] UpdateProjectInput createProjectInput)
+    public async Task<UpdateProjectOutput> UpdateProjectAsync([FromBody] UpdateProjectInput updateProjectInput)
     {
         var result = new UpdateProjectOutput();
-        var validator = await new UpdateProjectValidator().ValidateAsync(createProjectInput);
+        var validator = await new UpdateProjectValidator().ValidateAsync(updateProjectInput);
 
         if (validator.Errors.Any())
         {
@@ -178,9 +178,10 @@ public class ProjectController : BaseController
             return result;
         }
 
-        result = await _projectService.UpdateProjectAsync(createProjectInput.ProjectName,
-            createProjectInput.ProjectDetails, GetUserName(), createProjectInput.ProjectId,
-            Enum.Parse<ProjectStageEnum>(createProjectInput.ProjectStage), CreateTokenFromHeader());
+        updateProjectInput.Account = GetUserName();
+        updateProjectInput.Token = CreateTokenFromHeader();
+
+        result = await _projectService.UpdateProjectAsync(updateProjectInput);
 
         return result;
     }

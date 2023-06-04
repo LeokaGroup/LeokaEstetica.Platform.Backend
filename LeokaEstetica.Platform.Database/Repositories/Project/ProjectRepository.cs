@@ -4,6 +4,7 @@ using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
 using LeokaEstetica.Platform.Database.Chat;
+using LeokaEstetica.Platform.Models.Dto.Input.Project;
 using LeokaEstetica.Platform.Models.Dto.Output.Project;
 using LeokaEstetica.Platform.Models.Entities.Communication;
 using LeokaEstetica.Platform.Models.Entities.Configs;
@@ -204,23 +205,20 @@ public class ProjectRepository : IProjectRepository
     /// <summary>
     /// Метод обновляет проект пользователя.
     /// </summary>
-    /// <param name="projectName">Название проекта.</param>
-    /// <param name="projectDetails">Описание проекта.</param>
-    /// <param name="userId">Id пользователя.</param>
-    /// <param name="projectId">Id проекта.</param>
-    /// <param name="projectStage">Стадия проекта.</param>
+    /// <param name="updateProjectInput">Входная модель.</param>
     /// <returns>Данные нового проекта.</returns>
-    public async Task<UpdateProjectOutput> UpdateProjectAsync(string projectName, string projectDetails, long userId,
-        long projectId, ProjectStageEnum projectStage)
+    public async Task<UpdateProjectOutput> UpdateProjectAsync(UpdateProjectInput updateProjectInput)
     {
         var transaction = await _pgContext.Database
             .BeginTransactionAsync(IsolationLevel.ReadCommitted);
 
         try
         {
-            var project = await _pgContext.UserProjects
-                .FirstOrDefaultAsync(p => p.UserId == userId
-                                          && p.ProjectId == projectId);
+            var userId = updateProjectInput.UserId;
+            var projectId = updateProjectInput.ProjectId;
+
+            var project = await _pgContext.UserProjects.FirstOrDefaultAsync(p => p.UserId == userId
+                && p.ProjectId == projectId);
 
             if (project is null)
             {
@@ -228,12 +226,12 @@ public class ProjectRepository : IProjectRepository
                     $"Проект не найден для обновления. ProjectId был {projectId}. UserId был {userId}");
             }
 
-            project.ProjectName = projectName;
-            project.ProjectDetails = projectDetails;
+            project.ProjectName = updateProjectInput.ProjectName;
+            project.ProjectDetails = updateProjectInput.ProjectDetails;
 
             // Проставляем стадию проекта.
             var stage = await _pgContext.UserProjectsStages
-                .Where(p => p.ProjectId == project.ProjectId)
+                .Where(p => p.ProjectId == projectId)
                 .FirstOrDefaultAsync();
 
             if (stage is null)
@@ -241,21 +239,20 @@ public class ProjectRepository : IProjectRepository
                 throw new InvalidOperationException($"У проекта не записана стадия. ProjectId был {projectId}.");
             }
 
-            stage.StageId = (int)projectStage;
+            stage.StageId = (int)updateProjectInput.ProjectStageEnum;
             
             // Если проект уже был на модерации, то обновим статус.
-            var isModerationExists = await IsModerationExistsProjectAsync(project.ProjectId);
+            var isModerationExists = await IsModerationExistsProjectAsync(projectId);
             
             if (!isModerationExists)
             {
                 // Отправляем проект на модерацию.
-                await SendModerationProjectAsync(project.ProjectId);
+                await SendModerationProjectAsync(projectId);
             }
             
             else
             {
-                await UpdateModerationProjectStatusAsync(project.ProjectId,
-                    ProjectModerationStatusEnum.ModerationProject);
+                await UpdateModerationProjectStatusAsync(projectId, ProjectModerationStatusEnum.ModerationProject);
             }
 
             var result = new UpdateProjectOutput
@@ -264,7 +261,7 @@ public class ProjectRepository : IProjectRepository
                 ProjectName = project.ProjectName,
                 ProjectDetails = project.ProjectDetails,
                 ProjectIcon = project.ProjectIcon,
-                ProjectId = project.ProjectId
+                ProjectId = projectId
             };
 
             await _pgContext.SaveChangesAsync();

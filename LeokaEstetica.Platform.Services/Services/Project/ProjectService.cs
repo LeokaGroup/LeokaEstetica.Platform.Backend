@@ -394,17 +394,14 @@ public class ProjectService : IProjectService
     /// <summary>
     /// Метод обновляет проект пользователя.
     /// </summary>
-    /// <param name="projectName">Название проекта.</param>
-    /// <param name="projectDetails">Описание проекта.</param>
-    /// <param name="account">Аккаунт пользователя.</param>
-    /// <param name="projectId">Id проекта.</param>
-    /// <param name="projectStage">Стадия проекта.</param>
+    /// <param name="updateProjectInput">Входная модель.</param>
     /// <returns>Данные нового проекта.</returns>
-    public async Task<UpdateProjectOutput> UpdateProjectAsync(string projectName, string projectDetails, string account,
-        long projectId, ProjectStageEnum projectStage, string token)
+    public async Task<UpdateProjectOutput> UpdateProjectAsync(UpdateProjectInput updateProjectInput)
     {
         try
         {
+            var account = updateProjectInput.Account;
+            var token = updateProjectInput.Token;
             var userId = await _userRepository.GetUserByEmailAsync(account);
 
             if (userId <= 0)
@@ -416,14 +413,17 @@ public class ProjectService : IProjectService
                 throw ex;
             }
 
+            var projectId = updateProjectInput.ProjectId;
+
             if (projectId <= 0)
             {
                 await ValidateProjectIdAsync(projectId, token);
             }
+            
+            updateProjectInput.UserId = userId;
 
             // Изменяем проект в БД.
-            var result = await _projectRepository.UpdateProjectAsync(projectName, projectDetails, userId, projectId, 
-                projectStage);
+            var result = await _projectRepository.UpdateProjectAsync(updateProjectInput);
             
             await _projectNotificationsService.SendNotificationSuccessUpdatedUserProjectAsync("Все хорошо",
                 "Данные успешно изменены. Проект отправлен на модерацию.",

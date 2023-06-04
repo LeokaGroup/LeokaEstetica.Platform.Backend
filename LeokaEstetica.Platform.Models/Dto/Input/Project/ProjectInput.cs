@@ -1,3 +1,5 @@
+using LeokaEstetica.Platform.Models.Enums;
+
 namespace LeokaEstetica.Platform.Models.Dto.Input.Project;
 
 /// <summary>
@@ -39,4 +41,24 @@ public class ProjectInput
     /// Требования.
     /// </summary>
     public string Demands { get; set; }
+    
+    /// <summary>
+    /// Аккаунт.
+    /// </summary>
+    public string Account { get; set; }
+
+    /// <summary>
+    /// Токен.
+    /// </summary>
+    public string Token { get; set; }
+
+    /// <summary>
+    /// Стадия проекта в виде перечисления.
+    /// </summary>
+    public ProjectStageEnum ProjectStageEnum => Enum.Parse<ProjectStageEnum>(ProjectStage);
+
+    /// <summary>
+    /// Id пользователя.
+    /// </summary>
+    public long UserId { get; set; }
 }
