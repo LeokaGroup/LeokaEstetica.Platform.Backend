@@ -62,7 +62,9 @@ public class VacancyRepository : IVacancyRepository
                 WorkExperience = vacancyInput.WorkExperience,
                 Employment = vacancyInput.Employment,
                 Payment = vacancyInput.Payment,
-                UserId = vacancyInput.UserId
+                UserId = vacancyInput.UserId,
+                Demands = vacancyInput.Demands,
+                Conditions = vacancyInput.Conditions
             };
             await _pgContext.UserVacancies.AddAsync(vacancy);
             
