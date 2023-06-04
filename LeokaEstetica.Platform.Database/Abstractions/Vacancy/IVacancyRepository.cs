@@ -1,3 +1,4 @@
+using LeokaEstetica.Platform.Models.Dto.Input.Vacancy;
 using LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
 using LeokaEstetica.Platform.Models.Entities.Configs;
 using LeokaEstetica.Platform.Models.Entities.Vacancy;
@@ -18,15 +19,9 @@ public interface IVacancyRepository
     /// <summary>
     /// Метод создает вакансию.
     /// </summary>
-    /// <param name="vacancyName">Название вакансии.</param>
-    /// <param name="vacancyText">Описание вакансии.</param>
-    /// <param name="workExperience">Опыт работы.</param>
-    /// <param name="employment">Занятость у вакансии.</param>
-    /// <param name="payment">Оплата у вакансии.</param>
-    /// <param name="userId">Id пользователя.</param>
+    /// <param name="vacancyInput">Входная модель.</param>
     /// <returns>Данные вакансии.</returns>
-    Task<UserVacancyEntity> CreateVacancyAsync(string vacancyName, string vacancyText, string workExperience,
-        string employment, string payment, long userId);
+    Task<UserVacancyEntity> CreateVacancyAsync(VacancyInput vacancyInput);
 
     /// <summary>
     /// Метод обновляет вакансию.

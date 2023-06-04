@@ -3,6 +3,7 @@ using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Core.Helpers;
 using LeokaEstetica.Platform.Database.Abstractions.Vacancy;
+using LeokaEstetica.Platform.Models.Dto.Input.Vacancy;
 using LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
 using LeokaEstetica.Platform.Models.Entities.Configs;
 using LeokaEstetica.Platform.Models.Entities.Vacancy;
@@ -42,15 +43,9 @@ public class VacancyRepository : IVacancyRepository
     /// <summary>
     /// Метод создает вакансию.
     /// </summary>
-    /// <param name="vacancyName">Название вакансии.</param>
-    /// <param name="vacancyText">Описание вакансии.</param>
-    /// <param name="workExperience">Опыт работы.</param>
-    /// <param name="employment">Занятость у вакансии.</param>
-    /// <param name="payment">Оплата у вакансии.</param>
-    /// <param name="userId">Id пользователя.</param>
+    /// <param name="vacancyInput">Входная модель.</param>
     /// <returns>Данные созданной вакансии.</returns>
-    public async Task<UserVacancyEntity> CreateVacancyAsync(string vacancyName, string vacancyText,
-        string workExperience, string employment, string payment, long userId)
+    public async Task<UserVacancyEntity> CreateVacancyAsync(VacancyInput vacancyInput)
     {
         var transaction = await _pgContext.Database
             .BeginTransactionAsync(IsolationLevel.ReadCommitted);
@@ -60,12 +55,12 @@ public class VacancyRepository : IVacancyRepository
             var vacancy = new UserVacancyEntity
             {
                 DateCreated = DateTime.Now,
-                VacancyName = vacancyName,
-                VacancyText = vacancyText,
-                WorkExperience = workExperience,
-                Employment = employment,
-                Payment = payment,
-                UserId = userId
+                VacancyName = vacancyInput.VacancyName,
+                VacancyText = vacancyInput.VacancyText,
+                WorkExperience = vacancyInput.WorkExperience,
+                Employment = vacancyInput.Employment,
+                Payment = vacancyInput.Payment,
+                UserId = vacancyInput.UserId
             };
             await _pgContext.UserVacancies.AddAsync(vacancy);
             

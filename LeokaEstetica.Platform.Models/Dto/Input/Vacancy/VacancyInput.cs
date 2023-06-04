@@ -55,4 +55,19 @@ public class VacancyInput
     /// Токен пользователя.
     /// </summary>
     public string Token { get; set; }
+    
+    /// <summary>
+    /// Требования.
+    /// </summary>
+    public string Demands { get; set; }
+
+    /// <summary>
+    /// Условия.
+    /// </summary>
+    public string Conditions { get; set; }
+
+    /// <summary>
+    /// Id пользователя.
+    /// </summary>
+    public long UserId { get; set; }
 }
