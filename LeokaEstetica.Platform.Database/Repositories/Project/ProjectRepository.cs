@@ -228,6 +228,8 @@ public class ProjectRepository : IProjectRepository
 
             project.ProjectName = updateProjectInput.ProjectName;
             project.ProjectDetails = updateProjectInput.ProjectDetails;
+            project.Conditions = updateProjectInput.Conditions;
+            project.Demands = updateProjectInput.Demands;
 
             // Проставляем стадию проекта.
             var stage = await _pgContext.UserProjectsStages
