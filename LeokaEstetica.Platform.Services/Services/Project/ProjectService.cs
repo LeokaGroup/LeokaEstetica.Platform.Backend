@@ -24,7 +24,6 @@ using LeokaEstetica.Platform.Models.Entities.Configs;
 using LeokaEstetica.Platform.Models.Entities.Project;
 using LeokaEstetica.Platform.Models.Entities.ProjectTeam;
 using LeokaEstetica.Platform.Models.Entities.User;
-using LeokaEstetica.Platform.Models.Enums;
 using LeokaEstetica.Platform.CallCenter.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
 using LeokaEstetica.Platform.Notifications.Abstractions;
@@ -173,16 +172,13 @@ public class ProjectService : IProjectService
     /// <summary>
     /// Метод создает новый проект пользователя.
     /// </summary>
-    /// <param name="projectName">Название проекта.</param>
-    /// <param name="projectDetails">Описание проекта.</param>
-    /// <param name="account">Аккаунт пользователя.</param>
-    /// <param name="projectStage">Стадия проекта.</param>
+    /// <param name="createProjectInput">Входная модель.</param>
     /// <returns>Данные нового проекта.</returns>
-    public async Task<UserProjectEntity> CreateProjectAsync(string projectName, string projectDetails, string account,
-        ProjectStageEnum projectStage, string token)
+    public async Task<UserProjectEntity> CreateProjectAsync(CreateProjectInput createProjectInput)
     {
         try
         {
+            var account = createProjectInput.Account;
             var userId = await _userRepository.GetUserByEmailAsync(account);
 
             if (userId <= 0)
@@ -193,6 +189,8 @@ public class ProjectService : IProjectService
             
             // Проверяем заполнение анкеты и даем доступ либо нет.
             var isEmptyProfile = await _accessUserService.IsProfileEmptyAsync(userId);
+
+            var token = createProjectInput.Token;
 
             // Если нет доступа, то не даем оплатить платный тариф.
             if (isEmptyProfile)
@@ -213,8 +211,8 @@ public class ProjectService : IProjectService
             var fareRule = await _fareRuleRepository.GetByIdAsync(userSubscription.ObjectId);
             
             // Проверяем доступно ли пользователю создание проекта.
-            var availableCreateProjectLimit =
-                await _availableLimitsService.CheckAvailableCreateProjectAsync(userId, fareRule.Name);
+            var availableCreateProjectLimit = await _availableLimitsService.CheckAvailableCreateProjectAsync(userId,
+                fareRule.Name);
 
             // Если лимит по тарифу превышен.
             if (!availableCreateProjectLimit)
@@ -231,6 +229,8 @@ public class ProjectService : IProjectService
                 throw ex;
             }
 
+            var projectName = createProjectInput.ProjectName;
+
             // Проверяем существование такого проекта у текущего пользователя.
             var isCreatedProject = await _projectRepository.CheckCreatedProjectByProjectNameAsync(projectName, userId);
 
@@ -246,12 +246,14 @@ public class ProjectService : IProjectService
                 throw ex;
             }
 
-            var statusName = ProjectStatus.GetProjectStatusNameBySysName(ProjectStatusNameEnum.Moderation.ToString());
-            var project = await _projectRepository.CreateProjectAsync(projectName, projectDetails, userId,
-                ProjectStatusNameEnum.Moderation.ToString(), statusName, projectStage);
+            createProjectInput.UserId = userId;
+
+            // Создаем проект.
+            var project = await _projectRepository.CreateProjectAsync(createProjectInput);
+            var projectId = project.ProjectId;
 
             // Если что то пошло не так при создании проекта.
-            if (project is null || project.ProjectId <= 0)
+            if (project is null || projectId <= 0)
             {
                 var ex = new InvalidOperationException("Ошибка при создании проекта.");
                 _logger.LogError(ex, ex.Message);
@@ -264,7 +266,7 @@ public class ProjectService : IProjectService
             }
             
             // Добавляем владельца в участники проекта по дефолту.
-            await AddProjectOwnerToTeamMembersAsync(userId, project.ProjectId);
+            await AddProjectOwnerToTeamMembersAsync(userId, projectId);
 
             // Отправляем уведомление об успешном создании проекта.
             await _projectNotificationsService.SendNotificationSuccessCreatedUserProjectAsync("Все хорошо",
@@ -274,8 +276,7 @@ public class ProjectService : IProjectService
             var user = await _userRepository.GetUserPhoneEmailByUserIdAsync(userId);
             
             // Отправляем уведомление о созданном проекте владельцу проекта.
-            await _mailingsService.SendNotificationCreatedProjectAsync(user.Email, project.ProjectName,
-                project.ProjectId);
+            await _mailingsService.SendNotificationCreatedProjectAsync(user.Email, projectName, projectId);
 
             return project;
         }
@@ -390,17 +391,14 @@ public class ProjectService : IProjectService
     /// <summary>
     /// Метод обновляет проект пользователя.
     /// </summary>
-    /// <param name="projectName">Название проекта.</param>
-    /// <param name="projectDetails">Описание проекта.</param>
-    /// <param name="account">Аккаунт пользователя.</param>
-    /// <param name="projectId">Id проекта.</param>
-    /// <param name="projectStage">Стадия проекта.</param>
+    /// <param name="updateProjectInput">Входная модель.</param>
     /// <returns>Данные нового проекта.</returns>
-    public async Task<UpdateProjectOutput> UpdateProjectAsync(string projectName, string projectDetails, string account,
-        long projectId, ProjectStageEnum projectStage, string token)
+    public async Task<UpdateProjectOutput> UpdateProjectAsync(UpdateProjectInput updateProjectInput)
     {
         try
         {
+            var account = updateProjectInput.Account;
+            var token = updateProjectInput.Token;
             var userId = await _userRepository.GetUserByEmailAsync(account);
 
             if (userId <= 0)
@@ -412,14 +410,17 @@ public class ProjectService : IProjectService
                 throw ex;
             }
 
+            var projectId = updateProjectInput.ProjectId;
+
             if (projectId <= 0)
             {
                 await ValidateProjectIdAsync(projectId, token);
             }
+            
+            updateProjectInput.UserId = userId;
 
             // Изменяем проект в БД.
-            var result = await _projectRepository.UpdateProjectAsync(projectName, projectDetails, userId, projectId, 
-                projectStage);
+            var result = await _projectRepository.UpdateProjectAsync(updateProjectInput);
             
             await _projectNotificationsService.SendNotificationSuccessUpdatedUserProjectAsync("Все хорошо",
                 "Данные успешно изменены. Проект отправлен на модерацию.",
@@ -458,7 +459,7 @@ public class ProjectService : IProjectService
 
             if (prj.UserProject is null)
             {
-                var ex = new InvalidOperationException(
+                var ex = new InvalidOperationException( 
                     $"Не удалось найти проект с ProjectId {projectId} и UserId {userId}");
                 throw ex;
             }

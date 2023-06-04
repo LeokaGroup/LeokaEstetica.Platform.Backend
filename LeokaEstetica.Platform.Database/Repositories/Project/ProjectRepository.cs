@@ -2,8 +2,10 @@ using System.Data;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Core.Exceptions;
+using LeokaEstetica.Platform.Core.Helpers;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
 using LeokaEstetica.Platform.Database.Chat;
+using LeokaEstetica.Platform.Models.Dto.Input.Project;
 using LeokaEstetica.Platform.Models.Dto.Output.Project;
 using LeokaEstetica.Platform.Models.Entities.Communication;
 using LeokaEstetica.Platform.Models.Entities.Configs;
@@ -48,15 +50,9 @@ public class ProjectRepository : IProjectRepository
     /// <summary>
     /// Метод создает новый проект пользователя.
     /// </summary>
-    /// <param name="projectName">Название проекта.</param>
-    /// <param name="projectDetails">Описание проекта.</param>
-    /// <param name="userId">Id пользователя.</param>
-    /// <param name="statusSysName">Системное название статуса.</param>
-    /// <param name="statusName">Русское название статуса.</param>
-    /// <param name="projectStage">Стадия проекта.</param>
+    /// <param name="createProjectInput">Входная модель.</param>
     /// <returns>Данные нового проекта.</returns>
-    public async Task<UserProjectEntity> CreateProjectAsync(string projectName, string projectDetails, long userId,
-        string statusSysName, string statusName, ProjectStageEnum projectStage)
+    public async Task<UserProjectEntity> CreateProjectAsync(CreateProjectInput createProjectInput)
     {
         var transaction = await _pgContext.Database
             .BeginTransactionAsync(IsolationLevel.ReadCommitted);
@@ -65,17 +61,22 @@ public class ProjectRepository : IProjectRepository
         {
             var project = new UserProjectEntity
             {
-                ProjectName = projectName,
-                ProjectDetails = projectDetails,
-                UserId = userId,
+                ProjectName = createProjectInput.ProjectName,
+                ProjectDetails = createProjectInput.ProjectDetails,
+                UserId = createProjectInput.UserId,
                 ProjectCode = Guid.NewGuid(),
-                DateCreated = DateTime.Now
+                DateCreated = DateTime.Now,
+                Conditions = createProjectInput.Conditions,
+                Demands = createProjectInput.Demands
             };
             await _pgContext.UserProjects.AddAsync(project);
 
             // Дергаем сохранение тут, так как нам нужен Id добавленного проекта.
             // Фактического сохраненеия не произойдет, пока мы не завершили транзакцию.
             await _pgContext.SaveChangesAsync();
+
+            var statusSysName = ProjectStatusNameEnum.Moderation.ToString();
+            var statusName = ProjectStatus.GetProjectStatusNameBySysName(statusSysName);
 
             // Проставляем проекту статус "На модерации".
             await _pgContext.ProjectStatuses.AddAsync(new ProjectStatusEntity
@@ -89,7 +90,7 @@ public class ProjectRepository : IProjectRepository
             await _pgContext.UserProjectsStages.AddAsync(new UserProjectStageEntity
             {
                 ProjectId = project.ProjectId,
-                StageId = (int)projectStage
+                StageId = (int)createProjectInput.ProjectStageEnum
             });
 
             // Отправляем проект на модерацию.
@@ -200,23 +201,20 @@ public class ProjectRepository : IProjectRepository
     /// <summary>
     /// Метод обновляет проект пользователя.
     /// </summary>
-    /// <param name="projectName">Название проекта.</param>
-    /// <param name="projectDetails">Описание проекта.</param>
-    /// <param name="userId">Id пользователя.</param>
-    /// <param name="projectId">Id проекта.</param>
-    /// <param name="projectStage">Стадия проекта.</param>
+    /// <param name="updateProjectInput">Входная модель.</param>
     /// <returns>Данные нового проекта.</returns>
-    public async Task<UpdateProjectOutput> UpdateProjectAsync(string projectName, string projectDetails, long userId,
-        long projectId, ProjectStageEnum projectStage)
+    public async Task<UpdateProjectOutput> UpdateProjectAsync(UpdateProjectInput updateProjectInput)
     {
         var transaction = await _pgContext.Database
             .BeginTransactionAsync(IsolationLevel.ReadCommitted);
 
         try
         {
-            var project = await _pgContext.UserProjects
-                .FirstOrDefaultAsync(p => p.UserId == userId
-                                          && p.ProjectId == projectId);
+            var userId = updateProjectInput.UserId;
+            var projectId = updateProjectInput.ProjectId;
+
+            var project = await _pgContext.UserProjects.FirstOrDefaultAsync(p => p.UserId == userId
+                && p.ProjectId == projectId);
 
             if (project is null)
             {
@@ -224,12 +222,14 @@ public class ProjectRepository : IProjectRepository
                     $"Проект не найден для обновления. ProjectId был {projectId}. UserId был {userId}");
             }
 
-            project.ProjectName = projectName;
-            project.ProjectDetails = projectDetails;
+            project.ProjectName = updateProjectInput.ProjectName;
+            project.ProjectDetails = updateProjectInput.ProjectDetails;
+            project.Conditions = updateProjectInput.Conditions;
+            project.Demands = updateProjectInput.Demands;
 
             // Проставляем стадию проекта.
             var stage = await _pgContext.UserProjectsStages
-                .Where(p => p.ProjectId == project.ProjectId)
+                .Where(p => p.ProjectId == projectId)
                 .FirstOrDefaultAsync();
 
             if (stage is null)
@@ -237,21 +237,20 @@ public class ProjectRepository : IProjectRepository
                 throw new InvalidOperationException($"У проекта не записана стадия. ProjectId был {projectId}.");
             }
 
-            stage.StageId = (int)projectStage;
+            stage.StageId = (int)updateProjectInput.ProjectStageEnum;
             
             // Если проект уже был на модерации, то обновим статус.
-            var isModerationExists = await IsModerationExistsProjectAsync(project.ProjectId);
+            var isModerationExists = await IsModerationExistsProjectAsync(projectId);
             
             if (!isModerationExists)
             {
                 // Отправляем проект на модерацию.
-                await SendModerationProjectAsync(project.ProjectId);
+                await SendModerationProjectAsync(projectId);
             }
             
             else
             {
-                await UpdateModerationProjectStatusAsync(project.ProjectId,
-                    ProjectModerationStatusEnum.ModerationProject);
+                await UpdateModerationProjectStatusAsync(projectId, ProjectModerationStatusEnum.ModerationProject);
             }
 
             var result = new UpdateProjectOutput
@@ -260,7 +259,7 @@ public class ProjectRepository : IProjectRepository
                 ProjectName = project.ProjectName,
                 ProjectDetails = project.ProjectDetails,
                 ProjectIcon = project.ProjectIcon,
-                ProjectId = project.ProjectId
+                ProjectId = projectId
             };
 
             await _pgContext.SaveChangesAsync();

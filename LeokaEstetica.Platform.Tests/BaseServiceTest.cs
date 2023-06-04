@@ -172,7 +172,7 @@ public class BaseServiceTest
         ProjectService = new ProjectService(projectRepository, null, userRepository, mapper,
             projectNotificationsService, VacancyService, vacancyRepository, availableLimitsService,
             subscriptionRepository, fareRuleRepository, VacancyModerationService, projectNotificationsRepository, null,
-            null, fillColorProjectsService, null, ProjectModerationRepository);
+            accessUserService, fillColorProjectsService, null, ProjectModerationRepository);
 
         SubscriptionService =
             new SubscriptionService(null, userRepository, subscriptionRepository, fareRuleRepository);

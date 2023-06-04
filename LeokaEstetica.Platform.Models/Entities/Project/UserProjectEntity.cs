@@ -64,6 +64,11 @@ public class UserProjectEntity
     public string Conditions { get; set; }
 
     /// <summary>
+    /// Требования проекта.
+    /// </summary>
+    public string Demands { get; set; }
+
+    /// <summary>
     /// FK каталога проектов.
     /// </summary>
     public ICollection<CatalogProjectEntity> CatalogProjects { get; set; }

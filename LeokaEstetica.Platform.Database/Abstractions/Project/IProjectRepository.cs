@@ -1,3 +1,4 @@
+using LeokaEstetica.Platform.Models.Dto.Input.Project;
 using LeokaEstetica.Platform.Models.Dto.Output.Project;
 using LeokaEstetica.Platform.Models.Entities.Configs;
 using LeokaEstetica.Platform.Models.Entities.Project;
@@ -14,15 +15,9 @@ public interface IProjectRepository
     /// <summary>
     /// Метод создает новый проект пользователя.
     /// </summary>
-    /// <param name="projectName">Название проекта.</param>
-    /// <param name="projectDetails">Описание проекта.</param>
-    /// <param name="userId">Id пользователя.</param>
-    /// <param name="statusSysName">Системное название статуса.</param>
-    /// <param name="statusName">Русское название статуса.</param>
-    /// <param name="projectStage">Стадия проекта.</param>
+    /// <param name="createProjectInput">Входная модель.</param>
     /// <returns>Данные нового проекта.</returns>
-    Task<UserProjectEntity> CreateProjectAsync(string projectName, string projectDetails, long userId,
-        string statusSysName, string statusName, ProjectStageEnum projectStage);
+    Task<UserProjectEntity> CreateProjectAsync(CreateProjectInput createProjectInput);
 
     /// <summary>
     /// Метод получает названия полей для таблицы проектов пользователя.
@@ -56,14 +51,9 @@ public interface IProjectRepository
     /// <summary>
     /// Метод обновляет проект пользователя.
     /// </summary>
-    /// <param name="projectName">Название проекта.</param>
-    /// <param name="projectDetails">Описание проекта.</param>
-    /// <param name="userId">Id пользователя.</param>
-    /// <param name="projectId">Id проекта.</param>
-    /// <param name="projectStage">Стадия проекта.</param>
+    /// <param name="updateProjectInput">Входная модель.</param>
     /// <returns>Данные нового проекта.</returns>
-    Task<UpdateProjectOutput> UpdateProjectAsync(string projectName, string projectDetails, long userId, long projectId,
-        ProjectStageEnum projectStage);
+    Task<UpdateProjectOutput> UpdateProjectAsync(UpdateProjectInput updateProjectInput);
 
     /// <summary>
     /// Метод получает проект для изменения или просмотра.
