@@ -21,4 +21,11 @@ public interface IOrdersService
     /// <param name="account">Аккаунт.</param>
     /// <returns>Детали заказа.</returns>
     Task<OrderEntity> GetOrderDetailsAsync(long orderId, string account);
+
+    /// <summary>
+    /// Метод получает список транзакций по заказам пользователя.
+    /// </summary>
+    /// <param name="account">Аккаунт.</param>
+    /// <returns>Список транзакций.</returns>
+    Task<IEnumerable<HistoryEntity>> GetHistoryAsync(string account);
 }

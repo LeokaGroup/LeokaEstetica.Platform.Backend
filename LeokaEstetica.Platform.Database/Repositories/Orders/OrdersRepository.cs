@@ -21,6 +21,8 @@ public class OrdersRepository : IOrdersRepository
         _pgContext = pgContext;
     }
 
+    #region Публичные методы.
+
     /// <summary>
     /// Метод получает список заказов пользователя.
     /// </summary>
@@ -58,4 +60,26 @@ public class OrdersRepository : IOrdersRepository
 
         return result;
     }
+
+    /// <summary>
+    /// Метод получает список транзакций по заказам пользователя.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Список транзакций.</returns>
+    public async Task<IEnumerable<HistoryEntity>> GetHistoryAsync(long userId)
+    {
+        var result = await _pgContext.OrderTransactionsShadow
+            .Where(t => t.UserId == userId)
+            .ToListAsync();
+
+        return result;
+    }
+
+    #endregion
+
+    #region Приватные методы.
+
+    
+
+    #endregion
 }

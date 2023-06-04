@@ -65,7 +65,7 @@ public class OrdersController : BaseController
             return result;
         }
 
-        result.Orders = CreateUserOrdersBuilder.Create(orders, _mapper);
+        result.Orders = UserOrdersBuilder.CreateUserOrdersResult(orders, _mapper);
 
         return result;
     }
@@ -96,6 +96,33 @@ public class OrdersController : BaseController
 
         var order = await _ordersService.GetOrderDetailsAsync(orderId, GetUserName());
         var result = _mapper.Map<OrderOutput>(order);
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод получает список транзакций по заказам пользователя.
+    /// </summary>
+    /// <returns>Список транзакций.</returns>
+    [HttpGet]
+    [Route("history")]
+    [ProducesResponseType(200, Type = typeof(HistoryResult))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<HistoryResult> GetHistoryAsync()
+    {
+        var items = await _ordersService.GetHistoryAsync(GetUserName());
+        var result = new HistoryResult { Histories = new List<HistoryOutput>() };
+        var transactions = items.ToList();
+
+        if (!transactions.Any())
+        {
+            return result;
+        }
+
+        result.Histories = UserOrdersBuilder.CreateHistoryResult(transactions, _mapper);
 
         return result;
     }
