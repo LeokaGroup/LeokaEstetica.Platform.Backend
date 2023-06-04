@@ -112,7 +112,7 @@ public class VacancyController : BaseController
         
         var createdVacancy = await _vacancyService.CreateVacancyAsync(vacancyInput);
 
-        return result;
+        return createdVacancy;
     }
 
     /// <summary>

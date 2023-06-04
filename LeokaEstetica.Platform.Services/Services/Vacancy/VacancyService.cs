@@ -177,11 +177,12 @@ public class VacancyService : IVacancyService
     {
         try
         {
-            var userId = await _userRepository.GetUserByEmailAsync(vacancyInput.Account);
+            var account = vacancyInput.Account;
+            var userId = await _userRepository.GetUserByEmailAsync(account);
 
             if (userId <= 0)
             {
-                var ex = new NotFoundUserIdByAccountException(vacancyInput.Account);
+                var ex = new NotFoundUserIdByAccountException(account);
                 throw ex;
             }
 

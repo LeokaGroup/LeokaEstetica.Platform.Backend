@@ -47,6 +47,14 @@ public partial class VacancyConfiguration : IEntityTypeConfiguration<UserVacancy
             .HasColumnName("UserId")
             .HasColumnType("bigint")
             .IsRequired();
+        
+        entity.Property(e => e.Conditions)
+            .HasColumnName("Conditions")
+            .HasColumnType("text");
+        
+        entity.Property(e => e.Demands)
+            .HasColumnName("Demands")
+            .HasColumnType("text");
 
         entity.HasIndex(u => u.VacancyId)
             .HasDatabaseName("PK_Vacancies_VacancyId")
