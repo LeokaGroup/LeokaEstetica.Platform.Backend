@@ -34,7 +34,9 @@ public class UpdateProjectTest : BaseServiceTest
             Account = "sierra_93@mail.ru",
             Token = string.Empty,
             ProjectStage = ProjectStageEnum.Concept.ToString(),
-            ProjectId = 5
+            ProjectId = 5,
+            Conditions = "Тестовые условия тест",
+            Demands = "Тестовые требования тест"
         };
 
         return result;

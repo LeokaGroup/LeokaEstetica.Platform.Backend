@@ -13,7 +13,6 @@ using LeokaEstetica.Platform.Models.Dto.Input.ProjectTeam;
 using LeokaEstetica.Platform.Models.Dto.Output.Configs;
 using LeokaEstetica.Platform.Models.Dto.Output.Project;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectTeam;
-using LeokaEstetica.Platform.Models.Enums;
 using LeokaEstetica.Platform.Services.Abstractions.Project;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -106,11 +105,11 @@ public class ProjectController : BaseController
 
             return result;
         }
+        
+        createProjectInput.Account = GetUserName();
+        createProjectInput.Token = CreateTokenFromHeader();
 
-        var project = await _projectService.CreateProjectAsync(createProjectInput.ProjectName,
-            createProjectInput.ProjectDetails, GetUserName(),
-            Enum.Parse<ProjectStageEnum>(createProjectInput.ProjectStage), CreateTokenFromHeader(),
-            createProjectInput.Conditions, createProjectInput.Demands);
+        var project = await _projectService.CreateProjectAsync(createProjectInput);
         
         result = _mapper.Map<CreateProjectOutput>(project);
 

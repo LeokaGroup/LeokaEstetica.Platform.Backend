@@ -15,17 +15,9 @@ public interface IProjectRepository
     /// <summary>
     /// Метод создает новый проект пользователя.
     /// </summary>
-    /// <param name="projectName">Название проекта.</param>
-    /// <param name="projectDetails">Описание проекта.</param>
-    /// <param name="userId">Id пользователя.</param>
-    /// <param name="statusSysName">Системное название статуса.</param>
-    /// <param name="statusName">Русское название статуса.</param>
-    /// <param name="projectStage">Стадия проекта.</param>
-    /// <param name="demands">Требования проекта.</param>
-    /// <param name="conditions">Условия проекта.</param>
+    /// <param name="createProjectInput">Входная модель.</param>
     /// <returns>Данные нового проекта.</returns>
-    Task<UserProjectEntity> CreateProjectAsync(string projectName, string projectDetails, long userId,
-        string statusSysName, string statusName, ProjectStageEnum projectStage, string demands, string conditions);
+    Task<UserProjectEntity> CreateProjectAsync(CreateProjectInput createProjectInput);
 
     /// <summary>
     /// Метод получает названия полей для таблицы проектов пользователя.

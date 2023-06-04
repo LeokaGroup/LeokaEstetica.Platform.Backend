@@ -2,6 +2,7 @@ using System.Data;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Core.Exceptions;
+using LeokaEstetica.Platform.Core.Helpers;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
 using LeokaEstetica.Platform.Database.Chat;
 using LeokaEstetica.Platform.Models.Dto.Input.Project;
@@ -49,17 +50,9 @@ public class ProjectRepository : IProjectRepository
     /// <summary>
     /// Метод создает новый проект пользователя.
     /// </summary>
-    /// <param name="projectName">Название проекта.</param>
-    /// <param name="projectDetails">Описание проекта.</param>
-    /// <param name="userId">Id пользователя.</param>
-    /// <param name="statusSysName">Системное название статуса.</param>
-    /// <param name="statusName">Русское название статуса.</param>
-    /// <param name="projectStage">Стадия проекта.</param>
-    /// <param name="demands">Требования проекта.</param>
-    /// <param name="conditions">Условия проекта.</param>
+    /// <param name="createProjectInput">Входная модель.</param>
     /// <returns>Данные нового проекта.</returns>
-    public async Task<UserProjectEntity> CreateProjectAsync(string projectName, string projectDetails, long userId,
-        string statusSysName, string statusName, ProjectStageEnum projectStage, string demands, string conditions)
+    public async Task<UserProjectEntity> CreateProjectAsync(CreateProjectInput createProjectInput)
     {
         var transaction = await _pgContext.Database
             .BeginTransactionAsync(IsolationLevel.ReadCommitted);
@@ -68,19 +61,22 @@ public class ProjectRepository : IProjectRepository
         {
             var project = new UserProjectEntity
             {
-                ProjectName = projectName,
-                ProjectDetails = projectDetails,
-                UserId = userId,
+                ProjectName = createProjectInput.ProjectName,
+                ProjectDetails = createProjectInput.ProjectDetails,
+                UserId = createProjectInput.UserId,
                 ProjectCode = Guid.NewGuid(),
                 DateCreated = DateTime.Now,
-                Conditions = conditions,
-                Demands = demands
+                Conditions = createProjectInput.Conditions,
+                Demands = createProjectInput.Demands
             };
             await _pgContext.UserProjects.AddAsync(project);
 
             // Дергаем сохранение тут, так как нам нужен Id добавленного проекта.
             // Фактического сохраненеия не произойдет, пока мы не завершили транзакцию.
             await _pgContext.SaveChangesAsync();
+
+            var statusSysName = ProjectStatusNameEnum.Moderation.ToString();
+            var statusName = ProjectStatus.GetProjectStatusNameBySysName(statusSysName);
 
             // Проставляем проекту статус "На модерации".
             await _pgContext.ProjectStatuses.AddAsync(new ProjectStatusEntity
@@ -94,7 +90,7 @@ public class ProjectRepository : IProjectRepository
             await _pgContext.UserProjectsStages.AddAsync(new UserProjectStageEntity
             {
                 ProjectId = project.ProjectId,
-                StageId = (int)projectStage
+                StageId = (int)createProjectInput.ProjectStageEnum
             });
 
             // Отправляем проект на модерацию.
