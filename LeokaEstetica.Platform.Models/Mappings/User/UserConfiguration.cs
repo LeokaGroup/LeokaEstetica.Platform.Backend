@@ -130,6 +130,10 @@ public partial class UserConfiguration : IEntityTypeConfiguration<UserEntity>
         entity.HasIndex(u => u.UserCode)
             .HasDatabaseName("Uniq_Users_UserCode")
             .IsUnique();
+        
+        entity.HasIndex(u => u.DateRegister)
+            .HasDatabaseName("Idx_Users_DateRegister")
+            .IsUnique();
 
         OnConfigurePartial(entity);
     }

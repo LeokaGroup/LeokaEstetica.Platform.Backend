@@ -6,6 +6,7 @@ using LeokaEstetica.Platform.Database.Abstractions.Config;
 using LeokaEstetica.Platform.Database.Abstractions.Header;
 using LeokaEstetica.Platform.Database.Abstractions.Knowledge;
 using LeokaEstetica.Platform.Database.Abstractions.Landing;
+using LeokaEstetica.Platform.Database.Abstractions.Metrics;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Access;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Project;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Resume;
@@ -28,6 +29,7 @@ using LeokaEstetica.Platform.Database.Repositories.Config;
 using LeokaEstetica.Platform.Database.Repositories.Header;
 using LeokaEstetica.Platform.Database.Repositories.Knowledge;
 using LeokaEstetica.Platform.Database.Repositories.Landing;
+using LeokaEstetica.Platform.Database.Repositories.Metrics;
 using LeokaEstetica.Platform.Database.Repositories.Moderation.Access;
 using LeokaEstetica.Platform.Database.Repositories.Moderation.Project;
 using LeokaEstetica.Platform.Database.Repositories.Moderation.Resume;
@@ -266,6 +268,16 @@ public class RepositoriesModule : Module
         builder
             .RegisterType<OrdersRepository>()
             .As<IOrdersRepository>()
+            .InstancePerLifetimeScope();
+        
+        // Репозиторий метрик новых пользователей.
+        builder
+            .RegisterType<UserMetricsRepository>()
+            .Named<IUserMetricsRepository>("UserMetricsRepository")
+            .InstancePerLifetimeScope();
+        builder
+            .RegisterType<UserMetricsRepository>()
+            .As<IUserMetricsRepository>()
             .InstancePerLifetimeScope();
     }
 }
