@@ -175,15 +175,20 @@ public class VacancyService : IVacancyService
     /// <returns>Данные созданной вакансии.</returns>
     public async Task<VacancyOutput> CreateVacancyAsync(VacancyInput vacancyInput)
     {
+        var token = vacancyInput.Token;
+        
         try
         {
-            var userId = await _userRepository.GetUserByEmailAsync(vacancyInput.Account);
+            var account = vacancyInput.Account;
+            var userId = await _userRepository.GetUserByEmailAsync(account);
 
             if (userId <= 0)
             {
-                var ex = new NotFoundUserIdByAccountException(vacancyInput.Account);
+                var ex = new NotFoundUserIdByAccountException(account);
                 throw ex;
             }
+
+            vacancyInput.UserId = userId;
 
             // Получаем подписку пользователя.
             var userSubscription = await _subscriptionRepository.GetUserSubscriptionAsync(userId);
@@ -191,44 +196,45 @@ public class VacancyService : IVacancyService
             // Получаем тариф, на который оформлена подписка у пользователя.
             var fareRule = await _fareRuleRepository.GetByIdAsync(userSubscription.ObjectId);
 
+            var fareRuleName = fareRule.Name;
+
             // Проверяем доступо ли пользователю создание вакансии.
             var availableCreateProjectLimit = await _availableLimitsService
-                .CheckAvailableCreateVacancyAsync(userId, fareRule.Name);
+                .CheckAvailableCreateVacancyAsync(userId, fareRuleName);
 
             // Если лимит по тарифу превышен.
             if (!availableCreateProjectLimit)
             {
-                var ex = new Exception($"Превышен лимит вакансий по тарифу. UserId: {userId}. Тариф: {fareRule.Name}");
+                var ex = new Exception($"Превышен лимит вакансий по тарифу. UserId: {userId}. Тариф: {fareRuleName}");
 
                 await _vacancyNotificationsService.SendNotificationWarningLimitFareRuleVacanciesAsync(
                     "Что то пошло не так",
                     "Превышен лимит вакансий по тарифу.",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, vacancyInput.Token);
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
                 
                 throw ex;
             }
 
             // Добавляем вакансию в таблицу вакансий пользователя.
-            var createdVacancy = await _vacancyRepository.CreateVacancyAsync(vacancyInput.VacancyName,
-                vacancyInput.VacancyText, vacancyInput.WorkExperience, vacancyInput.Employment, vacancyInput.Payment,
-                userId);
+            var createdVacancy = await _vacancyRepository.CreateVacancyAsync(vacancyInput);
+            var vacancyId = createdVacancy.VacancyId;
             
             // Привязываем вакансию к проекту.
-            await _projectRepository.AttachProjectVacancyAsync(vacancyInput.ProjectId, createdVacancy.VacancyId);
+            await _projectRepository.AttachProjectVacancyAsync(vacancyInput.ProjectId, vacancyId);
 
             // Отправляем вакансию на модерацию.
-            await _vacancyModerationService.AddVacancyModerationAsync(createdVacancy.VacancyId);
+            await _vacancyModerationService.AddVacancyModerationAsync(vacancyId);
 
             // Отправляем уведомление об успешном создании вакансии и отправки ее на модерацию.
             await _vacancyNotificationsService.SendNotificationSuccessCreatedUserVacancyAsync("Все хорошо",
                 "Данные успешно сохранены. Вакансия отправлена на модерацию.",
-                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, vacancyInput.Token);
+                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);
             
             var user = await _userRepository.GetUserPhoneEmailByUserIdAsync(userId);
             
             // Отправляем уведомление о созданной вакансии владельцу.
             await _mailingsService.SendNotificationCreateVacancyAsync(user.Email, createdVacancy.VacancyName,
-                createdVacancy.VacancyId);
+                vacancyId);
             
             var result = _mapper.Map<VacancyOutput>(createdVacancy);
 
@@ -240,7 +246,7 @@ public class VacancyService : IVacancyService
             await _vacancyNotificationsService.SendNotificationErrorCreatedUserVacancyAsync("Ошибка",
                 "Ошибка при создании вакансии. Мы уже знаем о ней и разбираемся. " +
                 "А пока, попробуйте еще раз.",
-                NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, vacancyInput.Token);
+                NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, token);
             
             _logger.LogError(ex, ex.Message);
             throw;
@@ -358,21 +364,22 @@ public class VacancyService : IVacancyService
     {
         try
         {
-            var userId = await _userRepository.GetUserByEmailAsync(vacancyInput.Account);
+            var account = vacancyInput.Account;
+            var userId = await _userRepository.GetUserByEmailAsync(account);
 
             if (userId <= 0)
             {
-                var ex = new NotFoundUserIdByAccountException(vacancyInput.Account);
+                var ex = new NotFoundUserIdByAccountException(account);
                 throw ex;
             }
 
-            // Добавляем вакансию в таблицу вакансий пользователя.
-            var createdVacancy = await _vacancyRepository.UpdateVacancyAsync(vacancyInput.VacancyName,
-                vacancyInput.VacancyText, vacancyInput.WorkExperience, vacancyInput.Employment, vacancyInput.Payment,
-                userId, vacancyInput.VacancyId);
+            vacancyInput.UserId = userId;
+
+            // Создаем вакансию.
+            var createdVacancy = await _vacancyRepository.UpdateVacancyAsync(vacancyInput);
 
             // Отправляем вакансию на модерацию.
-            await _vacancyModerationService.AddVacancyModerationAsync(createdVacancy.VacancyId);
+            await _vacancyModerationService.AddVacancyModerationAsync(vacancyInput.VacancyId);
 
             // Отправляем уведомление об успешном изменении вакансии и отправки ее на модерацию.
             await _vacancyNotificationsService.SendNotificationSuccessCreatedUserVacancyAsync("Все хорошо",

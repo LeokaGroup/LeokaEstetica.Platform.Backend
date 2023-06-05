@@ -78,4 +78,14 @@ public class VacancyOutput : IFrontError
     /// Статус вакансии.
     /// </summary>
     public string VacancyStatusName { get; set; }
+    
+    /// <summary>
+    /// Требования.
+    /// </summary>
+    public string Demands { get; set; }
+
+    /// <summary>
+    /// Условия.
+    /// </summary>
+    public string Conditions { get; set; }
 }

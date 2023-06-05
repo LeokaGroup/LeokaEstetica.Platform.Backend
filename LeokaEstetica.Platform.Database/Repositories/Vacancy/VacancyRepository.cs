@@ -3,6 +3,7 @@ using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Core.Helpers;
 using LeokaEstetica.Platform.Database.Abstractions.Vacancy;
+using LeokaEstetica.Platform.Models.Dto.Input.Vacancy;
 using LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
 using LeokaEstetica.Platform.Models.Entities.Configs;
 using LeokaEstetica.Platform.Models.Entities.Vacancy;
@@ -27,6 +28,8 @@ public class VacancyRepository : IVacancyRepository
         _pgContext = pgContext;
     }
 
+    #region Публичные методы.
+
     /// <summary>
     /// Метод получает список меню вакансий.
     /// </summary>
@@ -42,15 +45,9 @@ public class VacancyRepository : IVacancyRepository
     /// <summary>
     /// Метод создает вакансию.
     /// </summary>
-    /// <param name="vacancyName">Название вакансии.</param>
-    /// <param name="vacancyText">Описание вакансии.</param>
-    /// <param name="workExperience">Опыт работы.</param>
-    /// <param name="employment">Занятость у вакансии.</param>
-    /// <param name="payment">Оплата у вакансии.</param>
-    /// <param name="userId">Id пользователя.</param>
+    /// <param name="vacancyInput">Входная модель.</param>
     /// <returns>Данные созданной вакансии.</returns>
-    public async Task<UserVacancyEntity> CreateVacancyAsync(string vacancyName, string vacancyText,
-        string workExperience, string employment, string payment, long userId)
+    public async Task<UserVacancyEntity> CreateVacancyAsync(VacancyInput vacancyInput)
     {
         var transaction = await _pgContext.Database
             .BeginTransactionAsync(IsolationLevel.ReadCommitted);
@@ -60,12 +57,14 @@ public class VacancyRepository : IVacancyRepository
             var vacancy = new UserVacancyEntity
             {
                 DateCreated = DateTime.Now,
-                VacancyName = vacancyName,
-                VacancyText = vacancyText,
-                WorkExperience = workExperience,
-                Employment = employment,
-                Payment = payment,
-                UserId = userId
+                VacancyName = vacancyInput.VacancyName,
+                VacancyText = vacancyInput.VacancyText,
+                WorkExperience = vacancyInput.WorkExperience,
+                Employment = vacancyInput.Employment,
+                Payment = vacancyInput.Payment,
+                UserId = vacancyInput.UserId,
+                Demands = vacancyInput.Demands,
+                Conditions = vacancyInput.Conditions
             };
             await _pgContext.UserVacancies.AddAsync(vacancy);
             
@@ -171,31 +170,21 @@ public class VacancyRepository : IVacancyRepository
     /// <summary>
     /// Метод обновляет вакансию.
     /// </summary>
-    /// <param name="vacancyName">Название вакансии.</param>
-    /// <param name="vacancyText">Описание вакансии.</param>
-    /// <param name="workExperience">Опыт работы.</param>
-    /// <param name="employment">Занятость у вакансии.</param>
-    /// <param name="payment">Оплата у вакансии.</param>
-    /// <param name="userId">Id пользователя.</param>
-    /// <param name="vacancyId">Id вакансии.</param>
-    /// <returns>Данные созданной вакансии.</returns>
-    public async Task<UserVacancyEntity> UpdateVacancyAsync(string vacancyName, string vacancyText,
-        string workExperience, string employment, string payment, long userId, long vacancyId)
+    /// <param name="vacancyInput">Входная модель.</param>
+    /// <returns>Данные вакансии.</returns>
+    public async Task<UserVacancyEntity> UpdateVacancyAsync(VacancyInput vacancyInput)
     {
-        var vacancy = await _pgContext.UserVacancies
-            .FirstOrDefaultAsync(v => v.VacancyId == vacancyId
-                                      && v.UserId == userId);
+        var vacancyId = vacancyInput.VacancyId;
+
+        var vacancy = await _pgContext.UserVacancies.FirstOrDefaultAsync(v => v.VacancyId == vacancyId
+                                                                              && v.UserId == vacancyInput.UserId);
 
         if (vacancy is null)
         {
             throw new InvalidOperationException($"Не найдено вакансии для обновления. VacancyId был {vacancyId}");
         }
 
-        vacancy.VacancyName = vacancyName;
-        vacancy.VacancyText = vacancyText;
-        vacancy.WorkExperience = workExperience;
-        vacancy.Employment = employment;
-        vacancy.Payment = payment;
+        FillUpdatedVacancy(vacancy, vacancyInput);
         
         await _pgContext.SaveChangesAsync(); // Сохраняем тут, так как нам нужен VacancyId.
 
@@ -396,4 +385,26 @@ public class VacancyRepository : IVacancyRepository
 
         return result;
     }
+
+    #endregion
+
+    #region Приватные методы.
+
+    /// <summary>
+    /// Метод заполняет сущность вакансии для обноления.
+    /// </summary>
+    /// <param name="vacancy">Вакансия до обновления.</param>
+    /// <param name="vacancyInput">Входная модель.</param>
+    private void FillUpdatedVacancy(UserVacancyEntity vacancy, VacancyInput vacancyInput)
+    {
+        vacancy.VacancyName = vacancyInput.VacancyName;
+        vacancy.VacancyText = vacancyInput.VacancyText;
+        vacancy.WorkExperience = vacancyInput.WorkExperience;
+        vacancy.Employment = vacancyInput.Employment;
+        vacancy.Payment = vacancyInput.Payment;
+        vacancy.Conditions = vacancyInput.Conditions;
+        vacancy.Demands = vacancyInput.Demands;
+    }
+
+    #endregion
 }

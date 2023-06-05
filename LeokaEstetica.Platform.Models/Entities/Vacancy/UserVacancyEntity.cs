@@ -67,6 +67,16 @@ public class UserVacancyEntity
     public long UserId { get; set; }
 
     /// <summary>
+    /// Требования.
+    /// </summary>
+    public string Demands { get; set; }
+
+    /// <summary>
+    /// Условия.
+    /// </summary>
+    public string Conditions { get; set; }
+
+    /// <summary>
     /// Каталог вакансий.
     /// </summary>
     public ICollection<CatalogVacancyEntity> CatalogVacancies { get; set; }
