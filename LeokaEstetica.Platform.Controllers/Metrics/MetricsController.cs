@@ -48,7 +48,7 @@ public class MetricsController : BaseController
             NewUsers = _mapper.Map<IEnumerable<NewUserMetricsOutput>>(items)
         };
 
-        result.NewUsers = UserMetricsHelper.CreateDisplayTextNewUserMetrics(result.NewUsers.ToList());
+        result.NewUsers = UserMetricsHelper.CreateDisplayTextNewUsers(result.NewUsers.ToList());
 
         return result;
     }

@@ -32,8 +32,10 @@ public class UserMetricsRepository : IUserMetricsRepository
             .Select(u => new UserEntity
             {
                 Email = u.Email,
-                Login = u.Login
+                Login = u.Login,
+                DateRegister = u.DateRegister
             })
+            .OrderByDescending(o => o.DateRegister)
             .ToListAsync();
 
         return result;

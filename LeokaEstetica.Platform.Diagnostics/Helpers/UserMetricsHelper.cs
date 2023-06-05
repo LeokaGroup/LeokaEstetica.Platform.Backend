@@ -14,13 +14,13 @@ public static class UserMetricsHelper
     /// <param name="users">Список пользователей.</param>
     /// </summary>
     /// <returns>Список пользователей.</returns>
-    public static IEnumerable<NewUserMetricsOutput> CreateDisplayTextNewUserMetrics(List<NewUserMetricsOutput> users)
+    public static IEnumerable<NewUserMetricsOutput> CreateDisplayTextNewUsers(List<NewUserMetricsOutput> users)
     {
         foreach (var user in users)
         {
             // Проставляем логин, если он заполнен, иначе почту.
             var userText = !string.IsNullOrEmpty(user.Login) ? user.Login : user.Email;
-            user.DisplayText = _helloText + userText;
+            user.DisplayText = _helloText + userText + "!";
         }
 
         return users;
