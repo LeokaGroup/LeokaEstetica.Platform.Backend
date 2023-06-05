@@ -15,6 +15,7 @@ using LeokaEstetica.Platform.Database.Repositories.Commerce;
 using LeokaEstetica.Platform.Database.Repositories.FareRule;
 using LeokaEstetica.Platform.Database.Repositories.Knowledge;
 using LeokaEstetica.Platform.Database.Repositories.Landing;
+using LeokaEstetica.Platform.Database.Repositories.Metrics;
 using LeokaEstetica.Platform.Database.Repositories.Moderation.Access;
 using LeokaEstetica.Platform.Database.Repositories.Moderation.Project;
 using LeokaEstetica.Platform.Database.Repositories.Moderation.Resume;
@@ -27,6 +28,7 @@ using LeokaEstetica.Platform.Database.Repositories.Resume;
 using LeokaEstetica.Platform.Database.Repositories.Subscription;
 using LeokaEstetica.Platform.Database.Repositories.User;
 using LeokaEstetica.Platform.Database.Repositories.Vacancy;
+using LeokaEstetica.Platform.Diagnostics.Services.Metrics;
 using LeokaEstetica.Platform.Finder.Services.Project;
 using LeokaEstetica.Platform.Finder.Services.Resume;
 using LeokaEstetica.Platform.Finder.Services.Vacancy;
@@ -91,6 +93,7 @@ public class BaseServiceTest
     protected readonly ProjectModerationRepository ProjectModerationRepository;
     protected readonly CommerceService CommerceService;
     protected readonly OrdersService OrdersService;
+    protected readonly UserMetricsService UserMetricsService;
 
     protected BaseServiceTest()
     {
@@ -210,5 +213,8 @@ public class BaseServiceTest
 
         var ordersRepository = new OrdersRepository(pgContext);
         OrdersService = new OrdersService(null, ordersRepository, userRepository);
+
+        var userMetricsRepository = new UserMetricsRepository(pgContext);
+        UserMetricsService = new UserMetricsService(null, userMetricsRepository);
     }
 }
