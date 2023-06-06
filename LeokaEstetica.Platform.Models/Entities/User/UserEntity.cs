@@ -144,6 +144,16 @@ public class UserEntity
     public DateTime DateCreatedMark { get; set; }
 
     /// <summary>
+    /// Дата начала подписки.
+    /// </summary>
+    public DateTime? SubscriptionStartDate { get; set; }
+    
+    /// <summary>
+    /// Дата окончания подписки.
+    /// </summary>
+    public DateTime? SubscriptionEndDate { get; set; }
+
+    /// <summary>
     /// Сообщения диалога.
     /// </summary>
     public ICollection<DialogMessageEntity> DialogMessages { get; set; }
