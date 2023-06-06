@@ -16,6 +16,7 @@ internal abstract class BaseProjectInviteTeamStrategy
     /// Конструктор.
     /// </summary>
     /// <param name="userRepository">Репозиторий пользователя.</param>
+    /// <param name="projectNotificationsService">Сервис уведомлений проектов.</param>
     protected BaseProjectInviteTeamStrategy(IUserRepository userRepository, 
         IProjectNotificationsService projectNotificationsService)
     {

@@ -184,4 +184,11 @@ public interface IUserRepository
     /// <param name="userId">Id пользователя.</param>
     /// <returns>Id анкеты.</returns>
     Task<long> GetProfileInfoIdByUserIdAsync(long userId);
+
+    /// <summary>
+    /// Метод получает дату начала подписки и дату окончания подписки пользователя.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Дата начала и дата окончания подписки.</returns>
+    Task<(DateTime? StartDate, DateTime? EndDate)> GetUserSubscriptionUsedDateAsync(long userId);
 }

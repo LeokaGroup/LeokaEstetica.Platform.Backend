@@ -8,14 +8,14 @@ internal class ProjectInviteTeamJob
     /// <summary>
     /// Метод находит Id пользователя по указанной стратегии.
     /// </summary>
-    /// <param name="job">Стратегия поиска.</param>
+    /// <param name="strategy">Стратегия поиска.</param>
     /// <param name="inviteText">Текст для приглашения.</param>
     /// <returns>Id пользователя.</returns>
-    public async Task<long> GetUserIdAsync(BaseProjectInviteTeamStrategy job, string inviteText)
+    internal async Task<long> GetUserIdAsync(BaseProjectInviteTeamStrategy strategy, string inviteText)
     {
-        if (job is not null)
+        if (strategy is not null)
         {
-            return await job.GetUserId(inviteText, string.Empty);
+            return await strategy.GetUserId(inviteText, string.Empty);
         }
 
         return 0;
