@@ -63,6 +63,12 @@ public sealed class RefundsService : IRefundsService
     {
         try
         {
+            if (orderId <= 0)
+            {
+                var ex = new InvalidOperationException($"Id заказа был <= 0. OrderId: {orderId}");
+                throw ex;
+            }
+            
             var userId = await _userRepository.GetUserByEmailAsync(account);
 
             if (userId <= 0)
