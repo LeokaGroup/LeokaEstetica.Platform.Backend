@@ -25,6 +25,7 @@ using LeokaEstetica.Platform.Services.Services.Subscription;
 using LeokaEstetica.Platform.Services.Services.User;
 using LeokaEstetica.Platform.Services.Services.Vacancy;
 using LeokaEstetica.Platform.Services.Strategies.Project.Team;
+using LeokaEstetica.Platform.Services.Strategies.Refunds;
 
 namespace LeokaEstetica.Platform.Services.AutofacModules;
 
@@ -209,6 +210,16 @@ public class ServicesModule : Module
             .InstancePerLifetimeScope();
         builder.RegisterType<OrdersService>()
             .As<IOrdersService>()
+            .InstancePerLifetimeScope();
+        
+        // Класс стратегии вычисления суммы возврата на основании использованных дней.
+        builder
+            .RegisterType<CalculateRefundUsedDaysStrategy>()
+            .Named<BaseCalculateRefundStrategy>("CalculateRefundUsedDaysStrategy")
+            .InstancePerLifetimeScope();
+        builder
+            .RegisterType<CalculateRefundUsedDaysStrategy>()
+            .As<BaseCalculateRefundStrategy>()
             .InstancePerLifetimeScope();
     }
 }
