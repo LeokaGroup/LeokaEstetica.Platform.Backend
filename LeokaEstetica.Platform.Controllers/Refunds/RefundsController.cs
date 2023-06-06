@@ -39,7 +39,7 @@ public class RefundsController : BaseController
     [ProducesResponseType(404)]
     public async Task<CalculateRefundOutput> CalculateRefundAsync([FromQuery] long orderId)
     {
-        var result = await _refundsService.CalculateRefundAsync(orderId, GetUserName());
+        var result = await _refundsService.CalculateRefundAsync(orderId, GetUserName(), CreateTokenFromHeader());
 
         return result;
     }
