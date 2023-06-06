@@ -7,7 +7,7 @@ namespace LeokaEstetica.Platform.Services.Strategies.Project.Team;
 /// Базовый класс приглашений в команду проекта.
 /// Базовая стратегия.
 /// </summary>
-public abstract class BaseProjectInviteTeamStrategy
+internal abstract class BaseProjectInviteTeamStrategy
 {
     protected readonly IUserRepository UserRepository;
     protected readonly IProjectNotificationsService ProjectNotificationsService;
