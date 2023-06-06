@@ -10,7 +10,7 @@ namespace LeokaEstetica.Platform.Services.Strategies.Refunds;
 /// <summary>
 /// Базовый класс семейства алгоритмов для вычисления суммы возврата.
 /// </summary>
-internal abstract class BaseCalculateRefundStrategy
+public abstract class BaseCalculateRefundStrategy
 {
     protected readonly ILogger<BaseCalculateRefundStrategy> Logger;
     protected readonly ISubscriptionRepository SubscriptionRepository;
@@ -25,7 +25,7 @@ internal abstract class BaseCalculateRefundStrategy
     /// <param name="subscriptionRepository">Репозиторий подписок.</param>
     /// <param name="fareRuleRepository">Репозиторий правил тарифов.</param>
     /// <param name="userRepository">Репозиторий пользователя.</param>
-    /// <param name="userRepository">Репозиторий заказов.</param>
+    /// <param name="ordersRepository">Репозиторий заказов.</param>
     protected BaseCalculateRefundStrategy(ILogger<BaseCalculateRefundStrategy> logger, 
         ISubscriptionRepository subscriptionRepository, 
         IFareRuleRepository fareRuleRepository, 

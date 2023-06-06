@@ -7,6 +7,7 @@ using LeokaEstetica.Platform.Services.Abstractions.Landing;
 using LeokaEstetica.Platform.Services.Abstractions.Orders;
 using LeokaEstetica.Platform.Services.Abstractions.Profile;
 using LeokaEstetica.Platform.Services.Abstractions.Project;
+using LeokaEstetica.Platform.Services.Abstractions.Refunds;
 using LeokaEstetica.Platform.Services.Abstractions.Resume;
 using LeokaEstetica.Platform.Services.Abstractions.Search.Project;
 using LeokaEstetica.Platform.Services.Abstractions.Subscription;
@@ -19,6 +20,7 @@ using LeokaEstetica.Platform.Services.Services.Landing;
 using LeokaEstetica.Platform.Services.Services.Orders;
 using LeokaEstetica.Platform.Services.Services.Profile;
 using LeokaEstetica.Platform.Services.Services.Project;
+using LeokaEstetica.Platform.Services.Services.Refunds;
 using LeokaEstetica.Platform.Services.Services.Resume;
 using LeokaEstetica.Platform.Services.Services.Search.Project;
 using LeokaEstetica.Platform.Services.Services.Subscription;
@@ -220,6 +222,16 @@ public class ServicesModule : Module
         builder
             .RegisterType<CalculateRefundUsedDaysStrategy>()
             .As<BaseCalculateRefundStrategy>()
+            .InstancePerLifetimeScope();
+        
+        // Сервис возвратов в нашей системе.
+        builder
+            .RegisterType<RefundsService>()
+            .Named<IRefundsService>("RefundsService")
+            .InstancePerLifetimeScope();
+        builder
+            .RegisterType<RefundsService>()
+            .As<IRefundsService>()
             .InstancePerLifetimeScope();
     }
 }
