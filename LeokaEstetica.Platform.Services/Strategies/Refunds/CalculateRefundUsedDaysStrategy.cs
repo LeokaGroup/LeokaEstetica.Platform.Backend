@@ -1,7 +1,5 @@
 using System.Transactions;
-using LeokaEstetica.Platform.Database.Abstractions.FareRule;
 using LeokaEstetica.Platform.Database.Abstractions.Orders;
-using LeokaEstetica.Platform.Database.Abstractions.Subscription;
 using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Models.Dto.Output.Refunds;
 using Microsoft.Extensions.Logging;
@@ -18,20 +16,12 @@ internal sealed class CalculateRefundUsedDaysStrategy : BaseCalculateRefundStrat
     /// Конструктор.
     /// </summary>
     /// <param name="logger">Логгер.</param>
-    /// <param name="subscriptionRepository">Репозиторий подписок.</param>
-    /// <param name="fareRuleRepository">Репозиторий правил тарифов.</param>
     /// <param name="userRepository">Репозиторий пользователя.</param>
     /// <param name="userRepository">Репозиторий заказов.</param>
     public CalculateRefundUsedDaysStrategy(ILogger<BaseCalculateRefundStrategy> logger,
-        ISubscriptionRepository subscriptionRepository,
-        IFareRuleRepository fareRuleRepository,
         IUserRepository userRepository,
         IOrdersRepository ordersRepository)
-        : base(logger,
-            subscriptionRepository,
-            fareRuleRepository,
-            userRepository,
-            ordersRepository)
+        : base(logger, userRepository, ordersRepository)
     {
     }
 
@@ -49,21 +39,6 @@ internal sealed class CalculateRefundUsedDaysStrategy : BaseCalculateRefundStrat
         
         try
         {
-            // Получаем подписку.
-            var currentSubscription = await SubscriptionRepository.GetUserSubscriptionAsync(userId);
-        
-            // Получаем тариф.
-            var fareRule = await FareRuleRepository.GetByIdAsync(currentSubscription.ObjectId);
-
-            // С бесплатным тарифом нет смысла работать. Возврат не делаем в таком кейсе.
-            if (fareRule.IsFree)
-            {
-                Logger.LogWarning("Невозможно вычислить сумму возврата. Нельзя сделать возврат по бесплатному тарифу. " +
-                                  $"UserId: {userId}. " +
-                                  $"OrderId: {orderId}");
-                return null;
-            }
-
             // Вычисляем, сколько прошло дней использования подписки у пользователя.
             var usedDays = await UserRepository.GetUserSubscriptionUsedDateAsync(userId);
 
@@ -84,7 +59,7 @@ internal sealed class CalculateRefundUsedDaysStrategy : BaseCalculateRefundStrat
             var orderPrice = (await OrdersRepository.GetOrderDetailsAsync(orderId, userId)).Price;
 
             // Вычисляем сумму к возврату.
-            var resultRefundPrice = Math.Round(orderPrice / referenceUsedDays);
+            var resultRefundPrice = orderPrice * referenceUsedDays / 100;
 
             // Не можем делать возвраты себе в ущерб.
             if (resultRefundPrice <= 0)
@@ -95,13 +70,13 @@ internal sealed class CalculateRefundUsedDaysStrategy : BaseCalculateRefundStrat
                 return null;
             }
             
-            scope.Complete();
-
             var result = new CalculateRefundOutput
             {
                 OrderId = orderId,
                 Price = resultRefundPrice
             };
+            
+            scope.Complete();
 
             return result;
         }

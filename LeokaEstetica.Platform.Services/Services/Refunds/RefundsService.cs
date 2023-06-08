@@ -59,27 +59,40 @@ public sealed class RefundsService : IRefundsService
     /// <param name="token">Токен.</param>
     /// </summary>
     /// <returns>Выходная модель.</returns>
-    public async Task<CalculateRefundOutput> CalculateRefundAsync(long orderId, string account, string token)
+    public async Task<CalculateRefundOutput> CalculateRefundAsync(string account, string token)
     {
         try
         {
-            if (orderId <= 0)
-            {
-                var ex = new InvalidOperationException($"Id заказа был <= 0. OrderId: {orderId}");
-                throw ex;
-            }
-            
             var userId = await _userRepository.GetUserByEmailAsync(account);
 
             if (userId <= 0)
             {
                 throw new NotFoundUserIdByAccountException(account);
             }
+            
+            // Получаем подписку.
+            var currentSubscription = await _subscriptionRepository.GetUserSubscriptionAsync(userId);
+            
+            // Получаем подписку пользователя.
+            var userSubscription = await _subscriptionRepository
+                .GetUserSubscriptionBySubscriptionIdAsync(currentSubscription.SubscriptionId, userId);
+        
+            // Получаем тариф.
+            //var fareRule = await _fareRuleRepository.GetByIdAsync(currentSubscription.ObjectId);
+
+            // Получаем заказ, который был оформлен на подписку.
+            var orderId = await _ordersRepository.GetUserOrderIdAsync(userSubscription.MonthCount, userId);
+            
+            if (orderId <= 0)
+            {
+                var ex = new InvalidOperationException($"Id заказа был <= 0. OrderId: {orderId}");
+                throw ex;
+            }
 
             var calculateRefund = new CalculateRefund();
             var result = await calculateRefund.CalculateRefundAsync(
-                new CalculateRefundUsedDaysStrategy(_loggerStrategy, _subscriptionRepository, _fareRuleRepository,
-                    _userRepository, _ordersRepository), userId, orderId);
+                new CalculateRefundUsedDaysStrategy(_loggerStrategy, _userRepository, _ordersRepository), userId,
+                orderId);
 
             if (result is null)
             {

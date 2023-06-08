@@ -28,4 +28,12 @@ public interface IOrdersRepository
     /// <param name="userId">Id пользователя.</param>
     /// <returns>Список транзакций.</returns>
     Task<IEnumerable<HistoryEntity>> GetHistoryAsync(long userId);
+
+    /// <summary>
+    /// Метод получает Id заказа пользователя по кол-во месяцев подписки и Id пользователя.
+    /// </summary>
+    /// <param name="monthCount">Кол-во месяцев подписки.</param>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Данные заказа.</returns>
+    Task<long> GetUserOrderIdAsync(short monthCount, long userId);
 }
