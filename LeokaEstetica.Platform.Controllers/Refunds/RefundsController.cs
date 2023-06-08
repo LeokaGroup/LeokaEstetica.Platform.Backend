@@ -1,5 +1,6 @@
 using LeokaEstetica.Platform.Base;
 using LeokaEstetica.Platform.Controllers.Filters;
+using LeokaEstetica.Platform.Models.Dto.Input.Refunds;
 using LeokaEstetica.Platform.Models.Dto.Output.Refunds;
 using LeokaEstetica.Platform.Services.Abstractions.Refunds;
 using Microsoft.AspNetCore.Mvc;
@@ -42,5 +43,22 @@ public class RefundsController : BaseController
         var result = await _refundsService.CalculateRefundAsync(GetUserName(), CreateTokenFromHeader());
 
         return result;
+    }
+
+    /// <summary>
+    /// Метод создает возврат по заказу.
+    /// </summary>
+    /// <param name="createRefundInput">Входная модель.</param>
+    /// <returns>Выходная модель.</returns>
+    [HttpPost]
+    [Route("refunds")]
+    [ProducesResponseType(200, Type = typeof(CreateRefundOutput))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<CreateRefundOutput> CreateRefundAsync([FromBody] CreateRefundInput createRefundInput)
+    {
+        
     }
 }
