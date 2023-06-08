@@ -171,6 +171,15 @@ public sealed class RefundsService : IRefundsService
         catch (Exception ex)
         {
             _logger.LogCritical(ex.Message, ex);
+            
+            if (!string.IsNullOrEmpty(token))
+            {
+                await _refundsNotificationService.SendNotificationErrorRefundAsync("Что то пошло не так",
+                    "Ошибка при возврате. Мы уже знаем о проблеме и уже занимаемся ей. " +
+                    $"Вы можете обратиться в тех.поддержку. ID вашего заказа {orderId}",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, token);
+            }
+            
             throw;
         }
     }
