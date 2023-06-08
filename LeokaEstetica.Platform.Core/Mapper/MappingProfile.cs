@@ -17,6 +17,7 @@ using LeokaEstetica.Platform.Models.Dto.Output.Orders;
 using LeokaEstetica.Platform.Models.Dto.Output.Profile;
 using LeokaEstetica.Platform.Models.Dto.Output.Project;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectTeam;
+using LeokaEstetica.Platform.Models.Dto.Output.Refunds;
 using LeokaEstetica.Platform.Models.Dto.Output.Resume;
 using LeokaEstetica.Platform.Models.Dto.Output.Search.Project;
 using LeokaEstetica.Platform.Models.Dto.Output.Subscription;
@@ -161,5 +162,7 @@ public class MappingProfile : Profile
         CreateMap<HistoryEntity, HistoryOutput>();
         
         CreateMap<UserEntity, NewUserMetricsOutput>();
+        
+        CreateMap<RefundEntity, RefundOutput>();
     }
 }

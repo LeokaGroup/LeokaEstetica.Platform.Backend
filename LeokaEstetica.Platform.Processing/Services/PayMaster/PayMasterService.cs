@@ -12,11 +12,13 @@ using LeokaEstetica.Platform.Models.Dto.Base.Commerce.PayMaster;
 using LeokaEstetica.Platform.Models.Dto.Common.Cache;
 using LeokaEstetica.Platform.Models.Dto.Input.Commerce.PayMaster;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce.PayMaster;
+using LeokaEstetica.Platform.Models.Dto.Output.Refunds;
 using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Notifications.Consts;
 using LeokaEstetica.Platform.Processing.Abstractions.PayMaster;
 using LeokaEstetica.Platform.Processing.Consts;
 using LeokaEstetica.Platform.Processing.Enums;
+using LeokaEstetica.Platform.Processing.Models.Input;
 using LeokaEstetica.Platform.Processing.Models.Output;
 using LeokaEstetica.Platform.Redis.Abstractions.Commerce;
 using Microsoft.Extensions.Configuration;
@@ -28,7 +30,7 @@ namespace LeokaEstetica.Platform.Processing.Services.PayMaster;
 /// <summary>
 /// Класс реализует методы сервиса работы с платежной системой PayMaster.
 /// </summary>
-public class PayMasterService : IPayMasterService
+public sealed class PayMasterService : IPayMasterService
 {
     private readonly ILogger<PayMasterService> _logger;
     private readonly IConfiguration _configuration;
@@ -159,10 +161,10 @@ public class PayMasterService : IPayMasterService
     {
         try
         {
-            _logger.LogInformation($"Начало проверки статуса заказа {paymentId}.");
-            
             await SetPayMasterRequestAuthorizationHeader(httpClient);
             
+            _logger.LogInformation($"Начало проверки статуса заказа {paymentId}.");
+
             var responseCreateOrder = await httpClient.GetAsync(string.Concat(ApiConsts.CHECK_PAYMENT_STATUS, 
                 paymentId));
             
@@ -203,6 +205,50 @@ public class PayMasterService : IPayMasterService
             _logger.LogCritical(ex, ex.Message);
             throw;
         }
+    }
+
+    /// <summary>
+    /// Метод создает возврат в ПС.
+    /// </summary>
+    /// <param name="paymentId">Id платежа в ПС.</param>
+    /// <param name="price">Сумма возврата.</param>
+    /// <param name="currency">Валюта.</param>
+    /// <returns>Выходная модель.</returns>
+    public async Task<CreateRefundOutput> CreateRefundAsync(string paymentId, decimal price, string currency)
+    {
+        var request = await CreateRefundRequestAsync(paymentId, price, currency);
+
+        using var httpClient = new HttpClient();
+        await SetPayMasterRequestAuthorizationHeader(httpClient);
+        
+        _logger.LogInformation($"Начало создания возврата платежа {paymentId}. Сумма к возврату: {price}");
+        
+        // Создаем возврат в ПС.
+        var responseCreateRefund = await httpClient.PostAsJsonAsync(ApiConsts.CREATE_REFUND, request);
+
+        // Если ошибка при возврате платежа в ПС.
+        if (!responseCreateRefund.IsSuccessStatusCode)
+        {
+            var ex = new InvalidOperationException(
+                $"Ошибка возврата платежа в ПС. Данные возврата: {JsonConvert.SerializeObject(request)}");
+            throw ex;
+        }
+
+        // Парсим результат из ПС.
+        var refund = await responseCreateRefund.Content.ReadFromJsonAsync<CreateRefundOutput>();
+
+        // Если ошибка при парсинге возврата из ПС, то не даем сделать возврат.
+        if (string.IsNullOrEmpty(refund?.PaymentId) 
+            || !refund.Status.Equals(RefundStatusEnum.Success.ToString()))
+        {
+            var ex = new InvalidOperationException(
+                $"Ошибка парсинга данных из ПС. Данные возврата: {JsonConvert.SerializeObject(request)}");
+            throw ex;
+        }
+
+        _logger.LogInformation("Конец возврата заказа.");
+
+        return refund;
     }
 
     #endregion
@@ -334,6 +380,26 @@ public class PayMasterService : IPayMasterService
         };
 
         return result;
+    }
+
+    /// <summary>
+    /// Метод создает модель запроса в ПС для возврата.
+    /// </summary>
+    /// <param name="paymentId">Id платежа в ПС.</param>
+    /// <param name="price">Сумма возврата.</param>
+    /// <param name="currency">Валюта.</param>
+    /// <returns>Заполненная модель запроса.</returns>
+    private async Task<CreateRefundInput> CreateRefundRequestAsync(string paymentId, decimal price,
+        string currency)
+    {
+        var request = new CreateRefundInput
+        {
+            PaymentId = paymentId,
+            Amount = price,
+            Currency = currency
+        };
+
+        return await Task.FromResult(request);
     }
 
     #endregion

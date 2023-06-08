@@ -26,6 +26,22 @@ public partial class RefundConfiguration : IEntityTypeConfiguration<RefundEntity
             .HasColumnType("varchar(50)")
             .HasMaxLength(50)
             .IsRequired();
+        
+        entity.Property(e => e.DateCreated)
+            .HasColumnName("DateCreated")
+            .HasColumnType("timestamp")
+            .HasDefaultValue(DateTime.Now)
+            .IsRequired();
+        
+        entity.Property(e => e.Status)
+            .HasColumnName("Status")
+            .HasColumnType("varchar(50)")
+            .IsRequired();
+        
+        entity.Property(e => e.RefundOrderId)
+            .HasColumnName("RefundOrderId")
+            .HasColumnType("varchar(50)")
+            .IsRequired();
 
         entity.HasIndex(u => u.RefundId)
             .HasDatabaseName("PK_Refunds_RefundId")

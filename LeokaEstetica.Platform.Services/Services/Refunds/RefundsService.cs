@@ -1,10 +1,14 @@
 using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.Orders;
+using LeokaEstetica.Platform.Database.Abstractions.Refunds;
 using LeokaEstetica.Platform.Database.Abstractions.Subscription;
 using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Models.Dto.Output.Refunds;
+using LeokaEstetica.Platform.Models.Entities.Commerce;
 using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Notifications.Consts;
+using LeokaEstetica.Platform.Processing.Abstractions.PayMaster;
+using LeokaEstetica.Platform.Processing.Enums;
 using LeokaEstetica.Platform.Services.Abstractions.Refunds;
 using LeokaEstetica.Platform.Services.Strategies.Refunds;
 using Microsoft.Extensions.Logging;
@@ -22,6 +26,8 @@ public sealed class RefundsService : IRefundsService
     private readonly IUserRepository _userRepository;
     private readonly IOrdersRepository _ordersRepository;
     private readonly IRefundsNotificationService _refundsNotificationService;
+    private readonly IRefundsRepository _refundsRepository;
+    private readonly IPayMasterService _payMasterService;
 
     /// <summary>
     /// Конструктор.
@@ -31,12 +37,16 @@ public sealed class RefundsService : IRefundsService
     /// <param name="userRepository">Репозиторий пользователя.</param>
     /// <param name="ordersRepository">Репозиторий заказов.</param>
     /// <param name="refundsNotificationService">Сервис уведомлений возвратов.</param>
+    /// <param name="refundsRepository">Репозиторий возвратов.</param>
+    /// <param name="payMasterService">Сервис возвратов в ПС.</param>
     public RefundsService(ILogger<RefundsService> logger,
         ILogger<BaseCalculateRefundStrategy> loggerStrategy,
         ISubscriptionRepository subscriptionRepository,
         IUserRepository userRepository,
         IOrdersRepository ordersRepository,
-        IRefundsNotificationService refundsNotificationService)
+        IRefundsNotificationService refundsNotificationService, 
+        IRefundsRepository refundsRepository, 
+        IPayMasterService payMasterService)
     {
         _logger = logger;
         _loggerStrategy = loggerStrategy;
@@ -44,7 +54,11 @@ public sealed class RefundsService : IRefundsService
         _userRepository = userRepository;
         _ordersRepository = ordersRepository;
         _refundsNotificationService = refundsNotificationService;
+        _refundsRepository = refundsRepository;
+        _payMasterService = payMasterService;
     }
+
+    #region Публичные методы.
 
     /// <summary>
     /// Метод вычисляет сумму возврата заказа.
@@ -111,4 +125,61 @@ public sealed class RefundsService : IRefundsService
             throw;
         }
     }
+
+    /// <summary>
+    /// Метод создает возврат по заказу.
+    /// </summary>
+    /// <param name="orderId">Id заказа.</param>
+    /// <param name="price">Сумма возврата.</param>
+    /// <param name="account">Аккаунт.</param>
+    /// <param name="token">Токен.</param>
+    /// <returns>Выходная модель.</returns>
+    public async Task<RefundEntity> CreateRefundAsync(long orderId, decimal price, string account, string token)
+    {
+        try
+        {
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId <= 0)
+            {
+                throw new NotFoundUserIdByAccountException(account);
+            }
+            
+            // Получаем данные для возврата из заказа.
+            var order = await _ordersRepository.GetOrderDetailsAsync(orderId, userId);
+
+            if (order is null)
+            {
+                var ex = new InvalidOperationException("Не удалось получить детали заказа. " +
+                                                       $"OrderId: {orderId}." +
+                                                       $"UserId: {userId}");
+                throw ex;
+            }
+
+            // Создаем возврат в ПС.
+            var paymentId = order.PaymentId;
+            var refund = await _payMasterService.CreateRefundAsync(paymentId, price,
+                PaymentCurrencyEnum.RUB.ToString());
+
+            // Сохраняем возврат в БД.
+            var result = await _refundsRepository.SaveRefundAsync(paymentId, price, refund.DateCreated, refund.Status,
+                refund.RefundId);
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogCritical(ex.Message, ex);
+            throw;
+        }
+    }
+
+    #endregion
+
+    #region Приватные методы.
+
+    
+
+    #endregion
 }
