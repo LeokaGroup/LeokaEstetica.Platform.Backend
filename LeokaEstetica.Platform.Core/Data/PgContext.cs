@@ -395,4 +395,9 @@ public class PgContext : DbContext
     /// Таблица списка транзакций по заказам пользователя.
     /// </summary>
     public DbSet<HistoryEntity> OrderTransactionsShadow { get; set; }
+
+    /// <summary>
+    /// Таблица возвратов.
+    /// </summary>
+    public DbSet<RefundEntity> Refunds { get; set; }
 }
