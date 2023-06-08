@@ -1,5 +1,4 @@
 using LeokaEstetica.Platform.Core.Exceptions;
-using LeokaEstetica.Platform.Database.Abstractions.FareRule;
 using LeokaEstetica.Platform.Database.Abstractions.Orders;
 using LeokaEstetica.Platform.Database.Abstractions.Subscription;
 using LeokaEstetica.Platform.Database.Abstractions.User;
@@ -20,7 +19,6 @@ public sealed class RefundsService : IRefundsService
     private readonly ILogger<RefundsService> _logger;
     private readonly ILogger<BaseCalculateRefundStrategy> _loggerStrategy;
     private readonly ISubscriptionRepository _subscriptionRepository;
-    private readonly IFareRuleRepository _fareRuleRepository;
     private readonly IUserRepository _userRepository;
     private readonly IOrdersRepository _ordersRepository;
     private readonly IRefundsNotificationService _refundsNotificationService;
@@ -30,14 +28,12 @@ public sealed class RefundsService : IRefundsService
     /// </summary>
     /// <param name="logger">Логгер.</param>
     /// <param name="subscriptionRepository">Репозиторий подписок.</param>
-    /// <param name="fareRuleRepository">Репозиторий правил тарифов.</param>
     /// <param name="userRepository">Репозиторий пользователя.</param>
     /// <param name="ordersRepository">Репозиторий заказов.</param>
     /// <param name="refundsNotificationService">Сервис уведомлений возвратов.</param>
     public RefundsService(ILogger<RefundsService> logger,
         ILogger<BaseCalculateRefundStrategy> loggerStrategy,
         ISubscriptionRepository subscriptionRepository,
-        IFareRuleRepository fareRuleRepository,
         IUserRepository userRepository,
         IOrdersRepository ordersRepository,
         IRefundsNotificationService refundsNotificationService)
@@ -45,7 +41,6 @@ public sealed class RefundsService : IRefundsService
         _logger = logger;
         _loggerStrategy = loggerStrategy;
         _subscriptionRepository = subscriptionRepository;
-        _fareRuleRepository = fareRuleRepository;
         _userRepository = userRepository;
         _ordersRepository = ordersRepository;
         _refundsNotificationService = refundsNotificationService;
@@ -76,9 +71,6 @@ public sealed class RefundsService : IRefundsService
             // Получаем подписку пользователя.
             var userSubscription = await _subscriptionRepository
                 .GetUserSubscriptionBySubscriptionIdAsync(currentSubscription.SubscriptionId, userId);
-        
-            // Получаем тариф.
-            //var fareRule = await _fareRuleRepository.GetByIdAsync(currentSubscription.ObjectId);
 
             // Получаем заказ, который был оформлен на подписку.
             var orderId = await _ordersRepository.GetUserOrderIdAsync(userSubscription.MonthCount, userId);
