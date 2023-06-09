@@ -1,5 +1,6 @@
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Runtime.CompilerServices;
 using LeokaEstetica.Platform.Access.Abstractions.User;
 using LeokaEstetica.Platform.Base.Enums;
 using LeokaEstetica.Platform.Base.Helpers;
@@ -25,12 +26,14 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
+[assembly: InternalsVisibleTo("LeokaEstetica.Platform.Tests")]
+
 namespace LeokaEstetica.Platform.Processing.Services.PayMaster;
 
 /// <summary>
 /// Класс реализует методы сервиса работы с платежной системой PayMaster.
 /// </summary>
-public sealed class PayMasterService : IPayMasterService
+internal sealed class PayMasterService : IPayMasterService
 {
     private readonly ILogger<PayMasterService> _logger;
     private readonly IConfiguration _configuration;

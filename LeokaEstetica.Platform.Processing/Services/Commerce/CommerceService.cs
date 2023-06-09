@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.Commerce;
@@ -9,13 +10,15 @@ using LeokaEstetica.Platform.Processing.Abstractions.Commerce;
 using LeokaEstetica.Platform.Redis.Abstractions.Commerce;
 using Microsoft.Extensions.Logging;
 
+[assembly: InternalsVisibleTo("LeokaEstetica.Platform.Tests")]
+
 namespace LeokaEstetica.Platform.Processing.Services.Commerce;
 
 /// <summary>
 /// TODO: Отрефачить разбив логику заказов в отдельный сервис OrderService.
 /// Класс реализует методы сервиса коммерции.
 /// </summary>
-public class CommerceService : ICommerceService
+internal sealed class CommerceService : ICommerceService
 {
     private readonly ICommerceRedisService _commerceRedisService;
     private readonly ILogger<CommerceService> _logger;
