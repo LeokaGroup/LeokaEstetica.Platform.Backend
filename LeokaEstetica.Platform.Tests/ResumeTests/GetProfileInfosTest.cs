@@ -3,7 +3,7 @@ using NUnit.Framework;
 namespace LeokaEstetica.Platform.Tests.ResumeTests;
 
 [TestFixture]
-public class GetProfileInfosTest : BaseServiceTest
+internal class GetProfileInfosTest : BaseServiceTest
 {
     [Test]
     public async Task GetProfileInfosAsync()

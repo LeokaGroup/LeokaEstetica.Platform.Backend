@@ -4,7 +4,7 @@ using NUnit.Framework;
 namespace LeokaEstetica.Platform.Tests.VacanciesTests;
 
 [TestFixture]
-public class UpdateVacancyTest : BaseServiceTest
+internal class UpdateVacancyTest : BaseServiceTest
 {
     [Test]
     public async Task UpdateVacancyAsyncTest()

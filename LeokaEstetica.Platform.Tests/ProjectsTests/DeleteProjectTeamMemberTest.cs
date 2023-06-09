@@ -3,7 +3,7 @@ using NUnit.Framework;
 namespace LeokaEstetica.Platform.Tests.ProjectsTests;
 
 [TestFixture]
-public class DeleteProjectTeamMemberTest : BaseServiceTest
+internal class DeleteProjectTeamMemberTest : BaseServiceTest
 {
     [Test]
     public async Task DeleteProjectTeamMemberAsyncTest()

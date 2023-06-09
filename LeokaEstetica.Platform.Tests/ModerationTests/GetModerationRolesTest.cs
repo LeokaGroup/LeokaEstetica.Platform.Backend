@@ -4,7 +4,7 @@ using NUnit.Framework;
 namespace LeokaEstetica.Platform.Tests.ModerationTests;
 
 [TestFixture]
-public class GetModerationRolesTest : BaseServiceTest
+internal class GetModerationRolesTest : BaseServiceTest
 {
     [Test]
     public async Task GetModerationRoleAsyncTest()

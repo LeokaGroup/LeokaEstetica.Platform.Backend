@@ -1,5 +1,6 @@
 using System.Data;
 using System.IdentityModel.Tokens.Jwt;
+using System.Runtime.CompilerServices;
 using System.Security.Claims;
 using AutoMapper;
 using LeokaEstetica.Platform.Access.Abstractions.User;
@@ -22,12 +23,14 @@ using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using ValidationFailure = FluentValidation.Results.ValidationFailure;
 
+[assembly: InternalsVisibleTo("LeokaEstetica.Platform.Tests")]
+
 namespace LeokaEstetica.Platform.Services.Services.User;
 
 /// <summary>
 /// Класс реализует методы сервиса пользователей.
 /// </summary>
-public class UserService : IUserService
+internal sealed class UserService : IUserService
 {
     private readonly ILogger<UserService> _logger;
     private readonly IUserRepository _userRepository;

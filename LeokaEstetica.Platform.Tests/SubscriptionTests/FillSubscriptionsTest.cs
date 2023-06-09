@@ -5,7 +5,7 @@ using static NUnit.Framework.Assert;
 namespace LeokaEstetica.Platform.Tests.SubscriptionTests;
 
 [TestFixture]
-public class FillSubscriptionsTest : BaseServiceTest
+internal class FillSubscriptionsTest : BaseServiceTest
 {
     /// <summary>
     /// Метод тестирует запись активных подписок пользователя.

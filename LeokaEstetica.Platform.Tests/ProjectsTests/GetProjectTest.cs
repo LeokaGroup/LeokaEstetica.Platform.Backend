@@ -4,7 +4,7 @@ using NUnit.Framework;
 namespace LeokaEstetica.Platform.Tests.ProjectsTests;
 
 [TestFixture]
-public class GetProjectTest : BaseServiceTest
+internal class GetProjectTest : BaseServiceTest
 {
     [Test]
     public async Task GetProjectAsyncTest()

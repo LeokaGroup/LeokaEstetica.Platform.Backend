@@ -3,7 +3,7 @@ using NUnit.Framework;
 namespace LeokaEstetica.Platform.Tests.ModerationTests;
 
 [TestFixture]
-public class AddUserBlackListTest : BaseServiceTest
+internal class AddUserBlackListTest : BaseServiceTest
 {
     [Test]
     public async Task AddUserBlackListAsyncTest()

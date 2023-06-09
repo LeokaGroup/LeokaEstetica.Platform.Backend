@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using AutoMapper;
 using LeokaEstetica.Platform.Access.Abstractions.AvailableLimits;
 using LeokaEstetica.Platform.Core.Exceptions;
@@ -25,12 +26,14 @@ using LeokaEstetica.Platform.Database.Abstractions.Moderation.Vacancy;
 using LeokaEstetica.Platform.Models.Entities.Moderation;
 using Microsoft.Extensions.Logging;
 
+[assembly: InternalsVisibleTo("LeokaEstetica.Platform.Tests")]
+
 namespace LeokaEstetica.Platform.Services.Services.Vacancy;
 
 /// <summary>
 /// Класс реализует методы сервиса вакансий.
 /// </summary>
-public class VacancyService : IVacancyService
+internal sealed class VacancyService : IVacancyService
 {
     private readonly ILogger<VacancyService> _logger;
     private readonly IVacancyRepository _vacancyRepository;

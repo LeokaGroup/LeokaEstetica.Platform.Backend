@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.Orders;
 using LeokaEstetica.Platform.Database.Abstractions.Refunds;
@@ -13,12 +14,14 @@ using LeokaEstetica.Platform.Services.Abstractions.Refunds;
 using LeokaEstetica.Platform.Services.Strategies.Refunds;
 using Microsoft.Extensions.Logging;
 
+[assembly: InternalsVisibleTo("LeokaEstetica.Platform.Tests")]
+
 namespace LeokaEstetica.Platform.Services.Services.Refunds;
 
 /// <summary>
 /// Класс реализует методы сервиса возвратов в нашей системе.
 /// </summary>
-public sealed class RefundsService : IRefundsService
+internal sealed class RefundsService : IRefundsService
 {
     private readonly ILogger<RefundsService> _logger;
     private readonly ILogger<BaseCalculateRefundStrategy> _loggerStrategy;
@@ -170,7 +173,7 @@ public sealed class RefundsService : IRefundsService
         
         catch (Exception ex)
         {
-            _logger.LogCritical(ex.Message, ex);
+            _logger?.LogCritical(ex.Message, ex);
             
             if (!string.IsNullOrEmpty(token))
             {

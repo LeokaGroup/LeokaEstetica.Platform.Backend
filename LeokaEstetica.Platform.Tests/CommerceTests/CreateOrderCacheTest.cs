@@ -4,7 +4,7 @@ using NUnit.Framework;
 namespace LeokaEstetica.Platform.Tests.CommerceTests;
 
 [TestFixture]
-public class CreateOrderCacheTest : BaseServiceTest
+internal class CreateOrderCacheTest : BaseServiceTest
 {
     [Test]
     public Task CreateOrderCacheAsyncTest()

@@ -7,7 +7,7 @@ namespace LeokaEstetica.Platform.Services.Strategies.Project.Team;
 /// <summary>
 /// Стратегия приглашения пользователя в проект по номеру телефона.
 /// </summary>
-internal class ProjectInviteTeamPhoneNumberStrategy : BaseProjectInviteTeamStrategy
+internal sealed class ProjectInviteTeamPhoneNumberStrategy : BaseProjectInviteTeamStrategy
 {
     /// <summary>
     /// Конструктор.

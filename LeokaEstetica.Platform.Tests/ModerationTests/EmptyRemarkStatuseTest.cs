@@ -4,7 +4,7 @@ using NUnit.Framework;
 namespace LeokaEstetica.Platform.Tests.ModerationTests;
 
 [TestFixture]
-public class EmptyRemarkStatuseTest : BaseServiceTest
+internal class EmptyRemarkStatuseTest : BaseServiceTest
 {
     [Test]
     public async Task EmptyRemarkStatuseAsyncTest()

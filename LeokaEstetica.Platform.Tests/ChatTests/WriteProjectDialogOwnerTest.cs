@@ -5,7 +5,7 @@ using static NUnit.Framework.Assert;
 namespace LeokaEstetica.Platform.Tests.ChatTests;
 
 [TestFixture]
-public class WriteProjectDialogOwnerTest : BaseServiceTest
+internal class WriteProjectDialogOwnerTest : BaseServiceTest
 {
     [Test]
     public async Task WriteProjectDialogOwnerAsyncTest()

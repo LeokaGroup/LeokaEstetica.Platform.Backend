@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Models.Entities.User;
@@ -6,12 +7,14 @@ using LeokaEstetica.Platform.Notifications.Consts;
 using LeokaEstetica.Platform.Services.Abstractions.Search.Project;
 using Microsoft.Extensions.Logging;
 
+[assembly: InternalsVisibleTo("LeokaEstetica.Platform.Tests")]
+
 namespace LeokaEstetica.Platform.Services.Services.Search.Project;
 
 /// <summary>
 /// Класс реализует методы сервиса поиска в проектах.
 /// </summary>
-public sealed class ProjectFinderService : IProjectFinderService
+internal sealed class ProjectFinderService : IProjectFinderService
 {
     private readonly ILogger<ProjectFinderService> _logger;
     private readonly IUserRepository _userRepository;

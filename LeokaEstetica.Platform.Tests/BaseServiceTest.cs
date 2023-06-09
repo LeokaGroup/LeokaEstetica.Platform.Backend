@@ -24,6 +24,7 @@ using LeokaEstetica.Platform.Database.Repositories.Notification;
 using LeokaEstetica.Platform.Database.Repositories.Orders;
 using LeokaEstetica.Platform.Database.Repositories.Profile;
 using LeokaEstetica.Platform.Database.Repositories.Project;
+using LeokaEstetica.Platform.Database.Repositories.Refunds;
 using LeokaEstetica.Platform.Database.Repositories.Resume;
 using LeokaEstetica.Platform.Database.Repositories.Subscription;
 using LeokaEstetica.Platform.Database.Repositories.User;
@@ -46,6 +47,7 @@ using LeokaEstetica.Platform.Services.Services.Landing;
 using LeokaEstetica.Platform.Services.Services.Orders;
 using LeokaEstetica.Platform.Services.Services.Profile;
 using LeokaEstetica.Platform.Services.Services.Project;
+using LeokaEstetica.Platform.Services.Services.Refunds;
 using LeokaEstetica.Platform.Services.Services.Resume;
 using LeokaEstetica.Platform.Services.Services.Subscription;
 using LeokaEstetica.Platform.Services.Services.User;
@@ -62,7 +64,7 @@ namespace LeokaEstetica.Platform.Tests;
 /// <summary>
 /// Базовый класс тестов с настройками конфигурации.
 /// </summary>
-public class BaseServiceTest
+internal class BaseServiceTest
 {
     private IConfiguration AppConfiguration { get; }
     private string PostgreConfigString { get; set; }
@@ -94,6 +96,7 @@ public class BaseServiceTest
     protected readonly CommerceService CommerceService;
     protected readonly OrdersService OrdersService;
     protected readonly UserMetricsService UserMetricsService;
+    protected readonly RefundsService RefundsService;
 
     protected BaseServiceTest()
     {
@@ -216,5 +219,9 @@ public class BaseServiceTest
 
         var userMetricsRepository = new UserMetricsRepository(pgContext);
         UserMetricsService = new UserMetricsService(null, userMetricsRepository);
+
+        var refundsRepository = new RefundsRepository(pgContext);
+        RefundsService = new RefundsService(null, null, subscriptionRepository, userRepository, ordersRepository, null,
+            refundsRepository, PayMasterService);
     }
 }

@@ -163,7 +163,7 @@ public sealed class PayMasterService : IPayMasterService
         {
             await SetPayMasterRequestAuthorizationHeader(httpClient);
             
-            _logger.LogInformation($"Начало проверки статуса заказа {paymentId}.");
+            _logger?.LogInformation($"Начало проверки статуса заказа {paymentId}.");
 
             var responseCreateOrder = await httpClient.GetAsync(string.Concat(ApiConsts.CHECK_PAYMENT_STATUS, 
                 paymentId));
@@ -202,7 +202,7 @@ public sealed class PayMasterService : IPayMasterService
         
         catch (Exception ex)
         {
-            _logger.LogCritical(ex, ex.Message);
+            _logger?.LogCritical(ex, ex.Message);
             throw;
         }
     }
@@ -221,7 +221,7 @@ public sealed class PayMasterService : IPayMasterService
         using var httpClient = new HttpClient();
         await SetPayMasterRequestAuthorizationHeader(httpClient);
         
-        _logger.LogInformation($"Начало создания возврата платежа {paymentId}. Сумма к возврату: {price}");
+        _logger?.LogInformation($"Начало создания возврата платежа {paymentId}. Сумма к возврату: {price}");
         
         // Создаем возврат в ПС.
         var responseCreateRefund = await httpClient.PostAsJsonAsync(ApiConsts.CREATE_REFUND, request);
@@ -246,7 +246,7 @@ public sealed class PayMasterService : IPayMasterService
             throw ex;
         }
 
-        _logger.LogInformation("Конец возврата заказа.");
+        _logger?.LogInformation("Конец возврата заказа.");
 
         return refund;
     }

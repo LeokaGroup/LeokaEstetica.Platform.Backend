@@ -5,7 +5,7 @@ using static NUnit.Framework.Assert;
 namespace LeokaEstetica.Platform.Tests.ModerationTests;
 
 [TestFixture]
-public class CreateResumeRemarksTest : BaseServiceTest
+internal class CreateResumeRemarksTest : BaseServiceTest
 {
     [Test]
     public async Task CreateResumeRemarksAsyncTest()

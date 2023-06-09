@@ -3,7 +3,7 @@ namespace LeokaEstetica.Platform.Services.Strategies.Project.Team;
 /// <summary>
 /// Класс представляет семейство алгоритмов для нахождения Id пользователя.
 /// </summary>
-internal class ProjectInviteTeamJob
+internal sealed class ProjectInviteTeamJob
 {
     /// <summary>
     /// Метод находит Id пользователя по указанной стратегии.

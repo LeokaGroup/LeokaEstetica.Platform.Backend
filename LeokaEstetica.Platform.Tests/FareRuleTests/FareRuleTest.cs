@@ -3,7 +3,7 @@ using NUnit.Framework;
 namespace LeokaEstetica.Platform.Tests.FareRuleTests;
 
 [TestFixture]
-public class FareRuleTest : BaseServiceTest
+internal class FareRuleTest : BaseServiceTest
 {
     [Test]
     public async Task GetFareRuleAsyncTest()

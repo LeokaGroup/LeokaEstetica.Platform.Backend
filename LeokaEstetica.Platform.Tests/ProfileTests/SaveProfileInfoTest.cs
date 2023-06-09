@@ -5,7 +5,7 @@ using NUnit.Framework;
 namespace LeokaEstetica.Platform.Tests.ProfileTests;
 
 [TestFixture]
-public class SaveProfileInfoTest : BaseServiceTest
+internal class SaveProfileInfoTest : BaseServiceTest
 {
     [Test]
     public async Task SaveProfileInfoAsyncTest()

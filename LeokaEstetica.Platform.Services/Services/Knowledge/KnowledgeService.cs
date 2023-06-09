@@ -1,14 +1,17 @@
+using System.Runtime.CompilerServices;
 using LeokaEstetica.Platform.Database.Abstractions.Knowledge;
 using LeokaEstetica.Platform.Models.Dto.Output.Knowledge;
 using LeokaEstetica.Platform.Services.Abstractions.Knowledge;
 using Microsoft.Extensions.Logging;
+
+[assembly: InternalsVisibleTo("LeokaEstetica.Platform.Tests")]
 
 namespace LeokaEstetica.Platform.Services.Services.Knowledge;
 
 /// <summary>
 /// Класс сервиса реализует методы сервиса БЗ.
 /// </summary>
-public class KnowledgeService : IKnowledgeService
+internal sealed class KnowledgeService : IKnowledgeService
 {
     private readonly IKnowledgeRepository _knowledgeRepository;
     private readonly ILogger<KnowledgeService> _logger;

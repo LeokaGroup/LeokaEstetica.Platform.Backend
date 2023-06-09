@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using AutoMapper;
 using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.FareRule;
@@ -11,12 +12,14 @@ using LeokaEstetica.Platform.Models.Entities.Profile;
 using LeokaEstetica.Platform.Services.Abstractions.Resume;
 using Microsoft.Extensions.Logging;
 
+[assembly: InternalsVisibleTo("LeokaEstetica.Platform.Tests")]
+
 namespace LeokaEstetica.Platform.Services.Services.Resume;
 
 /// <summary>
 /// Класс реализует методы сервиса базы резюме.
 /// </summary>
-public class ResumeService : IResumeService
+internal sealed class ResumeService : IResumeService
 {
     private readonly ILogger<ResumeService> _logger;
     private readonly IResumeRepository _resumeRepository;

@@ -5,7 +5,7 @@ using NUnit.Framework;
 namespace LeokaEstetica.Platform.Tests.ModerationTests;
 
 [TestFixture]
-public class GetVacancyRemarksTest : BaseServiceTest
+internal class GetVacancyRemarksTest : BaseServiceTest
 {
     private readonly IVacancyModerationRepository _vacancyModerationRepository;
 

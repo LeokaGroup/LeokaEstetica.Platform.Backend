@@ -4,7 +4,7 @@ using static NUnit.Framework.Assert;
 namespace LeokaEstetica.Platform.Tests.ChatTests;
 
 [TestFixture]
-public class SendMessageTest : BaseServiceTest
+internal class SendMessageTest : BaseServiceTest
 {
     [Test]
     public async Task SendMessageAsyncTest()

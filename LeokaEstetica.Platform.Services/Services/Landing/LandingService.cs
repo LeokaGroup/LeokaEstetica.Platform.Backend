@@ -1,16 +1,19 @@
-﻿using AutoMapper;
+﻿using System.Runtime.CompilerServices;
+using AutoMapper;
 using LeokaEstetica.Platform.Database.Abstractions.Landing;
 using LeokaEstetica.Platform.Models.Dto.Output.Landing;
 using LeokaEstetica.Platform.Models.Entities.Landing;
 using LeokaEstetica.Platform.Services.Abstractions.Landing;
 using Microsoft.Extensions.Logging;
 
+[assembly: InternalsVisibleTo("LeokaEstetica.Platform.Tests")]
+
 namespace LeokaEstetica.Platform.Services.Services.Landing;
 
 /// <summary>
 /// Класс реализует методы сервиса лендингов.
 /// </summary>
-public class LandingService : ILandingService
+internal sealed class LandingService : ILandingService
 {
     private readonly ILogger<LandingService> _logger;
     private readonly ILandingRepository _landingRepository;

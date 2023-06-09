@@ -4,7 +4,7 @@ using static NUnit.Framework.Assert;
 namespace LeokaEstetica.Platform.Tests.LandingTests;
 
 [TestFixture]
-public class GetLandingKnowledgeTest : BaseServiceTest
+internal class GetLandingKnowledgeTest : BaseServiceTest
 {
     [Test]
     public async Task GetLandingKnowledgeAsyncTest()
