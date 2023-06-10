@@ -3,7 +3,7 @@ using NUnit.Framework;
 namespace LeokaEstetica.Platform.Tests.ProjectsTests;
 
 [TestFixture]
-public class SearchInviteProjectMembersTest : BaseServiceTest
+internal class SearchInviteProjectMembersTest : BaseServiceTest
 {
     [Test]
     public async Task SearchInviteProjectMembersAsyncSuccessTest()

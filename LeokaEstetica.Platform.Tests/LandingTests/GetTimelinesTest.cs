@@ -3,7 +3,7 @@ using NUnit.Framework;
 namespace LeokaEstetica.Platform.Tests.LandingTests;
 
 [TestFixture]
-public class GetTimelinesTest : BaseServiceTest
+internal class GetTimelinesTest : BaseServiceTest
 {
     [Test]
     public async Task GetTimelinesAsyncTest()

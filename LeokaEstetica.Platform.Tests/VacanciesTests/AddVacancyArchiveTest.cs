@@ -3,7 +3,7 @@
 namespace LeokaEstetica.Platform.Tests.VacanciesTests;
 
 [TestFixture]
-public class AddVacancyArchiveTest : BaseServiceTest
+internal class AddVacancyArchiveTest : BaseServiceTest
 {
     [Test]
     public async Task AddVacancyArchiveAsyncTest()

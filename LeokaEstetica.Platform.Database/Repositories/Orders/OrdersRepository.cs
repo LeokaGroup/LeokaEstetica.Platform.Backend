@@ -75,6 +75,23 @@ public class OrdersRepository : IOrdersRepository
         return result;
     }
 
+    /// <summary>
+    /// Метод получает Id заказа пользователя по кол-во месяцев подписки и Id пользователя.
+    /// </summary>
+    /// <param name="monthCount">Кол-во месяцев подписки.</param>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Данные заказа.</returns>
+    public async Task<long> GetUserOrderIdAsync(short monthCount, long userId)
+    {
+        var result = await _pgContext.Orders
+            .Where(s => s.PaymentMonth == monthCount
+                        && s.UserId == userId)
+            .Select(s => s.OrderId)
+            .FirstOrDefaultAsync();
+
+        return result;
+    }
+
     #endregion
 
     #region Приватные методы.

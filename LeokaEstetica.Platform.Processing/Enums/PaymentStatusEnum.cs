@@ -45,17 +45,12 @@ public static class PaymentStatus
     };
 
     /// <summary>
-    /// Метод првоеряет, есть ли такой статус в системе.
+    /// Метод проверяет, есть ли такой статус в системе.
     /// </summary>
     /// <param name="statusName">Системное название статуса из ПС.</param>
     /// <returns>Если статус есть, вернет его, иначе будет по дефолту None.</returns>
     public static PaymentStatusEnum GetPaymentStatusBySysName(string statusName)
     {
         return _paymentStatuses.TryGet(statusName);
-    }
-
-    public static bool IfExistPaymentStatusBySysName(string statusName)
-    {
-        return _paymentStatuses.ContainsKey(statusName);
     }
 }

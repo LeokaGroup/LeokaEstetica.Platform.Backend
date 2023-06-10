@@ -5,7 +5,7 @@ using LeokaEstetica.Platform.Models.Entities.Project;
 namespace LeokaEstetica.Platform.Tests.ProjectsTests;
 
 [TestFixture]
-public class CatalogProjectTest : BaseServiceTest
+internal class CatalogProjectTest : BaseServiceTest
 {
     [Test]
     public async Task GetCatalogProjectAsyncTest()

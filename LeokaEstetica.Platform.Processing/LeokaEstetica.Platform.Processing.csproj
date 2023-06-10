@@ -14,8 +14,4 @@
       <ProjectReference Include="..\LeokaEstetica.Platform.Notifications\LeokaEstetica.Platform.Notifications.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Models\Input" />
-    </ItemGroup>
-
 </Project>

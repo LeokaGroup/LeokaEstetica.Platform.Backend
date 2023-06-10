@@ -95,6 +95,59 @@ public class CommerceRepository : ICommerceRepository
         return true;
     }
 
+    /// <summary>
+    /// Метод создает возврат в БД.
+    /// </summary>
+    /// <param name="paymentId">Id платежа в ПС.</param>
+    /// <param name="price">Сумма возврата.</param>
+    /// <param name="dateCreated">Дата создания возврата в ПС.</param>
+    /// <param name="status">Статус возврата в ПС.</param>
+    /// <param name="refundOrderId">Id возврата в ПС.</param>
+    /// <returns>Данные возврата.</returns>
+    public async Task<RefundEntity> CreateRefundAsync(string paymentId, decimal price, DateTime dateCreated,
+        string status, string refundOrderId)
+    {
+        var result = new RefundEntity
+        {
+            PaymentId = paymentId,
+            Price = price,
+            DateCreated = dateCreated,
+            Status = status,
+            RefundOrderId = refundOrderId
+        };
+
+        await _pgContext.Refunds.AddAsync(result);
+        await _pgContext.SaveChangesAsync();
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод обновляет статус возврата.
+    /// </summary>
+    /// <param name="refundStatusName">Русское название статуса возврата.</param>
+    /// <param name="paymentId">Id платежа в ПС.</param>
+    /// <param name="refundId">Id возврата в БД.</param>
+    /// <param name="refundOrderId">Id возврата в ПС.</param>
+    public async Task<bool> UpdateRefundStatusAsync(string refundStatusName, string paymentId, long refundId,
+        string refundOrderId)
+    {
+        var refund = await _pgContext.Refunds
+            .FirstOrDefaultAsync(r => r.PaymentId.Equals(paymentId)
+                                      && r.RefundId == refundId
+                                      && r.RefundOrderId.Equals(refundOrderId));
+        
+        if (refund is null)
+        {
+            return false;
+        }
+        
+        refund.Status = refundStatusName;
+        await _pgContext.SaveChangesAsync();
+
+        return true;
+    }
+
     #endregion
 
     #region Приватные методы.

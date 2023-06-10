@@ -1,16 +1,19 @@
-﻿using LeokaEstetica.Platform.Access.Enums;
+﻿using System.Runtime.CompilerServices;
+using LeokaEstetica.Platform.Access.Enums;
 using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.FareRule;
 using LeokaEstetica.Platform.Database.Abstractions.Subscription;
 using LeokaEstetica.Platform.Models.Dto.Output.Project;
 using LeokaEstetica.Platform.Services.Abstractions.Project;
 
+[assembly: InternalsVisibleTo("LeokaEstetica.Platform.Tests")]
+
 namespace LeokaEstetica.Platform.Services.Services.Project;
 
 /// <summary>
 /// Класс реализует методы сервиса выделение цветом пользователей.
 /// </summary>
-public class FillColorProjectsService : IFillColorProjectsService
+internal sealed class FillColorProjectsService : IFillColorProjectsService
 {
     /// <summary>
     /// Список названий тарифов, которые дают выделение цветом.

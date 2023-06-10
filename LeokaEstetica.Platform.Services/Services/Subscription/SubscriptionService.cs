@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.FareRule;
 using LeokaEstetica.Platform.Database.Abstractions.Subscription;
@@ -8,12 +9,14 @@ using LeokaEstetica.Platform.Services.Abstractions.Subscription;
 using LeokaEstetica.Platform.Services.Builders;
 using Microsoft.Extensions.Logging;
 
+[assembly: InternalsVisibleTo("LeokaEstetica.Platform.Tests")]
+
 namespace LeokaEstetica.Platform.Services.Services.Subscription;
 
 /// <summary>
 /// Класс реализует методы сервиса подписок.
 /// </summary>
-public class SubscriptionService : ISubscriptionService
+internal sealed class SubscriptionService : ISubscriptionService
 {
     private readonly ILogger<SubscriptionService> _logger;
     private readonly IUserRepository _userRepository;

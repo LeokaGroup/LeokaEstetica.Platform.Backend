@@ -3,7 +3,7 @@ using NUnit.Framework;
 namespace LeokaEstetica.Platform.Tests.UserTests;
 
 [TestFixture]
-public class CreateUserTest : BaseServiceTest
+internal class CreateUserTest : BaseServiceTest
 {
     [Test]
     public async Task CreateUserAsyncTest()

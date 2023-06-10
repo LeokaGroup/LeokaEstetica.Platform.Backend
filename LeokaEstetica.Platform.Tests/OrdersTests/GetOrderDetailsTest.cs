@@ -4,7 +4,7 @@ using static NUnit.Framework.Assert;
 namespace LeokaEstetica.Platform.Tests.OrdersTests;
 
 [TestFixture]
-public class GetOrderDetailsTest : BaseServiceTest
+internal class GetOrderDetailsTest : BaseServiceTest
 {
     [Test]
     public async Task GetOrderDetailsAsyncTest()

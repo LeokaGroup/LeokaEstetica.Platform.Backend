@@ -7,6 +7,7 @@ using LeokaEstetica.Platform.Services.Abstractions.Landing;
 using LeokaEstetica.Platform.Services.Abstractions.Orders;
 using LeokaEstetica.Platform.Services.Abstractions.Profile;
 using LeokaEstetica.Platform.Services.Abstractions.Project;
+using LeokaEstetica.Platform.Services.Abstractions.Refunds;
 using LeokaEstetica.Platform.Services.Abstractions.Resume;
 using LeokaEstetica.Platform.Services.Abstractions.Search.Project;
 using LeokaEstetica.Platform.Services.Abstractions.Subscription;
@@ -19,12 +20,14 @@ using LeokaEstetica.Platform.Services.Services.Landing;
 using LeokaEstetica.Platform.Services.Services.Orders;
 using LeokaEstetica.Platform.Services.Services.Profile;
 using LeokaEstetica.Platform.Services.Services.Project;
+using LeokaEstetica.Platform.Services.Services.Refunds;
 using LeokaEstetica.Platform.Services.Services.Resume;
 using LeokaEstetica.Platform.Services.Services.Search.Project;
 using LeokaEstetica.Platform.Services.Services.Subscription;
 using LeokaEstetica.Platform.Services.Services.User;
 using LeokaEstetica.Platform.Services.Services.Vacancy;
 using LeokaEstetica.Platform.Services.Strategies.Project.Team;
+using LeokaEstetica.Platform.Services.Strategies.Refunds;
 
 namespace LeokaEstetica.Platform.Services.AutofacModules;
 
@@ -209,6 +212,26 @@ public class ServicesModule : Module
             .InstancePerLifetimeScope();
         builder.RegisterType<OrdersService>()
             .As<IOrdersService>()
+            .InstancePerLifetimeScope();
+        
+        // Класс стратегии вычисления суммы возврата на основании использованных дней.
+        builder
+            .RegisterType<CalculateRefundUsedDaysStrategy>()
+            .Named<BaseCalculateRefundStrategy>("CalculateRefundUsedDaysStrategy")
+            .InstancePerLifetimeScope();
+        builder
+            .RegisterType<CalculateRefundUsedDaysStrategy>()
+            .As<BaseCalculateRefundStrategy>()
+            .InstancePerLifetimeScope();
+        
+        // Сервис возвратов в нашей системе.
+        builder
+            .RegisterType<RefundsService>()
+            .Named<IRefundsService>("RefundsService")
+            .InstancePerLifetimeScope();
+        builder
+            .RegisterType<RefundsService>()
+            .As<IRefundsService>()
             .InstancePerLifetimeScope();
     }
 }

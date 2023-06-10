@@ -1,5 +1,7 @@
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Runtime.CompilerServices;
+using AutoMapper;
 using LeokaEstetica.Platform.Access.Abstractions.User;
 using LeokaEstetica.Platform.Base.Enums;
 using LeokaEstetica.Platform.Base.Helpers;
@@ -12,23 +14,27 @@ using LeokaEstetica.Platform.Models.Dto.Base.Commerce.PayMaster;
 using LeokaEstetica.Platform.Models.Dto.Common.Cache;
 using LeokaEstetica.Platform.Models.Dto.Input.Commerce.PayMaster;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce.PayMaster;
+using LeokaEstetica.Platform.Models.Dto.Output.Refunds;
 using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Notifications.Consts;
 using LeokaEstetica.Platform.Processing.Abstractions.PayMaster;
 using LeokaEstetica.Platform.Processing.Consts;
 using LeokaEstetica.Platform.Processing.Enums;
+using LeokaEstetica.Platform.Processing.Models.Input;
 using LeokaEstetica.Platform.Processing.Models.Output;
 using LeokaEstetica.Platform.Redis.Abstractions.Commerce;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
+[assembly: InternalsVisibleTo("LeokaEstetica.Platform.Tests")]
+
 namespace LeokaEstetica.Platform.Processing.Services.PayMaster;
 
 /// <summary>
 /// Класс реализует методы сервиса работы с платежной системой PayMaster.
 /// </summary>
-public class PayMasterService : IPayMasterService
+internal sealed class PayMasterService : IPayMasterService
 {
     private readonly ILogger<PayMasterService> _logger;
     private readonly IConfiguration _configuration;
@@ -38,6 +44,7 @@ public class PayMasterService : IPayMasterService
     private readonly IAccessUserNotificationsService _accessUserNotificationsService;
     private readonly ICommerceRedisService _commerceRedisService;
     private readonly IRabbitMqService _rabbitMqService;
+    private readonly IMapper _mapper;
 
     /// <summary>
     /// Конструктор.
@@ -50,6 +57,7 @@ public class PayMasterService : IPayMasterService
     /// <param name="accessUserNotificationsService">Сервис уведомлений доступа пользователя.</param>
     /// <param name="commerceRedisService">Сервис кэша коммерции.</param>
     /// <param name="rabbitMqService">Сервис кролика.</param>
+    /// <param name="mapper">Автомаппер.</param>
     public PayMasterService(ILogger<PayMasterService> logger,
         IConfiguration configuration,
         IUserRepository userRepository,
@@ -57,7 +65,8 @@ public class PayMasterService : IPayMasterService
         IAccessUserService accessUserService, 
         IAccessUserNotificationsService accessUserNotificationsService, 
         ICommerceRedisService commerceRedisService, 
-        IRabbitMqService rabbitMqService)
+        IRabbitMqService rabbitMqService, 
+        IMapper mapper)
     {
         _logger = logger;
         _configuration = configuration;
@@ -67,6 +76,7 @@ public class PayMasterService : IPayMasterService
         _accessUserNotificationsService = accessUserNotificationsService;
         _commerceRedisService = commerceRedisService;
         _rabbitMqService = rabbitMqService;
+        _mapper = mapper;
     }
 
     #region Публичные методы.
@@ -159,10 +169,10 @@ public class PayMasterService : IPayMasterService
     {
         try
         {
-            _logger.LogInformation($"Начало проверки статуса заказа {paymentId}.");
-            
             await SetPayMasterRequestAuthorizationHeader(httpClient);
             
+            _logger?.LogInformation($"Начало проверки статуса заказа {paymentId}.");
+
             var responseCreateOrder = await httpClient.GetAsync(string.Concat(ApiConsts.CHECK_PAYMENT_STATUS, 
                 paymentId));
             
@@ -200,7 +210,111 @@ public class PayMasterService : IPayMasterService
         
         catch (Exception ex)
         {
-            _logger.LogCritical(ex, ex.Message);
+            _logger?.LogCritical(ex, ex.Message);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Метод создает возврат в ПС.
+    /// </summary>
+    /// <param name="paymentId">Id платежа в ПС.</param>
+    /// <param name="price">Сумма возврата.</param>
+    /// <param name="currency">Валюта.</param>
+    /// <returns>Выходная модель.</returns>
+    public async Task<CreateRefundOutput> CreateRefundAsync(string paymentId, decimal price, string currency)
+    {
+        var request = await CreateRefundRequestAsync(paymentId, price, currency);
+
+        using var httpClient = new HttpClient();
+        await SetPayMasterRequestAuthorizationHeader(httpClient);
+        
+        _logger?.LogInformation($"Начало создания возврата платежа {paymentId}. Сумма к возврату: {price}");
+        
+        // Создаем возврат в ПС.
+        var responseCreateRefund = await httpClient.PostAsJsonAsync(ApiConsts.CREATE_REFUND, request);
+
+        // Если ошибка при возврате платежа в ПС.
+        if (!responseCreateRefund.IsSuccessStatusCode)
+        {
+            var ex = new InvalidOperationException(
+                "Ошибка возврата платежа в ПС. " +
+                "Стоит проверить статус платежа в ПС, проверить сумму возврата платежа, " +
+                "проверить дату создания платежа в ПС." +
+                $"Данные возврата: {JsonConvert.SerializeObject(request)}");
+            throw ex;
+        }
+
+        var refund = await CreateRefundResultAsync(responseCreateRefund, request);
+        
+        // Создаем возврат в БД.
+        var createdRefund = await _commerceRepository.CreateRefundAsync(refund.PaymentId, refund.Amount.Value,
+            refund.DateCreated, refund.Status, refund.RefundId);
+
+        var result = _mapper.Map<CreateRefundOutput>(createdRefund);
+        
+        // Отправляем возврат в очередь для отслеживания его статуса.
+        var refundEvent = RefundEventFactory.CreateRefundEvent(createdRefund.RefundId, createdRefund.PaymentId,
+            createdRefund.Status, createdRefund.RefundOrderId);
+        await _rabbitMqService.PublishAsync(refundEvent, QueueTypeEnum.RefundsQueue);
+
+        _logger?.LogInformation("Конец создания возврата платежа.");
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод проверяет статус возврата в ПС.
+    /// </summary>
+    /// <param name="refundId">Id возврата.</param>
+    /// <param name="httpClient">HttpClient.</param>
+    /// <returns>Статус возврата.</returns>
+    public async Task<RefundStatusEnum> CheckRefundStatusAsync(string refundId, HttpClient httpClient)
+    {
+        try
+        {
+            await SetPayMasterRequestAuthorizationHeader(httpClient);
+            
+            _logger?.LogInformation($"Начало проверки статуса возврата {refundId}.");
+
+            var responseCreatedRefund = await httpClient.GetAsync(string.Concat(ApiConsts.CHECK_REFUND_STATUS,
+                refundId));
+            
+            // Если ошибка при проверки статуса возврата в ПС.
+            if (!responseCreatedRefund.IsSuccessStatusCode)
+            {
+                var ex = new InvalidOperationException("Ошибка проверки статуса возврата в ПС. " +
+                                                       $"RefundId возврата: {refundId}");
+                throw ex;
+            }
+
+            // Парсим результат из ПС.
+            var refund = await responseCreatedRefund.Content.ReadFromJsonAsync<CheckStatusRefundOutput>();
+
+            // Если ошибка при парсинге возврата из ПС.
+            if (string.IsNullOrEmpty(refund?.RefundId))
+            {
+                var ex = new InvalidOperationException("Ошибка парсинга данных из ПС. " +
+                                                       $"RefundId возврата: {refundId}");
+                throw ex;
+            }
+
+            var result = RefundStatus.GetPaymentStatusBySysName(refund.StatusSysName);
+
+            if (result == RefundStatusEnum.None)
+            {
+                var ex = new InvalidOperationException("Неизвестный статус возврата." +
+                                                       $"Статус возврата в ПС: {refund.StatusSysName}." +
+                                                       "Необходимо добавить маппинги для этого статуса возврата.");
+                throw ex;
+            }
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            _logger?.LogCritical(ex, ex.Message);
             throw;
         }
     }
@@ -290,7 +404,7 @@ public class PayMasterService : IPayMasterService
     }
 
     /// <summary>
-    /// Метод создает результат созданного заказа.
+    /// Метод создает результат созданного заказа. Также создает заказ в БД.
     /// </summary>
     /// <param name="order">Заказ.</param>
     /// <param name="orderCache">Заказ из кэша.</param>
@@ -304,8 +418,8 @@ public class PayMasterService : IPayMasterService
     {
         // Проверяем статус заказа в ПС.
         var paymentId = order.PaymentId;
-        var responseCheckStatusOrder = await httpClient
-            .GetStringAsync(string.Concat(ApiConsts.CHECK_PAYMENT_STATUS, paymentId));
+        var responseCheckStatusOrder = await httpClient.GetStringAsync(string.Concat(ApiConsts.CHECK_PAYMENT_STATUS,
+            paymentId));
 
         // Если ошибка получения данных платежа.
         if (string.IsNullOrEmpty(responseCheckStatusOrder))
@@ -334,6 +448,53 @@ public class PayMasterService : IPayMasterService
         };
 
         return result;
+    }
+
+    /// <summary>
+    /// Метод создает модель запроса в ПС для возврата.
+    /// </summary>
+    /// <param name="paymentId">Id платежа в ПС.</param>
+    /// <param name="price">Сумма возврата.</param>
+    /// <param name="currency">Валюта.</param>
+    /// <returns>Заполненная модель запроса.</returns>
+    private async Task<CreateRefundInput> CreateRefundRequestAsync(string paymentId, decimal price,
+        string currency)
+    {
+        var request = new CreateRefundInput
+        {
+            PaymentId = paymentId,
+            Amount = new Amount
+            {
+                Value = price,
+                Currency = currency
+            }
+        };
+
+        return await Task.FromResult(request);
+    }
+
+    /// <summary>
+    /// Метод создает результат возврата заказа.
+    /// </summary>
+    /// <param name="responseCreateRefund">Данные возврата из ПС.</param>
+    /// <param name="request">Модель запроса в ПС.</param>
+    /// <returns></returns>
+    /// <exception cref="InvalidOperationException">Может бахнуть ошибку, если не получилось распарсить результат из ПС.</exception>
+    private async Task<CreateRefundOutput> CreateRefundResultAsync(HttpResponseMessage responseCreateRefund,
+        CreateRefundInput request)
+    {
+        // Парсим результат из ПС.
+        var refund = await responseCreateRefund.Content.ReadFromJsonAsync<CreateRefundOutput>();
+
+        // Если ошибка при парсинге возврата из ПС, то не даем создать возврат.
+        if (string.IsNullOrEmpty(refund?.PaymentId))
+        {
+            var ex = new InvalidOperationException(
+                $"Ошибка парсинга данных из ПС. Данные возврата: {JsonConvert.SerializeObject(request)}");
+            throw ex;
+        }
+
+        return refund;
     }
 
     #endregion

@@ -4,7 +4,7 @@ using NUnit.Framework;
 namespace LeokaEstetica.Platform.Tests.ChatTests;
 
 [TestFixture]
-public class ProjectDialogTest : BaseServiceTest
+internal class ProjectDialogTest : BaseServiceTest
 {
     /// <summary>
     /// Метод тестирует создание нового диалога в проекте, поэтому не передаем Id диалога.

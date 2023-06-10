@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using System.Text;
 using LeokaEstetica.Platform.Base.Enums;
 using LeokaEstetica.Platform.Base.Models.IntegrationEvents.Orders;
@@ -6,15 +7,19 @@ using LeokaEstetica.Platform.Database.Abstractions.Commerce;
 using LeokaEstetica.Platform.Processing.Abstractions.PayMaster;
 using LeokaEstetica.Platform.Processing.Enums;
 using Newtonsoft.Json;
+using Quartz;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
+
+[assembly: InternalsVisibleTo("LeokaEstetica.Platform.Backend")]
 
 namespace LeokaEstetica.Platform.WorkerServices.Jobs.RabbitMq;
 
 /// <summary>
 /// Класс джобы консьюмера заказов кролика.
 /// </summary>
-public class OrdersJob : BackgroundService
+[DisallowConcurrentExecution]
+internal sealed class OrdersJob : IJob, IDisposable
 {
     private readonly IModel _channel;
     private readonly IConnection _connection;
@@ -57,10 +62,10 @@ public class OrdersJob : BackgroundService
     /// <summary>
     /// Метод запускает логику фоновой задачи.
     /// </summary>
-    /// <param name="stoppingToken">Токен отмены.</param>
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    /// <param name="context">Выполняемый контекст джобы.</param>
+    public async Task Execute(IJobExecutionContext context)
     {
-        await CheckOrderStatusAsync(stoppingToken);
+        await CheckOrderStatusAsync();
 
         await Task.CompletedTask;
     }
@@ -68,11 +73,8 @@ public class OrdersJob : BackgroundService
     /// <summary>
     /// Метод выполняет работу джобы.
     /// </summary>
-    /// <param name="stoppingToken">Токен отмены таски.</param>
-    private async Task CheckOrderStatusAsync(CancellationToken stoppingToken)
+    private async Task CheckOrderStatusAsync()
     {
-        stoppingToken.ThrowIfCancellationRequested();
-
         var consumer = new AsyncEventingBasicConsumer(_channel);
         consumer.Received += async (_, ea) =>
         {
@@ -123,7 +125,6 @@ public class OrdersJob : BackgroundService
                 else
                 {
                     _logger.LogInformation("Оставили сообщение в очереди заказов...");
-                    
                     _channel.BasicRecoverAsync(false);
                 }
             }
@@ -141,11 +142,10 @@ public class OrdersJob : BackgroundService
     /// <summary>
     /// Метод очищает ресурсы.
     /// </summary>
-    public override void Dispose()
+    public void Dispose()
     {
-        _channel.Close();
-        _connection.Close();
+        _channel?.Dispose();
+        _connection?.Dispose();
         _httpClient?.Dispose();
-        base.Dispose();
     }
 }

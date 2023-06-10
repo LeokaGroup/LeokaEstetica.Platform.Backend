@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Runtime.CompilerServices;
 using AutoMapper;
 using LeokaEstetica.Platform.Access.Abstractions.AvailableLimits;
 using LeokaEstetica.Platform.Access.Abstractions.User;
@@ -39,12 +40,14 @@ using LeokaEstetica.Platform.Database.Abstractions.Moderation.Project;
 using LeokaEstetica.Platform.Models.Entities.Moderation;
 using Microsoft.Extensions.Logging;
 
+[assembly: InternalsVisibleTo("LeokaEstetica.Platform.Tests")]
+
 namespace LeokaEstetica.Platform.Services.Services.Project;
 
 /// <summary>
 /// Класс реализует методы сервиса проектов.
 /// </summary>
-public class ProjectService : IProjectService
+internal sealed class ProjectService : IProjectService
 {
     private readonly IProjectRepository _projectRepository;
     private readonly ILogger<ProjectService> _logger;

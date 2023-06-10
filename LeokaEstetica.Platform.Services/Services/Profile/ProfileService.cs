@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using AutoMapper;
 using LeokaEstetica.Platform.Database.Abstractions.Profile;
 using LeokaEstetica.Platform.Database.Abstractions.User;
@@ -13,12 +14,14 @@ using Microsoft.Extensions.Logging;
 using Items = LeokaEstetica.Platform.Models.Dto.Output.Profile.ProfileItems;
 using ProfileItems = LeokaEstetica.Platform.Redis.Models.Profile.ProfileItems;
 
+[assembly: InternalsVisibleTo("LeokaEstetica.Platform.Tests")]
+
 namespace LeokaEstetica.Platform.Services.Services.Profile;
 
 /// <summary>
 /// Класс реализует методы сервиса профиля пользователя.
 /// </summary>
-public class ProfileService : IProfileService
+internal sealed class ProfileService : IProfileService
 {
     private readonly ILogger<ProfileService> _logger;
     private readonly IProfileRepository _profileRepository;

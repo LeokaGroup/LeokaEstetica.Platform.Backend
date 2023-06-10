@@ -418,6 +418,34 @@ public class UserRepository : IUserRepository
         return result;
     }
 
+    /// <summary>
+    /// Метод получает дату начала подписки и дату окончания подписки пользователя.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Дата начала и дата окончания подписки.</returns>
+    public async Task<(DateTime? StartDate, DateTime? EndDate)> GetUserSubscriptionUsedDateAsync(long userId)
+    {
+        (DateTime? StartDate, DateTime? EndDate) result = (null, null);
+        var item = await _pgContext.Users
+            .Where(u => u.UserId == userId)
+            .Select(u => new
+            {
+                u.SubscriptionStartDate,
+                u.SubscriptionEndDate
+            })
+            .FirstOrDefaultAsync();
+
+        if (item is null)
+        {
+            return result;
+        }
+
+        result.StartDate = item.SubscriptionStartDate;
+        result.EndDate = item.SubscriptionEndDate;
+
+        return result;
+    }
+
     #endregion
 
     #region Приватные методы.

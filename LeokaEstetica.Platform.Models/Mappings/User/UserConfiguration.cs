@@ -122,6 +122,14 @@ public partial class UserConfiguration : IEntityTypeConfiguration<UserEntity>
             .HasColumnName("IsMarkDeactivate")
             .HasColumnType("bool")
             .IsRequired();
+        
+        entity.Property(e => e.SubscriptionStartDate)
+            .HasColumnName("SubscriptionStartDate")
+            .HasColumnType("timestamp");
+        
+        entity.Property(e => e.SubscriptionEndDate)
+            .HasColumnName("SubscriptionEndDate")
+            .HasColumnType("timestamp");
 
         entity.HasIndex(u => u.UserId)
             .HasDatabaseName("PK_Users_UserId")

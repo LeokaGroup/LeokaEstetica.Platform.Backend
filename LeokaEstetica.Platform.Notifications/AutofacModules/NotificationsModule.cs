@@ -73,5 +73,13 @@ public class NotificationsModule : Module
         builder.RegisterType<ResumeModerationNotificationService>()
             .As<IResumeModerationNotificationService>()
             .InstancePerLifetimeScope();
+        
+        // Сервис уведомлений возвратов.
+        builder.RegisterType<RefundsNotificationService>()
+            .Named<IRefundsNotificationService>("RefundsNotificationService")
+            .InstancePerLifetimeScope();
+        builder.RegisterType<RefundsNotificationService>()
+            .As<IRefundsNotificationService>()
+            .InstancePerLifetimeScope();
     }
 }

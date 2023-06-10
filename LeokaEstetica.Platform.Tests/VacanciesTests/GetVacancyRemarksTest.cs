@@ -3,7 +3,7 @@ using NUnit.Framework;
 namespace LeokaEstetica.Platform.Tests.VacanciesTests;
 
 [TestFixture]
-public class GetVacancyRemarksTest : BaseServiceTest
+internal class GetVacancyRemarksTest : BaseServiceTest
 {
     [Test]
     public Task GetVacancyRemarksAsyncTest()

@@ -1,16 +1,19 @@
-﻿using AutoMapper;
+﻿using System.Runtime.CompilerServices;
+using AutoMapper;
 using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.Header;
 using LeokaEstetica.Platform.Models.Dto.Output.Header;
 using LeokaEstetica.Platform.Models.Enums;
 using LeokaEstetica.Platform.Services.Abstractions.Header;
 
+[assembly: InternalsVisibleTo("LeokaEstetica.Platform.Tests")]
+
 namespace LeokaEstetica.Platform.Services.Services.Header;
 
 /// <summary>
 /// Класс реализует методы сервиса хидера.
 /// </summary>
-public sealed class HeaderService : IHeaderService
+internal sealed class HeaderService : IHeaderService
 {
     private readonly IHeaderRepository _headerRepository;
     private readonly IMapper _mapper;

@@ -1,4 +1,5 @@
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce.PayMaster;
+using LeokaEstetica.Platform.Models.Dto.Output.Refunds;
 using LeokaEstetica.Platform.Processing.Enums;
 
 namespace LeokaEstetica.Platform.Processing.Abstractions.PayMaster;
@@ -24,4 +25,21 @@ public interface IPayMasterService
     /// <param name="httpClient">HttpClient.</param>
     /// <returns>Статус платежа.</returns>
     Task<PaymentStatusEnum> CheckOrderStatusAsync(string paymentId, HttpClient httpClient);
+    
+    /// <summary>
+    /// Метод создает возврат в ПС.
+    /// </summary>
+    /// <param name="paymentId">Id платежа в ПС.</param>
+    /// <param name="price">Сумма возврата.</param>
+    /// <param name="currency">Валюта.</param>
+    /// <returns>Выходная модель.</returns>
+    Task<CreateRefundOutput> CreateRefundAsync(string paymentId, decimal price, string currency);
+    
+    /// <summary>
+    /// Метод проверяет статус возврата в ПС.
+    /// </summary>
+    /// <param name="refundId">Id возврата.</param>
+    /// <param name="httpClient">HttpClient.</param>
+    /// <returns>Статус возврата.</returns>
+    Task<RefundStatusEnum> CheckRefundStatusAsync(string refundId, HttpClient httpClient);
 }

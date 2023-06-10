@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using LeokaEstetica.Platform.Access.Enums;
 using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.FareRule;
@@ -5,12 +6,14 @@ using LeokaEstetica.Platform.Database.Abstractions.Subscription;
 using LeokaEstetica.Platform.Models.Dto.Output.Resume;
 using LeokaEstetica.Platform.Services.Abstractions.Resume;
 
+[assembly: InternalsVisibleTo("LeokaEstetica.Platform.Tests")]
+
 namespace LeokaEstetica.Platform.Services.Services.Resume;
 
 /// <summary>
 /// Сервис выделение цветом резюме пользователей.
 /// </summary>
-public class FillColorResumeService : IFillColorResumeService
+internal sealed class FillColorResumeService : IFillColorResumeService
 {
     /// <summary>
     /// Список названий тарифов, которые дают выделение цветом.

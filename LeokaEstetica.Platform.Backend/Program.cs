@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using NLog.Web;
+using Quartz;
 
 var builder = WebApplication.CreateBuilder(new WebApplicationOptions
 {
@@ -108,8 +109,15 @@ builder.Services.AddFluentValidation(conf =>
     conf.AutomaticValidationEnabled = false;
 });
 
-// Запуск джоб при старте ядра системы.
-StartJobs.Start(builder.Services);
+builder.Services.AddQuartz(q =>
+{
+    q.UseMicrosoftDependencyInjectionJobFactory();
+    
+    // Запуск джоб при старте ядра системы.
+    StartJobs.Start(q);
+});
+
+builder.Services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
 
 builder.Logging.ClearProviders();
 builder.Host.UseNLog();

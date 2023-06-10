@@ -4,7 +4,7 @@ using static NUnit.Framework.Assert;
 namespace LeokaEstetica.Platform.Tests.ModerationTests;
 
 [TestFixture]
-public class CheckUserRoleModerationTest : BaseServiceTest
+internal class CheckUserRoleModerationTest : BaseServiceTest
 {
     /// <summary>
     /// Метод проверяет пользователя, у которого есть роль для модерации.

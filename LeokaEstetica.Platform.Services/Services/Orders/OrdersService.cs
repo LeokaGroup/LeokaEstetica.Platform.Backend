@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.Orders;
 using LeokaEstetica.Platform.Database.Abstractions.User;
@@ -5,12 +6,14 @@ using LeokaEstetica.Platform.Models.Entities.Commerce;
 using LeokaEstetica.Platform.Services.Abstractions.Orders;
 using Microsoft.Extensions.Logging;
 
+[assembly: InternalsVisibleTo("LeokaEstetica.Platform.Tests")]
+
 namespace LeokaEstetica.Platform.Services.Services.Orders;
 
 /// <summary>
 /// Класс реализует методы сервиса заказов.
 /// </summary>
-public class OrdersService : IOrdersService
+internal sealed class OrdersService : IOrdersService
 {
     private readonly ILogger<OrdersService> _logger;
     private readonly IOrdersRepository _ordersRepository;
