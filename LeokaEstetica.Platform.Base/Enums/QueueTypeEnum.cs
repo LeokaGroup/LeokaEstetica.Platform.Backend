@@ -11,5 +11,11 @@ public enum QueueTypeEnum
     /// Очередь заказов.
     /// </summary>
     [Description("Orders.Queue")]
-    OrdersQueue = 1
+    OrdersQueue = 1,
+    
+    /// <summary>
+    /// Очередь возвратов.
+    /// </summary>
+    [Description("Refunds.Queue")]
+    RefundsQueue = 2
 }

@@ -252,6 +252,11 @@ internal sealed class PayMasterService : IPayMasterService
             refund.DateCreated, refund.Status, refund.RefundId);
 
         var result = _mapper.Map<CreateRefundOutput>(createdRefund);
+        
+        // Отправляем возврат в очередь для отслеживания его статуса.
+        var refundEvent = RefundEventFactory.CreateRefundEvent(createdRefund.RefundId, createdRefund.PaymentId,
+            createdRefund.Status, createdRefund.RefundOrderId);
+        await _rabbitMqService.PublishAsync(refundEvent, QueueTypeEnum.RefundsQueue);
 
         _logger?.LogInformation("Конец создания возврата платежа.");
 
