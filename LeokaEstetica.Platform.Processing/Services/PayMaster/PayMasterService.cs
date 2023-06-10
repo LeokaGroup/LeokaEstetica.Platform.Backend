@@ -263,6 +263,62 @@ internal sealed class PayMasterService : IPayMasterService
         return result;
     }
 
+    /// <summary>
+    /// Метод проверяет статус возврата в ПС.
+    /// </summary>
+    /// <param name="refundId">Id возврата.</param>
+    /// <param name="httpClient">HttpClient.</param>
+    /// <returns>Статус возврата.</returns>
+    public async Task<RefundStatusEnum> CheckRefundStatusAsync(string refundId, HttpClient httpClient)
+    {
+        try
+        {
+            await SetPayMasterRequestAuthorizationHeader(httpClient);
+            
+            _logger?.LogInformation($"Начало проверки статуса возврата {refundId}.");
+
+            var responseCreatedRefund = await httpClient.GetAsync(string.Concat(ApiConsts.CHECK_REFUND_STATUS,
+                refundId));
+            
+            // Если ошибка при проверки статуса возврата в ПС.
+            if (!responseCreatedRefund.IsSuccessStatusCode)
+            {
+                var ex = new InvalidOperationException("Ошибка проверки статуса возврата в ПС. " +
+                                                       $"RefundId возврата: {refundId}");
+                throw ex;
+            }
+
+            // Парсим результат из ПС.
+            var refund = await responseCreatedRefund.Content.ReadFromJsonAsync<CheckStatusRefundOutput>();
+
+            // Если ошибка при парсинге возврата из ПС.
+            if (string.IsNullOrEmpty(refund?.RefundId))
+            {
+                var ex = new InvalidOperationException("Ошибка парсинга данных из ПС. " +
+                                                       $"RefundId возврата: {refundId}");
+                throw ex;
+            }
+
+            var result = RefundStatus.GetPaymentStatusBySysName(refund.StatusSysName);
+
+            if (result == RefundStatusEnum.None)
+            {
+                var ex = new InvalidOperationException("Неизвестный статус возврата." +
+                                                       $"Статус возврата в ПС: {refund.StatusSysName}." +
+                                                       "Необходимо добавить маппинги для этого статуса возврата.");
+                throw ex;
+            }
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            _logger?.LogCritical(ex, ex.Message);
+            throw;
+        }
+    }
+
     #endregion
 
     #region Приватные методы.

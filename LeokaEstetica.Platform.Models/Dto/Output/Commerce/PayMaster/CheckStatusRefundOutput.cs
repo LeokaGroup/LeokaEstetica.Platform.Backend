@@ -3,9 +3,9 @@ using Newtonsoft.Json;
 namespace LeokaEstetica.Platform.Models.Dto.Output.Commerce.PayMaster;
 
 /// <summary>
-/// Класс выходной модели проверки статуса платежа.
+/// Класс выходной модели проверки статуса возврата.
 /// </summary>
-public class CheckStatusOrderOutput
+public class CheckStatusRefundOutput
 {
     /// <summary>
     /// Системное название статуса заказа.
@@ -14,8 +14,8 @@ public class CheckStatusOrderOutput
     public string StatusSysName { get; set; }
 
     /// <summary>
-    /// Id платежа в ПС.
+    /// Id возврата в ПС.
     /// </summary>
     [JsonProperty("id")]
-    public string PaymentId { get; set; }
+    public string RefundId { get; set; }
 }

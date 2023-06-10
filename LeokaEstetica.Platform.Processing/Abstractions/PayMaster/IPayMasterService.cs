@@ -34,4 +34,12 @@ public interface IPayMasterService
     /// <param name="currency">Валюта.</param>
     /// <returns>Выходная модель.</returns>
     Task<CreateRefundOutput> CreateRefundAsync(string paymentId, decimal price, string currency);
+    
+    /// <summary>
+    /// Метод проверяет статус возврата в ПС.
+    /// </summary>
+    /// <param name="refundId">Id возврата.</param>
+    /// <param name="httpClient">HttpClient.</param>
+    /// <returns>Статус возврата.</returns>
+    Task<RefundStatusEnum> CheckRefundStatusAsync(string refundId, HttpClient httpClient);
 }

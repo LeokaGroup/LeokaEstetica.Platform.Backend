@@ -46,4 +46,13 @@ public interface ICommerceRepository
     /// <returns>Данные возврата.</returns>
     Task<RefundEntity> CreateRefundAsync(string paymentId, decimal price, DateTime dateCreated, string status,
         string refundOrderId);
+    
+    /// <summary>
+    /// Метод обновляет статус возврата.
+    /// </summary>
+    /// <param name="refundStatusName">Русское название статуса возврата.</param>
+    /// <param name="paymentId">Id платежа в ПС.</param>
+    /// <param name="refundId">Id возврата в БД.</param>
+    /// <param name="refundOrderId">Id возврата в ПС.</param>
+    Task<bool> UpdateRefundStatusAsync(string refundStatusName, string paymentId, long refundId, string refundOrderId);
 }

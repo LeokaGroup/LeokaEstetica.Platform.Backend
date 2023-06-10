@@ -122,6 +122,32 @@ public class CommerceRepository : ICommerceRepository
         return result;
     }
 
+    /// <summary>
+    /// Метод обновляет статус возврата.
+    /// </summary>
+    /// <param name="refundStatusName">Русское название статуса возврата.</param>
+    /// <param name="paymentId">Id платежа в ПС.</param>
+    /// <param name="refundId">Id возврата в БД.</param>
+    /// <param name="refundOrderId">Id возврата в ПС.</param>
+    public async Task<bool> UpdateRefundStatusAsync(string refundStatusName, string paymentId, long refundId,
+        string refundOrderId)
+    {
+        var refund = await _pgContext.Refunds
+            .FirstOrDefaultAsync(r => r.PaymentId.Equals(paymentId)
+                                      && r.RefundId == refundId
+                                      && r.RefundOrderId.Equals(refundOrderId));
+        
+        if (refund is null)
+        {
+            return false;
+        }
+        
+        refund.Status = refundStatusName;
+        await _pgContext.SaveChangesAsync();
+
+        return true;
+    }
+
     #endregion
 
     #region Приватные методы.

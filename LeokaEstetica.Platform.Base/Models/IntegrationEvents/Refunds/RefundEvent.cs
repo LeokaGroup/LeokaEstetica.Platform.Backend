@@ -8,7 +8,7 @@ namespace LeokaEstetica.Platform.Base.Models.IntegrationEvents.Refunds;
 public class RefundEvent : BaseEventMessage
 {
     /// <summary>
-    /// PK.
+    /// Id возврата.
     /// </summary>
     public long RefundId { get; set; }
 

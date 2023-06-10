@@ -62,7 +62,7 @@ internal sealed class OrdersJob : IJob, IDisposable
     /// <summary>
     /// Метод запускает логику фоновой задачи.
     /// </summary>
-    /// <param name="stoppingToken">Токен отмены.</param>
+    /// <param name="context">Выполняемый контекст джобы.</param>
     public async Task Execute(IJobExecutionContext context)
     {
         await CheckOrderStatusAsync();
@@ -73,7 +73,6 @@ internal sealed class OrdersJob : IJob, IDisposable
     /// <summary>
     /// Метод выполняет работу джобы.
     /// </summary>
-    /// <param name="stoppingToken">Токен отмены таски.</param>
     private async Task CheckOrderStatusAsync()
     {
         var consumer = new AsyncEventingBasicConsumer(_channel);
@@ -126,7 +125,6 @@ internal sealed class OrdersJob : IJob, IDisposable
                 else
                 {
                     _logger.LogInformation("Оставили сообщение в очереди заказов...");
-                    
                     _channel.BasicRecoverAsync(false);
                 }
             }
