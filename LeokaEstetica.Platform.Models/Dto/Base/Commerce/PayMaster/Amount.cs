@@ -8,7 +8,7 @@ namespace LeokaEstetica.Platform.Models.Dto.Base.Commerce.PayMaster;
 public class Amount
 {
     /// <summary>
-    /// Значение стоимости.
+    /// Сумма.
     /// </summary>
     [JsonProperty("value")]
     public decimal Value { get; set; }

@@ -164,5 +164,7 @@ public class MappingProfile : Profile
         CreateMap<UserEntity, NewUserMetricsOutput>();
         
         CreateMap<RefundEntity, RefundOutput>();
+        
+        CreateMap<RefundEntity, CreateRefundOutput>();
     }
 }

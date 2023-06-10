@@ -53,9 +53,4 @@ public static class PaymentStatus
     {
         return _paymentStatuses.TryGet(statusName);
     }
-
-    public static bool IfExistPaymentStatusBySysName(string statusName)
-    {
-        return _paymentStatuses.ContainsKey(statusName);
-    }
 }

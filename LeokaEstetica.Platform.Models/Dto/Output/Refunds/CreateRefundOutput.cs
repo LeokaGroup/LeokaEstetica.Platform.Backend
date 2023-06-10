@@ -1,4 +1,5 @@
-using System.Text.Json.Serialization;
+using LeokaEstetica.Platform.Models.Dto.Base.Commerce.PayMaster;
+using Newtonsoft.Json;
 
 namespace LeokaEstetica.Platform.Models.Dto.Output.Refunds;
 
@@ -10,13 +11,13 @@ public class CreateRefundOutput
     /// <summary>
     /// Id возврата в ПС.
     /// </summary>
-    [JsonPropertyName("id")]
+    [JsonProperty("id")]
     public string RefundId { get; set; }
 
     /// <summary>
     /// Дата создания возврата.
     /// </summary>
-    [JsonPropertyName("created")]
+    [JsonProperty("created")]
     public DateTime DateCreated { get; set; }
 
     /// <summary>
@@ -27,13 +28,7 @@ public class CreateRefundOutput
     /// <summary>
     /// Сумма возврата.
     /// </summary>
-    [JsonPropertyName("value")]
-    public decimal Price { get; set; }
-
-    /// <summary>
-    /// Код валюты.
-    /// </summary>
-    public string Currency { get; set; }
+    public Amount Amount { get; set; }
 
     /// <summary>
     /// Статус возврата.

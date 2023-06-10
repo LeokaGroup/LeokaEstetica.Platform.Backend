@@ -1,3 +1,6 @@
+using LeokaEstetica.Platform.Models.Dto.Base.Commerce.PayMaster;
+using Newtonsoft.Json;
+
 namespace LeokaEstetica.Platform.Processing.Models.Input;
 
 /// <summary>
@@ -12,12 +15,8 @@ public class CreateRefundInput
     public string PaymentId { get; set; }
 
     /// <summary>
-    /// Сумма возврата.
+    /// Цена.
     /// </summary>
-    public decimal Amount { get; set; }
-
-    /// <summary>
-    /// Валюта.
-    /// </summary>
-    public string Currency { get; set; }
+    [JsonProperty("amount")]
+    public Amount Amount { get; set; }
 }
