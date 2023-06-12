@@ -1,5 +1,6 @@
 using LeokaEstetica.Platform.Base.Models.Input.Processing;
 using LeokaEstetica.Platform.Core.Enums;
+using LeokaEstetica.Platform.Models.Dto.Output.Commerce.PayMaster;
 using LeokaEstetica.Platform.Models.Entities.Commerce;
 
 namespace LeokaEstetica.Platform.Database.Abstractions.Commerce;
@@ -55,4 +56,11 @@ public interface ICommerceRepository
     /// <param name="refundId">Id возврата в БД.</param>
     /// <param name="refundOrderId">Id возврата в ПС.</param>
     Task<bool> UpdateRefundStatusAsync(string refundStatusName, string paymentId, long refundId, string refundOrderId);
+    
+    /// <summary>
+    /// Метод создает чек возврата в БД.
+    /// </summary>
+    /// <param name="createReceiptOutput">Модель результата из ПС.</param>
+    /// <returns>Данные чека.</returns>
+    Task<ReceiptEntity> CreateReceiptRefundAsync(CreateReceiptOutput createReceiptOutput);
 }

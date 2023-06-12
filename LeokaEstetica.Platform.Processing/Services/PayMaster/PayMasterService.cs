@@ -319,6 +319,48 @@ internal sealed class PayMasterService : IPayMasterService
         }
     }
 
+    /// <summary>
+    /// Метод создает чек возврата в ПС и отправляет его пользователю на почту.
+    /// <param name="createReceiptInput">Входная модель.</param>
+    /// </summary>
+    /// <returns>Выходная модель чека.</returns>
+    public async Task<CreateReceiptOutput> CreateReceiptRefundAsync(CreateReceiptInput createReceiptInput)
+    {
+        using var httpClient = new HttpClient();
+        await SetPayMasterRequestAuthorizationHeader(httpClient);
+        
+        _logger?.LogInformation($"Начало создания чека возврата по платежу {createReceiptInput.PaymentId}. " +
+                                $"Сумма чека возврата: {createReceiptInput.Amount.Value}");
+        
+        // Создаем чек возврата в ПС.
+        var response = await httpClient.PostAsJsonAsync(ApiConsts.CREATE_RECEIPT, createReceiptInput);
+
+        // Если ошибка при возврате платежа в ПС.
+        if (!response.IsSuccessStatusCode)
+        {
+            var ex = new InvalidOperationException(
+                "Ошибка создания чека возврата в ПС. " +
+                $"Данные возврата: {JsonConvert.SerializeObject(createReceiptInput)}");
+            throw ex;
+        }
+            
+        var refund = await CreateReceiptRefundResultAsync(response, createReceiptInput);
+
+        // Создаем чек возврата в БД.
+        var createdRefund = await _commerceRepository.CreateReceiptRefundAsync(refund);
+
+        var result = _mapper.Map<CreateReceiptOutput>(createdRefund);
+        
+        // Отправляем чек возврата в очередь для отслеживания его статуса.
+        var receiptRefundEvent = ReceiptRefundEventFactory.CreateReceiptRefundEvent(refund.ReceiptId,
+            refund.PaymentId, refund.Status);
+        await _rabbitMqService.PublishAsync(receiptRefundEvent, QueueTypeEnum.ReceiptRefundQueue);
+
+        _logger?.LogInformation("Конец создания чека возврата платежа.");
+
+        return result;
+    }
+
     #endregion
 
     #region Приватные методы.
@@ -346,11 +388,7 @@ internal sealed class PayMasterService : IPayMasterService
                 {
                     Description = "Оплата тарифа: " + fareRuleName + $" (на {month} мес.)"
                 },
-                Amount = new Amount
-                {
-                    Value = price,
-                    Currency = PaymentCurrencyEnum.RUB.ToString()
-                },
+                Amount = new Amount(price, PaymentCurrencyEnum.RUB.ToString()),
                 PaymentMethod = "BankCard",
                 FareRuleId = ruleId
             },
@@ -463,11 +501,7 @@ internal sealed class PayMasterService : IPayMasterService
         var request = new CreateRefundInput
         {
             PaymentId = paymentId,
-            Amount = new Amount
-            {
-                Value = price,
-                Currency = currency
-            }
+            Amount = new Amount(price, currency)
         };
 
         return await Task.FromResult(request);
@@ -493,6 +527,34 @@ internal sealed class PayMasterService : IPayMasterService
                 $"Ошибка парсинга данных из ПС. Данные возврата: {JsonConvert.SerializeObject(request)}");
             throw ex;
         }
+
+        return refund;
+    }
+    
+    /// <summary>
+    /// Метод создает результат создания чека возврата.
+    /// </summary>
+    /// <param name="response">Данные создания чека возврата из ПС.</param>
+    /// <param name="createReceiptInput">Модель запроса в ПС.</param>
+    /// <returns></returns>
+    /// <exception cref="InvalidOperationException">Может бахнуть ошибку, если не получилось распарсить результат из ПС.</exception>
+    private async Task<CreateReceiptOutput> CreateReceiptRefundResultAsync(HttpResponseMessage response,
+        CreateReceiptInput createReceiptInput)
+    {
+        // Парсим результат из ПС.
+        var refund = await response.Content.ReadFromJsonAsync<CreateReceiptOutput>();
+
+        // Если ошибка при парсинге чека возврата из ПС, то не даем создать чек возврата.
+        if (string.IsNullOrEmpty(refund?.PaymentId))
+        {
+            var ex = new InvalidOperationException(
+                "Ошибка парсинга данных из ПС. " +
+                $"Данные чека возврата: {JsonConvert.SerializeObject(createReceiptInput)}");
+            throw ex;
+        }
+
+        refund.RefundId = createReceiptInput.RefundId;
+        refund.OrderId = createReceiptInput.OrderId;
 
         return refund;
     }

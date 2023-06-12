@@ -4,6 +4,8 @@ using LeokaEstetica.Platform.Database.Abstractions.Orders;
 using LeokaEstetica.Platform.Database.Abstractions.Refunds;
 using LeokaEstetica.Platform.Database.Abstractions.Subscription;
 using LeokaEstetica.Platform.Database.Abstractions.User;
+using LeokaEstetica.Platform.Models.Dto.Base.Commerce.PayMaster;
+using LeokaEstetica.Platform.Models.Dto.Input.Commerce.PayMaster;
 using LeokaEstetica.Platform.Models.Dto.Output.Refunds;
 using LeokaEstetica.Platform.Models.Entities.Commerce;
 using LeokaEstetica.Platform.Notifications.Abstractions;
@@ -167,6 +169,13 @@ internal sealed class RefundsService : IRefundsService
             // Сохраняем возврат в БД.
             var result = await _refundsRepository.SaveRefundAsync(paymentId, price, refund.DateCreated, refund.Status,
                 refund.RefundId);
+            
+            // Создаем модель запроса к ПС для создания чека возврата.
+            var requestReceiptRefund = await CreateReceiptRefundRequestAsync(order, account, result.RefundId,
+                refund.RefundId);
+            
+            // Создаем чек возврата в ПС.
+            var receiptRefund = await _payMasterService.CreateReceiptRefundAsync(requestReceiptRefund);
 
             return result;
         }
@@ -190,8 +199,42 @@ internal sealed class RefundsService : IRefundsService
     #endregion
 
     #region Приватные методы.
-
     
+    /// <summary>
+    /// TODO: В будущем возможно будет проблема с account, потому что ПС ожидает именно почту пользователя.
+    /// TODO: а может придти не почта, а логин, тогда надо будет доработать такой кейс тут.
+    /// Метод создает модель запроса в ПС для создания чека возврата.
+    /// </summary>
+    /// <param name="order">Данные заказа.</param>
+    /// <param name="account">Аккаунт.</param>
+    /// <param name="refundId">Id возврата.</param>
+    /// <param name="refundOrderId">Id возврата в ПС.</param>
+    /// <returns>Модель запроса в ПС.</returns>
+    private async Task<CreateReceiptInput> CreateReceiptRefundRequestAsync(OrderEntity order, string account,
+        long refundId, string refundOrderId)
+    {
+        var price = order.Price;
+        var amount = new Amount(price, PaymentCurrencyEnum.RUB.ToString());
+        var client = new ClientInput(account);
+        
+        // Создаем позиции чека.
+        var items = new List<ReceiptItem>
+        {
+            new()
+            {
+                Name = order.OrderName,
+                PaymentMethod = "FullPayment",
+                PaymentSubject = "Service",
+                VatType = VatTypeEnum.None.ToString(),
+                Price = price
+            }
+        };
+
+        var request = new CreateReceiptInput(order.PaymentId, amount, ReceiptTypeEnum.Refund.ToString(), client, items,
+            order.OrderId, refundId, refundOrderId);
+
+        return await Task.FromResult(request);
+    }
 
     #endregion
 }

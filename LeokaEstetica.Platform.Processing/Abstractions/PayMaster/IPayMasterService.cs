@@ -1,3 +1,4 @@
+using LeokaEstetica.Platform.Models.Dto.Input.Commerce.PayMaster;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce.PayMaster;
 using LeokaEstetica.Platform.Models.Dto.Output.Refunds;
 using LeokaEstetica.Platform.Processing.Enums;
@@ -42,4 +43,11 @@ public interface IPayMasterService
     /// <param name="httpClient">HttpClient.</param>
     /// <returns>Статус возврата.</returns>
     Task<RefundStatusEnum> CheckRefundStatusAsync(string refundId, HttpClient httpClient);
+
+    /// <summary>
+    /// Метод создает чек возврата в ПС и отправляет его пользователю на почту.
+    /// <param name="createReceiptInput">Входная модель.</param>
+    /// </summary>
+    /// <returns>Выходная модель чека.</returns>
+    Task<CreateReceiptOutput> CreateReceiptRefundAsync(CreateReceiptInput createReceiptInput);
 }

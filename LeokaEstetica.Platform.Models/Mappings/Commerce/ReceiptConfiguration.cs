@@ -14,19 +14,38 @@ public partial class ReceiptConfiguration : IEntityTypeConfiguration<ReceiptEnti
 
         entity.Property(e => e.ReceiptId)
             .HasColumnName("ReceiptId")
-            .HasColumnType("bigserial");
+            .HasColumnType("bigserial")
+            .IsRequired();
         
         entity.Property(e => e.OrderId)
             .HasColumnName("OrderId")
-            .HasColumnType("bigint");
-        
-        entity.Property(e => e.DateSend)
-            .HasColumnName("DateSend")
-            .HasColumnType("timestamp");
-        
+            .HasColumnType("bigint")
+            .IsRequired();
+
         entity.Property(e => e.DateCreated)
             .HasColumnName("DateCreated")
-            .HasColumnType("timestamp");
+            .HasColumnType("timestamp")
+            .IsRequired();
+        
+        entity.Property(e => e.Status)
+            .HasColumnName("Status")
+            .HasColumnType("varchar(50)")
+            .IsRequired();
+        
+        entity.Property(e => e.Type)
+            .HasColumnName("Type")
+            .HasColumnType("varchar(50)")
+            .IsRequired();
+        
+        entity.Property(e => e.ReceiptOrderId)
+            .HasColumnName("ReceiptOrderId")
+            .HasColumnType("varchar(50)")
+            .IsRequired();
+        
+        entity.Property(e => e.UserId)
+            .HasColumnName("UserId")
+            .HasColumnType("bigint")
+            .IsRequired();
 
         entity.HasIndex(u => u.ReceiptId)
             .HasDatabaseName("PK_Receipts_ReceiptId")

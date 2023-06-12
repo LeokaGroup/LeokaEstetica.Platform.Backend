@@ -8,6 +8,17 @@ namespace LeokaEstetica.Platform.Models.Dto.Base.Commerce.PayMaster;
 public class Amount
 {
     /// <summary>
+    /// Конструктор.
+    /// </summary>
+    /// <param name="value"></param>
+    /// <param name="currency"></param>
+    public Amount(decimal value, string currency)
+    {
+        Value = value;
+        Currency = currency;
+    }
+
+    /// <summary>
     /// Сумма.
     /// </summary>
     [JsonProperty("value")]

@@ -2,6 +2,7 @@ using LeokaEstetica.Platform.Base.Models.Input.Processing;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Database.Abstractions.Commerce;
+using LeokaEstetica.Platform.Models.Dto.Output.Commerce.PayMaster;
 using LeokaEstetica.Platform.Models.Entities.Commerce;
 using Microsoft.EntityFrameworkCore;
 
@@ -146,6 +147,29 @@ public class CommerceRepository : ICommerceRepository
         await _pgContext.SaveChangesAsync();
 
         return true;
+    }
+
+    /// <summary>
+    /// Метод создает чек возврата в БД.
+    /// </summary>
+    /// <param name="createReceiptOutput">Модель результата из ПС.</param>
+    /// <returns>Данные чека.</returns>
+    public async Task<ReceiptEntity> CreateReceiptRefundAsync(CreateReceiptOutput createReceiptOutput)
+    {
+        var receipt = new ReceiptEntity
+        {
+            DateCreated = createReceiptOutput.DateCreated,
+            PaymentId = createReceiptOutput.PaymentId,
+            ReceiptOrderId = createReceiptOutput.ReceiptId,
+            Status = createReceiptOutput.Status,
+            OrderId = createReceiptOutput.OrderId,
+            Type = createReceiptOutput.Type
+        };
+
+        await _pgContext.Receipts.AddAsync(receipt);
+        await _pgContext.SaveChangesAsync();
+
+        return receipt;
     }
 
     #endregion
