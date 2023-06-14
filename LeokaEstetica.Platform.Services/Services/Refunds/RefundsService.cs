@@ -1,5 +1,7 @@
 using System.Runtime.CompilerServices;
+using LeokaEstetica.Platform.Core.Constants;
 using LeokaEstetica.Platform.Core.Exceptions;
+using LeokaEstetica.Platform.Database.Abstractions.Config;
 using LeokaEstetica.Platform.Database.Abstractions.Orders;
 using LeokaEstetica.Platform.Database.Abstractions.Subscription;
 using LeokaEstetica.Platform.Database.Abstractions.User;
@@ -31,6 +33,7 @@ internal sealed class RefundsService : IRefundsService
     private readonly IOrdersRepository _ordersRepository;
     private readonly IRefundsNotificationService _refundsNotificationService;
     private readonly IPayMasterService _payMasterService;
+    private readonly IGlobalConfigRepository _globalConfigRepository;
 
     /// <summary>
     /// Конструктор.
@@ -41,13 +44,15 @@ internal sealed class RefundsService : IRefundsService
     /// <param name="ordersRepository">Репозиторий заказов.</param>
     /// <param name="refundsNotificationService">Сервис уведомлений возвратов.</param>
     /// <param name="payMasterService">Сервис возвратов в ПС.</param>
+    /// <param name="globalConfigRepository">Репозиторий глобал конфига.</param>
     public RefundsService(ILogger<RefundsService> logger,
         ILogger<BaseCalculateRefundStrategy> loggerStrategy,
         ISubscriptionRepository subscriptionRepository,
         IUserRepository userRepository,
         IOrdersRepository ordersRepository,
         IRefundsNotificationService refundsNotificationService,
-        IPayMasterService payMasterService)
+        IPayMasterService payMasterService,
+        IGlobalConfigRepository globalConfigRepository)
     {
         _logger = logger;
         _loggerStrategy = loggerStrategy;
@@ -56,6 +61,7 @@ internal sealed class RefundsService : IRefundsService
         _ordersRepository = ordersRepository;
         _refundsNotificationService = refundsNotificationService;
         _payMasterService = payMasterService;
+        _globalConfigRepository = globalConfigRepository;
     }
 
     #region Публичные методы.
@@ -78,17 +84,17 @@ internal sealed class RefundsService : IRefundsService
             {
                 throw new NotFoundUserIdByAccountException(account);
             }
-            
+
             // Получаем подписку.
             var currentSubscription = await _subscriptionRepository.GetUserSubscriptionAsync(userId);
-            
+
             // Получаем подписку пользователя.
             var userSubscription = await _subscriptionRepository
                 .GetUserSubscriptionBySubscriptionIdAsync(currentSubscription.SubscriptionId, userId);
 
             // Получаем заказ, который был оформлен на подписку.
             var orderId = await _ordersRepository.GetUserOrderIdAsync(userSubscription.MonthCount, userId);
-            
+
             if (orderId <= 0)
             {
                 var ex = new InvalidOperationException($"Id заказа был <= 0. OrderId: {orderId}");
@@ -144,7 +150,7 @@ internal sealed class RefundsService : IRefundsService
             {
                 throw new NotFoundUserIdByAccountException(account);
             }
-            
+
             // Получаем данные для возврата из заказа.
             var order = await _ordersRepository.GetOrderDetailsAsync(orderId, userId);
 
@@ -157,24 +163,29 @@ internal sealed class RefundsService : IRefundsService
             }
 
             // Создаем возврат в ПС.
-            var paymentId = order.PaymentId;
-            var refund = await _payMasterService.CreateRefundAsync(paymentId, price,
+            var refund = await _payMasterService.CreateRefundAsync(order.PaymentId, price,
                 PaymentCurrencyEnum.RUB.ToString());
 
-            // Создаем модель запроса к ПС для создания чека возврата.
-            var requestReceiptRefund = await CreateReceiptRefundRequestAsync(order, account, refund.RefundId,
-                refund.RefundOrderId);
-            
-            // Создаем чек возврата в ПС.
-            _ = await _payMasterService.CreateReceiptRefundAsync(requestReceiptRefund);
+            var isReceiptRefund = await _globalConfigRepository.GetValueByKeyAsync<bool>(
+                GlobalConfigKeys.Receipt.SEND_RECEIPT_REFUND_MODE_ENABLED);
+
+            if (isReceiptRefund)
+            {
+                // Создаем модель запроса к ПС для создания чека возврата.
+                var requestReceiptRefund = await CreateReceiptRefundRequestAsync(order, account, refund.RefundId,
+                    refund.RefundOrderId);
+                
+                // Создаем чек возврата в ПС.
+                _ = await _payMasterService.CreateReceiptRefundAsync(requestReceiptRefund);
+            }
 
             return refund;
         }
-        
+
         catch (Exception ex)
         {
             _logger?.LogCritical(ex.Message, ex);
-            
+
             if (!string.IsNullOrEmpty(token))
             {
                 await _refundsNotificationService.SendNotificationErrorRefundAsync("Что то пошло не так",
@@ -182,7 +193,7 @@ internal sealed class RefundsService : IRefundsService
                     $"Вы можете обратиться в тех.поддержку. ID вашего заказа {orderId}",
                     NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, token);
             }
-            
+
             throw;
         }
     }
@@ -190,7 +201,7 @@ internal sealed class RefundsService : IRefundsService
     #endregion
 
     #region Приватные методы.
-    
+
     /// <summary>
     /// TODO: В будущем возможно будет проблема с account, потому что ПС ожидает именно почту пользователя.
     /// TODO: а может придти не почта, а логин, тогда надо будет доработать такой кейс тут.
@@ -207,7 +218,7 @@ internal sealed class RefundsService : IRefundsService
         var price = order.Price;
         var amount = new Amount(price, PaymentCurrencyEnum.RUB.ToString());
         var client = new ClientInput(account);
-        
+
         // Создаем позиции чека.
         var items = new List<ReceiptItem>
         {
