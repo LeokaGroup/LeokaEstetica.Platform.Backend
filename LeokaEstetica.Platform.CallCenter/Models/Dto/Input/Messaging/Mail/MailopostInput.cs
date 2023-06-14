@@ -1,4 +1,4 @@
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace LeokaEstetica.Platform.CallCenter.Models.Dto.Input.Messaging.Mail;
 
@@ -13,42 +13,37 @@ public class MailopostInput
     /// <summary>
     /// Адрес отправителя.
     /// </summary>
-    [JsonProperty("from_email")]
+    [JsonPropertyName("from_email")]
     public string FromEmail { get; set; }
 
     /// <summary>
     /// Название отправителя.
     /// </summary>
-    [JsonProperty("from_name")]
+    [JsonPropertyName("from_name")]
     public string FromName { get; set; }
 
     /// <summary>
     /// Адрес получателя.
     /// </summary>
-    [JsonProperty("to")]
     public string To { get; set; }
 
     /// <summary>
     /// Заголовок письма.
     /// </summary>
-    [JsonProperty("subject")]
     public string Subject { get; set; }
 
     /// <summary>
     /// Тело письма.
     /// </summary>
-    [JsonProperty("text")]
     public string Text { get; set; }
 
     /// <summary>
     /// Письмо в формате html.
     /// </summary>
-    [JsonProperty("html")]
     public string Html { get; set; }
 
     /// <summary>
     /// Тип тарификации.
     /// </summary>
-    [JsonProperty("payment")]
     public string Payment { get; set; }
 }

@@ -24,7 +24,6 @@ using LeokaEstetica.Platform.Database.Repositories.Notification;
 using LeokaEstetica.Platform.Database.Repositories.Orders;
 using LeokaEstetica.Platform.Database.Repositories.Profile;
 using LeokaEstetica.Platform.Database.Repositories.Project;
-using LeokaEstetica.Platform.Database.Repositories.Refunds;
 using LeokaEstetica.Platform.Database.Repositories.Resume;
 using LeokaEstetica.Platform.Database.Repositories.Subscription;
 using LeokaEstetica.Platform.Database.Repositories.User;
@@ -219,9 +218,7 @@ internal class BaseServiceTest
 
         var userMetricsRepository = new UserMetricsRepository(pgContext);
         UserMetricsService = new UserMetricsService(null, userMetricsRepository);
-
-        var refundsRepository = new RefundsRepository(pgContext);
         RefundsService = new RefundsService(null, null, subscriptionRepository, userRepository, ordersRepository, null,
-            refundsRepository, PayMasterService);
+            PayMasterService);
     }
 }

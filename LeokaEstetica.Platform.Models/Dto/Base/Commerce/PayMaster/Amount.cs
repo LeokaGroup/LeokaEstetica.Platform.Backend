@@ -1,5 +1,3 @@
-using Newtonsoft.Json;
-
 namespace LeokaEstetica.Platform.Models.Dto.Base.Commerce.PayMaster;
 
 /// <summary>
@@ -8,14 +6,23 @@ namespace LeokaEstetica.Platform.Models.Dto.Base.Commerce.PayMaster;
 public class Amount
 {
     /// <summary>
+    /// Конструктор.
+    /// </summary>
+    /// <param name="value"></param>
+    /// <param name="currency"></param>
+    public Amount(decimal value, string currency)
+    {
+        Value = value;
+        Currency = currency;
+    }
+
+    /// <summary>
     /// Сумма.
     /// </summary>
-    [JsonProperty("value")]
     public decimal Value { get; set; }
 
     /// <summary>
     /// Валюта.
     /// </summary>
-    [JsonProperty("currency")]
     public string Currency { get; set; }
 }

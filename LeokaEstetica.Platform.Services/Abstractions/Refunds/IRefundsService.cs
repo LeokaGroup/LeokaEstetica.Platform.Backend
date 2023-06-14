@@ -1,5 +1,4 @@
 using LeokaEstetica.Platform.Models.Dto.Output.Refunds;
-using LeokaEstetica.Platform.Models.Entities.Commerce;
 
 namespace LeokaEstetica.Platform.Services.Abstractions.Refunds;
 
@@ -25,5 +24,5 @@ public interface IRefundsService
     /// <param name="account">Аккаунт.</param>
     /// <param name="token">Токен.</param>
     /// <returns>Выходная модель.</returns>
-    Task<RefundEntity> CreateRefundAsync(long orderId, decimal price, string account, string token);
+    Task<CreateRefundOutput> CreateRefundAsync(long orderId, decimal price, string account, string token);
 }

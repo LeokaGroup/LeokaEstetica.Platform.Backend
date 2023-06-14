@@ -15,7 +15,6 @@ using LeokaEstetica.Platform.Database.Abstractions.Notification;
 using LeokaEstetica.Platform.Database.Abstractions.Orders;
 using LeokaEstetica.Platform.Database.Abstractions.Profile;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
-using LeokaEstetica.Platform.Database.Abstractions.Refunds;
 using LeokaEstetica.Platform.Database.Abstractions.Resume;
 using LeokaEstetica.Platform.Database.Abstractions.Subscription;
 using LeokaEstetica.Platform.Database.Abstractions.User;
@@ -39,7 +38,6 @@ using LeokaEstetica.Platform.Database.Repositories.Notification;
 using LeokaEstetica.Platform.Database.Repositories.Orders;
 using LeokaEstetica.Platform.Database.Repositories.Profile;
 using LeokaEstetica.Platform.Database.Repositories.Project;
-using LeokaEstetica.Platform.Database.Repositories.Refunds;
 using LeokaEstetica.Platform.Database.Repositories.Resume;
 using LeokaEstetica.Platform.Database.Repositories.Subscription;
 using LeokaEstetica.Platform.Database.Repositories.User;
@@ -280,16 +278,6 @@ public class RepositoriesModule : Module
         builder
             .RegisterType<UserMetricsRepository>()
             .As<IUserMetricsRepository>()
-            .InstancePerLifetimeScope();
-        
-        // Репозиторий возвратов.
-        builder
-            .RegisterType<RefundsRepository>()
-            .Named<IRefundsRepository>("RefundsRepository")
-            .InstancePerLifetimeScope();
-        builder
-            .RegisterType<RefundsRepository>()
-            .As<IRefundsRepository>()
             .InstancePerLifetimeScope();
     }
 }
