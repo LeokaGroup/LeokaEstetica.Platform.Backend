@@ -5,6 +5,7 @@ namespace LeokaEstetica.Platform.Models.Dto.Input.Commerce.PayMaster;
 /// <summary>
 /// Класс входной модели создания чека.
 /// </summary>
+[Serializable]
 public class CreateReceiptInput
 {
     /// <summary>

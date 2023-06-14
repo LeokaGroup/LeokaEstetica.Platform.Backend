@@ -13,7 +13,7 @@ public class ReceiptItem
     /// <summary>
     /// Кол-во позиций в чеке.
     /// </summary>
-    public int Quantity { get; set; }
+    public decimal Quantity { get; set; }
 
     /// <summary>
     /// Цена.

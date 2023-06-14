@@ -1,7 +1,6 @@
 using System.Runtime.CompilerServices;
 using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.Orders;
-using LeokaEstetica.Platform.Database.Abstractions.Refunds;
 using LeokaEstetica.Platform.Database.Abstractions.Subscription;
 using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Models.Dto.Base.Commerce.PayMaster;
@@ -31,7 +30,6 @@ internal sealed class RefundsService : IRefundsService
     private readonly IUserRepository _userRepository;
     private readonly IOrdersRepository _ordersRepository;
     private readonly IRefundsNotificationService _refundsNotificationService;
-    private readonly IRefundsRepository _refundsRepository;
     private readonly IPayMasterService _payMasterService;
 
     /// <summary>
@@ -42,15 +40,13 @@ internal sealed class RefundsService : IRefundsService
     /// <param name="userRepository">Репозиторий пользователя.</param>
     /// <param name="ordersRepository">Репозиторий заказов.</param>
     /// <param name="refundsNotificationService">Сервис уведомлений возвратов.</param>
-    /// <param name="refundsRepository">Репозиторий возвратов.</param>
     /// <param name="payMasterService">Сервис возвратов в ПС.</param>
     public RefundsService(ILogger<RefundsService> logger,
         ILogger<BaseCalculateRefundStrategy> loggerStrategy,
         ISubscriptionRepository subscriptionRepository,
         IUserRepository userRepository,
         IOrdersRepository ordersRepository,
-        IRefundsNotificationService refundsNotificationService, 
-        IRefundsRepository refundsRepository, 
+        IRefundsNotificationService refundsNotificationService,
         IPayMasterService payMasterService)
     {
         _logger = logger;
@@ -59,7 +55,6 @@ internal sealed class RefundsService : IRefundsService
         _userRepository = userRepository;
         _ordersRepository = ordersRepository;
         _refundsNotificationService = refundsNotificationService;
-        _refundsRepository = refundsRepository;
         _payMasterService = payMasterService;
     }
 
@@ -139,7 +134,7 @@ internal sealed class RefundsService : IRefundsService
     /// <param name="account">Аккаунт.</param>
     /// <param name="token">Токен.</param>
     /// <returns>Выходная модель.</returns>
-    public async Task<RefundEntity> CreateRefundAsync(long orderId, decimal price, string account, string token)
+    public async Task<CreateRefundOutput> CreateRefundAsync(long orderId, decimal price, string account, string token)
     {
         try
         {
@@ -166,18 +161,14 @@ internal sealed class RefundsService : IRefundsService
             var refund = await _payMasterService.CreateRefundAsync(paymentId, price,
                 PaymentCurrencyEnum.RUB.ToString());
 
-            // Сохраняем возврат в БД.
-            var result = await _refundsRepository.SaveRefundAsync(paymentId, price, refund.DateCreated, refund.Status,
-                refund.RefundId);
-            
             // Создаем модель запроса к ПС для создания чека возврата.
-            var requestReceiptRefund = await CreateReceiptRefundRequestAsync(order, account, result.RefundId,
-                refund.RefundId);
+            var requestReceiptRefund = await CreateReceiptRefundRequestAsync(order, account, refund.RefundId,
+                refund.RefundOrderId);
             
             // Создаем чек возврата в ПС.
-            var receiptRefund = await _payMasterService.CreateReceiptRefundAsync(requestReceiptRefund);
+            _ = await _payMasterService.CreateReceiptRefundAsync(requestReceiptRefund);
 
-            return result;
+            return refund;
         }
         
         catch (Exception ex)
@@ -226,7 +217,8 @@ internal sealed class RefundsService : IRefundsService
                 PaymentMethod = "FullPayment",
                 PaymentSubject = "Service",
                 VatType = VatTypeEnum.None.ToString(),
-                Price = price
+                Price = price,
+                Quantity = 1
             }
         };
 

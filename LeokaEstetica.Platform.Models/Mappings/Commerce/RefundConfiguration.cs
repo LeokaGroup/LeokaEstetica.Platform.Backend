@@ -29,7 +29,7 @@ public partial class RefundConfiguration : IEntityTypeConfiguration<RefundEntity
         
         entity.Property(e => e.DateCreated)
             .HasColumnName("DateCreated")
-            .HasColumnType("timestamp")
+            .HasColumnType("timestamp without timezone")
             .HasDefaultValue(DateTime.Now)
             .IsRequired();
         
