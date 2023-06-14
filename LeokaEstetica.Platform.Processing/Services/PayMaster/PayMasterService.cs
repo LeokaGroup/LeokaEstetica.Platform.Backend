@@ -339,8 +339,6 @@ internal sealed class PayMasterService : IPayMasterService
         // Если ошибка при возврате платежа в ПС.
         if (!response.IsSuccessStatusCode)
         {
-            var test = await httpClient.PostAsJsonAsync(ApiConsts.CREATE_RECEIPT, createReceiptInput).Result.Content
-                .ReadAsStringAsync();
             var ex = new InvalidOperationException(
                 "Ошибка создания чека возврата в ПС. " +
                 $"Данные возврата: {JsonConvert.SerializeObject(createReceiptInput)}");
@@ -558,8 +556,8 @@ internal sealed class PayMasterService : IPayMasterService
             throw ex;
         }
 
-        //refund.RefundId = createReceiptInput.RefundId;
-        //refund.OrderId = createReceiptInput.OrderId;
+        refund.RefundId = createReceiptInput.RefundId;
+        refund.OrderId = createReceiptInput.OrderId;
 
         return refund;
     }
