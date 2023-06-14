@@ -219,6 +219,6 @@ internal class BaseServiceTest
         var userMetricsRepository = new UserMetricsRepository(pgContext);
         UserMetricsService = new UserMetricsService(null, userMetricsRepository);
         RefundsService = new RefundsService(null, null, subscriptionRepository, userRepository, ordersRepository, null,
-            PayMasterService);
+            PayMasterService, null);
     }
 }
