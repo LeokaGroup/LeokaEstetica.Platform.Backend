@@ -21,4 +21,12 @@ public interface ISubscriptionService
     /// <param name="subscriptions">Список подписок до выделения.</param>
     /// <returns>Список подписок, но с выделенной подпиской, которую оформил пользователь либо не выделяем.</returns>
     Task<List<SubscriptionOutput>> FillSubscriptionsAsync(string account, List<SubscriptionOutput> subscriptions);
+
+    /// <summary>
+    /// Метод запишет пользователю подписку.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <param name="publicId">Публичный ключ тарифа.</param>
+    /// <param name="month">Кол-во месяцев подписки.</param>
+    Task SetUserSubscriptionAsync(long userId, Guid publicId, short month);
 }

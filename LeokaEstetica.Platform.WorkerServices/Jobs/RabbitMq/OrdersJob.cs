@@ -4,8 +4,10 @@ using LeokaEstetica.Platform.Base.Enums;
 using LeokaEstetica.Platform.Base.Models.IntegrationEvents.Orders;
 using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.Commerce;
+using LeokaEstetica.Platform.Database.Abstractions.FareRule;
 using LeokaEstetica.Platform.Processing.Abstractions.PayMaster;
 using LeokaEstetica.Platform.Processing.Enums;
+using LeokaEstetica.Platform.Services.Abstractions.Subscription;
 using Newtonsoft.Json;
 using Quartz;
 using RabbitMQ.Client;
@@ -27,6 +29,8 @@ internal sealed class OrdersJob : IJob, IDisposable
     private readonly HttpClient _httpClient;
     private readonly ICommerceRepository _commerceRepository;
     private readonly ILogger<OrdersJob> _logger;
+    private readonly ISubscriptionService _subscriptionService;
+    private readonly IFareRuleRepository _fareRuleRepository;
 
     /// <summary>
     /// Конструктор.
@@ -36,15 +40,21 @@ internal sealed class OrdersJob : IJob, IDisposable
     /// <param name="httpClient">HttpClient.</param>
     /// <param name="commerceRepository">Репозиторий коммерции.</param>
     /// <param name="logger">Сервис логов.</param>
+    /// <param name="subscriptionService">Сервис подписок.</param>
+    /// <param name="fareRuleRepository">Репозиторий тарифов.</param>
     public OrdersJob(IConfiguration configuration, 
         IPayMasterService payMasterService,
         ICommerceRepository commerceRepository, 
-        ILogger<OrdersJob> logger)
+        ILogger<OrdersJob> logger, 
+        ISubscriptionService subscriptionService, 
+        IFareRuleRepository fareRuleRepository)
     {
         _payMasterService = payMasterService;
         _httpClient = new HttpClient();
         _commerceRepository = commerceRepository;
         _logger = logger;
+        _subscriptionService = subscriptionService;
+        _fareRuleRepository = fareRuleRepository;
 
         var factory = new ConnectionFactory
         {
@@ -108,6 +118,17 @@ internal sealed class OrdersJob : IJob, IDisposable
                                                                    $"OrderId: {orderId}." +
                                                                    $"PaymentId: {paymentId}");
                             throw ex;
+                        }
+
+                        var publicId = orderEvent.PublicId;
+                        var fareRule = await _fareRuleRepository.GetByPublicIdAsync(publicId);
+
+                        // Для бесплатного тарифа нет срока подписки.
+                        if (!fareRule.IsFree)
+                        {
+                            // Проставляем даты подписки пользователю.
+                            await _subscriptionService.SetUserSubscriptionAsync(orderEvent.UserId, publicId,
+                                orderEvent.Month);
                         }
                     }
                 

@@ -23,6 +23,13 @@ internal sealed class SubscriptionService : ISubscriptionService
     private readonly ISubscriptionRepository _subscriptionRepository;
     private readonly IFareRuleRepository _fareRuleRepository;
 
+    /// <summary>
+    /// Конструктор.
+    /// </summary>
+    /// <param name="logger">Логгер.</param>
+    /// <param name="userRepository">Репозиторий пользователя.</param>
+    /// <param name="subscriptionRepository">Репозиторий подписок.</param>
+    /// <param name="fareRuleRepository">Репозиторий тарифов.</param>
     public SubscriptionService(ILogger<SubscriptionService> logger,
         IUserRepository userRepository,
         ISubscriptionRepository subscriptionRepository, 
@@ -33,6 +40,8 @@ internal sealed class SubscriptionService : ISubscriptionService
         _subscriptionRepository = subscriptionRepository;
         _fareRuleRepository = fareRuleRepository;
     }
+
+    #region Публичные методы.
 
     /// <summary>
     /// Метод получает список подписок.
@@ -97,4 +106,44 @@ internal sealed class SubscriptionService : ISubscriptionService
             throw;
         }
     }
+
+    /// <summary>
+    /// Метод запишет пользователю подписку.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <param name="publicId">Публичный ключ тарифа.</param>
+    /// <param name="month">Кол-во месяцев подписки.</param>
+    public async Task SetUserSubscriptionAsync(long userId, Guid publicId, short month)
+    {
+        var days = 0;
+        var currentYear = DateTime.Now.Year;
+        
+        while (month > 0)
+        {
+            // Суммируем дни от каждого месяца.
+            days += DateTime.DaysInMonth(currentYear, month);
+            month--;
+        }
+        
+        var startDate = DateTime.Now; // Дата начала подписки.
+        var endDate = startDate.AddDays(days); // Вычисляем дату окончания подписки.
+
+        var isSetSubscription = await _userRepository.SetSubscriptionDatesAsync(userId, startDate, endDate);
+
+        if (!isSetSubscription)
+        {
+            throw new InvalidOperationException("Не удалось проставить срок подписки. " +
+                                                $"UserId: {userId}." +
+                                                $"StartDate: {startDate}." +
+                                                $"EndDate: {endDate}");
+        }
+    }
+
+    #endregion
+
+    #region Приватные методы.
+
+    
+
+    #endregion
 }

@@ -191,4 +191,13 @@ public interface IUserRepository
     /// <param name="userId">Id пользователя.</param>
     /// <returns>Дата начала и дата окончания подписки.</returns>
     Task<(DateTime? StartDate, DateTime? EndDate)> GetUserSubscriptionUsedDateAsync(long userId);
+
+    /// <summary>
+    /// Метод проставляет срок подписки пользователю.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <param name="startDate">Дата начала подписки.</param>
+    /// <param name="endDate">Дата конца подписки.</param>
+    /// <returns>Признак записи подписки пользователю.</returns>
+    Task<bool> SetSubscriptionDatesAsync(long userId, DateTime startDate, DateTime endDate);
 }
