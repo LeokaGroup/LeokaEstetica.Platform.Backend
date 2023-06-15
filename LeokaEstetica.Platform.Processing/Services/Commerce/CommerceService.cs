@@ -152,11 +152,19 @@ internal sealed class CommerceService : ICommerceService
         var resultRefundPrice = orderPrice * referenceUsedDays / 100;
         
         // Не можем делать возвраты себе в ущерб.
-        if (resultRefundPrice <= 0)
+        if (resultRefundPrice == 0)
         {
-            _logger.LogWarning($"Невозможно сделать возврат на сумму: {resultRefundPrice}" +
+            _logger.LogWarning($"Невозможно сделать возврат на сумму: {resultRefundPrice}. Возврат не будет сделан." +
                                $"UserId: {userId}. " +
                                $"OrderId: {orderId}");
+        }
+
+        // Исключительная ситуация, сразу логируем такое.
+        if (resultRefundPrice < 0)
+        {
+            _logger.LogError($"Сумма возврата была отрицательной: {resultRefundPrice}. Возврат не будет сделан." +
+                             $"UserId: {userId}. " +
+                             $"OrderId: {orderId}");
         }
 
         return resultRefundPrice;

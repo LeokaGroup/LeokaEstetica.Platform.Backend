@@ -187,7 +187,7 @@ internal class BaseServiceTest
             commerceRepository, ordersRepository);
 
         SubscriptionService = new SubscriptionService(null, userRepository, subscriptionRepository,
-            fareRuleRepository, CommerceService);
+            fareRuleRepository);
         var fillColorResumeService = new FillColorResumeService();
         ResumeService = new ResumeService(null, resumeRepository, mapper, subscriptionRepository,
             fareRuleRepository, userRepository, fillColorResumeService, resumeModerationRepository);

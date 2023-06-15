@@ -129,6 +129,14 @@ internal sealed class RefundsService : IRefundsService
 
             if (price <= 0)
             {
+                if (!string.IsNullOrEmpty(token))
+                {
+                    await _refundsNotificationService.SendNotificationErrorCalculateRefundAsync("Что то пошло не так",
+                        "Ошибка при вычислении суммы возврата. Мы уже знаем о проблеме и уже занимаемся ей. " +
+                        $"Вы можете обратиться в тех.поддержку. ID вашего заказа {orderId}",
+                        NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, token);
+                }
+                
                 throw new InvalidOperationException("Сумма возврата не может быть отрицательной." +
                                                     $"Price: {price}" +
                                                     $"OrderId: {orderId}. " +
@@ -140,6 +148,13 @@ internal sealed class RefundsService : IRefundsService
 
         catch (Exception ex)
         {
+            if (!string.IsNullOrEmpty(token))
+            {
+                await _refundsNotificationService.SendNotificationErrorCalculateRefundAsync("Что то пошло не так",
+                    "Ошибка при вычислении суммы возврата. Мы уже знаем о проблеме и уже занимаемся ей. ",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, token);
+            }
+            
             _logger.LogError(ex.Message, ex);
             throw;
         }
