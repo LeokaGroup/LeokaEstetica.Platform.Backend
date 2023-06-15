@@ -1,5 +1,6 @@
 using LeokaEstetica.Platform.Models.Dto.Common.Cache;
 using LeokaEstetica.Platform.Models.Dto.Input.Commerce;
+using LeokaEstetica.Platform.Models.Dto.Output.Commerce;
 
 namespace LeokaEstetica.Platform.Processing.Abstractions.Commerce;
 
@@ -32,4 +33,11 @@ public interface ICommerceService
     /// <param name="orderId">Id заказа.</param>
     /// <returns>Сумма.</returns>
     Task<decimal> CalculatePriceSubscriptionFreeDaysAsync(long userId, long orderId);
+
+    /// <summary>
+    /// Метод вычисляет, есть ли остаток с прошлой подписки пользователя для учета ее как скидку при оформлении новой подписки.
+    /// </summary>
+    /// <param name="account">Аккаунт.</param>
+    /// <returns>Сумма остатка, если она есть.</returns>
+    Task<OrderFreeOutput> CheckFreePriceAsync(string account);
 }

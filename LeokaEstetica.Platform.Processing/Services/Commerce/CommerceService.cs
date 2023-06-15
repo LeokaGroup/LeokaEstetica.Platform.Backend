@@ -4,9 +4,11 @@ using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.Commerce;
 using LeokaEstetica.Platform.Database.Abstractions.FareRule;
 using LeokaEstetica.Platform.Database.Abstractions.Orders;
+using LeokaEstetica.Platform.Database.Abstractions.Subscription;
 using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Models.Dto.Common.Cache;
 using LeokaEstetica.Platform.Models.Dto.Input.Commerce;
+using LeokaEstetica.Platform.Models.Dto.Output.Commerce;
 using LeokaEstetica.Platform.Processing.Abstractions.Commerce;
 using LeokaEstetica.Platform.Redis.Abstractions.Commerce;
 using Microsoft.Extensions.Logging;
@@ -27,7 +29,8 @@ internal sealed class CommerceService : ICommerceService
     private readonly IFareRuleRepository _fareRuleRepository;
     private readonly ICommerceRepository _commerceRepository;
     private readonly IOrdersRepository _ordersRepository;
-    
+    private readonly ISubscriptionRepository _subscriptionRepository;
+
     /// <summary>
     /// Конструктор.
     /// <param name="commerceRedisService">Сервис кэша коммерции.</param>
@@ -36,13 +39,16 @@ internal sealed class CommerceService : ICommerceService
     /// <param name="fareRuleRepository">Репозиторий правил тарифов.</param>
     /// <param name="fareRuleRepository">Репозиторий коммерции.</param>
     /// <param name="ordersRepository">Репозиторий заказов.</param>
+    /// <param name="subscriptionRepository">Репозиторий подписок.</param>
+    /// <param name="commerceService">Сервис коммерции.</param>
     /// </summary>
     public CommerceService(ICommerceRedisService commerceRedisService, 
         ILogger<CommerceService> logger, 
         IUserRepository userRepository, 
         IFareRuleRepository fareRuleRepository, 
         ICommerceRepository commerceRepository, 
-        IOrdersRepository ordersRepository)
+        IOrdersRepository ordersRepository, 
+        ISubscriptionRepository subscriptionRepository)
     {
         _commerceRedisService = commerceRedisService;
         _logger = logger;
@@ -50,6 +56,7 @@ internal sealed class CommerceService : ICommerceService
         _fareRuleRepository = fareRuleRepository;
         _commerceRepository = commerceRepository;
         _ordersRepository = ordersRepository;
+        _subscriptionRepository = subscriptionRepository;
     }
 
     #region Публичные методы.
@@ -72,7 +79,7 @@ internal sealed class CommerceService : ICommerceService
                 var ex = new NotFoundUserIdByAccountException(account);
                 throw ex;
             }
-            
+
             // Сохраняем заказ в кэш сроком на 2 часа.
             var publicId = createOrderCacheInput.PublicId;
             var key = await _commerceRedisService.CreateOrderCacheKeyAsync(userId, publicId);
@@ -168,6 +175,61 @@ internal sealed class CommerceService : ICommerceService
         }
 
         return resultRefundPrice;
+    }
+
+    /// <summary>
+    /// Метод вычисляет, есть ли остаток с прошлой подписки пользователя для учета ее как скидку при оформлении новой подписки.
+    /// </summary>
+    /// <param name="account">Аккаунт.</param>
+    /// <returns>Сумма остатка, если она есть.</returns>
+    public async Task<OrderFreeOutput> CheckFreePriceAsync(string account)
+    {
+        try
+        {
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+            
+            // Проверяем, есть ли у пользователя действующая платная подписка.
+            var subscription = await _subscriptionRepository.GetUserSubscriptionAsync(userId);
+
+            if (subscription is null)
+            {
+                throw new InvalidOperationException($"Не удалось получить подписку. UserId: {userId}");
+            }
+
+            var subscriptionId = subscription.SubscriptionId;
+            var userSubscription = await _subscriptionRepository.GetUserSubscriptionBySubscriptionIdAsync(
+                subscriptionId, userId);
+
+            if (userSubscription is null)
+            {
+                throw new InvalidOperationException("Не удалось получить подписку пользователя." +
+                                                    $" UserId: {userId}." +
+                                                    $"SubscriptionId: {subscriptionId}");
+            }
+
+            // Находим Id заказа текущей подписки пользователя.
+            var orderId = await _ordersRepository.GetUserOrderIdAsync(userSubscription.MonthCount, userId);
+
+            var result = new OrderFreeOutput
+            {
+                // Вычисляем остаток суммы подписки.
+                FreePrice = await CalculatePriceSubscriptionFreeDaysAsync(userId, orderId)
+            };
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex.Message, ex);
+            throw;
+        }
     }
 
     #endregion
