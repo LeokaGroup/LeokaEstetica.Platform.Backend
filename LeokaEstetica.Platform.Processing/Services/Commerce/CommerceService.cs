@@ -181,8 +181,10 @@ internal sealed class CommerceService : ICommerceService
     /// Метод вычисляет, есть ли остаток с прошлой подписки пользователя для учета ее как скидку при оформлении новой подписки.
     /// </summary>
     /// <param name="account">Аккаунт.</param>
+    /// <param name="publicId">Публичный ключ тарифа.</param>
+    /// <param name="month">Кол-во месяцев подписки.</param>
     /// <returns>Сумма остатка, если она есть.</returns>
-    public async Task<OrderFreeOutput> CheckFreePriceAsync(string account)
+    public async Task<OrderFreeOutput> CheckFreePriceAsync(string account, Guid publicId, short month)
     {
         try
         {
@@ -215,12 +217,31 @@ internal sealed class CommerceService : ICommerceService
 
             // Находим Id заказа текущей подписки пользователя.
             var orderId = await _ordersRepository.GetUserOrderIdAsync(userSubscription.MonthCount, userId);
+            
+            // Вычисляем остаток суммы подписки (пока без учета повышения/понижения подписки).
+            var freePrice = await CalculatePriceSubscriptionFreeDaysAsync(userId, orderId);
 
             var result = new OrderFreeOutput
             {
-                // Вычисляем остаток суммы подписки.
-                FreePrice = await CalculatePriceSubscriptionFreeDaysAsync(userId, orderId)
+                FreePrice = freePrice
             };
+
+            if (freePrice == 0)
+            {
+                return result;
+            }
+            
+            // Проверяем повышение/понижение подписки.
+            // Находим тариф.
+            var fareRule = await _fareRuleRepository.GetByPublicIdAsync(publicId);
+            var calcPrice = await CalculateServicePriceAsync(month, fareRule.Price);
+
+            // Если сумма тарифа больше суммы остатка с текущей подписки пользователя,
+            // то это и будет его выгода и мы учтем это при переходе на другую подписку.
+            if (calcPrice > freePrice)
+            {
+                result.FreePrice = calcPrice - freePrice;
+            }
 
             return result;
         }
@@ -257,8 +278,8 @@ internal sealed class CommerceService : ICommerceService
 
         var discount = await GetPercentDiscountAsync(paymentMonth, DiscountTypeEnum.Service);
         var rulePrice = rule.Price;
-        var servicePrice = CalculateServicePriceAsync(paymentMonth, rulePrice);
-        var discountPrice = CalculatePercentPriceAsync(discount, servicePrice);
+        var servicePrice = await CalculateServicePriceAsync(paymentMonth, rulePrice);
+        var discountPrice = await CalculatePercentPriceAsync(discount, servicePrice);
 
         // Если была применена скидка.
         if (discountPrice < servicePrice)
@@ -300,7 +321,7 @@ internal sealed class CommerceService : ICommerceService
     /// <param name="percent">% скидки.</param>
     /// <param name="price">Сумму без скидки.</param>
     /// <returns>Сумма с учетом скидки.</returns>
-    private decimal CalculatePercentPriceAsync(decimal percent, decimal price)
+    private async Task<decimal> CalculatePercentPriceAsync(decimal percent, decimal price)
     {
         // Если нет скидки, то оставляем цену такой же.
         if (percent == 0)
@@ -308,7 +329,7 @@ internal sealed class CommerceService : ICommerceService
             return price;
         }
 
-        return price - Math.Round(price * percent / 100);
+        return await Task.FromResult(price - Math.Round(price * percent / 100));
     }
 
     /// <summary>
@@ -317,9 +338,9 @@ internal sealed class CommerceService : ICommerceService
     /// <param name="month">Кол-во месяцев подписки.</param>
     /// <param name="price">Цена.</param>
     /// <returns>Цена.</returns>
-    private decimal CalculateServicePriceAsync(short month, decimal price)
+    private async Task<decimal> CalculateServicePriceAsync(short month, decimal price)
     {
-        return price * month;
+        return await Task.FromResult(price * month);
     }
 
     #endregion

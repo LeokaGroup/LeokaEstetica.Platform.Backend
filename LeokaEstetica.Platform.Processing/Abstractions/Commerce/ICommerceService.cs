@@ -37,7 +37,8 @@ public interface ICommerceService
     /// <summary>
     /// Метод вычисляет, есть ли остаток с прошлой подписки пользователя для учета ее как скидку при оформлении новой подписки.
     /// </summary>
-    /// <param name="account">Аккаунт.</param>
+    /// <param name="publicId">Публичный ключ тарифа.</param>
+    /// <param name="month">Кол-во месяцев подписки.</param>
     /// <returns>Сумма остатка, если она есть.</returns>
-    Task<OrderFreeOutput> CheckFreePriceAsync(string account);
+    Task<OrderFreeOutput> CheckFreePriceAsync(string account, Guid publicId, short month);
 }
