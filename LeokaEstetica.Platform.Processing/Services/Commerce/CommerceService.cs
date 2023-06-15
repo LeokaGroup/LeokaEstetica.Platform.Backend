@@ -157,7 +157,6 @@ internal sealed class CommerceService : ICommerceService
             _logger.LogWarning($"Невозможно сделать возврат на сумму: {resultRefundPrice}" +
                                $"UserId: {userId}. " +
                                $"OrderId: {orderId}");
-            return 0;
         }
 
         return resultRefundPrice;

@@ -120,10 +120,19 @@ internal sealed class RefundsService : IRefundsService
                         NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, token);
                 }
 
-                var ex = new InvalidOperationException("Не удалось вычислить сумму возврата. " +
-                                                       $"OrderId: {orderId}. " +
-                                                       $"UserId: {userId}");
-                throw ex;
+                throw new InvalidOperationException("Не удалось вычислить сумму возврата. " +
+                                                    $"OrderId: {orderId}. " +
+                                                    $"UserId: {userId}");
+            }
+
+            var price = result.Price;
+
+            if (price <= 0)
+            {
+                throw new InvalidOperationException("Сумма возврата не может быть отрицательной." +
+                                                    $"Price: {price}" +
+                                                    $"OrderId: {orderId}. " +
+                                                    $"UserId: {userId}");
             }
 
             return result;
