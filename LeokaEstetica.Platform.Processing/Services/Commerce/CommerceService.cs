@@ -148,17 +148,17 @@ internal sealed class CommerceService : ICommerceService
             return 0;
         }
         
-        // Вычисляем кол-во дней, за которые будем возвращать ДС.
+        // Вычисляем кол-во дней, за которые можем учесть ДС пользователя при оплате новой подписки.
         var referenceUsedDays = (int)Math.Round(usedDays.EndDate.Value.Subtract(usedDays.StartDate.Value)
             .TotalDays);
 
         // Получаем по какой цене был оформлен заказ.
         var orderPrice = (await _ordersRepository.GetOrderDetailsAsync(orderId, userId)).Price;
 
-        // Вычисляем сумму к возврату.
+        // Вычисляем сумму остатка.
         var resultRefundPrice = orderPrice * referenceUsedDays / 100;
         
-        // Не можем делать возвраты себе в ущерб.
+        // Не можем вычислять остаток себе в ущерб.
         if (resultRefundPrice == 0)
         {
             _logger.LogWarning($"Невозможно сделать возврат на сумму: {resultRefundPrice}. Возврат не будет сделан." +
