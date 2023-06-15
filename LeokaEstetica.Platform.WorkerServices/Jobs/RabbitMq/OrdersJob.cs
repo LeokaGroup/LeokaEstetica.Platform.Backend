@@ -128,7 +128,7 @@ internal sealed class OrdersJob : IJob, IDisposable
                         {
                             // Проставляем даты подписки пользователю.
                             await _subscriptionService.SetUserSubscriptionAsync(orderEvent.UserId, publicId,
-                                orderEvent.Month);
+                                orderEvent.Month, orderId);
                         }
                     }
                 

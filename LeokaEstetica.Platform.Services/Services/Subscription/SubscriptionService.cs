@@ -5,6 +5,7 @@ using LeokaEstetica.Platform.Database.Abstractions.Subscription;
 using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Models.Dto.Output.Subscription;
 using LeokaEstetica.Platform.Models.Entities.Subscription;
+using LeokaEstetica.Platform.Processing.Abstractions.Commerce;
 using LeokaEstetica.Platform.Services.Abstractions.Subscription;
 using LeokaEstetica.Platform.Services.Builders;
 using Microsoft.Extensions.Logging;
@@ -22,6 +23,7 @@ internal sealed class SubscriptionService : ISubscriptionService
     private readonly IUserRepository _userRepository;
     private readonly ISubscriptionRepository _subscriptionRepository;
     private readonly IFareRuleRepository _fareRuleRepository;
+    private readonly ICommerceService _commerceService;
 
     /// <summary>
     /// Конструктор.
@@ -30,15 +32,18 @@ internal sealed class SubscriptionService : ISubscriptionService
     /// <param name="userRepository">Репозиторий пользователя.</param>
     /// <param name="subscriptionRepository">Репозиторий подписок.</param>
     /// <param name="fareRuleRepository">Репозиторий тарифов.</param>
+    /// <param name="commerceService">Сервис коммерции.</param>
     public SubscriptionService(ILogger<SubscriptionService> logger,
         IUserRepository userRepository,
         ISubscriptionRepository subscriptionRepository, 
-        IFareRuleRepository fareRuleRepository)
+        IFareRuleRepository fareRuleRepository, 
+        ICommerceService commerceService)
     {
         _logger = logger;
         _userRepository = userRepository;
         _subscriptionRepository = subscriptionRepository;
         _fareRuleRepository = fareRuleRepository;
+        _commerceService = commerceService;
     }
 
     #region Публичные методы.
@@ -113,8 +118,20 @@ internal sealed class SubscriptionService : ISubscriptionService
     /// <param name="userId">Id пользователя.</param>
     /// <param name="publicId">Публичный ключ тарифа.</param>
     /// <param name="month">Кол-во месяцев подписки.</param>
-    public async Task SetUserSubscriptionAsync(long userId, Guid publicId, short month)
+    /// <param name="orderId">Id заказа.</param>
+    public async Task SetUserSubscriptionAsync(long userId, Guid publicId, short month, long orderId)
     {
+        if (month <= 0)
+        {
+            var ex = new InvalidOperationException(
+                "Для присвоения подписки кол-во месяцев не может быть отрицательным." +
+                $"Кол-во было: {month}" +
+                $"PublicId тарифа: {publicId}" +
+                $" UserId: {userId}." +
+                $" OrderId: {orderId}");
+            throw ex;
+        }
+        
         var days = 0;
         var currentYear = DateTime.Now.Year;
         
@@ -136,6 +153,17 @@ internal sealed class SubscriptionService : ISubscriptionService
                                                 $"UserId: {userId}." +
                                                 $"StartDate: {startDate}." +
                                                 $"EndDate: {endDate}");
+        }
+
+        var price = await _commerceService.CalculatePriceSubscriptionFreeDaysAsync(userId, orderId);
+
+        if (price <= 0)
+        {
+            _logger.LogInformation("Свободной суммы нет. Переход на тариф будет с новой оплатой." +
+                                   $"PublicId тарифа: {publicId}" +
+                                   $" UserId: {userId}." +
+                                   $" OrderId: {orderId}");
+            return;
         }
     }
 

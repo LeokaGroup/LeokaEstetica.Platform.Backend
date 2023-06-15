@@ -11,6 +11,7 @@ using LeokaEstetica.Platform.Models.Dto.Output.Refunds;
 using LeokaEstetica.Platform.Models.Entities.Commerce;
 using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Notifications.Consts;
+using LeokaEstetica.Platform.Processing.Abstractions.Commerce;
 using LeokaEstetica.Platform.Processing.Abstractions.PayMaster;
 using LeokaEstetica.Platform.Processing.Enums;
 using LeokaEstetica.Platform.Services.Abstractions.Refunds;
@@ -34,6 +35,7 @@ internal sealed class RefundsService : IRefundsService
     private readonly IRefundsNotificationService _refundsNotificationService;
     private readonly IPayMasterService _payMasterService;
     private readonly IGlobalConfigRepository _globalConfigRepository;
+    private readonly ICommerceService _commerceService;
 
     /// <summary>
     /// Конструктор.
@@ -45,6 +47,7 @@ internal sealed class RefundsService : IRefundsService
     /// <param name="refundsNotificationService">Сервис уведомлений возвратов.</param>
     /// <param name="payMasterService">Сервис возвратов в ПС.</param>
     /// <param name="globalConfigRepository">Репозиторий глобал конфига.</param>
+    /// <param name="commerceService">Сервис коммерции.</param>
     public RefundsService(ILogger<RefundsService> logger,
         ILogger<BaseCalculateRefundStrategy> loggerStrategy,
         ISubscriptionRepository subscriptionRepository,
@@ -52,7 +55,8 @@ internal sealed class RefundsService : IRefundsService
         IOrdersRepository ordersRepository,
         IRefundsNotificationService refundsNotificationService,
         IPayMasterService payMasterService,
-        IGlobalConfigRepository globalConfigRepository)
+        IGlobalConfigRepository globalConfigRepository, 
+        ICommerceService commerceService)
     {
         _logger = logger;
         _loggerStrategy = loggerStrategy;
@@ -62,6 +66,7 @@ internal sealed class RefundsService : IRefundsService
         _refundsNotificationService = refundsNotificationService;
         _payMasterService = payMasterService;
         _globalConfigRepository = globalConfigRepository;
+        _commerceService = commerceService;
     }
 
     #region Публичные методы.
@@ -103,8 +108,7 @@ internal sealed class RefundsService : IRefundsService
 
             var calculateRefund = new CalculateRefund();
             var result = await calculateRefund.CalculateRefundAsync(
-                new CalculateRefundUsedDaysStrategy(_loggerStrategy, _userRepository, _ordersRepository), userId,
-                orderId);
+                new CalculateRefundUsedDaysStrategy(_loggerStrategy, _commerceService), userId, orderId);
 
             if (result is null)
             {

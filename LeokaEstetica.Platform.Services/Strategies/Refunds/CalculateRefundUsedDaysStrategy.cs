@@ -1,7 +1,6 @@
 using System.Transactions;
-using LeokaEstetica.Platform.Database.Abstractions.Orders;
-using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Models.Dto.Output.Refunds;
+using LeokaEstetica.Platform.Processing.Abstractions.Commerce;
 using Microsoft.Extensions.Logging;
 
 namespace LeokaEstetica.Platform.Services.Strategies.Refunds;
@@ -16,12 +15,9 @@ internal sealed class CalculateRefundUsedDaysStrategy : BaseCalculateRefundStrat
     /// Конструктор.
     /// </summary>
     /// <param name="logger">Логгер.</param>
-    /// <param name="userRepository">Репозиторий пользователя.</param>
-    /// <param name="userRepository">Репозиторий заказов.</param>
-    public CalculateRefundUsedDaysStrategy(ILogger<BaseCalculateRefundStrategy> logger,
-        IUserRepository userRepository,
-        IOrdersRepository ordersRepository)
-        : base(logger, userRepository, ordersRepository)
+    /// <param name="commerceService">Сервис заказов.</param>
+    public CalculateRefundUsedDaysStrategy(ILogger<BaseCalculateRefundStrategy> logger, 
+        ICommerceService commerceService) : base(logger, commerceService)
     {
     }
 
@@ -39,36 +35,7 @@ internal sealed class CalculateRefundUsedDaysStrategy : BaseCalculateRefundStrat
         
         try
         {
-            // Вычисляем, сколько прошло дней использования подписки у пользователя.
-            var usedDays = await UserRepository.GetUserSubscriptionUsedDateAsync(userId);
-
-            // Если одна из дат пустая, то не можем вычислить сумму возврата. Возврат не делаем в таком кейсе.
-            if (!usedDays.StartDate.HasValue || !usedDays.EndDate.HasValue)
-            {
-                Logger.LogWarning("Невозможно вычислить сумму возврата. Одна из дат подписки либо обе были null. " +
-                                  $"UserId: {userId}. " +
-                                  $"OrderId: {orderId}");
-                return null;
-            }
-
-            // Вычисляем кол-во дней, за которые будем возвращать ДС.
-            var referenceUsedDays = (int)Math.Round(usedDays.EndDate.Value.Subtract(usedDays.StartDate.Value)
-                .TotalDays);
-
-            // Получаем по какой цене был оформлен заказ.
-            var orderPrice = (await OrdersRepository.GetOrderDetailsAsync(orderId, userId)).Price;
-
-            // Вычисляем сумму к возврату.
-            var resultRefundPrice = orderPrice * referenceUsedDays / 100;
-
-            // Не можем делать возвраты себе в ущерб.
-            if (resultRefundPrice <= 0)
-            {
-                Logger.LogWarning($"Невозможно сделать возврат на сумму: {resultRefundPrice}" +
-                                  $"UserId: {userId}. " +
-                                  $"OrderId: {orderId}");
-                return null;
-            }
+            var resultRefundPrice = await CommerceService.CalculatePriceSubscriptionFreeDaysAsync(userId, orderId);
             
             var result = new CalculateRefundOutput
             {

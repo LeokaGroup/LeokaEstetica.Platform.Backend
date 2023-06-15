@@ -1,6 +1,5 @@
-using LeokaEstetica.Platform.Database.Abstractions.Orders;
-using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Models.Dto.Output.Refunds;
+using LeokaEstetica.Platform.Processing.Abstractions.Commerce;
 using Microsoft.Extensions.Logging;
 
 namespace LeokaEstetica.Platform.Services.Strategies.Refunds;
@@ -11,22 +10,18 @@ namespace LeokaEstetica.Platform.Services.Strategies.Refunds;
 public abstract class BaseCalculateRefundStrategy
 {
     protected readonly ILogger<BaseCalculateRefundStrategy> Logger;
-    protected readonly IUserRepository UserRepository;
-    protected readonly IOrdersRepository OrdersRepository;
+    protected readonly ICommerceService CommerceService;
 
     /// <summary>
     /// Конструктор.
     /// </summary>
     /// <param name="logger">Логгер.</param>
-    /// <param name="userRepository">Репозиторий пользователя.</param>
-    /// <param name="ordersRepository">Репозиторий заказов.</param>
+    /// <param name="commerceService">Сервис заказов.</param>
     protected BaseCalculateRefundStrategy(ILogger<BaseCalculateRefundStrategy> logger, 
-        IUserRepository userRepository, 
-        IOrdersRepository ordersRepository)
+        ICommerceService commerceService)
     {
         Logger = logger;
-        UserRepository = userRepository;
-        OrdersRepository = ordersRepository;
+        CommerceService = commerceService;
     }
 
     /// <summary>
