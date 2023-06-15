@@ -9,4 +9,9 @@ public class OrderFreeOutput
     /// Остаток суммы с прошлой подписки.
     /// </summary>
     public decimal FreePrice { get; set; }
+
+    /// <summary>
+    /// Цена тарифа.
+    /// </summary>
+    public decimal Price { get; set; }
 }

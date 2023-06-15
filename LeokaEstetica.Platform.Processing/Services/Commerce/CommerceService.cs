@@ -243,6 +243,8 @@ internal sealed class CommerceService : ICommerceService
                 result.FreePrice = calcPrice - freePrice;
             }
 
+            result.Price = calcPrice;
+
             return result;
         }
         
