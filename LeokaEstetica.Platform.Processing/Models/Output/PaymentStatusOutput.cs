@@ -1,4 +1,4 @@
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace LeokaEstetica.Platform.Processing.Models.Output;
 
@@ -10,7 +10,7 @@ public class PaymentStatusOutput
     /// <summary>
     /// Статус платежа.
     /// </summary>
-    [JsonPropertyName("status")]
+    [JsonProperty("status")]
     public string OrderStatus { get; set; }
 
     /// <summary>

@@ -1,4 +1,4 @@
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace LeokaEstetica.Platform.Models.Dto.Base.Moderation.Output;
 
@@ -10,7 +10,7 @@ public class BaseGetRemarkOutput
     /// <summary>
     /// Текст замечания.
     /// </summary>
-    [JsonPropertyName("detail")]
+    [JsonProperty("detail")]
     protected string RemarkText { get; set; }
 
     /// <summary>

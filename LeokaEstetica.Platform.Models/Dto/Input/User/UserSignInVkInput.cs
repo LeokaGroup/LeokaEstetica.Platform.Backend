@@ -1,4 +1,4 @@
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace LeokaEstetica.Platform.Models.Dto.Input.User;
 
@@ -10,18 +10,18 @@ public class UserSignInVkInput
     /// <summary>
     /// Id пользователя в системе ВК.
     /// </summary>
-    [JsonPropertyName("uid")]
+    [JsonProperty("uid")]
     public long VkUserId { get; set; }
     
     /// <summary>
     /// Имя.
     /// </summary>
-    [JsonPropertyName("first_name")]
+    [JsonProperty("first_name")]
     public string FirstName { get; set; }
 
     /// <summary>
     /// Фамилия.
     /// </summary>
-    [JsonPropertyName("last_name")]
+    [JsonProperty("last_name")]
     public string LastName { get; set; }
 }

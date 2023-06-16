@@ -1,4 +1,4 @@
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace LeokaEstetica.Platform.Models.Dto.Output.Commerce.PayMaster;
 
@@ -10,12 +10,12 @@ public class CheckStatusRefundOutput
     /// <summary>
     /// Системное название статуса заказа.
     /// </summary>
-    [JsonPropertyName("status")]
+    [JsonProperty("status")]
     public string StatusSysName { get; set; }
 
     /// <summary>
     /// Id возврата в ПС.
     /// </summary>
-    [JsonPropertyName("id")]
+    [JsonProperty("id")]
     public string RefundId { get; set; }
 }
