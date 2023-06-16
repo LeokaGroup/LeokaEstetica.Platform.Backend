@@ -8,6 +8,7 @@ using LeokaEstetica.Platform.Access.Helpers;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Core.Exceptions;
+using LeokaEstetica.Platform.Database.Abstractions.FareRule;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Resume;
 using LeokaEstetica.Platform.Database.Abstractions.Profile;
 using LeokaEstetica.Platform.Database.Abstractions.Subscription;
@@ -42,6 +43,7 @@ internal sealed class UserService : IUserService
     private readonly IResumeModerationRepository _resumeModerationRepository;
     private readonly IAccessUserService _accessUserService;
     private readonly IUserRedisService _userRedisService;
+    private readonly IFareRuleRepository _fareRuleRepository;
 
     /// <summary>
     /// Конструктор.
@@ -54,6 +56,7 @@ internal sealed class UserService : IUserService
     /// <param name="profileRepository">Репозиторий профиля.</param>
     /// <param name="profileRepository">Репозиторий подписок.</param>
     /// <param name="resumeModerationRepository">Репозиторий модерации анкет.</param>
+    /// <param name="fareRuleRepository">Репозиторий тарифов.</param>
     public UserService(ILogger<UserService> logger, 
         IUserRepository userRepository, 
         IMapper mapper, 
@@ -63,7 +66,8 @@ internal sealed class UserService : IUserService
         ISubscriptionRepository subscriptionRepository, 
         IResumeModerationRepository resumeModerationRepository, 
         IAccessUserService accessUserService, 
-        IUserRedisService userRedisService)
+        IUserRedisService userRedisService, 
+        IFareRuleRepository fareRuleRepository)
     {
         _logger = logger;
         _userRepository = userRepository;
@@ -75,6 +79,7 @@ internal sealed class UserService : IUserService
         _resumeModerationRepository = resumeModerationRepository;
         _accessUserService = accessUserService;
         _userRedisService = userRedisService;
+        _fareRuleRepository = fareRuleRepository;
     }
 
     #region Публичные методы.
@@ -311,7 +316,9 @@ internal sealed class UserService : IUserService
             result.UserCode = userCode;
 
             var userId = await _userRepository.GetUserIdByEmailAsync(email);
-            
+
+            await IfDisableUserSubscriptionAsync(userId);
+
             // Записываем токен пользователя в кэш.
             await _userRedisService.AddUserTokenAndUserIdCacheAsync(userId, result.Token);
 
@@ -404,7 +411,7 @@ internal sealed class UserService : IUserService
                 Token = token
             };
 
-            return result;
+            return await Task.FromResult(result);
         }
         
         catch (Exception ex)
@@ -638,6 +645,47 @@ internal sealed class UserService : IUserService
         };
 
         return result;
+    }
+
+    /// <summary>
+    /// Метод отключает подписку пользователя, если срок ее истек.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    private async Task IfDisableUserSubscriptionAsync(long userId)
+    {
+        // Проверяем активность подписки пользователя, если она платная.
+        var subscription = await _subscriptionRepository.GetUserSubscriptionAsync(userId);
+
+        if (subscription is null)
+        {
+            throw new InvalidOperationException($"Не удалось получить подписку. UserId: {userId}");
+        }
+            
+        // Получаем тариф.
+        var fareRule = await _fareRuleRepository.GetByIdAsync(subscription.ObjectId);
+
+        // Бесплатный тариф нас не интересует.
+        if (!fareRule.IsFree)
+        {
+            var subscriptionId = subscription.SubscriptionId;
+            var userSubscription = await _subscriptionRepository.GetUserSubscriptionBySubscriptionIdAsync(
+                subscriptionId, userId);
+
+            if (userSubscription is null)
+            {
+                throw new InvalidOperationException("Не удалось получить подписку пользователя." +
+                                                    $"UserId: {userId}." +
+                                                    $"SubscriptionId: {subscriptionId}");
+            }
+
+            var dates = await _userRepository.GetUserSubscriptionUsedDateAsync(userId);
+
+            // Отключаем пользователю подписку.
+            if (dates.EndDate < DateTime.Now)
+            {
+                await _subscriptionRepository.DisableUserSubscriptionAsync(userId);
+            }
+        }
     }
     
     #endregion

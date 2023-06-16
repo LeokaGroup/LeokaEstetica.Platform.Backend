@@ -22,6 +22,8 @@ public class SubscriptionRepository : ISubscriptionRepository
         _pgContext = pgContext;
     }
 
+    #region Публичные методы.
+
     /// <summary>
     /// Метод получает список подписок.
     /// </summary>
@@ -127,4 +129,23 @@ public class SubscriptionRepository : ISubscriptionRepository
 
         return result;
     }
+
+    /// <summary>
+    /// Метод делает подписку неактивной.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    public async Task DisableUserSubscriptionAsync(long userId)
+    {
+        var result = await _pgContext.UserSubscriptions.FirstOrDefaultAsync(s => s.UserId == userId);
+        result!.IsActive = false;
+        await _pgContext.SaveChangesAsync();
+    }
+
+    #endregion
+
+    #region Приватные методы.
+
+    
+
+    #endregion
 }
