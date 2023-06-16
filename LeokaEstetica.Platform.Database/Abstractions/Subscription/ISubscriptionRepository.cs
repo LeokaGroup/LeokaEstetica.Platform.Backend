@@ -50,4 +50,10 @@ public interface ISubscriptionRepository
     /// <param name="userId">Id пользователя.</param>
     /// <returns>Подписка пользователя.</returns>
     Task<UserSubscriptionEntity> GetUserSubscriptionBySubscriptionIdAsync(long subscriptionId, long userId);
+
+    /// <summary>
+    /// Метод делает подписку неактивной.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    Task DisableUserSubscriptionAsync(long userId);
 }

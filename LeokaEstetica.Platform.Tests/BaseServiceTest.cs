@@ -127,9 +127,11 @@ internal class BaseServiceTest
         var accessUserRepository = new AccessUserRepository(pgContext);
         var accessUserService = new AccessUserService(accessUserRepository);
         var userRedisService = new UserRedisService(distributedCache, mapper);
+        var fareRuleRepository = new FareRuleRepository(pgContext);
 
         UserService = new UserService(null, userRepository, mapper, null, pgContext, profileRepository,
-            subscriptionRepository, resumeModerationRepository, accessUserService, userRedisService);
+            subscriptionRepository, resumeModerationRepository, accessUserService, userRedisService,
+            fareRuleRepository);
         ProfileService = new ProfileService(null, profileRepository, userRepository, mapper, null, null);
 
         var projectRepository = new ProjectRepository(pgContext, chatRepository);
@@ -139,7 +141,6 @@ internal class BaseServiceTest
             projectNotificationsRepository, null, projectRepository, null, null, vacancyRepository);
         var vacancyModerationRepository = new VacancyModerationRepository(pgContext);
         var vacancyNotificationsService = new VacancyNotificationsService(null, null);
-        var fareRuleRepository = new FareRuleRepository(pgContext);
         var availableLimitsRepository = new AvailableLimitsRepository(pgContext);
         var availableLimitsService = new AvailableLimitsService(null, availableLimitsRepository);
 
