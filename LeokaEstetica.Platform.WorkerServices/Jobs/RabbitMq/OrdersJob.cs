@@ -21,10 +21,9 @@ namespace LeokaEstetica.Platform.WorkerServices.Jobs.RabbitMq;
 /// Класс джобы консьюмера заказов кролика.
 /// </summary>
 [DisallowConcurrentExecution]
-internal sealed class OrdersJob : IJob, IDisposable
+internal sealed class OrdersJob : IJob
 {
     private readonly IModel _channel;
-    private readonly IConnection _connection;
     private readonly IPayMasterService _payMasterService;
     private readonly HttpClient _httpClient;
     private readonly ICommerceRepository _commerceRepository;
@@ -62,8 +61,8 @@ internal sealed class OrdersJob : IJob, IDisposable
             DispatchConsumersAsync = true
         };
         
-        _connection = factory.CreateConnection();
-        _channel = _connection.CreateModel();
+        var connection = factory.CreateConnection();
+        _channel = connection.CreateModel();
 
         _channel.QueueDeclare(queue: QueueTypeEnum.OrdersQueue.GetEnumDescription(), durable: false, exclusive: false,
             autoDelete: false, arguments: null);
@@ -158,15 +157,5 @@ internal sealed class OrdersJob : IJob, IDisposable
         _channel.BasicConsume(QueueTypeEnum.OrdersQueue.GetEnumDescription(), false, consumer);
 
         await Task.CompletedTask;
-    }
-
-    /// <summary>
-    /// Метод очищает ресурсы.
-    /// </summary>
-    public void Dispose()
-    {
-        _channel?.Dispose();
-        _connection?.Dispose();
-        _httpClient?.Dispose();
     }
 }
