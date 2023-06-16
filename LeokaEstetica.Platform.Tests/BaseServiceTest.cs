@@ -178,9 +178,16 @@ internal class BaseServiceTest
             projectNotificationsService, VacancyService, vacancyRepository, availableLimitsService,
             subscriptionRepository, fareRuleRepository, VacancyModerationService, projectNotificationsRepository, null,
             accessUserService, fillColorProjectsService, null, ProjectModerationRepository);
+        
+        var ordersRepository = new OrdersRepository(pgContext);
+        var commerceRepository = new CommerceRepository(pgContext);
+        var commerceRedisService = new CommerceRedisService(distributedCache);
+        
+        CommerceService = new CommerceService(commerceRedisService, null, userRepository, fareRuleRepository,
+            commerceRepository, ordersRepository);
 
-        SubscriptionService =
-            new SubscriptionService(null, userRepository, subscriptionRepository, fareRuleRepository);
+        SubscriptionService = new SubscriptionService(null, userRepository, subscriptionRepository,
+            fareRuleRepository);
         var fillColorResumeService = new FillColorResumeService();
         ResumeService = new ResumeService(null, resumeRepository, mapper, subscriptionRepository,
             fareRuleRepository, userRepository, fillColorResumeService, resumeModerationRepository);
@@ -189,10 +196,6 @@ internal class BaseServiceTest
         ResumeFinderService = new ResumeFinderService(null, resumeRepository);
         VacancyPaginationService = new VacancyPaginationService(vacancyRepository, null);
         ProjectPaginationService = new ProjectPaginationService(projectRepository, null);
-
-        var commerceRepository = new CommerceRepository(pgContext);
-        var commerceRedisService = new CommerceRedisService(distributedCache);
-
         FareRuleService = new FareRuleService(fareRuleRepository, null);
 
         var rabbitMqService = new RabbitMqService(AppConfiguration);
@@ -209,16 +212,12 @@ internal class BaseServiceTest
 
         var KnowledgeRepository = new KnowledgeRepository(pgContext);
         KnowledgeService = new KnowledgeService(KnowledgeRepository, null);
-        
-        CommerceService = new CommerceService(commerceRedisService, null, userRepository, fareRuleRepository,
-            commerceRepository);
 
-        var ordersRepository = new OrdersRepository(pgContext);
         OrdersService = new OrdersService(null, ordersRepository, userRepository);
 
         var userMetricsRepository = new UserMetricsRepository(pgContext);
         UserMetricsService = new UserMetricsService(null, userMetricsRepository);
         RefundsService = new RefundsService(null, null, subscriptionRepository, userRepository, ordersRepository, null,
-            PayMasterService, null);
+            PayMasterService, null, CommerceService);
     }
 }

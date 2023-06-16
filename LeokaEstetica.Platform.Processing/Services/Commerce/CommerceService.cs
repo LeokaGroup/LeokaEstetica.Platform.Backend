@@ -3,6 +3,7 @@ using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.Commerce;
 using LeokaEstetica.Platform.Database.Abstractions.FareRule;
+using LeokaEstetica.Platform.Database.Abstractions.Orders;
 using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Models.Dto.Common.Cache;
 using LeokaEstetica.Platform.Models.Dto.Input.Commerce;
@@ -25,6 +26,7 @@ internal sealed class CommerceService : ICommerceService
     private readonly IUserRepository _userRepository;
     private readonly IFareRuleRepository _fareRuleRepository;
     private readonly ICommerceRepository _commerceRepository;
+    private readonly IOrdersRepository _ordersRepository;
     
     /// <summary>
     /// Конструктор.
@@ -33,18 +35,21 @@ internal sealed class CommerceService : ICommerceService
     /// <param name="userRepository">Репозиторий пользователя.</param>
     /// <param name="fareRuleRepository">Репозиторий правил тарифов.</param>
     /// <param name="fareRuleRepository">Репозиторий коммерции.</param>
+    /// <param name="ordersRepository">Репозиторий заказов.</param>
     /// </summary>
     public CommerceService(ICommerceRedisService commerceRedisService, 
         ILogger<CommerceService> logger, 
         IUserRepository userRepository, 
         IFareRuleRepository fareRuleRepository, 
-        ICommerceRepository commerceRepository)
+        ICommerceRepository commerceRepository, 
+        IOrdersRepository ordersRepository)
     {
         _commerceRedisService = commerceRedisService;
         _logger = logger;
         _userRepository = userRepository;
         _fareRuleRepository = fareRuleRepository;
         _commerceRepository = commerceRepository;
+        _ordersRepository = ordersRepository;
     }
 
     #region Публичные методы.
@@ -114,6 +119,55 @@ internal sealed class CommerceService : ICommerceService
             _logger.LogError(ex, ex.Message);
             throw;
         }
+    }
+
+    /// <summary>
+    /// Метод вычисляет сумму с оставшихся дней подписки пользователя.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <param name="orderId">Id заказа.</param>
+    /// <returns>Сумма.</returns>
+    public async Task<decimal> CalculatePriceSubscriptionFreeDaysAsync(long userId, long orderId)
+    {
+        // Вычисляем, сколько прошло дней использования подписки у пользователя.
+        var usedDays = await _userRepository.GetUserSubscriptionUsedDateAsync(userId);
+        
+        // Если одна из дат пустая, то не можем вычислить сумму возврата. Возврат не делаем в таком кейсе.
+        if (!usedDays.StartDate.HasValue || !usedDays.EndDate.HasValue)
+        {
+            _logger.LogWarning("Невозможно вычислить сумму возврата. Одна из дат подписки либо обе были null. " +
+                              $"UserId: {userId}. " +
+                              $"OrderId: {orderId}");
+            return 0;
+        }
+        
+        // Вычисляем кол-во дней, за которые будем возвращать ДС.
+        var referenceUsedDays = (int)Math.Round(usedDays.EndDate.Value.Subtract(usedDays.StartDate.Value)
+            .TotalDays);
+
+        // Получаем по какой цене был оформлен заказ.
+        var orderPrice = (await _ordersRepository.GetOrderDetailsAsync(orderId, userId)).Price;
+
+        // Вычисляем сумму к возврату.
+        var resultRefundPrice = orderPrice * referenceUsedDays / 100;
+        
+        // Не можем делать возвраты себе в ущерб.
+        if (resultRefundPrice == 0)
+        {
+            _logger.LogWarning($"Невозможно сделать возврат на сумму: {resultRefundPrice}. Возврат не будет сделан." +
+                               $"UserId: {userId}. " +
+                               $"OrderId: {orderId}");
+        }
+
+        // Исключительная ситуация, сразу логируем такое.
+        if (resultRefundPrice < 0)
+        {
+            _logger.LogError($"Сумма возврата была отрицательной: {resultRefundPrice}. Возврат не будет сделан." +
+                             $"UserId: {userId}. " +
+                             $"OrderId: {orderId}");
+        }
+
+        return resultRefundPrice;
     }
 
     #endregion

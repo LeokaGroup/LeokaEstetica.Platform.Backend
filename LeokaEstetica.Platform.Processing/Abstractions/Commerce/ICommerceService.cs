@@ -24,4 +24,12 @@ public interface ICommerceService
     /// <param name="account">Аккаунт.</param>
     /// <returns>Услуги и сервисы заказа.</returns>
     Task<CreateOrderCache> GetOrderProductsCacheAsync(Guid publicId, string account);
+
+    /// <summary>
+    /// Метод вычисляет сумму с оставшихся дней подписки пользователя.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <param name="orderId">Id заказа.</param>
+    /// <returns>Сумма.</returns>
+    Task<decimal> CalculatePriceSubscriptionFreeDaysAsync(long userId, long orderId);
 }

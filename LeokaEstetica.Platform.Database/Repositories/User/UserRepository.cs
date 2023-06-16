@@ -446,6 +446,29 @@ public class UserRepository : IUserRepository
         return result;
     }
 
+    /// <summary>
+    /// Метод проставляет срок подписки пользователю.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <param name="startDate">Дата начала подписки.</param>
+    /// <param name="endDate">Дата конца подписки.</param>
+    /// <returns>Признак записи подписки пользователю.</returns>
+    public async Task<bool> SetSubscriptionDatesAsync(long userId, DateTime startDate, DateTime endDate)
+    {
+        var user = await GetUserByUserIdAsync(userId);
+
+        if (user is null)
+        {
+            return false;
+        }
+        
+        user.SubscriptionStartDate = startDate;
+        user.SubscriptionEndDate = endDate;
+        await _pgContext.SaveChangesAsync();
+
+        return true;
+    }
+
     #endregion
 
     #region Приватные методы.

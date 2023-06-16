@@ -21,4 +21,19 @@ public class OrderEvent : BaseEventMessage
     /// Id платежа в ПС.
     /// </summary>
     public string PaymentId { get; set; }
+
+    /// <summary>
+    /// Id пользователя.
+    /// </summary>
+    public long UserId { get; set; }
+
+    /// <summary>
+    /// Публичный ключ тарифа.
+    /// </summary>
+    public Guid PublicId { get; set; }
+
+    /// <summary>
+    /// Кол-во месяцев подписки.
+    /// </summary>
+    public short Month { get; set; }
 }

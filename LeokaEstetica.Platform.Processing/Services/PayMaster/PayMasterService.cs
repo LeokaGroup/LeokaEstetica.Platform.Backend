@@ -145,7 +145,8 @@ internal sealed class PayMasterService : IPayMasterService
                 throw ex;
             }
 
-            var result = await CreatePaymentOrderResultAsync(order, orderCache, createOrderInput, userId, httpClient);
+            var result = await CreatePaymentOrderResultAsync(order, orderCache, createOrderInput, userId, httpClient,
+                publicId);
 
             _logger.LogInformation("Конец создания заказа.");
             _logger.LogInformation("Создание заказа успешно.");
@@ -338,8 +339,6 @@ internal sealed class PayMasterService : IPayMasterService
         // Если ошибка при возврате платежа в ПС.
         if (!response.IsSuccessStatusCode)
         {
-            var test = await httpClient.PostAsJsonAsync(ApiConsts.CREATE_RECEIPT, createReceiptInput).Result.Content
-                .ReadAsStringAsync();
             var ex = new InvalidOperationException(
                 "Ошибка создания чека возврата в ПС. " +
                 $"Данные возврата: {JsonConvert.SerializeObject(createReceiptInput)}");
@@ -451,10 +450,12 @@ internal sealed class PayMasterService : IPayMasterService
     /// <param name="createOrderInput">Входная модель заказа.</param>
     /// <param name="userId">Id пользователя.</param>
     /// <param name="httpClient">Http-client.</param>
+    /// <param name="publicId">Публичный ключ тарифа.</param>
     /// <returns>Результирующая модель заказа.</returns>
     /// <exception cref="InvalidOperationException">Может бахнуть ошибку, если не прошла проверка статуса платежа в ПС.</exception>
     private async Task<CreateOrderOutput> CreatePaymentOrderResultAsync(CreateOrderOutput order,
-        CreateOrderCache orderCache, CreateOrderInput createOrderInput, long userId, HttpClient httpClient)
+        CreateOrderCache orderCache, CreateOrderInput createOrderInput, long userId, HttpClient httpClient,
+        Guid publicId)
     {
         // Проверяем статус заказа в ПС.
         var paymentId = order.PaymentId;
@@ -478,7 +479,7 @@ internal sealed class PayMasterService : IPayMasterService
         
         // Отправляем заказ в очередь для отслеживания его статуса.
         var orderEvent = OrderEventFactory.CreateOrderEvent(createdOrderResult.OrderId,
-            createdOrderResult.StatusSysName, paymentId);
+            createdOrderResult.StatusSysName, paymentId, userId, publicId, orderCache.Month);
         await _rabbitMqService.PublishAsync(orderEvent, QueueTypeEnum.OrdersQueue);
         
         var result = new CreateOrderOutput
@@ -555,8 +556,8 @@ internal sealed class PayMasterService : IPayMasterService
             throw ex;
         }
 
-        //refund.RefundId = createReceiptInput.RefundId;
-        //refund.OrderId = createReceiptInput.OrderId;
+        refund.RefundId = createReceiptInput.RefundId;
+        refund.OrderId = createReceiptInput.OrderId;
 
         return refund;
     }
