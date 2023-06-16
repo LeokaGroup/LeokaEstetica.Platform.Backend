@@ -153,4 +153,24 @@ public class CommerceController : BaseController
 
         return result;
     }
+
+    /// <summary>
+    /// Метод вычисляет, есть ли остаток с прошлой подписки пользователя для учета ее как скидку при оформлении новой подписки.
+    /// </summary>
+    /// <param name="publicId">Публичный ключ тарифа.</param>
+    /// <param name="month">Кол-во месяцев подписки.</param>
+    /// <returns>Сумма остатка, если она есть.</returns>
+    [HttpGet]
+    [Route("check-free")]
+    [ProducesResponseType(200, Type = typeof(OrderFreeOutput))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<OrderFreeOutput> CheckFreePriceAsync([FromQuery] Guid publicId, [FromQuery] short month)
+    {
+        var result = await _commerceService.CheckFreePriceAsync(GetUserName(), publicId, month);
+
+        return result;
+    }
 }

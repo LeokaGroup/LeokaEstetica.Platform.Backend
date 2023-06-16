@@ -184,7 +184,7 @@ internal class BaseServiceTest
         var commerceRedisService = new CommerceRedisService(distributedCache);
         
         CommerceService = new CommerceService(commerceRedisService, null, userRepository, fareRuleRepository,
-            commerceRepository, ordersRepository);
+            commerceRepository, ordersRepository, subscriptionRepository);
 
         SubscriptionService = new SubscriptionService(null, userRepository, subscriptionRepository,
             fareRuleRepository);
