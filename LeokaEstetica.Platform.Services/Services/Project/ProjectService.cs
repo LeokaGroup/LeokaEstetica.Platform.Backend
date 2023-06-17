@@ -1194,6 +1194,11 @@ internal sealed class ProjectService : IProjectService
                     "Проект успешно добавлен в архив.",
                     NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);
             }
+            
+            var projectName = await _projectRepository.GetProjectNameByProjectIdAsync(projectId);
+
+            // Отправляем уведомление на почту.
+            await _mailingsService.SendNotificationAddProjectArchiveAsync(account, projectId, projectName);
         }
         
         catch (Exception ex)

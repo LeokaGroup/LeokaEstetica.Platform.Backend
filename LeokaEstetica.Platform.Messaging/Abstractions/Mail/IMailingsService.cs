@@ -79,4 +79,12 @@ public interface IMailingsService
     /// <param name="projectId">Id проекта.</param>
     /// <param name="projectName">Название проекта.</param>
     Task SendNotificationDeleteProjectTeamMemberAsync(string mailTo, long projectId, string projectName);
+
+    /// <summary>
+    /// Метод отправляет уведомление на почту пользователя, о добавлении его проекта в архив.
+    /// </summary>
+    /// <param name="mailTo">Почта пользователя, которого исключили.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="projectName">Название проекта.</param>
+    Task SendNotificationAddProjectArchiveAsync(string mailTo, long projectId, string projectName);
 }

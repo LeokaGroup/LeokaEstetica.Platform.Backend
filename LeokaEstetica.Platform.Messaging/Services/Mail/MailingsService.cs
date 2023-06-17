@@ -12,11 +12,16 @@ namespace LeokaEstetica.Platform.Messaging.Services.Mail;
 /// <summary>
 /// Класс реализует методы сервиса работы с сообщениями почты.
 /// </summary>
-public class MailingsService : IMailingsService
+internal sealed class MailingsService : IMailingsService
 {
     private readonly IConfiguration _configuration;
     private readonly IGlobalConfigRepository _globalConfigRepository;
 
+    /// <summary>
+    /// Конструктор.
+    /// </summary>
+    /// <param name="configuration">Конфигурация.</param>
+    /// <param name="globalConfigRepository">Репозиторий глобал конфига.</param>
     public MailingsService(IConfiguration configuration, 
         IGlobalConfigRepository globalConfigRepository)
     {
@@ -338,6 +343,37 @@ public class MailingsService : IMailingsService
                        "<br/>-----<br/>" +
                        "С уважением, команда Leoka Estetica";
             var subject = $"Исключение из команды проекта: \"{projectName}\"";
+
+            var mailModel = CreateMailopostModelConfirmEmail(mailTo, text, subject, text);
+            await SendEmailNotificationAsync(mailModel);
+        }
+    }
+
+    /// <summary>
+    /// Метод отправляет уведомление на почту пользователя, о добавлении его проекта в архив.
+    /// </summary>
+    /// <param name="mailTo">Почта пользователя, которого исключили.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="projectName">Название проекта.</param>
+    public async Task SendNotificationAddProjectArchiveAsync(string mailTo, long projectId, string projectName)
+    {
+        var isEnabledEmailNotifications = await _globalConfigRepository
+            .GetValueByKeyAsync<bool>(GlobalConfigKeys.EmailNotifications.EMAIL_NOTIFICATIONS_DISABLE_MODE_ENABLED);
+
+        if (isEnabledEmailNotifications)
+        {
+            // TODO: Заменить на получение ссылки из БД.
+            var text = $"Ваш проект: \"{projectName}\" был добавлен в архив." +
+                       "<br/>" +
+                       $"<a href='https://leoka-estetica-dev.ru/projects/project?projectId={projectId}&mode=view'>" +
+                       "Перейти к проекту" +
+                       "</a>" +
+                       "<br/>" +
+                       "<br/>" +
+                       "<br/>" +
+                       "<br/>-----<br/>" +
+                       "С уважением, команда Leoka Estetica";
+            var subject = $"Добавление проекта: \"{projectName}\" в архив";
 
             var mailModel = CreateMailopostModelConfirmEmail(mailTo, text, subject, text);
             await SendEmailNotificationAsync(mailModel);
