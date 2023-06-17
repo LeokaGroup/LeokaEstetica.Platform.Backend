@@ -12,7 +12,7 @@ namespace LeokaEstetica.Platform.Database.Repositories.Commerce;
 /// TODO: Отрефачить разбив логику заказов в отдельный репозиторий OrderRepository.
 /// Класс реализует методы репозитория коммерции.
 /// </summary>
-public class CommerceRepository : ICommerceRepository
+internal sealed class CommerceRepository : ICommerceRepository
 {
     private readonly PgContext _pgContext;
 

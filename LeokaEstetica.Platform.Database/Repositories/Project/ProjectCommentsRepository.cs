@@ -11,7 +11,7 @@ namespace LeokaEstetica.Platform.Database.Repositories.Project;
 /// <summary>
 /// Класс реализует методы репозитория комментариев к проектам.
 /// </summary>
-public sealed class ProjectCommentsRepository : IProjectCommentsRepository
+internal sealed class ProjectCommentsRepository : IProjectCommentsRepository
 {
     private readonly PgContext _pgContext;
 

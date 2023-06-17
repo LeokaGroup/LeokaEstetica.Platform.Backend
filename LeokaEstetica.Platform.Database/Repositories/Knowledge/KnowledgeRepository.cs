@@ -8,7 +8,7 @@ namespace LeokaEstetica.Platform.Database.Repositories.Knowledge;
 /// <summary>
 /// Класс реализует методы репозитория БЗ.
 /// </summary>
-public class KnowledgeRepository : IKnowledgeRepository
+internal sealed class KnowledgeRepository : IKnowledgeRepository
 {
     private readonly PgContext _pgContext;
 

@@ -9,7 +9,7 @@ namespace LeokaEstetica.Platform.Database.Repositories.Subscription;
 /// <summary>
 /// Класс реализует методы репозитория подписок.
 /// </summary>
-public class SubscriptionRepository : ISubscriptionRepository
+internal sealed class SubscriptionRepository : ISubscriptionRepository
 {
     private readonly PgContext _pgContext;
     

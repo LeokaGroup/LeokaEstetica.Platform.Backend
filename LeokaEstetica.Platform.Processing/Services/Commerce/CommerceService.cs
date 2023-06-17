@@ -1,4 +1,5 @@
 using System.Runtime.CompilerServices;
+using LeokaEstetica.Platform.Access.Abstractions.AvailableLimits;
 using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.Commerce;
@@ -30,6 +31,7 @@ internal sealed class CommerceService : ICommerceService
     private readonly ICommerceRepository _commerceRepository;
     private readonly IOrdersRepository _ordersRepository;
     private readonly ISubscriptionRepository _subscriptionRepository;
+    private readonly IAvailableLimitsService _availableLimitsService;
 
     /// <summary>
     /// Конструктор.
@@ -41,6 +43,7 @@ internal sealed class CommerceService : ICommerceService
     /// <param name="ordersRepository">Репозиторий заказов.</param>
     /// <param name="subscriptionRepository">Репозиторий подписок.</param>
     /// <param name="commerceService">Сервис коммерции.</param>
+    /// <param name="commerceService">Сервис проверки лимитов.</param>
     /// </summary>
     public CommerceService(ICommerceRedisService commerceRedisService, 
         ILogger<CommerceService> logger, 
@@ -48,7 +51,8 @@ internal sealed class CommerceService : ICommerceService
         IFareRuleRepository fareRuleRepository, 
         ICommerceRepository commerceRepository, 
         IOrdersRepository ordersRepository, 
-        ISubscriptionRepository subscriptionRepository)
+        ISubscriptionRepository subscriptionRepository, 
+        IAvailableLimitsService availableLimitsService)
     {
         _commerceRedisService = commerceRedisService;
         _logger = logger;
@@ -57,6 +61,7 @@ internal sealed class CommerceService : ICommerceService
         _commerceRepository = commerceRepository;
         _ordersRepository = ordersRepository;
         _subscriptionRepository = subscriptionRepository;
+        _availableLimitsService = availableLimitsService;
     }
 
     #region Публичные методы.
@@ -82,10 +87,27 @@ internal sealed class CommerceService : ICommerceService
 
             // Сохраняем заказ в кэш сроком на 2 часа.
             var publicId = createOrderCacheInput.PublicId;
+            
+            // Проверяем на понижение.
+            var checkReduction = await _availableLimitsService.CheckAvailableReductionSubscriptionAsync(userId,
+                publicId, _subscriptionRepository, _fareRuleRepository);
+
+            var result = new CreateOrderCache();
+
+            // Если новый тариф не вмещает по лимитам.
+            if (!checkReduction.IsSuccessLimits)
+            {
+                result.IsSuccessLimits = checkReduction.IsSuccessLimits;
+                result.ReductionSubscriptionLimits = checkReduction.ReductionSubscriptionLimits;
+                result.FareLimitsCount = checkReduction.FareLimitsCount;
+                
+                return result;
+            }
+            
             var key = await _commerceRedisService.CreateOrderCacheKeyAsync(userId, publicId);
             var orderToCache = await CreateOrderCacheResult(publicId, createOrderCacheInput.PaymentMonth, userId);
             
-            var result = await _commerceRedisService.CreateOrderCacheAsync(key, orderToCache);
+            result = await _commerceRedisService.CreateOrderCacheAsync(key, orderToCache);
 
             return result;
         }

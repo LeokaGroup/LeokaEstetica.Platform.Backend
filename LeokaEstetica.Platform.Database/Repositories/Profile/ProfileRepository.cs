@@ -8,7 +8,7 @@ namespace LeokaEstetica.Platform.Database.Repositories.Profile;
 /// <summary>
 /// Класс реализует методы репозитория профиля пользователя.
 /// </summary>
-public sealed class ProfileRepository : IProfileRepository
+internal sealed class ProfileRepository : IProfileRepository
 {
     private readonly PgContext _pgContext;
     

@@ -11,7 +11,7 @@ namespace LeokaEstetica.Platform.Database.Repositories.User;
 /// <summary>
 /// Класс реализует методы репозитория пользователей.
 /// </summary>
-public class UserRepository : IUserRepository
+internal sealed class UserRepository : IUserRepository
 {
     private readonly PgContext _pgContext;
     private readonly ILogger<UserRepository> _logger;

@@ -8,7 +8,7 @@ namespace LeokaEstetica.Platform.Database.Repositories.FareRule;
 /// <summary>
 /// Класс реализует методы репозитория правил тарифа.
 /// </summary>
-public class FareRuleRepository : IFareRuleRepository
+internal sealed class FareRuleRepository : IFareRuleRepository
 {
     private readonly PgContext _pgContext;
     

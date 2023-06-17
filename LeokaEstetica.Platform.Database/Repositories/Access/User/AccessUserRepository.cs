@@ -8,7 +8,7 @@ namespace LeokaEstetica.Platform.Database.Repositories.Access.User;
 /// <summary>
 /// Класс реализует методы репозитория проверки доступа пользователей. 
 /// </summary>
-public class AccessUserRepository : IAccessUserRepository
+internal sealed class AccessUserRepository : IAccessUserRepository
 {
     private readonly PgContext _pgContext;
 

@@ -7,7 +7,7 @@ namespace LeokaEstetica.Platform.Database.Repositories.AvailableLimits;
 /// <summary>
 /// Класс реализует методы репозитория проверки лимитов.
 /// </summary>
-public class AvailableLimitsRepository : IAvailableLimitsRepository
+internal sealed class AvailableLimitsRepository : IAvailableLimitsRepository
 {
     private readonly PgContext _pgContext;
     
@@ -28,6 +28,7 @@ public class AvailableLimitsRepository : IAvailableLimitsRepository
     /// <returns>Кол-во созданных пользователем проектов.</returns>
     public async Task<int> CheckAvailableCreateProjectAsync(long userId)
     {
+        // Считаем кол-во именно в каталоге, потому что что ограничиваем лишь на активные. 
         var result = await _pgContext.CatalogProjects
             .Where(p => p.Project.UserId == userId)
             .CountAsync();
@@ -43,6 +44,7 @@ public class AvailableLimitsRepository : IAvailableLimitsRepository
     /// <returns>Кол-во созданных пользователем вакансий.</returns>
     public async Task<int> CheckAvailableCreateVacancyAsync(long userId)
     {
+        // Считаем кол-во именно в каталоге, потому что что ограничиваем лишь на активные.
         var result = await _pgContext.CatalogVacancies
             .Where(p => p.Vacancy.UserId == userId)
             .CountAsync();

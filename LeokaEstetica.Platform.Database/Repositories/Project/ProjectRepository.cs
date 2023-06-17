@@ -21,7 +21,7 @@ namespace LeokaEstetica.Platform.Database.Repositories.Project;
 /// <summary>
 /// Класс реализует метод репозитория проектов.
 /// </summary>
-public class ProjectRepository : IProjectRepository
+internal sealed class ProjectRepository : IProjectRepository
 {
     private readonly PgContext _pgContext;
     private readonly IChatRepository _chatRepository;

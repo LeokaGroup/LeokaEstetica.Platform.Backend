@@ -8,7 +8,7 @@ namespace LeokaEstetica.Platform.Database.Repositories.Moderation.Access;
 /// <summary>
 /// Абстракция репозитория проверки доступа к модерации.
 /// </summary>
-public class AccessModerationRepository : IAccessModerationRepository
+internal sealed class AccessModerationRepository : IAccessModerationRepository
 {
     private readonly PgContext _pgContext;
 
