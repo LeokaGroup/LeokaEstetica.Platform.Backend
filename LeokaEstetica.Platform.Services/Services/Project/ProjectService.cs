@@ -1149,6 +1149,51 @@ internal sealed class ProjectService : IProjectService
             throw;
         }
     }
+    
+    /// <summary>
+    /// Метод добавляет проект в архив.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="account">Аккаунт пользователя.</param>
+    public async Task AddProjectArchiveAsync(long projectId, string account)
+    {
+        try
+        {
+            if (projectId <= 0)
+            {
+                var ex = new InvalidOperationException($"Id проекта не может быть <= 0. ProjectId: {projectId}");
+                throw ex;
+            }
+            
+            var userId = await _userRepository.GetUserIdByEmailOrLoginAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+            
+            // Проверяем, является ли текущий пользователь владельцем проекта.
+            var isOwner = await _projectRepository.CheckProjectOwnerAsync(projectId, userId);
+
+            // Только владелец может добавить проект в архив.
+            if (!isOwner)
+            {
+                throw new InvalidOperationException("Пользователь не является владельцем проекта." +
+                                                    "Добавление в архив невозможно." +
+                                                    $"ProjectId: {projectId}." +
+                                                    $"UserId: {userId}");
+            }
+
+            await _projectRepository.AddProjectArchiveAsync(projectId, userId);
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            throw;
+        }
+    }
 
     #endregion
 

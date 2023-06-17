@@ -1031,6 +1031,22 @@ internal sealed class ProjectRepository : IProjectRepository
         return result;
     }
 
+    /// <summary>
+    /// Метод добавляет проект в архив.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="userId">Id пользователя.</param>
+    public async Task AddProjectArchiveAsync(long projectId, long userId)
+    {
+        await _pgContext.ArchivedProjects.AddAsync(new ArchivedProjectEntity
+        {
+            ProjectId = projectId,
+            UserId = userId,
+            DateArchived = DateTime.Now
+        });
+        await _pgContext.SaveChangesAsync();
+    }
+
     #region Приватные методы.
 
     /// Метод првоеряет, был ли уже такой проект на модерации. 
