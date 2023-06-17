@@ -8,7 +8,7 @@ namespace LeokaEstetica.Platform.Database.Repositories.Orders;
 /// <summary>
 /// Класс реализует методы репозитория заказов.
 /// </summary>
-public class OrdersRepository : IOrdersRepository
+internal sealed class OrdersRepository : IOrdersRepository
 {
     private readonly PgContext _pgContext;
     

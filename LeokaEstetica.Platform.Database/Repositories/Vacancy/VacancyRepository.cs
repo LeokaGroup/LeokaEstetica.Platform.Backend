@@ -15,7 +15,7 @@ namespace LeokaEstetica.Platform.Database.Repositories.Vacancy;
 /// <summary>
 /// Класс реализует методы репозитория вакансий. 
 /// </summary>
-public class VacancyRepository : IVacancyRepository
+internal sealed class VacancyRepository : IVacancyRepository
 {
     private readonly PgContext _pgContext;
 

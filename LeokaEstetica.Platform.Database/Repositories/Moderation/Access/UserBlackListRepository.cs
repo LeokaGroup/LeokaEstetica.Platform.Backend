@@ -8,7 +8,7 @@ namespace LeokaEstetica.Platform.Database.Repositories.Moderation.Access;
 /// <summary>
 /// Класс репозитория ЧС пользователей.
 /// </summary>
-public class UserBlackListRepository : IUserBlackListRepository
+internal sealed class UserBlackListRepository : IUserBlackListRepository
 {
     private readonly PgContext _pgContext;
 

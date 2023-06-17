@@ -10,7 +10,7 @@ namespace LeokaEstetica.Platform.Database.Repositories.Notification;
 /// <summary>
 /// Класс реализует методы репозитория уведомлений проектов.
 /// </summary>
-public class ProjectNotificationsRepository : IProjectNotificationsRepository
+internal sealed class ProjectNotificationsRepository : IProjectNotificationsRepository
 {
     private readonly PgContext _pgContext;
     

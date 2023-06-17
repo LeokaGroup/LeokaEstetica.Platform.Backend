@@ -10,7 +10,7 @@ namespace LeokaEstetica.Platform.Database.Repositories.Chat;
 /// <summary>
 /// Класс реализует методы репозитория чата.
 /// </summary>
-public class ChatRepository : IChatRepository
+internal sealed class ChatRepository : IChatRepository
 {
     private readonly PgContext _pgContext;
 

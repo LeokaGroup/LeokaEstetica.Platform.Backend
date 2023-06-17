@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Core.Extensions;
@@ -7,12 +8,14 @@ using LeokaEstetica.Platform.Models.Entities.Notification;
 using LeokaEstetica.Platform.Models.Entities.Project;
 using Microsoft.EntityFrameworkCore;
 
+[assembly: InternalsVisibleTo("LeokaEstetica.Platform.Tests")]
+
 namespace LeokaEstetica.Platform.Database.Repositories.Moderation.Project;
 
 /// <summary>
 /// Класс реализует методы репозитория модерации проектов.
 /// </summary>
-public class ProjectModerationRepository : IProjectModerationRepository
+internal sealed class ProjectModerationRepository : IProjectModerationRepository
 {
     private readonly PgContext _pgContext;
 

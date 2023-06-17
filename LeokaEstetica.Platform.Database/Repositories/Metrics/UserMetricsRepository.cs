@@ -8,7 +8,7 @@ namespace LeokaEstetica.Platform.Database.Repositories.Metrics;
 /// <summary>
 /// Класс реализует методы репозитория метрик новых пользователей.
 /// </summary>
-public class UserMetricsRepository : IUserMetricsRepository
+internal sealed class UserMetricsRepository : IUserMetricsRepository
 {
     private readonly PgContext _pgContext;
     

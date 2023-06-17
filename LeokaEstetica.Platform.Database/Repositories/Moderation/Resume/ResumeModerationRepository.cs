@@ -10,7 +10,7 @@ namespace LeokaEstetica.Platform.Database.Repositories.Moderation.Resume;
 /// <summary>
 /// Класс реализует методы репозитория модерации анкет пользователей.
 /// </summary>
-public class ResumeModerationRepository : IResumeModerationRepository
+internal sealed class ResumeModerationRepository : IResumeModerationRepository
 {
     private readonly PgContext _pgContext;
     

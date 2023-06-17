@@ -8,7 +8,7 @@ namespace LeokaEstetica.Platform.Database.Repositories.Landing;
 /// <summary>
 /// Класс реализует методы репозитория лендингов.
 /// </summary>
-public class LandingRepository : ILandingRepository
+internal sealed class LandingRepository : ILandingRepository
 {
     private readonly PgContext _pgContext;
     

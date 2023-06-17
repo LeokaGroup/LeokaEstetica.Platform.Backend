@@ -11,7 +11,7 @@ namespace LeokaEstetica.Platform.Database.Repositories.Config;
 /// <summary>
 /// Класс реализует методы репозитория глобал конфига.
 /// </summary>
-public class GlobalConfigRepository : IGlobalConfigRepository
+internal sealed class GlobalConfigRepository : IGlobalConfigRepository
 {
     private readonly PgContext _pgContext;
     private readonly ILogger<GlobalConfigRepository> _logger;

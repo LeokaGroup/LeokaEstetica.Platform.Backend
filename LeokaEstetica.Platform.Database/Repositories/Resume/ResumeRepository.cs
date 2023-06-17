@@ -9,7 +9,7 @@ namespace LeokaEstetica.Platform.Database.Repositories.Resume;
 /// <summary>
 /// Класс реализует методы репозитория базы резюме.
 /// </summary>
-public class ResumeRepository : IResumeRepository
+internal sealed class ResumeRepository : IResumeRepository
 {
     private readonly PgContext _pgContext;
     

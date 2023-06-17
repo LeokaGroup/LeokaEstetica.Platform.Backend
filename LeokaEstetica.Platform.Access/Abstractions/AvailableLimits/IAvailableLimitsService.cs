@@ -1,3 +1,7 @@
+using LeokaEstetica.Platform.Access.Models.Output;
+using LeokaEstetica.Platform.Database.Abstractions.FareRule;
+using LeokaEstetica.Platform.Database.Abstractions.Subscription;
+
 namespace LeokaEstetica.Platform.Access.Abstractions.AvailableLimits;
 
 /// <summary>
@@ -20,4 +24,13 @@ public interface IAvailableLimitsService
     /// <param name="fareRuleName">Название тарифа.</param>
     /// <returns>Признак доступости.</returns>
     Task<bool> CheckAvailableCreateVacancyAsync(long userId, string fareRuleName);
+
+    /// <summary>
+    /// Метод проверяет, проходит ли понижающий тариф по лимитам при переходе на него с более дорогого тарифа.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <param name="publicId">Публичный ключ тарифа, на который переходят.</param>
+    /// <returns>Результирующая модель с результатами по лимитам.</returns>
+    Task<ReductionSubscriptionLimitsOutput> CheckAvailableReductionSubscriptionAsync(long userId, Guid publicId,
+        ISubscriptionRepository _subscriptionRepository, IFareRuleRepository fareRuleRepository);
 }

@@ -10,7 +10,7 @@ namespace LeokaEstetica.Platform.Database.Repositories.Header;
 /// <summary>
 /// Класс реализует методы репозитория работы с хидерами.
 /// </summary>
-public sealed class HeaderRepository : IHeaderRepository
+internal sealed class HeaderRepository : IHeaderRepository
 {
     private readonly PgContext _pgContext;
     private readonly ILogger<HeaderRepository> _logger;
