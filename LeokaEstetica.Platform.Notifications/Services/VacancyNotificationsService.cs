@@ -9,7 +9,7 @@ namespace LeokaEstetica.Platform.Notifications.Services;
 /// <summary>
 /// Класс реализует методы уведомлений вакансий.
 /// </summary>
-public class VacancyNotificationsService : IVacancyNotificationsService
+internal sealed class VacancyNotificationsService : IVacancyNotificationsService
 {
     private readonly IHubContext<NotifyHub> _hubContext;
     private readonly INotificationsRedisService _notificationsRedisService;

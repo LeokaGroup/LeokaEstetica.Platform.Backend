@@ -666,6 +666,6 @@ public class ProjectController : BaseController
     [ProducesResponseType(404)]
     public async Task AddProjectArchiveAsync([FromBody] ProjectArchiveInput projectArchiveInput)
     {
-        await _projectService.AddProjectArchiveAsync(projectArchiveInput.ProjectId, GetUserName());
+        await _projectService.AddProjectArchiveAsync(projectArchiveInput.ProjectId, GetUserName(), GetTokenFromHeader());
     }
 }

@@ -9,7 +9,7 @@ namespace LeokaEstetica.Platform.Notifications.Services;
 /// <summary>
 /// Класс реализует методы сервиса уведомлений.
 /// </summary>
-public sealed class NotificationsService : INotificationsService
+internal sealed class NotificationsService : INotificationsService
 {
     private readonly IHubContext<NotifyHub> _hubContext;
     private readonly INotificationsRedisService _notificationsRedisService;

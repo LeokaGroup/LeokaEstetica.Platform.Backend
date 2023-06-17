@@ -208,5 +208,6 @@ public interface IProjectService
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
     /// <param name="account">Аккаунт пользователя.</param>
-    Task AddProjectArchiveAsync(long projectId, string account);
+    /// <param name="token">Токен.</param>
+    Task AddProjectArchiveAsync(long projectId, string account, string token);
 }

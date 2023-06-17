@@ -1155,7 +1155,8 @@ internal sealed class ProjectService : IProjectService
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
     /// <param name="account">Аккаунт пользователя.</param>
-    public async Task AddProjectArchiveAsync(long projectId, string account)
+    /// <param name="token">Токен.</param>
+    public async Task AddProjectArchiveAsync(long projectId, string account, string token)
     {
         try
         {
@@ -1186,11 +1187,26 @@ internal sealed class ProjectService : IProjectService
             }
 
             await _projectRepository.AddProjectArchiveAsync(projectId, userId);
+            
+            if (!string.IsNullOrEmpty(token))
+            {
+                await _projectNotificationsService.SendNotificationSuccessAddProjectArchiveAsync("Все хорошо",
+                    "Проект успешно добавлен в архив.",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);
+            }
         }
         
         catch (Exception ex)
         {
             _logger.LogError(ex, ex.Message);
+            
+            if (!string.IsNullOrEmpty(token))
+            {
+                await _projectNotificationsService.SendNotificationErrorAddProjectArchiveAsync("Что то не так...",
+                    "Ошибка при добавлении проекта в архив. Мы уже знаем о проблеме и уже занимаемся ей.",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, token);
+            }
+            
             throw;
         }
     }

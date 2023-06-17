@@ -9,7 +9,7 @@ namespace LeokaEstetica.Platform.Notifications.Services;
 /// <summary>
 /// Класс реализует методы сервиса уведомлений модерации проектов.
 /// </summary>
-public class ProjectModerationNotificationService : IProjectModerationNotificationService
+internal sealed class ProjectModerationNotificationService : IProjectModerationNotificationService
 {
     private readonly IHubContext<NotifyHub> _hubContext;
     private readonly INotificationsRedisService _notificationsRedisService;
