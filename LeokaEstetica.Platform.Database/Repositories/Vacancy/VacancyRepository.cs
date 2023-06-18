@@ -366,6 +366,9 @@ internal sealed class VacancyRepository : IVacancyRepository
 
         // Добавляем вакансию в таблицу архивов.
         await _pgContext.ArchivedVacancies.AddAsync(arvhivedVacancy);
+        
+        // Изменяем статус вакансии на "В архиве".
+        await UpdateModerationVacancyStatusAsync(vacancyId, VacancyModerationStatusEnum.ArchivedVacancy);
 
         await _pgContext.SaveChangesAsync();
     }
@@ -415,6 +418,23 @@ internal sealed class VacancyRepository : IVacancyRepository
         vacancy.Payment = vacancyInput.Payment;
         vacancy.Conditions = vacancyInput.Conditions;
         vacancy.Demands = vacancyInput.Demands;
+    }
+    
+    /// <summary>
+    /// Метод обновляет статус вакансии на модерации.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <param name="status">Статус вакансии.</param>
+    private async Task UpdateModerationVacancyStatusAsync(long vacancyId, VacancyModerationStatusEnum status)
+    {
+        var vac = await _pgContext.ModerationVacancies.FirstOrDefaultAsync(p => p.VacancyId == vacancyId);
+
+        if (vac is null)
+        {
+            throw new InvalidOperationException($"Не найдена вакансия для модерации. VacancyId: {vacancyId}");
+        }
+        
+        vac.ModerationStatusId = (int)status;
     }
 
     #endregion

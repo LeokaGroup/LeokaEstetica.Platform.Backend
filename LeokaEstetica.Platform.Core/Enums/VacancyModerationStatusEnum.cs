@@ -14,5 +14,8 @@ public enum VacancyModerationStatusEnum
     ModerationVacancy = 2,
     
     [Description("Отклонена")]
-    RejectedVacancy = 3
+    RejectedVacancy = 3,
+    
+    [Description("В архиве")]
+    ArchivedVacancy = 4
 }
