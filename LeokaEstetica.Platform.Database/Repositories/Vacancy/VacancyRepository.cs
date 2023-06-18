@@ -400,6 +400,51 @@ internal sealed class VacancyRepository : IVacancyRepository
         return result;
     }
 
+    /// <summary>
+    /// Метод удаляет из архива вакансию.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <param name="userId">Id пользователя.</param>
+    public async Task<bool> DeleteVacancyArchiveAsync(long vacancyId, long userId)
+    {
+        var transaction = await _pgContext.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted);
+
+        try
+        {
+            var mp = await _pgContext.ModerationVacancies.FirstOrDefaultAsync(p => p.VacancyId == vacancyId
+                && p.UserVacancy.UserId == userId);
+
+            if (mp is null)
+            {
+                return false;
+            }
+
+            mp.ModerationStatusId = (int)VacancyModerationStatusEnum.ModerationVacancy;
+
+            var va = await _pgContext.ArchivedVacancies.FirstOrDefaultAsync(p => p.VacancyId == vacancyId
+                && p.UserId == userId);
+        
+            if (va is null)
+            {
+                return false;
+            }
+
+            _pgContext.ArchivedVacancies.Remove(va);
+            
+            await _pgContext.SaveChangesAsync();
+
+            await transaction.CommitAsync();
+        
+            return true;
+        }
+        
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
+    }
+
     #endregion
 
     #region Приватные методы.

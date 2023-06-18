@@ -88,4 +88,12 @@ public interface IVacancyService
     /// <param name="account">Аккаунт пользователя.</param>
     /// <returns>Список замечаний вакансии.</returns>
     Task<IEnumerable<VacancyRemarkEntity>> GetVacancyRemarksAsync(long vacancyId, string account);
+
+    /// <summary>
+    /// Метод удаляет из архива вакансию.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <param name="account">Аккаунт.</param>
+    /// <param name="token">Токен пользователя.</param>
+    Task DeleteVacancyArchiveAsync(long vacancyId, string account, string token);
 }

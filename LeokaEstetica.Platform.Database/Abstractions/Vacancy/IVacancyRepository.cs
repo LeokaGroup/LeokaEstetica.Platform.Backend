@@ -123,4 +123,11 @@ public interface IVacancyRepository
     /// <param name="vacancyId">Id вакансии.</param>
     /// <returns>Признак проверки.</returns>
     Task<bool> CheckVacancyArchiveAsync(long vacancyId);
+    
+    /// <summary>
+    /// Метод удаляет из архива вакансию.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <param name="userId">Id пользователя.</param>
+    Task<bool> DeleteVacancyArchiveAsync(long vacancyId, long userId);
 }

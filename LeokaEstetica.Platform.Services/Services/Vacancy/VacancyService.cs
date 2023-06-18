@@ -676,6 +676,76 @@ internal sealed class VacancyService : IVacancyService
         }
     }
 
+    /// <summary>
+    /// Метод удаляет из архива вакансию.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <param name="account">Аккаунт.</param>
+    /// <param name="token">Токен пользователя.</param>
+    public async Task DeleteVacancyArchiveAsync(long vacancyId, string account, string token)
+    {
+        try
+        {
+            if (vacancyId <= 0)
+            {
+                var ex = new InvalidOperationException($"Id проекта не может быть <= 0. ProjectId: {vacancyId}");
+                throw ex;
+            }
+            
+            var userId = await _userRepository.GetUserIdByEmailOrLoginAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+            
+            // Проверяем, является ли текущий пользователь владельцем вакансии.
+            var isOwner = await _vacancyRepository.CheckVacancyOwnerAsync(vacancyId, userId);
+
+            // Только владелец может удалить вакансию из архива.
+            if (!isOwner)
+            {
+                throw new InvalidOperationException("Пользователь не является владельцем вакансии." +
+                                                    "Удаление из архива невозможно." +
+                                                    $"VacancyId: {vacancyId}." +
+                                                    $"UserId: {userId}");
+            }
+
+            var isDelete = await _vacancyRepository.DeleteVacancyArchiveAsync(vacancyId, userId);
+
+            if (!isDelete && !string.IsNullOrEmpty(token))
+            {
+                await _vacancyNotificationsService.SendNotificationErrorDeleteVacancyArchiveAsync("Что то не так...",
+                    "Ошибка при удалении вакансии из архива. Мы уже знаем о проблеме и уже занимаемся ей.",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, token);
+
+                return;
+            }
+            
+            if (!string.IsNullOrEmpty(token))
+            {
+                await _vacancyNotificationsService.SendNotificationSuccessDeleteVacancyArchiveAsync("Все хорошо",
+                    "Вакансия успешно удалена из архива.",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);
+            }
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            
+            if (!string.IsNullOrEmpty(token))
+            {
+                await _vacancyNotificationsService.SendNotificationErrorDeleteVacancyArchiveAsync("Что то не так...",
+                    "Ошибка при удалении вакансии из архива. Мы уже знаем о проблеме и уже занимаемся ей.",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, token);
+            }
+            
+            throw;
+        }
+    }
+
     #endregion
 
     #region Приватные методы.
