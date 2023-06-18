@@ -78,7 +78,8 @@ public interface IVacancyService
     /// </summary>
     /// <param name="vacancyId">Id вакансии.</param>
     /// <param name="account">Аккаунт.</param>
-    Task AddVacancyArchiveAsync(long vacancyId, string account);
+    /// <param name="token">Токен пользователя.</param>
+    Task AddVacancyArchiveAsync(long vacancyId, string account, string token);
 
     /// <summary>
     /// Метод получает список замечаний вакансии, если они есть.

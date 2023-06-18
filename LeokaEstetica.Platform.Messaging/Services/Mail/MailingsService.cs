@@ -380,6 +380,37 @@ internal sealed class MailingsService : IMailingsService
         }
     }
 
+    /// <summary>
+    /// Метод отправляет уведомление на почту пользователя, о добавлении его вакансии в архив.
+    /// </summary>
+    /// <param name="mailTo">Почта пользователя, которого исключили.</param>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <param name="vacancyName">Название вакансии.</param>
+    public async Task SendNotificationAddVacancyArchiveAsync(string mailTo, long vacancyId, string vacancyName)
+    {
+        var isEnabledEmailNotifications = await _globalConfigRepository
+            .GetValueByKeyAsync<bool>(GlobalConfigKeys.EmailNotifications.EMAIL_NOTIFICATIONS_DISABLE_MODE_ENABLED);
+
+        if (isEnabledEmailNotifications)
+        {
+            // TODO: Заменить на получение ссылки из БД.
+            var text = $"Ваша вакансия: \"{vacancyName}\" была добавлена в архив." +
+                       "<br/>" +
+                       $"<a href='https://leoka-estetica-dev.ru/vacancies/vacancy?vacancyId={vacancyId}&mode=view'>" +
+                       "Перейти к вакансии" +
+                       "</a>" +
+                       "<br/>" +
+                       "<br/>" +
+                       "<br/>" +
+                       "<br/>-----<br/>" +
+                       "С уважением, команда Leoka Estetica";
+            var subject = $"Добавление вакансии: \"{vacancyName}\" в архив";
+
+            var mailModel = CreateMailopostModelConfirmEmail(mailTo, text, subject, text);
+            await SendEmailNotificationAsync(mailModel);
+        }
+    }
+
     #endregion
 
     #region Приватные методы.

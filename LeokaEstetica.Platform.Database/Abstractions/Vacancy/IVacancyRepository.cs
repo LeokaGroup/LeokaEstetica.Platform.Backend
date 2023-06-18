@@ -116,4 +116,11 @@ public interface IVacancyRepository
     /// <param name="vacancyId">Id вакансии.</param>
     /// <returns>Название вакансии.</returns>
     Task<string> GetVacancyNameByIdAsync(long vacancyId);
+    
+    /// <summary>
+    /// Метод проверяет, находится ли такая вакансия в архиве.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <returns>Признак проверки.</returns>
+    Task<bool> CheckVacancyArchiveAsync(long vacancyId);
 }

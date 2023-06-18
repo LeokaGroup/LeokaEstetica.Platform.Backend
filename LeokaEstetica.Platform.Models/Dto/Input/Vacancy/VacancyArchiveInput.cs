@@ -3,7 +3,7 @@
 /// <summary>
 /// Класс входной модели архива вакансий.
 /// </summary>
-public class ArchiveVacancyInput
+public class VacancyArchiveInput
 {
     /// <summary>
     /// Id вакансии.

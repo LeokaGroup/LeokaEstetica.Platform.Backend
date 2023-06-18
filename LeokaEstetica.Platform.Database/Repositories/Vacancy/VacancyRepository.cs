@@ -329,9 +329,8 @@ internal sealed class VacancyRepository : IVacancyRepository
     /// <returns>Признак является ли пользователь владельцем вакансии.</returns>
     public async Task<bool> CheckVacancyOwnerAsync(long vacancyId, long userId)
     {
-        var result = await _pgContext.UserVacancies
-            .AnyAsync(p => p.VacancyId == vacancyId
-                           && p.UserId == userId);
+        var result = await _pgContext.UserVacancies.AnyAsync(p => p.VacancyId == vacancyId
+                                                                  && p.UserId == userId);
 
         return result;
     }
@@ -382,6 +381,18 @@ internal sealed class VacancyRepository : IVacancyRepository
             .Where(v => v.VacancyId == vacancyId)
             .Select(v => v.VacancyName)
             .FirstOrDefaultAsync();
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод проверяет, находится ли такая вакансия в архиве.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <returns>Признак проверки.</returns>
+    public async Task<bool> CheckVacancyArchiveAsync(long vacancyId)
+    {
+        var result = await _pgContext.ArchivedVacancies.AnyAsync(p => p.VacancyId == vacancyId);
 
         return result;
     }
