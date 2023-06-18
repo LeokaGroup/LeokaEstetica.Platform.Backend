@@ -9,7 +9,7 @@ namespace LeokaEstetica.Platform.Notifications.Services;
 /// <summary>
 /// Класс реализует методы сервиса уведомлений доступа пользователя.
 /// </summary>
-public class AccessUserNotificationsService : IAccessUserNotificationsService
+internal sealed class AccessUserNotificationsService : IAccessUserNotificationsService
 {
     private readonly IHubContext<NotifyHub> _hubContext;
     private readonly INotificationsRedisService _notificationsRedisService;

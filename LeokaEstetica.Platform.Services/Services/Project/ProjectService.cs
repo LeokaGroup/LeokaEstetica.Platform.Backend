@@ -1149,6 +1149,89 @@ internal sealed class ProjectService : IProjectService
             throw;
         }
     }
+    
+    /// <summary>
+    /// Метод добавляет проект в архив.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="account">Аккаунт пользователя.</param>
+    /// <param name="token">Токен.</param>
+    public async Task AddProjectArchiveAsync(long projectId, string account, string token)
+    {
+        try
+        {
+            if (projectId <= 0)
+            {
+                var ex = new InvalidOperationException($"Id проекта не может быть <= 0. ProjectId: {projectId}");
+                throw ex;
+            }
+            
+            var userId = await _userRepository.GetUserIdByEmailOrLoginAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+            
+            // Проверяем, является ли текущий пользователь владельцем проекта.
+            var isOwner = await _projectRepository.CheckProjectOwnerAsync(projectId, userId);
+
+            // Только владелец может добавить проект в архив.
+            if (!isOwner)
+            {
+                throw new InvalidOperationException("Пользователь не является владельцем проекта." +
+                                                    "Добавление в архив невозможно." +
+                                                    $"ProjectId: {projectId}." +
+                                                    $"UserId: {userId}");
+            }
+            
+            // Проверяем, есть ли уже такой проект в архиве.
+            var isExists = await _projectRepository.CheckProjectArchiveAsync(projectId);
+            
+            if (isExists)
+            {
+                _logger.LogWarning($"Такой проект уже добавлен в архив. ProjectId: {projectId}. UserId: {userId}");
+
+                if (!string.IsNullOrEmpty(token))
+                {
+                    await _projectNotificationsService.SendNotificationWarningAddProjectArchiveAsync("Внимание",
+                        "Такой проект уже добавлен в архив.",
+                        NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
+                }
+                
+                return;
+            }
+
+            await _projectRepository.AddProjectArchiveAsync(projectId, userId);
+            
+            if (!string.IsNullOrEmpty(token))
+            {
+                await _projectNotificationsService.SendNotificationSuccessAddProjectArchiveAsync("Все хорошо",
+                    "Проект успешно добавлен в архив.",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);
+            }
+            
+            var projectName = await _projectRepository.GetProjectNameByProjectIdAsync(projectId);
+
+            // Отправляем уведомление на почту.
+            await _mailingsService.SendNotificationAddProjectArchiveAsync(account, projectId, projectName);
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            
+            if (!string.IsNullOrEmpty(token))
+            {
+                await _projectNotificationsService.SendNotificationErrorAddProjectArchiveAsync("Что то не так...",
+                    "Ошибка при добавлении проекта в архив. Мы уже знаем о проблеме и уже занимаемся ей.",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, token);
+            }
+            
+            throw;
+        }
+    }
 
     #endregion
 

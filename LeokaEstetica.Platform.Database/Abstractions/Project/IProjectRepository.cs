@@ -3,7 +3,6 @@ using LeokaEstetica.Platform.Models.Dto.Output.Project;
 using LeokaEstetica.Platform.Models.Entities.Configs;
 using LeokaEstetica.Platform.Models.Entities.Project;
 using LeokaEstetica.Platform.Models.Entities.ProjectTeam;
-using LeokaEstetica.Platform.Models.Enums;
 
 namespace LeokaEstetica.Platform.Database.Abstractions.Project;
 
@@ -264,4 +263,18 @@ public interface IProjectRepository
     /// <param name="userId">Id пользователя.</param>
     /// <returns>Признак проверки.</returns>
     Task<bool> CheckExistsProjectTeamMemberAsync(long projectId, long userId);
+
+    /// <summary>
+    /// Метод добавляет проект в архив.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="userId">Id пользователя.</param>
+    Task AddProjectArchiveAsync(long projectId, long userId);
+
+    /// <summary>
+    /// Метод проверяет, находится ли такой проект в архиве.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Признак проверки.</returns>
+    Task<bool> CheckProjectArchiveAsync(long projectId);
 }

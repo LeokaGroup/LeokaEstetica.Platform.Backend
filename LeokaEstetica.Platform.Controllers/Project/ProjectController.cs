@@ -587,7 +587,7 @@ public class ProjectController : BaseController
     /// </summary>
     /// <returns>Список архивированных проектов.</returns>
     [HttpGet]
-    [Route("projects/archive")]
+    [Route("archive")]
     [ProducesResponseType(200, Type = typeof(UserProjectArchiveResultOutput))]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]
@@ -651,5 +651,21 @@ public class ProjectController : BaseController
         var result = _mapper.Map<IEnumerable<GetProjectRemarkOutput>>(items);
 
         return result;
+    }
+
+    /// <summary>
+    /// Метод добавляет проект в архив.
+    /// </summary>
+    /// <param name="projectArchiveInput">Входная модель.</param>
+    [HttpPost]
+    [Route("archive")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task AddProjectArchiveAsync([FromBody] ProjectArchiveInput projectArchiveInput)
+    {
+        await _projectService.AddProjectArchiveAsync(projectArchiveInput.ProjectId, GetUserName(), GetTokenFromHeader());
     }
 }

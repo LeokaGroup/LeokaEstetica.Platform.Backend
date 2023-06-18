@@ -9,7 +9,7 @@ namespace LeokaEstetica.Platform.Notifications.Services;
 /// <summary>
 /// Класс реализует методы сервиса уведомлений модерации анкет.
 /// </summary>
-public class ResumeModerationNotificationService : IResumeModerationNotificationService
+internal sealed class ResumeModerationNotificationService : IResumeModerationNotificationService
 {
     private readonly IHubContext<NotifyHub> _hubContext;
     private readonly INotificationsRedisService _notificationsRedisService;

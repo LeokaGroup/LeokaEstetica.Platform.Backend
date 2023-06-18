@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using AutoMapper;
 using LeokaEstetica.Platform.Base.Abstractions.Messaging.Mail;
 using LeokaEstetica.Platform.Core.Constants;
@@ -17,12 +18,14 @@ using Microsoft.Extensions.Logging;
 using NotificationOutput = LeokaEstetica.Platform.Notifications.Models.Output.NotificationOutput;
 using NotificationProjectOutput = LeokaEstetica.Platform.Models.Dto.Output.Notification.NotificationOutput;
 
+[assembly: InternalsVisibleTo("LeokaEstetica.Platform.Tests")]
+
 namespace LeokaEstetica.Platform.Notifications.Services;
 
 /// <summary>
 /// Класс реализует методы уведомлений проектов.
 /// </summary>
-public class ProjectNotificationsService : IProjectNotificationsService
+internal sealed class ProjectNotificationsService : IProjectNotificationsService
 {
     private readonly IHubContext<NotifyHub> _hubContext;
     private readonly ILogger<ProjectNotificationsService> _logger;
@@ -805,6 +808,75 @@ public class ProjectNotificationsService : IProjectNotificationsService
         await _hubContext.Clients
             .Client(connectionId)
             .SendAsync("SendNotificationSuccessDeleteProjectTeamMember",
+                new NotificationOutput
+                {
+                    Title = title,
+                    Message = notifyText,
+                    NotificationLevel = notificationLevel
+                });
+    }
+
+    /// <summary>
+    /// Метод отправляет уведомление об успехе при добавлении проекта в архив.
+    /// </summary>
+    /// <param name="title">Заголовок уведомления.</param>
+    /// <param name="notifyText">Текст уведомления.</param>
+    /// <param name="notificationLevel">Уровень уведомления.</param>
+    /// <param name="token">Токен пользователя.</param>
+    public async Task SendNotificationSuccessAddProjectArchiveAsync(string title, string notifyText,
+        string notificationLevel, string token)
+    {
+        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(token);
+
+        await _hubContext.Clients
+            .Client(connectionId)
+            .SendAsync("SendNotificationSuccessAddProjectArchive",
+                new NotificationOutput
+                {
+                    Title = title,
+                    Message = notifyText,
+                    NotificationLevel = notificationLevel
+                });
+    }
+
+    /// <summary>
+    /// Метод отправляет уведомление об ошибке при добавлении проекта в архив.
+    /// </summary>
+    /// <param name="title">Заголовок уведомления.</param>
+    /// <param name="notifyText">Текст уведомления.</param>
+    /// <param name="notificationLevel">Уровень уведомления.</param>
+    /// <param name="token">Токен пользователя.</param>
+    public async Task SendNotificationErrorAddProjectArchiveAsync(string title, string notifyText,
+        string notificationLevel, string token)
+    {
+        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(token);
+
+        await _hubContext.Clients
+            .Client(connectionId)
+            .SendAsync("SendNotificationErrorAddProjectArchive",
+                new NotificationOutput
+                {
+                    Title = title,
+                    Message = notifyText,
+                    NotificationLevel = notificationLevel
+                });
+    }
+
+    /// <summary>
+    /// Метод отправляет уведомление предупреждения о дубле при добавлении проекта в архив.
+    /// </summary>
+    /// <param name="title">Заголовок уведомления.</param>
+    /// <param name="notifyText">Текст уведомления.</param>
+    /// <param name="notificationLevel">Уровень уведомления.</param>
+    /// <param name="token">Токен пользователя.</param>
+    public async Task SendNotificationWarningAddProjectArchiveAsync(string title, string notifyText,
+        string notificationLevel, string token)
+    {
+        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(token);
+
+        await _hubContext.Clients
+            .Client(connectionId)
+            .SendAsync("SendNotificationWarningAddProjectArchive",
                 new NotificationOutput
                 {
                     Title = title,

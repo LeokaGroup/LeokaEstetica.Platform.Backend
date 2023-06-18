@@ -9,7 +9,6 @@ using LeokaEstetica.Platform.Models.Entities.Configs;
 using LeokaEstetica.Platform.Models.Entities.Moderation;
 using LeokaEstetica.Platform.Models.Entities.Project;
 using LeokaEstetica.Platform.Models.Entities.ProjectTeam;
-using LeokaEstetica.Platform.Models.Enums;
 
 namespace LeokaEstetica.Platform.Services.Abstractions.Project;
 
@@ -203,4 +202,12 @@ public interface IProjectService
     /// <param name="account">Аккаунт пользователя.</param>
     /// <returns>Список замечаний проекта.</returns>
     Task<IEnumerable<ProjectRemarkEntity>> GetProjectRemarksAsync(long projectId, string account);
+
+    /// <summary>
+    /// Метод добавляет проект в архив.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="account">Аккаунт пользователя.</param>
+    /// <param name="token">Токен.</param>
+    Task AddProjectArchiveAsync(long projectId, string account, string token);
 }
