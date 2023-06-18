@@ -277,4 +277,11 @@ public interface IProjectRepository
     /// <param name="projectId">Id проекта.</param>
     /// <returns>Признак проверки.</returns>
     Task<bool> CheckProjectArchiveAsync(long projectId);
+
+    /// <summary>
+    /// Метод удаляет из архива проект.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="userId">Id пользователя.</param>
+    Task<bool> DeleteProjectArchiveAsync(long projectId, long userId);
 }

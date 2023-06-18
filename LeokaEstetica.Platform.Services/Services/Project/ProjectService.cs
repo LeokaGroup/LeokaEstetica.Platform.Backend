@@ -1233,6 +1233,76 @@ internal sealed class ProjectService : IProjectService
         }
     }
 
+    /// <summary>
+    /// Метод удаляет из архива проект.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="account">Аккаунт пользователя.</param>
+    /// <param name="token">Токен.</param>
+    public async Task DeleteProjectArchiveAsync(long projectId, string account, string token)
+    {
+        try
+        {
+            if (projectId <= 0)
+            {
+                var ex = new InvalidOperationException($"Id проекта не может быть <= 0. ProjectId: {projectId}");
+                throw ex;
+            }
+            
+            var userId = await _userRepository.GetUserIdByEmailOrLoginAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+            
+            // Проверяем, является ли текущий пользователь владельцем проекта.
+            var isOwner = await _projectRepository.CheckProjectOwnerAsync(projectId, userId);
+
+            // Только владелец может удалить проект из архива.
+            if (!isOwner)
+            {
+                throw new InvalidOperationException("Пользователь не является владельцем проекта." +
+                                                    "Удаление из архива невозможно." +
+                                                    $"ProjectId: {projectId}." +
+                                                    $"UserId: {userId}");
+            }
+
+            var isDelete = await _projectRepository.DeleteProjectArchiveAsync(projectId, userId);
+
+            if (!isDelete && !string.IsNullOrEmpty(token))
+            {
+                await _projectNotificationsService.SendNotificationErrorDeleteProjectArchiveAsync("Что то не так...",
+                    "Ошибка при удалении проекта из архива. Мы уже знаем о проблеме и уже занимаемся ей.",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, token);
+
+                return;
+            }
+            
+            if (!string.IsNullOrEmpty(token))
+            {
+                await _projectNotificationsService.SendNotificationSuccessDeleteProjectArchiveAsync("Все хорошо",
+                    "Проект успешно удален из архива.",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);
+            }
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            
+            if (!string.IsNullOrEmpty(token))
+            {
+                await _projectNotificationsService.SendNotificationErrorDeleteProjectArchiveAsync("Что то не так...",
+                    "Ошибка при удалении проекта из архива. Мы уже знаем о проблеме и уже занимаемся ей.",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, token);
+            }
+            
+            throw;
+        }
+    }
+
     #endregion
 
     #region Приватные методы.
