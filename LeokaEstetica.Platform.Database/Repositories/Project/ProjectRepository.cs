@@ -1044,6 +1044,10 @@ internal sealed class ProjectRepository : IProjectRepository
             UserId = userId,
             DateArchived = DateTime.Now
         });
+
+        // Изменяем статус проекта на "В архиве".
+        await UpdateModerationProjectStatusAsync(projectId, ProjectModerationStatusEnum.ArchivedProject);
+        
         await _pgContext.SaveChangesAsync();
     }
 

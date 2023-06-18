@@ -11,7 +11,7 @@ public static class ProjectStatus
     /// <summary>
     /// Словарь статусов с системными именами.
     /// </summary>
-    private static readonly IDictionary<string, int> _projectStatusesSysNames = new Dictionary<string, int>()
+    private static readonly Dictionary<string, int> _projectStatusesSysNames = new()
     {
         ["Moderation"] = 1,
         ["Approved"] = 2,
@@ -24,7 +24,7 @@ public static class ProjectStatus
     /// <summary>
     /// Словарь статусов с русскими именами.
     /// </summary>
-    private static readonly IDictionary<string, string> _projectStatusesNames = new Dictionary<string, string>()
+    private static readonly Dictionary<string, string> _projectStatusesNames = new()
     {
         ["Moderation"] = "На модерации",
         ["Approved"] = "Одобрен",
@@ -76,5 +76,5 @@ public enum ProjectStatusNameEnum
     Removed = 5,
 
     [Description("В архиве")]
-    Archived = 6,
+    Archived = 6
 }
