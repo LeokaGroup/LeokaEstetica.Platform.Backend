@@ -1047,6 +1047,18 @@ internal sealed class ProjectRepository : IProjectRepository
         await _pgContext.SaveChangesAsync();
     }
 
+    /// <summary>
+    /// Метод проверяет, находится ли такой проект в архиве.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Признак проверки.</returns>
+    public async Task<bool> CheckProjectArchiveAsync(long projectId)
+    {
+        var result = await _pgContext.ArchivedProjects.AnyAsync(p => p.ProjectId == projectId);
+
+        return result;
+    }
+
     #region Приватные методы.
 
     /// Метод првоеряет, был ли уже такой проект на модерации. 

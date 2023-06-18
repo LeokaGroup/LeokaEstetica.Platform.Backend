@@ -1185,6 +1185,23 @@ internal sealed class ProjectService : IProjectService
                                                     $"ProjectId: {projectId}." +
                                                     $"UserId: {userId}");
             }
+            
+            // Проверяем, есть ли уже такой проект в архиве.
+            var isExists = await _projectRepository.CheckProjectArchiveAsync(projectId);
+            
+            if (isExists)
+            {
+                _logger.LogWarning($"Такой проект уже добавлен в архив. ProjectId: {projectId}. UserId: {userId}");
+
+                if (!string.IsNullOrEmpty(token))
+                {
+                    await _projectNotificationsService.SendNotificationWarningAddProjectArchiveAsync("Внимание",
+                        "Такой проект уже добавлен в архив.",
+                        NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
+                }
+                
+                return;
+            }
 
             await _projectRepository.AddProjectArchiveAsync(projectId, userId);
             

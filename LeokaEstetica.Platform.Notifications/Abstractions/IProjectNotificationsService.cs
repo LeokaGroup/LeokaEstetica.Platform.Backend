@@ -300,4 +300,14 @@ public interface IProjectNotificationsService
     /// <param name="token">Токен пользователя.</param>
     Task SendNotificationErrorAddProjectArchiveAsync(string title, string notifyText, string notificationLevel,
         string token);
+    
+    /// <summary>
+    /// Метод отправляет уведомление предупреждения о дубле при добавлении проекта в архив.
+    /// </summary>
+    /// <param name="title">Заголовок уведомления.</param>
+    /// <param name="notifyText">Текст уведомления.</param>
+    /// <param name="notificationLevel">Уровень уведомления.</param>
+    /// <param name="token">Токен пользователя.</param>
+    Task SendNotificationWarningAddProjectArchiveAsync(string title, string notifyText,
+        string notificationLevel, string token);
 }

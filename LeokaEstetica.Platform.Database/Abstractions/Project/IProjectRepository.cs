@@ -270,4 +270,11 @@ public interface IProjectRepository
     /// <param name="projectId">Id проекта.</param>
     /// <param name="userId">Id пользователя.</param>
     Task AddProjectArchiveAsync(long projectId, long userId);
+
+    /// <summary>
+    /// Метод проверяет, находится ли такой проект в архиве.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Признак проверки.</returns>
+    Task<bool> CheckProjectArchiveAsync(long projectId);
 }
