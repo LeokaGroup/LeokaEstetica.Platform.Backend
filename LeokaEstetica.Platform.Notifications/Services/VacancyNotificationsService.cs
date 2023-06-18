@@ -138,4 +138,73 @@ internal sealed class VacancyNotificationsService : IVacancyNotificationsService
                     NotificationLevel = notificationLevel
                 });
     }
+
+    /// <summary>
+    /// Метод отправляет уведомление об успехе при добавлении вакансии в архив.
+    /// </summary>
+    /// <param name="title">Заголовок уведомления.</param>
+    /// <param name="notifyText">Текст уведомления.</param>
+    /// <param name="notificationLevel">Уровень уведомления.</param>
+    /// <param name="token">Токен пользователя.</param>
+    public async Task SendNotificationSuccessAddVacancyArchiveAsync(string title, string notifyText,
+        string notificationLevel, string token)
+    {
+        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(token);
+
+        await _hubContext.Clients
+            .Client(connectionId)
+            .SendAsync("SendNotificationSuccessAddVacancyArchive",
+                new NotificationOutput
+                {
+                    Title = title,
+                    Message = notifyText,
+                    NotificationLevel = notificationLevel
+                });
+    }
+
+    /// <summary>
+    /// Метод отправляет уведомление об ошибке при добавлении вакансии в архив.
+    /// </summary>
+    /// <param name="title">Заголовок уведомления.</param>
+    /// <param name="notifyText">Текст уведомления.</param>
+    /// <param name="notificationLevel">Уровень уведомления.</param>
+    /// <param name="token">Токен пользователя.</param>
+    public async Task SendNotificationErrorAddVacancyArchiveAsync(string title, string notifyText,
+        string notificationLevel, string token)
+    {
+        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(token);
+
+        await _hubContext.Clients
+            .Client(connectionId)
+            .SendAsync("SendNotificationErrorAddVacancyArchive",
+                new NotificationOutput
+                {
+                    Title = title,
+                    Message = notifyText,
+                    NotificationLevel = notificationLevel
+                });
+    }
+
+    /// <summary>
+    /// Метод отправляет уведомление предупреждения о дубле при добавлении вакансии в архив.
+    /// </summary>
+    /// <param name="title">Заголовок уведомления.</param>
+    /// <param name="notifyText">Текст уведомления.</param>
+    /// <param name="notificationLevel">Уровень уведомления.</param>
+    /// <param name="token">Токен пользователя.</param>
+    public async Task SendNotificationWarningAddVacancyArchiveAsync(string title, string notifyText,
+        string notificationLevel, string token)
+    {
+        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(token);
+
+        await _hubContext.Clients
+            .Client(connectionId)
+            .SendAsync("SendNotificationWarningAddVacancyArchive",
+                new NotificationOutput
+                {
+                    Title = title,
+                    Message = notifyText,
+                    NotificationLevel = notificationLevel
+                });
+    }
 }

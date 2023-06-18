@@ -8,7 +8,7 @@ internal class AddVacancyArchiveTest : BaseServiceTest
     [Test]
     public async Task AddVacancyArchiveAsyncTest()
     { 
-        await VacancyService.AddVacancyArchiveAsync(147, "sierra_93@mail.ru");
+        await VacancyService.AddVacancyArchiveAsync(147, "sierra_93@mail.ru", null);
 
     }
 }

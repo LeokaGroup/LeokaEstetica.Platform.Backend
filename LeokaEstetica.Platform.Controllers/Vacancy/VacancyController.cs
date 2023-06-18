@@ -290,9 +290,9 @@ public class VacancyController : BaseController
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task AddVacancyArchiveAsync([FromBody] ArchiveVacancyInput vacancy)
+    public async Task AddVacancyArchiveAsync([FromBody] VacancyArchiveInput vacancy)
     {
-        await _vacancyService.AddVacancyArchiveAsync(vacancy.VacancyId, GetUserName());
+        await _vacancyService.AddVacancyArchiveAsync(vacancy.VacancyId, GetUserName(), GetTokenFromHeader());
     }
     
     /// <summary>

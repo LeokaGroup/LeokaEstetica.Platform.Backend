@@ -1,6 +1,7 @@
 namespace LeokaEstetica.Platform.Messaging.Abstractions.Mail;
 
 /// <summary>
+/// TODO: Отрефачить и разбить на отдельные абстракции уведомлений на почту (проекты отдельно, вакансии отдельно и тд).
 /// Абстракция сервиса работы с сообщениями почты.
 /// </summary>
 public interface IMailingsService
@@ -87,4 +88,12 @@ public interface IMailingsService
     /// <param name="projectId">Id проекта.</param>
     /// <param name="projectName">Название проекта.</param>
     Task SendNotificationAddProjectArchiveAsync(string mailTo, long projectId, string projectName);
+    
+    /// <summary>
+    /// Метод отправляет уведомление на почту пользователя, о добавлении его вакансии в архив.
+    /// </summary>
+    /// <param name="mailTo">Почта пользователя, которого исключили.</param>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <param name="vacancyName">Название вакансии.</param>
+    Task SendNotificationAddVacancyArchiveAsync(string mailTo, long vacancyId, string vacancyName);
 }

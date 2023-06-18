@@ -552,13 +552,14 @@ internal sealed class VacancyService : IVacancyService
     /// </summary>
     /// <param name="vacancyId">Id вакансии.</param>
     /// <param name="account">Аккаунт.</param>
-    public async Task AddVacancyArchiveAsync(long vacancyId, string account)
+    /// <param name="token">Токен пользователя.</param>
+    public async Task AddVacancyArchiveAsync(long vacancyId, string account, string token)
     {
         try
         {
             if (vacancyId <= 0)
             {
-                var ex = new ArgumentNullException($"Id вакансии не может быть пустым. VacancyId: {vacancyId}");
+                var ex = new InvalidOperationException($"Id вакансии не может быть <= 0. VacancyId: {vacancyId}");
                 throw ex;
             }
 
@@ -576,18 +577,57 @@ internal sealed class VacancyService : IVacancyService
 
             if (!isOwner)
             {
-                var ex = new InvalidOperationException(
-                    $"Пользователь не является владельцем вакансии. VacancyId: {vacancyId}. UserId: {userId}");
+                var ex = new InvalidOperationException("Пользователь не является владельцем вакансии." +
+                                                       "Добавление в архив невозможно." +
+                                                       $" VacancyId: {vacancyId}." +
+                                                       $" UserId: {userId}");
                 throw ex;
             }
+            
+            // Проверяем, есть ли уже такая вакансия в архиве.
+            var isExists = await _vacancyRepository.CheckVacancyArchiveAsync(vacancyId);
+            
+            if (isExists)
+            {
+                _logger.LogWarning($"Такая вакансия уже добавлена в архив. VacancyId: {vacancyId}. UserId: {userId}");
 
-            //Добавляем вакансию в таблицу архивов
+                if (!string.IsNullOrEmpty(token))
+                {
+                    await _vacancyNotificationsService.SendNotificationWarningAddVacancyArchiveAsync("Внимание",
+                        "Такая вакансия уже добавлена в архив.",
+                        NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
+                }
+                
+                return;
+            }
+
+            // Добавляем вакансию в архив.
             await _vacancyRepository.AddVacancyArchiveAsync(vacancyId, userId);
+            
+            if (!string.IsNullOrEmpty(token))
+            {
+                await _vacancyNotificationsService.SendNotificationSuccessAddVacancyArchiveAsync("Все хорошо",
+                    "Вакансия успешно добавлена в архив.",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);
+            }
+            
+            var vacancyName = await _vacancyRepository.GetVacancyNameByIdAsync(vacancyId);
+
+            // Отправляем уведомление на почту.
+            await _mailingsService.SendNotificationAddVacancyArchiveAsync(account, vacancyId, vacancyName);
         }
 
         catch (Exception ex)
         {
             _logger.LogError(ex, ex.Message);
+            
+            if (!string.IsNullOrEmpty(token))
+            {
+                await _vacancyNotificationsService.SendNotificationErrorAddVacancyArchiveAsync("Что то не так...",
+                    "Ошибка при добавлении вакансии в архив. Мы уже знаем о проблеме и уже занимаемся ей.",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, token);
+            }
+            
             throw;
         }
     }

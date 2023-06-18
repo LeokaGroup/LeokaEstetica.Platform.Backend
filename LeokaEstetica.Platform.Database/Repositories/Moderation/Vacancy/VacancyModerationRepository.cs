@@ -96,7 +96,6 @@ internal sealed class VacancyModerationRepository : IVacancyModerationRepository
     {
         var result = await _pgContext.ModerationVacancies
             .Include(up => up.UserVacancy)
-            .Where(p => p.ModerationStatus.StatusId == (int)VacancyModerationStatusEnum.ModerationVacancy)
             .Select(p => new ModerationVacancyEntity
             {
                 ModerationId = p.ModerationId,

@@ -329,9 +329,8 @@ internal sealed class VacancyRepository : IVacancyRepository
     /// <returns>Признак является ли пользователь владельцем вакансии.</returns>
     public async Task<bool> CheckVacancyOwnerAsync(long vacancyId, long userId)
     {
-        var result = await _pgContext.UserVacancies
-            .AnyAsync(p => p.VacancyId == vacancyId
-                           && p.UserId == userId);
+        var result = await _pgContext.UserVacancies.AnyAsync(p => p.VacancyId == vacancyId
+                                                                  && p.UserId == userId);
 
         return result;
     }
@@ -367,6 +366,9 @@ internal sealed class VacancyRepository : IVacancyRepository
 
         // Добавляем вакансию в таблицу архивов.
         await _pgContext.ArchivedVacancies.AddAsync(arvhivedVacancy);
+        
+        // Изменяем статус вакансии на "В архиве".
+        await UpdateModerationVacancyStatusAsync(vacancyId, VacancyModerationStatusEnum.ArchivedVacancy);
 
         await _pgContext.SaveChangesAsync();
     }
@@ -382,6 +384,18 @@ internal sealed class VacancyRepository : IVacancyRepository
             .Where(v => v.VacancyId == vacancyId)
             .Select(v => v.VacancyName)
             .FirstOrDefaultAsync();
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод проверяет, находится ли такая вакансия в архиве.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <returns>Признак проверки.</returns>
+    public async Task<bool> CheckVacancyArchiveAsync(long vacancyId)
+    {
+        var result = await _pgContext.ArchivedVacancies.AnyAsync(p => p.VacancyId == vacancyId);
 
         return result;
     }
@@ -404,6 +418,23 @@ internal sealed class VacancyRepository : IVacancyRepository
         vacancy.Payment = vacancyInput.Payment;
         vacancy.Conditions = vacancyInput.Conditions;
         vacancy.Demands = vacancyInput.Demands;
+    }
+    
+    /// <summary>
+    /// Метод обновляет статус вакансии на модерации.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <param name="status">Статус вакансии.</param>
+    private async Task UpdateModerationVacancyStatusAsync(long vacancyId, VacancyModerationStatusEnum status)
+    {
+        var vac = await _pgContext.ModerationVacancies.FirstOrDefaultAsync(p => p.VacancyId == vacancyId);
+
+        if (vac is null)
+        {
+            throw new InvalidOperationException($"Не найдена вакансия для модерации. VacancyId: {vacancyId}");
+        }
+        
+        vac.ModerationStatusId = (int)status;
     }
 
     #endregion
