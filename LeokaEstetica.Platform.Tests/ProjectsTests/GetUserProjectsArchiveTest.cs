@@ -11,6 +11,6 @@ internal class GetUserProjectsArchiveTest : BaseServiceTest
         var result = await ProjectService.GetUserProjectsArchiveAsync("sierra_93@mail.ru");
         
         Assert.NotNull(result);
-        Assert.IsNotEmpty(result.ProjectArchiveOutputs);
+        Assert.IsNotEmpty(result.ProjectsArchive);
     }
 }
