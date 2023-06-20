@@ -673,17 +673,16 @@ public class ProjectController : BaseController
     /// <summary>
     /// Метод удаляет из архива проект.
     /// </summary>
-    /// <param name="projectArchiveInput">Входная модель.</param>
-    [HttpPatch]
+    /// <param name="projectId">Id проекта.</param>
+    [HttpDelete]
     [Route("archive")]
     [ProducesResponseType(200)]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task DeleteProjectArchiveAsync([FromBody] ProjectArchiveInput projectArchiveInput)
+    public async Task DeleteProjectArchiveAsync([FromQuery] long projectId)
     {
-        await _projectService.DeleteProjectArchiveAsync(projectArchiveInput.ProjectId, GetUserName(),
-            GetTokenFromHeader());
+        await _projectService.DeleteProjectArchiveAsync(projectId, GetUserName(), GetTokenFromHeader());
     }
 }
