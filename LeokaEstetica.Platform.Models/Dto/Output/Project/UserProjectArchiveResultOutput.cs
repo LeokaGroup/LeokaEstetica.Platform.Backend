@@ -8,10 +8,10 @@ public class UserProjectArchiveResultOutput
     /// <summary>
     /// Список проектов.
     /// </summary>
-    public IEnumerable<ProjectArchiveOutput> ProjectArchiveOutputs { get; set; }
+    public IEnumerable<ProjectArchiveOutput> ProjectsArchive { get; set; }
 
     /// <summary>
     /// Кол-во проектов.
     /// </summary>
-    public int Total => ProjectArchiveOutputs.Count();
+    public int Total => ProjectsArchive.Count();
 }

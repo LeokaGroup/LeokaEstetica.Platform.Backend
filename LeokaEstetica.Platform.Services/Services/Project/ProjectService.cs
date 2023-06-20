@@ -1685,27 +1685,29 @@ internal sealed class ProjectService : IProjectService
                 throw new NotFoundUserIdByAccountException(account);
             }
 
-            // Находим проекты в архиве
-            var archivedProjects = await _projectRepository.GetUserProjectsArchiveAsync(userId);
-
-            var archivedProjectsOutput = _mapper.Map<List<ProjectArchiveOutput>>(archivedProjects);
-
-            // Проставляем статусы
-            archivedProjectsOutput.ForEach(p => p.ProjectStatusName = ProjectStatusNameEnum.Archived
-                .GetEnumDescription());
-
-            // Формируем выходную модель
-            var resultOutput = new UserProjectArchiveResultOutput
+            var result = new UserProjectArchiveResultOutput
             {
-                ProjectArchiveOutputs = archivedProjectsOutput
+                ProjectsArchive = new List<ProjectArchiveOutput>()
             };
 
-            foreach (var prj in archivedProjectsOutput)
+            // Находим проекты в архиве.
+            var archivedProjects = await _projectRepository.GetUserProjectsArchiveAsync(userId);
+
+            if (!archivedProjects.Any())
             {
-                prj.ProjectDetails = ClearHtmlBuilder.Clear(prj.ProjectDetails);
+                return result;
             }
 
-            return resultOutput;
+            result.ProjectsArchive = _mapper.Map<List<ProjectArchiveOutput>>(archivedProjects);
+
+            // Проставляем статусы и чистим от тегов.
+            foreach (var pr in result.ProjectsArchive)
+            {
+                pr.ProjectStatusName = ProjectStatusNameEnum.Archived.GetEnumDescription();
+                pr.ProjectDetails = ClearHtmlBuilder.Clear(pr.ProjectDetails);
+            }
+
+            return result;
         }
 
         catch (Exception ex)
