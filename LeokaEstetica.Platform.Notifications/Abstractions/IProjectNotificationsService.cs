@@ -310,4 +310,24 @@ public interface IProjectNotificationsService
     /// <param name="token">Токен пользователя.</param>
     Task SendNotificationWarningAddProjectArchiveAsync(string title, string notifyText,
         string notificationLevel, string token);
+    
+    /// <summary>
+    /// Метод отправляет уведомление об ошибке при удалении проекта из архива.
+    /// </summary>
+    /// <param name="title">Заголовок уведомления.</param>
+    /// <param name="notifyText">Текст уведомления.</param>
+    /// <param name="notificationLevel">Уровень уведомления.</param>
+    /// <param name="token">Токен пользователя.</param>
+    Task SendNotificationErrorDeleteProjectArchiveAsync(string title, string notifyText, string notificationLevel,
+        string token);
+    
+    /// <summary>
+    /// Метод отправляет уведомление об успехе при удалении проекта из архива.
+    /// </summary>
+    /// <param name="title">Заголовок уведомления.</param>
+    /// <param name="notifyText">Текст уведомления.</param>
+    /// <param name="notificationLevel">Уровень уведомления.</param>
+    /// <param name="token">Токен пользователя.</param>
+    Task SendNotificationSuccessDeleteProjectArchiveAsync(string title, string notifyText, string notificationLevel,
+        string token);
 }

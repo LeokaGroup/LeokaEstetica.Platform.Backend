@@ -885,6 +885,52 @@ internal sealed class ProjectNotificationsService : IProjectNotificationsService
                 });
     }
 
+    /// <summary>
+    /// Метод отправляет уведомление об ошибке при удалении проекта из архива.
+    /// </summary>
+    /// <param name="title">Заголовок уведомления.</param>
+    /// <param name="notifyText">Текст уведомления.</param>
+    /// <param name="notificationLevel">Уровень уведомления.</param>
+    /// <param name="token">Токен пользователя.</param>
+    public async Task SendNotificationErrorDeleteProjectArchiveAsync(string title, string notifyText,
+        string notificationLevel, string token)
+    {
+        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(token);
+
+        await _hubContext.Clients
+            .Client(connectionId)
+            .SendAsync("SendNotificationErrorDeleteProjectArchive",
+                new NotificationOutput
+                {
+                    Title = title,
+                    Message = notifyText,
+                    NotificationLevel = notificationLevel
+                });
+    }
+
+    /// <summary>
+    /// Метод отправляет уведомление об успехе при удалении проекта из архива.
+    /// </summary>
+    /// <param name="title">Заголовок уведомления.</param>
+    /// <param name="notifyText">Текст уведомления.</param>
+    /// <param name="notificationLevel">Уровень уведомления.</param>
+    /// <param name="token">Токен пользователя.</param>
+    public async Task SendNotificationSuccessDeleteProjectArchiveAsync(string title, string notifyText,
+        string notificationLevel, string token)
+    {
+        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(token);
+
+        await _hubContext.Clients
+            .Client(connectionId)
+            .SendAsync("SendNotificationSuccessDeleteProjectArchive",
+                new NotificationOutput
+                {
+                    Title = title,
+                    Message = notifyText,
+                    NotificationLevel = notificationLevel
+                });
+    }
+
     #endregion
 
     #region Приватные методы.

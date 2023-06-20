@@ -1063,6 +1063,52 @@ internal sealed class ProjectRepository : IProjectRepository
         return result;
     }
 
+    /// <summary>
+    /// Метод удаляет из архива проект.
+    /// При удалении из архива проект отправляется на модерацию.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="userId">Id пользователя.</param>
+    public async Task<bool> DeleteProjectArchiveAsync(long projectId, long userId)
+    {
+        var transaction = await _pgContext.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted);
+
+        try
+        {
+            var mp = await _pgContext.ModerationProjects.FirstOrDefaultAsync(p => p.ProjectId == projectId
+                && p.UserProject.UserId == userId);
+
+            if (mp is null)
+            {
+                return false;
+            }
+
+            mp.ModerationStatusId = (int)ProjectModerationStatusEnum.ModerationProject;
+
+            var pa = await _pgContext.ArchivedProjects.FirstOrDefaultAsync(p => p.ProjectId == projectId
+                && p.UserId == userId);
+        
+            if (pa is null)
+            {
+                return false;
+            }
+
+            _pgContext.ArchivedProjects.Remove(pa);
+            
+            await _pgContext.SaveChangesAsync();
+
+            await transaction.CommitAsync();
+        
+            return true;
+        }
+        
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
+    }
+
     #region Приватные методы.
 
     /// Метод првоеряет, был ли уже такой проект на модерации. 

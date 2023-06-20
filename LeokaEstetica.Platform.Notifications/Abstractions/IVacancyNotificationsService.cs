@@ -84,4 +84,24 @@ public interface IVacancyNotificationsService
     /// <param name="token">Токен пользователя.</param>
     Task SendNotificationWarningAddVacancyArchiveAsync(string title, string notifyText,
         string notificationLevel, string token);
+    
+    /// <summary>
+    /// Метод отправляет уведомление об ошибке при удалении вакансии из архива.
+    /// </summary>
+    /// <param name="title">Заголовок уведомления.</param>
+    /// <param name="notifyText">Текст уведомления.</param>
+    /// <param name="notificationLevel">Уровень уведомления.</param>
+    /// <param name="token">Токен пользователя.</param>
+    Task SendNotificationErrorDeleteVacancyArchiveAsync(string title, string notifyText, string notificationLevel,
+        string token);
+    
+    /// <summary>
+    /// Метод отправляет уведомление об успехе при удалении вакансии из архива.
+    /// </summary>
+    /// <param name="title">Заголовок уведомления.</param>
+    /// <param name="notifyText">Текст уведомления.</param>
+    /// <param name="notificationLevel">Уровень уведомления.</param>
+    /// <param name="token">Токен пользователя.</param>
+    Task SendNotificationSuccessDeleteVacancyArchiveAsync(string title, string notifyText, string notificationLevel,
+        string token);
 }

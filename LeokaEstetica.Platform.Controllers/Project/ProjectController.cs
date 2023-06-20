@@ -669,4 +669,21 @@ public class ProjectController : BaseController
         await _projectService.AddProjectArchiveAsync(projectArchiveInput.ProjectId, GetUserName(),
             GetTokenFromHeader());
     }
+
+    /// <summary>
+    /// Метод удаляет из архива проект.
+    /// </summary>
+    /// <param name="projectArchiveInput">Входная модель.</param>
+    [HttpPatch]
+    [Route("archive")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task DeleteProjectArchiveAsync([FromBody] ProjectArchiveInput projectArchiveInput)
+    {
+        await _projectService.DeleteProjectArchiveAsync(projectArchiveInput.ProjectId, GetUserName(),
+            GetTokenFromHeader());
+    }
 }

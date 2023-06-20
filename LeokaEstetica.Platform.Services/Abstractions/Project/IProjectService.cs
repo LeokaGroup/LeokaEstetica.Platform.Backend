@@ -210,4 +210,12 @@ public interface IProjectService
     /// <param name="account">Аккаунт пользователя.</param>
     /// <param name="token">Токен.</param>
     Task AddProjectArchiveAsync(long projectId, string account, string token);
+
+    /// <summary>
+    /// Метод удаляет из архива проект. Идет смена статуса, фактического удаления не происходит.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="account">Аккаунт пользователя.</param>
+    /// <param name="token">Токен.</param>
+    Task DeleteProjectArchiveAsync(long projectId, string account, string token);
 }
