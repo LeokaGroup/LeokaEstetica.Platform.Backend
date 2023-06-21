@@ -1,3 +1,4 @@
+using System.Globalization;
 using Newtonsoft.Json;
 
 namespace LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
@@ -68,4 +69,9 @@ public class CatalogVacancyOutput
     /// Значение тега.
     /// </summary>
     public string TagValue { get; set; }
+
+    /// <summary>
+    /// Отображаемая дата.
+    /// </summary>
+    public string DisplayDateCreated => DateCreated.ToString("d", CultureInfo.GetCultureInfo("ru"));
 }

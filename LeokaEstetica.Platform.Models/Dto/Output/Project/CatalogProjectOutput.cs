@@ -1,3 +1,4 @@
+using System.Globalization;
 using Newtonsoft.Json;
 
 namespace LeokaEstetica.Platform.Models.Dto.Output.Project;
@@ -62,4 +63,9 @@ public class CatalogProjectOutput
     /// Значение тега.
     /// </summary>
     public string TagValue { get; set; }
+    
+    /// <summary>
+    /// Отображаемая дата.
+    /// </summary>
+    public string DisplayDateCreated => DateCreated.ToString("d", CultureInfo.GetCultureInfo("ru"));
 }
