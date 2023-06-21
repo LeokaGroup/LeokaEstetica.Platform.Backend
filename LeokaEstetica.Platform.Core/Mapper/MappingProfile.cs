@@ -122,8 +122,8 @@ public class MappingProfile : Profile
         
         CreateMap<TimelineEntity, TimelineOutput>();
 
-        CreateMap<ArchivedProjectEntity, ProjectArchiveOutput>();
-            //.ForMember(a => a.ProjectName, a => a.MapFrom(src => src.UserProject.ProjectName));
+        CreateMap<ArchivedProjectEntity, ProjectArchiveOutput>()
+            .ForMember(a => a.ProjectName, a => a.MapFrom(src => src.UserProject.ProjectName));
         
         CreateMap<UserEntity, UserActivityMarkDeactivate>();
         CreateMap<UserActivityMarkDeactivate, UserEntity>();
@@ -166,6 +166,7 @@ public class MappingProfile : Profile
         
         CreateMap<RefundEntity, CreateRefundOutput>();
         
-        CreateMap<ArchivedVacancyEntity, VacancyArchiveOutput>();
+        CreateMap<ArchivedVacancyEntity, VacancyArchiveOutput>()
+            .ForMember(a => a.VacancyName, a => a.MapFrom(src => src.UserVacancy.VacancyName));;
     }
 }

@@ -24,6 +24,7 @@ using VacancyItems = LeokaEstetica.Platform.Redis.Models.Vacancy.VacancyItems;
 using LeokaEstetica.Platform.Base.Extensions.HtmlExtensions;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Vacancy;
 using LeokaEstetica.Platform.Models.Entities.Moderation;
+using LeokaEstetica.Platform.Services.Helpers;
 using Microsoft.Extensions.Logging;
 
 [assembly: InternalsVisibleTo("LeokaEstetica.Platform.Tests")]
@@ -770,12 +771,17 @@ internal sealed class VacancyService : IVacancyService
             // Находим вакансии в архиве.
             var archivedVacancies = await _vacancyRepository.GetUserVacanciesArchiveAsync(userId);
 
-            if (!archivedVacancies.Any())
+            var archivedVacancyEntities = archivedVacancies.ToList();
+            
+            if (!archivedVacancyEntities.Any())
             {
                 return result;
             }
 
             result.VacanciesArchive = _mapper.Map<List<VacancyArchiveOutput>>(archivedVacancies);
+
+            await CreateVacanciesDatesHelper.CreateDatesResultAsync(archivedVacancyEntities,
+                result.VacanciesArchive.ToList());
 
             return result;
         }

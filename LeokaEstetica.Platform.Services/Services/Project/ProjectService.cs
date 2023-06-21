@@ -36,6 +36,7 @@ using LeokaEstetica.Platform.Services.Strategies.Project.Team;
 using LeokaEstetica.Platform.Base.Extensions.HtmlExtensions;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Project;
 using LeokaEstetica.Platform.Models.Entities.Moderation;
+using LeokaEstetica.Platform.Services.Helpers;
 using Microsoft.Extensions.Logging;
 
 [assembly: InternalsVisibleTo("LeokaEstetica.Platform.Tests")]
@@ -1761,12 +1762,17 @@ internal sealed class ProjectService : IProjectService
             // Находим проекты в архиве.
             var archivedProjects = await _projectRepository.GetUserProjectsArchiveAsync(userId);
 
-            if (!archivedProjects.Any())
+            var archivedProjectEntities = archivedProjects.ToList();
+            
+            if (!archivedProjectEntities.Any())
             {
                 return result;
             }
 
             result.ProjectsArchive = _mapper.Map<List<ProjectArchiveOutput>>(archivedProjects);
+            
+            await CreateProjectsDatesHelper.CreateDatesResultAsync(archivedProjectEntities,
+                result.ProjectsArchive.ToList());
 
             return result;
         }

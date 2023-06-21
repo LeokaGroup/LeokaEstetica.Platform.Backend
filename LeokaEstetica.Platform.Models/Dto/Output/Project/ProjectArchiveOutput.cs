@@ -18,5 +18,5 @@ public class ProjectArchiveOutput
     /// <summary>
     /// Дата архива.
     /// </summary>
-    public DateTime DateArchived { get; set; }
+    public string DateArchived { get; set; }
 }

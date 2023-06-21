@@ -13,7 +13,7 @@ public class VacancyArchiveOutput
     /// <summary>
     /// Дата архивации вакансии.
     /// </summary>
-    public DateTime DateArchived { get; set; }
+    public string DateArchived { get; set; }
 
     /// <summary>
     /// Название вакансии.
