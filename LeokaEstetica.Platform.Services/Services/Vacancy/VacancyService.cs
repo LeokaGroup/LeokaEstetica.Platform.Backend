@@ -24,6 +24,7 @@ using VacancyItems = LeokaEstetica.Platform.Redis.Models.Vacancy.VacancyItems;
 using LeokaEstetica.Platform.Base.Extensions.HtmlExtensions;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Vacancy;
 using LeokaEstetica.Platform.Models.Entities.Moderation;
+using LeokaEstetica.Platform.Services.Helpers;
 using Microsoft.Extensions.Logging;
 
 [assembly: InternalsVisibleTo("LeokaEstetica.Platform.Tests")]
@@ -742,6 +743,52 @@ internal sealed class VacancyService : IVacancyService
                     NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, token);
             }
             
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Метод получает список вакансий пользователя из архива.
+    /// </summary>
+    /// <param name="account">Аккаунт.</param>
+    /// <returns>Список архивированных вакансий.</returns>
+    public async Task<UserVacancyArchiveResultOutput> GetUserVacanciesArchiveAsync(string account)
+    {
+        try
+        {
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId <= 0)
+            {
+                throw new NotFoundUserIdByAccountException(account);
+            }
+
+            var result = new UserVacancyArchiveResultOutput
+            {
+                VacanciesArchive = new List<VacancyArchiveOutput>()
+            };
+
+            // Находим вакансии в архиве.
+            var archivedVacancies = await _vacancyRepository.GetUserVacanciesArchiveAsync(userId);
+
+            var archivedVacancyEntities = archivedVacancies.ToList();
+            
+            if (!archivedVacancyEntities.Any())
+            {
+                return result;
+            }
+
+            result.VacanciesArchive = _mapper.Map<List<VacancyArchiveOutput>>(archivedVacancies);
+
+            await CreateVacanciesDatesHelper.CreateDatesResultAsync(archivedVacancyEntities,
+                result.VacanciesArchive.ToList());
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
             throw;
         }
     }

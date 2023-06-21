@@ -6,7 +6,6 @@ using LeokaEstetica.Platform.Access.Abstractions.User;
 using LeokaEstetica.Platform.Access.Enums;
 using LeokaEstetica.Platform.Core.Constants;
 using LeokaEstetica.Platform.Core.Enums;
-using LeokaEstetica.Platform.Core.Helpers;
 using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.FareRule;
 using LeokaEstetica.Platform.Database.Abstractions.Notification;
@@ -34,10 +33,10 @@ using LeokaEstetica.Platform.Services.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Services.Builders;
 using LeokaEstetica.Platform.Services.Consts;
 using LeokaEstetica.Platform.Services.Strategies.Project.Team;
-using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Base.Extensions.HtmlExtensions;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Project;
 using LeokaEstetica.Platform.Models.Entities.Moderation;
+using LeokaEstetica.Platform.Services.Helpers;
 using Microsoft.Extensions.Logging;
 
 [assembly: InternalsVisibleTo("LeokaEstetica.Platform.Tests")]
@@ -1763,19 +1762,17 @@ internal sealed class ProjectService : IProjectService
             // Находим проекты в архиве.
             var archivedProjects = await _projectRepository.GetUserProjectsArchiveAsync(userId);
 
-            if (!archivedProjects.Any())
+            var archivedProjectEntities = archivedProjects.ToList();
+            
+            if (!archivedProjectEntities.Any())
             {
                 return result;
             }
 
             result.ProjectsArchive = _mapper.Map<List<ProjectArchiveOutput>>(archivedProjects);
-
-            // Проставляем статусы и чистим от тегов.
-            foreach (var pr in result.ProjectsArchive)
-            {
-                pr.ProjectStatusName = ProjectStatusNameEnum.Archived.GetEnumDescription();
-                pr.ProjectDetails = ClearHtmlBuilder.Clear(pr.ProjectDetails);
-            }
+            
+            await CreateProjectsDatesHelper.CreateDatesResultAsync(archivedProjectEntities,
+                result.ProjectsArchive.ToList());
 
             return result;
         }
