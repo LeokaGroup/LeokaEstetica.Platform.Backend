@@ -87,4 +87,9 @@ public class ProjectOutput : IFrontError
     /// Требования проекта.
     /// </summary>
     public string Demands { get; set; }
+
+    /// <summary>
+    /// Признак видимости кнопки добавления проекта в архив.
+    /// </summary>
+    public bool IsVisibleActionAddProjectArchive { get; set; }
 }

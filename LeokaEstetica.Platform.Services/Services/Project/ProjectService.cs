@@ -1515,6 +1515,14 @@ internal sealed class ProjectService : IProjectService
         {
             result.IsVisibleDeleteButton = true;
             result.IsVisibleActionDeleteProjectTeamMember = true;
+            
+            // Проверяем, есть ли проект в архиве.
+            var isExists = await _projectRepository.CheckProjectArchiveAsync(projectId);
+
+            if (!isExists)
+            {
+                result.IsVisibleActionAddProjectArchive = true;   
+            }
         }
 
         else
