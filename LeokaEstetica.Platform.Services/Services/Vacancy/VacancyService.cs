@@ -841,6 +841,13 @@ internal sealed class VacancyService : IVacancyService
             result.IsVisibleDeleteButton = true;
             result.IsVisibleSaveButton = true;
             result.IsVisibleEditButton = true;
+
+            var isExists = await _vacancyRepository.CheckVacancyArchiveAsync(vacancy.VacancyId);
+
+            if (!isExists)
+            {
+                result.IsVisibleActionAddVacancyArchive = true;
+            }
         }
 
         return result;

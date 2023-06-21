@@ -88,4 +88,9 @@ public class VacancyOutput : IFrontError
     /// Условия.
     /// </summary>
     public string Conditions { get; set; }
+
+    /// <summary>
+    /// Признак отображения кнопки добавления вакансии в архив.
+    /// </summary>
+    public bool IsVisibleActionAddVacancyArchive { get; set; }
 }
