@@ -6,7 +6,6 @@ using LeokaEstetica.Platform.Access.Abstractions.User;
 using LeokaEstetica.Platform.Access.Enums;
 using LeokaEstetica.Platform.Core.Constants;
 using LeokaEstetica.Platform.Core.Enums;
-using LeokaEstetica.Platform.Core.Helpers;
 using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.FareRule;
 using LeokaEstetica.Platform.Database.Abstractions.Notification;
@@ -34,7 +33,6 @@ using LeokaEstetica.Platform.Services.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Services.Builders;
 using LeokaEstetica.Platform.Services.Consts;
 using LeokaEstetica.Platform.Services.Strategies.Project.Team;
-using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Base.Extensions.HtmlExtensions;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Project;
 using LeokaEstetica.Platform.Models.Entities.Moderation;
@@ -1769,13 +1767,6 @@ internal sealed class ProjectService : IProjectService
             }
 
             result.ProjectsArchive = _mapper.Map<List<ProjectArchiveOutput>>(archivedProjects);
-
-            // Проставляем статусы и чистим от тегов.
-            foreach (var pr in result.ProjectsArchive)
-            {
-                pr.ProjectStatusName = ProjectStatusNameEnum.Archived.GetEnumDescription();
-                pr.ProjectDetails = ClearHtmlBuilder.Clear(pr.ProjectDetails);
-            }
 
             return result;
         }

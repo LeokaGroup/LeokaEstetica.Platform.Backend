@@ -330,4 +330,22 @@ public class VacancyController : BaseController
     {
         await _vacancyService.DeleteVacancyArchiveAsync(vacancyId, GetUserName(), GetTokenFromHeader());
     }
+    
+    /// <summary>
+    /// Метод получает список вакансий пользователя из архива.
+    /// </summary>
+    /// <returns>Список архивированных вакансий.</returns>
+    [HttpGet]
+    [Route("archive")]
+    [ProducesResponseType(200, Type = typeof(UserVacancyArchiveResultOutput))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<UserVacancyArchiveResultOutput> GetUserVacanciesArchiveAsync()
+    {
+        var result = await _vacancyService.GetUserVacanciesArchiveAsync(GetUserName());
+
+        return result;
+    }
 }

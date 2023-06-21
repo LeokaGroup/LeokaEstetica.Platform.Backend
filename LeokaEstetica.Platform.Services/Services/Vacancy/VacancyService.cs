@@ -746,6 +746,47 @@ internal sealed class VacancyService : IVacancyService
         }
     }
 
+    /// <summary>
+    /// Метод получает список вакансий пользователя из архива.
+    /// </summary>
+    /// <param name="account">Аккаунт.</param>
+    /// <returns>Список архивированных вакансий.</returns>
+    public async Task<UserVacancyArchiveResultOutput> GetUserVacanciesArchiveAsync(string account)
+    {
+        try
+        {
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId <= 0)
+            {
+                throw new NotFoundUserIdByAccountException(account);
+            }
+
+            var result = new UserVacancyArchiveResultOutput
+            {
+                VacanciesArchive = new List<VacancyArchiveOutput>()
+            };
+
+            // Находим вакансии в архиве.
+            var archivedVacancies = await _vacancyRepository.GetUserVacanciesArchiveAsync(userId);
+
+            if (!archivedVacancies.Any())
+            {
+                return result;
+            }
+
+            result.VacanciesArchive = _mapper.Map<List<VacancyArchiveOutput>>(archivedVacancies);
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
     #endregion
 
     #region Приватные методы.

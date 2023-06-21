@@ -5,25 +5,15 @@
 /// </summary>
 public class ProjectArchiveOutput
 {
-    ///// <summary>
-    ///// Id проекта.
-    ///// </summary>
+   /// <summary>
+   /// Id проекта.
+   /// </summary>
     public long ProjectId { get; set; }
 
-    ///// <summary>
-    ///// Название проекта.
-    ///// </summary>
+    /// <summary>
+    /// Название проекта.
+    /// </summary>
     public string ProjectName { get; set; }
-
-    ///// <summary>
-    ///// Описание проекта.
-    ///// </summary>
-    public string ProjectDetails { get; set; }
-
-    ///// <summary>
-    ///// Название статуса проекта.
-    ///// </summary>
-    public string ProjectStatusName { get; set; }
 
     /// <summary>
     /// Дата архива.

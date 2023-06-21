@@ -445,6 +445,21 @@ internal sealed class VacancyRepository : IVacancyRepository
         }
     }
 
+    /// <summary>
+    /// Метод получает список вакансий пользователя из архива.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Список архивированных вакансий.</returns>
+    public async Task<IEnumerable<ArchivedVacancyEntity>> GetUserVacanciesArchiveAsync(long userId)
+    {
+        var result = await _pgContext.ArchivedVacancies
+            .Include(a => a.UserVacancy)
+            .Where(a => a.UserId == userId)
+            .ToListAsync();
+
+        return result;
+    }
+
     #endregion
 
     #region Приватные методы.

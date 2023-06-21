@@ -96,4 +96,11 @@ public interface IVacancyService
     /// <param name="account">Аккаунт.</param>
     /// <param name="token">Токен пользователя.</param>
     Task DeleteVacancyArchiveAsync(long vacancyId, string account, string token);
+
+    /// <summary>
+    /// Метод получает список вакансий пользователя из архива.
+    /// </summary>
+    /// <param name="account">Аккаунт.</param>
+    /// <returns>Список архивированных вакансий.</returns>
+    Task<UserVacancyArchiveResultOutput> GetUserVacanciesArchiveAsync(string account);
 }
