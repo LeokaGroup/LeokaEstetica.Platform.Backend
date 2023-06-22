@@ -299,7 +299,7 @@ public sealed class ChatService : IChatService
             var isDublicateDialog = await _chatRepository.CheckDialogAsync(userId, ownerId);
 
             // Диалога нет, можем создавать.
-            if (!isDublicateDialog)
+            if (isDublicateDialog is null)
             {
                 // Создаем новый диалог.
                 var lastDialogId = await _chatRepository.CreateDialogAsync(string.Empty, DateTime.Now);
@@ -311,7 +311,13 @@ public sealed class ChatService : IChatService
 
                 // Получаем дату начала диалога.
                 result.DateStartDialog = await _chatRepository.GetDialogStartDateAsync(result.DialogId);
+                
+                return result;
             }
+            
+            result.DialogState = DialogStateEnum.Empty.ToString();
+            result.DialogId = (long)isDublicateDialog;
+            result.FullName = await CreateDialogOwnerFioAsync(ownerId);
 
             return result;
         }

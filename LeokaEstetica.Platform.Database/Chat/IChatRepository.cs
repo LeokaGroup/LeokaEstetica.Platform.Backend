@@ -50,7 +50,7 @@ public interface IChatRepository
     /// </summary>
     /// <param name="dialogId">Id диалога.</param>
     /// <returns>Флаг проверки.</returns>
-    Task<bool> CheckDialogAsync(long userId, long ownerId);
+    Task<long?> CheckDialogAsync(long userId, long ownerId);
 
     /// <summary>
     /// Метод получает список сообщений диалога.
