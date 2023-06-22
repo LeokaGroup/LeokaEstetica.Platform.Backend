@@ -114,17 +114,17 @@ internal sealed class ChatRepository : IChatRepository
     /// </summary>
     /// <param name="dialogId">Id диалога.</param>
     /// <returns>Флаг проверки.</returns>
-    public async Task<bool> CheckDialogAsync(long userId, long ownerId)
+    public async Task<long?> CheckDialogAsync(long userId, long ownerId)
     {
         var dialogId = await _pgContext.DialogMembers
-            .Where(dm => new[] { userId, ownerId }.Contains(dm.UserId))
+            .Where(dm => dm.UserId == userId && dm.UserId == ownerId)
             .Select(dm => dm.DialogId)
             .FirstOrDefaultAsync();
         
         var isDialog = await _pgContext.Dialogs
             .FirstOrDefaultAsync(d => d.DialogId == dialogId);
 
-        return isDialog != null;
+        return isDialog?.DialogId;
     }
 
     /// <summary>
