@@ -3,7 +3,6 @@ using LeokaEstetica.Platform.Base.Abstractions.Messaging.EventBus;
 using LeokaEstetica.Platform.Base.Enums;
 using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Messaging.Abstractions.RabbitMq;
-using LeokaEstetica.Platform.Messaging.Consts;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using RabbitMQ.Client;
@@ -13,7 +12,7 @@ namespace LeokaEstetica.Platform.Messaging.Services.RabbitMq;
 /// <summary>
 /// Класс реализует методы сервиса кролика.
 /// </summary>
-public class RabbitMqService : IRabbitMqService
+internal sealed class RabbitMqService : IRabbitMqService
 {
     private readonly IConfiguration _configuration;
 

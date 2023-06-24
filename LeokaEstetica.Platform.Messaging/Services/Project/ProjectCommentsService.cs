@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using LeokaEstetica.Platform.Access.Abstractions.User;
 using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
@@ -8,12 +9,14 @@ using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Notifications.Consts;
 using Microsoft.Extensions.Logging;
 
+[assembly: InternalsVisibleTo("LeokaEstetica.Platform.Tests")]
+
 namespace LeokaEstetica.Platform.Messaging.Services.Project;
 
 /// <summary>
 /// Класс реализует методы сервиса комментариев к проектам.
 /// </summary>
-public sealed class ProjectCommentsService : IProjectCommentsService
+internal sealed class ProjectCommentsService : IProjectCommentsService
 {
     private readonly ILogger<ProjectCommentsService> _logger;
     private readonly IUserRepository _userRepository;
@@ -53,7 +56,6 @@ public sealed class ProjectCommentsService : IProjectCommentsService
             if (userId <= 0)
             {
                 var ex = new NotFoundUserIdByAccountException(account);
-                _logger.LogError(ex, ex.Message);
                 throw ex;
             }
             
@@ -90,10 +92,10 @@ public sealed class ProjectCommentsService : IProjectCommentsService
         
         catch (Exception ex)
         {
-            _logger.LogError(ex,
-                "Ошибка при создании комментария к проекту. " +
-                $"ProjectId = {projectId}. " +
-                $"Comment = {comment}. Account = {account}");
+            _logger.LogError(ex, "Ошибка при создании комментария к проекту. " +
+                                 $"ProjectId = {projectId}. " +
+                                 $"Comment = {comment}." +
+                                 $" Account = {account}");
             throw;
         }
     }

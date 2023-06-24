@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Runtime.CompilerServices;
 using AutoMapper;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
 using LeokaEstetica.Platform.Database.Abstractions.User;
@@ -12,12 +13,14 @@ using LeokaEstetica.Platform.Models.Dto.Chat.Output;
 using LeokaEstetica.Platform.Models.Enums;
 using Microsoft.Extensions.Logging;
 
+[assembly: InternalsVisibleTo("LeokaEstetica.Platform.Tests")]
+
 namespace LeokaEstetica.Platform.Messaging.Services.Chat;
 
 /// <summary>
 /// Класс реализует методы сервиса чата.
 /// </summary>
-public sealed class ChatService : IChatService
+internal sealed class ChatService : IChatService
 {
     private readonly ILogger<ChatService> _logger;
     private readonly IUserRepository _userRepository;
@@ -358,10 +361,8 @@ public sealed class ChatService : IChatService
     {
         try
         {
-            var result = new DialogResultOutput { Messages = new List<DialogMessageOutput>() };
-
             // Если нет сообщения, то ничего не делать.
-            if (string.IsNullOrEmpty(message))
+            if (string.IsNullOrWhiteSpace(message))
             {
                 return null;
             }
@@ -397,8 +398,13 @@ public sealed class ChatService : IChatService
             {
                 msg.IsMyMessage = msg.UserId == userId;
             }
+            
+            var result = new DialogResultOutput
+            {
+                Messages = new List<DialogMessageOutput>(),
+                DialogState = DialogStateEnum.Open.ToString()
+            };
 
-            result.DialogState = DialogStateEnum.Open.ToString();
             var mapMessages = _mapper.Map<List<DialogMessageOutput>>(messages);
             result.Messages.AddRange(mapMessages);
 
