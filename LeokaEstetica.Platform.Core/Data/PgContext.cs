@@ -436,4 +436,9 @@ public class PgContext : DbContext
     /// Роли пользователя тикета.
     /// </summary>
     public DbSet<UserTicketRoleEntity> UserTicketRoles { get; set; }
+
+    /// <summary>
+    /// Категории тикета.
+    /// </summary>
+    public DbSet<TicketCategoryEntity> TicketCategories { get; set; }
 }
