@@ -1,3 +1,5 @@
+using LeokaEstetica.Platform.Models.Entities.Ticket;
+
 namespace LeokaEstetica.Platform.Database.Abstractions.Ticket;
 
 /// <summary>
@@ -5,5 +7,9 @@ namespace LeokaEstetica.Platform.Database.Abstractions.Ticket;
 /// </summary>
 public interface ITicketRepository
 {
-    
+    /// <summary>
+    /// Метод получает список категорий тикетов.
+    /// </summary>
+    /// <returns>Категории тикетов.</returns>
+    Task<IEnumerable<TicketCategoryEntity>> GetTicketCategoriesAsync();
 }
