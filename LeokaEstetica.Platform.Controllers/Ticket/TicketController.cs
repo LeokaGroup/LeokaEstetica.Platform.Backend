@@ -38,7 +38,7 @@ public class TicketController : BaseController
     /// </summary>
     /// <returns>Категории тикетов.</returns>
     [AllowAnonymous]
-    [HttpPost]
+    [HttpGet]
     [Route("categories")]
     [ProducesResponseType(200, Type = typeof(IEnumerable<TicketCategoryOutput>))]
     [ProducesResponseType(400)]

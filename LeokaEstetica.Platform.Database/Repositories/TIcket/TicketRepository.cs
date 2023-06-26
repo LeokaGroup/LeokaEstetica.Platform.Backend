@@ -32,7 +32,9 @@ internal sealed class TicketRepository : ITicketRepository
     /// <returns>Категории тикетов.</returns>
     public async Task<IEnumerable<TicketCategoryEntity>> GetTicketCategoriesAsync()
     {
-        var result = await _pgContext.TicketCategories.ToListAsync();
+        var result = await _pgContext.TicketCategories
+            .OrderBy(o => o.Position)
+            .ToListAsync();
 
         return result;
     }
