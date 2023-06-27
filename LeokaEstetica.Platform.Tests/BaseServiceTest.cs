@@ -224,7 +224,7 @@ internal class BaseServiceTest
         RefundsService = new RefundsService(null, null, subscriptionRepository, userRepository, ordersRepository, null,
             PayMasterService, null, CommerceService);
 
-        var ticketRepository = new TicketRepository(pgContext);
-        TicketService = new TicketService(ticketRepository, null);
+        var ticketRepository = new TicketRepository(pgContext, null);
+        TicketService = new TicketService(ticketRepository, null, userRepository);
     }
 }

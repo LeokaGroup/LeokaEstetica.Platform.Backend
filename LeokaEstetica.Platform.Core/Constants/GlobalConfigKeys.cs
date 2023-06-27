@@ -154,4 +154,20 @@ public static class GlobalConfigKeys
         /// </summary>
         public const string SEND_RECEIPT_REFUND_MODE_ENABLED = "SendReceiptRefund.Mode.Enabled";
     }
+
+    /// <summary>
+    /// Класс валидации тикетов.
+    /// </summary>
+    public static class TicketValidation
+    {
+        /// <summary>
+        /// Если не валидная категория тикетов.
+        /// </summary>
+        public const string NOT_VALID_CATEGORY_NAME = "Категория не может быть пустой.";
+
+        /// <summary>
+        /// Если не передали сообщение тикета.
+        /// </summary>
+        public const string EMPTY_MESSAGE = "Сообщение тикета не может быть пустым.";
+    }
 }
