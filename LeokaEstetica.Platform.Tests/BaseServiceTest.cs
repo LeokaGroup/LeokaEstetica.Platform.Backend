@@ -5,6 +5,7 @@ using LeokaEstetica.Platform.Access.Services.Moderation;
 using LeokaEstetica.Platform.Access.Services.User;
 using LeokaEstetica.Platform.CallCenter.Services.Project;
 using LeokaEstetica.Platform.CallCenter.Services.Resume;
+using LeokaEstetica.Platform.CallCenter.Services.Ticket;
 using LeokaEstetica.Platform.CallCenter.Services.Vacancy;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Utils;
@@ -26,6 +27,7 @@ using LeokaEstetica.Platform.Database.Repositories.Profile;
 using LeokaEstetica.Platform.Database.Repositories.Project;
 using LeokaEstetica.Platform.Database.Repositories.Resume;
 using LeokaEstetica.Platform.Database.Repositories.Subscription;
+using LeokaEstetica.Platform.Database.Repositories.TIcket;
 using LeokaEstetica.Platform.Database.Repositories.User;
 using LeokaEstetica.Platform.Database.Repositories.Vacancy;
 using LeokaEstetica.Platform.Diagnostics.Services.Metrics;
@@ -96,6 +98,7 @@ internal class BaseServiceTest
     protected readonly OrdersService OrdersService;
     protected readonly UserMetricsService UserMetricsService;
     protected readonly RefundsService RefundsService;
+    protected readonly TicketService TicketService;
 
     protected BaseServiceTest()
     {
@@ -220,5 +223,8 @@ internal class BaseServiceTest
         UserMetricsService = new UserMetricsService(null, userMetricsRepository);
         RefundsService = new RefundsService(null, null, subscriptionRepository, userRepository, ordersRepository, null,
             PayMasterService, null, CommerceService);
+
+        var ticketRepository = new TicketRepository(pgContext, null);
+        TicketService = new TicketService(ticketRepository, null, userRepository);
     }
 }

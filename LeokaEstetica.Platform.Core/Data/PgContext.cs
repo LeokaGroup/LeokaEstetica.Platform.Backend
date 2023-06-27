@@ -14,6 +14,7 @@ using LeokaEstetica.Platform.Models.Entities.Project;
 using LeokaEstetica.Platform.Models.Entities.ProjectTeam;
 using LeokaEstetica.Platform.Models.Entities.Role;
 using LeokaEstetica.Platform.Models.Entities.Subscription;
+using LeokaEstetica.Platform.Models.Entities.Ticket;
 using LeokaEstetica.Platform.Models.Entities.User;
 using LeokaEstetica.Platform.Models.Entities.Vacancy;
 using Microsoft.EntityFrameworkCore;
@@ -400,4 +401,44 @@ public class PgContext : DbContext
     /// Таблица возвратов.
     /// </summary>
     public DbSet<RefundEntity> Refunds { get; set; }
+
+    /// <summary>
+    /// Таблица основной информации тикетов.
+    /// </summary>
+    public DbSet<MainInfoTicketEntity> MainInfoTickets { get; set; }
+
+    /// <summary>
+    /// Участники тикета.
+    /// </summary>
+    public DbSet<TicketMemberEntity> TicketMembers { get; set; }
+
+    /// <summary>
+    /// Файлы тикета.
+    /// </summary>
+    public DbSet<TicketFileEntity> TicketFiles { get; set; }
+
+    /// <summary>
+    /// Сообщения тикета.
+    /// </summary>
+    public DbSet<TicketMessageEntity> TicketMessages { get; set; }
+
+    /// <summary>
+    /// Роли тикета.
+    /// </summary>
+    public DbSet<TicketRoleEntity> TicketRoles { get; set; }
+
+    /// <summary>
+    /// Статусы тикетов.
+    /// </summary>
+    public DbSet<TicketStatusEntity> TicketStatuses { get; set; }
+
+    /// <summary>
+    /// Роли пользователя тикета.
+    /// </summary>
+    public DbSet<UserTicketRoleEntity> UserTicketRoles { get; set; }
+
+    /// <summary>
+    /// Категории тикета.
+    /// </summary>
+    public DbSet<TicketCategoryEntity> TicketCategories { get; set; }
 }

@@ -2,6 +2,7 @@ using LeokaEstetica.Platform.Models.Entities.Communication;
 using LeokaEstetica.Platform.Models.Entities.Moderation;
 using LeokaEstetica.Platform.Models.Entities.ProjectTeam;
 using LeokaEstetica.Platform.Models.Entities.Role;
+using LeokaEstetica.Platform.Models.Entities.Ticket;
 
 namespace LeokaEstetica.Platform.Models.Entities.User;
 
@@ -21,6 +22,9 @@ public class UserEntity
         ProjectRemarks = new HashSet<ProjectRemarkEntity>();
         VacancyRemarks = new HashSet<VacancyRemarkEntity>();
         ResumeRemarks = new HashSet<ResumeRemarkEntity>();
+        TicketMembers = new HashSet<TicketMemberEntity>();
+        TicketMessages = new HashSet<TicketMessageEntity>();
+        UserTicketRoles = new HashSet<UserTicketRoleEntity>();
     }
 
     /// <summary>
@@ -197,4 +201,19 @@ public class UserEntity
     /// Список замечаний анкет.
     /// </summary>
     public ICollection<ResumeRemarkEntity> ResumeRemarks { get; set; }
+
+    /// <summary>
+    /// Список участников тикета.
+    /// </summary>
+    public ICollection<TicketMemberEntity> TicketMembers { get; set; }
+
+    /// <summary>
+    /// Сообщения тикета.
+    /// </summary>
+    public ICollection<TicketMessageEntity> TicketMessages { get; set; }
+
+    /// <summary>
+    /// Роли пользователя тикета.
+    /// </summary>
+    public ICollection<UserTicketRoleEntity> UserTicketRoles { get; set; }
 }

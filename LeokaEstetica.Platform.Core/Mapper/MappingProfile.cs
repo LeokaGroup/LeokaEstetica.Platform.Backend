@@ -21,6 +21,7 @@ using LeokaEstetica.Platform.Models.Dto.Output.Refunds;
 using LeokaEstetica.Platform.Models.Dto.Output.Resume;
 using LeokaEstetica.Platform.Models.Dto.Output.Search.Project;
 using LeokaEstetica.Platform.Models.Dto.Output.Subscription;
+using LeokaEstetica.Platform.Models.Dto.Output.Ticket;
 using LeokaEstetica.Platform.Models.Dto.Output.User;
 using LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
 using LeokaEstetica.Platform.Models.Entities.Commerce;
@@ -35,6 +36,7 @@ using LeokaEstetica.Platform.Models.Entities.Profile;
 using LeokaEstetica.Platform.Models.Entities.Project;
 using LeokaEstetica.Platform.Models.Entities.ProjectTeam;
 using LeokaEstetica.Platform.Models.Entities.Subscription;
+using LeokaEstetica.Platform.Models.Entities.Ticket;
 using LeokaEstetica.Platform.Models.Entities.User;
 using LeokaEstetica.Platform.Models.Entities.Vacancy;
 
@@ -167,6 +169,8 @@ public class MappingProfile : Profile
         CreateMap<RefundEntity, CreateRefundOutput>();
         
         CreateMap<ArchivedVacancyEntity, VacancyArchiveOutput>()
-            .ForMember(a => a.VacancyName, a => a.MapFrom(src => src.UserVacancy.VacancyName));;
+            .ForMember(a => a.VacancyName, a => a.MapFrom(src => src.UserVacancy.VacancyName));
+        
+        CreateMap<TicketCategoryEntity, TicketCategoryOutput>();
     }
 }

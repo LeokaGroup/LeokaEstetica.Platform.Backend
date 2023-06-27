@@ -6,17 +6,20 @@ namespace LeokaEstetica.Platform.Controllers.Filters;
 /// <summary>
 /// Фильтр авторизации.
 /// </summary>
+[AttributeUsage(AttributeTargets.Class)]
 public class AuthFilter : Attribute, IAuthorizationFilter
 {
     /// <summary>
     /// Список допустимых апи, котороые не надо проверять.
     /// </summary>
-    private static readonly List<string> _allowActions = new()
+    private static readonly HashSet<string> _allowActions = new()
     {
         "SignIn",
         "CreateUser",
-        "GetFareRules", // Получение правил тарифов.
-        "AddConnectionIdCache"
+        "GetFareRules", // Правила тарифов.
+        "AddConnectionIdCache",
+        "GetTicketCategories", // Категории тикетов.
+        "CreateTicket"
     };
     
     /// <summary>
