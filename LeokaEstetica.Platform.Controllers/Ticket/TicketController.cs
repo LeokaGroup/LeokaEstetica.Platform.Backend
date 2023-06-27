@@ -67,7 +67,7 @@ public class TicketController : BaseController
     [AllowAnonymous]
     [HttpPost]
     [Route("ticket")]
-    public async Task CreateTicketAsync([FromBody] CreateTicketInput createTicketInput)
+    public async Task<bool> CreateTicketAsync([FromBody] CreateTicketInput createTicketInput)
     {
         var validator = await new CreateTicketValidator().ValidateAsync(createTicketInput);
 
@@ -79,10 +79,12 @@ public class TicketController : BaseController
                 _logger.LogError(ex, err.ErrorMessage);
             }
             
-            return;
+            return false;
         }
 
         await _ticketService.CreateTicketAsync(createTicketInput.Title, createTicketInput.Message, GetUserName());
+
+        return true;
     }
 
     #endregion
