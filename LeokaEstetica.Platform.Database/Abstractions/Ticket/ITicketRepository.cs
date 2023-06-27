@@ -20,4 +20,18 @@ public interface ITicketRepository
     /// <param name="message">Сообщение тикета.</param>
     /// <param name="userId">Id пользователя.</param>
     Task<long> CreateTicketAsync(string title, string message, long userId);
+
+    /// <summary>
+    /// Метод получает список тикетов для профиля пользователя.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Список тикетов.</returns>
+    Task<IEnumerable<MainInfoTicketEntity>> GetUserProfileTicketsAsync(long userId);
+
+    /// <summary>
+    /// Метод получает названия статусов тикетов.
+    /// </summary>
+    /// <param name="ids">Список Id тикетов, названия которых надо получить.</param>
+    /// <returns>Названия статусов тикетов.</returns>
+    Task<Dictionary<long, string>> GetTicketStatusNamesAsync(IEnumerable<long> ids);
 }

@@ -172,5 +172,7 @@ public class MappingProfile : Profile
             .ForMember(a => a.VacancyName, a => a.MapFrom(src => src.UserVacancy.VacancyName));
         
         CreateMap<TicketCategoryEntity, TicketCategoryOutput>();
+        
+        CreateMap<MainInfoTicketEntity, TicketOutput>();
     }
 }

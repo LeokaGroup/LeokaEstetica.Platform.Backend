@@ -225,6 +225,6 @@ internal class BaseServiceTest
             PayMasterService, null, CommerceService);
 
         var ticketRepository = new TicketRepository(pgContext, null);
-        TicketService = new TicketService(ticketRepository, null, userRepository);
+        TicketService = new TicketService(ticketRepository, null, userRepository, mapper);
     }
 }
