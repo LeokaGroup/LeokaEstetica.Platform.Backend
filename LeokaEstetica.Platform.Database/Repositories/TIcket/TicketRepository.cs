@@ -149,6 +149,7 @@ internal sealed class TicketRepository : ITicketRepository
                     TicketName = it.TicketName,
                     TicketId = it.TicketId
                 })
+            .Distinct()
             .ToListAsync();
 
         return result;
@@ -192,6 +193,7 @@ internal sealed class TicketRepository : ITicketRepository
                     TicketName = it.TicketName,
                     TicketId = it.TicketId
                 })
+            .Distinct()
             .ToListAsync();
 
         return result;
