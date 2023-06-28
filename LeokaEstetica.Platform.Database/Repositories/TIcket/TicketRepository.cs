@@ -131,6 +131,74 @@ internal sealed class TicketRepository : ITicketRepository
         }
     }
 
+    /// <summary>
+    /// Метод получает список тикетов для профиля пользователя.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Список тикетов.</returns>
+    public async Task<IEnumerable<MainInfoTicketEntity>> GetUserProfileTicketsAsync(long userId)
+    {
+        var result = await (from it in _pgContext.MainInfoTickets
+                join tm in _pgContext.TicketMembers
+                    on it.TicketId
+                    equals tm.TicketId
+                where tm.UserId == userId
+                select new MainInfoTicketEntity
+                {
+                    TicketStatusId = it.TicketStatusId,
+                    TicketName = it.TicketName,
+                    TicketId = it.TicketId
+                })
+            .Distinct()
+            .ToListAsync();
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод получает названия статусов тикетов.
+    /// </summary>
+    /// <param name="ids">Список Id тикетов, названия которых надо получить.</param>
+    /// <returns>Названия статусов тикетов.</returns>
+    public async Task<Dictionary<long, string>> GetTicketStatusNamesAsync(IEnumerable<long> ids)
+    {
+        var result = await (from it in _pgContext.MainInfoTickets
+                join ts in _pgContext.TicketStatuses
+                    on it.TicketStatusId
+                    equals ts.StatusId
+                where ids.Contains(it.TicketId)
+                select new
+                {
+                    ts.StatusName,
+                    it.TicketId
+                })
+            .ToDictionaryAsync(k => k.TicketId, v => v.StatusName);
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод получает список тикетов для КЦ.
+    /// </summary>
+    /// <returns>Список тикетов.</returns>
+    public async Task<IEnumerable<MainInfoTicketEntity>> GetCallCenterTicketsAsync()
+    {
+        var result = await (from it in _pgContext.MainInfoTickets
+                join tm in _pgContext.TicketMembers
+                    on it.TicketId
+                    equals tm.TicketId
+                select new MainInfoTicketEntity
+                {
+                    TicketStatusId = it.TicketStatusId,
+                    TicketName = it.TicketName,
+                    TicketId = it.TicketId
+                })
+            .Distinct()
+            .ToListAsync();
+
+        return result;
+    }
+
     #endregion
 
     #region Приватные методы.

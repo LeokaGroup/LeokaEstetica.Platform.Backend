@@ -20,8 +20,10 @@ using LeokaEstetica.Platform.Database.Abstractions.Subscription;
 using LeokaEstetica.Platform.Database.Abstractions.Ticket;
 using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Database.Abstractions.Vacancy;
+using LeokaEstetica.Platform.Database.Access.Ticket;
 using LeokaEstetica.Platform.Database.Access.User;
 using LeokaEstetica.Platform.Database.Chat;
+using LeokaEstetica.Platform.Database.Repositories.Access.Ticket;
 using LeokaEstetica.Platform.Database.Repositories.Access.User;
 using LeokaEstetica.Platform.Database.Repositories.AvailableLimits;
 using LeokaEstetica.Platform.Database.Repositories.Chat;
@@ -242,6 +244,14 @@ public class RepositoriesModule : Module
             .InstancePerLifetimeScope();
         builder.RegisterType<TicketRepository>()
             .As<ITicketRepository>()
+            .InstancePerLifetimeScope();
+        
+        // Репозиторий доступа тикетов.
+        builder.RegisterType<AccessTicketRepository>()
+            .Named<IAccessTicketRepository>("AccessTicketRepository")
+            .InstancePerLifetimeScope();
+        builder.RegisterType<AccessTicketRepository>()
+            .As<IAccessTicketRepository>()
             .InstancePerLifetimeScope();
     }
 }
