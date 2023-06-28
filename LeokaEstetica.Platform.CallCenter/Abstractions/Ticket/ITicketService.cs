@@ -28,4 +28,11 @@ public interface ITicketService
     /// <param name="account">Аккаунт.</param>
     /// <returns>Список тикетов.</returns>
     Task<IEnumerable<TicketOutput>> GetUserProfileTicketsAsync(string account);
+
+    /// <summary>
+    /// Метод получает список тикетов для КЦ.
+    /// </summary>
+    /// <param name="account">Аккаунт.</param>
+    /// <returns>Список тикетов.</returns>
+    Task<IEnumerable<TicketOutput>> GetCallCenterTicketsAsync(string account);
 }

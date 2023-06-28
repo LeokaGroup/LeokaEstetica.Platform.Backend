@@ -105,6 +105,24 @@ public class TicketController : BaseController
         return result;
     }
 
+    /// <summary>
+    /// Метод получает список тикетов для КЦ.
+    /// </summary>
+    /// <returns>Список тикетов.</returns>
+    [HttpGet]
+    [Route("callcenter")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<TicketOutput>))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<IEnumerable<TicketOutput>> GetCallCenterTicketsAsync()
+    {
+        var result = await _ticketService.GetCallCenterTicketsAsync(GetUserName());
+
+        return result;
+    }
+
     #endregion
 
     #region Приватные методы.

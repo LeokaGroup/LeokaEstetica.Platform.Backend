@@ -165,12 +165,34 @@ internal sealed class TicketRepository : ITicketRepository
                 join ts in _pgContext.TicketStatuses
                     on it.TicketStatusId
                     equals ts.StatusId
+                where ids.Contains(it.TicketId)
                 select new
                 {
                     ts.StatusName,
                     it.TicketId
                 })
             .ToDictionaryAsync(k => k.TicketId, v => v.StatusName);
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод получает список тикетов для КЦ.
+    /// </summary>
+    /// <returns>Список тикетов.</returns>
+    public async Task<IEnumerable<MainInfoTicketEntity>> GetCallCenterTicketsAsync()
+    {
+        var result = await (from it in _pgContext.MainInfoTickets
+                join tm in _pgContext.TicketMembers
+                    on it.TicketId
+                    equals tm.TicketId
+                select new MainInfoTicketEntity
+                {
+                    TicketStatusId = it.TicketStatusId,
+                    TicketName = it.TicketName,
+                    TicketId = it.TicketId
+                })
+            .ToListAsync();
 
         return result;
     }

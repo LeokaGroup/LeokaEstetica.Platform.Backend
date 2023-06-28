@@ -9,6 +9,7 @@ using LeokaEstetica.Platform.CallCenter.Services.Ticket;
 using LeokaEstetica.Platform.CallCenter.Services.Vacancy;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Utils;
+using LeokaEstetica.Platform.Database.Repositories.Access.Ticket;
 using LeokaEstetica.Platform.Database.Repositories.Access.User;
 using LeokaEstetica.Platform.Database.Repositories.AvailableLimits;
 using LeokaEstetica.Platform.Database.Repositories.Chat;
@@ -225,6 +226,7 @@ internal class BaseServiceTest
             PayMasterService, null, CommerceService);
 
         var ticketRepository = new TicketRepository(pgContext, null);
-        TicketService = new TicketService(ticketRepository, null, userRepository, mapper);
+        var accessTicketRepository = new AccessTicketRepository(pgContext);
+        TicketService = new TicketService(ticketRepository, null, userRepository, mapper, accessTicketRepository);
     }
 }

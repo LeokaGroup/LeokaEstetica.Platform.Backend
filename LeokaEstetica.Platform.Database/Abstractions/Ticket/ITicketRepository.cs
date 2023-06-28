@@ -34,4 +34,10 @@ public interface ITicketRepository
     /// <param name="ids">Список Id тикетов, названия которых надо получить.</param>
     /// <returns>Названия статусов тикетов.</returns>
     Task<Dictionary<long, string>> GetTicketStatusNamesAsync(IEnumerable<long> ids);
+    
+    /// <summary>
+    /// Метод получает список тикетов для КЦ.
+    /// </summary>
+    /// <returns>Список тикетов.</returns>
+    Task<IEnumerable<MainInfoTicketEntity>> GetCallCenterTicketsAsync();
 }

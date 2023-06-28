@@ -5,6 +5,7 @@ using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.Ticket;
 using LeokaEstetica.Platform.Database.Abstractions.User;
+using LeokaEstetica.Platform.Database.Access.Ticket;
 using LeokaEstetica.Platform.Models.Dto.Output.Ticket;
 using LeokaEstetica.Platform.Models.Entities.Ticket;
 using Microsoft.Extensions.Logging;
@@ -22,6 +23,7 @@ internal sealed class TicketService : ITicketService
     private readonly ILogger<TicketService> _logger;
     private readonly IUserRepository _userRepository;
     private readonly IMapper _mapper;
+    private readonly IAccessTicketRepository _accessTicketRepository;
 
     /// <summary>
     /// Конструктор.
@@ -30,15 +32,18 @@ internal sealed class TicketService : ITicketService
     /// <param name="ticketRepository">Логер.</param>
     /// <param name="userRepository">Репозиторий пользователя.</param>
     /// <param name="mapper">Автомаппер.</param>
+    /// <param name="accessTicketRepository">Репозиторий доступа к тикетам.</param>
     public TicketService(ITicketRepository ticketRepository, 
         ILogger<TicketService> logger, 
         IUserRepository userRepository, 
-        IMapper mapper)
+        IMapper mapper, 
+        IAccessTicketRepository accessTicketRepository)
     {
         _ticketRepository = ticketRepository;
         _logger = logger;
         _userRepository = userRepository;
         _mapper = mapper;
+        _accessTicketRepository = accessTicketRepository;
     }
 
     #region Публичные методы.
@@ -59,7 +64,7 @@ internal sealed class TicketService : ITicketService
         
         catch (Exception ex)
         {
-            _logger.LogError(ex, ex.Message);
+            _logger?.LogError(ex, ex.Message);
             throw;
         }
     }
@@ -96,7 +101,7 @@ internal sealed class TicketService : ITicketService
         
         catch (Exception ex)
         {
-            _logger.LogError(ex, ex.Message);
+            _logger?.LogError(ex, ex.Message);
             throw;
         }
     }
@@ -136,7 +141,66 @@ internal sealed class TicketService : ITicketService
         
         catch (Exception ex)
         {
-            _logger.LogError(ex, ex.Message);
+            _logger?.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Метод получает список тикетов для КЦ.
+    /// </summary>
+    /// <param name="account">Аккаунт.</param>
+    /// <returns>Список тикетов.</returns>
+    public async Task<IEnumerable<TicketOutput>> GetCallCenterTicketsAsync(string account)
+    {
+        try
+        {
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+            
+            var roles = await _accessTicketRepository.GetTicketUserRolesAsync(userId);
+            var userRoles = roles.ToList();
+
+            // Не даем доступ.
+            if (userRoles.Contains(-1))
+            {
+                // TODO: тут еще бросать уведомлялку как варнинг пользователю об этом. Одним уведомлением сделать.
+                throw new InvalidOperationException(
+                    $"У пользователя с UserId: {userId} нет прав для доступа к тикетам в КЦ.");
+            }
+            
+            // Есть ли нужная роль.
+            if (!userRoles.Contains(1))
+            {
+                // TODO: тут еще бросать уведомлялку как варнинг пользователю об этом. Одним уведомлением сделать.
+                throw new InvalidOperationException(
+                    $"У пользователя с UserId: {userId} нет нужной роли для доступа к тикетам в КЦ.");
+            }
+            
+            var result = new List<TicketOutput>();
+
+            var tickets = await _ticketRepository.GetCallCenterTicketsAsync();
+
+            if (!tickets.Any())
+            {
+                return result;
+            }
+
+            result = _mapper.Map<List<TicketOutput>>(tickets);
+
+            await FillStatusNamesAsync(result);
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, ex.Message);
             throw;
         }
     }
