@@ -205,6 +205,43 @@ internal sealed class TicketService : ITicketService
         }
     }
 
+    /// <summary>
+    /// Метод получает данные тикета.
+    /// </summary>
+    /// <param name="ticketId">Id тикета.</param>
+    /// <returns>Данные тикета.</returns>
+    public async Task<SelectedTicketOutput> GetSelectedTicketAsync(long ticketId)
+    {
+        try
+        {
+            var items = await _ticketRepository.GetTicketMessagesAsync(ticketId);
+            var result = new SelectedTicketOutput { Messages = new List<TicketMessageOutput>() };
+
+            var ticketMessages = items.ToList();
+            
+            if (!ticketMessages.Any())
+            {
+                return result;
+            }
+
+            var first = ticketMessages.FirstOrDefault();
+            result.TicketName = first?.MainInfoTicket.TicketName;
+            result.TicketId = ticketId;
+            
+            await FillStatusNamesAsync(result);
+
+            result.Messages = _mapper.Map<IEnumerable<TicketMessageOutput>>(ticketMessages);
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
     #endregion
 
     #region Приватные методы.
@@ -222,6 +259,17 @@ internal sealed class TicketService : ITicketService
         {
             t.StatusName = statuses.TryGet(t.TicketId);
         }
+    }
+    
+    /// <summary>
+    /// Метод проставляет название статуса тикета.
+    /// </summary>
+    /// <param name="ticket">Тикет.</param>
+    private async Task FillStatusNamesAsync(SelectedTicketOutput ticket)
+    {
+        var ticketId = ticket.TicketId;
+        var statuses = await _ticketRepository.GetTicketStatusNamesAsync(new[] { ticketId });
+        ticket.StatusName = statuses.TryGet(ticketId);
     }
 
     #endregion

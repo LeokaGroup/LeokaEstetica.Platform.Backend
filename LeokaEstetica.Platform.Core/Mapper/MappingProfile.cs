@@ -174,5 +174,7 @@ public class MappingProfile : Profile
         CreateMap<TicketCategoryEntity, TicketCategoryOutput>();
         
         CreateMap<MainInfoTicketEntity, TicketOutput>();
+        
+        CreateMap<TicketMessageEntity, TicketMessageOutput>();
     }
 }

@@ -29,7 +29,7 @@ public partial class ArchivedProjectConfiguration : IEntityTypeConfiguration<Arc
         entity.Property(e => e.DateArchived)
            .HasColumnName("DateArchived")
            .HasColumnType("timestamp")
-           .HasDefaultValue(DateTime.Now)
+           .HasDefaultValue(DateTime.UtcNow)
            .IsRequired();
 
         entity.HasOne(a => a.UserProject)

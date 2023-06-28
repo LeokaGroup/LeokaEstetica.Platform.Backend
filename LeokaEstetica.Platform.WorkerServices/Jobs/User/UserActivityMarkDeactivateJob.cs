@@ -55,7 +55,7 @@ public class UserActivityMarkDeactivateJob : BackgroundService
         {
             _logger.LogInformation("Начало работы джобы UserActivityMarkDeactivateJob.");
             
-            var now = DateTime.Now;
+            var now = DateTime.UtcNow;
             var markedUsers = new List<UserEntity>();
             var deletedUsers = new List<UserEntity>();
             
@@ -89,7 +89,7 @@ public class UserActivityMarkDeactivateJob : BackgroundService
                 
                 // Помечаем пользователей, которым проставим метку в БД и отправим предупреждение на почту.
                 u.IsMarkDeactivate = true;
-                u.DateCreatedMark = DateTime.Now;
+                u.DateCreatedMark = DateTime.UtcNow;
             }
 
             // Нет аккаунтов для пометок.

@@ -40,4 +40,11 @@ public interface ITicketRepository
     /// </summary>
     /// <returns>Список тикетов.</returns>
     Task<IEnumerable<MainInfoTicketEntity>> GetCallCenterTicketsAsync();
+
+    /// <summary>
+    /// Метод получает сообщения тикета и связанные данные.
+    /// </summary>
+    /// <param name="ticketId">Id тикета.</param>
+    /// <returns>Сообщения тикета и связанные данные.</returns>
+    Task<IEnumerable<TicketMessageEntity>> GetTicketMessagesAsync(long ticketId);
 }

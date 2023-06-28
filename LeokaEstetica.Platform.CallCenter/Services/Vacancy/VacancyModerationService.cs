@@ -233,7 +233,7 @@ public class VacancyModerationService : IVacancyModerationService
                 throw ex;
             }
 
-            var now = DateTime.Now;
+            var now = DateTime.UtcNow.ToUniversalTime();
             var addVacancyRemarks = new List<VacancyRemarkEntity>();
             var updateVacancyRemarks = new List<VacancyRemarkEntity>();
             

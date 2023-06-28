@@ -109,13 +109,13 @@ public partial class UserConfiguration : IEntityTypeConfiguration<UserEntity>
         entity.Property(e => e.LastAutorization)
             .HasColumnName("LastAutorization")
             .HasColumnType("timestamp")
-            .HasDefaultValue(DateTime.Now)
+            .HasDefaultValue(DateTime.UtcNow)
             .IsRequired();
         
         entity.Property(e => e.DateCreatedMark)
             .HasColumnName("DateCreatedMark")
             .HasColumnType("timestamp")
-            .HasDefaultValue(DateTime.Now)
+            .HasDefaultValue(DateTime.UtcNow)
             .IsRequired();
         
         entity.Property(e => e.IsMarkDeactivate)

@@ -56,7 +56,7 @@ internal sealed class VacancyRepository : IVacancyRepository
         {
             var vacancy = new UserVacancyEntity
             {
-                DateCreated = DateTime.Now,
+                DateCreated = DateTime.UtcNow,
                 VacancyName = vacancyInput.VacancyName,
                 VacancyText = vacancyInput.VacancyText,
                 WorkExperience = vacancyInput.WorkExperience,
@@ -360,7 +360,7 @@ internal sealed class VacancyRepository : IVacancyRepository
         var arvhivedVacancy = new ArchivedVacancyEntity
         {
             VacancyId = vacancyId,
-            DateArchived = DateTime.Now,
+            DateArchived = DateTime.UtcNow,
             UserId = userId
         };
 

@@ -46,7 +46,8 @@ public static class CreateDialogMessagesBuilder
             dialog.FullName = otherData.FirstName + " " + otherData.LastName;
 
             // Если дата диалога совпадает с сегодняшней, то заполнит часы и минуты, иначе оставит их null.
-            if (DateTime.Now.ToString("d").Equals(Convert.ToDateTime(dialog.Created).ToString("d")))
+            if (DateTime.UtcNow.ToUniversalTime().ToString("d")
+                .Equals(Convert.ToDateTime(dialog.Created).ToString("d")))
             {
                 // Запишет только часы и минуты.
                 dialog.CalcTime = Convert.ToDateTime(dialog.Created).ToString("t");

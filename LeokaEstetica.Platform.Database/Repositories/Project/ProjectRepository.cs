@@ -65,7 +65,7 @@ internal sealed class ProjectRepository : IProjectRepository
                 ProjectDetails = createProjectInput.ProjectDetails,
                 UserId = createProjectInput.UserId,
                 ProjectCode = Guid.NewGuid(),
-                DateCreated = DateTime.Now,
+                DateCreated = DateTime.UtcNow,
                 Conditions = createProjectInput.Conditions,
                 Demands = createProjectInput.Demands
             };
@@ -99,7 +99,7 @@ internal sealed class ProjectRepository : IProjectRepository
             // Создаем команду проекта по дефолту.
             await _pgContext.ProjectsTeams.AddAsync(new ProjectTeamEntity
             {
-                Created = DateTime.Now,
+                Created = DateTime.UtcNow,
                 ProjectId = project.ProjectId
             });
 
@@ -317,7 +317,7 @@ internal sealed class ProjectRepository : IProjectRepository
         // Добавляем проект в таблицу модерации проектов.
         await _pgContext.ModerationProjects.AddAsync(new ModerationProjectEntity
         {
-            DateModeration = DateTime.Now,
+            DateModeration = DateTime.UtcNow,
             ProjectId = projectId,
             ModerationStatusId = (int)ProjectModerationStatusEnum.ModerationProject
         });
@@ -455,7 +455,7 @@ internal sealed class ProjectRepository : IProjectRepository
             UserId = userId,
             VacancyId = vacancyId,
             ProjectResponseStatuseId = (int)ProjectResponseStatusEnum.Wait,
-            DateResponse = DateTime.Now
+            DateResponse = DateTime.UtcNow
         };
 
         await _pgContext.ProjectResponses.AddAsync(response);
@@ -546,7 +546,7 @@ internal sealed class ProjectRepository : IProjectRepository
     {
         var result = new ProjectTeamMemberEntity
         {
-            Joined = DateTime.Now,
+            Joined = DateTime.UtcNow,
             UserId = userId,
             VacancyId = vacancyId,
             TeamId = teamId
@@ -1042,7 +1042,7 @@ internal sealed class ProjectRepository : IProjectRepository
         {
             ProjectId = projectId,
             UserId = userId,
-            DateArchived = DateTime.Now
+            DateArchived = DateTime.UtcNow
         });
 
         // Изменяем статус проекта на "В архиве".

@@ -142,7 +142,7 @@ public class ResumeModerationService : IResumeModerationService
                 throw ex;
             }
 
-            var now = DateTime.Now;
+            var now = DateTime.UtcNow;
             var addResumeRemarks = new List<ResumeRemarkEntity>();
             var updateResumeRemarks = new List<ResumeRemarkEntity>();
             

@@ -44,7 +44,7 @@ internal sealed class VacancyModerationRepository : IVacancyModerationRepository
             var vacancy = new ModerationVacancyEntity
             {
                 VacancyId = vacancyId,
-                DateModeration = DateTime.Now,
+                DateModeration = DateTime.UtcNow,
                 ModerationStatusId = (int)VacancyModerationStatusEnum.ModerationVacancy
             };
             
@@ -179,7 +179,7 @@ internal sealed class VacancyModerationRepository : IVacancyModerationRepository
             Approved = false,
             Rejected = false,
             NotificationText = $"Вакансия \"{vacancyName}\" одобрена модератором",
-            Created = DateTime.Now,
+            Created = DateTime.UtcNow,
             NotificationType = NotificationTypeEnum.ApproveModerationVacancy.ToString(),
             IsShow = true,
             IsOwner = false
@@ -209,7 +209,7 @@ internal sealed class VacancyModerationRepository : IVacancyModerationRepository
             Approved = false,
             Rejected = false,
             NotificationText = $"Вакансия \"{vacancyName}\" отклонена модератором",
-            Created = DateTime.Now,
+            Created = DateTime.UtcNow,
             NotificationType = NotificationTypeEnum.RejectModerationVacancy.ToString(),
             IsShow = true,
             IsOwner = false
@@ -431,7 +431,7 @@ internal sealed class VacancyModerationRepository : IVacancyModerationRepository
         // Добавляем проект в таблицу модерации вакансий.
         await _pgContext.ModerationVacancies.AddAsync(new ModerationVacancyEntity
         {
-            DateModeration = DateTime.Now,
+            DateModeration = DateTime.UtcNow,
             VacancyId = vacancyId,
             ModerationStatusId = (int)VacancyModerationStatusEnum.ModerationVacancy
         });

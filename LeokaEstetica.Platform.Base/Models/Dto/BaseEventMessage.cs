@@ -10,5 +10,5 @@ public abstract class BaseEventMessage : IIntegrationEvent
     /// <summary>
     /// Дата публикации.
     /// </summary>
-    public DateTime PublishedDate { get; set; } = DateTime.Now;
+    public DateTime PublishedDate { get; set; } = DateTime.UtcNow;
 }

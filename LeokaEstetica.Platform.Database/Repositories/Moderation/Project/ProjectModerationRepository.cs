@@ -119,7 +119,7 @@ internal sealed class ProjectModerationRepository : IProjectModerationRepository
             Approved = false,
             Rejected = false,
             NotificationText = $"Проект \"{projectName}\" одобрен модератором",
-            Created = DateTime.Now,
+            Created = DateTime.UtcNow,
             NotificationType = NotificationTypeEnum.ApproveModerationProject.ToString(),
             IsShow = true,
             IsOwner = false
@@ -147,7 +147,7 @@ internal sealed class ProjectModerationRepository : IProjectModerationRepository
             Approved = false,
             Rejected = false,
             NotificationText = $"Проект \"{projectName}\" отклонен модератором",
-            Created = DateTime.Now,
+            Created = DateTime.UtcNow,
             NotificationType = NotificationTypeEnum.RejectModerationProject.ToString(),
             IsShow = true,
             IsOwner = false

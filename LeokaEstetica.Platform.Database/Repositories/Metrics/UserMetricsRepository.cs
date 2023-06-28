@@ -28,7 +28,7 @@ internal sealed class UserMetricsRepository : IUserMetricsRepository
     public async Task<IEnumerable<UserEntity>> GetNewUsersAsync()
     {
         var result = await _pgContext.Users
-            .Where(u => u.DateRegister.Month == DateTime.Now.Month)
+            .Where(u => u.DateRegister.Month == DateTime.UtcNow.ToUniversalTime().Month)
             .Select(u => new UserEntity
             {
                 Email = u.Email,

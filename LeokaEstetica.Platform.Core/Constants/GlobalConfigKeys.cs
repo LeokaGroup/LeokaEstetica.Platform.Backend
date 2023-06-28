@@ -169,5 +169,10 @@ public static class GlobalConfigKeys
         /// Если не передали сообщение тикета.
         /// </summary>
         public const string EMPTY_MESSAGE = "Сообщение тикета не может быть пустым.";
+
+        /// <summary>
+        /// Если не передали Id тикета.
+        /// </summary>
+        public const string NOT_VALID_TICKET_ID = "Id тикета был <= 0.";
     }
 }

@@ -237,7 +237,7 @@ public class ProjectModerationService : IProjectModerationService
                 throw ex;
             }
 
-            var now = DateTime.Now;
+            var now = DateTime.UtcNow;
             var addProjectRemarks = new List<ProjectRemarkEntity>();
             var updateProjectRemarks = new List<ProjectRemarkEntity>();
             
