@@ -221,6 +221,19 @@ internal sealed class TicketService : ITicketService
             
             if (!ticketMessages.Any())
             {
+                // Сообщений нет, но надо получить основные данные тикета.
+                var ticket = await _ticketRepository.GetTicketByIdAsync(ticketId);
+
+                if (ticket is null)
+                {
+                    throw new InvalidOperationException($"Ошибка получения тикета. TicketId: {ticketId}");
+                }
+                
+                result.TicketName = ticket.TicketName;
+                result.TicketId = ticketId;
+                
+                await FillStatusNamesAsync(result);
+
                 return result;
             }
 

@@ -47,4 +47,11 @@ public interface ITicketRepository
     /// <param name="ticketId">Id тикета.</param>
     /// <returns>Сообщения тикета и связанные данные.</returns>
     Task<IEnumerable<TicketMessageEntity>> GetTicketMessagesAsync(long ticketId);
+
+    /// <summary>
+    /// Метод получает тикет по его Id.
+    /// </summary>
+    /// <param name="ticketId">Id тикета.</param>
+    /// <returns>Данные тикета.</returns>
+    Task<MainInfoTicketEntity> GetTicketByIdAsync(long ticketId);
 }

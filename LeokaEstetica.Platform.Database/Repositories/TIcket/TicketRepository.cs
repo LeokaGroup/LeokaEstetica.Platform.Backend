@@ -215,6 +215,18 @@ internal sealed class TicketRepository : ITicketRepository
         return result;
     }
 
+    /// <summary>
+    /// Метод получает тикет по его Id.
+    /// </summary>
+    /// <param name="ticketId">Id тикета.</param>
+    /// <returns>Данные тикета.</returns>
+    public async Task<MainInfoTicketEntity> GetTicketByIdAsync(long ticketId)
+    {
+        var result = await _pgContext.MainInfoTickets.FirstOrDefaultAsync(t => t.TicketId == ticketId);
+
+        return result;
+    }
+
     #endregion
 
     #region Приватные методы.
