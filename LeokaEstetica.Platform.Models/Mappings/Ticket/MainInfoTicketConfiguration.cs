@@ -24,7 +24,7 @@ public partial class MainInfoTicketConfiguration : IEntityTypeConfiguration<Main
         entity.Property(e => e.DateCreated)
             .HasColumnName("DateCreated")
             .HasColumnType("timestamp")
-            .HasDefaultValue(DateTime.Now);
+            .HasDefaultValue(DateTime.UtcNow);
         
         entity.Property(e => e.TicketStatusId)
             .HasColumnName("TicketStatusId")

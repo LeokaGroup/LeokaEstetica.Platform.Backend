@@ -31,7 +31,7 @@ public partial class UserPhoneBlackListShadowConfiguration : IEntityTypeConfigur
         entity.Property(e => e.DateCreated)
             .HasColumnName("DateCreated")
             .HasColumnType("timestamp")
-            .HasDefaultValue(DateTime.Now);
+            .HasDefaultValue(DateTime.UtcNow);
 
         entity.HasIndex(u => u.ShadowId)
             .HasDatabaseName("PK_UserPhoneBlackListShadow_ShadowId")

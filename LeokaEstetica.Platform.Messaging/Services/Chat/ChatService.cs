@@ -87,7 +87,7 @@ internal sealed class ChatService : IChatService
             if (findDialogId == 0)
             {
                 // Создаем новый диалог.
-                dialogId = await _chatRepository.CreateDialogAsync(string.Empty, DateTime.Now);
+                dialogId = await _chatRepository.CreateDialogAsync(string.Empty, DateTime.UtcNow);
 
                 // Добавляем участников нового диалога.
                 await _chatRepository.AddDialogMembersAsync(userId, ownerId, (long)dialogId);
@@ -111,7 +111,7 @@ internal sealed class ChatService : IChatService
                 && !isFindDialog)
             {
                 // Создаем новый диалог.
-                dialogId = await _chatRepository.CreateDialogAsync(string.Empty, DateTime.Now);
+                dialogId = await _chatRepository.CreateDialogAsync(string.Empty, DateTime.UtcNow);
 
                 // Добавляем участников нового диалога.
                 await _chatRepository.AddDialogMembersAsync(userId, ownerId, (long)dialogId);
@@ -305,7 +305,7 @@ internal sealed class ChatService : IChatService
             if (isDublicateDialog is null)
             {
                 // Создаем новый диалог.
-                var lastDialogId = await _chatRepository.CreateDialogAsync(string.Empty, DateTime.Now);
+                var lastDialogId = await _chatRepository.CreateDialogAsync(string.Empty, DateTime.UtcNow);
 
                 // Добавляем участников нового диалога.
                 await _chatRepository.AddDialogMembersAsync(userId, ownerId, lastDialogId);
@@ -388,7 +388,7 @@ internal sealed class ChatService : IChatService
             }
 
             // Записываем сообщение в БД.
-            await _chatRepository.SaveMessageAsync(message, dialogId, DateTime.Now, userId, true);
+            await _chatRepository.SaveMessageAsync(message, dialogId, DateTime.UtcNow, userId, true);
 
             // Получаем список сообщений диалога.
             var messages = await _chatRepository.GetDialogMessagesAsync(dialogId);

@@ -46,7 +46,7 @@ internal sealed class ProjectNotificationsRepository : IProjectNotificationsRepo
             Approved = false,
             Rejected = false,
             NotificationText = $"Приглашение в проект \"{projectName}\"",
-            Created = DateTime.Now,
+            Created = DateTime.UtcNow,
             NotificationType = NotificationTypeEnum.ProjectInvite.ToString(),
             IsShow = true,
             IsOwner = false
@@ -155,7 +155,7 @@ internal sealed class ProjectNotificationsRepository : IProjectNotificationsRepo
             Approved = false,
             Rejected = false,
             NotificationText = $"Приглашение в проект \"{projectName}\" принято",
-            Created = DateTime.Now,
+            Created = DateTime.UtcNow,
             NotificationType = NotificationTypeEnum.ApproveInviteProject.ToString(),
             IsShow = true,
             IsOwner = isProjectOwner
@@ -186,7 +186,7 @@ internal sealed class ProjectNotificationsRepository : IProjectNotificationsRepo
             Approved = false,
             Rejected = false,
             NotificationText = $"Приглашение в проект \"{projectName}\" отклонено",
-            Created = DateTime.Now,
+            Created = DateTime.UtcNow,
             NotificationType = NotificationTypeEnum.RejectInviteProject.ToString(),
             IsShow = true,
             IsOwner = isProjectOwner
@@ -246,7 +246,7 @@ internal sealed class ProjectNotificationsRepository : IProjectNotificationsRepo
             Approved = false,
             Rejected = false,
             NotificationText = $"Исключение из проекта \"{projectName}\"",
-            Created = DateTime.Now,
+            Created = DateTime.UtcNow,
             NotificationType = NotificationTypeEnum.DeleteProjectTeamMember.ToString(),
             IsShow = true,
             IsOwner = true
@@ -276,7 +276,7 @@ internal sealed class ProjectNotificationsRepository : IProjectNotificationsRepo
             Approved = false,
             Rejected = false,
             NotificationText = $"Покидание команды проекта \"{projectName}\"",
-            Created = DateTime.Now,
+            Created = DateTime.UtcNow,
             NotificationType = NotificationTypeEnum.DeleteProjectTeamMember.ToString(),
             IsShow = true,
             IsOwner = false

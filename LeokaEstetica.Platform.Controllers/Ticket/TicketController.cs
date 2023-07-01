@@ -123,6 +123,35 @@ public class TicketController : BaseController
         return result;
     }
 
+    /// <summary>
+    /// Метод получает данные тикета.
+    /// </summary>
+    /// <param name="ticketId">Id тикета.</param>
+    /// <returns>Данные тикета.</returns>
+    [HttpGet]
+    [Route("ticket")]
+    [ProducesResponseType(200, Type = typeof(SelectedTicketOutput))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<SelectedTicketOutput> GetSelectedTicketAsync([FromQuery] long ticketId)
+    {
+        var validator = await new GetTicketValidator().ValidateAsync(ticketId);
+
+        if (validator.Errors.Any())
+        {
+            var ex = new InvalidOperationException("Ошибка получения тикета.");
+            _logger.LogError(ex, validator.Errors.First().ErrorMessage);
+
+            throw ex;
+        }
+
+        var result = await _ticketService.GetSelectedTicketAsync(ticketId, GetUserName());
+
+        return result;
+    }
+
     #endregion
 
     #region Приватные методы.

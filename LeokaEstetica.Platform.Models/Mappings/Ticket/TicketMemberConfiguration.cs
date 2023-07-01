@@ -29,7 +29,7 @@ public partial class TicketMemberConfiguration : IEntityTypeConfiguration<Ticket
         entity.Property(e => e.Joined)
             .HasColumnName("Joined")
             .HasColumnType("timestamp")
-            .HasDefaultValue(DateTime.Now);
+            .HasDefaultValue(DateTime.UtcNow);
 
         entity.HasIndex(u => u.MemberId)
             .HasDatabaseName("PK_TicketMembers_MemberId")

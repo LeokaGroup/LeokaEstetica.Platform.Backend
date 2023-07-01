@@ -185,7 +185,7 @@ internal sealed class UserService : IUserService
         {
             PasswordHash = HashHelper.HashPassword(password),
             Email = email,
-            DateRegister = DateTime.Now,
+            DateRegister = DateTime.UtcNow,
             UserCode = Guid.NewGuid()
         };
 
@@ -205,7 +205,7 @@ internal sealed class UserService : IUserService
         {
             PasswordHash = string.Empty,
             Email = string.Empty,
-            DateRegister = DateTime.Now,
+            DateRegister = DateTime.UtcNow,
             UserCode = Guid.NewGuid(),
             VkUserId = vkUserId,
             FirstName = firstName,
@@ -381,7 +381,7 @@ internal sealed class UserService : IUserService
     /// <returns>Строка токена.</returns>
     private string CreateTokenFactory(ClaimsIdentity claimsIdentity)
     {
-        var now = DateTime.Now;
+        var now = DateTime.UtcNow.ToUniversalTime();
         var jwt = new JwtSecurityToken(
             issuer: AuthOptions.ISSUER,
             audience: AuthOptions.AUDIENCE,
@@ -681,7 +681,7 @@ internal sealed class UserService : IUserService
             var dates = await _userRepository.GetUserSubscriptionUsedDateAsync(userId);
 
             // Отключаем пользователю подписку.
-            if (dates.EndDate < DateTime.Now)
+            if (dates.EndDate < DateTime.UtcNow.ToUniversalTime())
             {
                 await _subscriptionRepository.DisableUserSubscriptionAsync(userId);
             }

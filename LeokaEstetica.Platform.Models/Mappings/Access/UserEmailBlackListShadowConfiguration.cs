@@ -31,7 +31,7 @@ public partial class UserEmailBlackListShadowConfiguration : IEntityTypeConfigur
         entity.Property(e => e.DateCreated)
             .HasColumnName("DateCreated")
             .HasColumnType("timestamp")
-            .HasDefaultValue(DateTime.Now);
+            .HasDefaultValue(DateTime.UtcNow);
         
         entity.Property(e => e.Email)
             .HasColumnName("Email")

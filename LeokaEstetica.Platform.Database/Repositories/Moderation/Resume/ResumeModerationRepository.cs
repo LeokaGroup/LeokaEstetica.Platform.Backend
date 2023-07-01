@@ -68,7 +68,7 @@ internal sealed class ResumeModerationRepository : IResumeModerationRepository
         await _pgContext.ModerationResumes.AddAsync(new ModerationResumeEntity
         {
             ProfileInfoId = profileInfoId,
-            DateModeration = DateTime.Now,
+            DateModeration = DateTime.UtcNow,
             ModerationStatusId = (int)ResumeModerationStatusEnum.ModerationResume
         });
         await _pgContext.SaveChangesAsync();

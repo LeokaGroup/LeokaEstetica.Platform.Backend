@@ -33,11 +33,6 @@ public class TicketMessageEntity
     public long UserId { get; set; }
 
     /// <summary>
-    /// Признак сообщения текущего пользователя.
-    /// </summary>
-    public bool IsMyMessage { get; set; }
-    
-    /// <summary>
     /// FK на пользователя.
     /// </summary>
     public UserEntity User { get; set; }

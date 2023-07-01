@@ -205,6 +205,69 @@ internal sealed class TicketService : ITicketService
         }
     }
 
+    /// <summary>
+    /// Метод получает данные тикета.
+    /// </summary>
+    /// <param name="ticketId">Id тикета.</param>
+    /// <param name="account">Аккаунт.</param>
+    /// <returns>Данные тикета.</returns>
+    public async Task<SelectedTicketOutput> GetSelectedTicketAsync(long ticketId, string account)
+    {
+        try
+        {
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+            
+            var items = await _ticketRepository.GetTicketMessagesAsync(ticketId);
+            var result = new SelectedTicketOutput { Messages = new List<TicketMessageOutput>() };
+
+            var ticketMessages = items.ToList();
+            
+            if (!ticketMessages.Any())
+            {
+                // Сообщений нет, но надо получить основные данные тикета.
+                var ticket = await _ticketRepository.GetTicketByIdAsync(ticketId);
+
+                if (ticket is null)
+                {
+                    throw new InvalidOperationException($"Ошибка получения тикета. TicketId: {ticketId}");
+                }
+                
+                result.TicketName = ticket.TicketName;
+                result.TicketId = ticketId;
+                
+                await FillStatusNamesAsync(result);
+
+                await SetMyMessageFlagAsync(result, userId);
+
+                return result;
+            }
+
+            var first = ticketMessages.FirstOrDefault();
+            result.TicketName = first?.MainInfoTicket.TicketName;
+            result.TicketId = ticketId;
+            
+            await FillStatusNamesAsync(result);
+            
+            await SetMyMessageFlagAsync(result, userId);
+
+            result.Messages = _mapper.Map<IEnumerable<TicketMessageOutput>>(ticketMessages);
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
     #endregion
 
     #region Приватные методы.
@@ -222,6 +285,32 @@ internal sealed class TicketService : ITicketService
         {
             t.StatusName = statuses.TryGet(t.TicketId);
         }
+    }
+    
+    /// <summary>
+    /// Метод проставляет название статуса тикета.
+    /// </summary>
+    /// <param name="ticket">Тикет.</param>
+    private async Task FillStatusNamesAsync(SelectedTicketOutput ticket)
+    {
+        var ticketId = ticket.TicketId;
+        var statuses = await _ticketRepository.GetTicketStatusNamesAsync(new[] { ticketId });
+        ticket.StatusName = statuses.TryGet(ticketId);
+    }
+
+    /// <summary>
+    /// Метод проставляет сообщениям признак сообщения текущего пользователя.
+    /// </summary>
+    /// <param name="ticket">Тикет.</param>
+    private async Task SetMyMessageFlagAsync(SelectedTicketOutput ticket, long userId)
+    {
+        // Проставляем флаг принадлежности сообщений.
+        foreach (var t in ticket.Messages)
+        {
+            t.IsMyMessage = t.UserId == userId;
+        }
+
+        await Task.CompletedTask;
     }
 
     #endregion

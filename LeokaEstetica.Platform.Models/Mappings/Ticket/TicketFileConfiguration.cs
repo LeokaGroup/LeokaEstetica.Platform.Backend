@@ -24,7 +24,7 @@ public partial class TicketFileConfiguration : IEntityTypeConfiguration<TicketFi
         entity.Property(e => e.DateCreated)
             .HasColumnName("DateCreated")
             .HasColumnType("timestamp")
-            .HasDefaultValue(DateTime.Now)
+            .HasDefaultValue(DateTime.UtcNow)
             .IsRequired();
         
         entity.Property(e => e.Title)

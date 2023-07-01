@@ -29,16 +29,11 @@ public partial class TicketMessageConfiguration : IEntityTypeConfiguration<Ticke
         entity.Property(e => e.DateCreated)
             .HasColumnName("DateCreated")
             .HasColumnType("timestamp")
-            .HasDefaultValue(DateTime.Now);
+            .HasDefaultValue(DateTime.UtcNow);
         
         entity.Property(e => e.Message)
             .HasColumnName("Message")
             .HasColumnType("text")
-            .IsRequired();
-        
-        entity.Property(e => e.IsMyMessage)
-            .HasColumnName("IsMyMessage")
-            .HasColumnType("boolean")
             .IsRequired();
 
         entity.HasIndex(u => u.MessageId)

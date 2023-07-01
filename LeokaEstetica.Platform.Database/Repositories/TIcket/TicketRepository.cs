@@ -61,7 +61,7 @@ internal sealed class TicketRepository : ITicketRepository
             // Добавляем основную информацию о тикете, тем самым создаем новый тикет.
             var ticket = new MainInfoTicketEntity
             {
-                DateCreated = DateTime.Now,
+                DateCreated = DateTime.UtcNow,
                 TicketName = title,
                 TicketStatusId = (short)TicketStatusEnum.Opened,
                 TicketFileId = null // TODO: Позже доработаем это.
@@ -89,7 +89,7 @@ internal sealed class TicketRepository : ITicketRepository
                 // Добавляем админа в тикет.
                 ticketMembers.Add(new TicketMemberEntity
                 {
-                    Joined = DateTime.Now,
+                    Joined = DateTime.UtcNow,
                     UserId = id,
                     TicketId = ticketId
                 });
@@ -98,7 +98,7 @@ internal sealed class TicketRepository : ITicketRepository
             // Добавляем пользователя в тикет.
             ticketMembers.Add(new TicketMemberEntity
             {
-                Joined = DateTime.Now,
+                Joined = DateTime.UtcNow,
                 UserId = userId,
                 TicketId = ticketId
             });
@@ -108,8 +108,7 @@ internal sealed class TicketRepository : ITicketRepository
             // Создаем сообщение тикета.
             await _pgContext.TicketMessages.AddAsync(new TicketMessageEntity
             {
-                DateCreated = DateTime.Now,
-                IsMyMessage = true,
+                DateCreated = DateTime.UtcNow,
                 Message = message,
                 UserId = userId,
                 TicketId = ticketId
@@ -195,6 +194,34 @@ internal sealed class TicketRepository : ITicketRepository
                 })
             .Distinct()
             .ToListAsync();
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод получает сообщения тикета и связанные данные.
+    /// </summary>
+    /// <param name="ticketId">Id тикета.</param>
+    /// <returns>Сообщения тикета и связанные данные.</returns>
+    public async Task<IEnumerable<TicketMessageEntity>> GetTicketMessagesAsync(long ticketId)
+    {
+        var result = await _pgContext.TicketMessages
+            .Include(t => t.MainInfoTicket)
+            .Include(u => u.User)
+            .Where(t => t.TicketId == ticketId)
+            .ToListAsync();
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод получает тикет по его Id.
+    /// </summary>
+    /// <param name="ticketId">Id тикета.</param>
+    /// <returns>Данные тикета.</returns>
+    public async Task<MainInfoTicketEntity> GetTicketByIdAsync(long ticketId)
+    {
+        var result = await _pgContext.MainInfoTickets.FirstOrDefaultAsync(t => t.TicketId == ticketId);
 
         return result;
     }
