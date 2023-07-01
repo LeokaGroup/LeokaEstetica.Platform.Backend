@@ -147,7 +147,7 @@ public class TicketController : BaseController
             throw ex;
         }
 
-        var result = await _ticketService.GetSelectedTicketAsync(ticketId);
+        var result = await _ticketService.GetSelectedTicketAsync(ticketId, GetUserName());
 
         return result;
     }

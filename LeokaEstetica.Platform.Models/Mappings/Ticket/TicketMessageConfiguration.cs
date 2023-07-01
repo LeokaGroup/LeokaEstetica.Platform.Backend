@@ -35,11 +35,6 @@ public partial class TicketMessageConfiguration : IEntityTypeConfiguration<Ticke
             .HasColumnName("Message")
             .HasColumnType("text")
             .IsRequired();
-        
-        entity.Property(e => e.IsMyMessage)
-            .HasColumnName("IsMyMessage")
-            .HasColumnType("boolean")
-            .IsRequired();
 
         entity.HasIndex(u => u.MessageId)
             .HasDatabaseName("PK_TicketMessages_MessageId")

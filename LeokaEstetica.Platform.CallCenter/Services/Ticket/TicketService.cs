@@ -209,11 +209,20 @@ internal sealed class TicketService : ITicketService
     /// Метод получает данные тикета.
     /// </summary>
     /// <param name="ticketId">Id тикета.</param>
+    /// <param name="account">Аккаунт.</param>
     /// <returns>Данные тикета.</returns>
-    public async Task<SelectedTicketOutput> GetSelectedTicketAsync(long ticketId)
+    public async Task<SelectedTicketOutput> GetSelectedTicketAsync(long ticketId, string account)
     {
         try
         {
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+            
             var items = await _ticketRepository.GetTicketMessagesAsync(ticketId);
             var result = new SelectedTicketOutput { Messages = new List<TicketMessageOutput>() };
 
@@ -234,6 +243,8 @@ internal sealed class TicketService : ITicketService
                 
                 await FillStatusNamesAsync(result);
 
+                await SetMyMessageFlagAsync(result, userId);
+
                 return result;
             }
 
@@ -242,6 +253,8 @@ internal sealed class TicketService : ITicketService
             result.TicketId = ticketId;
             
             await FillStatusNamesAsync(result);
+            
+            await SetMyMessageFlagAsync(result, userId);
 
             result.Messages = _mapper.Map<IEnumerable<TicketMessageOutput>>(ticketMessages);
 
@@ -283,6 +296,21 @@ internal sealed class TicketService : ITicketService
         var ticketId = ticket.TicketId;
         var statuses = await _ticketRepository.GetTicketStatusNamesAsync(new[] { ticketId });
         ticket.StatusName = statuses.TryGet(ticketId);
+    }
+
+    /// <summary>
+    /// Метод проставляет сообщениям признак сообщения текущего пользователя.
+    /// </summary>
+    /// <param name="ticket">Тикет.</param>
+    private async Task SetMyMessageFlagAsync(SelectedTicketOutput ticket, long userId)
+    {
+        // Проставляем флаг принадлежности сообщений.
+        foreach (var t in ticket.Messages)
+        {
+            t.IsMyMessage = t.UserId == userId;
+        }
+
+        await Task.CompletedTask;
     }
 
     #endregion

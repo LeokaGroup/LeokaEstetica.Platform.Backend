@@ -109,7 +109,6 @@ internal sealed class TicketRepository : ITicketRepository
             await _pgContext.TicketMessages.AddAsync(new TicketMessageEntity
             {
                 DateCreated = DateTime.UtcNow,
-                IsMyMessage = true,
                 Message = message,
                 UserId = userId,
                 TicketId = ticketId

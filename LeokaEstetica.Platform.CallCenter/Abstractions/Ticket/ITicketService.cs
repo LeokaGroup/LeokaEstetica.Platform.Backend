@@ -40,6 +40,7 @@ public interface ITicketService
     /// Метод получает данные тикета.
     /// </summary>
     /// <param name="ticketId">Id тикета.</param>
+    /// <param name="account">Аккаунт.</param>
     /// <returns>Данные тикета.</returns>
-    Task<SelectedTicketOutput> GetSelectedTicketAsync(long ticketId);
+    Task<SelectedTicketOutput> GetSelectedTicketAsync(long ticketId, string account);
 }

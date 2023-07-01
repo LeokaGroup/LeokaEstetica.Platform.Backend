@@ -8,7 +8,7 @@ internal class GetSelectedTicketTest : BaseServiceTest
     [Test]
     public async Task SuccessGetSelectedTicketAsyncTest()
     {
-        Assert.DoesNotThrowAsync(async() => await TicketService.GetSelectedTicketAsync(3));
+        Assert.DoesNotThrowAsync(async() => await TicketService.GetSelectedTicketAsync(3, "sierra_93@mail.ru"));
         
         await Task.CompletedTask;
     }
@@ -16,7 +16,7 @@ internal class GetSelectedTicketTest : BaseServiceTest
     [Test]
     public async Task FailGetSelectedTicketAsyncTest()
     {
-        var test = await TicketService.GetSelectedTicketAsync(-1);
+        var test = await TicketService.GetSelectedTicketAsync(-1, "sierra_93@mail.ru");
         
         Assert.That(test.TicketId == 0);
         Assert.That(!test.Messages.Any());
@@ -27,7 +27,7 @@ internal class GetSelectedTicketTest : BaseServiceTest
     [Test]
     public async Task GetSelectedTicketAsyncTest()
     {
-        var test = await TicketService.GetSelectedTicketAsync(3);
+        var test = await TicketService.GetSelectedTicketAsync(3, "sierra_93@mail.ru");
         
         Assert.That(test.TicketId > 0);
         Assert.That(test.Messages.Any);
