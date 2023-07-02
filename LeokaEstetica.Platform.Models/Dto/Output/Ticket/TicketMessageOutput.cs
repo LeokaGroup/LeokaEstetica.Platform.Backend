@@ -18,7 +18,7 @@ public class TicketMessageOutput : TicketOutput
     /// <summary>
     /// Дата создания сообщения.
     /// </summary>
-    public DateTime DateCreated { get; set; }
+    public string DateCreated { get; set; }
 
     /// <summary>
     /// Id пользователя.

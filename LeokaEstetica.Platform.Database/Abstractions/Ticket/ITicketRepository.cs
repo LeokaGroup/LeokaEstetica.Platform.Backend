@@ -54,4 +54,13 @@ public interface ITicketRepository
     /// <param name="ticketId">Id тикета.</param>
     /// <returns>Данные тикета.</returns>
     Task<MainInfoTicketEntity> GetTicketByIdAsync(long ticketId);
+
+    /// <summary>
+    /// Метод сохраняет в БД сообщение тикета.
+    /// </summary>
+    /// <param name="ticketId">Id тикета.</param>
+    /// <param name="message">Сообщение тикета.</param>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Сообщения тикета.</returns>
+    Task<IEnumerable<TicketMessageEntity>> CreateTicketMessageAsync(long ticketId, string message, long userId);
 }

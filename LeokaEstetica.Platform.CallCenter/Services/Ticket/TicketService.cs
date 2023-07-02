@@ -33,10 +33,10 @@ internal sealed class TicketService : ITicketService
     /// <param name="userRepository">Репозиторий пользователя.</param>
     /// <param name="mapper">Автомаппер.</param>
     /// <param name="accessTicketRepository">Репозиторий доступа к тикетам.</param>
-    public TicketService(ITicketRepository ticketRepository, 
-        ILogger<TicketService> logger, 
-        IUserRepository userRepository, 
-        IMapper mapper, 
+    public TicketService(ITicketRepository ticketRepository,
+        ILogger<TicketService> logger,
+        IUserRepository userRepository,
+        IMapper mapper,
         IAccessTicketRepository accessTicketRepository)
     {
         _ticketRepository = ticketRepository;
@@ -61,7 +61,7 @@ internal sealed class TicketService : ITicketService
 
             return result;
         }
-        
+
         catch (Exception ex)
         {
             _logger?.LogError(ex, ex.Message);
@@ -98,7 +98,7 @@ internal sealed class TicketService : ITicketService
                                                     $"Message: {message}");
             }
         }
-        
+
         catch (Exception ex)
         {
             _logger?.LogError(ex, ex.Message);
@@ -138,7 +138,7 @@ internal sealed class TicketService : ITicketService
 
             return result;
         }
-        
+
         catch (Exception ex)
         {
             _logger?.LogError(ex, ex.Message);
@@ -162,7 +162,7 @@ internal sealed class TicketService : ITicketService
                 var ex = new NotFoundUserIdByAccountException(account);
                 throw ex;
             }
-            
+
             var roles = await _accessTicketRepository.GetTicketUserRolesAsync(userId);
             var userRoles = roles.ToList();
 
@@ -173,7 +173,7 @@ internal sealed class TicketService : ITicketService
                 throw new InvalidOperationException(
                     $"У пользователя с UserId: {userId} нет прав для доступа к тикетам в КЦ.");
             }
-            
+
             // Есть ли нужная роль.
             if (!userRoles.Contains(1))
             {
@@ -181,7 +181,7 @@ internal sealed class TicketService : ITicketService
                 throw new InvalidOperationException(
                     $"У пользователя с UserId: {userId} нет нужной роли для доступа к тикетам в КЦ.");
             }
-            
+
             var result = new List<TicketOutput>();
 
             var tickets = await _ticketRepository.GetCallCenterTicketsAsync();
@@ -197,7 +197,7 @@ internal sealed class TicketService : ITicketService
 
             return result;
         }
-        
+
         catch (Exception ex)
         {
             _logger?.LogError(ex, ex.Message);
@@ -222,12 +222,12 @@ internal sealed class TicketService : ITicketService
                 var ex = new NotFoundUserIdByAccountException(account);
                 throw ex;
             }
-            
+
             var items = await _ticketRepository.GetTicketMessagesAsync(ticketId);
             var result = new SelectedTicketOutput { Messages = new List<TicketMessageOutput>() };
 
             var ticketMessages = items.ToList();
-            
+
             if (!ticketMessages.Any())
             {
                 // Сообщений нет, но надо получить основные данные тикета.
@@ -237,13 +237,13 @@ internal sealed class TicketService : ITicketService
                 {
                     throw new InvalidOperationException($"Ошибка получения тикета. TicketId: {ticketId}");
                 }
-                
+
                 result.TicketName = ticket.TicketName;
                 result.TicketId = ticketId;
-                
+
                 await FillStatusNamesAsync(result);
 
-                await SetMyMessageFlagAsync(result, userId);
+                result.Messages = await CreateMessagesResultAsync(userId, ticket.TicketMessages.ToList());
 
                 return result;
             }
@@ -251,16 +251,50 @@ internal sealed class TicketService : ITicketService
             var first = ticketMessages.FirstOrDefault();
             result.TicketName = first?.MainInfoTicket.TicketName;
             result.TicketId = ticketId;
-            
+
             await FillStatusNamesAsync(result);
             
-            await SetMyMessageFlagAsync(result, userId);
-
-            result.Messages = _mapper.Map<IEnumerable<TicketMessageOutput>>(ticketMessages);
+            result.Messages = await CreateMessagesResultAsync(userId, ticketMessages);
 
             return result;
         }
-        
+
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Метод создает сообщение тикета.
+    /// </summary>
+    /// <param name="ticketId">Id тикета.</param>
+    /// <param name="message">Сообщение тикета.</param>
+    /// <param name="account">Аккаунт.</param>
+    /// <returns>Список сообщений.</returns>
+    public async Task<SelectedTicketOutput> CreateTicketMessageAsync(long ticketId, string message, string account)
+    {
+        try
+        {
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+            
+            var items = await _ticketRepository.CreateTicketMessageAsync(ticketId, message, userId);
+
+            var result = new SelectedTicketOutput
+            {
+                Messages = await CreateMessagesResultAsync(userId, items.ToList())
+            };
+
+            return result;
+        }
+
         catch (Exception ex)
         {
             _logger.LogError(ex, ex.Message);
@@ -280,13 +314,13 @@ internal sealed class TicketService : ITicketService
     {
         var ids = tickets.Select(s => s.TicketId);
         var statuses = await _ticketRepository.GetTicketStatusNamesAsync(ids);
-        
+
         foreach (var t in tickets)
         {
             t.StatusName = statuses.TryGet(t.TicketId);
         }
     }
-    
+
     /// <summary>
     /// Метод проставляет название статуса тикета.
     /// </summary>
@@ -299,18 +333,29 @@ internal sealed class TicketService : ITicketService
     }
 
     /// <summary>
-    /// Метод проставляет сообщениям признак сообщения текущего пользователя.
+    /// Метод создает результат сообщений.
     /// </summary>
     /// <param name="ticket">Тикет.</param>
-    private async Task SetMyMessageFlagAsync(SelectedTicketOutput ticket, long userId)
+    private async Task<IEnumerable<TicketMessageOutput>> CreateMessagesResultAsync(long userId,
+        List<TicketMessageEntity> ticketMessages)
     {
-        // Проставляем флаг принадлежности сообщений.
-        foreach (var t in ticket.Messages)
+        var result = new List<TicketMessageOutput>();
+        
+        foreach (var t in ticketMessages)
         {
-            t.IsMyMessage = t.UserId == userId;
+            var msg = _mapper.Map<TicketMessageOutput>(t);
+            
+            // Проставляем флаг принадлежности сообщения текущему пользователю.
+            msg.IsMyMessage = t.UserId == userId;
+
+            // Форматируем дату сообщения.
+            var messageDate = ticketMessages.Find(m => m.MessageId == t.MessageId);
+            msg.DateCreated = messageDate?.DateCreated.ToString("g");
+            
+            result.Add(msg);
         }
 
-        await Task.CompletedTask;
+        return await Task.FromResult(result);
     }
 
     #endregion

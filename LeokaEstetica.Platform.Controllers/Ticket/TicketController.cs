@@ -152,6 +152,42 @@ public class TicketController : BaseController
         return result;
     }
 
+    /// <summary>
+    /// Метод создает сообщение тикета.
+    /// </summary>
+    /// <param name="createMessageInput">Входная модель.</param>
+    /// <returns>Список сообщений.</returns>
+    [HttpPost]
+    [Route("message")]
+    [ProducesResponseType(200, Type = typeof(SelectedTicketOutput))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<(SelectedTicketOutput Messages, bool IsSuccess)> CreateTicketMessageAsync(
+        [FromBody] CreateMessageInput createMessageInput)
+    {
+        var validator = await new CreateTicketMessageValidator().ValidateAsync(createMessageInput);
+        var result = new SelectedTicketOutput { Messages = new List<TicketMessageOutput>() };
+
+        // Если есть ошибки, то не даем создать сообщение.
+        if (validator.Errors.Any())
+        {
+            foreach (var err in validator.Errors)
+            {
+                var ex = new InvalidOperationException("Ошибка создания сообщения тикета.");
+                _logger.LogError(ex, err.ErrorMessage);
+            }
+
+            return (result, false);
+        }
+        
+        result = await _ticketService.CreateTicketMessageAsync(createMessageInput.TicketId,
+            createMessageInput.Message, GetUserName());
+
+        return (result, true);
+    }
+
     #endregion
 
     #region Приватные методы.

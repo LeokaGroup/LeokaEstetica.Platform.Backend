@@ -226,6 +226,33 @@ internal sealed class TicketRepository : ITicketRepository
         return result;
     }
 
+    /// <summary>
+    /// Метод сохраняет в БД сообщение тикета.
+    /// </summary>
+    /// <param name="ticketId">Id тикета.</param>
+    /// <param name="message">Сообщение тикета.</param>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Сообщения тикета.</returns>
+    public async Task<IEnumerable<TicketMessageEntity>> CreateTicketMessageAsync(long ticketId, string message,
+        long userId)
+    {
+        await _pgContext.TicketMessages.AddAsync(new TicketMessageEntity
+        {
+            DateCreated = DateTime.UtcNow,
+            Message = message,
+            UserId = userId,
+            TicketId = ticketId
+        });
+        await _pgContext.SaveChangesAsync();
+
+        // Возвращаем все сообщения тикета.
+        var ticketMessages = await _pgContext.TicketMessages
+            .Where(tm => tm.TicketId == ticketId)
+            .ToListAsync();
+
+        return ticketMessages;
+    }
+
     #endregion
 
     #region Приватные методы.
