@@ -43,4 +43,13 @@ public interface ITicketService
     /// <param name="account">Аккаунт.</param>
     /// <returns>Данные тикета.</returns>
     Task<SelectedTicketOutput> GetSelectedTicketAsync(long ticketId, string account);
+    
+    /// <summary>
+    /// Метод создает сообщение тикета.
+    /// </summary>
+    /// <param name="ticketId">Id тикета.</param>
+    /// <param name="message">Сообщение тикета.</param>
+    /// <param name="account">Аккаунт.</param>
+    /// <returns>Список сообщений.</returns>
+    Task<CreateTicketMessageOutput> CreateTicketMessageAsync(long ticketId, string message, string account);
 }
