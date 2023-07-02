@@ -159,16 +159,19 @@ public class TicketController : BaseController
     /// <returns>Список сообщений.</returns>
     [HttpPost]
     [Route("message")]
-    [ProducesResponseType(200, Type = typeof(SelectedTicketOutput))]
+    [ProducesResponseType(200, Type = typeof(CreateTicketMessageOutput))]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<(SelectedTicketOutput Messages, bool IsSuccess)> CreateTicketMessageAsync(
+    public async Task<CreateTicketMessageOutput> CreateTicketMessageAsync(
         [FromBody] CreateMessageInput createMessageInput)
     {
         var validator = await new CreateTicketMessageValidator().ValidateAsync(createMessageInput);
-        var result = new SelectedTicketOutput { Messages = new List<TicketMessageOutput>() };
+        var result = new CreateTicketMessageOutput
+        {
+            Messages = new List<TicketMessageOutput>()
+        };
 
         // Если есть ошибки, то не даем создать сообщение.
         if (validator.Errors.Any())
@@ -179,13 +182,15 @@ public class TicketController : BaseController
                 _logger.LogError(ex, err.ErrorMessage);
             }
 
-            return (result, false);
+            return result;
         }
         
         result = await _ticketService.CreateTicketMessageAsync(createMessageInput.TicketId,
             createMessageInput.Message, GetUserName());
+        
+        result.IsSuccess = true;
 
-        return (result, true);
+        return result;
     }
 
     #endregion

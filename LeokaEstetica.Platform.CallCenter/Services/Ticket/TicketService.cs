@@ -273,7 +273,7 @@ internal sealed class TicketService : ITicketService
     /// <param name="message">Сообщение тикета.</param>
     /// <param name="account">Аккаунт.</param>
     /// <returns>Список сообщений.</returns>
-    public async Task<SelectedTicketOutput> CreateTicketMessageAsync(long ticketId, string message, string account)
+    public async Task<CreateTicketMessageOutput> CreateTicketMessageAsync(long ticketId, string message, string account)
     {
         try
         {
@@ -287,7 +287,7 @@ internal sealed class TicketService : ITicketService
             
             var items = await _ticketRepository.CreateTicketMessageAsync(ticketId, message, userId);
 
-            var result = new SelectedTicketOutput
+            var result = new CreateTicketMessageOutput
             {
                 Messages = await CreateMessagesResultAsync(userId, items.ToList())
             };
