@@ -35,6 +35,7 @@ using LeokaEstetica.Platform.Diagnostics.Services.Metrics;
 using LeokaEstetica.Platform.Finder.Services.Project;
 using LeokaEstetica.Platform.Finder.Services.Resume;
 using LeokaEstetica.Platform.Finder.Services.Vacancy;
+using LeokaEstetica.Platform.Integrations.Services.Telegram;
 using LeokaEstetica.Platform.Messaging.Services.Chat;
 using LeokaEstetica.Platform.Messaging.Services.Project;
 using LeokaEstetica.Platform.Messaging.Services.RabbitMq;
@@ -100,6 +101,7 @@ internal class BaseServiceTest
     protected readonly UserMetricsService UserMetricsService;
     protected readonly RefundsService RefundsService;
     protected readonly TicketService TicketService;
+    protected readonly TelegramBotService TelegramBotService;
 
     protected BaseServiceTest()
     {
@@ -228,5 +230,7 @@ internal class BaseServiceTest
         var ticketRepository = new TicketRepository(pgContext, null);
         var accessTicketRepository = new AccessTicketRepository(pgContext);
         TicketService = new TicketService(ticketRepository, null, userRepository, mapper, accessTicketRepository);
+
+        TelegramBotService = new TelegramBotService(null, AppConfiguration);
     }
 }

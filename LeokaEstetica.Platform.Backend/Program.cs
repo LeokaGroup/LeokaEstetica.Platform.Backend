@@ -1,6 +1,8 @@
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using FluentValidation.AspNetCore;
+using LeokaEstetica.Platform.Backend.Filters;
+using LeokaEstetica.Platform.Backend.Loaders.Bots;
 using LeokaEstetica.Platform.Backend.Loaders.Jobs;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Utils;
@@ -18,7 +20,12 @@ var builder = WebApplication.CreateBuilder(new WebApplicationOptions
 }); 
 var configuration = builder.Configuration;
 
-builder.Services.AddControllers().AddControllersAsServices();
+builder.Services.AddControllers(opt =>
+{
+    opt.Filters.Add(typeof(LogExceptionFilter));
+})
+.AddControllersAsServices();
+
 builder.Services.AddCors(options => options.AddPolicy("ApiCorsPolicy", b =>
 {
     b.WithOrigins(configuration.GetSection("CorsUrls:Urls").Get<string[]>())
@@ -121,6 +128,9 @@ builder.Services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
 
 builder.Logging.ClearProviders();
 builder.Host.UseNLog();
+
+// Запускаем ботов.
+await LogNotifyBot.RunAsync(configuration);
     
 var app = builder.Build();
 
