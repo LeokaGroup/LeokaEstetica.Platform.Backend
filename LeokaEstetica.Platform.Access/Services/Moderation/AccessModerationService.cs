@@ -30,9 +30,8 @@ public class AccessModerationService : IAccessModerationService
     /// Метод проверяет доступ пользователя к КЦ.
     /// </summary>
     /// <param name="account">Аккаунт.</param>
-    /// <param name="password">Пароль.</param>
     /// <returns>Данные выходной модели.</returns>
-    public async Task<ModerationRoleOutput> CheckUserRoleModerationAsync(string account, string password)
+    public async Task<ModerationRoleOutput> CheckUserRoleModerationAsync(string account)
     {
         try
         {
@@ -50,13 +49,6 @@ public class AccessModerationService : IAccessModerationService
                 throw new InvalidOperationException("Хэш пароль не удалось получить для пользователя. " +
                                                     $"UserId: {userId}." +
                                                     $"Account: {account}");
-            }
-
-            var checkPassword = HashHelper.VerifyHashedPassword(passwordHash, password);
-
-            if (!checkPassword)
-            {
-                throw new UnauthorizedAccessException("Пользователь не прошел проверку по паролю.");
             }
 
             var isRole = await _accessModerationRepository.CheckAccessUserRoleModerationAsync(userId);

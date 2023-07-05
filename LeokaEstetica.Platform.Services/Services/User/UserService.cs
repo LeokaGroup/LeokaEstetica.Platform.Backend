@@ -285,7 +285,7 @@ internal sealed class UserService : IUserService
 
             if (!checkPassword)
             {
-                throw new UnauthorizedAccessException("Пользователь не прошел проверку по паролю.");
+                throw new UnauthorizedAccessException($"Пользователь {email} не прошел проверку по паролю.");
             }
 
             try

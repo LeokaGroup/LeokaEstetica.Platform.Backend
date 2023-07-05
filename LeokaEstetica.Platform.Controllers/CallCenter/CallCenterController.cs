@@ -14,7 +14,6 @@ using LeokaEstetica.Platform.CallCenter.Abstractions.Vacancy;
 using LeokaEstetica.Platform.CallCenter.Models.Dto.Input.Access;
 using LeokaEstetica.Platform.CallCenter.Models.Dto.Input.Project;
 using LeokaEstetica.Platform.CallCenter.Models.Dto.Input.Resume;
-using LeokaEstetica.Platform.CallCenter.Models.Dto.Input.Role;
 using LeokaEstetica.Platform.CallCenter.Models.Dto.Input.Vacancy;
 using LeokaEstetica.Platform.CallCenter.Models.Dto.Output.Access;
 using LeokaEstetica.Platform.CallCenter.Models.Dto.Output.Project;
@@ -89,18 +88,16 @@ public class CallCenterController : BaseController
     /// Метод проверяет, имеет ли пользователь роль, которая дает доступ к модерации.
     /// </summary>
     /// <returns>Данные выходной модели.</returns>
-    [HttpPost]
+    [HttpGet]
     [Route("check")]
     [ProducesResponseType(200, Type = typeof(ModerationRoleOutput))]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<ModerationRoleOutput> CheckUserRoleModerationAsync(
-        [FromBody] ModerationRoleInput moderationRoleInput)
+    public async Task<ModerationRoleOutput> CheckUserRoleModerationAsync()
     {
-        var result = await _accessModerationService.CheckUserRoleModerationAsync(GetUserName(), 
-            moderationRoleInput.Password);
+        var result = await _accessModerationService.CheckUserRoleModerationAsync(GetUserName());
 
         return result;
     }
