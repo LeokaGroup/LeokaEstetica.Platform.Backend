@@ -193,6 +193,34 @@ public class TicketController : BaseController
         return result;
     }
 
+    /// <summary>
+    /// Метод закрывает тикет (идет проставление статуса тикета "Закрыт").
+    /// </summary>
+    /// <param name="closeTicketInput">Входная модель.</param>
+    [HttpPatch]
+    [Route("close")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task CloseTicketAsync([FromBody] CloseTicketInput closeTicketInput)
+    {
+        var ticketId = closeTicketInput.TicketId;
+        var validator = await new CloseTicketValidator().ValidateAsync(ticketId);
+
+        // Если есть ошибки, то не даем создать сообщение.
+        if (validator.Errors.Any())
+        {
+            var ex = new InvalidOperationException("Ошибка создания сообщения тикета.");
+            _logger.LogError(ex, validator.Errors.First().ErrorMessage);
+
+            return;
+        }
+
+        await _ticketService.CloseTicketAsync(ticketId, GetUserName(), GetTokenFromHeader());
+    }
+
     #endregion
 
     #region Приватные методы.

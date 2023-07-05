@@ -46,6 +46,19 @@ internal sealed class AccessTicketRepository : IAccessTicketRepository
         return result;
     }
 
+    /// <summary>
+    /// Метод проверяет, есть ли текущий пользователь в участниках тикета.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <param name="ticketId">Id тикета.</param>
+    /// <returns>Признак проверки.</returns>
+    public async Task<bool> IfExistsTicketMemberAsync(long userId, long ticketId)
+    {
+        var result = await _pgContext.TicketMembers.AnyAsync(m => m.UserId == userId && m.TicketId == ticketId);
+
+        return result;
+    }
+
     #endregion
 
     #region Приватные методы.

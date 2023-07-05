@@ -253,6 +253,26 @@ internal sealed class TicketRepository : ITicketRepository
         return ticketMessages;
     }
 
+    /// <summary>
+    /// Метод закрывает тикет (проставляя ему статус "Закрыт").
+    /// </summary>
+    /// <param name="ticketId">Id тикета.</param>
+    /// <returns>Признак закрытия тикета.</returns>
+    public async Task<bool> CloseTicketAsync(long ticketId)
+    {
+        var ticket = await _pgContext.MainInfoTickets.FirstOrDefaultAsync(t => t.TicketId == ticketId);
+
+        if (ticket is null)
+        {
+            return false;
+        }
+
+        ticket.TicketStatusId = (short)TicketStatusEnum.Closed;
+        await _pgContext.SaveChangesAsync();
+
+        return true;
+    }
+
     #endregion
 
     #region Приватные методы.

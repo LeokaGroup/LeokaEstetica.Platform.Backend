@@ -229,7 +229,8 @@ internal class BaseServiceTest
 
         var ticketRepository = new TicketRepository(pgContext, null);
         var accessTicketRepository = new AccessTicketRepository(pgContext);
-        TicketService = new TicketService(ticketRepository, null, userRepository, mapper, accessTicketRepository);
+        TicketService = new TicketService(ticketRepository, null, userRepository, mapper, accessTicketRepository,
+            null);
 
         TelegramBotService = new TelegramBotService(null, AppConfiguration);
     }
