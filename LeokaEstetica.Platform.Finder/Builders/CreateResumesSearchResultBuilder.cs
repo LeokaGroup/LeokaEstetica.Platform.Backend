@@ -31,39 +31,45 @@ public static class CreateResumesSearchResultBuilder
             var aboutMe = string.Empty;
             long profileInfoId = 0;
 
-            if (!string.IsNullOrEmpty(document.GetField(ResumeFinderConst.LAST_NAME).ToString()))
+            if (!string.IsNullOrEmpty(document.GetField(ResumeFinderConst.LAST_NAME)?.ToString()))
             {
                 lastName = document.GetField(ResumeFinderConst.LAST_NAME).StringValue;
             }
 
-            if (!string.IsNullOrEmpty(document.GetField(ResumeFinderConst.FIRST_NAME).ToString()))
+            if (!string.IsNullOrEmpty(document.GetField(ResumeFinderConst.FIRST_NAME)?.ToString()))
             {
                 firstName = document.GetField(ResumeFinderConst.FIRST_NAME).StringValue;
             }
 
-            if (!string.IsNullOrEmpty(document.GetField(ResumeFinderConst.PATRONYMIC).ToString()))
+            if (!string.IsNullOrEmpty(document.GetField(ResumeFinderConst.PATRONYMIC)?.ToString()))
             {
                 patronymic = document.GetField(ResumeFinderConst.PATRONYMIC).StringValue;
             }
 
-            if (!string.IsNullOrEmpty(document.GetField(ResumeFinderConst.JOB).ToString()))
+            if (!string.IsNullOrEmpty(document.GetField(ResumeFinderConst.JOB)?.ToString()))
             {
                 job = document.GetField(ResumeFinderConst.JOB).StringValue;
             }
             
-            if (long.Parse(document.GetField(ResumeFinderConst.USER_ID).StringValue) > 0)
+            if (long.TryParse(document.GetField(ResumeFinderConst.USER_ID)?.StringValue, out var uid))
             {
-                userId = long.Parse(document.GetField(ResumeFinderConst.USER_ID).StringValue);
+                if (uid > 0)
+                {
+                    userId = uid;   
+                }
             }
             
-            if (!string.IsNullOrEmpty(document.GetField(ResumeFinderConst.ABOUT_ME).ToString()))
+            if (!string.IsNullOrEmpty(document.GetField(ResumeFinderConst.ABOUT_ME)?.ToString()))
             {
-                aboutMe = document.GetField(ResumeFinderConst.ABOUT_ME).StringValue;
+                aboutMe = document.GetField(ResumeFinderConst.ABOUT_ME)?.StringValue;
             }
             
-            if (long.Parse(document.GetField(ResumeFinderConst.PROFILE_INFO_ID).StringValue) > 0)
+            if (long.TryParse(document.GetField(ResumeFinderConst.PROFILE_INFO_ID)?.StringValue, out var pid))
             {
-                profileInfoId = long.Parse(document.GetField(ResumeFinderConst.PROFILE_INFO_ID).StringValue);
+                if (pid > 0)
+                {
+                    profileInfoId = pid;   
+                }
             }
 
             var isShortFirstName = bool.Parse(document.GetField(ResumeFinderConst.IS_SHORT_FIRST_NAME).StringValue);
