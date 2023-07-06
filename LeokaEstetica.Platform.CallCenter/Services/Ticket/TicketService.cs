@@ -8,6 +8,8 @@ using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Database.Access.Ticket;
 using LeokaEstetica.Platform.Models.Dto.Output.Ticket;
 using LeokaEstetica.Platform.Models.Entities.Ticket;
+using LeokaEstetica.Platform.Notifications.Abstractions;
+using LeokaEstetica.Platform.Notifications.Consts;
 using Microsoft.Extensions.Logging;
 
 [assembly: InternalsVisibleTo("LeokaEstetica.Platform.Tests")]
@@ -24,6 +26,7 @@ internal sealed class TicketService : ITicketService
     private readonly IUserRepository _userRepository;
     private readonly IMapper _mapper;
     private readonly IAccessTicketRepository _accessTicketRepository;
+    private readonly ITicketNotificationService _ticketNotificationService;
 
     /// <summary>
     /// Конструктор.
@@ -33,17 +36,20 @@ internal sealed class TicketService : ITicketService
     /// <param name="userRepository">Репозиторий пользователя.</param>
     /// <param name="mapper">Автомаппер.</param>
     /// <param name="accessTicketRepository">Репозиторий доступа к тикетам.</param>
+    /// <param name="ticketNotificationService">Сервис уведомлений тикетов.</param>
     public TicketService(ITicketRepository ticketRepository,
         ILogger<TicketService> logger,
         IUserRepository userRepository,
         IMapper mapper,
-        IAccessTicketRepository accessTicketRepository)
+        IAccessTicketRepository accessTicketRepository,
+        ITicketNotificationService ticketNotificationService)
     {
         _ticketRepository = ticketRepository;
         _logger = logger;
         _userRepository = userRepository;
         _mapper = mapper;
         _accessTicketRepository = accessTicketRepository;
+        _ticketNotificationService = ticketNotificationService;
     }
 
     #region Публичные методы.
@@ -295,6 +301,63 @@ internal sealed class TicketService : ITicketService
             return result;
         }
 
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Метод закрывает тикет (идет проставление статуса тикета "Закрыт").
+    /// </summary>
+    /// <param name="closeTicketInput">Входная модель.</param>
+    /// <param name="token">Токен.</param>
+    public async Task CloseTicketAsync(long ticketId, string account, string token)
+    {
+        try
+        {
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+            
+            // Проверяем, входит ли текущий пользователь в участники тикета.
+            // Если нет, то не позволяем ему закрыть тикет.
+            var isAccess = await _accessTicketRepository.IfExistsTicketMemberAsync(userId, ticketId);
+
+            if (!isAccess)
+            {
+                // TODO: тут еще бросать уведомлялку как варнинг пользователю об этом.
+                var ex = new InvalidOperationException("Пользователь не является участником тикета." +
+                                                       $" Закрытие тикета невозможно. UserId: {userId}." +
+                                                       $"TicketId: {ticketId}");
+                throw ex;
+            }
+            
+            // Пользователь является участником тикета, позволяем ему закрыть тикет.
+            var isClosed = await _ticketRepository.CloseTicketAsync(ticketId);
+
+            if (!isClosed)
+            {
+                if (!string.IsNullOrEmpty(token))
+                {
+                    await _ticketNotificationService.SendNotificationErrorCloseTicketAsync("Ошибка",
+                        "У Вас нет прав не закрытие тикета. Если Вы уверены, что это ошибка, то напишите в тех.поддержкую" +
+                        $"Id тикета: {ticketId}",
+                        NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, token);   
+                }
+
+                var ex = new InvalidOperationException("Ошибка при закрытии тикета. " +
+                                                       $"TicketId: {ticketId}. " +
+                                                       $"UserId: {userId}");
+                throw ex;
+            }
+        }
+        
         catch (Exception ex)
         {
             _logger.LogError(ex, ex.Message);

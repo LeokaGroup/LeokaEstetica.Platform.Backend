@@ -81,5 +81,13 @@ public class NotificationsModule : Module
         builder.RegisterType<RefundsNotificationService>()
             .As<IRefundsNotificationService>()
             .InstancePerLifetimeScope();
+        
+        // Сервис уведомлений тикетов.
+        builder.RegisterType<TicketNotificationService>()
+            .Named<ITicketNotificationService>("TicketNotificationService")
+            .InstancePerLifetimeScope();
+        builder.RegisterType<TicketNotificationService>()
+            .As<ITicketNotificationService>()
+            .InstancePerLifetimeScope();
     }
 }
