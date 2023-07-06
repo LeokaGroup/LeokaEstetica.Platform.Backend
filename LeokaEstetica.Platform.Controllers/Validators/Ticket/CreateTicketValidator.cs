@@ -16,14 +16,14 @@ public class CreateTicketValidator : AbstractValidator<CreateTicketInput>
     {
         RuleFor(p => p.Title)
             .NotEmpty()
-            .WithMessage(GlobalConfigKeys.TicketValidation.NOT_VALID_CATEGORY_NAME)
+            .WithMessage(ValidationConst.TicketValidation.NOT_VALID_CATEGORY_NAME)
             .NotNull()
-            .WithMessage(GlobalConfigKeys.TicketValidation.NOT_VALID_CATEGORY_NAME);
+            .WithMessage(ValidationConst.TicketValidation.NOT_VALID_CATEGORY_NAME);
 
         RuleFor(p => p.Message)
             .NotEmpty()
-            .WithMessage(GlobalConfigKeys.TicketValidation.EMPTY_MESSAGE)
+            .WithMessage(ValidationConst.TicketValidation.EMPTY_MESSAGE)
             .NotNull()
-            .WithMessage(GlobalConfigKeys.TicketValidation.EMPTY_MESSAGE);
+            .WithMessage(ValidationConst.TicketValidation.EMPTY_MESSAGE);
     }
 }

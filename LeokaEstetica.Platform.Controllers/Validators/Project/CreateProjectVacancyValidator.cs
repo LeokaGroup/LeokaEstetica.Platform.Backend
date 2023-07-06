@@ -16,14 +16,14 @@ public class CreateProjectVacancyValidator : AbstractValidator<CreateProjectVaca
     {
         RuleFor(p => p.VacancyName)
             .NotNull()
-            .WithMessage(GlobalConfigKeys.ProjectVacancy.EMPTY_PROJECT_VACANCY_NAME)
+            .WithMessage(ValidationConst.ProjectVacancy.EMPTY_PROJECT_VACANCY_NAME)
             .NotEmpty()
-            .WithMessage(GlobalConfigKeys.ProjectVacancy.EMPTY_PROJECT_VACANCY_NAME);
+            .WithMessage(ValidationConst.ProjectVacancy.EMPTY_PROJECT_VACANCY_NAME);
 
         RuleFor(p => p.VacancyName)
             .NotNull()
-            .WithMessage(GlobalConfigKeys.ProjectVacancy.EMPTY_PROJECT_VACANCY_TEXT)
+            .WithMessage(ValidationConst.ProjectVacancy.EMPTY_PROJECT_VACANCY_TEXT)
             .NotEmpty()
-            .WithMessage(GlobalConfigKeys.ProjectVacancy.EMPTY_PROJECT_VACANCY_TEXT);
+            .WithMessage(ValidationConst.ProjectVacancy.EMPTY_PROJECT_VACANCY_TEXT);
     }
 }

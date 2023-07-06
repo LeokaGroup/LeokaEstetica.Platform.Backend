@@ -14,10 +14,10 @@ public class GetProjectValidator : AbstractValidator<GetProjectValidationModel>
     {
         RuleFor(p => p.ProjectId)
             .Must(p => p > 0)
-            .WithMessage(p => GlobalConfigKeys.ProjectValidation.NOT_VALID_PROJECT_ID + p.ProjectId);
+            .WithMessage(p => ValidationConst.ProjectValidation.NOT_VALID_PROJECT_ID + p.ProjectId);
         
         RuleFor(p => p.Mode)
             .Must(p => p != ModeEnum.None)
-            .WithMessage(p => GlobalConfigKeys.ProjectValidation.EMPTY_MODE + p.Mode);
+            .WithMessage(p => ValidationConst.ProjectValidation.EMPTY_MODE + p.Mode);
     }
 }

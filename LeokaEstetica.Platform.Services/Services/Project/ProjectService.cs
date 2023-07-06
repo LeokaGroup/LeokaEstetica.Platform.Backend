@@ -659,7 +659,7 @@ internal sealed class ProjectService : IProjectService
                 var ex = new DublicateProjectVacancyException();
                 await _projectNotificationsService.SendNotificationErrorDublicateAttachProjectVacancyAsync(
                     "Что то не так...",
-                    GlobalConfigKeys.ProjectVacancy.DUBLICATE_PROJECT_VACANCY,
+                    ValidationConst.ProjectVacancy.DUBLICATE_PROJECT_VACANCY,
                     NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, token);
                 throw ex;
             }

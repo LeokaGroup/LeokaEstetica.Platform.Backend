@@ -44,7 +44,7 @@ public sealed class ValidationExcludeErrorsService : IValidationExcludeErrorsSer
             if (cacheFields is not null && cacheFields.Any())
             {
                 await _validationExcludeErrorsCacheService
-                    .RefreshCacheAsync(GlobalConfigKeys.Cache.VALIDATION_EXCLUDE_KEY);
+                    .RefreshCacheAsync(CacheConst.Cache.VALIDATION_EXCLUDE_KEY);
                 
                 var excludeCacheErrors = cacheFields.Select(x => x.ParamName);
                 Exclude(ref errors, excludeCacheErrors);

@@ -15,6 +15,6 @@ public class GetTicketValidator : AbstractValidator<long>
     {
         RuleFor(p => p)
             .Must(p => p > 0)
-            .WithMessage(GlobalConfigKeys.TicketValidation.NOT_VALID_TICKET_ID);
+            .WithMessage(ValidationConst.TicketValidation.NOT_VALID_TICKET_ID);
     }
 }

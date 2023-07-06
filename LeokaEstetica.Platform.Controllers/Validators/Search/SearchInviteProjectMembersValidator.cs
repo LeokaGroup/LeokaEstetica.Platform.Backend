@@ -13,10 +13,10 @@ public class SearchInviteProjectMembersValidator : AbstractValidator<SearchProje
     {
         RuleFor(p => p.SearchText)
             .NotEmpty()
-            .WithMessage(GlobalConfigKeys.SearchProject.NOT_EMPTY_SEARCH_TEXT)
+            .WithMessage(ValidationConst.SearchProject.NOT_EMPTY_SEARCH_TEXT)
             .NotNull()
-            .WithMessage(GlobalConfigKeys.SearchProject.NOT_EMPTY_SEARCH_TEXT)
+            .WithMessage(ValidationConst.SearchProject.NOT_EMPTY_SEARCH_TEXT)
             .MaximumLength(100)
-            .WithMessage(GlobalConfigKeys.SearchProject.MAX_LENGHT_EXCEEDED);
+            .WithMessage(ValidationConst.SearchProject.MAX_LENGHT_EXCEEDED);
     }
 }

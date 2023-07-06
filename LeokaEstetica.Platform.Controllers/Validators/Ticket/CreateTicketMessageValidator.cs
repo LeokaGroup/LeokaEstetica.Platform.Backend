@@ -16,14 +16,14 @@ public class CreateTicketMessageValidator : AbstractValidator<CreateMessageInput
     {
         RuleFor(p => p.TicketId)
             .NotEmpty()
-            .WithMessage(GlobalConfigKeys.TicketValidation.NOT_VALID_TICKET_ID)
+            .WithMessage(ValidationConst.TicketValidation.NOT_VALID_TICKET_ID)
             .NotNull()
-            .WithMessage(GlobalConfigKeys.TicketValidation.NOT_VALID_TICKET_ID);
+            .WithMessage(ValidationConst.TicketValidation.NOT_VALID_TICKET_ID);
 
         RuleFor(p => p.Message)
             .NotEmpty()
-            .WithMessage(GlobalConfigKeys.TicketValidation.EMPTY_MESSAGE)
+            .WithMessage(ValidationConst.TicketValidation.EMPTY_MESSAGE)
             .NotNull()
-            .WithMessage(GlobalConfigKeys.TicketValidation.EMPTY_MESSAGE);
+            .WithMessage(ValidationConst.TicketValidation.EMPTY_MESSAGE);
     }
 }

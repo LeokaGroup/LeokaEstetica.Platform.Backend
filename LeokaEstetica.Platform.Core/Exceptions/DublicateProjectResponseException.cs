@@ -7,7 +7,7 @@ namespace LeokaEstetica.Platform.Core.Exceptions;
 /// </summary>
 public class DublicateProjectResponseException : Exception
 {
-    public DublicateProjectResponseException() : base(GlobalConfigKeys.ProjectResponse.DUBLICATE_PROJECT_RESPONSE)
+    public DublicateProjectResponseException() : base(ValidationConst.ProjectResponse.DUBLICATE_PROJECT_RESPONSE)
     {
     }
 }

@@ -7,7 +7,7 @@ namespace LeokaEstetica.Platform.Core.Exceptions;
 /// </summary>
 public class DublicateProjectVacancyException : Exception
 {
-    public DublicateProjectVacancyException() : base(GlobalConfigKeys.ProjectVacancy.DUBLICATE_PROJECT_VACANCY)
+    public DublicateProjectVacancyException() : base(ValidationConst.ProjectVacancy.DUBLICATE_PROJECT_VACANCY)
     {
     }
 }

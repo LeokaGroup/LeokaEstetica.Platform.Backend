@@ -13,14 +13,14 @@ public class CreateVacancyValidator : AbstractValidator<VacancyInput>
     {
         RuleFor(p => p.VacancyName)
             .NotEmpty()
-            .WithMessage(GlobalConfigKeys.Vacancy.EMPTY_VACANCY_NAME)
+            .WithMessage(ValidationConst.Vacancy.EMPTY_VACANCY_NAME)
             .NotNull()
-            .WithMessage(GlobalConfigKeys.Vacancy.EMPTY_VACANCY_NAME);
+            .WithMessage(ValidationConst.Vacancy.EMPTY_VACANCY_NAME);
 
         RuleFor(p => p.VacancyName)
             .NotEmpty()
-            .WithMessage(GlobalConfigKeys.Vacancy.EMPTY_VACANCY_TEXT)
+            .WithMessage(ValidationConst.Vacancy.EMPTY_VACANCY_TEXT)
             .NotNull()
-            .WithMessage(GlobalConfigKeys.Vacancy.EMPTY_VACANCY_TEXT);
+            .WithMessage(ValidationConst.Vacancy.EMPTY_VACANCY_TEXT);
     }
 }
