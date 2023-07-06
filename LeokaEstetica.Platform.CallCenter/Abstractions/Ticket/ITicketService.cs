@@ -52,4 +52,11 @@ public interface ITicketService
     /// <param name="account">Аккаунт.</param>
     /// <returns>Список сообщений.</returns>
     Task<CreateTicketMessageOutput> CreateTicketMessageAsync(long ticketId, string message, string account);
+
+    /// <summary>
+    /// Метод закрывает тикет (идет проставление статуса тикета "Закрыт").
+    /// </summary>
+    /// <param name="closeTicketInput">Входная модель.</param>
+    /// <param name="token">Токен.</param>
+    Task CloseTicketAsync(long ticketId, string account, string token);
 }

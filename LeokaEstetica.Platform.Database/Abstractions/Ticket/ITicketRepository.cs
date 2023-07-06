@@ -63,4 +63,11 @@ public interface ITicketRepository
     /// <param name="userId">Id пользователя.</param>
     /// <returns>Сообщения тикета.</returns>
     Task<IEnumerable<TicketMessageEntity>> CreateTicketMessageAsync(long ticketId, string message, long userId);
+
+    /// <summary>
+    /// Метод закрывает тикет (проставляя ему статус "Закрыт").
+    /// </summary>
+    /// <param name="ticketId">Id тикета.</param>
+    /// <returns>Признак закрытия тикета.</returns>
+    Task<bool> CloseTicketAsync(long ticketId);
 }

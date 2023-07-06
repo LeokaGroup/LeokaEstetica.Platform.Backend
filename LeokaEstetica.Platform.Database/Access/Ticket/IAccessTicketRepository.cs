@@ -12,4 +12,12 @@ public interface IAccessTicketRepository
     /// <param name="userId">Id пользователя.</param>
     /// <returns>Список ролей пользователя.</returns>
     Task<IEnumerable<int>> GetTicketUserRolesAsync(long userId);
+
+    /// <summary>
+    /// Метод проверяет, есть ли текущий пользователь в участниках тикета.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <param name="ticketId">Id тикета.</param>
+    /// <returns>Признак проверки.</returns>
+    Task<bool> IfExistsTicketMemberAsync(long userId, long ticketId);
 }
