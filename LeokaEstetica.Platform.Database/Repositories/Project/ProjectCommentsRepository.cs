@@ -74,13 +74,13 @@ internal sealed class ProjectCommentsRepository : IProjectCommentsRepository
                 join pcm in _pgContext.ProjectCommentsModeration
                     on pc.CommentId
                     equals pcm.CommentId
-                where pc.ProjectId == projectId && 
-                !new[]
-                    {
-                        (int)ProjectModerationStatusEnum.ModerationProject, // На модерации.
-                        (int)ProjectModerationStatusEnum.RejectedProject // Отклонен.
-                    }
-                    .Contains(pcm.StatusId)
+                where pc.ProjectId == projectId &&
+                      !new[]
+                          {
+                              (int)ProjectModerationStatusEnum.ModerationProject, // На модерации.
+                              (int)ProjectModerationStatusEnum.RejectedProject // Отклонен.
+                          }
+                          .Contains(pcm.StatusId)
                 select new ProjectCommentEntity
                 {
                     CommentId = pc.CommentId,
@@ -93,5 +93,42 @@ internal sealed class ProjectCommentsRepository : IProjectCommentsRepository
             .ToListAsync();
 
         return result;
+    }
+
+    /// <summary>
+    /// Метод получает все комментарии проектов.
+    /// В память все это не выгружаем.
+    /// </summary>
+    /// <returns>Запрос списка комментариев проектов.</returns>
+    public async Task<IQueryable<ProjectCommentEntity>> GetAllProjectCommentsAsync()
+    {
+        var result = (from pc in _pgContext.ProjectComments
+                join pcm in _pgContext.ProjectCommentsModeration
+                    on pc.CommentId
+                    equals pcm.CommentId
+                    into table
+                from tbl in table.DefaultIfEmpty()
+                select new ProjectCommentEntity
+                {
+                    CommentId = pc.CommentId,
+                    Comment = pc.Comment,
+                    Created = pc.Created,
+                    UserId = pc.UserId,
+                    IsMyComment = pc.IsMyComment,
+                    ProjectId = pc.ProjectId
+                })
+            .AsQueryable();
+
+        if (_pgContext.ProjectCommentsModeration.AsQueryable().Any())
+        {
+            result = result.Where(pcm => !new[]
+                {
+                    (long)ProjectModerationStatusEnum.ModerationProject, // На модерации.
+                    (long)ProjectModerationStatusEnum.RejectedProject // Отклонен.
+                }
+                .Contains(pcm.ModerationStatusId));
+        }
+
+        return await Task.FromResult(result);
     }
 }

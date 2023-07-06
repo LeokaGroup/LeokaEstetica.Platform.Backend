@@ -176,5 +176,7 @@ public class MappingProfile : Profile
         CreateMap<MainInfoTicketEntity, TicketOutput>();
         
         CreateMap<TicketMessageEntity, TicketMessageOutput>();
+        
+        CreateMap<ProjectCommentEntity, LastProjectCommentsOutput>();
     }
 }

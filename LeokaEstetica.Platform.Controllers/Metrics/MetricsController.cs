@@ -16,17 +16,21 @@ public class MetricsController : BaseController
 {
     private readonly IUserMetricsService _userMetricsService;
     private readonly IMapper _mapper;
+    private readonly IProjectMetricsService _projectMetricsService;
 
     /// <summary>
     /// Конструктор.
     /// </summary>
     /// <param name="userMetricsService">Сервис метрик пользователей.</param>
     /// <param name="mapper">Автомаппер.</param>
+    /// <param name="projectMetricsService">Сервис метрик проектов.</param>
     public MetricsController(IUserMetricsService userMetricsService, 
-        IMapper mapper)
+        IMapper mapper,
+        IProjectMetricsService projectMetricsService)
     {
         _userMetricsService = userMetricsService;
         _mapper = mapper;
+        _projectMetricsService = projectMetricsService;
     }
 
     /// <summary>
@@ -49,6 +53,25 @@ public class MetricsController : BaseController
         };
 
         result.NewUsers = UserMetricsHelper.CreateDisplayTextNewUsers(result.NewUsers.ToList());
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод получает последние 5 комментариев к проектам.
+    /// Проекты не повторяются.
+    /// </summary>
+    /// <returns>Список комментариев.</returns>
+    [HttpGet]
+    [Route("last-project-comments")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<LastProjectCommentsOutput>))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<IEnumerable<LastProjectCommentsOutput>> GetLastProjectCommentsAsync()
+    {
+        var result = await _projectMetricsService.GetLastProjectCommentsAsync();
 
         return result;
     }

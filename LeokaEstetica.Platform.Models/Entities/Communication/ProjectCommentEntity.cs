@@ -43,6 +43,11 @@ public class ProjectCommentEntity
     /// Id пользователя.
     /// </summary>
     public long UserId { get; set; }
+    
+    /// <summary>
+    /// Id статуса модерации.
+    /// </summary>
+    public int ModerationStatusId { get; set; }
 
     /// <summary>
     /// Список комментариев на модерации.
@@ -55,4 +60,9 @@ public class ProjectCommentEntity
     /// </summary>
     [JsonIgnore]
     public UserEntity User { get; set; }
+    
+    /// <summary>
+    /// FK.
+    /// </summary>
+    public ModerationStatusEntity ModerationStatus { get; set; }
 }

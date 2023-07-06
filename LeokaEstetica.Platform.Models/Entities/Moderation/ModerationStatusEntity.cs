@@ -1,3 +1,5 @@
+using LeokaEstetica.Platform.Models.Entities.Communication;
+
 namespace LeokaEstetica.Platform.Models.Entities.Moderation;
 
 /// <summary>
@@ -10,6 +12,7 @@ public class ModerationStatusEntity
         ProjectCommentsModeration = new HashSet<ProjectCommentModerationEntity>();
         ModerationProjects = new HashSet<ModerationProjectEntity>();
         ModerationResumes = new HashSet<ModerationResumeEntity>();
+        ProjectComments = new HashSet<ProjectCommentEntity>();
     }
 
     /// <summary>
@@ -46,4 +49,9 @@ public class ModerationStatusEntity
     /// Список анкет модерации.
     /// </summary>
     public ICollection<ModerationResumeEntity> ModerationResumes { get; set; }
+
+    /// <summary>
+    /// Комментарии проекта.
+    /// </summary>
+    public ICollection<ProjectCommentEntity> ProjectComments { get; set; }
 }
