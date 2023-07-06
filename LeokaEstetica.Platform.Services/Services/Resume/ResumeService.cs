@@ -1,5 +1,6 @@
 using System.Runtime.CompilerServices;
 using AutoMapper;
+using LeokaEstetica.Platform.Access.Abstractions.User;
 using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.FareRule;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Resume;
@@ -29,6 +30,7 @@ internal sealed class ResumeService : IResumeService
     private readonly IUserRepository _userRepository;
     private readonly IFillColorResumeService _fillColorResumeService;
     private readonly IResumeModerationRepository _resumeModerationRepository;
+    private readonly IAccessUserService _accessUserService;
     
     /// <summary>
     /// Конструктор.
@@ -41,6 +43,7 @@ internal sealed class ResumeService : IResumeService
     /// <param name="userRepository">Репозиторий пользователей.</param>
     /// <param name="fillColorResumeService">Сервис выделение цветом резюме пользователей.</param>
     /// <param name="resumeModerationRepository">Репозиторий модерации анкет.</param>
+    /// <param name="accessUserService">Сервис проверки доступа.</param>
     public ResumeService(ILogger<ResumeService> logger, 
         IResumeRepository resumeRepository, 
         IMapper mapper, 
@@ -48,7 +51,8 @@ internal sealed class ResumeService : IResumeService
         IFareRuleRepository fareRuleRepository, 
         IUserRepository userRepository,
         IFillColorResumeService fillColorResumeService, 
-        IResumeModerationRepository resumeModerationRepository)
+        IResumeModerationRepository resumeModerationRepository,
+        IAccessUserService accessUserService)
     {
         _logger = logger;
         _resumeRepository = resumeRepository;
@@ -58,6 +62,7 @@ internal sealed class ResumeService : IResumeService
         _userRepository = userRepository;
         _fillColorResumeService = fillColorResumeService;
         _resumeModerationRepository = resumeModerationRepository;
+        _accessUserService = accessUserService;
     }
 
     #region Публичные методы.
@@ -71,6 +76,25 @@ internal sealed class ResumeService : IResumeService
         try
         {
             var profiles = await _resumeRepository.GetProfileInfosAsync();
+
+            var removedProfile = new List<ProfileInfoEntity>();
+            
+            // Исключаем анкеты, которые не проходят по условиям.
+            foreach (var p in profiles)
+            {
+                var isAccess = await _accessUserService.IsProfileEmptyAsync(p.UserId);
+                
+                if (isAccess)
+                {
+                    removedProfile.Add(p);
+                }
+            }
+
+            // Удаляем из списка те анкеты, которые не прошли по условиям.
+            if (removedProfile.Any())
+            {
+                profiles.RemoveAll(p => removedProfile.Select(x => x.ProfileInfoId).Contains(p.ProfileInfoId));
+            }
 
             var result = new ResumeResultOutput
             {
