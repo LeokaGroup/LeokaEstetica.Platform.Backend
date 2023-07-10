@@ -21,4 +21,11 @@ public interface IProjectCommentsRepository
     /// <param name="projectId">Id проекта.</param>
     /// <returns>Список комментариев проекта.</returns>
     Task<IEnumerable<ProjectCommentEntity>> GetProjectCommentsAsync(long projectId);
+    
+    /// <summary>
+    /// Метод получает все комментарии проектов.
+    /// В память все это не выгружаем.
+    /// </summary>
+    /// <returns>Запрос списка комментариев проектов.</returns>
+    Task<IQueryable<ProjectCommentEntity>> GetAllProjectCommentsAsync();
 }

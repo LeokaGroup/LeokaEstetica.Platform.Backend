@@ -96,6 +96,7 @@ internal sealed class OrdersJob : IJob
                 var orderEvent = JsonConvert.DeserializeObject<OrderEvent>(message);
 
                 // Проверяем статус платежа в ПС.
+                // TODO: Обработать здесь NRE!
                 var paymentId = orderEvent.PaymentId;
                 var newOrderStatus = await _payMasterService.CheckOrderStatusAsync(paymentId, _httpClient);
                 

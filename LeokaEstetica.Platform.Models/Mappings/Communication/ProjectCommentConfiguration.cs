@@ -44,6 +44,11 @@ public partial class ProjectCommentConfiguration : IEntityTypeConfiguration<Proj
         entity.HasIndex(u => u.CommentId)
             .HasDatabaseName("PK_ProjectComments_CommentId")
             .IsUnique();
+        
+        entity.HasOne(p => p.ModerationStatus)
+            .WithMany(b => b.ProjectComments)
+            .HasForeignKey(p => p.ModerationStatusId)
+            .HasConstraintName("FK_ModerationStatuses_StatusId");
 
         OnConfigurePartial(entity);
     }

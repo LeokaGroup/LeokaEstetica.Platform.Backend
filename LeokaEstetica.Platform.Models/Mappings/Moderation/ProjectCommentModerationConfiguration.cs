@@ -26,14 +26,14 @@ public partial class ProjectCommentModerationConfiguration : IEntityTypeConfigur
             .HasColumnType("bigint")
             .IsRequired();
         
-        entity.Property(e => e.StatusId)
-            .HasColumnName("StatusId")
+        entity.Property(e => e.ModerationStatusId)
+            .HasColumnName("ModerationStatusId")
             .HasColumnType("int")
             .IsRequired();
         
         entity.HasOne(p => p.ModerationStatuses)
             .WithMany(b => b.ProjectCommentsModeration)
-            .HasForeignKey(p => p.StatusId)
+            .HasForeignKey(p => p.ModerationStatusId)
             .HasConstraintName("FK_ProjectComments_StatusId");
         
         entity.HasOne(p => p.ProjectComment)

@@ -19,5 +19,15 @@ public class MetricsModule : Module
             .RegisterType<UserMetricsService>()
             .As<IUserMetricsService>()
             .InstancePerLifetimeScope();
+        
+        // Сервис метрик проектов.
+        builder
+            .RegisterType<ProjectMetricsService>()
+            .Named<IProjectMetricsService>("ProjectMetricsService")
+            .InstancePerLifetimeScope();
+        builder
+            .RegisterType<ProjectMetricsService>()
+            .As<IProjectMetricsService>()
+            .InstancePerLifetimeScope();
     }
 }

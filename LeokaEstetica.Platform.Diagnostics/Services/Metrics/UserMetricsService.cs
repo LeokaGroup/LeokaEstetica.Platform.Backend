@@ -1,14 +1,17 @@
+using System.Runtime.CompilerServices;
 using LeokaEstetica.Platform.Database.Abstractions.Metrics;
 using LeokaEstetica.Platform.Diagnostics.Abstractions.Metrics;
 using LeokaEstetica.Platform.Models.Entities.User;
 using Microsoft.Extensions.Logging;
+
+[assembly: InternalsVisibleTo("LeokaEstetica.Platform.Tests")]
 
 namespace LeokaEstetica.Platform.Diagnostics.Services.Metrics;
 
 /// <summary>
 /// Класс реализует методы сервиса метрик пользователей.
 /// </summary>
-public class UserMetricsService : IUserMetricsService
+internal sealed class UserMetricsService : IUserMetricsService
 {
     private readonly ILogger<UserMetricsService> _logger;
     private readonly IUserMetricsRepository _userMetricsRepository;

@@ -102,6 +102,7 @@ internal class BaseServiceTest
     protected readonly RefundsService RefundsService;
     protected readonly TicketService TicketService;
     protected readonly TelegramBotService TelegramBotService;
+    protected readonly ProjectMetricsService ProjectMetricsService;
 
     protected BaseServiceTest()
     {
@@ -233,5 +234,7 @@ internal class BaseServiceTest
             null);
 
         TelegramBotService = new TelegramBotService(null, AppConfiguration);
+        
+        ProjectMetricsService = new ProjectMetricsService(projectCommentsRepository, mapper, projectRepository);
     }
 }
