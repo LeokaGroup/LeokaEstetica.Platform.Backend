@@ -83,8 +83,9 @@ internal sealed class ResumeService : IResumeService
             foreach (var p in profiles)
             {
                 var isAccess = await _accessUserService.IsProfileEmptyAsync(p.UserId);
+                var isRemarks = await _resumeModerationRepository.GetResumeRemarksAsync(p.ProfileInfoId);
                 
-                if (isAccess)
+                if (isAccess || isRemarks.Any())
                 {
                     removedProfile.Add(p);
                 }
