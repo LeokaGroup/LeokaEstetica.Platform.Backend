@@ -19,7 +19,9 @@ public class AuthFilter : Attribute, IAuthorizationFilter
         "GetFareRules", // Правила тарифов.
         "AddConnectionIdCache",
         "GetTicketCategories", // Категории тикетов.
-        "CreateTicket"
+        "CreateTicket",
+        "GetLastProjectComments",
+        "GetNewUsers"
     };
     
     /// <summary>

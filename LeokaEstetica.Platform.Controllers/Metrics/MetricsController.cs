@@ -1,8 +1,10 @@
 using AutoMapper;
 using LeokaEstetica.Platform.Base;
+using LeokaEstetica.Platform.Controllers.Filters;
 using LeokaEstetica.Platform.Diagnostics.Abstractions.Metrics;
 using LeokaEstetica.Platform.Diagnostics.Helpers;
 using LeokaEstetica.Platform.Models.Dto.Output.Metrics;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LeokaEstetica.Platform.Controllers.Metrics;
@@ -10,6 +12,7 @@ namespace LeokaEstetica.Platform.Controllers.Metrics;
 /// <summary>
 /// Контроллер работы с метриками.
 /// </summary>
+[AuthFilter]
 [ApiController]
 [Route("metrics")]
 public class MetricsController : BaseController
@@ -37,6 +40,7 @@ public class MetricsController : BaseController
     /// Метод получает список новых пользователей за текущий месяц.
     /// </summary>
     /// <returns>Список новых пользователей.</returns>
+    [AllowAnonymous]
     [HttpGet]
     [Route("new-users")]
     [ProducesResponseType(200, Type = typeof(NewUserMetricsResult))]
@@ -62,6 +66,7 @@ public class MetricsController : BaseController
     /// Проекты не повторяются.
     /// </summary>
     /// <returns>Список комментариев.</returns>
+    [AllowAnonymous]
     [HttpGet]
     [Route("last-project-comments")]
     [ProducesResponseType(200, Type = typeof(IEnumerable<LastProjectCommentsOutput>))]

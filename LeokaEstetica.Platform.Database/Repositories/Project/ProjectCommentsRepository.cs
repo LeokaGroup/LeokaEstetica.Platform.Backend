@@ -39,18 +39,20 @@ internal sealed class ProjectCommentsRepository : IProjectCommentsRepository
                 Created = DateTime.UtcNow,
                 ProjectId = projectId,
                 UserId = userId,
-                IsMyComment = true
+                IsMyComment = true,
+                ModerationStatusId = (int)ProjectModerationStatusEnum.ModerationProject
             };
             await _pgContext.ProjectComments.AddAsync(prj);
             await _pgContext.SaveChangesAsync();
             
             // Отправляем комментарий к проекту на модерацию.
-            await _pgContext.ProjectCommentsModeration.AddAsync(new ProjectCommentModerationEntity
+            var prjModeration = new ProjectCommentModerationEntity
             {
                 CommentId = prj.CommentId,
                 DateModeration = DateTime.UtcNow,
-                StatusId = (int)ProjectModerationStatusEnum.ModerationProject
-            });
+                ModerationStatusId = (int)ProjectModerationStatusEnum.ModerationProject
+            };
+            await _pgContext.ProjectCommentsModeration.AddAsync(prjModeration);
             await _pgContext.SaveChangesAsync();
             
             await transaction.CommitAsync();
@@ -80,7 +82,7 @@ internal sealed class ProjectCommentsRepository : IProjectCommentsRepository
                               (int)ProjectModerationStatusEnum.ModerationProject, // На модерации.
                               (int)ProjectModerationStatusEnum.RejectedProject // Отклонен.
                           }
-                          .Contains(pcm.StatusId)
+                          .Contains(pcm.ModerationStatusId)
                 select new ProjectCommentEntity
                 {
                     CommentId = pc.CommentId,
@@ -106,8 +108,6 @@ internal sealed class ProjectCommentsRepository : IProjectCommentsRepository
                 join pcm in _pgContext.ProjectCommentsModeration
                     on pc.CommentId
                     equals pcm.CommentId
-                    into table
-                from tbl in table.DefaultIfEmpty()
                 select new ProjectCommentEntity
                 {
                     CommentId = pc.CommentId,
@@ -115,7 +115,8 @@ internal sealed class ProjectCommentsRepository : IProjectCommentsRepository
                     Created = pc.Created,
                     UserId = pc.UserId,
                     IsMyComment = pc.IsMyComment,
-                    ProjectId = pc.ProjectId
+                    ProjectId = pc.ProjectId,
+                    ModerationStatusId = pc.ModerationStatusId
                 })
             .AsQueryable();
 

@@ -16,17 +16,21 @@ internal sealed class ProjectMetricsService : IProjectMetricsService
 {
     private readonly IProjectCommentsRepository _projectCommentsRepository;
     private readonly IMapper _mapper;
+    private readonly IProjectRepository _projectRepository;
     
     /// <summary>
     /// Конструктор.
     /// </summary>
     /// <param name="projectCommentsRepository">Репозиторий комментариев проектов.</param>
     /// <param name="mapper">Автомаппер.</param>
+    /// <param name="projectRepository">Репозиторий проектов.</param>
     public ProjectMetricsService(IProjectCommentsRepository projectCommentsRepository,
-        IMapper mapper)
+        IMapper mapper,
+        IProjectRepository projectRepository)
     {
         _projectCommentsRepository = projectCommentsRepository;
         _mapper = mapper;
+        _projectRepository = projectRepository;
     }
 
     /// <summary>
@@ -44,13 +48,19 @@ internal sealed class ProjectMetricsService : IProjectMetricsService
         }
 
         var filterResult = await comments
-            .OrderByDescending(o => o.Created)
             .Take(5)
             .GroupBy(g => g.ProjectId)
-            .Select(x => x.First())
+            .Select(x => x.OrderByDescending(o => o.Created).First())
             .ToListAsync();
-        
+
         var result = _mapper.Map<List<LastProjectCommentsOutput>>(filterResult);
+
+        // Заполняем названия проектов.
+        foreach (var prj in result)
+        {
+            var project = await _projectRepository.GetProjectAsync(prj.ProjectId);
+            prj.ProjectName = project.UserProject.ProjectName;
+        }
 
         return result;
     }

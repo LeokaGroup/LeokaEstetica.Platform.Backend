@@ -22,7 +22,6 @@ namespace LeokaEstetica.Platform.WorkerServices.Jobs.RabbitMq;
 internal sealed class RefundsJob : IJob
 {
     private readonly IModel _channel;
-    private readonly IConnection _connection;
     private readonly IPayMasterService _payMasterService;
     private readonly HttpClient _httpClient;
     private readonly ICommerceRepository _commerceRepository;
@@ -52,8 +51,8 @@ internal sealed class RefundsJob : IJob
             DispatchConsumersAsync = true
         };
         
-        _connection = factory.CreateConnection();
-        _channel = _connection.CreateModel();
+        var connection = factory.CreateConnection();
+        _channel = connection.CreateModel();
 
         _channel.QueueDeclare(queue: QueueTypeEnum.RefundsQueue.GetEnumDescription(), durable: false, exclusive: false,
             autoDelete: false, arguments: null);
@@ -87,6 +86,7 @@ internal sealed class RefundsJob : IJob
                 var refundEvent = JsonConvert.DeserializeObject<RefundEvent>(message);
 
                 // Проверяем статус возврата в ПС.
+                // TODO: Обработать здесь NRE!
                 var paymentId = refundEvent.PaymentId;
                 var newRefundStatus = await _payMasterService.CheckRefundStatusAsync(paymentId, _httpClient);
                 

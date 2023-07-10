@@ -177,6 +177,7 @@ public class MappingProfile : Profile
         
         CreateMap<TicketMessageEntity, TicketMessageOutput>();
         
-        CreateMap<ProjectCommentEntity, LastProjectCommentsOutput>();
+        CreateMap<ProjectCommentEntity, LastProjectCommentsOutput>()
+            .ForMember(a => a.Created, a => a.MapFrom(src => src.Created.ToString("g")));
     }
 }

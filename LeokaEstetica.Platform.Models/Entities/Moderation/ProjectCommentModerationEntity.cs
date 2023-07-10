@@ -25,7 +25,7 @@ public class ProjectCommentModerationEntity
     /// <summary>
     /// Id статуса.
     /// </summary>
-    public int StatusId { get; set; }
+    public int ModerationStatusId { get; set; }
 
     /// <summary>
     /// FK.

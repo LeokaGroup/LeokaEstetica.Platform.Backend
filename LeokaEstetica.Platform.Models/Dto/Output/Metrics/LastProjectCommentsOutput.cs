@@ -23,10 +23,15 @@ public class LastProjectCommentsOutput
     /// <summary>
     /// Дата создания комментария.
     /// </summary>
-    public DateTime Created { get; set; }
+    public string Created { get; set; }
 
     /// <summary>
     /// Id пользователя.
     /// </summary>
     public long UserId { get; set; }
+
+    /// <summary>
+    /// Название проекта.
+    /// </summary>
+    public string ProjectName { get; set; }
 }

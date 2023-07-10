@@ -235,6 +235,6 @@ internal class BaseServiceTest
 
         TelegramBotService = new TelegramBotService(null, AppConfiguration);
         
-        ProjectMetricsService = new ProjectMetricsService(projectCommentsRepository, mapper);
+        ProjectMetricsService = new ProjectMetricsService(projectCommentsRepository, mapper, projectRepository);
     }
 }
