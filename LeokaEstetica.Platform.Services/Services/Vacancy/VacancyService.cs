@@ -273,6 +273,8 @@ internal sealed class VacancyService : IVacancyService
                 return result;
             }
 
+            await DeleteIfVacancyRemarksAsync(catalogVacancies);
+
             // Выбираем пользователей, у которых есть подписка выше бизнеса. Только их выделяем цветом.
             result.CatalogVacancies = await _fillColorVacanciesService.SetColorBusinessVacancies(catalogVacancies,
                 _subscriptionRepository, _fareRuleRepository);
@@ -960,6 +962,33 @@ internal sealed class VacancyService : IVacancyService
         }
 
         return vacancies;
+    }
+    
+    /// <summary>
+    /// Метод удаляет из результата вакансии, которые не попадут в каталог из-за замечаний.
+    /// </summary>
+    /// <param name="vacancies">Список вакансий.</param>
+    private async Task DeleteIfVacancyRemarksAsync(List<CatalogVacancyOutput> vacancies)
+    {
+        var removedVacancies = new List<CatalogVacancyOutput>();
+            
+        // Исключаем вакансии, которые имеют неисправленные замечания.
+        foreach (var vac in vacancies)
+        {
+            var isRemarks = await _vacancyModerationRepository.GetVacancyRemarksAsync(vac.VacancyId);
+                
+            if (!isRemarks.Any())
+            {
+                continue;
+            }
+                
+            removedVacancies.Add(vac);
+        }
+
+        if (removedVacancies.Any())
+        {
+            removedVacancies.RemoveAll(v => removedVacancies.Select(x => x.VacancyId).Contains(v.VacancyId));
+        }
     }
     
     #endregion
