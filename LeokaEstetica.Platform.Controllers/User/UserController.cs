@@ -265,6 +265,7 @@ public class UserController : BaseController
             throw ex;
         }
 
-        await _userService.RestoreUserPasswordAsync(restorePasswordInput.RestorePassword, GetUserName());
+        await _userService.RestoreUserPasswordAsync(restorePasswordInput.RestorePassword, GetUserName(),
+            GetTokenFromHeader());
     }
 }

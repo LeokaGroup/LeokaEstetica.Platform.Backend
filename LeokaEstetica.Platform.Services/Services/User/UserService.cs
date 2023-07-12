@@ -47,6 +47,7 @@ internal sealed class UserService : IUserService
     private readonly IUserRedisService _userRedisService;
     private readonly IFareRuleRepository _fareRuleRepository;
     private readonly IAccessUserNotificationsService _accessUserNotificationsService;
+    private readonly INotificationsService _notificationsService;
 
     /// <summary>
     /// Конструктор.
@@ -61,6 +62,7 @@ internal sealed class UserService : IUserService
     /// <param name="resumeModerationRepository">Репозиторий модерации анкет.</param>
     /// <param name="fareRuleRepository">Репозиторий тарифов.</param>
     /// <param name="accessUserNotificationsService">Сервис уведомлений доступа пользователей.</param>
+    /// <param name="notificationsService">Сервис уведомлений.</param>
     public UserService(ILogger<UserService> logger, 
         IUserRepository userRepository, 
         IMapper mapper, 
@@ -72,7 +74,8 @@ internal sealed class UserService : IUserService
         IAccessUserService accessUserService, 
         IUserRedisService userRedisService, 
         IFareRuleRepository fareRuleRepository,
-        IAccessUserNotificationsService accessUserNotificationsService)
+        IAccessUserNotificationsService accessUserNotificationsService,
+        INotificationsService notificationsService)
     {
         _logger = logger;
         _userRepository = userRepository;
@@ -86,6 +89,7 @@ internal sealed class UserService : IUserService
         _userRedisService = userRedisService;
         _fareRuleRepository = fareRuleRepository;
         _accessUserNotificationsService = accessUserNotificationsService;
+        _notificationsService = notificationsService;
     }
 
     #region Публичные методы.
@@ -682,7 +686,8 @@ internal sealed class UserService : IUserService
     /// </summary>
     /// <param name="password">Новый пароль.</param>
     /// <param name="account">Аккаунт.</param>
-    public async Task RestoreUserPasswordAsync(string password, string account)
+    /// <param name="token">Токен.</param>
+    public async Task RestoreUserPasswordAsync(string password, string account, string token)
     {
         try
         {
@@ -696,6 +701,13 @@ internal sealed class UserService : IUserService
 
             var passwordHash = HashHelper.HashPassword(password);
             await _userRepository.RestoreUserPasswordAsync(passwordHash, userId);
+            
+            if (!string.IsNullOrEmpty(token))
+            {
+                await _notificationsService.SendNotifySuccessRestoreUserPasswordAsync("Все хорошо",
+                    "Пароль успешно изменен.",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);   
+            }
         }
         
         catch (Exception ex)

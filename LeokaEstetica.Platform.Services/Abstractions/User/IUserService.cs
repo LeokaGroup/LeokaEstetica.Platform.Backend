@@ -75,5 +75,6 @@ public interface IUserService
     /// </summary>
     /// <param name="password">Новый пароль.</param>
     /// <param name="account">Аккаунт.</param>
-    Task RestoreUserPasswordAsync(string password, string account);
+    /// <param name="token">Токен.</param>
+    Task RestoreUserPasswordAsync(string password, string account, string token);
 }
