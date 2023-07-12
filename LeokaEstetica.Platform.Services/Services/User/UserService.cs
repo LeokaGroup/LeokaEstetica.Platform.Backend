@@ -678,6 +678,34 @@ internal sealed class UserService : IUserService
     }
 
     /// <summary>
+    /// Метод запускает восстановление пароля пользователя.
+    /// </summary>
+    /// <param name="password">Новый пароль.</param>
+    /// <param name="account">Аккаунт.</param>
+    public async Task RestoreUserPasswordAsync(string password, string account)
+    {
+        try
+        {
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+
+            var passwordHash = HashHelper.HashPassword(password);
+            await _userRepository.RestoreUserPasswordAsync(passwordHash, userId);
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
+    /// <summary>
     /// Метод проверяет блокировку пользователя по параметру, который передали.
     /// Поочередно проверяем по почте, номеру телефона.
     /// </summary>

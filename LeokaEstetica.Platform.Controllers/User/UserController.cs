@@ -221,6 +221,11 @@ public class UserController : BaseController
     /// <returns>Признак успешного прохождения проверки.</returns>
     [HttpGet]
     [Route("restore/check")]
+    [ProducesResponseType(200, Type = typeof(bool))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
     public async Task<bool> CheckRestorePasswordAsync([FromQuery] Guid publicKey)
     {
         var validator = await new CheckRestorePasswordValidator().ValidateAsync(publicKey);
@@ -232,13 +237,34 @@ public class UserController : BaseController
             return false;
         }
 
-        return true;
+        var result = await _userService.CheckRestorePasswordAsync(publicKey, GetUserName());
+
+        return result;
     }
 
+    /// <summary>
+    /// Метод запускает восстановление пароля пользователя.
+    /// </summary>
+    /// <param name="restorePasswordInput">Входная модель.</param>
     [HttpPatch]
     [Route("restore")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
     public async Task RestoreUserPasswordAsync([FromBody] RestorePasswordInput restorePasswordInput)
     {
-        
+        var validator = await new RestorePasswordValidator().ValidateAsync(restorePasswordInput.RestorePassword);
+
+        if (validator.Errors.Any())
+        {
+            var ex = new InvalidOperationException("Передали невалидный пароль при восстановлении пароля.");
+            _logger.LogError(ex.Message);
+
+            throw ex;
+        }
+
+        await _userService.RestoreUserPasswordAsync(restorePasswordInput.RestorePassword, GetUserName());
     }
 }

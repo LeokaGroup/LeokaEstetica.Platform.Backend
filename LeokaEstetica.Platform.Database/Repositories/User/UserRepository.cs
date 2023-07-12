@@ -469,6 +469,25 @@ internal sealed class UserRepository : IUserRepository
         return true;
     }
 
+    /// <summary>
+    /// Метод восстанавливает пароль создавая новый.
+    /// </summary>
+    /// <param name="passwordHash">Хэш пароля.</param>
+    /// <param name="userId">Id пользователя.</param>
+    public async Task RestoreUserPasswordAsync(string passwordHash, long userId)
+    {
+        var user = await _pgContext.Users.FirstOrDefaultAsync(u => u.UserId == userId);
+
+        if (user is null)
+        {
+            throw new InvalidOperationException(
+                $"Не удалось получить пользователя для восстановления пароля. UserId: {userId}");
+        }
+        
+        user.PasswordHash = passwordHash;
+        await _pgContext.SaveChangesAsync();
+    }
+
     #endregion
 
     #region Приватные методы.

@@ -200,4 +200,11 @@ public interface IUserRepository
     /// <param name="endDate">Дата конца подписки.</param>
     /// <returns>Признак записи подписки пользователю.</returns>
     Task<bool> SetSubscriptionDatesAsync(long userId, DateTime startDate, DateTime endDate);
+
+    /// <summary>
+    /// Метод восстанавливает пароль создавая новый.
+    /// </summary>
+    /// <param name="passwordHash">Хэш пароля.</param>
+    /// <param name="userId">Id пользователя.</param>
+    Task RestoreUserPasswordAsync(string passwordHash, long userId);
 }

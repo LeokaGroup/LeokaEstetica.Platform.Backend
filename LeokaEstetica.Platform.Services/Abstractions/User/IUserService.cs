@@ -69,4 +69,11 @@ public interface IUserService
     /// <param name="account">Аккаунт.</param>
     /// <returns>Признак успешного прохождения проверки.</returns>
     Task<bool> CheckRestorePasswordAsync(Guid publicKey, string account);
+
+    /// <summary>
+    /// Метод запускает восстановление пароля пользователя.
+    /// </summary>
+    /// <param name="password">Новый пароль.</param>
+    /// <param name="account">Аккаунт.</param>
+    Task RestoreUserPasswordAsync(string password, string account);
 }
