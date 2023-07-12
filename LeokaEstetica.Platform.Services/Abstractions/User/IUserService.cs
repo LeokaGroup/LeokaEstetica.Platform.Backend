@@ -54,4 +54,11 @@ public interface IUserService
     /// <param name="firstName">Фамилия пользователя в системе ВК.</param>
     /// <returns>Данные пользователя.</returns>
     Task<UserSignInOutput> SignInAsync(long vkUserId, string firstName, string lastName);
+
+    /// <summary>
+    /// Метод отправляет код пользователю на почту для восстановления пароля.
+    /// <param name="account">Аккаунт.</param>
+    /// <param name="token">Токен.</param>
+    /// </summary>
+    Task SendCodeRestorePasswordAsync(string account, string token);
 }

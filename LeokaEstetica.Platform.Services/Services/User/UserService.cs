@@ -17,6 +17,8 @@ using LeokaEstetica.Platform.Messaging.Abstractions.Mail;
 using LeokaEstetica.Platform.Models.Dto.Input.User;
 using LeokaEstetica.Platform.Models.Dto.Output.User;
 using LeokaEstetica.Platform.Models.Entities.User;
+using LeokaEstetica.Platform.Notifications.Abstractions;
+using LeokaEstetica.Platform.Notifications.Consts;
 using LeokaEstetica.Platform.Redis.Abstractions.User;
 using LeokaEstetica.Platform.Services.Abstractions.User;
 using Microsoft.EntityFrameworkCore;
@@ -44,6 +46,7 @@ internal sealed class UserService : IUserService
     private readonly IAccessUserService _accessUserService;
     private readonly IUserRedisService _userRedisService;
     private readonly IFareRuleRepository _fareRuleRepository;
+    private readonly IAccessUserNotificationsService _accessUserNotificationsService;
 
     /// <summary>
     /// Конструктор.
@@ -57,6 +60,7 @@ internal sealed class UserService : IUserService
     /// <param name="profileRepository">Репозиторий подписок.</param>
     /// <param name="resumeModerationRepository">Репозиторий модерации анкет.</param>
     /// <param name="fareRuleRepository">Репозиторий тарифов.</param>
+    /// <param name="accessUserNotificationsService">Сервис уведомлений доступа пользователей.</param>
     public UserService(ILogger<UserService> logger, 
         IUserRepository userRepository, 
         IMapper mapper, 
@@ -67,7 +71,8 @@ internal sealed class UserService : IUserService
         IResumeModerationRepository resumeModerationRepository, 
         IAccessUserService accessUserService, 
         IUserRedisService userRedisService, 
-        IFareRuleRepository fareRuleRepository)
+        IFareRuleRepository fareRuleRepository,
+        IAccessUserNotificationsService accessUserNotificationsService)
     {
         _logger = logger;
         _userRepository = userRepository;
@@ -80,6 +85,7 @@ internal sealed class UserService : IUserService
         _accessUserService = accessUserService;
         _userRedisService = userRedisService;
         _fareRuleRepository = fareRuleRepository;
+        _accessUserNotificationsService = accessUserNotificationsService;
     }
 
     #region Публичные методы.
@@ -569,6 +575,63 @@ internal sealed class UserService : IUserService
             await tran.CommitAsync();
 
             return result;
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Метод отправляет код пользователю на почту для восстановления пароля.
+    /// <param name="account">Аккаунт.</param>
+    /// <param name="token">Токен.</param>
+    /// </summary>
+    public async Task SendCodeRestorePasswordAsync(string account, string token)
+    {
+        try
+        {
+            // Проверяем пользователя на блокировку.
+            var isBlocked = await _accessUserService.CheckBlockedUserAsync(account, false);
+
+            // Пользователь заблокирован, не даем ничего делать.
+            if (isBlocked)
+            {
+                if (!string.IsNullOrEmpty(token))
+                {
+                    await _accessUserNotificationsService.SendNotificationWarningBlockedUserProfileAsync("Внимание",
+                        "Невозможно восстановить пароль. Пользователь заблокирован. Причины блокировки можно узнать у тех.поддержки.",
+                        NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);   
+                }
+
+                throw new InvalidOperationException(
+                    "Пользователь заблокирован. Причины блокировки можно узнать у тех.поддержки.");
+            }
+            
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+
+            var guid = Guid.NewGuid();
+            
+            // Добавляем данные для восстановления в кэш.
+            await _userRedisService.AddRestoreUserDataCacheAsync(guid, userId);
+            
+            // Отправляем ссылку для восстановления пароля пользователю на почту.
+            await _mailingsService.SendLinkRestorePasswordAsync(account, guid);
+
+            if (!string.IsNullOrEmpty(token))
+            {
+                await _accessUserNotificationsService.SendNotificationSuccessLinkRestoreUserPasswordAsync("Все хорошо",
+                    "Дальнейшие инструкции по восстановлению пароля направлены Вам на почту.",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);   
+            }
         }
         
         catch (Exception ex)

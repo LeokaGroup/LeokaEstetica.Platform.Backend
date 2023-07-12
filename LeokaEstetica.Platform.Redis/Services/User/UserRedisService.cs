@@ -1,19 +1,20 @@
+using System.Runtime.CompilerServices;
 using AutoMapper;
 using LeokaEstetica.Platform.Models.Dto.Common.Cache;
-using LeokaEstetica.Platform.Models.Dto.Input.User;
 using LeokaEstetica.Platform.Models.Entities.User;
 using LeokaEstetica.Platform.Redis.Abstractions.User;
 using LeokaEstetica.Platform.Redis.Consts;
 using LeokaEstetica.Platform.Redis.Extensions;
 using Microsoft.Extensions.Caching.Distributed;
-using Newtonsoft.Json;
+
+[assembly: InternalsVisibleTo("LeokaEstetica.Platform.Tests")]
 
 namespace LeokaEstetica.Platform.Redis.Services.User;
 
 /// <summary>
 /// Класс реализует методы сервиса кэша пользователей.
 /// </summary>
-public class UserRedisService : IUserRedisService
+internal sealed class UserRedisService : IUserRedisService
 {
     private readonly IDistributedCache _redisCache;
     private readonly IMapper _mapper;
@@ -28,6 +29,8 @@ public class UserRedisService : IUserRedisService
         _redisCache = redisCache;
         _mapper = mapper;
     }
+
+    #region Публичные методы.
 
     /// <summary>
     /// Метод добавляет в кэш Id и токен пользователя.
@@ -118,4 +121,26 @@ public class UserRedisService : IUserRedisService
 
         return result;
     }
+
+    /// <summary>
+    /// Метод добавляет в кэш данные для восстановления пароля пользователя.
+    /// </summary>
+    /// <param name="guid">Guid для отправки его в ссылке.</param>
+    /// <param name="userId">Id пользователя.</param>
+    public async Task AddRestoreUserDataCacheAsync(Guid guid, long userId)
+    {
+        await _redisCache.SetStringAsync(userId.ToString(), ProtoBufExtensions.Serialize(guid),
+            new DistributedCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(24)
+            });
+    }
+
+    #endregion
+
+    #region Приватные методы.
+
+    
+
+    #endregion
 }

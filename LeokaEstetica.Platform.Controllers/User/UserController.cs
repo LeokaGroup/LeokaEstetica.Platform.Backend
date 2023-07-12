@@ -193,4 +193,14 @@ public class UserController : BaseController
 
         return result;
     }
+
+    /// <summary>
+    /// Метод отправляет код пользователю на почту для восстановления пароля.
+    /// </summary>
+    [HttpPost]
+    [Route("pre-restore")]
+    public async Task SendCodeRestorePasswordAsync()
+    {
+        await _userService.SendCodeRestorePasswordAsync(GetUserName(), GetTokenFromHeader());
+    }
 }

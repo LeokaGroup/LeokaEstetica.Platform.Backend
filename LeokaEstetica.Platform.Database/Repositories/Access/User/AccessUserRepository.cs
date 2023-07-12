@@ -43,7 +43,7 @@ internal sealed class AccessUserRepository : IAccessUserRepository
             }
         }
 
-        // Проверяем блокировку пользрвателя по почте.
+        // Проверяем блокировку пользователя по почте.
         var blockedEmailUser = await _pgContext.UserEmailBlackList
             .AnyAsync(u => u.Email.Equals(availableBlockedText));
 
