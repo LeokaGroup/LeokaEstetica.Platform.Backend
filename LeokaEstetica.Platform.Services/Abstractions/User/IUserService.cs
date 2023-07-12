@@ -61,4 +61,12 @@ public interface IUserService
     /// <param name="token">Токен.</param>
     /// </summary>
     Task SendCodeRestorePasswordAsync(string account, string token);
+    
+    /// <summary>
+    /// Метод проверяет доступ к восстановлению пароля пользователя.
+    /// </summary>
+    /// <param name="publicKey">Публичный код, который ранее высалался на почту пользователю.</param>
+    /// <param name="account">Аккаунт.</param>
+    /// <returns>Признак успешного прохождения проверки.</returns>
+    Task<bool> CheckRestorePasswordAsync(Guid publicKey, string account);
 }

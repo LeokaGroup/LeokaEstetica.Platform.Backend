@@ -40,4 +40,11 @@ public interface IUserRedisService
     /// <param name="guid">Guid для отправки его в ссылке.</param>
     /// <param name="userId">Id пользователя.</param>
     Task AddRestoreUserDataCacheAsync(Guid guid, long userId);
+
+    /// <summary>
+    /// Метод получает код восстановления пароля.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Признак успешной проверки.</returns>
+    Task<bool> GetRestoreUserDataCacheAsync(long userId);
 }

@@ -642,6 +642,42 @@ internal sealed class UserService : IUserService
     }
 
     /// <summary>
+    /// Метод проверяет доступ к восстановлению пароля пользователя.
+    /// </summary>
+    /// <param name="publicKey">Публичный код, который ранее высалался на почту пользователю.</param>
+    /// <param name="account">Аккаунт.</param>
+    /// <returns>Признак успешного прохождения проверки.</returns>
+    public async Task<bool> CheckRestorePasswordAsync(Guid publicKey, string account)
+    {
+        try
+        {
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+            
+            var guid = await _userRedisService.GetRestoreUserDataCacheAsync(userId);
+
+            if (!guid)
+            {
+                throw new InvalidOperationException(
+                    $"Не удалось проверить код {publicKey} для восстановления пароля пользователя.");
+            }
+
+            return true;
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
+    /// <summary>
     /// Метод проверяет блокировку пользователя по параметру, который передали.
     /// Поочередно проверяем по почте, номеру телефона.
     /// </summary>

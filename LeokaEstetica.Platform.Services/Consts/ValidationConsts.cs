@@ -79,6 +79,11 @@ public static class ValidationConsts
     public const string ACCESS_NOT_VALID_USER_ID = "Id пользователя <= 0.";
 
     /// <summary>
+    /// Если не валиден Guid.
+    /// </summary>
+    public const string NOT_VALID_PUBLIC_ID = "Публичный код невалиден.";
+
+    /// <summary>
     /// Класс описывает константы валидации Google.
     /// </summary>
     public static class Google

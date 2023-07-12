@@ -136,6 +136,32 @@ internal sealed class UserRedisService : IUserRedisService
             });
     }
 
+    /// <summary>
+    /// Метод получает код восстановления пароля.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Признак успешной проверки.</returns>
+    public async Task<bool> GetRestoreUserDataCacheAsync(long userId)
+    {
+        var result = await _redisCache.GetStringAsync(userId.ToString());
+
+        // Нет аккаунтов для удаления.
+        if (string.IsNullOrEmpty(result))
+        {
+            return false;
+        }
+
+        var redisResult = ProtoBufExtensions.Deserialize<Guid>(result);
+        
+        if (redisResult == Guid.Empty)
+        {
+            throw new InvalidOperationException(
+                "Не удалось получить код из кэша для проверки восстановления пароля пользователя.");
+        }
+
+        return true;
+    }
+
     #endregion
 
     #region Приватные методы.

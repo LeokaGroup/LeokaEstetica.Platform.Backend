@@ -6,7 +6,7 @@ namespace LeokaEstetica.Platform.Access.Services.User;
 /// <summary>
 /// Класс реализует методы сервиса проверки доступа пользователей.
 /// </summary>
-public class AccessUserService : IAccessUserService
+internal sealed class AccessUserService : IAccessUserService
 {
     private readonly IAccessUserRepository _accessUserRepository;
     
@@ -18,6 +18,8 @@ public class AccessUserService : IAccessUserService
     {
         _accessUserRepository = accessUserRepository;
     }
+
+    #region Публичные методы.
 
     /// <summary>
     /// Метод проверяет блокировку пользователя по параметру, который передали.
@@ -55,4 +57,12 @@ public class AccessUserService : IAccessUserService
 
         return false;
     }
+
+    #endregion
+
+    #region Приватные методы.
+
+    
+
+    #endregion
 }
