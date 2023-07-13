@@ -23,7 +23,6 @@ using LeokaEstetica.Platform.Redis.Abstractions.User;
 using LeokaEstetica.Platform.Services.Abstractions.User;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Microsoft.IdentityModel.Tokens;
 using ValidationFailure = FluentValidation.Results.ValidationFailure;
 
 [assembly: InternalsVisibleTo("LeokaEstetica.Platform.Tests")]
@@ -317,8 +316,8 @@ internal sealed class UserService : IUserService
 
             var userCode = await _userRepository.GetUserCodeByEmailAsync(email);
 
-            var claim = GetIdentityClaim(email);
-            var token = CreateTokenFactory(claim);
+            var claim = await _accessUserService.GetIdentityClaimAsync(email);
+            var token = await _accessUserService.CreateTokenFactoryAsync(claim);
             
             result.Email = email;
             result.Token = token;
@@ -341,95 +340,15 @@ internal sealed class UserService : IUserService
             throw;
         }
     }
-    
+
+    public Task<UserSignInOutput> RefreshTokenAsync(string account)
+    {
+        throw new NotImplementedException();
+    }
+
     #endregion
 
     #region Приватные методы.
-
-    /// <summary>
-    /// Метод выдает токен пользователю, если он прошел авторизацию.
-    /// </summary>
-    /// <param name="email">Email.</param>
-    /// <returns>Токен пользователя.</returns>
-    private ClaimsIdentity GetIdentityClaim(string email)
-    {
-        var claims = new List<Claim>
-        {
-            new(ClaimsIdentity.DefaultNameClaimType, email)
-        };
-
-        var claimsIdentity = new ClaimsIdentity(claims, "Token", 
-            ClaimsIdentity.DefaultNameClaimType, 
-            ClaimsIdentity.DefaultRoleClaimType);
-
-        return claimsIdentity;
-    }
-    
-    /// <summary>
-    /// Метод выдает токен пользователю, если он прошел авторизацию.
-    /// </summary>
-    /// <param name="vkUserId">VkUserId пользователя.</param>
-    /// <returns>Токен пользователя.</returns>
-    private ClaimsIdentity GetIdentityClaimVkUser(long vkUserId)
-    {
-        var claims = new List<Claim>
-        {
-            new(ClaimsIdentity.DefaultNameClaimType, vkUserId.ToString())
-        };
-
-        var claimsIdentity = new ClaimsIdentity(claims, "Token", 
-            ClaimsIdentity.DefaultNameClaimType, 
-            ClaimsIdentity.DefaultRoleClaimType);
-
-        return claimsIdentity;
-    }
-    
-    /// <summary>
-    /// Метод создает токен пользователю.
-    /// </summary>
-    /// <param name="claimsIdentity">Объект полномочий.</param>
-    /// <returns>Строка токена.</returns>
-    private string CreateTokenFactory(ClaimsIdentity claimsIdentity)
-    {
-        var now = DateTime.UtcNow.ToUniversalTime();
-        var jwt = new JwtSecurityToken(
-            issuer: AuthOptions.ISSUER,
-            audience: AuthOptions.AUDIENCE,
-            notBefore: now,
-            claims: claimsIdentity.Claims,
-            expires: now.Add(TimeSpan.FromMinutes(AuthOptions.LIFETIME)),
-            signingCredentials: new SigningCredentials(AuthOptions.GetSymmetricSecurityKey(), SecurityAlgorithms.HmacSha256));
-        var encodedJwt = new JwtSecurityTokenHandler().WriteToken(jwt);
-
-        return encodedJwt;
-    }
-    
-    /// <summary>
-    /// Метод обновляет токен.
-    /// </summary>
-    /// <param name="account">Аккаунт.</param>
-    /// <returns>Новые данные авторизации.</returns>
-    public async Task<UserSignInOutput> RefreshTokenAsync(string account)
-    {
-        try
-        {
-            var claim = GetIdentityClaim(account);
-            var token = CreateTokenFactory(claim);
-
-            var result = new UserSignInOutput
-            {
-                Token = token
-            };
-
-            return await Task.FromResult(result);
-        }
-        
-        catch (Exception ex)
-        {
-            _logger.LogCritical(ex, ex.Message);
-            throw;
-        }
-    }
 
     /// <summary>
     /// Метод авторизации через Google. Если аккаунт не зарегистрирован в системе,
@@ -446,14 +365,15 @@ internal sealed class UserService : IUserService
         {
             var claims = DecodeJwtGoogleData(googleAuthToken);
             var googleUserData = CreateGoogleDataFactory(claims);
+            var email = googleUserData.Email;
             
             // Првоеряем, существует ли такой пользователь в системе.
-            var isUserExists = await _userRepository.CheckUserByEmailAsync(googleUserData.Email);
+            var isUserExists = await _userRepository.CheckUserByEmailAsync(email);
             
             // Пользователя нет, регистрируем его и выдаем доступ.
             if (!isUserExists)
             {
-                var userModel = CreateSignUpUserModel(string.Empty, googleUserData.Email);
+                var userModel = CreateSignUpUserModel(string.Empty, email);
                 userModel.EmailConfirmed = true; // Почта и так подтверждена, раз это Google аккаунт.
             
                 var userId = await _userRepository.AddUserAsync(userModel);
@@ -479,14 +399,14 @@ internal sealed class UserService : IUserService
             }
 
             // Если пользователь уже существует, то выдаем ему доступ.
-            var userCode = await _userRepository.GetUserCodeByEmailAsync(googleUserData.Email);
-            var claim = GetIdentityClaim(googleUserData.Email);
-            var token = CreateTokenFactory(claim);
+            var userCode = await _userRepository.GetUserCodeByEmailAsync(email);
+            var claim = await _accessUserService.GetIdentityClaimAsync(email);
+            var token = await _accessUserService.CreateTokenFactoryAsync(claim);
 
             var result = new UserSignInOutput
             {
                 Errors = new List<ValidationFailure>(),
-                Email = googleUserData.Email,
+                Email = email,
                 Token = token,
                 IsSuccess = true,
                 UserCode = userCode
@@ -568,8 +488,8 @@ internal sealed class UserService : IUserService
 
             // Если пользователь уже существует, то выдаем ему доступ.
             var userCode = await _userRepository.GetUserCodeByVkUserIdAsync(vkUserId);
-            var claim = GetIdentityClaimVkUser(vkUserId);
-            var token = CreateTokenFactory(claim);
+            var claim = await _accessUserService.GetIdentityClaimVkUserAsync(vkUserId);
+            var token = await _accessUserService.CreateTokenFactoryAsync(claim);
 
             result.Token = token;
             result.IsSuccess = true;

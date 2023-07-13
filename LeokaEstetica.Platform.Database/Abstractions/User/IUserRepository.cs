@@ -79,11 +79,12 @@ public interface IUserRepository
     Task<UserInfoOutput> GetUserPhoneEmailByUserIdAsync(long userId);
 
     /// <summary>
-    /// Метод сохраняет телефон пользователя.
+    /// Метод сохраняет данные для таблицы пользователя.
     /// </summary>
     /// <param name="userId">Id пользователя.</param>
     /// <param name="phone">Номер телефона.</param>
-    Task SaveUserPhoneAsync(long userId, string phone);
+    /// <param name="email">Email.</param>
+    Task<SaveUserProfileDataOutput> SaveUserDataAsync(long userId, string phone, string email);
 
     /// <summary>
     /// Метод находит логин и почту пользователей по почте или логину пользователя.

@@ -196,15 +196,24 @@ internal sealed class UserRepository : IUserRepository
     }
 
     /// <summary>
-    /// Метод сохраняет телефон и почту пользователя.
+    /// Метод сохраняет данные для таблицы пользователя.
     /// </summary>
     /// <param name="userId">Id пользователя.</param>
     /// <param name="phone">Номер телефона.</param>
-    public async Task SaveUserPhoneAsync(long userId, string phone)
+    /// <param name="email">Email.</param>
+    public async Task<SaveUserProfileDataOutput> SaveUserDataAsync(long userId, string phone, string email)
     {
         var user = await GetUserByUserIdAsync(userId);
         user.PhoneNumber = phone;
+        user.Email = email;
         await _pgContext.SaveChangesAsync();
+
+        var result = new SaveUserProfileDataOutput
+        {
+            IsEmailChanged = !user.Email.Equals(email)
+        };
+
+        return result;
     }
 
     /// <summary>

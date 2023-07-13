@@ -139,7 +139,8 @@ internal class BaseServiceTest
         UserService = new UserService(null, userRepository, mapper, null, pgContext, profileRepository,
             subscriptionRepository, resumeModerationRepository, accessUserService, userRedisService,
             fareRuleRepository, null, null);
-        ProfileService = new ProfileService(null, profileRepository, userRepository, mapper, null, null);
+        ProfileService = new ProfileService(null, profileRepository, userRepository, mapper, null, null,
+            accessUserService);
 
         var projectRepository = new ProjectRepository(pgContext, chatRepository);
         var projectNotificationsRepository = new ProjectNotificationsRepository(pgContext);

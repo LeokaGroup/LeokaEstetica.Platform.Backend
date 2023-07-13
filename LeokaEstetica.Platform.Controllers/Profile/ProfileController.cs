@@ -1,9 +1,12 @@
+using FluentValidation.Results;
 using LeokaEstetica.Platform.Base;
 using LeokaEstetica.Platform.Controllers.Filters;
+using LeokaEstetica.Platform.Controllers.Validators.Profile;
 using LeokaEstetica.Platform.Models.Dto.Input.Profile;
 using LeokaEstetica.Platform.Models.Dto.Output.Profile;
 using LeokaEstetica.Platform.Services.Abstractions.Profile;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
 namespace LeokaEstetica.Platform.Controllers.Profile;
 
@@ -16,14 +19,18 @@ namespace LeokaEstetica.Platform.Controllers.Profile;
 public class ProfileController : BaseController
 {
     private readonly IProfileService _profileService;
+    private readonly ILogger<ProfileController> _logger;
 
     /// <summary>
     /// Конструктор.
     /// </summary>
     /// <param name="profileService">Сервис профиля.</param>
-    public ProfileController(IProfileService profileService)
+    /// <param name="logger">Логгер.</param>
+    public ProfileController(IProfileService profileService,
+        ILogger<ProfileController> logger)
     {
         _profileService = profileService;
+        _logger = logger;
     }
 
     /// <summary>
@@ -112,8 +119,26 @@ public class ProfileController : BaseController
     [ProducesResponseType(404)]
     public async Task<ProfileInfoOutput> SaveProfileInfoAsync([FromBody] ProfileInfoInput profileInfoInput)
     {
-        var result = await _profileService.SaveProfileInfoAsync(profileInfoInput, GetUserName(),
-            CreateTokenFromHeader());
+        var result = new ProfileInfoOutput { Errors = new List<ValidationFailure>() };
+        var validator = await new SaveProfileInfoValidator().ValidateAsync(profileInfoInput);
+
+        if (validator.Errors.Any())
+        {
+            var exceptions = new List<Exception>();
+            foreach (var err in validator.Errors)
+            {
+                exceptions.Add(new Exception(err.ErrorMessage));
+            }
+            
+            var ex = new AggregateException(exceptions);
+            _logger.LogError(ex, "Ошибки при попытке сохранения данных профиля.");
+            
+            result.Errors.AddRange(validator.Errors);
+
+            return result;
+        }
+        
+        result = await _profileService.SaveProfileInfoAsync(profileInfoInput, GetUserName(), CreateTokenFromHeader());
 
         return result;
     }

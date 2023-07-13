@@ -92,4 +92,9 @@ public class ProfileInfoOutput : IFrontError
     /// Опыт работы.
     /// </summary>
     public string WorkExperience { get; set; }
+
+    /// <summary>
+    /// Токен пользователя. Если изменился, то будет заполнен.
+    /// </summary>
+    public string Token { get; set; }
 }

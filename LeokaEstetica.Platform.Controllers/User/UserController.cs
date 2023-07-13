@@ -1,3 +1,4 @@
+using LeokaEstetica.Platform.Access.Abstractions.User;
 using LeokaEstetica.Platform.Base;
 using LeokaEstetica.Platform.Base.Abstractions.Services.Validation;
 using LeokaEstetica.Platform.Controllers.Filters;
@@ -22,6 +23,7 @@ public class UserController : BaseController
     private readonly IUserService _userService;
     private readonly IValidationExcludeErrorsService _validationExcludeErrorsService;
     private readonly ILogger<UserController> _logger;
+    private readonly IAccessUserService _accessUserService;
 
     /// <summary>
     /// Конструктор.
@@ -29,13 +31,16 @@ public class UserController : BaseController
     /// <param name="userService">Сервис пользователя.</param>
     /// <param name="validationExcludeErrorsService">Сервис исключения ошибок, которые не надо проверять.</param>
     /// <param name="logger">Логгер.</param>
+    /// <param name="accessUserService">Сервис доступа пользователей.</param>
     public UserController(IUserService userService, 
         IValidationExcludeErrorsService validationExcludeErrorsService,
-        ILogger<UserController> logger)
+        ILogger<UserController> logger,
+        IAccessUserService accessUserService)
     {
         _userService = userService;
         _validationExcludeErrorsService = validationExcludeErrorsService;
         _logger = logger;
+        _accessUserService = accessUserService;
     }
 
     /// <summary>
@@ -131,7 +136,7 @@ public class UserController : BaseController
     [ProducesResponseType(404)]
     public async Task<UserSignInOutput> RefreshTokenAsync()
     {
-        var result = await _userService.RefreshTokenAsync(GetUserName());
+        var result = await _accessUserService.RefreshTokenAsync(GetUserName());
 
         return result;
     }

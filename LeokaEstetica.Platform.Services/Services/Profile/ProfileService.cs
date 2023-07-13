@@ -1,5 +1,6 @@
 using System.Runtime.CompilerServices;
 using AutoMapper;
+using LeokaEstetica.Platform.Access.Abstractions.User;
 using LeokaEstetica.Platform.Database.Abstractions.Profile;
 using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Models.Dto.Input.Profile;
@@ -29,6 +30,7 @@ internal sealed class ProfileService : IProfileService
     private readonly IMapper _mapper;
     private readonly IProfileRedisService _profileRedisService;
     private readonly INotificationsService _notificationsService;
+    private readonly IAccessUserService _accessUserService;
 
     /// <summary>
     /// Конструктор.
@@ -39,12 +41,14 @@ internal sealed class ProfileService : IProfileService
     /// <param name="mapper">Автомаппер.</param>
     /// <param name="profileRedisService">Сервис кэша.</param>
     /// <param name="notificationsService">Сервис уведомлений.</param>
+    /// <param name="accessUserService">Сервис доступа пользователей.</param>
     public ProfileService(ILogger<ProfileService> logger,
         IProfileRepository profileRepository,
         IUserRepository userRepository,
         IMapper mapper,
         IProfileRedisService profileRedisService,
-        INotificationsService notificationsService)
+        INotificationsService notificationsService,
+        IAccessUserService accessUserService)
     {
         _logger = logger;
         _profileRepository = profileRepository;
@@ -52,6 +56,7 @@ internal sealed class ProfileService : IProfileService
         _mapper = mapper;
         _profileRedisService = profileRedisService;
         _notificationsService = notificationsService;
+        _accessUserService = accessUserService;
     }
 
     /// <summary>
@@ -237,8 +242,11 @@ internal sealed class ProfileService : IProfileService
             var result = _mapper.Map<ProfileInfoOutput>(savedProfileInfo);
             result.PhoneNumber = profileInfoInput.PhoneNumber;
 
+            var email = profileInfoInput.Email;
+
             // Сохраняем номер телефона пользователя.
-            await _userRepository.SaveUserPhoneAsync(userId, profileInfoInput.PhoneNumber);
+            var savedProfileInfoData = await _userRepository.SaveUserDataAsync(userId, profileInfoInput.PhoneNumber,
+                email);
 
             // Сохраняем выбранные навыки пользователя.
             await SaveUserSkillsAsync(profileInfoInput, userId);
@@ -249,6 +257,16 @@ internal sealed class ProfileService : IProfileService
             // Отправляем уведомление о сохранении фронту.
             await _notificationsService.SendNotifySuccessSaveAsync("Все хорошо", "Данные успешно сохранены.",
                     NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);
+
+            // Снова логиним юзера, так как почта изменилась а значит и токен надо менять.
+            if (savedProfileInfoData.IsEmailChanged)
+            {
+                var claim = await _accessUserService.GetIdentityClaimAsync(email);
+                var userToken = await _accessUserService.CreateTokenFactoryAsync(claim);   
+                
+                result.Email = email;
+                result.Token = userToken;
+            }
 
             result.IsSuccess = true;
 

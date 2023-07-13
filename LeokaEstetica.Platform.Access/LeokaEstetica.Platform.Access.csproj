@@ -11,4 +11,8 @@
       <ProjectReference Include="..\LeokaEstetica.Platform.CallCenter\LeokaEstetica.Platform.CallCenter.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.10.0" />
+    </ItemGroup>
+
 </Project>

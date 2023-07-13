@@ -10,6 +10,9 @@ namespace LeokaEstetica.Platform.Controllers.Validators.Profile;
 /// </summary>
 public class SaveProfileInfoValidator : AbstractValidator<ProfileInfoInput>
 {
+    /// <summary>
+    /// Конструктор.
+    /// </summary>
     public SaveProfileInfoValidator()
     {
         RuleFor(p => p.FirstName)
