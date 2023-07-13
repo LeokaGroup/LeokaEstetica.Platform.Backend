@@ -201,7 +201,6 @@ public class UserController : BaseController
 
     /// <summary>
     /// Метод отправляет код пользователю на почту для восстановления пароля.
-    /// <returns>Признак успешного прохождения проверки.</returns>
     /// </summary>
     [HttpPost]
     [Route("pre-restore")]
@@ -210,12 +209,9 @@ public class UserController : BaseController
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<bool> SendCodeRestorePasswordAsync([FromBody] PreRestorePasswordInput preRestorePasswordInput)
+    public async Task SendCodeRestorePasswordAsync([FromBody] PreRestorePasswordInput preRestorePasswordInput)
     {
-        var result = await _userService.SendCodeRestorePasswordAsync(preRestorePasswordInput.Account,
-            GetTokenFromHeader());
-
-        return result;
+        await _userService.SendCodeRestorePasswordAsync(preRestorePasswordInput.Account, GetTokenFromHeader());
     }
 
     /// <summary>

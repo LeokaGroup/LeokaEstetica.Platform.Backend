@@ -592,9 +592,8 @@ internal sealed class UserService : IUserService
     /// Метод отправляет код пользователю на почту для восстановления пароля.
     /// <param name="account">Аккаунт.</param>
     /// <param name="token">Токен.</param>
-    /// <returns>Признак успешного прохождения проверки.</returns>
     /// </summary>
-    public async Task<bool> SendCodeRestorePasswordAsync(string account, string token)
+    public async Task SendCodeRestorePasswordAsync(string account, string token)
     {
         try
         {
@@ -637,8 +636,6 @@ internal sealed class UserService : IUserService
                     "Дальнейшие инструкции по восстановлению пароля направлены Вам на почту.",
                     NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);   
             }
-
-            return true;
         }
         
         catch (Exception ex)
