@@ -434,7 +434,7 @@ internal sealed class MailingsService : IMailingsService
                        "<br/>" +
                        "<br/>-----<br/>" +
                        "С уважением, команда Leoka Estetica";
-            var subject = $"Восстановление пароля";
+            var subject = "Восстановление пароля";
 
             var mailModel = CreateMailopostModelConfirmEmail(mailTo, text, subject, text);
             await SendEmailNotificationAsync(mailModel);

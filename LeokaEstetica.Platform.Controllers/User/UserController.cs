@@ -209,9 +209,9 @@ public class UserController : BaseController
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task SendCodeRestorePasswordAsync()
+    public async Task SendCodeRestorePasswordAsync([FromBody] PreRestorePasswordInput preRestorePasswordInput)
     {
-        await _userService.SendCodeRestorePasswordAsync(GetUserName(), GetTokenFromHeader());
+        await _userService.SendCodeRestorePasswordAsync(preRestorePasswordInput.Account, GetTokenFromHeader());
     }
 
     /// <summary>
