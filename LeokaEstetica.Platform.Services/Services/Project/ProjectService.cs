@@ -369,6 +369,8 @@ internal sealed class ProjectService : IProjectService
             {
                 return result;
             }
+
+            await DeleteIfProjectRemarksAsync(catalogs);
             
             // Выбираем пользователей, у которых есть подписка выше бизнеса. Только их выделяем цветом.
             result.CatalogProjects = await _fillColorProjectsService.SetColorBusinessProjects(catalogs,
@@ -1983,6 +1985,33 @@ internal sealed class ProjectService : IProjectService
         }
 
         return projects;
+    }
+
+    /// <summary>
+    /// Метод удаляет из результата проекты, которые не попадут в каталог из-за замечаний.
+    /// </summary>
+    /// <param name="projects">Список проектов.</param>
+    private async Task DeleteIfProjectRemarksAsync(List<CatalogProjectOutput> projects)
+    {
+        var removedProjects = new List<CatalogProjectOutput>();
+            
+        // Исключаем проекты, которые имеют неисправленные замечания.
+        foreach (var prj in projects)
+        {
+            var isRemarks = await _projectModerationRepository.GetProjectRemarksAsync(prj.ProjectId);
+                
+            if (!isRemarks.Any())
+            {
+                continue;
+            }
+                
+            removedProjects.Add(prj);
+        }
+
+        if (removedProjects.Any())
+        {
+            projects.RemoveAll(p => removedProjects.Select(x => x.ProjectId).Contains(p.ProjectId));
+        }
     }
     
     #endregion
