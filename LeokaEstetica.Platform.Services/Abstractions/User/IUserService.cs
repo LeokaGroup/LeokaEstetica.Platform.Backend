@@ -59,8 +59,9 @@ public interface IUserService
     /// Метод отправляет код пользователю на почту для восстановления пароля.
     /// <param name="account">Аккаунт.</param>
     /// <param name="token">Токен.</param>
+    /// <returns>Признак успешного прохождения проверки.</returns>
     /// </summary>
-    Task SendCodeRestorePasswordAsync(string account, string token);
+    Task<bool> SendCodeRestorePasswordAsync(string account, string token);
     
     /// <summary>
     /// Метод проверяет доступ к восстановлению пароля пользователя.
