@@ -96,4 +96,11 @@ public interface IMailingsService
     /// <param name="vacancyId">Id вакансии.</param>
     /// <param name="vacancyName">Название вакансии.</param>
     Task SendNotificationAddVacancyArchiveAsync(string mailTo, long vacancyId, string vacancyName);
+
+    /// <summary>
+    /// Метод отправляет ссылку для восстановления пароля на почту пользователя.
+    /// </summary>
+    /// <param name="mailTo">Почта пользователя, которого исключили.</param>
+    /// <param name="guid">Код для ссылки.</param>
+    Task SendLinkRestorePasswordAsync(string mailTo, Guid guid);
 }

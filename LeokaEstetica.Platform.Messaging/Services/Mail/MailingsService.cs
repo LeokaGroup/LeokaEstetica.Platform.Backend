@@ -411,6 +411,36 @@ internal sealed class MailingsService : IMailingsService
         }
     }
 
+    /// <summary>
+    /// Метод отправляет ссылку для восстановления пароля на почту пользователя.
+    /// </summary>
+    /// <param name="mailTo">Почта пользователя, которого исключили.</param>
+    /// <param name="guid">Код для ссылки.</param>
+    public async Task SendLinkRestorePasswordAsync(string mailTo, Guid guid)
+    {
+        var isEnabledEmailNotifications = await _globalConfigRepository
+            .GetValueByKeyAsync<bool>(GlobalConfigKeys.EmailNotifications.EMAIL_NOTIFICATIONS_DISABLE_MODE_ENABLED);
+
+        if (isEnabledEmailNotifications)
+        {
+            // TODO: Заменить на получение ссылки из БД.
+            var text = "Для восстановления пароля перейдите по ссылке." +
+                       "<br/>" +
+                       $"<a href='https://leoka-estetica-dev.ru/profile/restore?publicKey={guid}'>" +
+                       "Восстановить пароль" +
+                       "</a>" +
+                       "<br/>" +
+                       "<br/>" +
+                       "<br/>" +
+                       "<br/>-----<br/>" +
+                       "С уважением, команда Leoka Estetica";
+            var subject = "Восстановление пароля";
+
+            var mailModel = CreateMailopostModelConfirmEmail(mailTo, text, subject, text);
+            await SendEmailNotificationAsync(mailModel);
+        }
+    }
+
     #endregion
 
     #region Приватные методы.

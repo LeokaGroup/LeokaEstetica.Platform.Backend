@@ -47,4 +47,48 @@ internal sealed class AccessUserNotificationsService : IAccessUserNotificationsS
                 NotificationLevel = notificationLevel
             });
     }
+
+    /// <summary>
+    /// Метод отправляет уведомление о блокировке профиля пользователя.
+    /// </summary>
+    /// <param name="title">Заголовок уведомления.</param>
+    /// <param name="notifyText">Текст уведомления.</param>
+    /// <param name="notificationLevel">Уровень уведомления.</param>
+    /// <param name="token">Токен пользователя.</param>
+    public async Task SendNotificationWarningBlockedUserProfileAsync(string title, string notifyText,
+        string notificationLevel, string token)
+    {
+        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(token);
+
+        await _hubContext.Clients
+            .Client(connectionId)
+            .SendAsync("SendNotificationWarningBlockedUserProfile", new NotificationOutput
+            {
+                Title = title,
+                Message = notifyText,
+                NotificationLevel = notificationLevel
+            });
+    }
+
+    /// <summary>
+    /// Метод отправляет уведомление о успешной отправке ссылки на восстановление пароля.
+    /// </summary>
+    /// <param name="title">Заголовок уведомления.</param>
+    /// <param name="notifyText">Текст уведомления.</param>
+    /// <param name="notificationLevel">Уровень уведомления.</param>
+    /// <param name="token">Токен пользователя.</param>
+    public async Task SendNotificationSuccessLinkRestoreUserPasswordAsync(string title, string notifyText,
+        string notificationLevel, string token)
+    {
+        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(token);
+
+        await _hubContext.Clients
+            .Client(connectionId)
+            .SendAsync("SendNotificationSuccessLinkRestoreUserPassword", new NotificationOutput
+            {
+                Title = title,
+                Message = notifyText,
+                NotificationLevel = notificationLevel
+            });
+    }
 }

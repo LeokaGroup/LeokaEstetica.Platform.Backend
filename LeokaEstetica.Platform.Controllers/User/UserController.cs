@@ -7,6 +7,7 @@ using LeokaEstetica.Platform.Models.Dto.Output.User;
 using LeokaEstetica.Platform.Services.Abstractions.User;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
 namespace LeokaEstetica.Platform.Controllers.User;
 
@@ -20,17 +21,21 @@ public class UserController : BaseController
 {
     private readonly IUserService _userService;
     private readonly IValidationExcludeErrorsService _validationExcludeErrorsService;
-    
+    private readonly ILogger<UserController> _logger;
+
     /// <summary>
     /// Конструктор.
     /// </summary>
     /// <param name="userService">Сервис пользователя.</param>
     /// <param name="validationExcludeErrorsService">Сервис исключения ошибок, которые не надо проверять.</param>
+    /// <param name="logger">Логгер.</param>
     public UserController(IUserService userService, 
-        IValidationExcludeErrorsService validationExcludeErrorsService)
+        IValidationExcludeErrorsService validationExcludeErrorsService,
+        ILogger<UserController> logger)
     {
         _userService = userService;
         _validationExcludeErrorsService = validationExcludeErrorsService;
+        _logger = logger;
     }
 
     /// <summary>
@@ -192,5 +197,79 @@ public class UserController : BaseController
             userSignInVkInput.LastName);
 
         return result;
+    }
+
+    /// <summary>
+    /// Метод отправляет код пользователю на почту для восстановления пароля.
+    /// <returns>Признак успешного прохождения проверки.</returns>
+    /// </summary>
+    [HttpPost]
+    [Route("pre-restore")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<bool> SendCodeRestorePasswordAsync([FromBody] PreRestorePasswordInput preRestorePasswordInput)
+    {
+        var result = await _userService.SendCodeRestorePasswordAsync(preRestorePasswordInput.Account,
+            GetTokenFromHeader());
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод проверяет доступ к восстановлению пароля пользователя.
+    /// </summary>
+    /// <param name="publicKey">Публичный код, который ранее высалался на почту пользователю.</param>
+    /// <returns>Признак успешного прохождения проверки.</returns>
+    [HttpGet]
+    [Route("restore/check")]
+    [ProducesResponseType(200, Type = typeof(bool))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<bool> CheckRestorePasswordAsync([FromQuery] Guid publicKey)
+    {
+        var validator = await new CheckRestorePasswordValidator().ValidateAsync(publicKey);
+
+        if (validator.Errors.Any())
+        {
+            _logger.LogError("Передали невалидный публичный код при восстановлении пароля.");
+            
+            return false;
+        }
+
+        var result = await _userService.CheckRestorePasswordAsync(publicKey, GetUserName());
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод запускает восстановление пароля пользователя.
+    /// </summary>
+    /// <param name="restorePasswordInput">Входная модель.</param>
+    [HttpPatch]
+    [Route("restore")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task RestoreUserPasswordAsync([FromBody] RestorePasswordInput restorePasswordInput)
+    {
+        var validator = await new RestorePasswordValidator().ValidateAsync(restorePasswordInput.RestorePassword);
+
+        if (validator.Errors.Any())
+        {
+            var ex = new InvalidOperationException("Передали невалидный пароль при восстановлении пароля.");
+            _logger.LogError(ex.Message);
+
+            throw ex;
+        }
+
+        await _userService.RestoreUserPasswordAsync(restorePasswordInput.RestorePassword, GetUserName(),
+            GetTokenFromHeader());
     }
 }

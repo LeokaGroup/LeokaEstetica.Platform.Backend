@@ -54,4 +54,28 @@ public interface IUserService
     /// <param name="firstName">Фамилия пользователя в системе ВК.</param>
     /// <returns>Данные пользователя.</returns>
     Task<UserSignInOutput> SignInAsync(long vkUserId, string firstName, string lastName);
+
+    /// <summary>
+    /// Метод отправляет код пользователю на почту для восстановления пароля.
+    /// <param name="account">Аккаунт.</param>
+    /// <param name="token">Токен.</param>
+    /// <returns>Признак успешного прохождения проверки.</returns>
+    /// </summary>
+    Task<bool> SendCodeRestorePasswordAsync(string account, string token);
+    
+    /// <summary>
+    /// Метод проверяет доступ к восстановлению пароля пользователя.
+    /// </summary>
+    /// <param name="publicKey">Публичный код, который ранее высалался на почту пользователю.</param>
+    /// <param name="account">Аккаунт.</param>
+    /// <returns>Признак успешного прохождения проверки.</returns>
+    Task<bool> CheckRestorePasswordAsync(Guid publicKey, string account);
+
+    /// <summary>
+    /// Метод запускает восстановление пароля пользователя.
+    /// </summary>
+    /// <param name="password">Новый пароль.</param>
+    /// <param name="account">Аккаунт.</param>
+    /// <param name="token">Токен.</param>
+    Task RestoreUserPasswordAsync(string password, string account, string token);
 }
