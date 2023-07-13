@@ -209,7 +209,7 @@ internal class BaseServiceTest
 
         var rabbitMqService = new RabbitMqService(AppConfiguration);
         PayMasterService = new PayMasterService(null, AppConfiguration, userRepository,
-            commerceRepository, accessUserService, null, commerceRedisService, rabbitMqService, mapper);
+            commerceRepository, accessUserService, null, commerceRedisService, rabbitMqService, mapper, null, null);
 
         var userBlackListService = new UserBlackListRepository(pgContext);
         UserBlackListService = new UserBlackListService(null, userBlackListService);

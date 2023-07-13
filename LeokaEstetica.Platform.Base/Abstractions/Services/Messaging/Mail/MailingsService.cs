@@ -8,10 +8,14 @@ using Newtonsoft.Json;
 
 namespace LeokaEstetica.Platform.Base.Abstractions.Services.Messaging.Mail;
 
-public class MailingsService : IMailingsService
+internal sealed class MailingsService : IMailingsService
 {
     private readonly IConfiguration _configuration;
 
+    /// <summary>
+    /// Конструктор.
+    /// </summary>
+    /// <param name="configuration">Конфигурация.</param>
     public MailingsService(IConfiguration configuration)
     {
         _configuration = configuration;
@@ -86,7 +90,12 @@ public class MailingsService : IMailingsService
             await SendEmailNotificationAsync(mailModel);
         }
     }
-    
+
+    public Task SendNotificationApproveInviteProjectAsync(string mailTo, string orderName)
+    {
+        throw new NotImplementedException();
+    }
+
     /// <summary>
     /// Метод создает входную модель с параметрами для отправки письма подтверждения почты.
     /// </summary>

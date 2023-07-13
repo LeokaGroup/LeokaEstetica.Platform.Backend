@@ -6,9 +6,12 @@ using LeokaEstetica.Platform.Access.Abstractions.User;
 using LeokaEstetica.Platform.Base.Enums;
 using LeokaEstetica.Platform.Base.Helpers;
 using LeokaEstetica.Platform.Base.Models.Input.Processing;
+using LeokaEstetica.Platform.Core.Constants;
 using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.Commerce;
+using LeokaEstetica.Platform.Database.Abstractions.Config;
 using LeokaEstetica.Platform.Database.Abstractions.User;
+using LeokaEstetica.Platform.Messaging.Abstractions.Mail;
 using LeokaEstetica.Platform.Messaging.Abstractions.RabbitMq;
 using LeokaEstetica.Platform.Models.Dto.Base.Commerce.PayMaster;
 using LeokaEstetica.Platform.Models.Dto.Common.Cache;
@@ -45,6 +48,8 @@ internal sealed class PayMasterService : IPayMasterService
     private readonly ICommerceRedisService _commerceRedisService;
     private readonly IRabbitMqService _rabbitMqService;
     private readonly IMapper _mapper;
+    private readonly IMailingsService _mailingsService;
+    private readonly IGlobalConfigRepository _globalConfigRepository;
 
     /// <summary>
     /// Конструктор.
@@ -58,6 +63,8 @@ internal sealed class PayMasterService : IPayMasterService
     /// <param name="commerceRedisService">Сервис кэша коммерции.</param>
     /// <param name="rabbitMqService">Сервис кролика.</param>
     /// <param name="mapper">Автомаппер.</param>
+    /// <param name="mailingsService">Сервис уведомлений на почту.</param>
+    /// <param name="globalConfigRepository">Репозиторий глобал конфига.</param>
     public PayMasterService(ILogger<PayMasterService> logger,
         IConfiguration configuration,
         IUserRepository userRepository,
@@ -66,7 +73,9 @@ internal sealed class PayMasterService : IPayMasterService
         IAccessUserNotificationsService accessUserNotificationsService, 
         ICommerceRedisService commerceRedisService, 
         IRabbitMqService rabbitMqService, 
-        IMapper mapper)
+        IMapper mapper,
+        IMailingsService mailingsService,
+        IGlobalConfigRepository globalConfigRepository)
     {
         _logger = logger;
         _configuration = configuration;
@@ -77,6 +86,8 @@ internal sealed class PayMasterService : IPayMasterService
         _commerceRedisService = commerceRedisService;
         _rabbitMqService = rabbitMqService;
         _mapper = mapper;
+        _mailingsService = mailingsService;
+        _globalConfigRepository = globalConfigRepository;
     }
 
     #region Публичные методы.
@@ -102,9 +113,12 @@ internal sealed class PayMasterService : IPayMasterService
             {
                 var ex = new InvalidOperationException($"Анкета пользователя не заполнена. UserId был: {userId}");
 
-                await _accessUserNotificationsService.SendNotificationWarningEmptyUserProfileAsync("Внимание",
-                    "Для покупки тарифа должна быть заполнена информация вашей анкеты.",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
+                if (!string.IsNullOrEmpty(token))
+                {
+                    await _accessUserNotificationsService.SendNotificationWarningEmptyUserProfileAsync("Внимание",
+                        "Для покупки тарифа должна быть заполнена информация вашей анкеты.",
+                        NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);   
+                }
 
                 throw ex;
             }
@@ -114,8 +128,10 @@ internal sealed class PayMasterService : IPayMasterService
             var orderCache = await _commerceRedisService.GetOrderCacheAsync(key);
             
             // Заполняем модель для запроса в ПС.
-            var createOrderInput = await CreateOrderRequestAsync(orderCache.FareRuleName, orderCache.Price,
-                orderCache.RuleId, publicId, orderCache.Month);
+            var fareRuleName = orderCache.FareRuleName;
+            var month = orderCache.Month;
+            var createOrderInput = await CreateOrderRequestAsync(fareRuleName, orderCache.Price,
+                orderCache.RuleId, publicId, month);
 
             _logger.LogInformation("Начало создания заказа.");
 
@@ -150,6 +166,13 @@ internal sealed class PayMasterService : IPayMasterService
 
             _logger.LogInformation("Конец создания заказа.");
             _logger.LogInformation("Создание заказа успешно.");
+            
+            var isEnabledEmailNotifications = await _globalConfigRepository
+                .GetValueByKeyAsync<bool>(GlobalConfigKeys.EmailNotifications.EMAIL_NOTIFICATIONS_DISABLE_MODE_ENABLED);
+
+            var sendMessage = $"Вы успешно оформили заказ: \"{fareRuleName}\"";
+            await _mailingsService.SendNotificationCreatedOrderAsync(account, sendMessage, isEnabledEmailNotifications,
+                month);
 
             return result;
         }

@@ -5,5 +5,4 @@ namespace LeokaEstetica.Platform.Base.Abstractions.Messaging.EventBus;
 /// </summary>
 public interface IIntegrationEvent
 {
-    
 }

@@ -103,4 +103,14 @@ public interface IMailingsService
     /// <param name="mailTo">Почта пользователя, которого исключили.</param>
     /// <param name="guid">Код для ссылки.</param>
     Task SendLinkRestorePasswordAsync(string mailTo, Guid guid);
+    
+    /// <summary>
+    /// Метод отправляет уведомление на почту об успешном оформлении заказа.
+    /// </summary>
+    /// <param name="mailTo">Почта пользователя, которому отправлять уведомление.</param>
+    /// <param name="orderName">Название заказа.</param>
+    /// <param name="isEmailNotificationsDisableModeEnabled">Признак уведомлений на почту.</param>
+    /// <param name="month">Кол-во мес-в подписки.</param>
+    Task SendNotificationCreatedOrderAsync(string mailTo, string orderName,
+        bool isEmailNotificationsDisableModeEnabled, int month);
 }

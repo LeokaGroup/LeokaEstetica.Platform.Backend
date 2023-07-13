@@ -440,6 +440,32 @@ internal sealed class MailingsService : IMailingsService
             await SendEmailNotificationAsync(mailModel);
         }
     }
+    
+    /// <summary>
+    /// Метод отправляет уведомление на почту об успешном оформлении заказа.
+    /// </summary>
+    /// <param name="mailTo">Почта пользователя, которому отправлять уведомление.</param>
+    /// <param name="orderName">Название заказа.</param>
+    /// <param name="isEmailNotificationsDisableModeEnabled">Признак уведомлений на почту.</param>
+    /// <param name="month">Кол-во мес-в подписки.</param>
+    public async Task SendNotificationCreatedOrderAsync(string mailTo, string orderName,
+        bool isEmailNotificationsDisableModeEnabled, int month)
+    {
+        if (isEmailNotificationsDisableModeEnabled)
+        {
+            // TODO: Заменить на получение ссылки из БД.
+            var text = $"Заказ: \"{orderName}\" успешно оформлен на срок {month} мес." +
+                       "<br/>" +
+                       "<br/>" +
+                       "<br/>" +
+                       "<br/>-----<br/>" +
+                       "С уважением, команда Leoka Estetica";
+            var subject = $"Вы оформили заказ: \"{orderName}\"";
+
+            var mailModel = CreateMailopostModelConfirmEmail(mailTo, text, subject, text);
+            await SendEmailNotificationAsync(mailModel);
+        }
+    }
 
     #endregion
 
