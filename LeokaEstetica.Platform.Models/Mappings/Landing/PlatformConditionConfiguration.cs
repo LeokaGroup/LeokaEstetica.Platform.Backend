@@ -24,6 +24,12 @@ public partial class PlatformConditionConfiguration : IEntityTypeConfiguration<P
             .HasColumnName("PlatformConditionSubTitle")
             .HasColumnType("varchar(200)")
             .IsRequired();
+            
+        entity.Property(e => e.Position)
+            .HasColumnName("Position")
+            .HasColumnType("int")
+            .HasDefaultValue(0)
+            .IsRequired();
 
         entity.HasIndex(u => u.PlatformConditionId)
             .HasDatabaseName("PK_PlatformConditions_PlatformConditionId")

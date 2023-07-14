@@ -179,5 +179,7 @@ public class MappingProfile : Profile
         
         CreateMap<ProjectCommentEntity, LastProjectCommentsOutput>()
             .ForMember(a => a.Created, a => a.MapFrom(src => src.Created.ToString("g")));
+        
+        CreateMap<PlatformConditionEntity, PlatformConditionOutput>();
     }
 }
