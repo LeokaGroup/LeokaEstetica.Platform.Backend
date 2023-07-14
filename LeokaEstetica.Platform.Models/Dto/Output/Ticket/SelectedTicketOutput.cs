@@ -14,4 +14,9 @@ public class SelectedTicketOutput : TicketOutput
     /// Кол-во сообщений.
     /// </summary>
     public int Total => Messages.Count();
+
+    /// <summary>
+    /// Признак доступности кнопки отправки сообщения.
+    /// </summary>
+    public bool IsDisableSendButton { get; set; }
 }
