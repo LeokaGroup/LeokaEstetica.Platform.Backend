@@ -441,4 +441,9 @@ public class PgContext : DbContext
     /// Категории тикета.
     /// </summary>
     public DbSet<TicketCategoryEntity> TicketCategories { get; set; }
+
+    /// <summary>
+    /// Преимущества платформы.
+    /// </summary>
+    public DbSet<PlatformConditionEntity> PlatformConditions { get; set; }
 }
