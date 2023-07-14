@@ -264,10 +264,10 @@ internal sealed class TicketService : ITicketService
             result.Messages = await CreateMessagesResultAsync(userId, ticketMessages);
 
             // Если тикет закрыт, то нельзя писать сообщения.
-            if (ticketMessages.First().MainInfoTicket.TicketStatusId != (int)TicketStatusEnum.Opened)
-            {
-                result.IsDisableSendButton = true;
-            }
+            var ticketStatus = ticketMessages.First().MainInfoTicket.TicketStatusId;
+
+            result.IsDisableSendButton = ticketStatus != (int)TicketStatusEnum.Opened;
+            result.IsDisableCloseTicketButton = ticketStatus == (int)TicketStatusEnum.Closed;
 
             return result;
         }

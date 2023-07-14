@@ -19,4 +19,9 @@ public class SelectedTicketOutput : TicketOutput
     /// Признак доступности кнопки отправки сообщения.
     /// </summary>
     public bool IsDisableSendButton { get; set; }
+
+    /// <summary>
+    /// Признак доступности кнопки закрытия тикета.
+    /// </summary>
+    public bool IsDisableCloseTicketButton { get; set; }
 }
