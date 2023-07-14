@@ -59,4 +59,11 @@ public interface ITicketService
     /// <param name="closeTicketInput">Входная модель.</param>
     /// <param name="token">Токен.</param>
     Task CloseTicketAsync(long ticketId, string account, string token);
+
+    /// <summary>
+    /// Метод создает предложение/пожелание.
+    /// </summary>
+    /// <param name="contactEmail">Почта пользователя, который оставил пожелание/предложение.</param>
+    /// <param name="wisheOfferText">Текст предложение/пожелания.</param>
+    Task<bool> CreateWisheOfferAsync(string contactEmail, string wisheOfferText);
 }

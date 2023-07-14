@@ -441,4 +441,9 @@ public class PgContext : DbContext
     /// Категории тикета.
     /// </summary>
     public DbSet<TicketCategoryEntity> TicketCategories { get; set; }
+
+    /// <summary>
+    /// Таблица пожеланий/предложений.
+    /// </summary>
+    public DbSet<WisheOfferEntity> WishesOffers { get; set; }
 }

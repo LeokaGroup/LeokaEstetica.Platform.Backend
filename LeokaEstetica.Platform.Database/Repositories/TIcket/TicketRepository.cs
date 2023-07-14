@@ -3,6 +3,7 @@ using System.Runtime.CompilerServices;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Database.Abstractions.Ticket;
+using LeokaEstetica.Platform.Models.Entities.Communication;
 using LeokaEstetica.Platform.Models.Entities.Ticket;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -271,6 +272,25 @@ internal sealed class TicketRepository : ITicketRepository
         await _pgContext.SaveChangesAsync();
 
         return true;
+    }
+
+    /// <summary>
+    /// Метод создает предложение/пожелание.
+    /// </summary>
+    /// <param name="contactEmail">Почта пользователя, который оставил пожелание/предложение.</param>
+    /// <param name="wisheOfferText">Текст предложение/пожелания.</param>
+    public async Task<long> CreateWisheOfferAsync(string contactEmail, string wisheOfferText)
+    {
+        var wisheOffer = new WisheOfferEntity
+        {
+            ContactEmail = contactEmail,
+            WisheOfferText = wisheOfferText,
+            DateCreated = DateTime.UtcNow
+        };
+        await _pgContext.WishesOffers.AddAsync(wisheOffer);
+        await _pgContext.SaveChangesAsync();
+
+        return wisheOffer.WisheOfferId;
     }
 
     #endregion

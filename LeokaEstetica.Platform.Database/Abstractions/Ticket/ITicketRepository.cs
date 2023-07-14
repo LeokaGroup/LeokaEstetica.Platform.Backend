@@ -70,4 +70,11 @@ public interface ITicketRepository
     /// <param name="ticketId">Id тикета.</param>
     /// <returns>Признак закрытия тикета.</returns>
     Task<bool> CloseTicketAsync(long ticketId);
+
+    /// <summary>
+    /// Метод создает предложение/пожелание.
+    /// </summary>
+    /// <param name="contactEmail">Почта пользователя, который оставил пожелание/предложение.</param>
+    /// <param name="wisheOfferText">Текст предложение/пожелания.</param>
+    Task<long> CreateWisheOfferAsync(string contactEmail, string wisheOfferText);
 }

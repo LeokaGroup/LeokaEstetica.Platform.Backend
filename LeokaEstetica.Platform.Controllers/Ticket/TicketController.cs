@@ -221,6 +221,20 @@ public class TicketController : BaseController
         await _ticketService.CloseTicketAsync(ticketId, GetUserName(), GetTokenFromHeader());
     }
 
+    /// <summary>
+    /// Метод создает предложение/пожелание.
+    /// </summary>
+    /// <param name="wisheOfferInput">Входная модель.</param>
+    [HttpPost]
+    [Route("wishes-offers")]
+    public async Task<bool> CreateWisheOfferAsync([FromBody] WisheOfferInput wisheOfferInput)
+    {
+        var result = await _ticketService.CreateWisheOfferAsync(wisheOfferInput.ContactEmail,
+            wisheOfferInput.WisheOfferText);
+
+        return result;
+    }
+
     #endregion
 
     #region Приватные методы.
