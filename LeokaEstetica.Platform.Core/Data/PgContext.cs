@@ -446,4 +446,9 @@ public class PgContext : DbContext
     /// Преимущества платформы.
     /// </summary>
     public DbSet<PlatformConditionEntity> PlatformConditions { get; set; }
+
+    /// <summary>
+    /// Таблица пожеланий/предложений.
+    /// </summary>
+    public DbSet<WisheOfferEntity> WishesOffers { get; set; }
 }

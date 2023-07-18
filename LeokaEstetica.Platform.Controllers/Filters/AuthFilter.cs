@@ -21,7 +21,8 @@ public class AuthFilter : Attribute, IAuthorizationFilter
         "GetTicketCategories", // Категории тикетов.
         "CreateTicket",
         "GetLastProjectComments",
-        "GetNewUsers"
+        "GetNewUsers",
+        "CreateWisheOffer"
     };
     
     /// <summary>

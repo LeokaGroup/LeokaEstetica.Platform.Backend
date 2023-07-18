@@ -372,6 +372,36 @@ internal sealed class TicketService : ITicketService
         }
     }
 
+    /// <summary>
+    /// Метод создает предложение/пожелание.
+    /// </summary>
+    /// <param name="contactEmail">Почта пользователя, который оставил пожелание/предложение.</param>
+    /// <param name="wisheOfferText">Текст предложение/пожелания.</param>
+    public async Task<WisheOfferOutput> CreateWisheOfferAsync(string contactEmail, string wisheOfferText)
+    {
+        try
+        {
+            var wisheOfferId = await _ticketRepository.CreateWisheOfferAsync(contactEmail, wisheOfferText);
+
+            var result = new WisheOfferOutput();
+
+            if (wisheOfferId <= 0)
+            {
+                return result;
+            }
+
+            result.IsSuccess = true;
+            
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
     #endregion
 
     #region Приватные методы.

@@ -1,4 +1,5 @@
 using AutoMapper;
+using FluentValidation.Results;
 using LeokaEstetica.Platform.Base;
 using LeokaEstetica.Platform.CallCenter.Abstractions.Ticket;
 using LeokaEstetica.Platform.Controllers.Filters;
@@ -219,6 +220,42 @@ public class TicketController : BaseController
         }
 
         await _ticketService.CloseTicketAsync(ticketId, GetUserName(), GetTokenFromHeader());
+    }
+
+    /// <summary>
+    /// Метод создает предложение/пожелание.
+    /// </summary>
+    /// <param name="wisheOfferInput">Входная модель.</param>
+    [AllowAnonymous]
+    [HttpPost]
+    [Route("wishes-offers")]
+    public async Task<WisheOfferOutput> CreateWisheOfferAsync([FromBody] WisheOfferInput wisheOfferInput)
+    {
+        var result = new WisheOfferOutput { Errors = new List<ValidationFailure>() };
+        
+        var validator = await new CreateWisheOfferValidator().ValidateAsync(wisheOfferInput);
+
+        // Если есть ошибки, то не даем создать сообщение.
+        if (validator.Errors.Any())
+        {
+            var exceptions = new List<InvalidOperationException>();
+            foreach (var err in validator.Errors)
+            {
+                exceptions.Add(new InvalidOperationException(err.ErrorMessage));
+            }
+            
+            var ex = new AggregateException(exceptions);
+            _logger.LogError(ex, "Ошибки создания пожелания/предложения.");
+            
+            result.Errors.AddRange(validator.Errors);
+
+            return result;
+        }
+        
+        result = await _ticketService.CreateWisheOfferAsync(wisheOfferInput.ContactEmail,
+            wisheOfferInput.WisheOfferText);
+
+        return result;
     }
 
     #endregion
