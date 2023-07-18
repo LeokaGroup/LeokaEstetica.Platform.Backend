@@ -77,14 +77,27 @@ public class LandingController : BaseController
     [ProducesResponseType(404)]
     public async Task<Dictionary<string, List<TimelineOutput>>> GetTimelinesAsync()
     {
-        Dictionary<string, List<TimelineOutput>> result = null;
-        
         var items = await _landingService.GetTimelinesAsync();
         
-        if (items.Any())
-        {
-            result = _mapper.Map<Dictionary<string, List<TimelineOutput>>>(items);
-        }
+        var result = _mapper.Map<Dictionary<string, List<TimelineOutput>>>(items);
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод получает преимущества платформы.
+    /// </summary>
+    /// <returns>Преимущества платформы.</returns>
+    [HttpGet]
+    [Route("conditions")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<PlatformConditionOutput>))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<IEnumerable<PlatformConditionOutput>> GetPlatformConditionsAsync()
+    {
+        var result = await _landingService.GetPlatformConditionsAsync();
 
         return result;
     }
