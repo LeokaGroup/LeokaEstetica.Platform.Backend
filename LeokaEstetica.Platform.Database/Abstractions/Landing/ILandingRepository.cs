@@ -30,4 +30,10 @@ public interface ILandingRepository
     /// </summary>
     /// <returns>Список таймлайнов.</returns>
     Task<Dictionary<string, List<TimelineEntity>>> GetTimelinesAsync();
+
+    /// <summary>
+    /// Метод получает преимущества платформы.
+    /// </summary>
+    /// <returns>Преимущества платформы.</returns>
+    Task<IEnumerable<PlatformConditionEntity>> GetPlatformConditionsAsync();
 }

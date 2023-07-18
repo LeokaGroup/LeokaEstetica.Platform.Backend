@@ -74,4 +74,17 @@ internal sealed class LandingRepository : ILandingRepository
 
         return result;
     }
+
+    /// <summary>
+    /// Метод получает преимущества платформы.
+    /// </summary>
+    /// <returns>Преимущества платформы.</returns>
+    public async Task<IEnumerable<PlatformConditionEntity>> GetPlatformConditionsAsync()
+    {
+        var result = await _pgContext.PlatformConditions
+            .OrderBy(o => o.Position)
+            .ToListAsync();
+
+        return result;
+    }
 }

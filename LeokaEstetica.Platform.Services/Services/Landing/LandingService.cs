@@ -117,6 +117,18 @@ internal sealed class LandingService : ILandingService
             throw;
         }
     }
-    
+
+    /// <summary>
+    /// Метод получает преимущества платформы.
+    /// </summary>
+    /// <returns>Преимущества платформы.</returns>
+    public async Task<IEnumerable<PlatformConditionOutput>> GetPlatformConditionsAsync()
+    {
+        var items = await _landingRepository.GetPlatformConditionsAsync();
+        var result = _mapper.Map<IEnumerable<PlatformConditionOutput>>(items);
+
+        return result;
+    }
+
     #endregion
 }
