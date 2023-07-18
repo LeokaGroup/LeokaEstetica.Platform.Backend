@@ -27,7 +27,7 @@ public partial class WisheOfferConfiguration : IEntityTypeConfiguration<WisheOff
             .IsRequired();
         
         entity.Property(e => e.DateCreated)
-            .HasColumnName("WisheOfferText")
+            .HasColumnName("DateCreated")
             .HasColumnType("timestamp")
             .IsRequired();
         

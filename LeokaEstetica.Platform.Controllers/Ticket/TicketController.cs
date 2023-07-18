@@ -225,6 +225,7 @@ public class TicketController : BaseController
     /// Метод создает предложение/пожелание.
     /// </summary>
     /// <param name="wisheOfferInput">Входная модель.</param>
+    [AllowAnonymous]
     [HttpPost]
     [Route("wishes-offers")]
     public async Task<bool> CreateWisheOfferAsync([FromBody] WisheOfferInput wisheOfferInput)
