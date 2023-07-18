@@ -65,5 +65,5 @@ public interface ITicketService
     /// </summary>
     /// <param name="contactEmail">Почта пользователя, который оставил пожелание/предложение.</param>
     /// <param name="wisheOfferText">Текст предложение/пожелания.</param>
-    Task<bool> CreateWisheOfferAsync(string contactEmail, string wisheOfferText);
+    Task<WisheOfferOutput> CreateWisheOfferAsync(string contactEmail, string wisheOfferText);
 }

@@ -377,18 +377,22 @@ internal sealed class TicketService : ITicketService
     /// </summary>
     /// <param name="contactEmail">Почта пользователя, который оставил пожелание/предложение.</param>
     /// <param name="wisheOfferText">Текст предложение/пожелания.</param>
-    public async Task<bool> CreateWisheOfferAsync(string contactEmail, string wisheOfferText)
+    public async Task<WisheOfferOutput> CreateWisheOfferAsync(string contactEmail, string wisheOfferText)
     {
         try
         {
             var wisheOfferId = await _ticketRepository.CreateWisheOfferAsync(contactEmail, wisheOfferText);
 
+            var result = new WisheOfferOutput();
+
             if (wisheOfferId <= 0)
             {
-                return false;
+                return result;
             }
+
+            result.IsSuccess = true;
             
-            return true;
+            return result;
         }
         
         catch (Exception ex)

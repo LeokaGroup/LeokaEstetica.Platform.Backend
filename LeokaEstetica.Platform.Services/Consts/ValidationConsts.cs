@@ -84,6 +84,11 @@ public static class ValidationConsts
     public const string NOT_VALID_PUBLIC_ID = "Публичный код невалиден.";
 
     /// <summary>
+    /// Если текст обращения был пустым.
+    /// </summary>
+    public const string EMPTY_WISHE_OFFER_TEXT = "Текст обращения не может быть пустым.";
+
+    /// <summary>
     /// Класс описывает константы валидации Google.
     /// </summary>
     public static class Google

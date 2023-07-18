@@ -124,10 +124,10 @@ public class ProfileController : BaseController
 
         if (validator.Errors.Any())
         {
-            var exceptions = new List<Exception>();
+            var exceptions = new List<InvalidOperationException>();
             foreach (var err in validator.Errors)
             {
-                exceptions.Add(new Exception(err.ErrorMessage));
+                exceptions.Add(new InvalidOperationException(err.ErrorMessage));
             }
             
             var ex = new AggregateException(exceptions);
