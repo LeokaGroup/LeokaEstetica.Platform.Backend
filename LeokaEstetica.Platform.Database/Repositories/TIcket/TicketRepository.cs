@@ -146,9 +146,11 @@ internal sealed class TicketRepository : ITicketRepository
                 {
                     TicketStatusId = it.TicketStatusId,
                     TicketName = it.TicketName,
-                    TicketId = it.TicketId
+                    TicketId = it.TicketId,
+                    DateCreated = it.DateCreated
                 })
             .Distinct()
+            .OrderBy(o => o.DateCreated)
             .ToListAsync();
 
         return result;
@@ -190,9 +192,11 @@ internal sealed class TicketRepository : ITicketRepository
                 {
                     TicketStatusId = it.TicketStatusId,
                     TicketName = it.TicketName,
-                    TicketId = it.TicketId
+                    TicketId = it.TicketId,
+                    DateCreated = it.DateCreated
                 })
             .Distinct()
+            .OrderBy(o => o.DateCreated)
             .ToListAsync();
 
         return result;

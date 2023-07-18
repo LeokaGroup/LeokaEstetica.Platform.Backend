@@ -1,6 +1,7 @@
 using System.Runtime.CompilerServices;
 using AutoMapper;
 using LeokaEstetica.Platform.CallCenter.Abstractions.Ticket;
+using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.Ticket;
@@ -261,6 +262,12 @@ internal sealed class TicketService : ITicketService
             await FillStatusNamesAsync(result);
             
             result.Messages = await CreateMessagesResultAsync(userId, ticketMessages);
+
+            // Если тикет закрыт, то нельзя писать сообщения.
+            var ticketStatus = ticketMessages.First().MainInfoTicket.TicketStatusId;
+
+            result.IsDisableSendButton = ticketStatus != (int)TicketStatusEnum.Opened;
+            result.IsDisableCloseTicketButton = ticketStatus == (int)TicketStatusEnum.Closed;
 
             return result;
         }
