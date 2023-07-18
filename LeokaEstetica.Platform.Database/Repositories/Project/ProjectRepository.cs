@@ -175,7 +175,6 @@ internal sealed class ProjectRepository : IProjectRepository
     }
 
     /// <summary>
-    /// TODO: Подумать, давать ли всем пользователям возможность просматривать каталог проектов или только тем, у кого есть подписка.
     /// Метод получает список проектов для каталога.
     /// </summary>
     /// <returns>Список проектов.</returns>
@@ -185,6 +184,11 @@ internal sealed class ProjectRepository : IProjectRepository
                 join p in _pgContext.UserProjects
                     on cp.ProjectId
                     equals p.ProjectId
+                join mp in _pgContext.ModerationProjects
+                    on p.ProjectId
+                    equals mp.ProjectId
+                    into table
+                from tbl in table.DefaultIfEmpty()
                 join us in _pgContext.UserSubscriptions
                     on p.UserId
                     equals us.UserId
@@ -192,6 +196,12 @@ internal sealed class ProjectRepository : IProjectRepository
                     on us.SubscriptionId
                     equals s.ObjectId
                 where p.ArchivedProjects.All(a => a.ProjectId != p.ProjectId)
+                      && !new[]
+                          {
+                              (int)VacancyModerationStatusEnum.ModerationVacancy,
+                              (int)VacancyModerationStatusEnum.RejectedVacancy
+                          }
+                          .Contains(tbl.ModerationStatusId)
                 orderby s.ObjectId descending
                 select new CatalogProjectOutput
                 {

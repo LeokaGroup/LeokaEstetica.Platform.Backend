@@ -89,7 +89,6 @@ internal sealed class VacancyRepository : IVacancyRepository
     }
 
     /// <summary>
-    /// TODO: userId возможно нужкн будет использовать, если будет монетизация в каталоге вакансий. Если доступ будет только у тех пользователей, которые приобрели подписку.
     /// Метод получает список вакансий для каталога.
     /// </summary>
     /// <returns>Список вакансий.</returns>
@@ -101,12 +100,23 @@ internal sealed class VacancyRepository : IVacancyRepository
                     equals mv.VacancyId
                     into table
                 from tbl in table.DefaultIfEmpty()
-                where !new[]
-                    {
-                        (int)VacancyModerationStatusEnum.ModerationVacancy,
-                        (int)VacancyModerationStatusEnum.RejectedVacancy
-                    }
-                    .Contains(tbl.ModerationStatusId)
+                join v in _pgContext.UserVacancies
+                    on tbl.UserVacancy.VacancyId
+                    equals v.VacancyId
+                join us in _pgContext.UserSubscriptions
+                    on tbl.UserVacancy.UserId
+                    equals us.UserId
+                join s in _pgContext.Subscriptions
+                    on us.SubscriptionId
+                    equals s.ObjectId
+                where v.ArchivedVacancies.All(a => a.VacancyId != v.VacancyId)
+                      && !new[]
+                          {
+                              (int)VacancyModerationStatusEnum.ModerationVacancy,
+                              (int)VacancyModerationStatusEnum.RejectedVacancy
+                          }
+                          .Contains(tbl.ModerationStatusId)
+                orderby s.ObjectId descending
                 select new CatalogVacancyOutput
                 {
                     VacancyName = cv.Vacancy.VacancyName,
