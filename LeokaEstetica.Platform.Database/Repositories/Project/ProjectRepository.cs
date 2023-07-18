@@ -181,18 +181,27 @@ internal sealed class ProjectRepository : IProjectRepository
     /// <returns>Список проектов.</returns>
     public async Task<IEnumerable<CatalogProjectOutput>> CatalogProjectsAsync()
     {
-        var result = await _pgContext.CatalogProjects
-            .Include(p => p.Project)
-            .Where(p => p.Project.ArchivedProjects.All(a => a.ProjectId != p.ProjectId))
-            .Select(p => new CatalogProjectOutput
-            {
-                ProjectId = p.Project.ProjectId,
-                ProjectName = p.Project.ProjectName,
-                DateCreated = p.Project.DateCreated,
-                ProjectIcon = p.Project.ProjectIcon,
-                ProjectDetails = p.Project.ProjectDetails,
-                UserId = p.Project.UserId
-            })
+        var result = await (from cp in _pgContext.CatalogProjects
+                join p in _pgContext.UserProjects
+                    on cp.ProjectId
+                    equals p.ProjectId
+                join us in _pgContext.UserSubscriptions
+                    on p.UserId
+                    equals us.UserId
+                join s in _pgContext.Subscriptions
+                    on us.SubscriptionId
+                    equals s.ObjectId
+                where p.ArchivedProjects.All(a => a.ProjectId != p.ProjectId)
+                orderby s.ObjectId descending
+                select new CatalogProjectOutput
+                {
+                    ProjectId = p.ProjectId,
+                    ProjectName = p.ProjectName,
+                    DateCreated = p.DateCreated,
+                    ProjectIcon = p.ProjectIcon,
+                    ProjectDetails = p.ProjectDetails,
+                    UserId = p.UserId
+                })
             .ToListAsync();
 
         return result;
