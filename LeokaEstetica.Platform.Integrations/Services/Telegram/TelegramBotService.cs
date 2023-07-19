@@ -36,15 +36,15 @@ internal sealed class TelegramBotService : ITelegramBotService
     /// <param name="errorMessage">Вся инфолрмация об исключении.</param>
     public async Task SendErrorMessageAsync(string errorMessage)
     {
+        if (string.IsNullOrWhiteSpace(errorMessage))
+        {
+            return;
+        }
+            
+        var botClient = new TelegramBotClient(_botToken);
+        
         try
         {
-            if (string.IsNullOrWhiteSpace(errorMessage))
-            {
-                return;
-            }
-            
-            var botClient = new TelegramBotClient(_botToken);
-
             var bot = await botClient.GetMeAsync();
 
             if (bot.IsBot)
@@ -53,11 +53,23 @@ internal sealed class TelegramBotService : ITelegramBotService
             }
         }
         
-        catch (Exception ex)
+        catch (Exception ex1)
         {
-            _logger.LogCritical(ex,
+            _logger.LogCritical(ex1,
                 "Ошибка при отправке исключения в канал. Не волнуйтесь, ошибку сохранили. Смотреть БД.");
-            throw;
+            
+            _logger.LogInformation("Повторная попытка отправить ошибку в чат телеграм.");
+
+            try
+            {
+                await botClient.SendTextMessageAsync(_chatId, errorMessage);
+            }
+            
+            catch (Exception ex2)
+            {
+                _logger.LogCritical(ex2, "Повторная отправка ошибки не удалась.");
+                throw;
+            }
         }
     }
 }
