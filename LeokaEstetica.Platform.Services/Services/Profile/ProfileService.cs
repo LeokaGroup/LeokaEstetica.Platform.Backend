@@ -1,10 +1,13 @@
 using System.Runtime.CompilerServices;
 using AutoMapper;
 using LeokaEstetica.Platform.Access.Abstractions.User;
+using LeokaEstetica.Platform.Core.Enums;
+using LeokaEstetica.Platform.Database.Abstractions.Moderation.Resume;
 using LeokaEstetica.Platform.Database.Abstractions.Profile;
 using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Models.Dto.Input.Profile;
 using LeokaEstetica.Platform.Models.Dto.Output.Profile;
+using LeokaEstetica.Platform.Models.Entities.Moderation;
 using LeokaEstetica.Platform.Models.Entities.Profile;
 using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Notifications.Consts;
@@ -31,6 +34,7 @@ internal sealed class ProfileService : IProfileService
     private readonly IProfileRedisService _profileRedisService;
     private readonly INotificationsService _notificationsService;
     private readonly IAccessUserService _accessUserService;
+    private readonly IResumeModerationRepository _resumeModerationRepository;
 
     /// <summary>
     /// Конструктор.
@@ -42,13 +46,15 @@ internal sealed class ProfileService : IProfileService
     /// <param name="profileRedisService">Сервис кэша.</param>
     /// <param name="notificationsService">Сервис уведомлений.</param>
     /// <param name="accessUserService">Сервис доступа пользователей.</param>
+    /// <param name="resumeModerationRepository">Репозиторий модерации анкет.</param>
     public ProfileService(ILogger<ProfileService> logger,
         IProfileRepository profileRepository,
         IUserRepository userRepository,
         IMapper mapper,
         IProfileRedisService profileRedisService,
         INotificationsService notificationsService,
-        IAccessUserService accessUserService)
+        IAccessUserService accessUserService,
+        IResumeModerationRepository resumeModerationRepository)
     {
         _logger = logger;
         _profileRepository = profileRepository;
@@ -57,6 +63,7 @@ internal sealed class ProfileService : IProfileService
         _profileRedisService = profileRedisService;
         _notificationsService = notificationsService;
         _accessUserService = accessUserService;
+        _resumeModerationRepository = resumeModerationRepository;
     }
 
     /// <summary>
@@ -267,6 +274,9 @@ internal sealed class ProfileService : IProfileService
                 result.Email = email;
                 result.Token = userToken;
             }
+            
+            // Проверяем наличие неисправленных замечаний.
+            await CheckAwaitingCorrectionRemarksAsync(profileInfo.ProfileInfoId);
 
             result.IsSuccess = true;
 
@@ -592,6 +602,38 @@ internal sealed class ProfileService : IProfileService
         {
             _logger.LogError(ex, ex.Message);
             throw;
+        }
+    }
+    
+    /// <summary>
+    /// Метод обновляет статус замечаниям на статус "На проверке", если есть неисправленные.
+    /// </summary>
+    /// <param name="profileInfoId">Id профиля.</param>
+    private async Task CheckAwaitingCorrectionRemarksAsync(long profileInfoId)
+    {
+        var remarks = await _resumeModerationRepository.GetResumeRemarksAsync(profileInfoId);
+
+        if (!remarks.Any())
+        {
+            return;
+        }
+
+        var awaitingRemarks = new List<ResumeRemarkEntity>();
+        
+        foreach (var r in remarks)
+        {
+            if (r.RemarkStatusId != (int)RemarkStatusEnum.AwaitingCorrection)
+            {
+                continue;
+            }
+
+            r.RemarkStatusId = (int)RemarkStatusEnum.Review;
+            awaitingRemarks.Add(r);
+        }
+
+        if (awaitingRemarks.Any())
+        {
+            await _resumeModerationRepository.UpdateResumeRemarksAsync(awaitingRemarks);
         }
     }
 }
