@@ -16,6 +16,7 @@ public enum RemarkStatusEnum
     [Description("Не отправлено")]
     NotAssigned = 3,
     
+    [Obsolete("Не используется. В будущем возможно удалим.")]
     [Description("Повторно отправлено")]
     AgainAssigned = 4,
     

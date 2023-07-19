@@ -179,7 +179,7 @@ internal sealed class ProjectModerationRepository : IProjectModerationRepository
                          && new[]
                          {
                              (int)RemarkStatusEnum.AwaitingCorrection,
-                             (int)RemarkStatusEnum.AgainAssigned,
+                             // (int)RemarkStatusEnum.AgainAssigned,
                              (int)RemarkStatusEnum.NotAssigned,
                              (int)RemarkStatusEnum.Review
                          }.Contains(pr.RemarkStatusId))

@@ -322,7 +322,9 @@ internal sealed class VacancyModerationRepository : IVacancyModerationRepository
                          && new[]
                          {
                              (int)RemarkStatusEnum.AwaitingCorrection,
-                             (int)RemarkStatusEnum.AgainAssigned
+                             // (int)RemarkStatusEnum.AgainAssigned,
+                             (int)RemarkStatusEnum.NotAssigned,
+                             (int)RemarkStatusEnum.Review
                          }.Contains(pr.RemarkStatusId))
             .ToListAsync();
 
