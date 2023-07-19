@@ -1,5 +1,6 @@
 using System.Runtime.CompilerServices;
 using LeokaEstetica.Platform.Integrations.Abstractions.Telegram;
+using LeokaEstetica.Platform.Integrations.Enums;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot;
@@ -15,6 +16,7 @@ internal sealed class TelegramBotService : ITelegramBotService
 {
     private readonly ILogger<TelegramBotService> _logger;
     private static string _chatId;
+    private static string _notificationsChatId;
     private static string _botToken;
 
     /// <summary>
@@ -28,7 +30,10 @@ internal sealed class TelegramBotService : ITelegramBotService
         _logger = logger;
         _chatId = configuration["LogBot:ChatId"];
         _botToken = configuration["LogBot:Token"];
+        _notificationsChatId = configuration["NotificationsBot:ChatId"];
     }
+
+    #region Публичные методы.
 
     /// <summary>
     /// Метод отправляет информацию об ошибке в канал телеграма.
@@ -72,4 +77,63 @@ internal sealed class TelegramBotService : ITelegramBotService
             }
         }
     }
+
+    /// <summary>
+    /// Метод отправляет уведомление в чат о созданной вакансии, проекте.
+    /// </summary>
+    /// <param name="objectType">Тип объекта (вакансия, проект).</param>
+    /// <param name="objectName">Название объекта (проекта, вакансии).</param>
+    public async Task SendNotificationCreatedObjectAsync(ObjectTypeEnum objectType, string objectName)
+    {
+        var botClient = new TelegramBotClient(_botToken);
+        var notifyMessage = string.Empty;
+
+        try
+        {
+            if (string.IsNullOrWhiteSpace(objectName))
+            {
+                var ex = new InvalidOperationException(
+                    "Название объекта (проекта, вакансии) не заполнено. Невозможно отправить уведомление в канал.");
+                throw ex;
+            }
+
+            if (objectType.HasFlag(ObjectTypeEnum.Project))
+            {
+                notifyMessage = $"Создан новый проект {objectName}.";
+            }
+        
+            else if (objectType.HasFlag(ObjectTypeEnum.Vacancy))
+            {
+                notifyMessage = $"Создана новая вакансия {objectName}.";
+            }
+
+            await botClient.SendTextMessageAsync(_notificationsChatId, notifyMessage);
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            
+            _logger.LogInformation("Повторная попытка отправить уведомление в чат телеграм.");
+
+            try
+            {
+                await botClient.SendTextMessageAsync(_notificationsChatId, notifyMessage);
+            }
+            
+            catch (Exception ex2)
+            {
+                _logger.LogError(ex2, "Повторная отправка уведомления не удалась.");
+                throw;
+            }
+        }
+    }
+
+    #endregion
+
+    #region Приватные методы.
+
+    
+
+    #endregion
 }

@@ -10,6 +10,8 @@ using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Project;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
 using LeokaEstetica.Platform.Database.Abstractions.User;
+using LeokaEstetica.Platform.Integrations.Abstractions.Telegram;
+using LeokaEstetica.Platform.Integrations.Enums;
 using LeokaEstetica.Platform.Models.Dto.Input.Moderation;
 using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Project;
 using LeokaEstetica.Platform.Models.Dto.Output.Project;
@@ -33,6 +35,7 @@ public class ProjectModerationService : IProjectModerationService
     private readonly IUserRepository _userRepository;
     private readonly IProjectRepository _projectRepository;
     private readonly IProjectModerationNotificationService _projectModerationNotificationService;
+    private readonly ITelegramBotService _telegramBotService;
 
     /// <summary>
     /// Конструктор.
@@ -44,13 +47,15 @@ public class ProjectModerationService : IProjectModerationService
     /// <param name="userRepository">Репозиторий пользователя.</param>
     /// <param name="projectRepository">Репозиторий проектов.</param>
     /// <param name="projectModerationNotificationService">Сервис уведомлений модерации проектов.</param>
+    /// <param name="telegramBotService">Сервис чат-ботов телеграма.</param>
     public ProjectModerationService(IProjectModerationRepository projectModerationRepository,
         ILogger<ProjectModerationService> logger,
         IMapper mapper, 
         IModerationMailingsService moderationMailingsService, 
         IUserRepository userRepository, 
         IProjectRepository projectRepository, 
-        IProjectModerationNotificationService projectModerationNotificationService)
+        IProjectModerationNotificationService projectModerationNotificationService,
+        ITelegramBotService telegramBotService)
     {
         _projectModerationRepository = projectModerationRepository;
         _logger = logger;
@@ -59,6 +64,7 @@ public class ProjectModerationService : IProjectModerationService
         _userRepository = userRepository;
         _projectRepository = projectRepository;
         _projectModerationNotificationService = projectModerationNotificationService;
+        _telegramBotService = telegramBotService;
     }
 
     #region Публичные методы.
@@ -147,6 +153,8 @@ public class ProjectModerationService : IProjectModerationService
             
             // Отправляем уведомление в приложении об одобрении проекта модератором.
             await _projectModerationRepository.AddNotificationApproveProjectAsync(projectId, userId, projectName);
+
+            await _telegramBotService.SendNotificationCreatedObjectAsync(ObjectTypeEnum.Project, projectName);
 
             return result;
         }
