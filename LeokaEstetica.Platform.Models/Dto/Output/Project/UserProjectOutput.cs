@@ -1,3 +1,5 @@
+using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Project;
+
 namespace LeokaEstetica.Platform.Models.Dto.Output.Project;
 
 /// <summary>
@@ -39,4 +41,9 @@ public class UserProjectOutput
     /// PK.
     /// </summary>
     public long ProjectId { get; set; }
+    
+    /// <summary>
+    /// Список замечаний проекта.
+    /// </summary>
+    public IEnumerable<ProjectRemarkOutput> ProjectRemarks { get; set; }
 }

@@ -332,6 +332,20 @@ internal sealed class ProjectModerationRepository : IProjectModerationRepository
         return result;
     }
 
+    /// <summary>
+    /// Метод получает проекты, замечания которых ожидают проверки модератором.
+    /// </summary>
+    /// <returns>Список проектов.</returns>
+    public async Task<IEnumerable<ProjectRemarkEntity>> GetProjectsAwaitingCorrectionAsync()
+    {
+        var result = await _pgContext.ProjectRemarks
+            .Include(r => r.UserProject)
+            .Where(s => s.RemarkStatusId == (int)RemarkStatusEnum.AwaitingCorrection)
+            .ToListAsync();
+
+        return result;
+    }
+
     #endregion
 
     #region Приватные методы.

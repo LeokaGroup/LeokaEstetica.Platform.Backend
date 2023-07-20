@@ -105,4 +105,10 @@ public interface IProjectModerationRepository
     /// </summary>
     /// <returns>Список замечаний проекта.</returns>
     Task<IEnumerable<UserProjectEntity>> GetProjectUnShippedRemarksTableAsync();
+
+    /// <summary>
+    /// Метод получает проекты, замечания которых ожидают проверки модератором.
+    /// </summary>
+    /// <returns>Список проектов.</returns>
+    Task<IEnumerable<ProjectRemarkEntity>> GetProjectsAwaitingCorrectionAsync();
 }
