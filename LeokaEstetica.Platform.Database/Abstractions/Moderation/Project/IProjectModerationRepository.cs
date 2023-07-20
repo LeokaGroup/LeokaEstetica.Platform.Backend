@@ -111,4 +111,10 @@ public interface IProjectModerationRepository
     /// </summary>
     /// <returns>Список проектов.</returns>
     Task<IEnumerable<ProjectRemarkEntity>> GetProjectsAwaitingCorrectionAsync();
+    
+    /// <summary>
+    /// Метод получает анкеты, замечания которых ожидают проверки модератором.
+    /// </summary>
+    /// <returns>Список анкет.</returns>
+    Task<IEnumerable<ResumeRemarkEntity>> GetResumesAwaitingCorrectionAsync();
 }
