@@ -140,7 +140,7 @@ internal class BaseServiceTest
             subscriptionRepository, resumeModerationRepository, accessUserService, userRedisService,
             fareRuleRepository, null, null);
         ProfileService = new ProfileService(null, profileRepository, userRepository, mapper, null, null,
-            accessUserService);
+            accessUserService, resumeModerationRepository);
 
         var projectRepository = new ProjectRepository(pgContext, chatRepository);
         var projectNotificationsRepository = new ProjectNotificationsRepository(pgContext);
