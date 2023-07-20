@@ -617,4 +617,24 @@ public class CallCenterController : BaseController
 
         return result;
     }
+
+    /// <summary>
+    /// Метод получает проекты, замечания которых ожидают проверки модератором.
+    /// </summary>
+    /// <returns>Список проектов.</returns>
+    [HttpGet]
+    [Route("awaiting-correction/projects")]
+    [ProducesResponseType(200, Type = typeof(AwaitingCorrectionProjectResult))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<Dictionary<long, IEnumerable<ProjectRemarkOutput>>> GetProjectsAwaitingCorrectionAsync()
+    {
+        var items = await _projectModerationRepository.GetProjectsAwaitingCorrectionAsync();
+
+        var result = _mapper.Map<Dictionary<long, IEnumerable<ProjectRemarkOutput>>>(items);
+
+        return result;
+    }
 }
