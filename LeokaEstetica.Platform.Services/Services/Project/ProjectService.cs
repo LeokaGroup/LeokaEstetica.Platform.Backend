@@ -429,6 +429,9 @@ internal sealed class ProjectService : IProjectService
             await _projectNotificationsService.SendNotificationSuccessUpdatedUserProjectAsync("Все хорошо",
                 "Данные успешно изменены. Проект отправлен на модерацию.",
                 NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);
+            
+            // Проверяем наличие неисправленных замечаний.
+            await CheckAwaitingCorrectionRemarksAsync(projectId);
 
             return result;
         }
@@ -2011,6 +2014,38 @@ internal sealed class ProjectService : IProjectService
         if (removedProjects.Any())
         {
             projects.RemoveAll(p => removedProjects.Select(x => x.ProjectId).Contains(p.ProjectId));
+        }
+    }
+
+    /// <summary>
+    /// Метод обновляет статус замечаниям на статус "На проверке", если есть неисправленные.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    private async Task CheckAwaitingCorrectionRemarksAsync(long projectId)
+    {
+        var remarks = await _projectModerationRepository.GetProjectRemarksAsync(projectId);
+
+        if (!remarks.Any())
+        {
+            return;
+        }
+
+        var awaitingRemarks = new List<ProjectRemarkEntity>();
+        
+        foreach (var r in remarks)
+        {
+            if (r.RemarkStatusId != (int)RemarkStatusEnum.AwaitingCorrection)
+            {
+                continue;
+            }
+
+            r.RemarkStatusId = (int)RemarkStatusEnum.Review;
+            awaitingRemarks.Add(r);
+        }
+
+        if (awaitingRemarks.Any())
+        {
+            await _projectModerationRepository.UpdateProjectRemarksAsync(awaitingRemarks);
         }
     }
     
