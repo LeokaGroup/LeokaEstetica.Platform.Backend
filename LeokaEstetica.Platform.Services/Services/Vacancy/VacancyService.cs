@@ -22,6 +22,7 @@ using LeokaEstetica.Platform.Services.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Services.Builders;
 using VacancyItems = LeokaEstetica.Platform.Redis.Models.Vacancy.VacancyItems;
 using LeokaEstetica.Platform.Base.Extensions.HtmlExtensions;
+using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Vacancy;
 using LeokaEstetica.Platform.Models.Entities.Moderation;
 using LeokaEstetica.Platform.Services.Helpers;
@@ -384,13 +385,18 @@ internal sealed class VacancyService : IVacancyService
             // Создаем вакансию.
             var createdVacancy = await _vacancyRepository.UpdateVacancyAsync(vacancyInput);
 
+            var vacancyId = vacancyInput.VacancyId;
+
             // Отправляем вакансию на модерацию.
-            await _vacancyModerationService.AddVacancyModerationAsync(vacancyInput.VacancyId);
+            await _vacancyModerationService.AddVacancyModerationAsync(vacancyId);
 
             // Отправляем уведомление об успешном изменении вакансии и отправки ее на модерацию.
             await _vacancyNotificationsService.SendNotificationSuccessCreatedUserVacancyAsync("Все хорошо",
                 "Данные успешно сохранены. Вакансия отправлена на модерацию.",
                 NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, vacancyInput.Token);
+
+            // Проверяем наличие неисправленных замечаний.
+            await CheckAwaitingCorrectionRemarksAsync(vacancyId);
 
             return createdVacancy;
         }
@@ -988,6 +994,38 @@ internal sealed class VacancyService : IVacancyService
         if (removedVacancies.Any())
         {
             removedVacancies.RemoveAll(v => removedVacancies.Select(x => x.VacancyId).Contains(v.VacancyId));
+        }
+    }
+    
+    /// <summary>
+    /// Метод обновляет статус замечаниям на статус "На проверке", если есть неисправленные.
+    /// </summary>
+    /// <param name="projectId">Id вакансии.</param>
+    private async Task CheckAwaitingCorrectionRemarksAsync(long vacancyId)
+    {
+        var remarks = await _vacancyModerationRepository.GetVacancyRemarksAsync(vacancyId);
+
+        if (!remarks.Any())
+        {
+            return;
+        }
+
+        var awaitingRemarks = new List<VacancyRemarkEntity>();
+        
+        foreach (var r in remarks)
+        {
+            if (r.RemarkStatusId != (int)RemarkStatusEnum.AwaitingCorrection)
+            {
+                continue;
+            }
+
+            r.RemarkStatusId = (int)RemarkStatusEnum.Review;
+            awaitingRemarks.Add(r);
+        }
+
+        if (awaitingRemarks.Any())
+        {
+            await _vacancyModerationRepository.UpdateVacancyRemarksAsync(awaitingRemarks);
         }
     }
     
