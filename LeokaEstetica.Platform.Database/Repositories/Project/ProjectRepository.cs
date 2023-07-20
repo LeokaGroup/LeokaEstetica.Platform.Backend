@@ -175,24 +175,43 @@ internal sealed class ProjectRepository : IProjectRepository
     }
 
     /// <summary>
-    /// TODO: Подумать, давать ли всем пользователям возможность просматривать каталог проектов или только тем, у кого есть подписка.
     /// Метод получает список проектов для каталога.
     /// </summary>
     /// <returns>Список проектов.</returns>
     public async Task<IEnumerable<CatalogProjectOutput>> CatalogProjectsAsync()
     {
-        var result = await _pgContext.CatalogProjects
-            .Include(p => p.Project)
-            .Where(p => p.Project.ArchivedProjects.All(a => a.ProjectId != p.ProjectId))
-            .Select(p => new CatalogProjectOutput
-            {
-                ProjectId = p.Project.ProjectId,
-                ProjectName = p.Project.ProjectName,
-                DateCreated = p.Project.DateCreated,
-                ProjectIcon = p.Project.ProjectIcon,
-                ProjectDetails = p.Project.ProjectDetails,
-                UserId = p.Project.UserId
-            })
+        var result = await (from cp in _pgContext.CatalogProjects
+                join p in _pgContext.UserProjects
+                    on cp.ProjectId
+                    equals p.ProjectId
+                join mp in _pgContext.ModerationProjects
+                    on p.ProjectId
+                    equals mp.ProjectId
+                    into table
+                from tbl in table.DefaultIfEmpty()
+                join us in _pgContext.UserSubscriptions
+                    on p.UserId
+                    equals us.UserId
+                join s in _pgContext.Subscriptions
+                    on us.SubscriptionId
+                    equals s.ObjectId
+                where p.ArchivedProjects.All(a => a.ProjectId != p.ProjectId)
+                      && !new[]
+                          {
+                              (int)VacancyModerationStatusEnum.ModerationVacancy,
+                              (int)VacancyModerationStatusEnum.RejectedVacancy
+                          }
+                          .Contains(tbl.ModerationStatusId)
+                orderby s.ObjectId descending
+                select new CatalogProjectOutput
+                {
+                    ProjectId = p.ProjectId,
+                    ProjectName = p.ProjectName,
+                    DateCreated = p.DateCreated,
+                    ProjectIcon = p.ProjectIcon,
+                    ProjectDetails = p.ProjectDetails,
+                    UserId = p.UserId
+                })
             .ToListAsync();
 
         return result;

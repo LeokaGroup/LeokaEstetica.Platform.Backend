@@ -30,18 +30,42 @@ internal sealed class ResumeRepository : IResumeRepository
     /// <returns>Список резюме.</returns>
     public async Task<List<ProfileInfoEntity>> GetProfileInfosAsync()
     {
-        var excludedResumes = _pgContext.ModerationResumes
-            .Where(r => !new[]
+        var result = await (from pi in _pgContext.ProfilesInfo
+                join us in _pgContext.UserSubscriptions
+                    on pi.UserId
+                    equals us.UserId
+                join s in _pgContext.Subscriptions
+                    on us.SubscriptionId
+                    equals s.ObjectId
+                join mp in _pgContext.ModerationResumes
+                    on pi.ProfileInfoId
+                    equals mp.ProfileInfoId
+                    into table
+                from tbl in table.DefaultIfEmpty()
+                where pi.ModerationResumes.All(a => a.ProfileInfoId != pi.ProfileInfoId)
+                      && !new[]
+                          {
+                              (int)VacancyModerationStatusEnum.ModerationVacancy,
+                              (int)VacancyModerationStatusEnum.RejectedVacancy
+                          }
+                          .Contains(tbl.ModerationStatusId)
+                orderby s.ObjectId descending
+                select new ProfileInfoEntity
                 {
-                    (int)ResumeModerationStatusEnum.ModerationResume,
-                    (int)ResumeModerationStatusEnum.RejectedResume
-                }
-                .Contains(r.ModerationStatusId))
-            .Select(r => r.ProfileInfoId)
-            .AsQueryable();
-
-        var result = await _pgContext.ProfilesInfo
-            .Where(r => !excludedResumes.Contains(r.ProfileInfoId))
+                    ProfileInfoId = pi.ProfileInfoId,
+                    Aboutme = pi.Aboutme,
+                    FirstName = pi.FirstName,
+                    IsShortFirstName = pi.IsShortFirstName,
+                    Job = pi.Job,
+                    LastName = pi.LastName,
+                    OtherLink = pi.OtherLink,
+                    WhatsApp = pi.WhatsApp,
+                    Telegram = pi.Telegram,
+                    Vkontakte = pi.Vkontakte,
+                    Patronymic = pi.Patronymic,
+                    UserId = pi.UserId,
+                    WorkExperience = pi.WorkExperience
+                })
             .ToListAsync();
 
         return result;
