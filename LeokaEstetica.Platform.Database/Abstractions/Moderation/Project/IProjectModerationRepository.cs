@@ -110,5 +110,5 @@ public interface IProjectModerationRepository
     /// Метод получает проекты, замечания которых ожидают проверки модератором.
     /// </summary>
     /// <returns>Список проектов.</returns>
-    Task<Dictionary<long, IEnumerable<ProjectRemarkEntity>>> GetProjectsAwaitingCorrectionAsync();
+    Task<IEnumerable<ProjectRemarkEntity>> GetProjectsAwaitingCorrectionAsync();
 }

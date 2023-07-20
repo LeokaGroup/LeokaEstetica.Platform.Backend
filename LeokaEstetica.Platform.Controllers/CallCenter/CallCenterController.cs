@@ -629,11 +629,13 @@ public class CallCenterController : BaseController
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<Dictionary<long, IEnumerable<ProjectRemarkOutput>>> GetProjectsAwaitingCorrectionAsync()
+    public async Task<AwaitingCorrectionProjectResult> GetProjectsAwaitingCorrectionAsync()
     {
         var items = await _projectModerationRepository.GetProjectsAwaitingCorrectionAsync();
-
-        var result = _mapper.Map<Dictionary<long, IEnumerable<ProjectRemarkOutput>>>(items);
+        var result = new AwaitingCorrectionProjectResult
+        {
+            AwaitingCorrectionProjects = _mapper.Map<IEnumerable<ProjectRemarkOutput>>(items)
+        };
 
         return result;
     }

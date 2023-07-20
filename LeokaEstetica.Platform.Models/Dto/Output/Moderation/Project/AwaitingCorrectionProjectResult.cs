@@ -8,7 +8,7 @@ public class AwaitingCorrectionProjectResult
     /// <summary>
     /// Список проектов.
     /// </summary>
-    public Dictionary<long, List<ProjectRemarkOutput>> AwaitingCorrectionProjects { get; set; }
+    public IEnumerable<ProjectRemarkOutput> AwaitingCorrectionProjects { get; set; }
 
     /// <summary>
     /// Кол-во.

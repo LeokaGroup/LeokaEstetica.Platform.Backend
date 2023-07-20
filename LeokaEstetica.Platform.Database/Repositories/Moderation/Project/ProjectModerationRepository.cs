@@ -336,26 +336,12 @@ internal sealed class ProjectModerationRepository : IProjectModerationRepository
     /// Метод получает проекты, замечания которых ожидают проверки модератором.
     /// </summary>
     /// <returns>Список проектов.</returns>
-    public async Task<Dictionary<long, IEnumerable<ProjectRemarkEntity>>> GetProjectsAwaitingCorrectionAsync()
+    public async Task<IEnumerable<ProjectRemarkEntity>> GetProjectsAwaitingCorrectionAsync()
     {
         var result = await _pgContext.ProjectRemarks
             .Include(r => r.UserProject)
             .Where(s => s.RemarkStatusId == (int)RemarkStatusEnum.AwaitingCorrection)
-            .GroupBy(g => g.ProjectId, (x, y) => new
-            {
-                x,
-                ProjectRemarks = y.Select(t => new ProjectRemarkEntity
-                {
-                    FieldName = t.FieldName,
-                    DateCreated = t.DateCreated,
-                    RussianName = t.RussianName,
-                    RemarkId = t.RemarkId,
-                    RemarkText = t.RemarkText,
-                    RemarkStatusId = t.RemarkStatusId,
-                    RejectReason = t.RejectReason
-                })
-            })
-            .ToDictionaryAsync(k => k.x, v => v.ProjectRemarks);
+            .ToListAsync();
 
         return result;
     }
