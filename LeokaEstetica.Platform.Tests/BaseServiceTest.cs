@@ -151,9 +151,11 @@ internal class BaseServiceTest
         var vacancyNotificationsService = new VacancyNotificationsService(null, null);
         var availableLimitsRepository = new AvailableLimitsRepository(pgContext);
         var availableLimitsService = new AvailableLimitsService(null, availableLimitsRepository);
+        
+        TelegramBotService = new TelegramBotService(null, AppConfiguration);
 
         VacancyModerationService = new VacancyModerationService(vacancyModerationRepository, null, mapper, null,
-            vacancyRepository, userRepository, projectRepository, null);
+            vacancyRepository, userRepository, projectRepository, null, TelegramBotService);
         
         // Тут если нужен будет ProjectService, то тут проблема с порядком следования.
         // Не получится сделать просто, VacancyService и ProjectService нужны друг другу тесно.
@@ -171,7 +173,7 @@ internal class BaseServiceTest
         ProjectModerationRepository = new ProjectModerationRepository(pgContext);
 
         ProjectModerationService = new ProjectModerationService(ProjectModerationRepository, null, mapper, null, 
-            userRepository, projectRepository, null);
+            userRepository, projectRepository, null, TelegramBotService);
 
         var projectCommentsRepository = new ProjectCommentsRepository(pgContext);
 
@@ -234,8 +236,6 @@ internal class BaseServiceTest
         TicketService = new TicketService(ticketRepository, null, userRepository, mapper, accessTicketRepository,
             null);
 
-        TelegramBotService = new TelegramBotService(null, AppConfiguration);
-        
         ProjectMetricsService = new ProjectMetricsService(projectCommentsRepository, mapper, projectRepository);
     }
 }

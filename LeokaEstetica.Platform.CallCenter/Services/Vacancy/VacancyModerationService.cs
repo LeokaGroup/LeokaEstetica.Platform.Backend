@@ -10,6 +10,8 @@ using LeokaEstetica.Platform.Database.Abstractions.Moderation.Vacancy;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
 using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Database.Abstractions.Vacancy;
+using LeokaEstetica.Platform.Integrations.Abstractions.Telegram;
+using LeokaEstetica.Platform.Integrations.Enums;
 using LeokaEstetica.Platform.Models.Dto.Input.Moderation;
 using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Vacancy;
 using LeokaEstetica.Platform.Models.Entities.Moderation;
@@ -33,6 +35,7 @@ public class VacancyModerationService : IVacancyModerationService
     private readonly IUserRepository _userRepository;
     private readonly IProjectRepository _projectRepository;
     private readonly IVacancyModerationNotificationService _vacancyModerationNotificationService;
+    private readonly ITelegramBotService _telegramBotService;
 
     /// <summary>
     /// Конструктор.
@@ -45,6 +48,7 @@ public class VacancyModerationService : IVacancyModerationService
     /// <param name="userRepository">Репозиторий пользователя.</param>
     /// <param name="projectRepository">Репозиторий проектов.</param>
     /// <param name="vacancyModerationNotificationService">Сервис уведомлений модерации вакансий.</param>
+    /// <param name="telegramBotService">Сервис чат-ботов телеграма.</param>
     public VacancyModerationService(IVacancyModerationRepository vacancyModerationRepository,
         ILogger<VacancyModerationService> logger, 
         IMapper mapper, 
@@ -52,7 +56,8 @@ public class VacancyModerationService : IVacancyModerationService
         IVacancyRepository vacancyRepository, 
         IUserRepository userRepository, 
         IProjectRepository projectRepository, 
-        IVacancyModerationNotificationService vacancyModerationNotificationService)
+        IVacancyModerationNotificationService vacancyModerationNotificationService,
+        ITelegramBotService telegramBotService)
     {
         _vacancyModerationRepository = vacancyModerationRepository;
         _logger = logger;
@@ -62,6 +67,7 @@ public class VacancyModerationService : IVacancyModerationService
         _userRepository = userRepository;
         _projectRepository = projectRepository;
         _vacancyModerationNotificationService = vacancyModerationNotificationService;
+        _telegramBotService = telegramBotService;
     }
 
     #region Публичные методы.
@@ -151,6 +157,8 @@ public class VacancyModerationService : IVacancyModerationService
             // Отправляем уведомление в приложении об одобрении вакансии модератором.
             await _vacancyModerationRepository.AddNotificationApproveVacancyAsync(vacancyId, vacancyOwnerId,
                 vacancyName, projectId);
+            
+            await _telegramBotService.SendNotificationCreatedObjectAsync(ObjectTypeEnum.Vacancy, vacancyName);
 
             return result;
         }
