@@ -344,7 +344,7 @@ internal sealed class ProjectModerationRepository : IProjectModerationRepository
             .GroupBy(g => g.ProjectId, (x, y) => new
             {
                 x,
-                ProjectRemarkEntities = y.Select(t => new ProjectRemarkEntity
+                ProjectRemarks = y.Select(t => new ProjectRemarkEntity
                 {
                     FieldName = t.FieldName,
                     DateCreated = t.DateCreated,
@@ -355,7 +355,7 @@ internal sealed class ProjectModerationRepository : IProjectModerationRepository
                     RejectReason = t.RejectReason
                 })
             })
-            .ToDictionaryAsync(k => k.x, v => v.ProjectRemarkEntities);
+            .ToDictionaryAsync(k => k.x, v => v.ProjectRemarks);
 
         return result;
     }
