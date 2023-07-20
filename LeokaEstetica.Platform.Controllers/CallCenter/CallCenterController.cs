@@ -641,9 +641,9 @@ public class CallCenterController : BaseController
     }
     
     /// <summary>
-    /// Метод получает проекты, замечания которых ожидают проверки модератором.
+    /// Метод получает анкеты, замечания которых ожидают проверки модератором.
     /// </summary>
-    /// <returns>Список проектов.</returns>
+    /// <returns>Список анкет.</returns>
     [HttpGet]
     [Route("awaiting-correction/resumes")]
     [ProducesResponseType(200, Type = typeof(AwaitingCorrectionProjectResult))]
