@@ -347,6 +347,20 @@ internal sealed class ProjectModerationRepository : IProjectModerationRepository
     }
 
     /// <summary>
+    /// Метод получает анкеты, замечания которых ожидают проверки модератором.
+    /// </summary>
+    /// <returns>Список анкет.</returns>
+    public async Task<IEnumerable<ResumeRemarkEntity>> GetResumesAwaitingCorrectionAsync()
+    {
+        var result = await _pgContext.ResumeRemarks
+            .Include(r => r.ProfileInfo)
+            .Where(s => s.RemarkStatusId == (int)RemarkStatusEnum.AwaitingCorrection)
+            .ToListAsync();
+
+        return result;
+    }
+
+    /// <summary>
     /// Метод получает вакансии, замечания которых ожидают проверки модератором.
     /// </summary>
     /// <returns>Список вакансий.</returns>
