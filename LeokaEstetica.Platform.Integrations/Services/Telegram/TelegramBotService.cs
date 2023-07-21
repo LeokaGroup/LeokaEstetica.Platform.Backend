@@ -17,7 +17,8 @@ internal sealed class TelegramBotService : ITelegramBotService
     private readonly ILogger<TelegramBotService> _logger;
     private static string _chatId;
     private static string _notificationsChatId;
-    private static string _botToken;
+    private static string _logBotToken;
+    private static string _notificationsBot;
 
     /// <summary>
     /// Конструктор.
@@ -29,7 +30,8 @@ internal sealed class TelegramBotService : ITelegramBotService
     {
         _logger = logger;
         _chatId = configuration["LogBot:ChatId"];
-        _botToken = configuration["LogBot:Token"];
+        _logBotToken = configuration["LogBot:Token"];
+        _notificationsBot = configuration["NotificationsBot:Token"];
         _notificationsChatId = configuration["NotificationsBot:ChatId"];
     }
 
@@ -46,7 +48,7 @@ internal sealed class TelegramBotService : ITelegramBotService
             return;
         }
             
-        var botClient = new TelegramBotClient(_botToken);
+        var botClient = new TelegramBotClient(_logBotToken);
         
         try
         {
@@ -85,7 +87,7 @@ internal sealed class TelegramBotService : ITelegramBotService
     /// <param name="objectName">Название объекта (проекта, вакансии).</param>
     public async Task SendNotificationCreatedObjectAsync(ObjectTypeEnum objectType, string objectName)
     {
-        var botClient = new TelegramBotClient(_botToken);
+        var botClient = new TelegramBotClient(_notificationsBot);
         var notifyMessage = string.Empty;
 
         try
@@ -99,12 +101,12 @@ internal sealed class TelegramBotService : ITelegramBotService
 
             if (objectType.HasFlag(ObjectTypeEnum.Project))
             {
-                notifyMessage = $"Создан новый проект {objectName}.";
+                notifyMessage = $"Создан новый проект \"{objectName}\".";
             }
         
             else if (objectType.HasFlag(ObjectTypeEnum.Vacancy))
             {
-                notifyMessage = $"Создана новая вакансия {objectName}.";
+                notifyMessage = $"Создана новая вакансия \"{objectName}\".";
             }
 
             await botClient.SendTextMessageAsync(_notificationsChatId, notifyMessage);
