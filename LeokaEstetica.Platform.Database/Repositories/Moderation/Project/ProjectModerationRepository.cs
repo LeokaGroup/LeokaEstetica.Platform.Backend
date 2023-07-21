@@ -360,6 +360,20 @@ internal sealed class ProjectModerationRepository : IProjectModerationRepository
         return result;
     }
 
+    /// <summary>
+    /// Метод получает вакансии, замечания которых ожидают проверки модератором.
+    /// </summary>
+    /// <returns>Список вакансий.</returns>
+    public async Task<IEnumerable<VacancyRemarkEntity>> GetVacanciesAwaitingCorrectionAsync()
+    {
+        var result = await _pgContext.VacancyRemarks
+            .Include(r => r.UserProject)
+            .Where(s => s.RemarkStatusId == (int)RemarkStatusEnum.AwaitingCorrection)
+            .ToListAsync();
+
+        return result;
+    }
+
     #endregion
 
     #region Приватные методы.

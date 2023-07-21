@@ -661,4 +661,26 @@ public class CallCenterController : BaseController
 
         return result;
     }
+    
+    /// <summary>
+    /// Метод получает вакансии, замечания которых ожидают проверки модератором.
+    /// </summary>
+    /// <returns>Список вакансий.</returns>
+    [HttpGet]
+    [Route("awaiting-correction/vacancies")]
+    [ProducesResponseType(200, Type = typeof(AwaitingCorrectionVacancyResult))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<AwaitingCorrectionVacancyResult> GetVacanciesAwaitingCorrectionAsync()
+    {
+        var items = await _projectModerationRepository.GetVacanciesAwaitingCorrectionAsync();
+        var result = new AwaitingCorrectionVacancyResult
+        {
+            AwaitingCorrectionVacancies = _mapper.Map<IEnumerable<VacancyRemarkOutput>>(items)
+        };
+
+        return result;
+    }
 }
