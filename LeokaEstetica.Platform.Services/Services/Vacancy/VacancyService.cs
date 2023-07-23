@@ -24,6 +24,7 @@ using VacancyItems = LeokaEstetica.Platform.Redis.Models.Vacancy.VacancyItems;
 using LeokaEstetica.Platform.Base.Extensions.HtmlExtensions;
 using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Vacancy;
+using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Vacancy;
 using LeokaEstetica.Platform.Models.Entities.Moderation;
 using LeokaEstetica.Platform.Services.Helpers;
 using Microsoft.Extensions.Logging;
@@ -351,6 +352,9 @@ internal sealed class VacancyService : IVacancyService
             }
 
             var result = await CreateVacancyResultAsync(vacancy, userId);
+
+            var remarks = await _vacancyModerationRepository.GetVacancyRemarksAsync(vacancyId);
+            result.VacancyRemarks = _mapper.Map<IEnumerable<VacancyRemarkOutput>>(remarks);
 
             return result;
         }
