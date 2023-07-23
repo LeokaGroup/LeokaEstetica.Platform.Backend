@@ -264,7 +264,8 @@ public class VacancyModerationService : IVacancyModerationService
                 // Если есть замечания вакансии сохраненные ранее.
                 if (existsProjectRemarks.Any())
                 {
-                    var getProjectRemarks = existsProjectRemarks.Find(x => x.FieldName.Equals(pr.FieldName));
+                    var getProjectRemarks = existsProjectRemarks.Find(x => x.FieldName.Equals(pr.FieldName)
+                                                                           && x.VacancyId == pr.VacancyId);
                     
                     // К обновлению.
                     if (getProjectRemarks is not null)

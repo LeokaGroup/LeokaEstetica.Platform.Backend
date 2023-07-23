@@ -359,7 +359,7 @@ public class CallCenterController : BaseController
         
         var result = new ProjectRemarkResult
         {
-            ProjectRemark = _mapper.Map<List<ProjectRemarkOutput>>(projectRemarks)
+            ProjectRemarks = _mapper.Map<List<ProjectRemarkOutput>>(projectRemarks)
         };
 
         return result;

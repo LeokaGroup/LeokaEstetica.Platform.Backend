@@ -165,7 +165,8 @@ public class ResumeModerationService : IResumeModerationService
                 // Если есть замечания анкеты сохраненные ранее.
                 if (existsResumeRemarks.Any())
                 {
-                    var getProjectRemarks = existsResumeRemarks.Find(x => x.FieldName.Equals(pr.FieldName));
+                    var getProjectRemarks = existsResumeRemarks.Find(x => x.FieldName.Equals(pr.FieldName)
+                                                                          && x.ProfileInfoId == pr.ProfileInfoId);
                     
                     // К обновлению.
                     if (getProjectRemarks is not null)
