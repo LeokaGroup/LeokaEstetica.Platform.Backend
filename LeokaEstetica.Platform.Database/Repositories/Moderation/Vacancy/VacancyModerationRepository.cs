@@ -96,6 +96,13 @@ internal sealed class VacancyModerationRepository : IVacancyModerationRepository
     {
         var result = await _pgContext.ModerationVacancies
             .Include(up => up.UserVacancy)
+            .Where(v => !new[]
+                {
+                    (int)VacancyModerationStatusEnum.ApproveVacancy, 
+                    (int)VacancyModerationStatusEnum.ArchivedVacancy,
+                    (int)VacancyModerationStatusEnum.RejectedVacancy
+                }
+                .Contains(v.ModerationStatusId))
             .Select(p => new ModerationVacancyEntity
             {
                 ModerationId = p.ModerationId,
@@ -135,13 +142,19 @@ internal sealed class VacancyModerationRepository : IVacancyModerationRepository
         {
             throw new InvalidOperationException($"Не удалось найти вакансию. VacancyId = {vacancyId}");
         }
-        
+
+        var isExists = await GetCatalogVacancyAsync(vacancyId);
+
         // Добавляем вакансию в каталог.
-        await _pgContext.CatalogVacancies.AddAsync(new CatalogVacancyEntity
+        if (isExists is null)
         {
-            VacancyId = vacancyId
-        });
-        await _pgContext.SaveChangesAsync();
+            await _pgContext.CatalogVacancies.AddAsync(new CatalogVacancyEntity
+            {
+                VacancyId = vacancyId
+            });
+            
+            await _pgContext.SaveChangesAsync();
+        }
 
         return true;
     }
@@ -454,6 +467,18 @@ internal sealed class VacancyModerationRepository : IVacancyModerationRepository
         }
         
         vac.ModerationStatusId = (int)status;
+    }
+
+    /// <summary>
+    /// Метод получает вакансию из каталога, если она там есть.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <returns>Данные вакансии.</returns>
+    private async Task<CatalogVacancyEntity> GetCatalogVacancyAsync(long vacancyId)
+    {
+        var result = await _pgContext.CatalogVacancies.FirstOrDefaultAsync(v => v.VacancyId == vacancyId);
+
+        return result;
     }
 
     #endregion
