@@ -8,10 +8,10 @@ public class VacancyRemarkResult
     /// <summary>
     /// Список замечаний вакансии.
     /// </summary>
-    public IEnumerable<VacancyRemarkOutput> VacancyRemark { get; set; }
+    public IEnumerable<VacancyRemarkOutput> VacancyRemarks { get; set; }
 
     /// <summary>
     /// Кол-во замечаний всего.
     /// </summary>
-    public int Total => VacancyRemark.Count();
+    public int Total => VacancyRemarks.Count();
 }

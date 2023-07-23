@@ -1,12 +1,13 @@
 using FluentValidation.Results;
 using LeokaEstetica.Platform.Models.Dto.Common;
+using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Vacancy;
 
 namespace LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
 
 /// <summary>
 /// Класс выходной модели вакансии.
 /// </summary>
-public class VacancyOutput : IFrontError
+public class VacancyOutput : VacancyRemarkResult, IFrontError
 {
     /// <summary>
     /// PK.

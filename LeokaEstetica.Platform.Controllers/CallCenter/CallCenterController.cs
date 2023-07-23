@@ -403,7 +403,7 @@ public class CallCenterController : BaseController
         
         var result = new VacancyRemarkResult
         {
-            VacancyRemark = _mapper.Map<List<VacancyRemarkOutput>>(vacancyRemarks)
+            VacancyRemarks = _mapper.Map<List<VacancyRemarkOutput>>(vacancyRemarks)
         };
 
         return result;
