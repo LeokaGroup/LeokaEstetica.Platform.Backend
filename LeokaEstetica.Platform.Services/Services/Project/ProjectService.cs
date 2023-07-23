@@ -35,6 +35,7 @@ using LeokaEstetica.Platform.Services.Consts;
 using LeokaEstetica.Platform.Services.Strategies.Project.Team;
 using LeokaEstetica.Platform.Base.Extensions.HtmlExtensions;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Project;
+using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Project;
 using LeokaEstetica.Platform.Models.Entities.Moderation;
 using LeokaEstetica.Platform.Services.Helpers;
 using Microsoft.Extensions.Logging;
@@ -472,6 +473,9 @@ internal sealed class ProjectService : IProjectService
             }
 
             var result = await CreateProjectResultAsync(projectId, prj, userId);
+
+            var remarks = await _projectModerationRepository.GetProjectRemarksAsync(projectId);
+            result.ProjectRemarks = _mapper.Map<IEnumerable<ProjectRemarkOutput>>(remarks);
 
             return result;
         }

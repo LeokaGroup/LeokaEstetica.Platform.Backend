@@ -43,7 +43,7 @@ public static class CreateDialogMessagesBuilder
             // Записываем имя и фамилию участника диалога, с которым идет общение.
             var otherUserId = membersIds.FirstOrDefault(m => !m.Equals(userId));
             var otherData = await userRepository.GetUserByUserIdAsync(otherUserId);
-            dialog.FullName = otherData.FirstName + " " + otherData.LastName;
+            dialog.FullName = otherData?.FirstName + " " + otherData?.LastName;
 
             // Если дата диалога совпадает с сегодняшней, то заполнит часы и минуты, иначе оставит их null.
             if (DateTime.UtcNow.ToUniversalTime().ToString("d")
@@ -63,12 +63,13 @@ public static class CreateDialogMessagesBuilder
             // Форматируем дату убрав секунды.
             dialog.Created = Convert.ToDateTime(dialog.Created).ToString("g");
             
-            var id = membersIds.Except(new[] { userId }).First();
+            var id = membersIds.Except(new[] { userId }).FirstOrDefault();
+
             var user = await userRepository.GetUserByUserIdAsync(id);
 
             // Если имя и фамилия заполнены, то берем их.
-            if (user.FirstName is not null 
-                && user.LastName is not null)
+            if (user?.FirstName is not null 
+                && user?.LastName is not null)
             {
                 dialog.FullName = user.FirstName + " " + user.LastName;
             }
@@ -76,7 +77,7 @@ public static class CreateDialogMessagesBuilder
             // Иначе берем почту.
             else
             {
-                dialog.FullName = user.Email;
+                dialog.FullName = user?.Email;
             }
         }
 

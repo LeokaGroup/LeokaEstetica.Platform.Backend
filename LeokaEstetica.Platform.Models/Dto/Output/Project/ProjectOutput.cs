@@ -1,12 +1,13 @@
 using FluentValidation.Results;
 using LeokaEstetica.Platform.Models.Dto.Common;
+using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Project;
 
 namespace LeokaEstetica.Platform.Models.Dto.Output.Project;
 
 /// <summary>
 /// Класс выходной модели проекта.
 /// </summary>
-public class ProjectOutput : IFrontError
+public class ProjectOutput : ProjectRemarkResult, IFrontError
 {
     /// <summary>
     /// Название проекта.

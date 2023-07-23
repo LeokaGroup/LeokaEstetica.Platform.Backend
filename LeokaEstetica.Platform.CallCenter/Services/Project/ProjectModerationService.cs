@@ -268,7 +268,8 @@ public class ProjectModerationService : IProjectModerationService
                 // Если есть замечания проекта сохраненные ранее.
                 if (existsProjectRemarks.Any())
                 {
-                    var getProjectRemarks = existsProjectRemarks.Find(x => x.FieldName.Equals(pr.FieldName));
+                    var getProjectRemarks = existsProjectRemarks.Find(x => x.FieldName.Equals(pr.FieldName)
+                                                                           && x.ProjectId == pr.ProjectId);
                     
                     // К обновлению.
                     if (getProjectRemarks is not null)
