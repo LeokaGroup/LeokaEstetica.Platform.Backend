@@ -538,7 +538,7 @@ internal sealed class VacancyService : IVacancyService
             {
                 result = new VacancyResultOutput
                 {
-                    Vacancies = _mapper.Map<IEnumerable<VacancyOutput>>(items)
+                    Vacancies = _mapper.Map<IEnumerable<VacancyOutput>>(items),
                 };
             }
 
@@ -861,6 +861,8 @@ internal sealed class VacancyService : IVacancyService
                 result.IsVisibleActionAddVacancyArchive = true;
             }
         }
+
+        result.VacancyRemarks = new List<VacancyRemarkOutput>();
 
         return result;
     }

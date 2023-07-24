@@ -13,5 +13,18 @@ public class VacancyRemarkResult
     /// <summary>
     /// Кол-во замечаний всего.
     /// </summary>
-    public int Total => VacancyRemarks.Count();
+    public int Total
+    {
+        get
+        {
+            if (VacancyRemarks is not null)
+            {
+                return VacancyRemarks.Count();
+            }
+
+            return 0;
+        }
+
+        set => Total = value;
+    }
 }
