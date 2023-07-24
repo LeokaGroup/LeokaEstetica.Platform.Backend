@@ -13,5 +13,18 @@ public class ResumeRemarkResult
     /// <summary>
     /// Кол-во замечаний всего.
     /// </summary>
-    public int Total => ResumeRemark.Count();
+    public int Total
+    {
+        get
+        {
+            if (ResumeRemark is not null)
+            {
+                return ResumeRemark.Count();
+            }
+
+            return 0;
+        }
+
+        set => Total = value;
+    }
 }
