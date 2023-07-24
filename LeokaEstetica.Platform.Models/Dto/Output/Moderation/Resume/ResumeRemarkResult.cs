@@ -8,10 +8,23 @@ public class ResumeRemarkResult
     /// <summary>
     /// Список замечаний анкеты.
     /// </summary>
-    public IEnumerable<ResumeRemarkOutput> ResumeRemark { get; set; }
+    public IEnumerable<ResumeRemarkOutput> ResumeRemarks { get; set; }
 
     /// <summary>
     /// Кол-во замечаний всего.
     /// </summary>
-    public int Total => ResumeRemark.Count();
+    public int Total
+    {
+        get
+        {
+            if (ResumeRemarks is not null)
+            {
+                return ResumeRemarks.Count();
+            }
+
+            return 0;
+        }
+
+        set => Total = value;
+    }
 }

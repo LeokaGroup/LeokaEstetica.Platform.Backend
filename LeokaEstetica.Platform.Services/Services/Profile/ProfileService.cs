@@ -6,6 +6,7 @@ using LeokaEstetica.Platform.Database.Abstractions.Moderation.Resume;
 using LeokaEstetica.Platform.Database.Abstractions.Profile;
 using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Models.Dto.Input.Profile;
+using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Resume;
 using LeokaEstetica.Platform.Models.Dto.Output.Profile;
 using LeokaEstetica.Platform.Models.Entities.Moderation;
 using LeokaEstetica.Platform.Models.Entities.Profile;
@@ -121,6 +122,9 @@ internal sealed class ProfileService : IProfileService
 
             result.Email = userData.Email;
             result.PhoneNumber = userData.PhoneNumber;
+
+            var remarks = await _resumeModerationRepository.GetResumeRemarksAsync(profileInfo.ProfileInfoId);
+            result.ResumeRemarks = _mapper.Map<IEnumerable<ResumeRemarkOutput>>(remarks);
 
             return result;
         }

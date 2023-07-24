@@ -1,12 +1,13 @@
 using FluentValidation.Results;
 using LeokaEstetica.Platform.Models.Dto.Common;
+using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Resume;
 
 namespace LeokaEstetica.Platform.Models.Dto.Output.Profile;
 
 /// <summary>
 /// Класс выходной модели информации профиля пользователя для раздела обо мне.
 /// </summary>
-public class ProfileInfoOutput : IFrontError
+public class ProfileInfoOutput : ResumeRemarkResult, IFrontError
 {
     /// <summary>
     /// PK.
