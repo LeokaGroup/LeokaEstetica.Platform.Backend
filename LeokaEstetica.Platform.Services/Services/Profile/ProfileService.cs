@@ -124,7 +124,7 @@ internal sealed class ProfileService : IProfileService
             result.PhoneNumber = userData.PhoneNumber;
 
             var remarks = await _resumeModerationRepository.GetResumeRemarksAsync(profileInfo.ProfileInfoId);
-            result.ResumeRemark = _mapper.Map<IEnumerable<ResumeRemarkOutput>>(remarks);
+            result.ResumeRemarks = _mapper.Map<IEnumerable<ResumeRemarkOutput>>(remarks);
 
             return result;
         }

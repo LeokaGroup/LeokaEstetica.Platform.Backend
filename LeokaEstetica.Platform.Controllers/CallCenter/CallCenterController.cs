@@ -449,7 +449,7 @@ public class CallCenterController : BaseController
         
         var result = new ResumeRemarkResult
         {
-            ResumeRemark = _mapper.Map<List<ResumeRemarkOutput>>(vacancyRemarks)
+            ResumeRemarks = _mapper.Map<List<ResumeRemarkOutput>>(vacancyRemarks)
         };
 
         return result;

@@ -8,7 +8,7 @@ public class ResumeRemarkResult
     /// <summary>
     /// Список замечаний анкеты.
     /// </summary>
-    public IEnumerable<ResumeRemarkOutput> ResumeRemark { get; set; }
+    public IEnumerable<ResumeRemarkOutput> ResumeRemarks { get; set; }
 
     /// <summary>
     /// Кол-во замечаний всего.
@@ -17,9 +17,9 @@ public class ResumeRemarkResult
     {
         get
         {
-            if (ResumeRemark is not null)
+            if (ResumeRemarks is not null)
             {
-                return ResumeRemark.Count();
+                return ResumeRemarks.Count();
             }
 
             return 0;
