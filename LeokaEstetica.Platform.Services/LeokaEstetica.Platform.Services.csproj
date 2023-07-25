@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>disable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\LeokaEstetica.Platform.Access\LeokaEstetica.Platform.Access.csproj" />
+      <ProjectReference Include="..\LeokaEstetica.Platform.Base\LeokaEstetica.Platform.Base.csproj" />
+      <ProjectReference Include="..\LeokaEstetica.Platform.Core\LeokaEstetica.Platform.Core.csproj" />
+      <ProjectReference Include="..\LeokaEstetica.Platform.Database\LeokaEstetica.Platform.Database.csproj" />
+      <ProjectReference Include="..\LeokaEstetica.Platform.Finder\LeokaEstetica.Platform.Finder.csproj" />
+      <ProjectReference Include="..\LeokaEstetica.Platform.Messaging\LeokaEstetica.Platform.Messaging.csproj" />
+      <ProjectReference Include="..\LeokaEstetica.Platform.CallCenter\LeokaEstetica.Platform.CallCenter.csproj" />
+      <ProjectReference Include="..\LeokaEstetica.Platform.Notifications\LeokaEstetica.Platform.Notifications.csproj" />
+      <ProjectReference Include="..\LeokaEstetica.Platform.Processing\LeokaEstetica.Platform.Processing.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.10.0" />
+    </ItemGroup>
+
+</Project>

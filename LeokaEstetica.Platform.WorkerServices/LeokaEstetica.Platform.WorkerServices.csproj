@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk.Worker">
+
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <Nullable>disable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <UserSecretsId>dotnet-LeokaEstetica.Platform.WorkerServices-1E5DEAF2-6517-4700-B3FE-9C50865E4243</UserSecretsId>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.1" />
+        <PackageReference Include="Quartz" Version="3.6.2" />
+        <PackageReference Include="Quartz.Extensions.Hosting" Version="3.6.2" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\LeokaEstetica.Platform.Database\LeokaEstetica.Platform.Database.csproj" />
+      <ProjectReference Include="..\LeokaEstetica.Platform.Messaging\LeokaEstetica.Platform.Messaging.csproj" />
+      <ProjectReference Include="..\LeokaEstetica.Platform.Processing\LeokaEstetica.Platform.Processing.csproj" />
+      <ProjectReference Include="..\LeokaEstetica.Platform.Services\LeokaEstetica.Platform.Services.csproj" />
+    </ItemGroup>
+</Project>
