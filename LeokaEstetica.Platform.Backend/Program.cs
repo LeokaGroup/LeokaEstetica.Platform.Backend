@@ -14,7 +14,10 @@ using Microsoft.OpenApi.Models;
 using NLog.Web;
 using Quartz;
 
-var builder = WebApplication.CreateBuilder(); 
+var builder = WebApplication.CreateBuilder(new WebApplicationOptions
+{
+    EnvironmentName = Environments.Development
+}); 
 var configuration = builder.Configuration;
 
 builder.Services.AddControllers(opt =>
@@ -25,45 +28,30 @@ builder.Services.AddControllers(opt =>
 
 builder.Services.AddCors(options => options.AddPolicy("ApiCorsPolicy", b =>
 {
-    b.WithOrigins(configuration.GetSection("").Get<string[]>())
+    b.WithOrigins(configuration.GetSection("CorsUrls:Urls").Get<string[]>())
         .AllowAnyHeader()
         .AllowAnyMethod()
         .AllowCredentials();
 }));
 
-if (configuration["Environment"].Equals("Development"))
-{
-    builder.Environment.EnvironmentName = Environments.Development;
-}
-
-else if (configuration["Environment"].Equals("Staging"))
-{
-    builder.Environment.EnvironmentName = Environments.Staging;
-}
-
-else if (configuration["Environment"].Equals("Production"))
-{
-    builder.Environment.EnvironmentName = Environments.Production;
-}
-
 if (builder.Environment.IsDevelopment())
 {
     builder.Services.AddDbContext<PgContext>(options =>
-            options.UseNpgsql(configuration["NpgDevSqlConnection"]),
+            options.UseNpgsql(configuration.GetConnectionString("NpgDevSqlConnection") ?? string.Empty),
         ServiceLifetime.Transient);
 }
       
 if (builder.Environment.IsStaging())
 {
     builder.Services.AddDbContext<PgContext>(options =>
-            options.UseNpgsql(configuration["NpgTestSqlConnection"]),
+            options.UseNpgsql(configuration.GetConnectionString("NpgTestSqlConnection") ?? string.Empty),
         ServiceLifetime.Transient);
 }
 
 if (builder.Environment.IsProduction())
 {
     builder.Services.AddDbContext<PgContext>(options =>
-            options.UseNpgsql(configuration["NpgSqlConnection"]),
+            options.UseNpgsql(configuration.GetConnectionString("NpgSqlConnection") ?? string.Empty),
         ServiceLifetime.Transient);
 }
 
