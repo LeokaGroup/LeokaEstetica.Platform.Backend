@@ -16,7 +16,7 @@ using Quartz;
 
 var builder = WebApplication.CreateBuilder(new WebApplicationOptions
 {
-    EnvironmentName = Environments.Development
+    EnvironmentName = Environments.Staging
 }); 
 var configuration = builder.Configuration;
 
