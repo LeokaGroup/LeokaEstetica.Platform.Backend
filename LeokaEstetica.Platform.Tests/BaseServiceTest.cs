@@ -14,6 +14,7 @@ using LeokaEstetica.Platform.Database.Repositories.Access.User;
 using LeokaEstetica.Platform.Database.Repositories.AvailableLimits;
 using LeokaEstetica.Platform.Database.Repositories.Chat;
 using LeokaEstetica.Platform.Database.Repositories.Commerce;
+using LeokaEstetica.Platform.Database.Repositories.Config;
 using LeokaEstetica.Platform.Database.Repositories.FareRule;
 using LeokaEstetica.Platform.Database.Repositories.Knowledge;
 using LeokaEstetica.Platform.Database.Repositories.Landing;
@@ -103,6 +104,7 @@ internal class BaseServiceTest
     protected readonly TicketService TicketService;
     protected readonly TelegramBotService TelegramBotService;
     protected readonly ProjectMetricsService ProjectMetricsService;
+    protected readonly TelegramService TelegramService;
 
     protected BaseServiceTest()
     {
@@ -237,5 +239,8 @@ internal class BaseServiceTest
             null);
 
         ProjectMetricsService = new ProjectMetricsService(projectCommentsRepository, mapper, projectRepository);
+
+        var globalConfigRepository = new GlobalConfigRepository(pgContext, null);
+        TelegramService = new TelegramService(globalConfigRepository, null);
     }
 }
