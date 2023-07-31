@@ -1,6 +1,7 @@
 using LeokaEstetica.Platform.Core.Constants;
 using LeokaEstetica.Platform.Database.Abstractions.Config;
 using LeokaEstetica.Platform.Integrations.Abstractions.Telegram;
+using LeokaEstetica.Platform.Models.Dto.Output.Integration.Telegram;
 using Microsoft.Extensions.Logging;
 
 namespace LeokaEstetica.Platform.Integrations.Services.Telegram;
@@ -29,12 +30,15 @@ internal sealed class TelegramService : ITelegramService
     /// Метод создает ссылку для приглашения пользователя в канал уведомлений телеграмма.
     /// </summary>
     /// <returns>Строка приглашения.</returns>
-    public async Task<string> CreateNotificationsChanelInviteLinkAsync()
+    public async Task<CreateInviteLInkOutput> CreateNotificationsChanelInviteLinkAsync()
     {
         try
         {
-            var result = await _globalConfigRepository.GetValueByKeyAsync<string>(GlobalConfigKeys.Integrations.Telegram
-                .NOTIFICATIONS_BOT_INVITE_DEVELOP_TEST);
+            var result = new CreateInviteLInkOutput
+            {
+                Url = await _globalConfigRepository.GetValueByKeyAsync<string>(GlobalConfigKeys.Integrations.Telegram
+                    .NOTIFICATIONS_BOT_INVITE_DEVELOP_TEST)
+            };
 
             return result;
         }

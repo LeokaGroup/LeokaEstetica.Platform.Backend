@@ -1,5 +1,6 @@
 using LeokaEstetica.Platform.Base;
 using LeokaEstetica.Platform.Integrations.Abstractions.Telegram;
+using LeokaEstetica.Platform.Models.Dto.Output.Integration.Telegram;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LeokaEstetica.Platform.Controllers.Telegram;
@@ -28,12 +29,12 @@ public class TelegramController : BaseController
     /// <returns>Строка приглашения.</returns>
     [HttpGet]
     [Route("invite")]
-    [ProducesResponseType(200, Type = typeof(string))]
+    [ProducesResponseType(200, Type = typeof(CreateInviteLInkOutput))]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<string> CreateNotificationsChanelInviteLinkAsync()
+    public async Task<CreateInviteLInkOutput> CreateNotificationsChanelInviteLinkAsync()
     {
         var result = await _telegramService.CreateNotificationsChanelInviteLinkAsync();
 
