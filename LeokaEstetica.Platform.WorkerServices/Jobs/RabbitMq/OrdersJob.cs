@@ -1,6 +1,7 @@
 using System.Runtime.CompilerServices;
 using System.Text;
 using LeokaEstetica.Platform.Base.Enums;
+using LeokaEstetica.Platform.Base.Extensions.StringExtensions;
 using LeokaEstetica.Platform.Base.Models.IntegrationEvents.Orders;
 using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.Commerce;
@@ -30,6 +31,11 @@ internal sealed class OrdersJob : IJob
     private readonly ILogger<OrdersJob> _logger;
     private readonly ISubscriptionService _subscriptionService;
     private readonly IFareRuleRepository _fareRuleRepository;
+
+    /// <summary>
+    /// Название очереди.
+    /// </summary>
+    private readonly string _queueName = string.Empty;
 
     /// <summary>
     /// Конструктор.
@@ -63,9 +69,10 @@ internal sealed class OrdersJob : IJob
         
         var connection = factory.CreateConnection();
         _channel = connection.CreateModel();
-
-        _channel.QueueDeclare(queue: QueueTypeEnum.OrdersQueue.GetEnumDescription(), durable: false, exclusive: false,
-            autoDelete: false, arguments: null);
+        
+        var flags = QueueTypeEnum.OrdersQueue | QueueTypeEnum.OrdersQueue;
+        _channel.QueueDeclare(queue: _queueName.CreateQueueDeclareNameFactory(configuration, flags),
+            durable: false, exclusive: false, autoDelete: false, arguments: null);
     }
     
     /// <summary>
@@ -155,7 +162,7 @@ internal sealed class OrdersJob : IJob
             await Task.Yield();
         };
 
-        _channel.BasicConsume(QueueTypeEnum.OrdersQueue.GetEnumDescription(), false, consumer);
+        _channel.BasicConsume(_queueName, false, consumer);
 
         await Task.CompletedTask;
     }
