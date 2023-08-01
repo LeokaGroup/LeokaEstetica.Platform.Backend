@@ -16,6 +16,6 @@ public interface IFillColorProjectsService
     /// <param name="subscriptionRepository">Сервис подписок.</param>
     /// <param name="fareRuleRepository">Сервис правил тарифа.</param>
     /// <returns>Каталог проектов с выделеным цветом пользователей.</returns>
-    Task<IEnumerable<CatalogProjectOutput>> SetColorBusinessProjects(List<CatalogProjectOutput> projects,
+    Task<IEnumerable<CatalogProjectOutput>> SetColorBusinessProjectsAsync(List<CatalogProjectOutput> projects,
         ISubscriptionRepository subscriptionRepository, IFareRuleRepository fareRuleRepository);
 }

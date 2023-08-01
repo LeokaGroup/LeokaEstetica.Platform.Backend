@@ -216,6 +216,49 @@ internal sealed class ProjectRepository : IProjectRepository
 
         return result;
     }
+    
+    /// <summary>
+    /// Метод получает список проектов для каталога без выгрузки в память.
+    /// </summary>
+    /// <returns>Список проектов.</returns>
+    public async Task<IOrderedQueryable<CatalogProjectOutput>> CatalogProjectsWithoutMemoryAsync()
+    {
+        var result = (from cp in _pgContext.CatalogProjects
+                join p in _pgContext.UserProjects
+                    on cp.ProjectId
+                    equals p.ProjectId
+                join mp in _pgContext.ModerationProjects
+                    on p.ProjectId
+                    equals mp.ProjectId
+                    into table
+                from tbl in table.DefaultIfEmpty()
+                join us in _pgContext.UserSubscriptions
+                    on p.UserId
+                    equals us.UserId
+                join s in _pgContext.Subscriptions
+                    on us.SubscriptionId
+                    equals s.ObjectId
+                where p.ArchivedProjects.All(a => a.ProjectId != p.ProjectId)
+                      && !new[]
+                          {
+                              (int)VacancyModerationStatusEnum.ModerationVacancy,
+                              (int)VacancyModerationStatusEnum.RejectedVacancy
+                          }
+                          .Contains(tbl.ModerationStatusId)
+                orderby s.ObjectId descending
+                select new CatalogProjectOutput
+                {
+                    ProjectId = p.ProjectId,
+                    ProjectName = p.ProjectName,
+                    DateCreated = p.DateCreated,
+                    ProjectIcon = p.ProjectIcon,
+                    ProjectDetails = p.ProjectDetails,
+                    UserId = p.UserId
+                })
+            .AsQueryable() as IOrderedQueryable<CatalogProjectOutput>;
+
+        return await Task.FromResult(result);
+    }
 
     /// <summary>
     /// Метод обновляет проект пользователя.
@@ -621,14 +664,21 @@ internal sealed class ProjectRepository : IProjectRepository
                 DateCreated = p.Project.DateCreated,
                 ProjectIcon = p.Project.ProjectIcon,
                 ProjectDetails = p.Project.ProjectDetails,
-                HasVacancies =
-                    _pgContext.ProjectVacancies.Any(pv => pv.ProjectId == p.ProjectId), // Если у проекта есть вакансии.
+                HasVacancies = _pgContext.ProjectVacancies.Any(pv => pv.ProjectId == p.ProjectId), // Если у проекта есть вакансии.
                 ProjectStageSysName = (from ps in _pgContext.UserProjectsStages
                         join s in _pgContext.ProjectStages
                             on ps.StageId
                             equals s.StageId
                         select s.StageSysName)
-                    .FirstOrDefault()
+                    .FirstOrDefault(),
+                UserId = p.Project.UserId,
+                IsModeration = _pgContext.ModerationProjects.Any(pm => new[]
+                        {
+                            (int)VacancyModerationStatusEnum.ModerationVacancy,
+                            (int)VacancyModerationStatusEnum.RejectedVacancy
+                        }
+                        .Contains(pm.ModerationStatusId)),
+                IsArchived = _pgContext.ArchivedProjects.Any(ap => ap.ProjectId == p.ProjectId)
             })
             .AsQueryable();
 

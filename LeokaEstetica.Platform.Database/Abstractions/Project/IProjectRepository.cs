@@ -46,6 +46,13 @@ public interface IProjectRepository
     /// </summary>
     /// <returns>Список проектов.</returns>
     Task<IEnumerable<CatalogProjectOutput>> CatalogProjectsAsync();
+    
+    /// <summary>
+    /// TODO: Подумать, давать ли всем пользователям возможность просматривать каталог проектов или только тем, у кого есть подписка.
+    /// Метод получает список проектов для каталога.
+    /// </summary>
+    /// <returns>Список проектов.</returns>
+    Task<IOrderedQueryable<CatalogProjectOutput>> CatalogProjectsWithoutMemoryAsync();
 
     /// <summary>
     /// Метод обновляет проект пользователя.
