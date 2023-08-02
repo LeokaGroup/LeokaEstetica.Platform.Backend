@@ -17,5 +17,13 @@ public class IntegrationModule : Module
         builder.RegisterType<TelegramBotService>()
             .As<ITelegramBotService>()
             .InstancePerLifetimeScope();
+        
+        // Сервис телеграм.
+        builder.RegisterType<TelegramService>()
+            .Named<ITelegramService>("TelegramService")
+            .InstancePerLifetimeScope();
+        builder.RegisterType<TelegramService>()
+            .As<ITelegramService>()
+            .InstancePerLifetimeScope();
     }
 }

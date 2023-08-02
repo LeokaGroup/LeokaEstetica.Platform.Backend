@@ -26,4 +26,21 @@ public static class GlobalConfigKeys
         /// </summary>
         public const string SEND_RECEIPT_REFUND_MODE_ENABLED = "SendReceiptRefund.Mode.Enabled";
     }
+
+    /// <summary>
+    /// Класс ключей интеграций.
+    /// </summary>
+    public static class Integrations
+    {
+        /// <summary>
+        /// Класс ключей телеграма.
+        /// </summary>
+        public static class Telegram
+        {
+            /// <summary>
+            /// Ключ для создания ссылки инвайта в канал уведомлений.
+            /// </summary>
+            public const string NOTIFICATIONS_BOT_INVITE_DEVELOP_TEST = "Notifications.Bot.Invite.Develop.Test";
+        }
+    }
 }
