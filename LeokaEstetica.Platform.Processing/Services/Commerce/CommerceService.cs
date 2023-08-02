@@ -92,22 +92,22 @@ internal sealed class CommerceService : ICommerceService
             var checkReduction = await _availableLimitsService.CheckAvailableReductionSubscriptionAsync(userId,
                 publicId, _subscriptionRepository, _fareRuleRepository);
 
-            var result = new CreateOrderCache();
-
-            // Если новый тариф не вмещает по лимитам.
-            if (!checkReduction.IsSuccessLimits)
+            var result = new CreateOrderCache
             {
-                result.IsSuccessLimits = checkReduction.IsSuccessLimits;
-                result.ReductionSubscriptionLimits = checkReduction.ReductionSubscriptionLimits;
-                result.FareLimitsCount = checkReduction.FareLimitsCount;
-                
+                IsSuccessLimits = checkReduction.IsSuccessLimits,
+                FareLimitsCount = checkReduction.FareLimitsCount,
+                ReductionSubscriptionLimits = checkReduction.ReductionSubscriptionLimits
+            };
+            
+            // Если новый тариф не вмещает по лимитам.
+            if (!result.IsSuccessLimits)
+            {
                 return result;
             }
-            
+
             var key = await _commerceRedisService.CreateOrderCacheKeyAsync(userId, publicId);
-            var orderToCache = await CreateOrderCacheResult(publicId, createOrderCacheInput.PaymentMonth, userId);
-            
-            result = await _commerceRedisService.CreateOrderCacheAsync(key, orderToCache);
+            await CreateOrderCacheResult(publicId, createOrderCacheInput.PaymentMonth, userId, result);
+            _ = await _commerceRedisService.CreateOrderCacheAsync(key, result);
 
             return result;
         }
@@ -287,8 +287,9 @@ internal sealed class CommerceService : ICommerceService
     /// <param name="publicId">Публичный код тарифа.</param>
     /// <param name="paymentMonth">Кол-во месяцев подписки.</param>
     /// <param name="userId">Id пользователя.</param>
+    /// <param name="result">Результирующая модель.</param>
     /// <returns>Результирующая модель.</returns>
-    private async Task<CreateOrderCache> CreateOrderCacheResult(Guid publicId, short paymentMonth, long userId)
+    private async Task CreateOrderCacheResult(Guid publicId, short paymentMonth, long userId, CreateOrderCache result)
     {
         var rule = await _fareRuleRepository.GetByPublicIdAsync(publicId);
 
@@ -311,18 +312,13 @@ internal sealed class CommerceService : ICommerceService
             products.Add($"Скидка на тариф {discount}");
         }
 
-        var result = new CreateOrderCache
-        {
-            RuleId = rule.RuleId,
-            Month = paymentMonth,
-            Percent = discount,
-            Price = discountPrice,
-            UserId = userId,
-            Products = products,
-            FareRuleName = rule.Name
-        };
-
-        return result;
+        result.RuleId = rule.RuleId;
+        result.Month = paymentMonth;
+        result.Percent = discount;
+        result.Price = discountPrice;
+        result.UserId = userId;
+        result.Products = products;
+        result.FareRuleName = rule.Name;
     }
 
     /// <summary>
