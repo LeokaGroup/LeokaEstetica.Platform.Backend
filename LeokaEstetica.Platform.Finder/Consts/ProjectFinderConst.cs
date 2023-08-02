@@ -49,4 +49,9 @@ public class ProjectFinderConst
     /// Поле признака наличия вакансий у проекта.
     /// </summary>
     public const string PROJECT_STAGE_SYSNAME = "ProjectStage";
+
+    /// <summary>
+    /// Id пользователя.
+    /// </summary>
+    public const string USER_ID = "UserId";
 }

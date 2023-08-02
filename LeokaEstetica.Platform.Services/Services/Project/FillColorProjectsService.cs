@@ -27,7 +27,7 @@ internal sealed class FillColorProjectsService : IFillColorProjectsService
     /// <summary>
     /// Метод выделяет цветом пользователей у которых есть подписка выше бизнеса.
     /// </summary>
-    public async Task<IEnumerable<CatalogProjectOutput>> SetColorBusinessProjects(List<CatalogProjectOutput> projects,
+    public async Task<IEnumerable<CatalogProjectOutput>> SetColorBusinessProjectsAsync(List<CatalogProjectOutput> projects,
         ISubscriptionRepository subscriptionRepository, IFareRuleRepository fareRuleRepository)
 
     {

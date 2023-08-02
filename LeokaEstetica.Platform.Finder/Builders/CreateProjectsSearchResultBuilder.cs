@@ -35,6 +35,7 @@ public static class CreateProjectsSearchResultBuilder
             var projectIcon = string.Empty;
             var hasVacancies = string.Empty;
             var stageSysName = string.Empty;
+            var userId = long.Parse(document.GetField(ProjectFinderConst.USER_ID).StringValue);;
 
             if (!string.IsNullOrEmpty(document.GetField(ProjectFinderConst.PROJECT_NAME).ToString()))
             {
@@ -61,10 +62,10 @@ public static class CreateProjectsSearchResultBuilder
                 hasVacancies = document.GetField(ProjectFinderConst.HAS_VACANCIES).StringValue;
             }
 
-            if (!string.IsNullOrEmpty(document.GetField(ProjectFinderConst.PROJECT_STAGE_SYSNAME).ToString()))
-            {
-                stageSysName = document.GetField(ProjectFinderConst.PROJECT_STAGE_SYSNAME).StringValue;
-            }
+            // if (!string.IsNullOrEmpty(document.GetField(ProjectFinderConst.PROJECT_STAGE_SYSNAME).ToString()))
+            // {
+            //     stageSysName = document.GetField(ProjectFinderConst.PROJECT_STAGE_SYSNAME).StringValue;
+            // }
 
             _projects.Add(new CatalogProjectOutput
             {
@@ -74,7 +75,8 @@ public static class CreateProjectsSearchResultBuilder
                 DateCreated = DateTime.Parse(dateCreated),
                 ProjectIcon = projectIcon,
                 HasVacancies = bool.Parse(hasVacancies),
-                ProjectStageSysName = stageSysName
+                ProjectStageSysName = stageSysName,
+                UserId = userId
             });
         }
 
