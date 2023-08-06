@@ -53,7 +53,6 @@ public class LogExceptionFilter : ExceptionFilterAttribute
         errorMessage.Append(environment);
         errorMessage.AppendLine("ErrorMessage: ");
         errorMessage.AppendLine(context.Exception.Message);
-        errorMessage.AppendLine("Guid: " + Guid.NewGuid());
         errorMessage.AppendLine("StackTrace: ");
         errorMessage.AppendLine(context.Exception.StackTrace);
         
