@@ -1,6 +1,5 @@
 using System.Text;
 using LeokaEstetica.Platform.Integrations.Abstractions.Telegram;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace LeokaEstetica.Platform.Backend.Filters;
@@ -52,15 +51,13 @@ public class LogExceptionFilter : ExceptionFilterAttribute
 
         var errorMessage = new StringBuilder();
         errorMessage.Append(environment);
-        errorMessage.Append("\nErrorMessage: ");
-        errorMessage.Append(context.Exception.Message);
-        errorMessage.Append("\nStackTrace:\n");
-        errorMessage.Append(context.Exception.StackTrace);
+        errorMessage.AppendLine("ErrorMessage: ");
+        errorMessage.AppendLine(context.Exception.Message);
+        errorMessage.AppendLine("Guid: " + Guid.NewGuid());
+        errorMessage.AppendLine("StackTrace: ");
+        errorMessage.AppendLine(context.Exception.StackTrace);
         
         // Отправляем информацию об исключении в канал телеграма.
-
         await _telegramBotService.SendErrorMessageAsync(errorMessage.ToString());
-
-        context.Result = new BadRequestResult();
     }
 }
