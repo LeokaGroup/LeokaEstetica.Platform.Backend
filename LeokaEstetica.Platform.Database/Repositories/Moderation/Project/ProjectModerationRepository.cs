@@ -374,6 +374,20 @@ internal sealed class ProjectModerationRepository : IProjectModerationRepository
         return result;
     }
 
+    /// <summary>
+    /// Метод получает комментарии на модерации.
+    /// </summary>
+    /// <returns>Комментарии на модерации.</returns>
+    public async Task<IEnumerable<ProjectCommentModerationEntity>> GetProjectCommentsModerationAsync()
+    {
+        var result = await _pgContext.ProjectCommentsModeration
+            .Include(c => c.ProjectComment)
+            .Where(c => new[] { (int)ProjectCommentModerationEnum.ModerationComment }.Contains(c.ModerationStatusId))
+            .ToListAsync();
+
+        return result;
+    }
+
     #endregion
 
     #region Приватные методы.

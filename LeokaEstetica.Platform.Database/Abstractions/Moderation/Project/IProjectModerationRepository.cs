@@ -123,4 +123,10 @@ public interface IProjectModerationRepository
     /// </summary>
     /// <returns>Список вакансий.</returns>
     Task<IEnumerable<VacancyRemarkEntity>> GetVacanciesAwaitingCorrectionAsync();
+
+    /// <summary>
+    /// Метод получает комментарии на модерации.
+    /// </summary>
+    /// <returns>Комментарии на модерации.</returns>
+    Task<IEnumerable<ProjectCommentModerationEntity>> GetProjectCommentsModerationAsync();
 }
