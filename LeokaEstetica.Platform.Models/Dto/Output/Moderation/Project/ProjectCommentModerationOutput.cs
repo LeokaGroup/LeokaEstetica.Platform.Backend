@@ -1,3 +1,5 @@
+using LeokaEstetica.Platform.Models.Dto.Output.Project;
+
 namespace LeokaEstetica.Platform.Models.Dto.Output.Moderation.Project;
 
 /// <summary>
@@ -33,7 +35,7 @@ public class ProjectCommentModerationOutput
     /// <summary>
     /// Текст комментария.
     /// </summary>
-    public string Comment { get; set; }
+    public ProjectCommentOutput ProjectComment { get; set; }
 
     /// <summary>
     /// Дата создания комментария.
