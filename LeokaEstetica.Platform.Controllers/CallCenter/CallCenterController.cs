@@ -685,4 +685,23 @@ public class CallCenterController : BaseController
 
         return result;
     }
+
+    /// <summary>
+    /// Метод получает комментарии на модерации.
+    /// </summary>
+    /// <returns>Комментарии на модерации.</returns>
+    [HttpGet]
+    [Route("project-comments")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<ProjectCommentModerationOutput>))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<IEnumerable<ProjectCommentModerationOutput>> GetProjectCommentsModerationAsync()
+    {
+        var items = await _projectModerationRepository.GetProjectCommentsModerationAsync();
+        var result = _mapper.Map<IEnumerable<ProjectCommentModerationOutput>>(items);
+
+        return result;
+    }
 }
