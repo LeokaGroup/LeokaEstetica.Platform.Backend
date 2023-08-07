@@ -400,6 +400,26 @@ public class ProjectModerationService : IProjectModerationService
         return result;
     }
 
+    /// <summary>
+    /// Метод получает комментарий проекта для просмотра.
+    /// </summary>
+    /// <param name="commentId">Id комментария.</param>
+    /// <returns>Данные комментария.</returns>
+    public async Task<ProjectCommentModerationEntity> GetCommentModerationByCommentIdAsync(long commentId)
+    {
+        try
+        {
+            var result = await _projectModerationRepository.GetCommentModerationByCommentIdAsync(commentId);
+
+            return result;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
     #endregion
 
     #region Приватные методы.

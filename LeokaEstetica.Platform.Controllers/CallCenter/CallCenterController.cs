@@ -20,12 +20,15 @@ using LeokaEstetica.Platform.CallCenter.Models.Dto.Output.Project;
 using LeokaEstetica.Platform.CallCenter.Models.Dto.Output.Role;
 using LeokaEstetica.Platform.CallCenter.Models.Dto.Output.Vacancy;
 using LeokaEstetica.Platform.Controllers.Filters;
+using LeokaEstetica.Platform.Controllers.Validators.Project;
+using LeokaEstetica.Platform.Core.Constants;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Project;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Resume;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Vacancy;
 using LeokaEstetica.Platform.Models.Dto.Input.Moderation;
 using LeokaEstetica.Platform.Services.Abstractions.Profile;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
 namespace LeokaEstetica.Platform.Controllers.CallCenter;
 
@@ -47,6 +50,7 @@ public class CallCenterController : BaseController
     private readonly IProjectModerationRepository _projectModerationRepository;
     private readonly IVacancyModerationRepository _vacancyModerationRepository;
     private readonly IResumeModerationRepository _resumeModerationRepository;
+    private readonly ILogger<CallCenterController> _logger;
 
     /// <summary>
     /// Конструктор.
@@ -61,6 +65,7 @@ public class CallCenterController : BaseController
     /// <param name="projectModerationRepository">Репозиторий модерации проектов.</param>
     /// <param name="vacancyModerationRepository">Репозиторий модерации вакансий.</param>
     /// <param name="resumeModerationRepository">Репозиторий модерации анкет.</param>
+    /// <param name="logger">Логгер.</param>
     public CallCenterController(IAccessModerationService accessModerationService,
         IProjectModerationService projectModerationService,
         IMapper mapper,
@@ -70,7 +75,8 @@ public class CallCenterController : BaseController
         IProfileService profileService, 
         IProjectModerationRepository projectModerationRepository, 
         IVacancyModerationRepository vacancyModerationRepository, 
-        IResumeModerationRepository resumeModerationRepository)
+        IResumeModerationRepository resumeModerationRepository,
+        ILogger<CallCenterController> logger)
     {
         _accessModerationService = accessModerationService;
         _projectModerationService = projectModerationService;
@@ -82,6 +88,7 @@ public class CallCenterController : BaseController
         _projectModerationRepository = projectModerationRepository;
         _vacancyModerationRepository = vacancyModerationRepository;
         _resumeModerationRepository = resumeModerationRepository;
+        _logger = logger;
     }
 
     /// <summary>
@@ -701,6 +708,37 @@ public class CallCenterController : BaseController
     {
         var items = await _projectModerationRepository.GetProjectCommentsModerationAsync();
         var result = _mapper.Map<IEnumerable<ProjectCommentModerationOutput>>(items);
+
+        return result;
+    }
+    
+    /// <summary>
+    /// Метод получает комментарий проекта для просмотра.
+    /// </summary>
+    /// <param name="commentId">Id комментария.</param>
+    /// <returns>Данные комментария.</returns>
+    [HttpGet]
+    [Route("project/{commentId}/preview")]
+    [ProducesResponseType(200, Type = typeof(ProjectCommentModerationOutput))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<ProjectCommentModerationOutput> GetCommentModerationByCommentIdAsync([FromRoute] long commentId)
+    {
+        var result = new ProjectCommentModerationOutput();
+        var validator = await new GetProjectCommentValidator().ValidateAsync(commentId);
+
+        if (validator.Errors.Any())
+        {
+            _logger.LogError(validator.Errors.First().ErrorMessage,
+                $"Ошибка при получении комментария проекта. CommentId: {commentId}");
+
+            return result;
+        }
+        
+        var item = await _projectModerationService.GetCommentModerationByCommentIdAsync(commentId);
+        result = _mapper.Map<ProjectCommentModerationOutput>(item);
 
         return result;
     }

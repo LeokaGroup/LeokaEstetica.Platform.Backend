@@ -65,4 +65,11 @@ public interface IProjectModerationService
     /// <param name="projectId">Id проекта.</param>
     /// <returns>Список замечаний проекта.</returns>
     Task<IEnumerable<ProjectRemarkEntity>> GetProjectUnShippedRemarksAsync(long projectId);
+
+    /// <summary>
+    /// Метод получает комментарий проекта для просмотра.
+    /// </summary>
+    /// <param name="commentId">Id комментария.</param>
+    /// <returns>Данные комментария.</returns>
+    Task<ProjectCommentModerationEntity> GetCommentModerationByCommentIdAsync(long commentId);
 }
