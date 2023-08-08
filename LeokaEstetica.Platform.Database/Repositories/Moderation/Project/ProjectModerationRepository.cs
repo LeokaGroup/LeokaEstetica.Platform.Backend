@@ -388,6 +388,19 @@ internal sealed class ProjectModerationRepository : IProjectModerationRepository
         return result;
     }
 
+    /// <summary>
+    /// Метод получает комментарий проекта для просмотра.
+    /// </summary>
+    /// <param name="commentId">Id комментария.</param>
+    /// <returns>Данные комментария.</returns>
+    public async Task<ProjectCommentModerationEntity> GetCommentModerationByCommentIdAsync(long commentId)
+    {
+        var result = await _pgContext.ProjectCommentsModeration
+            .FirstOrDefaultAsync(c => c.CommentId == commentId);
+
+        return result;
+    }
+
     #endregion
 
     #region Приватные методы.

@@ -129,4 +129,11 @@ public interface IProjectModerationRepository
     /// </summary>
     /// <returns>Комментарии на модерации.</returns>
     Task<IEnumerable<ProjectCommentModerationEntity>> GetProjectCommentsModerationAsync();
+
+    /// <summary>
+    /// Метод получает комментарий проекта для просмотра.
+    /// </summary>
+    /// <param name="commentId">Id комментария.</param>
+    /// <returns>Данные комментария.</returns>
+    Task<ProjectCommentModerationEntity> GetCommentModerationByCommentIdAsync(long commentId);
 }

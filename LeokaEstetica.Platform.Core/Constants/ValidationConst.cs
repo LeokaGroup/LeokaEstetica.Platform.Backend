@@ -131,4 +131,15 @@ public static class ValidationConst
         /// </summary>
         public const string NOT_VALID_TICKET_ID = "Id тикета был <= 0.";
     }
+
+    /// <summary>
+    /// Класс валидации комментариев проекта.
+    /// </summary>
+    public static class ProjectCommentValidation
+    {
+        /// <summary>
+        /// Если не передали Id комментария проекта.
+        /// </summary>
+        public const string NOT_VALID_COMMENT_ID = "Id комментария должен быть заполнен.";
+    }
 }
