@@ -21,7 +21,6 @@ using LeokaEstetica.Platform.CallCenter.Models.Dto.Output.Role;
 using LeokaEstetica.Platform.CallCenter.Models.Dto.Output.Vacancy;
 using LeokaEstetica.Platform.Controllers.Filters;
 using LeokaEstetica.Platform.Controllers.Validators.Project;
-using LeokaEstetica.Platform.Core.Constants;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Project;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Resume;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Vacancy;
@@ -740,6 +739,38 @@ public class CallCenterController : BaseController
         var item = await _projectModerationService.GetCommentModerationByCommentIdAsync(commentId);
         result = _mapper.Map<ProjectCommentModerationOutput>(item);
 
+        return result;
+    }
+    
+    /// <summary>
+    /// Метод одобряет комментарий проекта.
+    /// </summary>
+    /// <param name="projectCommentModerationInput">Входная модель.</param>
+    /// <returns>Выходная модель.</returns>
+    [HttpPatch]
+    [Route("project/comment/approve")]
+    [ProducesResponseType(200, Type = typeof(ManagingProjectCommentModerationOutput))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<ManagingProjectCommentModerationOutput> ApproveProjectCommentAsync(
+        [FromBody] ProjectCommentModerationInput projectCommentModerationInput)
+    {
+        var commentId = projectCommentModerationInput.CommentId;
+        var validator = await new ApproveProjectCommentValidator().ValidateAsync(commentId);
+        var result = new ManagingProjectCommentModerationOutput();
+        
+        if (validator.Errors.Any())
+        {
+            _logger.LogError(validator.Errors.First().ErrorMessage,
+                $"Ошибка при одобрении комментария проекта. CommentId: {commentId}");
+
+            return result;
+        }
+
+        result.IsSuccess = await _projectModerationService.ApproveProjectCommentAsync(commentId);
+        
         return result;
     }
 }

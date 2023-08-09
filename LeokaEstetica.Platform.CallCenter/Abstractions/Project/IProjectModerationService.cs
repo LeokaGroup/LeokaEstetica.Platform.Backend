@@ -72,4 +72,11 @@ public interface IProjectModerationService
     /// <param name="commentId">Id комментария.</param>
     /// <returns>Данные комментария.</returns>
     Task<ProjectCommentModerationEntity> GetCommentModerationByCommentIdAsync(long commentId);
+    
+    /// <summary>
+    /// Метод одобряет комментарий проекта.
+    /// </summary>
+    /// <param name="commentId">Id комментарии.</param>
+    /// <returns>Признак успешного подверждения.</returns>
+    Task<bool> ApproveProjectCommentAsync(long commentId);
 }
