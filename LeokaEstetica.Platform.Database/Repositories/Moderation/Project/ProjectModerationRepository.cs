@@ -401,6 +401,27 @@ internal sealed class ProjectModerationRepository : IProjectModerationRepository
         return result;
     }
 
+    /// <summary>
+    /// Метод одобряет комментарий проекта.
+    /// </summary>
+    /// <param name="commentId">Id комментарии.</param>
+    /// <returns>Признак успешного подверждения.</returns>
+    public async Task<bool> ApproveProjectCommentAsync(long commentId)
+    {
+        var comment = await _pgContext.ProjectCommentsModeration
+            .FirstOrDefaultAsync(c => c.CommentId == commentId);
+        
+        if (comment is null)
+        {
+            return false;
+        }
+        
+        comment.ModerationStatusId = (int)ProjectCommentModerationEnum.ApproveComment;
+        await _pgContext.SaveChangesAsync();
+        
+        return true;
+    }
+
     #endregion
 
     #region Приватные методы.

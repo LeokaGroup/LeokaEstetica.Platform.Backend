@@ -26,7 +26,7 @@ namespace LeokaEstetica.Platform.CallCenter.Services.Project;
 /// <summary>
 /// Класс реализует методы сервиса модерации проектов.
 /// </summary>
-public class ProjectModerationService : IProjectModerationService
+internal sealed class ProjectModerationService : IProjectModerationService
 {
     private readonly IProjectModerationRepository _projectModerationRepository;
     private readonly ILogger<ProjectModerationService> _logger;
@@ -416,6 +416,33 @@ public class ProjectModerationService : IProjectModerationService
 
             return result;
         }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Метод одобряет комментарий проекта.
+    /// </summary>
+    /// <param name="commentId">Id комментарии.</param>
+    /// <returns>Признак успешного подверждения.</returns>
+    public async Task<bool> ApproveProjectCommentAsync(long commentId)
+    {
+        try
+        {
+            var result = await _projectModerationRepository.ApproveProjectCommentAsync(commentId);
+
+            if (!result)
+            {
+                throw new InvalidOperationException("Ошибка при подтверждении комментария проекта." +
+                                                    $" CommentId: {commentId}");
+            }
+
+            return true;
+        }
+        
         catch (Exception ex)
         {
             _logger.LogError(ex, ex.Message);
