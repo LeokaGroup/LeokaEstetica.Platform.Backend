@@ -179,6 +179,9 @@ public class VacancyModerationService : IVacancyModerationService
     {
         try
         {
+            // TODO: Надо еще проверять, что внесены замечания вакансии. Нельзя отклонить вакансию, не внеся замечания,
+            // TODO: и модератор должен это видеть.
+            // TODO: Добавить такую проверку тут.
             var result = new RejectVacancyOutput
             {
                 IsSuccess = await _vacancyModerationRepository.RejectVacancyAsync(vacancyId)

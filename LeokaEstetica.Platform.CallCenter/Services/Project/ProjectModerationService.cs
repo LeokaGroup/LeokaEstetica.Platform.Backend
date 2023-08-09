@@ -177,6 +177,9 @@ public class ProjectModerationService : IProjectModerationService
     {
         try
         {
+            // TODO: Надо еще проверять, что внесены замечания проекта. Нельзя отклонить проект, не внеся замечания,
+            // TODO: и модератор должен это видеть.
+            // TODO: Добавить такую проверку тут.
             var result = new RejectProjectOutput
             {
                 IsSuccess = await _projectModerationRepository.RejectProjectAsync(projectId)
