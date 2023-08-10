@@ -422,6 +422,39 @@ internal sealed class ProjectModerationRepository : IProjectModerationRepository
         return true;
     }
 
+    /// <summary>
+    /// Метод проверяет, были ли внесены замечания к комментарию проекта.
+    /// </summary>
+    /// <param name="commentId">Id комментария.</param>
+    /// <returns>Признак успешной проверки.</returns>
+    public async Task<bool> IfRemarksProjectCommentAsync(long commentId)
+    {
+        var result = await _pgContext.ProjectCommentsModeration.AnyAsync(c => c.CommentId == commentId);
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод отклоняет комментарий проекта.
+    /// </summary>
+    /// <param name="commentId">Id комментария.</param>
+    /// <returns>Признак успешного подверждения.</returns>
+    public async Task<bool> RejectProjectCommentAsync(long commentId)
+    {
+        var comment = await _pgContext.ProjectCommentsModeration
+            .FirstOrDefaultAsync(c => c.CommentId == commentId);
+        
+        if (comment is null)
+        {
+            return false;
+        }
+        
+        comment.ModerationStatusId = (int)ProjectCommentModerationEnum.RejectedComment;
+        await _pgContext.SaveChangesAsync();
+        
+        return true;
+    }
+
     #endregion
 
     #region Приватные методы.

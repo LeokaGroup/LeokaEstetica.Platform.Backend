@@ -1,4 +1,5 @@
 using AutoMapper;
+using FluentValidation.Results;
 using LeokaEstetica.Platform.Base.Extensions.HtmlExtensions;
 using LeokaEstetica.Platform.CallCenter.Abstractions.Messaging.Mail;
 using LeokaEstetica.Platform.CallCenter.Abstractions.Project;
@@ -441,6 +442,60 @@ internal sealed class ProjectModerationService : IProjectModerationService
             }
 
             return true;
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Метод отклоняет комментарий проекта.
+    /// </summary>
+    /// <param name="commentId">Id комментарии.</param>
+    /// <returns>Признак успешного подверждения.</returns>
+    public async Task<ManagingProjectCommentModerationOutput> RejectProjectCommentAsync(long commentId)
+    {
+        try
+        {
+            var result = new ManagingProjectCommentModerationOutput
+            {
+                Errors = new List<ValidationFailure>()
+            };
+            
+            // Проверяем, внесены ли замечания к комментарию. Если нет, то не даем отклонить без указания замечаний.
+            var isWriteRemarks = await _projectModerationRepository.IfRemarksProjectCommentAsync(commentId);
+
+            // Если нет зафиксированных замечаний комментария, то не даем отклонить комментарий проекта.
+            if (!isWriteRemarks)
+            {
+                result.Errors.Add(new ValidationFailure
+                {
+                    ErrorMessage = "Нельзя отклонить комментарий проекта." +
+                                   " Сначала нужно внести замечания и затем их отправить пользователю."
+                });
+
+                _logger.LogInformation("Не удалось отклонить комментарий проекта." +
+                                       " Не были внесены замечания." +
+                                       $" CommentId: {commentId}");
+                
+                return result;
+            }
+
+            var isReject = await _projectModerationRepository.RejectProjectCommentAsync(commentId);
+
+            if (!isReject)
+            {
+                var ex = new InvalidOperationException(
+                    $"Ошибка при отклонении комментария проекта. CommentId: {commentId}");
+                throw ex;
+            }
+            
+            result.IsSuccess = true;
+            
+            return result;
         }
         
         catch (Exception ex)

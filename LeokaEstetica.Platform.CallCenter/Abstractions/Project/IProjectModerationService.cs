@@ -79,4 +79,11 @@ public interface IProjectModerationService
     /// <param name="commentId">Id комментарии.</param>
     /// <returns>Признак успешного подверждения.</returns>
     Task<bool> ApproveProjectCommentAsync(long commentId);
+    
+    /// <summary>
+    /// Метод отклоняет комментарий проекта.
+    /// </summary>
+    /// <param name="commentId">Id комментарии.</param>
+    /// <returns>Признак успешного подверждения.</returns>
+    Task<ManagingProjectCommentModerationOutput> RejectProjectCommentAsync(long commentId);
 }

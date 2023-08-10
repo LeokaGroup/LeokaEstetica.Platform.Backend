@@ -1,5 +1,6 @@
 using AutoMapper;
 using FluentValidation;
+using FluentValidation.Results;
 using LeokaEstetica.Platform.Access.Abstractions.Moderation;
 using LeokaEstetica.Platform.Base;
 using LeokaEstetica.Platform.Controllers.Validators.Access;
@@ -759,17 +760,65 @@ public class CallCenterController : BaseController
     {
         var commentId = projectCommentModerationInput.CommentId;
         var validator = await new ApproveProjectCommentValidator().ValidateAsync(commentId);
-        var result = new ManagingProjectCommentModerationOutput();
+        var result = new ManagingProjectCommentModerationOutput
+        {
+            Errors = new List<ValidationFailure>()
+        };
         
         if (validator.Errors.Any())
         {
-            _logger.LogError(validator.Errors.First().ErrorMessage,
-                $"Ошибка при одобрении комментария проекта. CommentId: {commentId}");
+            var err = validator.Errors.First().ErrorMessage;
+            _logger.LogError(err, $"Ошибка при одобрении комментария проекта. CommentId: {commentId}");
+
+            result.Errors.Add(new ValidationFailure
+            {
+                ErrorMessage = err
+            });
 
             return result;
         }
 
         result.IsSuccess = await _projectModerationService.ApproveProjectCommentAsync(commentId);
+        
+        return result;
+    }
+
+    /// <summary>
+    /// Метод отклоняет комментарий проекта.
+    /// </summary>
+    /// <param name="projectCommentModerationInput">Входная модель.</param>
+    /// <returns>Выходная модель.</returns>
+    [HttpPatch]
+    [Route("project/comment/reject")]
+    [ProducesResponseType(200, Type = typeof(ManagingProjectCommentModerationOutput))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<ManagingProjectCommentModerationOutput> RejectProjectCommentAsync(
+        [FromBody] ProjectCommentModerationInput projectCommentModerationInput)
+    {
+        var commentId = projectCommentModerationInput.CommentId;
+        var validator = await new ApproveProjectCommentValidator().ValidateAsync(commentId);
+        var result = new ManagingProjectCommentModerationOutput
+        {
+            Errors = new List<ValidationFailure>()
+        };
+        
+        if (validator.Errors.Any())
+        {
+            var err = validator.Errors.First().ErrorMessage;
+            _logger.LogError(err, $"Ошибка при отклонении комментария проекта. CommentId: {commentId}");
+
+            result.Errors.Add(new ValidationFailure
+            {
+                ErrorMessage = err
+            });
+
+            return result;
+        }
+
+        result = await _projectModerationService.RejectProjectCommentAsync(commentId);
         
         return result;
     }
