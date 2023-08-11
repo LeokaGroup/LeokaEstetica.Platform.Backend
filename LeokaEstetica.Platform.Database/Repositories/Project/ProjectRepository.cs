@@ -1144,16 +1144,6 @@ internal sealed class ProjectRepository : IProjectRepository
 
         try
         {
-            var mp = await _pgContext.ModerationProjects.FirstOrDefaultAsync(p => p.ProjectId == projectId
-                && p.UserProject.UserId == userId);
-
-            if (mp is null)
-            {
-                return false;
-            }
-
-            mp.ModerationStatusId = (int)ProjectModerationStatusEnum.ModerationProject;
-
             var pa = await _pgContext.ArchivedProjects.FirstOrDefaultAsync(p => p.ProjectId == projectId
                 && p.UserId == userId);
         
