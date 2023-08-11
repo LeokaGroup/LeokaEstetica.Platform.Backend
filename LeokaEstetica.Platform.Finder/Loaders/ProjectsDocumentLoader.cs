@@ -62,6 +62,12 @@ public static class ProjectsDocumentLoader
                 doc.Add(new Field(ProjectFinderConst.PROJECT_STAGE_SYSNAME, prj.ProjectStageSysName, Field.Store.YES,
                     Field.Index.NOT_ANALYZED_NO_NORMS));
             }
+            
+            if (prj.UserId > 0)
+            {
+                doc.Add(new Field(ProjectFinderConst.USER_ID, prj.UserId.ToString(), Field.Store.YES,
+                    Field.Index.NOT_ANALYZED_NO_NORMS));
+            }
 
             doc.Add(new Field(ProjectFinderConst.HAS_VACANCIES, prj.HasVacancies.ToString(), Field.Store.YES,
                 Field.Index.NOT_ANALYZED_NO_NORMS));
@@ -71,6 +77,7 @@ public static class ProjectsDocumentLoader
 
             doc.Add(new Field(ProjectFinderConst.OUTPUT_FIELD, prj.ProjectName?.Trim(), Field.Store.YES,
                 Field.Index.NOT_ANALYZED));
+            
             writer.AddDocument(doc);
         }
 

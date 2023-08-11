@@ -157,11 +157,28 @@ internal sealed class ChatService : IChatService
             var user = await _userRepository.GetUserByUserIdAsync(userId);
 
             // Записываем полное ФИО пользователя, с которым идет общение в чате.
-            result.FirstName = user.FirstName;
-            result.LastName = user.LastName;
-            
+            if (user.FirstName is not null && user.LastName is not null)
+            {
+                result.FirstName = user.FirstName;
+                result.LastName = user.LastName;   
+            }
+
             // Исключаем текущего пользователя.
-            var id = memberIds.Except(new[] { userId }).First();
+            var newMembers = memberIds.Distinct();
+            long id;
+
+            // Если там было 2 дубля пользователя, то выберем просто текущего.
+            if (newMembers.Count() <= 1)
+            {
+                id = userId;
+            }
+
+            // Иначе берем первого исключая текущего.
+            else
+            {
+                id = memberIds.Except(new[] { userId }).First();
+            }
+            
             result.FullName = await CreateDialogOwnerFioAsync(id);
             result.DialogId = convertDialogId;
             

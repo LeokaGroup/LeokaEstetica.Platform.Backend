@@ -1,5 +1,6 @@
 using AutoMapper;
 using FluentValidation;
+using FluentValidation.Results;
 using LeokaEstetica.Platform.Access.Abstractions.Moderation;
 using LeokaEstetica.Platform.Base;
 using LeokaEstetica.Platform.Controllers.Validators.Access;
@@ -20,12 +21,14 @@ using LeokaEstetica.Platform.CallCenter.Models.Dto.Output.Project;
 using LeokaEstetica.Platform.CallCenter.Models.Dto.Output.Role;
 using LeokaEstetica.Platform.CallCenter.Models.Dto.Output.Vacancy;
 using LeokaEstetica.Platform.Controllers.Filters;
+using LeokaEstetica.Platform.Controllers.Validators.Project;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Project;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Resume;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Vacancy;
 using LeokaEstetica.Platform.Models.Dto.Input.Moderation;
 using LeokaEstetica.Platform.Services.Abstractions.Profile;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
 namespace LeokaEstetica.Platform.Controllers.CallCenter;
 
@@ -47,6 +50,7 @@ public class CallCenterController : BaseController
     private readonly IProjectModerationRepository _projectModerationRepository;
     private readonly IVacancyModerationRepository _vacancyModerationRepository;
     private readonly IResumeModerationRepository _resumeModerationRepository;
+    private readonly ILogger<CallCenterController> _logger;
 
     /// <summary>
     /// Конструктор.
@@ -61,6 +65,7 @@ public class CallCenterController : BaseController
     /// <param name="projectModerationRepository">Репозиторий модерации проектов.</param>
     /// <param name="vacancyModerationRepository">Репозиторий модерации вакансий.</param>
     /// <param name="resumeModerationRepository">Репозиторий модерации анкет.</param>
+    /// <param name="logger">Логгер.</param>
     public CallCenterController(IAccessModerationService accessModerationService,
         IProjectModerationService projectModerationService,
         IMapper mapper,
@@ -70,7 +75,8 @@ public class CallCenterController : BaseController
         IProfileService profileService, 
         IProjectModerationRepository projectModerationRepository, 
         IVacancyModerationRepository vacancyModerationRepository, 
-        IResumeModerationRepository resumeModerationRepository)
+        IResumeModerationRepository resumeModerationRepository,
+        ILogger<CallCenterController> logger)
     {
         _accessModerationService = accessModerationService;
         _projectModerationService = projectModerationService;
@@ -82,6 +88,7 @@ public class CallCenterController : BaseController
         _projectModerationRepository = projectModerationRepository;
         _vacancyModerationRepository = vacancyModerationRepository;
         _resumeModerationRepository = resumeModerationRepository;
+        _logger = logger;
     }
 
     /// <summary>
@@ -683,6 +690,136 @@ public class CallCenterController : BaseController
             AwaitingCorrectionVacancies = _mapper.Map<IEnumerable<VacancyRemarkOutput>>(items)
         };
 
+        return result;
+    }
+
+    /// <summary>
+    /// Метод получает комментарии на модерации.
+    /// </summary>
+    /// <returns>Комментарии на модерации.</returns>
+    [HttpGet]
+    [Route("project-comments")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<ProjectCommentModerationOutput>))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<IEnumerable<ProjectCommentModerationOutput>> GetProjectCommentsModerationAsync()
+    {
+        var items = await _projectModerationRepository.GetProjectCommentsModerationAsync();
+        var result = _mapper.Map<IEnumerable<ProjectCommentModerationOutput>>(items);
+
+        return result;
+    }
+    
+    /// <summary>
+    /// Метод получает комментарий проекта для просмотра.
+    /// </summary>
+    /// <param name="commentId">Id комментария.</param>
+    /// <returns>Данные комментария.</returns>
+    [HttpGet]
+    [Route("project/{commentId}/preview")]
+    [ProducesResponseType(200, Type = typeof(ProjectCommentModerationOutput))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<ProjectCommentModerationOutput> GetCommentModerationByCommentIdAsync([FromRoute] long commentId)
+    {
+        var result = new ProjectCommentModerationOutput();
+        var validator = await new GetProjectCommentValidator().ValidateAsync(commentId);
+
+        if (validator.Errors.Any())
+        {
+            _logger.LogError(validator.Errors.First().ErrorMessage,
+                $"Ошибка при получении комментария проекта. CommentId: {commentId}");
+
+            return result;
+        }
+        
+        var item = await _projectModerationService.GetCommentModerationByCommentIdAsync(commentId);
+        result = _mapper.Map<ProjectCommentModerationOutput>(item);
+
+        return result;
+    }
+    
+    /// <summary>
+    /// Метод одобряет комментарий проекта.
+    /// </summary>
+    /// <param name="projectCommentModerationInput">Входная модель.</param>
+    /// <returns>Выходная модель.</returns>
+    [HttpPatch]
+    [Route("project/comment/approve")]
+    [ProducesResponseType(200, Type = typeof(ManagingProjectCommentModerationOutput))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<ManagingProjectCommentModerationOutput> ApproveProjectCommentAsync(
+        [FromBody] ProjectCommentModerationInput projectCommentModerationInput)
+    {
+        var commentId = projectCommentModerationInput.CommentId;
+        var validator = await new ApproveProjectCommentValidator().ValidateAsync(commentId);
+        var result = new ManagingProjectCommentModerationOutput
+        {
+            Errors = new List<ValidationFailure>()
+        };
+        
+        if (validator.Errors.Any())
+        {
+            var err = validator.Errors.First().ErrorMessage;
+            _logger.LogError(err, $"Ошибка при одобрении комментария проекта. CommentId: {commentId}");
+
+            result.Errors.Add(new ValidationFailure
+            {
+                ErrorMessage = err
+            });
+
+            return result;
+        }
+
+        result.IsSuccess = await _projectModerationService.ApproveProjectCommentAsync(commentId);
+        
+        return result;
+    }
+
+    /// <summary>
+    /// Метод отклоняет комментарий проекта.
+    /// </summary>
+    /// <param name="projectCommentModerationInput">Входная модель.</param>
+    /// <returns>Выходная модель.</returns>
+    [HttpPatch]
+    [Route("project/comment/reject")]
+    [ProducesResponseType(200, Type = typeof(ManagingProjectCommentModerationOutput))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<ManagingProjectCommentModerationOutput> RejectProjectCommentAsync(
+        [FromBody] ProjectCommentModerationInput projectCommentModerationInput)
+    {
+        var commentId = projectCommentModerationInput.CommentId;
+        var validator = await new ApproveProjectCommentValidator().ValidateAsync(commentId);
+        var result = new ManagingProjectCommentModerationOutput
+        {
+            Errors = new List<ValidationFailure>()
+        };
+        
+        if (validator.Errors.Any())
+        {
+            var err = validator.Errors.First().ErrorMessage;
+            _logger.LogError(err, $"Ошибка при отклонении комментария проекта. CommentId: {commentId}");
+
+            result.Errors.Add(new ValidationFailure
+            {
+                ErrorMessage = err
+            });
+
+            return result;
+        }
+
+        result = await _projectModerationService.RejectProjectCommentAsync(commentId);
+        
         return result;
     }
 }

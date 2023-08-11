@@ -68,4 +68,14 @@ public class CatalogProjectOutput
     /// Отображаемая дата.
     /// </summary>
     public string DisplayDateCreated => DateCreated.ToString("d", CultureInfo.GetCultureInfo("ru"));
+
+    /// <summary>
+    /// Признак проекта на модерации.
+    /// </summary>
+    public bool IsModeration { get; set; }
+
+    /// <summary>
+    /// Признак проекта в архиве.
+    /// </summary>
+    public bool IsArchived { get; set; }
 }

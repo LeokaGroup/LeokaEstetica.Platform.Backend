@@ -192,7 +192,8 @@ internal sealed class ChatRepository : IChatRepository
                 join d in _pgContext.Dialogs
                     on dm.DialogId
                     equals d.DialogId
-                where dm.UserId == userId
+                where dm.UserId == userId 
+                      && d.DialogMessages.Any()
                 select new DialogOutput
                 {
                     DialogId = dm.DialogId,

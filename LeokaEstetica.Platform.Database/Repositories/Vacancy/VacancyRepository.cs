@@ -421,16 +421,6 @@ internal sealed class VacancyRepository : IVacancyRepository
 
         try
         {
-            var mp = await _pgContext.ModerationVacancies.FirstOrDefaultAsync(p => p.VacancyId == vacancyId
-                && p.UserVacancy.UserId == userId);
-
-            if (mp is null)
-            {
-                return false;
-            }
-
-            mp.ModerationStatusId = (int)VacancyModerationStatusEnum.ModerationVacancy;
-
             var va = await _pgContext.ArchivedVacancies.FirstOrDefaultAsync(p => p.VacancyId == vacancyId
                 && p.UserId == userId);
         

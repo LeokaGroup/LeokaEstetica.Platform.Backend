@@ -361,27 +361,12 @@ internal sealed class ProjectService : IProjectService
     {
         try
         {
-            // Получаем список проектов для каталога.
-            var catalogProjects = await _projectRepository.CatalogProjectsAsync();
             var result = new CatalogProjectResultOutput { CatalogProjects = new List<CatalogProjectOutput>() };
-            var catalogs = catalogProjects.ToList();
-
-            if (!catalogs.Any())
-            {
-                return result;
-            }
-
-            await DeleteIfProjectRemarksAsync(catalogs);
             
-            // Выбираем пользователей, у которых есть подписка выше бизнеса. Только их выделяем цветом.
-            result.CatalogProjects = await _fillColorProjectsService.SetColorBusinessProjects(catalogs,
-            _subscriptionRepository, _fareRuleRepository);
+            // Получаем список проектов для каталога.
+            var projects = await _projectRepository.CatalogProjectsAsync();
 
-            // Очистка описание от тегов список проектов для каталога.
-            result.CatalogProjects = ClearCatalogVacanciesHtmlTags(catalogs);
-
-            // Проставляем проектам теги, в зависимости от подписки владельца проекта.
-            result.CatalogProjects = await SetProjectsTags(result.CatalogProjects.ToList());
+            result.CatalogProjects = await ExecuteCatalogConditionsAsync(projects);
 
             return result;
         }
@@ -956,10 +941,15 @@ internal sealed class ProjectService : IProjectService
         {
             // Разбиваем строку стадий проекта, так как там может приходить несколько значений в строке.
             filters.ProjectStages = CreateProjectStagesBuilder.CreateProjectStagesResult(filters.StageValues);
-            var items = await _projectRepository.GetFiltersProjectsAsync();
-            var result = await _dateProjectsFilterChain.FilterProjectsAsync(filters, items);
+           
+            // Получаем список проектов для каталога.
+            var projects = await _projectRepository.CatalogProjectsWithoutMemoryAsync();
+            
+            var result = await _dateProjectsFilterChain.FilterProjectsAsync(filters, projects);
 
-            return result;
+            var resultProjects = await ExecuteCatalogConditionsAsync(result);
+
+            return resultProjects;
         }
 
         catch (Exception ex)
@@ -1309,6 +1299,40 @@ internal sealed class ProjectService : IProjectService
             
             throw;
         }
+    }
+
+    /// <summary>
+    /// Метод запускает првоерки на разные условия прежде чем вывести проекты в каталог.
+    /// Проекты могут быть отсеяны, если не проходят по условиям.
+    /// </summary>
+    /// <param name="projects">Список проектов до проверки условий.</param>
+    /// <returns>Список проектов после проверки условий.</returns>
+    public async Task<IEnumerable<CatalogProjectOutput>> ExecuteCatalogConditionsAsync(
+        IEnumerable<CatalogProjectOutput> projects)
+    {
+        var catalogs = projects.ToList();
+        
+        if (!catalogs.Any())
+        {
+            return Enumerable.Empty<CatalogProjectOutput>();
+        }
+        
+        await DeleteIfProjectRemarksAsync(catalogs);
+            
+        // Выбираем пользователей, у которых есть подписка выше бизнеса. Только их выделяем цветом.
+        projects = await _fillColorProjectsService.SetColorBusinessProjectsAsync(catalogs, _subscriptionRepository,
+            _fareRuleRepository);
+
+        // Очистка описание от тегов список проектов для каталога.
+        projects = ClearCatalogVacanciesHtmlTags(projects.ToList());
+
+        // Проставляем проектам теги, в зависимости от подписки владельца проекта.
+        projects = await SetProjectsTagsAsync(projects.ToList());
+        
+        // Исключаем проекты на модерации и архивные.
+        // catalogs.ToList().RemoveAll(p => p.IsModeration || p.IsArchived);
+
+        return projects;
     }
 
     #endregion
@@ -1963,7 +1987,7 @@ internal sealed class ProjectService : IProjectService
     /// </summary>
     /// <param name="projects">Список проектов каталога.</param>
     /// <returns>Список проектов каталога с проставленными тегами.</returns>
-    private async Task<IEnumerable<CatalogProjectOutput>> SetProjectsTags(List<CatalogProjectOutput> projects)
+    private async Task<IEnumerable<CatalogProjectOutput>> SetProjectsTagsAsync(List<CatalogProjectOutput> projects)
     {
         foreach (var p in projects)
         {

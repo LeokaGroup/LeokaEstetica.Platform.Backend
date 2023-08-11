@@ -123,4 +123,38 @@ public interface IProjectModerationRepository
     /// </summary>
     /// <returns>Список вакансий.</returns>
     Task<IEnumerable<VacancyRemarkEntity>> GetVacanciesAwaitingCorrectionAsync();
+
+    /// <summary>
+    /// Метод получает комментарии на модерации.
+    /// </summary>
+    /// <returns>Комментарии на модерации.</returns>
+    Task<IEnumerable<ProjectCommentModerationEntity>> GetProjectCommentsModerationAsync();
+
+    /// <summary>
+    /// Метод получает комментарий проекта для просмотра.
+    /// </summary>
+    /// <param name="commentId">Id комментария.</param>
+    /// <returns>Данные комментария.</returns>
+    Task<ProjectCommentModerationEntity> GetCommentModerationByCommentIdAsync(long commentId);
+
+    /// <summary>
+    /// Метод одобряет комментарий проекта.
+    /// </summary>
+    /// <param name="commentId">Id комментария.</param>
+    /// <returns>Признак успешного подверждения.</returns>
+    Task<bool> ApproveProjectCommentAsync(long commentId);
+
+    /// <summary>
+    /// Метод проверяет, были ли внесены замечания к комментарию проекта.
+    /// </summary>
+    /// <param name="commentId">Id комментария.</param>
+    /// <returns>Признак успешной проверки.</returns>
+    Task<bool> IfRemarksProjectCommentAsync(long commentId);
+
+    /// <summary>
+    /// Метод отклоняет комментарий проекта.
+    /// </summary>
+    /// <param name="commentId">Id комментария.</param>
+    /// <returns>Признак успешного подверждения.</returns>
+    Task<bool> RejectProjectCommentAsync(long commentId);
 }

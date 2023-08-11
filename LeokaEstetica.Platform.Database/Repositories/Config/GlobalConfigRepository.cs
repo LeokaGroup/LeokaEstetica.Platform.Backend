@@ -1,10 +1,13 @@
 using System.Globalization;
+using System.Runtime.CompilerServices;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.Config;
 using LeokaEstetica.Platform.Models.Entities.Configs;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+
+[assembly: InternalsVisibleTo("LeokaEstetica.Platform.Tests")]
 
 namespace LeokaEstetica.Platform.Database.Repositories.Config;
 

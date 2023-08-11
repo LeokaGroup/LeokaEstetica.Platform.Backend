@@ -97,7 +97,10 @@ public class ResumeModerationService : IResumeModerationService
     {
         try
         {
-            await _resumeModerationRepository.ApproveResumeAsync(profileInfoId);
+            // TODO: Надо еще проверять, что внесены замечания анкеты. Нельзя отклонить анкету, не внеся замечания,
+            // TODO: и модератор должен это видеть.
+            // TODO: Добавить такую проверку тут.
+            await _resumeModerationRepository.RejectResumeAsync(profileInfoId);
         }
         
         catch (Exception ex)

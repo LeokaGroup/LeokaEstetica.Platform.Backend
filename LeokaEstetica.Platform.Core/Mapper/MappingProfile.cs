@@ -181,5 +181,9 @@ public class MappingProfile : Profile
             .ForMember(a => a.Created, a => a.MapFrom(src => src.Created.ToString("g")));
         
         CreateMap<PlatformConditionEntity, PlatformConditionOutput>();
+        
+        CreateMap<ProjectCommentModerationEntity, ProjectCommentModerationOutput>()
+            .ForMember(a => a.Created, a => a.MapFrom(src => src.ProjectComment.Created.ToString("g")))
+            .ForMember(a => a.DateModeration, a => a.MapFrom(src => src.DateModeration.ToString("g")));
     }
 }

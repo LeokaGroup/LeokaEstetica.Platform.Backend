@@ -1,6 +1,7 @@
 using System.Runtime.CompilerServices;
 using System.Text;
 using LeokaEstetica.Platform.Base.Enums;
+using LeokaEstetica.Platform.Base.Extensions.StringExtensions;
 using LeokaEstetica.Platform.Base.Models.IntegrationEvents.Refunds;
 using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.Commerce;
@@ -28,6 +29,11 @@ internal sealed class RefundsJob : IJob
     private readonly ILogger<OrdersJob> _logger;
     
     /// <summary>
+    /// Название очереди.
+    /// </summary>
+    private readonly string _queueName = string.Empty;
+    
+    /// <summary>
     /// Конструктор.
     /// </summary>
     /// <param name="configuration">Зависимость конфигурации приложения.</param>
@@ -53,9 +59,11 @@ internal sealed class RefundsJob : IJob
         
         var connection = factory.CreateConnection();
         _channel = connection.CreateModel();
+        
+        var flags = QueueTypeEnum.RefundsQueue | QueueTypeEnum.RefundsQueue;
 
-        _channel.QueueDeclare(queue: QueueTypeEnum.RefundsQueue.GetEnumDescription(), durable: false, exclusive: false,
-            autoDelete: false, arguments: null);
+        _channel.QueueDeclare(queue: _queueName.CreateQueueDeclareNameFactory(configuration, flags), durable: false,
+            exclusive: false, autoDelete: false, arguments: null);
     }
 
     /// <summary>
@@ -136,7 +144,7 @@ internal sealed class RefundsJob : IJob
             await Task.Yield();
         };
 
-        _channel.BasicConsume(QueueTypeEnum.RefundsQueue.GetEnumDescription(), false, consumer);
+        _channel.BasicConsume(_queueName, false, consumer);
 
         await Task.CompletedTask;
     }

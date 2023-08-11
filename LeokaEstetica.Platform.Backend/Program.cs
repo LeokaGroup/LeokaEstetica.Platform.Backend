@@ -1,6 +1,7 @@
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using FluentValidation.AspNetCore;
+using Hellang.Middleware.ProblemDetails;
 using LeokaEstetica.Platform.Backend.Filters;
 using LeokaEstetica.Platform.Backend.Loaders.Bots;
 using LeokaEstetica.Platform.Backend.Loaders.Jobs;
@@ -152,6 +153,8 @@ builder.Services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
 builder.Logging.ClearProviders();
 builder.Host.UseNLog();
 
+builder.Services.AddProblemDetails();
+
 // Запускаем ботов.
 await LogNotifyBot.RunAsync(configuration);
     
@@ -172,5 +175,7 @@ if (builder.Environment.IsDevelopment() || builder.Environment.IsStaging())
 }
 
 app.MapHub<NotifyHub>("/notify"); // Добавляем роут для хаба.
+
+app.UseProblemDetails();
 
 app.Run();

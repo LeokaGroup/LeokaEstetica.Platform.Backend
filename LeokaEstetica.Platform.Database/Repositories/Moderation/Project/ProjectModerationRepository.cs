@@ -374,6 +374,87 @@ internal sealed class ProjectModerationRepository : IProjectModerationRepository
         return result;
     }
 
+    /// <summary>
+    /// Метод получает комментарии на модерации.
+    /// </summary>
+    /// <returns>Комментарии на модерации.</returns>
+    public async Task<IEnumerable<ProjectCommentModerationEntity>> GetProjectCommentsModerationAsync()
+    {
+        var result = await _pgContext.ProjectCommentsModeration
+            .Include(c => c.ProjectComment)
+            .Where(c => new[] { (int)ProjectCommentModerationEnum.ModerationComment }.Contains(c.ModerationStatusId))
+            .ToListAsync();
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод получает комментарий проекта для просмотра.
+    /// </summary>
+    /// <param name="commentId">Id комментария.</param>
+    /// <returns>Данные комментария.</returns>
+    public async Task<ProjectCommentModerationEntity> GetCommentModerationByCommentIdAsync(long commentId)
+    {
+        var result = await _pgContext.ProjectCommentsModeration
+            .FirstOrDefaultAsync(c => c.CommentId == commentId);
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод одобряет комментарий проекта.
+    /// </summary>
+    /// <param name="commentId">Id комментарии.</param>
+    /// <returns>Признак успешного подверждения.</returns>
+    public async Task<bool> ApproveProjectCommentAsync(long commentId)
+    {
+        var comment = await _pgContext.ProjectCommentsModeration
+            .FirstOrDefaultAsync(c => c.CommentId == commentId);
+        
+        if (comment is null)
+        {
+            return false;
+        }
+        
+        comment.ModerationStatusId = (int)ProjectCommentModerationEnum.ApproveComment;
+        await _pgContext.SaveChangesAsync();
+        
+        return true;
+    }
+
+    /// <summary>
+    /// Метод проверяет, были ли внесены замечания к комментарию проекта.
+    /// </summary>
+    /// <param name="commentId">Id комментария.</param>
+    /// <returns>Признак успешной проверки.</returns>
+    public async Task<bool> IfRemarksProjectCommentAsync(long commentId)
+    {
+        var result = await _pgContext.ProjectCommentsModeration.AnyAsync(c => c.CommentId == commentId);
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод отклоняет комментарий проекта.
+    /// </summary>
+    /// <param name="commentId">Id комментария.</param>
+    /// <returns>Признак успешного подверждения.</returns>
+    public async Task<bool> RejectProjectCommentAsync(long commentId)
+    {
+        var comment = await _pgContext.ProjectCommentsModeration
+            .FirstOrDefaultAsync(c => c.CommentId == commentId);
+        
+        if (comment is null)
+        {
+            return false;
+        }
+        
+        comment.ModerationStatusId = (int)ProjectCommentModerationEnum.RejectedComment;
+        await _pgContext.SaveChangesAsync();
+        
+        return true;
+    }
+
     #endregion
 
     #region Приватные методы.
