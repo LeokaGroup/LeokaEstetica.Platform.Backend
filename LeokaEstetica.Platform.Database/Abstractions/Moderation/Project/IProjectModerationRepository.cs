@@ -140,7 +140,21 @@ public interface IProjectModerationRepository
     /// <summary>
     /// Метод одобряет комментарий проекта.
     /// </summary>
-    /// <param name="commentId">Id комментарии.</param>
+    /// <param name="commentId">Id комментария.</param>
     /// <returns>Признак успешного подверждения.</returns>
     Task<bool> ApproveProjectCommentAsync(long commentId);
+
+    /// <summary>
+    /// Метод проверяет, были ли внесены замечания к комментарию проекта.
+    /// </summary>
+    /// <param name="commentId">Id комментария.</param>
+    /// <returns>Признак успешной проверки.</returns>
+    Task<bool> IfRemarksProjectCommentAsync(long commentId);
+
+    /// <summary>
+    /// Метод отклоняет комментарий проекта.
+    /// </summary>
+    /// <param name="commentId">Id комментария.</param>
+    /// <returns>Признак успешного подверждения.</returns>
+    Task<bool> RejectProjectCommentAsync(long commentId);
 }
