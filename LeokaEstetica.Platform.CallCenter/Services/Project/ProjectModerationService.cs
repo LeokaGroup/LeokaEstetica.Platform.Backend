@@ -505,6 +505,16 @@ internal sealed class ProjectModerationService : IProjectModerationService
         }
     }
 
+    /// <summary>
+    /// Метод одобряет замечание проекта.
+    /// </summary>
+    /// <param name="remarkId">Id замечания.</param>
+    /// <returns>Признак успеха.</returns>
+    public async Task<bool> ApproveProjectRemarkAsync(long remarkId)
+    {
+        
+    }
+
     #endregion
 
     #region Приватные методы.

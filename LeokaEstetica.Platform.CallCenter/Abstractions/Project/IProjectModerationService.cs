@@ -86,4 +86,11 @@ public interface IProjectModerationService
     /// <param name="commentId">Id комментарии.</param>
     /// <returns>Признак успешного подверждения.</returns>
     Task<ManagingProjectCommentModerationOutput> RejectProjectCommentAsync(long commentId);
+
+    /// <summary>
+    /// Метод одобряет замечание проекта.
+    /// </summary>
+    /// <param name="remarkIds">Id замечаний.</param>
+    /// <returns>Признак успеха.</returns>
+    Task<bool> ApproveProjectRemarkAsync(IEnumerable<long> remarkIds, bool isFixed, bool uisUfixed);
 }

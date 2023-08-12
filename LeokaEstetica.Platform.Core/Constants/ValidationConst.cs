@@ -29,6 +29,11 @@ public static class ValidationConst
         /// Если передали некорректный режим.
         /// </summary>
         public const string EMPTY_MODE = "Передан некорректный режим. Mode был ";
+
+        /// <summary>
+        /// Если не передали список Id замечаний проекта.
+        /// </summary>
+        public const string EMPTY_REMARK_IDS = "Не передан список Id замечаний проекта.";
     }
     
     /// <summary>

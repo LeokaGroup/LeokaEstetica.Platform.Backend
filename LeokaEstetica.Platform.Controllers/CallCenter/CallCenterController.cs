@@ -29,6 +29,7 @@ using LeokaEstetica.Platform.Models.Dto.Input.Moderation;
 using LeokaEstetica.Platform.Services.Abstractions.Profile;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 
 namespace LeokaEstetica.Platform.Controllers.CallCenter;
 
@@ -69,12 +70,12 @@ public class CallCenterController : BaseController
     public CallCenterController(IAccessModerationService accessModerationService,
         IProjectModerationService projectModerationService,
         IMapper mapper,
-        IVacancyModerationService vacancyModerationService, 
-        IUserBlackListService userBlackListService, 
-        IResumeModerationService resumeModerationService, 
-        IProfileService profileService, 
-        IProjectModerationRepository projectModerationRepository, 
-        IVacancyModerationRepository vacancyModerationRepository, 
+        IVacancyModerationService vacancyModerationService,
+        IUserBlackListService userBlackListService,
+        IResumeModerationService resumeModerationService,
+        IProfileService profileService,
+        IProjectModerationRepository projectModerationRepository,
+        IVacancyModerationRepository vacancyModerationRepository,
         IResumeModerationRepository resumeModerationRepository,
         ILogger<CallCenterController> logger)
     {
@@ -203,7 +204,7 @@ public class CallCenterController : BaseController
 
         return result;
     }
-    
+
     /// <summary>
     /// Метод получает список вакансий для модерации.
     /// </summary>
@@ -221,7 +222,7 @@ public class CallCenterController : BaseController
 
         return result;
     }
-    
+
     /// <summary>
     /// Метод одобряет вакансию на модерации.
     /// </summary>
@@ -240,7 +241,7 @@ public class CallCenterController : BaseController
 
         return result;
     }
-    
+
     /// <summary>
     /// Метод отклоняет вакансию на модерации.
     /// </summary>
@@ -313,7 +314,7 @@ public class CallCenterController : BaseController
 
         return result;
     }
-    
+
     /// <summary>
     /// Метод одобряет анкету на модерации.
     /// </summary>
@@ -329,7 +330,7 @@ public class CallCenterController : BaseController
     {
         await _resumeModerationService.ApproveResumeAsync(approveResumeInput.ProfileInfoId);
     }
-    
+
     /// <summary>
     /// Метод отклоняет анкету на модерации.
     /// </summary>
@@ -361,9 +362,9 @@ public class CallCenterController : BaseController
     public async Task<ProjectRemarkResult> CreateProjectRemarksAsync(
         [FromBody] CreateProjectRemarkInput createProjectRemarkInput)
     {
-        var projectRemarks = await _projectModerationService.CreateProjectRemarksAsync(createProjectRemarkInput, 
+        var projectRemarks = await _projectModerationService.CreateProjectRemarksAsync(createProjectRemarkInput,
             GetUserName(), GetTokenFromHeader());
-        
+
         var result = new ProjectRemarkResult
         {
             ProjectRemarks = _mapper.Map<List<ProjectRemarkOutput>>(projectRemarks)
@@ -389,7 +390,7 @@ public class CallCenterController : BaseController
         await _projectModerationService.SendProjectRemarksAsync(sendProjectRemarkInput.ProjectId, GetUserName(),
             GetTokenFromHeader());
     }
-    
+
     /// <summary>
     /// Метод создает замечания вакансии.
     /// </summary>
@@ -405,19 +406,19 @@ public class CallCenterController : BaseController
     public async Task<VacancyRemarkResult> CreateVacancyRemarksAsync(
         [FromBody] CreateVacancyRemarkInput createVacancyRemarkInput)
     {
-        var vacancyRemarks = await _vacancyModerationService.CreateVacancyRemarksAsync(createVacancyRemarkInput, 
+        var vacancyRemarks = await _vacancyModerationService.CreateVacancyRemarksAsync(createVacancyRemarkInput,
             GetUserName(), GetTokenFromHeader());
-        
+
         var result = new VacancyRemarkResult
         {
             VacancyRemarks = new List<VacancyRemarkOutput>()
         };
-        
+
         result.VacancyRemarks = _mapper.Map<List<VacancyRemarkOutput>>(vacancyRemarks);
 
         return result;
     }
-    
+
     /// <summary>
     /// Метод отправляет замечания вакансии владельцу проекта.
     /// Отправка замечаний проекту подразумевает просто изменение статуса замечаниям проекта.
@@ -432,10 +433,10 @@ public class CallCenterController : BaseController
     [ProducesResponseType(404)]
     public async Task SendVacancyRemarksAsync([FromBody] SendVacancyRemarkInput sendVacancyRemarkInput)
     {
-        await _vacancyModerationService.SendVacancyRemarksAsync(sendVacancyRemarkInput.VacancyId, 
+        await _vacancyModerationService.SendVacancyRemarksAsync(sendVacancyRemarkInput.VacancyId,
             GetTokenFromHeader());
     }
-    
+
     /// <summary>
     /// Метод создает замечания анкеты.
     /// </summary>
@@ -451,9 +452,9 @@ public class CallCenterController : BaseController
     public async Task<ResumeRemarkResult> CreateVacancyRemarksAsync(
         [FromBody] CreateResumeRemarkInput createResumeRemarkInput)
     {
-        var vacancyRemarks = await _resumeModerationService.CreateResumeRemarksAsync(createResumeRemarkInput, 
+        var vacancyRemarks = await _resumeModerationService.CreateResumeRemarksAsync(createResumeRemarkInput,
             GetUserName(), GetTokenFromHeader());
-        
+
         var result = new ResumeRemarkResult
         {
             ResumeRemarks = _mapper.Map<List<ResumeRemarkOutput>>(vacancyRemarks)
@@ -461,7 +462,7 @@ public class CallCenterController : BaseController
 
         return result;
     }
-    
+
     /// <summary>
     /// Метод отправляет замечания вакансии владельцу проекта.
     /// Отправка замечаний проекту подразумевает просто изменение статуса замечаниям проекта.
@@ -505,7 +506,7 @@ public class CallCenterController : BaseController
 
         return result;
     }
-    
+
     /// <summary>
     /// Метод получает список замечаний проекта (не отправленные), если они есть.
     /// </summary>
@@ -525,7 +526,7 @@ public class CallCenterController : BaseController
 
         return result;
     }
-    
+
     /// <summary>
     /// Метод получает список замечаний вакансии (не отправленные), если они есть.
     /// </summary>
@@ -545,7 +546,7 @@ public class CallCenterController : BaseController
 
         return result;
     }
-    
+
     /// <summary>
     /// Метод получает список замечаний анкеты (не отправленные), если они есть.
     /// </summary>
@@ -566,7 +567,7 @@ public class CallCenterController : BaseController
 
         return result;
     }
-    
+
     /// <summary>
     /// Метод получает список замечаний проекта (не отправленные), если они есть.
     /// Выводим эти данные в таблицу замечаний проектов журнала модерации.
@@ -586,7 +587,7 @@ public class CallCenterController : BaseController
 
         return result;
     }
-    
+
     /// <summary>
     /// Метод получает список замечаний вакансии (не отправленные), если они есть.
     /// Выводим эти данные в таблицу замечаний вакансии журнала модерации.
@@ -606,7 +607,7 @@ public class CallCenterController : BaseController
 
         return result;
     }
-    
+
     /// <summary>
     /// Метод получает список замечаний анкеты (не отправленные), если они есть.
     /// Выводим эти данные в таблицу замечаний анкет журнала модерации.
@@ -648,7 +649,7 @@ public class CallCenterController : BaseController
 
         return result;
     }
-    
+
     /// <summary>
     /// Метод получает анкеты, замечания которых ожидают проверки модератором.
     /// </summary>
@@ -670,7 +671,7 @@ public class CallCenterController : BaseController
 
         return result;
     }
-    
+
     /// <summary>
     /// Метод получает вакансии, замечания которых ожидают проверки модератором.
     /// </summary>
@@ -711,7 +712,7 @@ public class CallCenterController : BaseController
 
         return result;
     }
-    
+
     /// <summary>
     /// Метод получает комментарий проекта для просмотра.
     /// </summary>
@@ -736,13 +737,13 @@ public class CallCenterController : BaseController
 
             return result;
         }
-        
+
         var item = await _projectModerationService.GetCommentModerationByCommentIdAsync(commentId);
         result = _mapper.Map<ProjectCommentModerationOutput>(item);
 
         return result;
     }
-    
+
     /// <summary>
     /// Метод одобряет комментарий проекта.
     /// </summary>
@@ -764,7 +765,7 @@ public class CallCenterController : BaseController
         {
             Errors = new List<ValidationFailure>()
         };
-        
+
         if (validator.Errors.Any())
         {
             var err = validator.Errors.First().ErrorMessage;
@@ -779,7 +780,7 @@ public class CallCenterController : BaseController
         }
 
         result.IsSuccess = await _projectModerationService.ApproveProjectCommentAsync(commentId);
-        
+
         return result;
     }
 
@@ -804,7 +805,7 @@ public class CallCenterController : BaseController
         {
             Errors = new List<ValidationFailure>()
         };
-        
+
         if (validator.Errors.Any())
         {
             var err = validator.Errors.First().ErrorMessage;
@@ -819,7 +820,34 @@ public class CallCenterController : BaseController
         }
 
         result = await _projectModerationService.RejectProjectCommentAsync(commentId);
-        
+
         return result;
+    }
+
+    /// <summary>
+    /// Метод одобряет замечание проекта.
+    /// </summary>
+    /// <param name="manageProjectRemarkInput">Входная модель.</param>
+    /// <returns>Признак успеха.</returns>
+    [HttpPatch]
+    [Route("project/remark/approve")]
+    [ProducesResponseType(200, Type = typeof(bool))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<bool> ApproveProjectRemarkAsync([FromBody] ManageProjectRemarkInput manageProjectRemarkInput)
+    {
+        var remarkIds = manageProjectRemarkInput.RemarkIds;
+        var validator = await new ManageProjectRemarkValidator().ValidateAsync(remarkIds);
+
+        if (validator.Errors.Any())
+        {
+            var err = validator.Errors.First().ErrorMessage;
+            _logger.LogError(err,
+                $"Ошибка при одобрении замечаний проекта. RemarkIds: {JsonConvert.SerializeObject(remarkIds)}");
+
+            return false;
+        }
     }
 }
