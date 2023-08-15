@@ -341,11 +341,6 @@ internal sealed class UserService : IUserService
         }
     }
 
-    public Task<UserSignInOutput> RefreshTokenAsync(string account)
-    {
-        throw new NotImplementedException();
-    }
-
     #endregion
 
     #region Приватные методы.
@@ -718,6 +713,10 @@ internal sealed class UserService : IUserService
         // Проверяем активность подписки пользователя, если она платная.
         var subscription = await _subscriptionRepository.GetUserSubscriptionAsync(userId);
 
+        // TODO: Добавить тут логирование этого кейса с таким же эксепшном, но не генерить ошибку,
+        // TODO: а переводить пользователя на бесплатную подписку.
+        // TODO: Если по лимитам не вмещает бесплатный, то принудительно добавляем все проекты, вакансии в архив,
+        // TODO: так как юзер сам виноват, что не продлил.
         if (subscription is null)
         {
             throw new InvalidOperationException($"Не удалось получить подписку. UserId: {userId}");
