@@ -712,14 +712,19 @@ internal sealed class UserService : IUserService
     {
         // Проверяем активность подписки пользователя, если она платная.
         var subscription = await _subscriptionRepository.GetUserSubscriptionAsync(userId);
-
-        // TODO: Добавить тут логирование этого кейса с таким же эксепшном, но не генерить ошибку,
-        // TODO: а переводить пользователя на бесплатную подписку.
-        // TODO: Если по лимитам не вмещает бесплатный, то принудительно добавляем все проекты, вакансии в архив,
-        // TODO: так как юзер сам виноват, что не продлил.
+        
         if (subscription is null)
         {
-            throw new InvalidOperationException($"Не удалось получить подписку. UserId: {userId}");
+            _logger.LogError($"Не удалось получить подписку. UserId: {userId}");
+
+            // Сбрасываем подписку пользователя на бесплатный тариф.
+            await _subscriptionRepository.AutoDefaultUserSubscriptionAsync(userId);
+
+            _logger.LogInformation(
+                "Автоматический сброс подписки пользователя на бесплатный тариф по причине не продления подписки." +
+                $" UserId: {userId}");
+
+            return;
         }
             
         // Получаем тариф.
@@ -742,7 +747,7 @@ internal sealed class UserService : IUserService
             var dates = await _userRepository.GetUserSubscriptionUsedDateAsync(userId);
 
             // Отключаем пользователю подписку.
-            if (dates.EndDate < DateTime.UtcNow.ToUniversalTime())
+            if (dates.EndDate < DateTime.UtcNow)
             {
                 await _subscriptionRepository.DisableUserSubscriptionAsync(userId);
             }

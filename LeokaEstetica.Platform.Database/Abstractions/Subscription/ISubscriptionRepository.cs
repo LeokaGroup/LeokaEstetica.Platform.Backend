@@ -56,4 +56,11 @@ public interface ISubscriptionRepository
     /// </summary>
     /// <param name="userId">Id пользователя.</param>
     Task DisableUserSubscriptionAsync(long userId);
+
+    /// <summary>
+    /// Метод автоматически присваивает аккаунту пользователя бесплатный тариф.
+    /// Обновляет неактивную подписку через сброс на бесплатный.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    Task AutoDefaultUserSubscriptionAsync(long userId);
 }
