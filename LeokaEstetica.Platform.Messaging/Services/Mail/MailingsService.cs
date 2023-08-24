@@ -38,10 +38,12 @@ internal sealed class MailingsService : IMailingsService
     /// <param name="confirmEmailCode">Код подтверждения почты.</param>
     public async Task SendConfirmEmailAsync(string mailTo, Guid confirmEmailCode)
     {
-        // TODO: Заменить на получение ссылки из БД.
+        var api = await _globalConfigRepository
+            .GetValueByKeyAsync<string>(GlobalConfigKeys.EmailNotifications.API_MAIL_URL);
+
         var html = "Рады вас видеть на Leoka Estetica!" +
                    "<br/><br/>" +
-                   $"Для завершения регистрации перейдите по ссылке <a href='https://leoka-estetica-dev.ru/user/account/confirm?code={confirmEmailCode}'>Подтвердить почту</a>" +
+                   $"Для завершения регистрации перейдите по ссылке <a href='{string.Concat(api, $"user/account/confirm?code={confirmEmailCode}")}'>Подтвердить почту</a>" +
                    "<br/>-----<br/>" +
                    "С уважением, команда Leoka Estetica";
         var subject = "Активация аккаунта на leoka-estetica.ru";
@@ -69,8 +71,10 @@ internal sealed class MailingsService : IMailingsService
 
         if (isEnabledEmailNotifications)
         {
-            // TODO: Заменить на получение ссылки из БД.
-            var text = $"<a href='https://leoka-estetica-dev.ru/projects/project?projectId={projectId}&mode=view'>" +
+            var api = await _globalConfigRepository
+                .GetValueByKeyAsync<string>(GlobalConfigKeys.EmailNotifications.API_MAIL_URL);
+            
+            var text = $"<a href='{string.Concat(api, $"projects/project?projectId={projectId}&mode=view")}'>" +
                        "Перейти к проекту" +
                        "</a>";
             
@@ -102,8 +106,10 @@ internal sealed class MailingsService : IMailingsService
 
         if (isEnabledEmailNotifications)
         {
-            // TODO: Заменить на получение ссылки из БД.
-            var text = $"<a href='https://leoka-estetica-dev.ru/vacancies/vacancy?vacancyId={vacancyId}&mode=view'>" +
+            var api = await _globalConfigRepository
+                .GetValueByKeyAsync<string>(GlobalConfigKeys.EmailNotifications.API_MAIL_URL);
+            
+            var text = $"<a href='{string.Concat(api, $"vacancies/vacancy?vacancyId={vacancyId}&mode=view")}'>" +
                        "Перейти к вакансии" +
                        "</a>";
             
@@ -134,7 +140,6 @@ internal sealed class MailingsService : IMailingsService
 
         if (isEnabledEmailNotifications)
         {
-            // TODO: Заменить на получение ссылки из БД.
             var text = $"Вы удалили вакансию: \"{vacancyName}\"." +
                        "<br/>" +
                        "<br/>" +
@@ -177,7 +182,6 @@ internal sealed class MailingsService : IMailingsService
                 }
             }
             
-            // TODO: Заменить на получение ссылки из БД.
             var text = $"Вы удалили проект: \"{projectName}\"." +
                        deleteVacanciesBuilder +
                        "<br/>" +
@@ -212,12 +216,14 @@ internal sealed class MailingsService : IMailingsService
                 ? $"Отклик на вакансию: \"{vacancyName}\""
                 : null;
             
-            // TODO: Заменить на получение ссылки из БД.
+            var api = await _globalConfigRepository
+                .GetValueByKeyAsync<string>(GlobalConfigKeys.EmailNotifications.API_MAIL_URL);
+            
             var text = $"Пользователь {otherUser} оставил отклик на ваш проект: \"{projectName}\"." +
                        "<br/>" +
                         withVacancy +
                        "<br/>" +
-                       $"<a href='https://leoka-estetica-dev.ru/projects/project?projectId={projectId}&mode=view'>" +
+                       $"<a href='{string.Concat(api, $"projects/project?projectId={projectId}&mode=view")}'>" +
                        "Перейти к проекту" +
                        "</a>" +
                        "<br/>" +
@@ -247,10 +253,12 @@ internal sealed class MailingsService : IMailingsService
 
         if (isEnabledEmailNotifications)
         {
-            // TODO: Заменить на получение ссылки из БД.
+            var api = await _globalConfigRepository
+                .GetValueByKeyAsync<string>(GlobalConfigKeys.EmailNotifications.API_MAIL_URL);
+            
             var text = $"Пользователь {projectOwnerName} пригласил Вас в команду проекта: \"{projectName}\"." +
                        "<br/>" +
-                       $"<a href='https://leoka-estetica-dev.ru/projects/project?projectId={projectId}&mode=view'>" +
+                       $"<a href='{string.Concat(api, $"projects/project?projectId={projectId}&mode=view")}'>" +
                        "Перейти к проекту" +
                        "</a>" +
                        "<br/>" +
@@ -282,11 +290,13 @@ internal sealed class MailingsService : IMailingsService
 
         if (isEnabledEmailNotifications)
         {
-            // TODO: Заменить на получение ссылки из БД.
+            var api = await _globalConfigRepository
+                .GetValueByKeyAsync<string>(GlobalConfigKeys.EmailNotifications.API_MAIL_URL);
+            
             var text = "Здравствуйте!" +
                        "<br/>" +
                        "<br/>" +
-                       "Мы заметили, что вы почти месяц не заходили в leoka-estetica-dev.ru. Возможно, по какой-то причине вы решили больше не использовать нашу платформу Leoka Estetica. Нам очень грустно это слышать, мы очень старались быть для вас полезными." +
+                       $"Мы заметили, что вы почти месяц не заходили в {api.TrimEnd('/')}. Возможно, по какой-то причине вы решили больше не использовать нашу платформу Leoka Estetica. Нам очень грустно это слышать, мы очень старались быть для вас полезными." +
                        "<br/>" +
                        "<br/>" +
                        "Сообщаем, что мы удалим ваш аккаунт через 7 дней, если вы больше в нем не нуждаетесь :(" +
@@ -331,10 +341,12 @@ internal sealed class MailingsService : IMailingsService
 
         if (isEnabledEmailNotifications)
         {
-            // TODO: Заменить на получение ссылки из БД.
+            var api = await _globalConfigRepository
+                .GetValueByKeyAsync<string>(GlobalConfigKeys.EmailNotifications.API_MAIL_URL);
+            
             var text = $"Вы были исключены из команды проекта: \"{projectName}\"." +
                        "<br/>" +
-                       $"<a href='https://leoka-estetica-dev.ru/projects/project?projectId={projectId}&mode=view'>" +
+                       $"<a href='{string.Concat(api, $"projects/project?projectId={projectId}&mode=view")}'>" +
                        "Перейти к проекту" +
                        "</a>" +
                        "<br/>" +
@@ -362,10 +374,12 @@ internal sealed class MailingsService : IMailingsService
 
         if (isEnabledEmailNotifications)
         {
-            // TODO: Заменить на получение ссылки из БД.
+            var api = await _globalConfigRepository
+                .GetValueByKeyAsync<string>(GlobalConfigKeys.EmailNotifications.API_MAIL_URL);
+            
             var text = $"Ваш проект: \"{projectName}\" был добавлен в архив." +
                        "<br/>" +
-                       $"<a href='https://leoka-estetica-dev.ru/projects/project?projectId={projectId}&mode=view'>" +
+                       $"<a href='{string.Concat(api, $"projects/project?projectId={projectId}&mode=view")}'>" +
                        "Перейти к проекту" +
                        "</a>" +
                        "<br/>" +
@@ -393,10 +407,12 @@ internal sealed class MailingsService : IMailingsService
 
         if (isEnabledEmailNotifications)
         {
-            // TODO: Заменить на получение ссылки из БД.
+            var api = await _globalConfigRepository
+                .GetValueByKeyAsync<string>(GlobalConfigKeys.EmailNotifications.API_MAIL_URL);
+            
             var text = $"Ваша вакансия: \"{vacancyName}\" была добавлена в архив." +
                        "<br/>" +
-                       $"<a href='https://leoka-estetica-dev.ru/vacancies/vacancy?vacancyId={vacancyId}&mode=view'>" +
+                       $"<a href='{string.Concat(api, $"vacancies/vacancy?vacancyId={vacancyId}&mode=view")}'>" +
                        "Перейти к вакансии" +
                        "</a>" +
                        "<br/>" +
@@ -423,10 +439,12 @@ internal sealed class MailingsService : IMailingsService
 
         if (isEnabledEmailNotifications)
         {
-            // TODO: Заменить на получение ссылки из БД.
+            var api = await _globalConfigRepository
+                .GetValueByKeyAsync<string>(GlobalConfigKeys.EmailNotifications.API_MAIL_URL);
+            
             var text = "Для восстановления пароля перейдите по ссылке." +
                        "<br/>" +
-                       $"<a href='https://leoka-estetica-dev.ru/profile/restore?publicKey={guid}'>" +
+                       $"<a href='{string.Concat(api, $"profile/restore?publicKey={guid}")}'>" +
                        "Восстановить пароль" +
                        "</a>" +
                        "<br/>" +
@@ -453,7 +471,6 @@ internal sealed class MailingsService : IMailingsService
     {
         if (isEmailNotificationsDisableModeEnabled)
         {
-            // TODO: Заменить на получение ссылки из БД.
             var text = $"Заказ: \"{orderName}\" успешно оформлен на срок {month} мес." +
                        "<br/>" +
                        "<br/>" +

@@ -14,8 +14,9 @@ public interface IMailingsService
     /// <param name="vacancyName">Название вакансии.</param>
     /// <param name="otherUser">Логин или почта пользователя, который оставил отклик.</param>
     /// <param name="isEmailNotificationsDisableModeEnabled">Признак уведомлений на почту.</param>
+    /// <param name="apiUrl">API уведомлений почты.</param>
     Task SendNotificationApproveInviteProjectAsync(string mailTo, long projectId, string projectName,
-        string vacancyName, string otherUser, bool isEmailNotificationsDisableModeEnabled);
+        string vacancyName, string otherUser, bool isEmailNotificationsDisableModeEnabled, string apiUrl);
     
     /// <summary>
     /// Метод отправляет уведомление на почту о отклонении инвайта в проект.
@@ -26,6 +27,7 @@ public interface IMailingsService
     /// <param name="vacancyName">Название вакансии.</param>
     /// <param name="otherUser">Логин или почта пользователя, который оставил отклик.</param>
     /// <param name="isEmailNotificationsDisableModeEnabled">Признак уведомлений на почту.</param>
+    /// <param name="apiUrl">API уведомлений почты.</param>
     Task SendNotificationRejectInviteProjectAsync(string mailTo, long projectId, string projectName,
-        string vacancyName, string otherUser, bool isEmailNotificationsDisableModeEnabled);
+        string vacancyName, string otherUser, bool isEmailNotificationsDisableModeEnabled, string apiUrl);
 }
