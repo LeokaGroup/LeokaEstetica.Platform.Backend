@@ -195,9 +195,10 @@ internal class BaseServiceTest
         var ordersRepository = new OrdersRepository(pgContext);
         var commerceRepository = new CommerceRepository(pgContext);
         var commerceRedisService = new CommerceRedisService(distributedCache);
-        
+
         CommerceService = new CommerceService(commerceRedisService, null, userRepository, fareRuleRepository,
-            commerceRepository, ordersRepository, subscriptionRepository, availableLimitsService);
+            commerceRepository, ordersRepository, subscriptionRepository, availableLimitsService, accessUserService,
+            null);
 
         SubscriptionService = new SubscriptionService(null, userRepository, subscriptionRepository,
             fareRuleRepository);

@@ -173,4 +173,23 @@ public class CommerceController : BaseController
 
         return result;
     }
+
+    /// <summary>
+    /// Метод проверяет заполнение анкеты пользователя.
+    /// Если не заполнена, то нельзя оформить заказ.
+    /// </summary>
+    /// <returns>Признак результата проверки. False - Анкета заполнена. True - не заполнена.</returns>
+    [HttpGet]
+    [Route("check-profile")]
+    [ProducesResponseType(200, Type = typeof(bool))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<bool> IsProfileEmptyAsync()
+    {
+        var result = await _commerceService.IsProfileEmptyAsync(GetUserName(), GetTokenFromHeader());
+
+        return result;
+    }
 }
