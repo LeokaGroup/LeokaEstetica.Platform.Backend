@@ -20,4 +20,10 @@ public interface IAvailableLimitsRepository
     /// <param name="userId">Id пользователя.</param>
     /// <returns>Кол-во созданных пользователем вакансий.</returns>
     Task<int> CheckAvailableCreateVacancyAsync(long userId);
+
+    /// <summary>
+    /// Метод добавляет в архив все проекты и вакансии пользователя, пока не пройдем по лимитам бесплатного тарифа.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    Task RestrictionFreeLimitsAsync(long userId);
 }

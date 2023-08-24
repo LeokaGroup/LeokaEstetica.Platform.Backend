@@ -8,6 +8,7 @@ using LeokaEstetica.Platform.Access.Helpers;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Core.Exceptions;
+using LeokaEstetica.Platform.Database.Abstractions.AvailableLimits;
 using LeokaEstetica.Platform.Database.Abstractions.FareRule;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Resume;
 using LeokaEstetica.Platform.Database.Abstractions.Profile;
@@ -47,6 +48,7 @@ internal sealed class UserService : IUserService
     private readonly IFareRuleRepository _fareRuleRepository;
     private readonly IAccessUserNotificationsService _accessUserNotificationsService;
     private readonly INotificationsService _notificationsService;
+    private readonly IAvailableLimitsRepository _availableLimitsRepository;
 
     /// <summary>
     /// Конструктор.
@@ -62,6 +64,7 @@ internal sealed class UserService : IUserService
     /// <param name="fareRuleRepository">Репозиторий тарифов.</param>
     /// <param name="accessUserNotificationsService">Сервис уведомлений доступа пользователей.</param>
     /// <param name="notificationsService">Сервис уведомлений.</param>
+    /// <param name="availableLimitsRepository">Репозиторий лимитов.</param>
     public UserService(ILogger<UserService> logger, 
         IUserRepository userRepository, 
         IMapper mapper, 
@@ -74,7 +77,8 @@ internal sealed class UserService : IUserService
         IUserRedisService userRedisService, 
         IFareRuleRepository fareRuleRepository,
         IAccessUserNotificationsService accessUserNotificationsService,
-        INotificationsService notificationsService)
+        INotificationsService notificationsService,
+        IAvailableLimitsRepository availableLimitsRepository)
     {
         _logger = logger;
         _userRepository = userRepository;
@@ -89,6 +93,7 @@ internal sealed class UserService : IUserService
         _fareRuleRepository = fareRuleRepository;
         _accessUserNotificationsService = accessUserNotificationsService;
         _notificationsService = notificationsService;
+        _availableLimitsRepository = availableLimitsRepository;
     }
 
     #region Публичные методы.
@@ -712,14 +717,26 @@ internal sealed class UserService : IUserService
     {
         // Проверяем активность подписки пользователя, если она платная.
         var subscription = await _subscriptionRepository.GetUserSubscriptionAsync(userId);
-
-        // TODO: Добавить тут логирование этого кейса с таким же эксепшном, но не генерить ошибку,
-        // TODO: а переводить пользователя на бесплатную подписку.
-        // TODO: Если по лимитам не вмещает бесплатный, то принудительно добавляем все проекты, вакансии в архив,
-        // TODO: так как юзер сам виноват, что не продлил.
+        
         if (subscription is null)
         {
-            throw new InvalidOperationException($"Не удалось получить подписку. UserId: {userId}");
+            _logger.LogError($"Не удалось получить подписку. UserId: {userId}");
+
+            // Сбрасываем подписку пользователя на бесплатный тариф.
+            await _subscriptionRepository.AutoDefaultUserSubscriptionAsync(userId);
+
+            _logger.LogInformation(
+                "Автоматический сброс подписки пользователя на бесплатный тариф по причине не продления подписки." +
+                $" UserId: {userId}");
+
+            await _availableLimitsRepository.RestrictionFreeLimitsAsync(userId);
+
+            _logger.LogInformation(
+                "Автоматическая отправка проектов и вакансий в архив по причине сброса подписки пользователя" +
+                " на бесплатный тариф по причине не продления подписки." +
+                $" UserId: {userId}");
+
+            return;
         }
             
         // Получаем тариф.
@@ -742,7 +759,7 @@ internal sealed class UserService : IUserService
             var dates = await _userRepository.GetUserSubscriptionUsedDateAsync(userId);
 
             // Отключаем пользователю подписку.
-            if (dates.EndDate < DateTime.UtcNow.ToUniversalTime())
+            if (dates.EndDate < DateTime.UtcNow)
             {
                 await _subscriptionRepository.DisableUserSubscriptionAsync(userId);
             }
