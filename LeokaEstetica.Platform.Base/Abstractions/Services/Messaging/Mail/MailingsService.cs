@@ -30,18 +30,18 @@ internal sealed class MailingsService : IMailingsService
     /// <param name="vacancyName">Название вакансии.</param>
     /// <param name="otherUser">Логин или почта пользователя, который оставил отклик.</param>
    /// <param name="isEmailNotificationsDisableModeEnabled">Признак уведомлений на почту.</param>
+   /// <param name="apiUrl">API уведомлений почты.</param>
     public async Task SendNotificationApproveInviteProjectAsync(string mailTo, long projectId, string projectName,
-        string vacancyName, string otherUser, bool isEmailNotificationsDisableModeEnabled)
+        string vacancyName, string otherUser, bool isEmailNotificationsDisableModeEnabled, string apiUrl)
     {
         if (isEmailNotificationsDisableModeEnabled)
         {
             var vacancy = !string.IsNullOrEmpty(vacancyName) ? $"Вакансия: {vacancyName}" + "<br/>" : null;
             
-            // TODO: Заменить на получение ссылки из БД.
             var text = $"Пользователь {otherUser} принял приглашение в проект: \"{projectName}\"." +
                        "<br/>" +
                        vacancy +
-                       $"<a href='https://leoka-estetica-dev.ru/projects/project?projectId={projectId}&mode=view'>" +
+                       $"<a href='{string.Concat(apiUrl, $"projects/project?projectId={projectId}&mode=view")}'>" +
                        "Перейти к проекту" +
                        "</a>" +
                        "<br/>" +
@@ -65,18 +65,18 @@ internal sealed class MailingsService : IMailingsService
     /// <param name="vacancyName">Название вакансии.</param>
     /// <param name="otherUser">Логин или почта пользователя, который оставил отклик.</param>
     /// <param name="isEmailNotificationsDisableModeEnabled">Признак уведомлений на почту.</param>
+    /// <param name="apiUrl">API уведомлений почты.</param>
     public async Task SendNotificationRejectInviteProjectAsync(string mailTo, long projectId, string projectName,
-        string vacancyName, string otherUser, bool isEmailNotificationsDisableModeEnabled)
+        string vacancyName, string otherUser, bool isEmailNotificationsDisableModeEnabled, string apiUrl)
     {
         if (isEmailNotificationsDisableModeEnabled)
         {
             var vacancy = !string.IsNullOrEmpty(vacancyName) ? $"Вакансия: {vacancyName}" + "<br/>" : null;
             
-            // TODO: Заменить на получение ссылки из БД.
             var text = $"Пользователь {otherUser} отклонил приглашение в проект: \"{projectName}\"." +
                        "<br/>" +
                        vacancy +
-                       $"<a href='https://leoka-estetica-dev.ru/projects/project?projectId={projectId}&mode=view'>" +
+                       $"<a href='{string.Concat(apiUrl, $"projects/project?projectId={projectId}&mode=view")}'>" +
                        "Перейти к проекту" +
                        "</a>" +
                        "<br/>" +

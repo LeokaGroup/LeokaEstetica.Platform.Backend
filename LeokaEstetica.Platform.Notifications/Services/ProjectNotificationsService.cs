@@ -1079,9 +1079,11 @@ internal sealed class ProjectNotificationsService : IProjectNotificationsService
             
         var isEnabledEmailNotifications = await _globalConfigRepository
             .GetValueByKeyAsync<bool>(GlobalConfigKeys.EmailNotifications.EMAIL_NOTIFICATIONS_DISABLE_MODE_ENABLED);
+        var api = await _globalConfigRepository
+            .GetValueByKeyAsync<string>(GlobalConfigKeys.EmailNotifications.API_MAIL_URL);
         
         await _mailingsService.SendNotificationApproveInviteProjectAsync(user.Email, projectId, projectName,
-            vacancyName, account, isEnabledEmailNotifications);
+            vacancyName, account, isEnabledEmailNotifications, api);
     }
 
     /// <summary>
@@ -1122,9 +1124,11 @@ internal sealed class ProjectNotificationsService : IProjectNotificationsService
             
         var isEnabledEmailNotifications = await _globalConfigRepository
             .GetValueByKeyAsync<bool>(GlobalConfigKeys.EmailNotifications.EMAIL_NOTIFICATIONS_DISABLE_MODE_ENABLED);
+        var api = await _globalConfigRepository
+            .GetValueByKeyAsync<string>(GlobalConfigKeys.EmailNotifications.API_MAIL_URL);
         
         await _mailingsService.SendNotificationRejectInviteProjectAsync(user.Email, projectId, projectName,
-            vacancyName, account, isEnabledEmailNotifications);
+            vacancyName, account, isEnabledEmailNotifications, api);
     }
 
     #endregion

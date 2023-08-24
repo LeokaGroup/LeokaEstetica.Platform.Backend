@@ -38,10 +38,12 @@ public class ModerationMailingsService : IModerationMailingsService
 
         if (isEnabledEmailNotifications)
         {
-            // TODO: Заменить на получение ссылки из БД.
+            var api = await _globalConfigRepository
+                .GetValueByKeyAsync<string>(GlobalConfigKeys.EmailNotifications.API_MAIL_URL);
+            
             var text = $"Модератор одобрил ваш проект: \"{projectName}\"." +
                        "<br/>" +
-                       $"<a href='https://leoka-estetica-dev.ru/projects/project?projectId={projectId}&mode=view'>" +
+                       $"<a href='{string.Concat(api, $"projects/project?projectId={projectId}&mode=view")}'>" +
                        "Перейти к проекту" +
                        "</a>" +
                        "<br/>" +
@@ -68,10 +70,12 @@ public class ModerationMailingsService : IModerationMailingsService
 
         if (isEnabledEmailNotifications)
         {
-            // TODO: Заменить на получение ссылки из БД.
+            var api = await _globalConfigRepository
+                .GetValueByKeyAsync<string>(GlobalConfigKeys.EmailNotifications.API_MAIL_URL);
+            
             var text = $"Модератор отклонил ваш проект: \"{projectName}\"." +
                        "<br/>" +
-                       $"<a href='https://leoka-estetica-dev.ru/projects/project?projectId={projectId}&mode=view'>" +
+                       $"<a href='{string.Concat(api, $"projects/project?projectId={projectId}&mode=view")}'>" +
                        "Перейти к проекту" +
                        "</a>" +
                        "<br/>" +
@@ -98,10 +102,12 @@ public class ModerationMailingsService : IModerationMailingsService
 
         if (isEnabledEmailNotifications)
         {
-            // TODO: Заменить на получение ссылки из БД.
+            var api = await _globalConfigRepository
+                .GetValueByKeyAsync<string>(GlobalConfigKeys.EmailNotifications.API_MAIL_URL);
+            
             var text = $"Модератор одобрил вашу вакансию: \"{vacancyName}\"." +
                        "<br/>" +
-                       $"<a href='https://leoka-estetica-dev.ru/vacancies/vacancy?vacancyId={vacancyId}&mode=view'>" +
+                       $"<a href='{string.Concat(api, $"vacancies/vacancy?vacancyId={vacancyId}&mode=view")}'>" +
                        "Перейти к вакансии" +
                        "</a>" +
                        "<br/>" +
@@ -128,10 +134,12 @@ public class ModerationMailingsService : IModerationMailingsService
 
         if (isEnabledEmailNotifications)
         {
-            // TODO: Заменить на получение ссылки из БД.
+            var api = await _globalConfigRepository
+                .GetValueByKeyAsync<string>(GlobalConfigKeys.EmailNotifications.API_MAIL_URL);
+            
             var text = $"Модератор отклонил вашу вакансию: \"{vacancyName}\"." +
                        "<br/>" +
-                       $"<a href='https://leoka-estetica-dev.ru/vacancies/vacancy?vacancyId={vacancyId}&mode=view'>" +
+                       $"<a href='{string.Concat(api, $"vacancies/vacancy?vacancyId={vacancyId}&mode=view")}'>" +
                        "Перейти к вакансии" +
                        "</a>" +
                        "<br/>" +
@@ -211,14 +219,16 @@ public class ModerationMailingsService : IModerationMailingsService
                 vacancyRemarkStringBuilder.AppendLine("<br/>");
             }
         
-            // TODO: Заменить на получение ссылки из БД.
+            var api = await _globalConfigRepository
+                .GetValueByKeyAsync<string>(GlobalConfigKeys.EmailNotifications.API_MAIL_URL);
+            
             var text = "Здравствуйте! <br/>" +
                        $"Ваша вакансия {vacancyName} имеет замечания." +
                        "После их исправления и проверки модератором ваша вакансия будет отображаться в каталоге вакансий." +
                        "<br/>" +
                        "После исправления замечаний просто сохраните изменения для их дальнейшей проверки модератором." +
                        "<br/>" +
-                       $"<a href='https://leoka-estetica-dev.ru/vacancies/vacancy?vacancyId={vacancyId}&mode=view'>" +
+                       $"<a href='{string.Concat(api, $"vacancies/vacancy?vacancyId={vacancyId}&mode=view")}'>" +
                        "Перейти к вакансии" +
                        "</a>" +
                        "<br/>" +
