@@ -98,4 +98,9 @@ public class ProfileInfoOutput : ResumeRemarkResult, IFrontError
     /// Токен пользователя. Если изменился, то будет заполнен.
     /// </summary>
     public string Token { get; set; }
+    
+    /// <summary>
+    /// Признак изменения почты пользователя. Нужно для повторного создания токена и релогина в системе.
+    /// </summary>
+    public bool IsEmailChanged { get; set; }
 }

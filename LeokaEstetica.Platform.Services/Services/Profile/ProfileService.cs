@@ -283,6 +283,7 @@ internal sealed class ProfileService : IProfileService
             await CheckAwaitingCorrectionRemarksAsync(profileInfo.ProfileInfoId);
 
             result.IsSuccess = true;
+            result.IsEmailChanged = savedProfileInfoData.IsEmailChanged;
 
             return result;
         }
