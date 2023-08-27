@@ -253,4 +253,27 @@ internal sealed class VacancyNotificationsService : IVacancyNotificationsService
                     NotificationLevel = notificationLevel
                 });
     }
+
+    /// <summary>
+    /// Метод отправляет уведомление предупреждения при удалении вакансии из архива.
+    /// </summary>
+    /// <param name="title">Заголовок уведомления.</param>
+    /// <param name="notifyText">Текст уведомления.</param>
+    /// <param name="notificationLevel">Уровень уведомления.</param>
+    /// <param name="token">Токен пользователя.</param>
+    public async Task SendNotificationWarningDeleteVacancyArchiveAsync(string title, string notifyText, string notificationLevel,
+        string token)
+    {
+        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(token);
+
+        await _hubContext.Clients
+            .Client(connectionId)
+            .SendAsync("SendNotificationWarningDeleteVacancyArchive",
+                new NotificationOutput
+                {
+                    Title = title,
+                    Message = notifyText,
+                    NotificationLevel = notificationLevel
+                });
+    }
 }

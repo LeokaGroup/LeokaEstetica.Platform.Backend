@@ -338,6 +338,6 @@ public interface IProjectNotificationsService
     /// <param name="notifyText">Текст уведомления.</param>
     /// <param name="notificationLevel">Уровень уведомления.</param>
     /// <param name="token">Токен пользователя.</param>
-    Task SendNotificationWarningDeleteProjectArchiveAsync(string title, string notifyText,
-        string notificationLevel, string token);
+    Task SendNotificationWarningDeleteProjectArchiveAsync(string title, string notifyText, string notificationLevel,
+        string token);
 }
