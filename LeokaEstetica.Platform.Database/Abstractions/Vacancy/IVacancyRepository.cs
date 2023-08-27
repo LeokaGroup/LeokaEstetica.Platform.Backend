@@ -137,4 +137,11 @@ public interface IVacancyRepository
     /// <param name="userId">Id пользователя.</param>
     /// <returns>Список архивированных вакансий.</returns>
     Task<IEnumerable<ArchivedVacancyEntity>> GetUserVacanciesArchiveAsync(long userId);
+    
+    /// <summary>
+    /// Метод получает кол-во вакансий пользователя в каталоге.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Кол-во вакансий в каталоге.</returns>
+    Task<long> GetUserVacanciesCatalogCountAsync(long userId);
 }

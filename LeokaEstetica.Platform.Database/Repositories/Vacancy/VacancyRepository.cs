@@ -460,6 +460,19 @@ internal sealed class VacancyRepository : IVacancyRepository
         return result;
     }
 
+    /// <summary>
+    /// Метод получает кол-во вакансий пользователя в каталоге.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Кол-во вакансий в каталоге.</returns>
+    public async Task<long> GetUserVacanciesCatalogCountAsync(long userId)
+    {
+        var result = await _pgContext.CatalogVacancies
+            .CountAsync(p => p.Vacancy.UserId == userId);
+
+        return result;
+    }
+
     #endregion
 
     #region Приватные методы.
