@@ -1168,6 +1168,19 @@ internal sealed class ProjectRepository : IProjectRepository
         }
     }
 
+    /// <summary>
+    /// Метод получает кол-во проектов пользователя в каталоге.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Кол-во проектов в каталоге.</returns>
+    public async Task<long> GetUserProjectsCatalogCountAsync(long userId)
+    {
+        var result = await _pgContext.CatalogProjects
+            .CountAsync(p => p.Project.UserId == userId);
+
+        return result;
+    }
+
     #region Приватные методы.
 
     /// Метод првоеряет, был ли уже такой проект на модерации. 
