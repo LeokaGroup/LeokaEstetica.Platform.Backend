@@ -214,11 +214,4 @@ public interface IUserRepository
     /// </summary>
     /// <param name="users">Список пользователей.</param>
     Task UpdateUsersLoginAsync(IEnumerable<UserEntity> users);
-
-    /// <summary>
-    /// Метод получает список пользователей по их Id.
-    /// </summary>
-    /// <param name="usersIds">Список Id пользователей.</param>
-    /// <returns>Список пользователей.</returns>
-    Task<IEnumerable<UserEntity>> GetUsersByUserIdsAsync(IEnumerable<long> usersIds);
 }
