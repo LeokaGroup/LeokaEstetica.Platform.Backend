@@ -128,7 +128,7 @@ internal sealed class SubscriptionService : ISubscriptionService
         }
         
         var days = 0;
-        var currentYear = DateTime.UtcNow.ToUniversalTime().Year;
+        var currentYear = DateTime.UtcNow.Year;
         
         while (month > 0)
         {
@@ -137,7 +137,7 @@ internal sealed class SubscriptionService : ISubscriptionService
             month--;
         }
         
-        var startDate = DateTime.UtcNow.ToUniversalTime(); // Дата начала подписки.
+        var startDate = DateTime.UtcNow; // Дата начала подписки.
         var endDate = startDate.AddDays(days); // Вычисляем дату окончания подписки.
         
         var isSetSubscription = await _userRepository.SetSubscriptionDatesAsync(userId, startDate, endDate);

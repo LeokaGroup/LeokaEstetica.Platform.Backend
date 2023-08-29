@@ -497,6 +497,30 @@ internal sealed class UserRepository : IUserRepository
         await _pgContext.SaveChangesAsync();
     }
 
+    /// <summary>
+    /// Метод обновляет логин пользователям.
+    /// </summary>
+    /// <param name="usersIds">Список Id пользователей.</param>
+    public async Task UpdateUsersLoginAsync(IEnumerable<UserEntity> users)
+    {
+        _pgContext.Users.UpdateRange(users);
+        await _pgContext.SaveChangesAsync();
+    }
+
+    /// <summary>
+    /// Метод получает список пользователей по их Id.
+    /// </summary>
+    /// <param name="usersIds">Список Id пользователей.</param>
+    /// <returns>Список пользователей.</returns>
+    public async Task<IEnumerable<UserEntity>> GetUsersByUserIdsAsync(IEnumerable<long> usersIds)
+    {
+        var result = await _pgContext.Users
+            .Where(u => usersIds.Contains(u.UserId))
+            .ToListAsync();
+
+        return result;
+    }
+
     #endregion
 
     #region Приватные методы.
