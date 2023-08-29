@@ -60,15 +60,15 @@ public class FareRuleController : BaseController
     /// <param name="objectId">Id объекта (тарифа).</param>
     [HttpGet]
     [Route("details")]
-    [ProducesResponseType(200, Type = typeof(IEnumerable<FareRuleOutput>))]
+    [ProducesResponseType(200, Type = typeof(FareRuleOutput))]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<IEnumerable<FareRuleOutput>> GetFareRuleDetailsByObjectIdAsync([FromQuery] int objectId)
+    public async Task<FareRuleOutput> GetFareRuleDetailsByObjectIdAsync([FromQuery] int objectId)
     {
         var items = await _fareRuleRepository.GetFareRuleDetailsByObjectIdAsync(objectId);
-        var result = _mapper.Map<IEnumerable<FareRuleOutput>>(items);
+        var result = _mapper.Map<FareRuleOutput>(items);
 
         return result;
     }
