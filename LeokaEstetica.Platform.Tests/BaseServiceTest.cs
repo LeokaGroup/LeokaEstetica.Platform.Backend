@@ -105,6 +105,7 @@ internal class BaseServiceTest
     protected readonly TelegramBotService TelegramBotService;
     protected readonly ProjectMetricsService ProjectMetricsService;
     protected readonly TelegramService TelegramService;
+    protected readonly FareRuleRepository FareRuleRepository;
 
     protected BaseServiceTest()
     {
@@ -136,12 +137,12 @@ internal class BaseServiceTest
         var accessUserRepository = new AccessUserRepository(pgContext);
         var accessUserService = new AccessUserService(accessUserRepository);
         var userRedisService = new UserRedisService(distributedCache, mapper);
-        var fareRuleRepository = new FareRuleRepository(pgContext);
+        FareRuleRepository = new FareRuleRepository(pgContext);
         var availableLimitsRepository = new AvailableLimitsRepository(pgContext);
 
         UserService = new UserService(null, userRepository, mapper, null, pgContext, profileRepository,
             subscriptionRepository, resumeModerationRepository, accessUserService, userRedisService,
-            fareRuleRepository, null, null, availableLimitsRepository);
+            FareRuleRepository, null, null, availableLimitsRepository);
         ProfileService = new ProfileService(null, profileRepository, userRepository, mapper, null, null,
             accessUserService, resumeModerationRepository);
 
@@ -162,7 +163,7 @@ internal class BaseServiceTest
         // Тут если нужен будет ProjectService, то тут проблема с порядком следования.
         // Не получится сделать просто, VacancyService и ProjectService нужны друг другу тесно.
         VacancyService = new VacancyService(null, vacancyRepository, mapper, null, userRepository,
-            VacancyModerationService, subscriptionRepository, fareRuleRepository, availableLimitsService,
+            VacancyModerationService, subscriptionRepository, FareRuleRepository, availableLimitsService,
             vacancyNotificationsService, null, null, null, vacancyModerationRepository);
 
         ChatService = new ChatService(null, userRepository, projectRepository, vacancyRepository, chatRepository,
@@ -189,28 +190,28 @@ internal class BaseServiceTest
 
         ProjectService = new ProjectService(projectRepository, null, userRepository, mapper,
             projectNotificationsService, VacancyService, vacancyRepository, availableLimitsService,
-            subscriptionRepository, fareRuleRepository, VacancyModerationService, projectNotificationsRepository, null,
+            subscriptionRepository, FareRuleRepository, VacancyModerationService, projectNotificationsRepository, null,
             accessUserService, fillColorProjectsService, null, ProjectModerationRepository);
         
         var ordersRepository = new OrdersRepository(pgContext);
         var commerceRepository = new CommerceRepository(pgContext);
         var commerceRedisService = new CommerceRedisService(distributedCache);
 
-        CommerceService = new CommerceService(commerceRedisService, null, userRepository, fareRuleRepository,
+        CommerceService = new CommerceService(commerceRedisService, null, userRepository, FareRuleRepository,
             commerceRepository, ordersRepository, subscriptionRepository, availableLimitsService, accessUserService,
             null);
 
         SubscriptionService = new SubscriptionService(null, userRepository, subscriptionRepository,
-            fareRuleRepository);
+            FareRuleRepository);
         var fillColorResumeService = new FillColorResumeService();
         ResumeService = new ResumeService(null, resumeRepository, mapper, subscriptionRepository,
-            fareRuleRepository, userRepository, fillColorResumeService, resumeModerationRepository, accessUserService);
+            FareRuleRepository, userRepository, fillColorResumeService, resumeModerationRepository, accessUserService);
         VacancyFinderService = new VacancyFinderService(vacancyRepository, null);
         FinderProjectService = new Finder.Services.Project.ProjectFinderService(projectRepository, null);
         ResumeFinderService = new ResumeFinderService(null, resumeRepository);
         VacancyPaginationService = new VacancyPaginationService(vacancyRepository, null);
         ProjectPaginationService = new ProjectPaginationService(projectRepository, null);
-        FareRuleService = new FareRuleService(fareRuleRepository, null);
+        FareRuleService = new FareRuleService(FareRuleRepository, null);
 
         var rabbitMqService = new RabbitMqService(AppConfiguration);
         PayMasterService = new PayMasterService(null, AppConfiguration, userRepository,
