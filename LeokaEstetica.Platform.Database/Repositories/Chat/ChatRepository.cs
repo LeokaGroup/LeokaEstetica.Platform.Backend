@@ -23,6 +23,8 @@ internal sealed class ChatRepository : IChatRepository
         _pgContext = pgContext;
     }
 
+    #region Публичные методы.
+
     /// <summary>
     /// Метод находит Id диалога в участниках диалога.
     /// </summary>
@@ -182,7 +184,7 @@ internal sealed class ChatRepository : IChatRepository
     }
 
     /// <summary>
-    /// Метод получит все диалогы.
+    /// Метод получит все диалоги.
     /// </summary>
     /// <param name="userId">Id пользователя.</param>
     /// <returns>Список диалогов.</returns>
@@ -258,4 +260,37 @@ internal sealed class ChatRepository : IChatRepository
 
         return result;
     }
+
+    /// <summary>
+    /// Метод получит все диалоги для профиля пользователя.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Список диалогов.</returns>
+    public async Task<List<ProfileDialogOutput>> GetProfileDialogsAsync(long userId)
+    {
+        var result = await (from dm in _pgContext.DialogMembers
+                join d in _pgContext.Dialogs
+                    on dm.DialogId
+                    equals d.DialogId
+                where dm.UserId == userId 
+                      && d.DialogMessages.Any()
+                select new ProfileDialogOutput
+                {
+                    DialogId = dm.DialogId,
+                    DialogName = d.DialogName,
+                    UserId = dm.UserId,
+                    Created = d.Created.ToString(CultureInfo.CurrentCulture)
+                })
+            .ToListAsync();
+
+        return result;
+    }
+
+    #endregion
+
+    #region Приватные методы.
+
+    
+
+    #endregion
 }
