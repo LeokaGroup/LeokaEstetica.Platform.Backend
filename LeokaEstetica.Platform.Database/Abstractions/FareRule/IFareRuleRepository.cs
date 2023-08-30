@@ -32,4 +32,11 @@ public interface IFareRuleRepository
     /// <param name="publicId">Публичный ключ тарифа.</param>
     /// <returns>Данные тарифа.</returns>
     Task<FareRuleEntity> GetByPublicIdAsync(Guid publicId);
+
+    /// <summary>
+    /// Метод получает тариф по его PublicId.
+    /// </summary>
+    /// <param name="objectId">Id объекта (тарифа).</param>
+    /// <returns>Данные тарифа.</returns>
+    Task<FareRuleEntity> GetFareRuleDetailsByObjectIdAsync(int objectId);
 }
