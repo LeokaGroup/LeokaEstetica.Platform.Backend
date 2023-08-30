@@ -1,4 +1,3 @@
-using LeokaEstetica.Platform.Messaging.Models.Chat.Output;
 using LeokaEstetica.Platform.Models.Dto.Chat.Output;
 using LeokaEstetica.Platform.Models.Enums;
 

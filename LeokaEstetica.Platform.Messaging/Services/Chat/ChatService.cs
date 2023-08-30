@@ -8,7 +8,6 @@ using LeokaEstetica.Platform.Database.Chat;
 using LeokaEstetica.Platform.Messaging.Abstractions.Chat;
 using LeokaEstetica.Platform.Messaging.Builders;
 using LeokaEstetica.Platform.Messaging.Enums;
-using LeokaEstetica.Platform.Messaging.Models.Chat.Output;
 using LeokaEstetica.Platform.Models.Dto.Chat.Output;
 using LeokaEstetica.Platform.Models.Enums;
 using Microsoft.Extensions.Logging;
@@ -311,6 +310,14 @@ internal sealed class ChatService : IChatService
                 result.DialogState = DialogStateEnum.Empty.ToString();
                 result.DialogId = findDialogId;
                 result.FullName = await CreateDialogOwnerFioAsync(userId);
+                
+                // Устанавливаем связь, если диалог создается для проекта.
+                if (discussionType == DiscussionTypeEnum.Project)
+                {
+                    // Связываем диалог с проектом.
+                    await _chatRepository.SetReferenceProjectDialogAsync(result.DialogId, discussionTypeId);
+                    result.ProjectId = discussionTypeId;
+                }
 
                 return result;
             }
@@ -329,8 +336,18 @@ internal sealed class ChatService : IChatService
                 result.DialogState = DialogStateEnum.Open.ToString();
                 result.DialogId = lastDialogId;
 
+                var dialogId = result.DialogId;
+
                 // Получаем дату начала диалога.
-                result.DateStartDialog = await _chatRepository.GetDialogStartDateAsync(result.DialogId);
+                result.DateStartDialog = await _chatRepository.GetDialogStartDateAsync(dialogId);
+                
+                // Устанавливаем связь, если диалог создается для проекта.
+                if (discussionType == DiscussionTypeEnum.Project)
+                {
+                    // Связываем диалог с проектом.
+                    await _chatRepository.SetReferenceProjectDialogAsync(dialogId, discussionTypeId);
+                    result.ProjectId = discussionTypeId;
+                }
                 
                 return result;
             }
