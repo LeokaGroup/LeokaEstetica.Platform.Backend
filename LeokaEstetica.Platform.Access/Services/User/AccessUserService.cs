@@ -89,7 +89,7 @@ internal sealed class AccessUserService : IAccessUserService
     /// <returns>Строка токена.</returns>
     public async Task<string> CreateTokenFactoryAsync(ClaimsIdentity claimsIdentity)
     {
-        var now = DateTime.UtcNow.ToUniversalTime();
+        var now = DateTime.UtcNow;
         var jwt = new JwtSecurityToken(
             issuer: AuthOptions.ISSUER,
             audience: AuthOptions.AUDIENCE,

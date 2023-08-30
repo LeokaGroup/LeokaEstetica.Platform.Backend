@@ -231,7 +231,7 @@ internal class BaseServiceTest
         OrdersService = new OrdersService(null, ordersRepository, userRepository);
 
         var userMetricsRepository = new UserMetricsRepository(pgContext);
-        UserMetricsService = new UserMetricsService(null, userMetricsRepository);
+        UserMetricsService = new UserMetricsService(null, userMetricsRepository, userRepository);
         RefundsService = new RefundsService(null, null, subscriptionRepository, userRepository, ordersRepository, null,
             PayMasterService, null, CommerceService);
 
