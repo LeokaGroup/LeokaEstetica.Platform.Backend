@@ -14,6 +14,11 @@ public static class GlobalConfigKeys
         /// Ключ для вкл/выкл отправку уведомлений на почту пользователей.
         /// </summary>
         public const string EMAIL_NOTIFICATIONS_DISABLE_MODE_ENABLED = "EmailNotifications.Disable.Mode.Enabled";
+        
+        /// <summary>
+        /// Ключ API для уведомлений на почту.
+        /// </summary>
+        public const string API_MAIL_URL = "Api.Mail.Url";
     }
 
     /// <summary>

@@ -208,4 +208,10 @@ public interface IUserRepository
     /// <param name="passwordHash">Хэш пароля.</param>
     /// <param name="userId">Id пользователя.</param>
     Task RestoreUserPasswordAsync(string passwordHash, long userId);
+
+    /// <summary>
+    /// Метод обновляет логин пользователям.
+    /// </summary>
+    /// <param name="users">Список пользователей.</param>
+    Task UpdateUsersLoginAsync(IEnumerable<UserEntity> users);
 }

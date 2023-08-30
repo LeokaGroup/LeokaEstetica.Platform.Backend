@@ -3,6 +3,7 @@ using System.Runtime.CompilerServices;
 using AutoMapper;
 using LeokaEstetica.Platform.Access.Abstractions.AvailableLimits;
 using LeokaEstetica.Platform.Access.Abstractions.User;
+using LeokaEstetica.Platform.Access.Consts;
 using LeokaEstetica.Platform.Access.Enums;
 using LeokaEstetica.Platform.Core.Constants;
 using LeokaEstetica.Platform.Core.Enums;
@@ -34,6 +35,7 @@ using LeokaEstetica.Platform.Services.Builders;
 using LeokaEstetica.Platform.Services.Consts;
 using LeokaEstetica.Platform.Services.Strategies.Project.Team;
 using LeokaEstetica.Platform.Base.Extensions.HtmlExtensions;
+using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Project;
 using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Project;
 using LeokaEstetica.Platform.Models.Entities.Moderation;
@@ -105,6 +107,8 @@ internal sealed class ProjectService : IProjectService
     private readonly IAccessUserNotificationsService _accessUserNotificationsService;
     private readonly IAccessUserService _accessUserService;
     private readonly IProjectModerationRepository _projectModerationRepository;
+    
+    private const string NOT_AVAILABLE_DELETE_PROJECT_ARCHIVE = "Невозможно убрать проект из архива, так как у Вас уже опубликовано максимальное количество проектов соответствующих максимальному лимиту тарифа. Добавьте в архив проекты, чтобы освободить лимиты либо перейдите на тариф, который имеет большие лимиты";
 
     /// <summary>
     /// Конструктор.
@@ -1266,7 +1270,80 @@ internal sealed class ProjectService : IProjectService
                                                     $"ProjectId: {projectId}." +
                                                     $"UserId: {userId}");
             }
+            
+            // Получаем подписку пользователя.
+            var userSubscription = await _subscriptionRepository.GetUserSubscriptionAsync(userId);
+            
+            // Получаем тариф, на который оформлена подписка у пользователя.
+            var fareRule = await _fareRuleRepository.GetByIdAsync(userSubscription.ObjectId);
+            var fareRuleName = fareRule.Name;
 
+            // Проверяем кол-во опубликованных проектов пользователя.
+            // Если по лимитам тарифа доступно, то разрешаем удалить проект из архива.
+            var projectsCatalogCount = await _projectRepository.GetUserProjectsCatalogCountAsync(userId);
+
+            // Проверяем кол-во в зависимости от подписки.
+            // Если стартовый тариф.
+            if (fareRuleName.Equals(FareRuleTypeEnum.Start.GetEnumDescription()))
+            {
+                if (projectsCatalogCount >= AvailableLimitsConst.AVAILABLE_PROJECT_START_COUNT)
+                {
+                    var ex = new InvalidOperationException(NOT_AVAILABLE_DELETE_PROJECT_ARCHIVE);
+                    
+                    _logger.LogError(ex, ex.Message);
+                    
+                    if (!string.IsNullOrEmpty(token))
+                    {
+                        await _projectNotificationsService.SendNotificationWarningDeleteProjectArchiveAsync("Внимание",
+                            NOT_AVAILABLE_DELETE_PROJECT_ARCHIVE, NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING,
+                            token);
+                    }
+                    
+                    throw ex;
+                }
+            }
+            
+            // Если базовый тариф.
+            if (fareRuleName.Equals(FareRuleTypeEnum.Base.GetEnumDescription()))
+            {
+                if (projectsCatalogCount >= AvailableLimitsConst.AVAILABLE_PROJECT_BASE_COUNT)
+                {
+                    var ex = new InvalidOperationException(NOT_AVAILABLE_DELETE_PROJECT_ARCHIVE);
+                    
+                    _logger.LogError(ex, ex.Message);
+                    
+                    if (!string.IsNullOrEmpty(token))
+                    {
+                        await _projectNotificationsService.SendNotificationWarningDeleteProjectArchiveAsync("Внимание",
+                            NOT_AVAILABLE_DELETE_PROJECT_ARCHIVE, NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING,
+                            token);
+                    }
+                    
+                    throw ex;
+                }
+            }
+            
+            // Если бизнес тариф.
+            if (fareRuleName.Equals(FareRuleTypeEnum.Business.GetEnumDescription()))
+            {
+                if (projectsCatalogCount >= AvailableLimitsConst.AVAILABLE_PROJECT_BUSINESS_COUNT)
+                {
+                    var ex = new InvalidOperationException(NOT_AVAILABLE_DELETE_PROJECT_ARCHIVE);
+                    
+                    _logger.LogError(ex, ex.Message);
+                    
+                    if (!string.IsNullOrEmpty(token))
+                    {
+                        await _projectNotificationsService.SendNotificationWarningDeleteProjectArchiveAsync("Внимание",
+                            NOT_AVAILABLE_DELETE_PROJECT_ARCHIVE, NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING,
+                            token);
+                    }
+                    
+                    throw ex;
+                }
+            }
+
+            // Удаляем проект из архива.
             var isDelete = await _projectRepository.DeleteProjectArchiveAsync(projectId, userId);
 
             if (!isDelete && !string.IsNullOrEmpty(token))

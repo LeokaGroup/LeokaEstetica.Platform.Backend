@@ -123,4 +123,32 @@ internal sealed class FareRuleRepository : IFareRuleRepository
 
         return result;
     }
+
+    /// <summary>
+    /// Метод получает тариф по его PublicId.
+    /// </summary>
+    /// <param name="objectId">Id объекта (тарифа).</param>
+    /// <returns>Данные тарифа.</returns>
+    public async Task<FareRuleEntity> GetFareRuleDetailsByObjectIdAsync(int objectId)
+    {
+        var result = await _pgContext.FareRules
+            .Where(fr => fr.RuleId == objectId)
+            .Select(fr => new FareRuleEntity(fr.PublicId)
+            {
+                RuleId = fr.RuleId,
+                Name = fr.Name,
+                Label = fr.Label,
+                Currency = fr.Currency,
+                Price = fr.Price,
+                FareRuleItems = _pgContext.FareRuleItems
+                    .Where(fri => fri.RuleId == fr.RuleId)
+                    .OrderBy(o => o.Position)
+                    .ToList(),
+                Position = fr.Position,
+                IsPopular = fr.IsPopular
+            })
+            .FirstOrDefaultAsync();
+
+        return result;
+    }
 }

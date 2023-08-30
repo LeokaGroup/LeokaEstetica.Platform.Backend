@@ -291,4 +291,11 @@ public interface IProjectRepository
     /// <param name="projectId">Id проекта.</param>
     /// <param name="userId">Id пользователя.</param>
     Task<bool> DeleteProjectArchiveAsync(long projectId, long userId);
+
+    /// <summary>
+    /// Метод получает кол-во проектов пользователя в каталоге.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Кол-во проектов в каталоге.</returns>
+    Task<long> GetUserProjectsCatalogCountAsync(long userId);
 }

@@ -41,4 +41,13 @@ public interface ICommerceService
     /// <param name="month">Кол-во месяцев подписки.</param>
     /// <returns>Сумма остатка, если она есть.</returns>
     Task<OrderFreeOutput> CheckFreePriceAsync(string account, Guid publicId, short month);
+
+    /// <summary>
+    /// Метод проверяет заполнение анкеты пользователя.
+    /// Если не заполнена, то нельзя оформить заказ.
+    /// </summary>
+    /// <param name="account">Аккаунт пользователя.</param>
+    /// <param name="token">Токен пользователя.</param>
+    /// <returns>Признак результата проверки.</returns>
+    Task<bool> IsProfileEmptyAsync(string account, string token);
 }

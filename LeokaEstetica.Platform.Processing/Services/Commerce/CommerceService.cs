@@ -1,5 +1,6 @@
 using System.Runtime.CompilerServices;
 using LeokaEstetica.Platform.Access.Abstractions.AvailableLimits;
+using LeokaEstetica.Platform.Access.Abstractions.User;
 using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.Commerce;
@@ -10,6 +11,8 @@ using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Models.Dto.Common.Cache;
 using LeokaEstetica.Platform.Models.Dto.Input.Commerce;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce;
+using LeokaEstetica.Platform.Notifications.Abstractions;
+using LeokaEstetica.Platform.Notifications.Consts;
 using LeokaEstetica.Platform.Processing.Abstractions.Commerce;
 using LeokaEstetica.Platform.Redis.Abstractions.Commerce;
 using Microsoft.Extensions.Logging;
@@ -32,6 +35,8 @@ internal sealed class CommerceService : ICommerceService
     private readonly IOrdersRepository _ordersRepository;
     private readonly ISubscriptionRepository _subscriptionRepository;
     private readonly IAvailableLimitsService _availableLimitsService;
+    private readonly IAccessUserService _accessUserService;
+    private readonly IAccessUserNotificationsService _accessUserNotificationsService;
 
     /// <summary>
     /// Конструктор.
@@ -44,6 +49,8 @@ internal sealed class CommerceService : ICommerceService
     /// <param name="subscriptionRepository">Репозиторий подписок.</param>
     /// <param name="commerceService">Сервис коммерции.</param>
     /// <param name="commerceService">Сервис проверки лимитов.</param>
+    /// <param name="accessUserService">Сервис доступа пользователей.</param>
+    /// <param name="accessUserNotificationsService">Сервис уведомлений доступа пользователей.</param>
     /// </summary>
     public CommerceService(ICommerceRedisService commerceRedisService, 
         ILogger<CommerceService> logger, 
@@ -52,7 +59,9 @@ internal sealed class CommerceService : ICommerceService
         ICommerceRepository commerceRepository, 
         IOrdersRepository ordersRepository, 
         ISubscriptionRepository subscriptionRepository, 
-        IAvailableLimitsService availableLimitsService)
+        IAvailableLimitsService availableLimitsService,
+        IAccessUserService accessUserService,
+        IAccessUserNotificationsService accessUserNotificationsService)
     {
         _commerceRedisService = commerceRedisService;
         _logger = logger;
@@ -62,6 +71,8 @@ internal sealed class CommerceService : ICommerceService
         _ordersRepository = ordersRepository;
         _subscriptionRepository = subscriptionRepository;
         _availableLimitsService = availableLimitsService;
+        _accessUserService = accessUserService;
+        _accessUserNotificationsService = accessUserNotificationsService;
     }
 
     #region Публичные методы.
@@ -273,6 +284,48 @@ internal sealed class CommerceService : ICommerceService
         catch (Exception ex)
         {
             _logger.LogError(ex.Message, ex);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Метод проверяет заполнение анкеты пользователя.
+    /// Если не заполнена, то нельзя оформить заказ.
+    /// </summary>
+    /// <param name="account">Аккаунт пользователя.</param>
+    /// <param name="token">Токен пользователя.</param>
+    /// <returns>Признак результата проверки. False - Анкета заполнена. True - не заполнена.</returns>
+    public async Task<bool> IsProfileEmptyAsync(string account, string token)
+    {
+        var userId = await _userRepository.GetUserByEmailAsync(account);
+        
+        try
+        {
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+            
+            // Проверяем заполнение анкеты и даем доступ либо нет.
+            var isEmptyProfile = await _accessUserService.IsProfileEmptyAsync(userId);
+
+            // Если не заполнена, то не даем оформить платный тариф.
+            if (isEmptyProfile)
+            {
+                await _accessUserNotificationsService.SendNotificationWarningEmptyUserProfileAsync("Внимание",
+                    "Для оформления тарифа должна быть заполнена информация вашей анкеты.",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
+
+                return true;
+            }
+
+            return false;
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Анкета пользователя не заполнена. UserId был: {userId}");
             throw;
         }
     }

@@ -1,5 +1,6 @@
 using System.Runtime.CompilerServices;
 using LeokaEstetica.Platform.Access.Abstractions.AvailableLimits;
+using LeokaEstetica.Platform.Access.Consts;
 using LeokaEstetica.Platform.Access.Enums;
 using LeokaEstetica.Platform.Access.Models.Output;
 using LeokaEstetica.Platform.Core.Extensions;
@@ -19,14 +20,6 @@ internal sealed class AvailableLimitsService : IAvailableLimitsService
 {
     private readonly ILogger<AvailableLimitsService> _logger;
     private readonly IAvailableLimitsRepository _availableLimitsRepository;
-    
-    private const int AVAILABLE_PROJECT_START_COUNT = 4; // Кол-во у тарифа старта.
-    private const int AVAILABLE_PROJECT_BASE_COUNT = 10; // Кол-во у тарифа базовый.
-    private const int AVAILABLE_PROJECT_BUSINESS_COUNT = 35; // Кол-во у тарифа бизнес.
-    
-    private const int AVAILABLE_VACANCY_START_COUNT = 5; // Кол-во у тарифа старта.
-    private const int AVAILABLE_VACANCY_BASE_COUNT = 15; // Кол-во у тарифа базовый.
-    private const int AVAILABLE_VACANCY_BUSINESS_COUNT = 40; // Кол-во у тарифа бизнес.
 
     /// <summary>
     /// Конструктор.
@@ -59,19 +52,19 @@ internal sealed class AvailableLimitsService : IAvailableLimitsService
             // Если стартовый тариф.
             if (fareRuleName.Equals(FareRuleTypeEnum.Start.GetEnumDescription()))
             {
-                return userProjectsCount <= AVAILABLE_PROJECT_START_COUNT;
+                return userProjectsCount <= AvailableLimitsConst.AVAILABLE_PROJECT_START_COUNT;
             }
             
             // Если базовый тариф.
             if (fareRuleName.Equals(FareRuleTypeEnum.Base.GetEnumDescription()))
             {
-                return userProjectsCount <= AVAILABLE_PROJECT_BASE_COUNT;
+                return userProjectsCount <= AvailableLimitsConst.AVAILABLE_PROJECT_BASE_COUNT;
             }
             
             // Если бизнес тариф.
             if (fareRuleName.Equals(FareRuleTypeEnum.Business.GetEnumDescription()))
             {
-                return userProjectsCount <= AVAILABLE_PROJECT_BUSINESS_COUNT;
+                return userProjectsCount <= AvailableLimitsConst.AVAILABLE_PROJECT_BUSINESS_COUNT;
             }
 
             return true;
@@ -101,19 +94,19 @@ internal sealed class AvailableLimitsService : IAvailableLimitsService
             // Если стартовый тариф.
             if (fareRuleName.Equals(FareRuleTypeEnum.Start.GetEnumDescription()))
             {
-                return userVacanciesCount < AVAILABLE_VACANCY_START_COUNT;
+                return userVacanciesCount < AvailableLimitsConst.AVAILABLE_VACANCY_START_COUNT;
             }
             
             // Если базовый тариф.
             if (fareRuleName.Equals(FareRuleTypeEnum.Base.GetEnumDescription()))
             {
-                return userVacanciesCount < AVAILABLE_VACANCY_BASE_COUNT;
+                return userVacanciesCount < AvailableLimitsConst.AVAILABLE_VACANCY_BASE_COUNT;
             }
             
             // Если бизнес тариф.
             if (fareRuleName.Equals(FareRuleTypeEnum.Business.GetEnumDescription()))
             {
-                return userVacanciesCount < AVAILABLE_VACANCY_BUSINESS_COUNT;
+                return userVacanciesCount < AvailableLimitsConst.AVAILABLE_VACANCY_BUSINESS_COUNT;
             }
 
             return true;
@@ -189,19 +182,19 @@ internal sealed class AvailableLimitsService : IAvailableLimitsService
         if (newFareName.Equals(FareRuleTypeEnum.Start.GetEnumDescription()))
         {
             // Если не проходит по кол-ву проектов.
-            if (userProjectsCount > AVAILABLE_PROJECT_START_COUNT)
+            if (userProjectsCount > AvailableLimitsConst.AVAILABLE_PROJECT_START_COUNT)
             {
                 result = await CreateReductionSubscriptionLimitsResult(ReductionSubscriptionLimitsEnum.Project,
-                    userProjectsCount - AVAILABLE_PROJECT_START_COUNT);
+                    userProjectsCount - AvailableLimitsConst.AVAILABLE_PROJECT_START_COUNT);
                 
                 return result;
             }
             
             // Если не проходит по кол-ву вакансий.
-            if (userVacanciesCount > AVAILABLE_VACANCY_START_COUNT)
+            if (userVacanciesCount > AvailableLimitsConst.AVAILABLE_VACANCY_START_COUNT)
             {
                 result = await CreateReductionSubscriptionLimitsResult(ReductionSubscriptionLimitsEnum.Vacancy,
-                    userProjectsCount - AVAILABLE_VACANCY_START_COUNT);
+                    userProjectsCount - AvailableLimitsConst.AVAILABLE_VACANCY_START_COUNT);
                 
                 return result;
             }
@@ -211,19 +204,19 @@ internal sealed class AvailableLimitsService : IAvailableLimitsService
         if (newFareName.Equals(FareRuleTypeEnum.Base.GetEnumDescription()))
         {
             // Если не проходит по кол-ву проектов.
-            if (userProjectsCount > AVAILABLE_PROJECT_BASE_COUNT)
+            if (userProjectsCount > AvailableLimitsConst.AVAILABLE_PROJECT_BASE_COUNT)
             {
                 result = await CreateReductionSubscriptionLimitsResult(ReductionSubscriptionLimitsEnum.Project,
-                    userProjectsCount - AVAILABLE_PROJECT_BASE_COUNT);
+                    userProjectsCount - AvailableLimitsConst.AVAILABLE_PROJECT_BASE_COUNT);
                 
                 return result;
             }
             
             // Если не проходит по кол-ву вакансий.
-            if (userVacanciesCount > AVAILABLE_VACANCY_BASE_COUNT)
+            if (userVacanciesCount > AvailableLimitsConst.AVAILABLE_VACANCY_BASE_COUNT)
             {
                 result = await CreateReductionSubscriptionLimitsResult(ReductionSubscriptionLimitsEnum.Vacancy,
-                    userProjectsCount - AVAILABLE_VACANCY_BASE_COUNT);
+                    userProjectsCount - AvailableLimitsConst.AVAILABLE_VACANCY_BASE_COUNT);
                 
                 return result;
             }
@@ -233,19 +226,19 @@ internal sealed class AvailableLimitsService : IAvailableLimitsService
         if (newFareName.Equals(FareRuleTypeEnum.Business.GetEnumDescription()))
         {
             // Если не проходит по кол-ву проектов.
-            if (userProjectsCount > AVAILABLE_PROJECT_BUSINESS_COUNT)
+            if (userProjectsCount > AvailableLimitsConst.AVAILABLE_PROJECT_BUSINESS_COUNT)
             {
                 result = await CreateReductionSubscriptionLimitsResult(ReductionSubscriptionLimitsEnum.Project,
-                    userProjectsCount - AVAILABLE_PROJECT_BUSINESS_COUNT);
+                    userProjectsCount - AvailableLimitsConst.AVAILABLE_PROJECT_BUSINESS_COUNT);
                 
                 return result;
             }
             
             // Если не проходит по кол-ву вакансий.
-            if (userVacanciesCount > AVAILABLE_VACANCY_BUSINESS_COUNT)
+            if (userVacanciesCount > AvailableLimitsConst.AVAILABLE_VACANCY_BUSINESS_COUNT)
             {
                 result = await CreateReductionSubscriptionLimitsResult(ReductionSubscriptionLimitsEnum.Vacancy,
-                    userProjectsCount - AVAILABLE_VACANCY_BUSINESS_COUNT);
+                    userProjectsCount - AvailableLimitsConst.AVAILABLE_VACANCY_BUSINESS_COUNT);
                 
                 return result;
             }

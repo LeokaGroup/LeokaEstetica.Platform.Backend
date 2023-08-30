@@ -141,6 +141,38 @@ internal sealed class SubscriptionRepository : ISubscriptionRepository
         await _pgContext.SaveChangesAsync();
     }
 
+    /// <summary>
+    /// Метод автоматически присваивает аккаунту пользователя бесплатный тариф.
+    /// Обновляет неактивную подписку через сброс на бесплатный.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    public async Task AutoDefaultUserSubscriptionAsync(long userId)
+    {
+        // Получаем неактивную подписку пользователя.
+        var userSubscription = await _pgContext.UserSubscriptions
+            .FirstOrDefaultAsync(s => s.UserId == userId 
+                                      && !s.IsActive);
+
+        if (userSubscription is null)
+        {
+            throw new InvalidOperationException(
+                "Не удалось получить неактивную подписку пользователя для сброса аккаунта до бесплатного тарифа." +
+                $" UserId: {userId}");
+        }
+        
+        // Получаем подписку, которую надо присвоить пользователю.
+        var freeSubscriptionId = await _pgContext.Subscriptions
+            .Where(s => s.ObjectId == 1
+                        && s.SubscriptionType.Equals(SubscriptionTypeEnum.FareRule.ToString()))
+            .Select(s => s.SubscriptionId)
+            .FirstOrDefaultAsync();
+        
+        userSubscription.IsActive = true;
+        userSubscription.SubscriptionId = freeSubscriptionId;
+
+        await _pgContext.SaveChangesAsync();
+    }
+
     #endregion
 
     #region Приватные методы.
