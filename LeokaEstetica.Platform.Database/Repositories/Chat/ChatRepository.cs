@@ -114,7 +114,8 @@ internal sealed class ChatRepository : IChatRepository
     /// <summary>
     /// Метод проверит существование диалога по участникам диалога.
     /// </summary>
-    /// <param name="dialogId">Id диалога.</param>
+    /// <param name="userId">Id пользователя (не владелец).</param>
+    /// <param name="ownerId">Id владельца проекта.</param>
     /// <returns>Флаг проверки.</returns>
     public async Task<long?> CheckDialogAsync(long userId, long ownerId)
     {
@@ -260,6 +261,34 @@ internal sealed class ChatRepository : IChatRepository
 
         return result;
     }
+
+    /// <summary>
+    /// Метод устанавливает связь между проектом и диалогом.
+    /// </summary>
+    /// <param name="dialogId">Id диалога.</param>
+    /// <param name="projectId">Id проекта.</param>
+    public async Task SetReferenceProjectDialogAsync(long dialogId, long projectId)
+    {
+        var dialog = await _pgContext.Dialogs
+            .FirstOrDefaultAsync(d => d.DialogId == dialogId);
+
+        if (dialog is null)
+        {
+            throw new InvalidOperationException($"Диалог не найден. DialogId: {dialogId}");
+        }
+
+        dialog.ProjectId = projectId;
+
+        await _pgContext.SaveChangesAsync();
+    }
+
+    #endregion
+
+    #region Приватные
+
+    
+
+    #endregion
 
     /// <summary>
     /// Метод получит все диалоги для профиля пользователя.

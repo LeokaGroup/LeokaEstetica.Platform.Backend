@@ -48,7 +48,8 @@ public interface IChatRepository
     /// <summary>
     /// Метод проверит существование диалога по участникам диалога.
     /// </summary>
-    /// <param name="dialogId">Id диалога.</param>
+    /// <param name="userId">Id пользователя (не владелец).</param>
+    /// <param name="ownerId">Id владельца проекта.</param>
     /// <returns>Флаг проверки.</returns>
     Task<long?> CheckDialogAsync(long userId, long ownerId);
 
@@ -110,4 +111,11 @@ public interface IChatRepository
     /// <param name="userId">Id пользователя.</param>
     /// <returns>Список диалогов.</returns>
     Task<List<ProfileDialogOutput>> GetProfileDialogsAsync(long userId);
+
+    /// <summary>
+    /// Метод устанавливает связь между проектом и диалогом.
+    /// </summary>
+    /// <param name="dialogId">Id диалога.</param>
+    /// <param name="projectId">Id проекта.</param>
+    Task SetReferenceProjectDialogAsync(long dialogId, long projectId);
 }
