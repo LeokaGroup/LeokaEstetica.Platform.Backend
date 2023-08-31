@@ -281,15 +281,7 @@ internal sealed class ChatRepository : IChatRepository
 
         await _pgContext.SaveChangesAsync();
     }
-
-    #endregion
-
-    #region Приватные
-
     
-
-    #endregion
-
     /// <summary>
     /// Метод получит все диалоги для профиля пользователя.
     /// </summary>
@@ -301,14 +293,18 @@ internal sealed class ChatRepository : IChatRepository
                 join d in _pgContext.Dialogs
                     on dm.DialogId
                     equals d.DialogId
-                where dm.UserId == userId 
+                where dm.UserId == userId
                       && d.DialogMessages.Any()
                 select new ProfileDialogOutput
                 {
                     DialogId = dm.DialogId,
                     DialogName = d.DialogName,
                     UserId = dm.UserId,
-                    Created = d.Created.ToString(CultureInfo.CurrentCulture)
+                    Created = d.Created.ToString(CultureInfo.CurrentCulture),
+                    ProjectName = _pgContext.UserProjects
+                        .Where(p => p.ProjectId == d.ProjectId)
+                        .Select(p => p.ProjectName)
+                        .FirstOrDefault()
                 })
             .ToListAsync();
 
