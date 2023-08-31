@@ -27,13 +27,25 @@ internal sealed class ChatService : IChatService
     private readonly IVacancyRepository _vacancyRepository;
     private readonly IChatRepository _chatRepository;
     private readonly IMapper _mapper;
+    private readonly IProjectResponseRepository _projectResponseRepository;
 
+    /// <summary>
+    /// Конструктор.
+    /// </summary>
+    /// <param name="logger">Логгер.</param>
+    /// <param name="userRepository">Репозиторий пользователей.</param>
+    /// <param name="projectRepository">Репозиторий проектов.</param>
+    /// <param name="vacancyRepository">Репозиторий вакансий.</param>
+    /// <param name="chatRepository">Репозиторий чата.</param>
+    /// <param name="mapper">Маппер.</param>
+    /// <param name="projectResponseRepository">Репозиторий откликов на проекты.</param>
     public ChatService(ILogger<ChatService> logger,
         IUserRepository userRepository,
         IProjectRepository projectRepository,
         IVacancyRepository vacancyRepository,
         IChatRepository chatRepository,
-        IMapper mapper)
+        IMapper mapper,
+        IProjectResponseRepository projectResponseRepository)
     {
         _logger = logger;
         _userRepository = userRepository;
@@ -41,6 +53,7 @@ internal sealed class ChatService : IChatService
         _vacancyRepository = vacancyRepository;
         _chatRepository = chatRepository;
         _mapper = mapper;
+        _projectResponseRepository = projectResponseRepository;
     }
 
     /// <summary>
@@ -284,8 +297,6 @@ internal sealed class ChatService : IChatService
     {
         try
         {
-            var result = new DialogResultOutput { Messages = new List<DialogMessageOutput>() };
-
             // Находим Id текущего пользователя, который просматривает страницу проекта или вакансии.
             var userId = await _userRepository.GetUserByEmailAsync(account);
 
@@ -299,10 +310,10 @@ internal sealed class ChatService : IChatService
                 throw new InvalidOperationException("Не передали Id предмета обсуждения.");
             }
 
-            var ownerId = await GetOwnerIdAsync(discussionType, discussionTypeId);
-
             // Найдем диалог, в котором есть оба участника, отталкиваемся от текущего пользователя.
             var findDialogId = await _chatRepository.GetDialogMembersByUserIdAsync(userId);
+            
+            var result = new DialogResultOutput { Messages = new List<DialogMessageOutput>() };
 
             // Если диалог уже есть, ничего не делать.
             if (findDialogId > 0)
@@ -321,6 +332,8 @@ internal sealed class ChatService : IChatService
 
                 return result;
             }
+            
+            var ownerId = await GetOwnerIdAsync(discussionType, discussionTypeId);
 
             // Проверяем существование диалога перед его созданием.
             var isDublicateDialog = await _chatRepository.CheckDialogAsync(userId, ownerId);
@@ -347,6 +360,9 @@ internal sealed class ChatService : IChatService
                     // Связываем диалог с проектом.
                     await _chatRepository.SetReferenceProjectDialogAsync(dialogId, discussionTypeId);
                     result.ProjectId = discussionTypeId;
+                    
+                    // Связываем диалог с вакансией (если при отклике на проект, отклик был с указанием вакансии).
+                    await _projectResponseRepository.SetReferenceVacancyDialogAsync(discussionTypeId, userId);
                 }
                 
                 return result;

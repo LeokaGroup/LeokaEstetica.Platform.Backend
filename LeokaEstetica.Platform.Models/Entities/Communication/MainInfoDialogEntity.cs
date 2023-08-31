@@ -1,4 +1,5 @@
 using LeokaEstetica.Platform.Models.Entities.Project;
+using LeokaEstetica.Platform.Models.Entities.Vacancy;
 
 namespace LeokaEstetica.Platform.Models.Entities.Communication;
 
@@ -34,6 +35,11 @@ public class MainInfoDialogEntity
     public long? ProjectId { get; set; }
 
     /// <summary>
+    /// Id вакансии.
+    /// </summary>
+    public long? VacancyId { get; set; }
+
+    /// <summary>
     /// Сообщения диалога.
     /// </summary>
     public ICollection<DialogMessageEntity> DialogMessages { get; set; }
@@ -47,4 +53,9 @@ public class MainInfoDialogEntity
     /// Проекты в каталоге.
     /// </summary>
     public CatalogProjectEntity CatalogProject { get; set; }
+
+    /// <summary>
+    /// Вакансии в каталоге.
+    /// </summary>
+    public CatalogVacancyEntity CatalogVacancy { get; set; }
 }

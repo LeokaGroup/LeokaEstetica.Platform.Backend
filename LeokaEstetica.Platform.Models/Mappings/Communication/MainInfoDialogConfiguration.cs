@@ -34,6 +34,11 @@ public partial class MainInfoDialogConfiguration : IEntityTypeConfiguration<Main
             .WithMany(b => b.MainInfoDialog)
             .HasForeignKey(p => p.ProjectId)
             .HasConstraintName("FK_CatalogProjects_ProjectId");
+        
+        entity.HasOne(p => p.CatalogVacancy)
+            .WithMany(b => b.MainInfoDialog)
+            .HasForeignKey(p => p.VacancyId)
+            .HasConstraintName("FK_CatalogVacancies_VacancyId");
 
         OnConfigurePartial(entity);
     }

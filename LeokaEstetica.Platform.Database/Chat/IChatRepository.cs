@@ -48,7 +48,8 @@ public interface IChatRepository
     /// <summary>
     /// Метод проверит существование диалога по участникам диалога.
     /// </summary>
-    /// <param name="dialogId">Id диалога.</param>
+    /// <param name="userId">Id пользователя (не владелец).</param>
+    /// <param name="ownerId">Id владельца проекта.</param>
     /// <returns>Флаг проверки.</returns>
     Task<long?> CheckDialogAsync(long userId, long ownerId);
 

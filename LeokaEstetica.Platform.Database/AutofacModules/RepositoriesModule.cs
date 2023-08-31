@@ -253,5 +253,13 @@ public class RepositoriesModule : Module
         builder.RegisterType<AccessTicketRepository>()
             .As<IAccessTicketRepository>()
             .InstancePerLifetimeScope();
+        
+        // Репозиторий откликов на проекты.
+        builder.RegisterType<ProjectResponseRepository>()
+            .Named<IProjectResponseRepository>("ProjectResponseRepository")
+            .InstancePerLifetimeScope();
+        builder.RegisterType<ProjectResponseRepository>()
+            .As<IProjectResponseRepository>()
+            .InstancePerLifetimeScope();
     }
 }
