@@ -166,8 +166,10 @@ internal class BaseServiceTest
             VacancyModerationService, subscriptionRepository, FareRuleRepository, availableLimitsService,
             vacancyNotificationsService, null, null, null, vacancyModerationRepository);
 
+        var projectResponseRepository = new ProjectResponseRepository(pgContext);
+
         ChatService = new ChatService(null, userRepository, projectRepository, vacancyRepository, chatRepository,
-            mapper);
+            mapper, projectResponseRepository);
 
         var accessModerationRepository = new AccessModerationRepository(pgContext);
 
