@@ -1,3 +1,5 @@
+using LeokaEstetica.Platform.Models.Entities.Project;
+
 namespace LeokaEstetica.Platform.Models.Entities.Communication;
 
 /// <summary>
@@ -27,6 +29,11 @@ public class MainInfoDialogEntity
     public DateTime Created { get; set; }
 
     /// <summary>
+    /// Id проекта.
+    /// </summary>
+    public long? ProjectId { get; set; }
+
+    /// <summary>
     /// Сообщения диалога.
     /// </summary>
     public ICollection<DialogMessageEntity> DialogMessages { get; set; }
@@ -35,4 +42,9 @@ public class MainInfoDialogEntity
     /// Участники диалога.
     /// </summary>
     public ICollection<DialogMemberEntity> DialogMembers { get; set; }
+
+    /// <summary>
+    /// Проекты в каталоге.
+    /// </summary>
+    public CatalogProjectEntity CatalogProject { get; set; }
 }

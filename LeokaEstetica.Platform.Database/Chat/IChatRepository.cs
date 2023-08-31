@@ -103,4 +103,11 @@ public interface IChatRepository
     /// <param name="dialogId">Id диалога.</param>
     /// <returns>Список участников диалога.</returns>
     Task<ICollection<DialogMemberEntity>> GetDialogMembersByDialogIdAsync(long dialogId);
+
+    /// <summary>
+    /// Метод устанавливает связь между проектом и диалогом.
+    /// </summary>
+    /// <param name="dialogId">Id диалога.</param>
+    /// <param name="projectId">Id проекта.</param>
+    Task SetReferenceProjectDialogAsync(long dialogId, long projectId);
 }
