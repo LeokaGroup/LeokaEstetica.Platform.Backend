@@ -56,6 +56,8 @@ internal sealed class ChatService : IChatService
         _projectResponseRepository = projectResponseRepository;
     }
 
+    #region Публичные методы.
+
     /// <summary>
     /// Метод получает диалог или создает новый и возвращает его.
     /// </summary>
@@ -272,7 +274,8 @@ internal sealed class ChatService : IChatService
             }
 
             var dialogs = await _chatRepository.GetDialogsAsync(userId);
-            dialogs = await CreateDialogMessagesBuilder.Create(dialogs, _chatRepository, _userRepository, userId);
+            dialogs = await CreateDialogMessagesBuilder.CreateDialogAsync(dialogs, _chatRepository, _userRepository, userId,
+                _mapper);
 
             return dialogs;
         }
@@ -467,4 +470,36 @@ internal sealed class ChatService : IChatService
             throw;
         }
     }
+
+    /// <summary>
+    /// Метод получит все диалоги для профиля пользователя.
+    /// </summary>
+    /// <param name="account">Аккаунт.</param>
+    /// <returns>Список диалогов.</returns>
+    public async Task<List<ProfileDialogOutput>> GetProfileDialogsAsync(string account)
+    {
+        try
+        {
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId == 0)
+            {
+                throw new InvalidOperationException($"Id пользователя с аккаунтом {account} не найден.");
+            }
+
+            var dialogs = await _chatRepository.GetProfileDialogsAsync(userId);
+            dialogs = await CreateDialogMessagesBuilder.CreateProfileDialogAsync(dialogs, _chatRepository, _userRepository,
+                userId, _mapper);
+
+            return dialogs;
+        }
+
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
+    #endregion
 }

@@ -1,3 +1,4 @@
+using AutoMapper;
 using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Database.Chat;
 using LeokaEstetica.Platform.Models.Dto.Chat.Output;
@@ -17,8 +18,42 @@ public static class CreateDialogMessagesBuilder
     /// <param name="userRepository">Зависимость пользователя.</param>
     /// <param name="userId">Id пользователя.</param>
     /// <returns>Список диалогов.</returns>
-    public static async Task<List<DialogOutput>> Create(List<DialogOutput> dialogs, IChatRepository chatRepository,
-        IUserRepository userRepository, long userId)
+    public static async Task<List<DialogOutput>> CreateDialogAsync(List<DialogOutput> dialogs, IChatRepository chatRepository,
+        IUserRepository userRepository, long userId, IMapper mapper)
+    {
+        var mapDialogs = mapper.Map<List<BaseDialogOutput>>(dialogs);
+        var dialogsResult = await CreateDialogsResultAsync(mapDialogs, chatRepository, userRepository, userId);
+        var result = mapper.Map<List<DialogOutput>>(dialogsResult);
+
+        return result;
+    }
+    
+    /// <summary>
+    /// Метод проводит необходимые операции с сообщениями.
+    /// </summary>
+    /// <param name="dialogs">Список диалогов.</param>
+    /// <param name="chatRepository">Зависимость чата.</param>
+    /// <param name="userRepository">Зависимость пользователя.</param>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Список диалогов.</returns>
+    public static async Task<List<ProfileDialogOutput>> CreateProfileDialogAsync(List<ProfileDialogOutput> dialogs, IChatRepository chatRepository, IUserRepository userRepository, long userId, IMapper mapper)
+    {
+        var mapDialogs = mapper.Map<List<BaseDialogOutput>>(dialogs);
+        var dialogsResult = await CreateDialogsResultAsync(mapDialogs, chatRepository, userRepository, userId);
+        var result = mapper.Map<List<ProfileDialogOutput>>(dialogsResult);
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод создает результат для разных моделей.
+    /// </summary>
+    /// <param name="dialogs">Список диалогов до изменения.</param>
+    /// <param name="chatRepository">Зависимость чата.</param>
+    /// <param name="userRepository">Зависимость пользователя.</param>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Список диалогов.</returns>
+    private static async Task<List<BaseDialogOutput>> CreateDialogsResultAsync(List<BaseDialogOutput> dialogs, IChatRepository chatRepository, IUserRepository userRepository, long userId)
     {
         foreach (var dialog in dialogs)
         {

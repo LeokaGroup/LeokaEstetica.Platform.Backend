@@ -125,4 +125,22 @@ public class ChatController : BaseController
 
         return result;
     }
+
+    /// <summary>
+    /// Метод получает список диалогов для ЛК.
+    /// </summary>
+    /// <returns>Список диалогов.</returns>
+    [HttpGet]
+    [Route("profile-messages")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<ProfileDialogOutput>))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<IEnumerable<ProfileDialogOutput>> GetProfileDialogsAsync()
+    {
+        var result = await _chatService.GetProfileDialogsAsync(GetUserName());
+
+        return result;
+    }
 }

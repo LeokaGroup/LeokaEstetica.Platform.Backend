@@ -45,4 +45,11 @@ public interface IChatService
     /// <param name="account">Аккаунт.</param>
     /// <returns>Выходная модель.</returns>
     Task<DialogResultOutput> SendMessageAsync(string message, long dialogId, string account);
+    
+    /// <summary>
+    /// Метод получит все диалоги для профиля пользователя.
+    /// </summary>
+    /// <param name="account">Аккаунт.</param>
+    /// <returns>Список диалогов.</returns>
+    Task<List<ProfileDialogOutput>> GetProfileDialogsAsync(string account);
 }
