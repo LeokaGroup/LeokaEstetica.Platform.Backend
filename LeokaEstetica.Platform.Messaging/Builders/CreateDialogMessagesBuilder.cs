@@ -64,6 +64,11 @@ public static class CreateDialogMessagesBuilder
         foreach (var dialog in dialogs.Dialogs)
         {
             var dialogId = dialog.DialogId;
+
+            if (dialogId <= 0)
+            {
+                throw new InvalidOperationException($"Некорректный Id диалога. DialogId: {dialogId}");
+            }
             
             // Получаем диалог для ЛК пользователя, так как менять будем и его данные.
             var profileDialog = profileDialogs.Find(d => d.DialogId == dialogId);
@@ -76,7 +81,7 @@ public static class CreateDialogMessagesBuilder
             var lastMessage = await chatRepository.GetLastMessageAsync(dialogId);
 
             // Подтягиваем последнее сообщение для каждого диалога и проставляет после 40 символов ...
-            if (lastMessage is not null)
+            if (!string.IsNullOrEmpty(lastMessage))
             {
                 var lastMsg = lastMessage.Length > 40
                     ? string.Concat(lastMessage.Substring(0, 40), "...")
@@ -89,7 +94,7 @@ public static class CreateDialogMessagesBuilder
             // Найдет Id участников диалога по DialogId.
             var membersIds = await chatRepository.GetDialogMembersAsync(dialogId);
 
-            if (membersIds == null)
+            if (!membersIds.Any())
             {
                 throw new InvalidOperationException($"Не найдено участников для диалога с DialogId {dialogId}");
             }
@@ -103,8 +108,7 @@ public static class CreateDialogMessagesBuilder
             profileDialog.FullName = fullName;
 
             // Если дата диалога совпадает с сегодняшней, то заполнит часы и минуты, иначе оставит их null.
-            if (DateTime.UtcNow.ToString("d")
-                .Equals(Convert.ToDateTime(dialog.Created).ToString("d")))
+            if (DateTime.UtcNow.ToString("d").Equals(Convert.ToDateTime(dialog.Created).ToString("d")))
             {
                 // Запишет только часы и минуты.
                 var calcTime = Convert.ToDateTime(dialog.Created).ToString("t");
@@ -129,7 +133,7 @@ public static class CreateDialogMessagesBuilder
             dialog.Created = created;
             profileDialog.Created = created;
 
-            var id = membersIds.Except(new[] { userId }).FirstOrDefault();
+            var id = membersIds.Except(new[] { userId }).First();
 
             var user = await userRepository.GetUserByUserIdAsync(id);
 
