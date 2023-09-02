@@ -2,6 +2,7 @@ using AutoMapper;
 using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Database.Chat;
 using LeokaEstetica.Platform.Models.Dto.Chat.Output;
+using LeokaEstetica.Platform.Models.Entities.User;
 
 namespace LeokaEstetica.Platform.Messaging.Builders;
 
@@ -133,9 +134,20 @@ public static class CreateDialogMessagesBuilder
             dialog.Created = created;
             profileDialog.Created = created;
 
-            var id = membersIds.Except(new[] { userId }).First();
+            var id = membersIds.Except(new[] { userId }).FirstOrDefault();
+            
+            UserEntity user;
+            
+            // Если в участниках был дубль одного и того же пользователя, то берем просто его Id.
+            if (id > 0)
+            {
+                user = await userRepository.GetUserByUserIdAsync(id);
+            }
 
-            var user = await userRepository.GetUserByUserIdAsync(id);
+            else
+            {
+                user = await userRepository.GetUserByUserIdAsync(userId);
+            }
 
             // Если имя и фамилия заполнены, то берем их.
             if (user is not null 
@@ -157,6 +169,10 @@ public static class CreateDialogMessagesBuilder
                 profileDialog.FullName = otherFullName;
             }
         }
+
+        // Удаляем все диалоги, где нет последнего сообщения.
+        dialogs.Dialogs.RemoveAll(d => d.LastMessage is null);
+        profileDialogs.RemoveAll(d => d.LastMessage is null);
 
         return (dialogs.Dialogs, profileDialogs);
     }

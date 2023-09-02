@@ -82,6 +82,16 @@ internal sealed class ChatService : IChatService
                 throw new InvalidOperationException($"Id пользователя с аккаунтом {account} не найден.");
             }
 
+            // Если не передали Id предмета обсуждения, то если проект,
+            // то пойдем искать Id проекта у диалога, так как они связаны.
+            if (discussionTypeId <= 0 
+                && discussionType == DiscussionTypeEnum.Project 
+                && dialogId.HasValue)
+            {
+                discussionTypeId = await _chatRepository.GetDialogProjectIdByDialogIdAsync(dialogId.Value);
+            }
+
+            // Если снова не нашли, то это уже ошибка.
             if (discussionTypeId <= 0)
             {
                 throw new InvalidOperationException("Не передали Id предмета обсуждения.");

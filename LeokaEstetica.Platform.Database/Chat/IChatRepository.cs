@@ -118,4 +118,11 @@ public interface IChatRepository
     /// <param name="dialogId">Id диалога.</param>
     /// <param name="projectId">Id проекта.</param>
     Task SetReferenceProjectDialogAsync(long dialogId, long projectId);
+
+    /// <summary>
+    /// Метод получает Id проекта Id диалога.
+    /// </summary>
+    /// <param name="dialogId">Id диалога.</param>
+    /// <returns>Id проекта.</returns>
+    Task<long> GetDialogProjectIdByDialogIdAsync(long dialogId);
 }

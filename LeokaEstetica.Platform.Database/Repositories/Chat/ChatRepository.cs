@@ -202,7 +202,12 @@ internal sealed class ChatRepository : IChatRepository
                     DialogId = dm.DialogId,
                     DialogName = d.DialogName,
                     UserId = dm.UserId,
-                    Created = d.Created.ToString(CultureInfo.CurrentCulture)
+                    Created = d.Created.ToString(CultureInfo.CurrentCulture),
+                    ProjectId = _pgContext.UserProjects
+                        .Where(p => p.ProjectId == d.ProjectId 
+                                    && d.ProjectId != null)
+                        .Select(p => p.ProjectId)
+                        .FirstOrDefault()
                 })
             .ToListAsync();
 
@@ -281,7 +286,7 @@ internal sealed class ChatRepository : IChatRepository
 
         await _pgContext.SaveChangesAsync();
     }
-    
+
     /// <summary>
     /// Метод получит все диалоги для профиля пользователя.
     /// </summary>
@@ -309,11 +314,31 @@ internal sealed class ChatRepository : IChatRepository
                         .Where(p => p.ProjectId == d.ProjectId 
                                     && d.ProjectId != null)
                         .Select(p => p.ProjectId)
-                        .FirstOrDefault()
+                        .FirstOrDefault(),
                 })
             .ToListAsync();
 
         return result;
+    }
+    
+    /// <summary>
+    /// Метод получает Id проекта Id диалога.
+    /// </summary>
+    /// <param name="dialogId">Id диалога.</param>
+    /// <returns>Id проекта.</returns>
+    public async Task<long> GetDialogProjectIdByDialogIdAsync(long dialogId)
+    {
+        var result = await _pgContext.Dialogs
+            .Where(d => d.DialogId == dialogId)
+            .Select(d => d.ProjectId)
+            .FirstOrDefaultAsync();
+
+        if (!result.HasValue)
+        {
+            throw new InvalidOperationException($"Не удалось получить данные диалога. DialogId: {dialogId}");
+        }
+
+        return result.Value;
     }
 
     #endregion
