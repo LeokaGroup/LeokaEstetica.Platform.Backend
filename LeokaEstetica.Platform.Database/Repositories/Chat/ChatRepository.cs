@@ -304,6 +304,11 @@ internal sealed class ChatRepository : IChatRepository
                     ProjectName = _pgContext.UserProjects
                         .Where(p => p.ProjectId == d.ProjectId)
                         .Select(p => p.ProjectName)
+                        .FirstOrDefault(),
+                    ProjectId = _pgContext.UserProjects
+                        .Where(p => p.ProjectId == d.ProjectId 
+                                    && d.ProjectId != null)
+                        .Select(p => p.ProjectId)
                         .FirstOrDefault()
                 })
             .ToListAsync();

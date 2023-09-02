@@ -187,11 +187,8 @@ public class MappingProfile : Profile
             .ForMember(a => a.Created, a => a.MapFrom(src => src.ProjectComment.Created.ToString("g")))
             .ForMember(a => a.DateModeration, a => a.MapFrom(src => src.DateModeration.ToString("g")));
         
-        CreateInterfaceMap<DialogOutput, BaseDialogOutput>();
-        CreateInterfaceMap<ProfileDialogOutput, BaseDialogOutput>();
-        
-        CreateMap<BaseDialogOutput, DialogOutput>();
-        CreateMap<BaseDialogOutput, ProfileDialogOutput>();
+        CreateMap<DialogOutput, ProfileDialogOutput>();
+        CreateMap<ProfileDialogOutput, DialogOutput>();
     }
     
     /// <summary>

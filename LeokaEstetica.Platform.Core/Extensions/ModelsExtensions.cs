@@ -1,5 +1,4 @@
 using Autofac;
-using LeokaEstetica.Platform.Models.Dto.Chat.Output;
 
 namespace LeokaEstetica.Platform.Core.Extensions;
 
@@ -14,7 +13,7 @@ public static class ModelsExtensions
    /// <param name="builder">Билдер.</param>
    public static void RegisterModels(ContainerBuilder builder)
    {
-      builder.RegisterType<DialogOutput>().As<BaseDialogOutput>();
-      builder.RegisterType<ProfileDialogOutput>().As<BaseDialogOutput>();
+      // TODO: Оставил коммент для примера регистрации моделей.
+      // builder.RegisterType<DialogOutput>().As<BaseDialogOutput>();
    }
 }
