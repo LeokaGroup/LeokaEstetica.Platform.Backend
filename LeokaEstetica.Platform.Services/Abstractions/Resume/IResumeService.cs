@@ -16,7 +16,7 @@ public interface IResumeService
     Task<ResumeResultOutput> GetProfileInfosAsync();
 
     /// <summary>
-    /// Метод получает анкету пользователя.
+    /// Метод получает анкету пользователя по ее Id.
     /// </summary>
     /// <param name="resumeId">Id анкеты пользователя.</param>
     /// <returns>Данные анкеты.</returns>
@@ -28,4 +28,18 @@ public interface IResumeService
     /// <param name="account">Аккаунт пользователя.</param>
     /// <returns>Список замечаний анкеты.</returns>
     Task<IEnumerable<ResumeRemarkEntity>> GetResumeRemarksAsync(string account);
+
+    /// <summary>
+    /// Метод записывает коды пользователей.
+    /// </summary>
+    /// <param name="resumes">Список анкет пользователей.</param>
+    /// <returns>Результирующий список.</returns>
+    Task<IEnumerable<ResumeOutput>> SetUserCodesAsync(List<ResumeOutput> resumes);
+
+    /// <summary>
+    /// Метод проставляет флаги вакансиям пользователя в зависимости от его подписки.
+    /// </summary>
+    /// <param name="vacancies">Список вакансий каталога.</param>
+    /// <returns>Список вакансий каталога с проставленными тегами.</returns>
+    Task<IEnumerable<ResumeOutput>> SetVacanciesTagsAsync(List<ResumeOutput> vacancies);
 }

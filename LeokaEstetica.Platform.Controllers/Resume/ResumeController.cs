@@ -2,6 +2,8 @@ using AutoMapper;
 using LeokaEstetica.Platform.Access.Abstractions.Resume;
 using LeokaEstetica.Platform.Base;
 using LeokaEstetica.Platform.Controllers.Filters;
+using LeokaEstetica.Platform.Database.Abstractions.FareRule;
+using LeokaEstetica.Platform.Database.Abstractions.Subscription;
 using LeokaEstetica.Platform.Finder.Abstractions.Resume;
 using LeokaEstetica.Platform.Models.Dto.Output.Resume;
 using LeokaEstetica.Platform.Services.Abstractions.Resume;
@@ -22,6 +24,9 @@ public class ResumeController : BaseController
     private readonly IResumeFinderService _resumeFinderService;
     private readonly IResumePaginationService _resumePaginationService;
     private readonly IAccessResumeService _accessResumeService;
+    private readonly IFillColorResumeService _fillColorResumeService;
+    private readonly ISubscriptionRepository _subscriptionRepository;
+    private readonly IFareRuleRepository _fareRuleRepository;
 
     /// <summary>
     /// Конструктор.
@@ -31,17 +36,26 @@ public class ResumeController : BaseController
     /// <param name="resumeFinderService">Поисковый сервис резюме.</param>
     /// <param name="resumePaginationService">Сервис пагинации резюме.</param>
     /// <param name="accessResumeService">Сервис проверки доступа к базе резюме.</param>
+    /// <param name="fillColorResumeService">Сервис выделения цветами анкет.</param>
+    /// <param name="subscriptionRepository">Репозиторий подписок пользователя.</param>
+    /// <param name="fareRuleRepository">Репозиторий правил тарифа.</param>
     public ResumeController(IResumeService resumeService, 
         IMapper mapper, 
         IResumeFinderService resumeFinderService, 
         IResumePaginationService resumePaginationService, 
-        IAccessResumeService accessResumeService)
+        IAccessResumeService accessResumeService,
+        IFillColorResumeService fillColorResumeService,
+        ISubscriptionRepository subscriptionRepository,
+        IFareRuleRepository fareRuleRepository)
     {
         _resumeService = resumeService;
         _mapper = mapper;
         _resumeFinderService = resumeFinderService;
         _resumePaginationService = resumePaginationService;
         _accessResumeService = accessResumeService;
+        _fillColorResumeService = fillColorResumeService;
+        _subscriptionRepository = subscriptionRepository;
+        _fareRuleRepository = fareRuleRepository;
     }
 
     /// <summary>
@@ -97,11 +111,20 @@ public class ResumeController : BaseController
     {
         var result = await _resumePaginationService.GetResumesPaginationAsync(page);
 
+        result.Resumes = await _fillColorResumeService.SetColorBusinessResume(result.Resumes, _subscriptionRepository,
+            _fareRuleRepository) as List<ResumeOutput>;
+        
+        // Записываем анкетам коды пользователей.
+        result.Resumes = await _resumeService.SetUserCodesAsync(result.Resumes) as List<ResumeOutput>;
+            
+        // Записываем теги анкетам.
+        result.Resumes = await _resumeService.SetVacanciesTagsAsync(result.Resumes) as List<ResumeOutput>;
+
         return result;
     }
 
     /// <summary>
-    /// Метод получает анкету пользователя по ее 
+    /// Метод получает анкету пользователя по ее Id.
     /// </summary>
     /// <param name="resumeId">Id анкеты пользователя.</param>
     /// <returns>Данные анкеты.</returns>
