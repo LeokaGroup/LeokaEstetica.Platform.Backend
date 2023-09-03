@@ -360,7 +360,11 @@ internal sealed class VacancyService : IVacancyService
             // Нет доступа на изменение.
             if (!isOwner && mode == ModeEnum.Edit)
             {
-                return new VacancyOutput { IsAccess = false };
+                return new VacancyOutput
+                {
+                    IsAccess = false,
+                    IsSuccess = false
+                };
             }
 
             var vacancy = await _vacancyRepository.GetVacancyByVacancyIdAsync(vacancyId);

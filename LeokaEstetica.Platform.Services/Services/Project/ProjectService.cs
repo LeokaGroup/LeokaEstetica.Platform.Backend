@@ -463,7 +463,12 @@ internal sealed class ProjectService : IProjectService
             // Нет доступа на изменение.
             if (!isOwner && mode == ModeEnum.Edit)
             {
-                return new ProjectOutput { IsAccess = false };
+                return new ProjectOutput
+                {
+                    IsAccess = false,
+                    IsSuccess = false,
+                    ProjectRemarks = new List<ProjectRemarkOutput>()
+                };
             }
 
             var prj = await _projectRepository.GetProjectAsync(projectId);

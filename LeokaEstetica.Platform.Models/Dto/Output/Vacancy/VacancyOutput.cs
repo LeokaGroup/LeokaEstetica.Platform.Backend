@@ -99,4 +99,9 @@ public class VacancyOutput : VacancyRemarkResult, IFrontError
     /// Признак доступа.
     /// </summary>
     public bool IsAccess { get; set; }
+    
+    /// <summary>
+    /// Успешное ли сохранение.
+    /// </summary>
+    public bool IsSuccess { get; set; }
 }
