@@ -452,6 +452,25 @@ internal sealed class ProjectService : IProjectService
                 throw ex;
             }
 
+            if (projectId <= 0)
+            {
+                throw new InvalidOperationException($"Не передан Id проекта. ProjectId: {projectId}");
+            }
+            
+            // Проверяем доступ к проекту.
+            var isOwner = await _projectRepository.CheckProjectOwnerAsync(projectId, userId);
+            
+            // Нет доступа на изменение.
+            if (!isOwner && mode == ModeEnum.Edit)
+            {
+                return new ProjectOutput
+                {
+                    IsAccess = false,
+                    IsSuccess = false,
+                    ProjectRemarks = new List<ProjectRemarkOutput>()
+                };
+            }
+
             var prj = await _projectRepository.GetProjectAsync(projectId);
 
             if (prj.UserProject is null)
@@ -465,6 +484,7 @@ internal sealed class ProjectService : IProjectService
 
             var remarks = await _projectModerationRepository.GetProjectRemarksAsync(projectId);
             result.ProjectRemarks = _mapper.Map<IEnumerable<ProjectRemarkOutput>>(remarks);
+            result.IsAccess = true;
 
             return result;
         }

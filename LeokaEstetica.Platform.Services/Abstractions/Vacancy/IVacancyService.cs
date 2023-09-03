@@ -1,3 +1,4 @@
+using LeokaEstetica.Platform.Access.Enums;
 using LeokaEstetica.Platform.Models.Dto.Input.Vacancy;
 using LeokaEstetica.Platform.Models.Dto.Output.Configs;
 using LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
@@ -48,9 +49,10 @@ public interface IVacancyService
     /// Метод получает вакансию по ее Id.
     /// </summary>
     /// <param name="vacancyId">Id вакансии.</param>
+    /// <param name="mode">Режим. Чтение или изменение.</param>
     /// <param name="account">Аккаунт.</param>
     /// <returns>Данные вакансии.</returns>
-    Task<VacancyOutput> GetVacancyByVacancyIdAsync(long vacancyId, string account);
+    Task<VacancyOutput> GetVacancyByVacancyIdAsync(long vacancyId, ModeEnum mode, string account);
 
     /// <summary>
     /// Метод фильтрации вакансий в зависимости от параметров фильтров.

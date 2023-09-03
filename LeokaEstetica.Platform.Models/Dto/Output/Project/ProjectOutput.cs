@@ -93,4 +93,9 @@ public class ProjectOutput : ProjectRemarkResult, IFrontError
     /// Признак видимости кнопки добавления проекта в архив.
     /// </summary>
     public bool IsVisibleActionAddProjectArchive { get; set; }
+
+    /// <summary>
+    /// Признак доступа.
+    /// </summary>
+    public bool IsAccess { get; set; }
 }

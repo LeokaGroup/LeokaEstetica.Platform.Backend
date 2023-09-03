@@ -2,6 +2,7 @@ using System.Runtime.CompilerServices;
 using AutoMapper;
 using LeokaEstetica.Platform.Access.Abstractions.User;
 using LeokaEstetica.Platform.Core.Exceptions;
+using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.FareRule;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Resume;
 using LeokaEstetica.Platform.Database.Abstractions.Resume;
@@ -111,9 +112,9 @@ internal sealed class ResumeService : IResumeService
             result.CatalogResumes = await _fillColorResumeService.SetColorBusinessResume(result.CatalogResumes.ToList(),
                 _subscriptionRepository, _fareRuleRepository);
             
-            result.CatalogResumes = await SetUserCodes(result.CatalogResumes.ToList());
+            result.CatalogResumes = await SetUserCodesAsync(result.CatalogResumes.ToList());
             
-            result.CatalogResumes = await SetVacanciesTags(result.CatalogResumes.ToList());
+            result.CatalogResumes = await SetVacanciesTagsAsync(result.CatalogResumes.ToList());
 
             return result;
         }
@@ -126,7 +127,7 @@ internal sealed class ResumeService : IResumeService
     }
 
     /// <summary>
-    /// Метод получает анкету пользователя.
+    /// Метод получает анкету пользователя по ее Id.
     /// </summary>
     /// <param name="resumeId">Id анкеты пользователя.</param>
     /// <returns>Данные анкеты.</returns>
@@ -191,17 +192,14 @@ internal sealed class ResumeService : IResumeService
     /// </summary>
     /// <param name="resumes">Список анкет пользователей.</param>
     /// <returns>Результирующий список.</returns>
-    private async Task<IEnumerable<ResumeOutput>> SetUserCodes(List<ResumeOutput> resumes)
+    public async Task<IEnumerable<ResumeOutput>> SetUserCodesAsync(List<ResumeOutput> resumes)
     {
         // Получаем словарь пользователей для поиска кодов, чтобы получить скорость поиска O(1).
         var userCodesDict = await _userRepository.GetUsersCodesAsync();
         
         foreach (var r in resumes)
         {
-            if (userCodesDict.TryGetValue(r.UserId, out var code))
-            {
-                r.UserCode = code;   
-            }
+            r.UserCode = userCodesDict.TryGet(r.UserId);   
         }
 
         return resumes;
@@ -212,7 +210,7 @@ internal sealed class ResumeService : IResumeService
     /// </summary>
     /// <param name="vacancies">Список вакансий каталога.</param>
     /// <returns>Список вакансий каталога с проставленными тегами.</returns>
-    private async Task<IEnumerable<ResumeOutput>> SetVacanciesTags(List<ResumeOutput> vacancies)
+    public async Task<IEnumerable<ResumeOutput>> SetVacanciesTagsAsync(List<ResumeOutput> vacancies)
     {
         foreach (var v in vacancies)
         {
