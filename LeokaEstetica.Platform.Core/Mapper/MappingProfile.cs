@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using LeokaEstetica.Platform.Core.Utils;
 using LeokaEstetica.Platform.Models.Dto.Chat.Output;
 using LeokaEstetica.Platform.Models.Dto.Common.Cache;
 using LeokaEstetica.Platform.Models.Dto.Input.Moderation;
@@ -185,5 +186,18 @@ public class MappingProfile : Profile
         CreateMap<ProjectCommentModerationEntity, ProjectCommentModerationOutput>()
             .ForMember(a => a.Created, a => a.MapFrom(src => src.ProjectComment.Created.ToString("g")))
             .ForMember(a => a.DateModeration, a => a.MapFrom(src => src.DateModeration.ToString("g")));
+        
+        CreateMap<DialogOutput, ProfileDialogOutput>();
+        CreateMap<ProfileDialogOutput, DialogOutput>();
+    }
+    
+    /// <summary>
+    /// Метод мапит на абстриакцию.
+    /// </summary>
+    /// <typeparam name="TSource">Что маппим.</typeparam>
+    /// <typeparam name="TDestination">На что маппим.</typeparam>
+    private void CreateInterfaceMap<TSource, TDestination>() where TDestination : class
+    {
+        CreateMap<TSource, TDestination>().ConstructUsing(ctor: t => AutoFac.Resolve<TDestination>());
     }
 }

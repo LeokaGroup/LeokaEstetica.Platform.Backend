@@ -75,7 +75,7 @@ public interface IChatRepository
     Task<string> GetDialogStartDateAsync(long dialogId);
 
     /// <summary>
-    /// Метод получит все диалогы.
+    /// Метод получит все диалоги.
     /// </summary>
     /// <param name="userId">Id пользователя.</param>
     /// <returns>Список диалогов.</returns>
@@ -104,6 +104,13 @@ public interface IChatRepository
     /// <param name="dialogId">Id диалога.</param>
     /// <returns>Список участников диалога.</returns>
     Task<ICollection<DialogMemberEntity>> GetDialogMembersByDialogIdAsync(long dialogId);
+    
+    /// <summary>
+    /// Метод получит все диалоги для профиля пользователя.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Список диалогов.</returns>
+    Task<List<ProfileDialogOutput>> GetProfileDialogsAsync(long userId);
 
     /// <summary>
     /// Метод устанавливает связь между проектом и диалогом.
@@ -111,4 +118,11 @@ public interface IChatRepository
     /// <param name="dialogId">Id диалога.</param>
     /// <param name="projectId">Id проекта.</param>
     Task SetReferenceProjectDialogAsync(long dialogId, long projectId);
+
+    /// <summary>
+    /// Метод получает Id проекта Id диалога.
+    /// </summary>
+    /// <param name="dialogId">Id диалога.</param>
+    /// <returns>Id проекта.</returns>
+    Task<long> GetDialogProjectIdByDialogIdAsync(long dialogId);
 }

@@ -3,6 +3,7 @@ using Autofac;
 using AutoMapper;
 using LeokaEstetica.Platform.Core.Attributes;
 using LeokaEstetica.Platform.Core.Data;
+using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Core.Mapper;
 using Microsoft.EntityFrameworkCore;
 using Module = Autofac.Module;
@@ -119,6 +120,9 @@ public static class AutoFac
             .Union(assemblies13);
 
         RegisterMapper(b);
+        
+        // Регистрация моделей, которые будут резолвиться.
+        ModelsExtensions.RegisterModels(b);
 
         _typeModules = (from assembly in assemblies
             from type in assembly.GetTypes()
@@ -149,6 +153,9 @@ public static class AutoFac
             RegisterAllAssemblyTypes(_builder);
             RegisterDbContext(_builder);
             RegisterMapper(_builder);
+            
+            // Регистрация моделей, которые будут резолвиться.
+            ModelsExtensions.RegisterModels(_builder);
 
             _container = _builder.Build();
         }
@@ -169,6 +176,9 @@ public static class AutoFac
         RegisterAllAssemblyTypes(_builder);
         RegisterDbContext(_builder);
         RegisterMapper(_builder);
+        
+        // Регистрация моделей, которые будут резолвиться.
+        ModelsExtensions.RegisterModels(_builder);
 
         return _container.BeginLifetimeScope();
     }

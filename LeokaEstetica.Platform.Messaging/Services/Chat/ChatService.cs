@@ -56,6 +56,8 @@ internal sealed class ChatService : IChatService
         _projectResponseRepository = projectResponseRepository;
     }
 
+    #region Публичные методы.
+
     /// <summary>
     /// Метод получает диалог или создает новый и возвращает его.
     /// </summary>
@@ -80,6 +82,16 @@ internal sealed class ChatService : IChatService
                 throw new InvalidOperationException($"Id пользователя с аккаунтом {account} не найден.");
             }
 
+            // Если не передали Id предмета обсуждения, то если проект,
+            // то пойдем искать Id проекта у диалога, так как они связаны.
+            if (discussionTypeId <= 0 
+                && discussionType == DiscussionTypeEnum.Project 
+                && dialogId.HasValue)
+            {
+                discussionTypeId = await _chatRepository.GetDialogProjectIdByDialogIdAsync(dialogId.Value);
+            }
+
+            // Если снова не нашли, то это уже ошибка.
             if (discussionTypeId <= 0)
             {
                 throw new InvalidOperationException("Не передали Id предмета обсуждения.");
@@ -229,33 +241,6 @@ internal sealed class ChatService : IChatService
     }
 
     /// <summary>
-    /// Метод записывает Id владельца предмета обсуждения.
-    /// </summary>
-    /// <param name="discussionType">Тип предмета обсуждения.</param>
-    /// <param name="discussionTypeId">Id предмета обсуждения (вакансии, проекта и тд).</param>
-    /// <returns></returns>
-    private async Task<long> GetOwnerIdAsync(DiscussionTypeEnum discussionType, long discussionTypeId)
-    {
-        long ownerId = 0;
-
-        // Если предмет обсуждения это проект.
-        if (discussionType == DiscussionTypeEnum.Project)
-        {
-            // Выбираем Id владельца проекта.
-            ownerId = await _projectRepository.GetProjectOwnerIdAsync(discussionTypeId);
-        }
-
-        // Если предмет обсуждения это вакансия.
-        if (discussionType == DiscussionTypeEnum.Vacancy)
-        {
-            // Выбираем Id владельца вакансии.
-            ownerId = await _vacancyRepository.GetVacancyOwnerIdAsync(discussionTypeId);
-        }
-
-        return ownerId;
-    }
-
-    /// <summary>
     /// Метод получает список диалогов.
     /// </summary>
     /// <param name="account">Аккаунт.</param>
@@ -272,7 +257,10 @@ internal sealed class ChatService : IChatService
             }
 
             var dialogs = await _chatRepository.GetDialogsAsync(userId);
-            dialogs = await CreateDialogMessagesBuilder.Create(dialogs, _chatRepository, _userRepository, userId);
+            var mapDialogs = _mapper.Map<List<ProfileDialogOutput>>(dialogs);
+            
+            dialogs = await CreateDialogMessagesBuilder.CreateDialogAsync((dialogs, mapDialogs), _chatRepository,
+                _userRepository, userId, _mapper);
 
             return dialogs;
         }
@@ -383,24 +371,6 @@ internal sealed class ChatService : IChatService
     }
 
     /// <summary>
-    /// Метод строит строку с имененм и фамилией пользователя, с которым идет общение.
-    /// </summary>
-    /// <param name="userId">Id пользователя.</param>
-    /// <returns>Строка с именем и фамилией.</returns>
-    private async Task<string> CreateDialogOwnerFioAsync(long userId)
-    {
-        var result = await _userRepository.GetUserByUserIdAsync(userId);
-
-        if (result.FirstName is null 
-            && result.LastName is null)
-        {
-            return result.Email;
-        }
-
-        return result.FirstName + " " + result.LastName;
-    }
-
-    /// <summary>
     /// Метод отправляет сообщение.
     /// </summary>
     /// <param name="message">Сообщение.</param>
@@ -467,4 +437,88 @@ internal sealed class ChatService : IChatService
             throw;
         }
     }
+
+    /// <summary>
+    /// Метод получит все диалоги для профиля пользователя.
+    /// </summary>
+    /// <param name="account">Аккаунт.</param>
+    /// <returns>Список диалогов.</returns>
+    public async Task<List<ProfileDialogOutput>> GetProfileDialogsAsync(string account)
+    {
+        try
+        {
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId == 0)
+            {
+                throw new InvalidOperationException($"Id пользователя с аккаунтом {account} не найден.");
+            }
+
+            var dialogs = await _chatRepository.GetProfileDialogsAsync(userId);
+            var mapProfileDialogs = _mapper.Map<List<ProfileDialogOutput>>(dialogs);
+            var mapDefaultDialogs =  _mapper.Map<List<DialogOutput>>(dialogs);
+            
+            dialogs = await CreateDialogMessagesBuilder.CreateProfileDialogAsync((mapDefaultDialogs, mapProfileDialogs),
+                _chatRepository, _userRepository, userId, _mapper);
+
+            return dialogs;
+        }
+
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
+    #endregion
+
+    #region Приватные методы.
+
+    /// <summary>
+    /// Метод записывает Id владельца предмета обсуждения.
+    /// </summary>
+    /// <param name="discussionType">Тип предмета обсуждения.</param>
+    /// <param name="discussionTypeId">Id предмета обсуждения (вакансии, проекта и тд).</param>
+    /// <returns></returns>
+    private async Task<long> GetOwnerIdAsync(DiscussionTypeEnum discussionType, long discussionTypeId)
+    {
+        long ownerId = 0;
+
+        // Если предмет обсуждения это проект.
+        if (discussionType == DiscussionTypeEnum.Project)
+        {
+            // Выбираем Id владельца проекта.
+            ownerId = await _projectRepository.GetProjectOwnerIdAsync(discussionTypeId);
+        }
+
+        // Если предмет обсуждения это вакансия.
+        if (discussionType == DiscussionTypeEnum.Vacancy)
+        {
+            // Выбираем Id владельца вакансии.
+            ownerId = await _vacancyRepository.GetVacancyOwnerIdAsync(discussionTypeId);
+        }
+
+        return ownerId;
+    }
+    
+    /// <summary>
+    /// Метод строит строку с имененм и фамилией пользователя, с которым идет общение.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Строка с именем и фамилией.</returns>
+    private async Task<string> CreateDialogOwnerFioAsync(long userId)
+    {
+        var result = await _userRepository.GetUserByUserIdAsync(userId);
+
+        if (result.FirstName is null 
+            && result.LastName is null)
+        {
+            return result.Email;
+        }
+
+        return result.FirstName + " " + result.LastName;
+    }
+
+    #endregion
 }
