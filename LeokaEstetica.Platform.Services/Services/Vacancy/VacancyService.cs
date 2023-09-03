@@ -334,9 +334,10 @@ internal sealed class VacancyService : IVacancyService
     /// Метод получает вакансию по ее Id.
     /// </summary>
     /// <param name="vacancyId">Id вакансии.</param>
+    /// <param name="mode">Режим. Чтение или изменение.</param>
     /// <param name="account">Аккаунт.</param>
     /// <returns>Данные вакансии.</returns>
-    public async Task<VacancyOutput> GetVacancyByVacancyIdAsync(long vacancyId, string account)
+    public async Task<VacancyOutput> GetVacancyByVacancyIdAsync(long vacancyId, ModeEnum mode, string account)
     {
         try
         {
@@ -346,6 +347,20 @@ internal sealed class VacancyService : IVacancyService
             {
                 var ex = new NotFoundUserIdByAccountException(account);
                 throw ex;
+            }
+            
+            if (vacancyId <= 0)
+            {
+                throw new InvalidOperationException($"Не передан Id вакансии. VacancyId: {vacancyId}");
+            }
+            
+            // Проверяем доступ к вакансии.
+            var isOwner = await _vacancyRepository.CheckVacancyOwnerAsync(vacancyId, userId);
+            
+            // Нет доступа на изменение.
+            if (!isOwner && mode == ModeEnum.Edit)
+            {
+                return new VacancyOutput { IsAccess = false };
             }
 
             var vacancy = await _vacancyRepository.GetVacancyByVacancyIdAsync(vacancyId);

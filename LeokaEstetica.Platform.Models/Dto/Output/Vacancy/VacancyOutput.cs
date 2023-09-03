@@ -94,4 +94,9 @@ public class VacancyOutput : VacancyRemarkResult, IFrontError
     /// Признак отображения кнопки добавления вакансии в архив.
     /// </summary>
     public bool IsVisibleActionAddVacancyArchive { get; set; }
+    
+    /// <summary>
+    /// Признак доступа.
+    /// </summary>
+    public bool IsAccess { get; set; }
 }

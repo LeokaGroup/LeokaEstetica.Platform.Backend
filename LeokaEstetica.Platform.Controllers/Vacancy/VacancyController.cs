@@ -2,6 +2,7 @@ using AutoMapper;
 using LeokaEstetica.Platform.Base;
 using LeokaEstetica.Platform.Base.Abstractions.Services.Validation;
 using LeokaEstetica.Platform.Controllers.Filters;
+using LeokaEstetica.Platform.Controllers.ModelsValidation.Vacancy;
 using LeokaEstetica.Platform.Controllers.Validators.Vacancy;
 using LeokaEstetica.Platform.Finder.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Models.Dto.Input.Vacancy;
@@ -137,18 +138,30 @@ public class VacancyController : BaseController
     /// <summary>
     /// Метод получает вакансию по ее Id.
     /// </summary>
-    /// <param name="vacancyId">Id вакансии.</param>
+    /// <param name="vacancyValidationModel">Входная модель.</param>
     /// <returns>Данные вакансии.</returns>
     [HttpGet]
-    [Route("vacancy/{vacancyId}")]
+    [Route("vacancy")]
     [ProducesResponseType(200, Type = typeof(VacancyOutput))]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<VacancyOutput> GetVacancyByVacancyIdAsync([FromRoute] long vacancyId)
+    public async Task<VacancyOutput> GetVacancyByVacancyIdAsync(
+        [FromQuery] VacancyValidationModel vacancyValidationModel)
     {
-        var result = await _vacancyService.GetVacancyByVacancyIdAsync(vacancyId, GetUserName());
+        var result = new VacancyOutput();
+        var validator = await new VacancyValidator().ValidateAsync(vacancyValidationModel);
+
+        if (validator.Errors.Any())
+        {
+            result.Errors = await _validationExcludeErrorsService.ExcludeAsync(validator.Errors);
+
+            return result;
+        }
+        
+        result = await _vacancyService.GetVacancyByVacancyIdAsync(vacancyValidationModel.VacancyId,
+            vacancyValidationModel.Mode, GetUserName());
 
         return result;
     }

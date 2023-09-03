@@ -5,7 +5,7 @@ namespace LeokaEstetica.Platform.Controllers.ModelsValidation.Project;
 /// <summary>
 /// Класс модели валидации получения проекта.
 /// </summary>
-public class GetProjectValidationModel
+public class ProjectValidationModel
 {
     /// <summary>
     /// Id проекта.

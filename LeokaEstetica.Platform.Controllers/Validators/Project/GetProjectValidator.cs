@@ -8,9 +8,12 @@ namespace LeokaEstetica.Platform.Controllers.Validators.Project;
 /// <summary>
 /// Класс валидатора получения проекта.
 /// </summary>
-public class GetProjectValidator : AbstractValidator<GetProjectValidationModel>
+public class ProjectValidator : AbstractValidator<ProjectValidationModel>
 {
-    public GetProjectValidator()
+    /// <summary>
+    /// Конструктор.
+    /// </summary>
+    public ProjectValidator()
     {
         RuleFor(p => p.ProjectId)
             .Must(p => p > 0)
