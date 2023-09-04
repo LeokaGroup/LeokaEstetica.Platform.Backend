@@ -74,13 +74,4 @@ public class BaseController : ControllerBase
         
         return CreateTokenFromHeader();
     }
-
-    /// <summary>
-    /// Метод очищает встроенную валидацию ASP.NET Core.
-    /// </summary>
-    [ApiExplorerSettings(IgnoreApi = true)]
-    public void Clear()
-    {
-        ModelState.Clear();
-    }
 }
