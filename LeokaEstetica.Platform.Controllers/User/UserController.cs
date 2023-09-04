@@ -1,5 +1,3 @@
-using System.Globalization;
-using FluentValidation;
 using LeokaEstetica.Platform.Access.Abstractions.User;
 using LeokaEstetica.Platform.Base;
 using LeokaEstetica.Platform.Base.Abstractions.Services.Validation;
@@ -110,10 +108,6 @@ public class UserController : BaseController
     [ProducesResponseType(404)]
     public async Task<UserSignInOutput> SignInAsync([FromBody] UserSignInInput userSignInInput)
     {
-        // var test = ValidatorOptions.Global.LanguageManager.GetString("NotNullValidator");
-        CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("ru");
-        CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo("ru");
-        
         var result = new UserSignInOutput();
         var validator = await new SignInValidator().ValidateAsync(userSignInInput);
 
