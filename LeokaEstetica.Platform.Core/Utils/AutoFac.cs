@@ -18,6 +18,9 @@ public static class AutoFac
     private static ContainerBuilder _builder;
     private static IContainer _container;
     private static IEnumerable<Type> _typeModules;
+    
+    // Сборки, в которых надо регистрировать зависимости.
+    // Для добавления новой регистрации, достаточно просто добавить сюда название сборки.
     private static readonly List<string> _conditions = new()
     {
         "LeokaEstetica.Platform.Logs",
