@@ -17,15 +17,15 @@ public class SignInValidator : AbstractValidator<UserSignInInput>
     {
         RuleFor(p => p.Email)
             .NotNull()
-            .WithMessage(ValidationConsts.NOT_VALID_EMAIL_ERROR)
+            // .WithMessage(ValidationConsts.NOT_VALID_EMAIL_ERROR)
             .NotEmpty()
-            .WithMessage(ValidationConsts.NOT_VALID_EMAIL_ERROR)
+            // .WithMessage(ValidationConsts.NOT_VALID_EMAIL_ERROR)
             .Matches("[.\\-_a-z0-9]+@([a-z0-9][\\-a-z0-9]+\\.)+[a-z]{2,6}", RegexOptions.IgnoreCase);
 
         RuleFor(p => p.Password)
             .NotNull()
-            .WithMessage(ValidationConsts.EMPTY_PASSWORD_ERROR)
-            .NotEmpty()
-            .WithMessage(ValidationConsts.EMPTY_PASSWORD_ERROR);
+            // .WithMessage(ValidationConsts.EMPTY_PASSWORD_ERROR)
+            .NotEmpty();
+        // .WithMessage(ValidationConsts.EMPTY_PASSWORD_ERROR);
     }
 }
