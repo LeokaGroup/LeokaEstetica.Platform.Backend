@@ -71,4 +71,10 @@ public interface IUserService
     /// <param name="account">Аккаунт.</param>
     /// <param name="token">Токен.</param>
     Task RestoreUserPasswordAsync(string password, string account, string token);
+
+    /// <summary>
+    /// Метод получает конфигурацию дял аутентификации через разных провайдеров в зависимости от среды окружения.
+    /// </summary>
+    /// <returns>Данные с ссылками для аутентификации через провайдеров.</returns>
+    Task<AuthProviderConfigOutput> GetAuthProviderConfigAsync();
 }

@@ -48,4 +48,30 @@ public static class GlobalConfigKeys
             public const string NOTIFICATIONS_BOT_INVITE_DEVELOP_TEST = "Notifications.Bot.Invite.Develop.Test";
         }
     }
+
+    /// <summary>
+    /// Класс ключей провайдеров аутентификации.
+    /// </summary>
+    public static class AuthProviderReference
+    {
+        /// <summary>
+        /// Ключ провайдера аутентификации через провайдера ВК.
+        /// </summary>
+        public const string AUTH_PROVIDER_REFERENCE_VK = "Auth.Provider.Reference.Vk";
+
+        /// <summary>
+        /// Ключ редиректа после успешной аутентификации через провайдера ВК.
+        /// </summary>
+        public const string AUTH_PROVIDER_REDIRECT_REFERENCE_VK = "Auth.Provider.Redirect.Reference.Vk";
+        
+        /// <summary>
+        /// Ключ провайдера аутентификации через провайдера Google.
+        /// </summary>
+        public const string AUTH_PROVIDER_REFERENCE_GOOGLE = "Auth.Provider.Reference.Google";
+
+        /// <summary>
+        /// Ключ редиректа после успешной аутентификации через провайдера Google.
+        /// </summary>
+        public const string AUTH_PROVIDER_REDIRECT_REFERENCE_GOOGLE = "Auth.Provider.Redirect.Reference.Google";
+    }
 }
