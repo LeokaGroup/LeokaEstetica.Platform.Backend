@@ -1,3 +1,4 @@
+using System.Globalization;
 using LeokaEstetica.Platform.Access.Abstractions.User;
 using LeokaEstetica.Platform.Base;
 using LeokaEstetica.Platform.Base.Abstractions.Services.Validation;
@@ -108,6 +109,7 @@ public class UserController : BaseController
     [ProducesResponseType(404)]
     public async Task<UserSignInOutput> SignInAsync([FromBody] UserSignInInput userSignInInput)
     {
+        _logger.LogInformation($"ui culture: {CultureInfo.CurrentUICulture.TwoLetterISOLanguageName}");
         var result = new UserSignInOutput();
         var validator = await new SignInValidator().ValidateAsync(userSignInInput);
 
