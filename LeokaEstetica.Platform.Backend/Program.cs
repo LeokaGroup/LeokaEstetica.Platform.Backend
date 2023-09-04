@@ -161,8 +161,8 @@ builder.Services.AddProblemDetails();
 await LogNotifyBot.RunAsync(configuration);
 
 // ValidatorOptions.Global.LanguageManager.Culture = new CultureInfo("ru");
-var culture = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
-ValidatorOptions.Global.LanguageManager.Culture = new CultureInfo(culture);
+// var culture = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+// ValidatorOptions.Global.LanguageManager.Culture = new CultureInfo(culture);
 // ValidatorOptions.Global.LanguageManager = new CustomLanguageManager();
     
 var app = builder.Build();
