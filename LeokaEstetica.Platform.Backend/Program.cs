@@ -7,6 +7,7 @@ using Hellang.Middleware.ProblemDetails;
 using LeokaEstetica.Platform.Backend.Filters;
 using LeokaEstetica.Platform.Backend.Loaders.Bots;
 using LeokaEstetica.Platform.Backend.Loaders.Jobs;
+using LeokaEstetica.Platform.Controllers.ModelsValidation;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Utils;
 using LeokaEstetica.Platform.Notifications.Data;
@@ -160,7 +161,8 @@ builder.Services.AddProblemDetails();
 // Запускаем ботов.
 await LogNotifyBot.RunAsync(configuration);
 
-ValidatorOptions.Global.LanguageManager.Culture = new CultureInfo("ru");
+// ValidatorOptions.Global.LanguageManager.Culture = new CultureInfo("ru");
+ValidatorOptions.Global.LanguageManager = new CustomLanguageManager();
     
 var app = builder.Build();
 
