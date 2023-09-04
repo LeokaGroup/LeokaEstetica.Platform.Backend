@@ -87,6 +87,11 @@ public static class ValidationConsts
     /// Если текст обращения был пустым.
     /// </summary>
     public const string EMPTY_WISHE_OFFER_TEXT = "Текст обращения не может быть пустым.";
+    
+    /// <summary>
+    /// Если не заполнен пароль.
+    /// </summary>
+    public const string NOT_VALID_PASSWORD = "Пароль некорректный.";
 
     /// <summary>
     /// Класс описывает константы валидации Google.
