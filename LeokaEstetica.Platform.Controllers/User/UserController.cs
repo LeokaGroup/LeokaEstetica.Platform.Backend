@@ -108,8 +108,6 @@ public class UserController : BaseController
     [ProducesResponseType(404)]
     public async Task<UserSignInOutput> SignInAsync([FromBody] UserSignInInput userSignInInput)
     {
-        Clear();
-        
         var result = new UserSignInOutput();
         var validator = await new SignInValidator().ValidateAsync(userSignInInput);
 

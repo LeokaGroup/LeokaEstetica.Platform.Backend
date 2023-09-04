@@ -1,5 +1,7 @@
+using System.Globalization;
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
+using FluentValidation;
 using FluentValidation.AspNetCore;
 using Hellang.Middleware.ProblemDetails;
 using LeokaEstetica.Platform.Backend.Filters;
@@ -157,6 +159,8 @@ builder.Services.AddProblemDetails();
 
 // Запускаем ботов.
 await LogNotifyBot.RunAsync(configuration);
+
+ValidatorOptions.Global.LanguageManager.Culture = new CultureInfo("ru");
     
 var app = builder.Build();
 
