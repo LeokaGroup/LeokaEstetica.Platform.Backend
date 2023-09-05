@@ -139,11 +139,13 @@ internal class BaseServiceTest
         var accessUserService = new AccessUserService(accessUserRepository);
         var userRedisService = new UserRedisService(distributedCache, mapper);
         FareRuleRepository = new FareRuleRepository(pgContext);
+        
         var availableLimitsRepository = new AvailableLimitsRepository(pgContext);
+        var globalConfigRepository = new GlobalConfigRepository(pgContext, null);
 
         UserService = new UserService(null, userRepository, mapper, null, pgContext, profileRepository,
             subscriptionRepository, resumeModerationRepository, accessUserService, userRedisService,
-            FareRuleRepository, null, null, availableLimitsRepository);
+            FareRuleRepository, null, null, availableLimitsRepository, globalConfigRepository);
         ProfileService = new ProfileService(null, profileRepository, userRepository, mapper, null, null,
             accessUserService, resumeModerationRepository);
 
@@ -244,8 +246,7 @@ internal class BaseServiceTest
             null);
 
         ProjectMetricsService = new ProjectMetricsService(projectCommentsRepository, mapper, projectRepository);
-
-        var globalConfigRepository = new GlobalConfigRepository(pgContext, null);
+        
         TelegramService = new TelegramService(globalConfigRepository, null);
     }
 }
