@@ -23,6 +23,8 @@ internal sealed class ChatRepository : IChatRepository
         _pgContext = pgContext;
     }
 
+    #region Публичные методы.
+
     /// <summary>
     /// Метод находит Id диалога в участниках диалога.
     /// </summary>
@@ -112,7 +114,8 @@ internal sealed class ChatRepository : IChatRepository
     /// <summary>
     /// Метод проверит существование диалога по участникам диалога.
     /// </summary>
-    /// <param name="dialogId">Id диалога.</param>
+    /// <param name="userId">Id пользователя (не владелец).</param>
+    /// <param name="ownerId">Id владельца проекта.</param>
     /// <returns>Флаг проверки.</returns>
     public async Task<long?> CheckDialogAsync(long userId, long ownerId)
     {
@@ -182,7 +185,7 @@ internal sealed class ChatRepository : IChatRepository
     }
 
     /// <summary>
-    /// Метод получит все диалогы.
+    /// Метод получит все диалоги.
     /// </summary>
     /// <param name="userId">Id пользователя.</param>
     /// <returns>Список диалогов.</returns>
@@ -199,7 +202,12 @@ internal sealed class ChatRepository : IChatRepository
                     DialogId = dm.DialogId,
                     DialogName = d.DialogName,
                     UserId = dm.UserId,
-                    Created = d.Created.ToString(CultureInfo.CurrentCulture)
+                    Created = d.Created.ToString(CultureInfo.CurrentCulture),
+                    ProjectId = _pgContext.UserProjects
+                        .Where(p => p.ProjectId == d.ProjectId 
+                                    && d.ProjectId != null)
+                        .Select(p => p.ProjectId)
+                        .FirstOrDefault()
                 })
             .ToListAsync();
 
@@ -258,4 +266,86 @@ internal sealed class ChatRepository : IChatRepository
 
         return result;
     }
+
+    /// <summary>
+    /// Метод устанавливает связь между проектом и диалогом.
+    /// </summary>
+    /// <param name="dialogId">Id диалога.</param>
+    /// <param name="projectId">Id проекта.</param>
+    public async Task SetReferenceProjectDialogAsync(long dialogId, long projectId)
+    {
+        var dialog = await _pgContext.Dialogs
+            .FirstOrDefaultAsync(d => d.DialogId == dialogId);
+
+        if (dialog is null)
+        {
+            throw new InvalidOperationException($"Диалог не найден. DialogId: {dialogId}");
+        }
+
+        dialog.ProjectId = projectId;
+
+        await _pgContext.SaveChangesAsync();
+    }
+
+    /// <summary>
+    /// Метод получит все диалоги для профиля пользователя.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Список диалогов.</returns>
+    public async Task<List<ProfileDialogOutput>> GetProfileDialogsAsync(long userId)
+    {
+        var result = await (from dm in _pgContext.DialogMembers
+                join d in _pgContext.Dialogs
+                    on dm.DialogId
+                    equals d.DialogId
+                where dm.UserId == userId
+                      && d.DialogMessages.Any()
+                select new ProfileDialogOutput
+                {
+                    DialogId = dm.DialogId,
+                    DialogName = d.DialogName,
+                    UserId = dm.UserId,
+                    Created = d.Created.ToString(CultureInfo.CurrentCulture),
+                    ProjectName = _pgContext.UserProjects
+                        .Where(p => p.ProjectId == d.ProjectId)
+                        .Select(p => p.ProjectName)
+                        .FirstOrDefault(),
+                    ProjectId = _pgContext.UserProjects
+                        .Where(p => p.ProjectId == d.ProjectId 
+                                    && d.ProjectId != null)
+                        .Select(p => p.ProjectId)
+                        .FirstOrDefault(),
+                })
+            .ToListAsync();
+
+        return result;
+    }
+    
+    /// <summary>
+    /// Метод получает Id проекта Id диалога.
+    /// </summary>
+    /// <param name="dialogId">Id диалога.</param>
+    /// <returns>Id проекта.</returns>
+    public async Task<long> GetDialogProjectIdByDialogIdAsync(long dialogId)
+    {
+        var result = await _pgContext.Dialogs
+            .Where(d => d.DialogId == dialogId)
+            .Select(d => d.ProjectId)
+            .FirstOrDefaultAsync();
+
+        if (!result.HasValue)
+        {
+            throw new InvalidOperationException($"Не удалось получить данные диалога. DialogId: {dialogId}");
+        }
+
+        return result.Value;
+    }
+
+    #endregion
+
+    #region Приватные методы.
+
+    
+
+    #endregion
 }

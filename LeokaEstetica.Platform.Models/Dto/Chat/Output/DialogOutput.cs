@@ -57,4 +57,9 @@ public class DialogOutput
     /// Имя + фамилия.
     /// </summary>
     public string FullName { get; set; }
+    
+    /// <summary>
+    /// Id проекта.
+    /// </summary>
+    public long ProjectId { get; set; }
 }

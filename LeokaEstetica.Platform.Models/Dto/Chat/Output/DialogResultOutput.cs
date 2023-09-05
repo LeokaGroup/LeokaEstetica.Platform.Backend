@@ -1,8 +1,7 @@
 using FluentValidation.Results;
-using LeokaEstetica.Platform.Models.Dto.Chat.Output;
 using LeokaEstetica.Platform.Models.Dto.Common;
 
-namespace LeokaEstetica.Platform.Messaging.Models.Chat.Output;
+namespace LeokaEstetica.Platform.Models.Dto.Chat.Output;
 
 /// <summary>
 /// Класс с результатами диалогов.
@@ -53,4 +52,9 @@ public class DialogResultOutput : IFrontError
     /// Дата начала диалога.
     /// </summary>
     public string DateStartDialog { get; set; }
+
+    /// <summary>
+    /// Id проекта.
+    /// </summary>
+    public long? ProjectId { get; set; }
 }

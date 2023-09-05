@@ -1,3 +1,4 @@
+using LeokaEstetica.Platform.Models.Entities.Communication;
 using LeokaEstetica.Platform.Models.Entities.ProjectTeam;
 
 namespace LeokaEstetica.Platform.Models.Entities.Project;
@@ -10,6 +11,7 @@ public class CatalogProjectEntity
     public CatalogProjectEntity()
     {
         ProjectsTeams = new HashSet<ProjectTeamEntity>();
+        MainInfoDialog = new HashSet<MainInfoDialogEntity>();
     }
 
     /// <summary>
@@ -28,4 +30,9 @@ public class CatalogProjectEntity
     /// Список команд проектов.
     /// </summary>
     public ICollection<ProjectTeamEntity> ProjectsTeams { get; set; }
+
+    /// <summary>
+    /// Информация о диалоге.
+    /// </summary>
+    public ICollection<MainInfoDialogEntity> MainInfoDialog { get; set; }
 }

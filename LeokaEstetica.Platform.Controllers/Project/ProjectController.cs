@@ -188,7 +188,7 @@ public class ProjectController : BaseController
     /// <summary>
     /// Метод получает проект для изменения или просмотра.
     /// </summary>
-    /// <param name="getProjectValidation">Входная модель.</param>
+    /// <param name="projectValidation">Входная модель.</param>
     /// <returns>Данные проекта.</returns>
     [HttpGet]
     [Route("project")]
@@ -197,10 +197,10 @@ public class ProjectController : BaseController
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<ProjectOutput> GetProjectAsync([FromQuery] GetProjectValidationModel getProjectValidation)
+    public async Task<ProjectOutput> GetProjectAsync([FromQuery] ProjectValidationModel projectValidation)
     {
         var result = new ProjectOutput();
-        var validator = await new GetProjectValidator().ValidateAsync(getProjectValidation);
+        var validator = await new ProjectValidator().ValidateAsync(projectValidation);
 
         if (validator.Errors.Any())
         {
@@ -209,7 +209,7 @@ public class ProjectController : BaseController
             return result;
         }
 
-        result = await _projectService.GetProjectAsync(getProjectValidation.ProjectId, getProjectValidation.Mode,
+        result = await _projectService.GetProjectAsync(projectValidation.ProjectId, projectValidation.Mode,
             GetUserName());
 
         return result;

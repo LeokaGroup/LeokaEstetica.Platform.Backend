@@ -32,6 +32,32 @@ public static class ValidationConst
     }
     
     /// <summary>
+    /// Класс описывает ключи для валидации вакансий.
+    /// </summary>
+    public static class VacancyValidation
+    {
+        /// <summary>
+        /// Если не заполнили название вакансии.
+        /// </summary>
+        public const string EMPTY_VACANCY_NAME = "Не заполнено название вакансии.";
+
+        /// <summary>
+        /// Если не заполнили описание вакансии.
+        /// </summary>
+        public const string EMPTY_VACANCY_DETAILS = "Не заполнено описание вакансии.";
+
+        /// <summary>
+        /// Если передали некорректный Id вакансии.
+        /// </summary>
+        public const string NOT_VALID_VACANCY_ID = "Некорректный Id вакансии. VacancyId был ";
+
+        /// <summary>
+        /// Если передали некорректный режим.
+        /// </summary>
+        public const string EMPTY_MODE = "Передан некорректный режим. Mode был ";
+    }
+    
+    /// <summary>
     /// Класс описывает ключи поиска в проектах.
     /// </summary>
     public static class SearchProject

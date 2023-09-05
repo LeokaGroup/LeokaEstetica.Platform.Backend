@@ -86,7 +86,8 @@ internal sealed class ResumeRepository : IResumeRepository
                 Job = pi.Job,
                 Aboutme = pi.Aboutme,
                 IsShortFirstName = pi.IsShortFirstName,
-                UserId = pi.UserId
+                UserId = pi.UserId,
+                ProfileInfoId = pi.ProfileInfoId
             })
             .AsQueryable();
 
@@ -94,7 +95,7 @@ internal sealed class ResumeRepository : IResumeRepository
     }
 
     /// <summary>
-    /// Метод получает анкету пользователя.
+    /// Метод получает анкету пользователя по ее Id.
     /// </summary>
     /// <param name="resumeId">Id анкеты пользователя.</param>
     /// <returns>Данные анкеты.</returns>

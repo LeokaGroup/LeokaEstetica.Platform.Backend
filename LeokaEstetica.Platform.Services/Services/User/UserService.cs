@@ -5,10 +5,12 @@ using System.Security.Claims;
 using AutoMapper;
 using LeokaEstetica.Platform.Access.Abstractions.User;
 using LeokaEstetica.Platform.Access.Helpers;
+using LeokaEstetica.Platform.Core.Constants;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.AvailableLimits;
+using LeokaEstetica.Platform.Database.Abstractions.Config;
 using LeokaEstetica.Platform.Database.Abstractions.FareRule;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Resume;
 using LeokaEstetica.Platform.Database.Abstractions.Profile;
@@ -22,6 +24,7 @@ using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Notifications.Consts;
 using LeokaEstetica.Platform.Redis.Abstractions.User;
 using LeokaEstetica.Platform.Services.Abstractions.User;
+using LeokaEstetica.Platform.Services.Consts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using ValidationFailure = FluentValidation.Results.ValidationFailure;
@@ -49,6 +52,7 @@ internal sealed class UserService : IUserService
     private readonly IAccessUserNotificationsService _accessUserNotificationsService;
     private readonly INotificationsService _notificationsService;
     private readonly IAvailableLimitsRepository _availableLimitsRepository;
+    private readonly IGlobalConfigRepository _globalConfigRepository;
 
     /// <summary>
     /// Конструктор.
@@ -65,6 +69,7 @@ internal sealed class UserService : IUserService
     /// <param name="accessUserNotificationsService">Сервис уведомлений доступа пользователей.</param>
     /// <param name="notificationsService">Сервис уведомлений.</param>
     /// <param name="availableLimitsRepository">Репозиторий лимитов.</param>
+    /// <param name="globalConfigRepository">Репозиторий глобал конфига.</param>
     public UserService(ILogger<UserService> logger, 
         IUserRepository userRepository, 
         IMapper mapper, 
@@ -78,7 +83,8 @@ internal sealed class UserService : IUserService
         IFareRuleRepository fareRuleRepository,
         IAccessUserNotificationsService accessUserNotificationsService,
         INotificationsService notificationsService,
-        IAvailableLimitsRepository availableLimitsRepository)
+        IAvailableLimitsRepository availableLimitsRepository,
+        IGlobalConfigRepository globalConfigRepository)
     {
         _logger = logger;
         _userRepository = userRepository;
@@ -94,6 +100,7 @@ internal sealed class UserService : IUserService
         _accessUserNotificationsService = accessUserNotificationsService;
         _notificationsService = notificationsService;
         _availableLimitsRepository = availableLimitsRepository;
+        _globalConfigRepository = globalConfigRepository;
     }
 
     #region Публичные методы.
@@ -286,8 +293,24 @@ internal sealed class UserService : IUserService
     {
         try
         {
+            var IfExistsUserEmail = await _userRepository.CheckUserByEmailAsync(email);
             var result = new UserSignInOutput { Errors = new List<ValidationFailure>() };
 
+            // Если нет такой почты в системе.
+            if (!IfExistsUserEmail)
+            {
+                result.Errors.Add(new ValidationFailure
+                {
+                    ErrorCode = "500",
+                    ErrorMessage = string.Format(ValidationConsts.NOT_VALID_EMAIL, email)
+                });
+                ;
+                var ex = new UnauthorizedAccessException(string.Format(ValidationConsts.NOT_VALID_EMAIL, email));
+                _logger.LogError(string.Format(ValidationConsts.NOT_VALID_EMAIL, email), ex);
+
+                return result;
+            }
+            
             var passwordHash = await _userRepository.GetPasswordHashByEmailAsync(email);
 
             if (passwordHash is null)
@@ -297,9 +320,20 @@ internal sealed class UserService : IUserService
 
             var checkPassword = HashHelper.VerifyHashedPassword(passwordHash, password);
 
+            // Если пароль некорректный.
             if (!checkPassword)
             {
-                throw new UnauthorizedAccessException($"Пользователь {email} не прошел проверку по паролю.");
+                result.Errors.Add(new ValidationFailure
+                {
+                    ErrorCode = "500",
+                    ErrorMessage = ValidationConsts.NOT_VALID_PASSWORD
+                });
+
+                var errMsg = $"Пользователь {email} не прошел проверку по паролю.";
+                var ex = new UnauthorizedAccessException(errMsg);
+                _logger.LogError(errMsg, ex);
+
+                return result;
             }
 
             try
@@ -631,6 +665,68 @@ internal sealed class UserService : IUserService
                     "Пароль успешно изменен.",
                     NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);   
             }
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Метод получает конфигурацию дял аутентификации через разных провайдеров в зависимости от среды окружения.
+    /// </summary>
+    /// <returns>Данные с ссылками для аутентификации через провайдеров.</returns>
+    public async Task<AuthProviderConfigOutput> GetAuthProviderConfigAsync()
+    {
+        try
+        {
+            var vkReference = await _globalConfigRepository.GetValueByKeyAsync<string>(
+                GlobalConfigKeys.AuthProviderReference.AUTH_PROVIDER_REFERENCE_VK);
+
+            if (string.IsNullOrEmpty(vkReference))
+            {
+                throw new InvalidOperationException(
+                    "Не удалось получить ссылку для аутентификации через провайдер VK.");
+            }
+        
+            var vkRedirect = await _globalConfigRepository.GetValueByKeyAsync<string>(
+                GlobalConfigKeys.AuthProviderReference.AUTH_PROVIDER_REDIRECT_REFERENCE_VK);
+            
+            if (string.IsNullOrEmpty(vkRedirect))
+            {
+                throw new InvalidOperationException(
+                    "Не удалось получить ссылку для редиректа после успешной аутентификации через провайдер VK.");
+            }
+            
+            var googleReference = await _globalConfigRepository.GetValueByKeyAsync<string>(
+                GlobalConfigKeys.AuthProviderReference.AUTH_PROVIDER_REFERENCE_GOOGLE);
+            
+            if (string.IsNullOrEmpty(googleReference))
+            {
+                throw new InvalidOperationException(
+                    "Не удалось получить ссылку для аутентификации через провайдер Google.");
+            }
+            
+            var googleRedirect = await _globalConfigRepository.GetValueByKeyAsync<string>(
+                GlobalConfigKeys.AuthProviderReference.AUTH_PROVIDER_REDIRECT_REFERENCE_GOOGLE);
+            
+            if (string.IsNullOrEmpty(googleRedirect))
+            {
+                throw new InvalidOperationException(
+                    "Не удалось получить ссылку для редиректа после успешной аутентификации через провайдер Google.");
+            }
+
+            var result = new AuthProviderConfigOutput
+            {
+                VkReference = vkReference,
+                VkRedirectReference = vkRedirect,
+                GoogleReference = googleReference,
+                GoogleRedirectReference = googleRedirect
+            };
+
+            return result;
         }
         
         catch (Exception ex)

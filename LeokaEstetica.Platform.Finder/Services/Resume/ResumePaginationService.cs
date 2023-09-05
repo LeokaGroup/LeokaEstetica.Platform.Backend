@@ -1,4 +1,6 @@
+using LeokaEstetica.Platform.Access.Abstractions.User;
 using LeokaEstetica.Platform.Database.Abstractions.Resume;
+using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Finder.Abstractions.Resume;
 using LeokaEstetica.Platform.Finder.Builders;
 using LeokaEstetica.Platform.Finder.Chains;
@@ -19,14 +21,29 @@ public class ResumePaginationService : BaseIndexRamDirectory, IResumePaginationS
 {
     private readonly IResumeRepository _resumeRepository;
     private readonly ILogger<ResumePaginationService> _logger;
+    private readonly IUserRepository _userRepository;
+    private readonly IAccessUserService _accessUserService;
 
+    /// <summary>
+    /// Конструктор.
+    /// </summary>
+    /// <param name="resumeRepository">Репозиторий резюме.</param>
+    /// <param name="logger">Логгер.</param>
+    /// <param name="userRepository">Репозиторий пользователей.</param>
+    /// <param name="accessUserService">Сервис доступа пользователей.</param>
     public ResumePaginationService(IResumeRepository resumeRepository,
-        ILogger<ResumePaginationService> logger)
+        ILogger<ResumePaginationService> logger,
+        IUserRepository userRepository,
+        IAccessUserService accessUserService)
     {
         _resumeRepository = resumeRepository;
         _logger = logger;
+        _userRepository = userRepository;
+        _accessUserService = accessUserService;
     }
-    
+
+    #region Публичные методы.
+
     /// <summary>
     /// Метод пагинации резюме.
     /// </summary>
@@ -60,6 +77,30 @@ public class ResumePaginationService : BaseIndexRamDirectory, IResumePaginationS
                 result.IsVisiblePagination = false;
             }
 
+            if (result.Resumes.Any())
+            {
+                var removedUsers = new List<ResumeOutput>();
+                
+                foreach (var res in result.Resumes)
+                {
+                    var userId = res.UserId;
+                    
+                    // Проверяем заполнение анкеты.
+                    var isEmptyProfile = await _accessUserService.IsProfileEmptyAsync(userId);
+
+                    // Удаляем анкеты из выборки, которые не заполнены.
+                    if (isEmptyProfile)
+                    {
+                        removedUsers.Add(res);
+                    }
+                }
+
+                if (removedUsers.Any())
+                {
+                    result.Resumes.RemoveAll(r => removedUsers.Contains(r));   
+                }
+            }
+
             return result;
         }
 
@@ -69,4 +110,12 @@ public class ResumePaginationService : BaseIndexRamDirectory, IResumePaginationS
             throw;
         }
     }
+
+    #endregion
+
+    #region Приватные методы.
+
+    
+
+    #endregion
 }

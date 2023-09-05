@@ -3,7 +3,6 @@ using LeokaEstetica.Platform.Base;
 using LeokaEstetica.Platform.Controllers.Filters;
 using LeokaEstetica.Platform.Controllers.Validators.Chat;
 using LeokaEstetica.Platform.Messaging.Abstractions.Chat;
-using LeokaEstetica.Platform.Messaging.Models.Chat.Output;
 using LeokaEstetica.Platform.Models.Dto.Chat.Input;
 using LeokaEstetica.Platform.Models.Dto.Chat.Output;
 using LeokaEstetica.Platform.Models.Enums;
@@ -123,6 +122,24 @@ public class ChatController : BaseController
     public async Task<DialogResultOutput> SendMessageAsync([FromBody] MessageInput messageInput)
     {
         var result = await _chatService.SendMessageAsync(messageInput.Message, messageInput.DialogId, GetUserName());
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод получает список диалогов для ЛК.
+    /// </summary>
+    /// <returns>Список диалогов.</returns>
+    [HttpGet]
+    [Route("profile-messages")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<ProfileDialogOutput>))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<IEnumerable<ProfileDialogOutput>> GetProfileDialogsAsync()
+    {
+        var result = await _chatService.GetProfileDialogsAsync(GetUserName());
 
         return result;
     }

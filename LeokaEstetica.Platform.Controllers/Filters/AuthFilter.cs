@@ -22,7 +22,8 @@ public class AuthFilter : Attribute, IAuthorizationFilter
         "CreateTicket",
         "GetLastProjectComments",
         "GetNewUsers",
-        "CreateWisheOffer"
+        "CreateWisheOffer",
+        "GetAuthProviderConfig" // Получение конфига аутентификации провайдеров.
     };
     
     /// <summary>

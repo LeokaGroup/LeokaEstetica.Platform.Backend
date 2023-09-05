@@ -106,6 +106,7 @@ internal class BaseServiceTest
     protected readonly ProjectMetricsService ProjectMetricsService;
     protected readonly TelegramService TelegramService;
     protected readonly FareRuleRepository FareRuleRepository;
+    protected readonly ChatRepository ChatRepository;
 
     protected BaseServiceTest()
     {
@@ -132,21 +133,23 @@ internal class BaseServiceTest
         var userRepository = new UserRepository(pgContext, null);
         var profileRepository = new ProfileRepository(pgContext);
         var subscriptionRepository = new SubscriptionRepository(pgContext);
-        var chatRepository = new ChatRepository(pgContext);
+        ChatRepository = new ChatRepository(pgContext);
         var resumeModerationRepository = new ResumeModerationRepository(pgContext);
         var accessUserRepository = new AccessUserRepository(pgContext);
         var accessUserService = new AccessUserService(accessUserRepository);
         var userRedisService = new UserRedisService(distributedCache, mapper);
         FareRuleRepository = new FareRuleRepository(pgContext);
+        
         var availableLimitsRepository = new AvailableLimitsRepository(pgContext);
+        var globalConfigRepository = new GlobalConfigRepository(pgContext, null);
 
         UserService = new UserService(null, userRepository, mapper, null, pgContext, profileRepository,
             subscriptionRepository, resumeModerationRepository, accessUserService, userRedisService,
-            FareRuleRepository, null, null, availableLimitsRepository);
+            FareRuleRepository, null, null, availableLimitsRepository, globalConfigRepository);
         ProfileService = new ProfileService(null, profileRepository, userRepository, mapper, null, null,
             accessUserService, resumeModerationRepository);
 
-        var projectRepository = new ProjectRepository(pgContext, chatRepository);
+        var projectRepository = new ProjectRepository(pgContext, ChatRepository);
         var projectNotificationsRepository = new ProjectNotificationsRepository(pgContext);
         var vacancyRepository = new VacancyRepository(pgContext);
         var projectNotificationsService = new ProjectNotificationsService(null, null, userRepository, mapper,
@@ -166,8 +169,10 @@ internal class BaseServiceTest
             VacancyModerationService, subscriptionRepository, FareRuleRepository, availableLimitsService,
             vacancyNotificationsService, null, null, null, vacancyModerationRepository);
 
-        ChatService = new ChatService(null, userRepository, projectRepository, vacancyRepository, chatRepository,
-            mapper);
+        var projectResponseRepository = new ProjectResponseRepository(pgContext);
+
+        ChatService = new ChatService(null, userRepository, projectRepository, vacancyRepository, ChatRepository,
+            mapper, projectResponseRepository);
 
         var accessModerationRepository = new AccessModerationRepository(pgContext);
 
@@ -241,8 +246,7 @@ internal class BaseServiceTest
             null);
 
         ProjectMetricsService = new ProjectMetricsService(projectCommentsRepository, mapper, projectRepository);
-
-        var globalConfigRepository = new GlobalConfigRepository(pgContext, null);
+        
         TelegramService = new TelegramService(globalConfigRepository, null);
     }
 }

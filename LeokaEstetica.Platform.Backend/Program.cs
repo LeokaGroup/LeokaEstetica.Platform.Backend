@@ -157,7 +157,7 @@ builder.Services.AddProblemDetails();
 
 // Запускаем ботов.
 await LogNotifyBot.RunAsync(configuration);
-    
+
 var app = builder.Build();
 
 app.UseHttpsRedirection();

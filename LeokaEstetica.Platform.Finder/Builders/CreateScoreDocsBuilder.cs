@@ -26,7 +26,7 @@ public static class CreateScoreDocsBuilder
 
         for (var i = skipRows; i < searchResults.Length; i++)
         {
-            if (i > (skipRows + PaginationConst.TAKE_COUNT) - 1)
+            if (i > skipRows + PaginationConst.TAKE_COUNT - 1)
             {
                 break;
             }

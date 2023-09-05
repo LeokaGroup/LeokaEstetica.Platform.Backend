@@ -277,4 +277,22 @@ public class UserController : BaseController
         await _userService.RestoreUserPasswordAsync(restorePasswordInput.RestorePassword, GetUserName(),
             GetTokenFromHeader());
     }
+
+    /// <summary>
+    /// Метод получает конфигурацию дял аутентификации через разных провайдеров в зависимости от среды окружения.
+    /// </summary>
+    /// <returns>Данные с ссылками для аутентификации через провайдеров.</returns>
+    [HttpGet]
+    [Route("providers-config")]
+    [ProducesResponseType(200, Type = typeof(AuthProviderConfigOutput))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<AuthProviderConfigOutput> GetAuthProviderConfigAsync()
+    {
+        var result = await _userService.GetAuthProviderConfigAsync();
+
+        return result;
+    }
 }

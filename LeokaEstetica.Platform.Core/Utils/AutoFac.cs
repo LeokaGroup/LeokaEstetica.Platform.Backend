@@ -3,6 +3,7 @@ using Autofac;
 using AutoMapper;
 using LeokaEstetica.Platform.Core.Attributes;
 using LeokaEstetica.Platform.Core.Data;
+using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Core.Mapper;
 using Microsoft.EntityFrameworkCore;
 using Module = Autofac.Module;
@@ -17,6 +18,27 @@ public static class AutoFac
     private static ContainerBuilder _builder;
     private static IContainer _container;
     private static IEnumerable<Type> _typeModules;
+    
+    // Сборки, в которых надо регистрировать зависимости.
+    // Для добавления новой регистрации, достаточно просто добавить сюда название сборки.
+    private static readonly List<string> _conditions = new()
+    {
+        "LeokaEstetica.Platform.Logs",
+        "LeokaEstetica.Platform.Services",
+        "LeokaEstetica.Platform.Base",
+        "LeokaEstetica.Platform.Database",
+        "LeokaEstetica.Platform.Access",
+        "LeokaEstetica.Platform.Messaging",
+        "LeokaEstetica.Platform.Notifications",
+        "LeokaEstetica.Platform.Redis",
+        "LeokaEstetica.Platform.CallCenter",
+        "LeokaEstetica.Platform.Finder",
+        "LeokaEstetica.Platform.Processing",
+        "LeokaEstetica.Platform.Diagnostics",
+        "LeokaEstetica.Platform.Integrations"
+    };
+
+    private static readonly List<Assembly> _assemblies = new();
 
     /// <summary>
     /// Метод инициализирует контейнер начальными регистрациями.
@@ -51,85 +73,30 @@ public static class AutoFac
     /// <param name="builder">Билдер контейнера, который наполнять регистрациями.</param>
     private static void RegisterAllAssemblyTypes(ContainerBuilder b)
     {
-        var assemblies1 = GetAssembliesFromApplicationBaseDirectory(x =>
-                x.FullName.StartsWith("LeokaEstetica.Platform.Logs"));
+        foreach (var c in _conditions)
+        {
+            var assembly = GetAssembliesFromApplicationBaseDirectory(x => x.FullName.StartsWith(c));
+            
+            b.RegisterAssemblyTypes(assembly).AsImplementedInterfaces();
 
-        var assemblies2 = GetAssembliesFromApplicationBaseDirectory(x =>
-                x.FullName.StartsWith("LeokaEstetica.Platform.Services"));
-
-        var assemblies3 = GetAssembliesFromApplicationBaseDirectory(x =>
-                x.FullName.StartsWith("LeokaEstetica.Platform.Base"));
-
-        var assemblies4 = GetAssembliesFromApplicationBaseDirectory(x =>
-                x.FullName.StartsWith("LeokaEstetica.Platform.Database"));
-
-        var assemblies5 = GetAssembliesFromApplicationBaseDirectory(x =>
-                x.FullName.StartsWith("LeokaEstetica.Platform.Access"));
-
-        var assemblies6 = GetAssembliesFromApplicationBaseDirectory(x =>
-                x.FullName.StartsWith("LeokaEstetica.Platform.Messaging"));
-
-        var assemblies7 = GetAssembliesFromApplicationBaseDirectory(x =>
-                x.FullName.StartsWith("LeokaEstetica.Platform.Notifications"));
-
-        var assemblies8 = GetAssembliesFromApplicationBaseDirectory(x =>
-                x.FullName.StartsWith("LeokaEstetica.Platform.Redis"));
-
-        var assemblies9 = GetAssembliesFromApplicationBaseDirectory(x =>
-                x.FullName.StartsWith("LeokaEstetica.Platform.CallCenter"));
-
-        var assemblies10 = GetAssembliesFromApplicationBaseDirectory(x =>
-                x.FullName.StartsWith("LeokaEstetica.Platform.Finder"));
-        
-        var assemblies11 = GetAssembliesFromApplicationBaseDirectory(x =>
-                x.FullName.StartsWith("LeokaEstetica.Platform.Processing"));
-        
-        var assemblies12 = GetAssembliesFromApplicationBaseDirectory(x =>
-                x.FullName.StartsWith("LeokaEstetica.Platform.Diagnostics"));
-
-        var assemblies13 = GetAssembliesFromApplicationBaseDirectory(x =>
-            x.FullName.StartsWith("LeokaEstetica.Platform.Integrations"));
-
-        b.RegisterAssemblyTypes(assemblies1).AsImplementedInterfaces();
-        b.RegisterAssemblyTypes(assemblies2).AsImplementedInterfaces();
-        b.RegisterAssemblyTypes(assemblies3).AsImplementedInterfaces();
-        b.RegisterAssemblyTypes(assemblies4).AsImplementedInterfaces();
-        b.RegisterAssemblyTypes(assemblies5).AsImplementedInterfaces();
-        b.RegisterAssemblyTypes(assemblies6).AsImplementedInterfaces();
-        b.RegisterAssemblyTypes(assemblies7).AsImplementedInterfaces();
-        b.RegisterAssemblyTypes(assemblies8).AsImplementedInterfaces();
-        b.RegisterAssemblyTypes(assemblies9).AsImplementedInterfaces();
-        b.RegisterAssemblyTypes(assemblies10).AsImplementedInterfaces();
-        b.RegisterAssemblyTypes(assemblies11).AsImplementedInterfaces();
-        b.RegisterAssemblyTypes(assemblies12).AsImplementedInterfaces();
-        b.RegisterAssemblyTypes(assemblies13).AsImplementedInterfaces();
-
-        var assemblies = assemblies1
-            .Union(assemblies2)
-            .Union(assemblies3)
-            .Union(assemblies4)
-            .Union(assemblies5)
-            .Union(assemblies6)
-            .Union(assemblies7)
-            .Union(assemblies8)
-            .Union(assemblies9)
-            .Union(assemblies10)
-            .Union(assemblies11)
-            .Union(assemblies12)
-            .Union(assemblies13);
+            _assemblies.AddRange(assembly);
+        }
 
         RegisterMapper(b);
+        
+        // Регистрация моделей, которые будут резолвиться.
+        ModelsExtensions.RegisterModels(b);
 
-        _typeModules = (from assembly in assemblies
+        _typeModules = (from assembly in _assemblies
             from type in assembly.GetTypes()
-            where type.IsClass && type.GetCustomAttribute<CommonModuleAttribute>() != null
+            where type.IsClass && type.GetCustomAttribute<CommonModuleAttribute>() is not null
             select type).ToArray();
 
         foreach (var module in _typeModules)
         {
             if (module is not null)
             {
-                b.RegisterModule(Activator.CreateInstance(module) as Module);
+                b.RegisterModule((Activator.CreateInstance(module) as Module)!);
             }
         }
     }
@@ -149,6 +116,9 @@ public static class AutoFac
             RegisterAllAssemblyTypes(_builder);
             RegisterDbContext(_builder);
             RegisterMapper(_builder);
+            
+            // Регистрация моделей, которые будут резолвиться.
+            ModelsExtensions.RegisterModels(_builder);
 
             _container = _builder.Build();
         }
@@ -169,6 +139,9 @@ public static class AutoFac
         RegisterAllAssemblyTypes(_builder);
         RegisterDbContext(_builder);
         RegisterMapper(_builder);
+        
+        // Регистрация моделей, которые будут резолвиться.
+        ModelsExtensions.RegisterModels(_builder);
 
         return _container.BeginLifetimeScope();
     }
