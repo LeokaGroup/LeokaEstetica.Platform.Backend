@@ -61,6 +61,7 @@ public class ChatController : BaseController
     /// <summary>
     /// Метод получает список диалогов.
     /// </summary>
+    /// <param name="projectId">Id проекта. Если не передан, то получает все диалоги пользователя.</param>
     /// <returns>Список диалогов.</returns>
     [HttpGet]
     [Route("dialogs")]
@@ -69,9 +70,9 @@ public class ChatController : BaseController
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<IEnumerable<DialogOutput>> GetDialogsAsync()
+    public async Task<IEnumerable<DialogOutput>> GetDialogsAsync([FromQuery] long? projectId = null)
     {
-        var result = await _chatService.GetDialogsAsync(GetUserName());
+        var result = await _chatService.GetDialogsAsync(GetUserName(), projectId);
 
         return result;
     }
