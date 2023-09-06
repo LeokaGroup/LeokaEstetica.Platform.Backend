@@ -244,8 +244,9 @@ internal sealed class ChatService : IChatService
     /// Метод получает список диалогов.
     /// </summary>
     /// <param name="account">Аккаунт.</param>
+    /// <param name="projectId">Id проекта. Если не передан, то получает все диалоги пользователя.</param>
     /// <returns>Список диалогов.</returns>
-    public async Task<IEnumerable<DialogOutput>> GetDialogsAsync(string account)
+    public async Task<IEnumerable<DialogOutput>> GetDialogsAsync(string account, long? projectId = null)
     {
         try
         {
@@ -256,7 +257,7 @@ internal sealed class ChatService : IChatService
                 throw new InvalidOperationException($"Id пользователя с аккаунтом {account} не найден.");
             }
 
-            var dialogs = await _chatRepository.GetDialogsAsync(userId);
+            var dialogs = await _chatRepository.GetDialogsAsync(userId, projectId);
             var mapDialogs = _mapper.Map<List<ProfileDialogOutput>>(dialogs);
             
             dialogs = await CreateDialogMessagesBuilder.CreateDialogAsync((dialogs, mapDialogs), _chatRepository,
