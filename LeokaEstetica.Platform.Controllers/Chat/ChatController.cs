@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace LeokaEstetica.Platform.Controllers.Chat;
 
 /// <summary>
+/// TODO: Этот контроллер удалим когда переведем все методы чатов на сокеты, он будет не нужен.
 /// Контроллер для работы с чатами.
 /// </summary>
 [AuthFilter]
@@ -27,35 +28,6 @@ public class ChatController : BaseController
     public ChatController(IChatService chatService)
     {
         _chatService = chatService;
-    }
-
-    /// <summary>
-    /// Метод получает диалог или создает новый и возвращает его.
-    /// </summary>
-    /// <param name="dialogInput">Входная модель.</param>
-    /// <returns>Данные диалога.</returns>
-    [HttpGet]
-    [Route("dialog")]
-    [ProducesResponseType(200, Type = typeof(DialogResultOutput))]
-    [ProducesResponseType(400)]
-    [ProducesResponseType(403)]
-    [ProducesResponseType(500)]
-    [ProducesResponseType(404)]
-    public async Task<DialogResultOutput> GetDialogAsync([FromQuery] DialogInput dialogInput)
-    {
-        var result = new DialogResultOutput { Errors = new List<ValidationFailure>() };
-        var validator = await new GetDialogValidator().ValidateAsync(dialogInput);
-
-        if (validator.Errors.Any())
-        {
-            return result;
-        }
-
-        Enum.TryParse(dialogInput.DiscussionType, out DiscussionTypeEnum discussionType);
-        result = await _chatService.GetDialogAsync(dialogInput.DialogId, discussionType, GetUserName(),
-            dialogInput.DiscussionTypeId);
-
-        return result;
     }
 
     /// <summary>
