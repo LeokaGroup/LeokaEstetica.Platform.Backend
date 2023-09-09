@@ -1,7 +1,7 @@
 using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Notifications.Data;
 using LeokaEstetica.Platform.Notifications.Models.Output;
-using LeokaEstetica.Platform.Redis.Abstractions.Notification;
+using LeokaEstetica.Platform.Redis.Abstractions.Connection;
 using Microsoft.AspNetCore.SignalR;
 
 namespace LeokaEstetica.Platform.Notifications.Services;
@@ -12,7 +12,7 @@ namespace LeokaEstetica.Platform.Notifications.Services;
 internal sealed class ProjectModerationNotificationService : IProjectModerationNotificationService
 {
     private readonly IHubContext<NotifyHub> _hubContext;
-    private readonly INotificationsRedisService _notificationsRedisService;
+    private readonly IConnectionService _connectionService;
     
     /// <summary>
     /// Конструктор.
@@ -20,10 +20,10 @@ internal sealed class ProjectModerationNotificationService : IProjectModerationN
     /// <param name="hubContext">Контекст хаба.</param>
     /// <param name="notificationsRedisService">Сервис уведомлений кэша.</param>
     public ProjectModerationNotificationService(IHubContext<NotifyHub> hubContext, 
-        INotificationsRedisService notificationsRedisService)
+        IConnectionService connectionService)
     {
         _hubContext = hubContext;
-        _notificationsRedisService = notificationsRedisService;
+        _connectionService = connectionService;
     }
 
     /// <summary>
@@ -36,7 +36,7 @@ internal sealed class ProjectModerationNotificationService : IProjectModerationN
     public async Task SendNotificationSuccessCreateProjectRemarksAsync(string title, string notifyText,
         string notificationLevel, string token)
     {
-        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(token);
+        var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
 
         await _hubContext.Clients
             .Client(connectionId)
@@ -59,7 +59,7 @@ internal sealed class ProjectModerationNotificationService : IProjectModerationN
     public async Task SendNotificationSuccessSendProjectRemarksAsync(string title, string notifyText,
         string notificationLevel, string token)
     {
-        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(token);
+        var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
 
         await _hubContext.Clients
             .Client(connectionId)
@@ -82,7 +82,7 @@ internal sealed class ProjectModerationNotificationService : IProjectModerationN
     public async Task SendNotificationWarningSendProjectRemarksAsync(string title, string notifyText,
         string notificationLevel, string token)
     {
-        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(token);
+        var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
 
         await _hubContext.Clients
             .Client(connectionId)

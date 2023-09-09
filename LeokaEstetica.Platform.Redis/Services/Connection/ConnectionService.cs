@@ -1,13 +1,13 @@
-using LeokaEstetica.Platform.Redis.Abstractions.Notification;
+using LeokaEstetica.Platform.Redis.Abstractions.Connection;
 using LeokaEstetica.Platform.Redis.Extensions;
 using Microsoft.Extensions.Caching.Distributed;
 
-namespace LeokaEstetica.Platform.Redis.Services.Notification;
+namespace LeokaEstetica.Platform.Redis.Services.Connection;
 
 /// <summary>
-/// Класс реализует методы сервиса уведомлений кэша.
+/// Класс реализует методы сервиса подключений Redis.
 /// </summary>
-public class NotificationsRedisService : INotificationsRedisService
+internal sealed class ConnectionService : IConnectionService
 {
     private readonly IDistributedCache _redisCache;
 
@@ -15,11 +15,11 @@ public class NotificationsRedisService : INotificationsRedisService
     /// Конструктор.
     /// </summary>
     /// <param name="redisCache">Кэш редиса.</param>
-    public NotificationsRedisService(IDistributedCache redisCache)
+    public ConnectionService(IDistributedCache redisCache)
     {
         _redisCache = redisCache;
     }
-
+    
     /// <summary>
     /// Метод сохраняет ConnectionId подключения SignalR в кэш.
     /// </summary>

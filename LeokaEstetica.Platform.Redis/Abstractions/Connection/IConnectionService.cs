@@ -1,9 +1,9 @@
-namespace LeokaEstetica.Platform.Redis.Abstractions.Notification;
+namespace LeokaEstetica.Platform.Redis.Abstractions.Connection;
 
 /// <summary>
-/// Абстракция уведомлений кэш-сервиса.
+/// Абстракция подключений Redis.
 /// </summary>
-public interface INotificationsRedisService
+public interface IConnectionService
 {
     /// <summary>
     /// Метод сохраняет ConnectionId подключения SignalR в кэш.
