@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using AutoMapper;
 using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Database.Chat;
@@ -7,10 +8,11 @@ using LeokaEstetica.Platform.Redis.Abstractions.Connection;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 
+[assembly: InternalsVisibleTo("LeokaEstetica.Platform.Backend")]
+
 namespace LeokaEstetica.Platform.Messaging.Hubs;
 
 /// <summary>
-/// TODO: Если не заработает, то убрать internal.
 /// Класс логики хаба для чатов.
 /// </summary>
 internal class ChatHub : Hub
@@ -42,6 +44,12 @@ internal class ChatHub : Hub
         _connectionService = connectionService;
     }
 
+    /// <summary>
+    /// Метод получает список диалогов.
+    /// <param name="account">Аккаунт.</param>
+    /// <param name="token">Токен.</param>    
+    /// <param name="projectId">Id проекта. Если не передан, то получает все диалоги пользователя.</param>
+    /// <returns>Список диалогов.</returns>
     public async Task GetDialogsAsync(string account, string token, long? projectId = null)
     {
         try
@@ -63,7 +71,7 @@ internal class ChatHub : Hub
 
             await Clients
                 .Client(connectionId)
-                .SendAsync("GetDialogsAsync", dialogs);
+                .SendAsync("listenGetProjectDialogs", dialogs);
         }
         
         catch (Exception ex)
