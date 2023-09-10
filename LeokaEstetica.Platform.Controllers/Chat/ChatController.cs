@@ -62,25 +62,6 @@ public class ChatController : BaseController
     }
 
     /// <summary>
-    /// Метод отправляет сообщение.
-    /// </summary>
-    /// <param name="messageInput">Входная модель.</param>
-    /// <returns>Выходная модель.</returns>
-    [HttpPost]
-    [Route("message")]
-    [ProducesResponseType(200, Type = typeof(DialogResultOutput))]
-    [ProducesResponseType(400)]
-    [ProducesResponseType(403)]
-    [ProducesResponseType(500)]
-    [ProducesResponseType(404)]
-    public async Task<DialogResultOutput> SendMessageAsync([FromBody] MessageInput messageInput)
-    {
-        var result = await _chatService.SendMessageAsync(messageInput.Message, messageInput.DialogId, GetUserName());
-
-        return result;
-    }
-
-    /// <summary>
     /// Метод получает список диалогов для ЛК.
     /// </summary>
     /// <returns>Список диалогов.</returns>
