@@ -261,7 +261,7 @@ internal sealed class ChatService : IChatService
             var mapDialogs = _mapper.Map<List<ProfileDialogOutput>>(dialogs);
             
             dialogs = await CreateDialogMessagesBuilder.CreateDialogAsync((dialogs, mapDialogs), _chatRepository,
-                _userRepository, userId, _mapper);
+                _userRepository, userId, _mapper, account);
 
             return dialogs;
         }
@@ -460,7 +460,7 @@ internal sealed class ChatService : IChatService
             var mapDefaultDialogs =  _mapper.Map<List<DialogOutput>>(dialogs);
             
             dialogs = await CreateDialogMessagesBuilder.CreateProfileDialogAsync((mapDefaultDialogs, mapProfileDialogs),
-                _chatRepository, _userRepository, userId, _mapper);
+                _chatRepository, _userRepository, userId, _mapper, account);
 
             return dialogs;
         }
