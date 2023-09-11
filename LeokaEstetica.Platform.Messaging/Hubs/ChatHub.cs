@@ -232,4 +232,32 @@ internal sealed class ChatHub : Hub
             throw;
         }
     }
+
+    /// <summary>
+    /// Метод получает список диалогов для ЛК.
+    /// </summary>
+    /// <returns>Список диалогов.</returns>
+    public async Task GetProfileDialogsAsync(string account, string token)
+    {
+        try
+        {
+            var result = new ProfileDialogResult
+            {
+                ActionType = DialogActionType.All.ToString(),
+                Dialogs = await _chatService.GetProfileDialogsAsync(account)
+            };
+
+            var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
+            
+            await Clients
+                .Client(connectionId)
+                .SendAsync("listenProfileDialogs", result);
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            throw;
+        }
+    }
 }

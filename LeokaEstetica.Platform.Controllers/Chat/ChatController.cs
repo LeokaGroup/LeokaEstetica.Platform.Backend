@@ -11,8 +11,8 @@ using Microsoft.AspNetCore.Mvc;
 namespace LeokaEstetica.Platform.Controllers.Chat;
 
 /// <summary>
-/// TODO: Этот контроллер удалим когда переведем все методы чатов на сокеты, он будет не нужен.
 /// Контроллер для работы с чатами.
+/// P.S: Большая часть логики с чатами работает на сокетах и находится в хабе ChatHub.
 /// </summary>
 [AuthFilter]
 [ApiController]
@@ -57,24 +57,6 @@ public class ChatController : BaseController
         Enum.TryParse(dialogInput.DiscussionType, out DiscussionTypeEnum discussionType);
         result = await _chatService.WriteProjectDialogOwnerAsync(discussionType, GetUserName(),
             dialogInput.DiscussionTypeId);
-
-        return result;
-    }
-
-    /// <summary>
-    /// Метод получает список диалогов для ЛК.
-    /// </summary>
-    /// <returns>Список диалогов.</returns>
-    [HttpGet]
-    [Route("profile-messages")]
-    [ProducesResponseType(200, Type = typeof(IEnumerable<ProfileDialogOutput>))]
-    [ProducesResponseType(400)]
-    [ProducesResponseType(403)]
-    [ProducesResponseType(500)]
-    [ProducesResponseType(404)]
-    public async Task<IEnumerable<ProfileDialogOutput>> GetProfileDialogsAsync()
-    {
-        var result = await _chatService.GetProfileDialogsAsync(GetUserName());
 
         return result;
     }
