@@ -82,7 +82,7 @@ internal sealed class ChatHub : Hub
             var mapDialogs = _mapper.Map<List<ProfileDialogOutput>>(dialogs);
             
             result.Dialogs = await CreateDialogMessagesBuilder.CreateDialogAsync((dialogs, mapDialogs), _chatRepository,
-                _userRepository, userId, _mapper);
+                _userRepository, userId, _mapper, account);
             
             var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
 
