@@ -3,7 +3,7 @@ using LeokaEstetica.Platform.Controllers.Filters;
 using LeokaEstetica.Platform.Models.Dto.Input.Notification;
 using LeokaEstetica.Platform.Models.Dto.Output.Notification;
 using LeokaEstetica.Platform.Notifications.Abstractions;
-using LeokaEstetica.Platform.Redis.Abstractions.Notification;
+using LeokaEstetica.Platform.Redis.Abstractions.Connection;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LeokaEstetica.Platform.Controllers.Notifications;
@@ -17,18 +17,18 @@ namespace LeokaEstetica.Platform.Controllers.Notifications;
 public class NotificationsController : BaseController
 {
     private readonly IProjectNotificationsService _projectNotificationsService;
-    private readonly INotificationsRedisService _notificationsRedisService;
+    private readonly IConnectionService _connectionService;
 
     /// <summary>
     /// Конструктор.
     /// </summary>
     /// <param name="projectNotificationsService">Сервис уведомлений проектов.</param>
-    /// <param name="notificationsRedisService">Сервис уведомлений кэша.</param>
+    /// <param name="connectionService">Сервис уведомлений Redis.</param>
     public NotificationsController(IProjectNotificationsService projectNotificationsService, 
-        INotificationsRedisService notificationsRedisService)
+        IConnectionService connectionService)
     {
         _projectNotificationsService = projectNotificationsService;
-        _notificationsRedisService = notificationsRedisService;
+        _connectionService = connectionService;
     }
 
     /// <summary>
@@ -96,7 +96,7 @@ public class NotificationsController : BaseController
     [ProducesResponseType(404)]
     public async Task AddConnectionIdCacheAsync([FromBody] CommitConnectionInput commitConnectionInput)
     {
-        await _notificationsRedisService.AddConnectionIdCacheAsync(commitConnectionInput.ConnectionId,
+        await _connectionService.AddConnectionIdCacheAsync(commitConnectionInput.ConnectionId,
             GetTokenFromHeader());
     }
 }

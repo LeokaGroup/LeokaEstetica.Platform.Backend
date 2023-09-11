@@ -1,8 +1,8 @@
 ﻿using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Notifications.Data;
-using LeokaEstetica.Platform.Redis.Abstractions.Notification;
 using Microsoft.AspNetCore.SignalR;
 using LeokaEstetica.Platform.Notifications.Models.Output;
+using LeokaEstetica.Platform.Redis.Abstractions.Connection;
 
 namespace LeokaEstetica.Platform.Notifications.Services;
 
@@ -12,18 +12,18 @@ namespace LeokaEstetica.Platform.Notifications.Services;
 internal sealed class CommentNotificationsService : ICommentNotificationsService
 {
     private readonly IHubContext<NotifyHub> _hubContext;
-    private readonly INotificationsRedisService _notificationsRedisService;
+    private readonly IConnectionService _connectionService;
 
     /// <summary>
     /// Конструктор.
     /// </summary>
     /// <param name="hubContext">Хаб.</param>
-    /// <param name="notificationsRedisService">Сервис уведомлений кэша.</param>
+    /// <param name="connectionService">Сервис подключений Redis.</param>
     public CommentNotificationsService(IHubContext<NotifyHub> hubContext,
-        INotificationsRedisService notificationsRedisService)
+        IConnectionService connectionService)
     {
         _hubContext = hubContext;
-        _notificationsRedisService = notificationsRedisService;
+        _connectionService = connectionService;
 
     }
     /// <summary>
@@ -36,7 +36,7 @@ internal sealed class CommentNotificationsService : ICommentNotificationsService
     public async Task SendNotificationCommentProjectIsNotEmptyAsync(string title, string notifyText,
         string notificationLevel, string token)
     {
-        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(token);
+        var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
 
         await _hubContext.Clients
             .Client(connectionId)

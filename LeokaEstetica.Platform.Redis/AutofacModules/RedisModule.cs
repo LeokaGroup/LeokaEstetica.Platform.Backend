@@ -1,13 +1,13 @@
 using Autofac;
 using LeokaEstetica.Platform.Core.Attributes;
 using LeokaEstetica.Platform.Redis.Abstractions.Commerce;
-using LeokaEstetica.Platform.Redis.Abstractions.Notification;
+using LeokaEstetica.Platform.Redis.Abstractions.Connection;
 using LeokaEstetica.Platform.Redis.Abstractions.Profile;
 using LeokaEstetica.Platform.Redis.Abstractions.User;
 using LeokaEstetica.Platform.Redis.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Redis.Abstractions.Validation;
 using LeokaEstetica.Platform.Redis.Services.Commerce;
-using LeokaEstetica.Platform.Redis.Services.Notification;
+using LeokaEstetica.Platform.Redis.Services.Connection;
 using LeokaEstetica.Platform.Redis.Services.Profile;
 using LeokaEstetica.Platform.Redis.Services.User;
 using LeokaEstetica.Platform.Redis.Services.Vacancy;
@@ -50,14 +50,14 @@ public class RedisModule : Module
             .As<IValidationExcludeErrorsCacheService>()
             .InstancePerLifetimeScope();
         
-        // Сервис уведомлений кэша.
+        // Сервис подключений Redis.
         builder
-            .RegisterType<NotificationsRedisService>()
-            .Named<INotificationsRedisService>("NotificationsRedisService")
+            .RegisterType<ConnectionService>()
+            .Named<IConnectionService>("ConnectionService")
             .InstancePerLifetimeScope();
         builder
-            .RegisterType<NotificationsRedisService>()
-            .As<INotificationsRedisService>()
+            .RegisterType<ConnectionService>()
+            .As<IConnectionService>()
             .InstancePerLifetimeScope();
         
         // Сервис кэша пользователей.

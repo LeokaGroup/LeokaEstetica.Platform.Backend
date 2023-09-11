@@ -57,4 +57,9 @@ public class DialogResultOutput : IFrontError
     /// Id проекта.
     /// </summary>
     public long? ProjectId { get; set; }
+    
+    /// <summary>
+    /// Тип события диалогов.
+    /// </summary>
+    public string ActionType { get; set; }
 }
