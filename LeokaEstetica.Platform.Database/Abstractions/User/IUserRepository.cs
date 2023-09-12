@@ -105,6 +105,12 @@ public interface IUserRepository
     /// </summary>
     /// <returns>Словарь кодов пользователей.</returns>
     Task<Dictionary<long, Guid>> GetUsersCodesAsync();
+    
+    /// <summary>
+    /// Метод получает словарь кодов пользователей, Id которых передали.
+    /// </summary>
+    /// <returns>Словарь кодов пользователей.</returns>
+    Task<Dictionary<long, Guid>> GetUsersCodesByUserIdsAsync(IEnumerable<long> userIds);
 
     /// <summary>
     /// Метод получает список пользователей.

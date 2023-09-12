@@ -34,4 +34,9 @@ public class DialogMessageOutput
     /// Признак принадлежности сообщения текущему пользователю.
     /// </summary>
     public bool IsMyMessage { get; set; }
+
+    /// <summary>
+    /// Код пользователя.
+    /// </summary>
+    public Guid UserCode { get; set; }
 }
