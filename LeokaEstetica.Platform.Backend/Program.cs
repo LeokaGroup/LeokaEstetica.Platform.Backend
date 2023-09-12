@@ -38,21 +38,21 @@ builder.Services.AddCors(options => options.AddPolicy("ApiCorsPolicy", b =>
 if (builder.Environment.IsDevelopment())
 {
     builder.Services.AddDbContext<PgContext>(options =>
-            options.UseNpgsql(configuration["NpgDevSqlConnection"]),
+            options.UseNpgsql(configuration.GetConnectionString("NpgDevSqlConnection")),
         ServiceLifetime.Transient);
 }
       
 if (builder.Environment.IsStaging())
 {
     builder.Services.AddDbContext<PgContext>(options =>
-            options.UseNpgsql(configuration["NpgTestSqlConnection"]),
+            options.UseNpgsql(configuration.GetConnectionString("NpgTestSqlConnection")),
         ServiceLifetime.Transient);
 }
 
 if (builder.Environment.IsProduction())
 {
     builder.Services.AddDbContext<PgContext>(options =>
-            options.UseNpgsql(configuration["NpgSqlConnection"]),
+            options.UseNpgsql(configuration.GetConnectionString("NpgSqlConnection")),
         ServiceLifetime.Transient);
 }
 
