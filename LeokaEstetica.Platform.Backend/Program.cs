@@ -35,30 +35,26 @@ builder.Services.AddCors(options => options.AddPolicy("ApiCorsPolicy", b =>
         .AllowCredentials();
 }));
 
-builder.Services.AddDbContext<PgContext>(options =>
-        options.UseNpgsql(configuration.GetConnectionString("NpgSqlConnection")),
-    ServiceLifetime.Transient);
-
-// if (builder.Environment.IsDevelopment())
-// {
-//     builder.Services.AddDbContext<PgContext>(options =>
-//             options.UseNpgsql(configuration.GetConnectionString("NpgDevSqlConnection") ?? string.Empty),
-//         ServiceLifetime.Transient);
-// }
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddDbContext<PgContext>(options =>
+            options.UseNpgsql(configuration["NpgDevSqlConnection"]),
+        ServiceLifetime.Transient);
+}
       
-// if (builder.Environment.IsStaging())
-// {
-//     builder.Services.AddDbContext<PgContext>(options =>
-//             options.UseNpgsql(configuration.GetConnectionString("NpgTestSqlConnection") ?? string.Empty),
-//         ServiceLifetime.Transient);
-// }
-//
-// if (builder.Environment.IsProduction())
-// {
-//     builder.Services.AddDbContext<PgContext>(options =>
-//             options.UseNpgsql(configuration.GetConnectionString("NpgSqlConnection") ?? string.Empty),
-//         ServiceLifetime.Transient);
-// }
+if (builder.Environment.IsStaging())
+{
+    builder.Services.AddDbContext<PgContext>(options =>
+            options.UseNpgsql(configuration["NpgTestSqlConnection"]),
+        ServiceLifetime.Transient);
+}
+
+if (builder.Environment.IsProduction())
+{
+    builder.Services.AddDbContext<PgContext>(options =>
+            options.UseNpgsql(configuration["NpgSqlConnection"]),
+        ServiceLifetime.Transient);
+}
 
 builder.Services.AddSwaggerGen(c =>
 {
