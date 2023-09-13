@@ -52,4 +52,14 @@ public class NotificationOutput
     /// Признак отображения кнопок принятия и отклонения приглашений уведомлений.
     /// </summary>
     public bool IsVisibleNotificationsButtons { get; set; }
+
+    /// <summary>
+    /// Id пользователя, кому принадлежит уведомление.
+    /// </summary>
+    public long UserId { get; set; }
+
+    /// <summary>
+    /// Id проекта.
+    /// </summary>
+    public long ProjectId { get; set; }
 }
