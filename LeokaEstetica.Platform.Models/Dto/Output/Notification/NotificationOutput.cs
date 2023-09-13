@@ -54,11 +54,6 @@ public class NotificationOutput
     public bool IsVisibleNotificationsButtons { get; set; }
 
     /// <summary>
-    /// Id пользователя, кому принадлежит уведомление.
-    /// </summary>
-    public long UserId { get; set; }
-
-    /// <summary>
     /// Id проекта.
     /// </summary>
     public long ProjectId { get; set; }
