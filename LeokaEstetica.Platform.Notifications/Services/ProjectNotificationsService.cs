@@ -506,20 +506,41 @@ internal sealed class ProjectNotificationsService : IProjectNotificationsService
                 Notifications = new List<NotificationProjectOutput>(notificationsCount)
             };
 
-            if (items.Item1.Any())
+            if (items.UserNotifications.Any())
             {
                 result.Notifications = _mapper.Map<List<NotificationProjectOutput>>(items.UserNotifications);
             }
             
             // Работаем с уведомлениями владельцев.
-            if (items.Item2.Any())
+            if (items.OwnerNotifications.Any())
             {
                 var newOwnerNotifications = _mapper.Map<List<NotificationProjectOutput>>(items.OwnerNotifications);
                 result.Notifications.AddRange(newOwnerNotifications);
             }
 
             var resultNotifications = result.Notifications;
-            FillUserNotificationsButtonsFlags(ref resultNotifications);
+
+            // Проставляем признак отображения кнопок.
+            foreach (var notification in resultNotifications)
+            {
+                var isProjectOwner = await _projectRepository.CheckProjectOwnerAsync(notification.ProjectId, userId);
+
+                // Если страницу уведомлений просматривает владелец.
+                if (isProjectOwner)
+                {
+                    notification.IsAcceptButton = true;
+                    notification.IsRejectButton = true;
+                    notification.IsVisibleNotificationsButtons = true;
+                }
+
+                // Иначе скрываем кнопки.
+                else
+                {
+                    notification.IsAcceptButton = false;
+                    notification.IsRejectButton = false;
+                    notification.IsVisibleNotificationsButtons = false;
+                }
+            }
 
             return result;
         }
@@ -957,21 +978,7 @@ internal sealed class ProjectNotificationsService : IProjectNotificationsService
     #endregion
 
     #region Приватные методы.
-    
-    /// <summary>
-    /// Метод проставляет признак отображения кнопок уведомлений для пользователей.
-    /// </summary>
-    /// <param name="ownerNotifications">Уведомления пользователей.</param>
-    /// <returns>Список уведомлений.</returns>
-    private void FillUserNotificationsButtonsFlags(ref List<NotificationProjectOutput> ownerNotifications)
-    {
-        // Проставляем признак отображения кнопок.
-        foreach (var notification in ownerNotifications)
-        {
-            notification.IsVisibleNotificationsButtons = true;
-        }
-    }
-    
+
     /// <summary>
     /// Метод отправляет уведомление об ошибке при апруве приглашения в проект.
     /// </summary>
