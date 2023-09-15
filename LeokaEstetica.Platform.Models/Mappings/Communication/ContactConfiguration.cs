@@ -13,7 +13,7 @@ public partial class ContactConfiguration : IEntityTypeConfiguration<ContactEnti
         entity.HasKey(e => e.ContactId);
 
         entity.Property(e => e.ContactId)
-            .HasColumnName("MemberId")
+            .HasColumnName("ContactId")
             .HasColumnType("smallint");
 
         entity.Property(e => e.Name)

@@ -1,9 +1,9 @@
-namespace LeokaEstetica.Platform.Models.Entities.Communication;
+namespace LeokaEstetica.Platform.Models.Dto.Output.Communication;
 
 /// <summary>
-/// Класс сопоставляется с таблицей контактов Communications.Contacts.
+/// Класс выходной модели контактов.
 /// </summary>
-public class ContactEntity
+public class ContactOutput
 {
     /// <summary>
     /// PK.

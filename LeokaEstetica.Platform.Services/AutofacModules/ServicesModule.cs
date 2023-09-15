@@ -5,6 +5,7 @@ using LeokaEstetica.Platform.Services.Abstractions.Header;
 using LeokaEstetica.Platform.Services.Abstractions.Knowledge;
 using LeokaEstetica.Platform.Services.Abstractions.Landing;
 using LeokaEstetica.Platform.Services.Abstractions.Orders;
+using LeokaEstetica.Platform.Services.Abstractions.Press;
 using LeokaEstetica.Platform.Services.Abstractions.Profile;
 using LeokaEstetica.Platform.Services.Abstractions.Project;
 using LeokaEstetica.Platform.Services.Abstractions.Refunds;
@@ -18,6 +19,7 @@ using LeokaEstetica.Platform.Services.Services.Header;
 using LeokaEstetica.Platform.Services.Services.Knowledge;
 using LeokaEstetica.Platform.Services.Services.Landing;
 using LeokaEstetica.Platform.Services.Services.Orders;
+using LeokaEstetica.Platform.Services.Services.Press;
 using LeokaEstetica.Platform.Services.Services.Profile;
 using LeokaEstetica.Platform.Services.Services.Project;
 using LeokaEstetica.Platform.Services.Services.Refunds;
@@ -232,6 +234,14 @@ public class ServicesModule : Module
         builder
             .RegisterType<RefundsService>()
             .As<IRefundsService>()
+            .InstancePerLifetimeScope();
+        
+        // Сервис прессы.
+        builder.RegisterType<PressService>()
+            .Named<IPressService>("PressService")
+            .InstancePerLifetimeScope();
+        builder.RegisterType<PressService>()
+            .As<IPressService>()
             .InstancePerLifetimeScope();
     }
 }
