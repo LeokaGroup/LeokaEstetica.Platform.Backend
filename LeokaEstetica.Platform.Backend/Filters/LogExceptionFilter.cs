@@ -1,5 +1,5 @@
 using System.Text;
-using LeokaEstetica.Platform.Integrations.Abstractions.Telegram;
+using LeokaEstetica.Platform.Integrations.Abstractions.Pachca;
 using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace LeokaEstetica.Platform.Backend.Filters;
@@ -9,19 +9,19 @@ namespace LeokaEstetica.Platform.Backend.Filters;
 /// </summary>
 public class LogExceptionFilter : ExceptionFilterAttribute
 {
-    private readonly ITelegramBotService _telegramBotService;
     private readonly IWebHostEnvironment _env;
+    private readonly IPachcaService _pachcaService;
 
     /// <summary>
     /// Конструктор.
     /// </summary>
-    /// <param name="telegramBotService">Сервис телеграм ботов.</param>
     /// <param name="env">Окружение.</param>
-    public LogExceptionFilter(ITelegramBotService telegramBotService,
-        IWebHostEnvironment env)
+    /// <param name="pachcaService">Сервис мессенджера пачки.</param>
+    public LogExceptionFilter(IWebHostEnvironment env,
+        IPachcaService pachcaService)
     {
-        _telegramBotService = telegramBotService;
         _env = env;
+        _pachcaService = pachcaService;
     }
 
     /// <summary>
@@ -36,17 +36,17 @@ public class LogExceptionFilter : ExceptionFilterAttribute
 
         if (_env.IsDevelopment())
         {
-            environment = "[Develop]";
+            environment = "[Develop] ";
         }
         
         else if (_env.IsStaging())
         {
-            environment = "[Test]";
+            environment = "[Test] ";
         }
         
         else if (_env.IsProduction())
         {
-            environment = "[Production]";
+            environment = "[Production] ";
         }
 
         var errorMessage = new StringBuilder();
@@ -57,6 +57,6 @@ public class LogExceptionFilter : ExceptionFilterAttribute
         errorMessage.AppendLine(context.Exception.StackTrace);
         
         // Отправляем информацию об исключении в канал телеграма.
-        await _telegramBotService.SendErrorMessageAsync(errorMessage.ToString());
+        await _pachcaService.SendNotificationErrorAsync(errorMessage.ToString());
     }
 }

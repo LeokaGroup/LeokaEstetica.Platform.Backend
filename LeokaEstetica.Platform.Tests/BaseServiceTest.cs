@@ -161,7 +161,7 @@ internal class BaseServiceTest
         TelegramBotService = new TelegramBotService(null, AppConfiguration);
 
         VacancyModerationService = new VacancyModerationService(vacancyModerationRepository, null, mapper, null,
-            vacancyRepository, userRepository, projectRepository, null, TelegramBotService);
+            vacancyRepository, userRepository, projectRepository, null, null);
         
         // Тут если нужен будет ProjectService, то тут проблема с порядком следования.
         // Не получится сделать просто, VacancyService и ProjectService нужны друг другу тесно.
@@ -181,7 +181,7 @@ internal class BaseServiceTest
         ProjectModerationRepository = new ProjectModerationRepository(pgContext);
 
         ProjectModerationService = new ProjectModerationService(ProjectModerationRepository, null, mapper, null, 
-            userRepository, projectRepository, null, TelegramBotService);
+            userRepository, projectRepository, null, null);
 
         var projectCommentsRepository = new ProjectCommentsRepository(pgContext);
 
