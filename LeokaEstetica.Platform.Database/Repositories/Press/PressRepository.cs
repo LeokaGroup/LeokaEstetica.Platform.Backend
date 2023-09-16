@@ -21,6 +21,8 @@ internal sealed class PressRepository : IPressRepository
         _pgContext = pgContext;
     }
 
+    #region Публичные методы.
+
     /// <summary>
     /// Метод получает список контактов.
     /// </summary>
@@ -31,4 +33,23 @@ internal sealed class PressRepository : IPressRepository
 
         return result;
     }
+
+    /// <summary>
+    /// Метод получает данные публичной оферты.
+    /// </summary>
+    /// <returns>Данные публичной оферты.</returns>
+    public async Task<IEnumerable<PublicOfferEntity>> GetPublicOfferAsync()
+    {
+        var result = await _pgContext.PublicOffer.ToListAsync();
+
+        return result;
+    }
+
+    #endregion
+
+    #region Приватные методы.
+
+    
+
+    #endregion
 }

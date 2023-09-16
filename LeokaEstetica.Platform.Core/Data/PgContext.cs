@@ -460,4 +460,9 @@ public class PgContext : DbContext
     /// Таблица контактов.
     /// </summary>
     public DbSet<ContactEntity> Contacts { get; set; }
+
+    /// <summary>
+    /// Таблица публичной оферты.
+    /// </summary>
+    public DbSet<PublicOfferEntity> PublicOffer { get; set; }
 }

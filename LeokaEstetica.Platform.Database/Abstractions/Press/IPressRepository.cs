@@ -12,4 +12,10 @@ public interface IPressRepository
     /// </summary>
     /// <returns>Список контактов.</returns>
     Task<IEnumerable<ContactEntity>> GetContactsAsync();
+
+    /// <summary>
+    /// Метод получает данные публичной оферты.
+    /// </summary>
+    /// <returns>Данные публичной оферты.</returns>
+    Task<IEnumerable<PublicOfferEntity>> GetPublicOfferAsync();
 }

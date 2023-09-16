@@ -26,6 +26,8 @@ internal sealed class PressService : IPressService
         _logger = logger;
     }
 
+    #region Публичные методы.
+
     /// <summary>
     /// Метод получает список контактов.
     /// </summary>
@@ -45,4 +47,32 @@ internal sealed class PressService : IPressService
             throw;
         }
     }
+
+    /// <summary>
+    /// Метод получает данные публичной оферты.
+    /// </summary>
+    /// <returns>Данные публичной оферты.</returns>
+    public async Task<IEnumerable<PublicOfferEntity>> GetPublicOfferAsync()
+    {
+        try
+        {
+            var result = await _pressRepository.GetPublicOfferAsync();
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
+    #endregion
+
+    #region Приватные методы.
+
+    
+
+    #endregion
 }

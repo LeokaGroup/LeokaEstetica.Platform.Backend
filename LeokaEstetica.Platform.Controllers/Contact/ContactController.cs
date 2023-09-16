@@ -11,7 +11,7 @@ namespace LeokaEstetica.Platform.Controllers.Contact;
 /// </summary>
 [ApiController]
 [Route("press")]
-public class ContactController : BaseController
+public class PressController : BaseController
 {
     private readonly IPressService _pressService;
     private readonly IMapper _mapper;
@@ -21,7 +21,7 @@ public class ContactController : BaseController
     /// <param name="pressService">Сервис прессы.</param>
     /// <param name="mapper">Маппер.</param>
     /// </summary>
-    public ContactController(IPressService pressService,
+    public PressController(IPressService pressService,
         IMapper mapper)
     {
         _pressService = pressService;
@@ -43,6 +43,25 @@ public class ContactController : BaseController
     {
         var contacts = await _pressService.GetContactsAsync();
         var result = _mapper.Map<IEnumerable<ContactOutput>>(contacts);
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод получает данные публичной оферты.
+    /// </summary>
+    /// <returns>Данные публичной оферты.</returns>
+    [HttpGet]
+    [Route("offer")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<PublicOfferOutput>))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<IEnumerable<PublicOfferOutput>> GetPublicOfferAsync()
+    {
+        var contacts = await _pressService.GetPublicOfferAsync();
+        var result = _mapper.Map<IEnumerable<PublicOfferOutput>>(contacts);
 
         return result;
     }
