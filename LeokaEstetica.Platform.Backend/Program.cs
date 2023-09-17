@@ -42,13 +42,7 @@ if (configuration["Environment"].Equals("Development"))
         ServiceLifetime.Transient);
 }
       
-// if (configuration["Environment"].Equals("Staging"))
-// {
-//     builder.Services.AddDbContext<PgContext>(options =>
-//             options.UseNpgsql(configuration.GetConnectionString("NpgTestSqlConnection")),
-//         ServiceLifetime.Transient);
-// }
-if (builder.Environment.IsStaging())
+if (configuration["Environment"].Equals("Staging"))
 {
     builder.Services.AddDbContext<PgContext>(options =>
             options.UseNpgsql(configuration.GetConnectionString("NpgTestSqlConnection")),
