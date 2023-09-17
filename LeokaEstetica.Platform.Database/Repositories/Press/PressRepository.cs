@@ -29,7 +29,7 @@ internal sealed class PressRepository : IPressRepository
     /// <returns>Список контактов.</returns>
     public async Task<IEnumerable<ContactEntity>> GetContactsAsync()
     {
-        var result = await _pgContext.Contacts.ToListAsync();
+        var result = await _pgContext.Contacts.OrderBy(o => o.ContactId).ToListAsync();
 
         return result;
     }
@@ -40,7 +40,7 @@ internal sealed class PressRepository : IPressRepository
     /// <returns>Данные публичной оферты.</returns>
     public async Task<IEnumerable<PublicOfferEntity>> GetPublicOfferAsync()
     {
-        var result = await _pgContext.PublicOffer.ToListAsync();
+        var result = await _pgContext.PublicOffer.OrderBy(o => o.OfferId).ToListAsync();
 
         return result;
     }
