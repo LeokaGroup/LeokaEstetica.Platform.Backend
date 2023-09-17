@@ -15,7 +15,10 @@ using Microsoft.OpenApi.Models;
 using NLog.Web;
 using Quartz;
 
-var builder = WebApplication.CreateBuilder(new WebApplicationOptions()); 
+var builder = WebApplication.CreateBuilder(new WebApplicationOptions
+{
+    EnvironmentName = Environments.Development
+}); 
 var configuration = builder.Configuration;
 
 builder.Services.AddControllers(opt =>
