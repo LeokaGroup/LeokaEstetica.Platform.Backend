@@ -15,10 +15,7 @@ using Microsoft.OpenApi.Models;
 using NLog.Web;
 using Quartz;
 
-var builder = WebApplication.CreateBuilder(new WebApplicationOptions
-{
-    EnvironmentName = Environments.Staging
-}); 
+var builder = WebApplication.CreateBuilder(); 
 var configuration = builder.Configuration;
 
 builder.Services.AddControllers(opt =>
@@ -34,6 +31,8 @@ builder.Services.AddCors(options => options.AddPolicy("ApiCorsPolicy", b =>
         .AllowAnyMethod()
         .AllowCredentials();
 }));
+
+builder.Configuration.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
 
 if (configuration["Environment"].Equals("Development"))
 {
