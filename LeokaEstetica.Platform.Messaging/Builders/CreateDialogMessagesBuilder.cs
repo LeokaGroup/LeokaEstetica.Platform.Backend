@@ -19,12 +19,13 @@ public static class CreateDialogMessagesBuilder
     /// <param name="userRepository">Репозиторий пользователя.</param>
     /// <param name="userId">Id пользователя.</param>
     /// <param name="mapper">Маппер.</param>
+    /// <param name="account">Аккаунт текущего пользователя.</param>
     /// <returns>Список диалогов.</returns>
     public static async Task<List<DialogOutput>> CreateDialogAsync(
         (List<DialogOutput> Dialogs, List<ProfileDialogOutput> ProfileDialogs) dialogs, IChatRepository chatRepository,
-        IUserRepository userRepository, long userId, IMapper mapper)
+        IUserRepository userRepository, long userId, IMapper mapper, string account)
     {
-        var result = await CreateDialogsResultAsync(dialogs, chatRepository, userRepository, userId, mapper);
+        var result = await CreateDialogsResultAsync(dialogs, chatRepository, userRepository, userId, mapper, account);
 
         return result.Dialogs;
     }
@@ -37,12 +38,13 @@ public static class CreateDialogMessagesBuilder
     /// <param name="userRepository">Репозиторий пользователя.</param>
     /// <param name="userId">Id пользователя.</param>
     /// <param name="mapper">Маппер.</param>
+    /// <param name="account">Аккаунт текущего пользователя.</param>
     /// <returns>Кортеж со списком диалогов.</returns>
     public static async Task<List<ProfileDialogOutput>> CreateProfileDialogAsync(
         (List<DialogOutput> Dialogs, List<ProfileDialogOutput> ProfileDialogs) dialogs, IChatRepository chatRepository,
-        IUserRepository userRepository, long userId, IMapper mapper)
+        IUserRepository userRepository, long userId, IMapper mapper, string account)
     {
-        var result = await CreateDialogsResultAsync(dialogs, chatRepository, userRepository, userId, mapper);
+        var result = await CreateDialogsResultAsync(dialogs, chatRepository, userRepository, userId, mapper, account);
     
         return result.ProfileDialogs;
     }
@@ -55,10 +57,12 @@ public static class CreateDialogMessagesBuilder
     /// <param name="userRepository">Репозиторий пользователя.</param>
     /// <param name="userId">Id пользователя.</param>
     /// <param name="mapper">Маппер.</param>
+    /// <param name="account">Аккаунт текущего пользователя.</param>
     /// <returns>Кортеж со списком диалогов.</returns>
     private static async Task<(List<DialogOutput> Dialogs, List<ProfileDialogOutput> ProfileDialogs)>
         CreateDialogsResultAsync((List<DialogOutput> Dialogs, List<ProfileDialogOutput> ProfileDialogs) dialogs,
-            IChatRepository chatRepository, IUserRepository userRepository, long userId, IMapper mapper)
+            IChatRepository chatRepository, IUserRepository userRepository, long userId, IMapper mapper,
+            string account)
     {
         var profileDialogs = mapper.Map<List<ProfileDialogOutput>>(dialogs.Dialogs);
         
@@ -69,6 +73,12 @@ public static class CreateDialogMessagesBuilder
             if (dialogId <= 0)
             {
                 throw new InvalidOperationException($"Некорректный Id диалога. DialogId: {dialogId}");
+            }
+            
+            // Пропускаем диалог с самим собой.
+            if (dialog.FullName is not null && dialog.FullName.Equals(account))
+            {
+                continue;
             }
             
             // Получаем диалог для ЛК пользователя, так как менять будем и его данные.
@@ -173,6 +183,10 @@ public static class CreateDialogMessagesBuilder
         // Удаляем все диалоги, где нет последнего сообщения.
         dialogs.Dialogs.RemoveAll(d => d.LastMessage is null);
         profileDialogs.RemoveAll(d => d.LastMessage is null);
+        
+        // даляем диалог с самим собой.
+        dialogs.Dialogs.RemoveAll(d => d.FullName.Equals(account));
+        profileDialogs.RemoveAll(d => d.FullName.Equals(account));
 
         return (dialogs.Dialogs, profileDialogs);
     }

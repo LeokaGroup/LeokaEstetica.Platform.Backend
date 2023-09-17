@@ -1,13 +1,14 @@
-using LeokaEstetica.Platform.Redis.Abstractions.Notification;
+using LeokaEstetica.Platform.Redis.Abstractions.Connection;
 using LeokaEstetica.Platform.Redis.Extensions;
+using LeokaEstetica.Platform.Redis.Models.Chat;
 using Microsoft.Extensions.Caching.Distributed;
 
-namespace LeokaEstetica.Platform.Redis.Services.Notification;
+namespace LeokaEstetica.Platform.Redis.Services.Connection;
 
 /// <summary>
-/// Класс реализует методы сервиса уведомлений кэша.
+/// Класс реализует методы сервиса подключений Redis.
 /// </summary>
-public class NotificationsRedisService : INotificationsRedisService
+internal sealed class ConnectionService : IConnectionService
 {
     private readonly IDistributedCache _redisCache;
 
@@ -15,11 +16,11 @@ public class NotificationsRedisService : INotificationsRedisService
     /// Конструктор.
     /// </summary>
     /// <param name="redisCache">Кэш редиса.</param>
-    public NotificationsRedisService(IDistributedCache redisCache)
+    public ConnectionService(IDistributedCache redisCache)
     {
         _redisCache = redisCache;
     }
-
+    
     /// <summary>
     /// Метод сохраняет ConnectionId подключения SignalR в кэш.
     /// </summary>
@@ -64,5 +65,39 @@ public class NotificationsRedisService : INotificationsRedisService
         connectionId = ProtoBufExtensions.Deserialize<string>(addedConnectionId);
 
         return connectionId;
+    }
+
+    /// <summary>
+    /// Метод сохраняет список ConnectionId подключений SignalR в кэш.
+    /// </summary>
+    /// <param name="dialogId">Id диалога.</param>
+    /// <param name="dialogRedis">Данные SignalR для хранения в кэше.</param>
+    public async Task AddDialogMembersConnectionIdsCacheAsync(long dialogId, List<DialogRedis> dialogRedis)
+    {
+        await _redisCache.SetStringAsync(string.Concat("Dialog_", dialogId.ToString()),
+            ProtoBufExtensions.Serialize(dialogRedis),
+            new DistributedCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(2)
+            });
+    }
+
+    /// <summary>
+    /// Метод получает список ConnectionId подключений SignalR из кэша.
+    /// </summary>
+    /// <param name="key">Ключ поиска.</param>
+    /// <returns>Список ConnectionId.</returns>
+    public async Task<List<DialogRedis>> GetDialogMembersConnectionIdsCacheAsync(string key)
+    {
+        var connectionId = await _redisCache.GetStringAsync(string.Concat("Dialog_", key));
+
+        if (!string.IsNullOrEmpty(connectionId))
+        {
+            var newConnectionId = ProtoBufExtensions.Deserialize<List<DialogRedis>>(connectionId);
+
+            return newConnectionId;
+        }
+
+        return null;
     }
 }

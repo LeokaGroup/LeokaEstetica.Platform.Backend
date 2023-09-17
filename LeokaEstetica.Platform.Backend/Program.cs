@@ -7,7 +7,7 @@ using LeokaEstetica.Platform.Backend.Loaders.Bots;
 using LeokaEstetica.Platform.Backend.Loaders.Jobs;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Utils;
-using LeokaEstetica.Platform.Notifications.Data;
+using LeokaEstetica.Platform.Messaging.Hubs;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -38,21 +38,21 @@ builder.Services.AddCors(options => options.AddPolicy("ApiCorsPolicy", b =>
 if (builder.Environment.IsDevelopment())
 {
     builder.Services.AddDbContext<PgContext>(options =>
-            options.UseNpgsql(configuration.GetConnectionString("NpgDevSqlConnection") ?? string.Empty),
+            options.UseNpgsql(configuration.GetConnectionString("NpgDevSqlConnection")),
         ServiceLifetime.Transient);
 }
       
 if (builder.Environment.IsStaging())
 {
     builder.Services.AddDbContext<PgContext>(options =>
-            options.UseNpgsql(configuration.GetConnectionString("NpgTestSqlConnection") ?? string.Empty),
+            options.UseNpgsql(configuration.GetConnectionString("NpgTestSqlConnection")),
         ServiceLifetime.Transient);
 }
 
 if (builder.Environment.IsProduction())
 {
     builder.Services.AddDbContext<PgContext>(options =>
-            options.UseNpgsql(configuration.GetConnectionString("NpgSqlConnection") ?? string.Empty),
+            options.UseNpgsql(configuration.GetConnectionString("NpgSqlConnection")),
         ServiceLifetime.Transient);
 }
 
@@ -174,7 +174,8 @@ if (builder.Environment.IsDevelopment() || builder.Environment.IsStaging())
     app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Leoka.Estetica.Platform"));
 }
 
-app.MapHub<NotifyHub>("/notify"); // Добавляем роут для хаба.
+// Добавляем хаб приложения для работы через сокеты.
+app.MapHub<ChatHub>("/notify");
 
 app.UseProblemDetails();
 

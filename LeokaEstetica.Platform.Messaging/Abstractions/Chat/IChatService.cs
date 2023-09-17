@@ -20,13 +20,6 @@ public interface IChatService
         long discussionTypeId);
 
     /// <summary>
-    /// Метод получает список диалогов.
-    /// </summary>
-    /// <param name="account">Аккаунт.</param>
-    /// <returns>Список диалогов.</returns>
-    Task<IEnumerable<DialogOutput>> GetDialogsAsync(string account);
-
-    /// <summary>
     /// Метод создает диалог для написания владельцу проекта.
     /// Если такой диалог уже создан с текущим юзером и владельцем проекта,
     /// то ничего не происходит и диалог считается пустым для начала общения.
@@ -42,9 +35,10 @@ public interface IChatService
     /// </summary>
     /// <param name="message">Сообщение.</param>
     /// <param name="dialogId">Id диалога.</param>
-    /// <param name="account">Аккаунт.</param>
+    /// <param name="userId">Id пользователя.</param>
+    /// <param name="token">Токен пользователя.</param>
     /// <returns>Выходная модель.</returns>
-    Task<DialogResultOutput> SendMessageAsync(string message, long dialogId, string account);
+    Task<DialogResultOutput> SendMessageAsync(string message, long dialogId, long userId, string token);
     
     /// <summary>
     /// Метод получит все диалоги для профиля пользователя.

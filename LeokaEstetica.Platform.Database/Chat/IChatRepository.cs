@@ -78,8 +78,9 @@ public interface IChatRepository
     /// Метод получит все диалоги.
     /// </summary>
     /// <param name="userId">Id пользователя.</param>
+    /// <param name="projectId">Id проекта. Если не передан, то получает все диалоги пользователя.</param>
     /// <returns>Список диалогов.</returns>
-    Task<List<DialogOutput>> GetDialogsAsync(long userId);
+    Task<List<DialogOutput>> GetDialogsAsync(long userId, long? projectId = null);
 
     /// <summary>
     /// Метод находит последнее сообщение диалога.

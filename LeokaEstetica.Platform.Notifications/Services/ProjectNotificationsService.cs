@@ -12,7 +12,7 @@ using LeokaEstetica.Platform.Models.Dto.Output.Notification;
 using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Notifications.Consts;
 using LeokaEstetica.Platform.Notifications.Data;
-using LeokaEstetica.Platform.Redis.Abstractions.Notification;
+using LeokaEstetica.Platform.Redis.Abstractions.Connection;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using NotificationOutput = LeokaEstetica.Platform.Notifications.Models.Output.NotificationOutput;
@@ -32,7 +32,7 @@ internal sealed class ProjectNotificationsService : IProjectNotificationsService
     private readonly IUserRepository _userRepository;
     private readonly IProjectNotificationsRepository _projectNotificationsRepository;
     private readonly IMapper _mapper;
-    private readonly INotificationsRedisService _notificationsRedisService;
+    private readonly IConnectionService _connectionService;
     private readonly IProjectRepository _projectRepository;
     private readonly IMailingsService _mailingsService;
     private readonly IGlobalConfigRepository _globalConfigRepository;
@@ -44,15 +44,15 @@ internal sealed class ProjectNotificationsService : IProjectNotificationsService
     /// <param name="hubContext">Контекст хаба.</param>
     /// <param name="logService">Сервис логера.</param>
     /// <param name="userRepository">Репозиторий пользователя.</param>
-    /// <param name="_projectNotificationsRepository">Репозиторий уведомлений проектов.</param>
+    /// <param name="projectNotificationsRepository">Репозиторий уведомлений проектов.</param>
     /// <param name="mapper">Автомаппер.</param>
-    /// <param name="notificationsRedisService">Сервис уведомлений кэша.</param>
+    /// <param name="connectionService">Сервис подключений Redis.</param>
     public ProjectNotificationsService(IHubContext<NotifyHub> hubContext, 
         ILogger<ProjectNotificationsService> logger, 
         IUserRepository userRepository,
         IMapper mapper, 
         IProjectNotificationsRepository projectNotificationsRepository, 
-        INotificationsRedisService notificationsRedisService, 
+        IConnectionService connectionService, 
         IProjectRepository projectRepository, 
         IMailingsService mailingsService, 
         IGlobalConfigRepository globalConfigRepository, 
@@ -63,7 +63,7 @@ internal sealed class ProjectNotificationsService : IProjectNotificationsService
         _userRepository = userRepository;
         _mapper = mapper;
         _projectNotificationsRepository = projectNotificationsRepository;
-        _notificationsRedisService = notificationsRedisService;
+        _connectionService = connectionService;
         _projectRepository = projectRepository;
         _mailingsService = mailingsService;
         _globalConfigRepository = globalConfigRepository;
@@ -82,7 +82,7 @@ internal sealed class ProjectNotificationsService : IProjectNotificationsService
     public async Task SendNotificationSuccessCreatedUserProjectAsync(string title, string notifyText,
         string notificationLevel, string token)
     {
-        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(token);
+        var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
 
         await _hubContext.Clients
             .Client(connectionId)
@@ -104,7 +104,7 @@ internal sealed class ProjectNotificationsService : IProjectNotificationsService
     public async Task SendNotificationErrorCreatedUserProjectAsync(string title, string notifyText,
         string notificationLevel, string token)
     {
-        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(token);
+        var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
 
         await _hubContext.Clients
             .Client(connectionId)
@@ -126,7 +126,7 @@ internal sealed class ProjectNotificationsService : IProjectNotificationsService
     public async Task SendNotificationWarningDublicateUserProjectAsync(string title, string notifyText,
         string notificationLevel, string token)
     {
-        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(token);
+        var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
 
         await _hubContext.Clients
             .Client(connectionId)
@@ -148,7 +148,7 @@ internal sealed class ProjectNotificationsService : IProjectNotificationsService
     public async Task SendNotificationSuccessUpdatedUserProjectAsync(string title, string notifyText,
         string notificationLevel, string token)
     {
-        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(token);
+        var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
 
         await _hubContext.Clients
             .Client(connectionId)
@@ -170,7 +170,7 @@ internal sealed class ProjectNotificationsService : IProjectNotificationsService
     public async Task SendNotificationErrorUpdatedUserProjectAsync(string title, string notifyText,
         string notificationLevel, string token)
     {
-        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(token);
+        var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
 
         await _hubContext.Clients
             .Client(connectionId)
@@ -192,7 +192,7 @@ internal sealed class ProjectNotificationsService : IProjectNotificationsService
     public async Task SendNotificationSuccessAttachProjectVacancyAsync(string title, string notifyText,
         string notificationLevel, string token)
     {
-        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(token);
+        var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
 
         await _hubContext.Clients
             .Client(connectionId)
@@ -214,7 +214,7 @@ internal sealed class ProjectNotificationsService : IProjectNotificationsService
     public async Task SendNotificationErrorDublicateAttachProjectVacancyAsync(string title, string notifyText,
         string notificationLevel, string token)
     {
-        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(token);
+        var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
         
         await _hubContext.Clients
             .Client(connectionId)
@@ -237,7 +237,7 @@ internal sealed class ProjectNotificationsService : IProjectNotificationsService
     public async Task SendNotificationSuccessProjectResponseAsync(string title, string notifyText,
         string notificationLevel, string token)
     {
-        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(token);
+        var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
 
         await _hubContext.Clients
             .Client(connectionId)
@@ -260,7 +260,7 @@ internal sealed class ProjectNotificationsService : IProjectNotificationsService
     public async Task SendNotificationWarningProjectResponseAsync(string title, string notifyText,
         string notificationLevel, string token)
     {
-        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(token);
+        var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
 
         await _hubContext.Clients
             .Client(connectionId)
@@ -283,7 +283,7 @@ internal sealed class ProjectNotificationsService : IProjectNotificationsService
     public async Task SendNotificationWarningSearchProjectTeamMemberAsync(string title, string notifyText,
         string notificationLevel, string token)
     {
-        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(token);
+        var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
 
         await _hubContext.Clients
             .Client(connectionId)
@@ -306,7 +306,7 @@ internal sealed class ProjectNotificationsService : IProjectNotificationsService
     public async Task SendNotificationWarningInviteProjectTeamMembersAsync(string title, string notifyText,
         string notificationLevel, string token)
     {
-        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(token);
+        var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
 
         await _hubContext.Clients
             .Client(connectionId)
@@ -329,7 +329,7 @@ internal sealed class ProjectNotificationsService : IProjectNotificationsService
     public async Task SendNotificationErrorInviteProjectTeamMembersAsync(string title, string notifyText,
         string notificationLevel, string token)
     {
-        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(token);
+        var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
 
         await _hubContext.Clients
             .Client(connectionId)
@@ -352,7 +352,7 @@ internal sealed class ProjectNotificationsService : IProjectNotificationsService
     public async Task SendNotificationWarningLimitFareRuleProjectsAsync(string title, string notifyText,
         string notificationLevel, string token)
     {
-        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(token);
+        var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
 
         await _hubContext.Clients
             .Client(connectionId)
@@ -375,7 +375,7 @@ internal sealed class ProjectNotificationsService : IProjectNotificationsService
     public async Task SendNotificationErrorDeleteProjectVacancyAsync(string title, string notifyText,
         string notificationLevel, string token)
     {
-        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(token);
+        var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
 
         await _hubContext.Clients
             .Client(connectionId)
@@ -398,7 +398,7 @@ internal sealed class ProjectNotificationsService : IProjectNotificationsService
     public async Task SendNotificationSuccessDeleteProjectVacancyAsync(string title, string notifyText,
         string notificationLevel, string token)
     {
-        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(token);
+        var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
 
         await _hubContext.Clients
             .Client(connectionId)
@@ -421,7 +421,7 @@ internal sealed class ProjectNotificationsService : IProjectNotificationsService
     public async Task SendNotificationErrorDeleteProjectAsync(string title, string notifyText, 
         string notificationLevel, string token)
     {
-        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(token);
+        var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
 
         await _hubContext.Clients
             .Client(connectionId)
@@ -444,7 +444,7 @@ internal sealed class ProjectNotificationsService : IProjectNotificationsService
     public async Task SendNotificationSuccessDeleteProjectAsync(string title, string notifyText,
         string notificationLevel, string userId)
     {
-        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(userId);
+        var connectionId = await _connectionService.GetConnectionIdCacheAsync(userId);
 
         await _hubContext.Clients
             .Client(connectionId)
@@ -467,7 +467,7 @@ internal sealed class ProjectNotificationsService : IProjectNotificationsService
     public async Task SendNotificationErrorProjectResponseAsync(string title, string notifyText,
         string notificationLevel, string token)
     {
-        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(token);
+        var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
 
         await _hubContext.Clients
             .Client(connectionId)
@@ -506,20 +506,41 @@ internal sealed class ProjectNotificationsService : IProjectNotificationsService
                 Notifications = new List<NotificationProjectOutput>(notificationsCount)
             };
 
-            if (items.Item1.Any())
+            if (items.UserNotifications.Any())
             {
                 result.Notifications = _mapper.Map<List<NotificationProjectOutput>>(items.UserNotifications);
             }
             
             // Работаем с уведомлениями владельцев.
-            if (items.Item2.Any())
+            if (items.OwnerNotifications.Any())
             {
                 var newOwnerNotifications = _mapper.Map<List<NotificationProjectOutput>>(items.OwnerNotifications);
                 result.Notifications.AddRange(newOwnerNotifications);
             }
 
             var resultNotifications = result.Notifications;
-            FillUserNotificationsButtonsFlags(ref resultNotifications);
+
+            // Проставляем признак отображения кнопок.
+            foreach (var notification in resultNotifications)
+            {
+                var isProjectOwner = await _projectRepository.CheckProjectOwnerAsync(notification.ProjectId, userId);
+
+                // Если страницу уведомлений просматривает владелец.
+                if (isProjectOwner)
+                {
+                    notification.IsAcceptButton = true;
+                    notification.IsRejectButton = true;
+                    notification.IsVisibleNotificationsButtons = true;
+                }
+
+                // Иначе скрываем кнопки.
+                else
+                {
+                    notification.IsAcceptButton = false;
+                    notification.IsRejectButton = false;
+                    notification.IsVisibleNotificationsButtons = false;
+                }
+            }
 
             return result;
         }
@@ -664,7 +685,7 @@ internal sealed class ProjectNotificationsService : IProjectNotificationsService
     public async Task SendNotificationErrorProjectInviteTeamByLinkAsync(string title, string notifyText,
         string notificationLevel, string token)
     {
-        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(token);
+        var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
 
         await _hubContext.Clients
             .Client(connectionId)
@@ -687,7 +708,7 @@ internal sealed class ProjectNotificationsService : IProjectNotificationsService
     public async Task SendNotificationErrorProjectInviteTeamByLoginAsync(string title, string notifyText,
         string notificationLevel, string token)
     {
-        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(token);
+        var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
 
         await _hubContext.Clients
             .Client(connectionId)
@@ -710,7 +731,7 @@ internal sealed class ProjectNotificationsService : IProjectNotificationsService
     public async Task SendNotificationErrorProjectInviteTeamByEmailAsync(string title, string notifyText,
         string notificationLevel, string token)
     {
-        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(token);
+        var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
 
         await _hubContext.Clients
             .Client(connectionId)
@@ -733,7 +754,7 @@ internal sealed class ProjectNotificationsService : IProjectNotificationsService
     public async Task SendNotificationErrorProjectInviteTeamByPhoneNumberAsync(string title, string notifyText,
         string notificationLevel, string token)
     {
-        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(token);
+        var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
 
         await _hubContext.Clients
             .Client(connectionId)
@@ -756,7 +777,7 @@ internal sealed class ProjectNotificationsService : IProjectNotificationsService
     public async Task SendNotificationWarningProjectInviteTeamAsync(string title, string notifyText,
         string notificationLevel, string token)
     {
-        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(token);
+        var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
 
         await _hubContext.Clients
             .Client(connectionId)
@@ -780,7 +801,7 @@ internal sealed class ProjectNotificationsService : IProjectNotificationsService
     public async Task SendNotificationWarningUserAlreadyProjectInvitedTeamAsync(string title, string notifyText,
         string notificationLevel, string token)
     {
-        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(token);
+        var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
 
         await _hubContext.Clients
             .Client(connectionId)
@@ -803,7 +824,7 @@ internal sealed class ProjectNotificationsService : IProjectNotificationsService
     public async Task SendNotificationSuccessDeleteProjectTeamMemberAsync(string title, string notifyText,
         string notificationLevel, string token)
     {
-        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(token);
+        var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
 
         await _hubContext.Clients
             .Client(connectionId)
@@ -826,7 +847,7 @@ internal sealed class ProjectNotificationsService : IProjectNotificationsService
     public async Task SendNotificationSuccessAddProjectArchiveAsync(string title, string notifyText,
         string notificationLevel, string token)
     {
-        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(token);
+        var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
 
         await _hubContext.Clients
             .Client(connectionId)
@@ -849,7 +870,7 @@ internal sealed class ProjectNotificationsService : IProjectNotificationsService
     public async Task SendNotificationErrorAddProjectArchiveAsync(string title, string notifyText,
         string notificationLevel, string token)
     {
-        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(token);
+        var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
 
         await _hubContext.Clients
             .Client(connectionId)
@@ -872,7 +893,7 @@ internal sealed class ProjectNotificationsService : IProjectNotificationsService
     public async Task SendNotificationWarningAddProjectArchiveAsync(string title, string notifyText,
         string notificationLevel, string token)
     {
-        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(token);
+        var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
 
         await _hubContext.Clients
             .Client(connectionId)
@@ -895,7 +916,7 @@ internal sealed class ProjectNotificationsService : IProjectNotificationsService
     public async Task SendNotificationErrorDeleteProjectArchiveAsync(string title, string notifyText,
         string notificationLevel, string token)
     {
-        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(token);
+        var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
 
         await _hubContext.Clients
             .Client(connectionId)
@@ -918,7 +939,7 @@ internal sealed class ProjectNotificationsService : IProjectNotificationsService
     public async Task SendNotificationSuccessDeleteProjectArchiveAsync(string title, string notifyText,
         string notificationLevel, string token)
     {
-        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(token);
+        var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
 
         await _hubContext.Clients
             .Client(connectionId)
@@ -941,7 +962,7 @@ internal sealed class ProjectNotificationsService : IProjectNotificationsService
     public async Task SendNotificationWarningDeleteProjectArchiveAsync(string title, string notifyText,
         string notificationLevel, string token)
     {
-        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(token);
+        var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
 
         await _hubContext.Clients
             .Client(connectionId)
@@ -957,21 +978,7 @@ internal sealed class ProjectNotificationsService : IProjectNotificationsService
     #endregion
 
     #region Приватные методы.
-    
-    /// <summary>
-    /// Метод проставляет признак отображения кнопок уведомлений для пользователей.
-    /// </summary>
-    /// <param name="ownerNotifications">Уведомления пользователей.</param>
-    /// <returns>Список уведомлений.</returns>
-    private void FillUserNotificationsButtonsFlags(ref List<NotificationProjectOutput> ownerNotifications)
-    {
-        // Проставляем признак отображения кнопок.
-        foreach (var notification in ownerNotifications)
-        {
-            notification.IsVisibleNotificationsButtons = true;
-        }
-    }
-    
+
     /// <summary>
     /// Метод отправляет уведомление об ошибке при апруве приглашения в проект.
     /// </summary>
@@ -982,7 +989,7 @@ internal sealed class ProjectNotificationsService : IProjectNotificationsService
     private async Task SendNotificationErrorApproveProjectInviteAsync(string title, string notifyText,
         string notificationLevel, string token)
     {
-        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(token);
+        var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
 
         await _hubContext.Clients
             .Client(connectionId)
@@ -1005,7 +1012,7 @@ internal sealed class ProjectNotificationsService : IProjectNotificationsService
     private async Task SendNotificationSuccessApproveProjectInviteAsync(string title, string notifyText,
         string notificationLevel, string token)
     {
-        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(token);
+        var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
 
         await _hubContext.Clients
             .Client(connectionId)
@@ -1028,7 +1035,7 @@ internal sealed class ProjectNotificationsService : IProjectNotificationsService
     private async Task SendNotificationErrorRejectProjectInviteAsync(string title, string notifyText,
         string notificationLevel, string token)
     {
-        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(token);
+        var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
 
         await _hubContext.Clients
             .Client(connectionId)
@@ -1051,7 +1058,7 @@ internal sealed class ProjectNotificationsService : IProjectNotificationsService
     private async Task SendNotificationSuccessRejectProjectInviteAsync(string title, string notifyText,
         string notificationLevel, string token)
     {
-        var connectionId = await _notificationsRedisService.GetConnectionIdCacheAsync(token);
+        var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
 
         await _hubContext.Clients
             .Client(connectionId)

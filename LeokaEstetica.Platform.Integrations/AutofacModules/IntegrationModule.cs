@@ -1,6 +1,8 @@
 using Autofac;
 using LeokaEstetica.Platform.Core.Attributes;
+using LeokaEstetica.Platform.Integrations.Abstractions.Pachca;
 using LeokaEstetica.Platform.Integrations.Abstractions.Telegram;
+using LeokaEstetica.Platform.Integrations.Services.Pachca;
 using LeokaEstetica.Platform.Integrations.Services.Telegram;
 
 namespace LeokaEstetica.Platform.Integrations.AutofacModules;
@@ -24,6 +26,14 @@ public class IntegrationModule : Module
             .InstancePerLifetimeScope();
         builder.RegisterType<TelegramService>()
             .As<ITelegramService>()
+            .InstancePerLifetimeScope();
+        
+        // Сервис пачки.
+        builder.RegisterType<PachcaService>()
+            .Named<IPachcaService>("PachcaService")
+            .InstancePerLifetimeScope();
+        builder.RegisterType<PachcaService>()
+            .As<IPachcaService>()
             .InstancePerLifetimeScope();
     }
 }

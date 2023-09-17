@@ -13,6 +13,7 @@ using LeokaEstetica.Platform.Database.Abstractions.Moderation.Resume;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Vacancy;
 using LeokaEstetica.Platform.Database.Abstractions.Notification;
 using LeokaEstetica.Platform.Database.Abstractions.Orders;
+using LeokaEstetica.Platform.Database.Abstractions.Press;
 using LeokaEstetica.Platform.Database.Abstractions.Profile;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
 using LeokaEstetica.Platform.Database.Abstractions.Resume;
@@ -39,6 +40,7 @@ using LeokaEstetica.Platform.Database.Repositories.Moderation.Resume;
 using LeokaEstetica.Platform.Database.Repositories.Moderation.Vacancy;
 using LeokaEstetica.Platform.Database.Repositories.Notification;
 using LeokaEstetica.Platform.Database.Repositories.Orders;
+using LeokaEstetica.Platform.Database.Repositories.Press;
 using LeokaEstetica.Platform.Database.Repositories.Profile;
 using LeokaEstetica.Platform.Database.Repositories.Project;
 using LeokaEstetica.Platform.Database.Repositories.Resume;
@@ -260,6 +262,14 @@ public class RepositoriesModule : Module
             .InstancePerLifetimeScope();
         builder.RegisterType<ProjectResponseRepository>()
             .As<IProjectResponseRepository>()
+            .InstancePerLifetimeScope();
+        
+        // Репозиторий прессы.
+        builder.RegisterType<PressRepository>()
+            .Named<IPressRepository>("PressRepository")
+            .InstancePerLifetimeScope();
+        builder.RegisterType<PressRepository>()
+            .As<IPressRepository>()
             .InstancePerLifetimeScope();
     }
 }

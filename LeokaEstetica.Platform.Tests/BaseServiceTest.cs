@@ -25,6 +25,7 @@ using LeokaEstetica.Platform.Database.Repositories.Moderation.Resume;
 using LeokaEstetica.Platform.Database.Repositories.Moderation.Vacancy;
 using LeokaEstetica.Platform.Database.Repositories.Notification;
 using LeokaEstetica.Platform.Database.Repositories.Orders;
+using LeokaEstetica.Platform.Database.Repositories.Press;
 using LeokaEstetica.Platform.Database.Repositories.Profile;
 using LeokaEstetica.Platform.Database.Repositories.Project;
 using LeokaEstetica.Platform.Database.Repositories.Resume;
@@ -49,6 +50,7 @@ using LeokaEstetica.Platform.Services.Services.FareRule;
 using LeokaEstetica.Platform.Services.Services.Knowledge;
 using LeokaEstetica.Platform.Services.Services.Landing;
 using LeokaEstetica.Platform.Services.Services.Orders;
+using LeokaEstetica.Platform.Services.Services.Press;
 using LeokaEstetica.Platform.Services.Services.Profile;
 using LeokaEstetica.Platform.Services.Services.Project;
 using LeokaEstetica.Platform.Services.Services.Refunds;
@@ -107,6 +109,7 @@ internal class BaseServiceTest
     protected readonly TelegramService TelegramService;
     protected readonly FareRuleRepository FareRuleRepository;
     protected readonly ChatRepository ChatRepository;
+    protected readonly PressService PressService;
 
     protected BaseServiceTest()
     {
@@ -161,7 +164,7 @@ internal class BaseServiceTest
         TelegramBotService = new TelegramBotService(null, AppConfiguration);
 
         VacancyModerationService = new VacancyModerationService(vacancyModerationRepository, null, mapper, null,
-            vacancyRepository, userRepository, projectRepository, null, TelegramBotService);
+            vacancyRepository, userRepository, projectRepository, null, null);
         
         // Тут если нужен будет ProjectService, то тут проблема с порядком следования.
         // Не получится сделать просто, VacancyService и ProjectService нужны друг другу тесно.
@@ -181,7 +184,7 @@ internal class BaseServiceTest
         ProjectModerationRepository = new ProjectModerationRepository(pgContext);
 
         ProjectModerationService = new ProjectModerationService(ProjectModerationRepository, null, mapper, null, 
-            userRepository, projectRepository, null, TelegramBotService);
+            userRepository, projectRepository, null, null);
 
         var projectCommentsRepository = new ProjectCommentsRepository(pgContext);
 
@@ -248,5 +251,8 @@ internal class BaseServiceTest
         ProjectMetricsService = new ProjectMetricsService(projectCommentsRepository, mapper, projectRepository);
         
         TelegramService = new TelegramService(globalConfigRepository, null);
+
+        var pressRepository = new PressRepository(pgContext);
+        PressService = new PressService(pressRepository, null);
     }
 }

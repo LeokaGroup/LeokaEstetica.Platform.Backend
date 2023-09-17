@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using AutoMapper;
+using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
 using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Database.Abstractions.Vacancy;
@@ -227,6 +228,7 @@ internal sealed class ChatService : IChatService
 
                 // Форматируем дату сообщения.
                 msg.Created = item.Created.ToString("g", CultureInfo.GetCultureInfo("ru"));
+
                 result.Messages.Add(msg);
             }
 
@@ -244,8 +246,9 @@ internal sealed class ChatService : IChatService
     /// Метод получает список диалогов.
     /// </summary>
     /// <param name="account">Аккаунт.</param>
+    /// <param name="projectId">Id проекта. Если не передан, то получает все диалоги пользователя.</param>
     /// <returns>Список диалогов.</returns>
-    public async Task<IEnumerable<DialogOutput>> GetDialogsAsync(string account)
+    public async Task<IEnumerable<DialogOutput>> GetDialogsAsync(string account, long? projectId = null)
     {
         try
         {
@@ -256,11 +259,11 @@ internal sealed class ChatService : IChatService
                 throw new InvalidOperationException($"Id пользователя с аккаунтом {account} не найден.");
             }
 
-            var dialogs = await _chatRepository.GetDialogsAsync(userId);
+            var dialogs = await _chatRepository.GetDialogsAsync(userId, projectId);
             var mapDialogs = _mapper.Map<List<ProfileDialogOutput>>(dialogs);
             
             dialogs = await CreateDialogMessagesBuilder.CreateDialogAsync((dialogs, mapDialogs), _chatRepository,
-                _userRepository, userId, _mapper);
+                _userRepository, userId, _mapper, account);
 
             return dialogs;
         }
@@ -375,30 +378,13 @@ internal sealed class ChatService : IChatService
     /// </summary>
     /// <param name="message">Сообщение.</param>
     /// <param name="dialogId">Id диалога.</param>
-    /// <param name="account">Аккаунт.</param>
+    /// <param name="userId">Id пользователя.</param>
+    /// <param name="token">Токен пользователя.</param>
     /// <returns>Выходная модель.</returns>
-    public async Task<DialogResultOutput> SendMessageAsync(string message, long dialogId, string account)
+    public async Task<DialogResultOutput> SendMessageAsync(string message, long dialogId, long userId, string token)
     {
         try
         {
-            // Если нет сообщения, то ничего не делать.
-            if (string.IsNullOrWhiteSpace(message))
-            {
-                return null;
-            }
-
-            if (dialogId == 0)
-            {
-                throw new ArgumentException("Id диалога не может быть пустым.");
-            }
-
-            var userId = await _userRepository.GetUserByEmailAsync(account);
-
-            if (userId == 0)
-            {
-                throw new InvalidOperationException($"Id пользователя с аккаунтом {account} не найден.");
-            }
-
             // Проверяем существование диалога.
             var checkDialog = await _chatRepository.CheckDialogAsync(dialogId);
 
@@ -413,12 +399,6 @@ internal sealed class ChatService : IChatService
             // Получаем список сообщений диалога.
             var messages = await _chatRepository.GetDialogMessagesAsync(dialogId);
 
-            // Проставляем флаг принадлежности сообщений.
-            foreach (var msg in messages)
-            {
-                msg.IsMyMessage = msg.UserId == userId;
-            }
-            
             var result = new DialogResultOutput
             {
                 Messages = new List<DialogMessageOutput>(),
@@ -427,6 +407,22 @@ internal sealed class ChatService : IChatService
 
             var mapMessages = _mapper.Map<List<DialogMessageOutput>>(messages);
             result.Messages.AddRange(mapMessages);
+            
+            // Получаем коды пользователей.
+            var userIds = result.Messages.Select(u => u.UserId).Distinct();
+            var userCodes = await _userRepository.GetUsersCodesByUserIdsAsync(userIds);
+            
+            // Проставляем флаг принадлежности сообщений.
+            foreach (var msg in result.Messages)
+            {
+                msg.IsMyMessage = msg.UserId == userId;
+                
+                if (userCodes.ContainsKey(msg.UserId))
+                {
+                    // Записываем код пользователя.
+                    msg.UserCode = userCodes.TryGet(msg.UserId);   
+                }
+            }
 
             return result;
         }
@@ -459,7 +455,7 @@ internal sealed class ChatService : IChatService
             var mapDefaultDialogs =  _mapper.Map<List<DialogOutput>>(dialogs);
             
             dialogs = await CreateDialogMessagesBuilder.CreateProfileDialogAsync((mapDefaultDialogs, mapProfileDialogs),
-                _chatRepository, _userRepository, userId, _mapper);
+                _chatRepository, _userRepository, userId, _mapper, account);
 
             return dialogs;
         }

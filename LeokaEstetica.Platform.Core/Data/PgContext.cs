@@ -28,6 +28,10 @@ public class PgContext : DbContext
 {
     private readonly DbContextOptions<PgContext> _options;
 
+    /// <summary>
+    /// Конструктор.
+    /// </summary>
+    /// <param name="options"></param>
     public PgContext(DbContextOptions<PgContext> options) 
         : base(options)
     {
@@ -451,4 +455,14 @@ public class PgContext : DbContext
     /// Таблица пожеланий/предложений.
     /// </summary>
     public DbSet<WisheOfferEntity> WishesOffers { get; set; }
+
+    /// <summary>
+    /// Таблица контактов.
+    /// </summary>
+    public DbSet<ContactEntity> Contacts { get; set; }
+
+    /// <summary>
+    /// Таблица публичной оферты.
+    /// </summary>
+    public DbSet<PublicOfferEntity> PublicOffer { get; set; }
 }

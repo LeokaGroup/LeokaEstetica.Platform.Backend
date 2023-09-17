@@ -265,6 +265,19 @@ internal sealed class UserRepository : IUserRepository
     }
 
     /// <summary>
+    /// Метод получает словарь кодов пользователей, Id которых передали.
+    /// </summary>
+    /// <returns>Словарь кодов пользователей.</returns>
+    public async Task<Dictionary<long, Guid>> GetUsersCodesByUserIdsAsync(IEnumerable<long> userIds)
+    {
+        var result = await _pgContext.Users
+            .Where(u => userIds.Contains(u.UserId))
+            .ToDictionaryAsync(k => k.UserId, v => v.UserCode);
+
+        return result;
+    }
+
+    /// <summary>
     /// Метод получает список пользователей.
     /// </summary>
     /// <returns>Список пользователей.</returns>

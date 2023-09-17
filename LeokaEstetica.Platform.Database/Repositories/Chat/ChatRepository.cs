@@ -188,14 +188,15 @@ internal sealed class ChatRepository : IChatRepository
     /// Метод получит все диалоги.
     /// </summary>
     /// <param name="userId">Id пользователя.</param>
+    /// <param name="projectId">Id проекта. Если не передан, то получает все диалоги пользователя.</param>
     /// <returns>Список диалогов.</returns>
-    public async Task<List<DialogOutput>> GetDialogsAsync(long userId)
+    public async Task<List<DialogOutput>> GetDialogsAsync(long userId, long? projectId = null)
     {
-        var result = await (from dm in _pgContext.DialogMembers
+        var query = (from dm in _pgContext.DialogMembers
                 join d in _pgContext.Dialogs
                     on dm.DialogId
                     equals d.DialogId
-                where dm.UserId == userId 
+                where dm.UserId == userId
                       && d.DialogMessages.Any()
                 select new DialogOutput
                 {
@@ -204,12 +205,22 @@ internal sealed class ChatRepository : IChatRepository
                     UserId = dm.UserId,
                     Created = d.Created.ToString(CultureInfo.CurrentCulture),
                     ProjectId = _pgContext.UserProjects
-                        .Where(p => p.ProjectId == d.ProjectId 
+                        .Where(p => p.ProjectId == d.ProjectId
                                     && d.ProjectId != null)
                         .Select(p => p.ProjectId)
                         .FirstOrDefault()
-                })
-            .ToListAsync();
+                });
+
+        // Если передали Id проекта, то фильтруем диалоги по проекту.
+        if (projectId.HasValue)
+        {
+            query = query.Where(p => p.ProjectId == projectId.Value);
+        }
+
+        query = query.GroupBy(g => g.DialogId)
+            .Select(x => x.First());
+
+        var result = await query.ToListAsync();
 
         return result;
     }
