@@ -4,7 +4,7 @@ using LeokaEstetica.Platform.Models.Dto.Output.Communication;
 using LeokaEstetica.Platform.Services.Abstractions.Press;
 using Microsoft.AspNetCore.Mvc;
 
-namespace LeokaEstetica.Platform.Controllers.Contact;
+namespace LeokaEstetica.Platform.Controllers.Press;
 
 /// <summary>
 /// Контроллер работы с прессой, контактами, вакансий и тд. Ознакомительная информация о компании.
