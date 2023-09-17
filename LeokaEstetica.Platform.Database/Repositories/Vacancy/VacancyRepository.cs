@@ -8,6 +8,7 @@ using LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
 using LeokaEstetica.Platform.Models.Entities.Configs;
 using LeokaEstetica.Platform.Models.Entities.Vacancy;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using IsolationLevel = System.Data.IsolationLevel;
 
 namespace LeokaEstetica.Platform.Database.Repositories.Vacancy;
@@ -18,14 +19,17 @@ namespace LeokaEstetica.Platform.Database.Repositories.Vacancy;
 internal sealed class VacancyRepository : IVacancyRepository
 {
     private readonly PgContext _pgContext;
+    private readonly ILogger<VacancyRepository> _logger;
 
     /// <summary>
     /// Конструктор.
     /// </summary>
     /// <param name="pgContext">Датаконтекст.</param>
-    public VacancyRepository(PgContext pgContext)
+    public VacancyRepository(PgContext pgContext,
+     ILogger<VacancyRepository> logger)
     {
         _pgContext = pgContext;
+        _logger = logger;
     }
 
     #region Публичные методы.
@@ -94,6 +98,8 @@ internal sealed class VacancyRepository : IVacancyRepository
     /// <returns>Список вакансий.</returns>
     public async Task<List<CatalogVacancyOutput>> CatalogVacanciesAsync()
     {
+        _logger.LogInformation($"Строка подключения теста: {_pgContext.Database.GetConnectionString()}");
+        
         var result = await (from cv in _pgContext.CatalogVacancies
                 join mv in _pgContext.ModerationVacancies
                     on cv.VacancyId
