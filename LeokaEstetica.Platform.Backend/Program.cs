@@ -15,10 +15,7 @@ using Microsoft.OpenApi.Models;
 using NLog.Web;
 using Quartz;
 
-var builder = WebApplication.CreateBuilder(new WebApplicationOptions
-{
-    EnvironmentName = Environments.Development
-}); 
+var builder = WebApplication.CreateBuilder(new WebApplicationOptions()); 
 var configuration = builder.Configuration;
 
 builder.Services.AddControllers(opt =>
@@ -35,21 +32,23 @@ builder.Services.AddCors(options => options.AddPolicy("ApiCorsPolicy", b =>
         .AllowCredentials();
 }));
 
-if (configuration["Environment"].Equals("Development"))
+builder.Environment.EnvironmentName = configuration["Environment"];
+
+if (builder.Environment.IsDevelopment())
 {
     builder.Services.AddDbContext<PgContext>(options =>
             options.UseNpgsql(configuration.GetConnectionString("NpgDevSqlConnection")),
         ServiceLifetime.Transient);
 }
       
-if (configuration["Environment"].Equals("Staging"))
+if (builder.Environment.IsStaging())
 {
     builder.Services.AddDbContext<PgContext>(options =>
             options.UseNpgsql(configuration.GetConnectionString("NpgTestSqlConnection")),
         ServiceLifetime.Transient);
 }
 
-if (configuration["Environment"].Equals("Production"))
+if (builder.Environment.IsProduction())
 {
     builder.Services.AddDbContext<PgContext>(options =>
             options.UseNpgsql(configuration.GetConnectionString("NpgSqlConnection")),
@@ -98,7 +97,8 @@ static void AddSwaggerXml(Swashbuckle.AspNetCore.SwaggerGen.SwaggerGenOptions c)
 builder.WebHost
     .UseKestrel()
     .UseContentRoot(Directory.GetCurrentDirectory())
-    .UseUrls("http://*:9992");
+    .UseUrls("http://*:9992")
+    .UseEnvironment(configuration["Environment"]);
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
