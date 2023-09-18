@@ -97,7 +97,8 @@ static void AddSwaggerXml(Swashbuckle.AspNetCore.SwaggerGen.SwaggerGenOptions c)
 builder.WebHost
     .UseKestrel()
     .UseContentRoot(Directory.GetCurrentDirectory())
-    .UseUrls("http://*:9993");
+    .UseUrls("http://*:9993")
+    .UseEnvironment(configuration["Environment"]);
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
