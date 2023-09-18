@@ -15,10 +15,7 @@ using Microsoft.OpenApi.Models;
 using NLog.Web;
 using Quartz;
 
-var builder = WebApplication.CreateBuilder(new WebApplicationOptions
-{
-    EnvironmentName = Environments.Development
-}); 
+var builder = WebApplication.CreateBuilder(new WebApplicationOptions()); 
 var configuration = builder.Configuration;
 
 builder.Services.AddControllers(opt =>
@@ -34,6 +31,8 @@ builder.Services.AddCors(options => options.AddPolicy("ApiCorsPolicy", b =>
         .AllowAnyMethod()
         .AllowCredentials();
 }));
+
+builder.Environment.EnvironmentName = configuration["Environment"];
 
 if (builder.Environment.IsDevelopment())
 {
