@@ -230,7 +230,7 @@ internal class BaseServiceTest
         ResumeModerationService = new ResumeModerationService(null, resumeModerationRepository, mapper,
             userRepository, null);
 
-        var landingRepository = new LandingRepository(pgContext, null);
+        var landingRepository = new LandingRepository(pgContext);
         LandingService = new LandingService(null, landingRepository, mapper);
 
         var KnowledgeRepository = new KnowledgeRepository(pgContext);
