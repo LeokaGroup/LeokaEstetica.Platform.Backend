@@ -265,9 +265,12 @@ internal sealed class ProfileService : IProfileService
             // Сохраняем выбранные цели пользователя.
             await SaveUserIntentsAsync(profileInfoInput, userId);
 
-            // Отправляем уведомление о сохранении фронту.
-            await _notificationsService.SendNotifySuccessSaveAsync("Все хорошо", "Данные успешно сохранены.",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);
+            if (!string.IsNullOrEmpty(token))
+            {
+                // Отправляем уведомление о сохранении фронту.
+                await _notificationsService.SendNotifySuccessSaveAsync("Все хорошо", "Данные успешно сохранены.",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);   
+            }
 
             // Снова логиним юзера, так как почта изменилась а значит и токен надо менять.
             if (savedProfileInfoData.IsEmailChanged)
