@@ -110,7 +110,7 @@ public class UserEntity
     /// <summary>
     /// Guid для подтверждения почты.
     /// </summary>
-    public Guid ConfirmEmailCode { get; set; }
+    public Guid? ConfirmEmailCode { get; set; }
 
     /// <summary>
     /// Дата начала блокировки.

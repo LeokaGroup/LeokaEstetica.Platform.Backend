@@ -2,7 +2,6 @@
 using LeokaEstetica.Platform.Database.Abstractions.Landing;
 using LeokaEstetica.Platform.Models.Entities.Landing;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 
 namespace LeokaEstetica.Platform.Database.Repositories.Landing;
 
@@ -12,13 +11,10 @@ namespace LeokaEstetica.Platform.Database.Repositories.Landing;
 internal sealed class LandingRepository : ILandingRepository
 {
     private readonly PgContext _pgContext;
-    private readonly ILogger<LandingRepository> _logger;
 
-    public LandingRepository(PgContext pgContext,
-        ILogger<LandingRepository> logger)
+    public LandingRepository(PgContext pgContext)
     {
         _pgContext = pgContext;
-        _logger = logger;
     }
 
     /// <summary>
@@ -27,8 +23,6 @@ internal sealed class LandingRepository : ILandingRepository
     /// <returns>Данные блока.returns>
     public async Task<FonEntity> LandingStartFonAsync()
     {
-        _logger.LogInformation($"Test Connection string: {_pgContext.Database.GetConnectionString()}");
-        
         var result = await _pgContext.Fons
             .FirstOrDefaultAsync();
 
