@@ -1,7 +1,7 @@
 using LeokaEstetica.Platform.Models.Dto.Chat.Output;
 using LeokaEstetica.Platform.Models.Enums;
 
-namespace LeokaEstetica.Platform.Messaging.Abstractions.Chat;
+namespace LeokaEstetica.Platform.Base.Abstractions.Messaging.Chat;
 
 /// <summary>
 /// Абстракция сервиса чата.

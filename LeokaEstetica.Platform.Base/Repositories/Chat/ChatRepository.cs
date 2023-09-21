@@ -1,11 +1,14 @@
 using System.Globalization;
+using System.Runtime.CompilerServices;
+using LeokaEstetica.Platform.Base.Abstractions.Repositories.Chat;
 using LeokaEstetica.Platform.Core.Data;
-using LeokaEstetica.Platform.Database.Chat;
 using LeokaEstetica.Platform.Models.Dto.Chat.Output;
 using LeokaEstetica.Platform.Models.Entities.Communication;
 using Microsoft.EntityFrameworkCore;
 
-namespace LeokaEstetica.Platform.Database.Repositories.Chat;
+[assembly: InternalsVisibleTo("LeokaEstetica.Platform.Tests")]
+
+namespace LeokaEstetica.Platform.Base.Repositories.Chat;
 
 /// <summary>
 /// Класс реализует методы репозитория чата.

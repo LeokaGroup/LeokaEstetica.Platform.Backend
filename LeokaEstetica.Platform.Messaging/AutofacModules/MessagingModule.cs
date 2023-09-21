@@ -1,6 +1,6 @@
 using Autofac;
+using LeokaEstetica.Platform.Base.Abstractions.Messaging.Chat;
 using LeokaEstetica.Platform.Core.Attributes;
-using LeokaEstetica.Platform.Messaging.Abstractions.Chat;
 using LeokaEstetica.Platform.Messaging.Abstractions.Mail;
 using LeokaEstetica.Platform.Messaging.Abstractions.Project;
 using LeokaEstetica.Platform.Messaging.Abstractions.RabbitMq;

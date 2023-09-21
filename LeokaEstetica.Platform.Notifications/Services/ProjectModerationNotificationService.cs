@@ -11,7 +11,7 @@ namespace LeokaEstetica.Platform.Notifications.Services;
 /// </summary>
 internal sealed class ProjectModerationNotificationService : IProjectModerationNotificationService
 {
-    private readonly IHubContext<NotifyHub> _hubContext;
+    private readonly IHubContext<ChatHub> _hubContext;
     private readonly IConnectionService _connectionService;
     
     /// <summary>
@@ -19,7 +19,7 @@ internal sealed class ProjectModerationNotificationService : IProjectModerationN
     /// </summary>
     /// <param name="hubContext">Контекст хаба.</param>
     /// <param name="notificationsRedisService">Сервис уведомлений кэша.</param>
-    public ProjectModerationNotificationService(IHubContext<NotifyHub> hubContext, 
+    public ProjectModerationNotificationService(IHubContext<ChatHub> hubContext, 
         IConnectionService connectionService)
     {
         _hubContext = hubContext;

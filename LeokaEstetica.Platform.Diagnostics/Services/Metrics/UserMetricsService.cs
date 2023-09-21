@@ -1,6 +1,6 @@
 using System.Runtime.CompilerServices;
+using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.Database.Abstractions.Metrics;
-using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Diagnostics.Abstractions.Metrics;
 using LeokaEstetica.Platform.Models.Entities.User;
 using Microsoft.Extensions.Logging;

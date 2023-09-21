@@ -1,8 +1,8 @@
 using System.Runtime.CompilerServices;
+using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.FareRule;
 using LeokaEstetica.Platform.Database.Abstractions.Subscription;
-using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Models.Dto.Output.Subscription;
 using LeokaEstetica.Platform.Models.Entities.Subscription;
 using LeokaEstetica.Platform.Services.Abstractions.Subscription;

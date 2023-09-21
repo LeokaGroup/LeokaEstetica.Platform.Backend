@@ -1,10 +1,10 @@
 using AutoMapper;
-using LeokaEstetica.Platform.Database.Abstractions.User;
-using LeokaEstetica.Platform.Database.Chat;
+using LeokaEstetica.Platform.Base.Abstractions.Repositories.Chat;
+using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.Models.Dto.Chat.Output;
 using LeokaEstetica.Platform.Models.Entities.User;
 
-namespace LeokaEstetica.Platform.Messaging.Builders;
+namespace LeokaEstetica.Platform.Base.Builders;
 
 /// <summary>
 /// Класс билдера сообщений.

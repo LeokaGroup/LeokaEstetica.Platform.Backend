@@ -1,4 +1,4 @@
-using LeokaEstetica.Platform.Database.Abstractions.User;
+using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.Notifications.Abstractions;
 
 namespace LeokaEstetica.Platform.Services.Strategies.Project.Team;

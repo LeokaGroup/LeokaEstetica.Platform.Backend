@@ -1,8 +1,12 @@
 using Autofac;
 using LeokaEstetica.Platform.Base.Abstractions.Messaging.Mail;
+using LeokaEstetica.Platform.Base.Abstractions.Repositories.Chat;
+using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.Validation;
 using LeokaEstetica.Platform.Base.Abstractions.Services.Messaging.Mail;
 using LeokaEstetica.Platform.Base.Abstractions.Services.Validation;
+using LeokaEstetica.Platform.Base.Repositories.Chat;
+using LeokaEstetica.Platform.Base.Repositories.User;
 using LeokaEstetica.Platform.Base.Repositories.Validation;
 using LeokaEstetica.Platform.Base.Services.Validation;
 using LeokaEstetica.Platform.Core.Attributes;
@@ -43,21 +47,21 @@ public class BaseModule : Module
             .RegisterType<MailingsService>()
             .As<IMailingsService>()
             .InstancePerLifetimeScope();
+
+        // Репозиторий пользователей.
+        builder.RegisterType<UserRepository>()
+            .Named<IUserRepository>("LandingRepository")
+            .InstancePerLifetimeScope();
+        builder.RegisterType<UserRepository>()
+            .As<IUserRepository>()
+            .InstancePerLifetimeScope();
         
-        // Репозиторий обновления сущностей generic-типов.
-        // builder
-        //     .RegisterGeneric(typeof(UpdateDetachedEntitiesRepository<>))
-        //     .As(typeof(IUpdateDetachedEntitiesRepository<>))
-        //     .InstancePerLifetimeScope();
-        
-        // builder
-        //     .RegisterType<UpdateDetachedEntitiesRepository<VacancyRemarkEntity>>()
-        //     .As<IUpdateDetachedEntitiesRepository<VacancyRemarkEntity>>()
-        //     .InstancePerLifetimeScope();
-        //
-        // builder
-        //     .RegisterType<UpdateDetachedEntitiesRepository<ProjectRemarkEntity>>()
-        //     .As<IUpdateDetachedEntitiesRepository<ProjectRemarkEntity>>()
-        //     .InstancePerLifetimeScope();
+        // Репозиторий чата.
+        builder.RegisterType<ChatRepository>()
+            .Named<IChatRepository>("ChatRepository")
+            .InstancePerLifetimeScope();
+        builder.RegisterType<ChatRepository>()
+            .As<IChatRepository>()
+            .InstancePerLifetimeScope();
     }
 }

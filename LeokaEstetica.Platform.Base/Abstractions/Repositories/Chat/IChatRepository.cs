@@ -1,7 +1,7 @@
 using LeokaEstetica.Platform.Models.Dto.Chat.Output;
 using LeokaEstetica.Platform.Models.Entities.Communication;
 
-namespace LeokaEstetica.Platform.Database.Chat;
+namespace LeokaEstetica.Platform.Base.Abstractions.Repositories.Chat;
 
 /// <summary>
 /// Абстракция репозитория чата.

@@ -1,12 +1,13 @@
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using AutoMapper;
+using LeokaEstetica.Platform.Base.Abstractions.Messaging.Chat;
+using LeokaEstetica.Platform.Base.Abstractions.Repositories.Chat;
+using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
+using LeokaEstetica.Platform.Base.Builders;
 using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
-using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Database.Abstractions.Vacancy;
-using LeokaEstetica.Platform.Database.Chat;
-using LeokaEstetica.Platform.Messaging.Abstractions.Chat;
 using LeokaEstetica.Platform.Messaging.Builders;
 using LeokaEstetica.Platform.Messaging.Enums;
 using LeokaEstetica.Platform.Models.Dto.Chat.Output;

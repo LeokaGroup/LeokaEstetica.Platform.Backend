@@ -1,8 +1,8 @@
 using LeokaEstetica.Platform.Access.Abstractions.Resume;
 using LeokaEstetica.Platform.Access.Enums;
+using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.Subscription;
-using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Models.Dto.Output.Resume;
 using Microsoft.Extensions.Logging;
 
