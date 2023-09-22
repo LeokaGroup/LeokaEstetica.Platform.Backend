@@ -29,8 +29,7 @@ internal sealed class VacancyModerationRepository : IVacancyModerationRepository
     #region Публичные методы.
 
     /// <summary>
-    /// Метод отправляет вакансию на модерацию. Это происходит через добавление в таблицу модерации вакансий.
-    /// Если вакансия в этой таблице, значит она не прошла еще модерацию.
+    /// Метод отправляет вакансию на модерацию.
     /// </summary>
     /// <param name="vacancyId">Id вакансии.</param>
     public async Task AddVacancyModerationAsync(long vacancyId)

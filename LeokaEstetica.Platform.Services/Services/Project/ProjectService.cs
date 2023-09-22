@@ -1377,6 +1377,9 @@ internal sealed class ProjectService : IProjectService
                 return;
             }
             
+            // Отправляем проект на модерацию.
+            await _projectModerationRepository.AddProjectModerationAsync(projectId);
+            
             if (!string.IsNullOrEmpty(token))
             {
                 await _projectNotificationsService.SendNotificationSuccessDeleteProjectArchiveAsync("Все хорошо",

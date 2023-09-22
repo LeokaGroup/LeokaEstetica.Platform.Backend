@@ -1,3 +1,4 @@
+using System.Data;
 using System.Runtime.CompilerServices;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Enums;
@@ -62,7 +63,7 @@ internal sealed class ProjectModerationRepository : IProjectModerationRepository
     /// <returns>Признак подиверждения проекта.</returns>
     public async Task<bool> ApproveProjectAsync(long projectId)
     {
-        var isSuccessSetStatus = await SetProjectStatus(projectId, ProjectModerationStatusEnum.ApproveProject);
+        var isSuccessSetStatus = await SetProjectStatusAsync(projectId, ProjectModerationStatusEnum.ApproveProject);
 
         if (!isSuccessSetStatus)
         {
@@ -95,7 +96,7 @@ internal sealed class ProjectModerationRepository : IProjectModerationRepository
     /// <returns>Признак отклонения проекта.</returns>
     public async Task<bool> RejectProjectAsync(long projectId)
     {
-        var result = await SetProjectStatus(projectId, ProjectModerationStatusEnum.RejectedProject);
+        var result = await SetProjectStatusAsync(projectId, ProjectModerationStatusEnum.RejectedProject);
 
         return result;
     }
@@ -455,6 +456,51 @@ internal sealed class ProjectModerationRepository : IProjectModerationRepository
         return true;
     }
 
+    /// <summary>
+    /// Метод отправляет проект на модерацию. Это происходит через добавление в таблицу модерации проектов.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    public async Task AddProjectModerationAsync(long projectId)
+    {
+        var transaction = await _pgContext.Database
+            .BeginTransactionAsync(IsolationLevel.ReadCommitted);
+        
+        try
+        {
+            // Отправляем проект на модерацию.
+            var prj = new ModerationProjectEntity
+            {
+                ProjectId = projectId,
+                DateModeration = DateTime.UtcNow,
+                ModerationStatusId = (int)ProjectModerationStatusEnum.ModerationProject
+            };
+            
+            // Если проект уже был на модерации, то обновим статус.
+            var isModerationExists = await IsModerationExistsProjectAsync(prj.ProjectId);
+            
+            if (!isModerationExists)
+            {
+                // Отправляем проект на модерацию.
+                await SendModerationProjectAsync(projectId);
+            }
+            
+            else
+            {
+                await UpdateModerationProjectStatusAsync(projectId, ProjectModerationStatusEnum.ModerationProject);
+            }
+
+            await _pgContext.SaveChangesAsync();
+            
+            await transaction.CommitAsync();
+        }
+        
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
+    }
+
     #endregion
 
     #region Приватные методы.
@@ -465,7 +511,7 @@ internal sealed class ProjectModerationRepository : IProjectModerationRepository
     /// <param name="projectId">Id проекта.</param>
     /// <param name="projectModerationStatus">Статус.</param>
     /// <returns>Признак подиверждения проекта.</returns>
-    private async Task<bool> SetProjectStatus(long projectId, ProjectModerationStatusEnum projectModerationStatus)
+    private async Task<bool> SetProjectStatusAsync(long projectId, ProjectModerationStatusEnum projectModerationStatus)
     {
         var prj = await _pgContext.ModerationProjects
             .FirstOrDefaultAsync(p => p.ProjectId == projectId);
@@ -480,6 +526,51 @@ internal sealed class ProjectModerationRepository : IProjectModerationRepository
         await _pgContext.SaveChangesAsync();
 
         return true;
+    }
+    
+    /// <summary>
+    /// Метод проверяет, был ли уже такой проект на модерации. 
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Признак модерации.</returns>
+    private async Task<bool> IsModerationExistsProjectAsync(long projectId)
+    {
+        var result = await _pgContext.ModerationProjects
+            .AnyAsync(p => p.ProjectId == projectId);
+
+        return result;
+    }
+    
+    /// <summary>
+    /// Метод отправляет проект на модерацию.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    private async Task SendModerationProjectAsync(long projectId)
+    {
+        // Добавляем проект в таблицу модерации проектов.
+        await _pgContext.ModerationProjects.AddAsync(new ModerationProjectEntity
+        {
+            DateModeration = DateTime.UtcNow,
+            ProjectId = projectId,
+            ModerationStatusId = (int)ProjectModerationStatusEnum.ModerationProject
+        });
+    }
+    
+    /// <summary>
+    /// Метод обновляет статус проекта на модерации.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="status">Статус проекта.</param>
+    private async Task UpdateModerationProjectStatusAsync(long projectId, ProjectModerationStatusEnum status)
+    {
+        var prj = await _pgContext.ModerationProjects.FirstOrDefaultAsync(p => p.ProjectId == projectId);
+
+        if (prj is null)
+        {
+            throw new InvalidOperationException($"Не найден проект для модерации. ProjectId: {projectId}");
+        }
+        
+        prj.ModerationStatusId = (int)status;
     }
 
     #endregion
