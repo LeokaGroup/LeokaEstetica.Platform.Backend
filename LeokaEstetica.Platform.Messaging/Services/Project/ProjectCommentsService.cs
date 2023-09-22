@@ -1,8 +1,8 @@
 using System.Runtime.CompilerServices;
 using LeokaEstetica.Platform.Access.Abstractions.User;
+using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
-using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Messaging.Abstractions.Project;
 using LeokaEstetica.Platform.Models.Entities.Communication;
 using LeokaEstetica.Platform.Notifications.Abstractions;

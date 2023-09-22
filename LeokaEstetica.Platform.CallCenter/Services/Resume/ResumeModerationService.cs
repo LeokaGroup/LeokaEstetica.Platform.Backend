@@ -1,11 +1,11 @@
 using AutoMapper;
+using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.CallCenter.Abstractions.Resume;
 using LeokaEstetica.Platform.CallCenter.Builders;
 using LeokaEstetica.Platform.CallCenter.Consts;
 using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Resume;
-using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Models.Dto.Input.Moderation;
 using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Resume;
 using LeokaEstetica.Platform.Models.Entities.Moderation;

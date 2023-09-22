@@ -157,4 +157,10 @@ public interface IProjectModerationRepository
     /// <param name="commentId">Id комментария.</param>
     /// <returns>Признак успешного подверждения.</returns>
     Task<bool> RejectProjectCommentAsync(long commentId);
+    
+    /// <summary>
+    /// Метод отправляет проект на модерацию. Это происходит через добавление в таблицу модерации проектов.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    Task AddProjectModerationAsync(long projectId);
 }

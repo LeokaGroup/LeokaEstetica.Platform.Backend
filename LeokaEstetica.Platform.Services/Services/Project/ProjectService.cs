@@ -5,6 +5,7 @@ using LeokaEstetica.Platform.Access.Abstractions.AvailableLimits;
 using LeokaEstetica.Platform.Access.Abstractions.User;
 using LeokaEstetica.Platform.Access.Consts;
 using LeokaEstetica.Platform.Access.Enums;
+using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.Core.Constants;
 using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Core.Exceptions;
@@ -12,7 +13,6 @@ using LeokaEstetica.Platform.Database.Abstractions.FareRule;
 using LeokaEstetica.Platform.Database.Abstractions.Notification;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
 using LeokaEstetica.Platform.Database.Abstractions.Subscription;
-using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Database.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Finder.Chains.Project;
 using LeokaEstetica.Platform.Messaging.Abstractions.Mail;
@@ -422,6 +422,8 @@ internal sealed class ProjectService : IProjectService
             
             // Проверяем наличие неисправленных замечаний.
             await CheckAwaitingCorrectionRemarksAsync(projectId);
+
+            result.ProjectRemarks ??= new List<ProjectRemarkOutput>();
 
             return result;
         }
@@ -1374,6 +1376,9 @@ internal sealed class ProjectService : IProjectService
 
                 return;
             }
+            
+            // Отправляем проект на модерацию.
+            await _projectModerationRepository.AddProjectModerationAsync(projectId);
             
             if (!string.IsNullOrEmpty(token))
             {

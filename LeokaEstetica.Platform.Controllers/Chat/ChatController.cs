@@ -1,8 +1,8 @@
 using FluentValidation.Results;
 using LeokaEstetica.Platform.Base;
+using LeokaEstetica.Platform.Base.Abstractions.Messaging.Chat;
 using LeokaEstetica.Platform.Controllers.Filters;
-using LeokaEstetica.Platform.Controllers.Validators.Chat;
-using LeokaEstetica.Platform.Messaging.Abstractions.Chat;
+using LeokaEstetica.Platform.Messaging.Validators;
 using LeokaEstetica.Platform.Models.Dto.Chat.Input;
 using LeokaEstetica.Platform.Models.Dto.Chat.Output;
 using LeokaEstetica.Platform.Models.Enums;

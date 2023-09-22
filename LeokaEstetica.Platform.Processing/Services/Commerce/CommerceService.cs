@@ -1,13 +1,13 @@
 using System.Runtime.CompilerServices;
 using LeokaEstetica.Platform.Access.Abstractions.AvailableLimits;
 using LeokaEstetica.Platform.Access.Abstractions.User;
+using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.Commerce;
 using LeokaEstetica.Platform.Database.Abstractions.FareRule;
 using LeokaEstetica.Platform.Database.Abstractions.Orders;
 using LeokaEstetica.Platform.Database.Abstractions.Subscription;
-using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Models.Dto.Common.Cache;
 using LeokaEstetica.Platform.Models.Dto.Input.Commerce;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce;

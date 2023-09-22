@@ -1,10 +1,10 @@
 using System.Runtime.CompilerServices;
 using AutoMapper;
 using LeokaEstetica.Platform.Access.Abstractions.User;
+using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Resume;
 using LeokaEstetica.Platform.Database.Abstractions.Profile;
-using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Models.Dto.Input.Profile;
 using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Resume;
 using LeokaEstetica.Platform.Models.Dto.Output.Profile;
@@ -265,9 +265,12 @@ internal sealed class ProfileService : IProfileService
             // Сохраняем выбранные цели пользователя.
             await SaveUserIntentsAsync(profileInfoInput, userId);
 
-            // Отправляем уведомление о сохранении фронту.
-            await _notificationsService.SendNotifySuccessSaveAsync("Все хорошо", "Данные успешно сохранены.",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);
+            if (!string.IsNullOrEmpty(token))
+            {
+                // Отправляем уведомление о сохранении фронту.
+                await _notificationsService.SendNotifySuccessSaveAsync("Все хорошо", "Данные успешно сохранены.",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);   
+            }
 
             // Снова логиним юзера, так как почта изменилась а значит и токен надо менять.
             if (savedProfileInfoData.IsEmailChanged)

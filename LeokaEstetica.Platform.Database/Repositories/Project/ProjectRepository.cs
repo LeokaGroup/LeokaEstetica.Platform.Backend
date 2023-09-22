@@ -1,10 +1,10 @@
 using System.Data;
+using LeokaEstetica.Platform.Base.Abstractions.Repositories.Chat;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Core.Helpers;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
-using LeokaEstetica.Platform.Database.Chat;
 using LeokaEstetica.Platform.Models.Dto.Input.Project;
 using LeokaEstetica.Platform.Models.Dto.Output.Project;
 using LeokaEstetica.Platform.Models.Entities.Communication;

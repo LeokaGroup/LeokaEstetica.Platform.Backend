@@ -1,12 +1,12 @@
 using System.Runtime.CompilerServices;
 using AutoMapper;
 using LeokaEstetica.Platform.Base.Abstractions.Messaging.Mail;
+using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.Core.Constants;
 using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.Config;
 using LeokaEstetica.Platform.Database.Abstractions.Notification;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
-using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Database.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Models.Dto.Output.Notification;
 using LeokaEstetica.Platform.Notifications.Abstractions;
@@ -27,7 +27,7 @@ namespace LeokaEstetica.Platform.Notifications.Services;
 /// </summary>
 internal sealed class ProjectNotificationsService : IProjectNotificationsService
 {
-    private readonly IHubContext<NotifyHub> _hubContext;
+    private readonly IHubContext<ChatHub> _hubContext;
     private readonly ILogger<ProjectNotificationsService> _logger;
     private readonly IUserRepository _userRepository;
     private readonly IProjectNotificationsRepository _projectNotificationsRepository;
@@ -47,7 +47,7 @@ internal sealed class ProjectNotificationsService : IProjectNotificationsService
     /// <param name="projectNotificationsRepository">Репозиторий уведомлений проектов.</param>
     /// <param name="mapper">Автомаппер.</param>
     /// <param name="connectionService">Сервис подключений Redis.</param>
-    public ProjectNotificationsService(IHubContext<NotifyHub> hubContext, 
+    public ProjectNotificationsService(IHubContext<ChatHub> hubContext, 
         ILogger<ProjectNotificationsService> logger, 
         IUserRepository userRepository,
         IMapper mapper, 

@@ -1,6 +1,6 @@
 using LeokaEstetica.Platform.Access.Abstractions.User;
+using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.Database.Abstractions.Resume;
-using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Finder.Abstractions.Resume;
 using LeokaEstetica.Platform.Finder.Builders;
 using LeokaEstetica.Platform.Finder.Chains;

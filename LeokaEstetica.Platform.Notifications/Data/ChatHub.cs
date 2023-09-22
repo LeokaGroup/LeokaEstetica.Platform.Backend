@@ -1,11 +1,9 @@
 using System.Runtime.CompilerServices;
 using AutoMapper;
-using FluentValidation.Results;
-using LeokaEstetica.Platform.Database.Abstractions.User;
-using LeokaEstetica.Platform.Database.Chat;
-using LeokaEstetica.Platform.Messaging.Abstractions.Chat;
-using LeokaEstetica.Platform.Messaging.Builders;
-using LeokaEstetica.Platform.Messaging.Validators;
+using LeokaEstetica.Platform.Base.Abstractions.Messaging.Chat;
+using LeokaEstetica.Platform.Base.Abstractions.Repositories.Chat;
+using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
+using LeokaEstetica.Platform.Base.Builders;
 using LeokaEstetica.Platform.Models.Dto.Chat.Input;
 using LeokaEstetica.Platform.Models.Dto.Chat.Output;
 using LeokaEstetica.Platform.Models.Enums;
@@ -17,7 +15,7 @@ using Newtonsoft.Json;
 
 [assembly: InternalsVisibleTo("LeokaEstetica.Platform.Backend")]
 
-namespace LeokaEstetica.Platform.Messaging.Hubs;
+namespace LeokaEstetica.Platform.Notifications.Data;
 
 /// <summary>
 /// Класс логики хаба для чатов.
@@ -119,31 +117,12 @@ internal sealed class ChatHub : Hub
             }
 
             var json = JsonConvert.DeserializeObject<DialogInput>(dialogInput);
-            var result = new DialogResultOutput
-            {
-                Errors = new List<ValidationFailure>()
-            };
-            var validator = await new GetDialogValidator().ValidateAsync(json);
-
-            var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
-
-            // Если есть ошибки, то вернем их.
-            if (validator.Errors.Any())
-            {
-                result.Errors.AddRange(validator.Errors);
-
-                await Clients
-                    .Client(connectionId)
-                    .SendAsync("listenGetDialog", result);
-
-                return;
-            }
 
             Enum.TryParse(json!.DiscussionType, out DiscussionTypeEnum discussionType);
 
             var dialogId = json.DialogId;
 
-            result = await _chatService.GetDialogAsync(dialogId, discussionType, account,
+            var result = await _chatService.GetDialogAsync(dialogId, discussionType, account,
                 json.DiscussionTypeId);
             result.ActionType = DialogActionType.Concrete.ToString();
 

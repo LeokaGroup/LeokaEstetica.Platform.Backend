@@ -1,12 +1,12 @@
+using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Exceptions;
-using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Models.Dto.Output.User;
 using LeokaEstetica.Platform.Models.Entities.User;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-namespace LeokaEstetica.Platform.Database.Repositories.User;
+namespace LeokaEstetica.Platform.Base.Repositories.User;
 
 /// <summary>
 /// Класс реализует методы репозитория пользователей.

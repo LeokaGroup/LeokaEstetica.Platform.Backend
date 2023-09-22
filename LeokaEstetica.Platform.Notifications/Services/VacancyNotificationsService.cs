@@ -11,7 +11,7 @@ namespace LeokaEstetica.Platform.Notifications.Services;
 /// </summary>
 internal sealed class VacancyNotificationsService : IVacancyNotificationsService
 {
-    private readonly IHubContext<NotifyHub> _hubContext;
+    private readonly IHubContext<ChatHub> _hubContext;
     private readonly IConnectionService _connectionService;
 
     /// <summary>
@@ -19,7 +19,7 @@ internal sealed class VacancyNotificationsService : IVacancyNotificationsService
     /// </summary>
     /// <param name="hubContext">Контекст хаба.</param>
     /// <param name="connectionService">Сервис подключений Redis.</param>
-    public VacancyNotificationsService(IHubContext<NotifyHub> hubContext, 
+    public VacancyNotificationsService(IHubContext<ChatHub> hubContext, 
         IConnectionService connectionService)
     {
         _hubContext = hubContext;

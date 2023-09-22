@@ -19,15 +19,12 @@ using LeokaEstetica.Platform.Database.Abstractions.Project;
 using LeokaEstetica.Platform.Database.Abstractions.Resume;
 using LeokaEstetica.Platform.Database.Abstractions.Subscription;
 using LeokaEstetica.Platform.Database.Abstractions.Ticket;
-using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Database.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Database.Access.Ticket;
 using LeokaEstetica.Platform.Database.Access.User;
-using LeokaEstetica.Platform.Database.Chat;
 using LeokaEstetica.Platform.Database.Repositories.Access.Ticket;
 using LeokaEstetica.Platform.Database.Repositories.Access.User;
 using LeokaEstetica.Platform.Database.Repositories.AvailableLimits;
-using LeokaEstetica.Platform.Database.Repositories.Chat;
 using LeokaEstetica.Platform.Database.Repositories.Commerce;
 using LeokaEstetica.Platform.Database.Repositories.Config;
 using LeokaEstetica.Platform.Database.Repositories.Header;
@@ -46,7 +43,6 @@ using LeokaEstetica.Platform.Database.Repositories.Project;
 using LeokaEstetica.Platform.Database.Repositories.Resume;
 using LeokaEstetica.Platform.Database.Repositories.Subscription;
 using LeokaEstetica.Platform.Database.Repositories.TIcket;
-using LeokaEstetica.Platform.Database.Repositories.User;
 using LeokaEstetica.Platform.Database.Repositories.Vacancy;
 
 namespace LeokaEstetica.Platform.Database.AutofacModules;
@@ -71,15 +67,7 @@ public class RepositoriesModule : Module
         builder.RegisterType<LandingRepository>()
             .As<ILandingRepository>()
             .InstancePerLifetimeScope();
-            
-        // Репозиторий пользователей.
-        builder.RegisterType<UserRepository>()
-            .Named<IUserRepository>("LandingRepository")
-            .InstancePerLifetimeScope();
-        builder.RegisterType<UserRepository>()
-            .As<IUserRepository>()
-            .InstancePerLifetimeScope();
-            
+
         // Репозиторий профиля.
         builder.RegisterType<ProfileRepository>()
             .Named<IProfileRepository>("ProfileRepository")
@@ -111,15 +99,7 @@ public class RepositoriesModule : Module
         builder.RegisterType<VacancyModerationRepository>()
             .As<IVacancyModerationRepository>()
             .InstancePerLifetimeScope();
-        
-        // Репозиторий чата.
-        builder.RegisterType<ChatRepository>()
-            .Named<IChatRepository>("ChatRepository")
-            .InstancePerLifetimeScope();
-        builder.RegisterType<ChatRepository>()
-            .As<IChatRepository>()
-            .InstancePerLifetimeScope();
-        
+
         // Репозиторий доступа к модерации.
         builder.RegisterType<AccessModerationRepository>()
             .Named<IAccessModerationRepository>("AccessModerationRepository")

@@ -1,11 +1,11 @@
 using System.Runtime.CompilerServices;
 using AutoMapper;
+using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.CallCenter.Abstractions.Ticket;
 using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.Ticket;
-using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Database.Access.Ticket;
 using LeokaEstetica.Platform.Models.Dto.Output.Ticket;
 using LeokaEstetica.Platform.Models.Entities.Ticket;

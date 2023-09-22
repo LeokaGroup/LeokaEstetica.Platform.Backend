@@ -3,11 +3,11 @@ using AutoMapper;
 using LeokaEstetica.Platform.Access.Abstractions.AvailableLimits;
 using LeokaEstetica.Platform.Access.Consts;
 using LeokaEstetica.Platform.Access.Enums;
+using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.FareRule;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
 using LeokaEstetica.Platform.Database.Abstractions.Subscription;
-using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Database.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Finder.Chains.Vacancy;
 using LeokaEstetica.Platform.Messaging.Abstractions.Mail;
@@ -90,6 +90,7 @@ internal sealed class VacancyService : IVacancyService
     private readonly IVacancyNotificationsService _vacancyNotificationsService;
     
     private static readonly string _approveVacancy = "Опубликована";
+    private static readonly string _archiveVacancy = "В архиве";
 
     private readonly IProjectRepository _projectRepository;
     private readonly IMailingsService _mailingsService;
@@ -356,15 +357,16 @@ internal sealed class VacancyService : IVacancyService
             
             // Проверяем доступ к вакансии.
             var isOwner = await _vacancyRepository.CheckVacancyOwnerAsync(vacancyId, userId);
+
+            var result = new VacancyOutput();
             
             // Нет доступа на изменение.
             if (!isOwner && mode == ModeEnum.Edit)
             {
-                return new VacancyOutput
-                {
-                    IsAccess = false,
-                    IsSuccess = false
-                };
+                result.IsSuccess = false;
+                result.IsAccess = false;
+
+                return result;
             }
 
             var vacancy = await _vacancyRepository.GetVacancyByVacancyIdAsync(vacancyId);
@@ -375,10 +377,13 @@ internal sealed class VacancyService : IVacancyService
                     $"Не удалось получить вакансию. VacancyId: {vacancyId}. UserId: {userId}");
             }
 
-            var result = await CreateVacancyResultAsync(vacancy, userId);
+            result = await CreateVacancyResultAsync(vacancy, userId);
 
             var remarks = await _vacancyModerationRepository.GetVacancyRemarksAsync(vacancyId);
             result.VacancyRemarks = _mapper.Map<IEnumerable<VacancyRemarkOutput>>(remarks);
+            
+            result.IsSuccess = true;
+            result.IsAccess = true;
 
             return result;
         }
@@ -545,7 +550,6 @@ internal sealed class VacancyService : IVacancyService
     {
         try
         {
-            var result = new VacancyResultOutput();
             var userId = await _userRepository.GetUserIdByEmailOrLoginAsync(account);
 
             if (userId <= 0)
@@ -555,21 +559,22 @@ internal sealed class VacancyService : IVacancyService
             }
 
             var items = await _vacancyRepository.GetUserVacanciesAsync(userId);
-
-            var userVacancyEntities = items.ToList();
             
-            if (userVacancyEntities.Any())
+            var result = new VacancyResultOutput
             {
-                result = new VacancyResultOutput
-                {
-                    Vacancies = _mapper.Map<IEnumerable<VacancyOutput>>(items),
-                };
+                Vacancies = new List<VacancyOutput>()
+            };
+
+            if (!items.Any())
+            {
+                return result;
             }
 
-            var vacancies = result.Vacancies.ToList();
+            var mapVacancies = _mapper.Map<IEnumerable<VacancyOutput>>(items);
+            var vacancies = mapVacancies.ToList();
 
             // Проставляем вакансиям статусы.
-            result.Vacancies = await FillVacanciesStatuses(vacancies);
+            result.Vacancies = await FillVacanciesStatusesAsync(vacancies, userId);
             
             // Очищаем теги.
             result.Vacancies = ClearVacanciesHtmlTags(vacancies);
@@ -833,6 +838,9 @@ internal sealed class VacancyService : IVacancyService
                 return;
             }
             
+            // Отправляем вакансию на модерацию.
+            await _vacancyModerationRepository.AddVacancyModerationAsync(vacancyId);
+            
             if (!string.IsNullOrEmpty(token))
             {
                 await _vacancyNotificationsService.SendNotificationSuccessDeleteVacancyArchiveAsync("Все хорошо",
@@ -998,15 +1006,19 @@ internal sealed class VacancyService : IVacancyService
     /// Метод проставляет статусы вакансиям.
     /// </summary>
     /// <param name="projectVacancies">Список вакансий.</param>
+    /// <param name="userId">Id пользователя.</param>
     /// <returns>Список вакансий.</returns>
-    private async Task<IEnumerable<VacancyOutput>> FillVacanciesStatuses(
-        List<VacancyOutput> vacancies)
+    private async Task<IEnumerable<VacancyOutput>> FillVacanciesStatusesAsync(
+        List<VacancyOutput> vacancies, long userId)
     {
         // Получаем список вакансий на модерации.
         var moderationVacancies = await _vacancyModerationService.VacanciesModerationAsync();
 
         // Получаем список вакансий из каталога вакансий.
         var catalogVacancies = await _vacancyRepository.CatalogVacanciesAsync();
+        
+        // Находим вакансии в архиве.
+        var archivedVacancies = (await _vacancyRepository.GetUserVacanciesArchiveAsync(userId)).ToList();
 
         // Проставляем статусы вакансий.
         foreach (var pv in vacancies)
@@ -1020,17 +1032,25 @@ internal sealed class VacancyService : IVacancyService
                     .Where(v => v.VacancyId == pv.VacancyId)
                     .Select(v => v.ModerationStatusName)
                     .FirstOrDefault();
+                
+                continue;
             }
                 
             // Ищем вакансию в каталоге вакансий.
-            else
-            {
-                var isCatalogVacancy = catalogVacancies.Any(v => v.VacancyId == pv.VacancyId);
+            var isCatalogVacancy = catalogVacancies.Any(v => v.VacancyId == pv.VacancyId);
 
-                if (isCatalogVacancy)
-                {
-                    pv.VacancyStatusName = _approveVacancy;
-                }
+            if (isCatalogVacancy)
+            {
+                pv.VacancyStatusName = _approveVacancy;
+                continue;
+            }
+            
+            // Ищем в архиве вакансий.
+            var isArchiveVacancy = archivedVacancies.Any(v => v.VacancyId == pv.VacancyId);
+            
+            if (isArchiveVacancy)
+            {
+                pv.VacancyStatusName = _archiveVacancy;
             }
         }
 

@@ -1,7 +1,7 @@
 using System.Runtime.CompilerServices;
+using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.Orders;
-using LeokaEstetica.Platform.Database.Abstractions.User;
 using LeokaEstetica.Platform.Models.Entities.Commerce;
 using LeokaEstetica.Platform.Services.Abstractions.Orders;
 using Microsoft.Extensions.Logging;
