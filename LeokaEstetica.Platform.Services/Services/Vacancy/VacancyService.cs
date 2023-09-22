@@ -356,15 +356,16 @@ internal sealed class VacancyService : IVacancyService
             
             // Проверяем доступ к вакансии.
             var isOwner = await _vacancyRepository.CheckVacancyOwnerAsync(vacancyId, userId);
+
+            var result = new VacancyOutput();
             
             // Нет доступа на изменение.
             if (!isOwner && mode == ModeEnum.Edit)
             {
-                return new VacancyOutput
-                {
-                    IsAccess = false,
-                    IsSuccess = false
-                };
+                result.IsSuccess = false;
+                result.IsAccess = false;
+
+                return result;
             }
 
             var vacancy = await _vacancyRepository.GetVacancyByVacancyIdAsync(vacancyId);
@@ -375,10 +376,13 @@ internal sealed class VacancyService : IVacancyService
                     $"Не удалось получить вакансию. VacancyId: {vacancyId}. UserId: {userId}");
             }
 
-            var result = await CreateVacancyResultAsync(vacancy, userId);
+            result = await CreateVacancyResultAsync(vacancy, userId);
 
             var remarks = await _vacancyModerationRepository.GetVacancyRemarksAsync(vacancyId);
             result.VacancyRemarks = _mapper.Map<IEnumerable<VacancyRemarkOutput>>(remarks);
+            
+            result.IsSuccess = true;
+            result.IsAccess = true;
 
             return result;
         }
