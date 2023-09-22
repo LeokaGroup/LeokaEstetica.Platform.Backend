@@ -550,7 +550,6 @@ internal sealed class VacancyService : IVacancyService
     {
         try
         {
-            var result = new VacancyResultOutput();
             var userId = await _userRepository.GetUserIdByEmailOrLoginAsync(account);
 
             if (userId <= 0)
@@ -560,18 +559,19 @@ internal sealed class VacancyService : IVacancyService
             }
 
             var items = await _vacancyRepository.GetUserVacanciesAsync(userId);
-
-            var userVacancyEntities = items.ToList();
             
-            if (userVacancyEntities.Any())
+            var result = new VacancyResultOutput
             {
-                result = new VacancyResultOutput
-                {
-                    Vacancies = _mapper.Map<IEnumerable<VacancyOutput>>(items),
-                };
+                Vacancies = new List<VacancyOutput>()
+            };
+
+            if (!items.Any())
+            {
+                return result;
             }
 
-            var vacancies = result.Vacancies.ToList();
+            var mapVacancies = _mapper.Map<IEnumerable<VacancyOutput>>(items);
+            var vacancies = mapVacancies.ToList();
 
             // Проставляем вакансиям статусы.
             result.Vacancies = await FillVacanciesStatusesAsync(vacancies, userId);
