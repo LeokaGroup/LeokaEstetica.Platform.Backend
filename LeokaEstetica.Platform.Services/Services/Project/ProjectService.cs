@@ -423,6 +423,8 @@ internal sealed class ProjectService : IProjectService
             // Проверяем наличие неисправленных замечаний.
             await CheckAwaitingCorrectionRemarksAsync(projectId);
 
+            result.ProjectRemarks ??= new List<ProjectRemarkOutput>();
+
             return result;
         }
 
