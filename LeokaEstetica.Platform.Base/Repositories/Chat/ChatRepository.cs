@@ -296,6 +296,12 @@ internal sealed class ChatRepository : IChatRepository
             throw new InvalidOperationException($"Диалог не найден. DialogId: {dialogId}");
         }
 
+        // Не надо нагружать базу, если уже привязан к проекту.
+        if (dialog.ProjectId == projectId)
+        {
+            return;
+        }
+
         dialog.ProjectId = projectId;
 
         await _pgContext.SaveChangesAsync();
