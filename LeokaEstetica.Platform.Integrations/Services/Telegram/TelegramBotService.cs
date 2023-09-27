@@ -16,9 +16,9 @@ internal sealed class TelegramBotService : ITelegramBotService
 {
     private readonly ILogger<TelegramBotService> _logger;
     private static string _chatId;
-    private static string _notificationsChatId;
     private static string _logBotToken;
     private static string _notificationsBot;
+    private readonly IConfiguration _configuration;
 
     /// <summary>
     /// Конструктор.
@@ -29,10 +29,10 @@ internal sealed class TelegramBotService : ITelegramBotService
         IConfiguration configuration)
     {
         _logger = logger;
+        _configuration = configuration;
         _chatId = configuration["LogBot:ChatId"];
         _logBotToken = configuration["LogBot:Token"];
         _notificationsBot = configuration["NotificationsBot:Token"];
-        _notificationsChatId = configuration["NotificationsBot:ChatId"];
     }
 
     #region Публичные методы.
@@ -108,8 +108,17 @@ internal sealed class TelegramBotService : ITelegramBotService
             {
                 notifyMessage = $"Создана новая вакансия \"{objectName}\".";
             }
-
-            await botClient.SendTextMessageAsync(_notificationsChatId, notifyMessage);
+            
+            if (new[] {"Development", "Staging"}.Contains(_configuration["Environment"]))
+            {
+                await botClient.SendTextMessageAsync(_configuration["NotificationsBot:ChatIdDevelopTest"],
+                    notifyMessage);
+            }
+        
+            else
+            {
+                await botClient.SendTextMessageAsync(_configuration["NotificationsBot:ChatId"], notifyMessage);
+            }
         }
         
         catch (Exception ex)
@@ -120,7 +129,16 @@ internal sealed class TelegramBotService : ITelegramBotService
 
             try
             {
-                await botClient.SendTextMessageAsync(_notificationsChatId, notifyMessage);
+                if (new[] {"Development", "Staging"}.Contains(_configuration["Environment"]))
+                {
+                    await botClient.SendTextMessageAsync(_configuration["NotificationsBot:ChatIdDevelopTest"],
+                        notifyMessage);
+                }
+        
+                else
+                {
+                    await botClient.SendTextMessageAsync(_configuration["NotificationsBot:ChatId"], notifyMessage);
+                }
             }
             
             catch (Exception ex2)
