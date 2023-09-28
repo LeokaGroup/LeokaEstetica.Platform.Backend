@@ -70,7 +70,7 @@ internal sealed class ProjectFinderService : IProjectFinderService
             
             // Отбираем пользователей, которые на модерации и удалим их из выборки.
             var removedUsers = resumesModeration.Resumes
-                .Where(u => users.Select(x => x.UserId).Contains(u.UserId))
+                .IntersectBy(users.Select(x => x.UserId), u => u.UserId)
                 .ToList();
             
             if (removedUsers.Any())
