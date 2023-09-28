@@ -40,6 +40,7 @@ public static class CreateResumesModerationDatesBuilder
             {
                 newItem.Email = findItem.Email;
                 newItem.PhoneNumber = findItem.PhoneNumber;
+                newItem.UserId = findItem.UserId;
             }
             
             _resumes.Add(newItem);
