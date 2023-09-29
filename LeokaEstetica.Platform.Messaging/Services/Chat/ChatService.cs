@@ -244,39 +244,6 @@ internal sealed class ChatService : IChatService
     }
 
     /// <summary>
-    /// Метод получает список диалогов.
-    /// </summary>
-    /// <param name="account">Аккаунт.</param>
-    /// <param name="projectId">Id проекта. Если не передан, то получает все диалоги пользователя.</param>
-    /// <returns>Список диалогов.</returns>
-    public async Task<IEnumerable<DialogOutput>> GetDialogsAsync(string account, long? projectId = null)
-    {
-        try
-        {
-            var userId = await _userRepository.GetUserByEmailAsync(account);
-
-            if (userId == 0)
-            {
-                throw new InvalidOperationException($"Id пользователя с аккаунтом {account} не найден.");
-            }
-
-            var dialogs = await _chatRepository.GetDialogsAsync(userId, projectId);
-            var mapDialogs = _mapper.Map<List<ProfileDialogOutput>>(dialogs);
-            
-            dialogs = await CreateDialogMessagesBuilder.CreateDialogAsync((dialogs, mapDialogs), _chatRepository,
-                _userRepository, userId, _mapper, account);
-
-            return dialogs;
-        }
-
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, ex.Message);
-            throw;
-        }
-    }
-
-    /// <summary>
     /// Метод создает диалог для написания владельцу проекта.
     /// Если такой диалог уже создан с текущим юзером и владельцем проекта,
     /// то ничего не происходит и диалог считается пустым для начала общения.

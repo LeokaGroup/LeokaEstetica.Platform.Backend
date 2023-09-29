@@ -118,12 +118,10 @@ internal sealed class ChatHub : Hub
 
             var json = JsonConvert.DeserializeObject<DialogInput>(dialogInput);
 
-            Enum.TryParse(json!.DiscussionType, out DiscussionTypeEnum discussionType);
+            var dialogId = json?.DialogId;
 
-            var dialogId = json.DialogId;
-
-            var result = await _chatService.GetDialogAsync(dialogId, discussionType, account,
-                json.DiscussionTypeId);
+            var result = await _chatService.GetDialogAsync(dialogId,
+                Enum.Parse<DiscussionTypeEnum>(json!.DiscussionType), account, json.DiscussionTypeId);
             result.ActionType = DialogActionType.Concrete.ToString();
 
             var clients = await CreateClientsResultAsync(dialogId, userId, token);
