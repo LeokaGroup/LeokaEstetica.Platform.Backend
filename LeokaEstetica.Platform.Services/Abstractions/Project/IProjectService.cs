@@ -88,8 +88,10 @@ public interface IProjectService
     /// </summary>
     /// <param name="projectId">Id проекта, для которого получить список вакансий.</param>
     /// <param name="account">Аккаунт пользователя.</param>
+    /// <param name="isInviteProject">Признак приглашения в проект.</param>
     /// <returns>Список вакансий проекта.</returns>
-    Task<IEnumerable<ProjectVacancyEntity>> ProjectVacanciesAvailableAttachAsync(long projectId, string account);
+    Task<IEnumerable<ProjectVacancyEntity>> ProjectVacanciesAvailableAttachAsync(long projectId, string account,
+        bool isInviteProject);
 
     /// <summary>
     /// Метод прикрепляет вакансию к проекту.

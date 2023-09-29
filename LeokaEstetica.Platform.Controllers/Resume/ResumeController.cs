@@ -77,6 +77,7 @@ public class ResumeController : BaseController
     }
 
     /// <summary>
+    /// TODO: Это должно находится в контроллере поиска. Перенести.
     /// Метод находит резюме по поисковому запросу.
     /// </summary>
     /// <param name="searchText">Поисковая строка.</param>
