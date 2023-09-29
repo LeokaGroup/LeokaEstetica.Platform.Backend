@@ -40,7 +40,7 @@ internal sealed class ProjectCommentsRepository : IProjectCommentsRepository
                 ProjectId = projectId,
                 UserId = userId,
                 IsMyComment = true,
-                ModerationStatusId = (int)ProjectModerationStatusEnum.ModerationProject
+                ModerationStatusId = (int)ProjectCommentModerationEnum.ModerationComment
             };
             await _pgContext.ProjectComments.AddAsync(prj);
             await _pgContext.SaveChangesAsync();
@@ -50,7 +50,7 @@ internal sealed class ProjectCommentsRepository : IProjectCommentsRepository
             {
                 CommentId = prj.CommentId,
                 DateModeration = DateTime.UtcNow,
-                ModerationStatusId = (int)ProjectModerationStatusEnum.ModerationProject
+                ModerationStatusId = (int)ProjectCommentModerationEnum.ModerationComment
             };
             await _pgContext.ProjectCommentsModeration.AddAsync(prjModeration);
             await _pgContext.SaveChangesAsync();
