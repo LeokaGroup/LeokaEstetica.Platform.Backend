@@ -12,6 +12,7 @@ using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Project;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
 using LeokaEstetica.Platform.Integrations.Abstractions.Pachca;
+using LeokaEstetica.Platform.Integrations.Abstractions.Telegram;
 using LeokaEstetica.Platform.Integrations.Enums;
 using LeokaEstetica.Platform.Models.Dto.Input.Moderation;
 using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Project;
@@ -37,6 +38,7 @@ internal sealed class ProjectModerationService : IProjectModerationService
     private readonly IProjectRepository _projectRepository;
     private readonly IProjectModerationNotificationService _projectModerationNotificationService;
     private readonly IPachcaService _pachcaService;
+    private readonly ITelegramBotService _telegramBotService;
 
     /// <summary>
     /// Конструктор.
@@ -49,6 +51,7 @@ internal sealed class ProjectModerationService : IProjectModerationService
     /// <param name="projectRepository">Репозиторий проектов.</param>
     /// <param name="projectModerationNotificationService">Сервис уведомлений модерации проектов.</param>
     /// <param name="pachcaService">Сервис пачки.</param>
+    /// <param name="telegramService">Сервис бота телеграма.</param>
     public ProjectModerationService(IProjectModerationRepository projectModerationRepository,
         ILogger<ProjectModerationService> logger,
         IMapper mapper, 
@@ -56,7 +59,8 @@ internal sealed class ProjectModerationService : IProjectModerationService
         IUserRepository userRepository, 
         IProjectRepository projectRepository, 
         IProjectModerationNotificationService projectModerationNotificationService,
-        IPachcaService pachcaService)
+        IPachcaService pachcaService,
+        ITelegramBotService telegramBotService)
     {
         _projectModerationRepository = projectModerationRepository;
         _logger = logger;
@@ -66,6 +70,7 @@ internal sealed class ProjectModerationService : IProjectModerationService
         _projectRepository = projectRepository;
         _projectModerationNotificationService = projectModerationNotificationService;
         _pachcaService = pachcaService;
+        _telegramBotService = telegramBotService;
     }
 
     #region Публичные методы.
@@ -156,6 +161,7 @@ internal sealed class ProjectModerationService : IProjectModerationService
             await _projectModerationRepository.AddNotificationApproveProjectAsync(projectId, userId, projectName);
 
             await _pachcaService.SendNotificationCreatedObjectAsync(ObjectTypeEnum.Project, projectName);
+            await _telegramBotService.SendNotificationCreatedObjectAsync(ObjectTypeEnum.Project, projectName);
 
             return result;
         }
