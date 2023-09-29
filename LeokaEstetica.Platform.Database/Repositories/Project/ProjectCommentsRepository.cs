@@ -79,8 +79,8 @@ internal sealed class ProjectCommentsRepository : IProjectCommentsRepository
                 where pc.ProjectId == projectId &&
                       !new[]
                           {
-                              (int)ProjectModerationStatusEnum.ModerationProject, // На модерации.
-                              (int)ProjectModerationStatusEnum.RejectedProject // Отклонен.
+                              (int)ProjectCommentModerationEnum.ModerationComment, // На модерации.
+                              (int)ProjectCommentModerationEnum.RejectedComment // Отклонен.
                           }
                           .Contains(pcm.ModerationStatusId)
                 select new ProjectCommentEntity
