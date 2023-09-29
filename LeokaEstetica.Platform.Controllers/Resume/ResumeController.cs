@@ -137,8 +137,7 @@ public class ResumeController : BaseController
     [ProducesResponseType(404)]
     public async Task<ResumeOutput> GetResumeAsync([FromRoute] long resumeId)
     {
-        var resume = await _resumeService.GetResumeAsync(resumeId);
-        var result = _mapper.Map<ResumeOutput>(resume);
+        var result = await _resumeService.GetResumeAsync(resumeId);
 
         return result;
     }
