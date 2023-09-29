@@ -11,7 +11,7 @@ internal class WriteProjectDialogOwnerTest : BaseServiceTest
     public async Task WriteProjectDialogOwnerAsyncTest()
     {
         var result =
-            await ChatService.WriteProjectDialogOwnerAsync(DiscussionTypeEnum.Project, "alisaiva931@mail.ru", 21);
+            await ChatService.WriteProjectDialogOwnerAsync(DiscussionTypeEnum.Project, "alisaiva931@mail.ru", 21, null);
 
         IsNotNull(result);
         IsTrue(result.DialogId > 0);
