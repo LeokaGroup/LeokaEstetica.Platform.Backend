@@ -33,19 +33,12 @@ internal sealed class ProjectResponseRepository : IProjectResponseRepository
             .FirstOrDefaultAsync(r => r.ProjectId == projectId 
                                       && r.UserId == userId);
 
-        if (response is null)
-        {
-            throw new InvalidOperationException("Не удалось получить отклик на проект. " +
-                                                $"ProjectId: {projectId}. " +
-                                                $"UserId: {userId}");
-        }
-
-        // Если отклик был без вакансии, то ничего не делаем.
-        if (!response.VacancyId.HasValue)
+        // Если не было отклика на проект или  отклик был без вакансии, то ничего не делаем.
+        if (response?.VacancyId is null)
         {
             return;
         }
-        
+
         // Иначе связываем диалог с вакансией.
         var dialog = await (from dm in _pgContext.DialogMembers
                 join d in _pgContext.Dialogs
