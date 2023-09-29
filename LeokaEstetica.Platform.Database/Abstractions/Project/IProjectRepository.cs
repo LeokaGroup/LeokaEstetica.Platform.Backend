@@ -94,8 +94,10 @@ public interface IProjectRepository
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
     /// <param name="userId">Id пользователя.</param>
+    /// <param name="isInviteProject">Признак приглашения в проект.</param>
     /// <returns>Список вакансий проекта.</returns>
-    Task<IEnumerable<ProjectVacancyEntity>> ProjectVacanciesAvailableAttachAsync(long projectId, long userId);
+    Task<IEnumerable<ProjectVacancyEntity>> ProjectVacanciesAvailableAttachAsync(long projectId, long userId,
+        bool isInviteProject);
 
     /// <summary>
     /// Метод записывает отклик на проект.

@@ -447,26 +447,24 @@ internal sealed class ProjectRepository : IProjectRepository
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
     /// <param name="userId">Id пользователя.</param>
+    /// <param name="isInviteProject">Признак приглашения в проект.</param>
     /// <returns>Список вакансий проекта.</returns>
     public async Task<IEnumerable<ProjectVacancyEntity>> ProjectVacanciesAvailableAttachAsync(long projectId,
-        long userId)
+        long userId, bool isInviteProject)
     {
         // Получаем Id вакансий, которые уже прикреплены к проекту. Их исключаем.
         var attachedVacanciesIds = _pgContext.ProjectVacancies
             .Where(p => p.ProjectId == projectId)
-            .Select(p => p.VacancyId)
-            .AsQueryable();
+            .Select(p => p.VacancyId);
         
         // Получаем Id вакансий, которые еще на модерации либо отклонены модератором, так как их нельзя атачить.
         var moderationVacanciesIds = _pgContext.ModerationVacancies
             .Where(v => _excludedVacanciesStatuses.Contains(v.ModerationStatusId))
-            .Select(v => v.VacancyId)
-            .AsQueryable();
+            .Select(v => v.VacancyId);
 
         // Получаем вакансии, которые можно прикрепить к проекту.
-        var result = await _pgContext.UserVacancies
+        var result = _pgContext.UserVacancies
             .Where(v => v.UserId == userId
-                        && !attachedVacanciesIds.Contains(v.VacancyId)
                         && !moderationVacanciesIds.Contains(v.VacancyId))
             .Select(v => new ProjectVacancyEntity
             {
@@ -483,11 +481,23 @@ internal sealed class ProjectRepository : IProjectRepository
                     UserId = userId,
                     VacancyId = v.VacancyId,
                 }
-            })
-            .OrderBy(o => o.VacancyId)
-            .ToListAsync();
+            });
 
-        return result;
+        // Если не идет приглашение пользователя в проект, то отсекаем вакансии, которые уже прикреплены к проекту.
+        if (!isInviteProject)
+        {
+            result = result.Where(v => !attachedVacanciesIds.Contains(v.VacancyId));
+        }
+        
+        // Иначе наоборот, нам нужны только вакансии, которые уже прикреплены к проекту.
+        else
+        {
+            result = result.Where(v => attachedVacanciesIds.Contains(v.VacancyId));
+        }
+
+        result = result.OrderBy(o => o.VacancyId);
+
+        return await result.ToListAsync();
     }
 
     /// <summary>
