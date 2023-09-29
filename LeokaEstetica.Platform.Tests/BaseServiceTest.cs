@@ -190,7 +190,9 @@ internal class BaseServiceTest
 
         ProjectCommentsService = new ProjectCommentsService(null, userRepository, projectCommentsRepository, null, null,
             null);
-        ProjectFinderService = new ProjectFinderService(null, userRepository, projectNotificationsService);
+        ResumeModerationService = new ResumeModerationService(null, resumeModerationRepository, mapper,
+            userRepository, null);
+        ProjectFinderService = new ProjectFinderService(null, userRepository, projectNotificationsService, ResumeModerationService);
 
         var resumeRepository = new ResumeRepository(pgContext);
 
@@ -227,8 +229,6 @@ internal class BaseServiceTest
 
         var userBlackListService = new UserBlackListRepository(pgContext);
         UserBlackListService = new UserBlackListService(null, userBlackListService);
-        ResumeModerationService = new ResumeModerationService(null, resumeModerationRepository, mapper,
-            userRepository, null);
 
         var landingRepository = new LandingRepository(pgContext);
         LandingService = new LandingService(null, landingRepository, mapper);

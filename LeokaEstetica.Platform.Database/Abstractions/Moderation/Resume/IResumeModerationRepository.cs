@@ -87,4 +87,6 @@ public interface IResumeModerationRepository
     /// </summary>
     /// <returns>Список замечаний анкеты.</returns>
     Task<IEnumerable<ProfileInfoEntity>> GetResumeUnShippedRemarksTableAsync();
+    
+    
 }
