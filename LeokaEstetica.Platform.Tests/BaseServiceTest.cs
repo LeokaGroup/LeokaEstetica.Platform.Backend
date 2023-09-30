@@ -164,7 +164,7 @@ internal class BaseServiceTest
         TelegramBotService = new TelegramBotService(null, AppConfiguration);
 
         VacancyModerationService = new VacancyModerationService(vacancyModerationRepository, null, mapper, null,
-            vacancyRepository, userRepository, projectRepository, null, null);
+            vacancyRepository, userRepository, projectRepository, null, null, TelegramBotService);
         
         // Тут если нужен будет ProjectService, то тут проблема с порядком следования.
         // Не получится сделать просто, VacancyService и ProjectService нужны друг другу тесно.
@@ -184,13 +184,15 @@ internal class BaseServiceTest
         ProjectModerationRepository = new ProjectModerationRepository(pgContext);
 
         ProjectModerationService = new ProjectModerationService(ProjectModerationRepository, null, mapper, null, 
-            userRepository, projectRepository, null, null);
+            userRepository, projectRepository, null, null, TelegramBotService);
 
         var projectCommentsRepository = new ProjectCommentsRepository(pgContext);
 
         ProjectCommentsService = new ProjectCommentsService(null, userRepository, projectCommentsRepository, null, null,
             null);
-        ProjectFinderService = new ProjectFinderService(null, userRepository, projectNotificationsService);
+        ResumeModerationService = new ResumeModerationService(null, resumeModerationRepository, mapper,
+            userRepository, null);
+        ProjectFinderService = new ProjectFinderService(null, userRepository, projectNotificationsService, ResumeModerationService);
 
         var resumeRepository = new ResumeRepository(pgContext);
 
@@ -227,8 +229,6 @@ internal class BaseServiceTest
 
         var userBlackListService = new UserBlackListRepository(pgContext);
         UserBlackListService = new UserBlackListService(null, userBlackListService);
-        ResumeModerationService = new ResumeModerationService(null, resumeModerationRepository, mapper,
-            userRepository, null);
 
         var landingRepository = new LandingRepository(pgContext);
         LandingService = new LandingService(null, landingRepository, mapper);

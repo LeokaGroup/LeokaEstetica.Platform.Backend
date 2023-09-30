@@ -487,6 +487,10 @@ internal sealed class ProjectService : IProjectService
             var remarks = await _projectModerationRepository.GetProjectRemarksAsync(projectId);
             result.ProjectRemarks = _mapper.Map<IEnumerable<ProjectRemarkOutput>>(remarks);
             result.IsAccess = true;
+            
+            result.ProjectDetails = ClearHtmlBuilder.Clear(result.ProjectDetails);
+            result.Conditions = ClearHtmlBuilder.Clear(result.Conditions);
+            result.Demands = ClearHtmlBuilder.Clear(result.Demands);
 
             return result;
         }
@@ -625,9 +629,10 @@ internal sealed class ProjectService : IProjectService
     /// </summary>
     /// <param name="projectId">Id проекта, для которого получить список вакансий.</param>
     /// <param name="account">Аккаунт пользователя.</param>
+    /// <param name="isInviteProject">Признак приглашения в проект.</param>
     /// <returns>Список вакансий проекта.</returns>
     public async Task<IEnumerable<ProjectVacancyEntity>> ProjectVacanciesAvailableAttachAsync(long projectId,
-        string account)
+        string account, bool isInviteProject)
     {
         try
         {
@@ -640,8 +645,8 @@ internal sealed class ProjectService : IProjectService
             }
 
             // Получаем список вакансий проекта, из которых можно выбрать вакансию для прикрепления к проекту.
-            // Исключаем вакансии, которые уже прикреплены к проекту.
-            var result = await _projectRepository.ProjectVacanciesAvailableAttachAsync(projectId, userId);
+            var result = await _projectRepository.ProjectVacanciesAvailableAttachAsync(projectId, userId,
+                isInviteProject);
 
             return result;
         }

@@ -92,4 +92,9 @@ public class UserSignUpOutput : IFrontError
     /// Список ошибок.
     /// </summary>
     public List<ValidationFailure> Errors { get; set; }
+
+    /// <summary>
+    /// Признак успешной регистрации.
+    /// </summary>
+    public bool IsSuccess { get; set; }
 }

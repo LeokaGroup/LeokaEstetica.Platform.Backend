@@ -15,13 +15,6 @@ public interface IUserRedisService
     Task AddUserTokenAndUserIdCacheAsync(long userId, string token);
 
     /// <summary>
-    /// Метод получает Id пользователя из кэша.
-    /// </summary>
-    /// <param name="token">Токен пользователя.</param>
-    /// <returns>Id пользователя из кэша.</returns>
-    Task<string> GetUserIdCacheAsync(string token);
-
-    /// <summary>
     /// Метод добавляет в кэш пользователей, аккаунты которых нужно удалить и все их данные.
     /// </summary>
     /// <param name="users">Список пользователей.</param>

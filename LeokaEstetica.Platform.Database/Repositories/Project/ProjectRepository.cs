@@ -447,26 +447,24 @@ internal sealed class ProjectRepository : IProjectRepository
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
     /// <param name="userId">Id пользователя.</param>
+    /// <param name="isInviteProject">Признак приглашения в проект.</param>
     /// <returns>Список вакансий проекта.</returns>
     public async Task<IEnumerable<ProjectVacancyEntity>> ProjectVacanciesAvailableAttachAsync(long projectId,
-        long userId)
+        long userId, bool isInviteProject)
     {
         // Получаем Id вакансий, которые уже прикреплены к проекту. Их исключаем.
         var attachedVacanciesIds = _pgContext.ProjectVacancies
             .Where(p => p.ProjectId == projectId)
-            .Select(p => p.VacancyId)
-            .AsQueryable();
+            .Select(p => p.VacancyId);
         
         // Получаем Id вакансий, которые еще на модерации либо отклонены модератором, так как их нельзя атачить.
         var moderationVacanciesIds = _pgContext.ModerationVacancies
             .Where(v => _excludedVacanciesStatuses.Contains(v.ModerationStatusId))
-            .Select(v => v.VacancyId)
-            .AsQueryable();
+            .Select(v => v.VacancyId);
 
         // Получаем вакансии, которые можно прикрепить к проекту.
-        var result = await _pgContext.UserVacancies
+        var result = _pgContext.UserVacancies
             .Where(v => v.UserId == userId
-                        && !attachedVacanciesIds.Contains(v.VacancyId)
                         && !moderationVacanciesIds.Contains(v.VacancyId))
             .Select(v => new ProjectVacancyEntity
             {
@@ -483,11 +481,23 @@ internal sealed class ProjectRepository : IProjectRepository
                     UserId = userId,
                     VacancyId = v.VacancyId,
                 }
-            })
-            .OrderBy(o => o.VacancyId)
-            .ToListAsync();
+            });
 
-        return result;
+        // Если не идет приглашение пользователя в проект, то отсекаем вакансии, которые уже прикреплены к проекту.
+        if (!isInviteProject)
+        {
+            result = result.Where(v => !attachedVacanciesIds.Contains(v.VacancyId));
+        }
+        
+        // Иначе наоборот, нам нужны только вакансии, которые уже прикреплены к проекту.
+        else
+        {
+            result = result.Where(v => attachedVacanciesIds.Contains(v.VacancyId));
+        }
+
+        result = result.OrderBy(o => o.VacancyId);
+
+        return await result.ToListAsync();
     }
 
     /// <summary>
@@ -753,7 +763,7 @@ internal sealed class ProjectRepository : IProjectRepository
                 _pgContext.ProjectVacancies.RemoveRange(projectVacancies);
             }
 
-            // Удаляем чат диалога и все сообщения.
+            // Удаляем чат диалога и все сообщения по Id текущего пользователя.
             var projectDialogs = await _chatRepository.GetDialogsAsync(userId);
 
             // Если у проекта есть диалоги.
@@ -779,21 +789,43 @@ internal sealed class ProjectRepository : IProjectRepository
                     }
                 }
             }
+            
+            // Иначе будем искать диалоги по ProjectId.
+            else
+            {
+                var prjDialogs = await _pgContext.Dialogs
+                    .Where(d => d.ProjectId == projectId)
+                    .ToListAsync();
+                
+                // Перед удалением диалога, сначала смотрим сообщения диалога.
+                foreach (var d in prjDialogs)
+                {
+                    var projectDialogMessages = await _chatRepository.GetDialogMessagesAsync(d.DialogId);
+
+                    // Если есть сообщения, дропаем их.
+                    if (projectDialogMessages.Any())
+                    {
+                        _pgContext.DialogMessages.RemoveRange(projectDialogMessages);
+                    }
+                    
+                    // Дропаем участников диалога.
+                    var dialogMembers = await _chatRepository.GetDialogMembersByDialogIdAsync(d.DialogId);
+
+                    if (dialogMembers.Any())
+                    {
+                        _pgContext.DialogMembers.RemoveRange(dialogMembers);
+                            
+                        // Применяем сохранение здесь, так как каталог проектов имеет FK на диалог и иначе не даст удалить.
+                        await _pgContext.SaveChangesAsync();
+                    }
+                }
+            }
 
             // Смотрим команду проекта.
             var projectTeam = await GetProjectTeamAsync(projectId);
 
             if (projectTeam is not null)
             {
-                // Дропаем участников команды.
-                // var projectTeamMembers = await GetProjectTeamMembersAsync(projectTeam.TeamId);
-                //
-                // if (projectTeamMembers.Any())
-                // {
-                //     _pgContext.ProjectTeamMembers.RemoveRange(projectTeamMembers);
-                // }
-
-                // Дропаем команду проекта.
                 _pgContext.ProjectsTeams.Remove(projectTeam);
             }
 
@@ -813,6 +845,17 @@ internal sealed class ProjectRepository : IProjectRepository
                 }
 
                 _pgContext.ProjectComments.RemoveRange(projectComments);
+            }
+            
+            // Удаляем основную информацию диалога.
+            var mainInfoDialog = await _pgContext.Dialogs.FirstOrDefaultAsync(d => d.ProjectId == projectId);
+
+            if (mainInfoDialog is not null)
+            {
+                _pgContext.Dialogs.Remove(mainInfoDialog);
+                
+                // Применяем сохранение здесь, так как каталог проектов имеет FK на диалог и иначе не даст удалить.
+                await _pgContext.SaveChangesAsync();
             }
             
             // Удаляем проект из каталога.

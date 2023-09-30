@@ -34,6 +34,8 @@ builder.Services.AddCors(options => options.AddPolicy("ApiCorsPolicy", b =>
 
 builder.Environment.EnvironmentName = configuration["Environment"];
 
+builder.Services.AddHttpContextAccessor();
+
 if (builder.Environment.IsDevelopment())
 {
     builder.Services.AddDbContext<PgContext>(options =>
@@ -145,7 +147,7 @@ builder.Services.AddQuartz(q =>
     q.UseMicrosoftDependencyInjectionJobFactory();
     
     // Запуск джоб при старте ядра системы.
-    StartJobs.Start(q);
+    StartJobs.Start(q, builder.Services);
 });
 
 builder.Services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);

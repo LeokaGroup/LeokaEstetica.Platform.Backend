@@ -47,33 +47,6 @@ internal sealed class UserRedisService : IUserRedisService
     }
 
     /// <summary>
-    /// Метод получает Id пользователя из кэша.
-    /// </summary>
-    /// <param name="token">Токен пользователя.</param>
-    /// <returns>Id пользователя из кэша.</returns>
-    public async Task<string> GetUserIdCacheAsync(string token)
-    {
-        var redisResult = await _redisCache.GetStringAsync(token);
-    
-        if (string.IsNullOrEmpty(redisResult))
-        {
-            throw new InvalidOperationException($"Не удалось получить Id пользователя из кэша. Токен: {token}");
-        }
-        
-        var result = ProtoBufExtensions.Deserialize<string>(redisResult);
-
-        if (string.IsNullOrEmpty(result))
-        {
-            throw new InvalidOperationException($"Не удалось получить Id пользователя из кэша. Токен: {token}");
-        }
-            
-        // Данные нашли, продлеваем время жизни ключа.
-        await _redisCache.RefreshAsync(token);
-    
-        return result;
-    }
-
-    /// <summary>
     /// Метод добавляет в кэш пользователей, аккаунты которых нужно удалить и все их данные.
     /// </summary>
     /// <param name="users">Список пользователей.</param>

@@ -320,7 +320,7 @@ public class ProjectController : BaseController
     public async Task<ProjectVacancyResultOutput> ProjectVacanciesAvailableAttachAsync([FromQuery] long projectId)
     {
         var result = new ProjectVacancyResultOutput();
-        var items = await _projectService.ProjectVacanciesAvailableAttachAsync(projectId, GetUserName());
+        var items = await _projectService.ProjectVacanciesAvailableAttachAsync(projectId, GetUserName(), false);
         result.ProjectVacancies = _mapper.Map<IEnumerable<ProjectVacancyOutput>>(items);
 
         return result;
@@ -453,6 +453,7 @@ public class ProjectController : BaseController
     }
 
     /// <summary>
+    /// TODO: Это должно находится в контроллере поиска. Перенести.
     /// Метод фильтрации проектов в зависимости от параметров фильтров.
     /// </summary>
     /// <param name="filterProjectInput">Входная модель.</param>
@@ -473,6 +474,7 @@ public class ProjectController : BaseController
     }
 
     /// <summary>
+    /// TODO: Это должно находится в контроллере поиска. Перенести.
     /// Метод находит проекты по поисковому запросу.
     /// </summary>
     /// <param name="searchText">Строка поиска.</param>
@@ -684,5 +686,26 @@ public class ProjectController : BaseController
     public async Task DeleteProjectArchiveAsync([FromQuery] long projectId)
     {
         await _projectService.DeleteProjectArchiveAsync(projectId, GetUserName(), GetTokenFromHeader());
+    }
+    
+    /// <summary>
+    /// Метод получает список вакансий проекта, по которым можно пригласить пользователя в проект.
+    /// </summary>
+    /// <param name="projectId">Id проекта, для которого получить список вакансий.</param>
+    /// <returns>Список вакансий проекта.</returns>
+    [HttpGet]
+    [Route("available-invite-vacancies")]
+    [ProducesResponseType(200, Type = typeof(ProjectVacancyResultOutput))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<ProjectVacancyResultOutput> ProjectVacanciesAvailableInviteAsync([FromQuery] long projectId)
+    {
+        var result = new ProjectVacancyResultOutput();
+        var items = await _projectService.ProjectVacanciesAvailableAttachAsync(projectId, GetUserName(), true);
+        result.ProjectVacancies = _mapper.Map<IEnumerable<ProjectVacancyOutput>>(items);
+
+        return result;
     }
 }

@@ -10,8 +10,8 @@ public interface IPachcaService
     /// <summary>
     /// Метод отправляет уведомлений с деталями ошибки в пачку.
     /// </summary>
-    /// <param name="message">Текст исключения со всеми деталями.</param>
-    Task SendNotificationErrorAsync(string message);
+    /// <param name="exception">Исключение.</param>
+    Task SendNotificationErrorAsync(Exception exception);
     
     /// <summary>
     /// Метод отправляет уведомление в пачку о созданной вакансии, проекте.

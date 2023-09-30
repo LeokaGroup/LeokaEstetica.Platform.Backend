@@ -384,6 +384,10 @@ internal sealed class VacancyService : IVacancyService
             
             result.IsSuccess = true;
             result.IsAccess = true;
+            
+            result.VacancyText = ClearHtmlBuilder.Clear(result.VacancyText);
+            result.Conditions = ClearHtmlBuilder.Clear(result.Conditions);
+            result.Demands = ClearHtmlBuilder.Clear(result.Demands);
 
             return result;
         }
@@ -508,6 +512,10 @@ internal sealed class VacancyService : IVacancyService
                 throw ex;
             }
             
+            _logger.LogInformation("Начали удаление вакансии пользователя." +
+                                   $" VacancyId: {vacancyId}." +
+                                   $" UserId: {userId}");
+            
             var removedVacancy = await _vacancyRepository.DeleteVacancyAsync(vacancyId, userId);
             
             if (!removedVacancy.Success)
@@ -533,6 +541,10 @@ internal sealed class VacancyService : IVacancyService
             
             // Отправляем уведомление на почту владельцу вакансии.
             await _mailingsService.SendNotificationDeleteVacancyAsync(user.Email, removedVacancy.VacancyName);
+            
+            _logger.LogInformation("Закончили удаление вакансии пользователя." +
+                                   $" VacancyId: {vacancyId}." +
+                                   $" UserId: {userId}");
         }
         
         catch (Exception ex)

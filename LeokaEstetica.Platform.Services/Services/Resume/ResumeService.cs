@@ -131,11 +131,18 @@ internal sealed class ResumeService : IResumeService
     /// </summary>
     /// <param name="resumeId">Id анкеты пользователя.</param>
     /// <returns>Данные анкеты.</returns>
-    public async Task<ProfileInfoEntity> GetResumeAsync(long resumeId)
+    public async Task<ResumeOutput> GetResumeAsync(long resumeId)
     {
         try
         {
-            var result = await _resumeRepository.GetResumeAsync(resumeId);
+            var profile = await _resumeRepository.GetResumeAsync(resumeId);
+
+            // Дополняем результат данными пользователя.
+
+            var result = _mapper.Map<ResumeOutput>(profile);
+            
+            // Наполняем результат.
+            await CreateModifyUserResult(result);
 
             return result;
         }
@@ -239,6 +246,26 @@ internal sealed class ResumeService : IResumeService
         }
 
         return vacancies;
+    }
+
+    /// <summary>
+    /// Метод наполняет результат о пользователе доп.данными.
+    /// </summary>
+    /// <param name="result">Результат до наполнения.</param>
+    /// <exception cref="InvalidOperationException">Если не удалось получить доп.данные о пользователе.</exception>
+    private async Task CreateModifyUserResult(ResumeOutput result)
+    {
+        var userId = result.UserId;
+        var modifyUser = await _userRepository.GetUserPhoneEmailByUserIdAsync(userId);
+
+        if (modifyUser is null)
+        {
+            throw new InvalidOperationException("Не удалось получить дополнительную информацию о пользователе." +
+                                                $"UserId: {userId}");
+        }
+
+        result.Email = modifyUser.Email;
+        result.PhoneNumber = modifyUser.PhoneNumber;
     }
 
     #endregion

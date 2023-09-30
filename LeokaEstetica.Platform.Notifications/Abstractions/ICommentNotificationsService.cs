@@ -14,4 +14,14 @@ public interface ICommentNotificationsService
     /// <param name="token">Токен пользователя.</param>
     Task SendNotificationCommentProjectIsNotEmptyAsync(string title, string notifyText,
         string notificationLevel, string token);
+    
+    /// <summary>
+    /// Метод отправляет уведомление успешной записи комментария проекта.
+    /// </summary>
+    /// <param name="title">Заголовок уведомления.</param>
+    /// <param name="notifyText">Текст уведомления.</param>
+    /// <param name="notificationLevel">Уровень уведомления.</param>
+    /// <param name="token">Токен пользователя.</param>
+    Task SendNotificationSuccessCreatedCommentProjectAsync(string title, string notifyText,
+        string notificationLevel, string token);
 }

@@ -26,9 +26,10 @@ public interface IChatService
     /// <param name="discussionType">Тип объекта обсуждения.</param>
     /// <param name="account">Аккаунт.</param>
     /// <param name="discussionTypeId">Id предмета обсуждения (Id проекта или вакансии).</param>
+    /// <param name="token">Токен пользователя.</param>
     /// <returns>Данные диалога.</returns>
     Task<DialogResultOutput> WriteProjectDialogOwnerAsync(DiscussionTypeEnum discussionType, string account,
-        long discussionTypeId);
+        long discussionTypeId, string token);
 
     /// <summary>
     /// Метод отправляет сообщение.
@@ -37,8 +38,10 @@ public interface IChatService
     /// <param name="dialogId">Id диалога.</param>
     /// <param name="userId">Id пользователя.</param>
     /// <param name="token">Токен пользователя.</param>
+    /// <param name="isMyMessage">Флаг принадлежности сообщения пользователю, который пишет сообщение.</param>
     /// <returns>Выходная модель.</returns>
-    Task<DialogResultOutput> SendMessageAsync(string message, long dialogId, long userId, string token);
+    Task<DialogResultOutput> SendMessageAsync(string message, long dialogId, long userId, string token,
+        bool isMyMessage);
     
     /// <summary>
     /// Метод получит все диалоги для профиля пользователя.

@@ -27,6 +27,13 @@ public interface IResumeRepository
     Task<ProfileInfoEntity> GetResumeAsync(long resumeId);
     
     /// <summary>
+    /// Метод получает анкеты пользователей по Id пользователей.
+    /// </summary>
+    /// <param name="usersIds">Id пользователей.</param>
+    /// <returns>Список анкет.</returns>
+    Task<IEnumerable<ProfileInfoEntity>> GetResumesAsync(IEnumerable<long> usersIds);
+    
+    /// <summary>
     /// Метод првоеряет владельца анкеты.
     /// </summary>
     /// <param name="profileInfoId">Id анкеты.</param>

@@ -1,10 +1,14 @@
+using System.Data;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Models.Dto.Output.User;
+using LeokaEstetica.Platform.Models.Entities.Moderation;
+using LeokaEstetica.Platform.Models.Entities.Profile;
 using LeokaEstetica.Platform.Models.Entities.User;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 
 namespace LeokaEstetica.Platform.Base.Repositories.User;
 
@@ -15,7 +19,7 @@ internal sealed class UserRepository : IUserRepository
 {
     private readonly PgContext _pgContext;
     private readonly ILogger<UserRepository> _logger;
-    
+
     /// <summary>
     /// Конструктор.
     /// </summary>
@@ -388,11 +392,41 @@ internal sealed class UserRepository : IUserRepository
     /// <summary>
     /// Метод удаляет аккаунты пользователей.
     /// </summary>
-    /// <param name="users">Список пользователей, которых предупредим.</param>
-    public async Task DeleteDeactivateAccountsAsync(List<UserEntity> users)
+    /// <param name="users">Список пользователей, которых удаляем.</param>
+    /// <param name="profileItems">Список анкет пользователей, которых удаляем.</param>
+    /// <param name="profileItems">Список анкет пользователей на модерации, которых удаляем.</param>
+    public async Task DeleteDeactivateAccountsAsync(List<UserEntity> users, List<ProfileInfoEntity> profileItems,
+        List<ModerationResumeEntity> moderationResumes)
     {
-        _pgContext.Users.RemoveRange(users);
-        await _pgContext.SaveChangesAsync();
+        _logger.LogInformation($"Начали удаление анкет пользователей: {JsonConvert.SerializeObject(users)}.");
+        
+        var transaction = await _pgContext.Database
+            .BeginTransactionAsync(IsolationLevel.ReadCommitted);
+
+        try
+        {
+            // Находим и удаляем все анкеты пользователей на модерации.
+            _pgContext.ModerationResumes.RemoveRange(moderationResumes);
+            await _pgContext.SaveChangesAsync();
+            
+            // Находим и удаляем все анкеты пользователей.
+            _pgContext.ProfilesInfo.RemoveRange(profileItems);
+            await _pgContext.SaveChangesAsync();
+
+            // Удаляем самих пользователей.
+            _pgContext.Users.RemoveRange(users);
+            await _pgContext.SaveChangesAsync();
+            
+            await transaction.CommitAsync();
+        }
+        
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
+
+        _logger.LogInformation("Закончили удаление анкет пользователей.");
     }
 
     /// <summary>
@@ -517,6 +551,18 @@ internal sealed class UserRepository : IUserRepository
     public async Task UpdateUsersLoginAsync(IEnumerable<UserEntity> users)
     {
         _pgContext.Users.UpdateRange(users);
+        await _pgContext.SaveChangesAsync();
+    }
+
+    /// <summary>
+    /// Метод актуализирует дату последней авторизации пользователя = сегодня.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    public async Task ActualisingLastAutorizationUserAsync(long userId)
+    {
+        var user = await _pgContext.Users.FirstOrDefaultAsync(u => u.UserId == userId);
+        user!.LastAutorization = DateTime.UtcNow;
+
         await _pgContext.SaveChangesAsync();
     }
 

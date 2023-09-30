@@ -194,6 +194,8 @@ public class MappingProfile : Profile
         CreateMap<ContactEntity, ContactOutput>();
         
         CreateMap<PublicOfferEntity, PublicOfferOutput>();
+        
+        CreateMap<UserEntity, ResumeModerationOutput>();
     }
     
     /// <summary>

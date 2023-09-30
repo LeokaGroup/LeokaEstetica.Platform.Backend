@@ -8,7 +8,6 @@ using LeokaEstetica.Platform.Base.Builders;
 using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
 using LeokaEstetica.Platform.Database.Abstractions.Vacancy;
-using LeokaEstetica.Platform.Messaging.Builders;
 using LeokaEstetica.Platform.Messaging.Enums;
 using LeokaEstetica.Platform.Models.Dto.Chat.Output;
 using LeokaEstetica.Platform.Models.Enums;
@@ -244,48 +243,16 @@ internal sealed class ChatService : IChatService
     }
 
     /// <summary>
-    /// Метод получает список диалогов.
-    /// </summary>
-    /// <param name="account">Аккаунт.</param>
-    /// <param name="projectId">Id проекта. Если не передан, то получает все диалоги пользователя.</param>
-    /// <returns>Список диалогов.</returns>
-    public async Task<IEnumerable<DialogOutput>> GetDialogsAsync(string account, long? projectId = null)
-    {
-        try
-        {
-            var userId = await _userRepository.GetUserByEmailAsync(account);
-
-            if (userId == 0)
-            {
-                throw new InvalidOperationException($"Id пользователя с аккаунтом {account} не найден.");
-            }
-
-            var dialogs = await _chatRepository.GetDialogsAsync(userId, projectId);
-            var mapDialogs = _mapper.Map<List<ProfileDialogOutput>>(dialogs);
-            
-            dialogs = await CreateDialogMessagesBuilder.CreateDialogAsync((dialogs, mapDialogs), _chatRepository,
-                _userRepository, userId, _mapper, account);
-
-            return dialogs;
-        }
-
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, ex.Message);
-            throw;
-        }
-    }
-
-    /// <summary>
     /// Метод создает диалог для написания владельцу проекта.
     /// Если такой диалог уже создан с текущим юзером и владельцем проекта,
     /// то ничего не происходит и диалог считается пустым для начала общения.
     /// <param name="discussionType">Тип объекта обсуждения.</param>
     /// <param name="account">Аккаунт.</param>
     /// <param name="discussionTypeId">Id предмета обсуждения (Id проекта или вакансии).</param>
+    /// <param name="token">Токен пользователя.</param>
     /// <returns>Данные диалога.</returns>
     public async Task<DialogResultOutput> WriteProjectDialogOwnerAsync(DiscussionTypeEnum discussionType,
-        string account, long discussionTypeId)
+        string account, long discussionTypeId, string token)
     {
         try
         {
@@ -328,10 +295,10 @@ internal sealed class ChatService : IChatService
             var ownerId = await GetOwnerIdAsync(discussionType, discussionTypeId);
 
             // Проверяем существование диалога перед его созданием.
-            var isDublicateDialog = await _chatRepository.CheckDialogAsync(userId, ownerId);
+            var getDialogId = await _chatRepository.CheckDialogAsync(userId, ownerId);
 
             // Диалога нет, можем создавать.
-            if (isDublicateDialog is null)
+            if (getDialogId is null)
             {
                 // Создаем новый диалог.
                 var lastDialogId = await _chatRepository.CreateDialogAsync(string.Empty, DateTime.UtcNow);
@@ -355,13 +322,19 @@ internal sealed class ChatService : IChatService
                     
                     // Связываем диалог с вакансией (если при отклике на проект, отклик был с указанием вакансии).
                     await _projectResponseRepository.SetReferenceVacancyDialogAsync(discussionTypeId, userId);
+                    
+                    // Генерим автоматическое сообщение от системы, потому что для отображения диалога на фронте,
+                    // нужно минимум 1 сообщение.
+                    await SendMessageAsync(
+                        "Начало обсуждения с владельцем проекта. Это сообщение создано автоматически.", dialogId,
+                        userId, token, false);
                 }
                 
                 return result;
             }
             
             result.DialogState = DialogStateEnum.Empty.ToString();
-            result.DialogId = (long)isDublicateDialog;
+            result.DialogId = (long)getDialogId;
             result.FullName = await CreateDialogOwnerFioAsync(ownerId);
 
             return result;
@@ -381,8 +354,10 @@ internal sealed class ChatService : IChatService
     /// <param name="dialogId">Id диалога.</param>
     /// <param name="userId">Id пользователя.</param>
     /// <param name="token">Токен пользователя.</param>
+    /// <param name="isMyMessage">Флаг принадлежности сообщения пользователю, который пишет сообщение.</param>
     /// <returns>Выходная модель.</returns>
-    public async Task<DialogResultOutput> SendMessageAsync(string message, long dialogId, long userId, string token)
+    public async Task<DialogResultOutput> SendMessageAsync(string message, long dialogId, long userId, string token,
+        bool isMyMessage)
     {
         try
         {
@@ -395,7 +370,7 @@ internal sealed class ChatService : IChatService
             }
 
             // Записываем сообщение в БД.
-            await _chatRepository.SaveMessageAsync(message, dialogId, DateTime.UtcNow, userId, true);
+            await _chatRepository.SaveMessageAsync(message, dialogId, DateTime.UtcNow, userId, isMyMessage);
 
             // Получаем список сообщений диалога.
             var messages = await _chatRepository.GetDialogMessagesAsync(dialogId);

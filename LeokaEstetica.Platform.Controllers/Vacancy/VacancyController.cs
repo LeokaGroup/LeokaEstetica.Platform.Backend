@@ -201,6 +201,7 @@ public class VacancyController : BaseController
     }
 
     /// <summary>
+    /// TODO: Это должно находится в контроллере поиска. Перенести.
     /// Метод фильтрации вакансий в зависимости от параметров фильтров.
     /// </summary>
     /// <param name="filterVacancyInput">Входная модель.</param>
@@ -221,6 +222,7 @@ public class VacancyController : BaseController
     }
     
     /// <summary>
+    /// TODO: Это должно находится в контроллере поиска. Перенести.
     /// Метод находит вакансии по поисковому запросу.
     /// </summary>
     /// <param name="searchText">Строка поиска.</param>

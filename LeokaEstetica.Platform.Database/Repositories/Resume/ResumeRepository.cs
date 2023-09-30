@@ -108,6 +108,20 @@ internal sealed class ResumeRepository : IResumeRepository
     }
 
     /// <summary>
+    /// Метод получает анкеты пользователей по Id анкет.
+    /// </summary>
+    /// <param name="usersIds">Id пользователей.</param>
+    /// <returns>Список анкет.</returns>
+    public async Task<IEnumerable<ProfileInfoEntity>> GetResumesAsync(IEnumerable<long> usersIds)
+    {
+        var result = await _pgContext.ProfilesInfo
+            .Where(p => usersIds.Contains(p.UserId))
+            .ToListAsync();
+
+        return result;
+    }
+
+    /// <summary>
     /// Метод првоеряет владельца анкеты.
     /// </summary>
     /// <param name="profileInfoId">Id анкеты.</param>

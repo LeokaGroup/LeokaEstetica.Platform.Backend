@@ -88,6 +88,13 @@ internal sealed class ProjectCommentsService : IProjectCommentsService
             }
             
             await _projectCommentsRepository.CreateProjectCommentAsync(projectId, comment, userId);
+
+            if (!string.IsNullOrEmpty(token))
+            {
+                await _commentNotificationsService.SendNotificationSuccessCreatedCommentProjectAsync("Все хорошо",
+                    "Комментарий к проекту успешно записан. Он появится в списке комментариев проекта после одобрения модератором.",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);
+            }
         }
         
         catch (Exception ex)
