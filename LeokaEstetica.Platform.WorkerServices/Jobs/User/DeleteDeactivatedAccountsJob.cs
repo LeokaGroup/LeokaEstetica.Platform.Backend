@@ -3,6 +3,7 @@ using LeokaEstetica.Platform.Redis.Abstractions.User;
 using LeokaEstetica.Platform.Redis.Consts;
 using LeokaEstetica.Platform.Services.Abstractions.Project;
 using LeokaEstetica.Platform.Services.Abstractions.Vacancy;
+using Newtonsoft.Json;
 
 namespace LeokaEstetica.Platform.WorkerServices.Jobs.User;
 
@@ -62,16 +63,21 @@ public class DeleteDeactivatedAccountsJob : BackgroundService
 
             if (!deleteUsers.Any())
             {
-                await Task.CompletedTask;
+                return;
             }
 
             foreach (var u in deleteUsers)
             {
+                _logger.LogInformation(
+                    $"Найденные пользователи для удаления: {JsonConvert.SerializeObject(deleteUsers)}");
+                
                 var userProjects = await _projectService.UserProjectsAsync(u.Email);
                 
                 // Пропускем, если нет проектов для удаления.
                 if (userProjects.UserProjects.Any())
                 {
+                    _logger.LogInformation("Проектов для удаления нет.");
+                
                     // Перебираем все проекты для удаления.
                     foreach (var p in userProjects.UserProjects)
                     {
@@ -84,6 +90,8 @@ public class DeleteDeactivatedAccountsJob : BackgroundService
                 // Проектов то нет, но надо бы проверить вакансии пользователей, которые не были привязаны к проектам.
                 else
                 {
+                    _logger.LogInformation("Проверяем вакансии пользователей, которые не были привязаны к проектам.");
+                    
                     var vacancies = await _vacancyService.GetUserVacanciesAsync(u.Email);
 
                     if (vacancies.Vacancies.Any())

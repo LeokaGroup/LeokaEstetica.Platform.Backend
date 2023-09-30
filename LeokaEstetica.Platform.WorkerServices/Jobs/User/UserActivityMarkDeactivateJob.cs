@@ -96,7 +96,7 @@ public class UserActivityMarkDeactivateJob : BackgroundService
             // Нет аккаунтов для удаления.
             if (!markedUsers.Any() && !deletedUsers.Any())
             {
-                await Task.CompletedTask;
+                return;
             }
 
             if (markedUsers.Any())
