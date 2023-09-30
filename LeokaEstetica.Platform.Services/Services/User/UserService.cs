@@ -363,7 +363,7 @@ internal sealed class UserService : IUserService
             await IfDisableUserSubscriptionAsync(userId);
 
             // Записываем токен пользователя в кэш.
-            await _userRedisService.AddUserTokenAndUserIdCacheAsync(userId, result.Token);
+            await _userRedisService.AddUserTokenAndUserIdCacheAsync(userId, token);
             
             // Актуализируем дату последней авторизации = сегодня.
             await _userRepository.ActualisingLastAutorizationUserAsync(userId);
