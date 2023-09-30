@@ -5,6 +5,7 @@ using LeokaEstetica.Platform.Models.Dto.Output.User;
 using LeokaEstetica.Platform.Models.Entities.User;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 
 namespace LeokaEstetica.Platform.Base.Repositories.User;
 
@@ -391,8 +392,12 @@ internal sealed class UserRepository : IUserRepository
     /// <param name="users">Список пользователей, которых предупредим.</param>
     public async Task DeleteDeactivateAccountsAsync(List<UserEntity> users)
     {
+        _logger.LogInformation($"Начали удаление анкет пользователей: {JsonConvert.SerializeObject(users)}.");
+        
         _pgContext.Users.RemoveRange(users);
         await _pgContext.SaveChangesAsync();
+        
+        _logger.LogInformation("Закончили удаление анкет пользователей.");
     }
 
     /// <summary>

@@ -43,7 +43,10 @@ public class DeleteDeactivatedAccountsJob : BackgroundService
     /// <param name="IJobExecutionContext">Контекст джобы.</param>
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        _timer = new Timer(DoWork, null, TimeSpan.Zero, TimeSpan.FromHours(24));
+        // _timer = new Timer(DoWork, null, TimeSpan.Zero, TimeSpan.FromHours(24));
+        
+        // TODO: Времено для тестов.
+        _timer = new Timer(DoWork, null, TimeSpan.Zero, TimeSpan.FromSeconds(10));
 
         await Task.CompletedTask;
     }
@@ -96,6 +99,8 @@ public class DeleteDeactivatedAccountsJob : BackgroundService
 
                     if (vacancies.Vacancies.Any())
                     {
+                        _logger.LogInformation("Начали удаление вакансий пользователей.");
+                        
                         foreach (var v in vacancies.Vacancies)
                         {
                             await _vacancyService.DeleteVacancyAsync(v.VacancyId, u.Email, null);
