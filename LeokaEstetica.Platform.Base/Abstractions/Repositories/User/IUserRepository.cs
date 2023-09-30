@@ -220,4 +220,10 @@ public interface IUserRepository
     /// </summary>
     /// <param name="users">Список пользователей.</param>
     Task UpdateUsersLoginAsync(IEnumerable<UserEntity> users);
+
+    /// <summary>
+    /// Метод актуализирует дату последней авторизации пользователя = сегодня.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    Task ActualisingLastAutorizationUserAsync(long userId);
 }

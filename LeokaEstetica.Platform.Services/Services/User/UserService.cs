@@ -357,11 +357,6 @@ internal sealed class UserService : IUserService
 
             var claim = await _accessUserService.GetIdentityClaimAsync(email);
             var token = await _accessUserService.CreateTokenFactoryAsync(claim);
-            
-            result.Email = email;
-            result.Token = token;
-            result.IsSuccess = true;
-            result.UserCode = userCode;
 
             var userId = await _userRepository.GetUserIdByEmailAsync(email);
 
@@ -369,6 +364,14 @@ internal sealed class UserService : IUserService
 
             // Записываем токен пользователя в кэш.
             await _userRedisService.AddUserTokenAndUserIdCacheAsync(userId, result.Token);
+            
+            // Актуализируем дату последней авторизации = сегодня.
+            await _userRepository.ActualisingLastAutorizationUserAsync(userId);
+            
+            result.Email = email;
+            result.Token = token;
+            result.IsSuccess = true;
+            result.UserCode = userCode;
 
             return result;
         }

@@ -520,6 +520,18 @@ internal sealed class UserRepository : IUserRepository
         await _pgContext.SaveChangesAsync();
     }
 
+    /// <summary>
+    /// Метод актуализирует дату последней авторизации пользователя = сегодня.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    public async Task ActualisingLastAutorizationUserAsync(long userId)
+    {
+        var user = await _pgContext.Users.FirstOrDefaultAsync(u => u.UserId == userId);
+        user!.LastAutorization = DateTime.UtcNow;
+
+        await _pgContext.SaveChangesAsync();
+    }
+
     #endregion
 
     #region Приватные методы.
