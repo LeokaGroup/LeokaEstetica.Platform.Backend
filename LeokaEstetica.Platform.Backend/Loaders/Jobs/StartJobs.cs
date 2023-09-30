@@ -1,5 +1,4 @@
 using LeokaEstetica.Platform.WorkerServices.Jobs.RabbitMq;
-using LeokaEstetica.Platform.WorkerServices.Jobs.User;
 using Quartz;
 
 namespace LeokaEstetica.Platform.Backend.Loaders.Jobs;
@@ -12,15 +11,15 @@ public static class StartJobs
     /// <summary>
     /// Метод запускает все джобы.
     /// </summary>
-    public static void Start(IServiceCollectionQuartzConfigurator q, IServiceCollection services)
+    public static void Start(IServiceCollectionQuartzConfigurator q)
     {
         // Запускаем планировщик активностей аккаунтов пользователей.
-        services.AddHostedService<UserActivityMarkDeactivateJob>();
+        //services.AddHostedService<UserActivityMarkDeactivateJob>();
 
         // Запускаем планировщик удаления аккаунтов пользователей.
-        services.AddHostedService<DeleteDeactivatedAccountsJob>();
+        //services.AddHostedService<DeleteDeactivatedAccountsJob>();
+        //services.AddHostedService<OrdersJob>();
 
-        // Джоба возвратов.
         var refundsJobJobKey = new JobKey("RefundsJob");
         q.AddJob<RefundsJob>(opts => opts.WithIdentity(refundsJobJobKey));
         q.AddTrigger(opts => opts
@@ -30,7 +29,6 @@ public static class StartJobs
                 .WithIntervalInMinutes(3)
                 .RepeatForever()));
         
-        // Джоба заказов.
         var ordersJobJobKey = new JobKey("OrdersJob");
         q.AddJob<OrdersJob>(opts => opts.WithIdentity(ordersJobJobKey));
         q.AddTrigger(opts => opts

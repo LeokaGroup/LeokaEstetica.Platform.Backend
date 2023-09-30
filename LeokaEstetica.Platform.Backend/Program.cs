@@ -145,7 +145,7 @@ builder.Services.AddQuartz(q =>
     q.UseMicrosoftDependencyInjectionJobFactory();
     
     // Запуск джоб при старте ядра системы.
-    StartJobs.Start(q, builder.Services);
+    StartJobs.Start(q);
 });
 
 builder.Services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
