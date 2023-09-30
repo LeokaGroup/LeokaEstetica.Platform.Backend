@@ -1,4 +1,5 @@
 using System.Net.Http.Json;
+using System.Text;
 using LeokaEstetica.Platform.Integrations.Abstractions.Pachca;
 using LeokaEstetica.Platform.Integrations.Enums;
 using LeokaEstetica.Platform.Integrations.Models.Input.Pachca;
@@ -30,18 +31,40 @@ internal sealed class PachcaService : IPachcaService
     /// <summary>
     /// Метод отправляет уведомлений с деталями ошибки в пачку.
     /// </summary>
-    /// <param name="message">Текст исключения со всеми деталями.</param>
-    public async Task SendNotificationErrorAsync(string message)
+    /// <param name="exception">Исключение.</param>
+    public async Task SendNotificationErrorAsync(Exception exception)
     {
-        if (string.IsNullOrWhiteSpace(message))
-        {
-            return;
-        }
-
         try
         {
+            string environment = null;
+
+            if (_configuration["Environment"].Equals("Development"))
+            {
+                environment = "[Develop] ";
+            }
+        
+            else if (_configuration["Environment"].Equals("Staging"))
+            {
+                environment = "[Test] ";
+            }
+        
+            else if (_configuration["Environment"].Equals("Production"))
+            {
+                environment = "[Production] ";
+            }
+
+            var errorMessage = new StringBuilder();
+            errorMessage.Append(environment);
+            errorMessage.AppendLine("ErrorMessage: ");
+
+            var errMsg = exception.Message;
+            
+            errorMessage.AppendLine(errMsg);
+            errorMessage.AppendLine("StackTrace: ");
+            errorMessage.AppendLine(exception.StackTrace);
+            
             using var httpClient = new HttpClient();
-            var request = new SendNotificationInput { Message = message };
+            var request = new SendNotificationInput { Message = errorMessage.ToString() };
         
             await httpClient.PostAsJsonAsync(_configuration["PachcaBot:AlarmsBot"], request);
         }

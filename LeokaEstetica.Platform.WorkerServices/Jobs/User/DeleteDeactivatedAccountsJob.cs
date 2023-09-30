@@ -1,6 +1,7 @@
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Resume;
 using LeokaEstetica.Platform.Database.Abstractions.Resume;
+using LeokaEstetica.Platform.Integrations.Abstractions.Pachca;
 using LeokaEstetica.Platform.Redis.Abstractions.User;
 using LeokaEstetica.Platform.Redis.Consts;
 using LeokaEstetica.Platform.Services.Abstractions.Project;
@@ -22,6 +23,7 @@ public class DeleteDeactivatedAccountsJob : BackgroundService
     private readonly IVacancyService _vacancyService;
     private readonly IResumeRepository _resumeRepository;
     private readonly IResumeModerationRepository _resumeModerationRepository;
+    private readonly IPachcaService _pachcaService;
 
     /// <summary>
     /// Конструктор.
@@ -32,6 +34,7 @@ public class DeleteDeactivatedAccountsJob : BackgroundService
     /// <param name="vacancyService">Репозиторий вакансий.</param>
     /// <param name="resumeRepository">Репозиторий анкет.</param>
     /// <param name="resumeModerationRepository">Репозиторий модерации анкет.</param>
+    /// <param name="pachcaService">Сервис пачки.</param>
     /// </summary>
     public DeleteDeactivatedAccountsJob(ILogger<DeleteDeactivatedAccountsJob> logger,
         IUserRedisService userRedisService,
@@ -39,7 +42,8 @@ public class DeleteDeactivatedAccountsJob : BackgroundService
         IUserRepository userRepository, 
         IVacancyService vacancyService,
         IResumeRepository resumeRepository,
-        IResumeModerationRepository resumeModerationRepository)
+        IResumeModerationRepository resumeModerationRepository,
+        IPachcaService pachcaService)
     {
         _logger = logger;
         _userRedisService = userRedisService;
@@ -48,6 +52,7 @@ public class DeleteDeactivatedAccountsJob : BackgroundService
         _vacancyService = vacancyService;
         _resumeRepository = resumeRepository;
         _resumeModerationRepository = resumeModerationRepository;
+        _pachcaService = pachcaService;
     }
 
     /// <summary>
@@ -152,6 +157,9 @@ public class DeleteDeactivatedAccountsJob : BackgroundService
         catch (Exception ex)
         {
             _logger.LogCritical(ex, "Ошибка при выполнении фоновой задачи DeleteDeactivatedAccounts.");
+            
+            await _pachcaService.SendNotificationErrorAsync(ex);
+            
             throw;
         }
     }

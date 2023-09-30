@@ -1,4 +1,5 @@
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
+using LeokaEstetica.Platform.Integrations.Abstractions.Pachca;
 using LeokaEstetica.Platform.Messaging.Abstractions.Mail;
 using LeokaEstetica.Platform.Models.Entities.User;
 using LeokaEstetica.Platform.Redis.Abstractions.User;
@@ -15,6 +16,7 @@ public class UserActivityMarkDeactivateJob : BackgroundService
     private readonly IUserRedisService _userRedisService;
     private readonly ILogger<UserActivityMarkDeactivateJob> _logger;
     private readonly IMailingsService _mailingsService;
+    private readonly IPachcaService _pachcaService;
 
     /// <summary>
     /// Конструктор.
@@ -23,15 +25,18 @@ public class UserActivityMarkDeactivateJob : BackgroundService
     /// <param name="userRedisService">Сервис кэша.</param>
     /// <param name="logger">Сервис логов.</param>
     /// <param name="mailingsService">Сервис уведомлений на почту.</param>
+    /// <param name="pachcaService">Сервис пачки.</param>
     public UserActivityMarkDeactivateJob(IUserRepository userRepository,
         IUserRedisService userRedisService,
         ILogger<UserActivityMarkDeactivateJob> logger,
-        IMailingsService mailingsService)
+        IMailingsService mailingsService,
+        IPachcaService pachcaService)
     {
         _userRepository = userRepository;
         _userRedisService = userRedisService;
         _logger = logger;
         _mailingsService = mailingsService;
+        _pachcaService = pachcaService;
     }
 
     /// <summary>
@@ -117,6 +122,8 @@ public class UserActivityMarkDeactivateJob : BackgroundService
 
         catch (Exception ex)
         {
+            await _pachcaService.SendNotificationErrorAsync(ex);
+            
             _logger.LogCritical(ex, "Ошибка при выполнении фоновой задачи UserActivityMarkDeactivate.");
             throw;
         }
