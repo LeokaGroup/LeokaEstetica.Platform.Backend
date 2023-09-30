@@ -87,6 +87,14 @@ public interface IResumeModerationRepository
     /// </summary>
     /// <returns>Список замечаний анкеты.</returns>
     Task<IEnumerable<ProfileInfoEntity>> GetResumeUnShippedRemarksTableAsync();
-    
-    
+
+    /// <summary>
+    /// Метод получает анкеты на модерации по Id анкет пользователей.
+    /// </summary>
+    /// <param name="userIds">Id анкет пользователей.</param>
+    /// <returns>Список анкет на модерации.</returns>
+    Task<IEnumerable<ModerationResumeEntity>> GetResumesModerationByProfileInfosIdsAsync(
+        IEnumerable<long> profileInfosIds);
+
+
 }

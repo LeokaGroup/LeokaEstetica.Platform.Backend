@@ -3,6 +3,7 @@ using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Models.Dto.Output.User;
+using LeokaEstetica.Platform.Models.Entities.Moderation;
 using LeokaEstetica.Platform.Models.Entities.Profile;
 using LeokaEstetica.Platform.Models.Entities.User;
 using Microsoft.EntityFrameworkCore;
@@ -393,7 +394,9 @@ internal sealed class UserRepository : IUserRepository
     /// </summary>
     /// <param name="users">Список пользователей, которых удаляем.</param>
     /// <param name="profileItems">Список анкет пользователей, которых удаляем.</param>
-    public async Task DeleteDeactivateAccountsAsync(List<UserEntity> users, List<ProfileInfoEntity> profileItems)
+    /// <param name="profileItems">Список анкет пользователей на модерации, которых удаляем.</param>
+    public async Task DeleteDeactivateAccountsAsync(List<UserEntity> users, List<ProfileInfoEntity> profileItems,
+        List<ModerationResumeEntity> moderationResumes)
     {
         _logger.LogInformation($"Начали удаление анкет пользователей: {JsonConvert.SerializeObject(users)}.");
         
@@ -402,12 +405,15 @@ internal sealed class UserRepository : IUserRepository
 
         try
         {
+            // Находим и удаляем все анкеты пользователей на модерации.
+            _pgContext.ModerationResumes.RemoveRange(moderationResumes);
+            
             // Находим и удаляем все анкеты пользователей.
             _pgContext.ProfilesInfo.RemoveRange(profileItems);
-            await _pgContext.SaveChangesAsync();
 
             // Удаляем самих пользователей.
             _pgContext.Users.RemoveRange(users);
+            
             await _pgContext.SaveChangesAsync();
             
             await transaction.CommitAsync();

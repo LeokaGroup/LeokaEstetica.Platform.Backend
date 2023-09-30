@@ -1,4 +1,5 @@
 using LeokaEstetica.Platform.Models.Dto.Output.User;
+using LeokaEstetica.Platform.Models.Entities.Moderation;
 using LeokaEstetica.Platform.Models.Entities.Profile;
 using LeokaEstetica.Platform.Models.Entities.User;
 
@@ -171,7 +172,9 @@ public interface IUserRepository
     /// </summary>
     /// <param name="users">Список пользователей, которых удаляем.</param>
     /// <param name="profileItems">Список анкет пользователей, которых удаляем.</param>
-    Task DeleteDeactivateAccountsAsync(List<UserEntity> users, List<ProfileInfoEntity> profileItems);
+    /// <param name="profileItems">Список анкет пользователей на модерации, которых удаляем.</param>
+    Task DeleteDeactivateAccountsAsync(List<UserEntity> users, List<ProfileInfoEntity> profileItems,
+        List<ModerationResumeEntity> moderationResumes);
     
     /// <summary>
     /// Метод находит Id пользователя по его Id анкеты.

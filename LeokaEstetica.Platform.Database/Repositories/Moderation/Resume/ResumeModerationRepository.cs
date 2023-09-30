@@ -281,6 +281,21 @@ internal sealed class ResumeModerationRepository : IResumeModerationRepository
         return result;
     }
 
+    /// <summary>
+    /// Метод получает анкеты на модерации по Id анкет пользователей.
+    /// </summary>
+    /// <param name="userIds">Id анкет пользователей.</param>
+    /// <returns>Список анкет на модерации.</returns>
+    public async Task<IEnumerable<ModerationResumeEntity>> GetResumesModerationByProfileInfosIdsAsync(
+        IEnumerable<long> profileInfosIds)
+    {
+        var result = await _pgContext.ModerationResumes
+            .Where(r => profileInfosIds.Contains(r.ProfileInfoId))
+            .ToListAsync();
+
+        return result;
+    }
+
     #endregion
 
     #region Приватные методы.

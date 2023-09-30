@@ -1,4 +1,5 @@
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
+using LeokaEstetica.Platform.Database.Abstractions.Moderation.Resume;
 using LeokaEstetica.Platform.Database.Abstractions.Resume;
 using LeokaEstetica.Platform.Redis.Abstractions.User;
 using LeokaEstetica.Platform.Redis.Consts;
@@ -20,6 +21,7 @@ public class DeleteDeactivatedAccountsJob : BackgroundService
     private readonly IUserRepository _userRepository;
     private readonly IVacancyService _vacancyService;
     private readonly IResumeRepository _resumeRepository;
+    private readonly IResumeModerationRepository _resumeModerationRepository;
 
     /// <summary>
     /// Конструктор.
@@ -29,13 +31,15 @@ public class DeleteDeactivatedAccountsJob : BackgroundService
     /// <param name="userRepository">Репозиторий пользователей.</param>
     /// <param name="vacancyService">Репозиторий вакансий.</param>
     /// <param name="resumeRepository">Репозиторий анкет.</param>
+    /// <param name="resumeModerationRepository">Репозиторий модерации анкет.</param>
     /// </summary>
     public DeleteDeactivatedAccountsJob(ILogger<DeleteDeactivatedAccountsJob> logger,
         IUserRedisService userRedisService,
         IProjectService projectService,
         IUserRepository userRepository, 
         IVacancyService vacancyService,
-        IResumeRepository resumeRepository)
+        IResumeRepository resumeRepository,
+        IResumeModerationRepository resumeModerationRepository)
     {
         _logger = logger;
         _userRedisService = userRedisService;
@@ -43,6 +47,7 @@ public class DeleteDeactivatedAccountsJob : BackgroundService
         _userRepository = userRepository;
         _vacancyService = vacancyService;
         _resumeRepository = resumeRepository;
+        _resumeModerationRepository = resumeModerationRepository;
     }
 
     /// <summary>
@@ -125,12 +130,23 @@ public class DeleteDeactivatedAccountsJob : BackgroundService
 
                 if (!profileItems.Any())
                 {
-                    throw new InvalidOperationException(
-                        $"Не удалось получить анкеты пользователей: {JsonConvert.SerializeObject(profileItems)}");
+                    throw new InvalidOperationException("Не удалось получить анкеты пользователей:" +
+                                                        $" {JsonConvert.SerializeObject(profileItems)}");
+                }
+                
+                // Находим анкеты пользователей на модерации, так как сначала надо удалить оттуда перед удалением анкет.
+                var moderationResumesItems = await _resumeModerationRepository
+                    .GetResumesModerationByProfileInfosIdsAsync(profileItems.Select(r => r.ProfileInfoId));
+                var moderationResumes = moderationResumesItems.ToList();
+                        
+                if (!moderationResumes.Any())
+                {
+                    throw new InvalidOperationException("Не удалось получить анкеты пользователей на модерации:" +
+                                                        $" {JsonConvert.SerializeObject(moderationResumes)}");
                 }
                 
                 // Удаляем все аккаунты.
-                await _userRepository.DeleteDeactivateAccountsAsync(deleteUsers, profileItems);   
+                await _userRepository.DeleteDeactivateAccountsAsync(deleteUsers, profileItems, moderationResumes);   
             }
             
             _logger.LogInformation("Отработала джоба DeleteDeactivatedAccountsJob.");
