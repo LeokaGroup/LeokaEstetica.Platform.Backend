@@ -407,13 +407,14 @@ internal sealed class UserRepository : IUserRepository
         {
             // Находим и удаляем все анкеты пользователей на модерации.
             _pgContext.ModerationResumes.RemoveRange(moderationResumes);
+            await _pgContext.SaveChangesAsync();
             
             // Находим и удаляем все анкеты пользователей.
             _pgContext.ProfilesInfo.RemoveRange(profileItems);
+            await _pgContext.SaveChangesAsync();
 
             // Удаляем самих пользователей.
             _pgContext.Users.RemoveRange(users);
-            
             await _pgContext.SaveChangesAsync();
             
             await transaction.CommitAsync();
