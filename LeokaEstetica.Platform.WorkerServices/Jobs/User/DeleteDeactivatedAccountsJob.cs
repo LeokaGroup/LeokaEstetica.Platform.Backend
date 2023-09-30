@@ -1,4 +1,5 @@
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
+using LeokaEstetica.Platform.Database.Abstractions.Resume;
 using LeokaEstetica.Platform.Redis.Abstractions.User;
 using LeokaEstetica.Platform.Redis.Consts;
 using LeokaEstetica.Platform.Services.Abstractions.Project;
@@ -18,23 +19,30 @@ public class DeleteDeactivatedAccountsJob : BackgroundService
     private readonly IProjectService _projectService;
     private readonly IUserRepository _userRepository;
     private readonly IVacancyService _vacancyService;
+    private readonly IResumeRepository _resumeRepository;
 
     /// <summary>
     /// Конструктор.
     /// <param name="logger">Сервис логов.</param>
     /// <param name="userRedisService">Сервис кэша.</param>
+    /// <param name="projectService">Сервис проектов.</param>
+    /// <param name="userRepository">Репозиторий пользователей.</param>
+    /// <param name="vacancyService">Репозиторий вакансий.</param>
+    /// <param name="resumeRepository">Репозиторий анкет.</param>
     /// </summary>
     public DeleteDeactivatedAccountsJob(ILogger<DeleteDeactivatedAccountsJob> logger,
         IUserRedisService userRedisService,
         IProjectService projectService,
         IUserRepository userRepository, 
-        IVacancyService vacancyService)
+        IVacancyService vacancyService,
+        IResumeRepository resumeRepository)
     {
         _logger = logger;
         _userRedisService = userRedisService;
         _projectService = projectService;
         _userRepository = userRepository;
         _vacancyService = vacancyService;
+        _resumeRepository = resumeRepository;
     }
 
     /// <summary>
@@ -111,8 +119,18 @@ public class DeleteDeactivatedAccountsJob : BackgroundService
 
             if (deleteUsers.Any())
             {
+                // Находим анкеты пользователей.
+                var resumes = await _resumeRepository.GetResumesAsync(deleteUsers.Select(u => u.UserId));
+                var profileItems = resumes.ToList();
+
+                if (!profileItems.Any())
+                {
+                    throw new InvalidOperationException(
+                        $"Не удалось получить анкеты пользователей: {JsonConvert.SerializeObject(profileItems)}");
+                }
+                
                 // Удаляем все аккаунты.
-                await _userRepository.DeleteDeactivateAccountsAsync(deleteUsers);   
+                await _userRepository.DeleteDeactivateAccountsAsync(deleteUsers, profileItems);   
             }
             
             _logger.LogInformation("Отработала джоба DeleteDeactivatedAccountsJob.");
