@@ -27,6 +27,7 @@ using LeokaEstetica.Platform.Services.Abstractions.User;
 using LeokaEstetica.Platform.Services.Consts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using ValidationFailure = FluentValidation.Results.ValidationFailure;
 
 [assembly: InternalsVisibleTo("LeokaEstetica.Platform.Tests")]
@@ -118,7 +119,11 @@ internal sealed class UserService : IUserService
         
         try
         {
-            var result = new UserSignUpOutput { Errors = new List<ValidationFailure>() };
+            var result = new UserSignUpOutput
+            {
+                Errors = new List<ValidationFailure>(),
+                IsSuccess = false
+            };
             await CheckUserByEmailAsync(result, email);
 
             if (result.Errors.Any())
@@ -141,11 +146,11 @@ internal sealed class UserService : IUserService
             
             if (addedUser is null)
             {
-                throw new InvalidOperationException("Ошибка добавления пользователя.");
+                throw new InvalidOperationException(
+                    "Ошибка добавления пользователя." +
+                    $" Данные нового пользователя: {JsonConvert.SerializeObject(userModel)}");
             }
-            
-            result = _mapper.Map<UserSignUpOutput>(addedUser);
-            
+
             // Добавляет данные о пользователе в таблицу профиля.
             var profileInfoId = await _profileRepository.AddUserInfoAsync(userId);
 
@@ -162,6 +167,10 @@ internal sealed class UserService : IUserService
             
             // Отправляем анкету на модерацию.
             await _resumeModerationRepository.AddResumeModerationAsync(profileInfoId);
+            
+            result = _mapper.Map<UserSignUpOutput>(addedUser);
+            
+            result.IsSuccess = true;
 
             await tran.CommitAsync();
 
@@ -176,92 +185,6 @@ internal sealed class UserService : IUserService
         }
     }
 
-    /// <summary>
-    /// Метод проверяет существование пользователя в базе по email.
-    /// </summary>
-    /// <param name="email">Email пользователя.</param>
-    private async Task CheckUserByEmailAsync(UserSignUpOutput result, string email)
-    {
-        var isUser = await _userRepository.CheckUserByEmailAsync(email);
-        
-        // Пользователь уже есть, не даем регистрировать.
-        if (isUser)
-        {
-            result.Errors = new List<ValidationFailure>
-            {
-                new() { ErrorMessage = $"Пользователь с Email {email} уже зарегистрирован в системе." }
-            };
-        }
-    }
-
-    /// <summary>
-    /// Метод создает модель для регистрации пользователя.
-    /// </summary>
-    /// <param name="password">Пароль./param>
-    /// <param name="email">Почта.</param>
-    /// <returns>Модель с данными.</returns>
-    private UserEntity CreateSignUpUserModel(string password, string email)
-    {
-        var model = new UserEntity
-        {
-            PasswordHash = HashHelper.HashPassword(password),
-            Email = email,
-            DateRegister = DateTime.UtcNow,
-            UserCode = Guid.NewGuid()
-        };
-
-        return model;
-    }
-    
-    /// <summary>
-    /// Метод создает модель для регистрации пользователя.
-    /// </summary>
-    /// <param name="vkUserId">Id пользователя в системе ВК.</param>
-    /// <param name="firstName">Имя пользователя в системе ВК.</param>
-    /// <param name="firstName">Фамилия пользователя в системе ВК.</param>
-    /// <returns>Модель с данными.</returns>
-    private UserEntity CreateSignUpVkUserModel(long vkUserId, string firstName, string lastName)
-    {
-        var model = new UserEntity
-        {
-            PasswordHash = string.Empty,
-            Email = string.Empty,
-            DateRegister = DateTime.UtcNow,
-            UserCode = Guid.NewGuid(),
-            VkUserId = vkUserId,
-            FirstName = firstName,
-            LastName = lastName,
-            EmailConfirmed = true,
-            IsVkAuth = true
-        };
-
-        return model;
-    }
-
-    /// <summary>
-    /// Метод проверяет UserId. Сроздает исключение, если с ним проблемы.
-    /// </summary>
-    /// <param name="userId">UserId.</param>
-    private void ValidateUserId(UserSignUpOutput result, long userId)
-    {
-        try
-        {
-            if (userId <= 0)
-            {
-                throw new ArgumentException("Id пользователя был <= 0!");
-            }
-        }
-        
-        catch (ArgumentException ex)
-        {
-            result.Errors = new List<ValidationFailure>()
-            {
-                new() { ErrorMessage = "Id пользователя был <= 0!" }
-            };
-            _logger.LogCritical(ex, ex.Message);
-        }
-    }
-    
     /// <summary>
     /// Метод подтверждает аккаунт пользователя по коду, который ранее был отправлен пользователю на почту и записан в БД.
     /// </summary>
@@ -862,6 +785,92 @@ internal sealed class UserService : IUserService
             {
                 await _subscriptionRepository.DisableUserSubscriptionAsync(userId);
             }
+        }
+    }
+    
+    /// <summary>
+    /// Метод проверяет существование пользователя в базе по email.
+    /// </summary>
+    /// <param name="email">Email пользователя.</param>
+    private async Task CheckUserByEmailAsync(UserSignUpOutput result, string email)
+    {
+        var isUser = await _userRepository.CheckUserByEmailAsync(email);
+        
+        // Пользователь уже есть, не даем регистрировать.
+        if (isUser)
+        {
+            result.Errors = new List<ValidationFailure>
+            {
+                new() { ErrorMessage = $"Пользователь с Email {email} уже зарегистрирован в системе." }
+            };
+        }
+    }
+
+    /// <summary>
+    /// Метод создает модель для регистрации пользователя.
+    /// </summary>
+    /// <param name="password">Пароль./param>
+    /// <param name="email">Почта.</param>
+    /// <returns>Модель с данными.</returns>
+    private UserEntity CreateSignUpUserModel(string password, string email)
+    {
+        var model = new UserEntity
+        {
+            PasswordHash = HashHelper.HashPassword(password),
+            Email = email,
+            DateRegister = DateTime.UtcNow,
+            UserCode = Guid.NewGuid()
+        };
+
+        return model;
+    }
+    
+    /// <summary>
+    /// Метод создает модель для регистрации пользователя.
+    /// </summary>
+    /// <param name="vkUserId">Id пользователя в системе ВК.</param>
+    /// <param name="firstName">Имя пользователя в системе ВК.</param>
+    /// <param name="firstName">Фамилия пользователя в системе ВК.</param>
+    /// <returns>Модель с данными.</returns>
+    private UserEntity CreateSignUpVkUserModel(long vkUserId, string firstName, string lastName)
+    {
+        var model = new UserEntity
+        {
+            PasswordHash = string.Empty,
+            Email = string.Empty,
+            DateRegister = DateTime.UtcNow,
+            UserCode = Guid.NewGuid(),
+            VkUserId = vkUserId,
+            FirstName = firstName,
+            LastName = lastName,
+            EmailConfirmed = true,
+            IsVkAuth = true
+        };
+
+        return model;
+    }
+
+    /// <summary>
+    /// Метод проверяет UserId. Сроздает исключение, если с ним проблемы.
+    /// </summary>
+    /// <param name="userId">UserId.</param>
+    private void ValidateUserId(UserSignUpOutput result, long userId)
+    {
+        try
+        {
+            if (userId <= 0)
+            {
+                throw new ArgumentException("Id пользователя был <= 0!");
+            }
+        }
+        
+        catch (ArgumentException ex)
+        {
+            result.Errors = new List<ValidationFailure>()
+            {
+                new() { ErrorMessage = "Id пользователя был <= 0!" }
+            };
+            _logger.LogCritical(ex, ex.Message);
         }
     }
     

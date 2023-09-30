@@ -26,6 +26,8 @@ internal sealed class NotificationsService : INotificationsService
         _connectionService = connectionService;
     }
 
+    #region Публичные методы.
+
     /// <summary>
     /// Метод отправляет уведомление об успешном сохранении.
     /// </summary>
@@ -69,4 +71,12 @@ internal sealed class NotificationsService : INotificationsService
                 NotificationLevel = notificationLevel
             });
     }
+
+    #endregion
+
+    #region Приватные методы.
+
+    
+
+    #endregion
 }
