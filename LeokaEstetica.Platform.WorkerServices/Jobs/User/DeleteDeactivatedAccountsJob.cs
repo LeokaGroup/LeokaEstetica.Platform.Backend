@@ -43,7 +43,10 @@ public class DeleteDeactivatedAccountsJob : BackgroundService
     /// <param name="IJobExecutionContext">Контекст джобы.</param>
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        _timer = new Timer(DoWork, null, TimeSpan.Zero, TimeSpan.FromHours(24));
+        // _timer = new Timer(DoWork, null, TimeSpan.Zero, TimeSpan.FromHours(24));
+        
+        // TODO: Времено для тестов.
+        _timer = new Timer(DoWork, null, TimeSpan.Zero, TimeSpan.FromSeconds(10));
 
         await Task.CompletedTask;
     }
