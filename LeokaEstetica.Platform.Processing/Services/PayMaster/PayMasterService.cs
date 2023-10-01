@@ -5,6 +5,7 @@ using AutoMapper;
 using LeokaEstetica.Platform.Access.Abstractions.User;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.Base.Enums;
+using LeokaEstetica.Platform.Base.Extensions.StringExtensions;
 using LeokaEstetica.Platform.Base.Helpers;
 using LeokaEstetica.Platform.Base.Models.Input.Processing;
 using LeokaEstetica.Platform.Core.Constants;
@@ -280,7 +281,9 @@ internal sealed class PayMasterService : IPayMasterService
         // Отправляем возврат в очередь для отслеживания его статуса.
         var refundEvent = RefundEventFactory.CreateRefundEvent(createdRefund.RefundId, createdRefund.PaymentId,
             createdRefund.Status, createdRefund.RefundOrderId);
-        await _rabbitMqService.PublishAsync(refundEvent, QueueTypeEnum.RefundsQueue);
+        
+        var queueType = string.Empty.CreateQueueDeclareNameFactory(_configuration, QueueTypeEnum.RefundsQueue);
+        await _rabbitMqService.PublishAsync(refundEvent, queueType);
 
         _logger?.LogInformation("Конец создания возврата платежа.");
 
@@ -378,7 +381,9 @@ internal sealed class PayMasterService : IPayMasterService
         // Отправляем чек возврата в очередь для отслеживания его статуса.
         var receiptRefundEvent = ReceiptRefundEventFactory.CreateReceiptRefundEvent(refund.ReceiptId,
             refund.PaymentId, refund.Status);
-        await _rabbitMqService.PublishAsync(receiptRefundEvent, QueueTypeEnum.ReceiptRefundQueue);
+            
+        var queueType = string.Empty.CreateQueueDeclareNameFactory(_configuration, QueueTypeEnum.ReceiptRefundQueue);
+        await _rabbitMqService.PublishAsync(receiptRefundEvent, queueType);
 
         _logger?.LogInformation("Конец создания чека возврата платежа.");
 
@@ -503,7 +508,9 @@ internal sealed class PayMasterService : IPayMasterService
         // Отправляем заказ в очередь для отслеживания его статуса.
         var orderEvent = OrderEventFactory.CreateOrderEvent(createdOrderResult.OrderId,
             createdOrderResult.StatusSysName, paymentId, userId, publicId, orderCache.Month);
-        await _rabbitMqService.PublishAsync(orderEvent, QueueTypeEnum.OrdersQueue);
+
+        var queueType = string.Empty.CreateQueueDeclareNameFactory(_configuration, QueueTypeEnum.OrdersQueue);
+        await _rabbitMqService.PublishAsync(orderEvent, queueType);
         
         var result = new CreateOrderOutput
         {

@@ -30,11 +30,6 @@ public static class QueueExtensions
     public static string CreateQueueDeclareNameFactory(this string queue, IConfiguration configuration,
         QueueTypeEnum queueType)
     {
-        if (queue is null)
-        {
-            throw new ArgumentNullException("Не передано название очереди.");
-        }
-
         if (!_flags.Contains(queueType))
         {
             throw new InvalidOperationException($"Неизвестный тип очереди. QueueType: {queueType}");

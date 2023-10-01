@@ -1,5 +1,4 @@
 using LeokaEstetica.Platform.Base.Abstractions.Messaging.EventBus;
-using LeokaEstetica.Platform.Base.Enums;
 
 namespace LeokaEstetica.Platform.Messaging.Abstractions.RabbitMq;
 
@@ -13,5 +12,5 @@ public interface IRabbitMqService
     /// </summary>
     /// <param name="event">Событие.</param>
     /// <param name="queueType">Тип очереди.</param>
-    Task PublishAsync(IIntegrationEvent @event, QueueTypeEnum queueType);
+    Task PublishAsync(IIntegrationEvent @event, string queueType);
 }
