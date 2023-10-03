@@ -170,7 +170,8 @@ app.UseAuthorization();
 app.UseCors("ApiCorsPolicy");
 app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
 
-if (builder.Environment.IsDevelopment() || builder.Environment.IsStaging())
+// TODO: Временно добавил для тестов прода IsProduction. Потом конечно уберу это.
+if (builder.Environment.IsDevelopment() || builder.Environment.IsStaging() || builder.Environment.IsProduction())
 {
     app.UseSwagger();
     app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Leoka.Estetica.Platform"));
