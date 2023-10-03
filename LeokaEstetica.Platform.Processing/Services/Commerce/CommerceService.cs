@@ -248,16 +248,21 @@ internal sealed class CommerceService : ICommerceService
                                                     $"SubscriptionId: {subscriptionId}");
             }
 
+            var result = new OrderFreeOutput();
+
             // Находим Id заказа текущей подписки пользователя.
             var orderId = await _ordersRepository.GetUserOrderIdAsync(userSubscription.MonthCount, userId);
+
+            // Подписки нет, значит бесплатная. С бесплатной остатка не будет.
+            if (orderId <= 0)
+            {
+                return result;
+            }
             
             // Вычисляем остаток суммы подписки (пока без учета повышения/понижения подписки).
             var freePrice = await CalculatePriceSubscriptionFreeDaysAsync(userId, orderId);
 
-            var result = new OrderFreeOutput
-            {
-                FreePrice = freePrice
-            };
+            result.FreePrice = freePrice;
 
             if (freePrice == 0)
             {
