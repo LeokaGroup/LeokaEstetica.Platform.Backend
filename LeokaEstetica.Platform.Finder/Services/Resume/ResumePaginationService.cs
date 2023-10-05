@@ -1,5 +1,4 @@
 using LeokaEstetica.Platform.Access.Abstractions.User;
-using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.Database.Abstractions.Resume;
 using LeokaEstetica.Platform.Finder.Abstractions.Resume;
 using LeokaEstetica.Platform.Finder.Builders;
@@ -21,7 +20,6 @@ public class ResumePaginationService : BaseIndexRamDirectory, IResumePaginationS
 {
     private readonly IResumeRepository _resumeRepository;
     private readonly ILogger<ResumePaginationService> _logger;
-    private readonly IUserRepository _userRepository;
     private readonly IAccessUserService _accessUserService;
 
     /// <summary>
@@ -29,16 +27,13 @@ public class ResumePaginationService : BaseIndexRamDirectory, IResumePaginationS
     /// </summary>
     /// <param name="resumeRepository">Репозиторий резюме.</param>
     /// <param name="logger">Логгер.</param>
-    /// <param name="userRepository">Репозиторий пользователей.</param>
     /// <param name="accessUserService">Сервис доступа пользователей.</param>
     public ResumePaginationService(IResumeRepository resumeRepository,
         ILogger<ResumePaginationService> logger,
-        IUserRepository userRepository,
         IAccessUserService accessUserService)
     {
         _resumeRepository = resumeRepository;
         _logger = logger;
-        _userRepository = userRepository;
         _accessUserService = accessUserService;
     }
 
@@ -67,7 +62,7 @@ public class ResumePaginationService : BaseIndexRamDirectory, IResumePaginationS
             using var searcher = new IndexSearcher(reader);
             var scoreDocs = CreateScoreDocsBuilder.CreateScoreDocsResult(page, searcher);
 
-            result.Resumes = CreateResumesSearchResultBuilder.CreateResumesSearchResult(scoreDocs, searcher);
+            result.Resumes = CreateResumesSearchResultBuilder.CreateResumesSearchResult(scoreDocs, searcher).ToList();
 
             // Если первая страница и записей менее максимального на странице,
             // то надо скрыть пагинацию, так как смысл в пагинации теряется в этом кейсе.
