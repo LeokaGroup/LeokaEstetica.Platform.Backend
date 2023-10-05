@@ -1,4 +1,7 @@
 using System.Runtime.CompilerServices;
+using System.Text;
+using LeokaEstetica.Platform.Core.Constants;
+using LeokaEstetica.Platform.Database.Abstractions.Config;
 using LeokaEstetica.Platform.Integrations.Abstractions.Telegram;
 using LeokaEstetica.Platform.Integrations.Enums;
 using Microsoft.Extensions.Configuration;
@@ -19,17 +22,21 @@ internal sealed class TelegramBotService : ITelegramBotService
     private static string _logBotToken;
     private static string _notificationsBot;
     private readonly IConfiguration _configuration;
+    private readonly IGlobalConfigRepository _globalConfigRepository;
 
     /// <summary>
     /// Конструктор.
     /// </summary>
     /// <param name="logger">Логгер.</param>
     /// <param name="configuration">Конфигурация.</param>
+    /// <param name="globalConfigRepository">Репозиторий глобал конфига.</param>
     public TelegramBotService(ILogger<TelegramBotService> logger,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        IGlobalConfigRepository globalConfigRepository)
     {
         _logger = logger;
         _configuration = configuration;
+        _globalConfigRepository = globalConfigRepository;
         _chatId = configuration["LogBot:ChatId"];
         _logBotToken = configuration["LogBot:Token"];
         _notificationsBot = configuration["NotificationsBot:Token"];
@@ -85,10 +92,13 @@ internal sealed class TelegramBotService : ITelegramBotService
     /// </summary>
     /// <param name="objectType">Тип объекта (вакансия, проект).</param>
     /// <param name="objectName">Название объекта (проекта, вакансии).</param>
-    public async Task SendNotificationCreatedObjectAsync(ObjectTypeEnum objectType, string objectName)
+    /// <param name="objectDescription">Описание объекта (проекта, вакансии).</param>
+    /// <param name="objectId">Id объекта (проекта, вакансии).</param>
+    public async Task SendNotificationCreatedObjectAsync(ObjectTypeEnum objectType, string objectName,
+        string objectDescription, long objectId)
     {
         var botClient = new TelegramBotClient(_notificationsBot);
-        var notifyMessage = string.Empty;
+        var notifyMessage = new StringBuilder();
 
         try
         {
@@ -99,25 +109,33 @@ internal sealed class TelegramBotService : ITelegramBotService
                 throw ex;
             }
 
+            var objectLink = await _globalConfigRepository.GetValueByKeyAsync<string>(GlobalConfigKeys.Integrations
+                .Telegram.NOTIFICATIONS_BOT_CREATED_OBJECT_LINK);
+
             if (objectType.HasFlag(ObjectTypeEnum.Project))
             {
-                notifyMessage = $"Создан новый проект \"{objectName}\".";
+                notifyMessage.AppendLine($"Создан новый проект: <strong>{objectName}</strong>.");
+                notifyMessage.AppendLine(objectDescription);
+                notifyMessage.AppendLine(string.Concat(objectLink, $"projects/project?projectId={objectId}&mode=view"));
             }
         
             else if (objectType.HasFlag(ObjectTypeEnum.Vacancy))
             {
-                notifyMessage = $"Создана новая вакансия \"{objectName}\".";
+                notifyMessage.AppendLine($"Создана новая вакансия: <strong>{objectName}</strong>.");
+                notifyMessage.AppendLine(objectDescription);
+                notifyMessage.AppendLine(string.Concat(objectLink, $"vacancies/vacancy?vacancyId={objectId}&mode=view"));
             }
-            
+
             if (new[] {"Development", "Staging"}.Contains(_configuration["Environment"]))
             {
                 await botClient.SendTextMessageAsync(_configuration["NotificationsBot:ChatIdDevelopTest"],
-                    notifyMessage);
+                    notifyMessage.ToString());
             }
         
             else
             {
-                await botClient.SendTextMessageAsync(_configuration["NotificationsBot:ChatId"], notifyMessage);
+                await botClient.SendTextMessageAsync(_configuration["NotificationsBot:ChatId"],
+                    notifyMessage.ToString());
             }
         }
         
@@ -132,12 +150,13 @@ internal sealed class TelegramBotService : ITelegramBotService
                 if (new[] {"Development", "Staging"}.Contains(_configuration["Environment"]))
                 {
                     await botClient.SendTextMessageAsync(_configuration["NotificationsBot:ChatIdDevelopTest"],
-                        notifyMessage);
+                        notifyMessage.ToString());
                 }
         
                 else
                 {
-                    await botClient.SendTextMessageAsync(_configuration["NotificationsBot:ChatId"], notifyMessage);
+                    await botClient.SendTextMessageAsync(_configuration["NotificationsBot:ChatId"],
+                        notifyMessage.ToString());
                 }
             }
             

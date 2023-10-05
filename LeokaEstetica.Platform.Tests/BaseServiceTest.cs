@@ -161,7 +161,7 @@ internal class BaseServiceTest
         var vacancyNotificationsService = new VacancyNotificationsService(null, null);
         var availableLimitsService = new AvailableLimitsService(null, availableLimitsRepository);
         
-        TelegramBotService = new TelegramBotService(null, AppConfiguration);
+        TelegramBotService = new TelegramBotService(null, AppConfiguration, globalConfigRepository);
 
         VacancyModerationService = new VacancyModerationService(vacancyModerationRepository, null, mapper, null,
             vacancyRepository, userRepository, projectRepository, null, null, TelegramBotService);
