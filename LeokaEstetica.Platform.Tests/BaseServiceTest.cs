@@ -55,6 +55,7 @@ using LeokaEstetica.Platform.Services.Services.Profile;
 using LeokaEstetica.Platform.Services.Services.Project;
 using LeokaEstetica.Platform.Services.Services.Refunds;
 using LeokaEstetica.Platform.Services.Services.Resume;
+using LeokaEstetica.Platform.Services.Services.Search.Profile;
 using LeokaEstetica.Platform.Services.Services.Subscription;
 using LeokaEstetica.Platform.Services.Services.User;
 using LeokaEstetica.Platform.Services.Services.Vacancy;
@@ -110,6 +111,7 @@ internal class BaseServiceTest
     protected readonly FareRuleRepository FareRuleRepository;
     protected readonly ChatRepository ChatRepository;
     protected readonly PressService PressService;
+    protected readonly SearchProfileService SearchProfileService;
 
     protected BaseServiceTest()
     {
@@ -254,5 +256,7 @@ internal class BaseServiceTest
 
         var pressRepository = new PressRepository(pgContext);
         PressService = new PressService(pressRepository, null);
+
+        SearchProfileService = new SearchProfileService(profileRepository, null);
     }
 }

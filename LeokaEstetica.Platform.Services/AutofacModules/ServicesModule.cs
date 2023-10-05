@@ -10,6 +10,7 @@ using LeokaEstetica.Platform.Services.Abstractions.Profile;
 using LeokaEstetica.Platform.Services.Abstractions.Project;
 using LeokaEstetica.Platform.Services.Abstractions.Refunds;
 using LeokaEstetica.Platform.Services.Abstractions.Resume;
+using LeokaEstetica.Platform.Services.Abstractions.Search.Profile;
 using LeokaEstetica.Platform.Services.Abstractions.Search.Project;
 using LeokaEstetica.Platform.Services.Abstractions.Subscription;
 using LeokaEstetica.Platform.Services.Abstractions.User;
@@ -24,6 +25,7 @@ using LeokaEstetica.Platform.Services.Services.Profile;
 using LeokaEstetica.Platform.Services.Services.Project;
 using LeokaEstetica.Platform.Services.Services.Refunds;
 using LeokaEstetica.Platform.Services.Services.Resume;
+using LeokaEstetica.Platform.Services.Services.Search.Profile;
 using LeokaEstetica.Platform.Services.Services.Search.Project;
 using LeokaEstetica.Platform.Services.Services.Subscription;
 using LeokaEstetica.Platform.Services.Services.User;
@@ -242,6 +244,14 @@ public class ServicesModule : Module
             .InstancePerLifetimeScope();
         builder.RegisterType<PressService>()
             .As<IPressService>()
+            .InstancePerLifetimeScope();
+        
+        // Сервис поиска в профиле пользователя.
+        builder.RegisterType<SearchProfileService>()
+            .Named<ISearchProfileService>("SearchProfileService")
+            .InstancePerLifetimeScope();
+        builder.RegisterType<SearchProfileService>()
+            .As<ISearchProfileService>()
             .InstancePerLifetimeScope();
     }
 }

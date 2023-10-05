@@ -276,4 +276,18 @@ internal sealed class ProfileRepository : IProfileRepository
 
         return result;
     }
+
+    /// <summary>
+    /// Метод поиска навыков по названию навыка.
+    /// </summary>
+    /// <param name="skillName">Поисковый текст.</param>
+    /// <returns>Список навыков, которые удалось найти.</returns>
+    public async Task<IEnumerable<SkillEntity>> GetUserSkillsByNameAsync(string skillName)
+    {
+        var result = await _pgContext.Skills
+            .Where(s => s.SkillName.ToLower().Contains(skillName))
+            .ToListAsync();
+
+        return result;
+    }
 }

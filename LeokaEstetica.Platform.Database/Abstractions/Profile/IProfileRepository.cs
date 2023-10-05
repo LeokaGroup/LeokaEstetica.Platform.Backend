@@ -89,4 +89,11 @@ public interface IProfileRepository
     /// <param name="userId">Id пользователя.</param>
     /// <returns>Список целей.</returns>
     Task<List<UserIntentEntity>> SelectedProfileUserIntentsAsync(long userId);
+
+    /// <summary>
+    /// Метод поиска навыков по названию навыка.
+    /// </summary>
+    /// <param name="skillName">Поисковый текст.</param>
+    /// <returns>Список навыков, которые удалось найти.</returns>
+    Task<IEnumerable<SkillEntity>> GetUserSkillsByNameAsync(string skillName);
 }
