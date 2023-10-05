@@ -15,7 +15,7 @@ public static class CreateResumesSearchResultBuilder
     /// <param name="searchResults">Результаты поиска.</param>
     /// <param name="searcher">Поисковый индекс.</param>
     /// <returns>Список резюме.</returns>
-    public static List<ResumeOutput> CreateResumesSearchResult(ScoreDoc[] searchResults,
+    public static IEnumerable<ResumeOutput> CreateResumesSearchResult(ScoreDoc[] searchResults,
         IndexSearcher searcher)
     {
         var resumes = new List<ResumeOutput>(20);

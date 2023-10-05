@@ -122,7 +122,7 @@ internal sealed class VacancyRepository : IVacancyRepository
                               (int)VacancyModerationStatusEnum.RejectedVacancy
                           }
                           .Contains(tbl.ModerationStatusId)
-                orderby s.ObjectId descending
+                orderby cv.Vacancy.DateCreated descending, s.ObjectId descending
                 select new CatalogVacancyOutput
                 {
                     VacancyName = cv.Vacancy.VacancyName,

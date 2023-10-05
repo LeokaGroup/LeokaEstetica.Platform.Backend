@@ -1,5 +1,6 @@
 using AutoMapper;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
+using LeokaEstetica.Platform.Base.Extensions.HtmlExtensions;
 using LeokaEstetica.Platform.CallCenter.Abstractions.Messaging.Mail;
 using LeokaEstetica.Platform.CallCenter.Abstractions.Vacancy;
 using LeokaEstetica.Platform.CallCenter.Builders;
@@ -153,8 +154,9 @@ public class VacancyModerationService : IVacancyModerationService
             
             var vacancyOwnerId = await _vacancyRepository.GetVacancyOwnerIdAsync(vacancyId);
             var user = await _userRepository.GetUserPhoneEmailByUserIdAsync(vacancyOwnerId);
-            var vacancyName = await _vacancyRepository.GetVacancyNameByIdAsync(vacancyId);
+            var vacancy = await _vacancyRepository.GetVacancyByVacancyIdAsync(vacancyId);
             var projectId = await _projectRepository.GetProjectIdByVacancyIdAsync(vacancyId);
+            var vacancyName = vacancy.VacancyName;
             
             // Отправляем уведомление на почту владельца вакансии.
             await _moderationMailingsService.SendNotificationApproveVacancyAsync(user.Email, vacancyName, vacancyId);
@@ -164,7 +166,10 @@ public class VacancyModerationService : IVacancyModerationService
                 vacancyName, projectId);
             
             await _pachcaService.SendNotificationCreatedObjectAsync(ObjectTypeEnum.Vacancy, vacancyName);
-            await _telegramBotService.SendNotificationCreatedObjectAsync(ObjectTypeEnum.Vacancy, vacancyName);
+            
+            var vacancyText = ClearHtmlBuilder.Clear(vacancy.VacancyText);
+            await _telegramBotService.SendNotificationCreatedObjectAsync(ObjectTypeEnum.Vacancy, vacancyName,
+                vacancyText, vacancyId);
 
             return result;
         }

@@ -18,5 +18,8 @@ public interface ITelegramBotService
     /// </summary>
     /// <param name="objectType">Тип объекта (вакансия, проект).</param>
     /// <param name="objectName">Название объекта (проекта, вакансии).</param>
-    Task SendNotificationCreatedObjectAsync(ObjectTypeEnum objectType, string objectName);
+    /// <param name="objectDescription">Описание объекта (проекта, вакансии).</param>
+    /// <param name="objectId">Id объекта (проекта, вакансии).</param>
+    Task SendNotificationCreatedObjectAsync(ObjectTypeEnum objectType, string objectName, string objectDescription,
+        long objectId);
 }
