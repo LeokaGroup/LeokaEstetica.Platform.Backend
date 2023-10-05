@@ -114,14 +114,14 @@ internal sealed class TelegramBotService : ITelegramBotService
 
             if (objectType.HasFlag(ObjectTypeEnum.Project))
             {
-                notifyMessage.AppendLine($"Создан новый проект: <strong>{objectName}</strong>.");
+                notifyMessage.AppendLine($"Создан новый проект: {objectName}.");
                 notifyMessage.AppendLine(objectDescription);
                 notifyMessage.AppendLine(string.Concat(objectLink, $"projects/project?projectId={objectId}&mode=view"));
             }
         
             else if (objectType.HasFlag(ObjectTypeEnum.Vacancy))
             {
-                notifyMessage.AppendLine($"Создана новая вакансия: <strong>{objectName}</strong>.");
+                notifyMessage.AppendLine($"Создана новая вакансия: {objectName}.");
                 notifyMessage.AppendLine(objectDescription);
                 notifyMessage.AppendLine(string.Concat(objectLink, $"vacancies/vacancy?vacancyId={objectId}&mode=view"));
             }
