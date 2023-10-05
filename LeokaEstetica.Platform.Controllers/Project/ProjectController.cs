@@ -488,6 +488,11 @@ public class ProjectController : BaseController
     [ProducesResponseType(404)]
     public async Task<CatalogProjectResultOutput> SearchProjectsAsync([FromQuery] string searchText)
     {
+        if (string.IsNullOrWhiteSpace(searchText))
+        {
+            return null;
+        }
+        
         var result = await _projectFinderService.SearchProjectsAsync(searchText);
 
         return result;

@@ -50,7 +50,7 @@ public class ResumeFinderService : BaseIndexRamDirectory, IResumeFinderService
             // Больше 20 и не надо, так как есть пагинация.
             var searchResults = searcher.Search(query, 20).ScoreDocs;
             var items = CreateResumesSearchResultBuilder.CreateResumesSearchResult(searchResults, searcher);
-            result.CatalogResumes = (IOrderedQueryable<ResumeOutput>)items;
+            result.CatalogResumes = items;
 
             return result;
         }
