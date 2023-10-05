@@ -202,7 +202,7 @@ internal sealed class ProjectRepository : IProjectRepository
                               (int)VacancyModerationStatusEnum.RejectedVacancy
                           }
                           .Contains(tbl.ModerationStatusId)
-                orderby s.ObjectId descending
+                orderby cp.Project.DateCreated descending, s.ObjectId descending
                 select new CatalogProjectOutput
                 {
                     ProjectId = p.ProjectId,
