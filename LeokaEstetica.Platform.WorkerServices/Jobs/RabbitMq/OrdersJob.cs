@@ -6,6 +6,7 @@ using LeokaEstetica.Platform.Base.Models.IntegrationEvents.Orders;
 using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.Commerce;
 using LeokaEstetica.Platform.Database.Abstractions.FareRule;
+using LeokaEstetica.Platform.Messaging.Factors;
 using LeokaEstetica.Platform.Processing.Abstractions.PayMaster;
 using LeokaEstetica.Platform.Processing.Enums;
 using LeokaEstetica.Platform.Services.Abstractions.Subscription;
@@ -61,12 +62,7 @@ internal sealed class OrdersJob : IJob
         _subscriptionService = subscriptionService;
         _fareRuleRepository = fareRuleRepository;
 
-        var factory = new ConnectionFactory
-        {
-            HostName = configuration["RabbitMq:HostName"],
-            DispatchConsumersAsync = true
-        };
-        
+        var factory = CreateRabbitMqConnectionFactory.CreateRabbitMqConnection(configuration);
         var connection = factory.CreateConnection();
         _channel = connection.CreateModel();
         
