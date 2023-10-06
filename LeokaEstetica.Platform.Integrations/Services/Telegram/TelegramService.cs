@@ -37,7 +37,7 @@ internal sealed class TelegramService : ITelegramService
             var result = new CreateInviteLInkOutput
             {
                 Url = await _globalConfigRepository.GetValueByKeyAsync<string>(GlobalConfigKeys.Integrations.Telegram
-                    .NOTIFICATIONS_BOT_INVITE_DEVELOP_TEST)
+                    .NOTIFICATIONS_BOT_INVITE)
             };
 
             return result;

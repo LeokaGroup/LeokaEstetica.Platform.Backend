@@ -45,7 +45,12 @@ public static class GlobalConfigKeys
             /// <summary>
             /// Ключ для создания ссылки инвайта в канал уведомлений.
             /// </summary>
-            public const string NOTIFICATIONS_BOT_INVITE_DEVELOP_TEST = "Notifications.Bot.Invite.Develop.Test";
+            public const string NOTIFICATIONS_BOT_INVITE = "Notifications.Bot.Invite";
+            
+            /// <summary>
+            /// Ключ для ссылки на объект (проект, вакансию).
+            /// </summary>
+            public const string NOTIFICATIONS_BOT_CREATED_OBJECT_LINK = "Notifications.Bot.CreatedObjectLink";
         }
     }
 

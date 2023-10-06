@@ -152,7 +152,8 @@ internal sealed class ProjectModerationService : IProjectModerationService
             
             var user = await _userRepository.GetUserPhoneEmailByUserIdAsync(userId);
 
-            var projectName = await _projectRepository.GetProjectNameByIdAsync(projectId);
+            var project = await _projectRepository.GetProjectAsync(projectId);
+            var projectName = project.UserProject.ProjectName;
             
             // Отправляем уведомление на почту владельца проекта.
             await _moderationMailingsService.SendNotificationApproveProjectAsync(user.Email, projectName, projectId);
@@ -161,7 +162,10 @@ internal sealed class ProjectModerationService : IProjectModerationService
             await _projectModerationRepository.AddNotificationApproveProjectAsync(projectId, userId, projectName);
 
             await _pachcaService.SendNotificationCreatedObjectAsync(ObjectTypeEnum.Project, projectName);
-            await _telegramBotService.SendNotificationCreatedObjectAsync(ObjectTypeEnum.Project, projectName);
+            
+            var projectDetails = ClearHtmlBuilder.Clear(project.UserProject.ProjectDetails);
+            await _telegramBotService.SendNotificationCreatedObjectAsync(ObjectTypeEnum.Project, projectName,
+                projectDetails, projectId);
 
             return result;
         }

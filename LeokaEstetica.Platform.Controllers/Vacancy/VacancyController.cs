@@ -236,6 +236,11 @@ public class VacancyController : BaseController
     [ProducesResponseType(404)]
     public async Task<CatalogVacancyResultOutput> SearchVacanciesAsync([FromQuery] string searchText)
     {
+        if (string.IsNullOrWhiteSpace(searchText))
+        {
+            return null;
+        }
+        
         var result = await _vacancyFinderService.SearchVacanciesAsync(searchText);
 
         return result;

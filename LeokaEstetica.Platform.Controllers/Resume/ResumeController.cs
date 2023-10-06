@@ -91,6 +91,11 @@ public class ResumeController : BaseController
     [ProducesResponseType(404)]
     public async Task<ResumeResultOutput> SearchResumesAsync([FromQuery] string searchText)
     {
+        if (string.IsNullOrWhiteSpace(searchText))
+        {
+            return null;
+        }
+        
         var result = await _resumeFinderService.SearchResumesAsync(searchText);
 
         return result;
