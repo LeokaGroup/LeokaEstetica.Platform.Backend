@@ -129,9 +129,9 @@ internal sealed class OrdersJob : IJob
                         // Для бесплатного тарифа нет срока подписки.
                         if (!fareRule.IsFree)
                         {
-                            // Проставляем даты подписки пользователю.
+                            // Проставляем подписку и даты подписки пользователю.
                             await _subscriptionService.SetUserSubscriptionAsync(orderEvent.UserId, publicId,
-                                orderEvent.Month, orderId);
+                                orderEvent.Month, orderId, fareRule.RuleId);
                         }
                     }
                 

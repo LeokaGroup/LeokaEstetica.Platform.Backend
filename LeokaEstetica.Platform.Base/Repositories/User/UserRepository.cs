@@ -566,6 +566,30 @@ internal sealed class UserRepository : IUserRepository
         await _pgContext.SaveChangesAsync();
     }
 
+    /// <summary>
+    /// Метод проставляет подписку пользователю.
+    /// </summary>
+    /// <param name="ruleId">Id тарифа, на который переходит пользователь.</param>
+    /// <param name="userId">Id пользователя.</param>
+    /// <param name="month">Кол-во месяцев, на которое оформляется подписка.</param>
+    public async Task SetSubscriptionAsync(int ruleId, long userId, int month)
+    {
+        var userSubscription = await _pgContext.UserSubscriptions
+            .FirstOrDefaultAsync(s => s.UserId == userId);
+
+        if (userSubscription is null)
+        {
+            throw new InvalidOperationException("Не удалось получить подписку пользователя." +
+                                                $"UserId: {userId}." +
+                                                $"RuleId: {ruleId}.");
+        }
+
+        userSubscription.SubscriptionId = ruleId;
+        userSubscription.MonthCount = (short)month;
+
+        await _pgContext.SaveChangesAsync();
+    }
+
     #endregion
 
     #region Приватные методы.

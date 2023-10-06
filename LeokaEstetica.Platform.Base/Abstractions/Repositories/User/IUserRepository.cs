@@ -231,4 +231,12 @@ public interface IUserRepository
     /// </summary>
     /// <param name="userId">Id пользователя.</param>
     Task ActualisingLastAutorizationUserAsync(long userId);
+
+    /// <summary>
+    /// Метод проставляет подписку пользователю.
+    /// </summary>
+    /// <param name="ruleId">Id тарифа, на который переходит пользователь.</param>
+    /// <param name="userId">Id пользователя.</param>
+    /// <param name="month">Кол-во месяцев, на которое оформляется подписка.</param>
+    Task SetSubscriptionAsync(int ruleId, long userId, int month);
 }

@@ -114,7 +114,8 @@ internal sealed class SubscriptionService : ISubscriptionService
     /// <param name="publicId">Публичный ключ тарифа.</param>
     /// <param name="month">Кол-во месяцев подписки.</param>
     /// <param name="orderId">Id заказа.</param>
-    public async Task SetUserSubscriptionAsync(long userId, Guid publicId, short month, long orderId)
+    /// <param name="ruleId">Id тарифа.</param>
+    public async Task SetUserSubscriptionAsync(long userId, Guid publicId, short month, long orderId, int ruleId)
     {
         if (month <= 0)
         {
@@ -125,6 +126,17 @@ internal sealed class SubscriptionService : ISubscriptionService
                 $" UserId: {userId}." +
                 $" OrderId: {orderId}");
             throw ex;
+        }
+
+        // Id тарифа должен быть > 0, так как если он 1, то это бесплатный тариф. Если он 0, то это ошибка.
+        // А его оформлять не нужно, так при регистрации у пользователя и так присваивается бесплатная.
+        if (ruleId <= 1)
+        {
+            throw new InvalidOperationException(
+                "Для присвоения подписки пользователю должен быть оплачен один из платных тарифов." +
+                $"PublicId тарифа: {publicId}" +
+                $" UserId: {userId}." +
+                $" OrderId: {orderId}");
         }
         
         var days = 0;
@@ -140,8 +152,10 @@ internal sealed class SubscriptionService : ISubscriptionService
         var startDate = DateTime.UtcNow; // Дата начала подписки.
         var endDate = startDate.AddDays(days); // Вычисляем дату окончания подписки.
         
+        // Устанавливаем срок действия подписки.
         var isSetSubscription = await _userRepository.SetSubscriptionDatesAsync(userId, startDate, endDate);
 
+        // Если не удалось проставить срок действия подписки.
         if (!isSetSubscription)
         {
             throw new InvalidOperationException("Не удалось проставить срок подписки. " +
@@ -149,6 +163,9 @@ internal sealed class SubscriptionService : ISubscriptionService
                                                 $"StartDate: {startDate}." +
                                                 $"EndDate: {endDate}");
         }
+        
+        // Проставляем подписку пользователю.
+        await _userRepository.SetSubscriptionAsync(ruleId, userId, month);
     }
 
     #endregion
