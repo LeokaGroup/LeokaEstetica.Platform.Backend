@@ -1,6 +1,7 @@
 using System.Text;
 using LeokaEstetica.Platform.Base.Abstractions.Messaging.EventBus;
 using LeokaEstetica.Platform.Messaging.Abstractions.RabbitMq;
+using LeokaEstetica.Platform.Messaging.Factors;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using RabbitMQ.Client;
@@ -30,13 +31,7 @@ internal sealed class RabbitMqService : IRabbitMqService
     /// <param name="queueType">Тип очереди.</param>
     public Task PublishAsync(IIntegrationEvent @event, string queueType)
     {
-        var factory = new ConnectionFactory
-        {
-            HostName = _configuration["RabbitMq:HostName"],
-            UserName = _configuration["RabbitMq:UserName"],
-            Password = _configuration["RabbitMq:Password"],
-            Port = AmqpTcpEndpoint.UseDefaultPort
-        };
+        var factory = CreateRabbitMqConnectionFactory.CreateRabbitMqConnection(_configuration);
         using var connection = factory.CreateConnection();
         using var channel = connection.CreateModel();
 

@@ -5,6 +5,7 @@ using LeokaEstetica.Platform.Base.Extensions.StringExtensions;
 using LeokaEstetica.Platform.Base.Models.IntegrationEvents.Refunds;
 using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.Commerce;
+using LeokaEstetica.Platform.Messaging.Factors;
 using LeokaEstetica.Platform.Processing.Abstractions.PayMaster;
 using LeokaEstetica.Platform.Processing.Enums;
 using Newtonsoft.Json;
@@ -51,14 +52,7 @@ internal sealed class RefundsJob : IJob
         _commerceRepository = commerceRepository;
         _logger = logger;
 
-        var factory = new ConnectionFactory
-        {
-            HostName = configuration["RabbitMq:HostName"],
-            UserName = configuration["RabbitMq:UserName"],
-            Password = configuration["RabbitMq:Password"],
-            Port = AmqpTcpEndpoint.UseDefaultPort
-        };
-        
+        var factory = CreateRabbitMqConnectionFactory.CreateRabbitMqConnection(configuration);
         var connection = factory.CreateConnection();
         _channel = connection.CreateModel();
         
