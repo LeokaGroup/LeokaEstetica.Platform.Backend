@@ -54,7 +54,9 @@ internal sealed class RefundsJob : IJob
         var factory = new ConnectionFactory
         {
             HostName = configuration["RabbitMq:HostName"],
-            DispatchConsumersAsync = true
+            UserName = configuration["RabbitMq:UserName"],
+            Password = configuration["RabbitMq:Password"],
+            Port = AmqpTcpEndpoint.UseDefaultPort
         };
         
         var connection = factory.CreateConnection();
