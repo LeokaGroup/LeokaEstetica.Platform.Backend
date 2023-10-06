@@ -29,5 +29,6 @@ public interface ISubscriptionService
     /// <param name="publicId">Публичный ключ тарифа.</param>
     /// <param name="month">Кол-во месяцев подписки.</param>
     /// <param name="orderId">Id заказа.</param>
-    Task SetUserSubscriptionAsync(long userId, Guid publicId, short month, long orderId);
+    /// <param name="ruleId">Id тарифа.</param>
+    Task SetUserSubscriptionAsync(long userId, Guid publicId, short month, long orderId, int ruleId);
 }
