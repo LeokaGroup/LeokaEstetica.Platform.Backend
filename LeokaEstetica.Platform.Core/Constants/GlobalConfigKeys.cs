@@ -79,4 +79,20 @@ public static class GlobalConfigKeys
         /// </summary>
         public const string AUTH_PROVIDER_REDIRECT_REFERENCE_GOOGLE = "Auth.Provider.Redirect.Reference.Google";
     }
+
+    /// <summary>
+    /// Класс ключей режимов работы фоновых джоб.
+    /// </summary>
+    public static class JobsMode
+    {
+        /// <summary>
+        /// Ключ вкл/откл режим работы джобы заказов.
+        /// </summary>
+        public const string ORDERS_JOB_MODE_ENABLED = "Orders.Job.Mode.Enabled";
+        
+        /// <summary>
+        /// Ключ вкл/откл режим работы джобы возвратов.
+        /// </summary>
+        public const string REFUNDS_JOB_MODE_ENABLED = "Refunds.Job.Mode.Enabled";
+    }
 }

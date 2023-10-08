@@ -3,8 +3,10 @@ using System.Text;
 using LeokaEstetica.Platform.Base.Enums;
 using LeokaEstetica.Platform.Base.Extensions.StringExtensions;
 using LeokaEstetica.Platform.Base.Models.IntegrationEvents.Refunds;
+using LeokaEstetica.Platform.Core.Constants;
 using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.Commerce;
+using LeokaEstetica.Platform.Database.Abstractions.Config;
 using LeokaEstetica.Platform.Messaging.Factors;
 using LeokaEstetica.Platform.Processing.Abstractions.PayMaster;
 using LeokaEstetica.Platform.Processing.Enums;
@@ -28,6 +30,7 @@ internal sealed class RefundsJob : IJob
     private readonly HttpClient _httpClient;
     private readonly ICommerceRepository _commerceRepository;
     private readonly ILogger<OrdersJob> _logger;
+    private readonly IGlobalConfigRepository _globalConfigRepository;
     
     /// <summary>
     /// Название очереди.
@@ -42,15 +45,18 @@ internal sealed class RefundsJob : IJob
     /// <param name="httpClient">HttpClient.</param>
     /// <param name="commerceRepository">Репозиторий коммерции.</param>
     /// <param name="logger">Сервис логов.</param>
+    /// <param name="globalConfigRepository">Репозиторий глобал конфигов.</param>
     public RefundsJob(IConfiguration configuration, 
         IPayMasterService payMasterService,
         ICommerceRepository commerceRepository, 
-        ILogger<OrdersJob> logger)
+        ILogger<OrdersJob> logger,
+        IGlobalConfigRepository globalConfigRepository)
     {
         _payMasterService = payMasterService;
         _httpClient = new HttpClient();
         _commerceRepository = commerceRepository;
         _logger = logger;
+        _globalConfigRepository = globalConfigRepository;
 
         var factory = CreateRabbitMqConnectionFactory.CreateRabbitMqConnection(configuration);
         var connection = factory.CreateConnection();
@@ -68,6 +74,14 @@ internal sealed class RefundsJob : IJob
     /// <param name="context">Выполняемый контекст джобы.</param>
     public async Task Execute(IJobExecutionContext context)
     {
+        var isEnabledJob = await _globalConfigRepository
+            .GetValueByKeyAsync<bool>(GlobalConfigKeys.JobsMode.REFUNDS_JOB_MODE_ENABLED);
+
+        if (!isEnabledJob)
+        {
+            return;
+        }
+
         await CheckRefundStatusAsync();
         
         await Task.CompletedTask;
