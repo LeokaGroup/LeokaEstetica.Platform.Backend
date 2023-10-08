@@ -3,8 +3,10 @@ using System.Text;
 using LeokaEstetica.Platform.Base.Enums;
 using LeokaEstetica.Platform.Base.Extensions.StringExtensions;
 using LeokaEstetica.Platform.Base.Models.IntegrationEvents.Orders;
+using LeokaEstetica.Platform.Core.Constants;
 using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.Commerce;
+using LeokaEstetica.Platform.Database.Abstractions.Config;
 using LeokaEstetica.Platform.Database.Abstractions.FareRule;
 using LeokaEstetica.Platform.Messaging.Factors;
 using LeokaEstetica.Platform.Processing.Abstractions.PayMaster;
@@ -32,6 +34,7 @@ internal sealed class OrdersJob : IJob
     private readonly ILogger<OrdersJob> _logger;
     private readonly ISubscriptionService _subscriptionService;
     private readonly IFareRuleRepository _fareRuleRepository;
+    private readonly IGlobalConfigRepository _globalConfigRepository;
 
     /// <summary>
     /// Название очереди.
@@ -48,12 +51,14 @@ internal sealed class OrdersJob : IJob
     /// <param name="logger">Сервис логов.</param>
     /// <param name="subscriptionService">Сервис подписок.</param>
     /// <param name="fareRuleRepository">Репозиторий тарифов.</param>
+    /// <param name="globalConfigRepository">Репозиторий глобал конфигов.</param>
     public OrdersJob(IConfiguration configuration, 
         IPayMasterService payMasterService,
         ICommerceRepository commerceRepository, 
         ILogger<OrdersJob> logger, 
         ISubscriptionService subscriptionService, 
-        IFareRuleRepository fareRuleRepository)
+        IFareRuleRepository fareRuleRepository,
+        IGlobalConfigRepository globalConfigRepository)
     {
         _payMasterService = payMasterService;
         _httpClient = new HttpClient();
@@ -61,6 +66,7 @@ internal sealed class OrdersJob : IJob
         _logger = logger;
         _subscriptionService = subscriptionService;
         _fareRuleRepository = fareRuleRepository;
+        _globalConfigRepository = globalConfigRepository;
 
         var factory = CreateRabbitMqConnectionFactory.CreateRabbitMqConnection(configuration);
         var connection = factory.CreateConnection();
@@ -77,6 +83,14 @@ internal sealed class OrdersJob : IJob
     /// <param name="context">Выполняемый контекст джобы.</param>
     public async Task Execute(IJobExecutionContext context)
     {
+        var isEnabledJob = await _globalConfigRepository
+            .GetValueByKeyAsync<bool>(GlobalConfigKeys.JobsMode.ORDERS_JOB_MODE_ENABLED);
+
+        if (!isEnabledJob)
+        {
+            return;
+        }
+        
         await CheckOrderStatusAsync();
 
         await Task.CompletedTask;
