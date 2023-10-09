@@ -1,6 +1,7 @@
 using LeokaEstetica.Platform.Models.Dto.Common.Cache;
 using LeokaEstetica.Platform.Models.Dto.Input.Commerce;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce;
+using LeokaEstetica.Platform.Models.Dto.Output.Commerce.PayMaster;
 
 namespace LeokaEstetica.Platform.Processing.Abstractions.Commerce;
 
@@ -50,4 +51,13 @@ public interface ICommerceService
     /// <param name="token">Токен пользователя.</param>
     /// <returns>Признак результата проверки.</returns>
     Task<bool> IsProfileEmptyAsync(string account, string token);
+    
+    /// <summary>
+    /// Метод создает заказ.
+    /// </summary>
+    /// <param name="publicId">Публичный ключ тарифа.</param>
+    /// <param name="account">Аккаунт.</param>
+    /// <param name="token">Токен пользователя.</param>
+    /// <returns>Данные платежа.</returns>
+    Task<CreateOrderOutput> CreateOrderAsync(Guid publicId, string account, string token);
 }

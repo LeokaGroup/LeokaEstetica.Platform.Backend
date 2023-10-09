@@ -2,18 +2,23 @@ using System.Runtime.CompilerServices;
 using LeokaEstetica.Platform.Access.Abstractions.AvailableLimits;
 using LeokaEstetica.Platform.Access.Abstractions.User;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
+using LeokaEstetica.Platform.Core.Constants;
 using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.Commerce;
+using LeokaEstetica.Platform.Database.Abstractions.Config;
 using LeokaEstetica.Platform.Database.Abstractions.FareRule;
 using LeokaEstetica.Platform.Database.Abstractions.Orders;
 using LeokaEstetica.Platform.Database.Abstractions.Subscription;
 using LeokaEstetica.Platform.Models.Dto.Common.Cache;
 using LeokaEstetica.Platform.Models.Dto.Input.Commerce;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce;
+using LeokaEstetica.Platform.Models.Dto.Output.Commerce.PayMaster;
 using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Notifications.Consts;
 using LeokaEstetica.Platform.Processing.Abstractions.Commerce;
+using LeokaEstetica.Platform.Processing.Enums;
+using LeokaEstetica.Platform.Processing.Strategies.PaymentSystem;
 using LeokaEstetica.Platform.Redis.Abstractions.Commerce;
 using Microsoft.Extensions.Logging;
 
@@ -37,6 +42,7 @@ internal sealed class CommerceService : ICommerceService
     private readonly IAvailableLimitsService _availableLimitsService;
     private readonly IAccessUserService _accessUserService;
     private readonly IAccessUserNotificationsService _accessUserNotificationsService;
+    private readonly IGlobalConfigRepository _globalConfigRepository;
 
     /// <summary>
     /// Конструктор.
@@ -51,17 +57,19 @@ internal sealed class CommerceService : ICommerceService
     /// <param name="commerceService">Сервис проверки лимитов.</param>
     /// <param name="accessUserService">Сервис доступа пользователей.</param>
     /// <param name="accessUserNotificationsService">Сервис уведомлений доступа пользователей.</param>
+    /// <param name="globalConfigRepository">Репозиторий глобал конфига.</param>
     /// </summary>
-    public CommerceService(ICommerceRedisService commerceRedisService, 
-        ILogger<CommerceService> logger, 
-        IUserRepository userRepository, 
-        IFareRuleRepository fareRuleRepository, 
-        ICommerceRepository commerceRepository, 
-        IOrdersRepository ordersRepository, 
-        ISubscriptionRepository subscriptionRepository, 
+    public CommerceService(ICommerceRedisService commerceRedisService,
+        ILogger<CommerceService> logger,
+        IUserRepository userRepository,
+        IFareRuleRepository fareRuleRepository,
+        ICommerceRepository commerceRepository,
+        IOrdersRepository ordersRepository,
+        ISubscriptionRepository subscriptionRepository,
         IAvailableLimitsService availableLimitsService,
         IAccessUserService accessUserService,
-        IAccessUserNotificationsService accessUserNotificationsService)
+        IAccessUserNotificationsService accessUserNotificationsService,
+        IGlobalConfigRepository globalConfigRepository)
     {
         _commerceRedisService = commerceRedisService;
         _logger = logger;
@@ -73,6 +81,7 @@ internal sealed class CommerceService : ICommerceService
         _availableLimitsService = availableLimitsService;
         _accessUserService = accessUserService;
         _accessUserNotificationsService = accessUserNotificationsService;
+        _globalConfigRepository = globalConfigRepository;
     }
 
     #region Публичные методы.
@@ -98,7 +107,7 @@ internal sealed class CommerceService : ICommerceService
 
             // Сохраняем заказ в кэш сроком на 2 часа.
             var publicId = createOrderCacheInput.PublicId;
-            
+
             // Проверяем на понижение.
             var checkReduction = await _availableLimitsService.CheckAvailableReductionSubscriptionAsync(userId,
                 publicId, _subscriptionRepository, _fareRuleRepository);
@@ -109,7 +118,7 @@ internal sealed class CommerceService : ICommerceService
                 FareLimitsCount = checkReduction.FareLimitsCount,
                 ReductionSubscriptionLimits = checkReduction.ReductionSubscriptionLimits
             };
-            
+
             // Если новый тариф не вмещает по лимитам.
             if (!result.IsSuccessLimits)
             {
@@ -122,7 +131,7 @@ internal sealed class CommerceService : ICommerceService
 
             return result;
         }
-        
+
         catch (Exception ex)
         {
             _logger.LogError(ex, ex.Message);
@@ -147,13 +156,13 @@ internal sealed class CommerceService : ICommerceService
                 var ex = new NotFoundUserIdByAccountException(account);
                 throw ex;
             }
-            
+
             var key = await _commerceRedisService.CreateOrderCacheKeyAsync(userId, publicId);
             var result = await _commerceRedisService.GetOrderCacheAsync(key);
 
             return result;
         }
-        
+
         catch (Exception ex)
         {
             _logger.LogError(ex, ex.Message);
@@ -171,16 +180,16 @@ internal sealed class CommerceService : ICommerceService
     {
         // Вычисляем, сколько прошло дней использования подписки у пользователя.
         var usedDays = await _userRepository.GetUserSubscriptionUsedDateAsync(userId);
-        
+
         // Если одна из дат пустая, то не можем вычислить сумму возврата. Возврат не делаем в таком кейсе.
         if (!usedDays.StartDate.HasValue || !usedDays.EndDate.HasValue)
         {
             _logger.LogWarning("Невозможно вычислить сумму возврата. Одна из дат подписки либо обе были null. " +
-                              $"UserId: {userId}. " +
-                              $"OrderId: {orderId}");
+                               $"UserId: {userId}. " +
+                               $"OrderId: {orderId}");
             return 0;
         }
-        
+
         // Вычисляем кол-во дней, за которые можем учесть ДС пользователя при оплате новой подписки.
         var referenceUsedDays = (int)Math.Round(usedDays.EndDate.Value.Subtract(usedDays.StartDate.Value)
             .TotalDays);
@@ -190,7 +199,7 @@ internal sealed class CommerceService : ICommerceService
 
         // Вычисляем сумму остатка.
         var resultRefundPrice = orderPrice * referenceUsedDays / 100;
-        
+
         // Не можем вычислять остаток себе в ущерб.
         if (resultRefundPrice == 0)
         {
@@ -228,7 +237,7 @@ internal sealed class CommerceService : ICommerceService
                 var ex = new NotFoundUserIdByAccountException(account);
                 throw ex;
             }
-            
+
             // Проверяем, есть ли у пользователя действующая платная подписка.
             var subscription = await _subscriptionRepository.GetUserSubscriptionAsync(userId);
 
@@ -258,7 +267,7 @@ internal sealed class CommerceService : ICommerceService
             {
                 return result;
             }
-            
+
             // Вычисляем остаток суммы подписки (пока без учета повышения/понижения подписки).
             var freePrice = await CalculatePriceSubscriptionFreeDaysAsync(userId, orderId);
 
@@ -268,7 +277,7 @@ internal sealed class CommerceService : ICommerceService
             {
                 return result;
             }
-            
+
             // Проверяем повышение/понижение подписки.
             // Находим тариф.
             var fareRule = await _fareRuleRepository.GetByPublicIdAsync(publicId);
@@ -285,7 +294,7 @@ internal sealed class CommerceService : ICommerceService
 
             return result;
         }
-        
+
         catch (Exception ex)
         {
             _logger.LogError(ex.Message, ex);
@@ -303,7 +312,7 @@ internal sealed class CommerceService : ICommerceService
     public async Task<bool> IsProfileEmptyAsync(string account, string token)
     {
         var userId = await _userRepository.GetUserByEmailAsync(account);
-        
+
         try
         {
             if (userId <= 0)
@@ -311,7 +320,7 @@ internal sealed class CommerceService : ICommerceService
                 var ex = new NotFoundUserIdByAccountException(account);
                 throw ex;
             }
-            
+
             // Проверяем заполнение анкеты и даем доступ либо нет.
             var isEmptyProfile = await _accessUserService.IsProfileEmptyAsync(userId);
 
@@ -327,7 +336,7 @@ internal sealed class CommerceService : ICommerceService
 
             return false;
         }
-        
+
         catch (Exception ex)
         {
             _logger.LogError(ex, $"Анкета пользователя не заполнена. UserId был: {userId}");
@@ -335,10 +344,56 @@ internal sealed class CommerceService : ICommerceService
         }
     }
 
+    /// <summary>
+    /// Метод создает заказ.
+    /// </summary>
+    /// <param name="publicId">Публичный ключ тарифа.</param>
+    /// <param name="account">Аккаунт.</param>
+    /// <param name="token">Токен пользователя.</param>
+    /// <returns>Данные платежа.</returns>
+    public async Task<CreateOrderOutput> CreateOrderAsync(Guid publicId, string account, string token)
+    {
+        try
+        {
+            _logger.LogInformation("Начали создание заказа в ПС.");
+            
+            var paymentSystemType = await _globalConfigRepository.GetValueByKeyAsync<string>(GlobalConfigKeys
+                .Integrations.PaymentSystem.COMMERCE_PAYMENT_SYSTEM_TYPE_MODE);
+            _logger.LogInformation($"Заказ будет создан в ПС: {paymentSystemType}.");
+
+            var systemType = Enum.Parse<PaymentSystemEnum>(paymentSystemType);
+            
+            var paymentSystemJob = new PaymentSystemJob();
+
+            var order = systemType switch
+            {
+                PaymentSystemEnum.Yandex => await paymentSystemJob.CreateOrderAsync(
+                    new YandexKassaStrategy(), publicId, account, token),
+
+                _ => throw new InvalidOperationException("Неизвестный тип платежной системы.")
+            };
+
+            if (order is null)
+            {
+                throw new InvalidOperationException($"Ошибка создания заказа в ПС: {paymentSystemType}." +
+                                                    $"PublicId: {publicId}." +
+                                                    $"Account: {account}");
+            }
+
+            return order;
+        }
+
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Ошибка при создании заказа в ПС.");
+            throw;
+        }
+    }
+
     #endregion
 
     #region Приватные методы.
-    
+
     /// <summary>
     /// Метод создает модель заказа для кэша.
     /// </summary>

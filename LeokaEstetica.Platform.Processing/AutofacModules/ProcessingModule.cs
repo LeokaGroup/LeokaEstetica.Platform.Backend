@@ -4,6 +4,7 @@ using LeokaEstetica.Platform.Processing.Abstractions.Commerce;
 using LeokaEstetica.Platform.Processing.Abstractions.PayMaster;
 using LeokaEstetica.Platform.Processing.Services.Commerce;
 using LeokaEstetica.Platform.Processing.Services.PayMaster;
+using LeokaEstetica.Platform.Processing.Strategies.PaymentSystem;
 
 namespace LeokaEstetica.Platform.Processing.AutofacModules;
 
@@ -13,23 +14,24 @@ public class ProcessingModule : Module
     public static void InitModules(ContainerBuilder builder)
     {
         // Сервис платежной системы PayMaster.
-        builder
-            .RegisterType<PayMasterService>()
+        builder.RegisterType<PayMasterService>()
             .Named<IPayMasterService>("PayMasterService")
             .InstancePerLifetimeScope();
-        builder
-            .RegisterType<PayMasterService>()
+        builder.RegisterType<PayMasterService>()
             .As<IPayMasterService>()
             .InstancePerLifetimeScope();
         
         // Сервис коммерции.
-        builder
-            .RegisterType<CommerceService>()
+        builder.RegisterType<CommerceService>()
             .Named<ICommerceService>("CommerceService")
             .InstancePerLifetimeScope();
-        builder
-            .RegisterType<CommerceService>()
+        builder.RegisterType<CommerceService>()
             .As<ICommerceService>()
+            .InstancePerLifetimeScope();
+            
+        // Класс стратегии приглашения в проект по логину.
+        builder.RegisterType<YandexKassaStrategy>()
+            .Named<BasePaymentSystemStrategy>("YandexKassaStrategy")
             .InstancePerLifetimeScope();
     }
 }
