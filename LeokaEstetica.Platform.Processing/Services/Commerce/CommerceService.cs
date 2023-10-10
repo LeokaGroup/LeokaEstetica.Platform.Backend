@@ -21,6 +21,7 @@ using LeokaEstetica.Platform.Processing.Enums;
 using LeokaEstetica.Platform.Processing.Strategies.PaymentSystem;
 using LeokaEstetica.Platform.Redis.Abstractions.Commerce;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 
 [assembly: InternalsVisibleTo("LeokaEstetica.Platform.Tests")]
 
@@ -373,12 +374,20 @@ internal sealed class CommerceService : ICommerceService
                 _ => throw new InvalidOperationException("Неизвестный тип платежной системы.")
             };
 
+            var paymentId = order.PaymentId;
+
             if (order is null)
             {
                 throw new InvalidOperationException($"Ошибка создания заказа в ПС: {paymentSystemType}." +
                                                     $"PublicId: {publicId}." +
-                                                    $"Account: {account}");
+                                                    $"Account: {account}." +
+                                                    $"PaymentId: {paymentId}." +
+                                                    $"Данные заказа: {JsonConvert.SerializeObject(order)}.");
             }
+            
+            _logger.LogInformation("Закончили создание заказа в ПС." +
+                                   $" PaymentId: {paymentId}." +
+                                   $"Данные заказа: {JsonConvert.SerializeObject(order)}.");
 
             return order;
         }
