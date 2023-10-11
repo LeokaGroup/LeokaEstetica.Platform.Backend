@@ -220,6 +220,20 @@ internal sealed class TicketRepository : ITicketRepository
     }
 
     /// <summary>
+    /// Метод получает сообщения тикетов и связанные данные.
+    /// </summary>
+    /// <param name="ticketsIds">Id тикетов.</param>
+    /// <returns>Сообщения тикетов и связанные данные.</returns>
+    public async Task<IEnumerable<TicketMessageEntity>> GetTicketsMessagesAsync(IEnumerable<long> ticketsIds)
+    {
+        var result = await _pgContext.TicketMessages
+            .Where(t => ticketsIds.Contains(t.TicketId))
+            .ToListAsync();
+
+        return result;
+    }
+
+    /// <summary>
     /// Метод получает тикет по его Id.
     /// </summary>
     /// <param name="ticketId">Id тикета.</param>
@@ -295,6 +309,20 @@ internal sealed class TicketRepository : ITicketRepository
         await _pgContext.SaveChangesAsync();
 
         return wisheOffer.WisheOfferId;
+    }
+
+    /// <summary>
+    /// Метод получает список участников тикетов по Id участников.
+    /// </summary>
+    /// <param name="usersIds">Id участников. тикетов.</param>
+    /// <returns>Список участников тикетов.</returns>
+    public async Task<IEnumerable<TicketMemberEntity>> GetTicketsMembersByUserIdsAsync(IEnumerable<long> usersIds)
+    {
+        var result = await _pgContext.TicketMembers
+            .Where(tm => usersIds.Contains(tm.UserId))
+            .ToListAsync();
+
+        return result;
     }
 
     #endregion
