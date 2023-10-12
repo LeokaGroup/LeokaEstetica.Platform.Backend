@@ -5,7 +5,7 @@
         <Nullable>disable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <UserSecretsId>dotnet-LeokaEstetica.Platform.WorkerServices-1E5DEAF2-6517-4700-B3FE-9C50865E4243</UserSecretsId>
-        <SelfContained>true</SelfContained>
+        <SelfContained>false</SelfContained>
     </PropertyGroup>
 
     <ItemGroup>
