@@ -1,5 +1,5 @@
-using LeokaEstetica.Platform.WorkerServices.Jobs.RabbitMq;
-using LeokaEstetica.Platform.WorkerServices.Jobs.User;
+using LeokaEstetica.Platform.Backend.Loaders.Jobs.RabbitMq;
+using LeokaEstetica.Platform.Backend.Loaders.Jobs.User;
 using Quartz;
 
 namespace LeokaEstetica.Platform.Backend.Loaders.Jobs;

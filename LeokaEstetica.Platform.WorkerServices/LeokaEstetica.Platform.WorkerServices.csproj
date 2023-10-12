@@ -20,4 +20,8 @@
       <ProjectReference Include="..\LeokaEstetica.Platform.Processing\LeokaEstetica.Platform.Processing.csproj" />
       <ProjectReference Include="..\LeokaEstetica.Platform.Services\LeokaEstetica.Platform.Services.csproj" />
     </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Jobs" />
+    </ItemGroup>
 </Project>
