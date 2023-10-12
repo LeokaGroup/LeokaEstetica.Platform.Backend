@@ -9,7 +9,7 @@ using LeokaEstetica.Platform.Services.Abstractions.Project;
 using LeokaEstetica.Platform.Services.Abstractions.Vacancy;
 using Newtonsoft.Json;
 
-namespace LeokaEstetica.Platform.WorkerServices.Jobs.User;
+namespace LeokaEstetica.Platform.Backend.Loaders.Jobs.User;
 
 /// <summary>
 /// Класс джобы удаления аккаунтов пользователей и всех связанных данных.
