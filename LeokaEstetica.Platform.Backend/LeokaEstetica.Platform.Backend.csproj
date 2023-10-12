@@ -47,7 +47,7 @@
       <ProjectReference Include="..\LeokaEstetica.Platform.Core\LeokaEstetica.Platform.Core.csproj" />
       <ProjectReference Include="..\LeokaEstetica.Platform.Integrations\LeokaEstetica.Platform.Integrations.csproj" />
       <ProjectReference Include="..\LeokaEstetica.Platform.Notifications\LeokaEstetica.Platform.Notifications.csproj" />
-      <ProjectReference Include="..\LeokaEstetica.Platform.WorkerServices\LeokaEstetica.Platform.WorkerServices.csproj" GlobalPropertiesToRemove="SelfContained" />
+      <ProjectReference Include="..\LeokaEstetica.Platform.WorkerServices\LeokaEstetica.Platform.WorkerServices.csproj" />
     </ItemGroup>
 
 </Project>
