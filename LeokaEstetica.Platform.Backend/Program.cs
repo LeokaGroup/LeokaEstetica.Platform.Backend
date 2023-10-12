@@ -4,7 +4,7 @@ using FluentValidation.AspNetCore;
 using Hellang.Middleware.ProblemDetails;
 using LeokaEstetica.Platform.Backend.Filters;
 using LeokaEstetica.Platform.Backend.Loaders.Bots;
-// using LeokaEstetica.Platform.Backend.Loaders.Jobs;
+using LeokaEstetica.Platform.Backend.Loaders.Jobs;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Utils;
 using LeokaEstetica.Platform.Notifications.Data;
@@ -13,7 +13,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using NLog.Web;
-// using Quartz;
+using Quartz;
 
 var builder = WebApplication.CreateBuilder(new WebApplicationOptions()); 
 var configuration = builder.Configuration;
@@ -142,15 +142,15 @@ builder.Services.AddFluentValidation(conf =>
     conf.AutomaticValidationEnabled = false;
 });
 
-// builder.Services.AddQuartz(q =>
-// {
-//     q.UseMicrosoftDependencyInjectionJobFactory();
-//     
-//     // Запуск джоб при старте ядра системы.
-//     StartJobs.Start(q, builder.Services);
-// });
+builder.Services.AddQuartz(q =>
+{
+    q.UseMicrosoftDependencyInjectionJobFactory();
+    
+    // Запуск джоб при старте ядра системы.
+    StartJobs.Start(q, builder.Services);
+});
 
-// builder.Services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
+builder.Services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
 
 builder.Logging.ClearProviders();
 builder.Host.UseNLog();
