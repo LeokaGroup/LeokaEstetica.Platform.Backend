@@ -23,7 +23,10 @@ public class AuthFilter : Attribute, IAuthorizationFilter
         "GetLastProjectComments",
         "GetNewUsers",
         "CreateWisheOffer",
-        "GetAuthProviderConfig" // Получение конфига аутентификации провайдеров.
+        "GetAuthProviderConfig", // Получение конфига аутентификации провайдеров.
+        "RestoreUserPassword", // Восстановление пароля.
+        "SendCodeRestorePassword", // Восстановление пароля.
+        "CheckRestorePassword" // Восстановление пароля.
     };
     
     /// <summary>
