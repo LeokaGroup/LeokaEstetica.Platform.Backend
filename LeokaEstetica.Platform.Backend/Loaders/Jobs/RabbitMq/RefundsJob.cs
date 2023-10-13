@@ -17,7 +17,7 @@ using RabbitMQ.Client.Events;
 
 [assembly: InternalsVisibleTo("LeokaEstetica.Platform.Backend")]
 
-namespace LeokaEstetica.Platform.WorkerServices.Jobs.RabbitMq;
+namespace LeokaEstetica.Platform.Backend.Loaders.Jobs.RabbitMq;
 
 /// <summary>
 /// Класс джобы консьюмера возвратов кролика.

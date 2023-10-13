@@ -1,6 +1,7 @@
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Resume;
 using LeokaEstetica.Platform.Database.Abstractions.Resume;
+using LeokaEstetica.Platform.Database.Abstractions.Ticket;
 using LeokaEstetica.Platform.Integrations.Abstractions.Pachca;
 using LeokaEstetica.Platform.Redis.Abstractions.User;
 using LeokaEstetica.Platform.Redis.Consts;
@@ -8,7 +9,7 @@ using LeokaEstetica.Platform.Services.Abstractions.Project;
 using LeokaEstetica.Platform.Services.Abstractions.Vacancy;
 using Newtonsoft.Json;
 
-namespace LeokaEstetica.Platform.WorkerServices.Jobs.User;
+namespace LeokaEstetica.Platform.Backend.Loaders.Jobs.User;
 
 /// <summary>
 /// Класс джобы удаления аккаунтов пользователей и всех связанных данных.
@@ -24,6 +25,7 @@ public class DeleteDeactivatedAccountsJob : BackgroundService
     private readonly IResumeRepository _resumeRepository;
     private readonly IResumeModerationRepository _resumeModerationRepository;
     private readonly IPachcaService _pachcaService;
+    private readonly ITicketRepository _ticketRepository;
 
     /// <summary>
     /// Конструктор.
@@ -35,6 +37,7 @@ public class DeleteDeactivatedAccountsJob : BackgroundService
     /// <param name="resumeRepository">Репозиторий анкет.</param>
     /// <param name="resumeModerationRepository">Репозиторий модерации анкет.</param>
     /// <param name="pachcaService">Сервис пачки.</param>
+    /// <param name="ticketRepository">Репозиторий тикетов.</param>
     /// </summary>
     public DeleteDeactivatedAccountsJob(ILogger<DeleteDeactivatedAccountsJob> logger,
         IUserRedisService userRedisService,
@@ -43,7 +46,8 @@ public class DeleteDeactivatedAccountsJob : BackgroundService
         IVacancyService vacancyService,
         IResumeRepository resumeRepository,
         IResumeModerationRepository resumeModerationRepository,
-        IPachcaService pachcaService)
+        IPachcaService pachcaService,
+        ITicketRepository ticketRepository)
     {
         _logger = logger;
         _userRedisService = userRedisService;
@@ -53,6 +57,7 @@ public class DeleteDeactivatedAccountsJob : BackgroundService
         _resumeRepository = resumeRepository;
         _resumeModerationRepository = resumeModerationRepository;
         _pachcaService = pachcaService;
+        _ticketRepository = ticketRepository;
     }
 
     /// <summary>
@@ -126,17 +131,20 @@ public class DeleteDeactivatedAccountsJob : BackgroundService
 
             if (deleteUsers.Any())
             {
+                var deleteUsersIds = deleteUsers.Select(u => u.UserId).ToList();
+                
                 // Находим анкеты пользователей.
-                var resumes = await _resumeRepository.GetResumesAsync(deleteUsers.Select(u => u.UserId));
+                var resumes = await _resumeRepository.GetResumesAsync(deleteUsersIds);
                 var profileItems = resumes.ToList();
 
                 if (!profileItems.Any())
                 {
                     throw new InvalidOperationException("Не удалось получить анкеты пользователей:" +
-                                                        $" {JsonConvert.SerializeObject(profileItems)}");
+                                                        "Id пользователей к удалению:" +
+                                                        $" {JsonConvert.SerializeObject(deleteUsersIds)}");
                 }
                 
-                // Находим анкеты пользователей на модерации, так как сначала надо удалить оттуда перед удалением анкет.
+                // Находим анкеты пользователей на модерации, которые сначала нужно удалить.
                 var moderationResumesItems = await _resumeModerationRepository
                     .GetResumesModerationByProfileInfosIdsAsync(profileItems.Select(r => r.ProfileInfoId));
                 var moderationResumes = moderationResumesItems.ToList();
@@ -144,11 +152,37 @@ public class DeleteDeactivatedAccountsJob : BackgroundService
                 if (!moderationResumes.Any())
                 {
                     throw new InvalidOperationException("Не удалось получить анкеты пользователей на модерации:" +
-                                                        $" {JsonConvert.SerializeObject(moderationResumes)}");
+                                                        "Анкеты пользователей к удалению:" +
+                                                        $" {JsonConvert.SerializeObject(profileItems)}");
+                }
+                
+                // Находим тикеты с пользователями, которые сначала нужно удалить.
+                var ticketsMembers = await _ticketRepository.GetTicketsMembersByUserIdsAsync(deleteUsersIds);
+                var ticketsMembersItems = ticketsMembers.ToList();
+
+                if (!ticketsMembersItems.Any())
+                {
+                    throw new InvalidOperationException("Не удалось получить участников тикетов:" +
+                                                        "Id пользователей к удалению:" +
+                                                        $" {JsonConvert.SerializeObject(deleteUsersIds)}");
+                }
+
+                var ticketsMembersIds = ticketsMembersItems.Select(tm => tm.TicketId).ToList();
+                
+                // Находим сообщения тикетов, которые сначала нужно удалить.
+                var ticketsMessages = await _ticketRepository.GetTicketsMessagesAsync(ticketsMembersIds);
+                var ticketsMessagesItems = ticketsMessages.ToList();
+
+                if (!ticketsMessagesItems.Any())
+                {
+                    throw new InvalidOperationException("Не удалось получить сообщения тикетов:" +
+                                                        "Id участников тикетов с сообщениями к удалению:" +
+                                                        $" {JsonConvert.SerializeObject(ticketsMembersIds)}");
                 }
                 
                 // Удаляем все аккаунты.
-                await _userRepository.DeleteDeactivateAccountsAsync(deleteUsers, profileItems, moderationResumes);   
+                await _userRepository.DeleteDeactivateAccountsAsync(deleteUsers, profileItems, moderationResumes,
+                    ticketsMembersItems, ticketsMessagesItems);   
             }
             
             _logger.LogInformation("Отработала джоба DeleteDeactivatedAccountsJob.");
