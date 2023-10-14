@@ -17,6 +17,7 @@ using LeokaEstetica.Platform.Models.Dto.Output.Commerce.PayMaster;
 using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Notifications.Consts;
 using LeokaEstetica.Platform.Processing.Abstractions.Commerce;
+using LeokaEstetica.Platform.Processing.Abstractions.PayMaster;
 using LeokaEstetica.Platform.Processing.Enums;
 using LeokaEstetica.Platform.Processing.Strategies.PaymentSystem;
 using LeokaEstetica.Platform.Redis.Abstractions.Commerce;
@@ -44,6 +45,7 @@ internal sealed class CommerceService : ICommerceService
     private readonly IAccessUserService _accessUserService;
     private readonly IAccessUserNotificationsService _accessUserNotificationsService;
     private readonly IGlobalConfigRepository _globalConfigRepository;
+    private readonly IPayMasterService _payMasterService;
 
     /// <summary>
     /// Конструктор.
@@ -59,6 +61,7 @@ internal sealed class CommerceService : ICommerceService
     /// <param name="accessUserService">Сервис доступа пользователей.</param>
     /// <param name="accessUserNotificationsService">Сервис уведомлений доступа пользователей.</param>
     /// <param name="globalConfigRepository">Репозиторий глобал конфига.</param>
+    /// <param name="payMasterService">Сервис платежной системы PayMaster.</param>
     /// </summary>
     public CommerceService(ICommerceRedisService commerceRedisService,
         ILogger<CommerceService> logger,
@@ -70,7 +73,8 @@ internal sealed class CommerceService : ICommerceService
         IAvailableLimitsService availableLimitsService,
         IAccessUserService accessUserService,
         IAccessUserNotificationsService accessUserNotificationsService,
-        IGlobalConfigRepository globalConfigRepository)
+        IGlobalConfigRepository globalConfigRepository,
+        IPayMasterService payMasterService)
     {
         _commerceRedisService = commerceRedisService;
         _logger = logger;
@@ -83,6 +87,7 @@ internal sealed class CommerceService : ICommerceService
         _accessUserService = accessUserService;
         _accessUserNotificationsService = accessUserNotificationsService;
         _globalConfigRepository = globalConfigRepository;
+        _payMasterService = payMasterService;
     }
 
     #region Публичные методы.
@@ -366,10 +371,14 @@ internal sealed class CommerceService : ICommerceService
             
             var paymentSystemJob = new PaymentSystemJob();
 
+            // Создаем заказ в ПС, которая выбрана в конфиг таблице.
             var order = systemType switch
             {
-                PaymentSystemEnum.Yandex => await paymentSystemJob.CreateOrderAsync(
-                    new YandexKassaStrategy(), publicId, account, token),
+                PaymentSystemEnum.Yandex => await paymentSystemJob.CreateOrderAsync(new YandexKassaStrategy(),
+                    publicId, account, token),
+
+                PaymentSystemEnum.PayMaster => await paymentSystemJob.CreateOrderAsync(
+                    new PayMasterStrategy(_payMasterService), publicId, account, token),
 
                 _ => throw new InvalidOperationException("Неизвестный тип платежной системы.")
             };

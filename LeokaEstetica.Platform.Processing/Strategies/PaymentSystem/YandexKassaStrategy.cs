@@ -16,5 +16,6 @@ internal class YandexKassaStrategy : BasePaymentSystemStrategy
     /// <returns>Данные платежа.</returns>
     public override async Task<CreateOrderOutput> CreateOrderAsync(Guid publicId, string account, string token)
     {
+        throw new NotImplementedException();
     }
 }

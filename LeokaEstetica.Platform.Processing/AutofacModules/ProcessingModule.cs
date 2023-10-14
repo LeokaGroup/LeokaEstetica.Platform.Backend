@@ -29,9 +29,14 @@ public class ProcessingModule : Module
             .As<ICommerceService>()
             .InstancePerLifetimeScope();
             
-        // Класс стратегии приглашения в проект по логину.
+        // Класс стратегии платежной системы ЮKassa.
         builder.RegisterType<YandexKassaStrategy>()
             .Named<BasePaymentSystemStrategy>("YandexKassaStrategy")
             .InstancePerLifetimeScope();
+        
+        // Класс стратегии платежной системы PayMaster.
+                builder.RegisterType<PayMasterStrategy>()
+                    .Named<BasePaymentSystemStrategy>("PayMasterStrategy")
+                    .InstancePerLifetimeScope();
     }
 }
