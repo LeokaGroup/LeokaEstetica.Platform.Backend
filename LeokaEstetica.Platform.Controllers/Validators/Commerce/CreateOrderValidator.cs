@@ -7,7 +7,7 @@ namespace LeokaEstetica.Platform.Controllers.Validators.Commerce;
 /// <summary>
 /// Класс валидатора создания заказа.
 /// </summary>
-public class CreateOrderValidator : AbstractValidator<CreateOrderInput>
+public class CreateOrderValidator : AbstractValidator<CreateOrderPayMasterInput>
 {
     /// <summary>
     /// Конструктор.

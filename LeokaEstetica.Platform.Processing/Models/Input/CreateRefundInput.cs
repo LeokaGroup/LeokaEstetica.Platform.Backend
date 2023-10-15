@@ -16,5 +16,5 @@ public class CreateRefundInput
     /// <summary>
     /// Цена.
     /// </summary>
-    public Amount Amount { get; set; }
+    public AmountPayMaster Amount { get; set; }
 }

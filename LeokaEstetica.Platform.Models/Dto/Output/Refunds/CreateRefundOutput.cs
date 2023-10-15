@@ -28,7 +28,7 @@ public class CreateRefundOutput
     /// <summary>
     /// Сумма возврата.
     /// </summary>
-    public Amount Amount { get; set; }
+    public AmountPayMaster Amount { get; set; }
 
     /// <summary>
     /// Статус возврата.

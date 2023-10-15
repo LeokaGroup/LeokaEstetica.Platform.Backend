@@ -240,11 +240,11 @@ internal sealed class RefundsService : IRefundsService
     /// <param name="refundId">Id возврата.</param>
     /// <param name="refundOrderId">Id возврата в ПС.</param>
     /// <returns>Модель запроса в ПС.</returns>
-    private async Task<CreateReceiptInput> CreateReceiptRefundRequestAsync(OrderEntity order, string account,
+    private async Task<CreateReceiptPayMasterInput> CreateReceiptRefundRequestAsync(OrderEntity order, string account,
         long refundId, string refundOrderId)
     {
         var price = order.Price;
-        var amount = new Amount(price, PaymentCurrencyEnum.RUB.ToString());
+        var amount = new AmountPayMaster(price, PaymentCurrencyEnum.RUB.ToString());
         var client = new ClientInput(account);
 
         // Создаем позиции чека.
@@ -261,8 +261,8 @@ internal sealed class RefundsService : IRefundsService
             }
         };
 
-        var request = new CreateReceiptInput(order.PaymentId, amount, ReceiptTypeEnum.Refund.ToString(), client, items,
-            order.OrderId, refundId, refundOrderId);
+        var request = new CreateReceiptPayMasterInput(order.PaymentId, amount, ReceiptTypeEnum.Refund.ToString(),
+            client, items, order.OrderId, refundId, refundOrderId);
 
         return await Task.FromResult(request);
     }

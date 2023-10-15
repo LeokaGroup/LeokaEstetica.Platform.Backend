@@ -4,12 +4,12 @@ namespace LeokaEstetica.Platform.Models.Dto.Input.Commerce.PayMaster;
 /// Класс входной модели создания заказа.
 /// </summary>
 [Serializable]
-public class CreateOrderInput 
+public class CreateOrderPayMasterInput 
 {
     /// <summary>
     /// Модель запроса к ПС для создания заказа.
     /// </summary>
-    public CreateOrderRequest CreateOrderRequest { get; set; }
+    public CreateOrderPayMasterRequest CreateOrderRequest { get; set; }
 
     /// <summary>
     /// Публичный ключ тарифа.

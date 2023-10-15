@@ -351,7 +351,7 @@ internal sealed class PayMasterService : IPayMasterService
     /// <param name="createReceiptInput">Входная модель.</param>
     /// </summary>
     /// <returns>Выходная модель чека.</returns>
-    public async Task<CreateReceiptOutput> CreateReceiptRefundAsync(CreateReceiptInput createReceiptInput)
+    public async Task<CreateReceiptOutput> CreateReceiptRefundAsync(CreateReceiptPayMasterInput createReceiptInput)
     {
         using var httpClient = new HttpClient();
         await SetPayMasterRequestAuthorizationHeader(httpClient);
@@ -403,21 +403,21 @@ internal sealed class PayMasterService : IPayMasterService
     /// <param name="publicId">Публичный ключ тарифа.</param>
     /// <param name="month">Кол-во мес, на которые оплачивается тариф.</param>
     /// <returns>Модель запроса в ПС PayMaster.</returns>
-    private async Task<CreateOrderInput> CreateOrderRequestAsync(string fareRuleName, decimal price, int ruleId,
+    private async Task<CreateOrderPayMasterInput> CreateOrderRequestAsync(string fareRuleName, decimal price, int ruleId,
         Guid publicId, short month)
     {
-        var result = new CreateOrderInput
+        var result = new CreateOrderPayMasterInput
         {
-            CreateOrderRequest = new CreateOrderRequest
+            CreateOrderRequest = new CreateOrderPayMasterRequest
             {
                 // Задаем Id мерчанта (магазина).
                 MerchantId = new Guid(_configuration["Commerce:PayMaster:MerchantId"]),
                 TestMode = true, // TODO: Добавить управляющий ключ в таблицу конфигов.
-                Invoice = new Invoice
+                Invoice = new InvoicePayMaster
                 {
                     Description = "Оплата тарифа: " + fareRuleName + $" (на {month} мес.)"
                 },
-                Amount = new Amount(price, PaymentCurrencyEnum.RUB.ToString()),
+                Amount = new AmountPayMaster(price, PaymentCurrencyEnum.RUB.ToString()),
                 PaymentMethod = "BankCard",
                 FareRuleId = ruleId
             },
@@ -437,7 +437,7 @@ internal sealed class PayMasterService : IPayMasterService
     /// <param name="responseCheckStatusOrder">Статус ответа из ПС.</param>
     /// <returns>Результирующая модель для сохранения в БД.</returns>
     private async Task<CreatePaymentOrderInput> CreatePaymentOrderAsync(string paymentId,
-        CreateOrderCache orderCache, CreateOrderRequest createOrderRequest, long userId,
+        CreateOrderCache orderCache, CreateOrderPayMasterRequest createOrderRequest, long userId,
         string responseCheckStatusOrder)
     {
         var createOrder = JsonConvert.DeserializeObject<PaymentStatusOutput>(responseCheckStatusOrder);
@@ -482,7 +482,7 @@ internal sealed class PayMasterService : IPayMasterService
     /// <returns>Результирующая модель заказа.</returns>
     /// <exception cref="InvalidOperationException">Может бахнуть ошибку, если не прошла проверка статуса платежа в ПС.</exception>
     private async Task<CreateOrderOutput> CreatePaymentOrderResultAsync(CreateOrderOutput order,
-        CreateOrderCache orderCache, CreateOrderInput createOrderInput, long userId, HttpClient httpClient,
+        CreateOrderCache orderCache, CreateOrderPayMasterInput createOrderInput, long userId, HttpClient httpClient,
         Guid publicId)
     {
         // Проверяем статус заказа в ПС.
@@ -534,7 +534,7 @@ internal sealed class PayMasterService : IPayMasterService
         var request = new CreateRefundInput
         {
             PaymentId = paymentId,
-            Amount = new Amount(price, currency)
+            Amount = new AmountPayMaster(price, currency)
         };
 
         return await Task.FromResult(request);
@@ -572,7 +572,7 @@ internal sealed class PayMasterService : IPayMasterService
     /// <returns></returns>
     /// <exception cref="InvalidOperationException">Может бахнуть ошибку, если не получилось распарсить результат из ПС.</exception>
     private async Task<CreateReceiptOutput> CreateReceiptRefundResultAsync(HttpResponseMessage response,
-        CreateReceiptInput createReceiptInput)
+        CreateReceiptPayMasterInput createReceiptInput)
     {
         // Парсим результат из ПС.
         var refund = await response.Content.ReadFromJsonAsync<CreateReceiptOutput>();

@@ -6,7 +6,7 @@ namespace LeokaEstetica.Platform.Models.Dto.Input.Commerce.PayMaster;
 /// Класс входной модели создания чека.
 /// </summary>
 [Serializable]
-public class CreateReceiptInput
+public class CreateReceiptPayMasterInput
 {
     /// <summary>
     /// Конструктор.
@@ -19,7 +19,7 @@ public class CreateReceiptInput
     /// <param name="orderId">Id заказа.</param>
     /// <param name="refundId">Id возврата.</param>
     /// <param name="refundOrderId">Id возврата в ПС.</param>
-    public CreateReceiptInput(string paymentId, Amount amount, string type, ClientInput client,
+    public CreateReceiptPayMasterInput(string paymentId, AmountPayMaster amount, string type, ClientInput client,
         List<ReceiptItem> items, long orderId, long refundId, string refundOrderId)
     {
         PaymentId = paymentId;
@@ -40,7 +40,7 @@ public class CreateReceiptInput
     /// <summary>
     /// Сумма чека.
     /// </summary>
-    public Amount Amount { get; set; }
+    public AmountPayMaster Amount { get; set; }
 
     /// <summary>
     /// Тип чека. <see cref="ReceiptTypeEnum"/>

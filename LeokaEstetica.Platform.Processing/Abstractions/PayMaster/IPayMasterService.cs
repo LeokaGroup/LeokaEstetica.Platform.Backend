@@ -49,5 +49,5 @@ public interface IPayMasterService
     /// <param name="createReceiptInput">Входная модель.</param>
     /// </summary>
     /// <returns>Выходная модель чека.</returns>
-    Task<CreateReceiptOutput> CreateReceiptRefundAsync(CreateReceiptInput createReceiptInput);
+    Task<CreateReceiptOutput> CreateReceiptRefundAsync(CreateReceiptPayMasterInput createReceiptInput);
 }

@@ -63,7 +63,7 @@ public class CommerceController : BaseController
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<CreateOrderOutput> CreateOrderAsync([FromBody] CreateOrderInput createOrderInput)
+    public async Task<CreateOrderOutput> CreateOrderAsync([FromBody] CreateOrderPayMasterInput createOrderInput)
     {
         var result = new CreateOrderOutput();
         var validator = await new CreateOrderValidator().ValidateAsync(createOrderInput);
