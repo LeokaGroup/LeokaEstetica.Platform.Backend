@@ -8,6 +8,7 @@ using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.Commerce;
 using LeokaEstetica.Platform.Database.Abstractions.Config;
 using LeokaEstetica.Platform.Database.Abstractions.FareRule;
+using LeokaEstetica.Platform.Integrations.Abstractions.Pachca;
 using LeokaEstetica.Platform.Messaging.Factors;
 using LeokaEstetica.Platform.Processing.Abstractions.PayMaster;
 using LeokaEstetica.Platform.Processing.Enums;
@@ -35,6 +36,7 @@ internal sealed class OrdersJob : IJob
     private readonly ISubscriptionService _subscriptionService;
     private readonly IFareRuleRepository _fareRuleRepository;
     private readonly IGlobalConfigRepository _globalConfigRepository;
+    private readonly IPachcaService _pachcaService;
 
     /// <summary>
     /// Название очереди.
@@ -52,13 +54,15 @@ internal sealed class OrdersJob : IJob
     /// <param name="subscriptionService">Сервис подписок.</param>
     /// <param name="fareRuleRepository">Репозиторий тарифов.</param>
     /// <param name="globalConfigRepository">Репозиторий глобал конфигов.</param>
+    /// <param name="pachcaService">Сервис пачки.</param>
     public OrdersJob(IConfiguration configuration, 
         IPayMasterService payMasterService,
         ICommerceRepository commerceRepository, 
         ILogger<OrdersJob> logger, 
         ISubscriptionService subscriptionService, 
         IFareRuleRepository fareRuleRepository,
-        IGlobalConfigRepository globalConfigRepository)
+        IGlobalConfigRepository globalConfigRepository,
+        IPachcaService pachcaService)
     {
         _payMasterService = payMasterService;
         _httpClient = new HttpClient();
@@ -67,6 +71,7 @@ internal sealed class OrdersJob : IJob
         _subscriptionService = subscriptionService;
         _fareRuleRepository = fareRuleRepository;
         _globalConfigRepository = globalConfigRepository;
+        _pachcaService = pachcaService;
 
         var factory = CreateRabbitMqConnectionFactory.CreateRabbitMqConnection(configuration);
         var connection = factory.CreateConnection();
@@ -112,9 +117,16 @@ internal sealed class OrdersJob : IJob
                 var message = Encoding.UTF8.GetString(ea.Body.ToArray());
                 var orderEvent = JsonConvert.DeserializeObject<OrderEvent>(message);
 
+                if (orderEvent is null)
+                {
+                    throw new InvalidOperationException("Событие не содержит нужных данных." +
+                                                        $" Получили сообщение из очереди заказов: {message}");
+                }
+
                 // Проверяем статус платежа в ПС.
-                // TODO: Обработать здесь NRE!
                 var paymentId = orderEvent.PaymentId;
+                
+                // TODO: Тут определять, с какой ПС работаем и проверяем в нужной.
                 var newOrderStatus = await _payMasterService.CheckOrderStatusAsync(paymentId, _httpClient);
                 
                 // Получаем старый статус платежа до проверки в ПС.
@@ -152,6 +164,9 @@ internal sealed class OrdersJob : IJob
                     catch (Exception ex)
                     {
                         _logger.LogCritical(ex, "Ошибка при чтении очереди заказов.");
+                        
+                        await _pachcaService.SendNotificationErrorAsync(ex);
+                        
                         throw;
                     }
                     

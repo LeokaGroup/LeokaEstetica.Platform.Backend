@@ -140,7 +140,7 @@ internal sealed class PayMasterService : IPayMasterService
             await SetPayMasterRequestAuthorizationHeader(httpClient);
             
             // Создаем платеж в ПС.
-            var responseCreateOrder = await httpClient.PostAsJsonAsync(ApiConsts.CREATE_PAYMENT,
+            var responseCreateOrder = await httpClient.PostAsJsonAsync(ApiConsts.PayMaster.CREATE_PAYMENT,
                 createOrderInput.CreateOrderRequest);
 
             // Если ошибка при создании платежа в ПС.
@@ -198,7 +198,7 @@ internal sealed class PayMasterService : IPayMasterService
             
             _logger?.LogInformation($"Начало проверки статуса заказа {paymentId}.");
 
-            var responseCreateOrder = await httpClient.GetAsync(string.Concat(ApiConsts.CHECK_PAYMENT_STATUS, 
+            var responseCreateOrder = await httpClient.GetAsync(string.Concat(ApiConsts.PayMaster.CHECK_PAYMENT_STATUS, 
                 paymentId));
             
             // Если ошибка при создании платежа в ПС.
@@ -257,7 +257,7 @@ internal sealed class PayMasterService : IPayMasterService
         _logger?.LogInformation($"Начало создания возврата платежа {paymentId}. Сумма к возврату: {price}");
         
         // Создаем возврат в ПС.
-        var responseCreateRefund = await httpClient.PostAsJsonAsync(ApiConsts.CREATE_REFUND, request);
+        var responseCreateRefund = await httpClient.PostAsJsonAsync(ApiConsts.PayMaster.CREATE_REFUND, request);
 
         // Если ошибка при возврате платежа в ПС.
         if (!responseCreateRefund.IsSuccessStatusCode)
@@ -304,8 +304,8 @@ internal sealed class PayMasterService : IPayMasterService
             
             _logger?.LogInformation($"Начало проверки статуса возврата {refundId}.");
 
-            var responseCreatedRefund = await httpClient.GetAsync(string.Concat(ApiConsts.CHECK_REFUND_STATUS,
-                refundId));
+            var responseCreatedRefund = await httpClient.GetAsync(
+                string.Concat(ApiConsts.PayMaster.CHECK_REFUND_STATUS, refundId));
             
             // Если ошибка при проверки статуса возврата в ПС.
             if (!responseCreatedRefund.IsSuccessStatusCode)
@@ -360,7 +360,7 @@ internal sealed class PayMasterService : IPayMasterService
                                 $"Сумма чека возврата: {createReceiptInput.Amount.Value}");
         
         // Создаем чек возврата в ПС.
-        var response = await httpClient.PostAsJsonAsync(ApiConsts.CREATE_RECEIPT, createReceiptInput);
+        var response = await httpClient.PostAsJsonAsync(ApiConsts.PayMaster.CREATE_RECEIPT, createReceiptInput);
 
         // Если ошибка при возврате платежа в ПС.
         if (!response.IsSuccessStatusCode)
@@ -487,8 +487,8 @@ internal sealed class PayMasterService : IPayMasterService
     {
         // Проверяем статус заказа в ПС.
         var paymentId = order.PaymentId;
-        var responseCheckStatusOrder = await httpClient.GetStringAsync(string.Concat(ApiConsts.CHECK_PAYMENT_STATUS,
-            paymentId));
+        var responseCheckStatusOrder = await httpClient.GetStringAsync(
+            string.Concat(ApiConsts.PayMaster.CHECK_PAYMENT_STATUS, paymentId));
 
         // Если ошибка получения данных платежа.
         if (string.IsNullOrEmpty(responseCheckStatusOrder))
