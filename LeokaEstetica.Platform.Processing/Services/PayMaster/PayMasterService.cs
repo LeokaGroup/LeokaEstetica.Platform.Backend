@@ -189,15 +189,16 @@ internal sealed class PayMasterService : IPayMasterService
     /// </summary>
     /// <param name="paymentId">Id платежа.</param>
     /// <returns>Статус платежа.</returns>
-    public async Task<PaymentStatusEnum> CheckOrderStatusAsync(string paymentId, HttpClient httpClient)
+    public async Task<PaymentStatusEnum> CheckOrderStatusAsync(string paymentId)
     {
         try
         {
+            using var httpClient = new HttpClient();
             await SetPayMasterRequestAuthorizationHeader(httpClient);
             
             _logger?.LogInformation($"Начало проверки статуса заказа {paymentId}.");
 
-            var responseCreateOrder = await httpClient.GetAsync(string.Concat(ApiConsts.PayMaster.CHECK_PAYMENT_STATUS, 
+            var responseCreateOrder = await httpClient.GetAsync(string.Concat(ApiConsts.PayMaster.CHECK_PAYMENT_STATUS,
                 paymentId));
             
             // Если ошибка при создании платежа в ПС.

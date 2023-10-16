@@ -8,25 +8,64 @@ namespace LeokaEstetica.Platform.Processing.Enums;
 /// </summary>
 public enum PaymentStatusEnum
 {
+    /// <summary>
+    /// Статуса нет.
+    /// </summary>
     None = 0,
     
+    /// <summary>
+    /// Новый.
+    /// </summary>
     [Description("Новый")]
     Pending = 1,
     
+    /// <summary>
+    /// Платеж проведен.
+    /// </summary>
     [Description("Платеж проведен")]
     Settled = 2,
     
+    /// <summary>
+    /// Платеж авторизован.
+    /// </summary>
     [Description("Платеж авторизован")]
     Authorized = 3,
     
+    /// <summary>
+    /// Платеж отменен.
+    /// </summary>
     [Description("Платеж отменен")]
     Cancelled = 4,
     
+    /// <summary>
+    /// Платеж отклонен.
+    /// </summary>
     [Description("Платеж отклонен")]
     Rejected = 5,
     
+    /// <summary>
+    /// Требуется дополнительное подтверждение.
+    /// </summary>
     [Description("Требуется дополнительное подтверждение")]
-    Confirmation = 6
+    Confirmation = 6,
+    
+    /// <summary>
+    /// Платеж оплачен, деньги авторизованы и ожидают списания.
+    /// </summary>
+    [Description("Оплачен")]
+    WaitingForCapture = 7,
+    
+    /// <summary>
+    /// Платеж успешно завершен.
+    /// </summary>
+    [Description("Завершен")]
+    Succeeded = 8,
+    
+    /// <summary>
+    /// Платеж отменен.
+    /// </summary>
+    [Description("Отменен")]
+    Canceled = 9
 }
 
 /// <summary>

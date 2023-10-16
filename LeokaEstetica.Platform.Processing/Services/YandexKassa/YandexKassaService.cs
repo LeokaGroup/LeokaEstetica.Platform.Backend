@@ -9,6 +9,7 @@ using LeokaEstetica.Platform.Models.Dto.Base.Commerce;
 using LeokaEstetica.Platform.Models.Dto.Common.Cache;
 using LeokaEstetica.Platform.Models.Dto.Input.Commerce.YandexKassa;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce.Base.Output;
+using LeokaEstetica.Platform.Models.Dto.Output.Commerce.PayMaster;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce.YandexKassa;
 using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Notifications.Consts;
@@ -154,6 +155,53 @@ internal sealed class YandexKassaService : IYandexKassaService
             _logger.LogError(ex, ex.Message);
             throw;
         }
+    }
+
+    /// <summary>
+    /// Метод проверяет статус платежа в ПС.
+    /// </summary>
+    /// <param name="paymentId">Id платежа.</param>
+    /// <returns>Статус платежа.</returns>
+    public async Task<PaymentStatusEnum> CheckOrderStatusAsync(string paymentId)
+    {
+        using var httpClient = new HttpClient();
+        await SetYandexKassaRequestAuthorizationHeader(httpClient);
+            
+        _logger?.LogInformation($"Начало проверки статуса заказа {paymentId}.");
+
+        var responseCreateOrder = await httpClient.GetAsync(string.Concat(ApiConsts.YandexKassa.CHECK_PAYMENT_STATUS,
+            paymentId));
+            
+        // Если ошибка при создании платежа в ПС.
+        if (!responseCreateOrder.IsSuccessStatusCode)
+        {
+            var ex = new InvalidOperationException("Ошибка проверки статуса платежа в ПС. " +
+                                                   $"PaymentId платежа: {paymentId}");
+            throw ex;
+        }
+
+        // Парсим результат из ПС.
+        var order = await responseCreateOrder.Content.ReadFromJsonAsync<CheckStatusOrderOutput>();
+
+        // Если ошибка при парсинге заказа из ПС, то не даем создать заказ.
+        if (string.IsNullOrEmpty(order?.PaymentId))
+        {
+            var ex = new InvalidOperationException("Ошибка парсинга данных из ПС. " +
+                                                   $"PaymentId платежа: {paymentId}");
+            throw ex;
+        }
+
+        var result = PaymentStatus.GetPaymentStatusBySysName(order.StatusSysName);
+
+        if (result == PaymentStatusEnum.None)
+        {
+            var ex = new InvalidOperationException("Неизвестный статус заказа." +
+                                                   $"Статус заказа в ПС: {order.StatusSysName}." +
+                                                   "Необходимо добавить маппинги для этого статуса заказа.");
+            throw ex;
+        }
+
+        return result;
     }
 
     #endregion

@@ -10,6 +10,7 @@ using LeokaEstetica.Platform.Database.Abstractions.Config;
 using LeokaEstetica.Platform.Database.Abstractions.FareRule;
 using LeokaEstetica.Platform.Integrations.Abstractions.Pachca;
 using LeokaEstetica.Platform.Messaging.Factors;
+using LeokaEstetica.Platform.Processing.Abstractions.Commerce;
 using LeokaEstetica.Platform.Processing.Abstractions.PayMaster;
 using LeokaEstetica.Platform.Processing.Enums;
 using LeokaEstetica.Platform.Services.Abstractions.Subscription;
@@ -30,13 +31,13 @@ internal sealed class OrdersJob : IJob
 {
     private readonly IModel _channel;
     private readonly IPayMasterService _payMasterService;
-    private readonly HttpClient _httpClient;
     private readonly ICommerceRepository _commerceRepository;
     private readonly ILogger<OrdersJob> _logger;
     private readonly ISubscriptionService _subscriptionService;
     private readonly IFareRuleRepository _fareRuleRepository;
     private readonly IGlobalConfigRepository _globalConfigRepository;
     private readonly IPachcaService _pachcaService;
+    private readonly ICommerceService _commerceService;
 
     /// <summary>
     /// Название очереди.
@@ -48,13 +49,13 @@ internal sealed class OrdersJob : IJob
     /// </summary>
     /// <param name="configuration">Зависимость конфигурации приложения.</param>
     /// <param name="payMasterService">Сервис ПС PayMaster.</param>
-    /// <param name="httpClient">HttpClient.</param>
     /// <param name="commerceRepository">Репозиторий коммерции.</param>
     /// <param name="logger">Сервис логов.</param>
     /// <param name="subscriptionService">Сервис подписок.</param>
     /// <param name="fareRuleRepository">Репозиторий тарифов.</param>
     /// <param name="globalConfigRepository">Репозиторий глобал конфигов.</param>
     /// <param name="pachcaService">Сервис пачки.</param>
+    /// <param name="commerceService">Сервис коммерции.</param>
     public OrdersJob(IConfiguration configuration, 
         IPayMasterService payMasterService,
         ICommerceRepository commerceRepository, 
@@ -62,16 +63,17 @@ internal sealed class OrdersJob : IJob
         ISubscriptionService subscriptionService, 
         IFareRuleRepository fareRuleRepository,
         IGlobalConfigRepository globalConfigRepository,
-        IPachcaService pachcaService)
+        IPachcaService pachcaService,
+        ICommerceService commerceService)
     {
         _payMasterService = payMasterService;
-        _httpClient = new HttpClient();
         _commerceRepository = commerceRepository;
         _logger = logger;
         _subscriptionService = subscriptionService;
         _fareRuleRepository = fareRuleRepository;
         _globalConfigRepository = globalConfigRepository;
         _pachcaService = pachcaService;
+        _commerceService = commerceService;
 
         var factory = CreateRabbitMqConnectionFactory.CreateRabbitMqConnection(configuration);
         var connection = factory.CreateConnection();
@@ -125,13 +127,7 @@ internal sealed class OrdersJob : IJob
 
                 // Проверяем статус платежа в ПС.
                 var paymentId = orderEvent.PaymentId;
-                
-                var paymentSystemType = await _globalConfigRepository.GetValueByKeyAsync<string>(GlobalConfigKeys
-                    .Integrations.PaymentSystem.COMMERCE_PAYMENT_SYSTEM_TYPE_MODE);
-                _logger.LogInformation($"Проверка статуса заказа в ПС: {paymentSystemType}.");
-
-                var systemType = Enum.Parse<PaymentSystemEnum>(paymentSystemType);
-                var newOrderStatus = await _payMasterService.CheckOrderStatusAsync(paymentId, _httpClient);
+                var newOrderStatus = await _commerceService.CheckOrderStatusAsync(paymentId);
                 
                 // Получаем старый статус платежа до проверки в ПС.
                 var oldStatusSysName = PaymentStatus.GetPaymentStatusBySysName(orderEvent.StatusSysName);

@@ -3,11 +3,11 @@ using LeokaEstetica.Platform.Models.Dto.Common.Cache.Output;
 using LeokaEstetica.Platform.Models.Dto.Input.Commerce;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce.Base.Output;
+using LeokaEstetica.Platform.Processing.Enums;
 
 namespace LeokaEstetica.Platform.Processing.Abstractions.Commerce;
 
 /// <summary>
-/// TODO: Отрефачить разбив логику заказов в отдельный сервис OrderService.
 /// Абстракция сервиса коммерции.
 /// </summary>
 public interface ICommerceService
@@ -61,4 +61,11 @@ public interface ICommerceService
     /// <param name="token">Токен пользователя.</param>
     /// <returns>Данные платежа.</returns>
     Task<ICreateOrderOutput> CreateOrderAsync(Guid publicId, string account, string token);
+    
+    /// <summary>
+    /// Метод проверяет статус платежа в ПС.
+    /// </summary>
+    /// <param name="paymentId">Id платежа.</param>
+    /// <returns>Статус платежа.</returns>
+    Task<PaymentStatusEnum> CheckOrderStatusAsync(string paymentId);
 }

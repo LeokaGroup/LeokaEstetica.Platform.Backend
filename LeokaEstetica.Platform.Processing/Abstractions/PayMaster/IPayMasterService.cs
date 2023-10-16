@@ -24,9 +24,8 @@ public interface IPayMasterService
     /// Метод проверяет статус платежа в ПС.
     /// </summary>
     /// <param name="paymentId">Id платежа.</param>
-    /// <param name="httpClient">HttpClient.</param>
     /// <returns>Статус платежа.</returns>
-    Task<PaymentStatusEnum> CheckOrderStatusAsync(string paymentId, HttpClient httpClient);
+    Task<PaymentStatusEnum> CheckOrderStatusAsync(string paymentId);
     
     /// <summary>
     /// Метод создает возврат в ПС.

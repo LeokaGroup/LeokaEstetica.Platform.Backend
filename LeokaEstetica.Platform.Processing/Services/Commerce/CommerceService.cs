@@ -34,7 +34,6 @@ using Newtonsoft.Json;
 namespace LeokaEstetica.Platform.Processing.Services.Commerce;
 
 /// <summary>
-/// TODO: Отрефачить разбив логику заказов в отдельный сервис OrderService.
 /// Класс реализует методы сервиса коммерции.
 /// </summary>
 internal sealed class CommerceService : ICommerceService
@@ -422,6 +421,35 @@ internal sealed class CommerceService : ICommerceService
             _logger.LogError(ex, "Ошибка при создании заказа в ПС.");
             throw;
         }
+    }
+
+    /// <summary>
+    /// Метод проверяет статус платежа в ПС.
+    /// </summary>
+    /// <param name="paymentId">Id платежа.</param>
+    /// <returns>Статус платежа.</returns>
+    public async Task<PaymentStatusEnum> CheckOrderStatusAsync(string paymentId)
+    {
+        var paymentSystemType = await _globalConfigRepository.GetValueByKeyAsync<string>(GlobalConfigKeys
+            .Integrations.PaymentSystem.COMMERCE_PAYMENT_SYSTEM_TYPE_MODE);
+        _logger.LogInformation($"Проверка статуса заказа в ПС: {paymentSystemType}.");
+
+        var systemType = Enum.Parse<PaymentSystemEnum>(paymentSystemType);
+        var paymentSystemJob = new PaymentSystemJob();
+
+        // Проверяем статус заказа в ПС, которая выбрана в конфиг таблице.
+        var orderStatus = systemType switch
+        {
+            PaymentSystemEnum.Yandex => await paymentSystemJob.CheckOrderStatusAsync(
+                new YandexKassaStrategy(_yandexKassaService), paymentId),
+
+            PaymentSystemEnum.PayMaster => await paymentSystemJob.CheckOrderStatusAsync(
+                new PayMasterStrategy(_payMasterService), paymentId),
+
+            _ => throw new InvalidOperationException("Неизвестный тип платежной системы.")
+        };
+
+        return orderStatus;
     }
 
     #endregion

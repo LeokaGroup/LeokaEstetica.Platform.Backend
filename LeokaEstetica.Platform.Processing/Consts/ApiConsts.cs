@@ -45,5 +45,10 @@ public static class ApiConsts
         /// Создание платежа в ПС.
         /// </summary>
         public const string CREATE_PAYMENT = "https://api.yookassa.ru/v3/payments";
+        
+        /// <summary>
+        /// Проверка статуса платежа в ПС.
+        /// </summary>
+        public const string CHECK_PAYMENT_STATUS = "https://paymaster.ru/api/v2/payments/";
     }
 }

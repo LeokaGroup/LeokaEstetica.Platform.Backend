@@ -1,4 +1,5 @@
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce.Base.Output;
+using LeokaEstetica.Platform.Processing.Enums;
 
 namespace LeokaEstetica.Platform.Processing.Strategies.PaymentSystem;
 
@@ -23,5 +24,20 @@ internal class PaymentSystemJob
         }
 
         return null;
+    }
+
+    /// <summary>
+    /// Метод проверяет статус платежа в ПС.
+    /// </summary>
+    /// <param name="paymentId">Id платежа.</param>
+    /// <returns>Статус платежа.</returns>
+    internal async Task<PaymentStatusEnum> CheckOrderStatusAsync(BasePaymentSystemStrategy strategy, string paymentId)
+    {
+        if (strategy is not null)
+        {
+            return await strategy.CheckOrderStatusAsync(paymentId);
+        }
+
+        return PaymentStatusEnum.None;
     }
 }
