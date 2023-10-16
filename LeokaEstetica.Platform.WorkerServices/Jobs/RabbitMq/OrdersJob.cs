@@ -126,7 +126,11 @@ internal sealed class OrdersJob : IJob
                 // Проверяем статус платежа в ПС.
                 var paymentId = orderEvent.PaymentId;
                 
-                // TODO: Тут определять, с какой ПС работаем и проверяем в нужной.
+                var paymentSystemType = await _globalConfigRepository.GetValueByKeyAsync<string>(GlobalConfigKeys
+                    .Integrations.PaymentSystem.COMMERCE_PAYMENT_SYSTEM_TYPE_MODE);
+                _logger.LogInformation($"Проверка статуса заказа в ПС: {paymentSystemType}.");
+
+                var systemType = Enum.Parse<PaymentSystemEnum>(paymentSystemType);
                 var newOrderStatus = await _payMasterService.CheckOrderStatusAsync(paymentId, _httpClient);
                 
                 // Получаем старый статус платежа до проверки в ПС.

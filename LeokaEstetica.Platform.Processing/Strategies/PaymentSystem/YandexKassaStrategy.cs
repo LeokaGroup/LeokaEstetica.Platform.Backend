@@ -1,5 +1,5 @@
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce.Base.Output;
-using LeokaEstetica.Platform.Models.Dto.Output.Commerce.YandexKassa;
+using LeokaEstetica.Platform.Processing.Abstractions.YandexKassa;
 
 namespace LeokaEstetica.Platform.Processing.Strategies.PaymentSystem;
 
@@ -8,6 +8,17 @@ namespace LeokaEstetica.Platform.Processing.Strategies.PaymentSystem;
 /// </summary>
 internal class YandexKassaStrategy : BasePaymentSystemStrategy
 {
+    private readonly IYandexKassaService _yandexKassaService;
+    
+    /// <summary>
+    /// Конструктор.
+    /// </summary>
+    /// <param name="yandexKassaService">Сервис ЮKassa.</param>
+    public YandexKassaStrategy(IYandexKassaService yandexKassaService)
+    {
+        _yandexKassaService = yandexKassaService;
+    }
+
     /// <summary>
     /// Метод создает заказ.
     /// </summary>
@@ -17,6 +28,8 @@ internal class YandexKassaStrategy : BasePaymentSystemStrategy
     /// <returns>Данные платежа.</returns>
     public override async Task<ICreateOrderOutput> CreateOrderAsync(Guid publicId, string account, string token)
     {
-        return new CreateOrderYandexKassaOutput();
+        var result = await _yandexKassaService.CreateOrderAsync(publicId, account, token);
+
+        return result;
     }
 }

@@ -22,6 +22,7 @@ using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Notifications.Consts;
 using LeokaEstetica.Platform.Processing.Abstractions.Commerce;
 using LeokaEstetica.Platform.Processing.Abstractions.PayMaster;
+using LeokaEstetica.Platform.Processing.Abstractions.YandexKassa;
 using LeokaEstetica.Platform.Processing.Enums;
 using LeokaEstetica.Platform.Processing.Strategies.PaymentSystem;
 using LeokaEstetica.Platform.Redis.Abstractions.Commerce;
@@ -51,6 +52,7 @@ internal sealed class CommerceService : ICommerceService
     private readonly IGlobalConfigRepository _globalConfigRepository;
     private readonly IPayMasterService _payMasterService;
     private readonly IMapper _mapper;
+    private readonly IYandexKassaService _yandexKassaService;
 
     /// <summary>
     /// Конструктор.
@@ -68,6 +70,7 @@ internal sealed class CommerceService : ICommerceService
     /// <param name="globalConfigRepository">Репозиторий глобал конфига.</param>
     /// <param name="payMasterService">Сервис платежной системы PayMaster.</param>
     /// <param name="mapper">Автомаппер.</param>
+    /// <param name="yandexKassaService">Сервис ЮKassa.</param>
     /// </summary>
     public CommerceService(ICommerceRedisService commerceRedisService,
         ILogger<CommerceService> logger,
@@ -81,7 +84,8 @@ internal sealed class CommerceService : ICommerceService
         IAccessUserNotificationsService accessUserNotificationsService,
         IGlobalConfigRepository globalConfigRepository,
         IPayMasterService payMasterService,
-        IMapper mapper)
+        IMapper mapper,
+        IYandexKassaService yandexKassaService)
     {
         _commerceRedisService = commerceRedisService;
         _logger = logger;
@@ -96,6 +100,7 @@ internal sealed class CommerceService : ICommerceService
         _globalConfigRepository = globalConfigRepository;
         _payMasterService = payMasterService;
         _mapper = mapper;
+        _yandexKassaService = yandexKassaService;
     }
 
     #region Публичные методы.
@@ -382,8 +387,8 @@ internal sealed class CommerceService : ICommerceService
             // Создаем заказ в ПС, которая выбрана в конфиг таблице.
             var order = systemType switch
             {
-                PaymentSystemEnum.Yandex => await paymentSystemJob.CreateOrderAsync(new YandexKassaStrategy(),
-                    publicId, account, token),
+                PaymentSystemEnum.Yandex => await paymentSystemJob.CreateOrderAsync(
+                    new YandexKassaStrategy(_yandexKassaService), publicId, account, token),
 
                 PaymentSystemEnum.PayMaster => await paymentSystemJob.CreateOrderAsync(
                     new PayMasterStrategy(_payMasterService), publicId, account, token),
