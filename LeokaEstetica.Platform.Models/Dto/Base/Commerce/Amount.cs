@@ -1,16 +1,16 @@
-namespace LeokaEstetica.Platform.Models.Dto.Base.Commerce.PayMaster;
+namespace LeokaEstetica.Platform.Models.Dto.Base.Commerce;
 
 /// <summary>
 /// Класс описывает цену.
 /// </summary>
-public class AmountPayMaster
+public class Amount
 {
     /// <summary>
     /// Конструктор.
     /// </summary>
     /// <param name="value"></param>
     /// <param name="currency"></param>
-    public AmountPayMaster(decimal value, string currency)
+    public Amount(decimal value, string currency)
     {
         Value = value;
         Currency = currency;

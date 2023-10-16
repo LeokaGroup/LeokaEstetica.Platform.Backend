@@ -30,8 +30,7 @@ public class CommerceRedisService : ICommerceRedisService
     /// </summary>
     /// <param name="key">Ключ добавленного заказа.</param>
     /// <param name="createOrderCache">Модель заказа для хранения в кэше.</param>
-    /// <returns>Данные заказа добавленного в кэш.</returns>
-    public async Task<CreateOrderCache> CreateOrderCacheAsync(string key, CreateOrderCache createOrderCache)
+    public async Task CreateOrderCacheAsync(string key, CreateOrderCache createOrderCache)
     {
         await _redisCache.SetStringAsync(key,
             ProtoBufExtensions.Serialize(createOrderCache),
@@ -39,8 +38,6 @@ public class CommerceRedisService : ICommerceRedisService
             {
                 AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(2)
             });
-
-        return createOrderCache;
     }
 
     /// <summary>

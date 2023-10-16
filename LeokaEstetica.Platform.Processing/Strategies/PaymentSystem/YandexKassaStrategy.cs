@@ -1,4 +1,5 @@
-using LeokaEstetica.Platform.Models.Dto.Output.Commerce.PayMaster;
+using LeokaEstetica.Platform.Models.Dto.Output.Commerce.Base.Output;
+using LeokaEstetica.Platform.Models.Dto.Output.Commerce.YandexKassa;
 
 namespace LeokaEstetica.Platform.Processing.Strategies.PaymentSystem;
 
@@ -14,8 +15,8 @@ internal class YandexKassaStrategy : BasePaymentSystemStrategy
     /// <param name="account">Аккаунт.</param>
     /// <param name="token">Токен пользователя.</param>
     /// <returns>Данные платежа.</returns>
-    public override async Task<CreateOrderOutput> CreateOrderAsync(Guid publicId, string account, string token)
+    public override async Task<ICreateOrderOutput> CreateOrderAsync(Guid publicId, string account, string token)
     {
-        throw new NotImplementedException();
+        return new CreateOrderYandexKassaOutput();
     }
 }

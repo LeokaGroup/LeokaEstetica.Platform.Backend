@@ -213,7 +213,7 @@ internal class BaseServiceTest
 
         CommerceService = new CommerceService(commerceRedisService, null, userRepository, FareRuleRepository,
             commerceRepository, ordersRepository, subscriptionRepository, availableLimitsService, accessUserService,
-            null, null, PayMasterService);
+            null, null, PayMasterService, mapper);
 
         SubscriptionService = new SubscriptionService(null, userRepository, subscriptionRepository,
             FareRuleRepository);

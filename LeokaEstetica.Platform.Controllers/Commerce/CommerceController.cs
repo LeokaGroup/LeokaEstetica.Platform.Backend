@@ -1,4 +1,5 @@
 using AutoMapper;
+using FluentValidation.Results;
 using LeokaEstetica.Platform.Base;
 using LeokaEstetica.Platform.Controllers.Filters;
 using LeokaEstetica.Platform.Controllers.Validators.Commerce;
@@ -6,6 +7,7 @@ using LeokaEstetica.Platform.Database.Abstractions.FareRule;
 using LeokaEstetica.Platform.Models.Dto.Input.Commerce;
 using LeokaEstetica.Platform.Models.Dto.Input.Commerce.PayMaster;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce;
+using LeokaEstetica.Platform.Models.Dto.Output.Commerce.Base.Output;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce.PayMaster;
 using LeokaEstetica.Platform.Models.Dto.Output.FareRule;
 using LeokaEstetica.Platform.Processing.Abstractions.Commerce;
@@ -58,14 +60,15 @@ public class CommerceController : BaseController
     /// <returns>Данные платежа.</returns>
     [HttpPost]
     [Route("payments")]
-    [ProducesResponseType(200, Type = typeof(CreateOrderOutput))]
+    [ProducesResponseType(200, Type = typeof(ICreateOrderOutput))]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<CreateOrderOutput> CreateOrderAsync([FromBody] CreateOrderPayMasterInput createOrderInput)
+    public async Task<ICreateOrderOutput> CreateOrderAsync(
+        [FromBody] CreateOrderPayMasterInput createOrderInput)
     {
-        var result = new CreateOrderOutput();
+        var result = new CreateOrderPayMasterOutput { Errors = new List<ValidationFailure>() };
         var validator = await new CreateOrderValidator().ValidateAsync(createOrderInput);
 
         if (validator.Errors.Any())
@@ -76,7 +79,7 @@ public class CommerceController : BaseController
         }
 
         result = await _commerceService.CreateOrderAsync(createOrderInput.PublicId, GetUserName(),
-            GetTokenFromHeader());
+            GetTokenFromHeader()) as CreateOrderPayMasterOutput;
 
         return result;
     }

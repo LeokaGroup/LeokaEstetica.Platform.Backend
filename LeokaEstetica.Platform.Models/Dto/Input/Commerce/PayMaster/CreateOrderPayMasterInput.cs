@@ -1,10 +1,12 @@
+using LeokaEstetica.Platform.Models.Dto.Input.Base;
+
 namespace LeokaEstetica.Platform.Models.Dto.Input.Commerce.PayMaster;
 
 /// <summary>
 /// Класс входной модели создания заказа.
 /// </summary>
 [Serializable]
-public class CreateOrderPayMasterInput 
+public class CreateOrderPayMasterInput : ICreateOrderInput
 {
     /// <summary>
     /// Модель запроса к ПС для создания заказа.

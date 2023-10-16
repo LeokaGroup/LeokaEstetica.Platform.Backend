@@ -1,7 +1,8 @@
 using LeokaEstetica.Platform.Models.Dto.Common.Cache;
+using LeokaEstetica.Platform.Models.Dto.Common.Cache.Output;
 using LeokaEstetica.Platform.Models.Dto.Input.Commerce;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce;
-using LeokaEstetica.Platform.Models.Dto.Output.Commerce.PayMaster;
+using LeokaEstetica.Platform.Models.Dto.Output.Commerce.Base.Output;
 
 namespace LeokaEstetica.Platform.Processing.Abstractions.Commerce;
 
@@ -17,7 +18,7 @@ public interface ICommerceService
     /// <param name="createOrderCache">Входная модель.</param>
     /// <param name="account">Аккаунт.</param>
     /// <returns>Данные заказа добавленного в кэш.</returns>
-    Task<CreateOrderCache> CreateOrderCacheAsync(CreateOrderCacheInput createOrderCacheInput, string account);
+    Task<CreateOrderCacheOutput> CreateOrderCacheAsync(CreateOrderCacheInput createOrderCacheInput, string account);
 
     /// <summary>
     /// Метод получает услуги и сервисы заказа из кэша.
@@ -59,5 +60,5 @@ public interface ICommerceService
     /// <param name="account">Аккаунт.</param>
     /// <param name="token">Токен пользователя.</param>
     /// <returns>Данные платежа.</returns>
-    Task<CreateOrderOutput> CreateOrderAsync(Guid publicId, string account, string token);
+    Task<ICreateOrderOutput> CreateOrderAsync(Guid publicId, string account, string token);
 }

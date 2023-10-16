@@ -39,7 +39,7 @@ public static class ApiConsts
     /// <summary>
     /// Класс ендпроинтов платежной системы ЮKassa.
     /// </summary>
-    public static class UKassa
+    public static class YandexKassa
     {
         /// <summary>
         /// Создание платежа в ПС.

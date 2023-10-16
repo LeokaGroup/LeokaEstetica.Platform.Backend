@@ -62,6 +62,11 @@ public static class GlobalConfigKeys
             /// Ключ переключения платежной системы.
             /// </summary>
             public const string COMMERCE_PAYMENT_SYSTEM_TYPE_MODE = "Commerce.Payment.System.Type.Mode";
+
+            /// <summary>
+            /// Ключ вкл/откл тестового режима в ПС.
+            /// </summary>
+            public const string COMMERCE_TEST_MODE_ENABLED = "Commerce.Test.Mode.Enabled";
         }
     }
 

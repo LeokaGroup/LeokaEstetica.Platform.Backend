@@ -1,4 +1,4 @@
-using LeokaEstetica.Platform.Models.Dto.Output.Commerce.PayMaster;
+using LeokaEstetica.Platform.Models.Dto.Output.Commerce.Base.Output;
 
 namespace LeokaEstetica.Platform.Processing.Strategies.PaymentSystem;
 
@@ -14,5 +14,5 @@ internal abstract class BasePaymentSystemStrategy
     /// <param name="account">Аккаунт.</param>
     /// <param name="token">Токен пользователя.</param>
     /// <returns>Данные платежа.</returns>
-    public abstract Task<CreateOrderOutput> CreateOrderAsync(Guid publicId, string account, string token);
+    public abstract Task<ICreateOrderOutput> CreateOrderAsync(Guid publicId, string account, string token);
 }

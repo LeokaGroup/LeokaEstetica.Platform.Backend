@@ -1,4 +1,5 @@
 using System.Runtime.CompilerServices;
+using AutoMapper;
 using LeokaEstetica.Platform.Access.Abstractions.AvailableLimits;
 using LeokaEstetica.Platform.Access.Abstractions.User;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
@@ -11,9 +12,12 @@ using LeokaEstetica.Platform.Database.Abstractions.FareRule;
 using LeokaEstetica.Platform.Database.Abstractions.Orders;
 using LeokaEstetica.Platform.Database.Abstractions.Subscription;
 using LeokaEstetica.Platform.Models.Dto.Common.Cache;
+using LeokaEstetica.Platform.Models.Dto.Common.Cache.Output;
 using LeokaEstetica.Platform.Models.Dto.Input.Commerce;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce;
+using LeokaEstetica.Platform.Models.Dto.Output.Commerce.Base.Output;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce.PayMaster;
+using LeokaEstetica.Platform.Models.Dto.Output.Commerce.YandexKassa;
 using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Notifications.Consts;
 using LeokaEstetica.Platform.Processing.Abstractions.Commerce;
@@ -46,6 +50,7 @@ internal sealed class CommerceService : ICommerceService
     private readonly IAccessUserNotificationsService _accessUserNotificationsService;
     private readonly IGlobalConfigRepository _globalConfigRepository;
     private readonly IPayMasterService _payMasterService;
+    private readonly IMapper _mapper;
 
     /// <summary>
     /// Конструктор.
@@ -62,6 +67,7 @@ internal sealed class CommerceService : ICommerceService
     /// <param name="accessUserNotificationsService">Сервис уведомлений доступа пользователей.</param>
     /// <param name="globalConfigRepository">Репозиторий глобал конфига.</param>
     /// <param name="payMasterService">Сервис платежной системы PayMaster.</param>
+    /// <param name="mapper">Автомаппер.</param>
     /// </summary>
     public CommerceService(ICommerceRedisService commerceRedisService,
         ILogger<CommerceService> logger,
@@ -74,7 +80,8 @@ internal sealed class CommerceService : ICommerceService
         IAccessUserService accessUserService,
         IAccessUserNotificationsService accessUserNotificationsService,
         IGlobalConfigRepository globalConfigRepository,
-        IPayMasterService payMasterService)
+        IPayMasterService payMasterService,
+        IMapper mapper)
     {
         _commerceRedisService = commerceRedisService;
         _logger = logger;
@@ -88,6 +95,7 @@ internal sealed class CommerceService : ICommerceService
         _accessUserNotificationsService = accessUserNotificationsService;
         _globalConfigRepository = globalConfigRepository;
         _payMasterService = payMasterService;
+        _mapper = mapper;
     }
 
     #region Публичные методы.
@@ -98,7 +106,7 @@ internal sealed class CommerceService : ICommerceService
     /// <param name="createOrderCache">Модель заказа для хранения в кэше.</param>
     /// <param name="account">Аккаунт.</param>
     /// <returns>Данные заказа добавленного в кэш.</returns>
-    public async Task<CreateOrderCache> CreateOrderCacheAsync(CreateOrderCacheInput createOrderCacheInput,
+    public async Task<CreateOrderCacheOutput> CreateOrderCacheAsync(CreateOrderCacheInput createOrderCacheInput,
         string account)
     {
         try
@@ -118,6 +126,12 @@ internal sealed class CommerceService : ICommerceService
             var checkReduction = await _availableLimitsService.CheckAvailableReductionSubscriptionAsync(userId,
                 publicId, _subscriptionRepository, _fareRuleRepository);
 
+            // Если новый тариф не вмещает по лимитам.
+            if (!checkReduction.IsSuccessLimits)
+            {
+                return new CreateOrderCacheOutput();
+            }
+
             var result = new CreateOrderCache
             {
                 IsSuccessLimits = checkReduction.IsSuccessLimits,
@@ -125,17 +139,11 @@ internal sealed class CommerceService : ICommerceService
                 ReductionSubscriptionLimits = checkReduction.ReductionSubscriptionLimits
             };
 
-            // Если новый тариф не вмещает по лимитам.
-            if (!result.IsSuccessLimits)
-            {
-                return result;
-            }
-
             var key = await _commerceRedisService.CreateOrderCacheKeyAsync(userId, publicId);
-            await CreateOrderCacheResult(publicId, createOrderCacheInput.PaymentMonth, userId, result);
-            _ = await _commerceRedisService.CreateOrderCacheAsync(key, result);
+            await CreateOrderCacheResult(publicId, createOrderCacheInput.PaymentMonth, userId, result.RuleId, result);
+            await _commerceRedisService.CreateOrderCacheAsync(key, result);
 
-            return result;
+            return _mapper.Map<CreateOrderCacheOutput>(result);
         }
 
         catch (Exception ex)
@@ -357,7 +365,7 @@ internal sealed class CommerceService : ICommerceService
     /// <param name="account">Аккаунт.</param>
     /// <param name="token">Токен пользователя.</param>
     /// <returns>Данные платежа.</returns>
-    public async Task<CreateOrderOutput> CreateOrderAsync(Guid publicId, string account, string token)
+    public async Task<ICreateOrderOutput> CreateOrderAsync(Guid publicId, string account, string token)
     {
         try
         {
@@ -383,17 +391,20 @@ internal sealed class CommerceService : ICommerceService
                 _ => throw new InvalidOperationException("Неизвестный тип платежной системы.")
             };
 
-            var paymentId = order.PaymentId;
+            var paymentId = string.Empty;
 
-            if (order is null)
+            // Записываем Id платежа в ПС в зависимости от типа ПС.
+            // Смотря результат из какой ПС получили тут.
+            paymentId = order switch
             {
-                throw new InvalidOperationException($"Ошибка создания заказа в ПС: {paymentSystemType}." +
-                                                    $"PublicId: {publicId}." +
-                                                    $"Account: {account}." +
-                                                    $"PaymentId: {paymentId}." +
-                                                    $"Данные заказа: {JsonConvert.SerializeObject(order)}.");
-            }
-            
+                CreateOrderPayMasterOutput output => output.PaymentId,
+                CreateOrderYandexKassaOutput castOrder => castOrder.PaymentId,
+                null => throw new InvalidOperationException($"Ошибка создания заказа в ПС: {paymentSystemType}." +
+                                                            $"PublicId: {publicId}." + $"Account: {account}." +
+                                                            $"PaymentId: {paymentId}."),
+                _ => paymentId
+            };
+
             _logger.LogInformation("Закончили создание заказа в ПС." +
                                    $" PaymentId: {paymentId}." +
                                    $"Данные заказа: {JsonConvert.SerializeObject(order)}.");
@@ -418,9 +429,10 @@ internal sealed class CommerceService : ICommerceService
     /// <param name="publicId">Публичный код тарифа.</param>
     /// <param name="paymentMonth">Кол-во месяцев подписки.</param>
     /// <param name="userId">Id пользователя.</param>
-    /// <param name="result">Результирующая модель.</param>
-    /// <returns>Результирующая модель.</returns>
-    private async Task CreateOrderCacheResult(Guid publicId, short paymentMonth, long userId, CreateOrderCache result)
+    /// <param name="ruleId">Id тарифа.</param>
+    /// <param name="CreateOrderCacheInput">Модель для создания заказа в кэше.</param>
+    private async Task CreateOrderCacheResult(Guid publicId, short paymentMonth, long userId, int ruleId,
+        CreateOrderCache createOrderCache)
     {
         var rule = await _fareRuleRepository.GetByPublicIdAsync(publicId);
 
@@ -443,13 +455,13 @@ internal sealed class CommerceService : ICommerceService
             products.Add($"Скидка на тариф {discount}");
         }
 
-        result.RuleId = rule.RuleId;
-        result.Month = paymentMonth;
-        result.Percent = discount;
-        result.Price = discountPrice;
-        result.UserId = userId;
-        result.Products = products;
-        result.FareRuleName = rule.Name;
+        createOrderCache.RuleId = ruleId;
+        createOrderCache.Month = paymentMonth;
+        createOrderCache.Percent = discount;
+        createOrderCache.Price = discountPrice;
+        createOrderCache.UserId = userId;
+        createOrderCache.Products = products;
+        createOrderCache.FareRuleName = rule.Name;
     }
 
     /// <summary>

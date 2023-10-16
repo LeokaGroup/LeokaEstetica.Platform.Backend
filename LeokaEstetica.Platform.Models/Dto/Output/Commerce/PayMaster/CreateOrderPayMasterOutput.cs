@@ -1,12 +1,13 @@
 using FluentValidation.Results;
 using LeokaEstetica.Platform.Models.Dto.Common;
+using LeokaEstetica.Platform.Models.Dto.Output.Commerce.Base.Output;
 
 namespace LeokaEstetica.Platform.Models.Dto.Output.Commerce.PayMaster;
 
 /// <summary>
-/// Класс выходной модели создания заказа.
+/// Класс выходной модели создания заказа в PayMaster.
 /// </summary>
-public class CreateOrderOutput : IFrontError
+public class CreateOrderPayMasterOutput : ICreateOrderOutput, IFrontError
 {
     /// <summary>
     /// Id заказа.

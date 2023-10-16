@@ -12,8 +12,7 @@ public interface ICommerceRedisService
     /// </summary>
     /// <param name="key">Ключ добавленного заказа.</param>
     /// <param name="createOrderCache">Модель заказа для хранения в кэше.</param>
-    /// <returns>Данные заказа добавленного в кэш.</returns>
-    Task<CreateOrderCache> CreateOrderCacheAsync(string key, CreateOrderCache createOrderCache);
+    Task CreateOrderCacheAsync(string key, CreateOrderCache createOrderCache);
 
     /// <summary>
     /// Метод получает заказ из кэша.

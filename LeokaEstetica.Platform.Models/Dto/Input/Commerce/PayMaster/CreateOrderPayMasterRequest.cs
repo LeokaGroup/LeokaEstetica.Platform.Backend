@@ -1,3 +1,4 @@
+using LeokaEstetica.Platform.Models.Dto.Base.Commerce;
 using LeokaEstetica.Platform.Models.Dto.Base.Commerce.PayMaster;
 
 namespace LeokaEstetica.Platform.Models.Dto.Input.Commerce.PayMaster;
@@ -30,7 +31,7 @@ public class CreateOrderPayMasterRequest
     /// <summary>
     /// Цена.
     /// </summary>
-    public AmountPayMaster Amount { get; set; }
+    public Amount Amount { get; set; }
 
     /// <summary>
     /// Метод оплаты.

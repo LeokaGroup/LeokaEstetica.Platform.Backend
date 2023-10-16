@@ -5,7 +5,7 @@ using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.Config;
 using LeokaEstetica.Platform.Database.Abstractions.Orders;
 using LeokaEstetica.Platform.Database.Abstractions.Subscription;
-using LeokaEstetica.Platform.Models.Dto.Base.Commerce.PayMaster;
+using LeokaEstetica.Platform.Models.Dto.Base.Commerce;
 using LeokaEstetica.Platform.Models.Dto.Input.Commerce.PayMaster;
 using LeokaEstetica.Platform.Models.Dto.Output.Refunds;
 using LeokaEstetica.Platform.Models.Entities.Commerce;
@@ -244,7 +244,7 @@ internal sealed class RefundsService : IRefundsService
         long refundId, string refundOrderId)
     {
         var price = order.Price;
-        var amount = new AmountPayMaster(price, PaymentCurrencyEnum.RUB.ToString());
+        var amount = new Amount(price, PaymentCurrencyEnum.RUB.ToString());
         var client = new ClientInput(account);
 
         // Создаем позиции чека.

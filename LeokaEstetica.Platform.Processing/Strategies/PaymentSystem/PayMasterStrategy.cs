@@ -1,4 +1,4 @@
-using LeokaEstetica.Platform.Models.Dto.Output.Commerce.PayMaster;
+using LeokaEstetica.Platform.Models.Dto.Output.Commerce.Base.Output;
 using LeokaEstetica.Platform.Processing.Abstractions.PayMaster;
 
 namespace LeokaEstetica.Platform.Processing.Strategies.PaymentSystem;
@@ -26,7 +26,7 @@ internal class PayMasterStrategy : BasePaymentSystemStrategy
     /// <param name="account">Аккаунт.</param>
     /// <param name="token">Токен пользователя.</param>
     /// <returns>Данные платежа.</returns>
-    public override async Task<CreateOrderOutput> CreateOrderAsync(Guid publicId, string account, string token)
+    public override async Task<ICreateOrderOutput> CreateOrderAsync(Guid publicId, string account, string token)
     {
         var result = await _payMasterService.CreateOrderAsync(publicId, account, token);
 

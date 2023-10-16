@@ -1,4 +1,4 @@
-using LeokaEstetica.Platform.Models.Dto.Output.Commerce.PayMaster;
+using LeokaEstetica.Platform.Models.Dto.Output.Commerce.Base.Output;
 
 namespace LeokaEstetica.Platform.Processing.Strategies.PaymentSystem;
 
@@ -14,7 +14,7 @@ internal class PaymentSystemJob
     /// <param name="account">Аккаунт.</param>
     /// <param name="token">Токен пользователя.</param>
     /// <returns>Данные платежа.</returns>
-    internal async Task<CreateOrderOutput> CreateOrderAsync(BasePaymentSystemStrategy strategy, Guid publicId,
+    internal async Task<ICreateOrderOutput> CreateOrderAsync(BasePaymentSystemStrategy strategy, Guid publicId,
         string account, string token)
     {
         if (strategy is not null)

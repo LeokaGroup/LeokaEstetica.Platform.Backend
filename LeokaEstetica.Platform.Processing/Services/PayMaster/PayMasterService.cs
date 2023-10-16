@@ -7,16 +7,17 @@ using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.Base.Enums;
 using LeokaEstetica.Platform.Base.Extensions.StringExtensions;
 using LeokaEstetica.Platform.Base.Helpers;
-using LeokaEstetica.Platform.Base.Models.Input.Processing;
 using LeokaEstetica.Platform.Core.Constants;
-using LeokaEstetica.Platform.Core.Extensions;
+using LeokaEstetica.Platform.Core.Utils;
 using LeokaEstetica.Platform.Database.Abstractions.Commerce;
 using LeokaEstetica.Platform.Database.Abstractions.Config;
 using LeokaEstetica.Platform.Messaging.Abstractions.Mail;
 using LeokaEstetica.Platform.Messaging.Abstractions.RabbitMq;
+using LeokaEstetica.Platform.Models.Dto.Base.Commerce;
 using LeokaEstetica.Platform.Models.Dto.Base.Commerce.PayMaster;
 using LeokaEstetica.Platform.Models.Dto.Common.Cache;
 using LeokaEstetica.Platform.Models.Dto.Input.Commerce.PayMaster;
+using LeokaEstetica.Platform.Models.Dto.Output.Commerce.Base.Output;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce.PayMaster;
 using LeokaEstetica.Platform.Models.Dto.Output.Refunds;
 using LeokaEstetica.Platform.Notifications.Abstractions;
@@ -24,8 +25,9 @@ using LeokaEstetica.Platform.Notifications.Consts;
 using LeokaEstetica.Platform.Processing.Abstractions.PayMaster;
 using LeokaEstetica.Platform.Processing.Consts;
 using LeokaEstetica.Platform.Processing.Enums;
+using LeokaEstetica.Platform.Processing.Factors;
+using LeokaEstetica.Platform.Processing.Models;
 using LeokaEstetica.Platform.Processing.Models.Input;
-using LeokaEstetica.Platform.Processing.Models.Output;
 using LeokaEstetica.Platform.Redis.Abstractions.Commerce;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -100,7 +102,7 @@ internal sealed class PayMasterService : IPayMasterService
     /// <param name="account">Аккаунт.</param>
     /// <param name="token">Токен пользователя.</param>
     /// <returns>Данные платежа.</returns>
-    public async Task<CreateOrderOutput> CreateOrderAsync(Guid publicId, string account, string token)
+    public async Task<ICreateOrderOutput> CreateOrderAsync(Guid publicId, string account, string token)
     {
         try
         {
@@ -152,7 +154,7 @@ internal sealed class PayMasterService : IPayMasterService
             }
 
             // Парсим результат из ПС.
-            var order = await responseCreateOrder.Content.ReadFromJsonAsync<CreateOrderOutput>();
+            var order = await responseCreateOrder.Content.ReadFromJsonAsync<CreateOrderPayMasterOutput>();
 
             // Если ошибка при парсинге заказа из ПС, то не даем создать заказ.
             if (string.IsNullOrEmpty(order?.PaymentId))
@@ -162,18 +164,15 @@ internal sealed class PayMasterService : IPayMasterService
                 throw ex;
             }
 
-            var result = await CreatePaymentOrderResultAsync(order, orderCache, createOrderInput, userId, httpClient,
-                publicId);
+            var paymentOrderAggregateInput = CreatePaymentOrderAggregateInputResult(order, orderCache,
+                createOrderInput, userId, httpClient, publicId, fareRuleName, account, month);
+            
+            var reference = AutoFac.Resolve<IPaymentOrderReference>();
+            var result = await CreatePaymentOrderFactory.CreatePaymentOrderResultAsync(paymentOrderAggregateInput,
+                reference);
 
             _logger.LogInformation("Конец создания заказа.");
             _logger.LogInformation("Создание заказа успешно.");
-            
-            var isEnabledEmailNotifications = await _globalConfigRepository
-                .GetValueByKeyAsync<bool>(GlobalConfigKeys.EmailNotifications.EMAIL_NOTIFICATIONS_DISABLE_MODE_ENABLED);
-
-            var sendMessage = $"Вы успешно оформили заказ: \"{fareRuleName}\"";
-            await _mailingsService.SendNotificationCreatedOrderAsync(account, sendMessage, isEnabledEmailNotifications,
-                month);
 
             return result;
         }
@@ -403,21 +402,24 @@ internal sealed class PayMasterService : IPayMasterService
     /// <param name="publicId">Публичный ключ тарифа.</param>
     /// <param name="month">Кол-во мес, на которые оплачивается тариф.</param>
     /// <returns>Модель запроса в ПС PayMaster.</returns>
-    private async Task<CreateOrderPayMasterInput> CreateOrderRequestAsync(string fareRuleName, decimal price, int ruleId,
-        Guid publicId, short month)
+    private async Task<CreateOrderPayMasterInput> CreateOrderRequestAsync(string fareRuleName, decimal price,
+        int ruleId, Guid publicId, short month)
     {
+        var isTestMode = await _globalConfigRepository.GetValueByKeyAsync<bool>(
+                    GlobalConfigKeys.Integrations.PaymentSystem.COMMERCE_TEST_MODE_ENABLED);
+        
         var result = new CreateOrderPayMasterInput
         {
             CreateOrderRequest = new CreateOrderPayMasterRequest
             {
                 // Задаем Id мерчанта (магазина).
                 MerchantId = new Guid(_configuration["Commerce:PayMaster:MerchantId"]),
-                TestMode = true, // TODO: Добавить управляющий ключ в таблицу конфигов.
+                TestMode = isTestMode,
                 Invoice = new InvoicePayMaster
                 {
                     Description = "Оплата тарифа: " + fareRuleName + $" (на {month} мес.)"
                 },
-                Amount = new AmountPayMaster(price, PaymentCurrencyEnum.RUB.ToString()),
+                Amount = new Amount(price, PaymentCurrencyEnum.RUB.ToString()),
                 PaymentMethod = "BankCard",
                 FareRuleId = ruleId
             },
@@ -428,37 +430,6 @@ internal sealed class PayMasterService : IPayMasterService
     }
 
     /// <summary>
-    /// Метод парсит результат для сохранения заказа в БД.
-    /// </summary>
-    /// <param name="paymentId">Id платежа в ПС.</param>
-    /// <param name="orderCache">Заказ в кэше.</param>
-    /// <param name="createOrderRequest">Модель запроса.</param>
-    /// <param name="userId">Id пользователя.</param>
-    /// <param name="responseCheckStatusOrder">Статус ответа из ПС.</param>
-    /// <returns>Результирующая модель для сохранения в БД.</returns>
-    private async Task<CreatePaymentOrderInput> CreatePaymentOrderAsync(string paymentId,
-        CreateOrderCache orderCache, CreateOrderPayMasterRequest createOrderRequest, long userId,
-        string responseCheckStatusOrder)
-    {
-        var createOrder = JsonConvert.DeserializeObject<PaymentStatusOutput>(responseCheckStatusOrder);
-        var result = new CreatePaymentOrderInput
-        {
-            PaymentId = paymentId,
-            Name = orderCache.FareRuleName,
-            Description = createOrderRequest.Invoice.Description,
-            UserId = userId,
-            Price = createOrderRequest.Amount.Value,
-            PaymentMonth = orderCache.Month,
-            Currency = PaymentCurrencyEnum.RUB.ToString(),
-            Created = DateTime.Parse(createOrder.Created),
-            PaymentStatusSysName = createOrder.OrderStatus,
-            PaymentStatusName = PaymentStatusEnum.Pending.GetEnumDescription()
-        };
-
-        return await Task.FromResult(result);
-    }
-    
-    /// <summary>
     /// Метод устанавливает запросу заголовки авторизации.
     /// </summary>
     private async Task SetPayMasterRequestAuthorizationHeader(HttpClient httpClient)
@@ -468,57 +439,6 @@ internal sealed class PayMasterService : IPayMasterService
             _configuration["Commerce:PayMaster:ApiToken"]);
 
         await Task.CompletedTask;
-    }
-
-    /// <summary>
-    /// Метод создает результат созданного заказа. Также создает заказ в БД.
-    /// </summary>
-    /// <param name="order">Заказ.</param>
-    /// <param name="orderCache">Заказ из кэша.</param>
-    /// <param name="createOrderInput">Входная модель заказа.</param>
-    /// <param name="userId">Id пользователя.</param>
-    /// <param name="httpClient">Http-client.</param>
-    /// <param name="publicId">Публичный ключ тарифа.</param>
-    /// <returns>Результирующая модель заказа.</returns>
-    /// <exception cref="InvalidOperationException">Может бахнуть ошибку, если не прошла проверка статуса платежа в ПС.</exception>
-    private async Task<CreateOrderOutput> CreatePaymentOrderResultAsync(CreateOrderOutput order,
-        CreateOrderCache orderCache, CreateOrderPayMasterInput createOrderInput, long userId, HttpClient httpClient,
-        Guid publicId)
-    {
-        // Проверяем статус заказа в ПС.
-        var paymentId = order.PaymentId;
-        var responseCheckStatusOrder = await httpClient.GetStringAsync(
-            string.Concat(ApiConsts.PayMaster.CHECK_PAYMENT_STATUS, paymentId));
-
-        // Если ошибка получения данных платежа.
-        if (string.IsNullOrEmpty(responseCheckStatusOrder))
-        {
-            var ex = new InvalidOperationException(
-                "Ошибка проверки статуса платежа в ПС. " +
-                $"Данные платежа: {JsonConvert.SerializeObject(createOrderInput)}");
-            throw ex;
-        }
-        
-        var createdOrder = await CreatePaymentOrderAsync(paymentId, orderCache,
-            createOrderInput.CreateOrderRequest, userId, responseCheckStatusOrder);
-
-        // Создаем заказ в БД.
-        var createdOrderResult = await _commerceRepository.CreateOrderAsync(createdOrder);
-        
-        // Отправляем заказ в очередь для отслеживания его статуса.
-        var orderEvent = OrderEventFactory.CreateOrderEvent(createdOrderResult.OrderId,
-            createdOrderResult.StatusSysName, paymentId, userId, publicId, orderCache.Month);
-
-        var queueType = string.Empty.CreateQueueDeclareNameFactory(_configuration, QueueTypeEnum.OrdersQueue);
-        await _rabbitMqService.PublishAsync(orderEvent, queueType);
-        
-        var result = new CreateOrderOutput
-        {
-            PaymentId = paymentId,
-            Url = order.Url
-        };
-
-        return result;
     }
 
     /// <summary>
@@ -534,7 +454,7 @@ internal sealed class PayMasterService : IPayMasterService
         var request = new CreateRefundInput
         {
             PaymentId = paymentId,
-            Amount = new AmountPayMaster(price, currency)
+            Amount = new Amount(price, currency)
         };
 
         return await Task.FromResult(request);
@@ -590,6 +510,39 @@ internal sealed class PayMasterService : IPayMasterService
         refund.OrderId = createReceiptInput.OrderId;
 
         return refund;
+    }
+
+    /// <summary>
+    /// Метод создает входную модель для создания заказа.
+    /// </summary>
+    /// <param name="order">Данные заказа.</param>
+    /// <param name="orderCache">Данные заказа в кэше.</param>
+    /// <param name="createOrderInput">Входная модель создания заказа.</param>
+    /// <param name="userId">Id пользователя.</param>
+    /// <param name="httpClient">Клиент http-запросов.</param>
+    /// <param name="publicId">Публичный ключ тарифа.</param>
+    /// <param name="fareRuleName">Название тарифа.</param>
+    /// <param name="account">Аккаунт пользователя.</param>
+    /// <param name="month">Кол-во месяцев, на которое оформлен тариф.</param>
+    /// <returns>Наполненная входная модель для создания заказа.</returns>
+    private CreatePaymentOrderAggregateInput CreatePaymentOrderAggregateInputResult(CreateOrderPayMasterOutput order,
+        CreateOrderCache orderCache, CreateOrderPayMasterInput createOrderInput, long userId, HttpClient httpClient,
+        Guid publicId, string fareRuleName, string account, short month)
+    {
+        var reesult = new CreatePaymentOrderAggregateInput
+        {
+            CreateOrderOutput = order,
+            CreateOrderInput = createOrderInput,
+            OrderCache = orderCache,
+            UserId = userId,
+            HttpClient = httpClient,
+            PublicId = publicId,
+            FareRuleName = fareRuleName,
+            Account = account,
+            Month = month
+        };
+
+        return reesult;
     }
 
     #endregion

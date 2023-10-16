@@ -1,4 +1,5 @@
 using LeokaEstetica.Platform.Models.Dto.Input.Commerce.PayMaster;
+using LeokaEstetica.Platform.Models.Dto.Output.Commerce.Base.Output;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce.PayMaster;
 using LeokaEstetica.Platform.Models.Dto.Output.Refunds;
 using LeokaEstetica.Platform.Processing.Enums;
@@ -17,7 +18,7 @@ public interface IPayMasterService
     /// <param name="account">Аккаунт.</param>
     /// <param name="token">Токен пользователя.</param>
     /// <returns>Данные платежа.</returns>
-    Task<CreateOrderOutput> CreateOrderAsync(Guid publicId, string account, string token);
+    Task<ICreateOrderOutput> CreateOrderAsync(Guid publicId, string account, string token);
     
     /// <summary>
     /// Метод проверяет статус платежа в ПС.

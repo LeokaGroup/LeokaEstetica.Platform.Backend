@@ -1,3 +1,4 @@
+using LeokaEstetica.Platform.Models.Dto.Base.Commerce;
 using LeokaEstetica.Platform.Models.Dto.Base.Commerce.PayMaster;
 using Newtonsoft.Json;
 
@@ -28,7 +29,7 @@ public class CreateRefundOutput
     /// <summary>
     /// Сумма возврата.
     /// </summary>
-    public AmountPayMaster Amount { get; set; }
+    public Amount Amount { get; set; }
 
     /// <summary>
     /// Статус возврата.

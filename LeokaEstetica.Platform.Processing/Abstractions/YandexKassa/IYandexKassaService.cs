@@ -1,4 +1,4 @@
-using LeokaEstetica.Platform.Models.Dto.Output.Commerce.YandexKassa;
+using LeokaEstetica.Platform.Models.Dto.Output.Commerce.Base.Output;
 
 namespace LeokaEstetica.Platform.Processing.Abstractions.YandexKassa;
 
@@ -14,5 +14,5 @@ public interface IYandexKassaService
     /// <param name="account">Аккаунт.</param>
     /// <param name="token">Токен пользователя.</param>
     /// <returns>Данные платежа.</returns>
-    Task<CreateYandexKassaOrderOutput> CreateOrderAsync(Guid publicId, string account, string token);
+    Task<ICreateOrderOutput> CreateOrderAsync(Guid publicId, string account, string token);
 }

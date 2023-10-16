@@ -1,3 +1,4 @@
+using LeokaEstetica.Platform.Models.Dto.Base.Commerce;
 using LeokaEstetica.Platform.Models.Dto.Base.Commerce.PayMaster;
 
 namespace LeokaEstetica.Platform.Models.Dto.Input.Commerce.PayMaster;
@@ -19,7 +20,7 @@ public class CreateReceiptPayMasterInput
     /// <param name="orderId">Id заказа.</param>
     /// <param name="refundId">Id возврата.</param>
     /// <param name="refundOrderId">Id возврата в ПС.</param>
-    public CreateReceiptPayMasterInput(string paymentId, AmountPayMaster amount, string type, ClientInput client,
+    public CreateReceiptPayMasterInput(string paymentId, Amount amount, string type, ClientInput client,
         List<ReceiptItem> items, long orderId, long refundId, string refundOrderId)
     {
         PaymentId = paymentId;
@@ -40,7 +41,7 @@ public class CreateReceiptPayMasterInput
     /// <summary>
     /// Сумма чека.
     /// </summary>
-    public AmountPayMaster Amount { get; set; }
+    public Amount Amount { get; set; }
 
     /// <summary>
     /// Тип чека. <see cref="ReceiptTypeEnum"/>
