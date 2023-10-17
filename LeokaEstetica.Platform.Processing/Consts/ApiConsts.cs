@@ -49,6 +49,6 @@ public static class ApiConsts
         /// <summary>
         /// Проверка статуса платежа в ПС.
         /// </summary>
-        public const string CHECK_PAYMENT_STATUS = "https://paymaster.ru/api/v2/payments/";
+        public const string CHECK_PAYMENT_STATUS = "https://api.yookassa.ru/v3/payments/";
     }
 }

@@ -18,7 +18,7 @@ public static class StartJobs
         services.AddHostedService<UserActivityMarkDeactivateJob>();
 
         // Запускаем планировщик удаления аккаунтов пользователей.
-        services.AddHostedService<DeleteDeactivatedAccountsJob>();
+        //services.AddHostedService<DeleteDeactivatedAccountsJob>();
 
         var refundsJobJobKey = new JobKey("RefundsJob");
         q.AddJob<RefundsJob>(opts => opts.WithIdentity(refundsJobJobKey));
@@ -35,7 +35,8 @@ public static class StartJobs
             .ForJob(ordersJobJobKey)
             .WithIdentity("OrdersJobTrigger")
             .WithSimpleSchedule(x => x
-                .WithIntervalInMinutes(3)
+                // .WithIntervalInMinutes(3)
+                .WithIntervalInSeconds(10)
                 .RepeatForever()));
     }
 }

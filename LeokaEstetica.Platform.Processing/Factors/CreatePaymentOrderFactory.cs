@@ -1,9 +1,14 @@
 using LeokaEstetica.Platform.Base.Enums;
+using LeokaEstetica.Platform.Base.Extensions;
 using LeokaEstetica.Platform.Base.Extensions.StringExtensions;
 using LeokaEstetica.Platform.Base.Helpers;
 using LeokaEstetica.Platform.Base.Models.Input.Processing;
 using LeokaEstetica.Platform.Core.Constants;
 using LeokaEstetica.Platform.Core.Extensions;
+using LeokaEstetica.Platform.Database.Abstractions.Commerce;
+using LeokaEstetica.Platform.Database.Abstractions.Config;
+using LeokaEstetica.Platform.Messaging.Abstractions.Mail;
+using LeokaEstetica.Platform.Messaging.Abstractions.RabbitMq;
 using LeokaEstetica.Platform.Models.Dto.Common.Cache;
 using LeokaEstetica.Platform.Models.Dto.Input.Base;
 using LeokaEstetica.Platform.Models.Dto.Input.Commerce.PayMaster;
@@ -13,9 +18,9 @@ using LeokaEstetica.Platform.Models.Dto.Output.Commerce.PayMaster;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce.YandexKassa;
 using LeokaEstetica.Platform.Processing.Consts;
 using LeokaEstetica.Platform.Processing.Enums;
-using LeokaEstetica.Platform.Processing.Models;
 using LeokaEstetica.Platform.Processing.Models.Input;
 using LeokaEstetica.Platform.Processing.Models.Output;
+using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 
 namespace LeokaEstetica.Platform.Processing.Factors;
@@ -29,15 +34,21 @@ public static class CreatePaymentOrderFactory
     /// Метод создает результат созданного заказа. Также создает заказ в БД.
     /// </summary>
     /// <param name="createPaymentOrderAggregateInput">Агрегирующая модель заказа.</param>
-    /// <param name="createPaymentOrderReference">Необходимые зависимости.</param>
+    /// <param name="configuration">Конфигурация приложения.</param>
+    /// <param name="commerceRepository">Репозиторий коммерции.</param>
+    /// <param name="rabbitMqService">Сервис кролика.</param>
+    /// <param name="globalConfigRepository">Репозиторий глобал конфига.</param>
+    /// <param name="mailingsService">Сервис email.</param>
     /// <returns>Результирующая модель заказа.</returns>
     /// <exception cref="InvalidOperationException">Может бахнуть ошибку, если не прошла проверка статуса платежа в ПС.</exception>
     public static async Task<ICreateOrderOutput> CreatePaymentOrderResultAsync(
-        CreatePaymentOrderAggregateInput createPaymentOrderAggregateInput,
-        IPaymentOrderReference createPaymentOrderReference)
+        CreatePaymentOrderAggregateInput createPaymentOrderAggregateInput, IConfiguration configuration,
+        ICommerceRepository commerceRepository, IRabbitMqService rabbitMqService,
+        IGlobalConfigRepository globalConfigRepository, IMailingsService mailingsService)
     {
         var paymentId = string.Empty;
         ICreateOrderOutput result = null;
+        using var httpClient = new HttpClient();
 
         if (createPaymentOrderAggregateInput.CreateOrderOutput is CreateOrderPayMasterOutput payMasterOrder)
         {
@@ -47,11 +58,14 @@ public static class CreatePaymentOrderFactory
         else if (createPaymentOrderAggregateInput.CreateOrderOutput is CreateOrderYandexKassaOutput yandexOrder)
         {
             paymentId = yandexOrder.PaymentId;
+            result = yandexOrder;
+            
+            httpClient.SetYandexKassaRequestAuthorizationHeader(configuration);
         }
 
         // Проверяем статус заказа в ПС.
-        var responseCheckStatusOrder = await createPaymentOrderAggregateInput.HttpClient.GetStringAsync(
-            string.Concat(ApiConsts.PayMaster.CHECK_PAYMENT_STATUS, paymentId));
+        var responseCheckStatusOrder = await httpClient.GetStringAsync(
+            string.Concat(ApiConsts.YandexKassa.CHECK_PAYMENT_STATUS, paymentId));
 
         // Если ошибка получения данных платежа.
         if (string.IsNullOrEmpty(responseCheckStatusOrder))
@@ -67,40 +81,22 @@ public static class CreatePaymentOrderFactory
             responseCheckStatusOrder);
 
         // Создаем заказ в БД.
-        var createdOrderResult = await createPaymentOrderReference.CommerceRepository.CreateOrderAsync(createdOrder);
+        var createdOrderResult = await commerceRepository.CreateOrderAsync(createdOrder);
 
         // Отправляем заказ в очередь для отслеживания его статуса.
         var orderEvent = OrderEventFactory.CreateOrderEvent(createdOrderResult.OrderId,
             createdOrderResult.StatusSysName, paymentId, createPaymentOrderAggregateInput.UserId,
             createPaymentOrderAggregateInput.PublicId, createPaymentOrderAggregateInput.OrderCache.Month);
-
-        var queueType = string.Empty.CreateQueueDeclareNameFactory(createPaymentOrderReference.Configuration,
-            QueueTypeEnum.OrdersQueue);
-        await createPaymentOrderReference.RabbitMqService.PublishAsync(orderEvent, queueType);
-
-        if (createPaymentOrderAggregateInput.CreateOrderOutput is CreateOrderPayMasterOutput payMasterOrderResult)
-        {
-            result = new CreateOrderPayMasterOutput
-            {
-                PaymentId = payMasterOrderResult.PaymentId,
-                Url = payMasterOrderResult.Url
-            };
-        }
-
-        else if (createPaymentOrderAggregateInput.CreateOrderOutput is CreateOrderYandexKassaOutput yandexOrderResult)
-        {
-            result = new CreateOrderYandexKassaOutput
-            {
-                PaymentId = yandexOrderResult.PaymentId,
-                Url = yandexOrderResult.Url
-            };
-        }
-
-        var isEnabledEmailNotifications = await createPaymentOrderReference.GlobalConfigRepository
-            .GetValueByKeyAsync<bool>(GlobalConfigKeys.EmailNotifications.EMAIL_NOTIFICATIONS_DISABLE_MODE_ENABLED);
+        
+        var queueType = string.Empty.CreateQueueDeclareNameFactory(configuration, QueueTypeEnum.OrdersQueue);
+        await rabbitMqService.PublishAsync(orderEvent, queueType);
+        
+        var isEnabledEmailNotifications = await globalConfigRepository.GetValueByKeyAsync<bool>(
+            GlobalConfigKeys.EmailNotifications.EMAIL_NOTIFICATIONS_DISABLE_MODE_ENABLED);
 
         var sendMessage = $"Вы успешно оформили заказ: \"{createPaymentOrderAggregateInput.FareRuleName}\"";
-        await createPaymentOrderReference.MailingsService.SendNotificationCreatedOrderAsync(
+        
+        await mailingsService.SendNotificationCreatedOrderAsync(
             createPaymentOrderAggregateInput.Account, sendMessage, isEnabledEmailNotifications,
             createPaymentOrderAggregateInput.Month);
 

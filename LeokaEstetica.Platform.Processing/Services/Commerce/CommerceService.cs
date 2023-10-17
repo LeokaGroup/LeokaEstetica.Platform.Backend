@@ -16,8 +16,6 @@ using LeokaEstetica.Platform.Models.Dto.Common.Cache.Output;
 using LeokaEstetica.Platform.Models.Dto.Input.Commerce;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce.Base.Output;
-using LeokaEstetica.Platform.Models.Dto.Output.Commerce.PayMaster;
-using LeokaEstetica.Platform.Models.Dto.Output.Commerce.YandexKassa;
 using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Notifications.Consts;
 using LeokaEstetica.Platform.Processing.Abstractions.Commerce;
@@ -395,22 +393,8 @@ internal sealed class CommerceService : ICommerceService
                 _ => throw new InvalidOperationException("Неизвестный тип платежной системы.")
             };
 
-            var paymentId = string.Empty;
-
-            // Записываем Id платежа в ПС в зависимости от типа ПС.
-            // Смотря результат из какой ПС получили тут.
-            paymentId = order switch
-            {
-                CreateOrderPayMasterOutput output => output.PaymentId,
-                CreateOrderYandexKassaOutput castOrder => castOrder.PaymentId,
-                null => throw new InvalidOperationException($"Ошибка создания заказа в ПС: {paymentSystemType}." +
-                                                            $"PublicId: {publicId}." + $"Account: {account}." +
-                                                            $"PaymentId: {paymentId}."),
-                _ => paymentId
-            };
-
             _logger.LogInformation("Закончили создание заказа в ПС." +
-                                   $" PaymentId: {paymentId}." +
+                                   $" PaymentId: {order.PaymentId}." +
                                    $"Данные заказа: {JsonConvert.SerializeObject(order)}.");
 
             return order;

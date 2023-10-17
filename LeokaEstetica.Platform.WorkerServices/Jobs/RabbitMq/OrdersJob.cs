@@ -11,7 +11,6 @@ using LeokaEstetica.Platform.Database.Abstractions.FareRule;
 using LeokaEstetica.Platform.Integrations.Abstractions.Pachca;
 using LeokaEstetica.Platform.Messaging.Factors;
 using LeokaEstetica.Platform.Processing.Abstractions.Commerce;
-using LeokaEstetica.Platform.Processing.Abstractions.PayMaster;
 using LeokaEstetica.Platform.Processing.Enums;
 using LeokaEstetica.Platform.Services.Abstractions.Subscription;
 using Newtonsoft.Json;
@@ -30,7 +29,6 @@ namespace LeokaEstetica.Platform.WorkerServices.Jobs.RabbitMq;
 internal sealed class OrdersJob : IJob
 {
     private readonly IModel _channel;
-    private readonly IPayMasterService _payMasterService;
     private readonly ICommerceRepository _commerceRepository;
     private readonly ILogger<OrdersJob> _logger;
     private readonly ISubscriptionService _subscriptionService;
@@ -48,7 +46,6 @@ internal sealed class OrdersJob : IJob
     /// Конструктор.
     /// </summary>
     /// <param name="configuration">Зависимость конфигурации приложения.</param>
-    /// <param name="payMasterService">Сервис ПС PayMaster.</param>
     /// <param name="commerceRepository">Репозиторий коммерции.</param>
     /// <param name="logger">Сервис логов.</param>
     /// <param name="subscriptionService">Сервис подписок.</param>
@@ -56,8 +53,7 @@ internal sealed class OrdersJob : IJob
     /// <param name="globalConfigRepository">Репозиторий глобал конфигов.</param>
     /// <param name="pachcaService">Сервис пачки.</param>
     /// <param name="commerceService">Сервис коммерции.</param>
-    public OrdersJob(IConfiguration configuration, 
-        IPayMasterService payMasterService,
+    public OrdersJob(IConfiguration configuration,
         ICommerceRepository commerceRepository, 
         ILogger<OrdersJob> logger, 
         ISubscriptionService subscriptionService, 
@@ -66,7 +62,6 @@ internal sealed class OrdersJob : IJob
         IPachcaService pachcaService,
         ICommerceService commerceService)
     {
-        _payMasterService = payMasterService;
         _commerceRepository = commerceRepository;
         _logger = logger;
         _subscriptionService = subscriptionService;

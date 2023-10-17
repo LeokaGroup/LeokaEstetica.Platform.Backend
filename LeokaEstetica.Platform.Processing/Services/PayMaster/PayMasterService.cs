@@ -8,7 +8,6 @@ using LeokaEstetica.Platform.Base.Enums;
 using LeokaEstetica.Platform.Base.Extensions.StringExtensions;
 using LeokaEstetica.Platform.Base.Helpers;
 using LeokaEstetica.Platform.Core.Constants;
-using LeokaEstetica.Platform.Core.Utils;
 using LeokaEstetica.Platform.Database.Abstractions.Commerce;
 using LeokaEstetica.Platform.Database.Abstractions.Config;
 using LeokaEstetica.Platform.Messaging.Abstractions.Mail;
@@ -26,7 +25,6 @@ using LeokaEstetica.Platform.Processing.Abstractions.PayMaster;
 using LeokaEstetica.Platform.Processing.Consts;
 using LeokaEstetica.Platform.Processing.Enums;
 using LeokaEstetica.Platform.Processing.Factors;
-using LeokaEstetica.Platform.Processing.Models;
 using LeokaEstetica.Platform.Processing.Models.Input;
 using LeokaEstetica.Platform.Redis.Abstractions.Commerce;
 using Microsoft.Extensions.Configuration;
@@ -51,8 +49,8 @@ internal sealed class PayMasterService : IPayMasterService
     private readonly ICommerceRedisService _commerceRedisService;
     private readonly IRabbitMqService _rabbitMqService;
     private readonly IMapper _mapper;
-    private readonly IMailingsService _mailingsService;
     private readonly IGlobalConfigRepository _globalConfigRepository;
+    private readonly IMailingsService _mailingsService;
 
     /// <summary>
     /// Конструктор.
@@ -66,8 +64,8 @@ internal sealed class PayMasterService : IPayMasterService
     /// <param name="commerceRedisService">Сервис кэша коммерции.</param>
     /// <param name="rabbitMqService">Сервис кролика.</param>
     /// <param name="mapper">Автомаппер.</param>
-    /// <param name="mailingsService">Сервис уведомлений на почту.</param>
     /// <param name="globalConfigRepository">Репозиторий глобал конфига.</param>
+    /// <param name="mailingsService">Сервис email.</param>
     public PayMasterService(ILogger<PayMasterService> logger,
         IConfiguration configuration,
         IUserRepository userRepository,
@@ -77,8 +75,8 @@ internal sealed class PayMasterService : IPayMasterService
         ICommerceRedisService commerceRedisService, 
         IRabbitMqService rabbitMqService, 
         IMapper mapper,
-        IMailingsService mailingsService,
-        IGlobalConfigRepository globalConfigRepository)
+        IGlobalConfigRepository globalConfigRepository,
+        IMailingsService mailingsService)
     {
         _logger = logger;
         _configuration = configuration;
@@ -89,8 +87,8 @@ internal sealed class PayMasterService : IPayMasterService
         _commerceRedisService = commerceRedisService;
         _rabbitMqService = rabbitMqService;
         _mapper = mapper;
-        _mailingsService = mailingsService;
         _globalConfigRepository = globalConfigRepository;
+        _mailingsService = mailingsService;
     }
 
     #region Публичные методы.
@@ -167,9 +165,8 @@ internal sealed class PayMasterService : IPayMasterService
             var paymentOrderAggregateInput = CreatePaymentOrderAggregateInputResult(order, orderCache,
                 createOrderInput, userId, httpClient, publicId, fareRuleName, account, month);
             
-            var reference = AutoFac.Resolve<IPaymentOrderReference>();
             var result = await CreatePaymentOrderFactory.CreatePaymentOrderResultAsync(paymentOrderAggregateInput,
-                reference);
+                _configuration, _commerceRepository, _rabbitMqService, _globalConfigRepository, _mailingsService);
 
             _logger.LogInformation("Конец создания заказа.");
             _logger.LogInformation("Создание заказа успешно.");
@@ -536,7 +533,6 @@ internal sealed class PayMasterService : IPayMasterService
             CreateOrderInput = createOrderInput,
             OrderCache = orderCache,
             UserId = userId,
-            HttpClient = httpClient,
             PublicId = publicId,
             FareRuleName = fareRuleName,
             Account = account,

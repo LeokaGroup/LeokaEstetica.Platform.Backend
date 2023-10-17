@@ -1,3 +1,5 @@
+using Newtonsoft.Json;
+
 namespace LeokaEstetica.Platform.Models.Dto.Input.Commerce.YandexKassa;
 
 /// <summary>
@@ -8,11 +10,13 @@ public class Confirmation
     /// <summary>
     /// Тип способа подтверждения платежа.
     /// </summary>
+    [JsonProperty("type")]
     public string Type { get; set; }
 
     /// <summary>
     /// Url коллбека.
     /// </summary>
+    [JsonProperty("return_url")]
     public string ReturnUrl { get; set; }
     
     /// <summary>

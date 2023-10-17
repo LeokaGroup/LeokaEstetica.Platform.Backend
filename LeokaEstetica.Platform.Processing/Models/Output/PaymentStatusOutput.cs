@@ -16,5 +16,6 @@ public class PaymentStatusOutput
     /// <summary>
     /// Дата создания платежа в ПС.
     /// </summary>
+    [JsonProperty("created_at")]
     public string Created { get; set; }
 }

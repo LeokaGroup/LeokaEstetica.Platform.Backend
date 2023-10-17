@@ -22,7 +22,20 @@ public class CreateOrderYandexKassaOutput : ICreateOrderOutput, IFrontError
     public string PaymentId { get; set; }
     
     /// <summary>
-    /// Ссылка на оплату.
+    /// Статус платежа в ПС.
     /// </summary>
-    public string Url { get; set; }
+    [JsonProperty("status")]
+    public string OrderStatus { get; set; }
+
+    /// <summary>
+    /// Подтверждение платежа.
+    /// </summary>
+    [JsonProperty("confirmation")]
+    public ConfirmationOutput Confirmation { get; set; }
+
+    /// <summary>
+    /// Дата создания заказа в ПС.
+    /// </summary>
+    [JsonProperty("created_at")]
+    public DateTime Created { get; set; }
 }

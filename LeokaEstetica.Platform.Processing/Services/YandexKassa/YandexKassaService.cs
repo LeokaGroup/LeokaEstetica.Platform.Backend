@@ -1,10 +1,13 @@
-using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Text;
 using LeokaEstetica.Platform.Access.Abstractions.User;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
+using LeokaEstetica.Platform.Base.Extensions;
 using LeokaEstetica.Platform.Core.Constants;
-using LeokaEstetica.Platform.Core.Utils;
+using LeokaEstetica.Platform.Database.Abstractions.Commerce;
 using LeokaEstetica.Platform.Database.Abstractions.Config;
+using LeokaEstetica.Platform.Messaging.Abstractions.Mail;
+using LeokaEstetica.Platform.Messaging.Abstractions.RabbitMq;
 using LeokaEstetica.Platform.Models.Dto.Base.Commerce;
 using LeokaEstetica.Platform.Models.Dto.Common.Cache;
 using LeokaEstetica.Platform.Models.Dto.Input.Commerce.YandexKassa;
@@ -17,7 +20,6 @@ using LeokaEstetica.Platform.Processing.Abstractions.YandexKassa;
 using LeokaEstetica.Platform.Processing.Consts;
 using LeokaEstetica.Platform.Processing.Enums;
 using LeokaEstetica.Platform.Processing.Factors;
-using LeokaEstetica.Platform.Processing.Models;
 using LeokaEstetica.Platform.Processing.Models.Input;
 using LeokaEstetica.Platform.Redis.Abstractions.Commerce;
 using Microsoft.Extensions.Configuration;
@@ -38,6 +40,9 @@ internal sealed class YandexKassaService : IYandexKassaService
     private readonly ICommerceRedisService _commerceRedisService;
     private readonly IConfiguration _configuration;
     private readonly IGlobalConfigRepository _globalConfigRepository;
+    private readonly ICommerceRepository _commerceRepository;
+    private readonly IRabbitMqService _rabbitMqService;
+    private readonly IMailingsService _mailingsService;
 
     /// <summary>
     /// Конструктор.
@@ -48,14 +53,20 @@ internal sealed class YandexKassaService : IYandexKassaService
     /// <param name="accessUserNotificationsService">Сервис уведомлений доступов пользователей.</param>
     /// <param name="commerceRedisService">Сервис кэша коммерции.</param>
     /// <param name="configuration">Конфигурация приложения.</param>
-    /// <param name="globalConfigRepository">Репозиторий глобал конфига.</param> 
+    /// <param name="globalConfigRepository">Репозиторий глобал конфига.</param>
+    /// <param name="commerceRepository">Репозиторий коммерции.</param>
+    /// <param name="rabbitMqService">Сервис кролика.</param>
+    /// <param name="mailingsService">Сервис email.</param> 
     public YandexKassaService(ILogger<YandexKassaService> logger,
         IUserRepository userRepository,
         IAccessUserService accessUserService,
         IAccessUserNotificationsService accessUserNotificationsService,
         ICommerceRedisService commerceRedisService,
         IConfiguration configuration,
-        IGlobalConfigRepository globalConfigRepository)
+        IGlobalConfigRepository globalConfigRepository,
+        ICommerceRepository commerceRepository,
+        IRabbitMqService rabbitMqService,
+        IMailingsService mailingsService)
     {
         _logger = logger;
         _userRepository = userRepository;
@@ -64,6 +75,9 @@ internal sealed class YandexKassaService : IYandexKassaService
         _commerceRedisService = commerceRedisService;
         _configuration = configuration;
         _globalConfigRepository = globalConfigRepository;
+        _commerceRepository = commerceRepository;
+        _rabbitMqService = rabbitMqService;
+        _mailingsService = mailingsService;
     }
 
     #region Публичные методы.
@@ -111,23 +125,29 @@ internal sealed class YandexKassaService : IYandexKassaService
 
             _logger.LogInformation("Начало создания заказа.");
 
-            using var httpClient = new HttpClient();
-            await SetYandexKassaRequestAuthorizationHeader(httpClient);
+            using var httpClient = new HttpClient().SetYandexKassaRequestAuthorizationHeader(_configuration);
+            // await SetYandexKassaRequestAuthorizationHeader(httpClient);
             
             // Создаем платеж в ПС.
-            var responseCreateOrder = await httpClient.PostAsJsonAsync(ApiConsts.YandexKassa.CREATE_PAYMENT,
-                createOrderInput.CreateOrderRequest);
+            var httpContent = new StringContent(JsonConvert.SerializeObject(createOrderInput.CreateOrderRequest),
+                Encoding.UTF8, "application/json");
+            var responseCreateOrder = await httpClient.PostAsync(new Uri(ApiConsts.YandexKassa.CREATE_PAYMENT),
+                httpContent);
 
             // Если ошибка при создании платежа в ПС.
             if (!responseCreateOrder.IsSuccessStatusCode)
             {
+                var responseErrorDetails = responseCreateOrder.Content.ReadAsStringAsync().Result;
                 var ex = new InvalidOperationException(
-                    $"Ошибка создания платежа в ПС. Данные платежа: {JsonConvert.SerializeObject(createOrderInput)}");
+                    "Ошибка создания платежа в ПС." +
+                    $" Данные платежа: {JsonConvert.SerializeObject(createOrderInput.CreateOrderRequest)}." +
+                    $" Ответ от ПС: {responseErrorDetails}");
                 throw ex;
             }
 
             // Парсим результат из ПС.
-            var order = await responseCreateOrder.Content.ReadFromJsonAsync<CreateOrderYandexKassaOutput>();
+            var mapOrder = await responseCreateOrder.Content.ReadAsStringAsync();
+            var order = JsonConvert.DeserializeObject<CreateOrderYandexKassaOutput>(mapOrder);
             
             // Если ошибка при парсинге заказа из ПС, то не даем создать заказ.
             if (string.IsNullOrEmpty(order?.PaymentId))
@@ -136,13 +156,12 @@ internal sealed class YandexKassaService : IYandexKassaService
                     $"Ошибка парсинга данных из ПС. Данные платежа: {JsonConvert.SerializeObject(createOrderInput)}");
                 throw ex;
             }
-            
-            var paymentOrderAggregateInput = CreatePaymentOrderAggregateInputResult(order, orderCache,
-                createOrderInput, userId, httpClient, publicId, fareRuleName, account, month);
-            
-            var reference = AutoFac.Resolve<IPaymentOrderReference>();
+
+            var paymentOrderAggregateInput = CreatePaymentOrderAggregateInputResult(order, orderCache, createOrderInput,
+                userId, publicId, fareRuleName, account, month);
+
             var result = await CreatePaymentOrderFactory.CreatePaymentOrderResultAsync(paymentOrderAggregateInput,
-                reference);
+                    _configuration, _commerceRepository, _rabbitMqService, _globalConfigRepository, _mailingsService);
 
             _logger.LogInformation("Конец создания заказа.");
             _logger.LogInformation("Создание заказа успешно.");
@@ -164,9 +183,8 @@ internal sealed class YandexKassaService : IYandexKassaService
     /// <returns>Статус платежа.</returns>
     public async Task<PaymentStatusEnum> CheckOrderStatusAsync(string paymentId)
     {
-        using var httpClient = new HttpClient();
-        await SetYandexKassaRequestAuthorizationHeader(httpClient);
-            
+        using var httpClient = new HttpClient().SetYandexKassaRequestAuthorizationHeader(_configuration);
+
         _logger?.LogInformation($"Начало проверки статуса заказа {paymentId}.");
 
         var responseCreateOrder = await httpClient.GetAsync(string.Concat(ApiConsts.YandexKassa.CHECK_PAYMENT_STATUS,
@@ -227,7 +245,6 @@ internal sealed class YandexKassaService : IYandexKassaService
         {
             CreateOrderRequest = new CreateOrderYandexKassaRequest
             {
-                ShopId = Convert.ToInt32(_configuration["Commerce:UKassa:ShopId"]),
                 TestMode = isTestMode,
                 Description = "Оплата тарифа: " + fareRuleName + $" (на {month} мес.)",
                 Amount = new Amount(price, PaymentCurrencyEnum.RUB.ToString()),
@@ -240,19 +257,7 @@ internal sealed class YandexKassaService : IYandexKassaService
 
         return await Task.FromResult(result);
     }
-    
-    /// <summary>
-    /// Метод устанавливает запросу заголовки авторизации.
-    /// </summary>
-    private async Task SetYandexKassaRequestAuthorizationHeader(HttpClient httpClient)
-    {
-        // Устанавливаем заголовки запросу.
-        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic",
-            _configuration["Commerce:UKassa:ShopId"] + ":" + _configuration["Commerce:UKassa:ApiToken"]);
 
-        await Task.CompletedTask;
-    }
-    
     /// <summary>
     /// Метод создает входную модель для создания заказа.
     /// </summary>
@@ -260,15 +265,14 @@ internal sealed class YandexKassaService : IYandexKassaService
     /// <param name="orderCache">Данные заказа в кэше.</param>
     /// <param name="createOrderInput">Входная модель создания заказа.</param>
     /// <param name="userId">Id пользователя.</param>
-    /// <param name="httpClient">Клиент http-запросов.</param>
     /// <param name="publicId">Публичный ключ тарифа.</param>
     /// <param name="fareRuleName">Название тарифа.</param>
     /// <param name="account">Аккаунт пользователя.</param>
     /// <param name="month">Кол-во месяцев, на которое оформлен тариф.</param>
     /// <returns>Наполненная входная модель для создания заказа.</returns>
     private CreatePaymentOrderAggregateInput CreatePaymentOrderAggregateInputResult(CreateOrderYandexKassaOutput order,
-        CreateOrderCache orderCache, CreateOrderYandexKassaInput createOrderInput, long userId, HttpClient httpClient,
-        Guid publicId, string fareRuleName, string account, short month)
+        CreateOrderCache orderCache, CreateOrderYandexKassaInput createOrderInput, long userId, Guid publicId,
+        string fareRuleName, string account, short month)
     {
         var reesult = new CreatePaymentOrderAggregateInput
         {
@@ -276,7 +280,6 @@ internal sealed class YandexKassaService : IYandexKassaService
             CreateOrderInput = createOrderInput,
             OrderCache = orderCache,
             UserId = userId,
-            HttpClient = httpClient,
             PublicId = publicId,
             FareRuleName = fareRuleName,
             Account = account,

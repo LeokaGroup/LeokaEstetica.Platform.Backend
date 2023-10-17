@@ -3,7 +3,6 @@ using LeokaEstetica.Platform.Core.Attributes;
 using LeokaEstetica.Platform.Processing.Abstractions.Commerce;
 using LeokaEstetica.Platform.Processing.Abstractions.PayMaster;
 using LeokaEstetica.Platform.Processing.Abstractions.YandexKassa;
-using LeokaEstetica.Platform.Processing.Models;
 using LeokaEstetica.Platform.Processing.Services.Commerce;
 using LeokaEstetica.Platform.Processing.Services.PayMaster;
 using LeokaEstetica.Platform.Processing.Services.YandexKassa;
@@ -48,9 +47,6 @@ public class ProcessingModule : Module
             .InstancePerLifetimeScope();
         builder.RegisterType<YandexKassaService>()
             .As<IYandexKassaService>()
-            .InstancePerLifetimeScope();
-        
-        builder.RegisterType<IPaymentOrderReference>()
             .InstancePerLifetimeScope();
     }
 }

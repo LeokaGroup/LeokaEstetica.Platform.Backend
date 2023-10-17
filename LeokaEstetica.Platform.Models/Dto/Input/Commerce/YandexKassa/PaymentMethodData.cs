@@ -1,3 +1,5 @@
+using Newtonsoft.Json;
+
 namespace LeokaEstetica.Platform.Models.Dto.Input.Commerce.YandexKassa;
 
 /// <summary>
@@ -8,6 +10,7 @@ public class PaymentMethodData
     /// <summary>
     /// Тип метода оплаты.
     /// </summary>
+    [JsonProperty("type")]
     public string Type { get; set; }
     
     /// <summary>

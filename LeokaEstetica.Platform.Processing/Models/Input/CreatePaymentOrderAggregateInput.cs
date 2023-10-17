@@ -30,11 +30,6 @@ public class CreatePaymentOrderAggregateInput
     public long UserId { get; set; }
 
     /// <summary>
-    /// Клиент http-запросов.
-    /// </summary>
-    public HttpClient HttpClient { get; set; }
-
-    /// <summary>
     /// Публичный ключ тарифа.
     /// </summary>
     public Guid PublicId { get; set; }
