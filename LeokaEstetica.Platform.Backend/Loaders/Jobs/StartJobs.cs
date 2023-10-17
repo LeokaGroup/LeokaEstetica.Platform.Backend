@@ -20,22 +20,22 @@ public static class StartJobs
         // Запускаем планировщик удаления аккаунтов пользователей.
         services.AddHostedService<DeleteDeactivatedAccountsJob>();
 
-        var refundsJobJobKey = new JobKey("RefundsJob");
-        q.AddJob<RefundsJob>(opts => opts.WithIdentity(refundsJobJobKey));
-        q.AddTrigger(opts => opts
-            .ForJob(refundsJobJobKey)
-            .WithIdentity("RefundsJobTrigger")
-            .WithSimpleSchedule(x => x
-                .WithIntervalInMinutes(3)
-                .RepeatForever()));
+        // var refundsJobJobKey = new JobKey("RefundsJob");
+        // q.AddJob<RefundsJob>(opts => opts.WithIdentity(refundsJobJobKey));
+        // q.AddTrigger(opts => opts
+        //     .ForJob(refundsJobJobKey)
+        //     .WithIdentity("RefundsJobTrigger")
+        //     .WithSimpleSchedule(x => x
+        //         .WithIntervalInMinutes(3)
+        //         .RepeatForever()));
         
-        var ordersJobJobKey = new JobKey("OrdersJob");
-        q.AddJob<OrdersJob>(opts => opts.WithIdentity(ordersJobJobKey));
-        q.AddTrigger(opts => opts
-            .ForJob(ordersJobJobKey)
-            .WithIdentity("OrdersJobTrigger")
-            .WithSimpleSchedule(x => x
-                .WithIntervalInMinutes(3)
-                .RepeatForever()));
+        // var ordersJobJobKey = new JobKey("OrdersJob");
+        // q.AddJob<OrdersJob>(opts => opts.WithIdentity(ordersJobJobKey));
+        // q.AddTrigger(opts => opts
+        //     .ForJob(ordersJobJobKey)
+        //     .WithIdentity("OrdersJobTrigger")
+        //     .WithSimpleSchedule(x => x
+        //         .WithIntervalInMinutes(3)
+        //         .RepeatForever()));
     }
 }
