@@ -35,8 +35,7 @@ public static class StartJobs
             .ForJob(ordersJobJobKey)
             .WithIdentity("OrdersJobTrigger")
             .WithSimpleSchedule(x => x
-                // .WithIntervalInMinutes(3)
-                .WithIntervalInSeconds(10)
+                .WithIntervalInMinutes(3)
                 .RepeatForever()));
     }
 }
