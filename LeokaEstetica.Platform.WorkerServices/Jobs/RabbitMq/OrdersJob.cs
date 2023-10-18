@@ -120,12 +120,27 @@ internal sealed class OrdersJob : IJob
                                                         $" Получили сообщение из очереди заказов: {message}");
                 }
 
-                // Проверяем статус платежа в ПС.
-                var paymentId = orderEvent.PaymentId;
-                var newOrderStatus = await _commerceService.CheckOrderStatusAsync(paymentId);
+                PaymentStatusEnum newOrderStatus;
+                PaymentStatusEnum oldStatusSysName;
+                string paymentId;
+
+                try
+                {
+                    // Проверяем статус платежа в ПС.
+                    paymentId = orderEvent.PaymentId;
+                    newOrderStatus = await _commerceService.CheckOrderStatusAsync(paymentId);
                 
-                // Получаем старый статус платежа до проверки в ПС.
-                var oldStatusSysName = PaymentStatus.GetPaymentStatusBySysName(orderEvent.StatusSysName);
+                    // Получаем старый статус платежа до проверки в ПС.
+                    oldStatusSysName = PaymentStatus.GetPaymentStatusBySysName(orderEvent.StatusSysName);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogCritical(ex, "Ошибка при чтении очереди заказов.");
+                        
+                    await _pachcaService.SendNotificationErrorAsync(ex);
+                        
+                    throw;
+                }
 
                 // Если статус заказа изменился в ПС, то обновляем его статус в БД.
                 if (newOrderStatus != oldStatusSysName)

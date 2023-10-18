@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using LeokaEstetica.Platform.Base.Extensions.StringExtensions;
 using LeokaEstetica.Platform.Core.Extensions;
 
 namespace LeokaEstetica.Platform.Processing.Enums;
@@ -80,7 +81,10 @@ public static class PaymentStatus
         { PaymentStatusEnum.Authorized.ToString(), PaymentStatusEnum.Authorized },
         { PaymentStatusEnum.Cancelled.ToString(), PaymentStatusEnum.Cancelled },
         { PaymentStatusEnum.Rejected.ToString(), PaymentStatusEnum.Rejected },
-        { PaymentStatusEnum.Confirmation.ToString(), PaymentStatusEnum.Confirmation }
+        { PaymentStatusEnum.Confirmation.ToString(), PaymentStatusEnum.Confirmation },
+        { PaymentStatusEnum.Canceled.ToString(), PaymentStatusEnum.Canceled },
+        { PaymentStatusEnum.WaitingForCapture.ToString(), PaymentStatusEnum.WaitingForCapture },
+        { PaymentStatusEnum.Succeeded.ToString(), PaymentStatusEnum.Succeeded }
     };
 
     /// <summary>
@@ -90,6 +94,6 @@ public static class PaymentStatus
     /// <returns>Если статус есть, вернет его, иначе будет по дефолту None.</returns>
     public static PaymentStatusEnum GetPaymentStatusBySysName(string statusName)
     {
-        return _paymentStatuses.TryGet(statusName);
+        return _paymentStatuses.TryGet(StringExtensions.ToPascalCase(statusName));
     }
 }

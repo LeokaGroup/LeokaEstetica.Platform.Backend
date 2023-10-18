@@ -183,43 +183,52 @@ internal sealed class YandexKassaService : IYandexKassaService
     /// <returns>Статус платежа.</returns>
     public async Task<PaymentStatusEnum> CheckOrderStatusAsync(string paymentId)
     {
-        using var httpClient = new HttpClient().SetYandexKassaRequestAuthorizationHeader(_configuration);
+        try
+        {
+            using var httpClient = new HttpClient().SetYandexKassaRequestAuthorizationHeader(_configuration);
 
-        _logger?.LogInformation($"Начало проверки статуса заказа {paymentId}.");
+            _logger?.LogInformation($"Начало проверки статуса заказа {paymentId}.");
 
-        var responseCreateOrder = await httpClient.GetAsync(string.Concat(ApiConsts.YandexKassa.CHECK_PAYMENT_STATUS,
-            paymentId));
+            var responseCreateOrder = await httpClient.GetAsync(string.Concat(ApiConsts.YandexKassa.CHECK_PAYMENT_STATUS,
+                paymentId));
             
-        // Если ошибка при создании платежа в ПС.
-        if (!responseCreateOrder.IsSuccessStatusCode)
-        {
-            var ex = new InvalidOperationException("Ошибка проверки статуса платежа в ПС. " +
-                                                   $"PaymentId платежа: {paymentId}");
-            throw ex;
+            // Если ошибка при создании платежа в ПС.
+            if (!responseCreateOrder.IsSuccessStatusCode)
+            {
+                var ex = new InvalidOperationException("Ошибка проверки статуса платежа в ПС. " +
+                                                       $"PaymentId платежа: {paymentId}");
+                throw ex;
+            }
+
+            // Парсим результат из ПС.
+            var order = await responseCreateOrder.Content.ReadFromJsonAsync<CheckStatusOrderOutput>();
+
+            // Если ошибка при парсинге заказа из ПС, то не даем создать заказ.
+            if (string.IsNullOrEmpty(order?.PaymentId))
+            {
+                var ex = new InvalidOperationException("Ошибка парсинга данных из ПС. " +
+                                                       $"PaymentId платежа: {paymentId}");
+                throw ex;
+            }
+
+            var result = PaymentStatus.GetPaymentStatusBySysName(order.StatusSysName);
+
+            if (result == PaymentStatusEnum.None)
+            {
+                var ex = new InvalidOperationException("Неизвестный статус заказа." +
+                                                       $" Статус заказа в ПС: {order.StatusSysName}." +
+                                                       " Необходимо добавить маппинги для этого статуса заказа.");
+                throw ex;
+            }
+
+            return result;
         }
-
-        // Парсим результат из ПС.
-        var order = await responseCreateOrder.Content.ReadFromJsonAsync<CheckStatusOrderOutput>();
-
-        // Если ошибка при парсинге заказа из ПС, то не даем создать заказ.
-        if (string.IsNullOrEmpty(order?.PaymentId))
+        
+        catch (Exception ex)
         {
-            var ex = new InvalidOperationException("Ошибка парсинга данных из ПС. " +
-                                                   $"PaymentId платежа: {paymentId}");
-            throw ex;
+            _logger.LogError(ex, ex.Message);
+            throw;
         }
-
-        var result = PaymentStatus.GetPaymentStatusBySysName(order.StatusSysName);
-
-        if (result == PaymentStatusEnum.None)
-        {
-            var ex = new InvalidOperationException("Неизвестный статус заказа." +
-                                                   $"Статус заказа в ПС: {order.StatusSysName}." +
-                                                   "Необходимо добавить маппинги для этого статуса заказа.");
-            throw ex;
-        }
-
-        return result;
     }
 
     #endregion

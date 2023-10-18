@@ -222,8 +222,8 @@ internal sealed class PayMasterService : IPayMasterService
             if (result == PaymentStatusEnum.None)
             {
                 var ex = new InvalidOperationException("Неизвестный статус заказа." +
-                                                       $"Статус заказа в ПС: {order.StatusSysName}." +
-                                                       "Необходимо добавить маппинги для этого статуса заказа.");
+                                                       $" Статус заказа в ПС: {order.StatusSysName}." +
+                                                       " Необходимо добавить маппинги для этого статуса заказа.");
                 throw ex;
             }
 
