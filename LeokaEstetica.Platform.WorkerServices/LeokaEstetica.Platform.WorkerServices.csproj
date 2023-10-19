@@ -5,6 +5,7 @@
         <Nullable>disable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <UserSecretsId>dotnet-LeokaEstetica.Platform.WorkerServices-1E5DEAF2-6517-4700-B3FE-9C50865E4243</UserSecretsId>
+        <OutputType>Library</OutputType>
     </PropertyGroup>
 
     <ItemGroup>
@@ -18,5 +19,9 @@
       <ProjectReference Include="..\LeokaEstetica.Platform.Messaging\LeokaEstetica.Platform.Messaging.csproj" />
       <ProjectReference Include="..\LeokaEstetica.Platform.Processing\LeokaEstetica.Platform.Processing.csproj" />
       <ProjectReference Include="..\LeokaEstetica.Platform.Services\LeokaEstetica.Platform.Services.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Jobs" />
     </ItemGroup>
 </Project>

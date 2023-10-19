@@ -47,6 +47,13 @@ public interface ITicketRepository
     /// <param name="ticketId">Id тикета.</param>
     /// <returns>Сообщения тикета и связанные данные.</returns>
     Task<IEnumerable<TicketMessageEntity>> GetTicketMessagesAsync(long ticketId);
+    
+    /// <summary>
+    /// Метод получает сообщения тикетов и связанные данные.
+    /// </summary>
+    /// <param name="ticketsIds">Id тикетов.</param>
+    /// <returns>Сообщения тикетов и связанные данные.</returns>
+    Task<IEnumerable<TicketMessageEntity>> GetTicketsMessagesAsync(IEnumerable<long> ticketsIds);
 
     /// <summary>
     /// Метод получает тикет по его Id.
@@ -77,4 +84,11 @@ public interface ITicketRepository
     /// <param name="contactEmail">Почта пользователя, который оставил пожелание/предложение.</param>
     /// <param name="wisheOfferText">Текст предложение/пожелания.</param>
     Task<long> CreateWisheOfferAsync(string contactEmail, string wisheOfferText);
+
+    /// <summary>
+    /// Метод получает список участников тикетов по Id участников.
+    /// </summary>
+    /// <param name="usersIds">Id участников. тикетов.</param>
+    /// <returns>Список участников тикетов.</returns>
+    Task<IEnumerable<TicketMemberEntity>> GetTicketsMembersByUserIdsAsync(IEnumerable<long> usersIds);
 }

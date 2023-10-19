@@ -4,7 +4,7 @@ using LeokaEstetica.Platform.Messaging.Abstractions.Mail;
 using LeokaEstetica.Platform.Models.Entities.User;
 using LeokaEstetica.Platform.Redis.Abstractions.User;
 
-namespace LeokaEstetica.Platform.WorkerServices.Jobs.User;
+namespace LeokaEstetica.Platform.Backend.Loaders.Jobs.User;
 
 /// <summary>
 /// Класс джобы проставления пометки к удалению аккаунтов пользователей, если они не заходили более 30 дней.
