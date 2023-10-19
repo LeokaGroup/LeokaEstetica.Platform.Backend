@@ -18,7 +18,7 @@ public static class StartJobs
         services.AddHostedService<UserActivityMarkDeactivateJob>();
 
         // Запускаем планировщик удаления аккаунтов пользователей.
-        //services.AddHostedService<DeleteDeactivatedAccountsJob>();
+        services.AddHostedService<DeleteDeactivatedAccountsJob>();
 
         // TODO: Возвраты пока работают вручную (пока не автоматизируем их).
         // var refundsJobJobKey = new JobKey("RefundsJob");
