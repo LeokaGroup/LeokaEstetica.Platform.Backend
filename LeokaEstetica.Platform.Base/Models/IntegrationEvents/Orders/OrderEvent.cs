@@ -36,4 +36,14 @@ public class OrderEvent : BaseEventMessage
     /// Кол-во месяцев подписки.
     /// </summary>
     public short Month { get; set; }
+
+    /// <summary>
+    /// Цена.
+    /// </summary>
+    public decimal Price { get; set; }
+
+    /// <summary>
+    /// Валюта.
+    /// </summary>
+    public string Currency { get; set; }
 }

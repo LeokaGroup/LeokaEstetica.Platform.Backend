@@ -471,28 +471,33 @@ internal sealed class UserService : IUserService
     /// <summary>
     /// Метод отправляет код пользователю на почту для восстановления пароля.
     /// <param name="account">Аккаунт.</param>
-    /// <param name="token">Токен.</param>
     /// <returns>Признак успешного прохождения проверки.</returns>
     /// </summary>
-    public async Task<bool> SendCodeRestorePasswordAsync(string account, string token)
+    public async Task<UserRestorePasswordOutput> SendCodeRestorePasswordAsync(string account)
     {
         try
         {
+            var result = new UserRestorePasswordOutput { Errors = new List<ValidationFailure>() };
+            
             // Проверяем пользователя на блокировку.
             var isBlocked = await _accessUserService.CheckBlockedUserAsync(account, false);
 
             // Пользователь заблокирован, не даем ничего делать.
             if (isBlocked)
             {
-                if (!string.IsNullOrEmpty(token))
-                {
-                    await _accessUserNotificationsService.SendNotificationWarningBlockedUserProfileAsync("Внимание",
-                        "Невозможно восстановить пароль. Пользователь заблокирован. Причины блокировки можно узнать у тех.поддержки.",
-                        NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);   
-                }
+                const string blockerErrorMsg = "Невозможно восстановить пароль." +
+                                      " Пользователь заблокирован." +
+                                      " Причины блокировки можно узнать у тех.поддержки.";
 
-                throw new InvalidOperationException(
-                    "Пользователь заблокирован. Причины блокировки можно узнать у тех.поддержки.");
+                var ex = new InvalidOperationException("Невозможно восстановить пароль. Пользователь заблокирован." +
+                                                       $"Account: {account}");
+
+                _logger.LogError(ex, ex.Message);
+                
+                result.Errors.Add(new ValidationFailure { ErrorMessage = blockerErrorMsg });
+                result.IsSuccess = false;
+
+                return result;
             }
             
             var userId = await _userRepository.GetUserByEmailAsync(account);
@@ -502,23 +507,18 @@ internal sealed class UserService : IUserService
                 var ex = new NotFoundUserIdByAccountException(account);
                 throw ex;
             }
-
-            var guid = Guid.NewGuid();
+            
+            var confirmCode = new Random().Next(100000, 999999).ToString("D4");
             
             // Добавляем данные для восстановления в кэш.
-            await _userRedisService.AddRestoreUserDataCacheAsync(guid, userId);
+            await _userRedisService.AddRestoreUserDataCacheAsync(confirmCode, userId);
             
             // Отправляем ссылку для восстановления пароля пользователю на почту.
-            await _mailingsService.SendLinkRestorePasswordAsync(account, guid);
+            await _mailingsService.SendConfirmCodeRestorePasswordAsync(account, confirmCode);
 
-            if (!string.IsNullOrEmpty(token))
-            {
-                await _accessUserNotificationsService.SendNotificationSuccessLinkRestoreUserPasswordAsync("Все хорошо",
-                    "Дальнейшие инструкции по восстановлению пароля направлены Вам на почту.",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);   
-            }
+            result.IsSuccess = true;
 
-            return true;
+            return result;
         }
         
         catch (Exception ex)
@@ -531,10 +531,10 @@ internal sealed class UserService : IUserService
     /// <summary>
     /// Метод проверяет доступ к восстановлению пароля пользователя.
     /// </summary>
-    /// <param name="publicKey">Публичный код, который ранее высалался на почту пользователю.</param>
+    /// <param name="confirmCode">Код, который ранее высалался на почту пользователю.</param>
     /// <param name="account">Аккаунт.</param>
     /// <returns>Признак успешного прохождения проверки.</returns>
-    public async Task<bool> CheckRestorePasswordAsync(Guid publicKey, string account)
+    public async Task<UserRestorePasswordOutput> CheckRestorePasswordAsync(string confirmCode, string account)
     {
         try
         {
@@ -546,15 +546,24 @@ internal sealed class UserService : IUserService
                 throw ex;
             }
             
-            var guid = await _userRedisService.GetRestoreUserDataCacheAsync(userId);
+            var checkedConfirmCode = await _userRedisService.GetRestoreUserDataCacheAsync(userId);
+            
+            var result = new UserRestorePasswordOutput { Errors = new List<ValidationFailure>() };
 
-            if (!guid)
+            if (!checkedConfirmCode)
             {
-                throw new InvalidOperationException(
-                    $"Не удалось проверить код {publicKey} для восстановления пароля пользователя.");
+                var exMsg = $"Не удалось проверить код: {confirmCode} для восстановления пароля пользователя: {account}.";
+                var ex = new InvalidOperationException(exMsg);
+                _logger.LogError(ex, ex.Message);
+
+                result.Errors.Add(new ValidationFailure { ErrorMessage = exMsg });
+
+                return result;
             }
 
-            return true;
+            result.IsSuccess = true;
+
+            return result;
         }
         
         catch (Exception ex)
@@ -584,18 +593,12 @@ internal sealed class UserService : IUserService
 
             var passwordHash = HashHelper.HashPassword(password);
             await _userRepository.RestoreUserPasswordAsync(passwordHash, userId);
-            
-            if (!string.IsNullOrEmpty(token))
-            {
-                await _notificationsService.SendNotifySuccessRestoreUserPasswordAsync("Все хорошо",
-                    "Пароль успешно изменен.",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);   
-            }
         }
         
         catch (Exception ex)
         {
             _logger.LogError(ex, ex.Message);
+            
             throw;
         }
     }

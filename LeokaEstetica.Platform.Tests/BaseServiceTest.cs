@@ -206,10 +206,14 @@ internal class BaseServiceTest
         var ordersRepository = new OrdersRepository(pgContext);
         var commerceRepository = new CommerceRepository(pgContext);
         var commerceRedisService = new CommerceRedisService(distributedCache);
+        var rabbitMqService = new RabbitMqService(AppConfiguration);
+        
+        PayMasterService = new PayMasterService(null, AppConfiguration, userRepository,
+            commerceRepository, accessUserService, null, commerceRedisService, rabbitMqService, mapper, null, null);
 
         CommerceService = new CommerceService(commerceRedisService, null, userRepository, FareRuleRepository,
             commerceRepository, ordersRepository, subscriptionRepository, availableLimitsService, accessUserService,
-            null);
+            null, null, PayMasterService, mapper, null);
 
         SubscriptionService = new SubscriptionService(null, userRepository, subscriptionRepository,
             FareRuleRepository);
@@ -222,10 +226,6 @@ internal class BaseServiceTest
         VacancyPaginationService = new VacancyPaginationService(vacancyRepository, null);
         ProjectPaginationService = new ProjectPaginationService(projectRepository, null);
         FareRuleService = new FareRuleService(FareRuleRepository, null);
-
-        var rabbitMqService = new RabbitMqService(AppConfiguration);
-        PayMasterService = new PayMasterService(null, AppConfiguration, userRepository,
-            commerceRepository, accessUserService, null, commerceRedisService, rabbitMqService, mapper, null, null);
 
         var userBlackListService = new UserBlackListRepository(pgContext);
         UserBlackListService = new UserBlackListService(null, userBlackListService);

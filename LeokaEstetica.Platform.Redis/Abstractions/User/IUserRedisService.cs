@@ -30,9 +30,9 @@ public interface IUserRedisService
     /// <summary>
     /// Метод добавляет в кэш данные для восстановления пароля пользователя.
     /// </summary>
-    /// <param name="guid">Guid для отправки его в ссылке.</param>
+    /// <param name="code">Код для подтверждения.</param>
     /// <param name="userId">Id пользователя.</param>
-    Task AddRestoreUserDataCacheAsync(Guid guid, long userId);
+    Task AddRestoreUserDataCacheAsync(string code, long userId);
 
     /// <summary>
     /// Метод получает код восстановления пароля.

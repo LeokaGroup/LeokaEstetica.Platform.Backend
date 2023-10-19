@@ -98,11 +98,11 @@ public interface IMailingsService
     Task SendNotificationAddVacancyArchiveAsync(string mailTo, long vacancyId, string vacancyName);
 
     /// <summary>
-    /// Метод отправляет ссылку для восстановления пароля на почту пользователя.
+    /// Метод отправляет код для восстановления пароля на почту пользователя.
     /// </summary>
     /// <param name="mailTo">Почта пользователя, которого исключили.</param>
-    /// <param name="guid">Код для ссылки.</param>
-    Task SendLinkRestorePasswordAsync(string mailTo, Guid guid);
+    /// <param name="code">Код для подтверждения.</param>
+    Task SendConfirmCodeRestorePasswordAsync(string mailTo, string code);
     
     /// <summary>
     /// Метод отправляет уведомление на почту об успешном оформлении заказа.
