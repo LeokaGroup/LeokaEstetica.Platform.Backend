@@ -1,3 +1,4 @@
+using FluentValidation.Results;
 using LeokaEstetica.Platform.Access.Abstractions.User;
 using LeokaEstetica.Platform.Base;
 using LeokaEstetica.Platform.Base.Abstractions.Services.Validation;
@@ -9,6 +10,7 @@ using LeokaEstetica.Platform.Services.Abstractions.User;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 
 namespace LeokaEstetica.Platform.Controllers.User;
 
@@ -208,17 +210,18 @@ public class UserController : BaseController
     /// Метод отправляет код пользователю на почту для восстановления пароля.
     /// <returns>Признак успешного прохождения проверки.</returns>
     /// </summary>
+    [AllowAnonymous]
     [HttpPost]
     [Route("pre-restore")]
-    [ProducesResponseType(200)]
+    [ProducesResponseType(200, Type = typeof(UserRestorePasswordOutput))]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<bool> SendCodeRestorePasswordAsync([FromBody] PreRestorePasswordInput preRestorePasswordInput)
+    public async Task<UserRestorePasswordOutput> SendCodeRestorePasswordAsync(
+        [FromBody] PreRestorePasswordInput preRestorePasswordInput)
     {
-        var result = await _userService.SendCodeRestorePasswordAsync(preRestorePasswordInput.Account,
-            GetTokenFromHeader());
+        var result = await _userService.SendCodeRestorePasswordAsync(preRestorePasswordInput.Account);
 
         return result;
     }
@@ -226,27 +229,35 @@ public class UserController : BaseController
     /// <summary>
     /// Метод проверяет доступ к восстановлению пароля пользователя.
     /// </summary>
-    /// <param name="publicKey">Публичный код, который ранее высалался на почту пользователю.</param>
+    /// <param name="confirmCode">Код, который ранее высалался на почту пользователю.</param>
+    /// <param name="userName">Пользователь, который восстанавливает пароль.</param>
     /// <returns>Признак успешного прохождения проверки.</returns>
+    [AllowAnonymous]
     [HttpGet]
     [Route("restore/check")]
-    [ProducesResponseType(200, Type = typeof(bool))]
+    [ProducesResponseType(200, Type = typeof(UserRestorePasswordOutput))]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<bool> CheckRestorePasswordAsync([FromQuery] Guid publicKey)
+    public async Task<UserRestorePasswordOutput> CheckRestorePasswordAsync([FromQuery] string confirmCode,
+        [FromQuery] string userName)
     {
-        var validator = await new CheckRestorePasswordValidator().ValidateAsync(publicKey);
+        var result = new UserRestorePasswordOutput { Errors = new List<ValidationFailure>() };
+        var validator = await new CheckRestorePasswordValidator().ValidateAsync((confirmCode, userName));
 
         if (validator.Errors.Any())
         {
-            _logger.LogError("Передали невалидный публичный код при восстановлении пароля.");
+            result.Errors.AddRange(validator.Errors);
+
+            _logger.LogError("Ошибка входных данных при проверке кода при восстановлении пароля." +
+                             $"ConfirmCode: {confirmCode}." +
+                             $"Пользователь: {userName}");
             
-            return false;
+            return result;
         }
 
-        var result = await _userService.CheckRestorePasswordAsync(publicKey, GetUserName());
+        result = await _userService.CheckRestorePasswordAsync(confirmCode, userName);
 
         return result;
     }
@@ -255,27 +266,39 @@ public class UserController : BaseController
     /// Метод запускает восстановление пароля пользователя.
     /// </summary>
     /// <param name="restorePasswordInput">Входная модель.</param>
+    /// <returns>Выходная модель.</returns>
+    [AllowAnonymous]
     [HttpPatch]
     [Route("restore")]
-    [ProducesResponseType(200)]
+    [ProducesResponseType(200, Type = typeof(UserRestorePasswordOutput))]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task RestoreUserPasswordAsync([FromBody] RestorePasswordInput restorePasswordInput)
+    public async Task<UserRestorePasswordOutput> RestoreUserPasswordAsync(
+        [FromBody] RestorePasswordInput restorePasswordInput)
     {
-        var validator = await new RestorePasswordValidator().ValidateAsync(restorePasswordInput.RestorePassword);
+        var result = new UserRestorePasswordOutput { Errors = new List<ValidationFailure>() };
+        var validator = await new RestorePasswordValidator().ValidateAsync(restorePasswordInput);
 
         if (validator.Errors.Any())
         {
-            var ex = new InvalidOperationException("Передали невалидный пароль при восстановлении пароля.");
-            _logger.LogError(ex.Message);
+            var ex = new InvalidOperationException(
+                "Ошибка входных данных при восстановлении пароля." +
+                $" RestorePasswordInput: {JsonConvert.SerializeObject(restorePasswordInput)}");
+            _logger.LogError(ex, ex.Message);
 
-            throw ex;
+            result.Errors.AddRange(validator.Errors);
+
+            return result;
         }
+        
+        await _userService.RestoreUserPasswordAsync(restorePasswordInput.RestorePassword,
+            restorePasswordInput.UserName, GetTokenFromHeader());
 
-        await _userService.RestoreUserPasswordAsync(restorePasswordInput.RestorePassword, GetUserName(),
-            GetTokenFromHeader());
+        result.IsSuccess = true;
+
+        return result;
     }
 
     /// <summary>
