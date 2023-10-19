@@ -1,4 +1,5 @@
 using LeokaEstetica.Platform.Models.Dto.Input.Commerce.PayMaster;
+using LeokaEstetica.Platform.Models.Dto.Output.Commerce.Base.Output;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce.PayMaster;
 using LeokaEstetica.Platform.Models.Dto.Output.Refunds;
 using LeokaEstetica.Platform.Processing.Enums;
@@ -17,15 +18,14 @@ public interface IPayMasterService
     /// <param name="account">Аккаунт.</param>
     /// <param name="token">Токен пользователя.</param>
     /// <returns>Данные платежа.</returns>
-    Task<CreateOrderOutput> CreateOrderAsync(Guid publicId, string account, string token);
+    Task<ICreateOrderOutput> CreateOrderAsync(Guid publicId, string account, string token);
     
     /// <summary>
     /// Метод проверяет статус платежа в ПС.
     /// </summary>
     /// <param name="paymentId">Id платежа.</param>
-    /// <param name="httpClient">HttpClient.</param>
     /// <returns>Статус платежа.</returns>
-    Task<PaymentStatusEnum> CheckOrderStatusAsync(string paymentId, HttpClient httpClient);
+    Task<PaymentStatusEnum> CheckOrderStatusAsync(string paymentId);
     
     /// <summary>
     /// Метод создает возврат в ПС.
@@ -49,5 +49,5 @@ public interface IPayMasterService
     /// <param name="createReceiptInput">Входная модель.</param>
     /// </summary>
     /// <returns>Выходная модель чека.</returns>
-    Task<CreateReceiptOutput> CreateReceiptRefundAsync(CreateReceiptInput createReceiptInput);
+    Task<CreateReceiptOutput> CreateReceiptRefundAsync(CreateReceiptPayMasterInput createReceiptInput);
 }

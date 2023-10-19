@@ -1,4 +1,5 @@
 using AutoMapper;
+using FluentValidation.Results;
 using LeokaEstetica.Platform.Base;
 using LeokaEstetica.Platform.Controllers.Filters;
 using LeokaEstetica.Platform.Controllers.Validators.Commerce;
@@ -6,10 +7,11 @@ using LeokaEstetica.Platform.Database.Abstractions.FareRule;
 using LeokaEstetica.Platform.Models.Dto.Input.Commerce;
 using LeokaEstetica.Platform.Models.Dto.Input.Commerce.PayMaster;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce;
+using LeokaEstetica.Platform.Models.Dto.Output.Commerce.Base.Output;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce.PayMaster;
+using LeokaEstetica.Platform.Models.Dto.Output.Commerce.YandexKassa;
 using LeokaEstetica.Platform.Models.Dto.Output.FareRule;
 using LeokaEstetica.Platform.Processing.Abstractions.Commerce;
-using LeokaEstetica.Platform.Processing.Abstractions.PayMaster;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -24,7 +26,6 @@ namespace LeokaEstetica.Platform.Controllers.Commerce;
 [Route("commercial")]
 public class CommerceController : BaseController
 {
-    private readonly IPayMasterService _payMasterService;
     private readonly IFareRuleRepository _fareRuleRepository;
     private readonly IMapper _mapper;
     private readonly ILogger<CommerceController> _logger;
@@ -33,18 +34,15 @@ public class CommerceController : BaseController
     /// <summary>
     /// Конструктор.
     /// </summary>
-    /// <param name="payMasterService">Сервис платежей через ПС PayMaster.</param>
     /// <param name="fareRuleRepository">Репозиторий правил тарифов.</param>
     /// <param name="mapper">Автомаппер.</param>
     /// <param name="logger">Сервис логера.</param>
     /// <param name="commerceService">Сервис коммерции.</param>
-    public CommerceController(IPayMasterService payMasterService, 
-        IFareRuleRepository fareRuleRepository, 
+    public CommerceController(IFareRuleRepository fareRuleRepository, 
         IMapper mapper, 
         ILogger<CommerceController> logger, 
         ICommerceService commerceService)
     {
-        _payMasterService = payMasterService;
         _fareRuleRepository = fareRuleRepository;
         _mapper = mapper;
         _logger = logger;
@@ -58,14 +56,15 @@ public class CommerceController : BaseController
     /// <returns>Данные платежа.</returns>
     [HttpPost]
     [Route("payments")]
-    [ProducesResponseType(200, Type = typeof(CreateOrderOutput))]
+    [ProducesResponseType(200, Type = typeof(ICreateOrderOutput))]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<CreateOrderOutput> CreateOrderAsync([FromBody] CreateOrderInput createOrderInput)
+    public async Task<ICreateOrderOutput> CreateOrderAsync(
+        [FromBody] CreateOrderPayMasterInput createOrderInput)
     {
-        var result = new CreateOrderOutput();
+        var result = new CreateOrderYandexKassaOutput { Errors = new List<ValidationFailure>() };
         var validator = await new CreateOrderValidator().ValidateAsync(createOrderInput);
 
         if (validator.Errors.Any())
@@ -75,10 +74,10 @@ public class CommerceController : BaseController
             return result;
         }
 
-        result = await _payMasterService.CreateOrderAsync(createOrderInput.PublicId, GetUserName(),
-            GetTokenFromHeader());
+        result = await _commerceService.CreateOrderAsync(createOrderInput.PublicId, GetUserName(),
+            GetTokenFromHeader()) as CreateOrderYandexKassaOutput;
 
-        return result;
+        return result ;
     }
 
     /// <summary>

@@ -3,7 +3,7 @@ namespace LeokaEstetica.Platform.Models.Dto.Base.Commerce.PayMaster;
 /// <summary>
 /// Класс описывает детали счета.
 /// </summary>
-public class Invoice
+public class InvoicePayMaster
 {
     /// <summary>
     /// Описание платежа.

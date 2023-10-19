@@ -18,8 +18,9 @@ public static class StartJobs
         services.AddHostedService<UserActivityMarkDeactivateJob>();
 
         // Запускаем планировщик удаления аккаунтов пользователей.
-        services.AddHostedService<DeleteDeactivatedAccountsJob>();
+        //services.AddHostedService<DeleteDeactivatedAccountsJob>();
 
+        // TODO: Возвраты пока работают вручную (пока не автоматизируем их).
         // var refundsJobJobKey = new JobKey("RefundsJob");
         // q.AddJob<RefundsJob>(opts => opts.WithIdentity(refundsJobJobKey));
         // q.AddTrigger(opts => opts
@@ -29,13 +30,13 @@ public static class StartJobs
         //         .WithIntervalInMinutes(3)
         //         .RepeatForever()));
         
-        // var ordersJobJobKey = new JobKey("OrdersJob");
-        // q.AddJob<OrdersJob>(opts => opts.WithIdentity(ordersJobJobKey));
-        // q.AddTrigger(opts => opts
-        //     .ForJob(ordersJobJobKey)
-        //     .WithIdentity("OrdersJobTrigger")
-        //     .WithSimpleSchedule(x => x
-        //         .WithIntervalInMinutes(3)
-        //         .RepeatForever()));
+        var ordersJobJobKey = new JobKey("OrdersJob");
+        q.AddJob<OrdersJob>(opts => opts.WithIdentity(ordersJobJobKey));
+        q.AddTrigger(opts => opts
+            .ForJob(ordersJobJobKey)
+            .WithIdentity("OrdersJobTrigger")
+            .WithSimpleSchedule(x => x
+                .WithIntervalInMinutes(3)
+                .RepeatForever()));
     }
 }

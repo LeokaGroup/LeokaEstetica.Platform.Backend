@@ -7,6 +7,7 @@ using LeokaEstetica.Platform.Core.Constants;
 using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.Commerce;
 using LeokaEstetica.Platform.Database.Abstractions.Config;
+using LeokaEstetica.Platform.Integrations.Abstractions.Pachca;
 using LeokaEstetica.Platform.Messaging.Factors;
 using LeokaEstetica.Platform.Processing.Abstractions.PayMaster;
 using LeokaEstetica.Platform.Processing.Enums;
@@ -31,6 +32,7 @@ internal sealed class RefundsJob : IJob
     private readonly ICommerceRepository _commerceRepository;
     private readonly ILogger<OrdersJob> _logger;
     private readonly IGlobalConfigRepository _globalConfigRepository;
+    private readonly IPachcaService _pachcaService;
     
     /// <summary>
     /// Название очереди.
@@ -46,17 +48,20 @@ internal sealed class RefundsJob : IJob
     /// <param name="commerceRepository">Репозиторий коммерции.</param>
     /// <param name="logger">Сервис логов.</param>
     /// <param name="globalConfigRepository">Репозиторий глобал конфигов.</param>
+    /// <param name="pachcaService">Сервис пачки.</param>
     public RefundsJob(IConfiguration configuration, 
         IPayMasterService payMasterService,
         ICommerceRepository commerceRepository, 
         ILogger<OrdersJob> logger,
-        IGlobalConfigRepository globalConfigRepository)
+        IGlobalConfigRepository globalConfigRepository,
+        IPachcaService pachcaService)
     {
         _payMasterService = payMasterService;
         _httpClient = new HttpClient();
         _commerceRepository = commerceRepository;
         _logger = logger;
         _globalConfigRepository = globalConfigRepository;
+        _pachcaService = pachcaService;
 
         var factory = CreateRabbitMqConnectionFactory.CreateRabbitMqConnection(configuration);
         var connection = factory.CreateConnection();
@@ -102,9 +107,14 @@ internal sealed class RefundsJob : IJob
             {
                 var message = Encoding.UTF8.GetString(ea.Body.ToArray());
                 var refundEvent = JsonConvert.DeserializeObject<RefundEvent>(message);
+                
+                if (refundEvent is null)
+                {
+                    throw new InvalidOperationException("Событие не содержит нужных данных." +
+                                                        $" Получили сообщение из очереди возвратов: {message}");
+                }
 
                 // Проверяем статус возврата в ПС.
-                // TODO: Обработать здесь NRE!
                 var paymentId = refundEvent.PaymentId;
                 var newRefundStatus = await _payMasterService.CheckRefundStatusAsync(paymentId, _httpClient);
                 
@@ -134,6 +144,9 @@ internal sealed class RefundsJob : IJob
                     catch (Exception ex)
                     {
                         _logger.LogCritical(ex, "Ошибка при чтении очереди возвратов.");
+                        
+                        await _pachcaService.SendNotificationErrorAsync(ex);
+                        
                         throw;
                     }
                     

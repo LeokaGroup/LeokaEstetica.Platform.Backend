@@ -1,3 +1,4 @@
+using LeokaEstetica.Platform.Models.Dto.Base.Commerce;
 using LeokaEstetica.Platform.Models.Dto.Base.Commerce.PayMaster;
 
 namespace LeokaEstetica.Platform.Models.Dto.Input.Commerce.PayMaster;
@@ -5,7 +6,7 @@ namespace LeokaEstetica.Platform.Models.Dto.Input.Commerce.PayMaster;
 /// <summary>
 /// Класс входной модели создания заказа при запросе к ПС.
 /// </summary>
-public class CreateOrderRequest
+public class CreateOrderPayMasterRequest
 {
     /// <summary>
     /// Ключ мерчанта (магазина).
@@ -25,7 +26,7 @@ public class CreateOrderRequest
     /// <summary>
     /// Детали счета.
     /// </summary>
-    public Invoice Invoice { get; set; }
+    public InvoicePayMaster Invoice { get; set; }
 
     /// <summary>
     /// Цена.
