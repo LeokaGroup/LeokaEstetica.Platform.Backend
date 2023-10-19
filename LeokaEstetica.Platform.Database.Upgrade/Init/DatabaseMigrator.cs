@@ -3,24 +3,39 @@ using DbUp;
 
 namespace LeokaEstetica.Platform.Database.Upgrade.Init;
 
-public static class DatabaseMigrator
+/// <summary>
+/// Класс инициализации миграций.
+/// </summary>
+public class DatabaseMigrator
 {
+    /// <summary>
+    /// Метод накатывает миграции.
+    /// </summary>
+    /// <param name="connectionString">Строка подключения к БД.</param>
     public static void MigrateDatabase(string connectionString)
     {
-        EnsureDatabase.For.PostgresqlDatabase(connectionString);
+        var assembly = Assembly.GetExecutingAssembly();
+        var assemblyName = assembly.GetName().Name;
 
-        var upgrader = DeployChanges.To
+        var executor = DeployChanges.To
             .PostgresqlDatabase(connectionString)
-            .WithScriptsEmbeddedInAssembly(Assembly.GetExecutingAssembly())
-            .WithTransaction()
+            .WithScriptsEmbeddedInAssembly(assembly,
+                s => s.StartsWith(string.Join('.', assemblyName, "Scripts"),
+                    StringComparison.InvariantCultureIgnoreCase))
+            .JournalToPostgresqlTable("public", "SchemaVersions")
             .LogToConsole()
             .Build();
 
-        var result = upgrader.PerformUpgrade();
+        var result = executor.PerformUpgrade();
 
         if (!result.Successful)
         {
-            throw new Exception("Ошибка при обновлении БД.", result.Error);
+            Console.WriteLine("Ошибка при обновлении БД.");
+            Console.WriteLine(result.Error);
         }
+        
+        Console.ForegroundColor = ConsoleColor.Green;
+        Console.WriteLine("Успешно!");
+        Console.ResetColor();
     }
 }

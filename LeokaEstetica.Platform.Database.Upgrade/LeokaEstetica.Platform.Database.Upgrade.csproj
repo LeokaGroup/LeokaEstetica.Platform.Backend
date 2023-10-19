@@ -4,11 +4,15 @@
         <TargetFramework>net6.0</TargetFramework>
         <Nullable>disable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
+        <OutputType>Exe</OutputType>
     </PropertyGroup>
 
     <ItemGroup>
+        <EmbeddedResource Include="Scripts\001.esta.ddl_alter_users.sql" />
+    </ItemGroup>
+
+    <ItemGroup>
         <PackageReference Include="dbup-postgresql" Version="5.0.37" />
-        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
     </ItemGroup>
 
 </Project>
