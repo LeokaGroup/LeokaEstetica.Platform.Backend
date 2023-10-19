@@ -97,6 +97,28 @@ internal sealed class CommerceRepository : ICommerceRepository
     }
 
     /// <summary>
+    /// Метод проставляет статус заказа подтвержден.
+    /// </summary>
+    /// <param name="paymentId">Id платежа в ПС.</param>
+    /// <param name="paymentStatusSysName">Системное название статуса заказа.</param>
+    /// <param name="paymentStatusName">Русское название статуса заказа.</param>
+    public async Task SetStatusConfirmByPaymentIdAsync(string paymentId, string paymentStatusSysName,
+        string paymentStatusName)
+    {
+        var order = await _pgContext.Orders.FirstOrDefaultAsync(o => o.PaymentId.Equals(paymentId));
+
+        if (order is null)
+        {
+            throw new InvalidOperationException($"Не удалось получить заказ по PaymentId: {paymentId}");
+        }
+
+        order.StatusName = paymentStatusName;
+        order.StatusSysName = paymentStatusSysName;
+        
+        await _pgContext.SaveChangesAsync();
+    }
+
+    /// <summary>
     /// Метод создает возврат в БД.
     /// </summary>
     /// <param name="paymentId">Id платежа в ПС.</param>

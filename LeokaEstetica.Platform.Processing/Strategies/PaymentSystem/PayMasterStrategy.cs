@@ -1,3 +1,4 @@
+using LeokaEstetica.Platform.Models.Dto.Base.Commerce;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce.Base.Output;
 using LeokaEstetica.Platform.Processing.Abstractions.PayMaster;
 using LeokaEstetica.Platform.Processing.Enums;
@@ -46,6 +47,11 @@ internal class PayMasterStrategy : BasePaymentSystemStrategy
         var result = await _payMasterService.CheckOrderStatusAsync(paymentId);
 
         return result;
+    }
+
+    public override Task ConfirmPaymentAsync(string paymentId, Amount amount)
+    {
+        throw new NotImplementedException("Подтверждение платежа не реализовано в ПС PayMaster.");
     }
 
     #endregion

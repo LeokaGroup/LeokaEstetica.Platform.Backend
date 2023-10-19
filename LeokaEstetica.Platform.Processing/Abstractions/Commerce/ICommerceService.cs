@@ -1,3 +1,4 @@
+using LeokaEstetica.Platform.Models.Dto.Base.Commerce;
 using LeokaEstetica.Platform.Models.Dto.Common.Cache;
 using LeokaEstetica.Platform.Models.Dto.Common.Cache.Output;
 using LeokaEstetica.Platform.Models.Dto.Input.Commerce;
@@ -68,4 +69,11 @@ public interface ICommerceService
     /// <param name="paymentId">Id платежа.</param>
     /// <returns>Статус платежа.</returns>
     Task<PaymentStatusEnum> CheckOrderStatusAsync(string paymentId);
+
+    /// <summary>
+    /// Метод подтвержадет платеж в ПС. После этого спишутся ДС.
+    /// </summary>
+    /// <param name="paymentId">Id платежа.</param>
+    /// <param name="amount">Данные о цене.</param>
+    Task ConfirmPaymentAsync(string paymentId, Amount amount);
 }

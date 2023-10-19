@@ -4,8 +4,10 @@ using LeokaEstetica.Platform.Access.Abstractions.User;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.Base.Extensions;
 using LeokaEstetica.Platform.Core.Constants;
+using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.Commerce;
 using LeokaEstetica.Platform.Database.Abstractions.Config;
+using LeokaEstetica.Platform.Database.Abstractions.Connection;
 using LeokaEstetica.Platform.Messaging.Abstractions.Mail;
 using LeokaEstetica.Platform.Messaging.Abstractions.RabbitMq;
 using LeokaEstetica.Platform.Models.Dto.Base.Commerce;
@@ -43,6 +45,7 @@ internal sealed class YandexKassaService : IYandexKassaService
     private readonly ICommerceRepository _commerceRepository;
     private readonly IRabbitMqService _rabbitMqService;
     private readonly IMailingsService _mailingsService;
+    private readonly ITransactionScopeFactory _transactionScopeFactory;
 
     /// <summary>
     /// Конструктор.
@@ -56,7 +59,8 @@ internal sealed class YandexKassaService : IYandexKassaService
     /// <param name="globalConfigRepository">Репозиторий глобал конфига.</param>
     /// <param name="commerceRepository">Репозиторий коммерции.</param>
     /// <param name="rabbitMqService">Сервис кролика.</param>
-    /// <param name="mailingsService">Сервис email.</param> 
+    /// <param name="mailingsService">Сервис email.</param>
+    /// <param name="transactionScopeFactory">Факторка транзакций.</param> 
     public YandexKassaService(ILogger<YandexKassaService> logger,
         IUserRepository userRepository,
         IAccessUserService accessUserService,
@@ -66,7 +70,8 @@ internal sealed class YandexKassaService : IYandexKassaService
         IGlobalConfigRepository globalConfigRepository,
         ICommerceRepository commerceRepository,
         IRabbitMqService rabbitMqService,
-        IMailingsService mailingsService)
+        IMailingsService mailingsService,
+        ITransactionScopeFactory transactionScopeFactory)
     {
         _logger = logger;
         _userRepository = userRepository;
@@ -78,6 +83,7 @@ internal sealed class YandexKassaService : IYandexKassaService
         _commerceRepository = commerceRepository;
         _rabbitMqService = rabbitMqService;
         _mailingsService = mailingsService;
+        _transactionScopeFactory = transactionScopeFactory;
     }
 
     #region Публичные методы.
@@ -93,6 +99,7 @@ internal sealed class YandexKassaService : IYandexKassaService
     {
         try
         {
+            using var scope = _transactionScopeFactory.CreateTransactionScope();
             var userId = await _userRepository.GetUserByEmailAsync(account);
 
             // Проверяем заполнение анкеты и даем доступ либо нет.
@@ -126,8 +133,7 @@ internal sealed class YandexKassaService : IYandexKassaService
             _logger.LogInformation("Начало создания заказа.");
 
             using var httpClient = new HttpClient().SetYandexKassaRequestAuthorizationHeader(_configuration);
-            // await SetYandexKassaRequestAuthorizationHeader(httpClient);
-            
+
             // Создаем платеж в ПС.
             var httpContent = new StringContent(JsonConvert.SerializeObject(createOrderInput.CreateOrderRequest),
                 Encoding.UTF8, "application/json");
@@ -164,6 +170,9 @@ internal sealed class YandexKassaService : IYandexKassaService
                     _configuration, _commerceRepository, _rabbitMqService, _globalConfigRepository, _mailingsService);
 
             _logger.LogInformation("Конец создания заказа.");
+            
+            scope.Complete();
+            
             _logger.LogInformation("Создание заказа успешно.");
 
             return result;
@@ -185,9 +194,10 @@ internal sealed class YandexKassaService : IYandexKassaService
     {
         try
         {
+            _logger.LogInformation($"Начало проверки статуса заказа {paymentId}.");
+            
+            using var scope = _transactionScopeFactory.CreateTransactionScope();
             using var httpClient = new HttpClient().SetYandexKassaRequestAuthorizationHeader(_configuration);
-
-            _logger?.LogInformation($"Начало проверки статуса заказа {paymentId}.");
 
             var responseCreateOrder = await httpClient.GetAsync(string.Concat(ApiConsts.YandexKassa.CHECK_PAYMENT_STATUS,
                 paymentId));
@@ -220,8 +230,58 @@ internal sealed class YandexKassaService : IYandexKassaService
                                                        " Необходимо добавить маппинги для этого статуса заказа.");
                 throw ex;
             }
+            
+            scope.Complete();
+            
+            _logger.LogInformation($"Закончили проверку статуса заказа {paymentId}.");
 
             return result;
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Метод подтвержадет платеж в ПС. После этого спишутся ДС.
+    /// </summary>
+    /// <param name="paymentId">Id платежа.</param>
+    /// <param name="amount">Данные о цене.</param>
+    public async Task ConfirmPaymentAsync(string paymentId, Amount amount)
+    {
+        try
+        {
+            _logger.LogInformation("Начало подтверждения заказа.");
+
+            using var scope = _transactionScopeFactory.CreateTransactionScope();
+            using var httpClient = new HttpClient().SetYandexKassaRequestAuthorizationHeader(_configuration);
+
+            // Подтверждаем платеж в ПС и списываем ДС у пользователя.
+            var httpContent = new StringContent(JsonConvert.SerializeObject(amount),
+                Encoding.UTF8, "application/json");
+            var responseConfirmOrder = await httpClient.PostAsync(
+                new Uri($"{ApiConsts.YandexKassa.CONFIRM_PAYMENT}{paymentId}/capture"), httpContent);
+
+            // Если ошибка при подтверждении заказа в ПС.
+            if (!responseConfirmOrder.IsSuccessStatusCode)
+            {
+                var responseErrorDetails = responseConfirmOrder.Content.ReadAsStringAsync().Result;
+                var ex = new InvalidOperationException(
+                    "Ошибка подтверждения заказа в ПС." +
+                    $" Данные заказа: {JsonConvert.SerializeObject(amount)}." +
+                    $" Ответ от ПС: {responseErrorDetails}");
+                throw ex;
+            }
+
+            await _commerceRepository.SetStatusConfirmByPaymentIdAsync(paymentId,
+                PaymentStatusEnum.Succeeded.ToString(), PaymentStatusEnum.Succeeded.GetEnumDescription());
+            
+            scope.Complete();
+            
+            _logger.LogInformation("Закончили подтверждение заказа.");
         }
         
         catch (Exception ex)

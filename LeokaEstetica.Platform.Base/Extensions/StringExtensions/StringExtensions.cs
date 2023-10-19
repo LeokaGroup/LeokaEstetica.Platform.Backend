@@ -13,14 +13,14 @@ public static class StringExtensions
     /// </summary>
     /// <param name="s">Входная строка.</param>
     /// <returns>Измененная строка.</returns>
-    public static string ToPascalCase(string s)
+    public static string ToPascalCase(this string str)
     {
         // Найдите части слов, используя следующие правила:
         // 1. все строчные буквы, начинающиеся в начале, это слово
         // 2. Все заглавные буквы - это слово.
         // З. заглавные буквы, за которыми следуют строчные буквы - слово
         // 4. вся строка должна разложиться на слова согласно 1,2,3.
-        var m = Regex.Match(s, "^(?<word>^[a-z]+|[A-Z]+|[A-Z][a-z]+)+$");
+        var m = Regex.Match(str, "^(?<word>^[a-z]+|[A-Z]+|[A-Z][a-z]+)+$");
         var g = m.Groups["word"];
 
         // Берите каждое слово и преобразуйте его в TitleCase
@@ -35,5 +35,10 @@ public static class StringExtensions
         }
 
         return sb.ToString();
+    }
+    
+    public static string ToPascalCaseFromSnakeCase(this string str)
+    {
+        return string.Concat(str.Split('_').Select(Thread.CurrentThread.CurrentCulture.TextInfo.ToTitleCase));
     }
 }

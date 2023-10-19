@@ -9,6 +9,7 @@ using LeokaEstetica.Platform.Models.Dto.Input.Commerce.PayMaster;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce.Base.Output;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce.PayMaster;
+using LeokaEstetica.Platform.Models.Dto.Output.Commerce.YandexKassa;
 using LeokaEstetica.Platform.Models.Dto.Output.FareRule;
 using LeokaEstetica.Platform.Processing.Abstractions.Commerce;
 using Microsoft.AspNetCore.Mvc;
@@ -63,7 +64,7 @@ public class CommerceController : BaseController
     public async Task<ICreateOrderOutput> CreateOrderAsync(
         [FromBody] CreateOrderPayMasterInput createOrderInput)
     {
-        var result = new CreateOrderPayMasterOutput { Errors = new List<ValidationFailure>() };
+        var result = new CreateOrderYandexKassaOutput { Errors = new List<ValidationFailure>() };
         var validator = await new CreateOrderValidator().ValidateAsync(createOrderInput);
 
         if (validator.Errors.Any())
@@ -74,9 +75,9 @@ public class CommerceController : BaseController
         }
 
         result = await _commerceService.CreateOrderAsync(createOrderInput.PublicId, GetUserName(),
-            GetTokenFromHeader()) as CreateOrderPayMasterOutput;
+            GetTokenFromHeader()) as CreateOrderYandexKassaOutput;
 
-        return result;
+        return result ;
     }
 
     /// <summary>

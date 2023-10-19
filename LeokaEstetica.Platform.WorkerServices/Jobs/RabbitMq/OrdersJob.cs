@@ -10,6 +10,7 @@ using LeokaEstetica.Platform.Database.Abstractions.Config;
 using LeokaEstetica.Platform.Database.Abstractions.FareRule;
 using LeokaEstetica.Platform.Integrations.Abstractions.Pachca;
 using LeokaEstetica.Platform.Messaging.Factors;
+using LeokaEstetica.Platform.Models.Dto.Base.Commerce;
 using LeokaEstetica.Platform.Processing.Abstractions.Commerce;
 using LeokaEstetica.Platform.Processing.Enums;
 using LeokaEstetica.Platform.Services.Abstractions.Subscription;
@@ -26,7 +27,7 @@ namespace LeokaEstetica.Platform.WorkerServices.Jobs.RabbitMq;
 /// Класс джобы консьюмера заказов кролика.
 /// </summary>
 [DisallowConcurrentExecution]
-internal sealed class OrdersJob : IJob, IDisposable
+internal sealed class OrdersJob : IJob
 {
     private readonly IModel _channel;
     private readonly ICommerceRepository _commerceRepository;
@@ -36,7 +37,6 @@ internal sealed class OrdersJob : IJob, IDisposable
     private readonly IGlobalConfigRepository _globalConfigRepository;
     private readonly IPachcaService _pachcaService;
     private readonly ICommerceService _commerceService;
-    private readonly IConnection _connection;
 
     /// <summary>
     /// Название очереди.
@@ -71,13 +71,12 @@ internal sealed class OrdersJob : IJob, IDisposable
         _pachcaService = pachcaService;
         _commerceService = commerceService;
 
-        var factory = CreateRabbitMqConnectionFactory.CreateRabbitMqConnection(configuration);
-        _connection = factory.CreateConnection();
-        _channel = _connection.CreateModel();
-        
+        var connection = CreateRabbitMqConnectionSingletonFactory.CreateRabbitMqConnection(configuration);
+        _channel = CreateRabbitMqChannelSingletonFactory.CreateRabbitMqChannel(connection);
+
         var flags = QueueTypeEnum.OrdersQueue | QueueTypeEnum.OrdersQueue;
         _channel.QueueDeclare(queue: _queueName.CreateQueueDeclareNameFactory(configuration, flags),
-            durable: false, exclusive: false, autoDelete: false, arguments: null);
+            durable: false, exclusive: false, autoDelete: false, arguments: null);   
     }
     
     /// <summary>
@@ -108,7 +107,7 @@ internal sealed class OrdersJob : IJob, IDisposable
         consumer.Received += async (_, ea) =>
         {
             _logger.LogInformation("Начали обработку сообщения из очереди заказов...");
-            
+
             // Если очередь не пуста, то будем парсить результат для проверки статуса заказов.
             if (!ea.Body.IsEmpty)
             {
@@ -134,12 +133,12 @@ internal sealed class OrdersJob : IJob, IDisposable
                     // Получаем старый статус платежа до проверки в ПС.
                     oldStatusSysName = PaymentStatus.GetPaymentStatusBySysName(orderEvent.StatusSysName);
                 }
+                
                 catch (Exception ex)
                 {
                     _logger.LogCritical(ex, "Ошибка при чтении очереди заказов.");
                         
                     await _pachcaService.SendNotificationErrorAsync(ex);
-                        
                     throw;
                 }
 
@@ -170,6 +169,14 @@ internal sealed class OrdersJob : IJob, IDisposable
                             await _subscriptionService.SetUserSubscriptionAsync(orderEvent.UserId, publicId,
                                 orderEvent.Month, orderId, fareRule.RuleId);
                         }
+                        
+                        // Если статус платежа в ПС ожидает подтверждения, то подтверждаем его, чтобы списать ДС.
+                        // Подтвердить в ПС можно только заказы в статусе waiting_for_capture.
+                        if (newOrderStatus == PaymentStatusEnum.WaitingForCapture)
+                        {
+                            await _commerceService.ConfirmPaymentAsync(paymentId,
+                                new Amount(orderEvent.Price, orderEvent.Currency));
+                        }
                     }
                 
                     catch (Exception ex)
@@ -177,7 +184,6 @@ internal sealed class OrdersJob : IJob, IDisposable
                         _logger.LogCritical(ex, "Ошибка при чтении очереди заказов.");
                         
                         await _pachcaService.SendNotificationErrorAsync(ex);
-                        
                         throw;
                     }
                     
@@ -192,7 +198,7 @@ internal sealed class OrdersJob : IJob, IDisposable
                     _channel.BasicRecoverAsync(false);
                 }
             }
-            
+
             _logger.LogInformation("Закончили обработку сообщения из очереди заказов...");
 
             await Task.Yield();
@@ -201,21 +207,5 @@ internal sealed class OrdersJob : IJob, IDisposable
         _channel.BasicConsume(_queueName, false, consumer);
 
         await Task.CompletedTask;
-    }
-
-    public void Dispose()
-    {
-        if (_channel.IsOpen)
-        {
-            _channel.Close();
-        }
-
-        if (_connection.IsOpen)
-        {
-            _connection.Close();
-        }
-        
-        _channel.Dispose();
-        _connection.Dispose();
     }
 }

@@ -1,3 +1,4 @@
+using LeokaEstetica.Platform.Models.Dto.Base.Commerce;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce.Base.Output;
 using LeokaEstetica.Platform.Processing.Enums;
 
@@ -39,5 +40,18 @@ internal class PaymentSystemJob
         }
 
         return PaymentStatusEnum.None;
+    }
+
+    /// <summary>
+    /// Метод подтвержадет платеж в ПС. После этого спишутся ДС.
+    /// </summary>
+    /// <param name="paymentId">Id платежа.</param>
+    /// <param name="amount">Данные о цене.</param>
+    internal async Task ConfirmPaymentAsync(BasePaymentSystemStrategy strategy, string paymentId, Amount amount)
+    {
+        if (strategy is not null)
+        {
+            await strategy.ConfirmPaymentAsync(paymentId, amount);
+        }
     }
 }

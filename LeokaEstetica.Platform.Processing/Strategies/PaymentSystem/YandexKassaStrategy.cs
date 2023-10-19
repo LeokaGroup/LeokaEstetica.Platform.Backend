@@ -1,3 +1,4 @@
+using LeokaEstetica.Platform.Models.Dto.Base.Commerce;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce.Base.Output;
 using LeokaEstetica.Platform.Processing.Abstractions.YandexKassa;
 using LeokaEstetica.Platform.Processing.Enums;
@@ -46,6 +47,16 @@ internal class YandexKassaStrategy : BasePaymentSystemStrategy
         var result = await _yandexKassaService.CheckOrderStatusAsync(paymentId);
 
         return result;
+    }
+
+    /// <summary>
+    /// Метод подтвержадет платеж в ПС. После этого спишутся ДС.
+    /// </summary>
+    /// <param name="paymentId">Id платежа.</param>
+    /// <param name="amount">Данные о цене.</param>
+    public override async Task ConfirmPaymentAsync(string paymentId, Amount amount)
+    {
+        await _yandexKassaService.ConfirmPaymentAsync(paymentId, amount);
     }
 
     #endregion

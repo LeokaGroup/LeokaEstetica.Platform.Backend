@@ -1,3 +1,4 @@
+using LeokaEstetica.Platform.Models.Dto.Base.Commerce;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce.Base.Output;
 using LeokaEstetica.Platform.Processing.Enums;
 
@@ -23,4 +24,11 @@ internal abstract class BasePaymentSystemStrategy
     /// <param name="paymentId">Id платежа.</param>
     /// <returns>Статус платежа.</returns>
     public abstract Task<PaymentStatusEnum> CheckOrderStatusAsync(string paymentId);
+    
+    /// <summary>
+    /// Метод подтвержадет платеж в ПС. После этого спишутся ДС.
+    /// </summary>
+    /// <param name="paymentId">Id платежа.</param>
+    /// <param name="amount">Данные о цене.</param>
+    public abstract Task ConfirmPaymentAsync(string paymentId, Amount amount);
 }

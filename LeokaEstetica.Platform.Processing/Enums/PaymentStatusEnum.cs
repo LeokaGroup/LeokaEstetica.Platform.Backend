@@ -94,6 +94,13 @@ public static class PaymentStatus
     /// <returns>Если статус есть, вернет его, иначе будет по дефолту None.</returns>
     public static PaymentStatusEnum GetPaymentStatusBySysName(string statusName)
     {
-        return _paymentStatuses.TryGet(StringExtensions.ToPascalCase(statusName));
+        var result = _paymentStatuses.TryGet(statusName.ToPascalCase());
+
+        if (result == PaymentStatusEnum.None)
+        {
+            result = _paymentStatuses.TryGet(statusName.ToPascalCaseFromSnakeCase());
+        }
+        
+        return result;
     }
 }

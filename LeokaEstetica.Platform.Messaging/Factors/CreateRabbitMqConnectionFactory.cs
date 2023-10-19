@@ -23,7 +23,7 @@ public static class CreateRabbitMqConnectionFactory
             DispatchConsumersAsync = true,
             Port = AmqpTcpEndpoint.UseDefaultPort,
             VirtualHost = "/",
-            ContinuationTimeout = new TimeSpan(10, 0, 0, 0)
+            ContinuationTimeout = new TimeSpan(0, 0, 0, 20)
         };
     }
 }

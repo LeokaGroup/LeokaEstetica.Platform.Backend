@@ -83,10 +83,12 @@ public static class CreatePaymentOrderFactory
         // Создаем заказ в БД.
         var createdOrderResult = await commerceRepository.CreateOrderAsync(createdOrder);
 
+        /// TODO: Засунуть все параметры в модель. Их слишком много уже тут.
         // Отправляем заказ в очередь для отслеживания его статуса.
         var orderEvent = OrderEventFactory.CreateOrderEvent(createdOrderResult.OrderId,
             createdOrderResult.StatusSysName, paymentId, createPaymentOrderAggregateInput.UserId,
-            createPaymentOrderAggregateInput.PublicId, createPaymentOrderAggregateInput.OrderCache.Month);
+            createPaymentOrderAggregateInput.PublicId, createPaymentOrderAggregateInput.OrderCache.Month,
+            createdOrderResult.Price, createdOrderResult.Currency);
         
         var queueType = string.Empty.CreateQueueDeclareNameFactory(configuration, QueueTypeEnum.OrdersQueue);
         await rabbitMqService.PublishAsync(orderEvent, queueType);

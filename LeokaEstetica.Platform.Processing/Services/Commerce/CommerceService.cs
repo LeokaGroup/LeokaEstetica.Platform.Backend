@@ -11,6 +11,7 @@ using LeokaEstetica.Platform.Database.Abstractions.Config;
 using LeokaEstetica.Platform.Database.Abstractions.FareRule;
 using LeokaEstetica.Platform.Database.Abstractions.Orders;
 using LeokaEstetica.Platform.Database.Abstractions.Subscription;
+using LeokaEstetica.Platform.Models.Dto.Base.Commerce;
 using LeokaEstetica.Platform.Models.Dto.Common.Cache;
 using LeokaEstetica.Platform.Models.Dto.Common.Cache.Output;
 using LeokaEstetica.Platform.Models.Dto.Input.Commerce;
@@ -434,6 +435,34 @@ internal sealed class CommerceService : ICommerceService
         };
 
         return orderStatus;
+    }
+
+    /// <summary>
+    /// Метод подтвержадет платеж в ПС. После этого спишутся ДС.
+    /// </summary>
+    /// <param name="paymentId">Id платежа.</param>
+    /// <param name="amount">Данные о цене.</param>
+    public async Task ConfirmPaymentAsync(string paymentId, Amount amount)
+    {
+        var paymentSystemType = await _globalConfigRepository.GetValueByKeyAsync<string>(GlobalConfigKeys
+            .Integrations.PaymentSystem.COMMERCE_PAYMENT_SYSTEM_TYPE_MODE);
+        _logger.LogInformation($"Подтверждение платежа в ПС: {paymentSystemType}.");
+
+        var systemType = Enum.Parse<PaymentSystemEnum>(paymentSystemType);
+        var paymentSystemJob = new PaymentSystemJob();
+
+        // Подтверждаем платеж в ПС, которая выбрана в конфиг таблице.
+        // После этого будут списаны ДС.
+        if (systemType == PaymentSystemEnum.Yandex)
+        {
+            await paymentSystemJob.ConfirmPaymentAsync(
+                new YandexKassaStrategy(_yandexKassaService), paymentId, amount);
+        }
+
+        else
+        {
+            throw new InvalidOperationException("Неизвестный тип платежной системы.");
+        }
     }
 
     #endregion
