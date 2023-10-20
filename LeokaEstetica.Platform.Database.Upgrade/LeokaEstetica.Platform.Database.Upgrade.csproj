@@ -8,7 +8,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <EmbeddedResource Include="Scripts\001.esta.ddl_alter_users.sql" />
+        <EmbeddedResource Include="Scripts\001.Esta.DDL_Alter_Users.sql" />
     </ItemGroup>
 
     <ItemGroup>
