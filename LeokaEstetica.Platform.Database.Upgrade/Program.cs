@@ -1,25 +1,23 @@
 using LeokaEstetica.Platform.Database.Upgrade.Init;
+using Microsoft.Extensions.Configuration;
 
-// var builder = WebApplication.CreateBuilder(new WebApplicationOptions());
-// var configuration = builder.Configuration;
+var builder = new ConfigurationBuilder();
+builder.SetBasePath(Directory.GetCurrentDirectory())
+    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
 
-// builder.Environment.EnvironmentName = configuration["Environment"];
+IConfiguration configuration = builder.Build();
 
-// builder.Services.AddTransient<DatabaseMigrator>();
+if (configuration["Environment"].Equals("Development"))
+{
+    DatabaseMigrator.MigrateDatabase(configuration["ConnectionStrings:NpgDevSqlConnection"]);
+}
 
-DatabaseMigrator.MigrateDatabase("User ID=chucknorris;Password=G3t7nQqbCyjuT8W;Server=80.78.251.69;Port=5432;Database=leoka_estetica_dev;Integrated Security=true;Pooling=true");
+if (configuration["Environment"].Equals("Staging"))
+{
+    DatabaseMigrator.MigrateDatabase(configuration["ConnectionStrings:NpgTestSqlConnection"]);
+}
 
-// if (builder.Environment.IsDevelopment())
-// {
-//     DatabaseMigrator.MigrateDatabase(configuration["ConnectionStrings:NpgDevSqlConnection"]);
-// }
-
-// if (builder.Environment.IsStaging())
-// {
-//     DatabaseMigrator.MigrateDatabase(configuration["ConnectionStrings:NpgTestSqlConnection"]);
-// }
-//
-// if (builder.Environment.IsProduction())
-// {
-//     DatabaseMigrator.MigrateDatabase(configuration["ConnectionStrings:NpgSqlConnection"]);
-// }
+if (configuration["Environment"].Equals("Production"))
+{
+    DatabaseMigrator.MigrateDatabase(configuration["ConnectionStrings:NpgSqlConnection"]);
+}
