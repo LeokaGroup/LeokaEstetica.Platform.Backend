@@ -3,13 +3,16 @@ CREATE FUNCTION "Commerce"."OrderTransactionsUpdate"() RETURNS TRIGGER
 AS
 $$
 BEGIN
-    NEW."StatusName" = NEW."StatusName",
-                       NEW."StatusSysName" = NEW."StatusSysName";
+    INSERT INTO "Commerce"."OrderTransactionsShadow" ("DateCreated", "ActionText", "ActionSysName", "UserId", "OrderId",
+                                                      "StatusName")
+    VALUES (OLD."DateCreated", 'Изменение статуса заказа.', 'Update', OLD."UserId", OLD."OrderId", NEW."StatusName");
+
+    RETURN NEW;
 END;
 $$;
 
 CREATE TRIGGER "OrderTransactionsShadowUpdateTrigger"
-    AFTER INSERT
+    AFTER UPDATE
     ON "Commerce"."Orders"
     FOR EACH ROW
-EXECUTE PROCEDURE "OrderTransactionsUpdate"();
+EXECUTE PROCEDURE "Commerce"."OrderTransactionsUpdate"();
