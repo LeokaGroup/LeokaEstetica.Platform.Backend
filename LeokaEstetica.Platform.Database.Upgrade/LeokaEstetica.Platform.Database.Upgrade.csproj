@@ -8,13 +8,13 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <EmbeddedResource Include="Scripts\001.Esta.DDL_Alter_Users.sql" />
-    </ItemGroup>
-
-    <ItemGroup>
         <PackageReference Include="dbup-postgresql" Version="5.0.37" />
         <PackageReference Include="Microsoft.Extensions.Configuration" Version="6.0.1" />
         <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="6.0.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Scripts" />
     </ItemGroup>
 
 </Project>
