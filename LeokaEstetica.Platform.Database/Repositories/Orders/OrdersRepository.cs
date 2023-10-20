@@ -70,6 +70,7 @@ internal sealed class OrdersRepository : IOrdersRepository
     {
         var result = await _pgContext.OrderTransactionsShadow
             .Where(t => t.UserId == userId)
+            .OrderByDescending(o => o.DateCreated)
             .ToListAsync();
 
         return result;
