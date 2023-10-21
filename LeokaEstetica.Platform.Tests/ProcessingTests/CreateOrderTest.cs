@@ -1,4 +1,6 @@
 using LeokaEstetica.Platform.Models.Dto.Input.Commerce;
+using LeokaEstetica.Platform.Models.Dto.Output.Commerce.PayMaster;
+using LeokaEstetica.Platform.Models.Dto.Output.Commerce.YandexKassa;
 using NUnit.Framework;
 using static NUnit.Framework.Assert;
 
@@ -20,6 +22,19 @@ internal class CreateOrderTest : BaseServiceTest
             "sierra_93@mail.ru", string.Empty);
 
         NotNull(result);
-        IsTrue(long.Parse(result.PaymentId) > 0);
+        
+        var paymentId = string.Empty;
+
+        if (result is CreateOrderPayMasterOutput payMasterOutput)
+        {
+            paymentId = payMasterOutput.PaymentId;
+        }
+        
+        else if (result is CreateOrderYandexKassaOutput yandexKassaOutput)
+        {
+            paymentId = yandexKassaOutput.PaymentId;
+        }
+        
+        IsTrue(long.Parse(paymentId) > 0);
     }
 }

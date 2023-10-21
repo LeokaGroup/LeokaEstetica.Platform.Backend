@@ -52,6 +52,22 @@ public static class GlobalConfigKeys
             /// </summary>
             public const string NOTIFICATIONS_BOT_CREATED_OBJECT_LINK = "Notifications.Bot.CreatedObjectLink";
         }
+
+        /// <summary>
+        /// Класс ключей платежных систем.
+        /// </summary>
+        public static class PaymentSystem
+        {
+            /// <summary>
+            /// Ключ переключения платежной системы.
+            /// </summary>
+            public const string COMMERCE_PAYMENT_SYSTEM_TYPE_MODE = "Commerce.Payment.System.Type.Mode";
+
+            /// <summary>
+            /// Ключ вкл/откл тестового режима в ПС.
+            /// </summary>
+            public const string COMMERCE_TEST_MODE_ENABLED = "Commerce.Test.Mode.Enabled";
+        }
     }
 
     /// <summary>

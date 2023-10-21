@@ -9,4 +9,9 @@ public class RestorePasswordInput
     /// Новый пароль.
     /// </summary>
     public string RestorePassword { get; set; }
+
+    /// <summary>
+    /// Пользователь, который восстанавливает пароль.
+    /// </summary>
+    public string UserName { get; set; }
 }

@@ -5,7 +5,7 @@ using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.Config;
 using LeokaEstetica.Platform.Database.Abstractions.Orders;
 using LeokaEstetica.Platform.Database.Abstractions.Subscription;
-using LeokaEstetica.Platform.Models.Dto.Base.Commerce.PayMaster;
+using LeokaEstetica.Platform.Models.Dto.Base.Commerce;
 using LeokaEstetica.Platform.Models.Dto.Input.Commerce.PayMaster;
 using LeokaEstetica.Platform.Models.Dto.Output.Refunds;
 using LeokaEstetica.Platform.Models.Entities.Commerce;
@@ -240,7 +240,7 @@ internal sealed class RefundsService : IRefundsService
     /// <param name="refundId">Id возврата.</param>
     /// <param name="refundOrderId">Id возврата в ПС.</param>
     /// <returns>Модель запроса в ПС.</returns>
-    private async Task<CreateReceiptInput> CreateReceiptRefundRequestAsync(OrderEntity order, string account,
+    private async Task<CreateReceiptPayMasterInput> CreateReceiptRefundRequestAsync(OrderEntity order, string account,
         long refundId, string refundOrderId)
     {
         var price = order.Price;
@@ -261,8 +261,8 @@ internal sealed class RefundsService : IRefundsService
             }
         };
 
-        var request = new CreateReceiptInput(order.PaymentId, amount, ReceiptTypeEnum.Refund.ToString(), client, items,
-            order.OrderId, refundId, refundOrderId);
+        var request = new CreateReceiptPayMasterInput(order.PaymentId, amount, ReceiptTypeEnum.Refund.ToString(),
+            client, items, order.OrderId, refundId, refundOrderId);
 
         return await Task.FromResult(request);
     }

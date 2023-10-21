@@ -98,14 +98,14 @@ internal sealed class UserRedisService : IUserRedisService
     /// <summary>
     /// Метод добавляет в кэш данные для восстановления пароля пользователя.
     /// </summary>
-    /// <param name="guid">Guid для отправки его в ссылке.</param>
+    /// <param name="code">Код для отправки его в ссылке.</param>
     /// <param name="userId">Id пользователя.</param>
-    public async Task AddRestoreUserDataCacheAsync(Guid guid, long userId)
+    public async Task AddRestoreUserDataCacheAsync(string code, long userId)
     {
-        await _redisCache.SetStringAsync(userId.ToString(), ProtoBufExtensions.Serialize(guid),
+        await _redisCache.SetStringAsync(userId.ToString(), ProtoBufExtensions.Serialize(code),
             new DistributedCacheEntryOptions
             {
-                AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(24)
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(2)
             });
     }
 
@@ -124,9 +124,9 @@ internal sealed class UserRedisService : IUserRedisService
             return false;
         }
 
-        var redisResult = ProtoBufExtensions.Deserialize<Guid>(result);
+        var redisResult = ProtoBufExtensions.Deserialize<string>(result);
         
-        if (redisResult == Guid.Empty)
+        if (string.IsNullOrWhiteSpace(redisResult))
         {
             throw new InvalidOperationException(
                 "Не удалось получить код из кэша для проверки восстановления пароля пользователя.");

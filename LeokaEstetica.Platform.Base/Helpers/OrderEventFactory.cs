@@ -8,6 +8,7 @@ namespace LeokaEstetica.Platform.Base.Helpers;
 public static class OrderEventFactory
 {
     /// <summary>
+    /// TODO: Засунуть все параметры в модель. Их слишком много уже тут.
     /// Метод наполняет данными событие заказа.
     /// </summary>
     /// <param name="orderId">Id заказа.</param>
@@ -18,7 +19,7 @@ public static class OrderEventFactory
     /// <param name="month">Кол-во месяцев подписки.</param>
     /// <returns>Результирующая модель.</returns>
     public static OrderEvent CreateOrderEvent(long orderId, string statusSysName, string paymentId, long userId,
-        Guid publicId, short month)
+        Guid publicId, short month, decimal price, string currency)
     {
         return new OrderEvent
         {
@@ -27,7 +28,9 @@ public static class OrderEventFactory
             PaymentId = paymentId,
             UserId = userId,
             PublicId = publicId,
-            Month = month
+            Month = month,
+            Price = price,
+            Currency = currency
         };
     }
 }

@@ -428,25 +428,18 @@ internal sealed class MailingsService : IMailingsService
     }
 
     /// <summary>
-    /// Метод отправляет ссылку для восстановления пароля на почту пользователя.
+    /// Метод отправляет код для восстановления пароля на почту пользователя.
     /// </summary>
     /// <param name="mailTo">Почта пользователя, которого исключили.</param>
-    /// <param name="guid">Код для ссылки.</param>
-    public async Task SendLinkRestorePasswordAsync(string mailTo, Guid guid)
+    /// <param name="code">Код для ссылки.</param>
+    public async Task SendConfirmCodeRestorePasswordAsync(string mailTo, string code)
     {
         var isEnabledEmailNotifications = await _globalConfigRepository
             .GetValueByKeyAsync<bool>(GlobalConfigKeys.EmailNotifications.EMAIL_NOTIFICATIONS_DISABLE_MODE_ENABLED);
 
         if (isEnabledEmailNotifications)
         {
-            var api = await _globalConfigRepository
-                .GetValueByKeyAsync<string>(GlobalConfigKeys.EmailNotifications.API_MAIL_URL);
-            
-            var text = "Для восстановления пароля перейдите по ссылке." +
-                       "<br/>" +
-                       $"<a href='{string.Concat(api, $"profile/restore?publicKey={guid}")}'>" +
-                       "Восстановить пароль" +
-                       "</a>" +
+            var text = $"Код для восстановления пароля: {code}." +
                        "<br/>" +
                        "<br/>" +
                        "<br/>" +
