@@ -1,4 +1,4 @@
-CREATE FUNCTION "Commerce"."OrderTransactionsUpdate"() RETURNS TRIGGER
+CREATE OR REPLACE FUNCTION "Commerce"."OrderTransactionsUpdate"() RETURNS TRIGGER
     LANGUAGE plpgsql
 AS
 $$
@@ -10,6 +10,8 @@ BEGIN
     RETURN NEW;
 END;
 $$;
+
+DROP TRIGGER IF EXISTS "OrderTransactionsShadowUpdateTrigger" ON "Commerce"."Orders";
 
 CREATE TRIGGER "OrderTransactionsShadowUpdateTrigger"
     AFTER UPDATE

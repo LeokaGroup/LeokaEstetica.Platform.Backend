@@ -10,5 +10,5 @@ CREATE TABLE IF NOT EXISTS "Moderation"."Vacancies"
     "DateModeration"     TIMESTAMP DEFAULT NOW() NOT NULL,
     "ModerationStatusId" INTEGER   DEFAULT 2     NOT NULL
         CONSTRAINT "FK_ModerationStatuses_StatusId"
-            REFERENCES "ModerationStatuses"
+            REFERENCES "Moderation"."ModerationStatuses"
 );

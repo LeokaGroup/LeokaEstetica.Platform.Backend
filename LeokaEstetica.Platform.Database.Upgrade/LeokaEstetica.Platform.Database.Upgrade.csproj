@@ -10,13 +10,19 @@
     <ItemGroup>
         <EmbeddedResource Include="Scripts\001.Esta.DDL_Create_Trigger_Orders.sql" />
         <EmbeddedResource Include="Scripts\002.Esta.DDL_Alter_Table_ModerationVacancies.sql" />
-        <EmbeddedResource Include="Scripts\003.Esta.DDL_Drop_FK_ProjectTeamMembers.sql" />
+        <EmbeddedResource Include="Scripts\003.Esta.DDL_Drop_FK_ProjectTeamMembers_2.sql" />
     </ItemGroup>
 
     <ItemGroup>
         <PackageReference Include="dbup-postgresql" Version="5.0.37" />
         <PackageReference Include="Microsoft.Extensions.Configuration" Version="6.0.1" />
         <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="6.0.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Update="appsettings.json">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
     </ItemGroup>
 
 </Project>
