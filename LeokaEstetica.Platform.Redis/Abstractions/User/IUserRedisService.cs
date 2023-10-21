@@ -40,4 +40,10 @@ public interface IUserRedisService
     /// <param name="userId">Id пользователя.</param>
     /// <returns>Признак успешной проверки.</returns>
     Task<bool> GetRestoreUserDataCacheAsync(long userId);
+
+    /// <summary>
+    /// Метод удаляет из кэша пользователей, которых ранее помечали к удалению.
+    /// К этому моменту они уже удалены из БД, поэтому из кэша надо удалить тоже.
+    /// </summary>
+    Task DeleteMarkDeactivateUserAccountsAsync();
 }

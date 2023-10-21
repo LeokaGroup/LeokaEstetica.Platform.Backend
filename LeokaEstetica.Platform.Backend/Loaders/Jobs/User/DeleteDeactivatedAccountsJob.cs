@@ -63,7 +63,7 @@ public class DeleteDeactivatedAccountsJob : BackgroundService
     /// <summary>
     /// Метод выполняет логику фоновой задачи.
     /// </summary>
-    /// <param name="IJobExecutionContext">Контекст джобы.</param>
+    /// <param name="stoppingToken">Токен отмены.</param>
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         _timer = new Timer(DoWork, null, TimeSpan.Zero, TimeSpan.FromHours(24));
@@ -179,10 +179,13 @@ public class DeleteDeactivatedAccountsJob : BackgroundService
                                                         "Id участников тикетов с сообщениями к удалению:" +
                                                         $" {JsonConvert.SerializeObject(ticketsMembersIds)}");
                 }
-                
+
                 // Удаляем все аккаунты.
                 await _userRepository.DeleteDeactivateAccountsAsync(deleteUsers, profileItems, moderationResumes,
                     ticketsMembersItems, ticketsMessagesItems);   
+                    
+                // Удаляем пользователей из кэша, так как их мы уже удалили из БД.
+                await _userRedisService.DeleteMarkDeactivateUserAccountsAsync();
             }
             
             _logger.LogInformation("Отработала джоба DeleteDeactivatedAccountsJob.");
