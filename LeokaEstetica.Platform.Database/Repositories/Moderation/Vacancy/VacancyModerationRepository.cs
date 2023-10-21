@@ -442,7 +442,7 @@ internal sealed class VacancyModerationRepository : IVacancyModerationRepository
     /// <param name="vacancyId">Id вакансии.</param>
     private async Task SendModerationVacancyAsync(long vacancyId)
     {
-        // Добавляем проект в таблицу модерации вакансий.
+        // Добавляем вакансию в таблицу модерации вакансий.
         await _pgContext.ModerationVacancies.AddAsync(new ModerationVacancyEntity
         {
             DateModeration = DateTime.UtcNow,
