@@ -125,6 +125,12 @@ internal sealed class ProfileService : IProfileService
 
             var remarks = await _resumeModerationRepository.GetResumeRemarksAsync(profileInfo.ProfileInfoId);
             result.ResumeRemarks = _mapper.Map<IEnumerable<ResumeRemarkOutput>>(remarks);
+            
+            // Если выбрана сокращенная форма фамили, то отображаем лишь первую букву и точку.
+            if (result.IsShortFirstName)
+            {
+                result.LastName = string.Concat(result.LastName.Substring(0, 1), ".");
+            }
 
             return result;
         }

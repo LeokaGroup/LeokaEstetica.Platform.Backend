@@ -23,6 +23,7 @@ internal sealed class UserRedisService : IUserRedisService
     /// Конструктор.
     /// </summary>
     /// <param name="redisCache">Кэш редиса.</param>
+    /// <param name="mapper">Маппер.</param>
     public UserRedisService(IDistributedCache redisCache, 
         IMapper mapper)
     {
@@ -133,6 +134,15 @@ internal sealed class UserRedisService : IUserRedisService
         }
 
         return true;
+    }
+
+    /// <summary>
+    /// Метод удаляет из кэша пользователей, которых ранее помечали к удалению.
+    /// К этому моменту они уже удалены из БД, поэтому из кэша надо удалить тоже.
+    /// </summary>
+    public async Task DeleteMarkDeactivateUserAccountsAsync()
+    {
+        await _redisCache.RemoveAsync(CacheKeysConsts.DEACTIVATE_USER_ACCOUNTS);
     }
 
     #endregion
