@@ -1,11 +1,10 @@
 using LeokaEstetica.Platform.Database.Upgrade.Init;
 using Microsoft.Extensions.Configuration;
 
-var builder = new ConfigurationBuilder();
-builder.SetBasePath(Directory.GetCurrentDirectory())
-    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
-
-IConfiguration configuration = builder.Build();
+IConfiguration configuration = new ConfigurationBuilder()
+    .AddJsonFile("appsettings.json",
+        optional: false, reloadOnChange: true)
+    .Build();
 
 if (configuration["Environment"].Equals("Development"))
 {
