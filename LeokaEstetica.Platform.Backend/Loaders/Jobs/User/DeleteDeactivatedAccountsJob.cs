@@ -94,7 +94,7 @@ public class DeleteDeactivatedAccountsJob : BackgroundService
                 _logger.LogInformation(
                     $"Найденные пользователи для удаления: {JsonConvert.SerializeObject(deleteUsers)}");
                 
-                var userProjects = await _projectService.UserProjectsAsync(u.Email);
+                var userProjects = await _projectService.UserProjectsAsync(u.Email, false);
                 
                 // Пропускем, если нет проектов для удаления.
                 if (userProjects.UserProjects.Any())

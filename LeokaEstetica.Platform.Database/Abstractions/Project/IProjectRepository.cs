@@ -37,8 +37,9 @@ public interface IProjectRepository
     /// Метод получает список проектов пользователя.
     /// </summary>
     /// <param name="userId">Id пользователя.</param>
+    /// <param name="isCreateVacancy">Признак создания вакансии.</param>
     /// <returns>Список проектов.</returns>
-    Task<UserProjectResultOutput> UserProjectsAsync(long userId);
+    Task<UserProjectResultOutput> UserProjectsAsync(long userId, bool isCreateVacancy);
 
     /// <summary>
     /// TODO: Подумать, давать ли всем пользователям возможность просматривать каталог проектов или только тем, у кого есть подписка.

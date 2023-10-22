@@ -35,8 +35,9 @@ public interface IProjectService
     /// Метод получает список проектов пользователя.
     /// </summary>
     /// <param name="account">Аккаунт пользователя.</param>
+    /// <param name="isCreateVacancy">Признак создания вакансии.</param>
     /// <returns>Список проектов.</returns>
-    Task<UserProjectResultOutput> UserProjectsAsync(string account);
+    Task<UserProjectResultOutput> UserProjectsAsync(string account, bool isCreateVacancy);
 
     /// <summary>
     /// TODO: Подумать, давать ли всем пользователям возможность просматривать каталог проектов или только тем, у кого есть подписка.
