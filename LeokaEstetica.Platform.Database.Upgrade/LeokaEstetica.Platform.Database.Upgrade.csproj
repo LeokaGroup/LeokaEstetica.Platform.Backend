@@ -11,6 +11,7 @@
         <EmbeddedResource Include="Scripts\001.Esta.DDL_Create_Trigger_Orders.sql" />
         <EmbeddedResource Include="Scripts\002.Esta.DDL_Alter_Table_ModerationVacancies.sql" />
         <EmbeddedResource Include="Scripts\003.Esta.DDL_Drop_FK_ProjectTeamMembers_2.sql" />
+        <EmbeddedResource Include="Scripts\004.Esta.DDL_Alter_ProjectTeamMembers.sql" />
     </ItemGroup>
 
     <ItemGroup>
