@@ -327,8 +327,9 @@ internal sealed class ProjectService : IProjectService
     /// Метод получает список проектов пользователя.
     /// </summary>
     /// <param name="account">Аккаунт пользователя.</param>
+    /// <param name="isCreateVacancy">Признак создания вакансии.</param>
     /// <returns>Список проектов.</returns>
-    public async Task<UserProjectResultOutput> UserProjectsAsync(string account)
+    public async Task<UserProjectResultOutput> UserProjectsAsync(string account, bool isCreateVacancy)
     {
         try
         {
@@ -339,7 +340,7 @@ internal sealed class ProjectService : IProjectService
                 throw new NotFoundUserIdByAccountException(account);
             }
 
-            var result = await _projectRepository.UserProjectsAsync(userId);
+            var result = await _projectRepository.UserProjectsAsync(userId, isCreateVacancy);
 
             foreach (var prj in result.UserProjects)
             {

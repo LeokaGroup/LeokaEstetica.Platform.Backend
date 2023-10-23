@@ -149,8 +149,9 @@ internal sealed class ProjectRepository : IProjectRepository
     /// Метод получает список проектов пользователя.
     /// </summary>
     /// <param name="userId">Id пользователя.</param>
+    /// <param name="isCreateVacancy">Признак создания вакансии.</param>
     /// <returns>Список проектов.</returns>
-    public async Task<UserProjectResultOutput> UserProjectsAsync(long userId)
+    public async Task<UserProjectResultOutput> UserProjectsAsync(long userId, bool isCreateVacancy)
     {
         var result = new UserProjectResultOutput
         {
@@ -171,6 +172,26 @@ internal sealed class ProjectRepository : IProjectRepository
                 .OrderByDescending(o => o.ProjectId)
                 .ToListAsync()
         };
+
+        if (isCreateVacancy)
+        {
+            var excludedStatuses = new[]
+                { ProjectStatusNameEnum.Archived.ToString(), ProjectModerationStatusEnum.ArchivedProject.ToString() };
+            var removedProjectsIds = new List<long>();
+            
+            foreach (var prj in result.UserProjects)
+            {
+                if (excludedStatuses.Contains(prj.ProjectStatusSysName))
+                {
+                    removedProjectsIds.Add(prj.ProjectId);
+                }
+            }
+
+            if (removedProjectsIds.Any())
+            {
+                result.UserProjects = result.UserProjects.Where(p => !removedProjectsIds.Contains(p.ProjectId));
+            }
+        }
 
         return result;
     }
