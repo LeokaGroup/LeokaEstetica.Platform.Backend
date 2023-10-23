@@ -483,6 +483,9 @@ internal sealed class ProjectRepository : IProjectRepository
         var moderationVacanciesIds = _pgContext.ModerationVacancies
             .Where(v => _excludedVacanciesStatuses.Contains(v.ModerationStatusId))
             .Select(v => v.VacancyId);
+        
+        // Получаем вакансии, которые в архиве, так как их нельзя атачить.
+        var archivedVacancies = _pgContext.ArchivedVacancies.Select(v => v.VacancyId);
 
         // Получаем вакансии, которые можно прикрепить к проекту.
         var result = _pgContext.UserVacancies
@@ -516,8 +519,11 @@ internal sealed class ProjectRepository : IProjectRepository
         {
             result = result.Where(v => attachedVacanciesIds.Contains(v.VacancyId));
         }
+        
+        // Отсекаем вакансии с ненужными статусами.
+        result = result.Where(v => !archivedVacancies.Contains(v.VacancyId));
 
-        result = result.OrderBy(o => o.VacancyId);
+        result = result.OrderByDescending(o => o.VacancyId);
 
         return await result.ToListAsync();
     }
