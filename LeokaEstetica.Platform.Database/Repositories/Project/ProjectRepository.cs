@@ -169,6 +169,7 @@ internal sealed class ProjectRepository : IProjectRepository
                     ProjectCode = p.UserProject.ProjectCode,
                     ProjectId = p.UserProject.ProjectId
                 })
+                .OrderByDescending(o => o.ProjectId)
                 .ToListAsync()
         };
 

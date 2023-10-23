@@ -360,7 +360,7 @@ internal sealed class VacancyRepository : IVacancyRepository
     {
         var result = await _pgContext.UserVacancies
             .Where(v => v.UserId == userId)
-            .OrderByDescending(v => v.VacancyId)
+            .OrderByDescending(o => o.VacancyId)
             .ToListAsync();
 
         return result;
