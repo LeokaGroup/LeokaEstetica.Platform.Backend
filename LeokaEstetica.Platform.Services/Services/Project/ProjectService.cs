@@ -87,8 +87,8 @@ internal sealed class ProjectService : IProjectService
     private readonly ISubscriptionRepository _subscriptionRepository;
     private readonly IFareRuleRepository _fareRuleRepository;
     private readonly IMailingsService _mailingsService;
+    private static readonly string _archiveVacancy = "В архиве";
 
-   
     /// <summary>
     /// Список типов приглашений в проект.
     /// </summary>
@@ -567,7 +567,7 @@ internal sealed class ProjectService : IProjectService
             var projectVacancies = result.ProjectVacancies.ToList();
 
             // Проставляем вакансиям статусы.
-            result.ProjectVacancies = await FillVacanciesStatuses(projectVacancies);
+            result.ProjectVacancies = await FillVacanciesStatusesAsync(projectVacancies, userId);
 
             // Чистим описания от html-тегов.
             result.ProjectVacancies = ClearHtmlTags(projectVacancies);
@@ -1578,15 +1578,19 @@ internal sealed class ProjectService : IProjectService
     /// Метод проставляет статусы вакансиям.
     /// </summary>
     /// <param name="projectVacancies">Список вакансий.</param>
+    /// <param name="userId">Id пользователя.</param>
     /// <returns>Список вакансий.</returns>
-    private async Task<IEnumerable<ProjectVacancyOutput>> FillVacanciesStatuses(
-        List<ProjectVacancyOutput> projectVacancies)
+    private async Task<IEnumerable<ProjectVacancyOutput>> FillVacanciesStatusesAsync(
+        List<ProjectVacancyOutput> projectVacancies, long userId)
     {
         // Получаем список вакансий на модерации.
         var moderationVacancies = await _vacancyModerationService.VacanciesModerationAsync();
 
         // Получаем список вакансий из каталога вакансий.
         var catalogVacancies = await _vacancyRepository.CatalogVacanciesAsync();
+        
+        // Находим вакансии в архиве.
+        var archivedVacancies = (await _vacancyRepository.GetUserVacanciesArchiveAsync(userId)).ToList();
 
         // Проставляем статусы вакансий.
         foreach (var pv in projectVacancies)
@@ -1611,6 +1615,14 @@ internal sealed class ProjectService : IProjectService
                 {
                     pv.UserVacancy.VacancyStatusName = _approveVacancy;
                 }
+            }
+            
+            // Ищем в архиве вакансий.
+            var isArchiveVacancy = archivedVacancies.Any(v => v.VacancyId == pv.VacancyId);
+            
+            if (isArchiveVacancy)
+            {
+                pv.UserVacancy.VacancyStatusName = _archiveVacancy;
             }
         }
 
