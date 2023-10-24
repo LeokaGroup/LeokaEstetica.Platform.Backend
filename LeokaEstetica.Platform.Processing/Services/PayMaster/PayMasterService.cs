@@ -238,6 +238,7 @@ internal sealed class PayMasterService : IPayMasterService
     }
 
     /// <summary>
+    /// TODO: Доработать этот метод для работы с разными ПС через стратегию, по аналогии как работают платежи.
     /// Метод создает возврат в ПС.
     /// </summary>
     /// <param name="paymentId">Id платежа в ПС.</param>
@@ -271,7 +272,7 @@ internal sealed class PayMasterService : IPayMasterService
         
         // Создаем возврат в БД.
         var createdRefund = await _commerceRepository.CreateRefundAsync(refund.PaymentId, refund.Amount.Value,
-            refund.DateCreated, refund.Status, refund.RefundOrderId);
+            refund.DateCreated, refund.Status, refund.RefundOrderId, false);
 
         var result = _mapper.Map<CreateRefundOutput>(createdRefund);
         
