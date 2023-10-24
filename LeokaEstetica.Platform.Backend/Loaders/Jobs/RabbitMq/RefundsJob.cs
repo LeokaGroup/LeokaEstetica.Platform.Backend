@@ -21,6 +21,7 @@ using RabbitMQ.Client.Events;
 namespace LeokaEstetica.Platform.Backend.Loaders.Jobs.RabbitMq;
 
 /// <summary>
+/// TODO: Не используется. Автовозвраты отключили. Возвраты делаем вручную через КЦ.
 /// Класс джобы консьюмера возвратов кролика.
 /// </summary>
 [DisallowConcurrentExecution]
@@ -44,7 +45,6 @@ internal sealed class RefundsJob : IJob
     /// </summary>
     /// <param name="configuration">Зависимость конфигурации приложения.</param>
     /// <param name="payMasterService">Сервис ПС PayMaster.</param>
-    /// <param name="httpClient">HttpClient.</param>
     /// <param name="commerceRepository">Репозиторий коммерции.</param>
     /// <param name="logger">Сервис логов.</param>
     /// <param name="globalConfigRepository">Репозиторий глобал конфигов.</param>

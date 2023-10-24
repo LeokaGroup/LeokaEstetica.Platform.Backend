@@ -6,7 +6,6 @@ using LeokaEstetica.Platform.Models.Entities.Commerce;
 namespace LeokaEstetica.Platform.Database.Abstractions.Commerce;
 
 /// <summary>
-/// TODO: Отрефачить разбив логику заказов в отдельный репозиторий OrderRepository.
 /// Абстракция репозитория коммерции.
 /// </summary>
 public interface ICommerceRepository
@@ -52,9 +51,10 @@ public interface ICommerceRepository
     /// <param name="dateCreated">Дата создания возврата в ПС.</param>
     /// <param name="status">Статус возврата в ПС.</param>
     /// <param name="refundOrderId">Id возврата в ПС.</param>
+    /// <param name="isManual">Признак ручного создания возврата.</param>
     /// <returns>Данные возврата.</returns>
     Task<RefundEntity> CreateRefundAsync(string paymentId, decimal price, DateTime dateCreated, string status,
-        string refundOrderId);
+        string refundOrderId, bool isManual);
     
     /// <summary>
     /// Метод обновляет статус возврата.
@@ -71,4 +71,11 @@ public interface ICommerceRepository
     /// <param name="createReceiptOutput">Модель результата из ПС.</param>
     /// <returns>Данные чека.</returns>
     Task<ReceiptEntity> CreateReceiptRefundAsync(CreateReceiptOutput createReceiptOutput);
+
+    /// <summary>
+    /// Метод проверяет, существует ли уже такой возврат.
+    /// </summary>
+    /// <param name="orderId">Id заказа.</param>
+    /// <returns>Признак результата проверки.</returns>
+    Task<bool> IfExistsRefundAsync(string orderId);
 }

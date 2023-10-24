@@ -1,7 +1,9 @@
 using System.Runtime.CompilerServices;
+using AutoMapper;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.Core.Constants;
 using LeokaEstetica.Platform.Core.Exceptions;
+using LeokaEstetica.Platform.Database.Abstractions.Commerce;
 using LeokaEstetica.Platform.Database.Abstractions.Config;
 using LeokaEstetica.Platform.Database.Abstractions.Orders;
 using LeokaEstetica.Platform.Database.Abstractions.Subscription;
@@ -17,6 +19,7 @@ using LeokaEstetica.Platform.Processing.Enums;
 using LeokaEstetica.Platform.Services.Abstractions.Refunds;
 using LeokaEstetica.Platform.Services.Strategies.Refunds;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 
 [assembly: InternalsVisibleTo("LeokaEstetica.Platform.Tests")]
 
@@ -36,6 +39,8 @@ internal sealed class RefundsService : IRefundsService
     private readonly IPayMasterService _payMasterService;
     private readonly IGlobalConfigRepository _globalConfigRepository;
     private readonly ICommerceService _commerceService;
+    private readonly ICommerceRepository _commerceRepository;
+    private readonly IMapper _mapper;
 
     /// <summary>
     /// Конструктор.
@@ -48,6 +53,8 @@ internal sealed class RefundsService : IRefundsService
     /// <param name="payMasterService">Сервис возвратов в ПС.</param>
     /// <param name="globalConfigRepository">Репозиторий глобал конфига.</param>
     /// <param name="commerceService">Сервис коммерции.</param>
+    /// <param name="commerceRepository">Репозиторий коммерции.</param>
+    /// <param name="mapper">Маппер.</param>
     public RefundsService(ILogger<RefundsService> logger,
         ILogger<BaseCalculateRefundStrategy> loggerStrategy,
         ISubscriptionRepository subscriptionRepository,
@@ -56,7 +63,9 @@ internal sealed class RefundsService : IRefundsService
         IRefundsNotificationService refundsNotificationService,
         IPayMasterService payMasterService,
         IGlobalConfigRepository globalConfigRepository, 
-        ICommerceService commerceService)
+        ICommerceService commerceService,
+        ICommerceRepository commerceRepository,
+        IMapper mapper)
     {
         _logger = logger;
         _loggerStrategy = loggerStrategy;
@@ -67,6 +76,8 @@ internal sealed class RefundsService : IRefundsService
         _payMasterService = payMasterService;
         _globalConfigRepository = globalConfigRepository;
         _commerceService = commerceService;
+        _commerceRepository = commerceRepository;
+        _mapper = mapper;
     }
 
     #region Публичные методы.
@@ -190,21 +201,70 @@ internal sealed class RefundsService : IRefundsService
                 throw ex;
             }
 
-            // Создаем возврат в ПС.
-            var refund = await _payMasterService.CreateRefundAsync(order.PaymentId, price,
-                PaymentCurrencyEnum.RUB.ToString());
-
             var isReceiptRefund = await _globalConfigRepository.GetValueByKeyAsync<bool>(
                 GlobalConfigKeys.Receipt.SEND_RECEIPT_REFUND_MODE_ENABLED);
+            CreateRefundOutput refund;
 
+            // Автоматическое создание возврата в ПС.
             if (isReceiptRefund)
             {
+                /// TODO: Доработать этот метод для работы с разными ПС через стратегию, по аналогии как работают платежи.
+                // Создаем возврат в ПС.
+                refund = await _payMasterService.CreateRefundAsync(order.PaymentId, price,
+                    PaymentCurrencyEnum.RUB.ToString());
+                
                 // Создаем модель запроса к ПС для создания чека возврата.
                 var requestReceiptRefund = await CreateReceiptRefundRequestAsync(order, account, refund.RefundId,
                     refund.RefundOrderId);
                 
                 // Создаем чек возврата в ПС.
                 _ = await _payMasterService.CreateReceiptRefundAsync(requestReceiptRefund);
+            }
+
+            // Ручное создание возврата.
+            else
+            {
+                _logger.LogInformation("Начали ручное создание возврата." +
+                                       $" Данные заказа для возврата: {JsonConvert.SerializeObject(order)}");
+                
+                // Проверяем, создан ли уже такой возврат.
+                var isExists = await _commerceRepository.IfExistsRefundAsync(orderId.ToString());
+
+                if (isExists)
+                {
+                    if (!string.IsNullOrEmpty(token))
+                    {
+                        await _refundsNotificationService.SendNotificationWarningManualRefundAsync("Внимание",
+                            "Такой возврат уже создан. Нельзя создать возврат повторно." +
+                            $"ID вашего заказа по которому сделан возврат {orderId}",
+                            NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
+                    }
+                    
+                    return null;
+                }
+                
+                // TODO: PaymentId пока всегда ставим null. отому что возвраты пока создаем только вручную.
+                // TODO: Также проставляем признак ручного создания возврата IsManual.
+                // Создаем возврат в БД.
+                var createdRefund = await _commerceRepository.CreateRefundAsync(null, price,
+                    DateTime.UtcNow, RefundStatusEnum.Pending.ToString(), orderId.ToString(), true);
+
+                refund = _mapper.Map<CreateRefundOutput>(createdRefund);
+
+                // TODO: Доработать тут логику, чтобы создавать вручную чек к возврату как возврат прихода (54-ФЗ).
+                
+                _logger.LogInformation("Закончили ручное создание возврата." +
+                                       $" Данные заказа для возврата: {JsonConvert.SerializeObject(order)}");
+                _logger.LogInformation($"Заказ {orderId} ожидает ручной обработки возврата.");
+            }
+            
+            if (!string.IsNullOrEmpty(token))
+            {
+                await _refundsNotificationService.SendNotificationSuccessManualRefundAsync("Все хорошо",
+                    "Возврат записан и будет обработан. Как только мы обработаем возврат," +
+                    " Вы получите уведомление об этом на почту. " +
+                    $"ID вашего заказа по которому будет возврат {orderId}",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);
             }
 
             return refund;
