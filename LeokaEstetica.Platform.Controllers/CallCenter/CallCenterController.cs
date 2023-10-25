@@ -10,6 +10,7 @@ using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Vacancy;
 using LeokaEstetica.Platform.Models.Dto.Output.Project;
 using LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
 using LeokaEstetica.Platform.CallCenter.Abstractions.Project;
+using LeokaEstetica.Platform.CallCenter.Abstractions.Refund;
 using LeokaEstetica.Platform.CallCenter.Abstractions.Resume;
 using LeokaEstetica.Platform.CallCenter.Abstractions.Vacancy;
 using LeokaEstetica.Platform.CallCenter.Models.Dto.Input.Access;
@@ -17,6 +18,7 @@ using LeokaEstetica.Platform.CallCenter.Models.Dto.Input.Project;
 using LeokaEstetica.Platform.CallCenter.Models.Dto.Input.Resume;
 using LeokaEstetica.Platform.CallCenter.Models.Dto.Input.Vacancy;
 using LeokaEstetica.Platform.CallCenter.Models.Dto.Output.Access;
+using LeokaEstetica.Platform.CallCenter.Models.Dto.Output.Commerce.Refund;
 using LeokaEstetica.Platform.CallCenter.Models.Dto.Output.Project;
 using LeokaEstetica.Platform.CallCenter.Models.Dto.Output.Role;
 using LeokaEstetica.Platform.CallCenter.Models.Dto.Output.Vacancy;
@@ -51,6 +53,7 @@ public class CallCenterController : BaseController
     private readonly IVacancyModerationRepository _vacancyModerationRepository;
     private readonly IResumeModerationRepository _resumeModerationRepository;
     private readonly ILogger<CallCenterController> _logger;
+    private readonly IRefundService _refundService;
 
     /// <summary>
     /// Конструктор.
@@ -66,6 +69,7 @@ public class CallCenterController : BaseController
     /// <param name="vacancyModerationRepository">Репозиторий модерации вакансий.</param>
     /// <param name="resumeModerationRepository">Репозиторий модерации анкет.</param>
     /// <param name="logger">Логгер.</param>
+    /// <param name="refundService">Сервис возвратов.</param>
     public CallCenterController(IAccessModerationService accessModerationService,
         IProjectModerationService projectModerationService,
         IMapper mapper,
@@ -76,7 +80,8 @@ public class CallCenterController : BaseController
         IProjectModerationRepository projectModerationRepository, 
         IVacancyModerationRepository vacancyModerationRepository, 
         IResumeModerationRepository resumeModerationRepository,
-        ILogger<CallCenterController> logger)
+        ILogger<CallCenterController> logger,
+        IRefundService refundService)
     {
         _accessModerationService = accessModerationService;
         _projectModerationService = projectModerationService;
@@ -89,6 +94,7 @@ public class CallCenterController : BaseController
         _vacancyModerationRepository = vacancyModerationRepository;
         _resumeModerationRepository = resumeModerationRepository;
         _logger = logger;
+        _refundService = refundService;
     }
 
     /// <summary>
@@ -820,6 +826,25 @@ public class CallCenterController : BaseController
 
         result = await _projectModerationService.RejectProjectCommentAsync(commentId);
         
+        return result;
+    }
+
+    /// <summary>
+    /// Метод получает список возвратов для КЦ, которые не обработаны.
+    /// </summary>
+    /// <returns>Список необработанных возвратов.</returns>
+    [HttpGet]
+    [Route("unprocessed-refunds")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<RefundOutput>))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<IEnumerable<RefundOutput>> GetUnprocessedRefundsAsync()
+    {
+        var refunds = await _refundService.GetUnprocessedRefundsAsync();
+        var result = _mapper.Map<IEnumerable<RefundOutput>>(refunds);
+
         return result;
     }
 }

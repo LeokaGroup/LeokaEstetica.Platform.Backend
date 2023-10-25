@@ -1,22 +1,34 @@
 using System.ComponentModel;
 using LeokaEstetica.Platform.Core.Extensions;
 
-namespace LeokaEstetica.Platform.Processing.Enums;
+namespace LeokaEstetica.Platform.Base.Enums;
 
 /// <summary>
 /// Перечисление статусов возвратов.
 /// </summary>
 public enum RefundStatusEnum
 {
+    /// <summary>
+    /// Нет статуса.
+    /// </summary>
     None = 0,
     
+    /// <summary>
+    /// Успешный возврат.
+    /// </summary>
     [Description("Возврат проведен успешно")]
     Success = 1,
     
+    /// <summary>
+    /// Возврат отклонен.
+    /// </summary>
     [Description("Запрос на возврат отклонен")]
     Rejected = 2,
     
-    [Description("Возврат выполняется")]
+    /// <summary>
+    /// Возврат ожидает обработки.
+    /// </summary>
+    [Description("Возврат ожидает обработки")]
     Pending = 3
 }
 

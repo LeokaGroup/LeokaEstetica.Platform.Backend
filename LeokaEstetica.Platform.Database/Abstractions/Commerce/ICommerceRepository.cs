@@ -78,4 +78,10 @@ public interface ICommerceRepository
     /// <param name="orderId">Id заказа.</param>
     /// <returns>Признак результата проверки.</returns>
     Task<bool> IfExistsRefundAsync(string orderId);
+    
+    /// <summary>
+    /// Метод получает список возвратов для КЦ, которые не обработаны.
+    /// </summary>
+    /// <returns>Список необработанных возвратов.</returns>
+    Task<IEnumerable<RefundEntity>> GetUnprocessedRefundsAsync();
 }

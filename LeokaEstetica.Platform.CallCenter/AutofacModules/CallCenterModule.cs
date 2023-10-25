@@ -1,11 +1,13 @@
 using Autofac;
 using LeokaEstetica.Platform.CallCenter.Abstractions.Messaging.Mail;
 using LeokaEstetica.Platform.CallCenter.Abstractions.Project;
+using LeokaEstetica.Platform.CallCenter.Abstractions.Refund;
 using LeokaEstetica.Platform.CallCenter.Abstractions.Resume;
 using LeokaEstetica.Platform.CallCenter.Abstractions.Ticket;
 using LeokaEstetica.Platform.CallCenter.Abstractions.Vacancy;
 using LeokaEstetica.Platform.CallCenter.Services.Messaging.Mail;
 using LeokaEstetica.Platform.CallCenter.Services.Project;
+using LeokaEstetica.Platform.CallCenter.Services.Refund;
 using LeokaEstetica.Platform.CallCenter.Services.Resume;
 using LeokaEstetica.Platform.CallCenter.Services.Ticket;
 using LeokaEstetica.Platform.CallCenter.Services.Vacancy;
@@ -56,6 +58,14 @@ public class CallCenterModule : Module
             .InstancePerLifetimeScope();
         builder.RegisterType<TicketService>()
             .As<ITicketService>()
+            .InstancePerLifetimeScope();
+        
+        // Сервис возвратов КЦ.
+        builder.RegisterType<RefundService>()
+            .Named<IRefundService>("RefundService")
+            .InstancePerLifetimeScope();
+        builder.RegisterType<RefundService>()
+            .As<IRefundService>()
             .InstancePerLifetimeScope();
     }
 }

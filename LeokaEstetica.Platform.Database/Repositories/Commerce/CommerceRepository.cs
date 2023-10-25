@@ -1,3 +1,4 @@
+using LeokaEstetica.Platform.Base.Enums;
 using LeokaEstetica.Platform.Base.Models.Input.Processing;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Enums;
@@ -205,6 +206,19 @@ internal sealed class CommerceRepository : ICommerceRepository
     public async Task<bool> IfExistsRefundAsync(string orderId)
     {
         var result = await _pgContext.Refunds.AnyAsync(r => r.RefundOrderId.Equals(orderId));
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод получает список возвратов для КЦ, которые не обработаны.
+    /// </summary>
+    /// <returns>Список необработанных возвратов.</returns>
+    public async Task<IEnumerable<RefundEntity>> GetUnprocessedRefundsAsync()
+    {
+        var result = await _pgContext.Refunds
+            .Where(r => r.Status.Equals(RefundStatusEnum.Pending.ToString()))
+            .ToListAsync();
 
         return result;
     }
