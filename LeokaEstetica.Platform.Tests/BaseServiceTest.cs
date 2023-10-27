@@ -6,7 +6,6 @@ using LeokaEstetica.Platform.Access.Services.User;
 using LeokaEstetica.Platform.Base.Repositories.Chat;
 using LeokaEstetica.Platform.Base.Repositories.User;
 using LeokaEstetica.Platform.CallCenter.Services.Project;
-using LeokaEstetica.Platform.CallCenter.Services.Refund;
 using LeokaEstetica.Platform.CallCenter.Services.Resume;
 using LeokaEstetica.Platform.CallCenter.Services.Ticket;
 using LeokaEstetica.Platform.CallCenter.Services.Vacancy;
@@ -111,7 +110,6 @@ internal class BaseServiceTest
     protected readonly FareRuleRepository FareRuleRepository;
     protected readonly ChatRepository ChatRepository;
     protected readonly PressService PressService;
-    protected readonly RefundService RefundService;
 
     protected BaseServiceTest()
     {
@@ -256,7 +254,5 @@ internal class BaseServiceTest
 
         var pressRepository = new PressRepository(pgContext);
         PressService = new PressService(pressRepository, null);
-        
-        RefundService = new RefundService(null, commerceRepository);
     }
 }

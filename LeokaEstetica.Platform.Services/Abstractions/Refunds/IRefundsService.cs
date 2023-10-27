@@ -1,4 +1,5 @@
 using LeokaEstetica.Platform.Models.Dto.Output.Refunds;
+using LeokaEstetica.Platform.Models.Entities.Commerce;
 
 namespace LeokaEstetica.Platform.Services.Abstractions.Refunds;
 
@@ -25,4 +26,10 @@ public interface IRefundsService
     /// <param name="token">Токен.</param>
     /// <returns>Выходная модель.</returns>
     Task<CreateRefundOutput> CreateRefundAsync(long orderId, decimal price, string account, string token);
+    
+    /// <summary>
+    /// Метод получает список возвратов для КЦ, которые не обработаны.
+    /// </summary>
+    /// <returns>Список необработанных возвратов.</returns>
+    Task<IEnumerable<RefundEntity>> GetUnprocessedRefundsAsync();
 }

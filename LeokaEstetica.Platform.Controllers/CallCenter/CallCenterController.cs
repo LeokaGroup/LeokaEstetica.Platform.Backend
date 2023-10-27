@@ -10,7 +10,6 @@ using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Vacancy;
 using LeokaEstetica.Platform.Models.Dto.Output.Project;
 using LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
 using LeokaEstetica.Platform.CallCenter.Abstractions.Project;
-using LeokaEstetica.Platform.CallCenter.Abstractions.Refund;
 using LeokaEstetica.Platform.CallCenter.Abstractions.Resume;
 using LeokaEstetica.Platform.CallCenter.Abstractions.Vacancy;
 using LeokaEstetica.Platform.CallCenter.Models.Dto.Input.Access;
@@ -18,7 +17,6 @@ using LeokaEstetica.Platform.CallCenter.Models.Dto.Input.Project;
 using LeokaEstetica.Platform.CallCenter.Models.Dto.Input.Resume;
 using LeokaEstetica.Platform.CallCenter.Models.Dto.Input.Vacancy;
 using LeokaEstetica.Platform.CallCenter.Models.Dto.Output.Access;
-using LeokaEstetica.Platform.CallCenter.Models.Dto.Output.Commerce.Refund;
 using LeokaEstetica.Platform.CallCenter.Models.Dto.Output.Project;
 using LeokaEstetica.Platform.CallCenter.Models.Dto.Output.Role;
 using LeokaEstetica.Platform.CallCenter.Models.Dto.Output.Vacancy;
@@ -28,7 +26,9 @@ using LeokaEstetica.Platform.Database.Abstractions.Moderation.Project;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Resume;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Vacancy;
 using LeokaEstetica.Platform.Models.Dto.Input.Moderation;
+using LeokaEstetica.Platform.Models.Dto.Output.Refunds;
 using LeokaEstetica.Platform.Services.Abstractions.Profile;
+using LeokaEstetica.Platform.Services.Abstractions.Refunds;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
@@ -53,7 +53,7 @@ public class CallCenterController : BaseController
     private readonly IVacancyModerationRepository _vacancyModerationRepository;
     private readonly IResumeModerationRepository _resumeModerationRepository;
     private readonly ILogger<CallCenterController> _logger;
-    private readonly IRefundService _refundService;
+    private readonly IRefundsService _refundService;
 
     /// <summary>
     /// Конструктор.
@@ -81,7 +81,7 @@ public class CallCenterController : BaseController
         IVacancyModerationRepository vacancyModerationRepository, 
         IResumeModerationRepository resumeModerationRepository,
         ILogger<CallCenterController> logger,
-        IRefundService refundService)
+        IRefundsService refundService)
     {
         _accessModerationService = accessModerationService;
         _projectModerationService = projectModerationService;

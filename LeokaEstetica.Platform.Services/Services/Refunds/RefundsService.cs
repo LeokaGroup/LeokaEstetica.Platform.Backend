@@ -286,6 +286,26 @@ internal sealed class RefundsService : IRefundsService
             throw;
         }
     }
+    
+    /// <summary>
+    /// Метод получает список возвратов для КЦ, которые не обработаны.
+    /// </summary>
+    /// <returns>Список необработанных возвратов.</returns>
+    public async Task<IEnumerable<RefundEntity>> GetUnprocessedRefundsAsync()
+    {
+        try
+        {
+            var result = await _commerceRepository.GetUnprocessedRefundsAsync();
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            throw;
+        }
+    }
 
     #endregion
 

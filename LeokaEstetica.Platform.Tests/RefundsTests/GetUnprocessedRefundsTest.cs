@@ -9,7 +9,7 @@ internal class GetUnprocessedRefundsTest : BaseServiceTest
     [Test]
     public async Task GetUnprocessedRefundsTestAsync()
     {
-        var result = await RefundService.GetUnprocessedRefundsAsync();
+        var result = await RefundsService.GetUnprocessedRefundsAsync();
         
         Assert.NotNull(result);
         Assert.NotNull(result.All(x => x.Status.Equals(RefundStatusEnum.Pending.ToString())));
