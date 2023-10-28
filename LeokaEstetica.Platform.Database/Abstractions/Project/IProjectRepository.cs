@@ -161,7 +161,7 @@ public interface IProjectRepository
     Task<IOrderedQueryable<CatalogProjectOutput>> GetFiltersProjectsAsync();
 
     /// <summary>
-    /// Метод првоеряет владельца проекта.
+    /// Метод проверяет владельца проекта.
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
     /// <param name="userId">Id пользователя.</param>
