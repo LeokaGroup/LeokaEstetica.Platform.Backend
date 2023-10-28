@@ -13,6 +13,7 @@
         <EmbeddedResource Include="Scripts\003.Esta.DDL_Drop_FK_ProjectTeamMembers_2.sql" />
         <EmbeddedResource Include="Scripts\004.Esta.DDL_Alter_ProjectTeamMembers.sql" />
         <EmbeddedResource Include="Scripts\005.Esta.DDL_Alter_Refunds.sql" />
+        <EmbeddedResource Include="Scripts\006.Esta.DML_Insert_GlobalConfig.sql" />
     </ItemGroup>
 
     <ItemGroup>

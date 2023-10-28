@@ -8,7 +8,6 @@ using LeokaEstetica.Platform.Models.Dto.Input.Commerce;
 using LeokaEstetica.Platform.Models.Dto.Input.Commerce.PayMaster;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce.Base.Output;
-using LeokaEstetica.Platform.Models.Dto.Output.Commerce.PayMaster;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce.YandexKassa;
 using LeokaEstetica.Platform.Models.Dto.Output.FareRule;
 using LeokaEstetica.Platform.Processing.Abstractions.Commerce;
@@ -77,7 +76,7 @@ public class CommerceController : BaseController
         result = await _commerceService.CreateOrderAsync(createOrderInput.PublicId, GetUserName(),
             GetTokenFromHeader()) as CreateOrderYandexKassaOutput;
 
-        return result ;
+        return result;
     }
 
     /// <summary>
