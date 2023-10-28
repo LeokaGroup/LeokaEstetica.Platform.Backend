@@ -57,4 +57,9 @@ public class NotificationOutput
     /// Id проекта.
     /// </summary>
     public long ProjectId { get; set; }
+    
+    /// <summary>
+    /// Id пользователя, который инициировал приглашение.
+    /// </summary>
+    public long UserId { get; set; }
 }

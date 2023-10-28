@@ -95,13 +95,7 @@ internal sealed class VacancyModerationRepository : IVacancyModerationRepository
     {
         var result = await _pgContext.ModerationVacancies
             .Include(up => up.UserVacancy)
-            .Where(v => !new[]
-                {
-                    (int)VacancyModerationStatusEnum.ApproveVacancy, 
-                    (int)VacancyModerationStatusEnum.ArchivedVacancy,
-                    (int)VacancyModerationStatusEnum.RejectedVacancy
-                }
-                .Contains(v.ModerationStatusId))
+            .Where(v => v.ModerationStatusId == (int)VacancyModerationStatusEnum.ModerationVacancy)
             .Select(p => new ModerationVacancyEntity
             {
                 ModerationId = p.ModerationId,
@@ -442,7 +436,7 @@ internal sealed class VacancyModerationRepository : IVacancyModerationRepository
     /// <param name="vacancyId">Id вакансии.</param>
     private async Task SendModerationVacancyAsync(long vacancyId)
     {
-        // Добавляем проект в таблицу модерации вакансий.
+        // Добавляем вакансию в таблицу модерации вакансий.
         await _pgContext.ModerationVacancies.AddAsync(new ModerationVacancyEntity
         {
             DateModeration = DateTime.UtcNow,

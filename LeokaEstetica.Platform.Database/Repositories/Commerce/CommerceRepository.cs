@@ -9,7 +9,6 @@ using Microsoft.EntityFrameworkCore;
 namespace LeokaEstetica.Platform.Database.Repositories.Commerce;
 
 /// <summary>
-/// TODO: Отрефачить разбив логику заказов в отдельный репозиторий OrderRepository.
 /// Класс реализует методы репозитория коммерции.
 /// </summary>
 internal sealed class CommerceRepository : ICommerceRepository
@@ -120,15 +119,18 @@ internal sealed class CommerceRepository : ICommerceRepository
 
     /// <summary>
     /// Метод создает возврат в БД.
+    /// Если paymentId = null, значит возврат создан вручную.
+    /// Также признак IsManual - признак ручного создания возврата.
     /// </summary>
     /// <param name="paymentId">Id платежа в ПС.</param>
     /// <param name="price">Сумма возврата.</param>
     /// <param name="dateCreated">Дата создания возврата в ПС.</param>
     /// <param name="status">Статус возврата в ПС.</param>
     /// <param name="refundOrderId">Id возврата в ПС.</param>
+    /// <param name="isManual">Признак ручного создания возврата.</param>
     /// <returns>Данные возврата.</returns>
     public async Task<RefundEntity> CreateRefundAsync(string paymentId, decimal price, DateTime dateCreated,
-        string status, string refundOrderId)
+        string status, string refundOrderId, bool isManual)
     {
         var result = new RefundEntity
         {
@@ -136,7 +138,8 @@ internal sealed class CommerceRepository : ICommerceRepository
             Price = price,
             DateCreated = dateCreated,
             Status = status,
-            RefundOrderId = refundOrderId
+            RefundOrderId = refundOrderId,
+            IsManual = isManual
         };
 
         await _pgContext.Refunds.AddAsync(result);
@@ -192,6 +195,18 @@ internal sealed class CommerceRepository : ICommerceRepository
         await _pgContext.SaveChangesAsync();
 
         return receipt;
+    }
+
+    /// <summary>
+    /// Метод проверяет, существует ли уже такой возврат.
+    /// </summary>
+    /// <param name="orderId">Id заказа.</param>
+    /// <returns>Признак результата проверки.</returns>
+    public async Task<bool> IfExistsRefundAsync(string orderId)
+    {
+        var result = await _pgContext.Refunds.AnyAsync(r => r.RefundOrderId.Equals(orderId));
+
+        return result;
     }
 
     #endregion

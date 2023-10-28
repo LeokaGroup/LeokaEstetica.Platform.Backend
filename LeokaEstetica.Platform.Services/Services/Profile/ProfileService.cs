@@ -251,6 +251,12 @@ internal sealed class ProfileService : IProfileService
             {
                 throw new InvalidOperationException($"Для пользователя {account} не заведено профиля в системе.");
             }
+            
+            // Оставляем исходную фамилию, если нет признака сокращения фамилии.
+            if (!profileInfoInput.IsShortFirstName)
+            {
+                profileInfoInput.LastName = profileInfo.LastName;
+            }
 
             CreateProfileInfoModel(profileInfoInput, ref profileInfo);
 

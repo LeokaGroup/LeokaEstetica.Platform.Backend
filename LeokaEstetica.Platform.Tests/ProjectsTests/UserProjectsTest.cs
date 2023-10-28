@@ -8,7 +8,7 @@ internal class UserProjectsTest : BaseServiceTest
     [Test]
     public async Task UserProjectsAsyncTest()
     {
-        var result = await ProjectService.UserProjectsAsync("sierra_93@mail.ru");
+        var result = await ProjectService.UserProjectsAsync("sierra_93@mail.ru", false);
         // Assert.IsNotEmpty(result);
     }
 }
