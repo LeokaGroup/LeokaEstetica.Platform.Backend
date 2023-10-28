@@ -546,9 +546,20 @@ internal sealed class ProjectNotificationsService : IProjectNotificationsService
                 // Иначе скрываем кнопки.
                 else
                 {
-                    notification.IsAcceptButton = false;
-                    notification.IsRejectButton = false;
-                    notification.IsVisibleNotificationsButtons = false;
+                    // Если инициатором приглашения был не владелец, то отображать кнопку апрува у него.
+                    if (notification.UserId == userId)
+                    {
+                        notification.IsVisibleNotificationsButtons = true;
+                        notification.IsAcceptButton = true;
+                        notification.IsRejectButton = true;
+                    }
+                    
+                    else
+                    {
+                        notification.IsVisibleNotificationsButtons = false;
+                        notification.IsAcceptButton = false;
+                        notification.IsRejectButton = false;
+                    }
                 }
             }
 
