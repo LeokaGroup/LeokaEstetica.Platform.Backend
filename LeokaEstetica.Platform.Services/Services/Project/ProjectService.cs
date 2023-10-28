@@ -1460,6 +1460,7 @@ internal sealed class ProjectService : IProjectService
         foreach (var member in teamMembers)
         {
             var vacancyName = string.Empty;
+            var isOwner = false;
             
             // Заполняем название вакансии.
             if (member.UserVacancy.VacancyId > 0)
@@ -1471,6 +1472,7 @@ internal sealed class ProjectService : IProjectService
             else if (member.UserVacancy.VacancyId == 0)
             {
                 vacancyName = "-";
+                isOwner = true;
             }
 
             if (string.IsNullOrEmpty(vacancyName))
@@ -1489,8 +1491,18 @@ internal sealed class ProjectService : IProjectService
                 throw ex;
             }
 
-            // Создаем команду проекта.
+            // Создаем результат команды проекта.
             var team = CreateProjectTeamResult(vacancyName, user, member);
+
+            if (isOwner)
+            {
+                team.IsVisibleActionDeleteProjectTeamMember = false;
+            }
+
+            else
+            {
+                team.IsVisibleActionDeleteProjectTeamMember = true;
+            }
             
             result.Add(team);
         }
@@ -1667,8 +1679,7 @@ internal sealed class ProjectService : IProjectService
         if (projectOwnerId == userId)
         {
             result.IsVisibleDeleteButton = true;
-            result.IsVisibleActionDeleteProjectTeamMember = true;
-            
+
             // Проверяем, есть ли проект в архиве.
             var isExists = await _projectRepository.CheckProjectArchiveAsync(projectId);
 
