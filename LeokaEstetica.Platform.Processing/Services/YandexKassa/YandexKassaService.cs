@@ -127,6 +127,19 @@ internal sealed class YandexKassaService : IYandexKassaService
             // Заполняем модель для запроса в ПС.
             var fareRuleName = orderCache.FareRuleName;
             var month = orderCache.Month;
+
+            var isTestPayMode = await _globalConfigRepository.GetValueByKeyAsync<bool>(GlobalConfigKeys.Integrations
+                .PaymentSystem.COMMEFCE_TEST_PRICE_MODE_ENABLED);
+
+            // Если хотим провести тестовый платеж, но на реальных ДС.
+            if (isTestPayMode)
+            {
+                var testPayPrice = await _globalConfigRepository.GetValueByKeyAsync<decimal>(GlobalConfigKeys
+                    .Integrations.PaymentSystem.COMMEFCE_TEST_PRICE_MODE_ENABLED_VALUE);
+                orderCache.Price = testPayPrice;
+            }
+            
+            // Готовим запрос в ПС.
             var createOrderInput = await CreateOrderRequestAsync(fareRuleName, orderCache.Price,
                 orderCache.RuleId, publicId, month);
 
@@ -135,6 +148,8 @@ internal sealed class YandexKassaService : IYandexKassaService
             using var httpClient = new HttpClient().SetYandexKassaRequestAuthorizationHeader(_configuration);
 
             // Создаем платеж в ПС.
+            // Создание платежа в ПС происходит за 1 этап (без холдирования).
+            // Так как мы не включали его. Мы просто сразу хотим списывать ДС.
             var httpContent = new StringContent(JsonConvert.SerializeObject(createOrderInput.CreateOrderRequest),
                 Encoding.UTF8, "application/json");
             var responseCreateOrder = await httpClient.PostAsync(new Uri(ApiConsts.YandexKassa.CREATE_PAYMENT),

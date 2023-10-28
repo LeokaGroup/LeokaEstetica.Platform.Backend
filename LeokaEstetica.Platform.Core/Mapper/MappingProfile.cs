@@ -203,6 +203,8 @@ public class MappingProfile : Profile
         CreateMap<CreateOrderCache, CreateOrderCacheOutput>();
         
         CreateMap<CreateOrderCacheOutput, OrderCacheOutput>();
+        
+        CreateMap<CreateRefundOutput, RefundOutput>();
     }
     
     /// <summary>

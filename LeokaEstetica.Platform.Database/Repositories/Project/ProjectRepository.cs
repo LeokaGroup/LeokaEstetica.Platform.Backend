@@ -149,8 +149,9 @@ internal sealed class ProjectRepository : IProjectRepository
     /// Метод получает список проектов пользователя.
     /// </summary>
     /// <param name="userId">Id пользователя.</param>
+    /// <param name="isCreateVacancy">Признак создания вакансии.</param>
     /// <returns>Список проектов.</returns>
-    public async Task<UserProjectResultOutput> UserProjectsAsync(long userId)
+    public async Task<UserProjectResultOutput> UserProjectsAsync(long userId, bool isCreateVacancy)
     {
         var result = new UserProjectResultOutput
         {
@@ -168,8 +169,29 @@ internal sealed class ProjectRepository : IProjectRepository
                     ProjectCode = p.UserProject.ProjectCode,
                     ProjectId = p.UserProject.ProjectId
                 })
+                .OrderByDescending(o => o.ProjectId)
                 .ToListAsync()
         };
+
+        if (isCreateVacancy)
+        {
+            var excludedStatuses = new[]
+                { ProjectStatusNameEnum.Archived.ToString(), ProjectModerationStatusEnum.ArchivedProject.ToString() };
+            var removedProjectsIds = new List<long>();
+            
+            foreach (var prj in result.UserProjects)
+            {
+                if (excludedStatuses.Contains(prj.ProjectStatusSysName))
+                {
+                    removedProjectsIds.Add(prj.ProjectId);
+                }
+            }
+
+            if (removedProjectsIds.Any())
+            {
+                result.UserProjects = result.UserProjects.Where(p => !removedProjectsIds.Contains(p.ProjectId));
+            }
+        }
 
         return result;
     }
@@ -461,6 +483,9 @@ internal sealed class ProjectRepository : IProjectRepository
         var moderationVacanciesIds = _pgContext.ModerationVacancies
             .Where(v => _excludedVacanciesStatuses.Contains(v.ModerationStatusId))
             .Select(v => v.VacancyId);
+        
+        // Получаем вакансии, которые в архиве, так как их нельзя атачить.
+        var archivedVacancies = _pgContext.ArchivedVacancies.Select(v => v.VacancyId);
 
         // Получаем вакансии, которые можно прикрепить к проекту.
         var result = _pgContext.UserVacancies
@@ -494,8 +519,11 @@ internal sealed class ProjectRepository : IProjectRepository
         {
             result = result.Where(v => attachedVacanciesIds.Contains(v.VacancyId));
         }
+        
+        // Отсекаем вакансии с ненужными статусами.
+        result = result.Where(v => !archivedVacancies.Contains(v.VacancyId));
 
-        result = result.OrderBy(o => o.VacancyId);
+        result = result.OrderByDescending(o => o.VacancyId);
 
         return await result.ToListAsync();
     }
@@ -696,7 +724,7 @@ internal sealed class ProjectRepository : IProjectRepository
     }
 
     /// <summary>
-    /// Метод првоеряет владельца проекта.
+    /// Метод проверяет владельца проекта.
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
     /// <param name="userId">Id пользователя.</param>

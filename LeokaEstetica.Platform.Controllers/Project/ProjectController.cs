@@ -119,6 +119,7 @@ public class ProjectController : BaseController
     /// <summary>
     /// Метод получает список проектов пользователя.
     /// </summary>
+    /// <param name="isCreateVacancy">Признак создания вакансии.</param>
     /// <returns>Список проектов.</returns>
     [HttpGet]
     [Route("user-projects")]
@@ -127,9 +128,9 @@ public class ProjectController : BaseController
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<UserProjectResultOutput> UserProjectsAsync()
+    public async Task<UserProjectResultOutput> UserProjectsAsync([FromQuery] bool isCreateVacancy)
     {
-        var result = await _projectService.UserProjectsAsync(GetUserName());
+        var result = await _projectService.UserProjectsAsync(GetUserName(), isCreateVacancy);
 
         return result;
     }
@@ -306,7 +307,7 @@ public class ProjectController : BaseController
     }
 
     /// <summary>
-    /// Метод получает список вакансий проекта, которые могут быть прикреплены у проекту пользователя.
+    /// Метод получает список вакансий проекта, которые могут быть прикреплены к проекту пользователя.
     /// </summary>
     /// <param name="projectId">Id проекта, для которого получить список вакансий.</param>
     /// <returns>Список вакансий проекта.</returns>

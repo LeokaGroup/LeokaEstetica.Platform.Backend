@@ -24,8 +24,7 @@ public partial class RefundConfiguration : IEntityTypeConfiguration<RefundEntity
         entity.Property(e => e.PaymentId)
             .HasColumnName("PaymentId")
             .HasColumnType("varchar(50)")
-            .HasMaxLength(50)
-            .IsRequired();
+            .HasMaxLength(50);
         
         entity.Property(e => e.DateCreated)
             .HasColumnName("DateCreated")
@@ -41,6 +40,11 @@ public partial class RefundConfiguration : IEntityTypeConfiguration<RefundEntity
         entity.Property(e => e.RefundOrderId)
             .HasColumnName("RefundOrderId")
             .HasColumnType("varchar(50)")
+            .IsRequired();
+        
+        entity.Property(e => e.IsManual)
+            .HasColumnName("IsManual")
+            .HasColumnType("boolean")
             .IsRequired();
 
         entity.HasIndex(u => u.RefundId)

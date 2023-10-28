@@ -34,4 +34,9 @@ public class RefundEntity
     /// Id возврата в ПС.
     /// </summary>
     public string RefundOrderId { get; set; }
+
+    /// <summary>
+    /// Признак ручного создания возврата.
+    /// </summary>
+    public bool IsManual { get; set; }
 }

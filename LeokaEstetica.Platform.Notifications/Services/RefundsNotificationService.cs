@@ -69,4 +69,48 @@ internal sealed class RefundsNotificationService : IRefundsNotificationService
                 NotificationLevel = notificationLevel
             });
     }
+
+    /// <summary>
+    /// Метод отправляет уведомление об успешном создании ручного возврата.
+    /// </summary>
+    /// <param name="title">Заголовок уведомления.</param>
+    /// <param name="notifyText">Текст уведомления.</param>
+    /// <param name="notificationLevel">Уровень уведомления.</param>
+    /// <param name="token">Токен пользователя.</param>
+    public async Task SendNotificationSuccessManualRefundAsync(string title, string notifyText,
+        string notificationLevel, string token)
+    {
+        var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
+
+        await _hubContext.Clients
+            .Client(connectionId)
+            .SendAsync("SendNotificationSuccessManualRefund", new NotificationOutput
+            {
+                Title = title,
+                Message = notifyText,
+                NotificationLevel = notificationLevel
+            });
+    }
+
+    /// <summary>
+    /// Метод отправляет уведомление об предупреждении дубликата создания ручного возврата.
+    /// </summary>
+    /// <param name="title">Заголовок уведомления.</param>
+    /// <param name="notifyText">Текст уведомления.</param>
+    /// <param name="notificationLevel">Уровень уведомления.</param>
+    /// <param name="token">Токен пользователя.</param>
+    public async Task SendNotificationWarningManualRefundAsync(string title, string notifyText,
+        string notificationLevel, string token)
+    {
+        var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
+
+        await _hubContext.Clients
+            .Client(connectionId)
+            .SendAsync("SendNotificationWarningManualRefund", new NotificationOutput
+            {
+                Title = title,
+                Message = notifyText,
+                NotificationLevel = notificationLevel
+            });
+    }
 }

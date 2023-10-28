@@ -24,6 +24,7 @@ using LeokaEstetica.Platform.Services.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Services.Builders;
 using VacancyItems = LeokaEstetica.Platform.Redis.Models.Vacancy.VacancyItems;
 using LeokaEstetica.Platform.Base.Extensions.HtmlExtensions;
+using LeokaEstetica.Platform.Base.Extensions.PriceExtensions;
 using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Vacancy;
@@ -286,9 +287,8 @@ internal sealed class VacancyService : IVacancyService
             // Выбираем пользователей, у которых есть подписка выше бизнеса. Только их выделяем цветом.
             result.CatalogVacancies = await _fillColorVacanciesService.SetColorBusinessVacancies(catalogVacancies,
                 _subscriptionRepository, _fareRuleRepository);
-
-            // Очистка описание от тегов список вакансий для каталога
-            ClearCatalogVacanciesHtmlTags(ref catalogVacancies);
+            
+            FormatCatalogVacancies(catalogVacancies);
             
             // Проставляем вакансиям теги, в зависимости от подписки владельца вакансии.
             result.CatalogVacancies = await SetVacanciesTags(result.CatalogVacancies.ToList());
@@ -384,10 +384,6 @@ internal sealed class VacancyService : IVacancyService
             
             result.IsSuccess = true;
             result.IsAccess = true;
-            
-            result.VacancyText = ClearHtmlBuilder.Clear(result.VacancyText);
-            result.Conditions = ClearHtmlBuilder.Clear(result.Conditions);
-            result.Demands = ClearHtmlBuilder.Clear(result.Demands);
 
             return result;
         }
@@ -980,21 +976,27 @@ internal sealed class VacancyService : IVacancyService
         }
 
         result.VacancyRemarks = new List<VacancyRemarkOutput>();
+        result.VacancyText = ClearHtmlBuilder.Clear(result.VacancyText);
+        result.Conditions = ClearHtmlBuilder.Clear(result.Conditions);
+        result.Demands = ClearHtmlBuilder.Clear(result.Demands);
+        result.Payment = result.Payment.CreatePriceWithDelimiterFromString();
 
         return result;
     }
 
     /// <summary>
-    /// Метод чистит описание от тегов список вакансий для каталога.
-    /// </summary>
+    /// Метод проводит различные форматирования для представления вакансий в каталоге.
     /// <param name="vacancies">Список вакансий.</param>
-    /// <returns>Список вакансий после очистки.</returns>
-    private void ClearCatalogVacanciesHtmlTags(ref List<CatalogVacancyOutput> vacancies)
+    /// <returns>Список вакансий.</returns>
+    private void FormatCatalogVacancies(List<CatalogVacancyOutput> vacancies)
     {
-        // Чистим описание вакансии от html-тегов.
         foreach (var vac in vacancies)
         {
+            // Чистим описание вакансии от html-тегов.
             vac.VacancyText = ClearHtmlBuilder.Clear(vac.VacancyText);
+            
+            // Форматируем цену к виду 1 000.
+            vac.Payment = vac.Payment.CreatePriceWithDelimiterFromString();
         }
     }
     
