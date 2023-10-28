@@ -24,4 +24,9 @@ public class ProjectTeamOutput
     /// В проекте с.
     /// </summary>
     public string Joined { get; set; }
+    
+    /// <summary>
+    /// Признак видимости кнопки исключения участника из проекта.
+    /// </summary>
+    public bool IsVisibleActionDeleteProjectTeamMember { get; set; }
 }
