@@ -287,9 +287,8 @@ internal sealed class VacancyService : IVacancyService
             // Выбираем пользователей, у которых есть подписка выше бизнеса. Только их выделяем цветом.
             result.CatalogVacancies = await _fillColorVacanciesService.SetColorBusinessVacancies(catalogVacancies,
                 _subscriptionRepository, _fareRuleRepository);
-
-            // Очистка описание от тегов список вакансий для каталога
-            ClearCatalogVacanciesHtmlTags(ref catalogVacancies);
+            
+            FormatCatalogVacancies(catalogVacancies);
             
             // Проставляем вакансиям теги, в зависимости от подписки владельца вакансии.
             result.CatalogVacancies = await SetVacanciesTags(result.CatalogVacancies.ToList());
@@ -986,16 +985,18 @@ internal sealed class VacancyService : IVacancyService
     }
 
     /// <summary>
-    /// Метод чистит описание от тегов список вакансий для каталога.
-    /// </summary>
+    /// Метод проводит различные форматирования для представления вакансий в каталоге.
     /// <param name="vacancies">Список вакансий.</param>
-    /// <returns>Список вакансий после очистки.</returns>
-    private void ClearCatalogVacanciesHtmlTags(ref List<CatalogVacancyOutput> vacancies)
+    /// <returns>Список вакансий.</returns>
+    private void FormatCatalogVacancies(List<CatalogVacancyOutput> vacancies)
     {
-        // Чистим описание вакансии от html-тегов.
         foreach (var vac in vacancies)
         {
+            // Чистим описание вакансии от html-тегов.
             vac.VacancyText = ClearHtmlBuilder.Clear(vac.VacancyText);
+            
+            // Форматируем цену к виду 1 000.
+            vac.Payment = vac.Payment.CreatePriceWithDelimiterFromString();
         }
     }
     
