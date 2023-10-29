@@ -1,10 +1,12 @@
 using System.Globalization;
 using System.Runtime.CompilerServices;
+using LeokaEstetica.Platform.Base.Factors;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.Config;
 using LeokaEstetica.Platform.Models.Entities.Configs;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 [assembly: InternalsVisibleTo("LeokaEstetica.Platform.Tests")]
@@ -18,12 +20,15 @@ internal sealed class GlobalConfigRepository : IGlobalConfigRepository
 {
     private readonly PgContext _pgContext;
     private readonly ILogger<GlobalConfigRepository> _logger;
+    private readonly IConfiguration _configuration;
 
     public GlobalConfigRepository(PgContext pgContext,
-        ILogger<GlobalConfigRepository> logger)
+        ILogger<GlobalConfigRepository> logger,
+        IConfiguration configuration)
     {
         _pgContext = pgContext;
         _logger = logger;
+        _configuration = configuration;
     }
 
     /// <summary>
@@ -35,10 +40,23 @@ internal sealed class GlobalConfigRepository : IGlobalConfigRepository
     public async Task<T> GetValueByKeyAsync<T>(string key)
     {
         var type = typeof(T);
+        GlobalConfigEntity config;
 
-        var config = await _pgContext.GlobalConfig
-            .Where(gc => gc.ParamKey.Equals(key))
-            .FirstOrDefaultAsync();
+        try
+        {
+            config = await _pgContext.GlobalConfig
+                .Where(gc => gc.ParamKey.Equals(key))
+                .FirstOrDefaultAsync();
+        }
+        
+        // TODO: При dispose PgContext пересоздаем датаконтекст и пробуем снова.
+        catch (ObjectDisposedException _)
+        {
+            var pgContext = CreateNewPgContextFactory.CreateNewPgContext(_configuration);
+            config = await pgContext.GlobalConfig
+                .Where(gc => gc.ParamKey.Equals(key))
+                .FirstOrDefaultAsync();
+        }
 
         if (config == null)
         {

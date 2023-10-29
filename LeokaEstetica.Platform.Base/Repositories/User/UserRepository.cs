@@ -1,13 +1,16 @@
 using System.Data;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
+using LeokaEstetica.Platform.Base.Factors;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Models.Dto.Output.User;
 using LeokaEstetica.Platform.Models.Entities.Moderation;
 using LeokaEstetica.Platform.Models.Entities.Profile;
+using LeokaEstetica.Platform.Models.Entities.Subscription;
 using LeokaEstetica.Platform.Models.Entities.Ticket;
 using LeokaEstetica.Platform.Models.Entities.User;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
@@ -20,6 +23,8 @@ internal sealed class UserRepository : IUserRepository
 {
     private readonly PgContext _pgContext;
     private readonly ILogger<UserRepository> _logger;
+    private readonly IConfiguration _configuration;
+    private bool _isNew;
 
     /// <summary>
     /// Конструктор.
@@ -27,10 +32,12 @@ internal sealed class UserRepository : IUserRepository
     /// <param name="pgContext">Датаконтекст.</param>
     /// <param name="logger">Сервис логгера.</param>
     public UserRepository(PgContext pgContext, 
-        ILogger<UserRepository> logger)
+        ILogger<UserRepository> logger,
+        IConfiguration configuration)
     {
         _pgContext = pgContext;
         _logger = logger;
+        _configuration = configuration;
     }
 
     #region Публичные методы.
@@ -55,8 +62,21 @@ internal sealed class UserRepository : IUserRepository
     /// <returns>Данные пользователя.</returns>
     public async Task<UserEntity> GetUserByUserIdAsync(long userId)
     {
-        var result = await _pgContext.Users
-            .FirstOrDefaultAsync(u => u.UserId == userId);
+        UserEntity result;
+        try
+        {
+            result = await _pgContext.Users
+                .FirstOrDefaultAsync(u => u.UserId == userId);
+        }
+        
+        // TODO: При dispose PgContext пересоздаем датаконтекст и пробуем снова.
+        catch (ObjectDisposedException _)
+        {
+            var pgContext = CreateNewPgContextFactory.CreateNewPgContext(_configuration);
+            result = await pgContext.Users
+                .FirstOrDefaultAsync(u => u.UserId == userId);
+            _isNew = true;
+        }
 
         return result;
     }
@@ -530,7 +550,17 @@ internal sealed class UserRepository : IUserRepository
         
         user.SubscriptionStartDate = startDate;
         user.SubscriptionEndDate = endDate;
-        await _pgContext.SaveChangesAsync();
+
+        if (_isNew)
+        {
+            var pgContext = CreateNewPgContextFactory.CreateNewPgContext(_configuration);
+            await pgContext.SaveChangesAsync();
+        }
+
+        else
+        {
+            await _pgContext.SaveChangesAsync();   
+        }
 
         return true;
     }
@@ -584,8 +614,24 @@ internal sealed class UserRepository : IUserRepository
     /// <param name="month">Кол-во месяцев, на которое оформляется подписка.</param>
     public async Task SetSubscriptionAsync(int ruleId, long userId, int month)
     {
-        var userSubscription = await _pgContext.UserSubscriptions
-            .FirstOrDefaultAsync(s => s.UserId == userId);
+        UserSubscriptionEntity userSubscription;
+        var isNew = false;
+        PgContext pgContext = null;
+        
+        try
+        {
+            userSubscription = await _pgContext.UserSubscriptions
+                .FirstOrDefaultAsync(s => s.UserId == userId);
+        }
+        
+        // TODO: При dispose PgContext пересоздаем датаконтекст и пробуем снова.
+        catch (ObjectDisposedException _)
+        {
+            pgContext = CreateNewPgContextFactory.CreateNewPgContext(_configuration);
+            userSubscription = await pgContext.UserSubscriptions
+                .FirstOrDefaultAsync(s => s.UserId == userId);
+            isNew = true;
+        }
 
         if (userSubscription is null)
         {
@@ -597,7 +643,15 @@ internal sealed class UserRepository : IUserRepository
         userSubscription.SubscriptionId = ruleId;
         userSubscription.MonthCount = (short)month;
 
-        await _pgContext.SaveChangesAsync();
+        if (isNew)
+        {
+            await pgContext.SaveChangesAsync();
+        }
+
+        else
+        {
+            await _pgContext.SaveChangesAsync();
+        }
     }
 
     #endregion

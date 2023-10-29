@@ -1,3 +1,4 @@
+using LeokaEstetica.Platform.Base.Factors;
 using LeokaEstetica.Platform.Base.Models.Input.Processing;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Enums;
@@ -5,6 +6,7 @@ using LeokaEstetica.Platform.Database.Abstractions.Commerce;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce.PayMaster;
 using LeokaEstetica.Platform.Models.Entities.Commerce;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 
 namespace LeokaEstetica.Platform.Database.Repositories.Commerce;
 
@@ -14,14 +16,17 @@ namespace LeokaEstetica.Platform.Database.Repositories.Commerce;
 internal sealed class CommerceRepository : ICommerceRepository
 {
     private readonly PgContext _pgContext;
+    private readonly IConfiguration _configuration;
 
     /// <summary>
     /// Конструктор.
     /// </summary>
     /// <param name="pgContext">Датаконтекст.</param>
-    public CommerceRepository(PgContext pgContext)
+    public CommerceRepository(PgContext pgContext,
+        IConfiguration configuration)
     {
         _pgContext = pgContext;
+        _configuration = configuration;
     }
 
     #region Публичные методы.
@@ -79,10 +84,27 @@ internal sealed class CommerceRepository : ICommerceRepository
     public async Task<bool> UpdateOrderStatusAsync(string paymentStatusSysName, string paymentStatusName,
         string paymentId, long orderId)
     {
-        var updateOrder = await _pgContext.Orders
-            .FirstOrDefaultAsync(o => o.OrderId == orderId 
-                                      && o.PaymentId.Equals(paymentId));
+        OrderEntity updateOrder;
+        var isNew = false;
+        PgContext pgContext = null;
 
+        try
+        {
+            updateOrder = await _pgContext.Orders
+                .FirstOrDefaultAsync(o => o.OrderId == orderId 
+                                          && o.PaymentId.Equals(paymentId));
+        }
+        
+        // TODO: При dispose PgContext пересоздаем датаконтекст и пробуем снова.
+        catch (ObjectDisposedException _)
+        {
+            pgContext = CreateNewPgContextFactory.CreateNewPgContext(_configuration);
+            updateOrder = await pgContext.Orders
+                .FirstOrDefaultAsync(o => o.OrderId == orderId 
+                                          && o.PaymentId.Equals(paymentId));
+            isNew = true;
+        }
+        
         if (updateOrder is null)
         {
             return false;
@@ -90,7 +112,16 @@ internal sealed class CommerceRepository : ICommerceRepository
 
         updateOrder.StatusSysName = paymentStatusSysName;
         updateOrder.StatusName = paymentStatusName;
-        await _pgContext.SaveChangesAsync();
+
+        if (isNew)
+        {
+            await pgContext.SaveChangesAsync();
+        }
+
+        else
+        {
+            await _pgContext.SaveChangesAsync();
+        }
 
         return true;
     }
@@ -104,7 +135,22 @@ internal sealed class CommerceRepository : ICommerceRepository
     public async Task SetStatusConfirmByPaymentIdAsync(string paymentId, string paymentStatusSysName,
         string paymentStatusName)
     {
-        var order = await _pgContext.Orders.FirstOrDefaultAsync(o => o.PaymentId.Equals(paymentId));
+        OrderEntity order;
+        var isNew = false;
+        PgContext pgContext = null;
+        
+        try
+        {
+            order = await _pgContext.Orders.FirstOrDefaultAsync(o => o.PaymentId.Equals(paymentId));
+        }
+        
+        // TODO: При dispose PgContext пересоздаем датаконтекст и пробуем снова.
+        catch (ObjectDisposedException _)
+        {
+            pgContext = CreateNewPgContextFactory.CreateNewPgContext(_configuration);
+            order = await pgContext.Orders.FirstOrDefaultAsync(o => o.PaymentId.Equals(paymentId));
+            isNew = true;
+        }
 
         if (order is null)
         {
@@ -113,8 +159,16 @@ internal sealed class CommerceRepository : ICommerceRepository
 
         order.StatusName = paymentStatusName;
         order.StatusSysName = paymentStatusSysName;
-        
-        await _pgContext.SaveChangesAsync();
+
+        if (isNew)
+        {
+            await pgContext.SaveChangesAsync();
+        }
+
+        else
+        {
+            await _pgContext.SaveChangesAsync();   
+        }
     }
 
     /// <summary>
