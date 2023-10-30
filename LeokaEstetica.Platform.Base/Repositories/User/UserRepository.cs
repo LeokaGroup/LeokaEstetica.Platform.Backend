@@ -554,11 +554,14 @@ internal sealed class UserRepository : IUserRepository
         if (_isNew)
         {
             var pgContext = CreateNewPgContextFactory.CreateNewPgContext(_configuration);
+            
+            pgContext.Update(user);
             await pgContext.SaveChangesAsync();
         }
 
         else
         {
+            _pgContext.Update(user);
             await _pgContext.SaveChangesAsync();   
         }
 
@@ -645,11 +648,13 @@ internal sealed class UserRepository : IUserRepository
 
         if (isNew)
         {
+            pgContext.Update(userSubscription);
             await pgContext.SaveChangesAsync();
         }
 
         else
         {
+            _pgContext.Update(userSubscription);
             await _pgContext.SaveChangesAsync();
         }
     }
