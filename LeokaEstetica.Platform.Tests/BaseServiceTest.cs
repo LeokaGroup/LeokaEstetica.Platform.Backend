@@ -133,7 +133,7 @@ internal class BaseServiceTest
         
         var optionsForCache = new OptionsWrapper<MemoryDistributedCacheOptions>(new MemoryDistributedCacheOptions());
         var distributedCache = new MemoryDistributedCache(optionsForCache);
-        var userRepository = new UserRepository(pgContext, null);
+        var userRepository = new UserRepository(pgContext, null, AppConfiguration);
         var profileRepository = new ProfileRepository(pgContext);
         var subscriptionRepository = new SubscriptionRepository(pgContext);
         ChatRepository = new ChatRepository(pgContext);
@@ -141,10 +141,10 @@ internal class BaseServiceTest
         var accessUserRepository = new AccessUserRepository(pgContext);
         var accessUserService = new AccessUserService(accessUserRepository);
         var userRedisService = new UserRedisService(distributedCache, mapper);
-        FareRuleRepository = new FareRuleRepository(pgContext);
+        FareRuleRepository = new FareRuleRepository(pgContext, AppConfiguration);
         
         var availableLimitsRepository = new AvailableLimitsRepository(pgContext);
-        var globalConfigRepository = new GlobalConfigRepository(pgContext, null);
+        var globalConfigRepository = new GlobalConfigRepository(pgContext, null, AppConfiguration);
 
         UserService = new UserService(null, userRepository, mapper, null, pgContext, profileRepository,
             subscriptionRepository, resumeModerationRepository, accessUserService, userRedisService,
@@ -204,7 +204,7 @@ internal class BaseServiceTest
             accessUserService, fillColorProjectsService, null, ProjectModerationRepository);
         
         var ordersRepository = new OrdersRepository(pgContext);
-        var commerceRepository = new CommerceRepository(pgContext);
+        var commerceRepository = new CommerceRepository(pgContext, AppConfiguration);
         var commerceRedisService = new CommerceRedisService(distributedCache);
         var rabbitMqService = new RabbitMqService(AppConfiguration);
         

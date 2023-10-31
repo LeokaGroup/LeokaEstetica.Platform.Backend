@@ -141,12 +141,13 @@ internal sealed class SubscriptionService : ISubscriptionService
         
         var days = 0;
         var currentYear = DateTime.UtcNow.Year;
+        var calcMonth = month; // Кол-во мес. которые используем в вычислениях, не меняя исходное кол-во мес.
         
-        while (month > 0)
+        while (calcMonth > 0)
         {
             // Суммируем дни от каждого месяца.
-            days += DateTime.DaysInMonth(currentYear, month);
-            month--;
+            days += DateTime.DaysInMonth(currentYear, calcMonth);
+            calcMonth--;
         }
         
         var startDate = DateTime.UtcNow; // Дата начала подписки.

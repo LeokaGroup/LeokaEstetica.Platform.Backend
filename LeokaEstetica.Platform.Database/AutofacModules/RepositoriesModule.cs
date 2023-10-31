@@ -4,6 +4,7 @@ using LeokaEstetica.Platform.Database.Abstractions.AvailableLimits;
 using LeokaEstetica.Platform.Database.Abstractions.Commerce;
 using LeokaEstetica.Platform.Database.Abstractions.Config;
 using LeokaEstetica.Platform.Database.Abstractions.Connection;
+using LeokaEstetica.Platform.Database.Abstractions.FareRule;
 using LeokaEstetica.Platform.Database.Abstractions.Header;
 using LeokaEstetica.Platform.Database.Abstractions.Knowledge;
 using LeokaEstetica.Platform.Database.Abstractions.Landing;
@@ -29,6 +30,7 @@ using LeokaEstetica.Platform.Database.Repositories.Access.User;
 using LeokaEstetica.Platform.Database.Repositories.AvailableLimits;
 using LeokaEstetica.Platform.Database.Repositories.Commerce;
 using LeokaEstetica.Platform.Database.Repositories.Config;
+using LeokaEstetica.Platform.Database.Repositories.FareRule;
 using LeokaEstetica.Platform.Database.Repositories.Header;
 using LeokaEstetica.Platform.Database.Repositories.Knowledge;
 using LeokaEstetica.Platform.Database.Repositories.Landing;
@@ -260,6 +262,13 @@ public class RepositoriesModule : Module
             .InstancePerLifetimeScope();
         builder.RegisterType<TransactionScopeFactory>()
             .As<ITransactionScopeFactory>()
+            .InstancePerLifetimeScope();
+        
+        builder.RegisterType<FareRuleRepository>()
+            .Named<IFareRuleRepository>("FareRuleRepository")
+            .InstancePerLifetimeScope();
+        builder.RegisterType<FareRuleRepository>()
+            .As<IFareRuleRepository>()
             .InstancePerLifetimeScope();
     }
 }
