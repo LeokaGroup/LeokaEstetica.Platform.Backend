@@ -208,14 +208,16 @@ internal sealed class CommerceService : ICommerceService
         }
 
         // Вычисляем кол-во дней, за которые можем учесть ДС пользователя при оплате новой подписки.
-        var referenceUsedDays = (int)Math.Round(usedDays.EndDate.Value.Subtract(usedDays.StartDate.Value)
-            .TotalDays);
+        var referenceUsedDays = (int)Math.Round(usedDays.EndDate.Value.Subtract(usedDays.StartDate.Value).TotalDays);
 
         // Получаем по какой цене был оформлен заказ.
         var orderPrice = (await _ordersRepository.GetOrderDetailsAsync(orderId, userId)).Price;
 
-        // Вычисляем сумму остатка.
-        var resultRefundPrice = orderPrice * referenceUsedDays / 100;
+        // Узнаем цену подписки за день.
+        var priceDay = Math.Round(orderPrice / referenceUsedDays);
+        
+        // Вычисляем сумму остатка (цена всей подписки - цена за день).
+        var resultRefundPrice = Math.Round(orderPrice - priceDay);
 
         // Не можем вычислять остаток себе в ущерб.
         if (resultRefundPrice == 0)
@@ -285,15 +287,17 @@ internal sealed class CommerceService : ICommerceService
                 return result;
             }
 
+            // TODO: Пока отключили скидку от остатка, так как это требует продумывания нашей системы ценообразования.
+            // TODO: Пока не будем давать скидку от остатка.
             // Вычисляем остаток суммы подписки (пока без учета повышения/понижения подписки).
-            var freePrice = await CalculatePriceSubscriptionFreeDaysAsync(userId, orderId);
+            // var freePrice = await CalculatePriceSubscriptionFreeDaysAsync(userId, orderId);
 
-            result.FreePrice = freePrice;
+            // result.FreePrice = freePrice;
 
-            if (freePrice == 0)
-            {
-                return result;
-            }
+            // if (freePrice == 0)
+            // {
+            //     return result;
+            // }
 
             // Проверяем повышение/понижение подписки.
             // Находим тариф.
@@ -302,10 +306,10 @@ internal sealed class CommerceService : ICommerceService
 
             // Если сумма тарифа больше суммы остатка с текущей подписки пользователя,
             // то это и будет его выгода и мы учтем это при переходе на другую подписку.
-            if (calcPrice > freePrice)
-            {
-                result.FreePrice = calcPrice - freePrice;
-            }
+            // if (calcPrice > freePrice)
+            // {
+            //     result.FreePrice = calcPrice - freePrice;
+            // }
 
             result.Price = calcPrice;
 
