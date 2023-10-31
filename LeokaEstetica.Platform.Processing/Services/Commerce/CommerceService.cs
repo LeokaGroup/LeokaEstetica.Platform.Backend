@@ -208,14 +208,16 @@ internal sealed class CommerceService : ICommerceService
         }
 
         // Вычисляем кол-во дней, за которые можем учесть ДС пользователя при оплате новой подписки.
-        var referenceUsedDays = (int)Math.Round(usedDays.EndDate.Value.Subtract(usedDays.StartDate.Value)
-            .TotalDays);
+        var referenceUsedDays = (int)Math.Round(usedDays.EndDate.Value.Subtract(usedDays.StartDate.Value).TotalDays);
 
         // Получаем по какой цене был оформлен заказ.
         var orderPrice = (await _ordersRepository.GetOrderDetailsAsync(orderId, userId)).Price;
 
-        // Вычисляем сумму остатка.
-        var resultRefundPrice = orderPrice * referenceUsedDays / 100;
+        // Узнаем цену подписки за день.
+        var priceDay = Math.Round(orderPrice / referenceUsedDays);
+        
+        // Вычисляем сумму остатка (цена всей подписки - цена за день).
+        var resultRefundPrice = Math.Round(orderPrice - priceDay);
 
         // Не можем вычислять остаток себе в ущерб.
         if (resultRefundPrice == 0)
