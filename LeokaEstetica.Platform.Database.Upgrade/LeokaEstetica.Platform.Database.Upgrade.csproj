@@ -14,6 +14,8 @@
         <EmbeddedResource Include="Scripts\004.Esta.DDL_Alter_ProjectTeamMembers.sql" />
         <EmbeddedResource Include="Scripts\005.Esta.DDL_Alter_Refunds.sql" />
         <EmbeddedResource Include="Scripts\006.Esta.DML_Insert_GlobalConfig.sql" />
+        <EmbeddedResource Include="Scripts\007.Esta.DDL_Alter_ProjectComments.sql" />
+        <EmbeddedResource Include="Scripts\008.Esta.DDL_Drop_ProjectCommentsModeration.sql" />
     </ItemGroup>
 
     <ItemGroup>
