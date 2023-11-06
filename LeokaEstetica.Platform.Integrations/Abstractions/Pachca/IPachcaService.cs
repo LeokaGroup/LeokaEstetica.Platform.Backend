@@ -19,4 +19,10 @@ public interface IPachcaService
     /// <param name="objectType">Тип объекта (вакансия, проект).</param>
     /// <param name="objectName">Название объекта (проекта, вакансии).</param>
     Task SendNotificationCreatedObjectAsync(ObjectTypeEnum objectType, string objectName);
+
+    /// <summary>
+    /// Метод отправляет уведомление в пачку о новом пользователе.
+    /// </summary>
+    /// <param name="account">Аккаунт пользователя.</param>
+    Task SendNotificationCreatedNewUserAsync(string account);
 }

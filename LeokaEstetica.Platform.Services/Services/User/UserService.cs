@@ -16,12 +16,11 @@ using LeokaEstetica.Platform.Database.Abstractions.FareRule;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Resume;
 using LeokaEstetica.Platform.Database.Abstractions.Profile;
 using LeokaEstetica.Platform.Database.Abstractions.Subscription;
+using LeokaEstetica.Platform.Integrations.Abstractions.Pachca;
 using LeokaEstetica.Platform.Messaging.Abstractions.Mail;
 using LeokaEstetica.Platform.Models.Dto.Input.User;
 using LeokaEstetica.Platform.Models.Dto.Output.User;
 using LeokaEstetica.Platform.Models.Entities.User;
-using LeokaEstetica.Platform.Notifications.Abstractions;
-using LeokaEstetica.Platform.Notifications.Consts;
 using LeokaEstetica.Platform.Redis.Abstractions.User;
 using LeokaEstetica.Platform.Services.Abstractions.User;
 using LeokaEstetica.Platform.Services.Consts;
@@ -50,10 +49,9 @@ internal sealed class UserService : IUserService
     private readonly IAccessUserService _accessUserService;
     private readonly IUserRedisService _userRedisService;
     private readonly IFareRuleRepository _fareRuleRepository;
-    private readonly IAccessUserNotificationsService _accessUserNotificationsService;
-    private readonly INotificationsService _notificationsService;
     private readonly IAvailableLimitsRepository _availableLimitsRepository;
     private readonly IGlobalConfigRepository _globalConfigRepository;
+    private readonly IPachcaService _pachcaService;
 
     /// <summary>
     /// Конструктор.
@@ -67,10 +65,9 @@ internal sealed class UserService : IUserService
     /// <param name="profileRepository">Репозиторий подписок.</param>
     /// <param name="resumeModerationRepository">Репозиторий модерации анкет.</param>
     /// <param name="fareRuleRepository">Репозиторий тарифов.</param>
-    /// <param name="accessUserNotificationsService">Сервис уведомлений доступа пользователей.</param>
-    /// <param name="notificationsService">Сервис уведомлений.</param>
     /// <param name="availableLimitsRepository">Репозиторий лимитов.</param>
     /// <param name="globalConfigRepository">Репозиторий глобал конфига.</param>
+    /// <param name="pachcaService">Сервис пачки.</param>
     public UserService(ILogger<UserService> logger, 
         IUserRepository userRepository, 
         IMapper mapper, 
@@ -82,10 +79,9 @@ internal sealed class UserService : IUserService
         IAccessUserService accessUserService, 
         IUserRedisService userRedisService, 
         IFareRuleRepository fareRuleRepository,
-        IAccessUserNotificationsService accessUserNotificationsService,
-        INotificationsService notificationsService,
         IAvailableLimitsRepository availableLimitsRepository,
-        IGlobalConfigRepository globalConfigRepository)
+        IGlobalConfigRepository globalConfigRepository,
+        IPachcaService pachcaService)
     {
         _logger = logger;
         _userRepository = userRepository;
@@ -98,10 +94,9 @@ internal sealed class UserService : IUserService
         _accessUserService = accessUserService;
         _userRedisService = userRedisService;
         _fareRuleRepository = fareRuleRepository;
-        _accessUserNotificationsService = accessUserNotificationsService;
-        _notificationsService = notificationsService;
         _availableLimitsRepository = availableLimitsRepository;
         _globalConfigRepository = globalConfigRepository;
+        _pachcaService = pachcaService;
     }
 
     #region Публичные методы.
@@ -171,6 +166,9 @@ internal sealed class UserService : IUserService
             result = _mapper.Map<UserSignUpOutput>(addedUser);
             
             result.IsSuccess = true;
+            
+            // Отправляем уведомление в чат пачки о новом пользователе.
+            await _pachcaService.SendNotificationCreatedNewUserAsync(email);
 
             await tran.CommitAsync();
 
