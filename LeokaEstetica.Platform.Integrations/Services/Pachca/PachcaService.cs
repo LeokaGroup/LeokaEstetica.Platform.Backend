@@ -28,6 +28,8 @@ internal sealed class PachcaService : IPachcaService
         _logger = logger;
     }
 
+    #region Публичные методы.
+
     /// <summary>
     /// Метод отправляет уведомлений с деталями ошибки в пачку.
     /// </summary>
@@ -42,12 +44,12 @@ internal sealed class PachcaService : IPachcaService
             {
                 environment = "[Develop] ";
             }
-        
+
             else if (_configuration["Environment"].Equals("Staging"))
             {
                 environment = "[Test] ";
             }
-        
+
             else if (_configuration["Environment"].Equals("Production"))
             {
                 environment = "[Production] ";
@@ -58,17 +60,17 @@ internal sealed class PachcaService : IPachcaService
             errorMessage.AppendLine("ErrorMessage: ");
 
             var errMsg = exception.Message;
-            
+
             errorMessage.AppendLine(errMsg);
             errorMessage.AppendLine("StackTrace: ");
             errorMessage.AppendLine(exception.StackTrace);
-            
+
             using var httpClient = new HttpClient();
             var request = new SendNotificationInput { Message = errorMessage.ToString() };
-        
+
             await httpClient.PostAsJsonAsync(_configuration["PachcaBot:AlarmsBot"], request);
         }
-        
+
         catch (Exception ex)
         {
             _logger.LogError(ex, ex.Message);
@@ -99,49 +101,113 @@ internal sealed class PachcaService : IPachcaService
             {
                 notifyMessage = $"Создан новый проект \"{objectName}\".";
             }
-        
+
             else if (objectType.HasFlag(ObjectTypeEnum.Vacancy))
             {
                 notifyMessage = $"Создана новая вакансия \"{objectName}\".";
             }
-            
-            if (new[] {"Development", "Staging"}.Contains(_configuration["Environment"]))
+
+            if (new[] { "Development", "Staging" }.Contains(_configuration["Environment"]))
             {
                 await httpClient.PostAsJsonAsync(_configuration["PachcaBot:NotificationsDevelopTestBot"],
                     notifyMessage);
             }
-        
+
             else
             {
                 await httpClient.PostAsJsonAsync(_configuration["PachcaBot:NotificationsBot"], notifyMessage);
             }
         }
-        
+
         catch (Exception ex)
         {
             _logger.LogError(ex, ex.Message);
-            
-            _logger.LogInformation("Повторная попытка отправить уведомление в чат телеграм.");
+
+            _logger.LogInformation("Повторная попытка отправить уведомление в чат пачки.");
 
             try
             {
-                if (new[] {"Development", "Staging"}.Contains(_configuration["Environment"]))
+                if (new[] { "Development", "Staging" }.Contains(_configuration["Environment"]))
                 {
                     await httpClient.PostAsJsonAsync(_configuration["PachcaBot:NotificationsDevelopTestBot"],
                         notifyMessage);
                 }
-        
+
                 else
                 {
                     await httpClient.PostAsJsonAsync(_configuration["PachcaBot:NotificationsBot"], notifyMessage);
                 }
             }
-            
+
             catch (Exception ex2)
             {
                 _logger.LogError(ex2, "Повторная отправка уведомления не удалась.");
                 throw;
             }
         }
+    }
+
+    /// <summary>
+    /// Метод отправляет уведомление в пачку о новом пользователе.
+    /// </summary>
+    /// <param name="account">Аккаунт пользователя.</param>
+    public async Task SendNotificationCreatedNewUserAsync(string account)
+    {
+        var notifyMessage = $"Новый пользователь {account} на платформе.";
+        using var httpClient = new HttpClient();
+
+        try
+        {
+            if (string.IsNullOrWhiteSpace(account))
+            {
+                var ex = new InvalidOperationException(
+                    "Аккаунт нового пользователя не заполнен. Невозможно отправить уведомление в канал.");
+                throw ex;
+            }
+
+            if (new[] { "Development", "Staging" }.Contains(_configuration["Environment"]))
+            {
+                await httpClient.PostAsJsonAsync(_configuration["PachcaBot:NotificationsDevelopTestBot"],
+                    notifyMessage);
+            }
+
+            else
+            {
+                await httpClient.PostAsJsonAsync(_configuration["PachcaBot:NotificationsBot"], notifyMessage);
+            }
+        }
+
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+
+            _logger.LogInformation("Повторная попытка отправить уведомление в чат пачки.");
+
+            try
+            {
+                if (new[] { "Development", "Staging" }.Contains(_configuration["Environment"]))
+                {
+                    await httpClient.PostAsJsonAsync(_configuration["PachcaBot:NotificationsDevelopTestBot"],
+                        notifyMessage);
+                }
+
+                else
+                {
+                    await httpClient.PostAsJsonAsync(_configuration["PachcaBot:NotificationsBot"], notifyMessage);
+                }
+            }
+
+            catch (Exception ex2)
+            {
+                _logger.LogError(ex2, "Повторная отправка уведомления не удалась.");
+                throw;
+            }
+        }
+
+        #endregion
+
+        #region Приватные методы.
+
+        #endregion
     }
 }
