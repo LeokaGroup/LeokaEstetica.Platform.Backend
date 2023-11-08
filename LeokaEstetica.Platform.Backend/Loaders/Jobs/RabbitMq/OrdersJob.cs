@@ -9,7 +9,6 @@ using LeokaEstetica.Platform.Database.Abstractions.Commerce;
 using LeokaEstetica.Platform.Database.Abstractions.Config;
 using LeokaEstetica.Platform.Database.Abstractions.FareRule;
 using LeokaEstetica.Platform.Integrations.Abstractions.Pachca;
-using LeokaEstetica.Platform.Messaging.Factors;
 using LeokaEstetica.Platform.Models.Dto.Base.Commerce;
 using LeokaEstetica.Platform.Processing.Abstractions.Commerce;
 using LeokaEstetica.Platform.Processing.Enums;
@@ -29,8 +28,8 @@ namespace LeokaEstetica.Platform.Backend.Loaders.Jobs.RabbitMq;
 [DisallowConcurrentExecution]
 internal sealed class OrdersJob : IJob, IDisposable
 {
-    private static IModel _channel;
-    private static IConnection _connection;
+    private IModel _channel;
+    private IConnection _connection;
     private readonly ICommerceRepository _commerceRepository;
     private readonly ILogger<OrdersJob> _logger;
     private readonly ISubscriptionService _subscriptionService;
@@ -38,6 +37,7 @@ internal sealed class OrdersJob : IJob, IDisposable
     private readonly IGlobalConfigRepository _globalConfigRepository;
     private readonly IPachcaService _pachcaService;
     private readonly ICommerceService _commerceService;
+    private readonly IConfiguration _configuration;
 
     /// <summary>
     /// Название очереди.
@@ -64,6 +64,7 @@ internal sealed class OrdersJob : IJob, IDisposable
         IPachcaService pachcaService,
         ICommerceService commerceService)
     {
+        _configuration = configuration;
         _commerceRepository = commerceRepository;
         _logger = logger;
         _subscriptionService = subscriptionService;
@@ -72,8 +73,8 @@ internal sealed class OrdersJob : IJob, IDisposable
         _pachcaService = pachcaService;
         _commerceService = commerceService;
 
-        _connection = CreateRabbitMqConnectionSingletonFactory.CreateRabbitMqConnection(configuration);
-        _channel = CreateRabbitMqChannelSingletonFactory.CreateRabbitMqChannel(_connection);
+        _connection = CreateRabbitMqConnectionFactory();
+        _channel = _connection.CreateModel();
 
         var flags = QueueTypeEnum.OrdersQueue | QueueTypeEnum.OrdersQueue;
         _channel.QueueDeclare(queue: _queueName.CreateQueueDeclareNameFactory(configuration, flags),
@@ -214,5 +215,27 @@ internal sealed class OrdersJob : IJob, IDisposable
     {
         _channel?.Dispose();
         _connection?.Dispose();
+    }
+
+    /// <summary>
+    /// Метод создает подключение к кролику со всеми параметрами подключения.
+    /// </summary>
+    /// <returns>Объект с данными подключения к кролику.</returns>
+    private IConnection CreateRabbitMqConnectionFactory()
+    {
+        var connection = new ConnectionFactory
+        {
+            HostName = _configuration["RabbitMq:HostName"],
+            Password = _configuration["RabbitMq:Password"],
+            UserName = _configuration["RabbitMq:UserName"],
+            DispatchConsumersAsync = true,
+            Port = AmqpTcpEndpoint.UseDefaultPort,
+            VirtualHost = "/",
+            ContinuationTimeout = new TimeSpan(0, 0, 10, 0)
+        };
+            
+        _connection = connection.CreateConnection();
+
+        return _connection;
     }
 }
