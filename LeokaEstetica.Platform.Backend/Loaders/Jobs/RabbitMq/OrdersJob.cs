@@ -26,10 +26,9 @@ namespace LeokaEstetica.Platform.Backend.Loaders.Jobs.RabbitMq;
 /// Класс джобы консьюмера заказов кролика.
 /// </summary>
 [DisallowConcurrentExecution]
-internal sealed class OrdersJob : IJob, IDisposable
+internal sealed class OrdersJob : IJob
 {
-    private IModel _channel;
-    private IConnection _connection;
+    private readonly IModel _channel;
     private readonly ICommerceRepository _commerceRepository;
     private readonly ILogger<OrdersJob> _logger;
     private readonly ISubscriptionService _subscriptionService;
@@ -37,12 +36,16 @@ internal sealed class OrdersJob : IJob, IDisposable
     private readonly IGlobalConfigRepository _globalConfigRepository;
     private readonly IPachcaService _pachcaService;
     private readonly ICommerceService _commerceService;
-    private readonly IConfiguration _configuration;
 
     /// <summary>
     /// Название очереди.
     /// </summary>
     private readonly string _queueName = string.Empty;
+    
+    /// <summary>
+    /// Счетчик кол-ва подключений во избежание дублей подключений.
+    /// </summary>
+    private static uint _counter;
 
     /// <summary>
     /// Конструктор.
@@ -64,7 +67,6 @@ internal sealed class OrdersJob : IJob, IDisposable
         IPachcaService pachcaService,
         ICommerceService commerceService)
     {
-        _configuration = configuration;
         _commerceRepository = commerceRepository;
         _logger = logger;
         _subscriptionService = subscriptionService;
@@ -72,13 +74,30 @@ internal sealed class OrdersJob : IJob, IDisposable
         _globalConfigRepository = globalConfigRepository;
         _pachcaService = pachcaService;
         _commerceService = commerceService;
-
-        _connection = CreateRabbitMqConnectionFactory();
-        _channel = _connection.CreateModel();
-
+        
+        var connection = new ConnectionFactory
+        {
+            HostName = configuration["RabbitMq:HostName"],
+            Password = configuration["RabbitMq:Password"],
+            UserName = configuration["RabbitMq:UserName"],
+            DispatchConsumersAsync = true,
+            Port = AmqpTcpEndpoint.UseDefaultPort,
+            VirtualHost = "/",
+            ContinuationTimeout = new TimeSpan(0, 0, 10, 0)
+        };
+        
         var flags = QueueTypeEnum.OrdersQueue | QueueTypeEnum.OrdersQueue;
-        _channel.QueueDeclare(queue: _queueName.CreateQueueDeclareNameFactory(configuration, flags),
-            durable: false, exclusive: false, autoDelete: false, arguments: null);   
+
+        // Если кол-во подключений уже больше 1, то не будем плодить их,
+        // а в рамках одного подключения будем работать с очередью.
+        if (_counter < 1)
+        {
+            var connection1 = connection.CreateConnection();
+            _channel = connection1.CreateModel();
+            _channel.QueueDeclare(queue: _queueName.CreateQueueDeclareNameFactory(configuration, flags),
+                durable: false, exclusive: false, autoDelete: false, arguments: null);   
+            _counter++;
+        }
     }
     
     /// <summary>
@@ -108,7 +127,8 @@ internal sealed class OrdersJob : IJob, IDisposable
         var consumer = new AsyncEventingBasicConsumer(_channel);
         consumer.Received += async (_, ea) =>
         {
-            _logger.LogInformation("Начали обработку сообщения из очереди заказов...");
+            var logger = _logger;
+            logger.LogInformation("Начали обработку сообщения из очереди заказов...");
 
             // Если очередь не пуста, то будем парсить результат для проверки статуса заказов.
             if (!ea.Body.IsEmpty)
@@ -138,7 +158,7 @@ internal sealed class OrdersJob : IJob, IDisposable
                 
                 catch (Exception ex)
                 {
-                    _logger.LogCritical(ex, "Ошибка при чтении очереди заказов.");
+                    logger.LogCritical(ex, "Ошибка при чтении очереди заказов.");
                         
                     await _pachcaService.SendNotificationErrorAsync(ex);
                     throw;
@@ -183,7 +203,7 @@ internal sealed class OrdersJob : IJob, IDisposable
                 
                     catch (Exception ex)
                     {
-                        _logger.LogCritical(ex, "Ошибка при чтении очереди заказов.");
+                        logger.LogCritical(ex, "Ошибка при чтении очереди заказов.");
                         
                         await _pachcaService.SendNotificationErrorAsync(ex);
                         throw;
@@ -196,12 +216,12 @@ internal sealed class OrdersJob : IJob, IDisposable
                 // Статус в ПС не изменился, оставляем его в очереди.
                 else
                 {
-                    _logger.LogInformation("Оставили сообщение в очереди заказов...");
+                    logger.LogInformation("Оставили сообщение в очереди заказов...");
                     _channel.BasicRecoverAsync(false);
                 }
             }
 
-            _logger.LogInformation("Закончили обработку сообщения из очереди заказов...");
+            logger.LogInformation("Закончили обработку сообщения из очереди заказов...");
 
             await Task.Yield();
         };
@@ -209,33 +229,5 @@ internal sealed class OrdersJob : IJob, IDisposable
         _channel.BasicConsume(_queueName, false, consumer);
 
         await Task.CompletedTask;
-    }
-
-    public void Dispose()
-    {
-        _channel?.Dispose();
-        _connection?.Dispose();
-    }
-
-    /// <summary>
-    /// Метод создает подключение к кролику со всеми параметрами подключения.
-    /// </summary>
-    /// <returns>Объект с данными подключения к кролику.</returns>
-    private IConnection CreateRabbitMqConnectionFactory()
-    {
-        var connection = new ConnectionFactory
-        {
-            HostName = _configuration["RabbitMq:HostName"],
-            Password = _configuration["RabbitMq:Password"],
-            UserName = _configuration["RabbitMq:UserName"],
-            DispatchConsumersAsync = true,
-            Port = AmqpTcpEndpoint.UseDefaultPort,
-            VirtualHost = "/",
-            ContinuationTimeout = new TimeSpan(0, 0, 10, 0)
-        };
-            
-        _connection = connection.CreateConnection();
-
-        return _connection;
     }
 }
