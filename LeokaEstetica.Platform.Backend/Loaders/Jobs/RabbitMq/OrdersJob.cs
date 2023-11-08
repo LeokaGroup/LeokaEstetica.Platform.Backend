@@ -27,7 +27,7 @@ namespace LeokaEstetica.Platform.Backend.Loaders.Jobs.RabbitMq;
 /// Класс джобы консьюмера заказов кролика.
 /// </summary>
 [DisallowConcurrentExecution]
-internal sealed class OrdersJob : IJob, IDisposable
+internal sealed class OrdersJob : IJob
 {
     private IModel _channel;
     private IConnection _connection;
@@ -38,6 +38,7 @@ internal sealed class OrdersJob : IJob, IDisposable
     private readonly IGlobalConfigRepository _globalConfigRepository;
     private readonly IPachcaService _pachcaService;
     private readonly ICommerceService _commerceService;
+    private readonly IConfiguration _configuration;
 
     /// <summary>
     /// Название очереди.
@@ -64,6 +65,7 @@ internal sealed class OrdersJob : IJob, IDisposable
         IPachcaService pachcaService,
         ICommerceService commerceService)
     {
+        _configuration = configuration;
         _commerceRepository = commerceRepository;
         _logger = logger;
         _subscriptionService = subscriptionService;
@@ -71,13 +73,6 @@ internal sealed class OrdersJob : IJob, IDisposable
         _globalConfigRepository = globalConfigRepository;
         _pachcaService = pachcaService;
         _commerceService = commerceService;
-
-        _connection = CreateRabbitMqConnectionSingletonFactory.CreateRabbitMqConnection(configuration);
-        _channel = CreateRabbitMqChannelSingletonFactory.CreateRabbitMqChannel(_connection);
-
-        var flags = QueueTypeEnum.OrdersQueue | QueueTypeEnum.OrdersQueue;
-        _channel.QueueDeclare(queue: _queueName.CreateQueueDeclareNameFactory(configuration, flags),
-            durable: false, exclusive: false, autoDelete: false, arguments: null);   
     }
     
     /// <summary>
@@ -107,7 +102,16 @@ internal sealed class OrdersJob : IJob, IDisposable
         var consumer = new AsyncEventingBasicConsumer(_channel);
         consumer.Received += async (_, ea) =>
         {
-            _logger.LogInformation("Начали обработку сообщения из очереди заказов...");
+            var configuration = _configuration;
+            var logger = _logger;
+            _connection = CreateRabbitMqConnectionSingletonFactory.CreateRabbitMqConnection(configuration);
+            _channel = CreateRabbitMqChannelSingletonFactory.CreateRabbitMqChannel(_connection);
+
+            var flags = QueueTypeEnum.OrdersQueue | QueueTypeEnum.OrdersQueue;
+            _channel.QueueDeclare(queue: _queueName.CreateQueueDeclareNameFactory(_configuration, flags),
+                durable: false, exclusive: false, autoDelete: false, arguments: null);   
+
+            logger.LogInformation("Начали обработку сообщения из очереди заказов...");
 
             // Если очередь не пуста, то будем парсить результат для проверки статуса заказов.
             if (!ea.Body.IsEmpty)
@@ -137,7 +141,7 @@ internal sealed class OrdersJob : IJob, IDisposable
                 
                 catch (Exception ex)
                 {
-                    _logger.LogCritical(ex, "Ошибка при чтении очереди заказов.");
+                    logger.LogCritical(ex, "Ошибка при чтении очереди заказов.");
                         
                     await _pachcaService.SendNotificationErrorAsync(ex);
                     throw;
@@ -182,7 +186,7 @@ internal sealed class OrdersJob : IJob, IDisposable
                 
                     catch (Exception ex)
                     {
-                        _logger.LogCritical(ex, "Ошибка при чтении очереди заказов.");
+                        logger.LogCritical(ex, "Ошибка при чтении очереди заказов.");
                         
                         await _pachcaService.SendNotificationErrorAsync(ex);
                         throw;
@@ -195,12 +199,12 @@ internal sealed class OrdersJob : IJob, IDisposable
                 // Статус в ПС не изменился, оставляем его в очереди.
                 else
                 {
-                    _logger.LogInformation("Оставили сообщение в очереди заказов...");
+                    logger.LogInformation("Оставили сообщение в очереди заказов...");
                     _channel.BasicRecoverAsync(false);
                 }
             }
 
-            _logger.LogInformation("Закончили обработку сообщения из очереди заказов...");
+            logger.LogInformation("Закончили обработку сообщения из очереди заказов...");
 
             await Task.Yield();
         };
@@ -208,14 +212,5 @@ internal sealed class OrdersJob : IJob, IDisposable
         _channel.BasicConsume(_queueName, false, consumer);
 
         await Task.CompletedTask;
-    }
-
-    public void Dispose()
-    {
-        _channel?.Dispose();
-        _connection?.Dispose();
-
-        _channel = null;
-        _connection = null;
     }
 }
