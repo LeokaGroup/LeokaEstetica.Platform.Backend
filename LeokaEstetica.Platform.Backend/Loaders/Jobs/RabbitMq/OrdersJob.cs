@@ -27,7 +27,7 @@ namespace LeokaEstetica.Platform.Backend.Loaders.Jobs.RabbitMq;
 /// Класс джобы консьюмера заказов кролика.
 /// </summary>
 [DisallowConcurrentExecution]
-internal sealed class OrdersJob : IJob
+internal sealed class OrdersJob : IJob, IDisposable
 {
     private readonly IModel _channel;
     private readonly ICommerceRepository _commerceRepository;
@@ -207,5 +207,10 @@ internal sealed class OrdersJob : IJob
         _channel.BasicConsume(_queueName, false, consumer);
 
         await Task.CompletedTask;
+    }
+
+    public void Dispose()
+    {
+        _channel?.Dispose();
     }
 }
