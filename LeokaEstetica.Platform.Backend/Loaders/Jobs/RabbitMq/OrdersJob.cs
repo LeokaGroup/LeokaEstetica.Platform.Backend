@@ -29,7 +29,8 @@ namespace LeokaEstetica.Platform.Backend.Loaders.Jobs.RabbitMq;
 [DisallowConcurrentExecution]
 internal sealed class OrdersJob : IJob, IDisposable
 {
-    private readonly IModel _channel;
+    private IModel _channel;
+    private IConnection _connection;
     private readonly ICommerceRepository _commerceRepository;
     private readonly ILogger<OrdersJob> _logger;
     private readonly ISubscriptionService _subscriptionService;
@@ -71,8 +72,8 @@ internal sealed class OrdersJob : IJob, IDisposable
         _pachcaService = pachcaService;
         _commerceService = commerceService;
 
-        var connection = CreateRabbitMqConnectionSingletonFactory.CreateRabbitMqConnection(configuration);
-        _channel = CreateRabbitMqChannelSingletonFactory.CreateRabbitMqChannel(connection);
+        _connection = CreateRabbitMqConnectionSingletonFactory.CreateRabbitMqConnection(configuration);
+        _channel = CreateRabbitMqChannelSingletonFactory.CreateRabbitMqChannel(_connection);
 
         var flags = QueueTypeEnum.OrdersQueue | QueueTypeEnum.OrdersQueue;
         _channel.QueueDeclare(queue: _queueName.CreateQueueDeclareNameFactory(configuration, flags),
@@ -212,5 +213,9 @@ internal sealed class OrdersJob : IJob, IDisposable
     public void Dispose()
     {
         _channel?.Dispose();
+        _connection?.Dispose();
+
+        _channel = null;
+        _connection = null;
     }
 }
