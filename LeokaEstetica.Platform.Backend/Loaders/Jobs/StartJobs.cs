@@ -15,10 +15,10 @@ public static class StartJobs
     public static void Start(IServiceCollectionQuartzConfigurator q, IServiceCollection services)
     {
         // Запускаем планировщик активностей аккаунтов пользователей.
-        services.AddHostedService<UserActivityMarkDeactivateJob>();
+        //services.AddHostedService<UserActivityMarkDeactivateJob>();
 
         // Запускаем планировщик удаления аккаунтов пользователей.
-        services.AddHostedService<DeleteDeactivatedAccountsJob>();
+        //services.AddHostedService<DeleteDeactivatedAccountsJob>();
 
         // TODO: Возвраты пока работают вручную (пока не автоматизируем их).
         // var refundsJobJobKey = new JobKey("RefundsJob");
