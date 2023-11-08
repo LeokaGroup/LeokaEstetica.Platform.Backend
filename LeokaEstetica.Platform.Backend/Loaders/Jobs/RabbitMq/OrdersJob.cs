@@ -9,7 +9,6 @@ using LeokaEstetica.Platform.Database.Abstractions.Commerce;
 using LeokaEstetica.Platform.Database.Abstractions.Config;
 using LeokaEstetica.Platform.Database.Abstractions.FareRule;
 using LeokaEstetica.Platform.Integrations.Abstractions.Pachca;
-using LeokaEstetica.Platform.Messaging.Factors;
 using LeokaEstetica.Platform.Models.Dto.Base.Commerce;
 using LeokaEstetica.Platform.Processing.Abstractions.Commerce;
 using LeokaEstetica.Platform.Processing.Enums;
@@ -29,8 +28,7 @@ namespace LeokaEstetica.Platform.Backend.Loaders.Jobs.RabbitMq;
 [DisallowConcurrentExecution]
 internal sealed class OrdersJob : IJob
 {
-    private IModel _channel;
-    private IConnection _connection;
+    private readonly IModel _channel;
     private readonly ICommerceRepository _commerceRepository;
     private readonly ILogger<OrdersJob> _logger;
     private readonly ISubscriptionService _subscriptionService;
@@ -38,12 +36,16 @@ internal sealed class OrdersJob : IJob
     private readonly IGlobalConfigRepository _globalConfigRepository;
     private readonly IPachcaService _pachcaService;
     private readonly ICommerceService _commerceService;
-    private readonly IConfiguration _configuration;
 
     /// <summary>
     /// Название очереди.
     /// </summary>
     private readonly string _queueName = string.Empty;
+    
+    /// <summary>
+    /// Счетчик кол-ва подключений во избежание дублей подключений.
+    /// </summary>
+    private static uint _counter;
 
     /// <summary>
     /// Конструктор.
@@ -65,7 +67,6 @@ internal sealed class OrdersJob : IJob
         IPachcaService pachcaService,
         ICommerceService commerceService)
     {
-        _configuration = configuration;
         _commerceRepository = commerceRepository;
         _logger = logger;
         _subscriptionService = subscriptionService;
@@ -73,6 +74,30 @@ internal sealed class OrdersJob : IJob
         _globalConfigRepository = globalConfigRepository;
         _pachcaService = pachcaService;
         _commerceService = commerceService;
+        
+        var connection = new ConnectionFactory
+        {
+            HostName = configuration["RabbitMq:HostName"],
+            Password = configuration["RabbitMq:Password"],
+            UserName = configuration["RabbitMq:UserName"],
+            DispatchConsumersAsync = true,
+            Port = AmqpTcpEndpoint.UseDefaultPort,
+            VirtualHost = "/",
+            ContinuationTimeout = new TimeSpan(0, 0, 10, 0)
+        };
+        
+        var flags = QueueTypeEnum.OrdersQueue | QueueTypeEnum.OrdersQueue;
+
+        // Если кол-во подключений уже больше 1, то не будем плодить их,
+        // а в рамках одного подключения будем работать с очередью.
+        if (_counter < 1)
+        {
+            var connection1 = connection.CreateConnection();
+            _channel = connection1.CreateModel();
+            _channel.QueueDeclare(queue: _queueName.CreateQueueDeclareNameFactory(configuration, flags),
+                durable: false, exclusive: false, autoDelete: false, arguments: null);   
+            _counter++;
+        }
     }
     
     /// <summary>
@@ -102,15 +127,7 @@ internal sealed class OrdersJob : IJob
         var consumer = new AsyncEventingBasicConsumer(_channel);
         consumer.Received += async (_, ea) =>
         {
-            var configuration = _configuration;
             var logger = _logger;
-            _connection = CreateRabbitMqConnectionSingletonFactory.CreateRabbitMqConnection(configuration);
-            _channel = CreateRabbitMqChannelSingletonFactory.CreateRabbitMqChannel(_connection);
-
-            var flags = QueueTypeEnum.OrdersQueue | QueueTypeEnum.OrdersQueue;
-            _channel.QueueDeclare(queue: _queueName.CreateQueueDeclareNameFactory(_configuration, flags),
-                durable: false, exclusive: false, autoDelete: false, arguments: null);   
-
             logger.LogInformation("Начали обработку сообщения из очереди заказов...");
 
             // Если очередь не пуста, то будем парсить результат для проверки статуса заказов.
