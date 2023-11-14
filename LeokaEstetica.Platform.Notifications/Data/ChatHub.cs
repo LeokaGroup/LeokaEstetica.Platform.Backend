@@ -14,6 +14,7 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
 [assembly: InternalsVisibleTo("LeokaEstetica.Platform.Backend")]
+[assembly: InternalsVisibleTo("LeokaEstetica.Platform.ProjectManagment")]
 
 namespace LeokaEstetica.Platform.Notifications.Data;
 

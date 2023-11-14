@@ -1,6 +1,6 @@
 using AutoMapper;
 using LeokaEstetica.Platform.Base;
-using LeokaEstetica.Platform.Controllers.Filters;
+using LeokaEstetica.Platform.Base.Filters;
 using LeokaEstetica.Platform.Controllers.Validators.Orders;
 using LeokaEstetica.Platform.Models.Dto.Output.Orders;
 using LeokaEstetica.Platform.Services.Abstractions.Orders;

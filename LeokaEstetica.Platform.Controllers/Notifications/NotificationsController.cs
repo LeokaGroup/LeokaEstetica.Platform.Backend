@@ -1,5 +1,5 @@
 using LeokaEstetica.Platform.Base;
-using LeokaEstetica.Platform.Controllers.Filters;
+using LeokaEstetica.Platform.Base.Filters;
 using LeokaEstetica.Platform.Models.Dto.Input.Notification;
 using LeokaEstetica.Platform.Models.Dto.Output.Notification;
 using LeokaEstetica.Platform.Notifications.Abstractions;

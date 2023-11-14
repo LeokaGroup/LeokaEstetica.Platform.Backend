@@ -121,4 +121,12 @@ public static class GlobalConfigKeys
         /// </summary>
         public const string REFUNDS_JOB_MODE_ENABLED = "Refunds.Job.Mode.Enabled";
     }
+
+    public static class ProjectManagment
+    {
+        /// <summary>
+        /// Ключ вкл/откл модуль управления проектами.
+        /// </summary>
+        public const string PROJECT_MANAGMENT_MODE_ENABLED = "ProjectManagment.Mode.Enabled";
+    }
 }
