@@ -1,8 +1,8 @@
 using AutoMapper;
 using FluentValidation.Results;
 using LeokaEstetica.Platform.Base;
+using LeokaEstetica.Platform.Base.Filters;
 using LeokaEstetica.Platform.CallCenter.Abstractions.Ticket;
-using LeokaEstetica.Platform.Controllers.Filters;
 using LeokaEstetica.Platform.Controllers.Validators.Ticket;
 using LeokaEstetica.Platform.Models.Dto.Input.Ticket;
 using LeokaEstetica.Platform.Models.Dto.Output.Ticket;

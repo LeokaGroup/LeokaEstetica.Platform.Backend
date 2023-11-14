@@ -1,6 +1,6 @@
 using AutoMapper;
 using LeokaEstetica.Platform.Base;
-using LeokaEstetica.Platform.Controllers.Filters;
+using LeokaEstetica.Platform.Base.Filters;
 using LeokaEstetica.Platform.Models.Dto.Input.Refunds;
 using LeokaEstetica.Platform.Models.Dto.Output.Refunds;
 using LeokaEstetica.Platform.Services.Abstractions.Refunds;
