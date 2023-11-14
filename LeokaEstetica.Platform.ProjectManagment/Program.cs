@@ -2,27 +2,20 @@ using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using FluentValidation.AspNetCore;
 using Hellang.Middleware.ProblemDetails;
-using LeokaEstetica.Platform.Backend.Filters;
-using LeokaEstetica.Platform.Backend.Loaders.Bots;
-using LeokaEstetica.Platform.Backend.Loaders.Jobs;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Utils;
 using LeokaEstetica.Platform.Notifications.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using NLog.Web;
-using Quartz;
 
-var builder = WebApplication.CreateBuilder(args); 
+var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
 
-builder.Services.AddControllers(opt =>
-{
-    opt.Filters.Add(typeof(LogExceptionFilter));
-})
-.AddControllersAsServices();
+builder.Services.AddControllers().AddControllersAsServices();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
 builder.Services.AddCors(options => options.AddPolicy("ApiCorsPolicy", b =>
 {
@@ -35,27 +28,6 @@ builder.Services.AddCors(options => options.AddPolicy("ApiCorsPolicy", b =>
 builder.Environment.EnvironmentName = configuration["Environment"];
 
 builder.Services.AddHttpContextAccessor();
-
-if (builder.Environment.IsDevelopment())
-{
-    builder.Services.AddDbContext<PgContext>(options =>
-            options.UseNpgsql(configuration.GetConnectionString("NpgDevSqlConnection")),
-        ServiceLifetime.Transient);
-}
-      
-if (builder.Environment.IsStaging())
-{
-    builder.Services.AddDbContext<PgContext>(options =>
-            options.UseNpgsql(configuration.GetConnectionString("NpgTestSqlConnection")),
-        ServiceLifetime.Transient);
-}
-
-if (builder.Environment.IsProduction())
-{
-    builder.Services.AddDbContext<PgContext>(options =>
-            options.UseNpgsql(configuration.GetConnectionString("NpgSqlConnection")),
-        ServiceLifetime.Transient);
-}
 
 builder.Services.AddSwaggerGen(c =>
 {
@@ -142,23 +114,10 @@ builder.Services.AddFluentValidation(conf =>
     conf.AutomaticValidationEnabled = false;
 });
 
-builder.Services.AddQuartz(q =>
-{
-    q.UseMicrosoftDependencyInjectionJobFactory();
-    
-    // Запуск джоб при старте ядра системы.
-    StartJobs.Start(q, builder.Services);
-});
-
-builder.Services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
-
 builder.Logging.ClearProviders();
 builder.Host.UseNLog();
 
 builder.Services.AddProblemDetails();
-
-// Запускаем ботов.
-await LogNotifyBot.RunAsync(configuration);
 
 var app = builder.Build();
 
@@ -174,7 +133,7 @@ app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
 if (builder.Environment.IsDevelopment() || builder.Environment.IsStaging() || builder.Environment.IsProduction())
 {
     app.UseSwagger();
-    app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Leoka.Estetica.Platform"));
+    app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Leoka.Estetica.Platform.ProjectManagment"));
 }
 
 // Добавляем хаб приложения для работы через сокеты.
