@@ -17,6 +17,7 @@
         <EmbeddedResource Include="Scripts\007.Esta.DDL_Alter_ProjectComments.sql" />
         <EmbeddedResource Include="Scripts\008.Esta.DDL_Drop_ProjectCommentsModeration.sql" />
         <EmbeddedResource Include="Scripts\009.Esta.DML_Alter_GlobalConfig.sql" />
+        <EmbeddedResource Include="Scripts\010.Esta.DML_Alter_PlatformOffersItems.sql" />
     </ItemGroup>
 
     <ItemGroup>
