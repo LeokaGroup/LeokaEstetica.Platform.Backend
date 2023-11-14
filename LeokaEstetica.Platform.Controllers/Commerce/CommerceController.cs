@@ -1,7 +1,7 @@
 using AutoMapper;
 using FluentValidation.Results;
 using LeokaEstetica.Platform.Base;
-using LeokaEstetica.Platform.Controllers.Filters;
+using LeokaEstetica.Platform.Base.Filters;
 using LeokaEstetica.Platform.Controllers.Validators.Commerce;
 using LeokaEstetica.Platform.Database.Abstractions.FareRule;
 using LeokaEstetica.Platform.Models.Dto.Input.Commerce;

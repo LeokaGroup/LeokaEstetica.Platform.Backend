@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 
-namespace LeokaEstetica.Platform.Controllers.Filters;
+namespace LeokaEstetica.Platform.Base.Filters;
 
 /// <summary>
 /// Фильтр авторизации.
