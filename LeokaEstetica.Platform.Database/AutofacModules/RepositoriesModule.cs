@@ -18,6 +18,7 @@ using LeokaEstetica.Platform.Database.Abstractions.Orders;
 using LeokaEstetica.Platform.Database.Abstractions.Press;
 using LeokaEstetica.Platform.Database.Abstractions.Profile;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
+using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Database.Abstractions.Resume;
 using LeokaEstetica.Platform.Database.Abstractions.Subscription;
 using LeokaEstetica.Platform.Database.Abstractions.Ticket;
@@ -44,6 +45,7 @@ using LeokaEstetica.Platform.Database.Repositories.Orders;
 using LeokaEstetica.Platform.Database.Repositories.Press;
 using LeokaEstetica.Platform.Database.Repositories.Profile;
 using LeokaEstetica.Platform.Database.Repositories.Project;
+using LeokaEstetica.Platform.Database.Repositories.ProjectManagment;
 using LeokaEstetica.Platform.Database.Repositories.Resume;
 using LeokaEstetica.Platform.Database.Repositories.Subscription;
 using LeokaEstetica.Platform.Database.Repositories.TIcket;
@@ -269,6 +271,13 @@ public class RepositoriesModule : Module
             .InstancePerLifetimeScope();
         builder.RegisterType<FareRuleRepository>()
             .As<IFareRuleRepository>()
+            .InstancePerLifetimeScope();
+        
+        builder.RegisterType<ProjectManagmentRepository>()
+            .Named<IProjectManagmentRepository>("ProjectManagmentRepository")
+            .InstancePerLifetimeScope();
+        builder.RegisterType<ProjectManagmentRepository>()
+            .As<IProjectManagmentRepository>()
             .InstancePerLifetimeScope();
     }
 }

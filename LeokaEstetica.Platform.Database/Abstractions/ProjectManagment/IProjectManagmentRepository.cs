@@ -1,11 +1,11 @@
 ﻿using LeokaEstetica.Platform.Models.Entities.ProjectManagment;
 
-namespace LeokaEstetica.Platform.Services.Abstractions.ProjectManagment;
+namespace LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 
 /// <summary>
-/// Абстракция сервиса управления проектами.
+/// Абстракция репозитория управления проектами.
 /// </summary>
-public interface IProjectManagmentService
+public interface IProjectManagmentRepository
 {
     /// <summary>
     /// Метод получает список стратегий представления рабочего пространства.

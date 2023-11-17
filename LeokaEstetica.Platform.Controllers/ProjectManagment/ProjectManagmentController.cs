@@ -1,7 +1,10 @@
-﻿using LeokaEstetica.Platform.Base;
+﻿using AutoMapper;
+using LeokaEstetica.Platform.Base;
 using LeokaEstetica.Platform.Base.Filters;
 using LeokaEstetica.Platform.Models.Dto.Output.Project;
+using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 using LeokaEstetica.Platform.Services.Abstractions.Project;
+using LeokaEstetica.Platform.Services.Abstractions.ProjectManagment;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LeokaEstetica.Platform.Controllers.ProjectManagment;
@@ -15,14 +18,22 @@ namespace LeokaEstetica.Platform.Controllers.ProjectManagment;
 public class ProjectManagmentController : BaseController
 {
    private readonly IProjectService _projectService;
+   private readonly IProjectManagmentService _projectManagmentService;
+   private readonly IMapper _mapper;
 
    /// <summary>
    /// Конструктор.
    /// </summary>
    /// <param name="projectService">Сервис проектов пользователей.</param>
-   public ProjectManagmentController(IProjectService projectService)
+   /// <param name="projectManagmentService">Сервис управления проектами.</param>
+   /// <param name="mapper">Маппер.</param>
+   public ProjectManagmentController(IProjectService projectService,
+      IProjectManagmentService projectManagmentService,
+      IMapper mapper)
    {
       _projectService = projectService;
+      _projectManagmentService = projectManagmentService;
+      _mapper = mapper;
    }
 
    /// <summary>
@@ -40,6 +51,25 @@ public class ProjectManagmentController : BaseController
    public async Task<UserProjectResultOutput> UserProjectsAsync()
    {
       var result = await _projectService.UserProjectsAsync(GetUserName(), false);
+
+      return result;
+   }
+
+   /// <summary>
+   /// Метод получает список стратегий представления рабочего пространства.
+   /// </summary>
+   /// <returns>Список стратегий.</returns>
+   [HttpGet]
+   [Route("view-strategies")]
+   [ProducesResponseType(200, Type = typeof(IEnumerable<ViewStrategyOutput>))]
+   [ProducesResponseType(400)]
+   [ProducesResponseType(403)]
+   [ProducesResponseType(500)]
+   [ProducesResponseType(404)]
+   public async Task<IEnumerable<ViewStrategyOutput>> GetViewStrategiesAsync()
+   {
+      var items = await _projectManagmentService.GetViewStrategiesAsync();
+      var result = _mapper.Map<IEnumerable<ViewStrategyOutput>>(items);
 
       return result;
    }

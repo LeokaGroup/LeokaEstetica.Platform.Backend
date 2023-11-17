@@ -20,6 +20,7 @@ using LeokaEstetica.Platform.Models.Dto.Output.Notification;
 using LeokaEstetica.Platform.Models.Dto.Output.Orders;
 using LeokaEstetica.Platform.Models.Dto.Output.Profile;
 using LeokaEstetica.Platform.Models.Dto.Output.Project;
+using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectTeam;
 using LeokaEstetica.Platform.Models.Dto.Output.Refunds;
 using LeokaEstetica.Platform.Models.Dto.Output.Resume;
@@ -38,6 +39,7 @@ using LeokaEstetica.Platform.Models.Entities.Moderation;
 using LeokaEstetica.Platform.Models.Entities.Notification;
 using LeokaEstetica.Platform.Models.Entities.Profile;
 using LeokaEstetica.Platform.Models.Entities.Project;
+using LeokaEstetica.Platform.Models.Entities.ProjectManagment;
 using LeokaEstetica.Platform.Models.Entities.ProjectTeam;
 using LeokaEstetica.Platform.Models.Entities.Subscription;
 using LeokaEstetica.Platform.Models.Entities.Ticket;
@@ -205,6 +207,8 @@ public class MappingProfile : Profile
         CreateMap<CreateOrderCacheOutput, OrderCacheOutput>();
         
         CreateMap<CreateRefundOutput, RefundOutput>();
+        
+        CreateMap<ViewStrategyEntity, ViewStrategyOutput>();
     }
     
     /// <summary>
