@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Mvc;
 namespace LeokaEstetica.Platform.ProjectManagment.Controllers;
 
 /// <summary>
-/// TODO: Вынести методы отсюда в доменный слой где все контроллеры в папку ProjectManagment.
 /// Контроллер конфигураций модуля управления проектами.
 /// </summary>
 [AuthFilter]
