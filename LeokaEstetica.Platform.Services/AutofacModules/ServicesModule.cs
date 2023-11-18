@@ -8,6 +8,7 @@ using LeokaEstetica.Platform.Services.Abstractions.Orders;
 using LeokaEstetica.Platform.Services.Abstractions.Press;
 using LeokaEstetica.Platform.Services.Abstractions.Profile;
 using LeokaEstetica.Platform.Services.Abstractions.Project;
+using LeokaEstetica.Platform.Services.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Services.Abstractions.Refunds;
 using LeokaEstetica.Platform.Services.Abstractions.Resume;
 using LeokaEstetica.Platform.Services.Abstractions.Search.Project;
@@ -22,6 +23,7 @@ using LeokaEstetica.Platform.Services.Services.Orders;
 using LeokaEstetica.Platform.Services.Services.Press;
 using LeokaEstetica.Platform.Services.Services.Profile;
 using LeokaEstetica.Platform.Services.Services.Project;
+using LeokaEstetica.Platform.Services.Services.ProjectManagment;
 using LeokaEstetica.Platform.Services.Services.Refunds;
 using LeokaEstetica.Platform.Services.Services.Resume;
 using LeokaEstetica.Platform.Services.Services.Search.Project;
@@ -242,6 +244,14 @@ public class ServicesModule : Module
             .InstancePerLifetimeScope();
         builder.RegisterType<PressService>()
             .As<IPressService>()
+            .InstancePerLifetimeScope();
+        
+        // Сервис управления проектами.
+        builder.RegisterType<ProjectManagmentService>()
+            .Named<IProjectManagmentService>("ProjectManagmentService")
+            .InstancePerLifetimeScope();
+        builder.RegisterType<ProjectManagmentService>()
+            .As<IProjectManagmentService>()
             .InstancePerLifetimeScope();
     }
 }
