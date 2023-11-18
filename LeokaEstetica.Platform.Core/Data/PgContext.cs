@@ -11,6 +11,7 @@ using LeokaEstetica.Platform.Models.Entities.Moderation;
 using LeokaEstetica.Platform.Models.Entities.Notification;
 using LeokaEstetica.Platform.Models.Entities.Profile;
 using LeokaEstetica.Platform.Models.Entities.Project;
+using LeokaEstetica.Platform.Models.Entities.ProjectManagment;
 using LeokaEstetica.Platform.Models.Entities.ProjectTeam;
 using LeokaEstetica.Platform.Models.Entities.Role;
 using LeokaEstetica.Platform.Models.Entities.Subscription;
@@ -465,4 +466,9 @@ public class PgContext : DbContext
     /// Таблица публичной оферты.
     /// </summary>
     public DbSet<PublicOfferEntity> PublicOffer { get; set; }
+
+    /// <summary>
+    /// Таблица стратегий представления рабочего пространства проектов.
+    /// </summary>
+    public DbSet<ViewStrategyEntity> ViewStrategies { get; set; }
 }
