@@ -1,3 +1,5 @@
+CREATE SCHEMA IF NOT EXISTS "ProjectManagment";
+
 CREATE TABLE IF NOT EXISTS "ProjectManagment"."ViewStrategies"
 (
     "StrategyId"          SERIAL,
