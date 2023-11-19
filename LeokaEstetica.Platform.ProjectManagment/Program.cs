@@ -34,7 +34,7 @@ if (builder.Environment.IsDevelopment())
             options.UseNpgsql(configuration["ConnectionStrings:NpgDevSqlConnection"]),
         ServiceLifetime.Transient);
 }
-      
+
 if (builder.Environment.IsStaging())
 {
     builder.Services.AddDbContext<PgContext>(options =>
@@ -71,8 +71,8 @@ builder.Services.AddSwaggerGen(c =>
             {
                 Reference = new OpenApiReference
                 {
-                    Type=ReferenceType.SecurityScheme,
-                    Id="Bearer"
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
                 }
             },
             Array.Empty<string>()
@@ -93,7 +93,7 @@ static void AddSwaggerXml(Swashbuckle.AspNetCore.SwaggerGen.SwaggerGenOptions c)
 builder.WebHost
     .UseKestrel()
     .UseContentRoot(Directory.GetCurrentDirectory())
-    .UseUrls(configuration["UseUrls:Path"])
+    .UseUrls(configuration["UseUrls:ProjectManagmentPath"])
     .UseEnvironment(configuration["Environment"]);
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -124,7 +124,8 @@ builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.AddSignalR();
 
 // Подключаем кэш Redis.
-builder.Services.AddStackExchangeRedisCache(options => {
+builder.Services.AddStackExchangeRedisCache(options =>
+{
     options.Configuration = configuration["Redis:RedisCacheUrl"] ?? string.Empty;
 });
 

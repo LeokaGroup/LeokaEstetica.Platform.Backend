@@ -15,14 +15,11 @@ using Microsoft.OpenApi.Models;
 using NLog.Web;
 using Quartz;
 
-var builder = WebApplication.CreateBuilder(args); 
+var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
 
-builder.Services.AddControllers(opt =>
-{
-    opt.Filters.Add(typeof(LogExceptionFilter));
-})
-.AddControllersAsServices();
+builder.Services.AddControllers(opt => { opt.Filters.Add(typeof(LogExceptionFilter)); })
+    .AddControllersAsServices();
 
 builder.Services.AddCors(options => options.AddPolicy("ApiCorsPolicy", b =>
 {
@@ -42,7 +39,7 @@ if (builder.Environment.IsDevelopment())
             options.UseNpgsql(configuration["ConnectionStrings:NpgDevSqlConnection"]),
         ServiceLifetime.Transient);
 }
-      
+
 if (builder.Environment.IsStaging())
 {
     builder.Services.AddDbContext<PgContext>(options =>
@@ -77,8 +74,8 @@ builder.Services.AddSwaggerGen(c =>
             {
                 Reference = new OpenApiReference
                 {
-                    Type=ReferenceType.SecurityScheme,
-                    Id="Bearer"
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
                 }
             },
             Array.Empty<string>()
@@ -130,7 +127,8 @@ builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.AddSignalR();
 
 // Подключаем кэш Redis.
-builder.Services.AddStackExchangeRedisCache(options => {
+builder.Services.AddStackExchangeRedisCache(options =>
+{
     options.Configuration = configuration["Redis:RedisCacheUrl"] ?? string.Empty;
 });
 
@@ -144,7 +142,7 @@ builder.Services.AddFluentValidation(conf =>
 builder.Services.AddQuartz(q =>
 {
     q.UseMicrosoftDependencyInjectionJobFactory();
-    
+
     // Запуск джоб при старте ядра системы.
     StartJobs.Start(q, builder.Services);
 });
