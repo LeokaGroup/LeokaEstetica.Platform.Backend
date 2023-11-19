@@ -39,21 +39,21 @@ builder.Services.AddHttpContextAccessor();
 if (builder.Environment.IsDevelopment())
 {
     builder.Services.AddDbContext<PgContext>(options =>
-            options.UseNpgsql(configuration.GetConnectionString("NpgDevSqlConnection")),
+            options.UseNpgsql(configuration["ConnectionStrings:NpgDevSqlConnection"]),
         ServiceLifetime.Transient);
 }
       
 if (builder.Environment.IsStaging())
 {
     builder.Services.AddDbContext<PgContext>(options =>
-            options.UseNpgsql(configuration.GetConnectionString("NpgTestSqlConnection")),
+            options.UseNpgsql(configuration["ConnectionStrings:NpgTestSqlConnection"]),
         ServiceLifetime.Transient);
 }
 
 if (builder.Environment.IsProduction())
 {
     builder.Services.AddDbContext<PgContext>(options =>
-            options.UseNpgsql(configuration.GetConnectionString("NpgSqlConnection")),
+            options.UseNpgsql(configuration["ConnectionStrings:NpgSqlConnection"]),
         ServiceLifetime.Transient);
 }
 
@@ -118,8 +118,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-builder.Host
-    .UseServiceProviderFactory(new AutofacServiceProviderFactory())
+builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory())
     .ConfigureContainer<ContainerBuilder>(AutoFac.Init);
 
 // Нужно для типа timestamp в Postgres.

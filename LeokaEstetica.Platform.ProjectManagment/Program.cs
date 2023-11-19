@@ -6,6 +6,7 @@ using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Utils;
 using LeokaEstetica.Platform.Notifications.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using NLog.Web;
@@ -26,6 +27,29 @@ builder.Services.AddCors(options => options.AddPolicy("ApiCorsPolicy", b =>
 }));
 
 builder.Environment.EnvironmentName = configuration["Environment"];
+
+builder.Configuration.AddJsonFile("appsettings.json", false, true);
+
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddDbContext<PgContext>(options =>
+            options.UseNpgsql(configuration["ConnectionStrings:NpgDevSqlConnection"]),
+        ServiceLifetime.Transient);
+}
+      
+if (builder.Environment.IsStaging())
+{
+    builder.Services.AddDbContext<PgContext>(options =>
+            options.UseNpgsql(configuration["ConnectionStrings:NpgTestSqlConnection"]),
+        ServiceLifetime.Transient);
+}
+
+if (builder.Environment.IsProduction())
+{
+    builder.Services.AddDbContext<PgContext>(options =>
+            options.UseNpgsql(configuration["ConnectionStrings:NpgSqlConnection"]),
+        ServiceLifetime.Transient);
+}
 
 builder.Services.AddHttpContextAccessor();
 
@@ -90,8 +114,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-builder.Host
-    .UseServiceProviderFactory(new AutofacServiceProviderFactory())
+builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory())
     .ConfigureContainer<ContainerBuilder>(AutoFac.Init);
 
 // Нужно для типа timestamp в Postgres.
