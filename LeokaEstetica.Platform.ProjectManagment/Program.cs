@@ -1,4 +1,3 @@
-using System.Net;
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using FluentValidation.AspNetCore;
@@ -92,10 +91,7 @@ static void AddSwaggerXml(Swashbuckle.AspNetCore.SwaggerGen.SwaggerGenOptions c)
 }
 
 builder.WebHost
-    .UseKestrel(opt =>
-    {
-        opt.Listen(IPAddress.Loopback, 9995);
-    })
+    .UseKestrel()
     .UseContentRoot(Directory.GetCurrentDirectory())
     .UseUrls(configuration["UseUrls:ProjectManagmentPath"])
     .UseEnvironment(configuration["Environment"]);
