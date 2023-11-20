@@ -1,4 +1,4 @@
-namespace LeokaEstetica.Platform.Integrations.Models.Input.Pachca;
+namespace LeokaEstetica.Platform.Base.Models.Input.Pachca;
 
 /// <summary>
 /// Класс входной модели исключений для пачки.

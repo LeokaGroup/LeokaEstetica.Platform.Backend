@@ -1,4 +1,4 @@
-using LeokaEstetica.Platform.Integrations.Enums;
+using LeokaEstetica.Platform.Base.Enums;
 
 namespace LeokaEstetica.Platform.Integrations.Abstractions.Telegram;
 

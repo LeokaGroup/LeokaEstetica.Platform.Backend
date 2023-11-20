@@ -1,6 +1,6 @@
 using System.ComponentModel;
 
-namespace LeokaEstetica.Platform.Integrations.Enums;
+namespace LeokaEstetica.Platform.Base.Enums;
 
 /// <summary>
 /// Перечисление типов объектов (вакансия, проект).
