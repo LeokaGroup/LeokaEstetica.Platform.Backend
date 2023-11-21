@@ -158,13 +158,6 @@ internal sealed class PachcaService : IPachcaService
 
         try
         {
-            if (string.IsNullOrWhiteSpace(account))
-            {
-                var ex = new InvalidOperationException(
-                    "Аккаунт нового пользователя не заполнен. Невозможно отправить уведомление в канал.");
-                throw ex;
-            }
-
             if (new[] { "Development", "Staging" }.Contains(_configuration["Environment"]))
             {
                 await httpClient.PostAsJsonAsync(_configuration["PachcaBot:NotificationsDevelopTestBot"],
