@@ -53,7 +53,7 @@ builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new OpenApiInfo { Title = "Leoka.Estetica.Platform" });
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "Leoka.Estetica.Platform.ProjectManagment" });
     AddSwaggerXml(c);
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
