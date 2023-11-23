@@ -49,6 +49,16 @@ public partial class ProjectManagmentHeaderConfiguration : IEntityTypeConfigurat
             .HasColumnName("IsDisabled")
             .HasColumnType("bool")
             .IsRequired();
+        
+        entity.Property(e => e.ControlType)
+            .HasColumnName("ControlType")
+            .HasColumnType("varchar(100)")
+            .IsRequired();
+        
+        entity.Property(e => e.Destination)
+            .HasColumnName("Destination")
+            .HasColumnType("varchar(100)")
+            .IsRequired();
 
         entity.HasIndex(u => u.HeaderId)
             .HasDatabaseName("PK_ProjectManagment_Header_HeaderId")

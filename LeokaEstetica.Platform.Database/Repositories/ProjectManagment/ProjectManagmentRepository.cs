@@ -31,4 +31,17 @@ internal sealed class ProjectManagmentRepository : IProjectManagmentRepository
 
         return result;
     }
+
+    /// <summary>
+    /// Метод получает элементы верхнего меню (хидера).
+    /// </summary>
+    /// <returns>Список элементов.</returns>
+    public async Task<IEnumerable<ProjectManagmentHeaderEntity>> GetHeaderItemsAsync()
+    {
+        var result = await _pgContext.ProjectManagmentHeader
+            .OrderBy(o => o.Position)
+            .ToListAsync();
+
+        return result;
+    }
 }
