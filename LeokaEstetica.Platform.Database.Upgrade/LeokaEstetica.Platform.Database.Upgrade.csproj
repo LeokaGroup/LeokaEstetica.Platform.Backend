@@ -20,7 +20,9 @@
         <EmbeddedResource Include="Scripts\010.Esta.DDL_Alter_PlatformOffersItems.sql" />
         <EmbeddedResource Include="Scripts\011.Esta.DML_Insert_Headers.sql" />
         <EmbeddedResource Include="Scripts\012.Esta.DDL_Create_ViewStrategies.sql" />
-        <EmbeddedResource Include="Scripts\0123Esta.DML_Insert_ViewStrategies.sql" />
+        <EmbeddedResource Include="Scripts\013.Esta.DML_Insert_ViewStrategies.sql" />
+        <EmbeddedResource Include="Scripts\014.Esta.DDL_Create_Header.sql" />
+        <EmbeddedResource Include="Scripts\015.Esta.DML_Insert_Header.sql" />
     </ItemGroup>
 
     <ItemGroup>
