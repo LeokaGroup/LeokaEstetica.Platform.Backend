@@ -80,12 +80,12 @@ public class ProjectManagmentController : BaseController
     /// <returns>Список элементов.</returns>
     [HttpGet]
     [Route("header")]
-    [ProducesResponseType(200, Type = typeof(ProjectManagmentHeaderResult))]
+    [ProducesResponseType(200, Type = typeof(List<ProjectManagmentHeaderResult>))]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<ProjectManagmentHeaderResult> GetHeaderItemsAsync()
+    public async Task<List<ProjectManagmentHeaderResult>> GetHeaderItemsAsync()
     {
         // Получаем необработанные списки. Доп.списки пока не заполнены.
         var unprocessedItems = await _projectManagmentService.GetHeaderItemsAsync();

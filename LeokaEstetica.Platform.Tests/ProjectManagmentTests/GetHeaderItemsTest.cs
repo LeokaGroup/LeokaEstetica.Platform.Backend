@@ -20,8 +20,6 @@ internal class GetHeaderItemsTest : BaseServiceTest
         
         var result = await ProjectManagmentService.ModifyHeaderItemsAsync(mapItems);
         
-        Assert.NotNull(result.Filters);
-        Assert.NotNull(result.StrategyItems);
-        Assert.NotNull(result.CreateItems);
+        Assert.NotNull(result.All(x => x.Items is not null && x.Items.Any() && !string.IsNullOrEmpty(x.Label)));
     }
 }

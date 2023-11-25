@@ -78,25 +78,16 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     /// Метод наполняет доп.списки элементов хидера.
     /// </summary>
     /// <param name="items">Список элементов.</param>
-    public async Task<ProjectManagmentHeaderResult> ModifyHeaderItemsAsync(
+    public async Task<List<ProjectManagmentHeaderResult>> ModifyHeaderItemsAsync(
         IEnumerable<ProjectManagmentHeaderOutput> items)
     {
         try
         {
-            var result = new ProjectManagmentHeaderResult
-            {
-                ProjectManagmentHeaderItems = items
-            };
-            
-            // Будем наполнять доп.списки.
-            foreach (var item in result.ProjectManagmentHeaderItems)
-            {
-                // Если нет доп.элементов, то нам не интересен этот пункт меню.
-                if (!item.HasItems)
-                {
-                    continue;
-                }
+            var result = new List<ProjectManagmentHeaderResult>();
 
+            // Будем наполнять доп.списки.
+            foreach (var item in items)
+            {
                 var destinationString = item.Destination;
                 var destination = Enum.Parse<ProjectManagmentDestinationTypeEnum>(destinationString);
 
@@ -125,7 +116,19 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 
                     if (mapItems is not null)
                     {
-                        result.StrategyItems = mapItems.Items.OrderBy(o => o.Position);
+                        var strategyItems = mapItems.Items.OrderBy(o => o.Position);
+                        
+                        var selectedStrategyItems = strategyItems.Select(x => new ProjectManagmentHeader
+                            {
+                                Label = x.ItemName,
+                                Id = ProjectManagmentDestinationTypeEnum.Strategy.ToString()
+                            });
+                        
+                        result.Add(new ProjectManagmentHeaderResult
+                        {
+                            Label = item.ItemName,
+                            Items = selectedStrategyItems
+                        });
                     }
                 }
 
@@ -148,7 +151,19 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 
                     if (mapItems is not null)
                     {
-                        result.CreateItems = mapItems.Items.OrderBy(o => o.Position);
+                        var createItems = mapItems.Items.OrderBy(o => o.Position);
+                        
+                        var selectedCreateItems = createItems.Select(x => new ProjectManagmentHeader
+                        {
+                            Label = x.ItemName,
+                            Id = ProjectManagmentDestinationTypeEnum.Create.ToString()
+                        });
+                        
+                        result.Add(new ProjectManagmentHeaderResult
+                        {
+                            Label = item.ItemName,
+                            Items = selectedCreateItems
+                        });
                     }
                 }
 
@@ -171,7 +186,65 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                     
                     if (mapItems is not null)
                     {
-                        result.Filters = mapItems.Items.OrderBy(o => o.Position);
+                        var filters = mapItems.Items.OrderBy(o => o.Position);
+                        
+                        var selectedFilters = filters.Select(x => new ProjectManagmentHeader
+                            {
+                                Label = x.ItemName,
+                                Id = ProjectManagmentDestinationTypeEnum.Filters.ToString()
+                            });
+                        
+                        result.Add(new ProjectManagmentHeaderResult
+                        {
+                            Label = item.ItemName,
+                            Items = selectedFilters
+                        });
+                    }
+                }
+                
+                // Если настройки.
+                if (destination == ProjectManagmentDestinationTypeEnum.Settings)
+                {
+                    if (!item.HasItems)
+                    {
+                        result.Add(new ProjectManagmentHeaderResult
+                        {
+                            Label = item.ItemName
+                        });
+                    }
+
+                    else
+                    {
+                        ProjectManagmentHeaderSettings mapItems;
+
+                        try
+                        {
+                            mapItems = JsonConvert.DeserializeObject<ProjectManagmentHeaderSettings>(item.Items);
+                        }
+                    
+                        catch (Exception ex)
+                        {
+                            _logger?.LogError(ex, "Ошибка при десериализации элементов меню настроек." +
+                                                  $" Settings: {item.Items}");
+                            throw;
+                        }
+                    
+                        if (mapItems is not null)
+                        {
+                            var settings = mapItems.Items.OrderBy(o => o.Position);
+                        
+                            var selectedSettings = settings.Select(x => new ProjectManagmentHeader
+                                {
+                                    Label = x.ItemName,
+                                    Id = ProjectManagmentDestinationTypeEnum.Settings.ToString()
+                                });
+                        
+                            result.AddRange(selectedSettings.Select(x => new ProjectManagmentHeaderResult
+                            {
+                                Label = x.Label,
+                                Id = x.Id
+                            }));
+                        }
                     }
                 }
             }

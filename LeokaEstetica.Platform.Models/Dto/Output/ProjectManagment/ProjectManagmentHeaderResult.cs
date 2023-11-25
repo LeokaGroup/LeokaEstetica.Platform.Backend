@@ -6,23 +6,48 @@ namespace LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 public class ProjectManagmentHeaderResult
 {
     /// <summary>
-    /// Список без наполненных доп.списков.
+    /// Название.
     /// </summary>
-    public IEnumerable<ProjectManagmentHeaderOutput> ProjectManagmentHeaderItems { get; set; }
+    public string Label { get; set; }
+
+    /// <summary>
+    /// Уникальный идентификатор (обычно системное название).
+    /// </summary>
+    public string Id { get; set; }
     
     /// <summary>
-    /// Список вложенных элементов для стратегий представления. 
+    /// Вложенные элементы.
     /// </summary>
+    public IEnumerable<ProjectManagmentHeader> Items { get; set; }
+}
 
-    public IOrderedEnumerable<StrategyItems> StrategyItems { get; set; }
+public class ProjectManagmentHeader
+{
+    /// <summary>
+    /// Название.
+    /// </summary>
+    public string Label { get; set; }
 
     /// <summary>
-    /// Список вложенных элементов для меню создания, т.е. кнопка создать. 
+    /// Вложенные элементы.
     /// </summary>
-    public IOrderedEnumerable<CreateItems> CreateItems { get; set; }
-
+    public IEnumerable<ProjectManagmentHeaderItems> Items { get; set; }
+    
     /// <summary>
-    /// Список вложенных элементов для фильтров. 
+    /// Уникальный идентификатор (обычно системное название).
     /// </summary>
-    public IOrderedEnumerable<Filters> Filters { get; set; }
+    public string Id { get; set; }
+}
+
+public class ProjectManagmentHeaderItems
+{
+    /// <summary>
+    /// Название.
+    /// </summary>
+    public string Label { get; set; }
+    
+    /// <summary>
+    /// Уникальный идентификатор (обычно системное название).
+    /// </summary>
+    public string Id { get; set; }
 }

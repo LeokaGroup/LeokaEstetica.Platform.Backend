@@ -25,5 +25,5 @@ public interface IProjectManagmentService
     /// Метод наполняет доп.списки элементов хидера.
     /// </summary>
     /// <param name="items">Список элементов.</param>
-    Task<ProjectManagmentHeaderResult> ModifyHeaderItemsAsync(IEnumerable<ProjectManagmentHeaderOutput> items);
+    Task<List<ProjectManagmentHeaderResult>> ModifyHeaderItemsAsync(IEnumerable<ProjectManagmentHeaderOutput> items);
 }
