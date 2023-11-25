@@ -471,4 +471,9 @@ public class PgContext : DbContext
     /// Таблица стратегий представления рабочего пространства проектов.
     /// </summary>
     public DbSet<ViewStrategyEntity> ViewStrategies { get; set; }
+
+    /// <summary>
+    /// Таблица элементов меню хидера модуля УП.
+    /// </summary>
+    public DbSet<ProjectManagmentHeaderEntity> ProjectManagmentHeader { get; set; }
 }

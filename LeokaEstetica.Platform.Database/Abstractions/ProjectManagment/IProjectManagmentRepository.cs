@@ -12,4 +12,10 @@ public interface IProjectManagmentRepository
     /// </summary>
     /// <returns>Список стратегий.</returns>
     Task<IEnumerable<ViewStrategyEntity>> GetViewStrategiesAsync();
+
+    /// <summary>
+    /// Метод получает элементы верхнего меню (хидера).
+    /// </summary>
+    /// <returns>Список элементов.</returns>
+    Task<IEnumerable<ProjectManagmentHeaderEntity>> GetHeaderItemsAsync();
 }

@@ -209,6 +209,8 @@ public class MappingProfile : Profile
         CreateMap<CreateRefundOutput, RefundOutput>();
         
         CreateMap<ViewStrategyEntity, ViewStrategyOutput>();
+        
+        CreateMap<ProjectManagmentHeaderEntity, ProjectManagmentHeaderOutput>();
     }
     
     /// <summary>

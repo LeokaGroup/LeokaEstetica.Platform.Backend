@@ -18,15 +18,18 @@ public partial class ViewStrategyConfiguration : IEntityTypeConfiguration<ViewSt
         
         entity.Property(e => e.ViewStrategyName)
             .HasColumnName("ViewStrategyName")
-            .HasColumnType("varchar(255)");
+            .HasColumnType("varchar(255)")
+            .IsRequired();
         
         entity.Property(e => e.ViewStrategySysName)
             .HasColumnName("ViewStrategySysName")
-            .HasColumnType("varchar(100)");
+            .HasColumnType("varchar(100)")
+            .IsRequired();
 
         entity.Property(e => e.Position)
             .HasColumnName("Position")
-            .HasColumnType("int");
+            .HasColumnType("int")
+            .IsRequired();
 
         entity.HasIndex(u => u.StrategyId)
             .HasDatabaseName("ViewStrategies_StrategyId")
