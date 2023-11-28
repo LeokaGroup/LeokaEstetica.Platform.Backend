@@ -27,6 +27,8 @@
         <EmbeddedResource Include="Scripts\017.Esta.DDL_Create_Table_ProjectManagmentTaskTemplates.sql" />
         <EmbeddedResource Include="Scripts\018.Esta.DDL_Create_Table_ProjectManagmentTaskStatusTemplates.sql" />
         <EmbeddedResource Include="Scripts\019.Esta.DDL_Create_Table_ProjectManagmentUserTaskTemplates.sql" />
+        <EmbeddedResource Include="Scripts\020.Esta.DML_Insert_ProjectManagmentTaskTemplates.sql" />
+        <EmbeddedResource Include="Scripts\021.Esta.DML_Insert_ProjectManagmentTaskStatusTemplates.sql" />
     </ItemGroup>
 
     <ItemGroup>

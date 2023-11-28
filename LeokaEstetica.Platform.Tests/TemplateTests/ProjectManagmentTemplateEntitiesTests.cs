@@ -13,13 +13,13 @@ internal class ProjectManagmentTemplateEntitiesTests : BaseServiceTest
     [Test]
     public async Task ProjectManagmentTemplateEntitiesAsyncTest()
     {
-        Assert.DoesNotThrowAsync(async () => 
+        Assert.DoesNotThrowAsync(async () =>
             await PgContext.ProjectManagmentTaskTemplates.Take(3).ToListAsync());
-            
-        Assert.DoesNotThrowAsync(async () => 
-        await PgContext.ProjectManagmentTaskStatusTemplates.Take(3).ToListAsync());
-        
-        Assert.DoesNotThrowAsync(async () => 
+
+        Assert.DoesNotThrowAsync(async () =>
+            await PgContext.ProjectManagmentTaskStatusTemplates.Take(3).ToListAsync());
+
+        Assert.DoesNotThrowAsync(async () =>
             await PgContext.ProjectManagmentUserTaskTemplates.Take(3).ToListAsync());
 
         await Task.CompletedTask;
