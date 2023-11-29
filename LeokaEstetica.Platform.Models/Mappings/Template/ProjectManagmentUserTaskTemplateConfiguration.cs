@@ -25,11 +25,6 @@ public partial class ProjectManagmentUserTaskTemplateConfiguration : IEntityType
             .HasDatabaseName("PK_ProjectManagmentUserTaskTemplates_UserTemplateId")
             .IsUnique();
 
-        entity.HasOne(p => p.ProjectManagmentTaskTemplate)
-            .WithMany(b => b.ProjectManagmentUserTaskTemplates)
-            .HasForeignKey(p => p.TemplateId)
-            .HasConstraintName("FK_ProjectManagmentTaskTemplates_TemplateId");
-
         OnConfigurePartial(entity);
     }
 

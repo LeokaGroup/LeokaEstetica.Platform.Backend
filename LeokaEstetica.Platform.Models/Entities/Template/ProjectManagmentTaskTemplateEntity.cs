@@ -5,12 +5,6 @@ namespace LeokaEstetica.Platform.Models.Entities.Template;
 /// </summary>
 public class ProjectManagmentTaskTemplateEntity
 {
-    public ProjectManagmentTaskTemplateEntity()
-    {
-        ProjectManagmentTaskStatusTemplates = new HashSet<ProjectManagmentTaskStatusTemplateEntity>();
-        ProjectManagmentUserTaskTemplates = new HashSet<ProjectManagmentUserTaskTemplateEntity>();
-    }
-
     /// <summary>
     /// PK.
     /// </summary>
@@ -34,10 +28,10 @@ public class ProjectManagmentTaskTemplateEntity
     /// <summary>
     /// Список статусов шаблонов задач.
     /// </summary>
-    public ICollection<ProjectManagmentTaskStatusTemplateEntity> ProjectManagmentTaskStatusTemplates { get; set; }
-
-    /// <summary>
-    /// Список статусов шаблонов задач пользователя.
-    /// </summary>
-    public ICollection<ProjectManagmentUserTaskTemplateEntity> ProjectManagmentUserTaskTemplates { get; set; }
+    public IEnumerable<ProjectManagmentTaskStatusTemplateEntity> ProjectManagmentTaskStatusTemplates { get; set; }
+    //
+    // /// <summary>
+    // /// Список статусов шаблонов задач пользователя.
+    // /// </summary>
+    public IEnumerable<ProjectManagmentTaskStatusIntermediateTemplateEntity> ProjectManagmentTaskStatusIntermediateTemplates { get; set; }
 }

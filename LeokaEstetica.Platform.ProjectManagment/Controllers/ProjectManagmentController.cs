@@ -3,6 +3,7 @@ using LeokaEstetica.Platform.Base;
 using LeokaEstetica.Platform.Base.Filters;
 using LeokaEstetica.Platform.Models.Dto.Output.Project;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
+using LeokaEstetica.Platform.Models.Dto.Output.Template;
 using LeokaEstetica.Platform.Services.Abstractions.Project;
 using LeokaEstetica.Platform.Services.Abstractions.ProjectManagment;
 using Microsoft.AspNetCore.Mvc;
@@ -95,5 +96,28 @@ public class ProjectManagmentController : BaseController
         var result = await _projectManagmentService.ModifyHeaderItemsAsync(mapItems);
 
         return result;
+    }
+
+    /// <summary>
+    /// Метод получает список шаблонов задач, которые пользователь может выбрать перед переходом в рабочее пространство.
+    /// </summary>
+    /// <returns>Список шаблонов задач.</returns>
+    [HttpGet]
+    [Route("templates")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<ProjectManagmentTaskTemplateResult>))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<IEnumerable<ProjectManagmentTaskTemplateResult>> GetProjectManagmentTemplatesAsync()
+    {
+        var items = await _projectManagmentService.GetProjectManagmentTemplatesAsync();
+        var result = _mapper.Map<IEnumerable<ProjectManagmentTaskTemplateResult>>(items);
+        var resultItems = result.ToList();
+        
+        // Проставляем Id шаблона статусам.
+        await _projectManagmentService.SetProjectManagmentTemplateIdsAsync(resultItems);
+
+        return resultItems;
     }
 }

@@ -1,7 +1,9 @@
 ﻿using System.Runtime.CompilerServices;
 using LeokaEstetica.Platform.Core.Enums;
+using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
+using LeokaEstetica.Platform.Models.Dto.Output.Template;
 using LeokaEstetica.Platform.Models.Entities.ProjectManagment;
 using LeokaEstetica.Platform.Services.Abstractions.ProjectManagment;
 using Microsoft.Extensions.Logging;
@@ -255,6 +257,74 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         catch (Exception ex)
         {
             _logger?.LogError(ex, "Ошибка при наполнении доп.списка элементов верхнего меню (хидера).");
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Метод получает список шаблонов задач, которые пользователь может выбрать перед переходом в рабочее пространство.
+    /// </summary>
+    /// <returns>Список шаблонов задач.</returns>
+    public async Task<IEnumerable<ProjectManagmentTaskTemplateEntityResult>> GetProjectManagmentTemplatesAsync()
+    {
+        try
+        {
+            var result = await _projectManagmentRepository.GetProjectManagmentTemplatesAsync();
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Метод проставляет Id шаблонов статусам для результата.
+    /// </summary>
+    /// <param name="templateStatuses">Список статусов.</param>
+    public async Task SetProjectManagmentTemplateIdsAsync(List<ProjectManagmentTaskTemplateResult> templateStatuses)
+    {
+        try
+        {
+            if (templateStatuses is null || !templateStatuses.Any())
+            {
+                throw new InvalidOperationException(
+                    "Невозможно проставить Id щаблонов статусам задач." +
+                    $" TemplateStatuses: {JsonConvert.SerializeObject(templateStatuses)}");
+            }
+
+            // Находим в БД все статусы по их Id.
+            var templateStatusIds = templateStatuses
+                .SelectMany(x => x.ProjectManagmentTaskStatusTemplates
+                    .Select(y => y.StatusId));
+            var items = templateStatuses
+                .SelectMany(x => x.ProjectManagmentTaskStatusTemplates
+                    .Select(y => y));
+
+            var statusesDict = await _projectManagmentRepository.GetTemplateStatusIdsByStatusIdsAsync(
+                templateStatusIds);
+            
+            foreach (var ts in items)
+            {
+                var statusId = ts.StatusId;
+                
+                // Если не нашли такогго статуса в таблице маппинга многие-ко-многим.
+                if (!statusesDict.ContainsKey(statusId))
+                {
+                    throw new InvalidOperationException(
+                        $"Не удалось получить шаблон, к которому принадлежит статус. Id статуса был: {statusId}");
+                }
+
+                ts.TemplateId = statusesDict.TryGet(statusId);
+            }
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
             throw;
         }
     }

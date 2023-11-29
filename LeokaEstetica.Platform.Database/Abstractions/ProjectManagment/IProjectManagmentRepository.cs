@@ -1,4 +1,6 @@
-﻿using LeokaEstetica.Platform.Models.Entities.ProjectManagment;
+﻿using LeokaEstetica.Platform.Models.Dto.Output.Template;
+using LeokaEstetica.Platform.Models.Entities.ProjectManagment;
+using LeokaEstetica.Platform.Models.Entities.Template;
 
 namespace LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 
@@ -18,4 +20,17 @@ public interface IProjectManagmentRepository
     /// </summary>
     /// <returns>Список элементов.</returns>
     Task<IEnumerable<ProjectManagmentHeaderEntity>> GetHeaderItemsAsync();
+
+    /// <summary>
+    /// Метод получает список шаблонов задач, которые пользователь может выбрать перед переходом в рабочее пространство.
+    /// </summary>
+    /// <returns>Список шаблонов задач.</returns>
+    Task<IEnumerable<ProjectManagmentTaskTemplateEntityResult>> GetProjectManagmentTemplatesAsync();
+
+    /// <summary>
+    /// Метод получает список Id статусов, которым будем проставлять Id шаблона, к которому относятся эти статусы.
+    /// </summary>
+    /// <param name="templateStatusIds">Список Id статусов.</param>
+    /// <returns>Словарь с Id шаблонов и статусов.</returns>
+    Task<IDictionary<int, int>> GetTemplateStatusIdsByStatusIdsAsync(IEnumerable<int> templateStatusIds);
 }

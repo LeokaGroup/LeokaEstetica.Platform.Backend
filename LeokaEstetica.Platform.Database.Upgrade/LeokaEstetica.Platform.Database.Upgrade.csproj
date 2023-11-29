@@ -29,6 +29,10 @@
         <EmbeddedResource Include="Scripts\019.Esta.DDL_Create_Table_ProjectManagmentUserTaskTemplates.sql" />
         <EmbeddedResource Include="Scripts\020.Esta.DML_Insert_ProjectManagmentTaskTemplates.sql" />
         <EmbeddedResource Include="Scripts\021.Esta.DML_Insert_ProjectManagmentTaskStatusTemplates.sql" />
+        <EmbeddedResource Include="Scripts\022.Esta.DDL_Delete_ForeignKeys_Templates.sql" />
+        <EmbeddedResource Include="Scripts\023.Esta.DDL_Delete_TemplateId_Templates.sql" />
+        <EmbeddedResource Include="Scripts\024.Esta.DDL_Create_ProjectManagmentTaskStatusIntermediateTemplates.sql" />
+        <EmbeddedResource Include="Scripts\025.Esta.DML_Insert_ProjectManagmentTaskStatusIntermediateTemplates.sql" />
     </ItemGroup>
 
     <ItemGroup>

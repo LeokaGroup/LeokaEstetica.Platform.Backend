@@ -26,12 +26,12 @@ public class ProjectManagmentTaskStatusTemplateEntity
     public int Position { get; set; }
 
     /// <summary>
-    /// Id шаблона.
+    /// FK многие-ко-многим на шаблоны задач.
     /// </summary>
-    public int TemplateId { get; set; }
-
+    public IEnumerable<ProjectManagmentTaskTemplateEntity> ProjectManagmentTaskTemplates { get; set; }
+    
     /// <summary>
-    /// FK на шаблоны задач.
+    /// Список статусов.
     /// </summary>
-    public ProjectManagmentTaskTemplateEntity ProjectManagmentTaskTemplate { get; set; }
+    public IEnumerable<ProjectManagmentTaskStatusIntermediateTemplateEntity> ProjectManagmentTaskStatusIntermediateTemplates { get; set; }
 }

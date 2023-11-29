@@ -23,7 +23,7 @@ builder.Services.AddControllers(opt => { opt.Filters.Add(typeof(LogExceptionFilt
 
 builder.Services.AddCors(options => options.AddPolicy("ApiCorsPolicy", b =>
 {
-    b.WithOrigins(configuration.GetSection("CorsUrls:Urls").Get<string[]>())
+    b.WithOrigins(new [] { "" })
         .AllowAnyHeader()
         .AllowAnyMethod()
         .AllowCredentials();
