@@ -18,8 +18,12 @@ using Quartz;
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
 
-builder.Services.AddControllers(opt => { opt.Filters.Add(typeof(LogExceptionFilter)); })
-    .AddControllersAsServices().AddNewtonsoftJson();
+builder.Services.AddControllers(opt =>
+    {
+        opt.Filters.Add(typeof(LogExceptionFilter));
+    })
+    .AddControllersAsServices()
+    .AddNewtonsoftJson();
 
 builder.Services.AddCors(options => options.AddPolicy("ApiCorsPolicy", b =>
 {
