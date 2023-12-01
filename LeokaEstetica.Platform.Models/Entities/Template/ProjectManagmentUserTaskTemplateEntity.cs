@@ -1,15 +1,19 @@
 namespace LeokaEstetica.Platform.Models.Entities.Template;
 
 /// <summary>
-///  TODO: Скорее всего надо будет расширять эту таблу.
 /// Класс сопоставляется с таблицей шаблонов, которые выбрал пользователь.
 /// </summary>
 public class ProjectManagmentUserTaskTemplateEntity
 {
     /// <summary>
-    /// PK.
+    /// Id пользователя.
     /// </summary>
-    public long UserTemplateId { get; set; }
+    public long UserId { get; set; }
+    
+    /// <summary>
+    /// Id шаблона.
+    /// </summary>
+    public int TemplateId { get; set; }
 
     /// <summary>
     /// Признак активности шаблона.

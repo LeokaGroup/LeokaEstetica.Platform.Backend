@@ -53,7 +53,7 @@ public partial class ProjectManagmentTaskTemplateConfiguration : IEntityTypeConf
                 j =>
                 {
                     j.HasKey(t => new { t.TemplateId, t.StatusId });
-                    j.ToTable("ProjectManagmentTaskStatusIntermediateTemplates");
+                    j.ToTable("ProjectManagmentTaskStatusIntermediateTemplates", "Templates");
                 });
 
         OnConfigurePartial(entity);
