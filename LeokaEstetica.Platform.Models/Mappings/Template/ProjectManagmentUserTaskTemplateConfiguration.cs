@@ -10,25 +10,15 @@ public partial class ProjectManagmentUserTaskTemplateConfiguration : IEntityType
     {
         entity.ToTable("ProjectManagmentUserTaskTemplates", "Templates");
 
-        entity.HasKey(e => e.UserTemplateId);
-
-        entity.Property(e => e.UserTemplateId)
-            .HasColumnName("UserTemplateId")
-            .HasColumnType("bigserial");
+        entity.HasKey(e => new { e.UserId, e.TemplateId });
 
         entity.Property(e => e.IsActive)
             .HasColumnName("IsActive")
             .HasColumnType("bool")
             .IsRequired();
 
-        entity.HasIndex(u => u.UserTemplateId)
-            .HasDatabaseName("PK_ProjectManagmentUserTaskTemplates_UserTemplateId")
-            .IsUnique();
-
-        entity.HasOne(p => p.ProjectManagmentTaskTemplate)
-            .WithMany(b => b.ProjectManagmentUserTaskTemplates)
-            .HasForeignKey(p => p.TemplateId)
-            .HasConstraintName("FK_ProjectManagmentTaskTemplates_TemplateId");
+        entity.HasIndex(u => u.UserId)
+            .HasDatabaseName("FK_Users_UserId");
 
         OnConfigurePartial(entity);
     }

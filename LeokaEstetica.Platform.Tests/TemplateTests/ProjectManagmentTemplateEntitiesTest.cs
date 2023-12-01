@@ -8,7 +8,7 @@ namespace LeokaEstetica.Platform.Tests.TemplateTests;
 /// Делаются простые выборки из БД, чтобы проверить, что ни одна из сущностей не упадет при работе с ней.
 /// </summary>
 [TestFixture]
-internal class ProjectManagmentTemplateEntitiesTests : BaseServiceTest
+internal class ProjectManagmentTemplateEntitiesTest : BaseServiceTest
 {
     [Test]
     public async Task ProjectManagmentTemplateEntitiesAsyncTest()

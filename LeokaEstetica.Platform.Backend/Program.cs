@@ -18,8 +18,12 @@ using Quartz;
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
 
-builder.Services.AddControllers(opt => { opt.Filters.Add(typeof(LogExceptionFilter)); })
-    .AddControllersAsServices().AddNewtonsoftJson();
+builder.Services.AddControllers(opt =>
+    {
+        opt.Filters.Add(typeof(LogExceptionFilter));
+    })
+    .AddControllersAsServices()
+    .AddNewtonsoftJson();
 
 builder.Services.AddCors(options => options.AddPolicy("ApiCorsPolicy", b =>
 {
@@ -167,8 +171,7 @@ app.UseAuthorization();
 app.UseCors("ApiCorsPolicy");
 app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
 
-// TODO: Временно добавил для тестов прода IsProduction. Потом конечно уберу это.
-if (builder.Environment.IsDevelopment() || builder.Environment.IsStaging() || builder.Environment.IsProduction())
+if (builder.Environment.IsDevelopment() || builder.Environment.IsStaging())
 {
     app.UseSwagger();
     app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Leoka.Estetica.Platform"));

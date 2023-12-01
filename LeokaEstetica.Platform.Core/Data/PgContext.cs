@@ -494,4 +494,6 @@ public class PgContext : DbContext
     /// Таблица шаблонов, которые выбрал пользователь.
     /// </summary>
     public DbSet<ProjectManagmentUserTaskTemplateEntity> ProjectManagmentUserTaskTemplates { get; set; }
+
+    public DbSet<ProjectManagmentTaskStatusIntermediateTemplateEntity> ProjectManagmentTaskStatusIntermediateTemplates { get; set; }
 }

@@ -6,10 +6,10 @@ namespace LeokaEstetica.Platform.Models.Entities.Template;
 public class ProjectManagmentUserTaskTemplateEntity
 {
     /// <summary>
-    /// PK.
+    /// Id пользователя.
     /// </summary>
-    public long UserTemplateId { get; set; }
-
+    public long UserId { get; set; }
+    
     /// <summary>
     /// Id шаблона.
     /// </summary>
@@ -20,9 +20,4 @@ public class ProjectManagmentUserTaskTemplateEntity
     /// Это поле нужно прежде всего для отображения всех шаблонов пользователя, что он выбирал ранее.
     /// </summary>
     public bool IsActive { get; set; }
-    
-    /// <summary>
-    /// FK на шаблоны задач.
-    /// </summary>
-    public ProjectManagmentTaskTemplateEntity ProjectManagmentTaskTemplate { get; set; }
 }
