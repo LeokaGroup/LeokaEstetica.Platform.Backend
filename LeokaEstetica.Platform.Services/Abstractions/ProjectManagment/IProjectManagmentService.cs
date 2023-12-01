@@ -39,4 +39,17 @@ public interface IProjectManagmentService
     /// </summary>
     /// <param name="templateStatuses">Список статусов.</param>
     Task SetProjectManagmentTemplateIdsAsync(List<ProjectManagmentTaskTemplateResult> templateStatuses);
+
+    /// <summary>
+    /// Метод получает конфигурацию рабочего пространства по выбранному шаблону.
+    /// Под конфигурацией понимаются основные элементы рабочего пространства (набор задач, статусов, фильтров, колонок и тд)
+    /// если выбранный шаблон это предполагает.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="strategy">Выбранная стратегия представления.</param>
+    /// <param name="templateId">Id шаблона.</param>
+    /// <param name="account">Аккаунт.</param>
+    /// <returns>Данные конфигурации рабочего пространства.</returns>
+    Task<ProjectManagmentWorkspaceResult> GetConfigurationWorkSpaceBySelectedTemplateAsync(long projectId,
+        string strategy, int templateId, string account);
 }
