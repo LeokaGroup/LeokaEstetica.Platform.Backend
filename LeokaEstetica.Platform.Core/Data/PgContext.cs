@@ -15,6 +15,7 @@ using LeokaEstetica.Platform.Models.Entities.ProjectManagment;
 using LeokaEstetica.Platform.Models.Entities.ProjectTeam;
 using LeokaEstetica.Platform.Models.Entities.Role;
 using LeokaEstetica.Platform.Models.Entities.Subscription;
+using LeokaEstetica.Platform.Models.Entities.Template;
 using LeokaEstetica.Platform.Models.Entities.Ticket;
 using LeokaEstetica.Platform.Models.Entities.User;
 using LeokaEstetica.Platform.Models.Entities.Vacancy;
@@ -476,4 +477,21 @@ public class PgContext : DbContext
     /// Таблица элементов меню хидера модуля УП.
     /// </summary>
     public DbSet<ProjectManagmentHeaderEntity> ProjectManagmentHeader { get; set; }
+
+    /// <summary>
+    /// Таблица шаблонов задач. Содержит в себе шаблоны, которые касаются только задач (поддерживает и Kanban и Scrum).
+    /// По сути, это набор столбцов в рабочем пространстве.
+    /// Каждый столбец - это отдельный статус линии задач (вертикальный столбец).
+    /// </summary>
+    public DbSet<ProjectManagmentTaskTemplateEntity> ProjectManagmentTaskTemplates { get; set; }
+
+    /// <summary>
+    /// Таблица шаблонов статусов задач.
+    /// </summary>
+    public DbSet<ProjectManagmentTaskStatusTemplateEntity> ProjectManagmentTaskStatusTemplates { get; set; }
+
+    /// <summary>
+    /// Таблица шаблонов, которые выбрал пользователь.
+    /// </summary>
+    public DbSet<ProjectManagmentUserTaskTemplateEntity> ProjectManagmentUserTaskTemplates { get; set; }
 }
