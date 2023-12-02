@@ -280,12 +280,14 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     /// <summary>
     /// Метод получает список шаблонов задач, которые пользователь может выбрать перед переходом в рабочее пространство.
     /// </summary>
+    /// <param name="templateId">Id шаблона.</param>
     /// <returns>Список шаблонов задач.</returns>
-    public async Task<IEnumerable<ProjectManagmentTaskTemplateEntityResult>> GetProjectManagmentTemplatesAsync()
+    public async Task<IEnumerable<ProjectManagmentTaskTemplateEntityResult>> GetProjectManagmentTemplatesAsync(
+        long? templateId)
     {
         try
         {
-            var result = await _projectManagmentRepository.GetProjectManagmentTemplatesAsync();
+            var result = await _projectManagmentRepository.GetProjectManagmentTemplatesAsync(templateId);
 
             return result;
         }
@@ -379,11 +381,11 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             }
 
             // Получаем набор статусов, которые входят в выбранный шаблон.
-            var items = await GetProjectManagmentTemplatesAsync();
+            var items = await GetProjectManagmentTemplatesAsync(templateId);
             var templateStatusesItems = _mapper.Map<IEnumerable<ProjectManagmentTaskTemplateResult>>(items);
             var statuses = templateStatusesItems?.ToList();
 
-            if (statuses?.FirstOrDefault() is null || !statuses.First().ProjectManagmentTaskStatusTemplates.Any())
+            if (statuses is null || !statuses.Any())
             {
                 throw new InvalidOperationException("Не удалось получить набор статусов шаблона." +
                                                     $" TemplateId: {templateId}." +

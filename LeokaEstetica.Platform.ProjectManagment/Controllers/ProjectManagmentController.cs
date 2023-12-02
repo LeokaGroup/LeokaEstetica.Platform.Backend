@@ -117,7 +117,7 @@ public class ProjectManagmentController : BaseController
     [ProducesResponseType(404)]
     public async Task<IEnumerable<ProjectManagmentTaskTemplateResult>> GetProjectManagmentTemplatesAsync()
     {
-        var items = await _projectManagmentService.GetProjectManagmentTemplatesAsync();
+        var items = await _projectManagmentService.GetProjectManagmentTemplatesAsync(null);
         var result = _mapper.Map<IEnumerable<ProjectManagmentTaskTemplateResult>>(items);
         var resultItems = result.ToList();
         

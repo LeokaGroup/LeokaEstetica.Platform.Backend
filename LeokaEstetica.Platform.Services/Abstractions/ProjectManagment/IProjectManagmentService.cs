@@ -31,8 +31,9 @@ public interface IProjectManagmentService
     /// <summary>
     /// Метод получает список шаблонов задач, которые пользователь может выбрать перед переходом в рабочее пространство.
     /// </summary>
+    /// <param name="templateId">Id шаблона.</param>
     /// <returns>Список шаблонов задач.</returns>
-    Task<IEnumerable<ProjectManagmentTaskTemplateEntityResult>> GetProjectManagmentTemplatesAsync();
+    Task<IEnumerable<ProjectManagmentTaskTemplateEntityResult>> GetProjectManagmentTemplatesAsync(long? templateId);
 
     /// <summary>
     /// Метод проставляет Id шаблонов статусам для результата.

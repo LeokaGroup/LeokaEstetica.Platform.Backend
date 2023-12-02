@@ -10,7 +10,7 @@ internal class GetProjectManagmentTemplatesTest : BaseServiceTest
     [Test]
     public async Task GetProjectManagmentTemplatesAsyncTest()
     {
-        var result = await ProjectManagmentService.GetProjectManagmentTemplatesAsync();
+        var result = await ProjectManagmentService.GetProjectManagmentTemplatesAsync(null);
         
         NotNull(result);
     }
