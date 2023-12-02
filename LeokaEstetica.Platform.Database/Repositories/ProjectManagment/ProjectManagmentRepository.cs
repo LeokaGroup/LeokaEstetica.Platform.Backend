@@ -51,10 +51,21 @@ internal sealed class ProjectManagmentRepository : IProjectManagmentRepository
     /// <summary>
     /// Метод получает список шаблонов задач, которые пользователь может выбрать перед переходом в рабочее пространство.
     /// </summary>
+    /// <param name="templateId">Id шаблона.</param>
     /// <returns>Список шаблонов задач.</returns>
-    public async Task<IEnumerable<ProjectManagmentTaskTemplateEntityResult>> GetProjectManagmentTemplatesAsync()
+    public async Task<IEnumerable<ProjectManagmentTaskTemplateEntityResult>> GetProjectManagmentTemplatesAsync(
+        long? templateId)
     {
-        var result = await _pgContext.ProjectManagmentTaskTemplates
+        var projectManagmentTaskTemplates = _pgContext.ProjectManagmentTaskTemplates.AsQueryable();
+
+        if (templateId.HasValue)
+        {
+            projectManagmentTaskTemplates = projectManagmentTaskTemplates
+                .Where(x => x.TemplateId == templateId.Value)
+                .OrderBy(o => o.Position);
+        }
+        
+        var result = projectManagmentTaskTemplates
             .Include(x => x.ProjectManagmentTaskStatusTemplates.OrderBy(o => o.Position))
             .ThenInclude(x => x.ProjectManagmentTaskStatusIntermediateTemplates)
             .OrderBy(o => o.Position)
@@ -65,10 +76,9 @@ internal sealed class ProjectManagmentRepository : IProjectManagmentRepository
                 ProjectManagmentTaskStatusTemplates = x
                     .SelectMany(y => y.ProjectManagmentTaskStatusTemplates
                         .OrderBy(o => o.Position)),
-            })
-            .ToListAsync();
+            });
 
-        return result;
+        return await result.ToListAsync();
     }
 
     /// <summary>

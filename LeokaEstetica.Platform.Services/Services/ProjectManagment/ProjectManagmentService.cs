@@ -1,6 +1,10 @@
 ﻿using System.Runtime.CompilerServices;
+using AutoMapper;
+using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.Core.Enums;
+using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Core.Extensions;
+using LeokaEstetica.Platform.Database.Abstractions.Project;
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.Template;
@@ -20,17 +24,29 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 {
     private readonly ILogger<ProjectManagmentService> _logger;
     private readonly IProjectManagmentRepository _projectManagmentRepository;
+    private readonly IMapper _mapper;
+    private readonly IUserRepository _userRepository;
+    private readonly IProjectRepository _projectRepository;
     
     /// <summary>
     /// Конструктор.
     /// <param name="logger">Логгер.</param>
     /// <param name="projectManagmentRepository">Репозиторий управления проектами.</param>
+    /// <param name="mapper">Маппер.</param>
+    /// <param name="mapper">Репозиторий пользователей.</param>
+    /// <param name="projectRepository">Репозиторий проектов.</param>
     /// </summary>
     public ProjectManagmentService(ILogger<ProjectManagmentService> logger,
-        IProjectManagmentRepository projectManagmentRepository)
+        IProjectManagmentRepository projectManagmentRepository,
+        IMapper mapper,
+        IUserRepository userRepository,
+        IProjectRepository projectRepository)
     {
         _logger = logger;
         _projectManagmentRepository = projectManagmentRepository;
+        _mapper = mapper;
+        _userRepository = userRepository;
+        _projectRepository = projectRepository;
     }
 
     #region Публичные методы.
@@ -264,19 +280,21 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     /// <summary>
     /// Метод получает список шаблонов задач, которые пользователь может выбрать перед переходом в рабочее пространство.
     /// </summary>
+    /// <param name="templateId">Id шаблона.</param>
     /// <returns>Список шаблонов задач.</returns>
-    public async Task<IEnumerable<ProjectManagmentTaskTemplateEntityResult>> GetProjectManagmentTemplatesAsync()
+    public async Task<IEnumerable<ProjectManagmentTaskTemplateEntityResult>> GetProjectManagmentTemplatesAsync(
+        long? templateId)
     {
         try
         {
-            var result = await _projectManagmentRepository.GetProjectManagmentTemplatesAsync();
+            var result = await _projectManagmentRepository.GetProjectManagmentTemplatesAsync(templateId);
 
             return result;
         }
         
         catch (Exception ex)
         {
-            _logger.LogError(ex, ex.Message);
+            _logger?.LogError(ex, ex.Message);
             throw;
         }
     }
@@ -324,7 +342,75 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         
         catch (Exception ex)
         {
-            _logger.LogError(ex, ex.Message);
+            _logger?.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Метод получает конфигурацию рабочего пространства по выбранному шаблону.
+    /// Под конфигурацией понимаются основные элементы рабочего пространства (набор задач, статусов, фильтров, колонок и тд)
+    /// если выбранный шаблон это предполагает.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="strategy">Выбранная стратегия представления.</param>
+    /// <param name="templateId">Id шаблона.</param>
+    /// <param name="account">Аккаунт.</param>
+    /// <returns>Данные конфигурации рабочего пространства.</returns>
+    public async Task<ProjectManagmentWorkspaceResult> GetConfigurationWorkSpaceBySelectedTemplateAsync(long projectId,
+        string strategy, int templateId, string account)
+    {
+        try
+        {
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+            
+            // Проверяем доступ к проекту.
+            var isOwner = await _projectRepository.CheckProjectOwnerAsync(projectId, userId);
+
+            if (!isOwner)
+            {
+                throw new InvalidOperationException("Пользователь не является владельцем проекта." +
+                                                    $"ProjectId: {projectId}." +
+                                                    $"UserId: {userId}");
+            }
+
+            // Получаем набор статусов, которые входят в выбранный шаблон.
+            var items = await GetProjectManagmentTemplatesAsync(templateId);
+            var templateStatusesItems = _mapper.Map<IEnumerable<ProjectManagmentTaskTemplateResult>>(items);
+            var statuses = templateStatusesItems?.ToList();
+
+            if (statuses is null || !statuses.Any())
+            {
+                throw new InvalidOperationException("Не удалось получить набор статусов шаблона." +
+                                                    $" TemplateId: {templateId}." +
+                                                    $"ProjectId: {projectId}." +
+                                                    $"Strategy: {strategy}.");
+            }
+
+            // Проставляем Id шаблона статусам.
+            await SetProjectManagmentTemplateIdsAsync(statuses);
+
+            var result = new ProjectManagmentWorkspaceResult
+            {
+                ProjectManagmentTaskStatuses = statuses.First().ProjectManagmentTaskStatusTemplates
+            };
+
+            // TODO: Задачи пользователя пока вообще не реализованы. Таблицы еще не проектировались.
+            // TODO: Пока просто отдаем статусы шаблона для рабочего пространства.
+            // Получаем задачи пользователя, которые принадлежат рабочему пространству.
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, ex.Message);
             throw;
         }
     }

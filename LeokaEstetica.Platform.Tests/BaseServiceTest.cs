@@ -261,6 +261,7 @@ internal class BaseServiceTest
         PressService = new PressService(pressRepository, null);
 
         var projectManagmentRepository = new ProjectManagmentRepository(pgContext);
-        ProjectManagmentService = new ProjectManagmentService(null, projectManagmentRepository);
+        ProjectManagmentService = new ProjectManagmentService(null, projectManagmentRepository, mapper, userRepository,
+            projectRepository);
     }
 }
