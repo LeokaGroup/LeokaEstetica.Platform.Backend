@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS "ProjectManagment"."TaskStatuses"
 (
-    "StatusId"      INT          NOT NULL,
+    "StatusId"      SERIAL          NOT NULL,
     "StatusName"    VARCHAR(150) NOT NULL,
     "StatusSysName" VARCHAR(150) NOT NULL,
     "Position"      INT          NOT NULL DEFAULT 0,
