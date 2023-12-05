@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS "ProjectManagment"."TaskTypes"
 (
-    "TypeId"      INT          NOT NULL,
+    "TypeId"      SERIAL          NOT NULL,
     "TypeName"    VARCHAR(150) NOT NULL,
     "TypeSysName" VARCHAR(150) NOT NULL,
     "Position"    INT          NOT NULL DEFAULT 0,
