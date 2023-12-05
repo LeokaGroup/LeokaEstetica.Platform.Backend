@@ -495,5 +495,59 @@ public class PgContext : DbContext
     /// </summary>
     public DbSet<ProjectManagmentUserTaskTemplateEntity> ProjectManagmentUserTaskTemplates { get; set; }
 
-    public DbSet<ProjectManagmentTaskStatusIntermediateTemplateEntity> ProjectManagmentTaskStatusIntermediateTemplates { get; set; }
+    public DbSet<ProjectManagmentTaskStatusIntermediateTemplateEntity> ProjectManagmentTaskStatusIntermediateTemplates
+    {
+        get;
+        set;
+    }
+
+    /// <summary>
+    /// Таблица пользователей.
+    /// </summary>
+    public DbSet<UserTaskEntity> UserTasks { get; set; }
+
+    /// <summary>
+    /// Таблица статусов задач.
+    /// </summary>
+    public DbSet<TaskStatusEntity> TaskStatuses { get; set; }
+
+    /// <summary>
+    /// Таблица отношений между задачами.
+    /// </summary>
+    public DbSet<TaskRelationEntity> TaskRelations { get; set; }
+
+    /// <summary>
+    /// Таблица зависимостей задач.
+    /// </summary>
+    public DbSet<TaskDependencyEntity> TaskDependencies { get; set; }
+
+    /// <summary>
+    /// Таблица резолюций задач.
+    /// </summary>
+    public DbSet<TaskResolutionEntity> TaskResolutions { get; set; }
+
+    /// <summary>
+    /// Таблица типов задач.
+    /// </summary>
+    public DbSet<TaskTypeEntity> TaskTypes { get; set; }
+
+    /// <summary>
+    /// Таблица тегов (меток) задач.
+    /// </summary>
+    public DbSet<TaskTagEntity> TaskTags { get; set; }
+
+    /// <summary>
+    /// Таблица комментариев к задачам.
+    /// </summary>
+    public DbSet<TaskCommentEntity> TaskComments { get; set; }
+
+    /// <summary>
+    /// История действий над задачей.
+    /// </summary>
+    public DbSet<TaskHistoryEntity> TaskHistories { get; set; }
+
+    /// <summary>
+    /// Таблица действий.
+    /// </summary>
+    public DbSet<HistoryActionEntity> HistoryActions { get; set; }
 }

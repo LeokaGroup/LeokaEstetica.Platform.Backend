@@ -29,9 +29,10 @@ public class ProjectManagmentTaskStatusTemplateEntity
     /// FK многие-ко-многим на шаблоны задач.
     /// </summary>
     public IEnumerable<ProjectManagmentTaskTemplateEntity> ProjectManagmentTaskTemplates { get; set; }
-    
+
     /// <summary>
     /// Список статусов.
     /// </summary>
-    public IEnumerable<ProjectManagmentTaskStatusIntermediateTemplateEntity> ProjectManagmentTaskStatusIntermediateTemplates { get; set; }
+    public IEnumerable<ProjectManagmentTaskStatusIntermediateTemplateEntity>
+        ProjectManagmentTaskStatusIntermediateTemplates { get; set; }
 }
