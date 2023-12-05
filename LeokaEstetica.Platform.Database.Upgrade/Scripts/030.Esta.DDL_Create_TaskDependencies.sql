@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS "ProjectManagment"."TaskDependencies"
 (
-    "DependencyId"       BIGINT       NOT NULL,
+    "DependencyId"       BIGSERIAL       NOT NULL,
     "TaskId"             BIGINT       NOT NULL,
     "DependencySysType"  VARCHAR(150) NOT NULL,
     "DependencyTypeName" VARCHAR(150) NOT NULL,

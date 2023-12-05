@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS "ProjectManagment"."TaskTags"
 (
-    "TagId"      INT          NOT NULL,
+    "TagId"      SERIAL          NOT NULL,
     "TagName"    VARCHAR(150) NOT NULL,
     "TagSysName" VARCHAR(150) NOT NULL,
     "Position"   INT          NOT NULL DEFAULT 0,

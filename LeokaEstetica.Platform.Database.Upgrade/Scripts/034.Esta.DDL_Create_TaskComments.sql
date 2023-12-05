@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS "ProjectManagment"."TaskComments"
 (
-    "CommentId" BIGINT    NOT NULL,
+    "CommentId" BIGSERIAL    NOT NULL,
     "Comment"   TEXT      NOT NULL,
     "Created"   TIMESTAMP NOT NULL DEFAULT NOW(),
     "Updated"   TIMESTAMP NOT NULL DEFAULT NOW(),

@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS "ProjectManagment"."TaskResolutions"
 (
-    "ResolutionId"      INT          NOT NULL,
+    "ResolutionId"      SERIAL          NOT NULL,
     "ResolutionName"    VARCHAR(150) NOT NULL,
     "ResolutionSysName" VARCHAR(150) NOT NULL,
     "Position"          INT          NOT NULL DEFAULT 0,

@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS "ProjectManagment"."TaskHistory"
 (
-    "HistoryId" BIGINT    NOT NULL,
+    "HistoryId" BIGSERIAL    NOT NULL,
     "ActionId"  INT       NOT NULL,
     "Created"   TIMESTAMP NOT NULL DEFAULT NOW(),
     "Updated"   TIMESTAMP NOT NULL DEFAULT NOW(),

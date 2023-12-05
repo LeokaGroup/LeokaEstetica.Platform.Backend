@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS "ProjectManagment"."HistoryActions"
 (
-    "ActionId"      INT          NOT NULL,
+    "ActionId"      SERIAL          NOT NULL,
     "ActionName"    VARCHAR(150) NOT NULL,
     "ActionSysName" VARCHAR(150) NOT NULL,
     "Position"      INT          NOT NULL DEFAULT 0,

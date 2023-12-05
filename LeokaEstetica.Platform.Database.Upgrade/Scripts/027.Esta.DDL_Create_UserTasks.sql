@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS "ProjectManagment"."UserTasks"
 (
-    "TaskId"        BIGINT       NOT NULL,
+    "TaskId"        BIGSERIAL       NOT NULL,
     "TaskStatusId"  INT          NOT NULL,
     "AuthorId"      BIGINT       NOT NULL,
     "WatcherIds"    JSONB        NULL,

@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS "ProjectManagment"."TaskRelations"
 (
-    "RelationId"   BIGINT       NOT NULL,
+    "RelationId"   BIGSERIAL       NOT NULL,
     "RelationType" VARCHAR(150) NOT NULL,
     "TaskId"       BIGINT       NOT NULL,
     CONSTRAINT "PK_TaskRelations_RelationId" PRIMARY KEY ("RelationId", "TaskId"),
