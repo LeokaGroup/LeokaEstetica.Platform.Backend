@@ -1,3 +1,5 @@
+using LeokaEstetica.Platform.Models.Entities.Project;
+
 namespace LeokaEstetica.Platform.Models.Entities.ProjectManagment;
 
 /// <summary>
@@ -5,6 +7,13 @@ namespace LeokaEstetica.Platform.Models.Entities.ProjectManagment;
 /// </summary>
 public class UserTaskEntity
 {
+    public UserTaskEntity()
+    {
+        TaskRelations = new HashSet<TaskRelationEntity>();
+        TaskComments = new HashSet<TaskCommentEntity>();
+        TaskHistories = new HashSet<TaskHistoryEntity>();
+    }
+
     /// <summary>
     /// PK.
     /// </summary>
@@ -80,4 +89,44 @@ public class UserTaskEntity
     /// Id исполнителя задачи.
     /// </summary>
     public long ExecutorId { get; set; }
+
+    /// <summary>
+    /// FK на статус задачи.
+    /// </summary>
+    public TaskStatusEntity TaskStatus { get; set; }
+
+    /// <summary>
+    /// Таблица отношений связей задач.
+    /// </summary>
+    public IEnumerable<TaskRelationEntity> TaskRelations { get; set; }
+
+    /// <summary>
+    /// Список зависимостей.
+    /// </summary>
+    public IEnumerable<TaskDependencyEntity> TaskDependencies { get; set; }
+
+    /// <summary>
+    /// FK на резолюцию задачи.
+    /// </summary>
+    public TaskResolutionEntity TaskResolution { get; set; }
+
+    /// <summary>
+    /// FK на проект.
+    /// </summary>
+    public UserProjectEntity UserProject { get; set; }
+
+    /// <summary>
+    /// FK на тип задачи.
+    /// </summary>
+    public TaskTypeEntity TaskType { get; set; }
+
+    /// <summary>
+    /// Список комментариев задачи.
+    /// </summary>
+    public IEnumerable<TaskCommentEntity> TaskComments { get; set; }
+
+    /// <summary>
+    /// История действий.
+    /// </summary>
+    public IEnumerable<TaskHistoryEntity> TaskHistories { get; set; }
 }

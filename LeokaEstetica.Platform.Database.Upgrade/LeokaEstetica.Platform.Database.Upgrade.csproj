@@ -34,6 +34,18 @@
         <EmbeddedResource Include="Scripts\024.Esta.DDL_Create_ProjectManagmentTaskStatusIntermediateTemplates.sql" />
         <EmbeddedResource Include="Scripts\025.Esta.DML_Insert_ProjectManagmentTaskStatusIntermediateTemplates.sql" />
         <EmbeddedResource Include="Scripts\026.Esta.DDL_Alter_ProjectManagmentUserTaskTemplates.sql" />
+        <EmbeddedResource Include="Scripts\027.Esta.DDL_Create_UserTasks.sql" />
+        <EmbeddedResource Include="Scripts\028.Esta.DDL_Create_TaskStatuses.sql" />
+        <EmbeddedResource Include="Scripts\029.Esta.DDL_Create_TaskRelations.sql" />
+        <EmbeddedResource Include="Scripts\030.Esta.DDL_Create_TaskDependencies.sql" />
+        <EmbeddedResource Include="Scripts\031.Esta.DDL_Create_TaskResolutions.sql" />
+        <EmbeddedResource Include="Scripts\032.Esta.DDL_Create_TaskTypes.sql" />
+        <EmbeddedResource Include="Scripts\033.Esta.DDL_Create_TaskTags.sql" />
+        <EmbeddedResource Include="Scripts\034.Esta.DDL_Create_TaskComments.sql" />
+        <EmbeddedResource Include="Scripts\035.Esta.DDL_Create_TaskHistory.sql" />
+        <EmbeddedResource Include="Scripts\036.Esta.DDL_Create_HistoryActions.sql" />
+        <EmbeddedResource Include="Scripts\037.Esta.DDL_Alter_UserTasks.sql" />
+        <EmbeddedResource Include="Scripts\038.Esta.DDL_Alter_TaskHistory.sql" />
     </ItemGroup>
 
     <ItemGroup>
