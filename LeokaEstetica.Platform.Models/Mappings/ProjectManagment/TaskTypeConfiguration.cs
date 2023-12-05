@@ -27,10 +27,15 @@ public partial class TaskTypeConfiguration : IEntityTypeConfiguration<TaskTypeEn
             .HasColumnType("int")
             .HasDefaultValue(0)
             .IsRequired();
-        
+
         entity.HasIndex(u => u.TypeId)
             .HasDatabaseName("PK_TaskTypes_TypeId")
             .IsUnique();
+        
+        // entity.HasOne(p => p.UserTask)
+        //     .WithOne(b => b.TaskType)
+        //     .HasForeignKey<UserTaskEntity>()
+        //     .IsRequired();
 
         OnConfigurePartial(entity);
     }

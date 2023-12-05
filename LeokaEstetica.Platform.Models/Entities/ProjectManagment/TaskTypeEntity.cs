@@ -28,5 +28,5 @@ public class TaskTypeEntity
     /// <summary>
     /// FK на задачу.
     /// </summary>
-    public UserTaskEntity UserTask { get; set; }
+    // public UserTaskEntity UserTask { get; set; }
 }

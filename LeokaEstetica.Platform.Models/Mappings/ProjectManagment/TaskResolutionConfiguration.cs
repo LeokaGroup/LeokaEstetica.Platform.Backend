@@ -32,10 +32,15 @@ public partial class TaskResolutionConfiguration : IEntityTypeConfiguration<Task
             .HasColumnType("int")
             .HasDefaultValue(0)
             .IsRequired();
-        
+
         entity.HasIndex(u => u.ResolutionId)
             .HasDatabaseName("PK_TaskResolutions_ResolutionId")
             .IsUnique();
+        
+        // entity.HasOne(p => p.UserTask)
+        //     .WithOne(b => b.TaskResolution)
+        //     .HasForeignKey<UserTaskEntity>()
+        //     .IsRequired();
 
         OnConfigurePartial(entity);
     }

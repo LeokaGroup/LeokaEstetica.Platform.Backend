@@ -108,7 +108,7 @@ public class UserTaskEntity
     /// <summary>
     /// FK на резолюцию задачи.
     /// </summary>
-    public TaskResolutionEntity TaskResolution { get; set; }
+    // public TaskResolutionEntity TaskResolution { get; set; }
 
     /// <summary>
     /// FK на проект.
@@ -118,7 +118,7 @@ public class UserTaskEntity
     /// <summary>
     /// FK на тип задачи.
     /// </summary>
-    public TaskTypeEntity TaskType { get; set; }
+    // public TaskTypeEntity TaskType { get; set; }
 
     /// <summary>
     /// Список комментариев задачи.

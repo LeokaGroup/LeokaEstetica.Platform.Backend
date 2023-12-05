@@ -13,7 +13,7 @@ public partial class TaskTagConfiguration : IEntityTypeConfiguration<TaskTagEnti
         entity.HasKey(e => e.TagId);
 
         entity.Property(e => e.TagId)
-            .HasColumnName("TaskId")
+            .HasColumnName("TagId")
             .HasColumnType("serial");
         
         entity.Property(e => e.Position)
