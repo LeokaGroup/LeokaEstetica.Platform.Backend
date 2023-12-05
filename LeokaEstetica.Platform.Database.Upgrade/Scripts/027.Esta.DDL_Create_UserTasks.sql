@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS "ProjectManagment"."UserTasks"
     "Updated"       TIMESTAMP    NOT NULL DEFAULT NOW(),
     "ProjectId"     BIGINT       NOT NULL,
     "ProjectTaskId" BIGINT       NOT NULL,
-    "ResolutionId"  INT          NOT NULL,
+    "ResolutionId"  INT          NULL,
     "StatusId"      INT          NOT NULL,
     "TagIds"        JSONB        NULL,
     "TaskTypeId"    INT          NOT NULL,
