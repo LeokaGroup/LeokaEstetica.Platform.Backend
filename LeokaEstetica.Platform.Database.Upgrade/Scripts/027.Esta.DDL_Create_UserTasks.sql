@@ -32,7 +32,6 @@ COMMENT ON COLUMN "ProjectManagment"."UserTasks"."Updated" IS 'Дата обно
 COMMENT ON COLUMN "ProjectManagment"."UserTasks"."ProjectId" IS 'Id проекта, к которому принадлежит задача.';
 COMMENT ON COLUMN "ProjectManagment"."UserTasks"."ProjectTaskId" IS 'Id задачи, в рамках проекта. Нужен, чтобы нумерация Id задачи шло в рамках каждого проекта.';
 COMMENT ON COLUMN "ProjectManagment"."UserTasks"."ResolutionId" IS 'Id резолюции.';
-COMMENT ON COLUMN "ProjectManagment"."UserTasks"."StatusId" IS 'Id статуса задачи.';
 COMMENT ON COLUMN "ProjectManagment"."UserTasks"."TagIds" IS 'Список Id тегов задачи. В виде Jsonb.';
 COMMENT ON COLUMN "ProjectManagment"."UserTasks"."TaskTypeId" IS 'Id типа задачи.';
 COMMENT ON COLUMN "ProjectManagment"."UserTasks"."ExecutorId" IS 'Id исполнителя задачи.';
