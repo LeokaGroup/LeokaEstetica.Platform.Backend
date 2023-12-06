@@ -424,7 +424,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                     // Добавляем задачи статуса, если есть что добавлять.
                     if (mapTasks.Any())
                     {
-                        ps.ProjectManagmentTasks = new List<ProjectManagmentTaskOutput>();
+                        ps.ProjectManagmentTasks = new List<ProjectManagmentTaskOutput>(mapTasks.Count);
                         ps.ProjectManagmentTasks.AddRange(mapTasks);   
                     }
                 }
