@@ -38,5 +38,5 @@ public class TaskCommentEntity
     /// <summary>
     /// FK на задачу.
     /// </summary>
-    public UserTaskEntity UserTask { get; set; }
+    public ProjectTaskEntity UserTask { get; set; }
 }

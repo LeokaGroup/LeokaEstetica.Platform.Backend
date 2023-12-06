@@ -400,9 +400,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             {
                 ProjectManagmentTaskStatuses = statuses.First().ProjectManagmentTaskStatusTemplates
             };
-
-            // TODO: Задачи пользователя пока вообще не реализованы. Таблицы еще не проектировались.
-            // TODO: Пока просто отдаем статусы шаблона для рабочего пространства.
+            
             // Получаем задачи пользователя, которые принадлежат рабочему пространству.
 
             return result;

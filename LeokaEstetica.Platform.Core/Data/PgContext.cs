@@ -502,9 +502,9 @@ public class PgContext : DbContext
     }
 
     /// <summary>
-    /// Таблица пользователей.
+    /// Таблица задач проекта.
     /// </summary>
-    public DbSet<UserTaskEntity> UserTasks { get; set; }
+    public DbSet<ProjectTaskEntity> ProjectTasks { get; set; }
 
     /// <summary>
     /// Таблица статусов задач.

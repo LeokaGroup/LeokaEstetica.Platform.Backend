@@ -5,11 +5,11 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace LeokaEstetica.Platform.Models.Mappings.ProjectManagment;
 
-public partial class UserTaskConfiguration : IEntityTypeConfiguration<UserTaskEntity>
+public partial class ProjectTaskConfiguration : IEntityTypeConfiguration<ProjectTaskEntity>
 {
-    public void Configure(EntityTypeBuilder<UserTaskEntity> entity)
+    public void Configure(EntityTypeBuilder<ProjectTaskEntity> entity)
     {
-        entity.ToTable("UserTasks", "ProjectManagment");
+        entity.ToTable("ProjectTasks", "ProjectManagment");
 
         entity.HasKey(e => e.TaskId);
 
@@ -86,13 +86,13 @@ public partial class UserTaskConfiguration : IEntityTypeConfiguration<UserTaskEn
             .IsRequired();
         
         entity.HasOne(p => p.TaskStatus)
-            .WithMany(b => b.UserTasks)
+            .WithMany(b => b.ProjectTasks)
             .HasForeignKey(p => p.StatusId)
             .HasConstraintName("FK_TaskStatuses_StatusId")
             .IsRequired();
         
         entity.HasOne(p => p.UserProject)
-            .WithOne(b => b.UserTask)
+            .WithOne(b => b.ProjectTask)
             .HasForeignKey<UserProjectEntity>()
             .IsRequired();
 
@@ -109,5 +109,5 @@ public partial class UserTaskConfiguration : IEntityTypeConfiguration<UserTaskEn
         OnConfigurePartial(entity);
     }
 
-    partial void OnConfigurePartial(EntityTypeBuilder<UserTaskEntity> entity);
+    partial void OnConfigurePartial(EntityTypeBuilder<ProjectTaskEntity> entity);
 }

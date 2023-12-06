@@ -23,5 +23,5 @@ public class TaskRelationEntity
     /// <summary>
     /// Задачи пользователя.
     /// </summary>
-    public UserTaskEntity UserTask { get; set; }
+    public ProjectTaskEntity ProjectTask { get; set; }
 }

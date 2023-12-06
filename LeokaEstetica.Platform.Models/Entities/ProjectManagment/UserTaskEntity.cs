@@ -5,9 +5,9 @@ namespace LeokaEstetica.Platform.Models.Entities.ProjectManagment;
 /// <summary>
 /// Класс сопоставляется с таблицей задач пользователя в модуле УП.
 /// </summary>
-public class UserTaskEntity
+public class ProjectTaskEntity
 {
-    public UserTaskEntity()
+    public ProjectTaskEntity()
     {
         TaskRelations = new HashSet<TaskRelationEntity>();
         TaskComments = new HashSet<TaskCommentEntity>();

@@ -28,7 +28,7 @@ public partial class TaskHistoryConfiguration : IEntityTypeConfiguration<TaskHis
             .HasDatabaseName("PK_TaskHistory_HistoryId")
             .IsUnique();
 
-        entity.HasOne(p => p.UserTask)
+        entity.HasOne(p => p.ProjectTask)
             .WithMany(b => b.TaskHistories)
             .HasForeignKey(p => p.TaskId)
             .HasConstraintName("FK_UserTasks_TaskId")

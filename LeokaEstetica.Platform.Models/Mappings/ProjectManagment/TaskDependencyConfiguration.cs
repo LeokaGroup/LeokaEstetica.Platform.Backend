@@ -28,7 +28,7 @@ public partial class TaskDependencyConfiguration : IEntityTypeConfiguration<Task
             .HasDefaultValue(0)
             .IsRequired();
         
-        entity.HasOne(p => p.UserTask)
+        entity.HasOne(p => p.ProjectTask)
             .WithMany(b => b.TaskDependencies)
             .HasForeignKey(p => p.TaskId)
             .HasConstraintName("FK_UserTasks_TaskId")

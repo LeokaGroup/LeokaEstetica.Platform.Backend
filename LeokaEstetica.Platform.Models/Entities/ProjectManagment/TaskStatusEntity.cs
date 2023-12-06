@@ -7,7 +7,7 @@ public class TaskStatusEntity
 {
     public TaskStatusEntity()
     {
-        UserTasks = new HashSet<UserTaskEntity>();
+        ProjectTasks = new HashSet<ProjectTaskEntity>();
     }
 
     /// <summary>
@@ -33,5 +33,5 @@ public class TaskStatusEntity
     /// <summary>
     /// FK на задачу.
     /// </summary>
-    public IEnumerable<UserTaskEntity> UserTasks { get; set; }
+    public IEnumerable<ProjectTaskEntity> ProjectTasks { get; set; }
 }
