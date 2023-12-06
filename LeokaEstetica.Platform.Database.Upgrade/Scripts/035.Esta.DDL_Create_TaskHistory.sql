@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS "ProjectManagment"."TaskHistory"
     "Updated"   TIMESTAMP NOT NULL DEFAULT NOW(),
     "TaskId"    BIGINT    NOT NULL,
     CONSTRAINT "PK_TaskHistory_HistoryId" PRIMARY KEY ("HistoryId"),
-    CONSTRAINT "FK_UserTasks_TaskId" FOREIGN KEY ("TaskId") REFERENCES "ProjectManagment"."UserTasks" ("TaskId")
+    CONSTRAINT "FK_UserTasks_TaskId" FOREIGN KEY ("TaskId") REFERENCES "ProjectManagment"."ProjectTasks" ("TaskId")
 );
 
 COMMENT ON TABLE "ProjectManagment"."TaskHistory" IS 'Таблица истории задачи. Описывает действия, которые происходили с задачей.';
