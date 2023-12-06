@@ -213,6 +213,7 @@ public class MappingProfile : Profile
         CreateMap<ViewStrategyEntity, ViewStrategyOutput>();
         
         CreateMap<ProjectManagmentHeaderEntity, ProjectManagmentHeaderOutput>();
+        CreateMap<ProjectTaskEntity, ProjectManagmentTaskOutput>();
         
         CreateMap<ProjectManagmentTaskTemplateEntity, ProjectManagmentTaskTemplateOutput>();
         CreateMap<ProjectManagmentTaskStatusTemplateEntity, ProjectManagmentTaskStatusTemplateOutput>();

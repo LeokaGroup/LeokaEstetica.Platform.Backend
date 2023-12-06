@@ -68,12 +68,7 @@ public class ProjectTaskEntity
     /// <summary>
     /// Id резолюции.
     /// </summary>
-    public int ResolutionId { get; set; }
-
-    /// <summary>
-    /// Id статуса задачи.
-    /// </summary>
-    public int StatusId { get; set; }
+    public int? ResolutionId { get; set; }
 
     /// <summary>
     /// Список Id тегов задачи. В виде Jsonb.

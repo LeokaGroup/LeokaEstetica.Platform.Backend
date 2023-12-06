@@ -401,7 +401,34 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 ProjectManagmentTaskStatuses = statuses.First().ProjectManagmentTaskStatusTemplates
             };
             
-            // Получаем задачи пользователя, которые принадлежат рабочему пространству.
+            // Получаем задачи пользователя, которые принадлежат проекту в рабочем пространстве.
+            var projectTasks = await _projectManagmentRepository.GetProjectTasksAsync(projectId);
+            var tasks = projectTasks?.ToList();
+
+            if (tasks is not null && tasks.Any())
+            {
+                // Распределяем задачи по статусам.
+                foreach (var ps in result.ProjectManagmentTaskStatuses)
+                {
+                    var statusId = ps.StatusId;
+                    var tasksByStatus = tasks.Where(s => s.TaskStatusId == statusId);
+
+                    // Для этого статуса нет задач, пропускаем.
+                    if (!tasksByStatus.Any())
+                    {
+                        continue;
+                    }
+
+                    var mapTasks = _mapper.Map<List<ProjectManagmentTaskOutput>>(tasksByStatus);
+
+                    // Добавляем задачи статуса, если есть что добавлять.
+                    if (mapTasks.Any())
+                    {
+                        ps.ProjectManagmentTasks = new List<ProjectManagmentTaskOutput>();
+                        ps.ProjectManagmentTasks.AddRange(mapTasks);   
+                    }
+                }
+            }
 
             return result;
         }

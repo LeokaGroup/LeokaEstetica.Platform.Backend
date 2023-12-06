@@ -94,6 +94,20 @@ internal sealed class ProjectManagmentRepository : IProjectManagmentRepository
 
         return result;
     }
+    
+    /// <summary>
+    /// Метод получает задачи проекта для рабочего пространства.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Задачи проекта.</returns>
+    public async Task<IEnumerable<ProjectTaskEntity>> GetProjectTasksAsync(long projectId)
+    {
+        var result = await _pgContext.ProjectTasks
+            .Where(t => t.ProjectId == projectId)
+            .ToListAsync();
+
+        return result;
+    }
 
     #endregion
 

@@ -68,8 +68,7 @@ public partial class ProjectTaskConfiguration : IEntityTypeConfiguration<Project
         
         entity.Property(e => e.ResolutionId)
             .HasColumnName("ResolutionId")
-            .HasColumnType("bigint")
-            .IsRequired();
+            .HasColumnType("bigint");
         
         entity.Property(e => e.TagIds)
             .HasColumnName("TagIds")
@@ -87,7 +86,7 @@ public partial class ProjectTaskConfiguration : IEntityTypeConfiguration<Project
         
         entity.HasOne(p => p.TaskStatus)
             .WithMany(b => b.ProjectTasks)
-            .HasForeignKey(p => p.StatusId)
+            .HasForeignKey(p => p.TaskStatusId)
             .HasConstraintName("FK_TaskStatuses_StatusId")
             .IsRequired();
         

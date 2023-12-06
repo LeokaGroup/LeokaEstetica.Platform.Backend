@@ -72,5 +72,5 @@ public class ProjectManagmentTaskOutput
     /// TODO: В будущем будет изменен на объект, содержащий фото и тд.
     /// ФИО исполнителя задачи.
     /// </summary>
-    public long ExecutorName { get; set; }
+    public string ExecutorName { get; set; }
 }
