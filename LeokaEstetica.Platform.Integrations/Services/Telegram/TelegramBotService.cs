@@ -1,9 +1,9 @@
 using System.Runtime.CompilerServices;
 using System.Text;
+using LeokaEstetica.Platform.Base.Enums;
 using LeokaEstetica.Platform.Core.Constants;
 using LeokaEstetica.Platform.Database.Abstractions.Config;
 using LeokaEstetica.Platform.Integrations.Abstractions.Telegram;
-using LeokaEstetica.Platform.Integrations.Enums;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot;

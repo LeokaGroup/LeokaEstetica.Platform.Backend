@@ -1,7 +1,7 @@
-using LeokaEstetica.Platform.Integrations.Abstractions.Pachca;
+using LeokaEstetica.Platform.Base.Abstractions.Services.Pachca;
 using Microsoft.AspNetCore.Mvc.Filters;
 
-namespace LeokaEstetica.Platform.Backend.Filters;
+namespace LeokaEstetica.Platform.Base.Filters;
 
 /// <summary>
 /// Класс глобального фильтра, который ловит все ошибки приложения и отправляет боту.
