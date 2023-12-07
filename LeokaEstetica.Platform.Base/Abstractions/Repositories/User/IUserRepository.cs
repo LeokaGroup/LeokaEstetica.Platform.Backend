@@ -243,4 +243,18 @@ public interface IUserRepository
     /// <param name="userId">Id пользователя.</param>
     /// <param name="month">Кол-во месяцев, на которое оформляется подписка.</param>
     Task SetSubscriptionAsync(int ruleId, long userId, int month);
+    
+    /// <summary>
+    /// Метод получает ФИО авторов задач по их Id.
+    /// </summary>
+    /// <param name="authorIds">Id авторов задач.</param>
+    /// <returns>Словарь с авторами задач.</returns>
+    Task<IDictionary<long, UserInfoOutput>> GetAuthorNamesByAuthorIdsAsync(IEnumerable<long> authorIds);
+    
+    /// <summary>
+    /// Метод получает ФИО исполнителей задач по их Id.
+    /// </summary>
+    /// <param name="authorIds">Id исполнителей задач.</param>
+    /// <returns>Словарь с исполнителями задач.</returns>
+    Task<IDictionary<long, UserInfoOutput>> GetExecutorNamesByExecutorIdsAsync(IEnumerable<long> executorIds);
 }

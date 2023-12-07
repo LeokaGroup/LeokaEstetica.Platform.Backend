@@ -29,4 +29,9 @@ public class UserInfoOutput
     /// Отчество.
     /// </summary>
     public string SecondName { get; set; }
+
+    /// <summary>
+    /// Полное ФИО.
+    /// </summary>
+    public string FullName => LastName + " " + FirstName + " " + (SecondName ?? string.Empty);
 }

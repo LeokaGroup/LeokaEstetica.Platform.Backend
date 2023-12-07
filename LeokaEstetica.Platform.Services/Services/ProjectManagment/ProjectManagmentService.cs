@@ -6,6 +6,7 @@ using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
+using LeokaEstetica.Platform.Integrations.Abstractions.Pachca;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.Template;
 using LeokaEstetica.Platform.Models.Entities.ProjectManagment;
@@ -27,6 +28,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     private readonly IMapper _mapper;
     private readonly IUserRepository _userRepository;
     private readonly IProjectRepository _projectRepository;
+    private readonly IPachcaService _pachcaService;
     
     /// <summary>
     /// Конструктор.
@@ -35,18 +37,21 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     /// <param name="mapper">Маппер.</param>
     /// <param name="mapper">Репозиторий пользователей.</param>
     /// <param name="projectRepository">Репозиторий проектов.</param>
+    /// <param name="pachcaService">Сервис уведомлений пачки.</param>
     /// </summary>
     public ProjectManagmentService(ILogger<ProjectManagmentService> logger,
         IProjectManagmentRepository projectManagmentRepository,
         IMapper mapper,
         IUserRepository userRepository,
-        IProjectRepository projectRepository)
+        IProjectRepository projectRepository,
+        IPachcaService pachcaService)
     {
         _logger = logger;
         _projectManagmentRepository = projectManagmentRepository;
         _mapper = mapper;
         _userRepository = userRepository;
         _projectRepository = projectRepository;
+        _pachcaService = pachcaService;
     }
 
     #region Публичные методы.
@@ -409,9 +414,37 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             {
                 // Получаем имена авторов задач.
                 var authorIds = tasks.Select(x => x.AuthorId);
+                var authors = await _userRepository.GetAuthorNamesByAuthorIdsAsync(authorIds);
+
+                if (authors.Count == 0)
+                {
+                    throw new InvalidOperationException("Не удалось получить авторов задач.");
+                }
+
+                var notValidExecutors = tasks.Where(x => x.ExecutorId <= 0);
+
+                // Обязательно логируем такое если обнаружили, но не стопаем выполнение логики.
+                if (notValidExecutors.Any())
+                {
+                    var ex = new InvalidOperationException(
+                        "Найдены невалидные исполнители задач." +
+                        $" ExecutorIds: {JsonConvert.SerializeObject(notValidExecutors)}." +
+                        $" ProjectId: {projectId}");
+                    
+                    _logger.LogError(ex, ex.Message);
+                    
+                    // Отправляем ивент в пачку.
+                    await _pachcaService.SendNotificationErrorAsync(ex);
+                }
                 
                 // Получаем имена исполнителей задач.
-                var executorIds = tasks.Select(x => x.ExecutorId);
+                var executorIds = tasks.Where(x => x.ExecutorId > 0).Select(x => x.ExecutorId);
+                var executors = await _userRepository.GetExecutorNamesByExecutorIdsAsync(executorIds);
+                
+                if (executors.Count == 0)
+                {
+                    throw new InvalidOperationException("Не удалось получить исполнителей задач.");
+                }
                 
                 // TODO: Добавить получение словаря наблюдателей для задач, где наблюдатели заполнены.
                 

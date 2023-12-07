@@ -658,6 +658,47 @@ internal sealed class UserRepository : IUserRepository
             await _pgContext.SaveChangesAsync();
         }
     }
+    
+    /// <summary>
+    /// Метод получает ФИО авторов задач по их Id.
+    /// </summary>
+    /// <param name="authorIds">Id авторов задач.</param>
+    /// <returns>Словарь с авторами задач.</returns>
+    public async Task<IDictionary<long, UserInfoOutput>> GetAuthorNamesByAuthorIdsAsync(IEnumerable<long> authorIds)
+    {
+        var result = await _pgContext.Users
+            .Where(u => authorIds.Contains(u.UserId))
+            .ToDictionaryAsync(k => k.UserId, v => new UserInfoOutput
+            {
+                FirstName = v.FirstName,
+                LastName = v.LastName,
+                Email = v.Email,
+                SecondName = v.SecondName
+            });
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод получает ФИО исполнителей задач по их Id.
+    /// </summary>
+    /// <param name="authorIds">Id исполнителей задач.</param>
+    /// <returns>Словарь с исполнителями задач.</returns>
+    public async Task<IDictionary<long, UserInfoOutput>> GetExecutorNamesByExecutorIdsAsync(
+        IEnumerable<long> executorIds)
+    {
+        var result = await _pgContext.Users
+            .Where(u => executorIds.Contains(u.UserId))
+            .ToDictionaryAsync(k => k.UserId, v => new UserInfoOutput
+            {
+                FirstName = v.FirstName,
+                LastName = v.LastName,
+                Email = v.Email,
+                SecondName = v.SecondName
+            });
+
+        return result;
+    }
 
     #endregion
 
