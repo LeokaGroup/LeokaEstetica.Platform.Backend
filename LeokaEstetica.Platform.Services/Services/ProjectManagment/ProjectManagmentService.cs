@@ -608,6 +608,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 
                 ps.ProjectManagmentTasks = new List<ProjectManagmentTaskOutput>(mapTasks.Count);
                 ps.ProjectManagmentTasks.AddRange(mapTasks);
+                ps.Total = ps.ProjectManagmentTasks.Count;
             }
         }
     }

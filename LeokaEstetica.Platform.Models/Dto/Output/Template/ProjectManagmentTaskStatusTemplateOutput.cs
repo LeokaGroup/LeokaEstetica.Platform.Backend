@@ -34,4 +34,9 @@ public class ProjectManagmentTaskStatusTemplateOutput
     /// Список задач определенного статуса.
     /// </summary>
     public List<ProjectManagmentTaskOutput> ProjectManagmentTasks { get; set; }
+
+    /// <summary>
+    /// Кол-во всего.
+    /// </summary>
+    public long Total { get; set; }
 }
