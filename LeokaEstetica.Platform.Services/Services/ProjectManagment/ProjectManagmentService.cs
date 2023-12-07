@@ -407,11 +407,26 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 
             if (tasks is not null && tasks.Any())
             {
+                // Получаем имена авторов задач.
+                var authorIds = tasks.Select(x => x.AuthorId);
+                
+                // Получаем имена исполнителей задач.
+                var executorIds = tasks.Select(x => x.ExecutorId);
+                
+                // TODO: Добавить получение словаря наблюдателей для задач, где наблюдатели заполнены.
+                
+                // TODO: Добавить получение словаря тегов для задач, где теги заполнены.
+                
+                // TODO: Добавить получение словаря названий типов для задач.
+                
+                // TODO: Добавить получение словаря названий статусов для задач.
+                
+                // TODO: Добавить получение словаря названий резолюций для задач, в которых она заполнена.
+
                 // Распределяем задачи по статусам.
                 foreach (var ps in result.ProjectManagmentTaskStatuses)
                 {
-                    var statusId = ps.StatusId;
-                    var tasksByStatus = tasks.Where(s => s.TaskStatusId == statusId);
+                    var tasksByStatus = tasks.Where(s => s.TaskStatusId == ps.StatusId);
 
                     // Для этого статуса нет задач, пропускаем.
                     if (!tasksByStatus.Any())
