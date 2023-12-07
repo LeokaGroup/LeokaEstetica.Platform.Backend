@@ -254,7 +254,14 @@ public interface IUserRepository
     /// <summary>
     /// Метод получает ФИО исполнителей задач по их Id.
     /// </summary>
-    /// <param name="authorIds">Id исполнителей задач.</param>
+    /// <param name="executorIds">Id исполнителей задач.</param>
     /// <returns>Словарь с исполнителями задач.</returns>
     Task<IDictionary<long, UserInfoOutput>> GetExecutorNamesByExecutorIdsAsync(IEnumerable<long> executorIds);
+    
+    /// <summary>
+    /// Метод получает ФИО наблюдателей задач по их Id.
+    /// </summary>
+    /// <param name="watcherIds">Id наблюдателей задач.</param>
+    /// <returns>Словарь с наблюдателями задач.</returns>
+    Task<IDictionary<long, UserInfoOutput>> GetWatcherNamesByWatcherIdsAsync(IEnumerable<long> watcherIds);
 }

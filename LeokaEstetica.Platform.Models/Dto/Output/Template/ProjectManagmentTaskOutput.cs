@@ -1,3 +1,5 @@
+using Newtonsoft.Json;
+
 namespace LeokaEstetica.Platform.Models.Dto.Output.Template;
 
 /// <summary>
@@ -16,6 +18,18 @@ public class ProjectManagmentTaskOutput
     public string TaskStatusName { get; set; }
 
     /// <summary>
+    /// Id статуса задачи.
+    /// </summary>
+    [JsonIgnore]
+    public int TaskStatusId { get; set; }
+
+    /// <summary>
+    /// Id автора задачи.
+    /// </summary>
+    [JsonIgnore]
+    public long AuthorId { get; set; }
+
+    /// <summary>
     /// TODO: В будущем будет изменен на объект, содержащий фото и тд.
     /// ФИО автора задачи.
     /// </summary>
@@ -26,6 +40,12 @@ public class ProjectManagmentTaskOutput
     /// ФИО наблюдателей задачи.
     /// </summary>
     public List<string> WatcherNames { get; set; }
+
+    /// <summary>
+    /// Id наблюдателей задачи.
+    /// </summary>
+    [JsonIgnore]
+    public List<long> WatcherIds { get; set; }
 
     /// <summary>
     /// Название задачи.
@@ -58,10 +78,22 @@ public class ProjectManagmentTaskOutput
     public string ResolutionName { get; set; }
 
     /// <summary>
+    /// Id резолюции (если указана).
+    /// </summary>
+    [JsonIgnore]
+    public int ResolutionId { get; set; }
+
+    /// <summary>
     /// TODO: В будущем будет изменен на объект, содержащий цвета и тд.
     /// Названия меток (тегов) задачи.
     /// </summary>
     public List<string> TagNames { get; set; }
+
+    /// <summary>
+    /// Id тегов (меток).
+    /// </summary>
+    [JsonIgnore]
+    public List<int> TagIds { get; set; }
 
     /// <summary>
     /// Название типа задачи.
@@ -69,8 +101,20 @@ public class ProjectManagmentTaskOutput
     public string TaskTypeName { get; set; }
 
     /// <summary>
+    /// Id типа задачи.
+    /// </summary>
+    [JsonIgnore]
+    public int TaskTypeId { get; set; }
+
+    /// <summary>
     /// TODO: В будущем будет изменен на объект, содержащий фото и тд.
     /// ФИО исполнителя задачи.
     /// </summary>
     public string ExecutorName { get; set; }
+
+    /// <summary>
+    /// Id исполнителя задачи.
+    /// </summary>
+    [JsonIgnore]
+    public long ExecutorId { get; set; }
 }

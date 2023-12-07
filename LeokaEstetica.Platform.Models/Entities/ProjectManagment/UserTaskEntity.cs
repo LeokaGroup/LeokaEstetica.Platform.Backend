@@ -31,9 +31,8 @@ public class ProjectTaskEntity
 
     /// <summary>
     /// Id пользователей, которые являются наблюдателями задачи.
-    // Jsonb в виде строки (например, 1,2,3).
     /// </summary>
-    public string WatcherIds { get; set; }
+    public long[] WatcherIds { get; set; }
 
     /// <summary>
     /// Название задачи.
@@ -71,9 +70,9 @@ public class ProjectTaskEntity
     public int? ResolutionId { get; set; }
 
     /// <summary>
-    /// Список Id тегов задачи. В виде Jsonb.
+    /// Список Id тегов задачи.
     /// </summary>
-    public string TagIds { get; set; }
+    public int[] TagIds { get; set; }
 
     /// <summary>
     /// Id типа задачи.

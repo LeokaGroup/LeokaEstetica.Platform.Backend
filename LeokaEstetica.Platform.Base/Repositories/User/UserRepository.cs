@@ -682,13 +682,33 @@ internal sealed class UserRepository : IUserRepository
     /// <summary>
     /// Метод получает ФИО исполнителей задач по их Id.
     /// </summary>
-    /// <param name="authorIds">Id исполнителей задач.</param>
+    /// <param name="executorIds">Id исполнителей задач.</param>
     /// <returns>Словарь с исполнителями задач.</returns>
     public async Task<IDictionary<long, UserInfoOutput>> GetExecutorNamesByExecutorIdsAsync(
         IEnumerable<long> executorIds)
     {
         var result = await _pgContext.Users
             .Where(u => executorIds.Contains(u.UserId))
+            .ToDictionaryAsync(k => k.UserId, v => new UserInfoOutput
+            {
+                FirstName = v.FirstName,
+                LastName = v.LastName,
+                Email = v.Email,
+                SecondName = v.SecondName
+            });
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод получает ФИО наблюдателей задач по их Id.
+    /// </summary>
+    /// <param name="watcherIds">Id наблюдателей задач.</param>
+    /// <returns>Словарь с наблюдателями задач.</returns>
+    public async Task<IDictionary<long, UserInfoOutput>> GetWatcherNamesByWatcherIdsAsync(IEnumerable<long> watcherIds)
+    {
+        var result = await _pgContext.Users
+            .Where(u => watcherIds.Contains(u.UserId))
             .ToDictionaryAsync(k => k.UserId, v => new UserInfoOutput
             {
                 FirstName = v.FirstName,

@@ -38,7 +38,7 @@ public partial class ProjectTaskConfiguration : IEntityTypeConfiguration<Project
         
         entity.Property(e => e.WatcherIds)
             .HasColumnName("WatcherIds")
-            .HasColumnType("jsonb");
+            .HasColumnType("bigint[]");
         
         entity.Property(e => e.Created)
             .HasColumnName("Created")
@@ -72,7 +72,7 @@ public partial class ProjectTaskConfiguration : IEntityTypeConfiguration<Project
         
         entity.Property(e => e.TagIds)
             .HasColumnName("TagIds")
-            .HasColumnType("jsonb");
+            .HasColumnType("int[]");
         
         entity.Property(e => e.TaskTypeId)
             .HasColumnName("TaskTypeId")

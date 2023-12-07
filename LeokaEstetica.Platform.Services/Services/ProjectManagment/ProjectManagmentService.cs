@@ -9,6 +9,7 @@ using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Integrations.Abstractions.Pachca;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.Template;
+using LeokaEstetica.Platform.Models.Dto.Output.User;
 using LeokaEstetica.Platform.Models.Entities.ProjectManagment;
 using LeokaEstetica.Platform.Services.Abstractions.ProjectManagment;
 using Microsoft.Extensions.Logging;
@@ -446,15 +447,43 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                     throw new InvalidOperationException("Не удалось получить исполнителей задач.");
                 }
                 
-                // TODO: Добавить получение словаря наблюдателей для задач, где наблюдатели заполнены.
+                var watcherIds = tasks
+                    .Where(x => x.WatcherIds is not null)
+                    .SelectMany(x => x.WatcherIds)
+                    .ToList();
                 
-                // TODO: Добавить получение словаря тегов для задач, где теги заполнены.
+                IDictionary<long, UserInfoOutput> watchers = null;
+
+                // Если есть наблюдатели, пойдем получать их.
+                // Если каких то нет, не страшно, значит они не заполнены у задач.
+                if (watcherIds.Any())
+                {
+                    watchers = await _userRepository.GetWatcherNamesByWatcherIdsAsync(watcherIds);
+                }
                 
-                // TODO: Добавить получение словаря названий типов для задач.
+                var tagIds = tasks.SelectMany(x => x.TagIds);
+                var tags = await _projectManagmentRepository.GetTagNamesByTagIdsAsync(tagIds);
                 
-                // TODO: Добавить получение словаря названий статусов для задач.
+                var typeIds = tasks.Select(x => x.TaskTypeId);
+                var types = await _projectManagmentRepository.GetTypeNamesByTypeIdsAsync(typeIds);
                 
-                // TODO: Добавить получение словаря названий резолюций для задач, в которых она заполнена.
+                var statusIds = tasks.Select(x => x.TaskStatusId);
+                var statuseNames = await _projectManagmentRepository.GetStatusNamesByStatusIdsAsync(statusIds);
+                
+                var resolutionIds = tasks
+                    .Where(x => x.ResolutionId is not null)
+                    .Select(x => (int)x.ResolutionId)
+                    .ToList();
+                
+                IDictionary<int, string> resolutions = null;
+
+                // Если есть резолюции задач, пойдем получать их.
+                // Если каких то нет, не страшно, значит они не заполнены у задач.
+                if (resolutionIds.Any())
+                {
+                    resolutions = await _projectManagmentRepository.GetResolutionNamesByResolutionIdsAsync(
+                        resolutionIds);
+                }
 
                 // Распределяем задачи по статусам.
                 foreach (var ps in result.ProjectManagmentTaskStatuses)
@@ -472,6 +501,60 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                     // Добавляем задачи статуса, если есть что добавлять.
                     if (mapTasks.Any())
                     {
+                        // Записываем названия исходя от Id полей.
+                        foreach (var ts in mapTasks)
+                        {
+                            // ФИО автора задачи.
+                            ts.AuthorName = authors.TryGet(ts.AuthorId)?.FullName;
+
+                            var executorId = ts.ExecutorId;
+
+                            if (executorId <= 0)
+                            {
+                                throw new InvalidOperationException("Невалидный исполнитель задачи." +
+                                                                    $" ExecutorId: {executorId}");
+                            }
+                            
+                            // ФИО исполнителя задачи (если назначен).
+                            ts.ExecutorName = executors.TryGet(ts.ExecutorId)?.FullName;
+                            
+                            // Название статуса.
+                            ts.TaskStatusName = statuseNames.TryGet(ts.TaskStatusId);
+                            
+                            // Название типа задачи.
+                            ts.TaskTypeName = types.TryGet(ts.TaskTypeId);
+
+                            // Название тегов (меток) задачи.
+                            if (tags is not null && tags.Count > 0)
+                            {
+                                foreach (var tg in ts.TagIds)
+                                {
+                                    ts.TagNames.Add(tags.TryGet(tg));
+                                }
+                            }
+                            
+                            // Название резолюции задачи.
+                            if (resolutions is not null && resolutions.Count > 0)
+                            {
+                                var resolutionName = resolutions.TryGet(ts.ResolutionId);
+                                
+                                // Если резолюции нет, не страшно. Значит не указана у задачи.
+                                if (resolutionName is not null)
+                                {
+                                    ts.ResolutionName = resolutions.TryGet(ts.ResolutionId);
+                                }
+                            }
+                            
+                            // Названия наблюдателей задачи.
+                            if (watchers is not null && watchers.Count > 0)
+                            {
+                                foreach (var w in ts.WatcherIds)
+                                {
+                                    ts.WatcherNames.Add(watchers.TryGet(w)?.FullName);
+                                }
+                            }
+                        }
+                        
                         ps.ProjectManagmentTasks = new List<ProjectManagmentTaskOutput>(mapTasks.Count);
                         ps.ProjectManagmentTasks.AddRange(mapTasks);   
                     }
