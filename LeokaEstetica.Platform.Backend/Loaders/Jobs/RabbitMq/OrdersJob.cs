@@ -226,7 +226,7 @@ internal sealed class OrdersJob : IJob
             await Task.Yield();
         };
 
-        _channel.BasicConsume(_queueName, false, consumer);
+        _channel?.BasicConsume(_queueName, false, consumer);
 
         await Task.CompletedTask;
     }
