@@ -34,4 +34,9 @@ public class UserInfoOutput
     /// Полное ФИО.
     /// </summary>
     public string FullName => LastName + " " + FirstName + " " + (SecondName ?? string.Empty);
+
+    /// <summary>
+    /// Id пользователя.
+    /// </summary>
+    public long UserId { get; set; }
 }

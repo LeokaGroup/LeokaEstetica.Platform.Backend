@@ -668,13 +668,15 @@ internal sealed class UserRepository : IUserRepository
     {
         var result = await _pgContext.Users
             .Where(u => authorIds.Contains(u.UserId))
-            .ToDictionaryAsync(k => k.UserId, v => new UserInfoOutput
+            .Select(u => new UserInfoOutput
             {
-                FirstName = v.FirstName,
-                LastName = v.LastName,
-                Email = v.Email,
-                SecondName = v.SecondName
-            });
+                FirstName = u.FirstName,
+                LastName = u.LastName,
+                Email = u.Email,
+                SecondName = u.SecondName,
+                UserId = u.UserId
+            })
+            .ToDictionaryAsync(k => k.UserId, v => v);
 
         return result;
     }
@@ -689,13 +691,15 @@ internal sealed class UserRepository : IUserRepository
     {
         var result = await _pgContext.Users
             .Where(u => executorIds.Contains(u.UserId))
-            .ToDictionaryAsync(k => k.UserId, v => new UserInfoOutput
+            .Select(u => new UserInfoOutput
             {
-                FirstName = v.FirstName,
-                LastName = v.LastName,
-                Email = v.Email,
-                SecondName = v.SecondName
-            });
+                FirstName = u.FirstName,
+                LastName = u.LastName,
+                Email = u.Email,
+                SecondName = u.SecondName,
+                UserId = u.UserId
+            })
+            .ToDictionaryAsync(k => k.UserId, v => v);
 
         return result;
     }
@@ -709,13 +713,15 @@ internal sealed class UserRepository : IUserRepository
     {
         var result = await _pgContext.Users
             .Where(u => watcherIds.Contains(u.UserId))
-            .ToDictionaryAsync(k => k.UserId, v => new UserInfoOutput
+            .Select(u => new UserInfoOutput
             {
-                FirstName = v.FirstName,
-                LastName = v.LastName,
-                Email = v.Email,
-                SecondName = v.SecondName
-            });
+                FirstName = u.FirstName,
+                LastName = u.LastName,
+                Email = u.Email,
+                SecondName = u.SecondName,
+                UserId = u.UserId
+            })
+            .ToDictionaryAsync(k => k.UserId, v => v);
 
         return result;
     }

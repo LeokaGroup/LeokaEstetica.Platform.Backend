@@ -34,6 +34,11 @@ public partial class ProjectManagmentTaskStatusTemplateConfiguration : IEntityTy
             .IsRequired()
             .HasDefaultValue(0);
 
+        entity.Property(e => e.TaskStatusId)
+            .HasColumnName("TaskStatusId")
+            .HasColumnType("int")
+            .IsRequired();
+
         entity.HasIndex(u => u.StatusId)
             .HasDatabaseName("PK_ProjectManagmentTaskStatusTemplates_StatusId")
             .IsUnique();

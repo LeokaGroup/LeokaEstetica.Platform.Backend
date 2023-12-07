@@ -446,6 +446,14 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 
     #region Приватные методы.
 
+    /// <summary>
+    /// Метод наполняет названия исходя из Id записей.
+    /// </summary>
+    /// <param name="projectManagmentTaskStatusTemplates">Список статусов, каждый статус может включать
+    /// или не включать в себя задачи.</param>
+    /// <param name="tasks">Список задач рабочего пространства проекта.</param>
+    /// <param name="projectId">Id проекта</param>
+    /// <exception cref="InvalidOperationException">Может бахнуть, если какое-то условие не прошли.</exception>
     private async Task ModifyProjectManagmentTaskStatusesResultAsync(
         IEnumerable<ProjectManagmentTaskStatusTemplateOutput> projectManagmentTaskStatusTemplates,
         List<ProjectTaskEntity> tasks, long projectId)
@@ -498,8 +506,14 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             watchers = await _userRepository.GetWatcherNamesByWatcherIdsAsync(watcherIds);
         }
 
-        var tagIds = tasks.SelectMany(x => x.TagIds);
-        var tags = await _projectManagmentRepository.GetTagNamesByTagIdsAsync(tagIds);
+        IDictionary<int, string> tags = null;
+
+        // Если есть теги, то пойдем получать.
+        if (tasks.Any(x => x.TagIds is not null))
+        {
+            var tagIds = tasks.SelectMany(x => x.TagIds);
+            tags = await _projectManagmentRepository.GetTagNamesByTagIdsAsync(tagIds);
+        }
 
         var typeIds = tasks.Select(x => x.TaskTypeId);
         var types = await _projectManagmentRepository.GetTypeNamesByTypeIdsAsync(typeIds);
@@ -525,7 +539,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         // Распределяем задачи по статусам.
         foreach (var ps in projectManagmentTaskStatusTemplates)
         {
-            var tasksByStatus = tasks.Where(s => s.TaskStatusId == ps.StatusId);
+            var tasksByStatus = tasks.Where(s => s.TaskStatusId == ps.TaskStatusId);
 
             // Для этого статуса нет задач, пропускаем.
             if (!tasksByStatus.Any())
@@ -566,7 +580,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                     {
                         foreach (var tg in ts.TagIds)
                         {
-                            ts.TagNames.Add(tags.TryGet(tg));
+                            ts.TagNames = new List<string> { tags.TryGet(tg) };
                         }
                     }
 
@@ -587,7 +601,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                     {
                         foreach (var w in ts.WatcherIds)
                         {
-                            ts.WatcherNames.Add(watchers.TryGet(w)?.FullName);
+                            ts.WatcherNames = new List<string> { watchers.TryGet(w)?.FullName };
                         }
                     }
                 }
