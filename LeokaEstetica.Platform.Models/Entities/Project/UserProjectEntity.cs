@@ -1,4 +1,5 @@
 using LeokaEstetica.Platform.Models.Entities.Moderation;
+using LeokaEstetica.Platform.Models.Entities.ProjectManagment;
 
 namespace LeokaEstetica.Platform.Models.Entities.Project;
 
@@ -102,4 +103,9 @@ public class UserProjectEntity
     /// Список замечаний вакансии.
     /// </summary>
     public ICollection<VacancyRemarkEntity> VacancyRemarks { get; set; }
+
+    /// <summary>
+    /// FK на задачу.
+    /// </summary>
+    public UserTaskEntity UserTask { get; set; }
 }

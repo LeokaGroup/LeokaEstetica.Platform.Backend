@@ -153,27 +153,23 @@ internal sealed class PachcaService : IPachcaService
     /// <param name="account">Аккаунт пользователя.</param>
     public async Task SendNotificationCreatedNewUserAsync(string account)
     {
-        var notifyMessage = $"Новый пользователь {account} на платформе.";
         using var httpClient = new HttpClient();
+        var notificationInput = new SendNotificationInput
+        {
+            Message = $"Новый пользователь {account} на платформе!"
+        };
 
         try
         {
-            if (string.IsNullOrWhiteSpace(account))
-            {
-                var ex = new InvalidOperationException(
-                    "Аккаунт нового пользователя не заполнен. Невозможно отправить уведомление в канал.");
-                throw ex;
-            }
-
             if (new[] { "Development", "Staging" }.Contains(_configuration["Environment"]))
             {
                 await httpClient.PostAsJsonAsync(_configuration["PachcaBot:NotificationsDevelopTestBot"],
-                    notifyMessage);
+                    notificationInput);
             }
 
             else
             {
-                await httpClient.PostAsJsonAsync(_configuration["PachcaBot:NotificationsBot"], notifyMessage);
+                await httpClient.PostAsJsonAsync(_configuration["PachcaBot:NotificationsBot"], notificationInput);
             }
         }
 
@@ -188,12 +184,12 @@ internal sealed class PachcaService : IPachcaService
                 if (new[] { "Development", "Staging" }.Contains(_configuration["Environment"]))
                 {
                     await httpClient.PostAsJsonAsync(_configuration["PachcaBot:NotificationsDevelopTestBot"],
-                        notifyMessage);
+                        notificationInput);
                 }
 
                 else
                 {
-                    await httpClient.PostAsJsonAsync(_configuration["PachcaBot:NotificationsBot"], notifyMessage);
+                    await httpClient.PostAsJsonAsync(_configuration["PachcaBot:NotificationsBot"], notificationInput);
                 }
             }
 

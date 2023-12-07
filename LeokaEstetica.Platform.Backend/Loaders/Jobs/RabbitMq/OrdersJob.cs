@@ -113,8 +113,12 @@ internal sealed class OrdersJob : IJob
         {
             return;
         }
-        
-        await CheckOrderStatusAsync();
+
+        // Если канал не был создан, то не будем дергать память.
+        if (_channel is not null)
+        {
+            await CheckOrderStatusAsync();
+        }
 
         await Task.CompletedTask;
     }

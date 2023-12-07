@@ -30,6 +30,7 @@ using LeokaEstetica.Platform.Database.Repositories.Orders;
 using LeokaEstetica.Platform.Database.Repositories.Press;
 using LeokaEstetica.Platform.Database.Repositories.Profile;
 using LeokaEstetica.Platform.Database.Repositories.Project;
+using LeokaEstetica.Platform.Database.Repositories.ProjectManagment;
 using LeokaEstetica.Platform.Database.Repositories.Resume;
 using LeokaEstetica.Platform.Database.Repositories.Subscription;
 using LeokaEstetica.Platform.Database.Repositories.TIcket;
@@ -54,6 +55,7 @@ using LeokaEstetica.Platform.Services.Services.Orders;
 using LeokaEstetica.Platform.Services.Services.Press;
 using LeokaEstetica.Platform.Services.Services.Profile;
 using LeokaEstetica.Platform.Services.Services.Project;
+using LeokaEstetica.Platform.Services.Services.ProjectManagment;
 using LeokaEstetica.Platform.Services.Services.Refunds;
 using LeokaEstetica.Platform.Services.Services.Resume;
 using LeokaEstetica.Platform.Services.Services.Subscription;
@@ -111,6 +113,7 @@ internal class BaseServiceTest
     protected readonly FareRuleRepository FareRuleRepository;
     protected readonly ChatRepository ChatRepository;
     protected readonly PressService PressService;
+    protected readonly ProjectManagmentService ProjectManagmentService;
 
     protected BaseServiceTest()
     {
@@ -256,5 +259,9 @@ internal class BaseServiceTest
 
         var pressRepository = new PressRepository(pgContext);
         PressService = new PressService(pressRepository, null);
+
+        var projectManagmentRepository = new ProjectManagmentRepository(pgContext);
+        ProjectManagmentService = new ProjectManagmentService(null, projectManagmentRepository, mapper, userRepository,
+            projectRepository);
     }
 }

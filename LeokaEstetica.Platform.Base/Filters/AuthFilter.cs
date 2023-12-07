@@ -41,7 +41,7 @@ public class AuthFilter : Attribute, IAuthorizationFilter
             && !context.HttpContext.User.Identity.IsAuthenticated
             && !_allowActions.Contains(context.RouteData.Values["action"]))
         {
-            context.Result = new ForbidResult();
+            context.Result = new UnauthorizedResult();
         }
     }
 }

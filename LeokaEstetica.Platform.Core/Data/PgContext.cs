@@ -15,6 +15,7 @@ using LeokaEstetica.Platform.Models.Entities.ProjectManagment;
 using LeokaEstetica.Platform.Models.Entities.ProjectTeam;
 using LeokaEstetica.Platform.Models.Entities.Role;
 using LeokaEstetica.Platform.Models.Entities.Subscription;
+using LeokaEstetica.Platform.Models.Entities.Template;
 using LeokaEstetica.Platform.Models.Entities.Ticket;
 using LeokaEstetica.Platform.Models.Entities.User;
 using LeokaEstetica.Platform.Models.Entities.Vacancy;
@@ -471,4 +472,82 @@ public class PgContext : DbContext
     /// Таблица стратегий представления рабочего пространства проектов.
     /// </summary>
     public DbSet<ViewStrategyEntity> ViewStrategies { get; set; }
+
+    /// <summary>
+    /// Таблица элементов меню хидера модуля УП.
+    /// </summary>
+    public DbSet<ProjectManagmentHeaderEntity> ProjectManagmentHeader { get; set; }
+
+    /// <summary>
+    /// Таблица шаблонов задач. Содержит в себе шаблоны, которые касаются только задач (поддерживает и Kanban и Scrum).
+    /// По сути, это набор столбцов в рабочем пространстве.
+    /// Каждый столбец - это отдельный статус линии задач (вертикальный столбец).
+    /// </summary>
+    public DbSet<ProjectManagmentTaskTemplateEntity> ProjectManagmentTaskTemplates { get; set; }
+
+    /// <summary>
+    /// Таблица шаблонов статусов задач.
+    /// </summary>
+    public DbSet<ProjectManagmentTaskStatusTemplateEntity> ProjectManagmentTaskStatusTemplates { get; set; }
+
+    /// <summary>
+    /// Таблица шаблонов, которые выбрал пользователь.
+    /// </summary>
+    public DbSet<ProjectManagmentUserTaskTemplateEntity> ProjectManagmentUserTaskTemplates { get; set; }
+
+    public DbSet<ProjectManagmentTaskStatusIntermediateTemplateEntity> ProjectManagmentTaskStatusIntermediateTemplates
+    {
+        get;
+        set;
+    }
+
+    /// <summary>
+    /// Таблица пользователей.
+    /// </summary>
+    public DbSet<UserTaskEntity> UserTasks { get; set; }
+
+    /// <summary>
+    /// Таблица статусов задач.
+    /// </summary>
+    public DbSet<TaskStatusEntity> TaskStatuses { get; set; }
+
+    /// <summary>
+    /// Таблица отношений между задачами.
+    /// </summary>
+    public DbSet<TaskRelationEntity> TaskRelations { get; set; }
+
+    /// <summary>
+    /// Таблица зависимостей задач.
+    /// </summary>
+    public DbSet<TaskDependencyEntity> TaskDependencies { get; set; }
+
+    /// <summary>
+    /// Таблица резолюций задач.
+    /// </summary>
+    public DbSet<TaskResolutionEntity> TaskResolutions { get; set; }
+
+    /// <summary>
+    /// Таблица типов задач.
+    /// </summary>
+    public DbSet<TaskTypeEntity> TaskTypes { get; set; }
+
+    /// <summary>
+    /// Таблица тегов (меток) задач.
+    /// </summary>
+    public DbSet<TaskTagEntity> TaskTags { get; set; }
+
+    /// <summary>
+    /// Таблица комментариев к задачам.
+    /// </summary>
+    public DbSet<TaskCommentEntity> TaskComments { get; set; }
+
+    /// <summary>
+    /// История действий над задачей.
+    /// </summary>
+    public DbSet<TaskHistoryEntity> TaskHistories { get; set; }
+
+    /// <summary>
+    /// Таблица действий.
+    /// </summary>
+    public DbSet<HistoryActionEntity> HistoryActions { get; set; }
 }
