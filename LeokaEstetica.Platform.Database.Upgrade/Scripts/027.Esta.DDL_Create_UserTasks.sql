@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS "ProjectManagment"."UserTasks"
+CREATE TABLE IF NOT EXISTS "ProjectManagment"."ProjectTasks"
 (
     "TaskId"        BIGSERIAL       NOT NULL,
     "TaskStatusId"  INT          NOT NULL,
@@ -15,23 +15,23 @@ CREATE TABLE IF NOT EXISTS "ProjectManagment"."UserTasks"
     "TagIds"        JSONB        NULL,
     "TaskTypeId"    INT          NOT NULL,
     "ExecutorId"    BIGINT       NOT NULL,
-    CONSTRAINT "PK_UserTasks_TaskId" PRIMARY KEY ("TaskId"),
+    CONSTRAINT "PK_ProjectTasks_TaskId" PRIMARY KEY ("TaskId"),
     CONSTRAINT "FK_UserProjects_ProjectId" FOREIGN KEY ("ProjectId") REFERENCES "Projects"."UserProjects" ("ProjectId")
 );
 
-COMMENT ON TABLE "ProjectManagment"."UserTasks" IS 'Таблица задач пользователя.';
-COMMENT ON COLUMN "ProjectManagment"."UserTasks"."TaskId" IS 'Id задачи.';
-COMMENT ON COLUMN "ProjectManagment"."UserTasks"."TaskStatusId" IS 'Id статуса задачи.';
-COMMENT ON COLUMN "ProjectManagment"."UserTasks"."AuthorId" IS 'Id пользователя, который является автором задачи.';
-COMMENT ON COLUMN "ProjectManagment"."UserTasks"."WatcherIds" IS 'Id пользователей, которые являются наблюдателями задачи.
+COMMENT ON TABLE "ProjectManagment"."ProjectTasks" IS 'Таблица задач проекта.';
+COMMENT ON COLUMN "ProjectManagment"."ProjectTasks"."TaskId" IS 'Id задачи.';
+COMMENT ON COLUMN "ProjectManagment"."ProjectTasks"."TaskStatusId" IS 'Id статуса задачи.';
+COMMENT ON COLUMN "ProjectManagment"."ProjectTasks"."AuthorId" IS 'Id пользователя, который является автором задачи.';
+COMMENT ON COLUMN "ProjectManagment"."ProjectTasks"."WatcherIds" IS 'Id пользователей, которые являются наблюдателями задачи.
 Jsonb в виде строки (например, 1,2,3).';
-COMMENT ON COLUMN "ProjectManagment"."UserTasks"."Name" IS 'Название задачи.';
-COMMENT ON COLUMN "ProjectManagment"."UserTasks"."Details" IS 'Описание задачи.';
-COMMENT ON COLUMN "ProjectManagment"."UserTasks"."Created" IS 'Дата создания задачи.';
-COMMENT ON COLUMN "ProjectManagment"."UserTasks"."Updated" IS 'Дата обновления задачи.';
-COMMENT ON COLUMN "ProjectManagment"."UserTasks"."ProjectId" IS 'Id проекта, к которому принадлежит задача.';
-COMMENT ON COLUMN "ProjectManagment"."UserTasks"."ProjectTaskId" IS 'Id задачи, в рамках проекта. Нужен, чтобы нумерация Id задачи шло в рамках каждого проекта.';
-COMMENT ON COLUMN "ProjectManagment"."UserTasks"."ResolutionId" IS 'Id резолюции.';
-COMMENT ON COLUMN "ProjectManagment"."UserTasks"."TagIds" IS 'Список Id тегов задачи. В виде Jsonb.';
-COMMENT ON COLUMN "ProjectManagment"."UserTasks"."TaskTypeId" IS 'Id типа задачи.';
-COMMENT ON COLUMN "ProjectManagment"."UserTasks"."ExecutorId" IS 'Id исполнителя задачи.';
+COMMENT ON COLUMN "ProjectManagment"."ProjectTasks"."Name" IS 'Название задачи.';
+COMMENT ON COLUMN "ProjectManagment"."ProjectTasks"."Details" IS 'Описание задачи.';
+COMMENT ON COLUMN "ProjectManagment"."ProjectTasks"."Created" IS 'Дата создания задачи.';
+COMMENT ON COLUMN "ProjectManagment"."ProjectTasks"."Updated" IS 'Дата обновления задачи.';
+COMMENT ON COLUMN "ProjectManagment"."ProjectTasks"."ProjectId" IS 'Id проекта, к которому принадлежит задача.';
+COMMENT ON COLUMN "ProjectManagment"."ProjectTasks"."ProjectTaskId" IS 'Id задачи, в рамках проекта. Нужен, чтобы нумерация Id задачи шло в рамках каждого проекта.';
+COMMENT ON COLUMN "ProjectManagment"."ProjectTasks"."ResolutionId" IS 'Id резолюции.';
+COMMENT ON COLUMN "ProjectManagment"."ProjectTasks"."TagIds" IS 'Список Id тегов задачи. В виде Jsonb.';
+COMMENT ON COLUMN "ProjectManagment"."ProjectTasks"."TaskTypeId" IS 'Id типа задачи.';
+COMMENT ON COLUMN "ProjectManagment"."ProjectTasks"."ExecutorId" IS 'Id исполнителя задачи.';

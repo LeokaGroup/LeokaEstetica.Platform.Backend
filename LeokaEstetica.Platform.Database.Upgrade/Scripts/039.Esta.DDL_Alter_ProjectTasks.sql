@@ -1,0 +1,3 @@
+ALTER TABLE IF EXISTS "ProjectManagment"."ProjectTasks"
+    ALTER COLUMN "WatcherIds" TYPE BIGINT[] USING NULL,
+    ALTER COLUMN "TagIds" TYPE INT[] USING NULL;

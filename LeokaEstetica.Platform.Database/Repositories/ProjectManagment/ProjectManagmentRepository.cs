@@ -94,6 +94,76 @@ internal sealed class ProjectManagmentRepository : IProjectManagmentRepository
 
         return result;
     }
+    
+    /// <summary>
+    /// Метод получает задачи проекта для рабочего пространства.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Задачи проекта.</returns>
+    public async Task<IEnumerable<ProjectTaskEntity>> GetProjectTasksAsync(long projectId)
+    {
+        var result = await _pgContext.ProjectTasks
+            .Where(t => t.ProjectId == projectId)
+            .ToListAsync();
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод получает названия тегов (меток) задач по их Id.
+    /// </summary>
+    /// <param name="tagIds">Id тегов (меток) задач.</param>
+    /// <returns>Словарь с тегами (метками) задач.</returns>
+    public async Task<IDictionary<int, string>> GetTagNamesByTagIdsAsync(IEnumerable<int> tagIds)
+    {
+        var result = await _pgContext.TaskTags
+            .Where(t => tagIds.Contains(t.TagId))
+            .ToDictionaryAsync(k => k.TagId, v => v.TagName);
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод получает названия типов задач по их Id.
+    /// </summary>
+    /// <param name="typeIds">Id типов задач.</param>
+    /// <returns>Словарь с типами задач.</returns>
+    public async Task<IDictionary<int, string>> GetTypeNamesByTypeIdsAsync(IEnumerable<int> typeIds)
+    {
+        var result = await _pgContext.TaskTypes
+            .Where(t => typeIds.Contains(t.TypeId))
+            .ToDictionaryAsync(k => k.TypeId, v => v.TypeName);
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод получает названия статусов задач по их Id.
+    /// </summary>
+    /// <param name="statusIds">Id статусов задач.</param>
+    /// <returns>Словарь с статусами задач.</returns>
+    public async Task<IDictionary<int, string>> GetStatusNamesByStatusIdsAsync(IEnumerable<int> statusIds)
+    {
+        var result = await _pgContext.TaskStatuses
+            .Where(t => statusIds.Contains(t.StatusId))
+            .ToDictionaryAsync(k => k.StatusId, v => v.StatusName);
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод получает названия резолюций задач по их Id.
+    /// </summary>
+    /// <param name="resolutionIds">Id резолюций задач.</param>
+    /// <returns>Словарь с резолюциями задач.</returns>
+    public async Task<IDictionary<int, string>> GetResolutionNamesByResolutionIdsAsync(IEnumerable<int> resolutionIds)
+    {
+        var result = await _pgContext.TaskResolutions
+            .Where(t => resolutionIds.Contains(t.ResolutionId))
+            .ToDictionaryAsync(k => k.ResolutionId, v => v.ResolutionName);
+
+        return result;
+    }
 
     #endregion
 

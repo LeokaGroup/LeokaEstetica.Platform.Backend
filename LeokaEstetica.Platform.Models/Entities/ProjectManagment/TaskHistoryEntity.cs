@@ -33,7 +33,7 @@ public class TaskHistoryEntity
     /// <summary>
     /// FK на задачу.
     /// </summary>
-    public UserTaskEntity UserTask { get; set; }
+    public ProjectTaskEntity ProjectTask { get; set; }
 
     /// <summary>
     /// FK на действие.

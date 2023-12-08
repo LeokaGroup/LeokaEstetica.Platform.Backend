@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS "ProjectManagment"."TaskDependencies"
     "DependencyTypeName" VARCHAR(150) NOT NULL,
     "Position"           INT          NOT NULL DEFAULT 0,
     CONSTRAINT "PK_TaskDependencies_DependencyId" PRIMARY KEY ("DependencyId"),
-    CONSTRAINT "FK_UserTasks_TaskId" FOREIGN KEY ("TaskId") REFERENCES "ProjectManagment"."UserTasks" ("TaskId")
+    CONSTRAINT "FK_UserTasks_TaskId" FOREIGN KEY ("TaskId") REFERENCES "ProjectManagment"."ProjectTasks" ("TaskId")
 );
 
 COMMENT ON TABLE "ProjectManagment"."TaskDependencies" IS 'Таблица зависимостей между задачами (Блокирует/блокируется, Клонирует/клонируется, Дублирует/дублируется, Связано с).';

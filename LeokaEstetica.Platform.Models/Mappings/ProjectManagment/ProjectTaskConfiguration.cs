@@ -5,11 +5,11 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace LeokaEstetica.Platform.Models.Mappings.ProjectManagment;
 
-public partial class UserTaskConfiguration : IEntityTypeConfiguration<UserTaskEntity>
+public partial class ProjectTaskConfiguration : IEntityTypeConfiguration<ProjectTaskEntity>
 {
-    public void Configure(EntityTypeBuilder<UserTaskEntity> entity)
+    public void Configure(EntityTypeBuilder<ProjectTaskEntity> entity)
     {
-        entity.ToTable("UserTasks", "ProjectManagment");
+        entity.ToTable("ProjectTasks", "ProjectManagment");
 
         entity.HasKey(e => e.TaskId);
 
@@ -38,7 +38,7 @@ public partial class UserTaskConfiguration : IEntityTypeConfiguration<UserTaskEn
         
         entity.Property(e => e.WatcherIds)
             .HasColumnName("WatcherIds")
-            .HasColumnType("jsonb");
+            .HasColumnType("bigint[]");
         
         entity.Property(e => e.Created)
             .HasColumnName("Created")
@@ -68,12 +68,11 @@ public partial class UserTaskConfiguration : IEntityTypeConfiguration<UserTaskEn
         
         entity.Property(e => e.ResolutionId)
             .HasColumnName("ResolutionId")
-            .HasColumnType("bigint")
-            .IsRequired();
+            .HasColumnType("bigint");
         
         entity.Property(e => e.TagIds)
             .HasColumnName("TagIds")
-            .HasColumnType("jsonb");
+            .HasColumnType("int[]");
         
         entity.Property(e => e.TaskTypeId)
             .HasColumnName("TaskTypeId")
@@ -86,13 +85,13 @@ public partial class UserTaskConfiguration : IEntityTypeConfiguration<UserTaskEn
             .IsRequired();
         
         entity.HasOne(p => p.TaskStatus)
-            .WithMany(b => b.UserTasks)
-            .HasForeignKey(p => p.StatusId)
+            .WithMany(b => b.ProjectTasks)
+            .HasForeignKey(p => p.TaskStatusId)
             .HasConstraintName("FK_TaskStatuses_StatusId")
             .IsRequired();
         
         entity.HasOne(p => p.UserProject)
-            .WithOne(b => b.UserTask)
+            .WithOne(b => b.ProjectTask)
             .HasForeignKey<UserProjectEntity>()
             .IsRequired();
 
@@ -109,5 +108,5 @@ public partial class UserTaskConfiguration : IEntityTypeConfiguration<UserTaskEn
         OnConfigurePartial(entity);
     }
 
-    partial void OnConfigurePartial(EntityTypeBuilder<UserTaskEntity> entity);
+    partial void OnConfigurePartial(EntityTypeBuilder<ProjectTaskEntity> entity);
 }

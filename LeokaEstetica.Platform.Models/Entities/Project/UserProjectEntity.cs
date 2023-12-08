@@ -107,5 +107,5 @@ public class UserProjectEntity
     /// <summary>
     /// FK на задачу.
     /// </summary>
-    public UserTaskEntity UserTask { get; set; }
+    public ProjectTaskEntity ProjectTask { get; set; }
 }

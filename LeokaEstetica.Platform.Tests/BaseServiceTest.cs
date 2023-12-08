@@ -262,6 +262,6 @@ internal class BaseServiceTest
 
         var projectManagmentRepository = new ProjectManagmentRepository(pgContext);
         ProjectManagmentService = new ProjectManagmentService(null, projectManagmentRepository, mapper, userRepository,
-            projectRepository);
+            projectRepository, pachcaService);
     }
 }

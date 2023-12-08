@@ -17,7 +17,7 @@ public partial class TaskRelationConfiguration : IEntityTypeConfiguration<TaskRe
             .HasColumnType("varchar(150)")
             .IsRequired();
         
-        entity.HasOne(p => p.UserTask)
+        entity.HasOne(p => p.ProjectTask)
             .WithMany(b => b.TaskRelations)
             .HasForeignKey(p => p.RelationId)
             .HasConstraintName("FK_UserTasks_TaskId")

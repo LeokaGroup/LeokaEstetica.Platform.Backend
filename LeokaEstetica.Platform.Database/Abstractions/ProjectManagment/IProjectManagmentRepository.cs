@@ -1,6 +1,5 @@
 ﻿using LeokaEstetica.Platform.Models.Dto.Output.Template;
 using LeokaEstetica.Platform.Models.Entities.ProjectManagment;
-using LeokaEstetica.Platform.Models.Entities.Template;
 
 namespace LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 
@@ -34,4 +33,39 @@ public interface IProjectManagmentRepository
     /// <param name="templateStatusIds">Список Id статусов.</param>
     /// <returns>Словарь с Id шаблонов и статусов.</returns>
     Task<IDictionary<int, int>> GetTemplateStatusIdsByStatusIdsAsync(IEnumerable<int> templateStatusIds);
+    
+    /// <summary>
+    /// Метод получает задачи проекта для рабочего пространства.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Задачи проекта.</returns>
+    Task<IEnumerable<ProjectTaskEntity>> GetProjectTasksAsync(long projectId);
+    
+    /// <summary>
+    /// Метод получает названия тегов (меток) задач по их Id.
+    /// </summary>
+    /// <param name="tagIds">Id тегов (меток) задач.</param>
+    /// <returns>Словарь с тегами (метками) задач.</returns>
+    Task<IDictionary<int, string>> GetTagNamesByTagIdsAsync(IEnumerable<int> tagIds);
+    
+    /// <summary>
+    /// Метод получает названия типов задач по их Id.
+    /// </summary>
+    /// <param name="typeIds">Id типов задач.</param>
+    /// <returns>Словарь с типами задач.</returns>
+    Task<IDictionary<int, string>> GetTypeNamesByTypeIdsAsync(IEnumerable<int> typeIds);
+    
+    /// <summary>
+    /// Метод получает названия статусов задач по их Id.
+    /// </summary>
+    /// <param name="statusIds">Id статусов задач.</param>
+    /// <returns>Словарь с статусами задач.</returns>
+    Task<IDictionary<int, string>> GetStatusNamesByStatusIdsAsync(IEnumerable<int> statusIds);
+    
+    /// <summary>
+    /// Метод получает названия резолюций задач по их Id.
+    /// </summary>
+    /// <param name="resolutionIds">Id резолюций задач.</param>
+    /// <returns>Словарь с резолюциями задач.</returns>
+    Task<IDictionary<int, string>> GetResolutionNamesByResolutionIdsAsync(IEnumerable<int> resolutionIds);
 }

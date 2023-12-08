@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS "ProjectManagment"."TaskComments"
     "TaskId"    BIGINT    NOT NULL,
     "AuthorId"  BIGINT    NOT NULL,
     CONSTRAINT "PK_TaskComments_CommentId" PRIMARY KEY ("CommentId"),
-    CONSTRAINT "FK_UserTasks_TaskId" FOREIGN KEY ("TaskId") REFERENCES "ProjectManagment"."UserTasks" ("TaskId")
+    CONSTRAINT "FK_UserTasks_TaskId" FOREIGN KEY ("TaskId") REFERENCES "ProjectManagment"."ProjectTasks" ("TaskId")
 );
 
 COMMENT ON TABLE "ProjectManagment"."TaskComments" IS 'Таблица комментариев к задаче.';

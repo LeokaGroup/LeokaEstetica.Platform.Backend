@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS "ProjectManagment"."TaskRelations"
     "RelationType" VARCHAR(150) NOT NULL,
     "TaskId"       BIGINT       NOT NULL,
     CONSTRAINT "PK_TaskRelations_RelationId" PRIMARY KEY ("RelationId", "TaskId"),
-    CONSTRAINT "FK_UserTasks_TaskId" FOREIGN KEY ("TaskId") REFERENCES "ProjectManagment"."UserTasks" ("TaskId")
+    CONSTRAINT "FK_UserTasks_TaskId" FOREIGN KEY ("TaskId") REFERENCES "ProjectManagment"."ProjectTasks" ("TaskId")
 );
 
 COMMENT ON TABLE "ProjectManagment"."TaskRelations" IS 'Таблица отношений между задачами (родитель, дочка).';

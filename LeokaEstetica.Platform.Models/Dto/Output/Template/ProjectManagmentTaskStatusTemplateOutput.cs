@@ -24,4 +24,19 @@ public class ProjectManagmentTaskStatusTemplateOutput
     /// Id шаблона.
     /// </summary>
     public int TemplateId { get; set; }
+    
+    /// <summary>
+    /// Id статуса, который маппится на статус задачи.
+    /// </summary>
+    public int TaskStatusId { get; set; }
+
+    /// <summary>
+    /// Список задач определенного статуса.
+    /// </summary>
+    public List<ProjectManagmentTaskOutput> ProjectManagmentTasks { get; set; }
+
+    /// <summary>
+    /// Кол-во всего.
+    /// </summary>
+    public long Total { get; set; }
 }

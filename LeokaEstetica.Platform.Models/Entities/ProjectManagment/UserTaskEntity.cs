@@ -5,9 +5,9 @@ namespace LeokaEstetica.Platform.Models.Entities.ProjectManagment;
 /// <summary>
 /// Класс сопоставляется с таблицей задач пользователя в модуле УП.
 /// </summary>
-public class UserTaskEntity
+public class ProjectTaskEntity
 {
-    public UserTaskEntity()
+    public ProjectTaskEntity()
     {
         TaskRelations = new HashSet<TaskRelationEntity>();
         TaskComments = new HashSet<TaskCommentEntity>();
@@ -31,9 +31,8 @@ public class UserTaskEntity
 
     /// <summary>
     /// Id пользователей, которые являются наблюдателями задачи.
-    // Jsonb в виде строки (например, 1,2,3).
     /// </summary>
-    public string WatcherIds { get; set; }
+    public long[] WatcherIds { get; set; }
 
     /// <summary>
     /// Название задачи.
@@ -68,17 +67,12 @@ public class UserTaskEntity
     /// <summary>
     /// Id резолюции.
     /// </summary>
-    public int ResolutionId { get; set; }
+    public int? ResolutionId { get; set; }
 
     /// <summary>
-    /// Id статуса задачи.
+    /// Список Id тегов задачи.
     /// </summary>
-    public int StatusId { get; set; }
-
-    /// <summary>
-    /// Список Id тегов задачи. В виде Jsonb.
-    /// </summary>
-    public string TagIds { get; set; }
+    public int[] TagIds { get; set; }
 
     /// <summary>
     /// Id типа задачи.
