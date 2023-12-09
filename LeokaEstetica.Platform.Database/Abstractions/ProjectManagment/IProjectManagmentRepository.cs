@@ -68,4 +68,11 @@ public interface IProjectManagmentRepository
     /// <param name="resolutionIds">Id резолюций задач.</param>
     /// <returns>Словарь с резолюциями задач.</returns>
     Task<IDictionary<int, string>> GetResolutionNamesByResolutionIdsAsync(IEnumerable<int> resolutionIds);
+    
+    /// <summary>
+    /// Метод получает названия приоритетов задач по их Id.
+    /// </summary>
+    /// <param name="priorityIds">Id приоритетов задач.</param>
+    /// <returns>Словарь с приоритетами задач.</returns>
+    Task<IDictionary<int, string>> GetPriorityNamesByPriorityIdsAsync(IEnumerable<int> priorityIds);
 }

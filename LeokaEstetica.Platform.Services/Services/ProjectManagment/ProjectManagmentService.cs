@@ -535,6 +535,21 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             resolutions = await _projectManagmentRepository.GetResolutionNamesByResolutionIdsAsync(
                 resolutionIds);
         }
+        
+        var priorityIds = tasks
+            .Where(x => x.PriorityId is not null)
+            .Select(x => (int)x.PriorityId)
+            .ToList();
+        
+        IDictionary<int, string> priorities = null;
+        
+        // Если есть приоритеты задач, пойдем получать их.
+        // Если каких то нет, не страшно, значит они не заполнены у задач.
+        if (priorityIds.Any())
+        {
+            priorities = await _projectManagmentRepository.GetPriorityNamesByPriorityIdsAsync(
+                priorityIds);
+        }
 
         // Распределяем задачи по статусам.
         foreach (var ps in projectManagmentTaskStatusTemplates)
@@ -602,6 +617,18 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                         foreach (var w in ts.WatcherIds)
                         {
                             ts.WatcherNames = new List<string> { watchers.TryGet(w)?.FullName };
+                        }
+                    }
+                    
+                    // Название приорита задачи.
+                    if (priorities is not null && priorities.Count > 0)
+                    {
+                        var priorityName = priorities.TryGet(ts.PriorityId);
+
+                        // Если приоритета нет, не страшно. Значит не указана у задачи.
+                        if (priorityName is not null)
+                        {
+                            ts.PriorityName = priorities.TryGet(ts.PriorityId);
                         }
                     }
                 }

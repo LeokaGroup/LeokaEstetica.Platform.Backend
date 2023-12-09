@@ -104,6 +104,10 @@ public partial class ProjectTaskConfiguration : IEntityTypeConfiguration<Project
         //     .WithOne(b => b.UserTask)
         //     .HasForeignKey<TaskResolutionEntity>()
         //     .IsRequired();
+        
+        entity.Property(e => e.PriorityId)
+            .HasColumnName("PriorityId")
+            .HasColumnType("int");
 
         OnConfigurePartial(entity);
     }
