@@ -550,4 +550,9 @@ public class PgContext : DbContext
     /// Таблица действий.
     /// </summary>
     public DbSet<HistoryActionEntity> HistoryActions { get; set; }
+
+    /// <summary>
+    /// Таблица приоритетов.
+    /// </summary>
+    public DbSet<TaskPriorityEntity> TaskPriorities { get; set; }
 }

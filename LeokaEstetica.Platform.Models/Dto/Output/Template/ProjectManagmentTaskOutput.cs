@@ -117,4 +117,15 @@ public class ProjectManagmentTaskOutput
     /// </summary>
     [JsonIgnore]
     public long ExecutorId { get; set; }
+    
+    /// <summary>
+    /// Id приоритета задачи (если указана).
+    /// </summary>
+    [JsonIgnore]
+    public int PriorityId { get; set; }
+
+    /// <summary>
+    /// Название приоритета задачи.
+    /// </summary>
+    public string PriorityName { get; set; }
 }

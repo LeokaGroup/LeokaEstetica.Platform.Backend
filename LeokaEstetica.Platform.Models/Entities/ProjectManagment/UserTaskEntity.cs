@@ -123,4 +123,9 @@ public class ProjectTaskEntity
     /// История действий.
     /// </summary>
     public IEnumerable<TaskHistoryEntity> TaskHistories { get; set; }
+
+    /// <summary>
+    /// Приоритет задачи.
+    /// </summary>
+    public int? PriorityId { get; set; }
 }
