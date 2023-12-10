@@ -72,8 +72,8 @@ public interface IProjectManagmentRepository
     /// <summary>
     /// Метод получает детали задачи.
     /// </summary>
-    /// <param name="taskId">Id задачи.</param>
+    /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
     /// <param name="projectId">Id проекта.</param>
     /// <returns>Данные задачи.</returns>
-    Task<ProjectTaskEntity> GetTaskDetailsByTaskIdAsync(long taskId, long projectId);
+    Task<ProjectTaskEntity> GetTaskDetailsByTaskIdAsync(long projectTaskId, long projectId);
 }

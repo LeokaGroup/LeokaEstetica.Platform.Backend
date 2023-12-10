@@ -57,9 +57,9 @@ public interface IProjectManagmentService
     /// <summary>
     /// Метод получает детали задачи.
     /// </summary>
-    /// <param name="taskId">Id задачи.</param>
+    /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
     /// <param name="account">Аккаунт.</param>
     /// <param name="projectId">Id проекта.</param>
     /// <returns>Данные задачи.</returns>
-    Task<ProjectManagmentTaskOutput> GetTaskDetailsByTaskIdAsync(long taskId, string account, long projectId);
+    Task<ProjectManagmentTaskOutput> GetTaskDetailsByTaskIdAsync(long projectTaskId, string account, long projectId);
 }

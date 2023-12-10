@@ -173,7 +173,7 @@ public class ProjectManagmentController : BaseController
     /// <summary>
     /// Метод получает детали задачи.
     /// </summary>
-    /// <param name="taskId">Id задачи.</param>
+    /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
     /// <param name="projectId">Id проекта.</param>
     /// <returns>Данные задачи.</returns>
     [HttpGet]
@@ -183,10 +183,11 @@ public class ProjectManagmentController : BaseController
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<ProjectManagmentTaskOutput> GetTaskDetailsByTaskIdAsync([FromQuery] long taskId,
+    public async Task<ProjectManagmentTaskOutput> GetTaskDetailsByTaskIdAsync([FromQuery] long projectTaskId,
         [FromQuery] long projectId)
     {
-        var result = await _projectManagmentService.GetTaskDetailsByTaskIdAsync(taskId, GetUserName(), projectId);
+        var result = await _projectManagmentService.GetTaskDetailsByTaskIdAsync(projectTaskId, GetUserName(),
+            projectId);
 
         return result;
     }
