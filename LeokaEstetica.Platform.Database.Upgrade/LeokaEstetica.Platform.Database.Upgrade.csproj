@@ -50,6 +50,7 @@
         <EmbeddedResource Include="Scripts\040.Esta.DDL_Alter_ProjectManagmentTaskStatusTemplates.sql" />
         <EmbeddedResource Include="Scripts\041.Esta.DDL_Create_TaskPriorities.sql" />
         <EmbeddedResource Include="Scripts\042.Esta.DDL_Alter_ProjectTasks.sql" />
+        <EmbeddedResource Include="Scripts\041.Esta.DDL_Alter_Create_Index_ProjectTasks.sql" />
     </ItemGroup>
 
     <ItemGroup>

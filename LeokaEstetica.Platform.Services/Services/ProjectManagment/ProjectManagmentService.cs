@@ -445,11 +445,11 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     /// <summary>
     /// Метод получает детали задачи.
     /// </summary>
-    /// <param name="taskId">Id задачи.</param>
+    /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
     /// <param name="account">Аккаунт.</param>
     /// <param name="projectId">Id проекта.</param>
     /// <returns>Данные задачи.</returns>
-    public async Task<ProjectManagmentTaskOutput> GetTaskDetailsByTaskIdAsync(long taskId, string account,
+    public async Task<ProjectManagmentTaskOutput> GetTaskDetailsByTaskIdAsync(long projectTaskId, string account,
         long projectId)
     {
         try
@@ -463,7 +463,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             }
             
             // TODO: Добавить проверку. Является ли пользователь участником проекта. Если нет, то не давать доступ к задаче.
-            var task = await _projectManagmentRepository.GetTaskDetailsByTaskIdAsync(taskId, projectId);
+            var task = await _projectManagmentRepository.GetTaskDetailsByTaskIdAsync(projectTaskId, projectId);
 
             var result = await ModifyProjectManagmentTaskDetailsResultAsync(task);
 
@@ -712,15 +712,10 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         {
             throw new InvalidOperationException("Не удалось получить исполнителей задач.");
         }
-        
-        var executorName = executors.TryGet(executors.First().Key).FullName;
-        var authorName = authors.TryGet(authors.First().Key).FullName;
-        
-        var result = new ProjectManagmentTaskOutput
-        {
-            ExecutorName = executorName,
-            AuthorName = authorName
-        };
+
+        var result = _mapper.Map<ProjectManagmentTaskOutput>(task);
+        result.ExecutorName = executors.TryGet(executors.First().Key).FullName;
+        result.AuthorName = authors.TryGet(authors.First().Key).FullName;
         
         IDictionary<long, UserInfoOutput> watchers = null;
 
@@ -728,13 +723,13 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 
         // Если есть наблюдатели, пойдем получать их.
         // Если каких то нет, не страшно, значит они не заполнены у задач.
-        if (watcherIds.Any())
+        if (watcherIds is not null && watcherIds.Any())
         {
             watchers = await _userRepository.GetWatcherNamesByWatcherIdsAsync(watcherIds);
         }
 
         // Наблюдатели задачи.
-        if (watcherIds.Any())
+        if (watchers is not null && watchers.Count > 0)
         {
             var watcherNames = new List<string>();
             foreach (var w in result.WatcherIds)
@@ -749,7 +744,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         var tagIds = task.TagIds;
 
         // Если есть теги, то пойдем получать.
-        if (tagIds is not null)
+        if (tagIds is not null && tagIds.Any())
         {
             tags = await _projectManagmentRepository.GetTagNamesByTagIdsAsync(tagIds);
         }
@@ -785,9 +780,12 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             resolutions = await _projectManagmentRepository.GetResolutionNamesByResolutionIdsAsync(
                 new[] { (int)resolutionId });
         }
-        
-        result.ResolutionName = resolutions.TryGet(result.ResolutionId);
-        // result.ProjectTaskId = task.ProjectTaskId;
+
+        // Получаем резолюцию задачи, если она есть.
+        if (resolutions is not null && resolutions.Count > 0)
+        {
+            result.ResolutionName = resolutions.TryGet(result.ResolutionId);
+        }
 
         return result;
     }
