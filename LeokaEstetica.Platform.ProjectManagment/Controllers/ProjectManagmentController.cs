@@ -138,6 +138,11 @@ public class ProjectManagmentController : BaseController
     /// <returns>Данные конфигурации рабочего пространства.</returns>
     [HttpGet]
     [Route("config-workspace-template")]
+    [ProducesResponseType(200, Type = typeof(ProjectManagmentWorkspaceResult))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
     public async Task<ProjectManagmentWorkspaceResult> GetConfigurationWorkSpaceBySelectedTemplateAsync(
         [FromQuery] long projectId, [FromQuery] string strategy, [FromQuery] int templateId)
     {
@@ -161,6 +166,27 @@ public class ProjectManagmentController : BaseController
 
         var result = await _projectManagmentService.GetConfigurationWorkSpaceBySelectedTemplateAsync(
             projectId, strategy, templateId, GetUserName());
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод получает детали задачи.
+    /// </summary>
+    /// <param name="taskId">Id задачи.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Данные задачи.</returns>
+    [HttpGet]
+    [Route("task")]
+    [ProducesResponseType(200, Type = typeof(ProjectManagmentTaskOutput))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<ProjectManagmentTaskOutput> GetTaskDetailsByTaskIdAsync([FromQuery] long taskId,
+        [FromQuery] long projectId)
+    {
+        var result = await _projectManagmentService.GetTaskDetailsByTaskIdAsync(taskId, GetUserName(), projectId);
 
         return result;
     }

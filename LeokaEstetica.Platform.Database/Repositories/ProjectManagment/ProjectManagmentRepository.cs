@@ -165,6 +165,21 @@ internal sealed class ProjectManagmentRepository : IProjectManagmentRepository
         return result;
     }
 
+    /// <summary>
+    /// Метод получает детали задачи.
+    /// </summary>
+    /// <param name="taskId">Id задачи.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Данные задачи.</returns>
+    public async Task<ProjectTaskEntity> GetTaskDetailsByTaskIdAsync(long taskId, long projectId)
+    {
+        var result = await _pgContext.ProjectTasks
+            .FirstOrDefaultAsync(t => t.ProjectId == taskId 
+                                      && t.TaskId == taskId);
+
+        return result;
+    }
+
     #endregion
 
     #region Приватные методы.
