@@ -166,6 +166,21 @@ internal sealed class ProjectManagmentRepository : IProjectManagmentRepository
     }
 
     /// <summary>
+    /// Метод получает детали задачи.
+    /// </summary>
+    /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Данные задачи.</returns>
+    public async Task<ProjectTaskEntity> GetTaskDetailsByTaskIdAsync(long projectTaskId, long projectId)
+    {
+        var result = await _pgContext.ProjectTasks
+            .FirstOrDefaultAsync(t => t.ProjectId == projectId 
+                                      && t.ProjectTaskId == projectTaskId);
+
+        return result;
+    }
+    
+    /// <summary>
     /// Метод получает названия приоритетов задач по их Id.
     /// </summary>
     /// <param name="priorityIds">Id приоритетов задач.</param>

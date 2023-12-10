@@ -53,4 +53,13 @@ public interface IProjectManagmentService
     /// <returns>Данные конфигурации рабочего пространства.</returns>
     Task<ProjectManagmentWorkspaceResult> GetConfigurationWorkSpaceBySelectedTemplateAsync(long projectId,
         string strategy, int templateId, string account);
+
+    /// <summary>
+    /// Метод получает детали задачи.
+    /// </summary>
+    /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
+    /// <param name="account">Аккаунт.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Данные задачи.</returns>
+    Task<ProjectManagmentTaskOutput> GetTaskDetailsByTaskIdAsync(long projectTaskId, string account, long projectId);
 }

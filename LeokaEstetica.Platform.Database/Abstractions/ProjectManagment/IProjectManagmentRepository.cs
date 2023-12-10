@@ -70,6 +70,14 @@ public interface IProjectManagmentRepository
     Task<IDictionary<int, string>> GetResolutionNamesByResolutionIdsAsync(IEnumerable<int> resolutionIds);
     
     /// <summary>
+    /// Метод получает детали задачи.
+    /// </summary>
+    /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Данные задачи.</returns>
+    Task<ProjectTaskEntity> GetTaskDetailsByTaskIdAsync(long projectTaskId, long projectId);
+    
+    /// <summary>
     /// Метод получает названия приоритетов задач по их Id.
     /// </summary>
     /// <param name="priorityIds">Id приоритетов задач.</param>
