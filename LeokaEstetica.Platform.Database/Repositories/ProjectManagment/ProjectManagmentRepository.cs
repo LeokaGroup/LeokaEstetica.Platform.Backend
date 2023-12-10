@@ -166,15 +166,16 @@ internal sealed class ProjectManagmentRepository : IProjectManagmentRepository
     }
 
     /// <summary>
-    /// Метод получает названия приоритетов задач по их Id.
+    /// Метод получает детали задачи.
     /// </summary>
-    /// <param name="priorityIds">Id приоритетов задач.</param>
-    /// <returns>Словарь с приоритетами задач.</returns>
-    public async Task<IDictionary<int, string>> GetPriorityNamesByPriorityIdsAsync(IEnumerable<int> priorityIds)
+    /// <param name="taskId">Id задачи.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Данные задачи.</returns>
+    public async Task<ProjectTaskEntity> GetTaskDetailsByTaskIdAsync(long taskId, long projectId)
     {
-        var result = await _pgContext.TaskPriorities
-            .Where(t => priorityIds.Contains(t.PriorityId))
-            .ToDictionaryAsync(k => k.PriorityId, v => v.PriorityName);
+        var result = await _pgContext.ProjectTasks
+            .FirstOrDefaultAsync(t => t.ProjectId == taskId 
+                                      && t.TaskId == taskId);
 
         return result;
     }

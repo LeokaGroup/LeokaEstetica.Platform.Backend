@@ -442,6 +442,41 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         }
     }
 
+    /// <summary>
+    /// Метод получает детали задачи.
+    /// </summary>
+    /// <param name="taskId">Id задачи.</param>
+    /// <param name="account">Аккаунт.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Данные задачи.</returns>
+    public async Task<ProjectManagmentTaskOutput> GetTaskDetailsByTaskIdAsync(long taskId, string account,
+        long projectId)
+    {
+        try
+        {
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+            
+            // TODO: Добавить проверку. Является ли пользователь участником проекта. Если нет, то не давать доступ к задаче.
+            var task = await _projectManagmentRepository.GetTaskDetailsByTaskIdAsync(taskId, projectId);
+
+            var result = await ModifyProjectManagmentTaskDetailsResultAsync(task);
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex.Message, ex);
+            throw;
+        }
+    }
+
     #endregion
 
     #region Приватные методы.
@@ -638,6 +673,123 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 ps.Total = ps.ProjectManagmentTasks.Count;
             }
         }
+    }
+
+    /// <summary>
+    /// Метод наполняет задачу названиями по Id полей.
+    /// </summary>
+    /// <param name="task">Задача.</param>
+    /// <returns>Задача модифицируемая наполненными полями.</returns>
+    private async Task<ProjectManagmentTaskOutput> ModifyProjectManagmentTaskDetailsResultAsync(ProjectTaskEntity task)
+    {
+        // Получаем имя автора задачи.
+        var authors = await _userRepository.GetAuthorNamesByAuthorIdsAsync(new[] { task.AuthorId });
+
+        if (authors.Count == 0)
+        {
+            throw new InvalidOperationException("Не удалось получить автора задачи.");
+        }
+        
+        var executorId = task.ExecutorId;
+
+        // Обязательно логируем такое если обнаружили, но не стопаем выполнение логики.
+        if (executorId <= 0)
+        {
+            var ex = new InvalidOperationException(
+                "Найден невалидный исполнитель задачи." +
+                $" ExecutorIds: {JsonConvert.SerializeObject(executorId)}.");
+
+            _logger.LogError(ex, ex.Message);
+
+            // Отправляем ивент в пачку.
+            await _pachcaService.SendNotificationErrorAsync(ex);
+        }
+
+        // Получаем имена исполнителя задачи.
+        var executors = await _userRepository.GetExecutorNamesByExecutorIdsAsync(new[] { executorId });
+
+        if (executors.Count == 0)
+        {
+            throw new InvalidOperationException("Не удалось получить исполнителей задач.");
+        }
+        
+        var executorName = executors.TryGet(executors.First().Key).FullName;
+        var authorName = authors.TryGet(authors.First().Key).FullName;
+        
+        var result = new ProjectManagmentTaskOutput
+        {
+            ExecutorName = executorName,
+            AuthorName = authorName
+        };
+        
+        IDictionary<long, UserInfoOutput> watchers = null;
+
+        var watcherIds = task.WatcherIds;
+
+        // Если есть наблюдатели, пойдем получать их.
+        // Если каких то нет, не страшно, значит они не заполнены у задач.
+        if (watcherIds.Any())
+        {
+            watchers = await _userRepository.GetWatcherNamesByWatcherIdsAsync(watcherIds);
+        }
+
+        // Наблюдатели задачи.
+        if (watcherIds.Any())
+        {
+            var watcherNames = new List<string>();
+            foreach (var w in result.WatcherIds)
+            {
+                watcherNames.Add(watchers.TryGet(w)?.FullName);
+            }
+            
+            result.WatcherNames = watcherNames;
+        }
+        
+        IDictionary<int, string> tags = null;
+        var tagIds = task.TagIds;
+
+        // Если есть теги, то пойдем получать.
+        if (tagIds is not null)
+        {
+            tags = await _projectManagmentRepository.GetTagNamesByTagIdsAsync(tagIds);
+        }
+        
+        // Название тегов (меток) задачи.
+        if (tags is not null && tags.Count > 0)
+        {
+            var tagNames = new List<string>();
+            foreach (var tg in result.TagIds)
+            {
+                tagNames.Add(tags.TryGet(tg));
+            }
+            
+            result.TagNames = tagNames;
+        }
+
+        var types = await _projectManagmentRepository.GetTypeNamesByTypeIdsAsync(new[] { task.TaskTypeId });
+        result.TaskTypeName = types.TryGet(result.TaskTypeId);
+        
+        var statuseNames = await _projectManagmentRepository.GetStatusNamesByStatusIdsAsync(
+            new[] { task.TaskStatusId });
+        
+        result.TaskStatusName = statuseNames.TryGet(result.TaskStatusId);
+        
+        IDictionary<int, string> resolutions = null;
+
+        var resolutionId = task.ResolutionId;
+
+        // Если есть резолюции задач, пойдем получать их.
+        // Если каких то нет, не страшно, значит они не заполнены у задач.
+        if (resolutionId is not null)
+        {
+            resolutions = await _projectManagmentRepository.GetResolutionNamesByResolutionIdsAsync(
+                new[] { (int)resolutionId });
+        }
+        
+        result.ResolutionName = resolutions.TryGet(result.ResolutionId);
+        // result.ProjectTaskId = task.ProjectTaskId;
+
+        return result;
     }
 
     #endregion
