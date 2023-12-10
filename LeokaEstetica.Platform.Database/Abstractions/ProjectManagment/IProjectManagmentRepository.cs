@@ -76,11 +76,4 @@ public interface IProjectManagmentRepository
     /// <param name="projectId">Id проекта.</param>
     /// <returns>Данные задачи.</returns>
     Task<ProjectTaskEntity> GetTaskDetailsByTaskIdAsync(long projectTaskId, long projectId);
-    
-    /// <summary>
-    /// Метод получает названия приоритетов задач по их Id.
-    /// </summary>
-    /// <param name="priorityIds">Id приоритетов задач.</param>
-    /// <returns>Словарь с приоритетами задач.</returns>
-    Task<IDictionary<int, string>> GetPriorityNamesByPriorityIdsAsync(IEnumerable<int> priorityIds);
 }
