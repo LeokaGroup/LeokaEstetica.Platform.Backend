@@ -527,20 +527,6 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             throw new InvalidOperationException("Не удалось получить исполнителей задач.");
         }
 
-        var watcherIds = tasks
-            .Where(x => x.WatcherIds is not null)
-            .SelectMany(x => x.WatcherIds)
-            .ToList();
-
-        IDictionary<long, UserInfoOutput> watchers = null;
-
-        // Если есть наблюдатели, пойдем получать их.
-        // Если каких то нет, не страшно, значит они не заполнены у задач.
-        if (watcherIds.Any())
-        {
-            watchers = await _userRepository.GetWatcherNamesByWatcherIdsAsync(watcherIds);
-        }
-
         IDictionary<int, string> tags = null;
 
         // Если есть теги, то пойдем получать.
@@ -584,6 +570,20 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         {
             priorities = await _projectManagmentRepository.GetPriorityNamesByPriorityIdsAsync(
                 priorityIds);
+        }
+        
+        var watcherIds = tasks
+            .Where(x => x.WatcherIds is not null)
+            .SelectMany(x => x.WatcherIds)
+            .ToList();
+
+        IDictionary<long, UserInfoOutput> watchers = null;
+
+        // Если есть наблюдатели, пойдем получать их.
+        // Если каких то нет, не страшно, значит они не заполнены у задач.
+        if (watcherIds.Any())
+        {
+            watchers = await _userRepository.GetWatcherNamesByWatcherIdsAsync(watcherIds);
         }
 
         // Распределяем задачи по статусам.
@@ -670,6 +670,8 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 
                 ps.ProjectManagmentTasks = new List<ProjectManagmentTaskOutput>(mapTasks.Count);
                 ps.ProjectManagmentTasks.AddRange(mapTasks);
+                
+                // Кол-во задач в статусе.
                 ps.Total = ps.ProjectManagmentTasks.Count;
             }
         }
@@ -716,8 +718,6 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         var result = _mapper.Map<ProjectManagmentTaskOutput>(task);
         result.ExecutorName = executors.TryGet(executors.First().Key).FullName;
         result.AuthorName = authors.TryGet(authors.First().Key).FullName;
-        
-        IDictionary<long, UserInfoOutput> watchers = null;
 
         var watcherIds = task.WatcherIds;
 
@@ -725,40 +725,41 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         // Если каких то нет, не страшно, значит они не заполнены у задач.
         if (watcherIds is not null && watcherIds.Any())
         {
-            watchers = await _userRepository.GetWatcherNamesByWatcherIdsAsync(watcherIds);
+            var watchers = await _userRepository.GetWatcherNamesByWatcherIdsAsync(watcherIds);
+            
+            // Наблюдатели задачи.
+            if (watchers is not null && watchers.Count > 0)
+            {
+                var watcherNames = new List<string>();
+            
+                foreach (var w in result.WatcherIds)
+                {
+                    watcherNames.Add(watchers.TryGet(w)?.FullName);
+                }
+            
+                result.WatcherNames = watcherNames;
+            }
         }
 
-        // Наблюдатели задачи.
-        if (watchers is not null && watchers.Count > 0)
-        {
-            var watcherNames = new List<string>();
-            foreach (var w in result.WatcherIds)
-            {
-                watcherNames.Add(watchers.TryGet(w)?.FullName);
-            }
-            
-            result.WatcherNames = watcherNames;
-        }
-        
-        IDictionary<int, string> tags = null;
         var tagIds = task.TagIds;
 
         // Если есть теги, то пойдем получать.
         if (tagIds is not null && tagIds.Any())
         {
-            tags = await _projectManagmentRepository.GetTagNamesByTagIdsAsync(tagIds);
-        }
-        
-        // Название тегов (меток) задачи.
-        if (tags is not null && tags.Count > 0)
-        {
-            var tagNames = new List<string>();
-            foreach (var tg in result.TagIds)
-            {
-                tagNames.Add(tags.TryGet(tg));
-            }
+            var tags = await _projectManagmentRepository.GetTagNamesByTagIdsAsync(tagIds);
             
-            result.TagNames = tagNames;
+            // Название тегов (меток) задачи.
+            if (tags is not null && tags.Count > 0)
+            {
+                var tagNames = new List<string>();
+                
+                foreach (var tg in result.TagIds)
+                {
+                    tagNames.Add(tags.TryGet(tg));
+                }
+            
+                result.TagNames = tagNames;
+            }
         }
 
         var types = await _projectManagmentRepository.GetTypeNamesByTypeIdsAsync(new[] { task.TaskTypeId });
@@ -768,23 +769,42 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             new[] { task.TaskStatusId });
         
         result.TaskStatusName = statuseNames.TryGet(result.TaskStatusId);
-        
-        IDictionary<int, string> resolutions = null;
 
         var resolutionId = task.ResolutionId;
 
         // Если есть резолюции задач, пойдем получать их.
         // Если каких то нет, не страшно, значит они не заполнены у задач.
-        if (resolutionId is not null)
+        if (resolutionId.HasValue)
         {
-            resolutions = await _projectManagmentRepository.GetResolutionNamesByResolutionIdsAsync(
-                new[] { (int)resolutionId });
+            var resolutions = await _projectManagmentRepository.GetResolutionNamesByResolutionIdsAsync(
+                new[] { resolutionId.Value });
+            
+            // Получаем резолюцию задачи, если она есть.
+            if (resolutions is not null && resolutions.Count > 0)
+            {
+                result.ResolutionName = resolutions.TryGet(result.ResolutionId);
+            }
         }
 
-        // Получаем резолюцию задачи, если она есть.
-        if (resolutions is not null && resolutions.Count > 0)
+        var priorityId = task.PriorityId;
+        
+        // Если есть приоритеты задач, пойдем получать их.
+        // Если каких то нет, не страшно, значит они не заполнены у задач.
+        if (priorityId.HasValue)
         {
-            result.ResolutionName = resolutions.TryGet(result.ResolutionId);
+            var priorities = await _projectManagmentRepository.GetPriorityNamesByPriorityIdsAsync(
+                new[] { priorityId.Value });
+
+            if (priorities is not null && priorities.Count > 0)
+            {
+                var priorityName = priorities.TryGet(priorityId.Value);
+
+                // Если приоритета нет, не страшно. Значит не указана у задачи.
+                if (priorityName is not null)
+                {
+                    result.PriorityName = priorities.TryGet(priorityId.Value);
+                }
+            }
         }
 
         return result;
