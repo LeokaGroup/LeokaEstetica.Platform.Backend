@@ -157,7 +157,7 @@ public class ProjectManagmentController : BaseController
             {
                 exceptions.Add(new InvalidOperationException(err.ErrorMessage));
             }
-            ;
+            
             var ex = new AggregateException("Ошибка получения конфигурации рабочего пространства.", exceptions);
             _logger.LogError(ex, ex.Message);
             
