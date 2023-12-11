@@ -33,7 +33,7 @@ public class UserInfoOutput
     /// <summary>
     /// Полное ФИО.
     /// </summary>
-    public string FullName => LastName + " " + FirstName + " " + (SecondName ?? string.Empty);
+    public string FullName => FirstName + " " + LastName + " " + (SecondName ?? string.Empty);
 
     /// <summary>
     /// Id пользователя.
