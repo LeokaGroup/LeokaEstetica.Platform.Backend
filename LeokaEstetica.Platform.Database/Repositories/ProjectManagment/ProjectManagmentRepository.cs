@@ -194,6 +194,20 @@ internal sealed class ProjectManagmentRepository : IProjectManagmentRepository
         return result;
     }
 
+    /// <summary>
+    /// Метод получает последний Id задачи в рамках проекта.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Последний Id задачи в рамках проекта.</returns>
+    public async Task<long> GetLastProjectTaskIdAsync(long projectId)
+    {
+        var result = await _pgContext.ProjectTasks
+            .Where(t => t.ProjectId == projectId)
+            .MaxAsync(t => t.ProjectTaskId);
+
+        return result;
+    }
+
     #endregion
 
     #region Приватные методы.
