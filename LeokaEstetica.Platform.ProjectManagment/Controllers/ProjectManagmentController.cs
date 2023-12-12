@@ -224,4 +224,23 @@ public class ProjectManagmentController : BaseController
             throw ex;
         }
     }
+
+    /// <summary>
+    /// Метод получает список приоритетов задачи.
+    /// </summary>
+    /// <returns>Список приоритетов задачи.</returns>
+    [HttpGet]
+    [Route("priorities")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<TaskPriorityOutput>))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<IEnumerable<TaskPriorityOutput>> GetTaskPrioritiesAsync()
+    {
+        var items = await _projectManagmentService.GetTaskPrioritiesAsync();
+        var result = _mapper.Map<IEnumerable<TaskPriorityOutput>>(items);
+
+        return result;
+    }
 }

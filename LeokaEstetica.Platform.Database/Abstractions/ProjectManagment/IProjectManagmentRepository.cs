@@ -90,4 +90,10 @@ public interface IProjectManagmentRepository
     /// <param name="projectId">Id проекта.</param>
     /// <returns>Последний Id задачи в рамках проекта.</returns>
     Task<long> GetLastProjectTaskIdAsync(long projectId);
+    
+    /// <summary>
+    /// Метод получает список приоритетов задачи.
+    /// </summary>
+    /// <returns>Список приоритетов задачи.</returns>
+    Task<IEnumerable<TaskPriorityEntity>> GetTaskPrioritiesAsync();
 }

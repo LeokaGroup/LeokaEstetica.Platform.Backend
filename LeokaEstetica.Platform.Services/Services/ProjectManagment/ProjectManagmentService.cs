@@ -549,6 +549,26 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         }
     }
 
+    /// <summary>
+    /// Метод получает список приоритетов задачи.
+    /// </summary>
+    /// <returns>Список приоритетов задачи.</returns>
+    public async Task<IEnumerable<TaskPriorityEntity>> GetTaskPrioritiesAsync()
+    {
+        try
+        {
+            var result = await _projectManagmentRepository.GetTaskPrioritiesAsync();
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex.Message, ex);
+            throw;
+        }
+    }
+
     #endregion
 
     #region Приватные методы.
