@@ -477,6 +477,26 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         }
     }
 
+    /// <summary>
+    /// Метод получает список типов задач.
+    /// </summary>
+    /// <returns>Список типов задач.</returns>
+    public async Task<IEnumerable<TaskTypeEntity>> GetTaskTypesAsync()
+    {
+        try
+        {
+            var result = await _projectManagmentRepository.GetTaskTypesAsync();
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex.Message, ex);
+            throw;
+        }
+    }
+
     #endregion
 
     #region Приватные методы.

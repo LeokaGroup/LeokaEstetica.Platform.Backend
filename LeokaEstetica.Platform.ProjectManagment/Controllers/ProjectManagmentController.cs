@@ -191,4 +191,23 @@ public class ProjectManagmentController : BaseController
 
         return result;
     }
+
+    /// <summary>
+    /// Метод получает список типов задач.
+    /// </summary>
+    /// <returns>Список типов задач.</returns>
+    [HttpGet]
+    [Route("task-types")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<TaskTypeOutput>))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<IEnumerable<TaskTypeOutput>> GetTaskTypesAsync()
+    {
+        var items = await _projectManagmentService.GetTaskTypesAsync();
+        var result = _mapper.Map<IEnumerable<TaskTypeOutput>>(items);
+
+        return result;
+    }
 }
