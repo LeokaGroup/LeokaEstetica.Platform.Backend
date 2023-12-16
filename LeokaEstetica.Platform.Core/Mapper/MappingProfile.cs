@@ -214,11 +214,12 @@ public class MappingProfile : Profile
         
         CreateMap<ProjectManagmentHeaderEntity, ProjectManagmentHeaderOutput>();
         CreateMap<ProjectTaskEntity, ProjectManagmentTaskOutput>();
-        
+
         CreateMap<ProjectManagmentTaskTemplateEntity, ProjectManagmentTaskTemplateOutput>();
         CreateMap<ProjectManagmentTaskStatusTemplateEntity, ProjectManagmentTaskStatusTemplateOutput>();
         CreateMap<ProjectManagmentTaskTemplateEntityResult, ProjectManagmentTaskTemplateResult>();
         CreateMap<TaskPriorityEntity, TaskPriorityOutput>();
+        CreateMap<TaskTypeEntity, TaskTypeOutput>();
     }
     
     /// <summary>

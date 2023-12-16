@@ -230,6 +230,19 @@ internal sealed class ProjectManagmentRepository : IProjectManagmentRepository
         return result;
     }
 
+    /// <summary>
+    /// Метод получает список типов задач.
+    /// </summary>
+    /// <returns>Список типов задач.</returns>
+    public async Task<IEnumerable<TaskTypeEntity>> GetTaskTypesAsync()
+    {
+        var result = await _pgContext.TaskTypes
+            .OrderBy(o => o.Position)
+            .ToListAsync();
+
+        return result;
+    }
+
     #endregion
 
     #region Приватные методы.

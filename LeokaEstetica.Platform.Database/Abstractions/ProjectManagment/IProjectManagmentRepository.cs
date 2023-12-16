@@ -96,4 +96,10 @@ public interface IProjectManagmentRepository
     /// </summary>
     /// <returns>Список приоритетов задачи.</returns>
     Task<IEnumerable<TaskPriorityEntity>> GetTaskPrioritiesAsync();
+    
+    /// <summary>
+    /// Метод получает список типов задач.
+    /// </summary>
+    /// <returns>Список типов задач.</returns>
+    Task<IEnumerable<TaskTypeEntity>> GetTaskTypesAsync();
 }

@@ -65,6 +65,12 @@ public interface IProjectManagmentService
     Task<ProjectManagmentTaskOutput> GetTaskDetailsByTaskIdAsync(long projectTaskId, string account, long projectId);
 
     /// <summary>
+    /// Метод получает список типов задач.
+    /// </summary>
+    /// <returns>Список типов задач.</returns>
+    Task<IEnumerable<TaskTypeEntity>> GetTaskTypesAsync();
+
+    /// <summary>
     /// Метод создает задачу проекта.
     /// </summary>
     /// <param name="projectManagementTaskInput">Входная модель.</param>
