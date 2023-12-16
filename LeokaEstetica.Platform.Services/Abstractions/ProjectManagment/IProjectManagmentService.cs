@@ -62,4 +62,10 @@ public interface IProjectManagmentService
     /// <param name="projectId">Id проекта.</param>
     /// <returns>Данные задачи.</returns>
     Task<ProjectManagmentTaskOutput> GetTaskDetailsByTaskIdAsync(long projectTaskId, string account, long projectId);
+
+    /// <summary>
+    /// Метод получает список тегов для выбора в задаче.
+    /// </summary>
+    /// <returns>Список тегов.</returns>
+    Task<IEnumerable<TaskTagEntity>> GetTaskTagsAsync();
 }

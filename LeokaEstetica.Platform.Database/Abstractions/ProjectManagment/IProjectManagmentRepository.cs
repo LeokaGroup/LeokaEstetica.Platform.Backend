@@ -83,4 +83,10 @@ public interface IProjectManagmentRepository
     /// <param name="priorityIds">Id приоритетов задач.</param>
     /// <returns>Словарь с приоритетами задач.</returns>
     Task<IDictionary<int, string>> GetPriorityNamesByPriorityIdsAsync(IEnumerable<int> priorityIds);
+
+    /// <summary>
+    /// Метод получает список тегов для выбора в задаче.
+    /// </summary>
+    /// <returns>Список тегов.</returns>
+    Task<IEnumerable<TaskTagEntity>> GetTaskTagsAsync();
 }
