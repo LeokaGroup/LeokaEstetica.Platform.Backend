@@ -1,6 +1,7 @@
 using AutoMapper;
 using LeokaEstetica.Platform.Base;
 using LeokaEstetica.Platform.Base.Filters;
+using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
 using LeokaEstetica.Platform.Models.Dto.Output.Project;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.Template;
@@ -157,7 +158,7 @@ public class ProjectManagmentController : BaseController
             {
                 exceptions.Add(new InvalidOperationException(err.ErrorMessage));
             }
-            ;
+            
             var ex = new AggregateException("Ошибка получения конфигурации рабочего пространства.", exceptions);
             _logger.LogError(ex, ex.Message);
             
@@ -188,6 +189,57 @@ public class ProjectManagmentController : BaseController
     {
         var result = await _projectManagmentService.GetTaskDetailsByTaskIdAsync(projectTaskId, GetUserName(),
             projectId);
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод создает задачу проекта.
+    /// </summary>
+    /// <param name="projectManagementTaskInput">Входная модель.</param>
+    [HttpPost]
+    [Route("task")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task CreateProjectTaskAsync([FromBody] CreateProjectManagementTaskInput projectManagementTaskInput)
+    {
+        var validator = await new CreateProjectManagementTaskValidator().ValidateAsync(projectManagementTaskInput);
+
+        if (validator.Errors.Any())
+        {
+            var exceptions = new List<InvalidOperationException>();
+
+            foreach (var err in validator.Errors)
+            {
+                exceptions.Add(new InvalidOperationException(err.ErrorMessage));
+            }
+
+            var ex = new AggregateException($"Ошибка создания задачи проекта {projectManagementTaskInput.ProjectId}.",
+                exceptions);
+            _logger.LogError(ex, ex.Message);
+            
+            throw ex;
+        }
+    }
+
+    /// <summary>
+    /// Метод получает список приоритетов задачи.
+    /// </summary>
+    /// <returns>Список приоритетов задачи.</returns>
+    [HttpGet]
+    [Route("priorities")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<TaskPriorityOutput>))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<IEnumerable<TaskPriorityOutput>> GetTaskPrioritiesAsync()
+    {
+        var items = await _projectManagmentService.GetTaskPrioritiesAsync();
+        var result = _mapper.Map<IEnumerable<TaskPriorityOutput>>(items);
 
         return result;
     }

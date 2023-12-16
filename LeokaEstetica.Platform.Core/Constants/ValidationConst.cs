@@ -188,5 +188,10 @@ public static class ValidationConst
         /// Если передали невалидный Id шаблона.
         /// </summary>
         public const string NOT_VALID_TEMPLATE_ID = "Id шаблона не передан.";
+
+        /// <summary>
+        /// Если не заполнили название задачи проекта.
+        /// </summary>
+        public const string EMPTY_TASK_NAME = "Название задачи не заполнено.";
     }
 }
