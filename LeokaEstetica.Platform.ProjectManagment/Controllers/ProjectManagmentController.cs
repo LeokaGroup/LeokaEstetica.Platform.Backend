@@ -191,4 +191,16 @@ public class ProjectManagmentController : BaseController
 
         return result;
     }
+
+    [HttpGet]
+    [Route("task-statuses")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<TaskStatusOutput>))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<IEnumerable<TaskStatusOutput>> GetTaskStatusesAsync()
+    {
+        
+    }
 }
