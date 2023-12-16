@@ -8,11 +8,13 @@ using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
+using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.Template;
 using LeokaEstetica.Platform.Models.Dto.Output.User;
 using LeokaEstetica.Platform.Models.Entities.ProjectManagment;
 using LeokaEstetica.Platform.Services.Abstractions.ProjectManagment;
+using LeokaEstetica.Platform.Services.Factors;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
@@ -478,6 +480,116 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     }
 
     /// <summary>
+    /// Метод создает задачу проекта.
+    /// </summary>
+    /// <param name="projectManagementTaskInput">Входная модель.</param>
+    /// <param name="account">Аккаунт.</param>
+    public async Task CreateProjectTaskAsync(CreateProjectManagementTaskInput projectManagementTaskInput,
+        string account)
+    {
+        try
+        {
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+
+            var projectId = projectManagementTaskInput.ProjectId;
+            
+            // Находим наибольший Id задачи в рамках проекта и увеличиваем его.
+            var maxProjectTaskId = await _projectManagmentRepository.GetLastProjectTaskIdAsync(projectId);
+
+            if (maxProjectTaskId <= 0)
+            {
+                throw new InvalidOperationException("Не удалось получить наибольший Id задачи в рамках проекта." +
+                                                    $"ProjectId: {projectId}");
+            }
+
+            ProjectTaskEntity addedProjectTask;
+            
+            // Ускоренное создание задачи.
+            if (projectManagementTaskInput.IsQuickCreate)
+            {
+                addedProjectTask = CreateProjectTaskFactory.CreateQuickProjectTask(projectManagementTaskInput, userId);
+            }
+
+            // Обычное создание задачи.
+            else
+            {
+                // При обычном создании задачи требуется валидация всех параметров.
+                var isValidParameters = IsValidCreateProjectTaskParameters(projectManagementTaskInput);
+
+                // Сюда заходить не должно никогда. Если это произошло, то следовать логу.
+                if (!isValidParameters)
+                {
+                    throw new InvalidOperationException(
+                        "Ошибка при создании задачи." +
+                        " Валидация не покрыла исключение, нужно изучить логи и добавить обработку ситуации.");
+                }
+                
+                // Если не был указан исполнитель задачи, то исполнителем задачи будет ее автор.
+                if (!projectManagementTaskInput.ExecutorId.HasValue)
+                {
+                    projectManagementTaskInput.ExecutorId = userId!;
+                }
+                
+                addedProjectTask = CreateProjectTaskFactory.CreateProjectTask(projectManagementTaskInput, userId);
+            }
+
+            addedProjectTask.ProjectTaskId = ++maxProjectTaskId;
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex.Message, ex);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Метод получает список приоритетов задачи.
+    /// </summary>
+    /// <returns>Список приоритетов задачи.</returns>
+    public async Task<IEnumerable<TaskPriorityEntity>> GetTaskPrioritiesAsync()
+    {
+        try
+        {
+            var result = await _projectManagmentRepository.GetTaskPrioritiesAsync();
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex.Message, ex);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Метод получает список типов задач.
+    /// </summary>
+    /// <returns>Список типов задач.</returns>
+    public async Task<IEnumerable<TaskTypeEntity>> GetTaskTypesAsync()
+    {
+        try
+        {
+            var result = await _projectManagmentRepository.GetTaskTypesAsync();
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex.Message, ex);
+            throw;
+        }
+    }
+
+    /// <summary>
     /// Метод получает список тегов для выбора в задаче.
     /// </summary>
     /// <returns>Список тегов.</returns>
@@ -831,4 +943,31 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     }
 
     #endregion
+
+    /// <summary>
+    /// TODO: Добавить отправку на фронт ивент на каждое сообщение через сокеты.
+    /// Метод валидирует параметры перед созданием задачи.
+    /// </summary>
+    /// <param name="projectManagementTaskInput">Входная модель.</param>
+    /// <returns>Признак результата проверки.</returns>
+    private bool IsValidCreateProjectTaskParameters(CreateProjectManagementTaskInput projectManagementTaskInput)
+    {
+        var exceptions = new List<InvalidOperationException>();
+        
+        if (!projectManagementTaskInput.TaskStatusId.HasValue)
+        {
+            exceptions.Add(new InvalidOperationException(
+                $"Статус задачи не указан. Данные задачи: {JsonConvert.SerializeObject(projectManagementTaskInput)}"));
+        }
+
+        if (!projectManagementTaskInput.TaskTypeId.HasValue)
+        {
+            exceptions.Add(new InvalidOperationException(
+                $"Тип задачи не указан. Данные задачи: {JsonConvert.SerializeObject(projectManagementTaskInput)}"));
+        }
+
+        var ex = new AggregateException("Ошибка при создании задачи.", exceptions);
+        _logger.LogCritical(ex, ex.Message);
+        throw ex;
+    }
 }

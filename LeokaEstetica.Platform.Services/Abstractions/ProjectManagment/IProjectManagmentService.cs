@@ -1,4 +1,5 @@
-﻿using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
+﻿using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
+using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.Template;
 using LeokaEstetica.Platform.Models.Entities.ProjectManagment;
 
@@ -62,6 +63,25 @@ public interface IProjectManagmentService
     /// <param name="projectId">Id проекта.</param>
     /// <returns>Данные задачи.</returns>
     Task<ProjectManagmentTaskOutput> GetTaskDetailsByTaskIdAsync(long projectTaskId, string account, long projectId);
+
+    /// <summary>
+    /// Метод получает список типов задач.
+    /// </summary>
+    /// <returns>Список типов задач.</returns>
+    Task<IEnumerable<TaskTypeEntity>> GetTaskTypesAsync();
+
+    /// <summary>
+    /// Метод создает задачу проекта.
+    /// </summary>
+    /// <param name="projectManagementTaskInput">Входная модель.</param>
+    /// <param name="account">Аккаунт.</param>
+    Task CreateProjectTaskAsync(CreateProjectManagementTaskInput projectManagementTaskInput, string account);
+
+    /// <summary>
+    /// Метод получает список приоритетов задачи.
+    /// </summary>
+    /// <returns>Список приоритетов задачи.</returns>
+    Task<IEnumerable<TaskPriorityEntity>> GetTaskPrioritiesAsync();
 
     /// <summary>
     /// Метод получает список тегов для выбора в задаче.

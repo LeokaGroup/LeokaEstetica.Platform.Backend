@@ -30,7 +30,9 @@ internal sealed class ProjectManagmentRepository : IProjectManagmentRepository
     /// <returns>Список стратегий.</returns>
     public async Task<IEnumerable<ViewStrategyEntity>> GetViewStrategiesAsync()
     {
-        var result = await _pgContext.ViewStrategies.ToListAsync();
+        var result = await _pgContext.ViewStrategies
+            .OrderBy(o => o.Position)
+            .ToListAsync();
 
         return result;
     }
@@ -90,6 +92,7 @@ internal sealed class ProjectManagmentRepository : IProjectManagmentRepository
     {
         var result = await _pgContext.ProjectManagmentTaskStatusIntermediateTemplates
             .Where(x => templateStatusIds.Contains(x.StatusId))
+            .OrderBy(o => o.TemplateId)
             .ToDictionaryAsync(k => k.StatusId, v => v.TemplateId);
 
         return result;
@@ -104,6 +107,7 @@ internal sealed class ProjectManagmentRepository : IProjectManagmentRepository
     {
         var result = await _pgContext.ProjectTasks
             .Where(t => t.ProjectId == projectId)
+            .OrderBy(o => o.ProjectId)
             .ToListAsync();
 
         return result;
@@ -118,6 +122,7 @@ internal sealed class ProjectManagmentRepository : IProjectManagmentRepository
     {
         var result = await _pgContext.TaskTags
             .Where(t => tagIds.Contains(t.TagId))
+            .OrderBy(o => o.Position)
             .ToDictionaryAsync(k => k.TagId, v => v.TagName);
 
         return result;
@@ -132,6 +137,7 @@ internal sealed class ProjectManagmentRepository : IProjectManagmentRepository
     {
         var result = await _pgContext.TaskTypes
             .Where(t => typeIds.Contains(t.TypeId))
+            .OrderBy(o => o.Position)
             .ToDictionaryAsync(k => k.TypeId, v => v.TypeName);
 
         return result;
@@ -146,6 +152,7 @@ internal sealed class ProjectManagmentRepository : IProjectManagmentRepository
     {
         var result = await _pgContext.TaskStatuses
             .Where(t => statusIds.Contains(t.StatusId))
+            .OrderBy(o => o.Position)
             .ToDictionaryAsync(k => k.StatusId, v => v.StatusName);
 
         return result;
@@ -160,6 +167,7 @@ internal sealed class ProjectManagmentRepository : IProjectManagmentRepository
     {
         var result = await _pgContext.TaskResolutions
             .Where(t => resolutionIds.Contains(t.ResolutionId))
+            .OrderBy(o => o.Position)
             .ToDictionaryAsync(k => k.ResolutionId, v => v.ResolutionName);
 
         return result;
@@ -189,7 +197,48 @@ internal sealed class ProjectManagmentRepository : IProjectManagmentRepository
     {
         var result = await _pgContext.TaskPriorities
             .Where(t => priorityIds.Contains(t.PriorityId))
+            .OrderBy(o => o.Position)
             .ToDictionaryAsync(k => k.PriorityId, v => v.PriorityName);
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод получает последний Id задачи в рамках проекта.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Последний Id задачи в рамках проекта.</returns>
+    public async Task<long> GetLastProjectTaskIdAsync(long projectId)
+    {
+        var result = await _pgContext.ProjectTasks
+            .Where(t => t.ProjectId == projectId)
+            .MaxAsync(t => t.ProjectTaskId);
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод получает список приоритетов задачи.
+    /// </summary>
+    /// <returns>Список приоритетов задачи.</returns>
+    public async Task<IEnumerable<TaskPriorityEntity>> GetTaskPrioritiesAsync()
+    {
+        var result = await _pgContext.TaskPriorities
+            .OrderBy(o => o.Position)
+            .ToListAsync();
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод получает список типов задач.
+    /// </summary>
+    /// <returns>Список типов задач.</returns>
+    public async Task<IEnumerable<TaskTypeEntity>> GetTaskTypesAsync()
+    {
+        var result = await _pgContext.TaskTypes
+            .OrderBy(o => o.Position)
+            .ToListAsync();
 
         return result;
     }
