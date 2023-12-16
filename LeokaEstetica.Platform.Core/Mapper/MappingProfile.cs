@@ -220,6 +220,7 @@ public class MappingProfile : Profile
         CreateMap<ProjectManagmentTaskTemplateEntityResult, ProjectManagmentTaskTemplateResult>();
         CreateMap<TaskPriorityEntity, TaskPriorityOutput>();
         CreateMap<TaskTypeEntity, TaskTypeOutput>();
+        CreateMap<TaskTagEntity, TaskTagOutput>();
     }
     
     /// <summary>

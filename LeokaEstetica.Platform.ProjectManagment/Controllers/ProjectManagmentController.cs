@@ -262,4 +262,23 @@ public class ProjectManagmentController : BaseController
 
         return result;
     }
+
+    /// <summary>
+    /// Метод получает список тегов для выбора в задаче.
+    /// </summary>
+    /// <returns>Список тегов.</returns>
+    [HttpGet]
+    [Route("task-tags")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<TaskTagOutput>))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<IEnumerable<TaskTagOutput>> GetTaskTagsAsync()
+    {
+        var items = await _projectManagmentService.GetTaskTagsAsync();
+        var result = _mapper.Map<IEnumerable<TaskTagOutput>>(items);
+
+        return result;
+    }
 }

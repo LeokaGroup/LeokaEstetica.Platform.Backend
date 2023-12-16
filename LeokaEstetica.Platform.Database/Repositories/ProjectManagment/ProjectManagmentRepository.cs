@@ -243,6 +243,19 @@ internal sealed class ProjectManagmentRepository : IProjectManagmentRepository
         return result;
     }
 
+    /// <summary>
+    /// Метод получает список тегов для выбора в задаче.
+    /// </summary>
+    /// <returns>Список тегов.</returns>
+    public async Task<IEnumerable<TaskTagEntity>> GetTaskTagsAsync()
+    {
+        var result = await _pgContext.TaskTags
+            .OrderBy(o => o.Position)
+            .ToListAsync();
+
+        return result;
+    }
+
     #endregion
 
     #region Приватные методы.

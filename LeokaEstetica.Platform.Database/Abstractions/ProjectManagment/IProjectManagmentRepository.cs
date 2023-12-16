@@ -102,4 +102,10 @@ public interface IProjectManagmentRepository
     /// </summary>
     /// <returns>Список типов задач.</returns>
     Task<IEnumerable<TaskTypeEntity>> GetTaskTypesAsync();
+
+    /// <summary>
+    /// Метод получает список тегов для выбора в задаче.
+    /// </summary>
+    /// <returns>Список тегов.</returns>
+    Task<IEnumerable<TaskTagEntity>> GetTaskTagsAsync();
 }
