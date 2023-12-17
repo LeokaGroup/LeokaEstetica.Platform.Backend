@@ -37,4 +37,10 @@ public interface IPachcaService
     /// </summary>
     /// <param name="vacancyId">Id вакансии.</param>
     Task SendNotificationCreatedVacancyBeforeModerationAsync(long vacancyId);
+    
+    /// <summary>
+    /// Метод отправляет уведомление в пачку об изменениях анкеты пользователя. Но такая анкета еще не прошла модерацию.
+    /// </summary>
+    /// <param name="profileInfoId">Id анкеты.</param>
+    Task SendNotificationChangedProfileInfoBeforeModerationAsync(long profileInfoId);
 }
