@@ -255,6 +255,60 @@ internal sealed class PachcaService : IPachcaService
         }
     }
 
+    /// <summary>
+    /// Метод отправляет уведомление в пачку о созданной вакансии. Но такая вакансия еще не прошла модерацию.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    public async Task SendNotificationCreatedVacancyBeforeModerationAsync(long vacancyId)
+    {
+        using var httpClient = new HttpClient();
+        var notificationInput = new SendNotificationInput
+        {
+            Message = $"Новая вакансия отправлена на модерацию! Id вакансии: {vacancyId}"
+        };
+
+        try
+        {
+            if (new[] { "Development", "Staging" }.Contains(_configuration["Environment"]))
+            {
+                await httpClient.PostAsJsonAsync(_configuration["PachcaBot:NotificationsDevelopTestBot"],
+                    notificationInput);
+            }
+
+            else
+            {
+                await httpClient.PostAsJsonAsync(_configuration["PachcaBot:NotificationsBot"], notificationInput);
+            }
+        }
+
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+
+            _logger.LogInformation("Повторная попытка отправить уведомление в чат пачки.");
+
+            try
+            {
+                if (new[] { "Development", "Staging" }.Contains(_configuration["Environment"]))
+                {
+                    await httpClient.PostAsJsonAsync(_configuration["PachcaBot:NotificationsDevelopTestBot"],
+                        notificationInput);
+                }
+
+                else
+                {
+                    await httpClient.PostAsJsonAsync(_configuration["PachcaBot:NotificationsBot"], notificationInput);
+                }
+            }
+
+            catch (Exception ex2)
+            {
+                _logger.LogError(ex2, "Повторная отправка уведомления не удалась.");
+                throw;
+            }
+        }
+    }
+
     #endregion
 
     #region Приватные методы.

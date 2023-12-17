@@ -175,7 +175,7 @@ internal class BaseServiceTest
         // Не получится сделать просто, VacancyService и ProjectService нужны друг другу тесно.
         VacancyService = new VacancyService(null, vacancyRepository, mapper, null, userRepository,
             VacancyModerationService, subscriptionRepository, FareRuleRepository, availableLimitsService,
-            vacancyNotificationsService, null, null, null, vacancyModerationRepository);
+            vacancyNotificationsService, null, null, null, vacancyModerationRepository, pachcaService);
 
         var projectResponseRepository = new ProjectResponseRepository(pgContext);
 

@@ -4,6 +4,7 @@ using LeokaEstetica.Platform.Access.Abstractions.AvailableLimits;
 using LeokaEstetica.Platform.Access.Consts;
 using LeokaEstetica.Platform.Access.Enums;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
+using LeokaEstetica.Platform.Base.Abstractions.Services.Pachca;
 using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.FareRule;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
@@ -99,6 +100,8 @@ internal sealed class VacancyService : IVacancyService
     
     private const string NOT_AVAILABLE_DELETE_VACANCY_ARCHIVE = "Невозможно убрать вакансию из архива, так как у Вас уже опубликовано максимальное количество вакансий соответствующих максимальному лимиту тарифа. Добавьте в архив вакансии, чтобы освободить лимиты либо перейдите на тариф, который имеет большие лимиты";
 
+    private readonly IPachcaService _pachcaService;
+
     /// <summary>
     /// Конструктор.
     /// </summary>
@@ -108,6 +111,7 @@ internal sealed class VacancyService : IVacancyService
     /// <param name="vacancyRedisService">Сервис вакансий кэша.</param>
     /// <param name="userRepository">Репозиторий пользователя.</param>
     /// <param name="vacancyModerationService">Сервис модерации вакансий.</param>
+    /// <param name="pachcaService">Сервис уведомления пачки.</param>
     public VacancyService(ILogger<VacancyService> logger,
         IVacancyRepository vacancyRepository,
         IMapper mapper,
@@ -121,7 +125,8 @@ internal sealed class VacancyService : IVacancyService
         IProjectRepository projectRepository,
         IFillColorVacanciesService fillColorVacanciesService, 
         IMailingsService mailingsService, 
-        IVacancyModerationRepository vacancyModerationRepository)
+        IVacancyModerationRepository vacancyModerationRepository,
+        IPachcaService pachcaService)
     {
         _logger = logger;
         _vacancyRepository = vacancyRepository;
@@ -137,6 +142,7 @@ internal sealed class VacancyService : IVacancyService
         _fillColorVacanciesService = fillColorVacanciesService;
         _mailingsService = mailingsService;
         _vacancyModerationRepository = vacancyModerationRepository;
+        _pachcaService = pachcaService;
 
         // Определяем обработчики цепочки фильтров.
         _salaryFilterVacanciesChain.Successor = _descSalaryVacanciesFilterChain;
@@ -248,6 +254,9 @@ internal sealed class VacancyService : IVacancyService
             // Отправляем уведомление о созданной вакансии владельцу.
             await _mailingsService.SendNotificationCreateVacancyAsync(user.Email, createdVacancy.VacancyName,
                 vacancyId);
+
+            // Отправляем уведомление о созданной вакансии в пачку.
+            await _pachcaService.SendNotificationCreatedVacancyBeforeModerationAsync(vacancyId);
             
             var result = _mapper.Map<VacancyOutput>(createdVacancy);
 

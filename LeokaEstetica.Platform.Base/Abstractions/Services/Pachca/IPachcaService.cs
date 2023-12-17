@@ -31,4 +31,10 @@ public interface IPachcaService
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
     Task SendNotificationCreatedProjectBeforeModerationAsync(long projectId);
+    
+    /// <summary>
+    /// Метод отправляет уведомление в пачку о созданной вакансии. Но такая вакансия еще не прошла модерацию.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    Task SendNotificationCreatedVacancyBeforeModerationAsync(long vacancyId);
 }
