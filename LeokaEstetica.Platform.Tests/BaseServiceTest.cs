@@ -206,7 +206,7 @@ internal class BaseServiceTest
         ProjectService = new ProjectService(projectRepository, null, userRepository, mapper,
             projectNotificationsService, VacancyService, vacancyRepository, availableLimitsService,
             subscriptionRepository, FareRuleRepository, VacancyModerationService, projectNotificationsRepository, null,
-            accessUserService, fillColorProjectsService, null, ProjectModerationRepository);
+            accessUserService, fillColorProjectsService, null, ProjectModerationRepository, pachcaService);
         
         var ordersRepository = new OrdersRepository(pgContext);
         var commerceRepository = new CommerceRepository(pgContext, AppConfiguration);
