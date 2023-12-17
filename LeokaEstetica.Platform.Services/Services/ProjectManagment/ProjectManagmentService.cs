@@ -609,6 +609,36 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         }
     }
 
+    /// <summary>
+    /// Метод получает список статусов задачи для выбора.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="account">Аккаунт.</param>
+    /// <returns>Список статусов.</returns>
+    public async Task<IEnumerable<TaskStatusOutput>> GetTaskStatusesAsync(long projectId, string account)
+    {
+        try
+        {
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+            
+            // TODO: получение Ids статусов шаблона из ProjectManagmentTaskStatusIntermediateTemplates.
+            
+            // TODO: получение данных статусов шаблона из ProjectManagmentTaskStatusTemplates.
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex.Message, ex);
+            throw;
+        }
+    }
+
     #endregion
 
     #region Приватные методы.

@@ -88,4 +88,12 @@ public interface IProjectManagmentService
     /// </summary>
     /// <returns>Список тегов.</returns>
     Task<IEnumerable<TaskTagEntity>> GetTaskTagsAsync();
+
+    /// <summary>
+    /// Метод получает список статусов задачи для выбора.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="account">Аккаунт.</param>
+    /// <returns>Список статусов.</returns>
+    Task<IEnumerable<TaskStatusOutput>> GetTaskStatusesAsync(long projectId, string account);
 }
