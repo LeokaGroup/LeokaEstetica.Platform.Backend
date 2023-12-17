@@ -6,6 +6,7 @@ using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Utils;
 using LeokaEstetica.Platform.Notifications.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using NLog.Web;
@@ -13,7 +14,7 @@ using NLog.Web;
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
 
-builder.Services.AddControllers().AddControllersAsServices();
+builder.Services.AddControllers().AddControllersAsServices().AddNewtonsoftJson();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -27,16 +28,37 @@ builder.Services.AddCors(options => options.AddPolicy("ApiCorsPolicy", b =>
 
 builder.Environment.EnvironmentName = configuration["Environment"];
 
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddDbContext<PgContext>(options =>
+            options.UseNpgsql(configuration["ConnectionStrings:NpgDevSqlConnection"]),
+        ServiceLifetime.Transient);
+}
+
+if (builder.Environment.IsStaging())
+{
+    builder.Services.AddDbContext<PgContext>(options =>
+            options.UseNpgsql(configuration["ConnectionStrings:NpgTestSqlConnection"]),
+        ServiceLifetime.Transient);
+}
+
+if (builder.Environment.IsProduction())
+{
+    builder.Services.AddDbContext<PgContext>(options =>
+            options.UseNpgsql(configuration["ConnectionStrings:NpgSqlConnection"]),
+        ServiceLifetime.Transient);
+}
+
 builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new OpenApiInfo { Title = "Leoka.Estetica.Platform" });
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "Leoka.Estetica.Platform.ProjectManagment" });
     AddSwaggerXml(c);
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         In = ParameterLocation.Header,
-        Description = "Передан невалидный токен",
+        Description = "Введите валидный токен.",
         Name = "Authorization",
         Type = SecuritySchemeType.Http,
         BearerFormat = "JWT",
@@ -49,8 +71,8 @@ builder.Services.AddSwaggerGen(c =>
             {
                 Reference = new OpenApiReference
                 {
-                    Type=ReferenceType.SecurityScheme,
-                    Id="Bearer"
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
                 }
             },
             Array.Empty<string>()
@@ -71,7 +93,7 @@ static void AddSwaggerXml(Swashbuckle.AspNetCore.SwaggerGen.SwaggerGenOptions c)
 builder.WebHost
     .UseKestrel()
     .UseContentRoot(Directory.GetCurrentDirectory())
-    .UseUrls(configuration["UseUrls:Path"])
+    .UseUrls(configuration["UseUrls:ProjectManagmentPath"])
     .UseEnvironment(configuration["Environment"]);
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -90,8 +112,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-builder.Host
-    .UseServiceProviderFactory(new AutofacServiceProviderFactory())
+builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory())
     .ConfigureContainer<ContainerBuilder>(AutoFac.Init);
 
 // Нужно для типа timestamp в Postgres.
@@ -103,7 +124,8 @@ builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.AddSignalR();
 
 // Подключаем кэш Redis.
-builder.Services.AddStackExchangeRedisCache(options => {
+builder.Services.AddStackExchangeRedisCache(options =>
+{
     options.Configuration = configuration["Redis:RedisCacheUrl"] ?? string.Empty;
 });
 

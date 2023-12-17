@@ -2,9 +2,9 @@ using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using FluentValidation.AspNetCore;
 using Hellang.Middleware.ProblemDetails;
-using LeokaEstetica.Platform.Backend.Filters;
 using LeokaEstetica.Platform.Backend.Loaders.Bots;
 using LeokaEstetica.Platform.Backend.Loaders.Jobs;
+using LeokaEstetica.Platform.Base.Filters;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Utils;
 using LeokaEstetica.Platform.Notifications.Data;
@@ -15,14 +15,15 @@ using Microsoft.OpenApi.Models;
 using NLog.Web;
 using Quartz;
 
-var builder = WebApplication.CreateBuilder(args); 
+var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
 
 builder.Services.AddControllers(opt =>
-{
-    opt.Filters.Add(typeof(LogExceptionFilter));
-})
-.AddControllersAsServices();
+    {
+        opt.Filters.Add(typeof(LogExceptionFilter));
+    })
+    .AddControllersAsServices()
+    .AddNewtonsoftJson();
 
 builder.Services.AddCors(options => options.AddPolicy("ApiCorsPolicy", b =>
 {
@@ -39,21 +40,21 @@ builder.Services.AddHttpContextAccessor();
 if (builder.Environment.IsDevelopment())
 {
     builder.Services.AddDbContext<PgContext>(options =>
-            options.UseNpgsql(configuration.GetConnectionString("NpgDevSqlConnection")),
+            options.UseNpgsql(configuration["ConnectionStrings:NpgDevSqlConnection"]),
         ServiceLifetime.Transient);
 }
-      
+
 if (builder.Environment.IsStaging())
 {
     builder.Services.AddDbContext<PgContext>(options =>
-            options.UseNpgsql(configuration.GetConnectionString("NpgTestSqlConnection")),
+            options.UseNpgsql(configuration["ConnectionStrings:NpgTestSqlConnection"]),
         ServiceLifetime.Transient);
 }
 
 if (builder.Environment.IsProduction())
 {
     builder.Services.AddDbContext<PgContext>(options =>
-            options.UseNpgsql(configuration.GetConnectionString("NpgSqlConnection")),
+            options.UseNpgsql(configuration["ConnectionStrings:NpgSqlConnection"]),
         ServiceLifetime.Transient);
 }
 
@@ -64,7 +65,7 @@ builder.Services.AddSwaggerGen(c =>
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         In = ParameterLocation.Header,
-        Description = "Передан невалидный токен",
+        Description = "Введите валидный токен.",
         Name = "Authorization",
         Type = SecuritySchemeType.Http,
         BearerFormat = "JWT",
@@ -77,8 +78,8 @@ builder.Services.AddSwaggerGen(c =>
             {
                 Reference = new OpenApiReference
                 {
-                    Type=ReferenceType.SecurityScheme,
-                    Id="Bearer"
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
                 }
             },
             Array.Empty<string>()
@@ -118,8 +119,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-builder.Host
-    .UseServiceProviderFactory(new AutofacServiceProviderFactory())
+builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory())
     .ConfigureContainer<ContainerBuilder>(AutoFac.Init);
 
 // Нужно для типа timestamp в Postgres.
@@ -131,7 +131,8 @@ builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.AddSignalR();
 
 // Подключаем кэш Redis.
-builder.Services.AddStackExchangeRedisCache(options => {
+builder.Services.AddStackExchangeRedisCache(options =>
+{
     options.Configuration = configuration["Redis:RedisCacheUrl"] ?? string.Empty;
 });
 
@@ -145,7 +146,7 @@ builder.Services.AddFluentValidation(conf =>
 builder.Services.AddQuartz(q =>
 {
     q.UseMicrosoftDependencyInjectionJobFactory();
-    
+
     // Запуск джоб при старте ядра системы.
     StartJobs.Start(q, builder.Services);
 });
@@ -170,8 +171,7 @@ app.UseAuthorization();
 app.UseCors("ApiCorsPolicy");
 app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
 
-// TODO: Временно добавил для тестов прода IsProduction. Потом конечно уберу это.
-if (builder.Environment.IsDevelopment() || builder.Environment.IsStaging() || builder.Environment.IsProduction())
+if (builder.Environment.IsDevelopment() || builder.Environment.IsStaging())
 {
     app.UseSwagger();
     app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Leoka.Estetica.Platform"));

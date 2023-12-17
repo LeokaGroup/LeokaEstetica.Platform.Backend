@@ -217,6 +217,9 @@ internal sealed class ProjectRepository : IProjectRepository
                 join s in _pgContext.Subscriptions
                     on us.SubscriptionId
                     equals s.ObjectId
+                join ups in _pgContext.UserProjectsStages
+                    on p.ProjectId
+                    equals ups.ProjectId
                 where p.ArchivedProjects.All(a => a.ProjectId != p.ProjectId)
                       && !new[]
                           {
@@ -232,7 +235,9 @@ internal sealed class ProjectRepository : IProjectRepository
                     DateCreated = p.DateCreated,
                     ProjectIcon = p.ProjectIcon,
                     ProjectDetails = p.ProjectDetails,
-                    UserId = p.UserId
+                    UserId = p.UserId,
+                    ProjectStageSysName = _pgContext.ProjectStages
+                        .FirstOrDefault(x => x.StageId == ups.StageId).StageSysName
                 })
             .ToListAsync();
 

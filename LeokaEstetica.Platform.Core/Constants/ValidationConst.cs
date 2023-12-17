@@ -168,4 +168,30 @@ public static class ValidationConst
         /// </summary>
         public const string NOT_VALID_COMMENT_ID = "Id комментария должен быть заполнен.";
     }
+
+    /// <summary>
+    /// Класс валидации модуля УП (управление проектами).
+    /// </summary>
+    public static class ProjectManagmentValidation
+    {
+        /// <summary>
+        /// Если передали невалидный Id проекта.
+        /// </summary>
+        public const string NOT_VALID_PROJECT_ID = "Id проекта не передан.";
+        
+        /// <summary>
+        /// Если не передали стратегию представления.
+        /// </summary>
+        public const string EMPTY_STRATEGY = "Стратегия представления не передана.";
+        
+        /// <summary>
+        /// Если передали невалидный Id шаблона.
+        /// </summary>
+        public const string NOT_VALID_TEMPLATE_ID = "Id шаблона не передан.";
+
+        /// <summary>
+        /// Если не заполнили название задачи проекта.
+        /// </summary>
+        public const string EMPTY_TASK_NAME = "Название задачи не заполнено.";
+    }
 }

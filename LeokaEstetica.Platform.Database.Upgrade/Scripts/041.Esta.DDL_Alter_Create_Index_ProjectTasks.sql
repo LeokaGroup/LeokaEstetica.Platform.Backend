@@ -1,0 +1,1 @@
+CREATE INDEX IF NOT EXISTS "IDX_ProjectTasks_ProjectId_ProjectTaskId" ON "ProjectManagment"."ProjectTasks" ("ProjectId", "ProjectTaskId");
