@@ -975,7 +975,7 @@ internal sealed class ProjectService : IProjectService
             filters.ProjectStages = CreateProjectStagesBuilder.CreateProjectStagesResult(filters.StageValues);
            
             // Получаем список проектов для каталога.
-            var projects = await _projectRepository.CatalogProjectsWithoutMemoryAsync();
+            var projects = (await _projectRepository.CatalogProjectsAsync()).ToList();
             
             var result = await _dateProjectsFilterChain.FilterProjectsAsync(filters, projects);
 
