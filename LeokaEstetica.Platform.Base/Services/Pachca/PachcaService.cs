@@ -30,7 +30,7 @@ internal sealed class PachcaService : IPachcaService
 
     #region Публичные методы.
 
-    /// <summary>
+     /// <summary>
     /// Метод отправляет уведомлений с деталями ошибки в пачку.
     /// </summary>
     /// <param name="exception">Исключение.</param>
@@ -199,11 +199,67 @@ internal sealed class PachcaService : IPachcaService
                 throw;
             }
         }
-
-        #endregion
-
-        #region Приватные методы.
-
-        #endregion
     }
+
+    /// <summary>
+    /// Метод отправляет уведомление в пачку о созданном проекте. Но такой проект еще не прошел модерацию.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    public async Task SendNotificationCreatedProjectBeforeModerationAsync(long projectId)
+    {
+        using var httpClient = new HttpClient();
+        var notificationInput = new SendNotificationInput
+        {
+            Message = $"Новый проект отправлен на модерацию! Id проекта: {projectId}"
+        };
+
+        try
+        {
+            if (new[] { "Development", "Staging" }.Contains(_configuration["Environment"]))
+            {
+                await httpClient.PostAsJsonAsync(_configuration["PachcaBot:NotificationsDevelopTestBot"],
+                    notificationInput);
+            }
+
+            else
+            {
+                await httpClient.PostAsJsonAsync(_configuration["PachcaBot:NotificationsBot"], notificationInput);
+            }
+        }
+
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+
+            _logger.LogInformation("Повторная попытка отправить уведомление в чат пачки.");
+
+            try
+            {
+                if (new[] { "Development", "Staging" }.Contains(_configuration["Environment"]))
+                {
+                    await httpClient.PostAsJsonAsync(_configuration["PachcaBot:NotificationsDevelopTestBot"],
+                        notificationInput);
+                }
+
+                else
+                {
+                    await httpClient.PostAsJsonAsync(_configuration["PachcaBot:NotificationsBot"], notificationInput);
+                }
+            }
+
+            catch (Exception ex2)
+            {
+                _logger.LogError(ex2, "Повторная отправка уведомления не удалась.");
+                throw;
+            }
+        }
+    }
+
+    #endregion
+
+    #region Приватные методы.
+
+    
+
+    #endregion
 }

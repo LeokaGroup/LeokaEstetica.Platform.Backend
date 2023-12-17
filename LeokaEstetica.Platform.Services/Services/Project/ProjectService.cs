@@ -291,6 +291,9 @@ internal sealed class ProjectService : IProjectService
             // Отправляем уведомление о созданном проекте владельцу проекта.
             await _mailingsService.SendNotificationCreatedProjectAsync(user.Email, projectName, projectId);
 
+            // Отправляем уведомление об отправленном проекте на модерацию.
+            await _pachcaService.SendNotificationCreatedProjectBeforeModerationAsync(projectId);
+
             return project;
         }
 

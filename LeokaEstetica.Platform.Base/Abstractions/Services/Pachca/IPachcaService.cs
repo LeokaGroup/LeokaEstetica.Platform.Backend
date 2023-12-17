@@ -25,4 +25,10 @@ public interface IPachcaService
     /// </summary>
     /// <param name="account">Аккаунт пользователя.</param>
     Task SendNotificationCreatedNewUserAsync(string account);
+
+    /// <summary>
+    /// Метод отправляет уведомление в пачку о созданном проекте. Но такой проект еще не прошел модерацию.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    Task SendNotificationCreatedProjectBeforeModerationAsync(long projectId);
 }

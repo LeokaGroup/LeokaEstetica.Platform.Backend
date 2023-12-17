@@ -16,10 +16,10 @@ public partial class CatalogProjectConfiguration : IEntityTypeConfiguration<Cata
             .HasColumnName("CatalogProjectId")
             .HasColumnType("bigserial");
 
-        entity.HasOne(p => p.Project)
-            .WithMany(b => b.CatalogProjects)
-            .HasForeignKey(p => p.ProjectId)
-            .HasConstraintName("FK_UserProjects_ProjectId");
+        // entity.HasOne(p => p.Project)
+        //     .WithMany(b => b.CatalogProjects)
+        //     .HasForeignKey(p => p.ProjectId)
+        //     .HasConstraintName("FK_UserProjects_ProjectId");
 
         entity.HasIndex(u => u.CatalogProjectId)
             .HasDatabaseName("PK_CatalogProjects_CatalogProjectId")
