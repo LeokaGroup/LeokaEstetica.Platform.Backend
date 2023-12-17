@@ -1,5 +1,6 @@
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Database.Abstractions.Template;
+using Microsoft.EntityFrameworkCore;
 
 namespace LeokaEstetica.Platform.Database.Repositories.Templates;
 
@@ -20,12 +21,32 @@ internal sealed class ProjectManagmentTemplateRepository : IProjectManagmentTemp
     }
 
     /// <summary>
+    /// Метод получает шаблон проекта.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Id шаблона.</returns>
+    public async Task<int?> GetProjectTemplateIdAsync(long projectId)
+    {
+        var result = await _pgContext.UserProjects
+            .Where(p => p.TemplateId.Value == projectId)
+            .Select(p => p.TemplateId)
+            .FirstOrDefaultAsync();
+
+        return result;
+    }
+
+    /// <summary>
     /// Метод получает список Id статусов, которые принадлежат шаблону.
     /// </summary>
     /// <param name="templateId">Id шаблона.</param>
     /// <returns>Список Id статусов.</returns>
-    public Task<IEnumerable<int>> GetTemplateStatusIdsAsync(int templateId)
+    public async Task<IEnumerable<int>> GetTemplateStatusIdsAsync(int templateId)
     {
-        throw new NotImplementedException();
+        var result = await _pgContext.ProjectManagmentTaskStatusIntermediateTemplates
+            .Where(t => t.TemplateId == templateId)
+            .Select(t => t.StatusId)
+            .ToListAsync();
+
+        return result;
     }
 }

@@ -108,4 +108,9 @@ public class UserProjectEntity
     /// FK на задачу.
     /// </summary>
     public ProjectTaskEntity ProjectTask { get; set; }
+
+    /// <summary>
+    /// Id шаблона, если выбран был.
+    /// </summary>
+    public int? TemplateId { get; set; }
 }

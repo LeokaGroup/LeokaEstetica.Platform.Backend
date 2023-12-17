@@ -8,11 +8,13 @@ using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
+using LeokaEstetica.Platform.Database.Abstractions.Template;
 using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.Template;
 using LeokaEstetica.Platform.Models.Dto.Output.User;
 using LeokaEstetica.Platform.Models.Entities.ProjectManagment;
+using LeokaEstetica.Platform.Models.Entities.Template;
 using LeokaEstetica.Platform.Services.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Services.Factors;
 using Microsoft.Extensions.Logging;
@@ -33,6 +35,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     private readonly IUserRepository _userRepository;
     private readonly IProjectRepository _projectRepository;
     private readonly IPachcaService _pachcaService;
+    private readonly IProjectManagmentTemplateRepository _projectManagmentTemplateRepository;
 
     /// <summary>
     /// Конструктор.
@@ -42,13 +45,15 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     /// <param name="mapper">Репозиторий пользователей.</param>
     /// <param name="projectRepository">Репозиторий проектов.</param>
     /// <param name="pachcaService">Сервис уведомлений пачки.</param>
+    /// <param name="projectManagmentTemplateRepository">Репозиторий шаблонов проектов.</param>
     /// </summary>
     public ProjectManagmentService(ILogger<ProjectManagmentService> logger,
         IProjectManagmentRepository projectManagmentRepository,
         IMapper mapper,
         IUserRepository userRepository,
         IProjectRepository projectRepository,
-        IPachcaService pachcaService)
+        IPachcaService pachcaService,
+        IProjectManagmentTemplateRepository projectManagmentTemplateRepository)
     {
         _logger = logger;
         _projectManagmentRepository = projectManagmentRepository;
@@ -56,6 +61,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         _userRepository = userRepository;
         _projectRepository = projectRepository;
         _pachcaService = pachcaService;
+        _projectManagmentTemplateRepository = projectManagmentTemplateRepository;
     }
 
     #region Публичные методы.
@@ -615,7 +621,8 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     /// <param name="projectId">Id проекта.</param>
     /// <param name="account">Аккаунт.</param>
     /// <returns>Список статусов.</returns>
-    public async Task<IEnumerable<TaskStatusOutput>> GetTaskStatusesAsync(long projectId, string account)
+    public async Task<IEnumerable<ProjectManagmentTaskTemplateEntity>> GetTaskStatusesAsync(long projectId,
+        string account)
     {
         try
         {
@@ -627,9 +634,25 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 throw ex;
             }
             
-            // TODO: получение Ids статусов шаблона из ProjectManagmentTaskStatusIntermediateTemplates.
+            // Получаем шаблон проекта, если он был выбран.
+            var projectTemplateId = await _projectManagmentTemplateRepository.GetProjectTemplateIdAsync(projectId);
+
+            if (!projectTemplateId.HasValue || projectTemplateId.Value <= 0)
+            {
+                throw new InvalidOperationException($"Не удалось получить шаблон проекта. ProjectId: {projectId}");
+            }
             
-            // TODO: получение данных статусов шаблона из ProjectManagmentTaskStatusTemplates.
+            var statusIds = await _projectManagmentTemplateRepository.GetTemplateStatusIdsAsync(
+                projectTemplateId.Value);
+            var statusIdsItems = statusIds?.ToList();
+
+            if (statusIdsItems is null || !statusIdsItems.Any())
+            {
+                throw new InvalidOperationException("Не удалось получить статусы для выбора в задаче." +
+                                                    $"ProjectId: {projectId}");
+            }
+
+            
         }
         
         catch (Exception ex)
