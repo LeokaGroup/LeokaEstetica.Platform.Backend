@@ -32,11 +32,11 @@ public partial class ArchivedProjectConfiguration : IEntityTypeConfiguration<Arc
            .HasDefaultValue(DateTime.UtcNow)
            .IsRequired();
 
-        entity.HasOne(a => a.UserProject)
-           .WithMany(u => u.ArchivedProjects)
-           .HasForeignKey(a => a.ProjectId)
-           .HasConstraintName("FK_UserProjects_ProjectId")
-           .OnDelete(DeleteBehavior.Cascade);
+        // entity.HasOne(a => a.UserProject)
+        //    .WithMany(u => u.ArchivedProjects)
+        //    .HasForeignKey(a => a.ProjectId)
+        //    .HasConstraintName("FK_UserProjects_ProjectId")
+        //    .OnDelete(DeleteBehavior.Cascade);
 
         entity.HasIndex(a => a.ArchiveId)
             .HasDatabaseName("PK_ArchivedProjects_ArchiveId")
