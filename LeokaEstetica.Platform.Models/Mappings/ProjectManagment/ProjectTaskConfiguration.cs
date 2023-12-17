@@ -90,10 +90,10 @@ public partial class ProjectTaskConfiguration : IEntityTypeConfiguration<Project
             .HasConstraintName("FK_TaskStatuses_StatusId")
             .IsRequired();
         
-        entity.HasOne(p => p.UserProject)
-            .WithOne(b => b.ProjectTask)
-            .HasForeignKey<UserProjectEntity>()
-            .IsRequired();
+        // entity.HasOne(p => p.UserProject)
+        //     .WithOne(b => b.ProjectTask)
+        //     .HasForeignKey<UserProjectEntity>()
+        //     .IsRequired();
 
         // entity.HasOne(p => p.TaskType)
         //     .WithOne(b => b.UserTask)

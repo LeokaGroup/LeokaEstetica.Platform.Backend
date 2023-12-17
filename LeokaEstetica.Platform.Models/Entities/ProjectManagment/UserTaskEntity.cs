@@ -107,7 +107,7 @@ public class ProjectTaskEntity
     /// <summary>
     /// FK на проект.
     /// </summary>
-    public UserProjectEntity UserProject { get; set; }
+    // public UserProjectEntity UserProject { get; set; }
 
     /// <summary>
     /// FK на тип задачи.
