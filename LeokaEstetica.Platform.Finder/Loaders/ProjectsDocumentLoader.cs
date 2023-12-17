@@ -19,7 +19,7 @@ public static class ProjectsDocumentLoader
     /// <param name="vacancies">Список проектов.</param>
     /// <param name="index">Индекс.</param>
     /// <param name="analyzer">Анализатор текста.</param>
-    public static void Load(IOrderedQueryable<CatalogProjectOutput> projects, Lazy<RAMDirectory> index,
+    public static void Load(List<CatalogProjectOutput> projects, Lazy<RAMDirectory> index,
         StandardAnalyzer analyzer)
     {
         using var writer = new IndexWriter(index.Value, analyzer, IndexWriter.MaxFieldLength.UNLIMITED);

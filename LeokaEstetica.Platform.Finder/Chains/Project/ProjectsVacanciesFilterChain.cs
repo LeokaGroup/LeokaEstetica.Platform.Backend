@@ -14,8 +14,8 @@ public class ProjectsVacanciesFilterChain : BaseProjectsFilterChain
     /// <param name="filters">Фильтры.</param>
     /// <param name="projects">Список проектов.</param>
     /// <returns>Список проектов после фильтрации.</returns>
-    public override async Task<IQueryable<CatalogProjectOutput>> FilterProjectsAsync(FilterProjectInput filters,
-        IOrderedQueryable<CatalogProjectOutput> projects)
+    public override async Task<List<CatalogProjectOutput>> FilterProjectsAsync(FilterProjectInput filters,
+        List<CatalogProjectOutput> projects)
     {
         // Если фильтр не по наличию вакансий в проектах, то передаем следующему по цепочке.
         if (!filters.IsAnyVacancies)
@@ -23,7 +23,7 @@ public class ProjectsVacanciesFilterChain : BaseProjectsFilterChain
             return await CallNextSuccessor(filters, projects);
         }
 
-        projects = (IOrderedQueryable<CatalogProjectOutput>)projects.Where(p => p.HasVacancies);
+        projects = projects.Where(p => p.HasVacancies).ToList();
 
         return await CallNextSuccessor(filters, projects);
     }
