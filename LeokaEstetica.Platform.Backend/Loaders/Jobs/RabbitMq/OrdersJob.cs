@@ -1,5 +1,6 @@
 using System.Runtime.CompilerServices;
 using System.Text;
+using LeokaEstetica.Platform.Base.Abstractions.Services.Pachca;
 using LeokaEstetica.Platform.Base.Enums;
 using LeokaEstetica.Platform.Base.Extensions.StringExtensions;
 using LeokaEstetica.Platform.Base.Models.IntegrationEvents.Orders;
@@ -8,7 +9,6 @@ using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.Commerce;
 using LeokaEstetica.Platform.Database.Abstractions.Config;
 using LeokaEstetica.Platform.Database.Abstractions.FareRule;
-using LeokaEstetica.Platform.Integrations.Abstractions.Pachca;
 using LeokaEstetica.Platform.Models.Dto.Base.Commerce;
 using LeokaEstetica.Platform.Processing.Abstractions.Commerce;
 using LeokaEstetica.Platform.Processing.Enums;
@@ -113,8 +113,12 @@ internal sealed class OrdersJob : IJob
         {
             return;
         }
-        
-        await CheckOrderStatusAsync();
+
+        // Если канал не был создан, то не будем дергать память.
+        if (_channel is not null)
+        {
+            await CheckOrderStatusAsync();
+        }
 
         await Task.CompletedTask;
     }

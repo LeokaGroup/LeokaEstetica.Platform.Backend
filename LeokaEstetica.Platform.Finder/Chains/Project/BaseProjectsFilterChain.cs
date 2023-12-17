@@ -22,14 +22,14 @@ public abstract class BaseProjectsFilterChain : BaseIndexRamDirectory
     /// <param name="filters">Фильтры.</param>
     /// <param name="vacancies">Список проектов, которые еще не выгружены в память, так как мы будем их фильтровать.</param>
     /// <returns>Список проектов после фильтрации.</returns>
-    public abstract Task<IQueryable<CatalogProjectOutput>> FilterProjectsAsync(FilterProjectInput filters,
-        IOrderedQueryable<CatalogProjectOutput> projects);
+    public abstract Task<List<CatalogProjectOutput>> FilterProjectsAsync(FilterProjectInput filters,
+        List<CatalogProjectOutput> projects);
 
     /// <summary>
     /// Метод передает дальше по цепочке либо возвращает результат, если в цепочке больше нет обработчиков.
     /// </summary>
-    protected async Task<IQueryable<CatalogProjectOutput>> CallNextSuccessor(FilterProjectInput filters,
-        IOrderedQueryable<CatalogProjectOutput> projects)
+    protected async Task<List<CatalogProjectOutput>> CallNextSuccessor(FilterProjectInput filters,
+        List<CatalogProjectOutput> projects)
     {
         return Successor != null
             ? await Successor.FilterProjectsAsync(filters, projects)
@@ -40,7 +40,7 @@ public abstract class BaseProjectsFilterChain : BaseIndexRamDirectory
     /// Метод инициализирует данными индекс в памяти.
     /// </summary>
     /// <param name="vacancies">Список вакансий.</param>
-    protected void Initialize(IOrderedQueryable<CatalogProjectOutput> projects)
+    protected void Initialize(List<CatalogProjectOutput> projects)
     {
         ProjectsDocumentLoader.Load(projects, _index, _analyzer);
     }

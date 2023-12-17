@@ -6,6 +6,7 @@ using LeokaEstetica.Platform.Access.Abstractions.User;
 using LeokaEstetica.Platform.Access.Consts;
 using LeokaEstetica.Platform.Access.Enums;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
+using LeokaEstetica.Platform.Base.Abstractions.Services.Pachca;
 using LeokaEstetica.Platform.Core.Constants;
 using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Core.Exceptions;
@@ -110,6 +111,8 @@ internal sealed class ProjectService : IProjectService
     
     private const string NOT_AVAILABLE_DELETE_PROJECT_ARCHIVE = "Невозможно убрать проект из архива, так как у Вас уже опубликовано максимальное количество проектов соответствующих максимальному лимиту тарифа. Добавьте в архив проекты, чтобы освободить лимиты либо перейдите на тариф, который имеет большие лимиты";
 
+    private readonly IPachcaService _pachcaService;
+
     /// <summary>
     /// Конструктор.
     /// </summary>
@@ -126,6 +129,7 @@ internal sealed class ProjectService : IProjectService
     /// <param name="accessUserNotificationsService">Сервис уведомлений доступа пользователя.</param>
     /// <param name="accessUserService">Сервис доступа пользователя.</param>
     /// <param name="projectModerationRepository">Репозиторий модерации проектов.</param>
+    /// <param name="pachcaService">Сервис уведомлений пачки.</param>
     public ProjectService(IProjectRepository projectRepository,
         ILogger<ProjectService> logger,
         IUserRepository userRepository,
@@ -142,7 +146,8 @@ internal sealed class ProjectService : IProjectService
         IAccessUserService accessUserService,
         IFillColorProjectsService fillColorProjectsService, 
         IMailingsService mailingsService, 
-        IProjectModerationRepository projectModerationRepository)
+        IProjectModerationRepository projectModerationRepository,
+        IPachcaService pachcaService)
     {
         _projectRepository = projectRepository;
         _logger = logger;
@@ -161,6 +166,7 @@ internal sealed class ProjectService : IProjectService
         _fillColorProjectsService = fillColorProjectsService;
         _mailingsService = mailingsService;
         _projectModerationRepository = projectModerationRepository;
+        _pachcaService = pachcaService;
 
         // Определяем обработчики цепочки фильтров.
         _dateProjectsFilterChain.Successor = _projectsVacanciesFilterChain;
@@ -284,6 +290,9 @@ internal sealed class ProjectService : IProjectService
             
             // Отправляем уведомление о созданном проекте владельцу проекта.
             await _mailingsService.SendNotificationCreatedProjectAsync(user.Email, projectName, projectId);
+
+            // Отправляем уведомление об отправленном проекте на модерацию.
+            await _pachcaService.SendNotificationCreatedProjectBeforeModerationAsync(projectId);
 
             return project;
         }
@@ -975,8 +984,11 @@ internal sealed class ProjectService : IProjectService
             filters.ProjectStages = CreateProjectStagesBuilder.CreateProjectStagesResult(filters.StageValues);
            
             // Получаем список проектов для каталога.
-            var projects = await _projectRepository.CatalogProjectsWithoutMemoryAsync();
-            
+            var projects = (await _projectRepository.CatalogProjectsAsync()).ToList();
+
+            // Логгируем проект, у которого не удалось получить стадию проекта, но не ломаем систему.
+            await ValidateProjectStages(projects);
+
             var result = await _dateProjectsFilterChain.FilterProjectsAsync(filters, projects);
 
             var resultProjects = await ExecuteCatalogConditionsAsync(result);
@@ -2125,6 +2137,14 @@ internal sealed class ProjectService : IProjectService
             // Получаем подписку пользователя.
             var userSubscription = await _subscriptionRepository.GetUserSubscriptionAsync(p.UserId);
 
+            if (userSubscription is null)
+            {
+                // TODO: Как то было такое, если будет еще. То тут проблема была в данных.
+                // TODO: У пользователя не стоял признак IsActive = true.
+                throw new InvalidOperationException("Не удалось получить подписку пользователя." +
+                                                    $"UserIdL {p.UserId}.");
+            }
+
             // Такая подписка не дает тегов.
             if (userSubscription.ObjectId < 3)
             {
@@ -2205,6 +2225,33 @@ internal sealed class ProjectService : IProjectService
         if (awaitingRemarks.Any())
         {
             await _projectModerationRepository.UpdateProjectRemarksAsync(awaitingRemarks);
+        }
+    }
+
+    /// <summary>
+    /// Метод валидирует стадии проекта. Если хоть одну не удалось определить, то логируем такое.
+    /// Но не ломаем систему, а просто фиксируем для себя.
+    /// </summary>
+    /// <param name="projects"></param>
+    private async Task ValidateProjectStages(List<CatalogProjectOutput> projects)
+    {
+        var exeptions = new List<InvalidOperationException>();
+        foreach (var p in projects)
+        {
+            if (p.ProjectStageSysName is null)
+            {
+                exeptions.Add(new InvalidOperationException(
+                    $"Не удалось получить стадию проекта. ProjectId: {p.ProjectId}"));
+            }
+        }
+
+        if (exeptions.Any())
+        {
+            var aggEx = new AggregateException("Ошибка при получении стадий проектов.", exeptions);
+            _logger.LogError(aggEx, aggEx.Message);
+            
+            // Отправляем ошибки в чат пачки.
+            await _pachcaService.SendNotificationErrorAsync(aggEx);
         }
     }
     

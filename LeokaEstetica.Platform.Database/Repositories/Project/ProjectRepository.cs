@@ -217,6 +217,9 @@ internal sealed class ProjectRepository : IProjectRepository
                 join s in _pgContext.Subscriptions
                     on us.SubscriptionId
                     equals s.ObjectId
+                join ups in _pgContext.UserProjectsStages
+                    on p.ProjectId
+                    equals ups.ProjectId
                 where p.ArchivedProjects.All(a => a.ProjectId != p.ProjectId)
                       && !new[]
                           {
@@ -232,54 +235,13 @@ internal sealed class ProjectRepository : IProjectRepository
                     DateCreated = p.DateCreated,
                     ProjectIcon = p.ProjectIcon,
                     ProjectDetails = p.ProjectDetails,
-                    UserId = p.UserId
+                    UserId = p.UserId,
+                    ProjectStageSysName = _pgContext.ProjectStages
+                        .FirstOrDefault(x => x.StageId == ups.StageId).StageSysName
                 })
             .ToListAsync();
 
         return result;
-    }
-    
-    /// <summary>
-    /// Метод получает список проектов для каталога без выгрузки в память.
-    /// </summary>
-    /// <returns>Список проектов.</returns>
-    public async Task<IOrderedQueryable<CatalogProjectOutput>> CatalogProjectsWithoutMemoryAsync()
-    {
-        var result = (from cp in _pgContext.CatalogProjects
-                join p in _pgContext.UserProjects
-                    on cp.ProjectId
-                    equals p.ProjectId
-                join mp in _pgContext.ModerationProjects
-                    on p.ProjectId
-                    equals mp.ProjectId
-                    into table
-                from tbl in table.DefaultIfEmpty()
-                join us in _pgContext.UserSubscriptions
-                    on p.UserId
-                    equals us.UserId
-                join s in _pgContext.Subscriptions
-                    on us.SubscriptionId
-                    equals s.ObjectId
-                where p.ArchivedProjects.All(a => a.ProjectId != p.ProjectId)
-                      && !new[]
-                          {
-                              (int)VacancyModerationStatusEnum.ModerationVacancy,
-                              (int)VacancyModerationStatusEnum.RejectedVacancy
-                          }
-                          .Contains(tbl.ModerationStatusId)
-                orderby s.ObjectId descending
-                select new CatalogProjectOutput
-                {
-                    ProjectId = p.ProjectId,
-                    ProjectName = p.ProjectName,
-                    DateCreated = p.DateCreated,
-                    ProjectIcon = p.ProjectIcon,
-                    ProjectDetails = p.ProjectDetails,
-                    UserId = p.UserId
-                })
-            .AsQueryable() as IOrderedQueryable<CatalogProjectOutput>;
-
-        return await Task.FromResult(result);
     }
 
     /// <summary>
@@ -691,9 +653,9 @@ internal sealed class ProjectRepository : IProjectRepository
     /// Метод получает список проектов для дальнейшей фильтрации.
     /// </summary>
     /// <returns>Список проектов без выгрузки в память, так как этот список будем еще фильтровать.</returns>
-    public async Task<IOrderedQueryable<CatalogProjectOutput>> GetFiltersProjectsAsync()
+    public async Task<List<CatalogProjectOutput>> GetFiltersProjectsAsync()
     {
-        var result = (IOrderedQueryable<CatalogProjectOutput>)_pgContext.CatalogProjects
+        var result = await _pgContext.CatalogProjects
             .Include(p => p.Project)
             .Select(p => new CatalogProjectOutput
             {
@@ -718,7 +680,7 @@ internal sealed class ProjectRepository : IProjectRepository
                         .Contains(pm.ModerationStatusId)),
                 IsArchived = _pgContext.ArchivedProjects.Any(ap => ap.ProjectId == p.ProjectId)
             })
-            .AsQueryable();
+            .ToListAsync();
 
         return await Task.FromResult(result);
     }

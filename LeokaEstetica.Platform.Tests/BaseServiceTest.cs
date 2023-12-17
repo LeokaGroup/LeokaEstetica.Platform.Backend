@@ -5,6 +5,7 @@ using LeokaEstetica.Platform.Access.Services.Moderation;
 using LeokaEstetica.Platform.Access.Services.User;
 using LeokaEstetica.Platform.Base.Repositories.Chat;
 using LeokaEstetica.Platform.Base.Repositories.User;
+using LeokaEstetica.Platform.Base.Services.Pachca;
 using LeokaEstetica.Platform.CallCenter.Services.Project;
 using LeokaEstetica.Platform.CallCenter.Services.Resume;
 using LeokaEstetica.Platform.CallCenter.Services.Ticket;
@@ -29,6 +30,7 @@ using LeokaEstetica.Platform.Database.Repositories.Orders;
 using LeokaEstetica.Platform.Database.Repositories.Press;
 using LeokaEstetica.Platform.Database.Repositories.Profile;
 using LeokaEstetica.Platform.Database.Repositories.Project;
+using LeokaEstetica.Platform.Database.Repositories.ProjectManagment;
 using LeokaEstetica.Platform.Database.Repositories.Resume;
 using LeokaEstetica.Platform.Database.Repositories.Subscription;
 using LeokaEstetica.Platform.Database.Repositories.TIcket;
@@ -37,7 +39,6 @@ using LeokaEstetica.Platform.Diagnostics.Services.Metrics;
 using LeokaEstetica.Platform.Finder.Services.Project;
 using LeokaEstetica.Platform.Finder.Services.Resume;
 using LeokaEstetica.Platform.Finder.Services.Vacancy;
-using LeokaEstetica.Platform.Integrations.Services.Pachca;
 using LeokaEstetica.Platform.Integrations.Services.Telegram;
 using LeokaEstetica.Platform.Messaging.Services.Chat;
 using LeokaEstetica.Platform.Messaging.Services.Project;
@@ -54,6 +55,7 @@ using LeokaEstetica.Platform.Services.Services.Orders;
 using LeokaEstetica.Platform.Services.Services.Press;
 using LeokaEstetica.Platform.Services.Services.Profile;
 using LeokaEstetica.Platform.Services.Services.Project;
+using LeokaEstetica.Platform.Services.Services.ProjectManagment;
 using LeokaEstetica.Platform.Services.Services.Refunds;
 using LeokaEstetica.Platform.Services.Services.Resume;
 using LeokaEstetica.Platform.Services.Services.Subscription;
@@ -111,6 +113,7 @@ internal class BaseServiceTest
     protected readonly FareRuleRepository FareRuleRepository;
     protected readonly ChatRepository ChatRepository;
     protected readonly PressService PressService;
+    protected readonly ProjectManagmentService ProjectManagmentService;
 
     protected BaseServiceTest()
     {
@@ -152,7 +155,7 @@ internal class BaseServiceTest
             subscriptionRepository, resumeModerationRepository, accessUserService, userRedisService,
             FareRuleRepository, availableLimitsRepository, globalConfigRepository, pachcaService);
         ProfileService = new ProfileService(null, profileRepository, userRepository, mapper, null, null,
-            accessUserService, resumeModerationRepository);
+            accessUserService, resumeModerationRepository, pachcaService);
 
         var projectRepository = new ProjectRepository(pgContext, ChatRepository);
         var projectNotificationsRepository = new ProjectNotificationsRepository(pgContext);
@@ -172,7 +175,7 @@ internal class BaseServiceTest
         // Не получится сделать просто, VacancyService и ProjectService нужны друг другу тесно.
         VacancyService = new VacancyService(null, vacancyRepository, mapper, null, userRepository,
             VacancyModerationService, subscriptionRepository, FareRuleRepository, availableLimitsService,
-            vacancyNotificationsService, null, null, null, vacancyModerationRepository);
+            vacancyNotificationsService, null, null, null, vacancyModerationRepository, pachcaService);
 
         var projectResponseRepository = new ProjectResponseRepository(pgContext);
 
@@ -203,7 +206,7 @@ internal class BaseServiceTest
         ProjectService = new ProjectService(projectRepository, null, userRepository, mapper,
             projectNotificationsService, VacancyService, vacancyRepository, availableLimitsService,
             subscriptionRepository, FareRuleRepository, VacancyModerationService, projectNotificationsRepository, null,
-            accessUserService, fillColorProjectsService, null, ProjectModerationRepository);
+            accessUserService, fillColorProjectsService, null, ProjectModerationRepository, pachcaService);
         
         var ordersRepository = new OrdersRepository(pgContext);
         var commerceRepository = new CommerceRepository(pgContext, AppConfiguration);
@@ -256,5 +259,9 @@ internal class BaseServiceTest
 
         var pressRepository = new PressRepository(pgContext);
         PressService = new PressService(pressRepository, null);
+
+        var projectManagmentRepository = new ProjectManagmentRepository(pgContext);
+        ProjectManagmentService = new ProjectManagmentService(null, projectManagmentRepository, mapper, userRepository,
+            projectRepository, pachcaService);
     }
 }

@@ -2,16 +2,20 @@
 
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
-        <Nullable>enable</Nullable>
+        <Nullable>disable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
     </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="Autofac" Version="6.4.0" />
         <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="8.0.0" />
+        <PackageReference Include="FluentValidation" Version="11.4.0" />
         <PackageReference Include="FluentValidation.AspNetCore" Version="11.2.2" />
+        <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="11.4.0" />
         <PackageReference Include="Hellang.Middleware.ProblemDetails" Version="6.5.1" />
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.9" />
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="6.0.25" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.1" />
         <PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.1" />
         <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
@@ -25,6 +29,7 @@
       <ProjectReference Include="..\LeokaEstetica.Platform.Core\LeokaEstetica.Platform.Core.csproj" />
       <ProjectReference Include="..\LeokaEstetica.Platform.Notifications\LeokaEstetica.Platform.Notifications.csproj" />
       <ProjectReference Include="..\LeokaEstetica.Platform.Redis\LeokaEstetica.Platform.Redis.csproj" />
+      <ProjectReference Include="..\LeokaEstetica.Platform.Services\LeokaEstetica.Platform.Services.csproj" />
     </ItemGroup>
 
 </Project>

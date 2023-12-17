@@ -76,10 +76,10 @@ public static class HashHelper
     {
         try
         {
-            var _minHashLength = firstHash.Count <= secondHash.Count ? firstHash.Count : secondHash.Count;
+            var minHashLength = firstHash.Count <= secondHash.Count ? firstHash.Count : secondHash.Count;
             var xor = firstHash.Count ^ secondHash.Count;
 
-            for (var i = 0; i < _minHashLength; i++)
+            for (var i = 0; i < minHashLength; i++)
             {
                 xor |= firstHash[i] ^ secondHash[i];
             }

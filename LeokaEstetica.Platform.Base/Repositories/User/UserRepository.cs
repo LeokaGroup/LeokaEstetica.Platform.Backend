@@ -658,6 +658,73 @@ internal sealed class UserRepository : IUserRepository
             await _pgContext.SaveChangesAsync();
         }
     }
+    
+    /// <summary>
+    /// Метод получает ФИО авторов задач по их Id.
+    /// </summary>
+    /// <param name="authorIds">Id авторов задач.</param>
+    /// <returns>Словарь с авторами задач.</returns>
+    public async Task<IDictionary<long, UserInfoOutput>> GetAuthorNamesByAuthorIdsAsync(IEnumerable<long> authorIds)
+    {
+        var result = await _pgContext.Users
+            .Where(u => authorIds.Contains(u.UserId))
+            .Select(u => new UserInfoOutput
+            {
+                FirstName = u.FirstName,
+                LastName = u.LastName,
+                Email = u.Email,
+                SecondName = u.SecondName,
+                UserId = u.UserId
+            })
+            .ToDictionaryAsync(k => k.UserId, v => v);
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод получает ФИО исполнителей задач по их Id.
+    /// </summary>
+    /// <param name="executorIds">Id исполнителей задач.</param>
+    /// <returns>Словарь с исполнителями задач.</returns>
+    public async Task<IDictionary<long, UserInfoOutput>> GetExecutorNamesByExecutorIdsAsync(
+        IEnumerable<long> executorIds)
+    {
+        var result = await _pgContext.Users
+            .Where(u => executorIds.Contains(u.UserId))
+            .Select(u => new UserInfoOutput
+            {
+                FirstName = u.FirstName,
+                LastName = u.LastName,
+                Email = u.Email,
+                SecondName = u.SecondName,
+                UserId = u.UserId
+            })
+            .ToDictionaryAsync(k => k.UserId, v => v);
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод получает ФИО наблюдателей задач по их Id.
+    /// </summary>
+    /// <param name="watcherIds">Id наблюдателей задач.</param>
+    /// <returns>Словарь с наблюдателями задач.</returns>
+    public async Task<IDictionary<long, UserInfoOutput>> GetWatcherNamesByWatcherIdsAsync(IEnumerable<long> watcherIds)
+    {
+        var result = await _pgContext.Users
+            .Where(u => watcherIds.Contains(u.UserId))
+            .Select(u => new UserInfoOutput
+            {
+                FirstName = u.FirstName,
+                LastName = u.LastName,
+                Email = u.Email,
+                SecondName = u.SecondName,
+                UserId = u.UserId
+            })
+            .ToDictionaryAsync(k => k.UserId, v => v);
+
+        return result;
+    }
 
     #endregion
 
