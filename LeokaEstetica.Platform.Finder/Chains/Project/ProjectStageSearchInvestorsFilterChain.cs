@@ -22,8 +22,8 @@ public class ProjectStageSearchInvestorsFilterChain : BaseProjectsFilterChain
     /// <param name="filters">Фильтры.</param>
     /// <param name="projects">Список проектов.</param>
     /// <returns>Список проектов после фильтрации.</returns>
-    public override async Task<IQueryable<CatalogProjectOutput>> FilterProjectsAsync(FilterProjectInput filters,
-        IOrderedQueryable<CatalogProjectOutput> projects)
+    public override async Task<List<CatalogProjectOutput>> FilterProjectsAsync(FilterProjectInput filters,
+        List<CatalogProjectOutput> projects)
     {
         // Если фильтр не по стадии проекта "поиск инвесторов", то передаем следующему по цепочке.
         if (!filters.ProjectStages.Contains(FilterProjectStageTypeEnum.SearchInvestors))
@@ -42,9 +42,8 @@ public class ProjectStageSearchInvestorsFilterChain : BaseProjectsFilterChain
 
         // Больше 20 и не надо, так как есть пагинация.
         var searchResults = searcher.Search(new MatchAllDocsQuery(), filter, 20).ScoreDocs;
-        var result = CreateProjectsSearchResultBuilder.CreateProjectsSearchResult(searchResults, searcher);
-        projects = (IOrderedQueryable<CatalogProjectOutput>)result;
+        var result = CreateProjectsSearchResultBuilder.CreateProjectsSearchResult(searchResults, searcher).ToList();
 
-        return await CallNextSuccessor(filters, projects);
+        return await CallNextSuccessor(filters, result);
     }
 }

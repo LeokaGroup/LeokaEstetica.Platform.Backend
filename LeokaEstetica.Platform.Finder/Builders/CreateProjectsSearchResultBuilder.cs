@@ -20,7 +20,7 @@ public static class CreateProjectsSearchResultBuilder
     /// <param name="searchResults">Результаты поиска.</param>
     /// <param name="searcher">Поисковый индекс.</param>
     /// <returns>Список вакансий.</returns>
-    public static IQueryable<CatalogProjectOutput> CreateProjectsSearchResult(ScoreDoc[] searchResults,
+    public static List<CatalogProjectOutput> CreateProjectsSearchResult(ScoreDoc[] searchResults,
         IndexSearcher searcher)
     {
         _projects.Clear();
@@ -80,6 +80,6 @@ public static class CreateProjectsSearchResultBuilder
             });
         }
 
-        return _projects.AsQueryable();
+        return _projects;
     }
 }
