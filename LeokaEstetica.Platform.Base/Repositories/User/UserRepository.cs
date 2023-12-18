@@ -726,6 +726,27 @@ internal sealed class UserRepository : IUserRepository
         return result;
     }
 
+    /// <summary>
+    /// Метод получает данные профиля пользователей по их Id.
+    /// </summary>
+    /// <param name="userIds">Id пользователей.</param>
+    /// <returns>Данные профиля пользователей.</returns>
+    public async Task<IEnumerable<ProfileInfoEntity>> GetProfileInfoByUserIdsAsync(IEnumerable<long> userIds)
+    {
+        var result = await _pgContext.ProfilesInfo
+            .Where(p => userIds.Contains(p.UserId))
+            .Select(p => new ProfileInfoEntity
+            {
+                UserId = p.UserId,
+                FirstName = p.FirstName,
+                LastName = p.LastName,
+                Patronymic = p.Patronymic
+            })
+            .ToListAsync();
+
+        return result;
+    }
+
     #endregion
 
     #region Приватные методы.
