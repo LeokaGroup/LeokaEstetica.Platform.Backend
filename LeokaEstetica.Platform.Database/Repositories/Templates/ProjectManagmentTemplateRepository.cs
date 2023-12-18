@@ -29,7 +29,7 @@ internal sealed class ProjectManagmentTemplateRepository : IProjectManagmentTemp
     public async Task<int?> GetProjectTemplateIdAsync(long projectId)
     {
         var result = await _pgContext.UserProjects
-            .Where(p => p.TemplateId.Value == projectId)
+            .Where(p => p.ProjectId == projectId)
             .Select(p => p.TemplateId)
             .FirstOrDefaultAsync();
 
