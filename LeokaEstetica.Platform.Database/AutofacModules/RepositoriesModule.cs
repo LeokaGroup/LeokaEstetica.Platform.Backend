@@ -21,6 +21,7 @@ using LeokaEstetica.Platform.Database.Abstractions.Project;
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Database.Abstractions.Resume;
 using LeokaEstetica.Platform.Database.Abstractions.Subscription;
+using LeokaEstetica.Platform.Database.Abstractions.Template;
 using LeokaEstetica.Platform.Database.Abstractions.Ticket;
 using LeokaEstetica.Platform.Database.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Database.Access.Ticket;
@@ -48,6 +49,7 @@ using LeokaEstetica.Platform.Database.Repositories.Project;
 using LeokaEstetica.Platform.Database.Repositories.ProjectManagment;
 using LeokaEstetica.Platform.Database.Repositories.Resume;
 using LeokaEstetica.Platform.Database.Repositories.Subscription;
+using LeokaEstetica.Platform.Database.Repositories.Templates;
 using LeokaEstetica.Platform.Database.Repositories.TIcket;
 using LeokaEstetica.Platform.Database.Repositories.Vacancy;
 
@@ -278,6 +280,13 @@ public class RepositoriesModule : Module
             .InstancePerLifetimeScope();
         builder.RegisterType<ProjectManagmentRepository>()
             .As<IProjectManagmentRepository>()
+            .InstancePerLifetimeScope();
+        
+        builder.RegisterType<ProjectManagmentTemplateRepository>()
+            .Named<IProjectManagmentTemplateRepository>("ProjectManagmentTemplateRepository")
+            .InstancePerLifetimeScope();
+        builder.RegisterType<ProjectManagmentTemplateRepository>()
+            .As<IProjectManagmentTemplateRepository>()
             .InstancePerLifetimeScope();
     }
 }

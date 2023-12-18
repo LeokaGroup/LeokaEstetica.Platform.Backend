@@ -2,6 +2,7 @@
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.Template;
 using LeokaEstetica.Platform.Models.Entities.ProjectManagment;
+using LeokaEstetica.Platform.Models.Entities.Template;
 
 namespace LeokaEstetica.Platform.Services.Abstractions.ProjectManagment;
 
@@ -88,4 +89,12 @@ public interface IProjectManagmentService
     /// </summary>
     /// <returns>Список тегов.</returns>
     Task<IEnumerable<TaskTagEntity>> GetTaskTagsAsync();
+
+    /// <summary>
+    /// Метод получает список статусов задачи для выбора.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="account">Аккаунт.</param>
+    /// <returns>Список статусов.</returns>
+    Task<IEnumerable<ProjectManagmentTaskStatusTemplateEntity>> GetTaskStatusesAsync(long projectId, string account);
 }

@@ -281,4 +281,42 @@ public class ProjectManagmentController : BaseController
 
         return result;
     }
+
+    /// <summary>
+    /// Метод получает список статусов задачи для выбора.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Список статусов.</returns>
+    [HttpGet]
+    [Route("task-statuses")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<TaskStatusOutput>))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<IEnumerable<TaskStatusOutput>> GetTaskStatusesAsync([FromQuery] long projectId)
+    {
+        var validator = await new GetTaskStatusValidator().ValidateAsync(
+            new GetTaskStatusValidationModel(projectId));
+
+        if (validator.Errors.Any())
+        {
+            var exceptions = new List<InvalidOperationException>();
+
+            foreach (var err in validator.Errors)
+            {
+                exceptions.Add(new InvalidOperationException(err.ErrorMessage));
+            }
+            
+            var ex = new AggregateException("Ошибка получения статусов задачи проекта.", exceptions);
+            _logger.LogError(ex, ex.Message);
+            
+            throw ex;
+        }
+
+        var items = await _projectManagmentService.GetTaskStatusesAsync(projectId, GetUserName());
+        var result = _mapper.Map<IEnumerable<TaskStatusOutput>>(items);
+
+        return result;
+    }
 }
