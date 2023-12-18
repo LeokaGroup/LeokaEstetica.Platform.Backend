@@ -13,6 +13,7 @@ using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.Template;
 using LeokaEstetica.Platform.Models.Dto.Output.User;
+using LeokaEstetica.Platform.Models.Entities.Profile;
 using LeokaEstetica.Platform.Models.Entities.ProjectManagment;
 using LeokaEstetica.Platform.Models.Entities.Template;
 using LeokaEstetica.Platform.Services.Abstractions.ProjectManagment;
@@ -655,6 +656,62 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             var result = await _projectManagmentTemplateRepository.GetTaskTemplateStatusesAsync(statusIdsItems);
 
             return result;
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex.Message, ex);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Метод получает пользователей, которые могут быть выбраны в качестве исполнителя задачи.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="account">Аккаунт.</param>
+    /// <returns>Список пользователей.</returns>
+    public async Task<IEnumerable<ProfileInfoEntity>> GetSelectTaskExecutorsAsync(long projectId, string account)
+    {
+        try
+        {
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+
+            var teamId = await _projectRepository.GetProjectTeamIdByProjectIdAsync(projectId);
+
+            if (teamId <= 0)
+            {
+                throw new InvalidOperationException($"Не удалось получить команду проекта. ProjectId: {projectId}");
+            }
+
+            var teamMemberIds = await _projectRepository.GetProjectTeamMemberIdsAsync(teamId);
+            var teamMemberIdsItems = teamMemberIds?.ToList();
+
+            // Если результат null или нету пользователей или есть 1 пользователь и если этот пользователь тот,
+            // кто создает сейчас задачу, то список будет пустым.
+            // Потому что текущий пользователь может назначить себя исполнителем задачи через кнопку "Назначить меня".
+            if (teamMemberIdsItems is null 
+                || !teamMemberIdsItems.Any() 
+                || (teamMemberIdsItems.Count == 1 && teamMemberIdsItems.First() == userId))
+            {
+                return Enumerable.Empty<ProfileInfoEntity>();
+            }
+
+            var executors = await _userRepository.GetProfileInfoByUserIdsAsync(teamMemberIdsItems);
+            var executorsItems = executors?.ToList();
+
+            if (executorsItems is null || !executorsItems.Any())
+            {
+                return Enumerable.Empty<ProfileInfoEntity>();
+            }
+
+            return executorsItems;
         }
         
         catch (Exception ex)

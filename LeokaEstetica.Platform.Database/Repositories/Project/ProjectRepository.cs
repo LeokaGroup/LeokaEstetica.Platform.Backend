@@ -1214,6 +1214,37 @@ internal sealed class ProjectRepository : IProjectRepository
         return result;
     }
 
+    /// <summary>
+    /// Метод получает Id команды проекта по Id проекта.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Id команды.</returns>
+    public async Task<long> GetProjectTeamIdByProjectIdAsync(long projectId)
+    {
+        var result = await _pgContext.ProjectsTeams
+            .Where(t => t.ProjectId == projectId)
+            .Select(t => t.TeamId)
+            .FirstOrDefaultAsync();
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод получает список Id пользователей, которые находся в команде проекта.
+    /// </summary>
+    /// <param name="teamId">Id команды.</param>
+    /// <returns>Список Id пользователей.</returns>
+    public async Task<IEnumerable<long>> GetProjectTeamMemberIdsAsync(long teamId)
+    {
+        var result = await _pgContext.ProjectTeamMembers
+            .Where(t => t.TeamId == teamId)
+            .Select(t => t.UserId)
+            .Distinct()
+            .ToListAsync();
+
+        return result;
+    }
+
     #region Приватные методы.
 
     /// Метод првоеряет, был ли уже такой проект на модерации. 

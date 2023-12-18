@@ -319,4 +319,42 @@ public class ProjectManagmentController : BaseController
 
         return result;
     }
+
+    /// <summary>
+    /// Метод получает пользователей, которые могут быть выбраны в качестве исполнителя задачи.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Список пользователей.</returns>
+    [HttpGet]
+    [Route("select-task-executors")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<TaskExecutorOutput>))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<IEnumerable<TaskExecutorOutput>> GetSelectTaskExecutorsAsync([FromQuery] long projectId)
+    {
+        var validator = await new GetTaskExecutorValidator().ValidateAsync(
+            new GetTaskExecutorValidationModel(projectId));
+
+        if (validator.Errors.Any())
+        {
+            var exceptions = new List<InvalidOperationException>();
+
+            foreach (var err in validator.Errors)
+            {
+                exceptions.Add(new InvalidOperationException(err.ErrorMessage));
+            }
+            
+            var ex = new AggregateException("Ошибка получения исполнителей задачи проекта.", exceptions);
+            _logger.LogError(ex, ex.Message);
+            
+            throw ex;
+        }
+
+        var items = await _projectManagmentService.GetSelectTaskExecutorsAsync(projectId, GetUserName());
+        var result = _mapper.Map<IEnumerable<TaskExecutorOutput>>(items);
+
+        return result;
+    }
 }
