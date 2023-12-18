@@ -222,7 +222,7 @@ public class MappingProfile : Profile
         CreateMap<TaskTypeEntity, TaskTypeOutput>();
         CreateMap<TaskTagEntity, TaskTagOutput>();
         CreateMap<TaskStatusEntity, TaskStatusOutput>();
-        CreateMap<ProjectManagmentTaskTemplateEntity, TaskStatusOutput>();
+        CreateMap<ProjectManagmentTaskStatusTemplateEntity, TaskStatusOutput>();
     }
     
     /// <summary>

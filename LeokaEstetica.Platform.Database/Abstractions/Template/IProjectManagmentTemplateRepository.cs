@@ -26,5 +26,6 @@ public interface IProjectManagmentTemplateRepository
     /// </summary>
     /// <param name="statusIds">Список Id статусов шаблона.</param>
     /// <returns>Список статусов шаблона.</returns>
-    Task<IEnumerable<ProjectManagmentTaskTemplateEntity>> GetTaskTemplateStatusesAsync(IEnumerable<int> statusIds);
+    Task<IEnumerable<ProjectManagmentTaskStatusTemplateEntity>>
+        GetTaskTemplateStatusesAsync(IEnumerable<int> statusIds);
 }

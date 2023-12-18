@@ -33,6 +33,7 @@ using LeokaEstetica.Platform.Database.Repositories.Project;
 using LeokaEstetica.Platform.Database.Repositories.ProjectManagment;
 using LeokaEstetica.Platform.Database.Repositories.Resume;
 using LeokaEstetica.Platform.Database.Repositories.Subscription;
+using LeokaEstetica.Platform.Database.Repositories.Templates;
 using LeokaEstetica.Platform.Database.Repositories.TIcket;
 using LeokaEstetica.Platform.Database.Repositories.Vacancy;
 using LeokaEstetica.Platform.Diagnostics.Services.Metrics;
@@ -261,7 +262,8 @@ internal class BaseServiceTest
         PressService = new PressService(pressRepository, null);
 
         var projectManagmentRepository = new ProjectManagmentRepository(pgContext);
+        var projectManagmentTemplateRepository = new ProjectManagmentTemplateRepository(pgContext);
         ProjectManagmentService = new ProjectManagmentService(null, projectManagmentRepository, mapper, userRepository,
-            projectRepository, pachcaService);
+            projectRepository, pachcaService, projectManagmentTemplateRepository);
     }
 }

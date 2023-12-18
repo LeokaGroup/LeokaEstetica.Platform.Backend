@@ -1,5 +1,6 @@
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Database.Abstractions.Template;
+using LeokaEstetica.Platform.Models.Entities.Template;
 using Microsoft.EntityFrameworkCore;
 
 namespace LeokaEstetica.Platform.Database.Repositories.Templates;
@@ -45,6 +46,21 @@ internal sealed class ProjectManagmentTemplateRepository : IProjectManagmentTemp
         var result = await _pgContext.ProjectManagmentTaskStatusIntermediateTemplates
             .Where(t => t.TemplateId == templateId)
             .Select(t => t.StatusId)
+            .ToListAsync();
+
+        return result;
+    }
+
+    /// <summary>
+        /// Метод получает статусы шаблона проекта.
+        /// </summary>
+        /// <param name="statusIds">Список Id статусов шаблона.</param>
+        /// <returns>Список статусов шаблона.</returns>
+    public async Task<IEnumerable<ProjectManagmentTaskStatusTemplateEntity>> GetTaskTemplateStatusesAsync(
+        IEnumerable<int> statusIds)
+    {
+        var result = await _pgContext.ProjectManagmentTaskStatusTemplates
+            .Where(s => statusIds.Contains(s.StatusId))
             .ToListAsync();
 
         return result;

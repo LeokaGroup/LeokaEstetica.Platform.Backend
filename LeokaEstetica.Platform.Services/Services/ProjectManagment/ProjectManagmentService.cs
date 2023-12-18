@@ -621,7 +621,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     /// <param name="projectId">Id проекта.</param>
     /// <param name="account">Аккаунт.</param>
     /// <returns>Список статусов.</returns>
-    public async Task<IEnumerable<ProjectManagmentTaskTemplateEntity>> GetTaskStatusesAsync(long projectId,
+    public async Task<IEnumerable<ProjectManagmentTaskStatusTemplateEntity>> GetTaskStatusesAsync(long projectId,
         string account)
     {
         try
@@ -652,7 +652,9 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                                                     $"ProjectId: {projectId}");
             }
 
-            
+            var result = await _projectManagmentTemplateRepository.GetTaskTemplateStatusesAsync(statusIdsItems);
+
+            return result;
         }
         
         catch (Exception ex)

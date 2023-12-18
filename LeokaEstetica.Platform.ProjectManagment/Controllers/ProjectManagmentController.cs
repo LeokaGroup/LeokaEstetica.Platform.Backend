@@ -313,5 +313,10 @@ public class ProjectManagmentController : BaseController
             
             throw ex;
         }
+
+        var items = await _projectManagmentService.GetTaskStatusesAsync(projectId, GetUserName());
+        var result = _mapper.Map<IEnumerable<TaskStatusOutput>>(items);
+
+        return result;
     }
 }

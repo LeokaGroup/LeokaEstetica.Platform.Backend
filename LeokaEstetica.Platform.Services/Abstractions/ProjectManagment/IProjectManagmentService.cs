@@ -96,5 +96,5 @@ public interface IProjectManagmentService
     /// <param name="projectId">Id проекта.</param>
     /// <param name="account">Аккаунт.</param>
     /// <returns>Список статусов.</returns>
-    Task<IEnumerable<ProjectManagmentTaskTemplateEntity>> GetTaskStatusesAsync(long projectId, string account);
+    Task<IEnumerable<ProjectManagmentTaskStatusTemplateEntity>> GetTaskStatusesAsync(long projectId, string account);
 }
