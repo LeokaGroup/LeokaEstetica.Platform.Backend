@@ -1,9 +1,9 @@
 namespace LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 
 /// <summary>
-/// Класс выходной модели исполнителей задачи.
+/// Класс выходной модели исполнителей и наблюдателей задачи.
 /// </summary>
-public class TaskExecutorOutput
+public class TaskPeopleOutput
 {
     /// <summary>
     /// Фамилия.

@@ -224,7 +224,7 @@ public class MappingProfile : Profile
         CreateMap<TaskStatusEntity, TaskStatusOutput>();
         CreateMap<ProjectManagmentTaskStatusTemplateEntity, TaskStatusOutput>();
         
-        CreateMap<ProfileInfoEntity, TaskExecutorOutput>()
+        CreateMap<ProfileInfoEntity, TaskPeopleOutput>()
             .ForMember(p => p.SecondName, p => p.MapFrom(src => src.Patronymic));
     }
     
