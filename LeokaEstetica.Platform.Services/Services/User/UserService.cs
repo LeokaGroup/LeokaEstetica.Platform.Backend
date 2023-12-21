@@ -11,6 +11,7 @@ using LeokaEstetica.Platform.Core.Constants;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Core.Exceptions;
+using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.AvailableLimits;
 using LeokaEstetica.Platform.Database.Abstractions.Config;
 using LeokaEstetica.Platform.Database.Abstractions.FareRule;
@@ -19,6 +20,7 @@ using LeokaEstetica.Platform.Database.Abstractions.Profile;
 using LeokaEstetica.Platform.Database.Abstractions.Subscription;
 using LeokaEstetica.Platform.Messaging.Abstractions.Mail;
 using LeokaEstetica.Platform.Models.Dto.Input.User;
+using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.User;
 using LeokaEstetica.Platform.Models.Entities.User;
 using LeokaEstetica.Platform.Redis.Abstractions.User;
@@ -661,6 +663,24 @@ internal sealed class UserService : IUserService
             _logger.LogError(ex, ex.Message);
             throw;
         }
+    }
+
+    /// <summary>
+    /// Метод записывает коды пользователей.
+    /// </summary>
+    /// <param name="profileInfos">Список анкет пользователей.</param>
+    /// <returns>Результирующий список.</returns>
+    public async Task<IEnumerable<TaskPeopleOutput>> SetUserCodesAsync(List<TaskPeopleOutput> profileInfos)
+    {
+        // Получаем словарь пользователей для поиска кодов, чтобы получить скорость поиска O(1).
+        var userCodesDict = await _userRepository.GetUsersCodesAsync();
+        
+        foreach (var p in profileInfos)
+        {
+            p.UserCode = userCodesDict.TryGet(p.UserId);   
+        }
+
+        return profileInfos;
     }
 
     /// <summary>

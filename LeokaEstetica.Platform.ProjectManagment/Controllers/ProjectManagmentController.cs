@@ -9,6 +9,7 @@ using LeokaEstetica.Platform.ProjectManagment.ValidationModels;
 using LeokaEstetica.Platform.ProjectManagment.Validators;
 using LeokaEstetica.Platform.Services.Abstractions.Project;
 using LeokaEstetica.Platform.Services.Abstractions.ProjectManagment;
+using LeokaEstetica.Platform.Services.Abstractions.User;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LeokaEstetica.Platform.ProjectManagment.Controllers;
@@ -25,6 +26,7 @@ public class ProjectManagmentController : BaseController
     private readonly IProjectManagmentService _projectManagmentService;
     private readonly IMapper _mapper;
     private readonly ILogger<ProjectManagmentController> _logger;
+    private readonly IUserService _userService;
 
     /// <summary>
     /// Конструктор.
@@ -33,15 +35,18 @@ public class ProjectManagmentController : BaseController
     /// <param name="projectManagmentService">Сервис управления проектами.</param>
     /// <param name="mapper">Маппер.</param>
     /// <param name="logger">Логгер.</param>
+    /// <param name="userService">Сервис пользователей.</param>
     public ProjectManagmentController(IProjectService projectService,
         IProjectManagmentService projectManagmentService,
         IMapper mapper,
-        ILogger<ProjectManagmentController> logger)
+        ILogger<ProjectManagmentController> logger,
+        IUserService userService)
     {
         _projectService = projectService;
         _projectManagmentService = projectManagmentService;
         _mapper = mapper;
         _logger = logger;
+        _userService = userService;
     }
 
     /// <summary>
@@ -355,6 +360,7 @@ public class ProjectManagmentController : BaseController
 
         var items = await _projectManagmentService.GetSelectTaskExecutorsAsync(projectId, GetUserName());
         var result = _mapper.Map<IEnumerable<TaskPeopleOutput>>(items);
+        result = await _userService.SetUserCodesAsync(result.ToList());
 
         return result;
     }
