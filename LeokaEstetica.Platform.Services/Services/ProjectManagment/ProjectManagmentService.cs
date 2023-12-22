@@ -3,6 +3,7 @@ using System.Runtime.CompilerServices;
 using AutoMapper;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.Base.Abstractions.Services.Pachca;
+using LeokaEstetica.Platform.Base.Factors;
 using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Core.Extensions;
@@ -37,6 +38,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     private readonly IProjectRepository _projectRepository;
     private readonly IPachcaService _pachcaService;
     private readonly IProjectManagmentTemplateRepository _projectManagmentTemplateRepository;
+    private readonly ITransactionScopeFactory _transactionScopeFactory;
 
     /// <summary>
     /// Конструктор.
@@ -47,6 +49,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     /// <param name="projectRepository">Репозиторий проектов.</param>
     /// <param name="pachcaService">Сервис уведомлений пачки.</param>
     /// <param name="projectManagmentTemplateRepository">Репозиторий шаблонов проектов.</param>
+    /// <param name="transactionScopeFactory">Факторка транзакций.</param>
     /// </summary>
     public ProjectManagmentService(ILogger<ProjectManagmentService> logger,
         IProjectManagmentRepository projectManagmentRepository,
@@ -54,7 +57,8 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         IUserRepository userRepository,
         IProjectRepository projectRepository,
         IPachcaService pachcaService,
-        IProjectManagmentTemplateRepository projectManagmentTemplateRepository)
+        IProjectManagmentTemplateRepository projectManagmentTemplateRepository,
+        ITransactionScopeFactory transactionScopeFactory)
     {
         _logger = logger;
         _projectManagmentRepository = projectManagmentRepository;
@@ -63,6 +67,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         _projectRepository = projectRepository;
         _pachcaService = pachcaService;
         _projectManagmentTemplateRepository = projectManagmentTemplateRepository;
+        _transactionScopeFactory = transactionScopeFactory;
     }
 
     #region Публичные методы.
@@ -516,6 +521,8 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             }
 
             ProjectTaskEntity addedProjectTask;
+
+            using var transactionScope = _transactionScopeFactory.CreateTransactionScope();
             
             // Ускоренное создание задачи.
             if (projectManagementTaskInput.IsQuickCreate)
@@ -526,27 +533,21 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             // Обычное создание задачи.
             else
             {
-                // При обычном создании задачи требуется валидация всех параметров.
-                var isValidParameters = IsValidCreateProjectTaskParameters(projectManagementTaskInput);
-
-                // Сюда заходить не должно никогда. Если это произошло, то следовать логу.
-                if (!isValidParameters)
-                {
-                    throw new InvalidOperationException(
-                        "Ошибка при создании задачи." +
-                        " Валидация не покрыла исключение, нужно изучить логи и добавить обработку ситуации.");
-                }
-                
                 // Если не был указан исполнитель задачи, то исполнителем задачи будет ее автор.
                 if (!projectManagementTaskInput.ExecutorId.HasValue)
                 {
-                    projectManagementTaskInput.ExecutorId = userId!;
+                    projectManagementTaskInput.ExecutorId = userId;
                 }
                 
                 addedProjectTask = CreateProjectTaskFactory.CreateProjectTask(projectManagementTaskInput, userId);
             }
 
             addedProjectTask.ProjectTaskId = ++maxProjectTaskId;
+            
+            // Создаем задачу в БД.
+            await _projectManagmentRepository.CreateProjectTaskAsync(addedProjectTask);
+            
+            transactionScope.Complete();
         }
         
         catch (Exception ex)
@@ -1055,31 +1056,4 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     }
 
     #endregion
-
-    /// <summary>
-    /// TODO: Добавить отправку на фронт ивент на каждое сообщение через сокеты.
-    /// Метод валидирует параметры перед созданием задачи.
-    /// </summary>
-    /// <param name="projectManagementTaskInput">Входная модель.</param>
-    /// <returns>Признак результата проверки.</returns>
-    private bool IsValidCreateProjectTaskParameters(CreateProjectManagementTaskInput projectManagementTaskInput)
-    {
-        var exceptions = new List<InvalidOperationException>();
-        
-        if (!projectManagementTaskInput.TaskStatusId.HasValue)
-        {
-            exceptions.Add(new InvalidOperationException(
-                $"Статус задачи не указан. Данные задачи: {JsonConvert.SerializeObject(projectManagementTaskInput)}"));
-        }
-
-        if (!projectManagementTaskInput.TaskTypeId.HasValue)
-        {
-            exceptions.Add(new InvalidOperationException(
-                $"Тип задачи не указан. Данные задачи: {JsonConvert.SerializeObject(projectManagementTaskInput)}"));
-        }
-
-        var ex = new AggregateException("Ошибка при создании задачи.", exceptions);
-        _logger.LogCritical(ex, ex.Message);
-        throw ex;
-    }
 }

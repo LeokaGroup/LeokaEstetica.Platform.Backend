@@ -42,13 +42,13 @@ public partial class ProjectTaskConfiguration : IEntityTypeConfiguration<Project
         
         entity.Property(e => e.Created)
             .HasColumnName("Created")
-            .HasColumnType("timestamp")
+            .HasColumnType("timestamp with time zone")
             .HasDefaultValue(DateTime.UtcNow)
             .IsRequired();
         
         entity.Property(e => e.Updated)
             .HasColumnName("Updated")
-            .HasColumnType("timestamp")
+            .HasColumnType("timestamp with time zone")
             .HasDefaultValue(DateTime.UtcNow)
             .IsRequired();
 

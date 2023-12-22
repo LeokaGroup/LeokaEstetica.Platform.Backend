@@ -108,4 +108,10 @@ public interface IProjectManagmentRepository
     /// </summary>
     /// <returns>Список тегов.</returns>
     Task<IEnumerable<TaskTagEntity>> GetTaskTagsAsync();
+
+    /// <summary>
+    /// Метод создает задачу проекта.
+    /// </summary>
+    /// <param name="task">Задача для создания.</param>
+    Task CreateProjectTaskAsync (ProjectTaskEntity task);
 }

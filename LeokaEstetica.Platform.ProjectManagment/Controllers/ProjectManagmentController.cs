@@ -213,6 +213,7 @@ public class ProjectManagmentController : BaseController
     {
         var validator = await new CreateProjectManagementTaskValidator().ValidateAsync(projectManagementTaskInput);
 
+        // TODO: Добавить отправку на фронт ивент на каждое сообщение через сокеты.
         if (validator.Errors.Any())
         {
             var exceptions = new List<InvalidOperationException>();
@@ -228,6 +229,8 @@ public class ProjectManagmentController : BaseController
             
             throw ex;
         }
+
+        await _projectManagmentService.CreateProjectTaskAsync(projectManagementTaskInput, GetUserName());
     }
 
     /// <summary>
