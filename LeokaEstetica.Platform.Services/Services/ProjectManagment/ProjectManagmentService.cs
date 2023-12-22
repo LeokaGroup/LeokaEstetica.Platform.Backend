@@ -777,7 +777,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         // Если есть теги, то пойдем получать.
         if (tasks.Any(x => x.TagIds is not null))
         {
-            var tagIds = tasks.SelectMany(x => x.TagIds);
+            var tagIds = tasks.Where(x => x.TagIds is not null).SelectMany(x => x.TagIds);
             tags = await _projectManagmentRepository.GetTagNamesByTagIdsAsync(tagIds);
         }
 
