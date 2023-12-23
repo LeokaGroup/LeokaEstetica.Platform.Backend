@@ -193,5 +193,15 @@ public static class ValidationConst
         /// Если не заполнили название задачи проекта.
         /// </summary>
         public const string EMPTY_TASK_NAME = "Название задачи не заполнено.";
+        
+        /// <summary>
+        /// Если передали невалидный Id статуса задачи.
+        /// </summary>
+        public const string NOT_VALID_STATUS_ID = "Id статуса задачи не передан.";
+        
+        /// <summary>
+        /// Если передали невалидный Id типа задачи.
+        /// </summary>
+        public const string NOT_VALID_TASK_TYPE_ID = "Id типа задачи не передан.";
     }
 }

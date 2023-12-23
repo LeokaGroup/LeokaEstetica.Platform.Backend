@@ -29,4 +29,9 @@ public class TaskPeopleOutput
     /// Id пользователя.
     /// </summary>
     public long UserId { get; set; }
+    
+    /// <summary>
+    /// Код пользователя.
+    /// </summary>
+    public Guid UserCode { get; set; }
 }

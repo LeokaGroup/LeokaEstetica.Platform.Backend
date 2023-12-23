@@ -256,6 +256,16 @@ internal sealed class ProjectManagmentRepository : IProjectManagmentRepository
         return result;
     }
 
+    /// <summary>
+    /// Метод создает задачу проекта.
+    /// </summary>
+    /// <param name="task">Задача для создания.</param>
+    public async Task CreateProjectTaskAsync(ProjectTaskEntity task)
+    {
+        await _pgContext.ProjectTasks.AddAsync(task);
+        await _pgContext.SaveChangesAsync();
+    }
+
     #endregion
 
     #region Приватные методы.

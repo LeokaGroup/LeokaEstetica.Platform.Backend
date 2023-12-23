@@ -33,17 +33,17 @@ public class CreateProjectManagementTaskInput
     /// <summary>
     /// Id статуса задачи.
     /// </summary>
-    public int? TaskStatusId { get; set; }
+    public int TaskStatusId { get; set; }
     
     /// <summary>
     /// Id тегов (меток) задачи.
     /// </summary>
-    public long[] TagIds { get; set; }
+    public int[] TagIds { get; set; }
 
     /// <summary>
     /// Id типа задачи.
     /// </summary>
-    public int? TaskTypeId { get; set; }
+    public int TaskTypeId { get; set; }
 
     /// <summary>
     /// Id исполнителя задачи.

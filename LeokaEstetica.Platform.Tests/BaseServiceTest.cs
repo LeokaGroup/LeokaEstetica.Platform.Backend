@@ -3,6 +3,7 @@ using AutoMapper;
 using LeokaEstetica.Platform.Access.Services.AvailableLimits;
 using LeokaEstetica.Platform.Access.Services.Moderation;
 using LeokaEstetica.Platform.Access.Services.User;
+using LeokaEstetica.Platform.Base.Factors;
 using LeokaEstetica.Platform.Base.Repositories.Chat;
 using LeokaEstetica.Platform.Base.Repositories.User;
 using LeokaEstetica.Platform.Base.Services.Pachca;
@@ -77,7 +78,7 @@ namespace LeokaEstetica.Platform.Tests;
 internal class BaseServiceTest
 {
     private IConfiguration AppConfiguration { get; }
-    private string PostgreConfigString { get; set; }
+    private string PostgreConfigString { get; }
     protected readonly UserService UserService;
     protected readonly ProfileService ProfileService;
     protected readonly ProjectService ProjectService;
@@ -115,6 +116,7 @@ internal class BaseServiceTest
     protected readonly ChatRepository ChatRepository;
     protected readonly PressService PressService;
     protected readonly ProjectManagmentService ProjectManagmentService;
+    private readonly TransactionScopeFactory _transactionScopeFactory;
 
     protected BaseServiceTest()
     {
@@ -261,9 +263,11 @@ internal class BaseServiceTest
         var pressRepository = new PressRepository(pgContext);
         PressService = new PressService(pressRepository, null);
 
+        _transactionScopeFactory = new TransactionScopeFactory();
+
         var projectManagmentRepository = new ProjectManagmentRepository(pgContext);
         var projectManagmentTemplateRepository = new ProjectManagmentTemplateRepository(pgContext);
         ProjectManagmentService = new ProjectManagmentService(null, projectManagmentRepository, mapper, userRepository,
-            projectRepository, pachcaService, projectManagmentTemplateRepository);
+            projectRepository, pachcaService, projectManagmentTemplateRepository, _transactionScopeFactory);
     }
 }

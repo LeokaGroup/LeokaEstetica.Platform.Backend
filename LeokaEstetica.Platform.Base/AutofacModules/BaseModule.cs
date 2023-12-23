@@ -6,6 +6,7 @@ using LeokaEstetica.Platform.Base.Abstractions.Repositories.Validation;
 using LeokaEstetica.Platform.Base.Abstractions.Services.Messaging.Mail;
 using LeokaEstetica.Platform.Base.Abstractions.Services.Pachca;
 using LeokaEstetica.Platform.Base.Abstractions.Services.Validation;
+using LeokaEstetica.Platform.Base.Factors;
 using LeokaEstetica.Platform.Base.Repositories.Chat;
 using LeokaEstetica.Platform.Base.Repositories.User;
 using LeokaEstetica.Platform.Base.Repositories.Validation;
@@ -72,6 +73,14 @@ public class BaseModule : Module
             .InstancePerLifetimeScope();
         builder.RegisterType<PachcaService>()
             .As<IPachcaService>()
+            .InstancePerLifetimeScope();
+        
+        // Факторка транзакций.
+        builder.RegisterType<TransactionScopeFactory>()
+            .Named<ITransactionScopeFactory>("TransactionScopeFactory")
+            .InstancePerLifetimeScope();
+        builder.RegisterType<TransactionScopeFactory>()
+            .As<ITransactionScopeFactory>()
             .InstancePerLifetimeScope();
     }
 }
