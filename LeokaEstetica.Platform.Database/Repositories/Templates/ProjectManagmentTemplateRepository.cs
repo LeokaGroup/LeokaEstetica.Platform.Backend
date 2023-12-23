@@ -61,6 +61,7 @@ internal sealed class ProjectManagmentTemplateRepository : IProjectManagmentTemp
     {
         var result = await _pgContext.ProjectManagmentTaskStatusTemplates
             .Where(s => statusIds.Contains(s.StatusId))
+            .OrderBy(o => o.Position)
             .ToListAsync();
 
         return result;
