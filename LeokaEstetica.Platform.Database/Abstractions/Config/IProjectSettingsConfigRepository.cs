@@ -12,5 +12,6 @@ public interface IProjectSettingsConfigRepository
     /// <param name="templateId">Id шаблона.</param>
     /// <param name="projectId">Id проекта.</param>
     /// <param name="userId">Id пользователя.</param>
-    Task CommitSpaceSettingsAsync(string strategy, int templateId, long projectId, long userId);
+    /// <param name="isProjectOwner">Признак владельца проекта.</param>
+    Task CommitSpaceSettingsAsync(string strategy, int templateId, long projectId, long userId, bool isProjectOwner);
 }

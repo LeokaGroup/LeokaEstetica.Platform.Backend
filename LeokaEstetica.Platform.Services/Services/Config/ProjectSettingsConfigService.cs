@@ -1,6 +1,7 @@
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.Config;
+using LeokaEstetica.Platform.Database.Abstractions.Project;
 using LeokaEstetica.Platform.Services.Abstractions.Config;
 using Microsoft.Extensions.Logging;
 
@@ -12,6 +13,7 @@ internal sealed class ProjectSettingsConfigService : IProjectSettingsConfigServi
     private readonly IProjectSettingsConfigRepository _projectSettingsConfigRepository;
     private readonly IUserRepository _userRepository;
     private readonly ILogger<ProjectSettingsConfigService> _logger;
+    private readonly IProjectRepository _projectRepository;
 
     /// <summary>
     /// Конструктор.
@@ -19,13 +21,16 @@ internal sealed class ProjectSettingsConfigService : IProjectSettingsConfigServi
     /// <param name="projectSettingsConfigRepository">Репозиторий настроек проектов.</param>
     /// <param name="userRepository">Репозиторий пользователей.</param>
     /// <param name="logger">Логгер.</param>
+    /// <param name="projectRepository">Репозиторий проектов.</param>
     public ProjectSettingsConfigService(IProjectSettingsConfigRepository projectSettingsConfigRepository,
         IUserRepository userRepository,
-        ILogger<ProjectSettingsConfigService> logger)
+        ILogger<ProjectSettingsConfigService> logger,
+        IProjectRepository projectRepository)
     {
         _projectSettingsConfigRepository = projectSettingsConfigRepository;
         _userRepository = userRepository;
         _logger = logger;
+        _projectRepository = projectRepository;
     }
 
     /// <inheritdoc />
@@ -41,7 +46,11 @@ internal sealed class ProjectSettingsConfigService : IProjectSettingsConfigServi
                 throw ex;
             }
 
-            await _projectSettingsConfigRepository.CommitSpaceSettingsAsync(strategy, templateId, projectId, userId);
+            // Проверяем, является ли текущий пользователь владельцем проекта.
+            var isProjectOwner = await _projectRepository.CheckProjectOwnerAsync(projectId, userId);
+
+            await _projectSettingsConfigRepository.CommitSpaceSettingsAsync(strategy, templateId, projectId, userId,
+                isProjectOwner);
         }
         
         catch (Exception ex)

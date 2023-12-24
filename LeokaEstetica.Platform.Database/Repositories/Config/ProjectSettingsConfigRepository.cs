@@ -20,21 +20,17 @@ internal sealed class ProjectSettingsConfigRepository : IProjectSettingsConfigRe
     }
 
     /// <inheritdoc />
-    public async Task CommitSpaceSettingsAsync(string strategy, int templateId, long projectId, long userId)
+    public async Task CommitSpaceSettingsAsync(string strategy, int templateId, long projectId, long userId,
+        bool isProjectOwner)
     {
-        await _pgContext.AddRangeAsync(new List<ConfigSpaceSettingEntity>
+        var settings = new List<ConfigSpaceSettingEntity>();
+
+        // Для владельца проекта запоминаем еще и выбранный шаблон проекта.
+        // Другие участники проекта будут следовать этому шаблону, так как конфигурацию имеет право задавать
+        // лишь владелец проекта и пользователи, у которых есть нужная роль.
+        if (isProjectOwner)
         {
-            new ()
-            {
-                ParamKey = GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_STRATEGY,
-                ParamValue = strategy,
-                ParamType = "String",
-                UserId = userId,
-                ProjectId = projectId,
-                ParamDescription = "Выбранная пользователем стратегия представления.",
-                ParamTag = "Project management settings"
-            },
-            new ()
+            settings.Add(new ConfigSpaceSettingEntity
             {
                 ParamKey = GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGMENT_TEMPLATE_ID,
                 ParamValue = templateId.ToString(),
@@ -43,8 +39,21 @@ internal sealed class ProjectSettingsConfigRepository : IProjectSettingsConfigRe
                 ProjectId = projectId,
                 ParamDescription = "Выбранный пользователем шаблон.",
                 ParamTag = "Project management settings"
-            }
+            });
+        }
+
+        settings.Add(new ConfigSpaceSettingEntity
+        {
+            ParamKey = GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_STRATEGY,
+            ParamValue = strategy,
+            ParamType = "String",
+            UserId = userId,
+            ProjectId = projectId,
+            ParamDescription = "Выбранная пользователем стратегия представления.",
+            ParamTag = "Project management settings"
         });
+
+        await _pgContext.ConfigSpaceSettings.AddRangeAsync(settings);
         await _pgContext.SaveChangesAsync();
     }
 }
