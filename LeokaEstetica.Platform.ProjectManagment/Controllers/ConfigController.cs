@@ -2,8 +2,12 @@ using LeokaEstetica.Platform.Base;
 using LeokaEstetica.Platform.Base.Filters;
 using LeokaEstetica.Platform.Core.Constants;
 using LeokaEstetica.Platform.Database.Abstractions.Config;
+using LeokaEstetica.Platform.Models.Dto.Input.Config;
+using LeokaEstetica.Platform.ProjectManagment.Validators;
+using LeokaEstetica.Platform.Services.Abstractions.Config;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 
 namespace LeokaEstetica.Platform.ProjectManagment.Controllers;
 
@@ -17,17 +21,21 @@ public class ConfigController : BaseController
 {
     private readonly IGlobalConfigRepository _globalConfigRepository;
     private readonly ILogger<ConfigController> _logger;
+    private readonly IProjectSettingsConfigService _projectSettingsConfigService;
 
     /// <summary>
     /// Конструктор.
     /// </summary>
     /// <param name="globalConfigRepository">Репозиторий глобал конфига.</param>
     /// <param name="logger">Логгер.</param>
+    /// <param name="projectSettingsConfigService">Сервис настроек проектов.</param>
     public ConfigController(IGlobalConfigRepository globalConfigRepository,
-        ILogger<ConfigController> logger)
+        ILogger<ConfigController> logger,
+        IProjectSettingsConfigService projectSettingsConfigService)
     {
         _globalConfigRepository = globalConfigRepository;
         _logger = logger;
+        _projectSettingsConfigService = projectSettingsConfigService;
     }
 
     /// <summary>
@@ -50,5 +58,43 @@ public class ConfigController : BaseController
         _logger.LogInformation($"Закончили проверку доступности модуля управления проектами. Result: {result}");
 
         return result;
+    }
+
+    /// <summary>
+    /// Метод фиксирует выбранные пользователем настройки рабочего пространства проекта.
+    /// </summary>
+    /// <param name="configSpaceSettingInput">Входная модель.</param>
+    [HttpPost]
+    [Route("space-settings")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task CommitSpaceSettingsAsync([FromBody] ConfigSpaceSettingInput configSpaceSettingInput)
+    {
+        var validator = await new CommitProjectManagementSpaceSettingValidator()
+            .ValidateAsync(configSpaceSettingInput);
+        
+        if (validator.Errors.Any())
+        {
+            var exceptions = new List<InvalidOperationException>();
+
+            foreach (var err in validator.Errors)
+            {
+                exceptions.Add(new InvalidOperationException(err.ErrorMessage));
+            }
+
+            var ex = new AggregateException(
+                "Ошибка фиксации настроек рабочего пространств." +
+                $" ConfigSpaceSettingInput: {JsonConvert.SerializeObject(configSpaceSettingInput)}",
+                exceptions);
+            _logger.LogError(ex, ex.Message);
+            
+            throw ex;
+        }
+
+        await _projectSettingsConfigService.CommitSpaceSettingsAsync(configSpaceSettingInput.Strategy,
+            configSpaceSettingInput.TemplateId, configSpaceSettingInput.ProjectId, GetUserName());
     }
 }

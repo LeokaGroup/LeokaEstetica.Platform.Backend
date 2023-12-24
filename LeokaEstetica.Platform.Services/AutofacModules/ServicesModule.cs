@@ -1,5 +1,6 @@
 ﻿using Autofac;
 using LeokaEstetica.Platform.Core.Attributes;
+using LeokaEstetica.Platform.Services.Abstractions.Config;
 using LeokaEstetica.Platform.Services.Abstractions.FareRule;
 using LeokaEstetica.Platform.Services.Abstractions.Header;
 using LeokaEstetica.Platform.Services.Abstractions.Knowledge;
@@ -15,6 +16,7 @@ using LeokaEstetica.Platform.Services.Abstractions.Search.Project;
 using LeokaEstetica.Platform.Services.Abstractions.Subscription;
 using LeokaEstetica.Platform.Services.Abstractions.User;
 using LeokaEstetica.Platform.Services.Abstractions.Vacancy;
+using LeokaEstetica.Platform.Services.Services.Config;
 using LeokaEstetica.Platform.Services.Services.FareRule;
 using LeokaEstetica.Platform.Services.Services.Header;
 using LeokaEstetica.Platform.Services.Services.Knowledge;
@@ -252,6 +254,14 @@ public class ServicesModule : Module
             .InstancePerLifetimeScope();
         builder.RegisterType<ProjectManagmentService>()
             .As<IProjectManagmentService>()
+            .InstancePerLifetimeScope();
+            
+        // Сервис настроек проектов.
+        builder.RegisterType<ProjectSettingsConfigService>()
+            .Named<IProjectSettingsConfigService>("ProjectSettingsConfigService")
+            .InstancePerLifetimeScope();
+        builder.RegisterType<ProjectSettingsConfigService>()
+            .As<IProjectSettingsConfigService>()
             .InstancePerLifetimeScope();
     }
 }

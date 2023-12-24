@@ -122,11 +122,30 @@ public static class GlobalConfigKeys
         public const string REFUNDS_JOB_MODE_ENABLED = "Refunds.Job.Mode.Enabled";
     }
 
+    /// <summary>
+    /// Класс ключей модуля УП.
+    /// </summary>
     public static class ProjectManagment
     {
         /// <summary>
         /// Ключ вкл/откл модуль управления проектами.
         /// </summary>
         public const string PROJECT_MANAGMENT_MODE_ENABLED = "ProjectManagment.Mode.Enabled";
+    }
+
+    /// <summary>
+    /// Класс ключей настроек проектов.
+    /// </summary>
+    public static class ConfigSpaceSetting
+    {
+        /// <summary>
+        /// Ключ стратегии представления.
+        /// </summary>
+        public const string PROJECT_MANAGEMENT_STRATEGY = "ProjectManagement.Strategy";
+
+        /// <summary>
+        /// Ключ шаблона.
+        /// </summary>
+        public const string PROJECT_MANAGMENT_TEMPLATE_ID = "ProjectManagment.TemplateId";
     }
 }

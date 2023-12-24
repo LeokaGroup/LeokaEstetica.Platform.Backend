@@ -636,6 +636,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 throw ex;
             }
             
+            // TODO: Изменить на получение шаблона из репозитория конфигов настроек проектов.
             // Получаем шаблон проекта, если он был выбран.
             var projectTemplateId = await _projectManagmentTemplateRepository.GetProjectTemplateIdAsync(projectId);
 
