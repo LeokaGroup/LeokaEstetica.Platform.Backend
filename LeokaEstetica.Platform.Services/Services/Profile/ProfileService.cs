@@ -136,6 +136,9 @@ internal sealed class ProfileService : IProfileService
             {
                 result.LastName = string.Concat(result.LastName.Substring(0, 1), ".");
             }
+            
+            // Проверяем заполнение анкеты и даем доступ либо нет.
+            result.IsEmptyProfile = await _accessUserService.IsProfileEmptyAsync(userId);
 
             return result;
         }
