@@ -23,6 +23,14 @@ public interface IProjectSettingsConfigRepository
     /// Метод получает Id проекта, который был ранее выбран пользователем для перехода к управлению проектом.
     /// Необходимо для построения ссылки в рабочее пространство проекта.
     /// </summary>
-    /// <returns>Выходная модель.</returns>
+    /// <returns>Данные конфигурации.</returns>
     Task<ConfigSpaceSettingEntity> GetBuildProjectSpaceSettingsAsync(long userId);
+
+    /// <summary>
+    /// Метод получает настройки по Id проекта.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Данные конфигурации.</returns>
+    Task<IEnumerable<ConfigSpaceSettingEntity>> GetProjectSpaceSettingsByProjectIdAsync(long projectId, long userId);
 }

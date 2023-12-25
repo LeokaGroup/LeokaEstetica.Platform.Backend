@@ -139,8 +139,7 @@ public class ProjectManagmentController : BaseController
     /// если выбранный шаблон это предполагает.
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
-    /// <param name="strategy">Выбранная стратегия представления.</param>
-    /// <param name="templateId">Id шаблона.</param>
+
     /// <returns>Данные конфигурации рабочего пространства.</returns>
     [HttpGet]
     [Route("config-workspace-template")]
@@ -150,10 +149,10 @@ public class ProjectManagmentController : BaseController
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
     public async Task<ProjectManagmentWorkspaceResult> GetConfigurationWorkSpaceBySelectedTemplateAsync(
-        [FromQuery] long projectId, [FromQuery] string strategy, [FromQuery] int templateId)
+        [FromQuery] long projectId)
     {
         var validator = await new GetConfigurationValidator().ValidateAsync(
-            new GetConfigurationValidationModel(projectId, strategy, templateId));
+            new GetConfigurationValidationModel(projectId));
 
         if (validator.Errors.Any())
         {
@@ -171,7 +170,7 @@ public class ProjectManagmentController : BaseController
         }
 
         var result = await _projectManagmentService.GetConfigurationWorkSpaceBySelectedTemplateAsync(
-            projectId, strategy, templateId, GetUserName());
+            projectId, GetUserName());
 
         return result;
     }
