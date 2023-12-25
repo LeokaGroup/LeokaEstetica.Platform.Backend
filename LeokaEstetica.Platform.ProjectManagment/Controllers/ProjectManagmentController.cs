@@ -201,6 +201,7 @@ public class ProjectManagmentController : BaseController
     /// Метод создает задачу проекта.
     /// </summary>
     /// <param name="projectManagementTaskInput">Входная модель.</param>
+    /// <returns>Выходная модель.</returns>
     [HttpPost]
     [Route("task")]
     [ProducesResponseType(200)]
@@ -208,7 +209,8 @@ public class ProjectManagmentController : BaseController
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task CreateProjectTaskAsync([FromBody] CreateProjectManagementTaskInput projectManagementTaskInput)
+    public async Task<CreateProjectManagementTaskOutput> CreateProjectTaskAsync(
+        [FromBody] CreateProjectManagementTaskInput projectManagementTaskInput)
     {
         var validator = await new CreateProjectManagementTaskValidator().ValidateAsync(projectManagementTaskInput);
 
@@ -229,7 +231,9 @@ public class ProjectManagmentController : BaseController
             throw ex;
         }
 
-        await _projectManagmentService.CreateProjectTaskAsync(projectManagementTaskInput, GetUserName());
+        var result = await _projectManagmentService.CreateProjectTaskAsync(projectManagementTaskInput, GetUserName());
+
+        return result;
     }
 
     /// <summary>

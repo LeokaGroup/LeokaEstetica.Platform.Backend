@@ -425,24 +425,24 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             var items = await GetProjectManagmentTemplatesAsync(templateId);
             var templateStatusesItems = _mapper.Map<IEnumerable<ProjectManagmentTaskTemplateResult>>(items);
             var statuses = templateStatusesItems?.ToList();
-            
-            var strategy = projectSettingsItems.Find(x =>
-                x.ParamKey.Equals(GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_STRATEGY));
 
             if (statuses is null || !statuses.Any())
             {
                 throw new InvalidOperationException("Не удалось получить набор статусов шаблона." +
                                                     $" TemplateId: {templateId}." +
-                                                    $"ProjectId: {projectId}." +
-                                                    $"Strategy: {strategy}.");
+                                                    $"ProjectId: {projectId}.");
             }
 
             // Проставляем Id шаблона статусам.
             await SetProjectManagmentTemplateIdsAsync(statuses);
+            
+            var strategy = projectSettingsItems.Find(x =>
+                x.ParamKey.Equals(GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_STRATEGY));
 
             var result = new ProjectManagmentWorkspaceResult
             {
-                ProjectManagmentTaskStatuses = statuses.First().ProjectManagmentTaskStatusTemplates
+                ProjectManagmentTaskStatuses = statuses.First().ProjectManagmentTaskStatusTemplates,
+                Strategy = strategy!.ParamValue
             };
 
             // Получаем задачи пользователя, которые принадлежат проекту в рабочем пространстве.
@@ -513,14 +513,10 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             throw;
         }
     }
-
-    /// <summary>
-    /// Метод создает задачу проекта.
-    /// </summary>
-    /// <param name="projectManagementTaskInput">Входная модель.</param>
-    /// <param name="account">Аккаунт.</param>
-    public async Task CreateProjectTaskAsync(CreateProjectManagementTaskInput projectManagementTaskInput,
-        string account)
+    
+    /// <inheritdoc />
+    public async Task<CreateProjectManagementTaskOutput> CreateProjectTaskAsync(
+        CreateProjectManagementTaskInput projectManagementTaskInput, string account)
     {
         try
         {
@@ -569,8 +565,30 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             
             // Создаем задачу в БД.
             await _projectManagmentRepository.CreateProjectTaskAsync(addedProjectTask);
+
+            // Получаем настройки проекта.
+            var projectSettings = await _projectSettingsConfigRepository.GetProjectSpaceSettingsByProjectIdAsync(
+                projectId, userId);
+            var projectSettingsItems = projectSettings?.ToList();
+
+            if (projectSettingsItems is null || !projectSettingsItems.Any())
+            {
+                throw new InvalidOperationException("Ошибка получения настроек проекта. " +
+                                                    $"ProjectId: {projectId}. " +
+                                                    $"UserId: {userId}");
+            }
+
+            var redirectUrl = projectSettingsItems.Find(x =>
+                x.ParamKey.Equals(GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGMENT_SPACE_URL));
+
+            var result = new CreateProjectManagementTaskOutput
+            {
+                RedirectUrl = string.Concat(redirectUrl!.ParamValue, $"?projectId={projectId}")
+            };
             
             transactionScope.Complete();
+
+            return result;
         }
         
         catch (Exception ex)

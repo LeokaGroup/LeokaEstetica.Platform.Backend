@@ -75,7 +75,9 @@ public interface IProjectManagmentService
     /// </summary>
     /// <param name="projectManagementTaskInput">Входная модель.</param>
     /// <param name="account">Аккаунт.</param>
-    Task CreateProjectTaskAsync(CreateProjectManagementTaskInput projectManagementTaskInput, string account);
+    /// <returns>Выходная модель.</returns>
+    Task<CreateProjectManagementTaskOutput> CreateProjectTaskAsync(
+        CreateProjectManagementTaskInput projectManagementTaskInput, string account);
 
     /// <summary>
     /// Метод получает список приоритетов задачи.

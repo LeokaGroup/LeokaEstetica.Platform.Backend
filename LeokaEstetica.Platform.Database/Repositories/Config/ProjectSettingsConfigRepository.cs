@@ -129,6 +129,19 @@ internal sealed class ProjectSettingsConfigRepository : IProjectSettingsConfigRe
             .FirstOrDefaultAsync();
         
         result.Add(userStrategy);
+        
+        // Получаем роута представления с задачами.
+        var url = await _pgContext.ConfigSpaceSettings
+            .Where(s => s.ProjectId == projectId
+                        && s.ParamKey.Equals(GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGMENT_SPACE_URL))
+            .Select(s => new ConfigSpaceSettingEntity
+            {
+                ParamKey = s.ParamKey,
+                ParamValue = s.ParamValue
+            })
+            .FirstOrDefaultAsync();
+        
+        result.Add(url);
 
         return result;
     }
