@@ -147,5 +147,10 @@ public static class GlobalConfigKeys
         /// Ключ шаблона.
         /// </summary>
         public const string PROJECT_MANAGMENT_TEMPLATE_ID = "ProjectManagment.TemplateId";
+
+        /// <summary>
+        /// Ключ url к управлению проектом.
+        /// </summary>
+        public const string PROJECT_MANAGMENT_SPACE_URL = "ProjectManagment.SpaceUrl";
     }
 }

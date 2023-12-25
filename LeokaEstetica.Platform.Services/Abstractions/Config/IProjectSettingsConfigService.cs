@@ -1,3 +1,5 @@
+using LeokaEstetica.Platform.Models.Dto.Output.Configs;
+
 namespace LeokaEstetica.Platform.Services.Abstractions.Config;
 
 /// <summary>
@@ -9,5 +11,13 @@ public interface IProjectSettingsConfigService
     /// Метод фиксирует выбранные пользователем настройки рабочего пространства проекта.
     /// </summary>
     /// <param name="configSpaceSettingInput">Входная модель.</param>
-    Task CommitSpaceSettingsAsync(string strategy, int templateId, long projectId, string account);
+    Task<ConfigSpaceSettingOutput> CommitSpaceSettingsAsync(string strategy, int templateId, long projectId,
+        string account);
+
+    /// <summary>
+    /// Метод получает Id проекта, который был ранее выбран пользователем для перехода к управлению проектом.
+    /// Необходимо для построения ссылки в рабочее пространство проекта.
+    /// </summary>
+    /// <returns>Выходная модель.</returns>
+    Task<ConfigSpaceSettingOutput> GetBuildProjectSpaceSettingsAsync(string account);
 }

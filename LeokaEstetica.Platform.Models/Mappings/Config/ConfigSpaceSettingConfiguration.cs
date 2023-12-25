@@ -42,11 +42,19 @@ public partial class ConfigSpaceSettingConfiguration : IEntityTypeConfiguration<
         
         entity.Property(e => e.ProjectId)
             .HasColumnName("ProjectId")
-            .HasColumnType("bigint");
+            .HasColumnType("bigint")
+            .IsRequired();
         
         entity.Property(e => e.UserId)
             .HasColumnName("UserId")
-            .HasColumnType("bigint");
+            .HasColumnType("bigint")
+            .IsRequired();
+        
+        entity.Property(e => e.LastUserDate)
+            .HasColumnName("LastUserDate")
+            .HasColumnType("timestamp with time zone")
+            .HasDefaultValue(DateTime.UtcNow)
+            .IsRequired();
 
         entity.HasIndex(u => u.ConfigId)
             .HasDatabaseName("PK_ProjectManagmentProjectSettings_ConfigId")

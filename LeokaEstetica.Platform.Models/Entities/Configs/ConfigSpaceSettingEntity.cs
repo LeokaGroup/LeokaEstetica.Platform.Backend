@@ -44,4 +44,9 @@ public class ConfigSpaceSettingEntity
     /// Тег, который классифицирует параметр.
     /// </summary>
     public string ParamTag { get; set; }
+
+    /// <summary>
+    /// Дата последнего использования.
+    /// </summary>
+    public DateTime LastUserDate { get; set; }
 }
