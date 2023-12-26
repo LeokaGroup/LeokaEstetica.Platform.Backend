@@ -50,12 +50,10 @@ public interface IProjectManagmentService
     /// если выбранный шаблон это предполагает.
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
-    /// <param name="strategy">Выбранная стратегия представления.</param>
-    /// <param name="templateId">Id шаблона.</param>
     /// <param name="account">Аккаунт.</param>
     /// <returns>Данные конфигурации рабочего пространства.</returns>
     Task<ProjectManagmentWorkspaceResult> GetConfigurationWorkSpaceBySelectedTemplateAsync(long projectId,
-        string strategy, int templateId, string account);
+        string account);
 
     /// <summary>
     /// Метод получает детали задачи.
@@ -77,7 +75,9 @@ public interface IProjectManagmentService
     /// </summary>
     /// <param name="projectManagementTaskInput">Входная модель.</param>
     /// <param name="account">Аккаунт.</param>
-    Task CreateProjectTaskAsync(CreateProjectManagementTaskInput projectManagementTaskInput, string account);
+    /// <returns>Выходная модель.</returns>
+    Task<CreateProjectManagementTaskOutput> CreateProjectTaskAsync(
+        CreateProjectManagementTaskInput projectManagementTaskInput, string account);
 
     /// <summary>
     /// Метод получает список приоритетов задачи.

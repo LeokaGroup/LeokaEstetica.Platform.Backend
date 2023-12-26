@@ -288,5 +288,12 @@ public class RepositoriesModule : Module
         builder.RegisterType<ProjectManagmentTemplateRepository>()
             .As<IProjectManagmentTemplateRepository>()
             .InstancePerLifetimeScope();
+        
+        builder.RegisterType<ProjectSettingsConfigRepository>()
+            .Named<IProjectSettingsConfigRepository>("ProjectSettingsConfigRepository")
+            .InstancePerLifetimeScope();
+        builder.RegisterType<ProjectSettingsConfigRepository>()
+            .As<IProjectSettingsConfigRepository>()
+            .InstancePerLifetimeScope();
     }
 }

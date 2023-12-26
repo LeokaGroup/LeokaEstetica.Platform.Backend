@@ -8,6 +8,7 @@ namespace LeokaEstetica.Platform.Database.Abstractions.Template;
 public interface IProjectManagmentTemplateRepository
 {
     /// <summary>
+    /// TODO: Изменить на получение шаблона из репозитория конфигов настроек проектов.
     /// Метод получает шаблон проекта.
     /// </summary>
     /// <param name="projectId">Id проекта.</param>

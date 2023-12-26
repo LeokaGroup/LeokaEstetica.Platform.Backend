@@ -17,15 +17,5 @@ public class GetConfigurationValidator : AbstractValidator<GetConfigurationValid
         RuleFor(p => p.ProjectId)
             .Must(p => p > 0)
             .WithMessage(ValidationConst.ProjectManagmentValidation.NOT_VALID_PROJECT_ID);
-        
-        RuleFor(p => p.Strategy)
-            .NotNull()
-            .WithMessage(ValidationConst.ProjectManagmentValidation.EMPTY_STRATEGY)
-            .NotEmpty()
-            .WithMessage(ValidationConst.ProjectManagmentValidation.EMPTY_STRATEGY);
-        
-        RuleFor(p => p.TemplateId)
-            .Must(p => p > 0)
-            .WithMessage(ValidationConst.ProjectManagmentValidation.NOT_VALID_TEMPLATE_ID);
     }
 }

@@ -8,7 +8,7 @@ internal class GetConfigurationWorkSpaceBySelectedTemplateTest : BaseServiceTest
     [Test]
     public async Task GetConfigurationWorkSpaceBySelectedTemplateAsyncTest()
     {
-        var result = await ProjectManagmentService.GetConfigurationWorkSpaceBySelectedTemplateAsync(295, "kn", 1,
+        var result = await ProjectManagmentService.GetConfigurationWorkSpaceBySelectedTemplateAsync(295,
             "sierra_93@mail.ru");
 
         Assert.NotNull(result);

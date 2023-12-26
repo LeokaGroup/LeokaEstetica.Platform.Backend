@@ -4,9 +4,11 @@ using AutoMapper;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.Base.Abstractions.Services.Pachca;
 using LeokaEstetica.Platform.Base.Factors;
+using LeokaEstetica.Platform.Core.Constants;
 using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Core.Extensions;
+using LeokaEstetica.Platform.Database.Abstractions.Config;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Database.Abstractions.Template;
@@ -39,6 +41,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     private readonly IPachcaService _pachcaService;
     private readonly IProjectManagmentTemplateRepository _projectManagmentTemplateRepository;
     private readonly ITransactionScopeFactory _transactionScopeFactory;
+    private readonly IProjectSettingsConfigRepository _projectSettingsConfigRepository;
 
     /// <summary>
     /// Конструктор.
@@ -50,6 +53,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     /// <param name="pachcaService">Сервис уведомлений пачки.</param>
     /// <param name="projectManagmentTemplateRepository">Репозиторий шаблонов проектов.</param>
     /// <param name="transactionScopeFactory">Факторка транзакций.</param>
+    /// <param name="projectSettingsConfigRepository">Репозиторий настроек проектов.</param>
     /// </summary>
     public ProjectManagmentService(ILogger<ProjectManagmentService> logger,
         IProjectManagmentRepository projectManagmentRepository,
@@ -58,7 +62,8 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         IProjectRepository projectRepository,
         IPachcaService pachcaService,
         IProjectManagmentTemplateRepository projectManagmentTemplateRepository,
-        ITransactionScopeFactory transactionScopeFactory)
+        ITransactionScopeFactory transactionScopeFactory,
+        IProjectSettingsConfigRepository projectSettingsConfigRepository)
     {
         _logger = logger;
         _projectManagmentRepository = projectManagmentRepository;
@@ -68,6 +73,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         _pachcaService = pachcaService;
         _projectManagmentTemplateRepository = projectManagmentTemplateRepository;
         _transactionScopeFactory = transactionScopeFactory;
+        _projectSettingsConfigRepository = projectSettingsConfigRepository;
     }
 
     #region Публичные методы.
@@ -374,12 +380,10 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     /// если выбранный шаблон это предполагает.
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
-    /// <param name="strategy">Выбранная стратегия представления.</param>
-    /// <param name="templateId">Id шаблона.</param>
     /// <param name="account">Аккаунт.</param>
     /// <returns>Данные конфигурации рабочего пространства.</returns>
     public async Task<ProjectManagmentWorkspaceResult> GetConfigurationWorkSpaceBySelectedTemplateAsync(long projectId,
-        string strategy, int templateId, string account)
+        string account)
     {
         try
         {
@@ -400,6 +404,22 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                                                     $"ProjectId: {projectId}." +
                                                     $"UserId: {userId}");
             }
+            
+            // Получаем настройки проекта.
+            var projectSettings = await _projectSettingsConfigRepository.GetProjectSpaceSettingsByProjectIdAsync(
+                projectId, userId);
+            var projectSettingsItems = projectSettings?.ToList();
+
+            if (projectSettingsItems is null || !projectSettingsItems.Any())
+            {
+                throw new InvalidOperationException("Ошибка получения настроек проекта. " +
+                                                    $"ProjectId: {projectId}. " +
+                                                    $"UserId: {userId}");
+            }
+
+            var template = projectSettingsItems.Find(x =>
+                x.ParamKey.Equals(GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGMENT_TEMPLATE_ID));
+            var templateId = Convert.ToInt32(template!.ParamValue);
 
             // Получаем набор статусов, которые входят в выбранный шаблон.
             var items = await GetProjectManagmentTemplatesAsync(templateId);
@@ -410,16 +430,19 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             {
                 throw new InvalidOperationException("Не удалось получить набор статусов шаблона." +
                                                     $" TemplateId: {templateId}." +
-                                                    $"ProjectId: {projectId}." +
-                                                    $"Strategy: {strategy}.");
+                                                    $"ProjectId: {projectId}.");
             }
 
             // Проставляем Id шаблона статусам.
             await SetProjectManagmentTemplateIdsAsync(statuses);
+            
+            var strategy = projectSettingsItems.Find(x =>
+                x.ParamKey.Equals(GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_STRATEGY));
 
             var result = new ProjectManagmentWorkspaceResult
             {
-                ProjectManagmentTaskStatuses = statuses.First().ProjectManagmentTaskStatusTemplates
+                ProjectManagmentTaskStatuses = statuses.First().ProjectManagmentTaskStatusTemplates,
+                Strategy = strategy!.ParamValue
             };
 
             // Получаем задачи пользователя, которые принадлежат проекту в рабочем пространстве.
@@ -490,14 +513,10 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             throw;
         }
     }
-
-    /// <summary>
-    /// Метод создает задачу проекта.
-    /// </summary>
-    /// <param name="projectManagementTaskInput">Входная модель.</param>
-    /// <param name="account">Аккаунт.</param>
-    public async Task CreateProjectTaskAsync(CreateProjectManagementTaskInput projectManagementTaskInput,
-        string account)
+    
+    /// <inheritdoc />
+    public async Task<CreateProjectManagementTaskOutput> CreateProjectTaskAsync(
+        CreateProjectManagementTaskInput projectManagementTaskInput, string account)
     {
         try
         {
@@ -546,8 +565,30 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             
             // Создаем задачу в БД.
             await _projectManagmentRepository.CreateProjectTaskAsync(addedProjectTask);
+
+            // Получаем настройки проекта.
+            var projectSettings = await _projectSettingsConfigRepository.GetProjectSpaceSettingsByProjectIdAsync(
+                projectId, userId);
+            var projectSettingsItems = projectSettings?.ToList();
+
+            if (projectSettingsItems is null || !projectSettingsItems.Any())
+            {
+                throw new InvalidOperationException("Ошибка получения настроек проекта. " +
+                                                    $"ProjectId: {projectId}. " +
+                                                    $"UserId: {userId}");
+            }
+
+            var redirectUrl = projectSettingsItems.Find(x =>
+                x.ParamKey.Equals(GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGMENT_SPACE_URL));
+
+            var result = new CreateProjectManagementTaskOutput
+            {
+                RedirectUrl = string.Concat(redirectUrl!.ParamValue, $"?projectId={projectId}")
+            };
             
             transactionScope.Complete();
+
+            return result;
         }
         
         catch (Exception ex)
@@ -636,6 +677,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 throw ex;
             }
             
+            // TODO: Изменить на получение шаблона из репозитория конфигов настроек проектов.
             // Получаем шаблон проекта, если он был выбран.
             var projectTemplateId = await _projectManagmentTemplateRepository.GetProjectTemplateIdAsync(projectId);
 

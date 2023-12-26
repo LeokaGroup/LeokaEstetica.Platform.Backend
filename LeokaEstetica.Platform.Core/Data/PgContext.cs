@@ -555,4 +555,9 @@ public class PgContext : DbContext
     /// Таблица приоритетов.
     /// </summary>
     public DbSet<TaskPriorityEntity> TaskPriorities { get; set; }
+
+    /// <summary>
+    /// Таблица настроек рабочего пространства проектов.
+    /// </summary>
+    public DbSet<ConfigSpaceSettingEntity> ConfigSpaceSettings { get; set; }
 }
