@@ -250,46 +250,35 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 // Если настройки.
                 if (destination == ProjectManagmentDestinationTypeEnum.Settings)
                 {
-                    if (!item.HasItems)
+                    ProjectManagmentHeaderFilters mapItems;
+
+                    try
                     {
-                        result.Add(new ProjectManagmentHeaderResult
-                        {
-                            Label = item.ItemName
-                        });
+                        mapItems = JsonConvert.DeserializeObject<ProjectManagmentHeaderFilters>(item.Items);
                     }
 
-                    else
+                    catch (Exception ex)
                     {
-                        ProjectManagmentHeaderSettings mapItems;
+                        _logger?.LogError(ex, "Ошибка при десериализации элементов меню настроек." +
+                                              $" Filters: {item.Items}");
+                        throw;
+                    }
 
-                        try
+                    if (mapItems is not null)
+                    {
+                        var filters = mapItems.Items.OrderBy(o => o.Position);
+
+                        var selectedFilters = filters.Select(x => new ProjectManagmentHeader
                         {
-                            mapItems = JsonConvert.DeserializeObject<ProjectManagmentHeaderSettings>(item.Items);
-                        }
+                            Label = x.ItemName,
+                            Id = ProjectManagmentDestinationTypeEnum.Settings.ToString()
+                        });
 
-                        catch (Exception ex)
+                        result.Add(new ProjectManagmentHeaderResult
                         {
-                            _logger?.LogError(ex, "Ошибка при десериализации элементов меню настроек." +
-                                                  $" Settings: {item.Items}");
-                            throw;
-                        }
-
-                        if (mapItems is not null)
-                        {
-                            var settings = mapItems.Items.OrderBy(o => o.Position);
-
-                            var selectedSettings = settings.Select(x => new ProjectManagmentHeader
-                            {
-                                Label = x.ItemName,
-                                Id = ProjectManagmentDestinationTypeEnum.Settings.ToString()
-                            });
-
-                            result.AddRange(selectedSettings.Select(x => new ProjectManagmentHeaderResult
-                            {
-                                Label = x.Label,
-                                Id = x.Id
-                            }));
-                        }
+                            Label = item.ItemName,
+                            Items = selectedFilters
+                        });
                     }
                 }
             }
