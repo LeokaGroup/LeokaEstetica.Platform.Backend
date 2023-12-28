@@ -500,8 +500,8 @@ public class CallCenterController : BaseController
         };
 
         var account = result.ProfileInfo.Email;
-        result.Skills = await _profileService.SelectedProfileUserSkillsAsync(account);
-        result.Intents = await _profileService.SelectedProfileUserIntentsAsync(account);
+        result.Skills = await _profileService.SelectedProfileUserSkillsAsync(null, account);
+        result.Intents = await _profileService.SelectedProfileUserIntentsAsync(null, account);
 
         return result;
     }
