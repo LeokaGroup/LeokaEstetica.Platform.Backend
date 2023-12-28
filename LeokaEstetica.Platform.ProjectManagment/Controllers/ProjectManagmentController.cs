@@ -280,15 +280,15 @@ public class ProjectManagmentController : BaseController
     /// <returns>Список тегов.</returns>
     [HttpGet]
     [Route("task-tags")]
-    [ProducesResponseType(200, Type = typeof(IEnumerable<TaskTagOutput>))]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<UserTaskTagOutput>))]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<IEnumerable<TaskTagOutput>> GetTaskTagsAsync()
+    public async Task<IEnumerable<UserTaskTagOutput>> GetTaskTagsAsync()
     {
         var items = await _projectManagmentService.GetTaskTagsAsync();
-        var result = _mapper.Map<IEnumerable<TaskTagOutput>>(items);
+        var result = _mapper.Map<IEnumerable<UserTaskTagOutput>>(items);
 
         return result;
     }

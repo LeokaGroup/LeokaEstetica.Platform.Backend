@@ -1,9 +1,9 @@
 namespace LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 
 /// <summary>
-/// Класс выходной модели тегов задачи.
+/// Класс выходной модели тегов задачи пользователя.
 /// </summary>
-public class TaskTagOutput
+public class UserTaskTagOutput
 {
     /// <summary>
     /// Id тега.

@@ -628,10 +628,10 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     }
 
     /// <summary>
-    /// Метод получает список тегов для выбора в задаче.
+    /// Метод получает список тегов пользователя для выбора в задаче.
     /// </summary>
     /// <returns>Список тегов.</returns>
-    public async Task<IEnumerable<TaskTagEntity>> GetTaskTagsAsync()
+    public async Task<IEnumerable<UserTaskTagEntity>> GetTaskTagsAsync()
     {
         try
         {

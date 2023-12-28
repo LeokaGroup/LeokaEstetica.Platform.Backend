@@ -86,10 +86,10 @@ public interface IProjectManagmentService
     Task<IEnumerable<TaskPriorityEntity>> GetTaskPrioritiesAsync();
 
     /// <summary>
-    /// Метод получает список тегов для выбора в задаче.
+    /// Метод получает список тегов пользователя для выбора в задаче.
     /// </summary>
     /// <returns>Список тегов.</returns>
-    Task<IEnumerable<TaskTagEntity>> GetTaskTagsAsync();
+    Task<IEnumerable<UserTaskTagEntity>> GetTaskTagsAsync();
 
     /// <summary>
     /// Метод получает список статусов задачи для выбора.

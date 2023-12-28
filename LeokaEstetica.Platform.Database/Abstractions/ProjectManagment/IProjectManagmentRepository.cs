@@ -104,10 +104,10 @@ public interface IProjectManagmentRepository
     Task<IEnumerable<TaskTypeEntity>> GetTaskTypesAsync();
 
     /// <summary>
-    /// Метод получает список тегов для выбора в задаче.
+    /// Метод получает список тегов пользователя для выбора в задаче.
     /// </summary>
     /// <returns>Список тегов.</returns>
-    Task<IEnumerable<TaskTagEntity>> GetTaskTagsAsync();
+    Task<IEnumerable<UserTaskTagEntity>> GetTaskTagsAsync();
 
     /// <summary>
     /// Метод создает задачу проекта.
