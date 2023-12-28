@@ -163,8 +163,9 @@ public class ProfileController : BaseController
     }
 
     /// <summary>
-    /// Метод получает список выбранные навыки пользователя.
+    /// Метод получает выбранные навыки пользователя.
     /// </summary>
+    /// <param name="userCode">Код пользователя.</param>
     /// <returns>Список навыков.</returns>
     [HttpGet]
     [Route("selected-skills")]
@@ -173,16 +174,27 @@ public class ProfileController : BaseController
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<List<SkillOutput>> GetSelectedUserSkillsAsync()
+    public async Task<List<SkillOutput>> GetSelectedUserSkillsAsync([FromQuery] Guid? userCode)
     {
-        var result = await _profileService.SelectedProfileUserSkillsAsync(GetUserName());
+        List<SkillOutput> result;
+
+        if (userCode is null || userCode == Guid.Empty)
+        {
+            result = await _profileService.SelectedProfileUserSkillsAsync(null, GetUserName());
+        }
+        
+        else
+        {
+            result = await _profileService.SelectedProfileUserSkillsAsync(userCode, GetUserName());   
+        }
 
         return result;
     }
     
     /// <summary>
-    /// Метод получает список выбранные цели пользователя.
+    /// Метод получает выбранные цели пользователя.
     /// </summary>
+    /// <param name="userCode">Код пользователя.</param>
     /// <returns>Список целей.</returns>
     [HttpGet]
     [Route("selected-intents")]
@@ -191,9 +203,19 @@ public class ProfileController : BaseController
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<List<IntentOutput>> GetSelectedUserIntentsAsync()
+    public async Task<List<IntentOutput>> GetSelectedUserIntentsAsync([FromQuery] Guid? userCode)
     {
-        var result = await _profileService.SelectedProfileUserIntentsAsync(GetUserName());
+        List<IntentOutput> result;
+
+        if (userCode is null || userCode == Guid.Empty)
+        {
+            result = await _profileService.SelectedProfileUserIntentsAsync(null, GetUserName());
+        }
+        
+        else
+        {
+            result = await _profileService.SelectedProfileUserIntentsAsync(userCode, GetUserName());   
+        }
 
         return result;
     }
