@@ -26,7 +26,7 @@ internal sealed class ProjectInviteTeamLinkStrategy : BaseProjectInviteTeamStrat
     /// <returns>Id пользователя.</returns>
     public override async Task<long> GetUserId(string inviteText, string token)
     {
-        var result = await UserRepository.GetUserIdByCodeAsync(inviteText);
+        var result = await UserRepository.GetUserIdByCodeAsync(new Guid(inviteText));
 
         if (result <= 0)
         {
