@@ -40,6 +40,7 @@ using LeokaEstetica.Platform.Diagnostics.Services.Metrics;
 using LeokaEstetica.Platform.Finder.Services.Project;
 using LeokaEstetica.Platform.Finder.Services.Resume;
 using LeokaEstetica.Platform.Finder.Services.Vacancy;
+using LeokaEstetica.Platform.Integrations.Abstractions.Reverso;
 using LeokaEstetica.Platform.Integrations.Services.Pachca;
 using LeokaEstetica.Platform.Integrations.Services.Reverso;
 using LeokaEstetica.Platform.Integrations.Services.Telegram;
@@ -269,10 +270,9 @@ internal class BaseServiceTest
         var projectManagmentRepository = new ProjectManagmentRepository(pgContext);
         var projectManagmentTemplateRepository = new ProjectManagmentTemplateRepository(pgContext);
         var projectSettingsConfigRepository = new ProjectSettingsConfigRepository(pgContext);
+        ReversoService = new ReversoService(null);
         ProjectManagmentService = new ProjectManagmentService(null, projectManagmentRepository, mapper, userRepository,
             projectRepository, pachcaService, projectManagmentTemplateRepository, transactionScopeFactory,
-            projectSettingsConfigRepository);
-
-        ReversoService = new ReversoService(null);
+            projectSettingsConfigRepository, new Lazy<IReversoService>(ReversoService));
     }
 }

@@ -1,4 +1,5 @@
 using Autofac;
+using LazyProxy.Autofac;
 using LeokaEstetica.Platform.Core.Attributes;
 using LeokaEstetica.Platform.Integrations.Abstractions.Pachca;
 using LeokaEstetica.Platform.Integrations.Abstractions.Reverso;
@@ -39,11 +40,17 @@ public class IntegrationModule : Module
             .InstancePerLifetimeScope();
         
         // Сервис транслитера ReversoAPI.
-        builder.RegisterType<ReversoService>()
-            .Named<IReversoService>("ReversoService")
-            .InstancePerLifetimeScope();
-        builder.RegisterType<ReversoService>()
-            .As<IReversoService>()
-            .InstancePerLifetimeScope();
+        // builder.RegisterType<ReversoService>()
+        //     .Named<IReversoService>("ReversoService")
+        //     .InstancePerLifetimeScope();
+        // builder.RegisterType<ReversoService>()
+        //     .As<IReversoService>()
+        //     .InstancePerLifetimeScope();
+        // builder.RegisterType<ReversoService>()
+        //     .As<IReversoService>()
+        //     .InstancePerLifetimeScope();
+
+        builder.RegisterLazy<IReversoService, ReversoService>();
+        builder.RegisterLazy<IPachcaService, PachcaService>();
     }
 }

@@ -266,6 +266,24 @@ internal sealed class ProjectManagmentRepository : IProjectManagmentRepository
         await _pgContext.SaveChangesAsync();
     }
 
+    /// <inheritdoc />
+    public async Task<int> GetLastPositionUserTaskTagAsync(long userId)
+    {
+        var result = await _pgContext.UserTaskTags
+            .Where(x => x.UserId == userId)
+            .Select(x => x.Position)
+            .MaxAsync();
+
+        return result;
+    }
+
+    /// <inheritdoc />
+    public async Task CreateUserTaskTagAsync(UserTaskTagEntity tag)
+    {
+        await _pgContext.UserTaskTags.AddAsync(tag);
+        await _pgContext.SaveChangesAsync();
+    }
+
     #endregion
 
     #region Приватные методы.

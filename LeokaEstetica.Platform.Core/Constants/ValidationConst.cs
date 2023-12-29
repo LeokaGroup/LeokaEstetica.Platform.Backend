@@ -30,33 +30,7 @@ public static class ValidationConst
         /// </summary>
         public const string EMPTY_MODE = "Передан некорректный режим. Mode был ";
     }
-    
-    /// <summary>
-    /// Класс описывает ключи для валидации вакансий.
-    /// </summary>
-    public static class VacancyValidation
-    {
-        /// <summary>
-        /// Если не заполнили название вакансии.
-        /// </summary>
-        public const string EMPTY_VACANCY_NAME = "Не заполнено название вакансии.";
 
-        /// <summary>
-        /// Если не заполнили описание вакансии.
-        /// </summary>
-        public const string EMPTY_VACANCY_DETAILS = "Не заполнено описание вакансии.";
-
-        /// <summary>
-        /// Если передали некорректный Id вакансии.
-        /// </summary>
-        public const string NOT_VALID_VACANCY_ID = "Некорректный Id вакансии. VacancyId был ";
-
-        /// <summary>
-        /// Если передали некорректный режим.
-        /// </summary>
-        public const string EMPTY_MODE = "Передан некорректный режим. Mode был ";
-    }
-    
     /// <summary>
     /// Класс описывает ключи поиска в проектах.
     /// </summary>
@@ -190,18 +164,8 @@ public static class ValidationConst
         public const string NOT_VALID_TEMPLATE_ID = "Id шаблона не передан.";
 
         /// <summary>
-        /// Если не заполнили название задачи проекта.
+        /// Если не заполнили название тега.
         /// </summary>
-        public const string EMPTY_TASK_NAME = "Название задачи не заполнено.";
-        
-        /// <summary>
-        /// Если передали невалидный Id статуса задачи.
-        /// </summary>
-        public const string NOT_VALID_STATUS_ID = "Id статуса задачи не передан.";
-        
-        /// <summary>
-        /// Если передали невалидный Id типа задачи.
-        /// </summary>
-        public const string NOT_VALID_TASK_TYPE_ID = "Id типа задачи не передан.";
+        public const string EMPTY_TAG_NAME = "Не заполнено название тега.";
     }
 }
