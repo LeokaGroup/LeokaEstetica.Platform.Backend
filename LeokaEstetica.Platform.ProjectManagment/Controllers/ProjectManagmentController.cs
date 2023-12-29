@@ -370,4 +370,20 @@ public class ProjectManagmentController : BaseController
 
         return result;
     }
+
+    /// <summary>
+    /// Метод создает метку (тег) для задач пользователя.
+    /// </summary>
+    /// <param name="userTaskTagInput">Входная модель.</param>
+    [HttpPost]
+    [Route("user-tag")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task CreateUserTaskTagAsync([FromBody] UserTaskTagInput userTaskTagInput)
+    {
+        
+    }
 }

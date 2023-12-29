@@ -19,4 +19,14 @@ public class UserTaskTagOutput
     /// Системное название тега.
     /// </summary>
     public string TagSysName { get; set; }
+    
+    /// <summary>
+    /// Id пользователя.
+    /// </summary>
+    public long UserId { get; set; }
+
+    /// <summary>
+    /// Описание метки (тега).
+    /// </summary>
+    public string TagDescription { get; set; }
 }

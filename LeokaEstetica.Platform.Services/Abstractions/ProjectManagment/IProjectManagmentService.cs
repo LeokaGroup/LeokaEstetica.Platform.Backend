@@ -106,4 +106,12 @@ public interface IProjectManagmentService
     /// <param name="account">Аккаунт.</param>
     /// <returns>Список пользователей.</returns>
     Task<IEnumerable<ProfileInfoEntity>> GetSelectTaskExecutorsAsync(long projectId, string account);
+
+    /// <summary>
+    /// Метод создает метку (тег) для задач пользователя.
+    /// </summary>
+    /// <param name="tagName">Название метки (тега).</param>
+    /// <param name="tagDescription">Описание метки (тега).</param>
+    /// <param name="account">Аккаунт.</param>
+    Task CreateUserTaskTagAsync(string tagName, string tagDescription, string account);
 }
