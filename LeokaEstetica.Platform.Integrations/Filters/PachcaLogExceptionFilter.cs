@@ -1,12 +1,12 @@
-using LeokaEstetica.Platform.Base.Abstractions.Services.Pachca;
+using LeokaEstetica.Platform.Integrations.Abstractions.Pachca;
 using Microsoft.AspNetCore.Mvc.Filters;
 
-namespace LeokaEstetica.Platform.Base.Filters;
+namespace LeokaEstetica.Platform.Integrations.Filters;
 
 /// <summary>
 /// Класс глобального фильтра, который ловит все ошибки приложения и отправляет боту.
 /// </summary>
-public class LogExceptionFilter : ExceptionFilterAttribute
+public class PachcaLogExceptionFilter : ExceptionFilterAttribute
 {
     private readonly IPachcaService _pachcaService;
 
@@ -14,7 +14,7 @@ public class LogExceptionFilter : ExceptionFilterAttribute
     /// Конструктор.
     /// </summary>
     /// <param name="pachcaService">Сервис мессенджера пачки.</param>
-    public LogExceptionFilter(IPachcaService pachcaService)
+    public PachcaLogExceptionFilter(IPachcaService pachcaService)
     {
         _pachcaService = pachcaService;
     }

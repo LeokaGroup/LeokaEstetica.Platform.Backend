@@ -1,6 +1,6 @@
 using LeokaEstetica.Platform.Base.Enums;
 
-namespace LeokaEstetica.Platform.Base.Abstractions.Services.Pachca;
+namespace LeokaEstetica.Platform.Integrations.Abstractions.Pachca;
 
 /// <summary>
 /// Абстракция сервиса пачки.
