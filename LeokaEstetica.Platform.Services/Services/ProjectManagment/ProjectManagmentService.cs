@@ -2,6 +2,7 @@
 using System.Runtime.CompilerServices;
 using AutoMapper;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
+using LeokaEstetica.Platform.Base.Extensions.StringExtensions;
 using LeokaEstetica.Platform.Base.Factors;
 using LeokaEstetica.Platform.Core.Constants;
 using LeokaEstetica.Platform.Core.Enums;
@@ -773,9 +774,14 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 
             var tagSysName = await _reversoService.Value.TranslateTextRussianToEnglishAsync(tagName,
                 TranslateLangTypeEnum.Russian, TranslateLangTypeEnum.English);
+
+            // Разбиваем строку на пробелы и приводим каждое слово к PascalCase и соединяем снова в строку.
+            tagSysName = string.Join("", tagSysName.Split(" ").Select(x => x.ToPascalCase()));
+
             var maxUserTagPosition = await _projectManagmentRepository.GetLastPositionUserTaskTagAsync(userId);
+            
             var userTag = CreateUserTaskTagFactory.CreateUserTaskTag(tagName, tagDescription, tagSysName, userId,
-                    maxUserTagPosition);
+                    ++maxUserTagPosition);
             await _projectManagmentRepository.CreateUserTaskTagAsync(userTag);
         }
         

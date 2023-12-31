@@ -269,6 +269,14 @@ internal sealed class ProjectManagmentRepository : IProjectManagmentRepository
     /// <inheritdoc />
     public async Task<int> GetLastPositionUserTaskTagAsync(long userId)
     {
+        var isEmpty = await _pgContext.UserTaskTags.AnyAsync(x => x.UserId == userId);
+
+        if (!isEmpty)
+        {
+            // Если позиций пока нету, то начнем с первой.
+            return 1;
+        }
+        
         var result = await _pgContext.UserTaskTags
             .Where(x => x.UserId == userId)
             .Select(x => x.Position)

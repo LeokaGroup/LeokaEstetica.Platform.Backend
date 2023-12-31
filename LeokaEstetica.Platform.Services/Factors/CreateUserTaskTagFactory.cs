@@ -18,6 +18,11 @@ public static class CreateUserTaskTagFactory
     public static UserTaskTagEntity CreateUserTaskTag(string tagName, string tagDescription, string tagSysName,
         long userId, int maxPosition)
     {
+        if (string.IsNullOrWhiteSpace(tagDescription))
+        {
+            tagDescription = null;
+        }
+        
         var result = new UserTaskTagEntity
         {
             TagName = tagName,
