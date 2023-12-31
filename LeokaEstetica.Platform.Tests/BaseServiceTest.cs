@@ -6,7 +6,6 @@ using LeokaEstetica.Platform.Access.Services.User;
 using LeokaEstetica.Platform.Base.Factors;
 using LeokaEstetica.Platform.Base.Repositories.Chat;
 using LeokaEstetica.Platform.Base.Repositories.User;
-using LeokaEstetica.Platform.Base.Services.Pachca;
 using LeokaEstetica.Platform.CallCenter.Services.Project;
 using LeokaEstetica.Platform.CallCenter.Services.Resume;
 using LeokaEstetica.Platform.CallCenter.Services.Ticket;
@@ -41,6 +40,9 @@ using LeokaEstetica.Platform.Diagnostics.Services.Metrics;
 using LeokaEstetica.Platform.Finder.Services.Project;
 using LeokaEstetica.Platform.Finder.Services.Resume;
 using LeokaEstetica.Platform.Finder.Services.Vacancy;
+using LeokaEstetica.Platform.Integrations.Abstractions.Reverso;
+using LeokaEstetica.Platform.Integrations.Services.Pachca;
+using LeokaEstetica.Platform.Integrations.Services.Reverso;
 using LeokaEstetica.Platform.Integrations.Services.Telegram;
 using LeokaEstetica.Platform.Messaging.Services.Chat;
 using LeokaEstetica.Platform.Messaging.Services.Project;
@@ -116,7 +118,7 @@ internal class BaseServiceTest
     protected readonly ChatRepository ChatRepository;
     protected readonly PressService PressService;
     protected readonly ProjectManagmentService ProjectManagmentService;
-    private readonly TransactionScopeFactory _transactionScopeFactory;
+    protected readonly ReversoService ReversoService;
 
     protected BaseServiceTest()
     {
@@ -263,13 +265,14 @@ internal class BaseServiceTest
         var pressRepository = new PressRepository(pgContext);
         PressService = new PressService(pressRepository, null);
 
-        _transactionScopeFactory = new TransactionScopeFactory();
+        var transactionScopeFactory = new TransactionScopeFactory();
 
         var projectManagmentRepository = new ProjectManagmentRepository(pgContext);
         var projectManagmentTemplateRepository = new ProjectManagmentTemplateRepository(pgContext);
         var projectSettingsConfigRepository = new ProjectSettingsConfigRepository(pgContext);
+        ReversoService = new ReversoService(null);
         ProjectManagmentService = new ProjectManagmentService(null, projectManagmentRepository, mapper, userRepository,
-            projectRepository, pachcaService, projectManagmentTemplateRepository, _transactionScopeFactory,
-            projectSettingsConfigRepository);
+            projectRepository, pachcaService, projectManagmentTemplateRepository, transactionScopeFactory,
+            projectSettingsConfigRepository, new Lazy<IReversoService>(ReversoService));
     }
 }

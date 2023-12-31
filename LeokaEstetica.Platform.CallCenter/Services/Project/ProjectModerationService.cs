@@ -1,7 +1,6 @@
 using AutoMapper;
 using FluentValidation.Results;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
-using LeokaEstetica.Platform.Base.Abstractions.Services.Pachca;
 using LeokaEstetica.Platform.Base.Enums;
 using LeokaEstetica.Platform.Base.Extensions.HtmlExtensions;
 using LeokaEstetica.Platform.CallCenter.Abstractions.Messaging.Mail;
@@ -13,6 +12,7 @@ using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Project;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
+using LeokaEstetica.Platform.Integrations.Abstractions.Pachca;
 using LeokaEstetica.Platform.Integrations.Abstractions.Telegram;
 using LeokaEstetica.Platform.Models.Dto.Input.Moderation;
 using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Project;

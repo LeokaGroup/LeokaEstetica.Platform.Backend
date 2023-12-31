@@ -114,13 +114,13 @@ internal sealed class ProjectManagmentRepository : IProjectManagmentRepository
     }
 
     /// <summary>
-    /// Метод получает названия тегов (меток) задач по их Id.
+    /// Метод получает названия тегов (меток) пользователя задач по их Id.
     /// </summary>
     /// <param name="tagIds">Id тегов (меток) задач.</param>
     /// <returns>Словарь с тегами (метками) задач.</returns>
     public async Task<IDictionary<int, string>> GetTagNamesByTagIdsAsync(IEnumerable<int> tagIds)
     {
-        var result = await _pgContext.TaskTags
+        var result = await _pgContext.UserTaskTags
             .Where(t => tagIds.Contains(t.TagId))
             .OrderBy(o => o.Position)
             .ToDictionaryAsync(k => k.TagId, v => v.TagName);
@@ -244,12 +244,12 @@ internal sealed class ProjectManagmentRepository : IProjectManagmentRepository
     }
 
     /// <summary>
-    /// Метод получает список тегов для выбора в задаче.
+    /// Метод получает список тегов пользователя для выбора в задаче.
     /// </summary>
     /// <returns>Список тегов.</returns>
-    public async Task<IEnumerable<TaskTagEntity>> GetTaskTagsAsync()
+    public async Task<IEnumerable<UserTaskTagEntity>> GetTaskTagsAsync()
     {
-        var result = await _pgContext.TaskTags
+        var result = await _pgContext.UserTaskTags
             .OrderBy(o => o.Position)
             .ToListAsync();
 
@@ -263,6 +263,32 @@ internal sealed class ProjectManagmentRepository : IProjectManagmentRepository
     public async Task CreateProjectTaskAsync(ProjectTaskEntity task)
     {
         await _pgContext.ProjectTasks.AddAsync(task);
+        await _pgContext.SaveChangesAsync();
+    }
+
+    /// <inheritdoc />
+    public async Task<int> GetLastPositionUserTaskTagAsync(long userId)
+    {
+        var isEmpty = await _pgContext.UserTaskTags.AnyAsync(x => x.UserId == userId);
+
+        if (!isEmpty)
+        {
+            // Если позиций пока нету, то начнем с первой.
+            return 1;
+        }
+        
+        var result = await _pgContext.UserTaskTags
+            .Where(x => x.UserId == userId)
+            .Select(x => x.Position)
+            .MaxAsync();
+
+        return result;
+    }
+
+    /// <inheritdoc />
+    public async Task CreateUserTaskTagAsync(UserTaskTagEntity tag)
+    {
+        await _pgContext.UserTaskTags.AddAsync(tag);
         await _pgContext.SaveChangesAsync();
     }
 

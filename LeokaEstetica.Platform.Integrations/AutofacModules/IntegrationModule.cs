@@ -1,6 +1,11 @@
 using Autofac;
+using LazyProxy.Autofac;
 using LeokaEstetica.Platform.Core.Attributes;
+using LeokaEstetica.Platform.Integrations.Abstractions.Pachca;
+using LeokaEstetica.Platform.Integrations.Abstractions.Reverso;
 using LeokaEstetica.Platform.Integrations.Abstractions.Telegram;
+using LeokaEstetica.Platform.Integrations.Services.Pachca;
+using LeokaEstetica.Platform.Integrations.Services.Reverso;
 using LeokaEstetica.Platform.Integrations.Services.Telegram;
 
 namespace LeokaEstetica.Platform.Integrations.AutofacModules;
@@ -25,5 +30,27 @@ public class IntegrationModule : Module
         builder.RegisterType<TelegramService>()
             .As<ITelegramService>()
             .InstancePerLifetimeScope();
+        
+        // Сервис пачки.
+        builder.RegisterType<PachcaService>()
+            .Named<IPachcaService>("PachcaService")
+            .InstancePerLifetimeScope();
+        builder.RegisterType<PachcaService>()
+            .As<IPachcaService>()
+            .InstancePerLifetimeScope();
+        
+        // Сервис транслитера ReversoAPI.
+        // builder.RegisterType<ReversoService>()
+        //     .Named<IReversoService>("ReversoService")
+        //     .InstancePerLifetimeScope();
+        // builder.RegisterType<ReversoService>()
+        //     .As<IReversoService>()
+        //     .InstancePerLifetimeScope();
+        // builder.RegisterType<ReversoService>()
+        //     .As<IReversoService>()
+        //     .InstancePerLifetimeScope();
+
+        builder.RegisterLazy<IReversoService, ReversoService>();
+        builder.RegisterLazy<IPachcaService, PachcaService>();
     }
 }

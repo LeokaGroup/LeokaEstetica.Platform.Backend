@@ -104,14 +104,27 @@ public interface IProjectManagmentRepository
     Task<IEnumerable<TaskTypeEntity>> GetTaskTypesAsync();
 
     /// <summary>
-    /// Метод получает список тегов для выбора в задаче.
+    /// Метод получает список тегов пользователя для выбора в задаче.
     /// </summary>
     /// <returns>Список тегов.</returns>
-    Task<IEnumerable<TaskTagEntity>> GetTaskTagsAsync();
+    Task<IEnumerable<UserTaskTagEntity>> GetTaskTagsAsync();
 
     /// <summary>
     /// Метод создает задачу проекта.
     /// </summary>
     /// <param name="task">Задача для создания.</param>
     Task CreateProjectTaskAsync (ProjectTaskEntity task);
+
+    /// <summary>
+    /// Метод получает максимальный Position у тегов задач пользователя.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Позиция последнего тега.</returns>
+    Task<int> GetLastPositionUserTaskTagAsync(long userId);
+
+    /// <summary>
+    /// Метод создает тег пользователя.
+    /// </summary>
+    /// <param name="tag">Сущность тега.</param>
+    Task CreateUserTaskTagAsync(UserTaskTagEntity tag);
 }

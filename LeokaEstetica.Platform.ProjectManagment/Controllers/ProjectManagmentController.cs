@@ -1,6 +1,7 @@
 using AutoMapper;
 using LeokaEstetica.Platform.Base;
 using LeokaEstetica.Platform.Base.Filters;
+using LeokaEstetica.Platform.Integrations.Abstractions.Pachca;
 using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
 using LeokaEstetica.Platform.Models.Dto.Output.Project;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
@@ -27,6 +28,7 @@ public class ProjectManagmentController : BaseController
     private readonly IMapper _mapper;
     private readonly ILogger<ProjectManagmentController> _logger;
     private readonly IUserService _userService;
+    private readonly Lazy<IPachcaService> _pachcaService;
 
     /// <summary>
     /// Конструктор.
@@ -36,17 +38,20 @@ public class ProjectManagmentController : BaseController
     /// <param name="mapper">Маппер.</param>
     /// <param name="logger">Логгер.</param>
     /// <param name="userService">Сервис пользователей.</param>
+    /// <param name="pachcaService">Сервис пачки.</param>
     public ProjectManagmentController(IProjectService projectService,
         IProjectManagmentService projectManagmentService,
         IMapper mapper,
         ILogger<ProjectManagmentController> logger,
-        IUserService userService)
+        IUserService userService,
+        Lazy<IPachcaService> pachcaService)
     {
         _projectService = projectService;
         _projectManagmentService = projectManagmentService;
         _mapper = mapper;
         _logger = logger;
         _userService = userService;
+        _pachcaService = pachcaService;
     }
 
     /// <summary>
@@ -165,6 +170,7 @@ public class ProjectManagmentController : BaseController
             
             var ex = new AggregateException("Ошибка получения конфигурации рабочего пространства.", exceptions);
             _logger.LogError(ex, ex.Message);
+            await _pachcaService.Value.SendNotificationErrorAsync(ex);
             
             throw ex;
         }
@@ -228,6 +234,8 @@ public class ProjectManagmentController : BaseController
                 exceptions);
             _logger.LogError(ex, ex.Message);
             
+            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            
             throw ex;
         }
 
@@ -280,15 +288,15 @@ public class ProjectManagmentController : BaseController
     /// <returns>Список тегов.</returns>
     [HttpGet]
     [Route("task-tags")]
-    [ProducesResponseType(200, Type = typeof(IEnumerable<TaskTagOutput>))]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<UserTaskTagOutput>))]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<IEnumerable<TaskTagOutput>> GetTaskTagsAsync()
+    public async Task<IEnumerable<UserTaskTagOutput>> GetTaskTagsAsync()
     {
         var items = await _projectManagmentService.GetTaskTagsAsync();
-        var result = _mapper.Map<IEnumerable<TaskTagOutput>>(items);
+        var result = _mapper.Map<IEnumerable<UserTaskTagOutput>>(items);
 
         return result;
     }
@@ -321,6 +329,8 @@ public class ProjectManagmentController : BaseController
             
             var ex = new AggregateException("Ошибка получения статусов задачи проекта.", exceptions);
             _logger.LogError(ex, ex.Message);
+            
+            await _pachcaService.Value.SendNotificationErrorAsync(ex);
             
             throw ex;
         }
@@ -361,6 +371,8 @@ public class ProjectManagmentController : BaseController
                 exceptions);
             _logger.LogError(ex, ex.Message);
             
+            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            
             throw ex;
         }
 
@@ -369,5 +381,42 @@ public class ProjectManagmentController : BaseController
         result = await _userService.SetUserCodesAsync(result.ToList());
 
         return result;
+    }
+
+    /// <summary>
+    /// Метод создает метку (тег) для задач пользователя.
+    /// </summary>
+    /// <param name="userTaskTagInput">Входная модель.</param>
+    [HttpPost]
+    [Route("user-tag")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task CreateUserTaskTagAsync([FromBody] UserTaskTagInput userTaskTagInput)
+    {
+        var validator = await new CreateUserTaskTagValidator().ValidateAsync(userTaskTagInput);
+
+        if (validator.Errors.Any())
+        {
+            var exceptions = new List<InvalidOperationException>();
+
+            foreach (var err in validator.Errors)
+            {
+                exceptions.Add(new InvalidOperationException(err.ErrorMessage));
+            }
+
+            var ex = new AggregateException("Ошибка создания метки (тега).",
+                exceptions);
+            _logger.LogError(ex, ex.Message);
+            
+            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            
+            throw ex;
+        }
+
+        await _projectManagmentService.CreateUserTaskTagAsync(userTaskTagInput.TagName,
+            userTaskTagInput.TagDescription, GetUserName());
     }
 }

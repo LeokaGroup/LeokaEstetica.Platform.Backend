@@ -2,7 +2,7 @@
 using System.Runtime.CompilerServices;
 using AutoMapper;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
-using LeokaEstetica.Platform.Base.Abstractions.Services.Pachca;
+using LeokaEstetica.Platform.Base.Extensions.StringExtensions;
 using LeokaEstetica.Platform.Base.Factors;
 using LeokaEstetica.Platform.Core.Constants;
 using LeokaEstetica.Platform.Core.Enums;
@@ -12,6 +12,8 @@ using LeokaEstetica.Platform.Database.Abstractions.Config;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Database.Abstractions.Template;
+using LeokaEstetica.Platform.Integrations.Abstractions.Pachca;
+using LeokaEstetica.Platform.Integrations.Abstractions.Reverso;
 using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.Template;
@@ -42,6 +44,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     private readonly IProjectManagmentTemplateRepository _projectManagmentTemplateRepository;
     private readonly ITransactionScopeFactory _transactionScopeFactory;
     private readonly IProjectSettingsConfigRepository _projectSettingsConfigRepository;
+    private readonly Lazy<IReversoService> _reversoService;
 
     /// <summary>
     /// Конструктор.
@@ -54,6 +57,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     /// <param name="projectManagmentTemplateRepository">Репозиторий шаблонов проектов.</param>
     /// <param name="transactionScopeFactory">Факторка транзакций.</param>
     /// <param name="projectSettingsConfigRepository">Репозиторий настроек проектов.</param>
+    /// <param name="projectSettingsConfigRepository">Сервис транслитера.</param>
     /// </summary>
     public ProjectManagmentService(ILogger<ProjectManagmentService> logger,
         IProjectManagmentRepository projectManagmentRepository,
@@ -63,7 +67,8 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         IPachcaService pachcaService,
         IProjectManagmentTemplateRepository projectManagmentTemplateRepository,
         ITransactionScopeFactory transactionScopeFactory,
-        IProjectSettingsConfigRepository projectSettingsConfigRepository)
+        IProjectSettingsConfigRepository projectSettingsConfigRepository,
+        Lazy<IReversoService> reversoService)
     {
         _logger = logger;
         _projectManagmentRepository = projectManagmentRepository;
@@ -74,6 +79,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         _projectManagmentTemplateRepository = projectManagmentTemplateRepository;
         _transactionScopeFactory = transactionScopeFactory;
         _projectSettingsConfigRepository = projectSettingsConfigRepository;
+        _reversoService = reversoService;
     }
 
     #region Публичные методы.
@@ -628,10 +634,10 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     }
 
     /// <summary>
-    /// Метод получает список тегов для выбора в задаче.
+    /// Метод получает список тегов пользователя для выбора в задаче.
     /// </summary>
     /// <returns>Список тегов.</returns>
-    public async Task<IEnumerable<TaskTagEntity>> GetTaskTagsAsync()
+    public async Task<IEnumerable<UserTaskTagEntity>> GetTaskTagsAsync()
     {
         try
         {
@@ -744,6 +750,39 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             }
 
             return executorsItems;
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex.Message, ex);
+            throw;
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task CreateUserTaskTagAsync(string tagName, string tagDescription, string account)
+    {
+        try
+        {
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+
+            var tagSysName = await _reversoService.Value.TranslateTextRussianToEnglishAsync(tagName,
+                TranslateLangTypeEnum.Russian, TranslateLangTypeEnum.English);
+
+            // Разбиваем строку на пробелы и приводим каждое слово к PascalCase и соединяем снова в строку.
+            tagSysName = string.Join("", tagSysName.Split(" ").Select(x => x.ToPascalCase()));
+
+            var maxUserTagPosition = await _projectManagmentRepository.GetLastPositionUserTaskTagAsync(userId);
+            
+            var userTag = CreateUserTaskTagFactory.CreateUserTaskTag(tagName, tagDescription, tagSysName, userId,
+                    ++maxUserTagPosition);
+            await _projectManagmentRepository.CreateUserTaskTagAsync(userTag);
         }
         
         catch (Exception ex)

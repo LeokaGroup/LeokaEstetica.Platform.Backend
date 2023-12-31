@@ -4,9 +4,9 @@ using FluentValidation.AspNetCore;
 using Hellang.Middleware.ProblemDetails;
 using LeokaEstetica.Platform.Backend.Loaders.Bots;
 using LeokaEstetica.Platform.Backend.Loaders.Jobs;
-using LeokaEstetica.Platform.Base.Filters;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Utils;
+using LeokaEstetica.Platform.Integrations.Filters;
 using LeokaEstetica.Platform.Notifications.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -20,7 +20,7 @@ var configuration = builder.Configuration;
 
 builder.Services.AddControllers(opt =>
     {
-        opt.Filters.Add(typeof(LogExceptionFilter));
+        opt.Filters.Add(typeof(PachcaLogExceptionFilter));
     })
     .AddControllersAsServices()
     .AddNewtonsoftJson();

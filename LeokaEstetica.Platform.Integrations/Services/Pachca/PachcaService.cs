@@ -1,12 +1,12 @@
 using System.Net.Http.Json;
 using System.Text;
-using LeokaEstetica.Platform.Base.Abstractions.Services.Pachca;
 using LeokaEstetica.Platform.Base.Enums;
 using LeokaEstetica.Platform.Base.Models.Input.Pachca;
+using LeokaEstetica.Platform.Integrations.Abstractions.Pachca;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
-namespace LeokaEstetica.Platform.Base.Services.Pachca;
+namespace LeokaEstetica.Platform.Integrations.Services.Pachca;
 
 /// <summary>
 /// Класс реализует методы сервиса пачки.

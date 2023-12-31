@@ -44,7 +44,7 @@ internal class UserTasksTests : BaseServiceTest
         
         Assert.DoesNotThrowAsync(async () =>
         {
-            _ = await PgContext.TaskTags.FirstOrDefaultAsync();
+            _ = await PgContext.UserTaskTags.FirstOrDefaultAsync();
         });
         
         Assert.DoesNotThrowAsync(async () =>

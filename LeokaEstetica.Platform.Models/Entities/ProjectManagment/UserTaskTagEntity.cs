@@ -1,9 +1,9 @@
 namespace LeokaEstetica.Platform.Models.Entities.ProjectManagment;
 
 /// <summary>
-/// Класс сопоставляется с таблицей тегов (меток) задачи.
+/// Класс сопоставляется с таблицей тегов (меток) задачи пользователя.
 /// </summary>
-public class TaskTagEntity
+public class UserTaskTagEntity
 {
     /// <summary>
     /// PK.
@@ -24,4 +24,14 @@ public class TaskTagEntity
     /// Порядковый номер.
     /// </summary>
     public int Position { get; set; }
+
+    /// <summary>
+    /// Id пользователя.
+    /// </summary>
+    public long UserId { get; set; }
+
+    /// <summary>
+    /// Описание метки (тега).
+    /// </summary>
+    public string TagDescription { get; set; }
 }

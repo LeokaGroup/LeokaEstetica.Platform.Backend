@@ -1,9 +1,9 @@
 namespace LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 
 /// <summary>
-/// Класс выходной модели тегов задачи.
+/// Класс выходной модели тегов задачи пользователя.
 /// </summary>
-public class TaskTagOutput
+public class UserTaskTagOutput
 {
     /// <summary>
     /// Id тега.
@@ -19,4 +19,14 @@ public class TaskTagOutput
     /// Системное название тега.
     /// </summary>
     public string TagSysName { get; set; }
+    
+    /// <summary>
+    /// Id пользователя.
+    /// </summary>
+    public long UserId { get; set; }
+
+    /// <summary>
+    /// Описание метки (тега).
+    /// </summary>
+    public string TagDescription { get; set; }
 }
