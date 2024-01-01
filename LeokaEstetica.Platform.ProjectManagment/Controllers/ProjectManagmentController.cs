@@ -419,4 +419,44 @@ public class ProjectManagmentController : BaseController
         await _projectManagmentService.CreateUserTaskTagAsync(userTaskTagInput.TagName,
             userTaskTagInput.TagDescription, GetUserName());
     }
+
+    /// <summary>
+    /// Метод получает список статусов для выбора для создания нового статуса.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Список статусов.</returns>
+    [HttpGet]
+    [Route("select-create-task-statuses")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<TaskStatusOutput>))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<IEnumerable<TaskStatusOutput>> GetSelectableTaskStatusesAsync([FromQuery] long projectId)
+    {
+        var validator = await new GetTaskStatusValidator().ValidateAsync(
+            new GetTaskStatusValidationModel(projectId));
+
+        if (validator.Errors.Any())
+        {
+            var exceptions = new List<InvalidOperationException>();
+
+            foreach (var err in validator.Errors)
+            {
+                exceptions.Add(new InvalidOperationException(err.ErrorMessage));
+            }
+            
+            var ex = new AggregateException("Ошибка получения статусов для создания нового статуса.", exceptions);
+            _logger.LogError(ex, ex.Message);
+            
+            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            
+            throw ex;
+        }
+        
+        var items = await _projectManagmentService.GetSelectableTaskStatusesAsync(projectId);
+        var result = _mapper.Map<IEnumerable<TaskStatusOutput>>(items);
+
+        return result;
+    }
 }

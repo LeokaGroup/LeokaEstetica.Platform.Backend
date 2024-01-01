@@ -792,6 +792,43 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         }
     }
 
+    /// <inheritdoc />
+    public async Task<IEnumerable<ProjectManagmentTaskStatusTemplateEntity>> GetSelectableTaskStatusesAsync(
+        long projectId)
+    {
+        try
+        {
+            // Получаем шаблон, по которому управляется проект.
+            var projectTemplateId = await _projectManagmentTemplateRepository.GetProjectTemplateIdAsync(projectId);
+
+            if (!projectTemplateId.HasValue || projectTemplateId.Value <= 0)
+            {
+                throw new InvalidOperationException($"Не удалось получить шаблон проекта. ProjectId: {projectId}");
+            }
+
+            var statusIds = await _projectManagmentTemplateRepository.GetTemplateStatusIdsAsync(
+                projectTemplateId.Value);
+            var statusIdsItems = statusIds?.ToList();
+
+            if (statusIdsItems is null || !statusIdsItems.Any())
+            {
+                throw new InvalidOperationException("Не удалось получить статусы шаблона." +
+                                                    $"ProjectId: {projectId}. " +
+                                                    $"TemplateId: {projectTemplateId.Value}.");
+            }
+
+            var result = await _projectManagmentTemplateRepository.GetTaskTemplateStatusesAsync(statusIdsItems);
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex.Message, ex);
+            throw;
+        }
+    }
+
     #endregion
 
     #region Приватные методы.

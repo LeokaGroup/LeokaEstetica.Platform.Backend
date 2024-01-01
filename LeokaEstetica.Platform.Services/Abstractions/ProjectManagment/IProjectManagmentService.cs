@@ -114,4 +114,11 @@ public interface IProjectManagmentService
     /// <param name="tagDescription">Описание метки (тега).</param>
     /// <param name="account">Аккаунт.</param>
     Task CreateUserTaskTagAsync(string tagName, string tagDescription, string account);
+
+    /// <summary>
+    /// Метод получает список статусов для выбора для создания нового статуса.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Список статусов.</returns>
+    Task<IEnumerable<ProjectManagmentTaskStatusTemplateEntity>> GetSelectableTaskStatusesAsync(long projectId);
 }
