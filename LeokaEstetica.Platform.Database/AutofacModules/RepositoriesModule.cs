@@ -1,4 +1,5 @@
 ﻿using Autofac;
+using LazyProxy.Autofac;
 using LeokaEstetica.Platform.Core.Attributes;
 using LeokaEstetica.Platform.Database.Abstractions.AvailableLimits;
 using LeokaEstetica.Platform.Database.Abstractions.Commerce;
@@ -295,5 +296,7 @@ public class RepositoriesModule : Module
         builder.RegisterType<ProjectSettingsConfigRepository>()
             .As<IProjectSettingsConfigRepository>()
             .InstancePerLifetimeScope();
+
+        builder.RegisterLazy<IProjectManagmentTemplateRepository, ProjectManagmentTemplateRepository>();
     }
 }

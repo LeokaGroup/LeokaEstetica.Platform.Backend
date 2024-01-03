@@ -507,11 +507,6 @@ public class PgContext : DbContext
     public DbSet<ProjectTaskEntity> ProjectTasks { get; set; }
 
     /// <summary>
-    /// Таблица статусов задач.
-    /// </summary>
-    public DbSet<TaskStatusEntity> TaskStatuses { get; set; }
-
-    /// <summary>
     /// Таблица отношений между задачами.
     /// </summary>
     public DbSet<TaskRelationEntity> TaskRelations { get; set; }
@@ -560,4 +555,9 @@ public class PgContext : DbContext
     /// Таблица настроек рабочего пространства проектов.
     /// </summary>
     public DbSet<ConfigSpaceSettingEntity> ConfigSpaceSettings { get; set; }
+
+    /// <summary>
+    /// Таблица кастомных статусов шаблонов пользователя.
+    /// </summary>
+    public DbSet<ProjectManagementUserStatuseTemplateEntity> ProjectManagementUserStatuseTemplates { get; set; }
 }

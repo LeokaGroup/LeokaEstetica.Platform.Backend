@@ -119,6 +119,19 @@ public interface IProjectManagmentService
     /// Метод получает список статусов для выбора для создания нового статуса.
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
+    /// <param name="templateId">Id шаблона.</param>
     /// <returns>Список статусов.</returns>
-    Task<IEnumerable<ProjectManagmentTaskStatusTemplateEntity>> GetSelectableTaskStatusesAsync(long projectId);
+    Task<IEnumerable<ProjectManagmentTaskStatusTemplateEntity>> GetSelectableTaskStatusesAsync(long projectId,
+        int templateId);
+
+    /// <summary>
+    /// Метод создает новый статус шаблона пользователя учитывая ассоциацию статуса.
+    /// </summary>
+    /// <param name="associationStatusSysName">Название статуса ассоциации.</param>
+    /// <param name="statusName">Название статуса.</param>
+    /// <param name="statusDescription">Описание статуса.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="account">Аккаунт.</param>
+    Task CreateUserTaskStatusTemplateAsync(string associationStatusSysName, string statusName, string statusDescription,
+        long projectId, string account);
 }

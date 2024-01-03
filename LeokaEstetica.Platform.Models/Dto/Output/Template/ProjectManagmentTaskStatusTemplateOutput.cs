@@ -8,7 +8,7 @@ public class ProjectManagmentTaskStatusTemplateOutput
     /// <summary>
     /// PK.
     /// </summary>
-    public int StatusId { get; set; }
+    public long StatusId { get; set; }
 
     /// <summary>
     /// Название статуса.

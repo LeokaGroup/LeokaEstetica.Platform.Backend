@@ -167,5 +167,15 @@ public static class ValidationConst
         /// Если не заполнили название тега.
         /// </summary>
         public const string EMPTY_TAG_NAME = "Не заполнено название тега.";
+
+        /// <summary>
+        /// Если не заполнили название статуса.
+        /// </summary>
+        public const string EMPTY_STATUS_NAME = "Не заполнено название статуса.";
+
+        /// <summary>
+        /// Если не заполнили название статуса ассоциации.
+        /// </summary>
+        public const string ASSOCIATION_SYS_NAME = "Не заполнено название статуса ассоциации.";
     }
 }
