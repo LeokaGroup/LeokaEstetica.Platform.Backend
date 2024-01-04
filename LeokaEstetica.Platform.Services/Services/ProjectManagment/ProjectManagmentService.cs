@@ -818,29 +818,29 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                                                     $"TemplateId: {templateId}.");
             }
 
-            var resultItems = (await _projectManagmentTemplateRepository.GetTaskTemplateStatusesAsync(statusIdsItems))
+            var result = (await _projectManagmentTemplateRepository.GetTaskTemplateStatusesAsync(statusIdsItems))
                 .ToList();
 
             // TODO: Лучше сразу получить лишь нужные статусы в методе GetTaskTemplateStatusesAsync выше
             // TODO: сделав отдельным методом на это. Пока переиспользуем, но в будущем отрефачить.
             // Удаляем все лишние статусы, кроме базовых для всех шаблонов проекта.
-            resultItems.RemoveAll(x => !_associationStatusSysNames.Contains(x.StatusSysName));
+            result.RemoveAll(x => !_associationStatusSysNames.Contains(x.StatusSysName));
 
             // Если есть оба системных названия, то оставим одно. InWork имеет приоритет.
-            if (resultItems.Find(x => x.StatusSysName.Equals("InWork")) is not null
-                && resultItems.Find(x => x.StatusSysName.Equals("InDevelopment")) is not null)
+            if (result.Find(x => x.StatusSysName.Equals("InWork")) is not null
+                && result.Find(x => x.StatusSysName.Equals("InDevelopment")) is not null)
             {
-                var removedDevelopment = resultItems.Find(x => x.StatusSysName.Equals("InDevelopment"));
-                resultItems.Remove(removedDevelopment);
+                var removedDevelopment = result.Find(x => x.StatusSysName.Equals("InDevelopment"));
+                result.Remove(removedDevelopment);
             }
 
             // Если несколько системных названий Completed, то оставим одно.
-            if (resultItems.Count(x => x.StatusSysName.Equals("Completed")) > 1)
+            if (result.Count(x => x.StatusSysName.Equals("Completed")) > 1)
             {
-                resultItems = resultItems.DistinctBy(d => d.StatusSysName).ToList();
+                result = result.DistinctBy(d => d.StatusSysName).ToList();
             }
 
-            return resultItems;
+            return result;
         }
         
         catch (Exception ex)
