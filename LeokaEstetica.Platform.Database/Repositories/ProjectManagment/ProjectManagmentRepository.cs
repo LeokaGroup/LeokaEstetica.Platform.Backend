@@ -88,12 +88,14 @@ internal sealed class ProjectManagmentRepository : IProjectManagmentRepository
     /// </summary>
     /// <param name="templateStatusIds">Список Id статусов.</param>
     /// <returns>Словарь с Id шаблонов и статусов.</returns>
-    public async Task<IDictionary<long, int>> GetTemplateStatusIdsByStatusIdsAsync(IEnumerable<long> templateStatusIds)
+    public async Task<IEnumerable<KeyValuePair<long, int>>> GetTemplateStatusIdsByStatusIdsAsync(
+        IEnumerable<long> templateStatusIds)
     {
         var result = await _pgContext.ProjectManagmentTaskStatusIntermediateTemplates
             .Where(x => templateStatusIds.Contains(x.StatusId))
             .OrderBy(o => o.TemplateId)
-            .ToDictionaryAsync(k => k.StatusId, v => v.TemplateId);
+            .Select(x => new KeyValuePair<long, int>(x.StatusId, x.TemplateId))
+            .ToListAsync();
 
         return result;
     }

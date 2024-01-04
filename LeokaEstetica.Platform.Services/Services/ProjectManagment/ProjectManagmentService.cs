@@ -353,21 +353,22 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 .SelectMany(x => x.ProjectManagmentTaskStatusTemplates
                     .Select(y => y));
 
-            var statusesDict = await _projectManagmentRepository.GetTemplateStatusIdsByStatusIdsAsync(
-                templateStatusIds);
+            var statuses = (await _projectManagmentRepository.GetTemplateStatusIdsByStatusIdsAsync(templateStatusIds))
+                .ToList();
 
             foreach (var ts in items)
             {
                 var statusId = ts.StatusId;
+                var templateId = statuses.Find(x => x.Key == statusId);
 
-                // Если не нашли такогго статуса в таблице маппинга многие-ко-многим.
-                if (!statusesDict.ContainsKey(statusId))
+                // Если не нашли такого статуса в таблице маппинга многие-ко-многим.
+                if (templateId.Key <= 0 || templateId.Value <= 0)
                 {
                     throw new InvalidOperationException(
                         $"Не удалось получить шаблон, к которому принадлежит статус. Id статуса был: {statusId}");
                 }
 
-                ts.TemplateId = statusesDict.TryGet(statusId);
+                ts.TemplateId = templateId.Value;
             }
         }
 
@@ -445,7 +446,8 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 
             var result = new ProjectManagmentWorkspaceResult
             {
-                ProjectManagmentTaskStatuses = statuses.First().ProjectManagmentTaskStatusTemplates,
+                ProjectManagmentTaskStatuses = statuses.First().ProjectManagmentTaskStatusTemplates
+                    .Where(x => x.TemplateId == templateId),
                 Strategy = strategy!.ParamValue
             };
 
