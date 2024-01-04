@@ -1224,20 +1224,19 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             }
         }
 
-        var types = await _projectManagmentRepository.GetTypeNamesByTypeIdsAsync(new[] { task.TaskTypeId });
+        var taskStatusId = task.TaskTypeId;
+        var types = await _projectManagmentRepository.GetTypeNamesByTypeIdsAsync(new[] { taskStatusId });
         result.TaskTypeName = types.TryGet(result.TaskTypeId);
-        
-        var statuseNames = (await _projectManagmentTemplateRepository.GetTaskTemplateStatusesAsync(
-            new[] { task.TaskStatusId })).ToList();
-        
-        var taskStatusName = statuseNames.Find(x => x.StatusId == result.TaskStatusId)?.StatusName;
-        
-        if (string.IsNullOrEmpty(taskStatusName))
+
+        var statuseName = await _projectManagmentTemplateRepository.GetStatusNameByTaskStatusIdAsync(
+                Convert.ToInt32(task.TaskStatusId));
+
+        if (string.IsNullOrEmpty(statuseName))
         {
-            throw new InvalidOperationException("Не удалось получить TaskStatusName: {ts.TaskStatusId}.");
+            throw new InvalidOperationException($"Не удалось получить TaskStatusName: {taskStatusId}.");
         }
         
-        result.TaskStatusName = taskStatusName;
+        result.TaskStatusName = statuseName;
 
         var resolutionId = task.ResolutionId;
 

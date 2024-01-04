@@ -117,6 +117,21 @@ internal sealed class ProjectManagmentTemplateRepository : IProjectManagmentTemp
         await _pgContext.SaveChangesAsync();
     }
 
+    /// <summary>
+    /// Метод получает название статуса по TaskStatusId.
+    /// </summary>
+    /// <param name="taskStatusId">Id статуса задачи.</param>
+    /// <returns>Название статуса.</returns>
+    public async Task<string> GetStatusNameByTaskStatusIdAsync(int taskStatusId)
+    {
+        var result = await _pgContext.ProjectManagmentTaskStatusTemplates
+            .Where(s => s.TaskStatusId == taskStatusId)
+            .Select(s => s.StatusName)
+            .FirstOrDefaultAsync();
+
+        return result;
+    }
+
     #endregion
 
     #region Приватные методы.

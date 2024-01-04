@@ -59,4 +59,11 @@ public interface IProjectManagmentTemplateRepository
     /// <param name="statusId">Id статуса.</param>
     /// <param name="templateId">Id шаблона.</param>
     Task CreateProjectManagmentTaskStatusIntermediateTemplateAsync(long statusId, int templateId);
+
+    /// <summary>
+    /// Метод получает название статуса по TaskStatusId.
+    /// </summary>
+    /// <param name="taskStatusId">Id статуса задачи.</param>
+    /// <returns>Название статуса.</returns>
+    Task<string> GetStatusNameByTaskStatusIdAsync(int taskStatusId);
 }
