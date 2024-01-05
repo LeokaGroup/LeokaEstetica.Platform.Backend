@@ -32,7 +32,8 @@ public interface IProjectManagmentRepository
     /// </summary>
     /// <param name="templateStatusIds">Список Id статусов.</param>
     /// <returns>Словарь с Id шаблонов и статусов.</returns>
-    Task<IDictionary<int, int>> GetTemplateStatusIdsByStatusIdsAsync(IEnumerable<int> templateStatusIds);
+    Task<IEnumerable<KeyValuePair<long, int>>> GetTemplateStatusIdsByStatusIdsAsync(
+        IEnumerable<long> templateStatusIds);
     
     /// <summary>
     /// Метод получает задачи проекта для рабочего пространства.
@@ -54,14 +55,7 @@ public interface IProjectManagmentRepository
     /// <param name="typeIds">Id типов задач.</param>
     /// <returns>Словарь с типами задач.</returns>
     Task<IDictionary<int, string>> GetTypeNamesByTypeIdsAsync(IEnumerable<int> typeIds);
-    
-    /// <summary>
-    /// Метод получает названия статусов задач по их Id.
-    /// </summary>
-    /// <param name="statusIds">Id статусов задач.</param>
-    /// <returns>Словарь с статусами задач.</returns>
-    Task<IDictionary<int, string>> GetStatusNamesByStatusIdsAsync(IEnumerable<int> statusIds);
-    
+
     /// <summary>
     /// Метод получает названия резолюций задач по их Id.
     /// </summary>

@@ -19,4 +19,9 @@ public class TaskStatusOutput
     /// Системное название статуса.
     /// </summary>
     public string StatusSysName { get; set; }
+
+    /// <summary>
+    /// Id шаблона.
+    /// </summary>
+    public int TemplateId { get; set; }
 }

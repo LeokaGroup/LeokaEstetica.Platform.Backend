@@ -18,7 +18,7 @@ public class ProjectManagmentTaskStatusIntermediateTemplateEntity
     /// <summary>
     /// Id статуса.
     /// </summary>
-    public int StatusId { get; set; }
+    public long StatusId { get; set; }
 
     /// <summary>
     /// FK.

@@ -88,12 +88,14 @@ internal sealed class ProjectManagmentRepository : IProjectManagmentRepository
     /// </summary>
     /// <param name="templateStatusIds">Список Id статусов.</param>
     /// <returns>Словарь с Id шаблонов и статусов.</returns>
-    public async Task<IDictionary<int, int>> GetTemplateStatusIdsByStatusIdsAsync(IEnumerable<int> templateStatusIds)
+    public async Task<IEnumerable<KeyValuePair<long, int>>> GetTemplateStatusIdsByStatusIdsAsync(
+        IEnumerable<long> templateStatusIds)
     {
         var result = await _pgContext.ProjectManagmentTaskStatusIntermediateTemplates
             .Where(x => templateStatusIds.Contains(x.StatusId))
             .OrderBy(o => o.TemplateId)
-            .ToDictionaryAsync(k => k.StatusId, v => v.TemplateId);
+            .Select(x => new KeyValuePair<long, int>(x.StatusId, x.TemplateId))
+            .ToListAsync();
 
         return result;
     }
@@ -139,21 +141,6 @@ internal sealed class ProjectManagmentRepository : IProjectManagmentRepository
             .Where(t => typeIds.Contains(t.TypeId))
             .OrderBy(o => o.Position)
             .ToDictionaryAsync(k => k.TypeId, v => v.TypeName);
-
-        return result;
-    }
-
-    /// <summary>
-    /// Метод получает названия статусов задач по их Id.
-    /// </summary>
-    /// <param name="statusIds">Id статусов задач.</param>
-    /// <returns>Словарь с статусами задач.</returns>
-    public async Task<IDictionary<int, string>> GetStatusNamesByStatusIdsAsync(IEnumerable<int> statusIds)
-    {
-        var result = await _pgContext.TaskStatuses
-            .Where(t => statusIds.Contains(t.StatusId))
-            .OrderBy(o => o.Position)
-            .ToDictionaryAsync(k => k.StatusId, v => v.StatusName);
 
         return result;
     }

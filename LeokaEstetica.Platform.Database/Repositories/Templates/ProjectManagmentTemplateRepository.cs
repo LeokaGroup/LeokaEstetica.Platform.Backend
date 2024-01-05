@@ -21,12 +21,9 @@ internal sealed class ProjectManagmentTemplateRepository : IProjectManagmentTemp
         _pgContext = pgContext;
     }
 
-    /// <summary>
-    /// TODO: Изменить на получение шаблона из репозитория конфигов настроек проектов.
-    /// Метод получает шаблон проекта.
-    /// </summary>
-    /// <param name="projectId">Id проекта.</param>
-    /// <returns>Id шаблона.</returns>
+    #region Публичные методы.
+
+    /// <inheritdoc />
     public async Task<int?> GetProjectTemplateIdAsync(long projectId)
     {
         var result = await _pgContext.UserProjects
@@ -37,12 +34,8 @@ internal sealed class ProjectManagmentTemplateRepository : IProjectManagmentTemp
         return result;
     }
 
-    /// <summary>
-    /// Метод получает список Id статусов, которые принадлежат шаблону.
-    /// </summary>
-    /// <param name="templateId">Id шаблона.</param>
-    /// <returns>Список Id статусов.</returns>
-    public async Task<IEnumerable<int>> GetTemplateStatusIdsAsync(int templateId)
+    /// <inheritdoc />
+    public async Task<IEnumerable<long>> GetTemplateStatusIdsAsync(int templateId)
     {
         var result = await _pgContext.ProjectManagmentTaskStatusIntermediateTemplates
             .Where(t => t.TemplateId == templateId)
@@ -52,13 +45,9 @@ internal sealed class ProjectManagmentTemplateRepository : IProjectManagmentTemp
         return result;
     }
 
-    /// <summary>
-        /// Метод получает статусы шаблона проекта.
-        /// </summary>
-        /// <param name="statusIds">Список Id статусов шаблона.</param>
-        /// <returns>Список статусов шаблона.</returns>
+    /// <inheritdoc />
     public async Task<IEnumerable<ProjectManagmentTaskStatusTemplateEntity>> GetTaskTemplateStatusesAsync(
-        IEnumerable<int> statusIds)
+        IEnumerable<long> statusIds)
     {
         var result = await _pgContext.ProjectManagmentTaskStatusTemplates
             .Where(s => statusIds.Contains(s.StatusId))
@@ -67,4 +56,87 @@ internal sealed class ProjectManagmentTemplateRepository : IProjectManagmentTemp
 
         return result;
     }
+
+    /// <inheritdoc />
+    public async Task<ProjectManagmentTaskStatusTemplateEntity> GetProjectManagementStatusBySysNameAsync(
+        string associationStatusSysName)
+    {
+        var result = await _pgContext.ProjectManagmentTaskStatusTemplates
+            .Where(s => s.StatusSysName.Equals(associationStatusSysName))
+            .Select(s => new ProjectManagmentTaskStatusTemplateEntity
+            {
+                StatusName = s.StatusName,
+                StatusSysName = s.StatusSysName,
+                Position = s.Position,
+                TaskStatusId = s.TaskStatusId,
+                StatusId = s.StatusId
+            })
+            .FirstOrDefaultAsync();
+
+        return result;
+    }
+
+    /// <inheritdoc />
+    public async Task<long> CreateProjectManagmentTaskStatusTemplateAsync(
+        ProjectManagementUserStatuseTemplateEntity statusTemplateEntity)
+    {
+        await _pgContext.ProjectManagementUserStatuseTemplates.AddAsync(statusTemplateEntity);
+        await _pgContext.SaveChangesAsync();
+
+        return statusTemplateEntity.StatusId;
+    }
+
+    /// <inheritdoc />
+    public async Task<int> GetLastPositionUserStatusTemplateAsync(long userId)
+    {
+        var isEmpty = await _pgContext.ProjectManagementUserStatuseTemplates.AnyAsync(x => x.UserId == userId);
+
+        if (!isEmpty)
+        {
+            // Если позиций пока нету, то начнем с первой.
+            return 1;
+        }
+        
+        var result = await _pgContext.UserTaskTags
+            .Where(x => x.UserId == userId)
+            .Select(x => x.Position)
+            .MaxAsync();
+
+        return result;
+    }
+
+    /// <inheritdoc />
+    public async Task CreateProjectManagmentTaskStatusIntermediateTemplateAsync(long statusId, int templateId)
+    {
+        await _pgContext.ProjectManagmentTaskStatusIntermediateTemplates.AddAsync(
+            new ProjectManagmentTaskStatusIntermediateTemplateEntity
+            {
+                StatusId = statusId,
+                TemplateId = templateId
+            });
+        await _pgContext.SaveChangesAsync();
+    }
+
+    /// <summary>
+    /// Метод получает название статуса по TaskStatusId.
+    /// </summary>
+    /// <param name="taskStatusId">Id статуса задачи.</param>
+    /// <returns>Название статуса.</returns>
+    public async Task<string> GetStatusNameByTaskStatusIdAsync(int taskStatusId)
+    {
+        var result = await _pgContext.ProjectManagmentTaskStatusTemplates
+            .Where(s => s.TaskStatusId == taskStatusId)
+            .Select(s => s.StatusName)
+            .FirstOrDefaultAsync();
+
+        return result;
+    }
+
+    #endregion
+
+    #region Приватные методы.
+
+    
+
+    #endregion
 }

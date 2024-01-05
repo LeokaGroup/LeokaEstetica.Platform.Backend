@@ -1,4 +1,3 @@
-using LeokaEstetica.Platform.Models.Entities.Project;
 using LeokaEstetica.Platform.Models.Entities.ProjectManagment;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -19,7 +18,7 @@ public partial class ProjectTaskConfiguration : IEntityTypeConfiguration<Project
         
         entity.Property(e => e.TaskStatusId)
             .HasColumnName("TaskStatusId")
-            .HasColumnType("int")
+            .HasColumnType("bigint")
             .IsRequired();
         
         entity.Property(e => e.AuthorId)
@@ -83,13 +82,7 @@ public partial class ProjectTaskConfiguration : IEntityTypeConfiguration<Project
             .HasColumnName("ExecutorId")
             .HasColumnType("bigint")
             .IsRequired();
-        
-        entity.HasOne(p => p.TaskStatus)
-            .WithMany(b => b.ProjectTasks)
-            .HasForeignKey(p => p.TaskStatusId)
-            .HasConstraintName("FK_TaskStatuses_StatusId")
-            .IsRequired();
-        
+
         // entity.HasOne(p => p.UserProject)
         //     .WithOne(b => b.ProjectTask)
         //     .HasForeignKey<UserProjectEntity>()

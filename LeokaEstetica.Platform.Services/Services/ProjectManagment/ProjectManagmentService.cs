@@ -47,6 +47,15 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     private readonly Lazy<IReversoService> _reversoService;
 
     /// <summary>
+    /// Статусы задач, которые являются самыми базовыми и никогда не меняются независимо от шаблона проекта.
+    /// Новые статусы обязательно должны ассоциироваться с одним из перечисленных системных названий.
+    /// </summary>
+    private readonly List<string> _associationStatusSysNames = new()
+    {
+        "New", "InWork", "InDevelopment", "Completed"
+    };
+
+    /// <summary>
     /// Конструктор.
     /// <param name="logger">Логгер.</param>
     /// <param name="projectManagmentRepository">Репозиторий управления проектами.</param>
@@ -344,21 +353,22 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 .SelectMany(x => x.ProjectManagmentTaskStatusTemplates
                     .Select(y => y));
 
-            var statusesDict = await _projectManagmentRepository.GetTemplateStatusIdsByStatusIdsAsync(
-                templateStatusIds);
+            var statuses = (await _projectManagmentRepository.GetTemplateStatusIdsByStatusIdsAsync(templateStatusIds))
+                .ToList();
 
             foreach (var ts in items)
             {
                 var statusId = ts.StatusId;
+                var templateId = statuses.Find(x => x.Key == statusId);
 
-                // Если не нашли такогго статуса в таблице маппинга многие-ко-многим.
-                if (!statusesDict.ContainsKey(statusId))
+                // Если не нашли такого статуса в таблице маппинга многие-ко-многим.
+                if (templateId.Key <= 0 || templateId.Value <= 0)
                 {
                     throw new InvalidOperationException(
                         $"Не удалось получить шаблон, к которому принадлежит статус. Id статуса был: {statusId}");
                 }
 
-                ts.TemplateId = statusesDict.TryGet(statusId);
+                ts.TemplateId = templateId.Value;
             }
         }
 
@@ -436,7 +446,8 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 
             var result = new ProjectManagmentWorkspaceResult
             {
-                ProjectManagmentTaskStatuses = statuses.First().ProjectManagmentTaskStatusTemplates,
+                ProjectManagmentTaskStatuses = statuses.First().ProjectManagmentTaskStatusTemplates
+                    .Where(x => x.TemplateId == templateId),
                 Strategy = strategy!.ParamValue
             };
 
@@ -453,7 +464,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 
                 modifyStatusesTimer.Start();
 
-                // Наполняем названиями исхродя из Id полей.
+                // Наполняем названиями исходя из Id полей.
                 await ModifyProjectManagmentTaskStatusesResultAsync(result.ProjectManagmentTaskStatuses, tasks,
                     projectId);
                 
@@ -792,6 +803,134 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         }
     }
 
+    /// <inheritdoc />
+    public async Task<IEnumerable<ProjectManagmentTaskStatusTemplateEntity>> GetSelectableTaskStatusesAsync(
+        long projectId, int templateId)
+    {
+        try
+        {
+            var statusIds = await _projectManagmentTemplateRepository.GetTemplateStatusIdsAsync(
+                templateId);
+            var statusIdsItems = statusIds?.ToList();
+
+            if (statusIdsItems is null || !statusIdsItems.Any())
+            {
+                throw new InvalidOperationException("Не удалось получить статусы шаблона." +
+                                                    $"ProjectId: {projectId}. " +
+                                                    $"TemplateId: {templateId}.");
+            }
+
+            var result = (await _projectManagmentTemplateRepository.GetTaskTemplateStatusesAsync(statusIdsItems))
+                .ToList();
+
+            // TODO: Лучше сразу получить лишь нужные статусы в методе GetTaskTemplateStatusesAsync выше
+            // TODO: сделав отдельным методом на это. Пока переиспользуем, но в будущем отрефачить.
+            // Удаляем все лишние статусы, кроме базовых для всех шаблонов проекта.
+            result.RemoveAll(x => !_associationStatusSysNames.Contains(x.StatusSysName));
+
+            // Если есть оба системных названия, то оставим одно. InWork имеет приоритет.
+            if (result.Find(x => x.StatusSysName.Equals("InWork")) is not null
+                && result.Find(x => x.StatusSysName.Equals("InDevelopment")) is not null)
+            {
+                var removedDevelopment = result.Find(x => x.StatusSysName.Equals("InDevelopment"));
+                result.Remove(removedDevelopment);
+            }
+
+            // Если несколько системных названий Completed, то оставим одно.
+            if (result.Count(x => x.StatusSysName.Equals("Completed")) > 1)
+            {
+                result = result.DistinctBy(d => d.StatusSysName).ToList();
+            }
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex.Message, ex);
+            throw;
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task CreateUserTaskStatusTemplateAsync(string associationSysName, string statusName,
+        string statusDescription, long projectId, string account)
+    {
+        try
+        {
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+
+            var associationStatus = await _projectManagmentTemplateRepository.GetProjectManagementStatusBySysNameAsync(
+                associationSysName);
+
+            var associationStatusSysName = associationStatus.StatusSysName;
+
+            // Если системное название статуса недопустимо, то кидаем исключение.
+            if (!_associationStatusSysNames.Contains(associationStatusSysName))
+            {
+                throw new InvalidOperationException("Системное название статуса не определенно как базовый. " +
+                                                    "Проверьте маппинг статуса в таблице TaskStatuses" +
+                                                    $" StatusSysName: {associationStatusSysName}. " +
+                                                    $"AssociationStatusSysName: {associationStatusSysName}. " +
+                                                    $"StatusName: {statusName}. " +
+                                                    $"ProjectId: {projectId}");
+            }
+
+            var lastUserPosition = await _projectManagmentTemplateRepository.GetLastPositionUserStatusTemplateAsync(
+                userId);
+            
+            var statusSysName = await _reversoService.Value.TranslateTextRussianToEnglishAsync(statusName,
+                TranslateLangTypeEnum.Russian, TranslateLangTypeEnum.English);
+
+            // Разбиваем строку на пробелы и приводим каждое слово к PascalCase и соединяем снова в строку.
+            statusSysName = string.Join("", statusSysName.Split(" ").Select(x => x.ToPascalCase()));
+
+            var addedCustomUserStatus = CreateTaskStatusFactory.CreateUserStatuseTemplate(statusName, statusSysName,
+                lastUserPosition, userId, statusDescription);
+
+            // Создаем кастомный статус пользователя.
+            // Кастомный статус добавляется в шаблон пользователя (расширение шаблона), по которому управляется проект.
+            // Исходный шаблон проекта не изменяется и его статусы тоже.
+            var addedStatusId = await _projectManagmentTemplateRepository
+                .CreateProjectManagmentTaskStatusTemplateAsync(addedCustomUserStatus);
+
+            if (addedStatusId <= 0)
+            {
+                throw new InvalidOperationException(
+                    "Невалидный Id кастомного статуса. " +
+                    "Возможно, добавление не произошло. " +
+                    "Нужно првоерить таблицу кастомных статусов шаблонов пользователей. " +
+                    $"ProjectId: {projectId}. " +
+                    $"Id кастомного статуса был: {addedStatusId}");
+            }
+            
+            // TODO: Изменить на получение шаблона из репозитория конфигов настроек проектов.
+            // Получаем шаблон проекта, если он был выбран.
+            var projectTemplateId = await _projectManagmentTemplateRepository.GetProjectTemplateIdAsync(projectId);
+
+            if (!projectTemplateId.HasValue || projectTemplateId.Value <= 0)
+            {
+                throw new InvalidOperationException($"Не удалось получить шаблон проекта. ProjectId: {projectId}");
+            }
+            
+            // Добавляем этот новый кастомный статус в маппинг статусов шаблонов.
+            await _projectManagmentTemplateRepository.CreateProjectManagmentTaskStatusIntermediateTemplateAsync(
+                addedStatusId, projectTemplateId.Value);
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex.Message, ex);
+            throw;
+        }
+    }
+
     #endregion
 
     #region Приватные методы.
@@ -855,7 +994,8 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         var types = await _projectManagmentRepository.GetTypeNamesByTypeIdsAsync(typeIds);
 
         var statusIds = tasks.Select(x => x.TaskStatusId);
-        var statuseNames = await _projectManagmentRepository.GetStatusNamesByStatusIdsAsync(statusIds);
+        var statuseNames = (await _projectManagmentTemplateRepository.GetTaskTemplateStatusesAsync(statusIds))
+            .ToList();
 
         var resolutionIds = tasks
             .Where(x => x.ResolutionId is not null)
@@ -933,9 +1073,16 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 
                     // ФИО исполнителя задачи (если назначен).
                     ts.ExecutorName = executors.TryGet(ts.ExecutorId)?.FullName;
+                    
+                    var taskStatusName = statuseNames.Find(x => x.StatusId == ts.TaskStatusId)?.StatusName;
+
+                    if (string.IsNullOrEmpty(taskStatusName))
+                    {
+                        throw new InvalidOperationException("Не удалось получить TaskStatusName: {ts.TaskStatusId}.");
+                    }
 
                     // Название статуса.
-                    ts.TaskStatusName = statuseNames.TryGet(ts.TaskStatusId);
+                    ts.TaskStatusName = taskStatusName;
 
                     // Название типа задачи.
                     ts.TaskTypeName = types.TryGet(ts.TaskTypeId);
@@ -1077,13 +1224,19 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             }
         }
 
-        var types = await _projectManagmentRepository.GetTypeNamesByTypeIdsAsync(new[] { task.TaskTypeId });
+        var taskStatusId = task.TaskTypeId;
+        var types = await _projectManagmentRepository.GetTypeNamesByTypeIdsAsync(new[] { taskStatusId });
         result.TaskTypeName = types.TryGet(result.TaskTypeId);
+
+        var statuseName = await _projectManagmentTemplateRepository.GetStatusNameByTaskStatusIdAsync(
+                Convert.ToInt32(task.TaskStatusId));
+
+        if (string.IsNullOrEmpty(statuseName))
+        {
+            throw new InvalidOperationException($"Не удалось получить TaskStatusName: {taskStatusId}.");
+        }
         
-        var statuseNames = await _projectManagmentRepository.GetStatusNamesByStatusIdsAsync(
-            new[] { task.TaskStatusId });
-        
-        result.TaskStatusName = statuseNames.TryGet(result.TaskStatusId);
+        result.TaskStatusName = statuseName;
 
         var resolutionId = task.ResolutionId;
 

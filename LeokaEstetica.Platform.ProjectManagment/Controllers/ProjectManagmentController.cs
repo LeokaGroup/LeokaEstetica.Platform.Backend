@@ -1,6 +1,7 @@
 using AutoMapper;
 using LeokaEstetica.Platform.Base;
 using LeokaEstetica.Platform.Base.Filters;
+using LeokaEstetica.Platform.Database.Abstractions.Template;
 using LeokaEstetica.Platform.Integrations.Abstractions.Pachca;
 using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
 using LeokaEstetica.Platform.Models.Dto.Output.Project;
@@ -29,6 +30,7 @@ public class ProjectManagmentController : BaseController
     private readonly ILogger<ProjectManagmentController> _logger;
     private readonly IUserService _userService;
     private readonly Lazy<IPachcaService> _pachcaService;
+    private readonly Lazy<IProjectManagmentTemplateRepository> _projectManagmentTemplateRepository;
 
     /// <summary>
     /// Конструктор.
@@ -39,12 +41,14 @@ public class ProjectManagmentController : BaseController
     /// <param name="logger">Логгер.</param>
     /// <param name="userService">Сервис пользователей.</param>
     /// <param name="pachcaService">Сервис пачки.</param>
+    /// <param name="projectManagmentTemplateRepository">Репозиторий шаблонов проектов.</param>
     public ProjectManagmentController(IProjectService projectService,
         IProjectManagmentService projectManagmentService,
         IMapper mapper,
         ILogger<ProjectManagmentController> logger,
         IUserService userService,
-        Lazy<IPachcaService> pachcaService)
+        Lazy<IPachcaService> pachcaService,
+        Lazy<IProjectManagmentTemplateRepository> projectManagmentTemplateRepository)
     {
         _projectService = projectService;
         _projectManagmentService = projectManagmentService;
@@ -52,6 +56,7 @@ public class ProjectManagmentController : BaseController
         _logger = logger;
         _userService = userService;
         _pachcaService = pachcaService;
+        _projectManagmentTemplateRepository = projectManagmentTemplateRepository;
     }
 
     /// <summary>
@@ -418,5 +423,99 @@ public class ProjectManagmentController : BaseController
 
         await _projectManagmentService.CreateUserTaskTagAsync(userTaskTagInput.TagName,
             userTaskTagInput.TagDescription, GetUserName());
+    }
+
+    /// <summary>
+    /// Метод получает список статусов для выбора для создания нового статуса.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Список статусов.</returns>
+    [HttpGet]
+    [Route("select-create-task-statuses")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<TaskStatusOutput>))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<IEnumerable<TaskStatusOutput>> GetSelectableTaskStatusesAsync([FromQuery] long projectId)
+    {
+        var validator = await new GetTaskStatusValidator().ValidateAsync(
+            new GetTaskStatusValidationModel(projectId));
+
+        if (validator.Errors.Any())
+        {
+            var exceptions = new List<InvalidOperationException>();
+
+            foreach (var err in validator.Errors)
+            {
+                exceptions.Add(new InvalidOperationException(err.ErrorMessage));
+            }
+            
+            var ex = new AggregateException("Ошибка получения статусов для создания нового статуса.", exceptions);
+            _logger.LogError(ex, ex.Message);
+            
+            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            
+            throw ex;
+        }
+        
+        // Получаем шаблон, по которому управляется проект.
+        var templateId = await _projectManagmentTemplateRepository.Value.GetProjectTemplateIdAsync(projectId);
+
+        if (!templateId.HasValue || templateId.Value <= 0)
+        {
+            throw new InvalidOperationException($"Не удалось получить шаблон проекта. ProjectId: {projectId}");
+        }
+
+        var items = (await _projectManagmentService.GetSelectableTaskStatusesAsync(projectId, templateId.Value))
+            .ToList();
+        var result = _mapper.Map<IEnumerable<TaskStatusOutput>>(items);
+        var resultItems = result.ToList();
+        
+        // Проставляем шаблон для выходной модели.
+        foreach (var s in resultItems)
+        {
+            s.TemplateId = templateId.Value;
+        }
+
+        return resultItems;
+    }
+
+    /// <summary>
+    /// Метод создает новый статус шаблона пользователя учитывая ассоциацию статуса.
+    /// </summary>
+    /// <param name="createTaskStatusInput">Входная модель.</param>
+    /// <exception cref="AggregateException">Если входные параметры не прошли валидацию.</exception>
+    [HttpPost]
+    [Route("user-task-status")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task CreateUserTaskStatusTemplateAsync([FromBody] CreateTaskStatusInput createTaskStatusInput)
+    {
+        var validator = await new CreateTaskStatusValidator().ValidateAsync(createTaskStatusInput);
+
+        if (validator.Errors.Any())
+        {
+            var exceptions = new List<InvalidOperationException>();
+
+            foreach (var err in validator.Errors)
+            {
+                exceptions.Add(new InvalidOperationException(err.ErrorMessage));
+            }
+            
+            var ex = new AggregateException("Ошибка получения статусов для создания нового статуса.", exceptions);
+            _logger.LogError(ex, ex.Message);
+            
+            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            
+            throw ex;
+        }
+
+        await _projectManagmentService.CreateUserTaskStatusTemplateAsync(
+            createTaskStatusInput.AssociationStatusSysName, createTaskStatusInput.StatusName,
+            createTaskStatusInput.StatusDescription, createTaskStatusInput.ProjectId, GetUserName());
     }
 }

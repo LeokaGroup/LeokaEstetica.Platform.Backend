@@ -1,5 +1,3 @@
-using LeokaEstetica.Platform.Models.Entities.Project;
-
 namespace LeokaEstetica.Platform.Models.Entities.ProjectManagment;
 
 /// <summary>
@@ -22,7 +20,7 @@ public class ProjectTaskEntity
     /// <summary>
     /// Id статуса задачи.
     /// </summary>
-    public int TaskStatusId { get; set; }
+    public long TaskStatusId { get; set; }
 
     /// <summary>
     /// Id пользователя, который является автором задачи.
@@ -83,11 +81,6 @@ public class ProjectTaskEntity
     /// Id исполнителя задачи.
     /// </summary>
     public long ExecutorId { get; set; }
-
-    /// <summary>
-    /// FK на статус задачи.
-    /// </summary>
-    public TaskStatusEntity TaskStatus { get; set; }
 
     /// <summary>
     /// Таблица отношений связей задач.

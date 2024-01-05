@@ -221,7 +221,6 @@ public class MappingProfile : Profile
         CreateMap<TaskPriorityEntity, TaskPriorityOutput>();
         CreateMap<TaskTypeEntity, TaskTypeOutput>();
         CreateMap<UserTaskTagEntity, UserTaskTagOutput>();
-        CreateMap<TaskStatusEntity, TaskStatusOutput>();
         CreateMap<ProjectManagmentTaskStatusTemplateEntity, TaskStatusOutput>();
         
         CreateMap<ProfileInfoEntity, TaskPeopleOutput>()
