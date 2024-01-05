@@ -892,7 +892,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             statusSysName = string.Join("", statusSysName.Split(" ").Select(x => x.ToPascalCase()));
 
             var addedCustomUserStatus = CreateTaskStatusFactory.CreateUserStatuseTemplate(statusName, statusSysName,
-                lastUserPosition, userId, statusDescription);
+                ++lastUserPosition, userId, statusDescription);
 
             // Создаем кастомный статус пользователя.
             // Кастомный статус добавляется в шаблон пользователя (расширение шаблона), по которому управляется проект.
