@@ -177,5 +177,10 @@ public static class ValidationConst
         /// Если не заполнили название статуса ассоциации.
         /// </summary>
         public const string ASSOCIATION_SYS_NAME = "Не заполнено название статуса ассоциации.";
+        
+        /// <summary>
+        /// Если не заполнили название перехода.
+        /// </summary>
+        public const string EMPTY_TRANSITION_NAME = "Не заполнено название перехода.";
     }
 }
