@@ -143,6 +143,5 @@ public interface IProjectManagmentRepository
     /// </summary>
     /// <param name="currentTaskStatusId">Id текущего статуса задачи.</param>
     /// <returns>Доступные переходы в статусы задачи.</returns>
-    Task<IEnumerable<(long FromStatusId, long ToStatusId)>> GetAvailableTaskStatusTransitionsAsync(
-        long currentTaskStatusId);
+    Task<IEnumerable<KeyValuePair<long, long>>> GetAvailableTaskStatusTransitionsAsync(long currentTaskStatusId);
 }

@@ -303,11 +303,15 @@ internal sealed class ProjectManagmentRepository : IProjectManagmentRepository
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<(long FromStatusId, long ToStatusId)>> GetAvailableTaskStatusTransitionsAsync(
+    public async Task<IEnumerable<KeyValuePair<long, long>>> GetAvailableTaskStatusTransitionsAsync(
         long currentTaskStatusId)
     {
-        var result = await _pgContext.tra
-            .Where(t => t)
+        var result = await _pgContext.ProjectManagementTransitionTemplates
+            .Where(t => t.FromStatusId == currentTaskStatusId)
+            .Select(t => new KeyValuePair<long, long>(t.FromStatusId, t.ToStatusId))
+            .ToListAsync();
+
+        return result;
     }
 
     #endregion

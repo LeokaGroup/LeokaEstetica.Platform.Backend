@@ -140,8 +140,7 @@ public interface IProjectManagmentService
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
     /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
-    /// <param name="account">Аккаунт.</param>
     /// <returns>Список доступных переходов.</returns>
-    Task<IEnumerable<AvailableTaskStatusTransitionOutput>> GetAvailableTaskStatusTransitionsAsync(long projectId,
-        long projectTaskId, string account);
+    Task<IEnumerable<KeyValuePair<long,long>>> GetAvailableTaskStatusTransitionsAsync(long projectId,
+        long projectTaskId);
 }

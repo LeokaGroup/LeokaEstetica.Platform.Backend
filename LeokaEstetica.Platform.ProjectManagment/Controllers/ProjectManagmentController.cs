@@ -526,12 +526,12 @@ public class ProjectManagmentController : BaseController
     /// <returns>Список доступных переходов.</returns>
     [HttpGet]
     [Route("available-task-status-transitions")]
-    [ProducesResponseType(200, Type = typeof(IEnumerable<AvailableTaskStatusTransitionOutput>))]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<KeyValuePair<long,long>>))]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<IEnumerable<AvailableTaskStatusTransitionOutput>> GetAvailableTaskStatusTransitionsAsync(
+    public async Task<IEnumerable<KeyValuePair<long,long>>> GetAvailableTaskStatusTransitionsAsync(
         [FromBody] AvailableTaskStatusTransitionInput availableTaskStatusTransitionInput)
     {
         var validator = await new GetAvailableTaskStatusTransitionValidator()
@@ -553,5 +553,10 @@ public class ProjectManagmentController : BaseController
             
             throw ex;
         }
+
+        var result = await _projectManagmentService.GetAvailableTaskStatusTransitionsAsync(
+            availableTaskStatusTransitionInput.ProjectId, availableTaskStatusTransitionInput.ProjectTaskId);
+
+        return result;
     }
 }

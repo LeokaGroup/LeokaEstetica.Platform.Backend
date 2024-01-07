@@ -1059,8 +1059,8 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<AvailableTaskStatusTransitionOutput>> GetAvailableTaskStatusTransitionsAsync(
-        long projectId, long projectTaskId, string account)
+    public async Task<IEnumerable<KeyValuePair<long,long>>> GetAvailableTaskStatusTransitionsAsync(
+        long projectId, long projectTaskId)
     {
         try
         {
@@ -1088,6 +1088,9 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             
             // Получаем список доступных переходов в другие статусы.
             // Отталкиваемся от текущего статуса задачи.
+            var result = await _projectManagmentRepository.GetAvailableTaskStatusTransitionsAsync(currentTaskStatusId);
+
+            return result;
         }
         
         catch (Exception ex)
