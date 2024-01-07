@@ -16,7 +16,7 @@ namespace LeokaEstetica.Platform.ProjectManagment.Controllers;
 /// Контроллер настроек управления проектами.
 /// </summary>
 [ApiController]
-[Route("project-managment-settings")]
+[Route("project-management-settings")]
 [AuthFilter]
 public class ProjectManagmentSettingsController : BaseController
 {

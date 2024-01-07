@@ -43,5 +43,5 @@ public class ProjectManagementUserTransitionTemplateEntity
     /// <summary>
     /// FK.
     /// </summary>
-    public IEnumerable<ProjectManagementTransitionIntermediateTemplateEntity> ProjectManagementTransitionIntermediateTemplates { get; set; }
+    // public IEnumerable<ProjectManagementTransitionIntermediateTemplateEntity> ProjectManagementTransitionIntermediateTemplates { get; set; }
 }

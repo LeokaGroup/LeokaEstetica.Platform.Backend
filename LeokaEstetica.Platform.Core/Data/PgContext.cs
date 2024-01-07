@@ -577,9 +577,9 @@ public class PgContext : DbContext
     /// <summary>
     /// Таблица переходов многие-многие.
     /// </summary>
-    public DbSet<ProjectManagementTransitionIntermediateTemplateEntity> ProjectManagementTransitionIntermediateTemplates
-    {
-        get;
-        set;
-    }
+    // public DbSet<ProjectManagementTransitionIntermediateTemplateEntity> ProjectManagementTransitionIntermediateTemplates
+    // {
+    //     get;
+    //     set;
+    // }
 }

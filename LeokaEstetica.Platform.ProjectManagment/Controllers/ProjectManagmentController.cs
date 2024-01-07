@@ -20,7 +20,7 @@ namespace LeokaEstetica.Platform.ProjectManagment.Controllers;
 /// Контроллер управления проектами.
 /// </summary>
 [ApiController]
-[Route("project-managment")]
+[Route("project-management")]
 [AuthFilter]
 public class ProjectManagmentController : BaseController
 {
@@ -149,7 +149,6 @@ public class ProjectManagmentController : BaseController
     /// если выбранный шаблон это предполагает.
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
-
     /// <returns>Данные конфигурации рабочего пространства.</returns>
     [HttpGet]
     [Route("config-workspace-template")]
@@ -532,7 +531,7 @@ public class ProjectManagmentController : BaseController
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
     public async Task<IEnumerable<KeyValuePair<long,long>>> GetAvailableTaskStatusTransitionsAsync(
-        [FromBody] AvailableTaskStatusTransitionInput availableTaskStatusTransitionInput)
+        [FromQuery] AvailableTaskStatusTransitionInput availableTaskStatusTransitionInput)
     {
         var validator = await new GetAvailableTaskStatusTransitionValidator()
             .ValidateAsync(availableTaskStatusTransitionInput);

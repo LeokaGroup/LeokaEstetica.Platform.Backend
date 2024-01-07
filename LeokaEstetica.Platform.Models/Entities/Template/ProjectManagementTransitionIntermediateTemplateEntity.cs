@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace LeokaEstetica.Platform.Models.Entities.Template;
 
 /// <summary>
@@ -8,16 +10,19 @@ public class ProjectManagementTransitionIntermediateTemplateEntity
     /// <summary>
     /// Id перехода.
     /// </summary>
+    [Key]
     public long TransitionId { get; set; }
     
     /// <summary>
     /// Id статуса, из которого переход.
     /// </summary>
+    [Key]
     public long FromStatusId { get; set; }
 
     /// <summary>
     /// Id статуса, в который переход.
     /// </summary>
+    [Key]
     public long ToStatusId { get; set; }
 
     /// <summary>
