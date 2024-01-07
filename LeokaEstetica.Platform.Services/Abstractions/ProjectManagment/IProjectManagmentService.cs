@@ -132,6 +132,16 @@ public interface IProjectManagmentService
     /// <param name="statusDescription">Описание статуса.</param>
     /// <param name="projectId">Id проекта.</param>
     /// <param name="account">Аккаунт.</param>
-    Task CreateUserTaskStatusTemplateAsync(string associationStatusSysName, string statusName, string statusDescription,
-        long projectId, string account);
+    Task CreateUserTaskStatusTemplateAsync(string associationStatusSysName, string statusName,
+        string statusDescription, long projectId, string account);
+
+    /// <summary>
+    /// Метод получает доступные переходы в статусы задачи.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
+    /// <param name="account">Аккаунт.</param>
+    /// <returns>Список доступных переходов.</returns>
+    Task<IEnumerable<AvailableTaskStatusTransitionOutput>> GetAvailableTaskStatusTransitionsAsync(long projectId,
+        long projectTaskId, string account);
 }

@@ -177,5 +177,10 @@ public static class ValidationConst
         /// Если не заполнили название статуса ассоциации.
         /// </summary>
         public const string ASSOCIATION_SYS_NAME = "Не заполнено название статуса ассоциации.";
+        
+        /// <summary>
+        /// Если передали невалидный Id задачи проекта.
+        /// </summary>
+        public const string NOT_VALID_PROJECT_TASK_ID = "Id задачи проекта не передан.";
     }
 }

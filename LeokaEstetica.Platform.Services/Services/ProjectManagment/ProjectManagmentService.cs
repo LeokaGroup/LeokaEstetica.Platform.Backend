@@ -931,6 +931,45 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         }
     }
 
+    /// <inheritdoc />
+    public async Task<IEnumerable<AvailableTaskStatusTransitionOutput>> GetAvailableTaskStatusTransitionsAsync(
+        long projectId, long projectTaskId, string account)
+    {
+        try
+        {
+            var ifProjectHavingTask = await _projectManagmentRepository.IfProjectHavingProjectTaskIdAsync(projectId,
+                projectTaskId);
+
+            // Если задача не принадлежит проекту.
+            if (!ifProjectHavingTask)
+            {
+                throw new InvalidOperationException("Задача не принадлежит проекту. " +
+                                                    $"ProjectId: {projectId}. " +
+                                                    $"ProjectTaskId: {projectTaskId}");
+            }
+
+            // Получаем текущий статус задачи.
+            var currentTaskStatusId = await _projectManagmentRepository
+                .GetProjectTaskStatusIdByProjectIdProjectTaskIdAsync(projectId, projectTaskId);
+
+            if (currentTaskStatusId <= 0)
+            {
+                throw new InvalidOperationException("Не удалось получить текущий статус задачи. " +
+                                                    $"ProjectId: {projectId}. " +
+                                                    $"ProjectTaskId: {projectTaskId}");
+            }
+            
+            // Получаем список доступных переходов в другие статусы.
+            // Отталкиваемся от текущего статуса задачи.
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex.Message, ex);
+            throw;
+        }
+    }
+
     #endregion
 
     #region Приватные методы.

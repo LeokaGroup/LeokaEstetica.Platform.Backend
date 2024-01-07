@@ -121,4 +121,28 @@ public interface IProjectManagmentRepository
     /// </summary>
     /// <param name="tag">Сущность тега.</param>
     Task CreateUserTaskTagAsync(UserTaskTagEntity tag);
+
+    /// <summary>
+    /// Метод проверяет принадлежность задачи к проекту по ProjectTaskId.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
+    /// <returns>Признак результата проверки.</returns>
+    Task<bool> IfProjectHavingProjectTaskIdAsync(long projectId, long projectTaskId);
+
+    /// <summary>
+    /// Метод получает Id статуса задачи по Id проекта и Id задачи в рамках проекта.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
+    /// <returns>Id статуса задачи.</returns>
+    Task<long> GetProjectTaskStatusIdByProjectIdProjectTaskIdAsync(long projectId, long projectTaskId);
+
+    /// <summary>
+    /// Метод получает доступные переходы в статусы задачи.
+    /// </summary>
+    /// <param name="currentTaskStatusId">Id текущего статуса задачи.</param>
+    /// <returns>Доступные переходы в статусы задачи.</returns>
+    Task<IEnumerable<(long FromStatusId, long ToStatusId)>> GetAvailableTaskStatusTransitionsAsync(
+        long currentTaskStatusId);
 }

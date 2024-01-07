@@ -279,6 +279,37 @@ internal sealed class ProjectManagmentRepository : IProjectManagmentRepository
         await _pgContext.SaveChangesAsync();
     }
 
+    /// <inheritdoc />
+    public async Task<bool> IfProjectHavingProjectTaskIdAsync(long projectId, long projectTaskId)
+    {
+        var result = await _pgContext.ProjectTasks
+            .Where(t => t.ProjectId == projectId
+                        && t.ProjectTaskId == projectTaskId)
+            .AnyAsync();
+
+        return result;
+    }
+
+    /// <inheritdoc />
+    public async Task<long> GetProjectTaskStatusIdByProjectIdProjectTaskIdAsync(long projectId, long projectTaskId)
+    {
+        var result = await _pgContext.ProjectTasks
+            .Where(t => t.ProjectId == projectId
+                        && t.ProjectTaskId == projectTaskId)
+            .Select(t => t.TaskStatusId)
+            .FirstOrDefaultAsync();
+
+        return result;
+    }
+
+    /// <inheritdoc />
+    public async Task<IEnumerable<(long FromStatusId, long ToStatusId)>> GetAvailableTaskStatusTransitionsAsync(
+        long currentTaskStatusId)
+    {
+        var result = await _pgContext.tra
+            .Where(t => t)
+    }
+
     #endregion
 
     #region Приватные методы.

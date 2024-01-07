@@ -518,4 +518,40 @@ public class ProjectManagmentController : BaseController
             createTaskStatusInput.AssociationStatusSysName, createTaskStatusInput.StatusName,
             createTaskStatusInput.StatusDescription, createTaskStatusInput.ProjectId, GetUserName());
     }
+
+    /// <summary>
+    /// Метод получает доступные переходы в статусы задачи.
+    /// </summary>
+    /// <param name="availableTaskStatusTransitionInput">Входная модель.</param>
+    /// <returns>Список доступных переходов.</returns>
+    [HttpGet]
+    [Route("available-task-status-transitions")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<AvailableTaskStatusTransitionOutput>))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<IEnumerable<AvailableTaskStatusTransitionOutput>> GetAvailableTaskStatusTransitionsAsync(
+        [FromBody] AvailableTaskStatusTransitionInput availableTaskStatusTransitionInput)
+    {
+        var validator = await new GetAvailableTaskStatusTransitionValidator()
+            .ValidateAsync(availableTaskStatusTransitionInput);
+
+        if (validator.Errors.Any())
+        {
+            var exceptions = new List<InvalidOperationException>();
+
+            foreach (var err in validator.Errors)
+            {
+                exceptions.Add(new InvalidOperationException(err.ErrorMessage));
+            }
+            
+            var ex = new AggregateException("Ошибка получения возможных переходов статусов задачи.", exceptions);
+            _logger.LogError(ex, ex.Message);
+            
+            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            
+            throw ex;
+        }
+    }
 }
