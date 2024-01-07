@@ -179,6 +179,11 @@ public static class ValidationConst
         public const string ASSOCIATION_SYS_NAME = "Не заполнено название статуса ассоциации.";
         
         /// <summary>
+        /// Если не заполнили название перехода.
+        /// </summary>
+        public const string EMPTY_TRANSITION_NAME = "Не заполнено название перехода.";
+        
+        /// <summary>
         /// Если передали невалидный Id задачи проекта.
         /// </summary>
         public const string NOT_VALID_PROJECT_TASK_ID = "Id задачи проекта не передан.";

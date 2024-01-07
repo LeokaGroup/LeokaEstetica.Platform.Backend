@@ -1,7 +1,7 @@
 namespace LeokaEstetica.Platform.Models.Entities.Template;
 
 /// <summary>
-/// Класс описывает связи многие-ко-многим.
+/// Класс описывает связи многие-ко-многим таблиц статусов.
 /// </summary>
 public class ProjectManagmentTaskStatusIntermediateTemplateEntity
 {

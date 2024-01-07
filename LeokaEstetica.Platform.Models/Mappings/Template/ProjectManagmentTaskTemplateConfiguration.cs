@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace LeokaEstetica.Platform.Models.Mappings.Template;
 
+// TODO: Проверить, похоже маппинг не правильно сделан многие-многие. Пока не через EF используем эту связь и выглядит не критично, но надо отрефачить и написать корректно многие-многие.
 public partial class ProjectManagmentTaskTemplateConfiguration : IEntityTypeConfiguration<ProjectManagmentTaskTemplateEntity>
 {
     public void Configure(EntityTypeBuilder<ProjectManagmentTaskTemplateEntity> entity)

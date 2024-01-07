@@ -504,15 +504,142 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 var ex = new NotFoundUserIdByAccountException(account);
                 throw ex;
             }
-            
+
             // TODO: Добавить проверку. Является ли пользователь участником проекта. Если нет, то не давать доступ к задаче.
             var task = await _projectManagmentRepository.GetTaskDetailsByTaskIdAsync(projectTaskId, projectId);
 
-            var result = await ModifyProjectManagmentTaskDetailsResultAsync(task);
+            // Получаем имя автора задачи.
+            var authors = await _userRepository.GetAuthorNamesByAuthorIdsAsync(new[] { task.AuthorId });
+
+            if (authors.Count == 0)
+            {
+                throw new InvalidOperationException("Не удалось получить автора задачи.");
+            }
+
+            var executorId = task.ExecutorId;
+
+            // Обязательно логируем такое если обнаружили, но не стопаем выполнение логики.
+            if (executorId <= 0)
+            {
+                var ex = new InvalidOperationException(
+                    "Найден невалидный исполнитель задачи." +
+                    $" ExecutorIds: {JsonConvert.SerializeObject(executorId)}.");
+
+                _logger.LogError(ex, ex.Message);
+
+                // Отправляем ивент в пачку.
+                await _pachcaService.SendNotificationErrorAsync(ex);
+            }
+
+            // Получаем имена исполнителя задачи.
+            var executors = await _userRepository.GetExecutorNamesByExecutorIdsAsync(new[] { executorId });
+
+            if (executors.Count == 0)
+            {
+                throw new InvalidOperationException("Не удалось получить исполнителей задач.");
+            }
+
+            var result = _mapper.Map<ProjectManagmentTaskOutput>(task);
+            result.ExecutorName = executors.TryGet(executors.First().Key).FullName;
+            result.AuthorName = authors.TryGet(authors.First().Key).FullName;
+
+            var watcherIds = task.WatcherIds;
+
+            // Если есть наблюдатели, пойдем получать их.
+            // Если каких то нет, не страшно, значит они не заполнены у задач.
+            if (watcherIds is not null && watcherIds.Any())
+            {
+                var watchers = await _userRepository.GetWatcherNamesByWatcherIdsAsync(watcherIds);
+
+                // Наблюдатели задачи.
+                if (watchers is not null && watchers.Count > 0)
+                {
+                    var watcherNames = new List<string>();
+
+                    foreach (var w in result.WatcherIds)
+                    {
+                        watcherNames.Add(watchers.TryGet(w)?.FullName);
+                    }
+
+                    result.WatcherNames = watcherNames;
+                }
+            }
+
+            var tagIds = task.TagIds;
+
+            // Если есть теги, то пойдем получать.
+            if (tagIds is not null && tagIds.Any())
+            {
+                var tags = await _projectManagmentRepository.GetTagNamesByTagIdsAsync(tagIds);
+
+                // Название тегов (меток) задачи.
+                if (tags is not null && tags.Count > 0)
+                {
+                    var tagNames = new List<string>();
+
+                    foreach (var tg in result.TagIds)
+                    {
+                        tagNames.Add(tags.TryGet(tg));
+                    }
+
+                    result.TagNames = tagNames;
+                }
+            }
+
+            var taskStatusId = task.TaskTypeId;
+            var types = await _projectManagmentRepository.GetTypeNamesByTypeIdsAsync(new[] { taskStatusId });
+            result.TaskTypeName = types.TryGet(result.TaskTypeId);
+
+            var statuseName = await _projectManagmentTemplateRepository.GetStatusNameByTaskStatusIdAsync(
+                Convert.ToInt32(task.TaskStatusId));
+
+            if (string.IsNullOrEmpty(statuseName))
+            {
+                throw new InvalidOperationException($"Не удалось получить TaskStatusName: {taskStatusId}.");
+            }
+
+            result.TaskStatusName = statuseName;
+
+            var resolutionId = task.ResolutionId;
+
+            // Если есть резолюции задач, пойдем получать их.
+            // Если каких то нет, не страшно, значит они не заполнены у задач.
+            if (resolutionId.HasValue)
+            {
+                var resolutions = await _projectManagmentRepository.GetResolutionNamesByResolutionIdsAsync(
+                    new[] { resolutionId.Value });
+
+                // Получаем резолюцию задачи, если она есть.
+                if (resolutions is not null && resolutions.Count > 0)
+                {
+                    result.ResolutionName = resolutions.TryGet(result.ResolutionId);
+                }
+            }
+
+            var priorityId = task.PriorityId;
+
+            // Если есть приоритеты задач, пойдем получать их.
+            // Если каких то нет, не страшно, значит они не заполнены у задач.
+            if (priorityId.HasValue)
+            {
+                var priorities = await _projectManagmentRepository.GetPriorityNamesByPriorityIdsAsync(
+                    new[] { priorityId.Value });
+
+                if (priorities is not null && priorities.Count > 0)
+                {
+                    var priorityName = priorities.TryGet(priorityId.Value);
+
+                    // Если приоритета нет, не страшно. Значит не указана у задачи.
+                    if (priorityName is not null)
+                    {
+                        result.PriorityName = priorities.TryGet(priorityId.Value);
+                    }
+                }
+            }
 
             return result;
         }
-        
+
         catch (Exception ex)
         {
             _logger.LogError(ex.Message, ex);
@@ -892,7 +1019,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             statusSysName = string.Join("", statusSysName.Split(" ").Select(x => x.ToPascalCase()));
 
             var addedCustomUserStatus = CreateTaskStatusFactory.CreateUserStatuseTemplate(statusName, statusSysName,
-                lastUserPosition, userId, statusDescription);
+                ++lastUserPosition, userId, statusDescription);
 
             // Создаем кастомный статус пользователя.
             // Кастомный статус добавляется в шаблон пользователя (расширение шаблона), по которому управляется проект.
@@ -1176,145 +1303,6 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 ps.Total = ps.ProjectManagmentTasks.Count;
             }
         }
-    }
-
-    /// <summary>
-    /// Метод наполняет задачу названиями по Id полей.
-    /// </summary>
-    /// <param name="task">Задача.</param>
-    /// <returns>Задача модифицируемая наполненными полями.</returns>
-    private async Task<ProjectManagmentTaskOutput> ModifyProjectManagmentTaskDetailsResultAsync(ProjectTaskEntity task)
-    {
-        // Получаем имя автора задачи.
-        var authors = await _userRepository.GetAuthorNamesByAuthorIdsAsync(new[] { task.AuthorId });
-
-        if (authors.Count == 0)
-        {
-            throw new InvalidOperationException("Не удалось получить автора задачи.");
-        }
-        
-        var executorId = task.ExecutorId;
-
-        // Обязательно логируем такое если обнаружили, но не стопаем выполнение логики.
-        if (executorId <= 0)
-        {
-            var ex = new InvalidOperationException(
-                "Найден невалидный исполнитель задачи." +
-                $" ExecutorIds: {JsonConvert.SerializeObject(executorId)}.");
-
-            _logger.LogError(ex, ex.Message);
-
-            // Отправляем ивент в пачку.
-            await _pachcaService.SendNotificationErrorAsync(ex);
-        }
-
-        // Получаем имена исполнителя задачи.
-        var executors = await _userRepository.GetExecutorNamesByExecutorIdsAsync(new[] { executorId });
-
-        if (executors.Count == 0)
-        {
-            throw new InvalidOperationException("Не удалось получить исполнителей задач.");
-        }
-
-        var result = _mapper.Map<ProjectManagmentTaskOutput>(task);
-        result.ExecutorName = executors.TryGet(executors.First().Key).FullName;
-        result.AuthorName = authors.TryGet(authors.First().Key).FullName;
-
-        var watcherIds = task.WatcherIds;
-
-        // Если есть наблюдатели, пойдем получать их.
-        // Если каких то нет, не страшно, значит они не заполнены у задач.
-        if (watcherIds is not null && watcherIds.Any())
-        {
-            var watchers = await _userRepository.GetWatcherNamesByWatcherIdsAsync(watcherIds);
-            
-            // Наблюдатели задачи.
-            if (watchers is not null && watchers.Count > 0)
-            {
-                var watcherNames = new List<string>();
-            
-                foreach (var w in result.WatcherIds)
-                {
-                    watcherNames.Add(watchers.TryGet(w)?.FullName);
-                }
-            
-                result.WatcherNames = watcherNames;
-            }
-        }
-
-        var tagIds = task.TagIds;
-
-        // Если есть теги, то пойдем получать.
-        if (tagIds is not null && tagIds.Any())
-        {
-            var tags = await _projectManagmentRepository.GetTagNamesByTagIdsAsync(tagIds);
-            
-            // Название тегов (меток) задачи.
-            if (tags is not null && tags.Count > 0)
-            {
-                var tagNames = new List<string>();
-                
-                foreach (var tg in result.TagIds)
-                {
-                    tagNames.Add(tags.TryGet(tg));
-                }
-            
-                result.TagNames = tagNames;
-            }
-        }
-
-        var taskStatusId = task.TaskTypeId;
-        var types = await _projectManagmentRepository.GetTypeNamesByTypeIdsAsync(new[] { taskStatusId });
-        result.TaskTypeName = types.TryGet(result.TaskTypeId);
-
-        var statuseName = await _projectManagmentTemplateRepository.GetStatusNameByTaskStatusIdAsync(
-                Convert.ToInt32(task.TaskStatusId));
-
-        if (string.IsNullOrEmpty(statuseName))
-        {
-            throw new InvalidOperationException($"Не удалось получить TaskStatusName: {taskStatusId}.");
-        }
-        
-        result.TaskStatusName = statuseName;
-
-        var resolutionId = task.ResolutionId;
-
-        // Если есть резолюции задач, пойдем получать их.
-        // Если каких то нет, не страшно, значит они не заполнены у задач.
-        if (resolutionId.HasValue)
-        {
-            var resolutions = await _projectManagmentRepository.GetResolutionNamesByResolutionIdsAsync(
-                new[] { resolutionId.Value });
-            
-            // Получаем резолюцию задачи, если она есть.
-            if (resolutions is not null && resolutions.Count > 0)
-            {
-                result.ResolutionName = resolutions.TryGet(result.ResolutionId);
-            }
-        }
-
-        var priorityId = task.PriorityId;
-        
-        // Если есть приоритеты задач, пойдем получать их.
-        // Если каких то нет, не страшно, значит они не заполнены у задач.
-        if (priorityId.HasValue)
-        {
-            var priorities = await _projectManagmentRepository.GetPriorityNamesByPriorityIdsAsync(
-                new[] { priorityId.Value });
-
-            if (priorities is not null && priorities.Count > 0)
-            {
-                var priorityName = priorities.TryGet(priorityId.Value);
-
-                // Если приоритета нет, не страшно. Значит не указана у задачи.
-                if (priorityName is not null)
-                {
-                    result.PriorityName = priorities.TryGet(priorityId.Value);
-                }
-            }
-        }
-
-        return result;
     }
 
     #endregion
