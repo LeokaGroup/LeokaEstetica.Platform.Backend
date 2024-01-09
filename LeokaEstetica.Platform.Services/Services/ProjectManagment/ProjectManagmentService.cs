@@ -1225,8 +1225,8 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                     
                     result.Add(new AvailableTaskStatusTransitionOutput
                     {
-                        AvailableStatusName = userStatus.StatusName,
-                        AvailableStatusId = statusId
+                        StatusName = userStatus.StatusName,
+                        StatusId = statusId
                     });
                 }
 
@@ -1245,8 +1245,8 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                     
                 result.Add(new AvailableTaskStatusTransitionOutput
                 {
-                    AvailableStatusName = commonStatuse.StatusName,
-                    AvailableStatusId = statusId
+                    StatusName = commonStatuse.StatusName,
+                    StatusId = statusId
                 });
             }
 

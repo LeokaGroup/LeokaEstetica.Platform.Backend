@@ -1,4 +1,4 @@
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 
@@ -10,12 +10,12 @@ public class AvailableTaskStatusTransitionOutput
     /// <summary>
     /// Id доступного к переходу статуса.
     /// </summary>
-    public long AvailableStatusId { get; set; }
+    public long StatusId { get; set; }
     
     /// <summary>
     /// Название доступного к переходу статуса.
     /// </summary>
-    public string AvailableStatusName { get; set; }
+    public string StatusName { get; set; }
 
     /// <summary>
     /// Системное название доступного к переходу статуса.
