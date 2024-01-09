@@ -24,4 +24,9 @@ public class ProjectManagmentTaskStatusIntermediateTemplateEntity
     /// FK.
     /// </summary>
     public ProjectManagmentTaskStatusTemplateEntity ProjectManagmentTaskStatusTemplate { get; set; }
+
+    /// <summary>
+    /// Признак кастомного статуса (если статус создал пользователь).
+    /// </summary>
+    public bool IsCustomStatus { get; set; }
 }

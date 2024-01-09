@@ -34,9 +34,4 @@ public class ProjectManagementTransitionTemplateEntity
     /// Id статуса, в который переход.
     /// </summary>
     public long ToStatusId { get; set; }
-
-    /// <summary>
-    /// FK.
-    /// </summary>
-    // public IEnumerable<ProjectManagementTransitionIntermediateTemplateEntity> ProjectManagementTransitionIntermediateTemplates { get; set; }
 }

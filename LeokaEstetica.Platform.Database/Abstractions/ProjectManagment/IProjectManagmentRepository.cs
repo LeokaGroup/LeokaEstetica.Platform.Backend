@@ -1,5 +1,6 @@
 ﻿using LeokaEstetica.Platform.Models.Dto.Output.Template;
 using LeokaEstetica.Platform.Models.Entities.ProjectManagment;
+using LeokaEstetica.Platform.Models.Entities.Template;
 
 namespace LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 
@@ -139,9 +140,30 @@ public interface IProjectManagmentRepository
     Task<long> GetProjectTaskStatusIdByProjectIdProjectTaskIdAsync(long projectId, long projectTaskId);
 
     /// <summary>
-    /// Метод получает доступные переходы в статусы задачи.
+    /// Метод получает все доступные переходы в статусы задачи из промежуточной задачи.
     /// </summary>
     /// <param name="currentTaskStatusId">Id текущего статуса задачи.</param>
-    /// <returns>Доступные переходы в статусы задачи.</returns>
-    Task<IEnumerable<KeyValuePair<long, long>>> GetAvailableTaskStatusTransitionsAsync(long currentTaskStatusId);
+    /// <returns>Список переходов.</returns>
+    Task<IEnumerable<long>> GetProjectManagementTransitionIntermediateTemplatesAsync(long currentTaskStatusId);
+
+    /// <summary>
+    /// Метод получает статусы из таблицы связей многие-многие, чтобы дальше работать с
+    /// конкретными таблицами статусов (либо базовыми либо кастомными статусами).
+    /// </summary>
+    /// <param name="statusIds">Набор Id статусов, которые нужно получить.</param>
+    /// <returns>Словарь с набором Id статусов.</returns>
+    Task<IEnumerable<ProjectManagmentTaskStatusIntermediateTemplateEntity>>
+        GetTaskStatusIntermediateTemplatesAsync(IEnumerable<long> statusIds);
+
+    /// <summary>
+    /// Метод получает все базовые статусы задач.
+    /// </summary>
+    /// <returns>Список статусов задач.</returns>
+    Task<IDictionary<long, ProjectManagmentTaskStatusTemplateEntity>> GetTaskStatusTemplatesAsync();
+    
+    /// <summary>
+    /// Метод получает все статусы задач пользователя.
+    /// </summary>
+    /// <returns>Список статусов задач.</returns>
+    Task<IDictionary<long, ProjectManagementUserStatuseTemplateEntity>> GetUserTaskStatusTemplatesAsync();
 }

@@ -2,6 +2,7 @@
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.Template;
 using LeokaEstetica.Platform.Models.Entities.ProjectManagment;
+using LeokaEstetica.Platform.Models.Entities.Template;
 using Microsoft.EntityFrameworkCore;
 
 namespace LeokaEstetica.Platform.Database.Repositories.ProjectManagment;
@@ -303,13 +304,42 @@ internal sealed class ProjectManagmentRepository : IProjectManagmentRepository
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<KeyValuePair<long, long>>> GetAvailableTaskStatusTransitionsAsync(
-        long currentTaskStatusId)
+    public async Task<IEnumerable<long>> GetProjectManagementTransitionIntermediateTemplatesAsync(
+            long currentTaskStatusId)
     {
-        var result = await _pgContext.ProjectManagementTransitionTemplates
+        var result = await _pgContext.ProjectManagementTransitionIntermediateTemplates
             .Where(t => t.FromStatusId == currentTaskStatusId)
-            .Select(t => new KeyValuePair<long, long>(t.FromStatusId, t.ToStatusId))
+            .Select(t => t.ToStatusId)
             .ToListAsync();
+
+        return result;
+    }
+
+    /// <inheritdoc />
+    public async Task<IEnumerable<ProjectManagmentTaskStatusIntermediateTemplateEntity>>
+        GetTaskStatusIntermediateTemplatesAsync(IEnumerable<long> statusIds)
+    {
+        var result = await _pgContext.ProjectManagmentTaskStatusIntermediateTemplates
+            .Where(s => statusIds.Contains(s.StatusId))
+            .ToListAsync();
+
+        return result;
+    }
+
+    /// <inheritdoc />
+    public async Task<IDictionary<long, ProjectManagmentTaskStatusTemplateEntity>> GetTaskStatusTemplatesAsync()
+    {
+        var result = await _pgContext.ProjectManagmentTaskStatusTemplates
+            .ToDictionaryAsync(k => k.StatusId, v => v);
+
+        return result;
+    }
+
+    /// <inheritdoc />
+    public async Task<IDictionary<long, ProjectManagementUserStatuseTemplateEntity>> GetUserTaskStatusTemplatesAsync()
+    {
+        var result = await _pgContext.ProjectManagementUserStatuseTemplates
+            .ToDictionaryAsync(k => k.StatusId, v => v);
 
         return result;
     }

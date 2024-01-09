@@ -27,10 +27,22 @@ public interface IProjectSettingsConfigRepository
     Task<ConfigSpaceSettingEntity> GetBuildProjectSpaceSettingsAsync(long userId);
 
     /// <summary>
+    /// TODO: Отрефаить этот метод с/без UserId.
+    /// TODO: Чтобы можно было удалить метод GetProjectSpaceSettingsByProjectIdAsync (который без параметра UserId)
+    /// TODO: и переиспользовать его логику как с так и без UserId.
     /// Метод получает настройки по Id проекта.
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
     /// <param name="userId">Id пользователя.</param>
     /// <returns>Данные конфигурации.</returns>
     Task<IEnumerable<ConfigSpaceSettingEntity>> GetProjectSpaceSettingsByProjectIdAsync(long projectId, long userId);
+    
+    /// <summary>
+    /// TODO: Отрефаить этот метод, смотреть тудушку к методу GetProjectSpaceSettingsByProjectIdAsync с UserId.
+    /// Метод получает настройки по Id проекта.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Данные конфигурации.</returns>
+    Task<IEnumerable<ConfigSpaceSettingEntity>> GetProjectSpaceSettingsByProjectIdAsync(long projectId);
 }

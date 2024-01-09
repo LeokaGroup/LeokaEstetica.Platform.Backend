@@ -56,6 +56,14 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     };
 
     /// <summary>
+    /// Системные названия статусов, которые являются синонимами. Исключаются и оставляется по одному.
+    /// </summary>
+    private readonly List<string> _associationDevelopmentDublicateStatusSysNames = new()
+    {
+        "InWork", "InDevelopment"
+    };
+
+    /// <summary>
     /// Конструктор.
     /// <param name="logger">Логгер.</param>
     /// <param name="projectManagmentRepository">Репозиторий управления проектами.</param>
@@ -1059,7 +1067,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<KeyValuePair<long,long>>> GetAvailableTaskStatusTransitionsAsync(
+    public async Task<IEnumerable<AvailableTaskStatusTransitionOutput>> GetAvailableTaskStatusTransitionsAsync(
         long projectId, long projectTaskId)
     {
         try
@@ -1085,10 +1093,172 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                                                     $"ProjectId: {projectId}. " +
                                                     $"ProjectTaskId: {projectTaskId}");
             }
+
+            // Получаем все переходы из промежуточной таблицы отталкиваясь от текущего статуса задачи.
+            var statusIds = (await _projectManagmentRepository
+                    .GetProjectManagementTransitionIntermediateTemplatesAsync(currentTaskStatusId))?.ToList();
+
+            if (statusIds is null || !statusIds.Any())
+            {
+                throw new InvalidOperationException(
+                    $"Не удалось получить доступные переходы для статуса {currentTaskStatusId}. " +
+                    $"ProjectId: {projectId}. " +
+                    $"ProjectTaskId: {projectTaskId}.");
+            }
+
+            // Получаем все статусы по переходам.
+            var transitionStatuses = (await _projectManagmentRepository.GetTaskStatusIntermediateTemplatesAsync(
+                statusIds))?.ToList();
+
+            if (transitionStatuses is null || !transitionStatuses.Any())
+            {
+                throw new InvalidOperationException(
+                    $"Не удалось получить статусы переходов: {JsonConvert.SerializeObject(transitionStatuses)}. " +
+                    $"Id статусов были: {JsonConvert.SerializeObject(statusIds)} " +
+                    $"ProjectId: {projectId}. " +
+                    $"ProjectTaskId: {projectTaskId}. " +
+                    $"Id текущего статуса задачи: {currentTaskStatusId}.");
+            }
             
-            // Получаем список доступных переходов в другие статусы.
-            // Отталкиваемся от текущего статуса задачи.
-            var result = await _projectManagmentRepository.GetAvailableTaskStatusTransitionsAsync(currentTaskStatusId);
+            // Получаем названия статусов у таких переходов.
+            // Опираемся на признаки кастомности промежуточных таблиц переходов и статусов
+            // IsCustomTransition и IsCustomStatus.
+            var commonStatuses = await _projectManagmentRepository.GetTaskStatusTemplatesAsync();
+            
+            // Если нету общих статусов, но среди переходов был минимум 1 общий,
+            // то это ошибка и опасно продолжать дальше. Это может нарушить целостность переходов.
+            if (commonStatuses is null)
+            {
+                throw new InvalidOperationException(
+                    "Не удалось получить кастомные статусы пользователя," +
+                    " хотя был минимум 1 кастомный статус среди: " +
+                    $"{JsonConvert.SerializeObject(transitionStatuses)}.");
+            }
+            
+            var userStatuses = await _projectManagmentRepository.GetUserTaskStatusTemplatesAsync();
+            
+            // Если нету кастомных статусов, но среди переходов был минимум 1 кастомный,
+            // то это ошибка и опасно продолжать дальше. Это может нарушить целостность переходов.
+            if (userStatuses is null)
+            {
+                throw new InvalidOperationException(
+                    "Не удалось получить кастомные статусы пользователя," +
+                    " хотя был минимум 1 кастомный статус среди: " +
+                    $"{JsonConvert.SerializeObject(transitionStatuses)}.");
+            }
+            
+            // Получаем все статусы, которые входят в шаблон текущего проекта.
+            // Получаем настройки проекта.
+            var projectSettings = await _projectSettingsConfigRepository.GetProjectSpaceSettingsByProjectIdAsync(
+                projectId);
+            var projectSettingsItems = projectSettings?.ToList();
+
+            if (projectSettingsItems is null || !projectSettingsItems.Any())
+            {
+                throw new InvalidOperationException("Ошибка получения настроек проекта. " +
+                                                    $"ProjectId: {projectId}.");
+            }
+
+            var template = projectSettingsItems.Find(x =>
+                x.ParamKey.Equals(GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGMENT_TEMPLATE_ID));
+            var templateId = Convert.ToInt32(template!.ParamValue);
+
+            // Получаем все Id статусов, которые входят в шаблон текущего проекта.
+            var templateStatusIds = (await _projectManagmentTemplateRepository.GetTemplateStatusIdsAsync(templateId))
+                ?.ToList();
+
+            if (templateStatusIds is null || !templateStatusIds.Any())
+            {
+                throw new InvalidOperationException($"Не удалось получить статусы шаблона проекта: {templateId}.");
+            }
+            
+            // Получаем сами статусы, которые входят в шаблон текущего проекта.
+            var templateStatuses = (await _projectManagmentTemplateRepository
+                .GetTaskTemplateStatusesAsync(templateStatusIds))?.ToDictionary(k => k.StatusId, v => v);
+
+            if (templateStatuses is null || !templateStatuses.Any())
+            {
+                throw new InvalidOperationException(
+                    $"Не удалось получить статусы шаблона проекта: {projectId}. " +
+                    $"Id статусов были: {JsonConvert.SerializeObject(templateStatusIds)}.");
+            }
+
+            var result = new List<AvailableTaskStatusTransitionOutput>();
+            
+            foreach (var ts in transitionStatuses)
+            {
+                // Если шаблон не совпадает с шаблоном текущего проекта, то такой статус не нужен.
+                if (ts.TemplateId != templateId)
+                {
+                    continue;
+                }
+                
+                var statusId = ts.StatusId;
+                
+                if (statusId <= 0)
+                {
+                    throw new InvalidOperationException($"Невалидный статус задачи: {statusId}. " +
+                                                        $"Id задачи: {projectTaskId}. " +
+                                                        $"Id проекта: {projectId}.");
+                }
+
+                // Если статус не входит в шаблон проекта, то исключаем его.
+                if (!templateStatuses.ContainsKey(statusId))
+                {
+                    continue;
+                }
+
+                // Если кастомный статус, то получать будем из таблицы кастомных статусов.
+                if (ts.IsCustomStatus)
+                {
+                    if (!userStatuses.ContainsKey(statusId))
+                    {
+                        throw new InvalidOperationException(
+                            $"Статуса {statusId} нет среди статусов пользователей. " +
+                            "Возможно, стоит проверить среди общих статусов," +
+                            " а не среди кастомных либо статус некорректен. " +
+                            $"Кастомные статусы были: {JsonConvert.SerializeObject(userStatuses)}" +
+                            $". Среди них не было найдено статуса: {statusId}.");
+                    }
+                    
+                    var userStatus = userStatuses.TryGet(statusId);
+                    
+                    result.Add(new AvailableTaskStatusTransitionOutput
+                    {
+                        AvailableStatusName = userStatus.StatusName,
+                        AvailableStatusId = statusId
+                    });
+                }
+
+                // Иначе из таблицы общих статусов.
+                if (!commonStatuses.ContainsKey(statusId))
+                {
+                    throw new InvalidOperationException(
+                        $"Статуса {statusId} нет среди общих статусов. " +
+                        "Возможно, стоит проверить среди кастомных статусов пользователей," +
+                        " а не среди общих либо статус некорректен. " +
+                        $"Общие статусы были: {JsonConvert.SerializeObject(commonStatuses)}" +
+                        $". Среди них не было найдено статуса: {statusId}.");
+                }
+                
+                var commonStatuse = commonStatuses.TryGet(statusId);
+                    
+                result.Add(new AvailableTaskStatusTransitionOutput
+                {
+                    AvailableStatusName = commonStatuse.StatusName,
+                    AvailableStatusId = statusId
+                });
+            }
+
+            // TODO: Пока закоментил, так как не уверен, какой из статусов должен быть если по шаблону фильтранули уже.
+            // TODO: Приоритет никто не имеет тут по идее. Пока показывать будем и в работе и в разработке, если они будут.
+            // Если есть оба системных названия, то оставим одно. InWork имеет приоритет.
+            // if (result.Find(x => x.AvailableStatusSysName.Equals("InWork")) is not null
+            //     && result.Find(x => x.AvailableStatusSysName.Equals("InDevelopment")) is not null)
+            // {
+            //     var removedDevelopment = result.Find(x => x.AvailableStatusSysName.Equals("InDevelopment"));
+            //     result.Remove(removedDevelopment);
+            // }
 
             return result;
         }

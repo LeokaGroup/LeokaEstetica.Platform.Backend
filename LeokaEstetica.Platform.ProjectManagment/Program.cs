@@ -53,7 +53,7 @@ builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new OpenApiInfo { Title = "Leoka.Estetica.Platform.ProjectManagment" });
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "Leoka.Estetica.Platform.ProjectManagement" });
     AddSwaggerXml(c);
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
@@ -152,7 +152,7 @@ app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
 if (builder.Environment.IsDevelopment() || builder.Environment.IsStaging() || builder.Environment.IsProduction())
 {
     app.UseSwagger();
-    app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Leoka.Estetica.Platform.ProjectManagment"));
+    app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Leoka.Estetica.Platform.ProjectManagement"));
 }
 
 // Добавляем хаб приложения для работы через сокеты.

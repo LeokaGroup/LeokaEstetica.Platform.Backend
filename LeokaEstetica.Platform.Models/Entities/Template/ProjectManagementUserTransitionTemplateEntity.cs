@@ -39,9 +39,4 @@ public class ProjectManagementUserTransitionTemplateEntity
     /// Id пользователя.
     /// </summary>
     public long UserId { get; set; }
-
-    /// <summary>
-    /// FK.
-    /// </summary>
-    // public IEnumerable<ProjectManagementTransitionIntermediateTemplateEntity> ProjectManagementTransitionIntermediateTemplates { get; set; }
 }
