@@ -344,6 +344,22 @@ internal sealed class ProjectManagmentRepository : IProjectManagmentRepository
         return result;
     }
 
+    /// <inheritdoc />
+    public async Task ChangeTaskStatusAsync(long projectId, long changeStatusId, long taskId)
+    {
+        var task = await _pgContext.ProjectTasks
+            .FirstOrDefaultAsync(t => t.ProjectId == projectId 
+                                      && t.TaskId == taskId);
+
+        if (task is null)
+        {
+            throw new InvalidOperationException($"Задача с Id: {taskId} не найдена у проекта: {projectId}.");
+        }
+
+        task.TaskStatusId = changeStatusId;
+        await _pgContext.SaveChangesAsync();
+    }
+
     #endregion
 
     #region Приватные методы.

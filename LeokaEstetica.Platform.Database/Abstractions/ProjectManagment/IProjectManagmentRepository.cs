@@ -166,4 +166,12 @@ public interface IProjectManagmentRepository
     /// </summary>
     /// <returns>Список статусов задач.</returns>
     Task<IDictionary<long, ProjectManagementUserStatuseTemplateEntity>> GetUserTaskStatusTemplatesAsync();
+
+    /// <summary>
+    /// Метод изменяет статус задачи.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="changeStatusId">Id статуса задачи, на который нужно изменить.</param>
+    /// <param name="taskId">Id задачи (здесь имеется в виду Id задачи в рамках проекта).</param>
+    Task ChangeTaskStatusAsync(long projectId, long changeStatusId, long taskId);
 }

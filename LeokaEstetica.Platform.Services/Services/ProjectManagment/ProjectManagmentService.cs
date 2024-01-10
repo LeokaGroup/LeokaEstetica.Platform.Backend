@@ -1335,6 +1335,12 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         }
     }
 
+    /// <inheritdoc />
+    public async Task ChangeTaskStatusAsync(long projectId, long changeStatusId, long taskId)
+    {
+        await _projectManagmentRepository.ChangeTaskStatusAsync(projectId, changeStatusId, taskId);
+    }
+
     #endregion
 
     #region Приватные методы.
