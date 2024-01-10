@@ -43,6 +43,12 @@ public interface IProjectManagmentService
     /// </summary>
     /// <param name="templateStatuses">Список статусов.</param>
     Task SetProjectManagmentTemplateIdsAsync(List<ProjectManagmentTaskTemplateResult> templateStatuses);
+    
+    /// <summary>
+    /// Метод проставляет Id шаблонов статусам для результата.
+    /// </summary>
+    /// <param name="templateStatuses">Список статусов.</param>
+    Task SetProjectManagmentTemplateIdsAsync(List<TaskStatusOutput> templateStatuses);
 
     /// <summary>
     /// Метод получает конфигурацию рабочего пространства по выбранному шаблону.
@@ -97,7 +103,7 @@ public interface IProjectManagmentService
     /// <param name="projectId">Id проекта.</param>
     /// <param name="account">Аккаунт.</param>
     /// <returns>Список статусов.</returns>
-    Task<IEnumerable<ProjectManagmentTaskStatusTemplateEntity>> GetTaskStatusesAsync(long projectId, string account);
+    Task<IEnumerable<TaskStatusOutput>> GetTaskStatusesAsync(long projectId, string account);
 
     /// <summary>
     /// Метод получает пользователей, которые могут быть выбраны в качестве исполнителя задачи.

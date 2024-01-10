@@ -387,6 +387,50 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         }
     }
 
+    /// <inheritdoc />
+    public async Task SetProjectManagmentTemplateIdsAsync(List<TaskStatusOutput> templateStatuses)
+    {
+        try
+        {
+            if (templateStatuses is null || !templateStatuses.Any())
+            {
+                throw new InvalidOperationException(
+                    "Невозможно проставить Id щаблонов статусам задач." +
+                    $" TemplateStatuses: {JsonConvert.SerializeObject(templateStatuses)}");
+            }
+
+            // Находим в БД все статусы по их Id.
+            var templateStatusIds = templateStatuses.Select(x => x.StatusId);
+            // var items = templateStatuses
+            //     .SelectMany(x => x.ProjectManagmentTaskStatusTemplates
+            //         .Select(y => y));
+
+            var statuses = (await _projectManagmentRepository.GetTemplateStatusIdsByStatusIdsAsync(templateStatusIds))
+                .ToList();
+
+            foreach (var ts in templateStatuses)
+            {
+                var statusId = ts.StatusId;
+                var templateId = statuses.Find(x => x.Key == statusId);
+
+                // Если не нашли такого статуса в таблице маппинга многие-ко-многим.
+                if (templateId.Key <= 0 || templateId.Value <= 0)
+                {
+                    throw new InvalidOperationException(
+                        $"Не удалось получить шаблон, к которому принадлежит статус. Id статуса был: {statusId}");
+                }
+
+                ts.TemplateId = templateId.Value;
+            }
+        }
+
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
     /// <summary>
     /// Метод получает конфигурацию рабочего пространства по выбранному шаблону.
     /// Под конфигурацией понимаются основные элементы рабочего пространства (набор задач, статусов, фильтров, колонок и тд)
@@ -799,14 +843,8 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         }
     }
 
-    /// <summary>
-    /// Метод получает список статусов задачи для выбора.
-    /// </summary>
-    /// <param name="projectId">Id проекта.</param>
-    /// <param name="account">Аккаунт.</param>
-    /// <returns>Список статусов.</returns>
-    public async Task<IEnumerable<ProjectManagmentTaskStatusTemplateEntity>> GetTaskStatusesAsync(long projectId,
-        string account)
+    /// <inheritdoc />
+    public async Task<IEnumerable<TaskStatusOutput>> GetTaskStatusesAsync(long projectId, string account)
     {
         try
         {
@@ -818,26 +856,53 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 throw ex;
             }
             
-            // TODO: Изменить на получение шаблона из репозитория конфигов настроек проектов.
-            // Получаем шаблон проекта, если он был выбран.
-            var projectTemplateId = await _projectManagmentTemplateRepository.GetProjectTemplateIdAsync(projectId);
+            // Получаем все статусы, которые входят в шаблон текущего проекта.
+            // Получаем настройки проекта.
+            var projectSettings = await _projectSettingsConfigRepository.GetProjectSpaceSettingsByProjectIdAsync(
+                projectId);
+            var projectSettingsItems = projectSettings?.ToList();
 
-            if (!projectTemplateId.HasValue || projectTemplateId.Value <= 0)
+            if (projectSettingsItems is null || !projectSettingsItems.Any())
             {
-                throw new InvalidOperationException($"Не удалось получить шаблон проекта. ProjectId: {projectId}");
+                throw new InvalidOperationException("Ошибка получения настроек проекта. " +
+                                                    $"ProjectId: {projectId}.");
             }
-            
-            var statusIds = await _projectManagmentTemplateRepository.GetTemplateStatusIdsAsync(
-                projectTemplateId.Value);
-            var statusIdsItems = statusIds?.ToList();
 
-            if (statusIdsItems is null || !statusIdsItems.Any())
+            var template = projectSettingsItems.Find(x =>
+                x.ParamKey.Equals(GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGMENT_TEMPLATE_ID));
+            var templateId = Convert.ToInt32(template!.ParamValue);
+
+            var statusIds = (await _projectManagmentTemplateRepository.GetTemplateStatusIdsAsync(templateId))
+                ?.ToList();
+
+            if (statusIds is null || !statusIds.Any())
             {
                 throw new InvalidOperationException("Не удалось получить статусы для выбора в задаче." +
                                                     $"ProjectId: {projectId}");
             }
 
-            var result = await _projectManagmentTemplateRepository.GetTaskTemplateStatusesAsync(statusIdsItems);
+            var items = await _projectManagmentTemplateRepository.GetTaskTemplateStatusesAsync(statusIds);
+            var result = _mapper.Map<IEnumerable<TaskStatusOutput>>(items).ToList();
+        
+            // Проставляем Id шаблона статусам.
+            await SetProjectManagmentTemplateIdsAsync(result);
+
+            var removedTaskStatus = new List<TaskStatusOutput>();
+
+            foreach (var ts in result)
+            {
+                // Если шаблон не совпадает с шаблоном текущего проекта, то такой статус не нужен.
+                if (ts.TemplateId != templateId)
+                {
+                    removedTaskStatus.Add(ts);
+                }
+            }
+
+            // Если есть, что удалять, то удаляем статусы, которые не входят в шаблон проекта.
+            if (removedTaskStatus.Any())
+            {
+                result.RemoveAll(x => removedTaskStatus.Select(y => y.StatusId).Contains(x.StatusId));
+            }
 
             return result;
         }

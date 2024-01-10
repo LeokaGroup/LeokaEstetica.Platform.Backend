@@ -6,6 +6,11 @@ namespace LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 public class TaskStatusOutput
 {
     /// <summary>
+    /// Id статуса.
+    /// </summary>
+    public long StatusId { get; set; }
+    
+    /// <summary>
     /// Id статуса, который маппится на статус задачи.
     /// </summary>
     public int TaskStatusId { get; set; }
