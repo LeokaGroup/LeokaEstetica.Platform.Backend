@@ -495,6 +495,9 @@ public class PgContext : DbContext
     /// </summary>
     public DbSet<ProjectManagmentUserTaskTemplateEntity> ProjectManagmentUserTaskTemplates { get; set; }
 
+    /// <summary>
+    /// Таблица статусов многие-многие.
+    /// </summary>
     public DbSet<ProjectManagmentTaskStatusIntermediateTemplateEntity> ProjectManagmentTaskStatusIntermediateTemplates
     {
         get;
@@ -560,4 +563,23 @@ public class PgContext : DbContext
     /// Таблица кастомных статусов шаблонов пользователя.
     /// </summary>
     public DbSet<ProjectManagementUserStatuseTemplateEntity> ProjectManagementUserStatuseTemplates { get; set; }
+
+    /// <summary>
+    /// Таблица переходов статусов шаблонов.
+    /// </summary>
+    public DbSet<ProjectManagementTransitionTemplateEntity> ProjectManagementTransitionTemplates { get; set; }
+
+    /// <summary>
+    /// Таблица переходов статусов шаблонов пользователя.
+    /// </summary>
+    public DbSet<ProjectManagementUserTransitionTemplateEntity> ProjectManagementUserTransitionTemplates { get; set; }
+    
+    /// <summary>
+    /// Таблица переходов многие-многие.
+    /// </summary>
+    public DbSet<ProjectManagementTransitionIntermediateTemplateEntity> ProjectManagementTransitionIntermediateTemplates
+    {
+        get;
+        set;
+    }
 }

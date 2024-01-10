@@ -1,5 +1,6 @@
 ﻿using LeokaEstetica.Platform.Models.Dto.Output.Template;
 using LeokaEstetica.Platform.Models.Entities.ProjectManagment;
+using LeokaEstetica.Platform.Models.Entities.Template;
 
 namespace LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 
@@ -121,4 +122,56 @@ public interface IProjectManagmentRepository
     /// </summary>
     /// <param name="tag">Сущность тега.</param>
     Task CreateUserTaskTagAsync(UserTaskTagEntity tag);
+
+    /// <summary>
+    /// Метод проверяет принадлежность задачи к проекту по ProjectTaskId.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
+    /// <returns>Признак результата проверки.</returns>
+    Task<bool> IfProjectHavingProjectTaskIdAsync(long projectId, long projectTaskId);
+
+    /// <summary>
+    /// Метод получает Id статуса задачи по Id проекта и Id задачи в рамках проекта.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
+    /// <returns>Id статуса задачи.</returns>
+    Task<long> GetProjectTaskStatusIdByProjectIdProjectTaskIdAsync(long projectId, long projectTaskId);
+
+    /// <summary>
+    /// Метод получает все доступные переходы в статусы задачи из промежуточной задачи.
+    /// </summary>
+    /// <param name="currentTaskStatusId">Id текущего статуса задачи.</param>
+    /// <returns>Список переходов.</returns>
+    Task<IEnumerable<long>> GetProjectManagementTransitionIntermediateTemplatesAsync(long currentTaskStatusId);
+
+    /// <summary>
+    /// Метод получает статусы из таблицы связей многие-многие, чтобы дальше работать с
+    /// конкретными таблицами статусов (либо базовыми либо кастомными статусами).
+    /// </summary>
+    /// <param name="statusIds">Набор Id статусов, которые нужно получить.</param>
+    /// <returns>Словарь с набором Id статусов.</returns>
+    Task<IEnumerable<ProjectManagmentTaskStatusIntermediateTemplateEntity>>
+        GetTaskStatusIntermediateTemplatesAsync(IEnumerable<long> statusIds);
+
+    /// <summary>
+    /// Метод получает все базовые статусы задач.
+    /// </summary>
+    /// <returns>Список статусов задач.</returns>
+    Task<IDictionary<long, ProjectManagmentTaskStatusTemplateEntity>> GetTaskStatusTemplatesAsync();
+    
+    /// <summary>
+    /// Метод получает все статусы задач пользователя.
+    /// </summary>
+    /// <returns>Список статусов задач.</returns>
+    Task<IDictionary<long, ProjectManagementUserStatuseTemplateEntity>> GetUserTaskStatusTemplatesAsync();
+
+    /// <summary>
+    /// Метод изменяет статус задачи.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="changeStatusId">Id статуса задачи, на который нужно изменить.</param>
+    /// <param name="taskId">Id задачи (здесь имеется в виду Id задачи в рамках проекта).</param>
+    Task ChangeTaskStatusAsync(long projectId, long changeStatusId, long taskId);
 }

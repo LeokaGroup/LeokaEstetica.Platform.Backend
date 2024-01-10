@@ -39,8 +39,7 @@ public partial class ProjectManagementUserStatuseTemplateConfiguration : IEntity
         
         entity.Property(e => e.StatusDescription)
             .HasColumnName("StatusDescription")
-            .HasColumnType("varchar(255)")
-            .IsRequired();
+            .HasColumnType("varchar(255)");
 
         entity.HasIndex(u => u.StatusId)
             .HasDatabaseName("PK_ProjectManagementUserStatuseTemplates_StatusId")

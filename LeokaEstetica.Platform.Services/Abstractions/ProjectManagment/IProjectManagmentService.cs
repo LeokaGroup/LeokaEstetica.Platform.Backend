@@ -43,6 +43,12 @@ public interface IProjectManagmentService
     /// </summary>
     /// <param name="templateStatuses">Список статусов.</param>
     Task SetProjectManagmentTemplateIdsAsync(List<ProjectManagmentTaskTemplateResult> templateStatuses);
+    
+    /// <summary>
+    /// Метод проставляет Id шаблонов статусам для результата.
+    /// </summary>
+    /// <param name="templateStatuses">Список статусов.</param>
+    Task SetProjectManagmentTemplateIdsAsync(List<TaskStatusOutput> templateStatuses);
 
     /// <summary>
     /// Метод получает конфигурацию рабочего пространства по выбранному шаблону.
@@ -97,7 +103,7 @@ public interface IProjectManagmentService
     /// <param name="projectId">Id проекта.</param>
     /// <param name="account">Аккаунт.</param>
     /// <returns>Список статусов.</returns>
-    Task<IEnumerable<ProjectManagmentTaskStatusTemplateEntity>> GetTaskStatusesAsync(long projectId, string account);
+    Task<IEnumerable<TaskStatusOutput>> GetTaskStatusesAsync(long projectId, string account);
 
     /// <summary>
     /// Метод получает пользователей, которые могут быть выбраны в качестве исполнителя задачи.
@@ -132,6 +138,23 @@ public interface IProjectManagmentService
     /// <param name="statusDescription">Описание статуса.</param>
     /// <param name="projectId">Id проекта.</param>
     /// <param name="account">Аккаунт.</param>
-    Task CreateUserTaskStatusTemplateAsync(string associationStatusSysName, string statusName, string statusDescription,
-        long projectId, string account);
+    Task CreateUserTaskStatusTemplateAsync(string associationStatusSysName, string statusName,
+        string statusDescription, long projectId, string account);
+
+    /// <summary>
+    /// Метод получает доступные переходы в статусы задачи.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
+    /// <returns>Список доступных переходов.</returns>
+    Task<IEnumerable<AvailableTaskStatusTransitionOutput>> GetAvailableTaskStatusTransitionsAsync(long projectId,
+        long projectTaskId);
+
+    /// <summary>
+    /// Метод изменяет статус задачи.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="changeStatusId">Id статуса задачи, на который нужно изменить.</param>
+    /// <param name="taskId">Id задачи (здесь имеется в виду Id задачи в рамках проекта).</param>
+    Task ChangeTaskStatusAsync(long projectId, long changeStatusId, long taskId);
 }

@@ -1,0 +1,22 @@
+﻿namespace LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
+
+/// <summary>
+/// Класс входной модели изменения статуса задачи.
+/// </summary>
+public class ChangeTaskStatusInput
+{
+    /// <summary>
+    /// Id проекта.
+    /// </summary>
+    public long ProjectId { get; set; }
+
+    /// <summary>
+    /// Id статуса, на который нужно обновить.
+    /// </summary>
+    public long ChangeStatusId { get; set; }
+
+    /// <summary>
+    /// Id задачи (здесь имеется в виду Id задачи в рамках проекта).
+    /// </summary>
+    public long TaskId { get; set; }
+}

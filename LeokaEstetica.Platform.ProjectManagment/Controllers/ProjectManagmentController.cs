@@ -20,7 +20,7 @@ namespace LeokaEstetica.Platform.ProjectManagment.Controllers;
 /// Контроллер управления проектами.
 /// </summary>
 [ApiController]
-[Route("project-managment")]
+[Route("project-management")]
 [AuthFilter]
 public class ProjectManagmentController : BaseController
 {
@@ -149,7 +149,6 @@ public class ProjectManagmentController : BaseController
     /// если выбранный шаблон это предполагает.
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
-
     /// <returns>Данные конфигурации рабочего пространства.</returns>
     [HttpGet]
     [Route("config-workspace-template")]
@@ -340,8 +339,7 @@ public class ProjectManagmentController : BaseController
             throw ex;
         }
 
-        var items = await _projectManagmentService.GetTaskStatusesAsync(projectId, GetUserName());
-        var result = _mapper.Map<IEnumerable<TaskStatusOutput>>(items);
+        var result = await _projectManagmentService.GetTaskStatusesAsync(projectId, GetUserName());
 
         return result;
     }
@@ -517,5 +515,82 @@ public class ProjectManagmentController : BaseController
         await _projectManagmentService.CreateUserTaskStatusTemplateAsync(
             createTaskStatusInput.AssociationStatusSysName, createTaskStatusInput.StatusName,
             createTaskStatusInput.StatusDescription, createTaskStatusInput.ProjectId, GetUserName());
+    }
+
+    /// <summary>
+    /// Метод получает доступные переходы в статусы задачи.
+    /// </summary>
+    /// <param name="availableTaskStatusTransitionInput">Входная модель.</param>
+    /// <returns>Список доступных переходов.</returns>
+    [HttpGet]
+    [Route("available-task-status-transitions")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<AvailableTaskStatusTransitionOutput>))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<IEnumerable<AvailableTaskStatusTransitionOutput>> GetAvailableTaskStatusTransitionsAsync(
+        [FromQuery] AvailableTaskStatusTransitionInput availableTaskStatusTransitionInput)
+    {
+        var validator = await new GetAvailableTaskStatusTransitionValidator()
+            .ValidateAsync(availableTaskStatusTransitionInput);
+
+        if (validator.Errors.Any())
+        {
+            var exceptions = new List<InvalidOperationException>();
+
+            foreach (var err in validator.Errors)
+            {
+                exceptions.Add(new InvalidOperationException(err.ErrorMessage));
+            }
+            
+            var ex = new AggregateException("Ошибка получения возможных переходов статусов задачи.", exceptions);
+            _logger.LogError(ex, ex.Message);
+            
+            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            
+            throw ex;
+        }
+
+        var result = await _projectManagmentService.GetAvailableTaskStatusTransitionsAsync(
+            availableTaskStatusTransitionInput.ProjectId, availableTaskStatusTransitionInput.ProjectTaskId);
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод изменяет статус задачи.
+    /// </summary>
+    /// <param name="changeTaskStatusInput">Входная модель.</param>
+    [HttpPatch]
+    [Route("task-status")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task ChangeTaskStatusAsync([FromBody] ChangeTaskStatusInput changeTaskStatusInput)
+    {
+        var validator = await new ChangeTaskStatusValidator().ValidateAsync(changeTaskStatusInput);
+
+        if (validator.Errors.Any())
+        {
+            var exceptions = new List<InvalidOperationException>();
+
+            foreach (var err in validator.Errors)
+            {
+                exceptions.Add(new InvalidOperationException(err.ErrorMessage));
+            }
+            
+            var ex = new AggregateException("Ошибка изменения статуса задачи.", exceptions);
+            _logger.LogError(ex, ex.Message);
+            
+            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            
+            throw ex;
+        }
+
+        await _projectManagmentService.ChangeTaskStatusAsync(changeTaskStatusInput.ProjectId,
+            changeTaskStatusInput.ChangeStatusId, changeTaskStatusInput.TaskId);
     }
 }

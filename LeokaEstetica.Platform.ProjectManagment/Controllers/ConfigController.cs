@@ -17,7 +17,7 @@ namespace LeokaEstetica.Platform.ProjectManagment.Controllers;
 /// </summary>
 [AuthFilter]
 [ApiController]
-[Route("project-managment/config")]
+[Route("project-management/config")]
 public class ConfigController : BaseController
 {
     private readonly IGlobalConfigRepository _globalConfigRepository;

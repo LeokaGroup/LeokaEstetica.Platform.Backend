@@ -2,6 +2,7 @@
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.Template;
 using LeokaEstetica.Platform.Models.Entities.ProjectManagment;
+using LeokaEstetica.Platform.Models.Entities.Template;
 using Microsoft.EntityFrameworkCore;
 
 namespace LeokaEstetica.Platform.Database.Repositories.ProjectManagment;
@@ -276,6 +277,86 @@ internal sealed class ProjectManagmentRepository : IProjectManagmentRepository
     public async Task CreateUserTaskTagAsync(UserTaskTagEntity tag)
     {
         await _pgContext.UserTaskTags.AddAsync(tag);
+        await _pgContext.SaveChangesAsync();
+    }
+
+    /// <inheritdoc />
+    public async Task<bool> IfProjectHavingProjectTaskIdAsync(long projectId, long projectTaskId)
+    {
+        var result = await _pgContext.ProjectTasks
+            .Where(t => t.ProjectId == projectId
+                        && t.ProjectTaskId == projectTaskId)
+            .AnyAsync();
+
+        return result;
+    }
+
+    /// <inheritdoc />
+    public async Task<long> GetProjectTaskStatusIdByProjectIdProjectTaskIdAsync(long projectId, long projectTaskId)
+    {
+        var result = await _pgContext.ProjectTasks
+            .Where(t => t.ProjectId == projectId
+                        && t.ProjectTaskId == projectTaskId)
+            .Select(t => t.TaskStatusId)
+            .FirstOrDefaultAsync();
+
+        return result;
+    }
+
+    /// <inheritdoc />
+    public async Task<IEnumerable<long>> GetProjectManagementTransitionIntermediateTemplatesAsync(
+            long currentTaskStatusId)
+    {
+        var result = await _pgContext.ProjectManagementTransitionIntermediateTemplates
+            .Where(t => t.FromStatusId == currentTaskStatusId)
+            .Select(t => t.ToStatusId)
+            .ToListAsync();
+
+        return result;
+    }
+
+    /// <inheritdoc />
+    public async Task<IEnumerable<ProjectManagmentTaskStatusIntermediateTemplateEntity>>
+        GetTaskStatusIntermediateTemplatesAsync(IEnumerable<long> statusIds)
+    {
+        var result = await _pgContext.ProjectManagmentTaskStatusIntermediateTemplates
+            .Where(s => statusIds.Contains(s.StatusId))
+            .ToListAsync();
+
+        return result;
+    }
+
+    /// <inheritdoc />
+    public async Task<IDictionary<long, ProjectManagmentTaskStatusTemplateEntity>> GetTaskStatusTemplatesAsync()
+    {
+        var result = await _pgContext.ProjectManagmentTaskStatusTemplates
+            .ToDictionaryAsync(k => k.StatusId, v => v);
+
+        return result;
+    }
+
+    /// <inheritdoc />
+    public async Task<IDictionary<long, ProjectManagementUserStatuseTemplateEntity>> GetUserTaskStatusTemplatesAsync()
+    {
+        var result = await _pgContext.ProjectManagementUserStatuseTemplates
+            .ToDictionaryAsync(k => k.StatusId, v => v);
+
+        return result;
+    }
+
+    /// <inheritdoc />
+    public async Task ChangeTaskStatusAsync(long projectId, long changeStatusId, long taskId)
+    {
+        var task = await _pgContext.ProjectTasks
+            .FirstOrDefaultAsync(t => t.ProjectId == projectId 
+                                      && t.TaskId == taskId);
+
+        if (task is null)
+        {
+            throw new InvalidOperationException($"Задача с Id: {taskId} не найдена у проекта: {projectId}.");
+        }
+
+        task.TaskStatusId = changeStatusId;
         await _pgContext.SaveChangesAsync();
     }
 

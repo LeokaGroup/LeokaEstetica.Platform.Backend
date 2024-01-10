@@ -92,12 +92,7 @@ internal sealed class ProjectSettingsConfigRepository : IProjectSettingsConfigRe
         return result;
     }
 
-    /// <summary>
-    /// Метод получает настройки по Id проекта.
-    /// </summary>
-    /// <param name="projectId">Id проекта.</param>
-    /// <param name="userId">Id пользователя.</param>
-    /// <returns>Данные конфигурации.</returns>
+    /// <inheritdoc />
     public async Task<IEnumerable<ConfigSpaceSettingEntity>> GetProjectSpaceSettingsByProjectIdAsync(long projectId,
         long userId)
     {
@@ -121,6 +116,53 @@ internal sealed class ProjectSettingsConfigRepository : IProjectSettingsConfigRe
             .Where(s => s.ProjectId == projectId
                         && s.ParamKey.Equals(GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_STRATEGY)
                         && s.UserId == userId)
+            .Select(s => new ConfigSpaceSettingEntity
+            {
+                ParamKey = s.ParamKey,
+                ParamValue = s.ParamValue
+            })
+            .FirstOrDefaultAsync();
+        
+        result.Add(userStrategy);
+        
+        // Получаем роута представления с задачами.
+        var url = await _pgContext.ConfigSpaceSettings
+            .Where(s => s.ProjectId == projectId
+                        && s.ParamKey.Equals(GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGMENT_SPACE_URL))
+            .Select(s => new ConfigSpaceSettingEntity
+            {
+                ParamKey = s.ParamKey,
+                ParamValue = s.ParamValue
+            })
+            .FirstOrDefaultAsync();
+        
+        result.Add(url);
+
+        return result;
+    }
+
+    /// <inheritdoc />
+    public async Task<IEnumerable<ConfigSpaceSettingEntity>> GetProjectSpaceSettingsByProjectIdAsync(long projectId)
+    {
+        var result = new List<ConfigSpaceSettingEntity>();
+
+        // Получаем шаблон проекта, который был задан владельцем проекта.
+        var projectTemplate = await _pgContext.ConfigSpaceSettings
+            .Where(s => s.ProjectId == projectId
+                        && s.ParamKey.Equals(GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGMENT_TEMPLATE_ID))
+            .Select(s => new ConfigSpaceSettingEntity
+            {
+                ParamKey = s.ParamKey,
+                ParamValue = s.ParamValue
+            })
+            .FirstOrDefaultAsync();
+
+        result.Add(projectTemplate);
+        
+        // Получаем стратегию пользователя в этом проекте.
+        var userStrategy = await _pgContext.ConfigSpaceSettings
+            .Where(s => s.ProjectId == projectId
+                        && s.ParamKey.Equals(GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_STRATEGY))
             .Select(s => new ConfigSpaceSettingEntity
             {
                 ParamKey = s.ParamKey,

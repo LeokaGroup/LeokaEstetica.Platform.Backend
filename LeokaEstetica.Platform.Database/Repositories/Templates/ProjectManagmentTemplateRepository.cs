@@ -112,7 +112,8 @@ internal sealed class ProjectManagmentTemplateRepository : IProjectManagmentTemp
             new ProjectManagmentTaskStatusIntermediateTemplateEntity
             {
                 StatusId = statusId,
-                TemplateId = templateId
+                TemplateId = templateId,
+                IsCustomStatus = true
             });
         await _pgContext.SaveChangesAsync();
     }
