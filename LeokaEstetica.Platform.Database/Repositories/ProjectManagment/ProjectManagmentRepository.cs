@@ -68,7 +68,7 @@ internal sealed class ProjectManagmentRepository : IProjectManagmentRepository
                 .OrderBy(o => o.Position);
         }
         
-        var result = projectManagmentTaskTemplates
+        var result = await projectManagmentTaskTemplates
             .Include(x => x.ProjectManagmentTaskStatusTemplates.OrderBy(o => o.Position))
             .ThenInclude(x => x.ProjectManagmentTaskStatusIntermediateTemplates)
             .OrderBy(o => o.Position)
@@ -78,10 +78,11 @@ internal sealed class ProjectManagmentRepository : IProjectManagmentRepository
                 TemplateName = x.Key,
                 ProjectManagmentTaskStatusTemplates = x
                     .SelectMany(y => y.ProjectManagmentTaskStatusTemplates
-                        .OrderBy(o => o.Position)),
-            });
+                        .OrderBy(o => o.Position))
+            })
+            .ToListAsync();
 
-        return await result.ToListAsync();
+        return result;
     }
 
     /// <summary>
