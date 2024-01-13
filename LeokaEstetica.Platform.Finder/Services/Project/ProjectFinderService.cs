@@ -49,8 +49,8 @@ public class ProjectFinderService : BaseIndexRamDirectory, IProjectFinderService
 
             // Больше 20 и не надо, так как есть пагинация.
             var searchResults = searcher.Search(query, 20).ScoreDocs;
-            var items = CreateProjectsSearchResultBuilder.CreateProjectsSearchResult(searchResults, searcher);
-            result.CatalogProjects = (IOrderedQueryable<CatalogProjectOutput>)items;
+            result.CatalogProjects = CreateProjectsSearchResultBuilder.CreateProjectsSearchResult(searchResults,
+                searcher);
 
             return result;
         }
