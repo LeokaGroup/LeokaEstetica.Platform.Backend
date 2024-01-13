@@ -355,6 +355,12 @@ internal sealed class ProjectService : IProjectService
             foreach (var prj in result.UserProjects)
             {
                 prj.ProjectDetails = ClearHtmlBuilder.Clear(prj.ProjectDetails);
+
+                // Если описание слишком большое, то урезаем для умещения в таблице проектов пользователя на UI.
+                if (prj.ProjectDetails.Length > 40)
+                {
+                    prj.ProjectDetails = string.Concat(prj.ProjectDetails.Substring(0, 40), "...");
+                }
             }
 
             return result;

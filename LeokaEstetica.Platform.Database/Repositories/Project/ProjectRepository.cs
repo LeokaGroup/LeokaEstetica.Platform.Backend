@@ -155,9 +155,9 @@ internal sealed class ProjectRepository : IProjectRepository
     {
         var result = new UserProjectResultOutput
         {
-            UserProjects = await _pgContext.ModerationProjects
-                .Include(ms => ms.ModerationStatus)
-                .Include(up => up.UserProject)
+            UserProjects = await _pgContext.ModerationProjects.AsNoTracking()
+                .Include(ms => ms.ModerationStatus).AsNoTracking()
+                .Include(up => up.UserProject).AsNoTracking()
                 .Where(u => u.UserProject.UserId == userId)
                 .Select(p => new UserProjectOutput
                 {
@@ -202,22 +202,22 @@ internal sealed class ProjectRepository : IProjectRepository
     /// <returns>Список проектов.</returns>
     public async Task<IEnumerable<CatalogProjectOutput>> CatalogProjectsAsync()
     {
-        var result = await (from cp in _pgContext.CatalogProjects
-                join p in _pgContext.UserProjects
+        var result = await (from cp in _pgContext.CatalogProjects.AsNoTracking()
+                join p in _pgContext.UserProjects.AsNoTracking()
                     on cp.ProjectId
                     equals p.ProjectId
-                join mp in _pgContext.ModerationProjects
+                join mp in _pgContext.ModerationProjects.AsNoTracking()
                     on p.ProjectId
                     equals mp.ProjectId
                     into table
                 from tbl in table.DefaultIfEmpty()
-                join us in _pgContext.UserSubscriptions
+                join us in _pgContext.UserSubscriptions.AsNoTracking()
                     on p.UserId
                     equals us.UserId
-                join s in _pgContext.Subscriptions
+                join s in _pgContext.Subscriptions.AsNoTracking()
                     on us.SubscriptionId
                     equals s.ObjectId
-                join ups in _pgContext.UserProjectsStages
+                join ups in _pgContext.UserProjectsStages.AsNoTracking()
                     on p.ProjectId
                     equals ups.ProjectId
                 where p.ArchivedProjects.All(a => a.ProjectId != p.ProjectId)
@@ -236,7 +236,7 @@ internal sealed class ProjectRepository : IProjectRepository
                     ProjectIcon = p.ProjectIcon,
                     ProjectDetails = p.ProjectDetails,
                     UserId = p.UserId,
-                    ProjectStageSysName = _pgContext.ProjectStages
+                    ProjectStageSysName = _pgContext.ProjectStages.AsNoTracking()
                         .FirstOrDefault(x => x.StageId == ups.StageId).StageSysName
                 })
             .ToListAsync();
@@ -331,17 +331,17 @@ internal sealed class ProjectRepository : IProjectRepository
     {
         (UserProjectEntity UserProject, ProjectStageEntity ProjectStage) result = (null, null);
 
-        result.Item1 = await _pgContext.UserProjects
+        result.Item1 = await _pgContext.UserProjects.AsNoTracking()
             .FirstOrDefaultAsync(p => p.ProjectId == projectId);
 
         // Получаем стадию проекта пользователя.
-        var projectStageId = await _pgContext.UserProjectsStages
+        var projectStageId = await _pgContext.UserProjectsStages.AsNoTracking()
             .Where(p => p.ProjectId == projectId)
             .Select(p => p.StageId)
             .FirstOrDefaultAsync();
 
         // Берем полные данные о стадии проекта.
-        result.Item2 = await _pgContext.ProjectStages
+        result.Item2 = await _pgContext.ProjectStages.AsNoTracking()
             .Where(ps => ps.StageId == projectStageId)
             .Select(ps => new ProjectStageEntity
             {
@@ -1056,7 +1056,7 @@ internal sealed class ProjectRepository : IProjectRepository
     /// <returns>Список архивированных проектов.</returns>
     public async Task<IEnumerable<ArchivedProjectEntity>> GetUserProjectsArchiveAsync(long userId)
     {
-        var result = await _pgContext.ArchivedProjects
+        var result = await _pgContext.ArchivedProjects.AsNoTracking()
             .Include(a => a.UserProject)
             .Where(a => a.UserId == userId)
             .ToListAsync();
@@ -1071,12 +1071,12 @@ internal sealed class ProjectRepository : IProjectRepository
     /// <returns>Id проекта.</returns>
     public async Task<long> GetProjectIdByVacancyIdAsync(long vacancyId)
     {
-        var userId = await _pgContext.UserVacancies
+        var userId = await _pgContext.UserVacancies.AsNoTracking()
             .Where(v => v.VacancyId == vacancyId)
             .Select(v => v.UserId)
             .FirstOrDefaultAsync();
 
-        var result = await _pgContext.UserProjects
+        var result = await _pgContext.UserProjects.AsNoTracking()
             .Where(p => p.UserId == userId)
             .Select(p => p.ProjectId)
             .FirstOrDefaultAsync();
@@ -1091,7 +1091,7 @@ internal sealed class ProjectRepository : IProjectRepository
     /// <returns>Название проекта.</returns>
     public async Task<string> GetProjectNameByIdAsync(long projectId)
     {
-        var result = await _pgContext.UserProjects
+        var result = await _pgContext.UserProjects.AsNoTracking()
             .Where(p => p.ProjectId == projectId)
             .Select(p => p.ProjectName)
             .FirstOrDefaultAsync();
@@ -1208,7 +1208,7 @@ internal sealed class ProjectRepository : IProjectRepository
     /// <returns>Кол-во проектов в каталоге.</returns>
     public async Task<long> GetUserProjectsCatalogCountAsync(long userId)
     {
-        var result = await _pgContext.CatalogProjects
+        var result = await _pgContext.CatalogProjects.AsNoTracking()
             .CountAsync(p => p.Project.UserId == userId);
 
         return result;
