@@ -42,6 +42,7 @@ using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Project;
 using LeokaEstetica.Platform.Models.Entities.Moderation;
 using LeokaEstetica.Platform.Services.Helpers;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 
 [assembly: InternalsVisibleTo("LeokaEstetica.Platform.Tests")]
 
@@ -608,6 +609,16 @@ internal sealed class ProjectService : IProjectService
                 throw ex;
             }
 
+            var token = createProjectVacancyInput.Token;
+
+            if (string.IsNullOrEmpty(token))
+            {
+                var ex = new ArgumentException(
+                    "Невалидный токен при создании вакансии проекта. " +
+                    $"Данные вакансии проекта был {JsonConvert.SerializeObject(createProjectVacancyInput)}");
+                throw ex;
+            }
+
             // Создаем вакансию.
             var createdVacancy = await _vacancyService.CreateVacancyAsync(new VacancyInput
             {
@@ -617,12 +628,13 @@ internal sealed class ProjectService : IProjectService
                 Employment = createProjectVacancyInput.Employment,
                 Payment = createProjectVacancyInput.Payment,
                 Account = createProjectVacancyInput.Account,
-                ProjectId = createProjectVacancyInput.ProjectId
+                ProjectId = createProjectVacancyInput.ProjectId,
+                Token = token
             });
 
             // Автоматически привязываем вакансию к проекту.
             await AttachProjectVacancyAsync(createProjectVacancyInput.ProjectId, createdVacancy.VacancyId,
-                createProjectVacancyInput.Account, createProjectVacancyInput.Token);
+                createProjectVacancyInput.Account, token);
 
             return createdVacancy;
         }
