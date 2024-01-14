@@ -56,14 +56,6 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     };
 
     /// <summary>
-    /// Системные названия статусов, которые являются синонимами. Исключаются и оставляется по одному.
-    /// </summary>
-    private readonly List<string> _associationDevelopmentDublicateStatusSysNames = new()
-    {
-        "InWork", "InDevelopment"
-    };
-
-    /// <summary>
     /// Конструктор.
     /// <param name="logger">Логгер.</param>
     /// <param name="projectManagmentRepository">Репозиторий управления проектами.</param>

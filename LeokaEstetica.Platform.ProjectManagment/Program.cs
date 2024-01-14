@@ -28,6 +28,7 @@ builder.Services.AddCors(options => options.AddPolicy("ApiCorsPolicy", b =>
 
 builder.Environment.EnvironmentName = configuration["Environment"];
 
+// TODO: Весь PgContext удалим, когда закончим миграцию на SqlKata + Dapper.
 if (builder.Environment.IsDevelopment())
 {
     builder.Services.AddDbContext<PgContext>(options =>
@@ -148,8 +149,7 @@ app.UseAuthorization();
 app.UseCors("ApiCorsPolicy");
 app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
 
-// TODO: Временно добавил для тестов прода IsProduction. Потом конечно уберу это.
-if (builder.Environment.IsDevelopment() || builder.Environment.IsStaging() || builder.Environment.IsProduction())
+if (builder.Environment.IsDevelopment() || builder.Environment.IsStaging())
 {
     app.UseSwagger();
     app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Leoka.Estetica.Platform.ProjectManagement"));

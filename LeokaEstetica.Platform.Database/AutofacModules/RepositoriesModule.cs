@@ -1,10 +1,10 @@
 ﻿using Autofac;
 using LazyProxy.Autofac;
+using LeokaEstetica.Platform.Base.Abstractions.Connection;
 using LeokaEstetica.Platform.Core.Attributes;
 using LeokaEstetica.Platform.Database.Abstractions.AvailableLimits;
 using LeokaEstetica.Platform.Database.Abstractions.Commerce;
 using LeokaEstetica.Platform.Database.Abstractions.Config;
-using LeokaEstetica.Platform.Database.Abstractions.Connection;
 using LeokaEstetica.Platform.Database.Abstractions.FareRule;
 using LeokaEstetica.Platform.Database.Abstractions.Header;
 using LeokaEstetica.Platform.Database.Abstractions.Knowledge;
@@ -27,7 +27,6 @@ using LeokaEstetica.Platform.Database.Abstractions.Ticket;
 using LeokaEstetica.Platform.Database.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Database.Access.Ticket;
 using LeokaEstetica.Platform.Database.Access.User;
-using LeokaEstetica.Platform.Database.Factors;
 using LeokaEstetica.Platform.Database.Repositories.Access.Ticket;
 using LeokaEstetica.Platform.Database.Repositories.Access.User;
 using LeokaEstetica.Platform.Database.Repositories.AvailableLimits;
@@ -261,13 +260,14 @@ public class RepositoriesModule : Module
             .As<IPressRepository>()
             .InstancePerLifetimeScope();
             
+        // TODO: Эта регистрация уже есть в слое Shared. Убрать отсюда если ничего не сломается.
         // Транзакции.
-        builder.RegisterType<TransactionScopeFactory>()
-            .Named<ITransactionScopeFactory>("TransactionScopeFactory")
-            .InstancePerLifetimeScope();
-        builder.RegisterType<TransactionScopeFactory>()
-            .As<ITransactionScopeFactory>()
-            .InstancePerLifetimeScope();
+        // builder.RegisterType<TransactionScopeFactory>()
+        //     .Named<ITransactionScopeFactory>("TransactionScopeFactory")
+        //     .InstancePerLifetimeScope();
+        // builder.RegisterType<TransactionScopeFactory>()
+        //     .As<ITransactionScopeFactory>()
+        //     .InstancePerLifetimeScope();
         
         builder.RegisterType<FareRuleRepository>()
             .Named<IFareRuleRepository>("FareRuleRepository")
