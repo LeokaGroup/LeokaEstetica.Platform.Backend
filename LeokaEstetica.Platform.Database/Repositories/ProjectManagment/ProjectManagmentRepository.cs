@@ -1,4 +1,5 @@
-﻿using LeokaEstetica.Platform.Base.Abstractions.Connection;
+﻿using Dapper;
+using LeokaEstetica.Platform.Base.Abstractions.Connection;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.Base;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
@@ -6,7 +7,7 @@ using LeokaEstetica.Platform.Models.Dto.Output.Template;
 using LeokaEstetica.Platform.Models.Entities.ProjectManagment;
 using LeokaEstetica.Platform.Models.Entities.Template;
 using Microsoft.EntityFrameworkCore;
-using SqlKata.Execution;
+using SqlKata;
 
 namespace LeokaEstetica.Platform.Database.Repositories.ProjectManagment;
 
@@ -35,15 +36,17 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
     /// <returns>Список стратегий.</returns>
     public async Task<IEnumerable<ViewStrategyEntity>> GetViewStrategiesAsync()
     {
-        // var result = await _pgContext.ViewStrategies
-        //     .OrderBy(o => o.Position)
-        //     .ToListAsync();
-
         using var connection = await ConnectionProvider.GetConnectionAsync();
         var queryFactory = await ConnectionProvider.CreateQueryFactory(connection);
-        var query = queryFactory.Query("Users").Where("Id", 1).Where("Status", "Active");
 
-        return null;
+        var query = queryFactory.Query("project_management.view_strategies")
+            .Select("strategy_id", "view_strategy_name", "view_strategy_sys_name", "position")
+            .OrderBy("position");
+        var sql = queryFactory.Compiler.Compile(query).Sql;
+
+        var result = await connection.QueryAsync<ViewStrategyEntity>(sql);
+
+        return result;
     }
 
     /// <summary>
@@ -52,9 +55,16 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
     /// <returns>Список элементов.</returns>
     public async Task<IEnumerable<ProjectManagmentHeaderEntity>> GetHeaderItemsAsync()
     {
-        var result = await _pgContext.ProjectManagmentHeader
-            .OrderBy(o => o.Position)
-            .ToListAsync();
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+        var queryFactory = await ConnectionProvider.CreateQueryFactory(connection);
+
+        var query = queryFactory.Query("project_management.header")
+            .Select("header_id", "item_name", "item_url", "position", "header_type", "items", "has_items",
+                "is_disabled", "control_type", "destination")
+            .OrderBy("position");
+        var sql = queryFactory.Compiler.Compile(query).Sql;
+        
+        var result = await connection.QueryAsync<ProjectManagmentHeaderEntity>(sql);
 
         return result;
     }
@@ -67,30 +77,35 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
     public async Task<IEnumerable<ProjectManagmentTaskTemplateEntityResult>> GetProjectManagmentTemplatesAsync(
         long? templateId)
     {
-        var projectManagmentTaskTemplates = _pgContext.ProjectManagmentTaskTemplates.AsQueryable();
-
-        if (templateId.HasValue)
-        {
-            projectManagmentTaskTemplates = projectManagmentTaskTemplates
-                .Where(x => x.TemplateId == templateId.Value)
-                .OrderBy(o => o.Position);
-        }
+        // var projectManagmentTaskTemplates = _pgContext.ProjectManagmentTaskTemplates.AsQueryable();
+        //
+        // if (templateId.HasValue)
+        // {
+        //     projectManagmentTaskTemplates = projectManagmentTaskTemplates
+        //         .Where(x => x.TemplateId == templateId.Value)
+        //         .OrderBy(o => o.Position);
+        // }
+        //
+        // var result = await projectManagmentTaskTemplates
+        //     .Include(x => x.ProjectManagmentTaskStatusTemplates.OrderBy(o => o.Position))
+        //     .ThenInclude(x => x.ProjectManagmentTaskStatusIntermediateTemplates)
+        //     .OrderBy(o => o.Position)
+        //     .GroupBy(g => g.TemplateName)
+        //     .Select(x => new ProjectManagmentTaskTemplateEntityResult
+        //     {
+        //         TemplateName = x.Key,
+        //         ProjectManagmentTaskStatusTemplates = x
+        //             .SelectMany(y => y.ProjectManagmentTaskStatusTemplates
+        //                 .OrderBy(o => o.Position))
+        //     })
+        //     .ToListAsync();
         
-        var result = await projectManagmentTaskTemplates
-            .Include(x => x.ProjectManagmentTaskStatusTemplates.OrderBy(o => o.Position))
-            .ThenInclude(x => x.ProjectManagmentTaskStatusIntermediateTemplates)
-            .OrderBy(o => o.Position)
-            .GroupBy(g => g.TemplateName)
-            .Select(x => new ProjectManagmentTaskTemplateEntityResult
-            {
-                TemplateName = x.Key,
-                ProjectManagmentTaskStatusTemplates = x
-                    .SelectMany(y => y.ProjectManagmentTaskStatusTemplates
-                        .OrderBy(o => o.Position))
-            })
-            .ToListAsync();
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+        var queryFactory = await ConnectionProvider.CreateQueryFactory(connection);
 
-        return result;
+        var query = new Query("");
+
+        return null;
     }
 
     /// <summary>

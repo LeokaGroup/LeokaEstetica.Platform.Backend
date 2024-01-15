@@ -104,7 +104,7 @@ internal class NpgSqlConnectionFactory : IConnectionFactory
 
         // var connection = await CreateConnectionAsync();
         // var conn = new NpgsqlConnection(connection);
-        var compiler = new SqlServerCompiler();
+        var compiler = new PostgresCompiler();
         var result = new QueryFactory((NpgsqlConnection)connection, compiler);
 
         return await Task.FromResult(result);

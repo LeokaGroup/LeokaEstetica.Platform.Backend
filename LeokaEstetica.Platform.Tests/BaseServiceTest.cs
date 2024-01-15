@@ -82,9 +82,7 @@ internal class BaseServiceTest
 {
     private IConfiguration AppConfiguration { get; }
     private string PostgreConfigString { get; }
-    private readonly ConnectionProvider ConnectionProvider;
-    private readonly NpgSqlConnectionFactory NpgSqlConnectionFactory;
-    
+
     protected readonly UserService UserService;
     protected readonly ProfileService ProfileService;
     protected readonly ProjectService ProjectService;
@@ -143,8 +141,8 @@ internal class BaseServiceTest
         var pgContext = new PgContext(optionsBuilder.Options);
 
         PgContext = pgContext;
-        NpgSqlConnectionFactory = new NpgSqlConnectionFactory(PostgreConfigString);
-        ConnectionProvider = new ConnectionProvider(NpgSqlConnectionFactory);
+        var npgSqlConnectionFactory = new NpgSqlConnectionFactory(PostgreConfigString);
+        var connectionProvider = new ConnectionProvider(npgSqlConnectionFactory);
         
         var optionsForCache = new OptionsWrapper<MemoryDistributedCacheOptions>(new MemoryDistributedCacheOptions());
         var distributedCache = new MemoryDistributedCache(optionsForCache);
@@ -273,7 +271,7 @@ internal class BaseServiceTest
 
         var transactionScopeFactory = new TransactionScopeFactory();
 
-        var projectManagmentRepository = new ProjectManagmentRepository(pgContext, ConnectionProvider);
+        var projectManagmentRepository = new ProjectManagmentRepository(pgContext, connectionProvider);
         var projectManagmentTemplateRepository = new ProjectManagmentTemplateRepository(pgContext);
         var projectSettingsConfigRepository = new ProjectSettingsConfigRepository(pgContext);
         ReversoService = new ReversoService(null);
