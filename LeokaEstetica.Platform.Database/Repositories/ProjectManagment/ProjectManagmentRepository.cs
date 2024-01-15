@@ -1,16 +1,19 @@
-﻿using LeokaEstetica.Platform.Core.Data;
+﻿using LeokaEstetica.Platform.Base.Abstractions.Connection;
+using LeokaEstetica.Platform.Base.Abstractions.Repositories.Base;
+using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.Template;
 using LeokaEstetica.Platform.Models.Entities.ProjectManagment;
 using LeokaEstetica.Platform.Models.Entities.Template;
 using Microsoft.EntityFrameworkCore;
+using SqlKata.Execution;
 
 namespace LeokaEstetica.Platform.Database.Repositories.ProjectManagment;
 
 /// <summary>
 /// Класс реализует методы репозитория управления проектами.
 /// </summary>
-internal sealed class ProjectManagmentRepository : IProjectManagmentRepository
+internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManagmentRepository
 {
     private readonly PgContext _pgContext;
     
@@ -18,7 +21,8 @@ internal sealed class ProjectManagmentRepository : IProjectManagmentRepository
     /// Конструктор.
     /// </summary>
     /// <param name="pgContext">Датаконтекст.</param>
-    public ProjectManagmentRepository(PgContext pgContext)
+    public ProjectManagmentRepository(PgContext pgContext, IConnectionProvider connectionProvider)
+        : base(connectionProvider)
     {
         _pgContext = pgContext;
     }
@@ -31,11 +35,15 @@ internal sealed class ProjectManagmentRepository : IProjectManagmentRepository
     /// <returns>Список стратегий.</returns>
     public async Task<IEnumerable<ViewStrategyEntity>> GetViewStrategiesAsync()
     {
-        var result = await _pgContext.ViewStrategies
-            .OrderBy(o => o.Position)
-            .ToListAsync();
+        // var result = await _pgContext.ViewStrategies
+        //     .OrderBy(o => o.Position)
+        //     .ToListAsync();
 
-        return result;
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+        var queryFactory = await ConnectionProvider.CreateQueryFactory(connection);
+        var query = queryFactory.Query("Users").Where("Id", 1).Where("Status", "Active");
+
+        return null;
     }
 
     /// <summary>

@@ -2,6 +2,7 @@ using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using FluentValidation.AspNetCore;
 using Hellang.Middleware.ProblemDetails;
+using LeokaEstetica.Platform.Base.Factors;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Utils;
 using LeokaEstetica.Platform.Notifications.Data;
@@ -28,27 +29,33 @@ builder.Services.AddCors(options => options.AddPolicy("ApiCorsPolicy", b =>
 
 builder.Environment.EnvironmentName = configuration["Environment"];
 
-// TODO: Весь PgContext удалим, когда закончим миграцию на SqlKata + Dapper.
+string connection = null;
+
 if (builder.Environment.IsDevelopment())
 {
-    builder.Services.AddDbContext<PgContext>(options =>
-            options.UseNpgsql(configuration["ConnectionStrings:NpgDevSqlConnection"]),
-        ServiceLifetime.Transient);
+    // builder.Services.AddDbContext<PgContext>(options =>
+    //         options.UseNpgsql(configuration["ConnectionStrings:NpgDevSqlConnection"]),
+    //     ServiceLifetime.Transient);
+    connection = configuration["ConnectionStrings:NpgDevSqlConnection"];
 }
 
 if (builder.Environment.IsStaging())
 {
-    builder.Services.AddDbContext<PgContext>(options =>
-            options.UseNpgsql(configuration["ConnectionStrings:NpgTestSqlConnection"]),
-        ServiceLifetime.Transient);
+    // builder.Services.AddDbContext<PgContext>(options =>
+    //         options.UseNpgsql(configuration["ConnectionStrings:NpgTestSqlConnection"]),
+    //     ServiceLifetime.Transient);
+    connection = configuration["ConnectionStrings:NpgTestSqlConnection"];
 }
 
 if (builder.Environment.IsProduction())
 {
-    builder.Services.AddDbContext<PgContext>(options =>
-            options.UseNpgsql(configuration["ConnectionStrings:NpgSqlConnection"]),
-        ServiceLifetime.Transient);
+    // builder.Services.AddDbContext<PgContext>(options =>
+    //         options.UseNpgsql(configuration["ConnectionStrings:NpgSqlConnection"]),
+    //     ServiceLifetime.Transient);
+    connection = configuration["ConnectionStrings:NpgSqlConnection"];
 }
+
+builder.Services.AddTransient<IConnectionFactory>(_ => new NpgSqlConnectionFactory(connection));
 
 builder.Services.AddHttpContextAccessor();
 

@@ -4,12 +4,12 @@ using FluentValidation.AspNetCore;
 using Hellang.Middleware.ProblemDetails;
 using LeokaEstetica.Platform.Backend.Loaders.Bots;
 using LeokaEstetica.Platform.Backend.Loaders.Jobs;
+using LeokaEstetica.Platform.Base.Factors;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Utils;
 using LeokaEstetica.Platform.Integrations.Filters;
 using LeokaEstetica.Platform.Notifications.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using NLog.Web;
@@ -37,26 +37,33 @@ builder.Environment.EnvironmentName = configuration["Environment"];
 
 builder.Services.AddHttpContextAccessor();
 
+string connection = null;
+
 if (builder.Environment.IsDevelopment())
 {
-    builder.Services.AddDbContext<PgContext>(options =>
-            options.UseNpgsql(configuration["ConnectionStrings:NpgDevSqlConnection"]),
-        ServiceLifetime.Transient);
+    // builder.Services.AddDbContext<PgContext>(options =>
+    //         options.UseNpgsql(configuration["ConnectionStrings:NpgDevSqlConnection"]),
+    //     ServiceLifetime.Transient);
+    connection = configuration["ConnectionStrings:NpgDevSqlConnection"];
 }
 
 if (builder.Environment.IsStaging())
 {
-    builder.Services.AddDbContext<PgContext>(options =>
-            options.UseNpgsql(configuration["ConnectionStrings:NpgTestSqlConnection"]),
-        ServiceLifetime.Transient);
+    // builder.Services.AddDbContext<PgContext>(options =>
+    //         options.UseNpgsql(configuration["ConnectionStrings:NpgTestSqlConnection"]),
+    //     ServiceLifetime.Transient);
+    connection = configuration["ConnectionStrings:NpgTestSqlConnection"];
 }
 
 if (builder.Environment.IsProduction())
 {
-    builder.Services.AddDbContext<PgContext>(options =>
-            options.UseNpgsql(configuration["ConnectionStrings:NpgSqlConnection"]),
-        ServiceLifetime.Transient);
+    // builder.Services.AddDbContext<PgContext>(options =>
+    //         options.UseNpgsql(configuration["ConnectionStrings:NpgSqlConnection"]),
+    //     ServiceLifetime.Transient);
+    connection = configuration["ConnectionStrings:NpgSqlConnection"];
 }
+
+builder.Services.AddTransient<IConnectionFactory>(_ => new NpgSqlConnectionFactory(connection));
 
 builder.Services.AddSwaggerGen(c =>
 {
