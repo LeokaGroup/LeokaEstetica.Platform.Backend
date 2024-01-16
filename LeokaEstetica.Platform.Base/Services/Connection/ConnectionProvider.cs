@@ -2,7 +2,6 @@ using System.Data;
 using System.Runtime.CompilerServices;
 using LeokaEstetica.Platform.Base.Abstractions.Connection;
 using LeokaEstetica.Platform.Base.Factors;
-using SqlKata.Execution;
 
 [assembly: InternalsVisibleTo("LeokaEstetica.Platform.Tests")]
 
@@ -42,13 +41,5 @@ internal class ConnectionProvider : IConnectionProvider
         var connection = await _connectionFactory.CreateConnectionAsync(connectionString);
 
         return connection;
-    }
-
-    /// <inheritdoc />
-    public async Task<QueryFactory> CreateQueryFactory(IDbConnection connection)
-    {
-        var result = await _connectionFactory.CreateQueryFactory(connection);
-
-        return result;
     }
 }

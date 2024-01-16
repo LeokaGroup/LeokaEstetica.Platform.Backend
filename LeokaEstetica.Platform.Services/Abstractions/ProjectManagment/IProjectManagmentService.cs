@@ -36,7 +36,7 @@ public interface IProjectManagmentService
     /// </summary>
     /// <param name="templateId">Id шаблона.</param>
     /// <returns>Список шаблонов задач.</returns>
-    Task<IEnumerable<ProjectManagmentTaskTemplateEntityResult>> GetProjectManagmentTemplatesAsync(long? templateId);
+    Task<IEnumerable<ProjectManagmentTaskTemplateResult>> GetProjectManagmentTemplatesAsync(long? templateId);
 
     /// <summary>
     /// Метод проставляет Id шаблонов статусам для результата.

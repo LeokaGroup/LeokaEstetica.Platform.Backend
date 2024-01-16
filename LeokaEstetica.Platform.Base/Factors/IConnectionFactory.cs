@@ -1,5 +1,4 @@
 using System.Data;
-using SqlKata.Execution;
 
 namespace LeokaEstetica.Platform.Base.Factors;
 
@@ -26,11 +25,4 @@ public interface IConnectionFactory
     /// </summary>
     /// <returns>Открытую транзакцию.</returns>
     Task<IDbTransaction> CreateTransactionAsync();
-
-    /// <summary>
-    /// Метод создает подключения для SqlKata с нужным провайдером.
-    /// </summary>
-    /// <param name="connection">Строка подключения.</param>
-    /// <returns>QueryFactory-фабрику для подключения.</returns>
-    Task<QueryFactory> CreateQueryFactory(IDbConnection connection);
 }

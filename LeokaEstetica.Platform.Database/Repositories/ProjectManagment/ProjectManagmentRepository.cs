@@ -8,6 +8,7 @@ using LeokaEstetica.Platform.Models.Entities.ProjectManagment;
 using LeokaEstetica.Platform.Models.Entities.Template;
 using Microsoft.EntityFrameworkCore;
 using SqlKata;
+using SqlKata.Compilers;
 
 namespace LeokaEstetica.Platform.Database.Repositories.ProjectManagment;
 
@@ -17,7 +18,7 @@ namespace LeokaEstetica.Platform.Database.Repositories.ProjectManagment;
 internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManagmentRepository
 {
     private readonly PgContext _pgContext;
-    
+
     /// <summary>
     /// Конструктор.
     /// </summary>
@@ -37,13 +38,13 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
     public async Task<IEnumerable<ViewStrategyEntity>> GetViewStrategiesAsync()
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
-        var queryFactory = await ConnectionProvider.CreateQueryFactory(connection);
 
-        var query = queryFactory.Query("project_management.view_strategies")
+        var query = new Query("project_management.view_strategies")
             .Select("strategy_id", "view_strategy_name", "view_strategy_sys_name", "position")
             .OrderBy("position");
-        var sql = queryFactory.Compiler.Compile(query).Sql;
-
+        var compiler = new PostgresCompiler();
+        var sql = compiler.Compile(query).ToString();
+        
         var result = await connection.QueryAsync<ViewStrategyEntity>(sql);
 
         return result;
@@ -56,14 +57,14 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
     public async Task<IEnumerable<ProjectManagmentHeaderEntity>> GetHeaderItemsAsync()
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
-        var queryFactory = await ConnectionProvider.CreateQueryFactory(connection);
+        var compiler = new PostgresCompiler();
 
-        var query = queryFactory.Query("project_management.header")
+        var query = new Query("project_management.header")
             .Select("header_id", "item_name", "item_url", "position", "header_type", "items", "has_items",
                 "is_disabled", "control_type", "destination")
             .OrderBy("position");
-        var sql = queryFactory.Compiler.Compile(query).Sql;
-        
+        var sql = compiler.Compile(query).ToString();
+
         var result = await connection.QueryAsync<ProjectManagmentHeaderEntity>(sql);
 
         return result;
@@ -77,35 +78,22 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
     public async Task<IEnumerable<ProjectManagmentTaskTemplateEntityResult>> GetProjectManagmentTemplatesAsync(
         long? templateId)
     {
-        // var projectManagmentTaskTemplates = _pgContext.ProjectManagmentTaskTemplates.AsQueryable();
-        //
-        // if (templateId.HasValue)
-        // {
-        //     projectManagmentTaskTemplates = projectManagmentTaskTemplates
-        //         .Where(x => x.TemplateId == templateId.Value)
-        //         .OrderBy(o => o.Position);
-        // }
-        //
-        // var result = await projectManagmentTaskTemplates
-        //     .Include(x => x.ProjectManagmentTaskStatusTemplates.OrderBy(o => o.Position))
-        //     .ThenInclude(x => x.ProjectManagmentTaskStatusIntermediateTemplates)
-        //     .OrderBy(o => o.Position)
-        //     .GroupBy(g => g.TemplateName)
-        //     .Select(x => new ProjectManagmentTaskTemplateEntityResult
-        //     {
-        //         TemplateName = x.Key,
-        //         ProjectManagmentTaskStatusTemplates = x
-        //             .SelectMany(y => y.ProjectManagmentTaskStatusTemplates
-        //                 .OrderBy(o => o.Position))
-        //     })
-        //     .ToListAsync();
-        
         using var connection = await ConnectionProvider.GetConnectionAsync();
-        var queryFactory = await ConnectionProvider.CreateQueryFactory(connection);
+        var compiler = new PostgresCompiler();
+        var query = new Query("templates.project_management_task_status_intermediate_templates AS tsit")
+            .Join("templates.project_management_task_status_templates AS tst", "tsit.status_id", "tst.status_id")
+            .Join("templates.project_management_task_templates AS ptt", "tsit.template_id", "ptt.template_id");
 
-        var query = new Query("");
+        if (templateId.HasValue)
+        {
+            query.Where("tsit.template_id", templateId.Value);
+        }
 
-        return null;
+        var sql = compiler.Compile(query).ToString();
+
+        var result = await connection.QueryAsync<ProjectManagmentTaskTemplateEntityResult>(sql);
+
+        return result;
     }
 
     /// <summary>
@@ -124,7 +112,7 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
 
         return result;
     }
-    
+
     /// <summary>
     /// Метод получает задачи проекта для рабочего пространства.
     /// </summary>
@@ -194,12 +182,12 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
     public async Task<ProjectTaskEntity> GetTaskDetailsByTaskIdAsync(long projectTaskId, long projectId)
     {
         var result = await _pgContext.ProjectTasks
-            .FirstOrDefaultAsync(t => t.ProjectId == projectId 
+            .FirstOrDefaultAsync(t => t.ProjectId == projectId
                                       && t.ProjectTaskId == projectTaskId);
 
         return result;
     }
-    
+
     /// <summary>
     /// Метод получает названия приоритетов задач по их Id.
     /// </summary>
@@ -288,7 +276,7 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
             // Если позиций пока нету, то начнем с первой.
             return 1;
         }
-        
+
         var result = await _pgContext.UserTaskTags
             .Where(x => x.UserId == userId)
             .Select(x => x.Position)
@@ -329,7 +317,7 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
 
     /// <inheritdoc />
     public async Task<IEnumerable<long>> GetProjectManagementTransitionIntermediateTemplatesAsync(
-            long currentTaskStatusId)
+        long currentTaskStatusId)
     {
         var result = await _pgContext.ProjectManagementTransitionIntermediateTemplates
             .Where(t => t.FromStatusId == currentTaskStatusId)
@@ -372,7 +360,7 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
     public async Task ChangeTaskStatusAsync(long projectId, long changeStatusId, long taskId)
     {
         var task = await _pgContext.ProjectTasks
-            .FirstOrDefaultAsync(t => t.ProjectId == projectId 
+            .FirstOrDefaultAsync(t => t.ProjectId == projectId
                                       && t.TaskId == taskId);
 
         if (task is null)
@@ -387,8 +375,6 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
     #endregion
 
     #region Приватные методы.
-
-    
 
     #endregion
 }

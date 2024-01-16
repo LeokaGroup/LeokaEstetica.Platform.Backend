@@ -313,12 +313,30 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     /// </summary>
     /// <param name="templateId">Id шаблона.</param>
     /// <returns>Список шаблонов задач.</returns>
-    public async Task<IEnumerable<ProjectManagmentTaskTemplateEntityResult>> GetProjectManagmentTemplatesAsync(
+    public async Task<IEnumerable<ProjectManagmentTaskTemplateResult>> GetProjectManagmentTemplatesAsync(
         long? templateId)
     {
         try
         {
-            var result = await _projectManagmentRepository.GetProjectManagmentTemplatesAsync(templateId);
+            var items = (await _projectManagmentRepository.GetProjectManagmentTemplatesAsync(templateId))
+                .ToList();
+            
+            // Разбиваем статусы на группы (кажда группа это отдельный шаблон со статусами).
+            var templateIds = items.Select(x => x.TemplateId).Distinct().ToList();
+            var result = new List<ProjectManagmentTaskTemplateResult>();
+
+            foreach (var tid in templateIds)
+            {
+                // Выбираем все статусы определенного шаблона и добавляем в результат. 
+                var templateStatuses = items.Where(x => x.TemplateId == tid);
+                var resultItem = new ProjectManagmentTaskTemplateResult
+                {
+                    TemplateName = templateStatuses.First().TemplateName,
+                    ProjectManagmentTaskStatusTemplates =
+                        _mapper.Map<IEnumerable<ProjectManagmentTaskStatusTemplateOutput>>(templateStatuses)
+                };
+                result.Add(resultItem);
+            }
 
             return result;
         }
@@ -393,9 +411,6 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 
             // Находим в БД все статусы по их Id.
             var templateStatusIds = templateStatuses.Select(x => x.StatusId);
-            // var items = templateStatuses
-            //     .SelectMany(x => x.ProjectManagmentTaskStatusTemplates
-            //         .Select(y => y));
 
             var statuses = (await _projectManagmentRepository.GetTemplateStatusIdsByStatusIdsAsync(templateStatusIds))
                 .ToList();
