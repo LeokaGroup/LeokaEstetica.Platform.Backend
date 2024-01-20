@@ -271,8 +271,8 @@ internal class BaseServiceTest
 
         var transactionScopeFactory = new TransactionScopeFactory();
 
-        var projectManagmentRepository = new ProjectManagmentRepository(pgContext, connectionProvider);
-        var projectManagmentTemplateRepository = new ProjectManagmentTemplateRepository(pgContext);
+        var projectManagmentRepository = new ProjectManagmentRepository(connectionProvider);
+        var projectManagmentTemplateRepository = new ProjectManagmentTemplateRepository(connectionProvider);
         var projectSettingsConfigRepository = new ProjectSettingsConfigRepository(pgContext);
         ReversoService = new ReversoService(null);
         ProjectManagmentService = new ProjectManagmentService(null, projectManagmentRepository, mapper, userRepository,
