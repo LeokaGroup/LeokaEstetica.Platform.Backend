@@ -79,19 +79,24 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
         
-        var query = @"SELECT status_id, template_id, is_custom_status 
+        var query = @"SELECT tsit.status_id, 
+                      tsit.template_id, 
+                      tsit.is_custom_status, 
+                      tst.status_name, 
+                      tst.status_sys_name,
+                      tst.task_status_id 
                       FROM templates.project_management_task_status_intermediate_templates AS tsit 
                       INNER JOIN templates.project_management_task_status_templates AS tst 
-                                ON tsit.status_id = tst.status_id 
+                        ON tsit.status_id = tst.status_id 
                       INNER JOIN templates.project_management_task_templates AS ptt 
-                                ON tsit.template_id = ptt.template_id";
+                        ON tsit.template_id = ptt.template_id";
 
         IEnumerable<ProjectManagmentTaskTemplateEntityResult> result;
 
         if (templateId.HasValue)
         {
             var parameters = new DynamicParameters();
-            parameters.Add("@template_id", templateId.Value);
+            parameters.Add("@templateId", templateId.Value);
             query += " WHERE tsit.template_id = @templateId";
             
             result = await connection.QueryAsync<ProjectManagmentTaskTemplateEntityResult>(query, parameters);
