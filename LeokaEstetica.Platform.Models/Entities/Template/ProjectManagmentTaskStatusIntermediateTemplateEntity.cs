@@ -11,19 +11,9 @@ public class ProjectManagmentTaskStatusIntermediateTemplateEntity
     public int TemplateId { get; set; }
 
     /// <summary>
-    /// FK.
-    /// </summary>
-    public ProjectManagmentTaskTemplateEntity ProjectManagmentTaskTemplate { get; set; }
-
-    /// <summary>
     /// Id статуса.
     /// </summary>
     public long StatusId { get; set; }
-
-    /// <summary>
-    /// FK.
-    /// </summary>
-    public ProjectManagmentTaskStatusTemplateEntity ProjectManagmentTaskStatusTemplate { get; set; }
 
     /// <summary>
     /// Признак кастомного статуса (если статус создал пользователь).

@@ -29,15 +29,4 @@ public class ProjectManagmentTaskStatusTemplateEntity
     /// Id статуса, который маппится на статус задачи.
     /// </summary>
     public int TaskStatusId { get; set; }
-
-    /// <summary>
-    /// FK многие-ко-многим на шаблоны задач.
-    /// </summary>
-    public IEnumerable<ProjectManagmentTaskTemplateEntity> ProjectManagmentTaskTemplates { get; set; }
-
-    /// <summary>
-    /// Список статусов.
-    /// </summary>
-    public IEnumerable<ProjectManagmentTaskStatusIntermediateTemplateEntity>
-        ProjectManagmentTaskStatusIntermediateTemplates { get; set; }
 }

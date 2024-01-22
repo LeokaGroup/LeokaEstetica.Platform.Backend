@@ -7,8 +7,10 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <PackageReference Include="Dapper" Version="2.1.28" />
       <PackageReference Include="FluentValidation" Version="11.4.0" />
       <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.2.0" />
+      <PackageReference Include="SqlKata" Version="2.4.0" />
     </ItemGroup>
 
     <ItemGroup>

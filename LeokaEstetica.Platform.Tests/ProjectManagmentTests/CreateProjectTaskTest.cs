@@ -47,8 +47,8 @@ internal class CreateProjectTaskTest : BaseServiceTest
     {
         var task = new CreateProjectManagementTaskInput
         {
-            Name = "Тестовая задача для проверки созданная обычным способом",
-            Details = "Тестовое описание тестовой задачи.",
+            Name = "Тестовая задача для проверки созданная обычным способом1",
+            Details = "Тестовое описание тестовой задачи1.",
             ExecutorId = 32,
             IsQuickCreate = false,
             PriorityId = (int)TaskPriorityEnum.Medium,

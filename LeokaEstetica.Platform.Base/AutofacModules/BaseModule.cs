@@ -1,16 +1,20 @@
 using Autofac;
+using LeokaEstetica.Platform.Base.Abstractions.Connection;
 using LeokaEstetica.Platform.Base.Abstractions.Messaging.Mail;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.Chat;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.Validation;
 using LeokaEstetica.Platform.Base.Abstractions.Services.Messaging.Mail;
 using LeokaEstetica.Platform.Base.Abstractions.Services.Validation;
+using LeokaEstetica.Platform.Base.Enums;
 using LeokaEstetica.Platform.Base.Factors;
 using LeokaEstetica.Platform.Base.Repositories.Chat;
 using LeokaEstetica.Platform.Base.Repositories.User;
 using LeokaEstetica.Platform.Base.Repositories.Validation;
+using LeokaEstetica.Platform.Base.Services.Connection;
 using LeokaEstetica.Platform.Base.Services.Validation;
 using LeokaEstetica.Platform.Core.Attributes;
+using Enum = LeokaEstetica.Platform.Base.Enums.Enum;
 
 namespace LeokaEstetica.Platform.Base.AutofacModules;
 
@@ -71,6 +75,30 @@ public class BaseModule : Module
             .InstancePerLifetimeScope();
         builder.RegisterType<TransactionScopeFactory>()
             .As<ITransactionScopeFactory>()
+            .InstancePerLifetimeScope();
+        
+        // Факторка подключений к БД Postgres.
+        builder.RegisterType<NpgSqlConnectionFactory>()
+            .Named<IConnectionFactory>("NpgSqlConnectionFactory")
+            .InstancePerLifetimeScope();
+        builder.RegisterType<NpgSqlConnectionFactory>()
+            .As<IConnectionFactory>()
+            .InstancePerLifetimeScope();
+        
+        // Обобщенная енамка для работы с енамками в БД.
+        builder.RegisterType<Enum>()
+            .Named<IEnum>("Enum")
+            .InstancePerLifetimeScope();
+        builder.RegisterType<Enum>()
+            .As<IEnum>()
+            .InstancePerLifetimeScope();
+        
+        // Провайдер подключений к БД.
+        builder.RegisterType<ConnectionProvider>()
+            .Named<IConnectionProvider>("ConnectionProvider")
+            .InstancePerLifetimeScope();
+        builder.RegisterType<ConnectionProvider>()
+            .As<IConnectionProvider>()
             .InstancePerLifetimeScope();
     }
 }

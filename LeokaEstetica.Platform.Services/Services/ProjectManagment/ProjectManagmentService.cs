@@ -18,6 +18,7 @@ using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.Template;
 using LeokaEstetica.Platform.Models.Dto.Output.User;
+using LeokaEstetica.Platform.Models.Dto.ProjectManagement.Output;
 using LeokaEstetica.Platform.Models.Entities.Profile;
 using LeokaEstetica.Platform.Models.Entities.ProjectManagment;
 using LeokaEstetica.Platform.Models.Entities.Template;
@@ -53,14 +54,6 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     private readonly List<string> _associationStatusSysNames = new()
     {
         "New", "InWork", "InDevelopment", "Completed"
-    };
-
-    /// <summary>
-    /// Системные названия статусов, которые являются синонимами. Исключаются и оставляется по одному.
-    /// </summary>
-    private readonly List<string> _associationDevelopmentDublicateStatusSysNames = new()
-    {
-        "InWork", "InDevelopment"
     };
 
     /// <summary>
@@ -321,12 +314,30 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     /// </summary>
     /// <param name="templateId">Id шаблона.</param>
     /// <returns>Список шаблонов задач.</returns>
-    public async Task<IEnumerable<ProjectManagmentTaskTemplateEntityResult>> GetProjectManagmentTemplatesAsync(
+    public async Task<IEnumerable<ProjectManagmentTaskTemplateResult>> GetProjectManagmentTemplatesAsync(
         long? templateId)
     {
         try
         {
-            var result = await _projectManagmentRepository.GetProjectManagmentTemplatesAsync(templateId);
+            var items = (await _projectManagmentRepository.GetProjectManagmentTemplatesAsync(templateId))
+                .ToList();
+            
+            // Разбиваем статусы на группы (кажда группа это отдельный шаблон со статусами).
+            var templateIds = items.Select(x => x.TemplateId).Distinct().ToList();
+            var result = new List<ProjectManagmentTaskTemplateResult>();
+
+            foreach (var tid in templateIds)
+            {
+                // Выбираем все статусы определенного шаблона и добавляем в результат. 
+                var templateStatuses = items.Where(x => x.TemplateId == tid);
+                var resultItem = new ProjectManagmentTaskTemplateResult
+                {
+                    TemplateName = templateStatuses.First().TemplateName,
+                    ProjectManagmentTaskStatusTemplates =
+                        _mapper.Map<IEnumerable<ProjectManagmentTaskStatusTemplateOutput>>(templateStatuses)
+                };
+                result.Add(resultItem);
+            }
 
             return result;
         }
@@ -367,16 +378,16 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             foreach (var ts in items)
             {
                 var statusId = ts.StatusId;
-                var templateId = statuses.Find(x => x.Key == statusId);
+                var templateData = statuses.Find(x => x.StatusId == statusId);
 
                 // Если не нашли такого статуса в таблице маппинга многие-ко-многим.
-                if (templateId.Key <= 0 || templateId.Value <= 0)
+                if (templateData is null || templateData.StatusId <= 0 || templateData.TemplateId <= 0)
                 {
                     throw new InvalidOperationException(
                         $"Не удалось получить шаблон, к которому принадлежит статус. Id статуса был: {statusId}");
                 }
 
-                ts.TemplateId = templateId.Value;
+                ts.TemplateId = templateData.TemplateId;
             }
         }
 
@@ -401,9 +412,6 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 
             // Находим в БД все статусы по их Id.
             var templateStatusIds = templateStatuses.Select(x => x.StatusId);
-            // var items = templateStatuses
-            //     .SelectMany(x => x.ProjectManagmentTaskStatusTemplates
-            //         .Select(y => y));
 
             var statuses = (await _projectManagmentRepository.GetTemplateStatusIdsByStatusIdsAsync(templateStatusIds))
                 .ToList();
@@ -411,16 +419,16 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             foreach (var ts in templateStatuses)
             {
                 var statusId = ts.StatusId;
-                var templateId = statuses.Find(x => x.Key == statusId);
+                var templateData = statuses.Find(x => x.StatusId == statusId);
 
                 // Если не нашли такого статуса в таблице маппинга многие-ко-многим.
-                if (templateId.Key <= 0 || templateId.Value <= 0)
+                if (templateData is null || templateData.StatusId <= 0 || templateData.TemplateId <= 0)
                 {
                     throw new InvalidOperationException(
                         $"Не удалось получить шаблон, к которому принадлежит статус. Id статуса был: {statusId}");
                 }
 
-                ts.TemplateId = templateId.Value;
+                ts.TemplateId = templateData.TemplateId;
             }
         }
 
@@ -631,7 +639,8 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 
                     foreach (var tg in result.TagIds)
                     {
-                        tagNames.Add(tags.TryGet(tg));
+                        var tgName = tags.TryGet(tg).TagName;
+                        tagNames.Add(tgName);
                     }
 
                     result.TagNames = tagNames;
@@ -640,7 +649,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 
             var taskStatusId = task.TaskTypeId;
             var types = await _projectManagmentRepository.GetTypeNamesByTypeIdsAsync(new[] { taskStatusId });
-            result.TaskTypeName = types.TryGet(result.TaskTypeId);
+            result.TaskTypeName = types.TryGet(result.TaskTypeId).TypeName;
 
             var statuseName = await _projectManagmentTemplateRepository.GetStatusNameByTaskStatusIdAsync(
                 Convert.ToInt32(task.TaskStatusId));
@@ -664,7 +673,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 // Получаем резолюцию задачи, если она есть.
                 if (resolutions is not null && resolutions.Count > 0)
                 {
-                    result.ResolutionName = resolutions.TryGet(result.ResolutionId);
+                    result.ResolutionName = resolutions.TryGet(result.ResolutionId).ResolutionName;
                 }
             }
 
@@ -684,7 +693,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                     // Если приоритета нет, не страшно. Значит не указана у задачи.
                     if (priorityName is not null)
                     {
-                        result.PriorityName = priorities.TryGet(priorityId.Value);
+                        result.PriorityName = priorities.TryGet(priorityId.Value).PriorityName;
                     }
                 }
             }
@@ -1391,12 +1400,12 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             throw new InvalidOperationException("Не удалось получить исполнителей задач.");
         }
 
-        IDictionary<int, string> tags = null;
+        IDictionary<int, UserTaskTagOutput> tags = null;
 
         // Если есть теги, то пойдем получать.
         if (tasks.Any(x => x.TagIds is not null))
         {
-            var tagIds = tasks.Where(x => x.TagIds is not null).SelectMany(x => x.TagIds);
+            var tagIds = tasks.Where(x => x.TagIds is not null).SelectMany(x => x.TagIds).Distinct();
             tags = await _projectManagmentRepository.GetTagNamesByTagIdsAsync(tagIds);
         }
 
@@ -1412,7 +1421,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             .Select(x => (int)x.ResolutionId)
             .ToList();
 
-        IDictionary<int, string> resolutions = null;
+        IDictionary<int, TaskResolutionOutput> resolutions = null;
 
         // Если есть резолюции задач, пойдем получать их.
         // Если каких то нет, не страшно, значит они не заполнены у задач.
@@ -1427,7 +1436,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             .Select(x => (int)x.PriorityId)
             .ToList();
         
-        IDictionary<int, string> priorities = null;
+        IDictionary<int, TaskPriorityOutput> priorities = null;
         
         // Если есть приоритеты задач, пойдем получать их.
         // Если каких то нет, не страшно, значит они не заполнены у задач.
@@ -1495,14 +1504,14 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                     ts.TaskStatusName = taskStatusName;
 
                     // Название типа задачи.
-                    ts.TaskTypeName = types.TryGet(ts.TaskTypeId);
+                    ts.TaskTypeName = types.TryGet(ts.TaskTypeId)?.TypeName;
 
                     // Название тегов (меток) задачи.
                     if (tags is not null && tags.Count > 0)
                     {
                         foreach (var tg in ts.TagIds)
                         {
-                            ts.TagNames = new List<string> { tags.TryGet(tg) };
+                            ts.TagNames = new List<string> { tags.TryGet(tg)?.TagName };
                         }
                     }
 
@@ -1514,7 +1523,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                         // Если резолюции нет, не страшно. Значит не указана у задачи.
                         if (resolutionName is not null)
                         {
-                            ts.ResolutionName = resolutions.TryGet(ts.ResolutionId);
+                            ts.ResolutionName = resolutions.TryGet(ts.ResolutionId)?.ResolutionName;
                         }
                     }
 
@@ -1535,7 +1544,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                         // Если приоритета нет, не страшно. Значит не указана у задачи.
                         if (priorityName is not null)
                         {
-                            ts.PriorityName = priorities.TryGet(ts.PriorityId);
+                            ts.PriorityName = priorities.TryGet(ts.PriorityId)?.PriorityName;
                         }
                     }
                 }
