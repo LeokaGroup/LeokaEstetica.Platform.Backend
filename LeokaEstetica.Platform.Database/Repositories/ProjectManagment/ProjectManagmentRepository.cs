@@ -1,5 +1,4 @@
-﻿using System.Data;
-using Dapper;
+﻿using Dapper;
 using LeokaEstetica.Platform.Base.Abstractions.Connection;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.Base;
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
@@ -36,14 +35,11 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
     public async Task<IEnumerable<ViewStrategyEntity>> GetViewStrategiesAsync()
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
+        var query = @"SELECT strategy_id, view_strategy_name, view_strategy_sys_name, position 
+                      FROM project_management.view_strategies 
+                      ORDER BY position";
 
-        var query = new Query("project_management.view_strategies")
-            .Select("strategy_id", "view_strategy_name", "view_strategy_sys_name", "position")
-            .OrderBy("position");
-        var compiler = new PostgresCompiler();
-        var sql = compiler.Compile(query).ToString();
-
-        var result = await connection.QueryAsync<ViewStrategyEntity>(sql);
+        var result = await connection.QueryAsync<ViewStrategyEntity>(query);
 
         return result;
     }
@@ -55,14 +51,20 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
     public async Task<IEnumerable<ProjectManagmentHeaderEntity>> GetHeaderItemsAsync()
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
-        var compiler = new PostgresCompiler();
-        var query = new Query("project_management.header")
-            .Select("header_id", "item_name", "item_url", "position", "header_type", "items", "has_items",
-                "is_disabled", "control_type", "destination")
-            .OrderBy("position");
-        var sql = compiler.Compile(query).ToString();
+        var query = @"SELECT header_id,
+                             item_name,
+                             item_url,
+                             position,
+                             header_type,
+                             items,
+                             has_items,
+                             is_disabled,
+                             control_type,
+                             destination
+                             FROM project_management.header
+                             ORDER BY position";
 
-        var result = await connection.QueryAsync<ProjectManagmentHeaderEntity>(sql);
+        var result = await connection.QueryAsync<ProjectManagmentHeaderEntity>(query);
 
         return result;
     }
@@ -76,19 +78,29 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
         long? templateId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
-        var compiler = new PostgresCompiler();
-        var query = new Query("templates.project_management_task_status_intermediate_templates AS tsit")
-            .Join("templates.project_management_task_status_templates AS tst", "tsit.status_id", "tst.status_id")
-            .Join("templates.project_management_task_templates AS ptt", "tsit.template_id", "ptt.template_id");
+        
+        var query = @"SELECT status_id, template_id, is_custom_status 
+                      FROM templates.project_management_task_status_intermediate_templates AS tsit 
+                      INNER JOIN templates.project_management_task_status_templates AS tst 
+                                ON tsit.status_id = tst.status_id 
+                      INNER JOIN templates.project_management_task_templates AS ptt 
+                                ON tsit.template_id = ptt.template_id";
+
+        IEnumerable<ProjectManagmentTaskTemplateEntityResult> result;
 
         if (templateId.HasValue)
         {
-            query.Where("tsit.template_id", templateId.Value);
+            var parameters = new DynamicParameters();
+            parameters.Add("@template_id", templateId.Value);
+            query += " WHERE tsit.template_id = @templateId";
+            
+            result = await connection.QueryAsync<ProjectManagmentTaskTemplateEntityResult>(query, parameters);
         }
 
-        var sql = compiler.Compile(query).ToString();
-
-        var result = await connection.QueryAsync<ProjectManagmentTaskTemplateEntityResult>(sql);
+        else
+        {
+            result = await connection.QueryAsync<ProjectManagmentTaskTemplateEntityResult>(query);
+        }
 
         return result;
     }
