@@ -403,12 +403,19 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
     public async Task CreateUserTaskTagAsync(UserTaskTagEntity tag)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
-        var compiler = new PostgresCompiler();
-        var query = new Query("project_management.user_task_tags")
-            .AsInsert(tag);
-        var sql = compiler.Compile(query).ToString();
+        
+        var parameters = new DynamicParameters();
+        parameters.Add("@tag_name", tag.TagName);
+        parameters.Add("@tag_sys_name", tag.TagSysName);
+        parameters.Add("@tag_description", tag.TagDescription);
+        parameters.Add("@position", tag.Position);
+        parameters.Add("@user_id", tag.UserId);
 
-        await connection.ExecuteAsync(sql);
+        var query = @"INSERT INTO project_management.user_task_tags (tag_name, tag_sys_name, position, user_id, 
+                                               tag_description) 
+VALUES (@tag_name, @tag_sys_name, @tag_description, @position, @user_id)";
+
+        await connection.ExecuteAsync(query, parameters);
     }
 
     /// <inheritdoc />

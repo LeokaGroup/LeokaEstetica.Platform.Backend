@@ -91,15 +91,22 @@ internal sealed class ProjectManagmentTemplateRepository : BaseRepository, IProj
 
     /// <inheritdoc />
     public async Task<long> CreateProjectManagmentTaskStatusTemplateAsync(
-        ProjectManagementUserStatuseTemplateEntity statusTemplateEntity)
+        ProjectManagementUserStatuseTemplateEntity statusTemplate)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
-        var compiler = new PostgresCompiler();
-        var query = new Query("templates.project_management_user_statuse_templates")
-            .AsInsert(statusTemplateEntity);
-        var sql = compiler.Compile(query).ToString();
 
-        var insertedStatusId = await connection.ExecuteAsync(sql);
+        var parameters = new DynamicParameters();
+        parameters.Add("@status_name", statusTemplate.StatusName);
+        parameters.Add("@status_sys_name", statusTemplate.StatusSysName);
+        parameters.Add("@position", statusTemplate.Position);
+        parameters.Add("@user_id", statusTemplate.UserId);
+        parameters.Add("@status_description", statusTemplate.StatusDescription);
+
+        var query = @"INSERT INTO templates.project_management_user_statuse_templates (status_name, status_sys_name, 
+                                                                 position, user_id, status_description)
+                      VALUES (@status_name, @status_sys_name, @position, @user_id, @status_description)";
+
+        var insertedStatusId = await connection.ExecuteAsync(query, parameters);
 
         return insertedStatusId;
     }
@@ -130,17 +137,17 @@ internal sealed class ProjectManagmentTemplateRepository : BaseRepository, IProj
     public async Task CreateProjectManagmentTaskStatusIntermediateTemplateAsync(long statusId, int templateId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
-        var compiler = new PostgresCompiler();
-        var query = new Query("templates.project_management_task_status_intermediate_templates")
-            .AsInsert(new ProjectManagmentTaskStatusIntermediateTemplateEntity
-            {
-                StatusId = statusId,
-                TemplateId = templateId,
-                IsCustomStatus = true
-            });
-        var sql = compiler.Compile(query).ToString();
 
-        await connection.ExecuteAsync(sql);
+        var parameters = new DynamicParameters();
+        parameters.Add("@status_id", statusId);
+        parameters.Add("@template_id", templateId);
+        parameters.Add("@template_id", true);
+
+        var query = @"INSERT INTO templates.project_management_task_status_intermediate_templates
+                      (status_id, template_id, template_id)
+                       VALUES (@status_id, @template_id, @template_id)";
+
+        await connection.ExecuteAsync(query, parameters);
     }
 
     /// <summary>
