@@ -1,4 +1,6 @@
-﻿using LeokaEstetica.Platform.Models.Dto.Output.Template;
+﻿using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
+using LeokaEstetica.Platform.Models.Dto.Output.Template;
+using LeokaEstetica.Platform.Models.Dto.ProjectManagement.Output;
 using LeokaEstetica.Platform.Models.Entities.ProjectManagment;
 using LeokaEstetica.Platform.Models.Entities.Template;
 
@@ -33,7 +35,7 @@ public interface IProjectManagmentRepository
     /// </summary>
     /// <param name="templateStatusIds">Список Id статусов.</param>
     /// <returns>Словарь с Id шаблонов и статусов.</returns>
-    Task<IEnumerable<KeyValuePair<long, int>>> GetTemplateStatusIdsByStatusIdsAsync(
+    Task<IEnumerable<GetTemplateStatusIdByStatusIdOutput>> GetTemplateStatusIdsByStatusIdsAsync(
         IEnumerable<long> templateStatusIds);
     
     /// <summary>
@@ -48,21 +50,22 @@ public interface IProjectManagmentRepository
     /// </summary>
     /// <param name="tagIds">Id тегов (меток) задач.</param>
     /// <returns>Словарь с тегами (метками) задач.</returns>
-    Task<IDictionary<int, string>> GetTagNamesByTagIdsAsync(IEnumerable<int> tagIds);
+    Task<IDictionary<int, UserTaskTagOutput>> GetTagNamesByTagIdsAsync(IEnumerable<int> tagIds);
     
     /// <summary>
     /// Метод получает названия типов задач по их Id.
     /// </summary>
     /// <param name="typeIds">Id типов задач.</param>
     /// <returns>Словарь с типами задач.</returns>
-    Task<IDictionary<int, string>> GetTypeNamesByTypeIdsAsync(IEnumerable<int> typeIds);
+    Task<IDictionary<int, TaskTypeOutput>> GetTypeNamesByTypeIdsAsync(IEnumerable<int> typeIds);
 
     /// <summary>
     /// Метод получает названия резолюций задач по их Id.
     /// </summary>
     /// <param name="resolutionIds">Id резолюций задач.</param>
     /// <returns>Словарь с резолюциями задач.</returns>
-    Task<IDictionary<int, string>> GetResolutionNamesByResolutionIdsAsync(IEnumerable<int> resolutionIds);
+    Task<IDictionary<int, TaskResolutionOutput>> GetResolutionNamesByResolutionIdsAsync(
+        IEnumerable<int> resolutionIds);
     
     /// <summary>
     /// Метод получает детали задачи.
@@ -77,7 +80,7 @@ public interface IProjectManagmentRepository
     /// </summary>
     /// <param name="priorityIds">Id приоритетов задач.</param>
     /// <returns>Словарь с приоритетами задач.</returns>
-    Task<IDictionary<int, string>> GetPriorityNamesByPriorityIdsAsync(IEnumerable<int> priorityIds);
+    Task<IDictionary<int, TaskPriorityOutput>> GetPriorityNamesByPriorityIdsAsync(IEnumerable<int> priorityIds);
 
     /// <summary>
     /// Метод получает последний Id задачи в рамках проекта.
@@ -159,13 +162,13 @@ public interface IProjectManagmentRepository
     /// Метод получает все базовые статусы задач.
     /// </summary>
     /// <returns>Список статусов задач.</returns>
-    Task<IDictionary<long, ProjectManagmentTaskStatusTemplateEntity>> GetTaskStatusTemplatesAsync();
+    Task<IDictionary<long, GetTaskStatusTemplateOutput>> GetTaskStatusTemplatesAsync();
     
     /// <summary>
     /// Метод получает все статусы задач пользователя.
     /// </summary>
     /// <returns>Список статусов задач.</returns>
-    Task<IDictionary<long, ProjectManagementUserStatuseTemplateEntity>> GetUserTaskStatusTemplatesAsync();
+    Task<IDictionary<long, UserStatuseTemplateOutput>> GetUserTaskStatusTemplatesAsync();
 
     /// <summary>
     /// Метод изменяет статус задачи.

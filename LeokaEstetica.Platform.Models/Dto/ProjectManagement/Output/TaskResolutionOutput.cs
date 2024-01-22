@@ -1,15 +1,15 @@
-namespace LeokaEstetica.Platform.Models.Entities.ProjectManagment;
+namespace LeokaEstetica.Platform.Models.Dto.ProjectManagement.Output;
 
 /// <summary>
-/// Класс сопоставляется с таблицей резолюций задач.
+/// Класс выходной модели резолюции задач.
 /// </summary>
-public class TaskResolutionEntity
+public class TaskResolutionOutput
 {
     /// <summary>
     /// PK.
     /// </summary>
     public int ResolutionId { get; set; }
-
+    
     /// <summary>
     /// Название резолюции.
     /// </summary>

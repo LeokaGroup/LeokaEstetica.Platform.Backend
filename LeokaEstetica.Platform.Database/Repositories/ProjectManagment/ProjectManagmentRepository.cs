@@ -1,8 +1,11 @@
-﻿using Dapper;
+﻿using System.Data;
+using Dapper;
 using LeokaEstetica.Platform.Base.Abstractions.Connection;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.Base;
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
+using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.Template;
+using LeokaEstetica.Platform.Models.Dto.ProjectManagement.Output;
 using LeokaEstetica.Platform.Models.Entities.ProjectManagment;
 using LeokaEstetica.Platform.Models.Entities.Template;
 using SqlKata;
@@ -95,7 +98,7 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
     /// </summary>
     /// <param name="templateStatusIds">Список Id статусов.</param>
     /// <returns>Словарь с Id шаблонов и статусов.</returns>
-    public async Task<IEnumerable<KeyValuePair<long, int>>> GetTemplateStatusIdsByStatusIdsAsync(
+    public async Task<IEnumerable<GetTemplateStatusIdByStatusIdOutput>> GetTemplateStatusIdsByStatusIdsAsync(
         IEnumerable<long> templateStatusIds)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
@@ -106,7 +109,7 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
             .OrderBy("template_id");
         var sql = compiler.Compile(query).ToString();
 
-        var result = await connection.QueryAsync<KeyValuePair<long, int>>(sql);
+        var result = await connection.QueryAsync<GetTemplateStatusIdByStatusIdOutput>(sql);
 
         return result;
     }
@@ -123,7 +126,8 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
         var query = new Query("project_management.project_tasks")
             .Where("project_id", projectId)
             .Select("task_id", "task_status_id", "author_id", "watcher_ids", "name", "details", "created", "updated",
-                "project_id", "project_task_id", "resolution_id", "tag_ids", "task_type_id", "priority_id")
+                "project_id", "project_task_id", "resolution_id", "tag_ids", "task_type_id", "executor_id",
+                "priority_id")
             .OrderBy("project_id");
         var sql = compiler.Compile(query).ToString();
 
@@ -137,7 +141,7 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
     /// </summary>
     /// <param name="tagIds">Id тегов (меток) задач.</param>
     /// <returns>Словарь с тегами (метками) задач.</returns>
-    public async Task<IDictionary<int, string>> GetTagNamesByTagIdsAsync(IEnumerable<int> tagIds)
+    public async Task<IDictionary<int, UserTaskTagOutput>> GetTagNamesByTagIdsAsync(IEnumerable<int> tagIds)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
         var compiler = new PostgresCompiler();
@@ -147,8 +151,15 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
             .OrderBy("position");
         var sql = compiler.Compile(query).ToString();
         
-        var result = (await connection.QueryAsync<KeyValuePair<int, string>>(sql))
-            .ToDictionary(k => k.Key, v => v.ToString());
+        var result = (await connection.QueryAsync<UserTaskTagOutput>(sql))
+            .ToDictionary(k => k.TagId, v => new UserTaskTagOutput
+            {
+                TagName = v.TagName,
+                TagSysName = v.TagSysName,
+                TagDescription = v.TagDescription,
+                UserId = v.UserId,
+                TagId = v.TagId
+            });
 
         return result;
     }
@@ -158,7 +169,7 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
     /// </summary>
     /// <param name="typeIds">Id типов задач.</param>
     /// <returns>Словарь с типами задач.</returns>
-    public async Task<IDictionary<int, string>> GetTypeNamesByTypeIdsAsync(IEnumerable<int> typeIds)
+    public async Task<IDictionary<int, TaskTypeOutput>> GetTypeNamesByTypeIdsAsync(IEnumerable<int> typeIds)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
         var compiler = new PostgresCompiler();
@@ -168,8 +179,12 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
             .OrderBy("position");
         var sql = compiler.Compile(query).ToString();
         
-        var result = (await connection.QueryAsync<KeyValuePair<int, string>>(sql))
-            .ToDictionary(k => k.Key, v => v.ToString());
+        var result = (await connection.QueryAsync<TaskTypeOutput>(sql))
+            .ToDictionary(k => k.TypeId, v => new TaskTypeOutput
+            {
+                TypeName = v.TypeName,
+                TypeSysName = v.TypeSysName
+            });
 
         return result;
     }
@@ -179,7 +194,8 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
     /// </summary>
     /// <param name="resolutionIds">Id резолюций задач.</param>
     /// <returns>Словарь с резолюциями задач.</returns>
-    public async Task<IDictionary<int, string>> GetResolutionNamesByResolutionIdsAsync(IEnumerable<int> resolutionIds)
+    public async Task<IDictionary<int, TaskResolutionOutput>> GetResolutionNamesByResolutionIdsAsync(
+        IEnumerable<int> resolutionIds)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
         var compiler = new PostgresCompiler();
@@ -189,8 +205,13 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
             .OrderBy("position");
         var sql = compiler.Compile(query).ToString();
 
-        var result = (await connection.QueryAsync<KeyValuePair<int, string>>(sql))
-            .ToDictionary(k => k.Key, v => v.ToString());
+        var result = (await connection.QueryAsync<TaskResolutionOutput>(sql))
+            .ToDictionary(k => k.ResolutionId, v => new TaskResolutionOutput
+            {
+                ResolutionName = v.ResolutionName,
+                ResolutionSysName = v.ResolutionSysName,
+                Position = v.Position
+            });
 
         return result;
     }
@@ -220,7 +241,8 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
     /// </summary>
     /// <param name="priorityIds">Id приоритетов задач.</param>
     /// <returns>Словарь с приоритетами задач.</returns>
-    public async Task<IDictionary<int, string>> GetPriorityNamesByPriorityIdsAsync(IEnumerable<int> priorityIds)
+    public async Task<IDictionary<int, TaskPriorityOutput>> GetPriorityNamesByPriorityIdsAsync(
+        IEnumerable<int> priorityIds)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
         var compiler = new PostgresCompiler();
@@ -230,8 +252,12 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
             .OrderBy("position");
         var sql = compiler.Compile(query).ToString();
 
-        var result = (await connection.QueryAsync<KeyValuePair<int, string>>(sql))
-            .ToDictionary(k => k.Key, v => v.ToString());
+        var result = (await connection.QueryAsync<TaskPriorityOutput>(sql))
+            .ToDictionary(k => k.PriorityId, v => new TaskPriorityOutput
+            {
+                PriorityName = v.PriorityName,
+                PrioritySysName = v.PrioritySysName
+            });
 
         return result;
     }
@@ -317,12 +343,26 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
     public async Task CreateProjectTaskAsync(ProjectTaskEntity task)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
-        var compiler = new PostgresCompiler();
-        var query = new Query("project_management.project_tasks")
-            .AsInsert(task);
-        var sql = compiler.Compile(query).ToString();
 
-        await connection.ExecuteAsync(sql);
+        var parameters = new DynamicParameters();
+        parameters.Add("@task_status_id", task.TaskStatusId);
+        parameters.Add("@author_id", task.AuthorId);
+        parameters.Add("@watcher_ids", task.WatcherIds);
+        parameters.Add("@name", task.Name);
+        parameters.Add("@details", task.Details);
+        parameters.Add("@created", DateTime.UtcNow);
+        parameters.Add("@project_id", task.ProjectId);
+        parameters.Add("@project_task_id", task.ProjectTaskId);
+        parameters.Add("@resolution_id", task.ResolutionId);
+        parameters.Add("@tag_ids", task.TagIds);
+        parameters.Add("@task_type_id", task.TaskTypeId);
+        parameters.Add("@executor_id", task.ExecutorId);
+        parameters.Add("@priority_id", task.PriorityId);
+
+        var sql = @"INSERT INTO project_management.project_tasks (task_status_id, author_id, watcher_ids, name, details, created, project_id, project_task_id, resolution_id, tag_ids, task_type_id, executor_id, priority_id) 
+VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @project_id, @project_task_id, @resolution_id, @tag_ids, @task_type_id, @executor_id, @priority_id)";
+
+        await connection.ExecuteAsync(sql, parameters);
     }
 
     /// <inheritdoc />
@@ -424,7 +464,7 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
     }
 
     /// <inheritdoc />
-    public async Task<IDictionary<long, ProjectManagmentTaskStatusTemplateEntity>> GetTaskStatusTemplatesAsync()
+    public async Task<IDictionary<long, GetTaskStatusTemplateOutput>> GetTaskStatusTemplatesAsync()
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
         var compiler = new PostgresCompiler();
@@ -432,14 +472,20 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
             .Select("status_id", "status_name", "status_sys_name", "position", "task_status_id", "status_description");
         var sql = compiler.Compile(query).ToString();
 
-        var result = (await connection.QueryAsync<KeyValuePair<long, ProjectManagmentTaskStatusTemplateEntity>>(sql))
-            .ToDictionary(k => k.Key, v => v.Value);
+        var result = (await connection.QueryAsync<GetTaskStatusTemplateOutput>(sql))
+            .ToDictionary(k => k.StatusId, v => new GetTaskStatusTemplateOutput
+            {
+                Position = v.Position,
+                StatusName = v.StatusName,
+                StatusSysName = v.StatusSysName,
+                TaskStatusId = v.TaskStatusId
+            });
 
         return result;
     }
 
     /// <inheritdoc />
-    public async Task<IDictionary<long, ProjectManagementUserStatuseTemplateEntity>> GetUserTaskStatusTemplatesAsync()
+    public async Task<IDictionary<long, UserStatuseTemplateOutput>> GetUserTaskStatusTemplatesAsync()
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
         var compiler = new PostgresCompiler();
@@ -447,8 +493,15 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
             .Select("status_id", "status_name", "status_sys_name", "position", "user_id", "status_description");
         var sql = compiler.Compile(query).ToString();
 
-        var result = (await connection.QueryAsync<KeyValuePair<long, ProjectManagementUserStatuseTemplateEntity>>(sql))
-            .ToDictionary(k => k.Key, v => v.Value);
+        var result = (await connection.QueryAsync<UserStatuseTemplateOutput>(sql))
+            .ToDictionary(k => k.StatusId, v => new UserStatuseTemplateOutput
+            {
+                Position = v.Position,
+                StatusName = v.StatusName,
+                StatusSysName = v.StatusSysName,
+                StatusDescription = v.StatusDescription,
+                UserId = v.UserId
+            });
 
         return result;
     }

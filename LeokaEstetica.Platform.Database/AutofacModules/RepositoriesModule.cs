@@ -1,6 +1,6 @@
 ﻿using Autofac;
 using LazyProxy.Autofac;
-using LeokaEstetica.Platform.Base.Abstractions.Connection;
+using LeokaEstetica.Platform.Base.Factors;
 using LeokaEstetica.Platform.Core.Attributes;
 using LeokaEstetica.Platform.Database.Abstractions.AvailableLimits;
 using LeokaEstetica.Platform.Database.Abstractions.Commerce;
@@ -298,5 +298,12 @@ public class RepositoriesModule : Module
             .InstancePerLifetimeScope();
 
         builder.RegisterLazy<IProjectManagmentTemplateRepository, ProjectManagmentTemplateRepository>();
+        
+        builder.RegisterType<NpgSqlConnectionFactory>()
+            .Named<IConnectionFactory>("NpgSqlConnectionFactory")
+            .InstancePerLifetimeScope();
+        builder.RegisterType<NpgSqlConnectionFactory>()
+            .As<IConnectionFactory>()
+            .InstancePerLifetimeScope();
     }
 }
