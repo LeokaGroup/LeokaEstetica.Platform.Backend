@@ -1353,6 +1353,31 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         await _projectManagmentRepository.ChangeTaskStatusAsync(projectId, changeStatusId, taskId);
     }
 
+    /// <inheritdoc />
+    public async Task UpdateTaskDetailsAsync(long projectId, long taskId, string changedTaskDetails, string account)
+    {
+        try
+        {
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+
+            await _projectManagmentRepository.UpdateTaskDetailsAsync(projectId, taskId, changedTaskDetails);
+            
+            // TODO: Тут добавить запись активности пользователя по userId.
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex.Message, ex);
+            throw;
+        }
+    }
+
     #endregion
 
     #region Приватные методы.

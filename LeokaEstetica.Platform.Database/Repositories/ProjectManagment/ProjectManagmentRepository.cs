@@ -583,6 +583,24 @@ VALUES (@tag_name, @tag_sys_name, @tag_description, @position, @user_id)";
         return result;
     }
 
+    /// <inheritdoc />
+    public async Task UpdateTaskDetailsAsync(long projectId, long taskId, string changedTaskDetails)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@project_id", projectId);
+        parameters.Add("@task_id", taskId);
+        parameters.Add("@details", changedTaskDetails);
+
+        var sql = @"UPDATE project_management.project_tasks 
+                    SET details = @details 
+                    WHERE project_id = @project_id 
+                      AND task_id = @task_id";
+        
+        await connection.ExecuteAsync(sql, parameters);
+    }
+
     #endregion
 
     #region Приватные методы.
