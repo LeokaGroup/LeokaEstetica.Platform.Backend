@@ -1300,7 +1300,8 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                     result.Add(new AvailableTaskStatusTransitionOutput
                     {
                         StatusName = userStatus.StatusName,
-                        StatusId = statusId
+                        StatusId = statusId,
+                        TaskStatusId = ts.TaskStatusId
                     });
                 }
 
@@ -1320,19 +1321,21 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 result.Add(new AvailableTaskStatusTransitionOutput
                 {
                     StatusName = commonStatuse.StatusName,
-                    StatusId = statusId
+                    StatusId = statusId,
+                    TaskStatusId = ts.TaskStatusId
                 });
             }
 
-            // TODO: Пока закоментил, так как не уверен, какой из статусов должен быть если по шаблону фильтранули уже.
-            // TODO: Приоритет никто не имеет тут по идее. Пока показывать будем и в работе и в разработке, если они будут.
-            // Если есть оба системных названия, то оставим одно. InWork имеет приоритет.
-            // if (result.Find(x => x.AvailableStatusSysName.Equals("InWork")) is not null
-            //     && result.Find(x => x.AvailableStatusSysName.Equals("InDevelopment")) is not null)
-            // {
-            //     var removedDevelopment = result.Find(x => x.AvailableStatusSysName.Equals("InDevelopment"));
-            //     result.Remove(removedDevelopment);
-            // }
+            // Добавляем текущий статус в доступный переход.
+            var currentTaskStatus = await _projectManagmentRepository
+                .GetTaskStatusByTaskStatusIdAsync(currentTaskStatusId, templateId);
+                
+            result.Add(new AvailableTaskStatusTransitionOutput
+            {
+                StatusName = currentTaskStatus.StatusName,
+                StatusId = currentTaskStatus.StatusId,
+                TaskStatusId = currentTaskStatus.TaskStatusId
+            });
 
             return result;
         }

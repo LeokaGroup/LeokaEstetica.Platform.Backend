@@ -472,17 +472,21 @@ VALUES (@tag_name, @tag_sys_name, @tag_description, @position, @user_id)";
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<ProjectManagmentTaskStatusIntermediateTemplateEntity>>
+    public async Task<IEnumerable<TaskStatusIntermediateTemplateCompositeOutput>>
         GetTaskStatusIntermediateTemplatesAsync(IEnumerable<long> statusIds)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
-        var compiler = new PostgresCompiler();
-        var query = new Query("templates.project_management_task_status_intermediate_templates")
-            .WhereIn("status_id", statusIds)
-            .Select("status_id", "template_id", "is_custom_status");
-        var sql = compiler.Compile(query).ToString();
         
-        var result = await connection.QueryAsync<ProjectManagmentTaskStatusIntermediateTemplateEntity>(sql);
+        var parameters = new DynamicParameters();
+        parameters.Add("@statusIds", statusIds);
+
+        var sql = @"SELECT tsit.status_id, tsit.template_id, tsit.is_custom_status, tst.task_status_id 
+                    FROM templates.project_management_task_status_intermediate_templates AS tsit 
+                    INNER JOIN templates.project_management_task_status_templates AS tst 
+                        ON tsit.status_id = tst.status_id 
+                    WHERE tsit.status_id = ANY(@statusIds)";
+        
+        var result = await connection.QueryAsync<TaskStatusIntermediateTemplateCompositeOutput>(sql, parameters);
 
         return result;
     }
@@ -554,6 +558,29 @@ VALUES (@tag_name, @tag_sys_name, @tag_description, @position, @user_id)";
         var sqlUpdateTask = compiler.Compile(queryUpdateTask).ToString();
 
         await connection.ExecuteAsync(sqlUpdateTask);
+    }
+
+    /// <inheritdoc />
+    public async Task<ProjectManagmentTaskStatusTemplateEntity> GetTaskStatusByTaskStatusIdAsync(long taskStatusId,
+        int templateId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@task_status_id", taskStatusId);
+        parameters.Add("@template_id", templateId);
+
+        var sql = @"SELECT tst.status_id, tst.status_name, tst.status_sys_name, tst.task_status_id 
+                    FROM templates.project_management_task_status_intermediate_templates AS tsit 
+                    INNER JOIN templates.project_management_task_status_templates AS tst 
+                        ON tsit.status_id = tst.status_id 
+                    WHERE tst.task_status_id = @task_status_id 
+                    AND tsit.template_id = @template_id";
+
+        var result = await connection.QueryFirstOrDefaultAsync<ProjectManagmentTaskStatusTemplateEntity>(
+            sql, parameters);
+
+        return result;
     }
 
     #endregion
