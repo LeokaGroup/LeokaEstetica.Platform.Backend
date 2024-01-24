@@ -28,4 +28,9 @@ public class AvailableTaskStatusTransitionOutput
     /// </summary>
     [JsonIgnore]
     public int TemplateId { get; set; }
+
+    /// <summary>
+    /// Id статуса задачи, на которым мапится StatusId.
+    /// </summary>
+    public long TaskStatusId { get; set; }
 }

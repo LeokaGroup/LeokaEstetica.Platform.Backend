@@ -155,7 +155,7 @@ public interface IProjectManagmentRepository
     /// </summary>
     /// <param name="statusIds">Набор Id статусов, которые нужно получить.</param>
     /// <returns>Словарь с набором Id статусов.</returns>
-    Task<IEnumerable<ProjectManagmentTaskStatusIntermediateTemplateEntity>>
+    Task<IEnumerable<TaskStatusIntermediateTemplateCompositeOutput>>
         GetTaskStatusIntermediateTemplatesAsync(IEnumerable<long> statusIds);
 
     /// <summary>
@@ -177,4 +177,12 @@ public interface IProjectManagmentRepository
     /// <param name="changeStatusId">Id статуса задачи, на который нужно изменить.</param>
     /// <param name="taskId">Id задачи (здесь имеется в виду Id задачи в рамках проекта).</param>
     Task ChangeTaskStatusAsync(long projectId, long changeStatusId, long taskId);
+
+    /// <summary>
+    /// Метод получает данные статуса задачи по ее TaskStatusId.
+    /// </summary>
+    /// <param name="taskStatusId">Id статуса задачи.</param>
+    /// <param name="templateId">Id шаблона.</param>
+    /// <returns>Данные статуса.</returns>
+    Task<ProjectManagmentTaskStatusTemplateEntity> GetTaskStatusByTaskStatusIdAsync(long taskStatusId, int templateId);
 }
