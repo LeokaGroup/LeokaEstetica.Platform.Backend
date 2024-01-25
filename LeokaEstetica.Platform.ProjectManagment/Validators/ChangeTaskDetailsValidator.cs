@@ -5,14 +5,14 @@ using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
 namespace LeokaEstetica.Platform.ProjectManagment.Validators;
 
 /// <summary>
-/// Класс валидатора изменения описания задачи.
+/// Класс базового валидатора изменения задачи.
 /// </summary>
-public class ChangeTaskDetailsValidator : AbstractValidator<ChangeTaskDetailsInput>
+public class BaseChangeTaskValidator : AbstractValidator<BaseChangeTaskInput>
 {
     /// <summary>
     /// Конструктор.
     /// </summary>
-    public ChangeTaskDetailsValidator()
+    public BaseChangeTaskValidator()
     {
         RuleFor(p => p.ProjectId)
             .Must(p => p > 0)

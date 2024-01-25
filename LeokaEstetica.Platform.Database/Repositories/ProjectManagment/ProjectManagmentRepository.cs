@@ -601,6 +601,24 @@ VALUES (@tag_name, @tag_sys_name, @tag_description, @position, @user_id)";
         await connection.ExecuteAsync(sql, parameters);
     }
 
+    /// <inheritdoc />
+    public async Task UpdateTaskNameAsync(long projectId, long taskId, string changedTaskName)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@project_id", projectId);
+        parameters.Add("@task_id", taskId);
+        parameters.Add("@name", changedTaskName);
+
+        var sql = @"UPDATE project_management.project_tasks 
+                    SET name = @name 
+                    WHERE project_id = @project_id 
+                      AND task_id = @task_id";
+        
+        await connection.ExecuteAsync(sql, parameters);
+    }
+
     #endregion
 
     #region Приватные методы.

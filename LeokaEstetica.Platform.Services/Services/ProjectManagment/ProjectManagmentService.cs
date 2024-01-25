@@ -1378,6 +1378,31 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         }
     }
 
+    /// <inheritdoc />
+    public async Task UpdateTaskNameAsync(long projectId, long taskId, string changedTaskName, string account)
+    {
+        try
+        {
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+
+            await _projectManagmentRepository.UpdateTaskNameAsync(projectId, taskId, changedTaskName);
+            
+            // TODO: Тут добавить запись активности пользователя по userId.
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex.Message, ex);
+            throw;
+        }
+    }
+
     #endregion
 
     #region Приватные методы.
