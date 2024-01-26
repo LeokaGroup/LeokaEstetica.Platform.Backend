@@ -596,7 +596,7 @@ VALUES (@tag_name, @tag_sys_name, @tag_description, @position, @user_id)";
         var sql = @"UPDATE project_management.project_tasks 
                     SET details = @details 
                     WHERE project_id = @project_id 
-                      AND task_id = @task_id";
+                      AND project_task_id = @task_id";
         
         await connection.ExecuteAsync(sql, parameters);
     }
@@ -614,7 +614,7 @@ VALUES (@tag_name, @tag_sys_name, @tag_description, @position, @user_id)";
         var sql = @"UPDATE project_management.project_tasks 
                     SET name = @name 
                     WHERE project_id = @project_id 
-                      AND task_id = @task_id";
+                      AND project_task_id = @task_id";
         
         await connection.ExecuteAsync(sql, parameters);
     }
