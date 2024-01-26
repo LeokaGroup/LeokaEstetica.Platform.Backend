@@ -593,4 +593,88 @@ public class ProjectManagmentController : BaseController
         await _projectManagmentService.ChangeTaskStatusAsync(changeTaskStatusInput.ProjectId,
             changeTaskStatusInput.ChangeStatusId, changeTaskStatusInput.TaskId);
     }
+
+    /// <summary>
+    /// Метод обновления описание задачи.
+    /// </summary>
+    /// <param name="changeTaskDetailsInput">Входная модель.</param>
+    [HttpPatch]
+    [Route("task-details")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task UpdateTaskDetailsAsync([FromBody] ChangeTaskDetailsInput changeTaskDetailsInput)
+    {
+        // Если пустое описание, то это не ошибка, просто игнорим это.
+        if (string.IsNullOrEmpty(changeTaskDetailsInput.ChangedTaskDetails))
+        {
+            return;
+        }
+        
+        var validator = await new BaseChangeTaskValidator().ValidateAsync(changeTaskDetailsInput);
+
+        if (validator.Errors.Any())
+        {
+            var exceptions = new List<InvalidOperationException>();
+
+            foreach (var err in validator.Errors)
+            {
+                exceptions.Add(new InvalidOperationException(err.ErrorMessage));
+            }
+            
+            var ex = new AggregateException("Ошибка изменения описания задачи.", exceptions);
+            _logger.LogError(ex, ex.Message);
+            
+            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            
+            throw ex;
+        }
+
+        await _projectManagmentService.UpdateTaskDetailsAsync(changeTaskDetailsInput.ProjectId,
+            changeTaskDetailsInput.TaskId, changeTaskDetailsInput.ChangedTaskDetails, GetUserName());
+    }
+    
+    /// <summary>
+    /// Метод обновления название задачи.
+    /// </summary>
+    /// <param name="changeTaskNameInput">Входная модель.</param>
+    [HttpPatch]
+    [Route("task-name")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task UpdateTaskNameAsync([FromBody] ChangeTaskNameInput changeTaskNameInput)
+    {
+        // Если пустое название, то это не ошибка, просто игнорим это.
+        if (string.IsNullOrEmpty(changeTaskNameInput.ChangedTaskName))
+        {
+            return;
+        }
+        
+        var validator = await new BaseChangeTaskValidator().ValidateAsync(changeTaskNameInput);
+
+        if (validator.Errors.Any())
+        {
+            var exceptions = new List<InvalidOperationException>();
+
+            foreach (var err in validator.Errors)
+            {
+                exceptions.Add(new InvalidOperationException(err.ErrorMessage));
+            }
+            
+            var ex = new AggregateException("Ошибка изменения названия задачи.", exceptions);
+            _logger.LogError(ex, ex.Message);
+            
+            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            
+            throw ex;
+        }
+
+        await _projectManagmentService.UpdateTaskNameAsync(changeTaskNameInput.ProjectId,
+            changeTaskNameInput.TaskId, changeTaskNameInput.ChangedTaskName, GetUserName());
+    }
 }
