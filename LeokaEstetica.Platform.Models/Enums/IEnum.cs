@@ -1,4 +1,4 @@
-namespace LeokaEstetica.Platform.Base.Enums;
+namespace LeokaEstetica.Platform.Models.Enums;
 
 /// <summary>
 /// Абстракия для преставления типа SQL Enums в базе данных.

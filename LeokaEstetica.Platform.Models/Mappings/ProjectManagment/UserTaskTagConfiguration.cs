@@ -4,9 +4,9 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace LeokaEstetica.Platform.Models.Mappings.ProjectManagment;
 
-public partial class UserTaskTagConfiguration : IEntityTypeConfiguration<UserTaskTagEntity>
+public partial class UserTaskTagConfiguration : IEntityTypeConfiguration<ProjectTagEntity>
 {
-    public void Configure(EntityTypeBuilder<UserTaskTagEntity> entity)
+    public void Configure(EntityTypeBuilder<ProjectTagEntity> entity)
     {
         entity.ToTable("UserTaskTags", "ProjectManagment");
 
@@ -39,11 +39,6 @@ public partial class UserTaskTagConfiguration : IEntityTypeConfiguration<UserTas
         entity.Property(e => e.TagDescription)
             .HasColumnName("TagDescription")
             .HasColumnType("varchar(255)");
-        
-        entity.Property(e => e.UserId)
-            .HasColumnName("UserId")
-            .HasColumnType("bigint")
-            .IsRequired();
 
         entity.HasIndex(u => u.TagId)
             .HasDatabaseName("PK_TaskTags_TagId")
@@ -52,5 +47,5 @@ public partial class UserTaskTagConfiguration : IEntityTypeConfiguration<UserTas
         OnConfigurePartial(entity);
     }
 
-    partial void OnConfigurePartial(EntityTypeBuilder<UserTaskTagEntity> entity);
+    partial void OnConfigurePartial(EntityTypeBuilder<ProjectTagEntity> entity);
 }

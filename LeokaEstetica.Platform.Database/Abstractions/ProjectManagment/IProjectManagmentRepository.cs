@@ -50,7 +50,7 @@ public interface IProjectManagmentRepository
     /// </summary>
     /// <param name="tagIds">Id тегов (меток) задач.</param>
     /// <returns>Словарь с тегами (метками) задач.</returns>
-    Task<IDictionary<int, UserTaskTagOutput>> GetTagNamesByTagIdsAsync(IEnumerable<int> tagIds);
+    Task<IDictionary<int, ProjectTagOutput>> GetTagNamesByTagIdsAsync(IEnumerable<int> tagIds);
     
     /// <summary>
     /// Метод получает названия типов задач по их Id.
@@ -102,10 +102,10 @@ public interface IProjectManagmentRepository
     Task<IEnumerable<TaskTypeEntity>> GetTaskTypesAsync();
 
     /// <summary>
-    /// Метод получает список тегов пользователя для выбора в задаче.
+    /// Метод получает список тегов проекта для выбора в задаче.
     /// </summary>
     /// <returns>Список тегов.</returns>
-    Task<IEnumerable<UserTaskTagEntity>> GetTaskTagsAsync();
+    Task<IEnumerable<ProjectTagEntity>> GetProjectTagsAsync();
 
     /// <summary>
     /// Метод создает задачу проекта.
@@ -121,10 +121,10 @@ public interface IProjectManagmentRepository
     Task<int> GetLastPositionUserTaskTagAsync(long userId);
 
     /// <summary>
-    /// Метод создает тег пользователя.
+    /// Метод создает тег проекта.
     /// </summary>
     /// <param name="tag">Сущность тега.</param>
-    Task CreateUserTaskTagAsync(UserTaskTagEntity tag);
+    Task CreateProjectTaskTagAsync(ProjectTagEntity tag);
 
     /// <summary>
     /// Метод проверяет принадлежность задачи к проекту по ProjectTaskId.

@@ -92,10 +92,10 @@ public interface IProjectManagmentService
     Task<IEnumerable<TaskPriorityEntity>> GetTaskPrioritiesAsync();
 
     /// <summary>
-    /// Метод получает список тегов пользователя для выбора в задаче.
+    /// Метод получает список тегов проекта для выбора в задаче.
     /// </summary>
     /// <returns>Список тегов.</returns>
-    Task<IEnumerable<UserTaskTagEntity>> GetTaskTagsAsync();
+    Task<IEnumerable<ProjectTagEntity>> GetProjectTagsAsync();
 
     /// <summary>
     /// Метод получает список статусов задачи для выбора.
@@ -118,8 +118,9 @@ public interface IProjectManagmentService
     /// </summary>
     /// <param name="tagName">Название метки (тега).</param>
     /// <param name="tagDescription">Описание метки (тега).</param>
+    /// <param name="projectId">Id проекта.</param>
     /// <param name="account">Аккаунт.</param>
-    Task CreateUserTaskTagAsync(string tagName, string tagDescription, string account);
+    Task CreateProjectTagAsync(string tagName, string tagDescription, long projectId, string account);
 
     /// <summary>
     /// Метод получает список статусов для выбора для создания нового статуса.

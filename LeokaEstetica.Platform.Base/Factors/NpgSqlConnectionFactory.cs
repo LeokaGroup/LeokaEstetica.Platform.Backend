@@ -1,9 +1,9 @@
 using System.Data;
 using System.Runtime.CompilerServices;
-using LeokaEstetica.Platform.Base.Enums;
 using LeokaEstetica.Platform.Base.Handlers;
+using LeokaEstetica.Platform.Models.Enums;
 using Npgsql;
-using Enum = LeokaEstetica.Platform.Base.Enums.Enum;
+using Enum = LeokaEstetica.Platform.Models.Enums.Enum;
 
 [assembly: InternalsVisibleTo("LeokaEstetica.Platform.Backend")]
 [assembly: InternalsVisibleTo("LeokaEstetica.Platform.ProjectManagment")]

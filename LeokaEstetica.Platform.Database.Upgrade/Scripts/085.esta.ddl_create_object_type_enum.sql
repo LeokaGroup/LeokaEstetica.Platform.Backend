@@ -1,1 +1,1 @@
-CREATE TYPE object_type_enum AS ENUM ('project', 'project-documentation');
+CREATE TYPE project_management.object_tag_type_enum AS ENUM ('project', 'project-documentation');

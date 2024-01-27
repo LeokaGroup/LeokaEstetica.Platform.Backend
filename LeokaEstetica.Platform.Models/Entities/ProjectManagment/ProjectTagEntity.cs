@@ -1,9 +1,11 @@
+using LeokaEstetica.Platform.Models.Enums;
+
 namespace LeokaEstetica.Platform.Models.Entities.ProjectManagment;
 
 /// <summary>
-/// Класс сопоставляется с таблицей тегов (меток) задачи пользователя.
+/// Класс сопоставляется с таблицей тегов (меток) проекта.
 /// </summary>
-public class UserTaskTagEntity
+public class ProjectTagEntity
 {
     /// <summary>
     /// PK.
@@ -26,12 +28,17 @@ public class UserTaskTagEntity
     public int Position { get; set; }
 
     /// <summary>
-    /// Id пользователя.
-    /// </summary>
-    public long UserId { get; set; }
-
-    /// <summary>
     /// Описание метки (тега).
     /// </summary>
     public string TagDescription { get; set; }
+    
+    /// <summary>
+    /// Id проекта.
+    /// </summary>
+    public long ProjectId { get; set; }
+
+    /// <summary>
+    /// Тип объекта тега.
+    /// </summary>
+    public ObjectTagTypeEnum ObjectTagTypeValue { get; set; }
 }

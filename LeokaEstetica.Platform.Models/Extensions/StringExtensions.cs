@@ -1,13 +1,24 @@
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace LeokaEstetica.Platform.Base.Extensions.StringExtensions;
+namespace LeokaEstetica.Platform.Models.Extensions;
 
 /// <summary>
-/// Класс расширений для строк.
+/// Этот класс дубликат из Base, так как нельзя добавить ссылки.
+/// Класс расширений строк.
 /// </summary>
 public static class StringExtensions
 {
+    /// <summary>
+    /// Конвертирует строковое значение в snake-case.
+    /// </summary>
+    /// <param name="value"> Значение для конвертации. </param>
+    /// <returns> Конвертированное значение. </returns>
+    public static string ToSnakeCase(this string value)
+    {
+        return string.Concat(value.Select((x, i) => i > 0 && char.IsUpper(x) ? "_" + x : x.ToString())).ToLower();
+    }
+    
     /// <summary>
     /// Метод переводит в PascalCase.
     /// </summary>
@@ -35,20 +46,5 @@ public static class StringExtensions
         }
 
         return sb.ToString();
-    }
-    
-    public static string ToPascalCaseFromSnakeCase(this string str)
-    {
-        return string.Concat(str.Split('_').Select(Thread.CurrentThread.CurrentCulture.TextInfo.ToTitleCase));
-    }
-    
-    /// <summary>
-    /// Конвертирует строковое значение в snake-case.
-    /// </summary>
-    /// <param name="value"> Значение для конвертации. </param>
-    /// <returns> Конвертированное значение. </returns>
-    public static string ToSnakeCase(this string value)
-    {
-        return string.Concat(value.Select((x, i) => i > 0 && char.IsUpper(x) ? "_" + x : x.ToString())).ToLower();
     }
 }

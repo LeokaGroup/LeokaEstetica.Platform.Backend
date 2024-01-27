@@ -48,9 +48,10 @@ public class ProjectManagmentSettingsController : BaseController
     }
     
     /// <summary>
-    /// Метод создает метку (тег) для задач пользователя.
+    /// TODO: Актуализировать название метода, название ендпоинта и тд.
+    /// Метод создает метку (тег) проекта.
     /// </summary>
-    /// <param name="userTaskTagInput">Входная модель.</param>
+    /// <param name="projectTagInput">Входная модель.</param>
     [HttpPost]
     [Route("user-tag")]
     [ProducesResponseType(200)]
@@ -58,9 +59,9 @@ public class ProjectManagmentSettingsController : BaseController
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task CreateUserTaskTagAsync([FromBody] UserTaskTagInput userTaskTagInput)
+    public async Task CreateUserTaskTagAsync([FromBody] ProjectTagInput projectTagInput)
     {
-        var validator = await new CreateUserTaskTagValidator().ValidateAsync(userTaskTagInput);
+        var validator = await new CreateUserTaskTagValidator().ValidateAsync(projectTagInput);
 
         if (validator.Errors.Any())
         {
@@ -80,8 +81,8 @@ public class ProjectManagmentSettingsController : BaseController
             throw ex;
         }
 
-        await _projectManagmentService.CreateUserTaskTagAsync(userTaskTagInput.TagName,
-            userTaskTagInput.TagDescription, GetUserName());
+        await _projectManagmentService.CreateProjectTagAsync(projectTagInput.TagName,
+            projectTagInput.TagDescription, projectTagInput.ProjectId, GetUserName());
     }
 
     /// <summary>

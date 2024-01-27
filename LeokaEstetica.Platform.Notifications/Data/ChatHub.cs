@@ -12,6 +12,7 @@ using LeokaEstetica.Platform.Redis.Models.Chat;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using Enum = System.Enum;
 
 [assembly: InternalsVisibleTo("LeokaEstetica.Platform.Backend")]
 [assembly: InternalsVisibleTo("LeokaEstetica.Platform.ProjectManagment")]

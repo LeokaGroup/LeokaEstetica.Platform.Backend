@@ -1,8 +1,8 @@
 using System.Data;
 using Dapper;
-using LeokaEstetica.Platform.Base.Enums;
+using LeokaEstetica.Platform.Models.Enums;
 using Npgsql;
-using Enum = LeokaEstetica.Platform.Base.Enums.Enum;
+using Enum = LeokaEstetica.Platform.Models.Enums.Enum;
 
 namespace LeokaEstetica.Platform.Base.Handlers;
 
@@ -24,8 +24,10 @@ internal class NpgEnumHandler<T> : SqlMapper.TypeHandler<T>
     /// <inheritdoc/>
     public override T Parse(object value)
     {
-        var enumObj = new Enum();
-        enumObj.Value = value.ToString();
+        var enumObj = new Enum
+        {
+            Value = value.ToString()
+        };
         return enumObj as T;
     }
 }
