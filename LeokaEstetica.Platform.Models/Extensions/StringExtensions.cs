@@ -3,10 +3,6 @@ using System.Text.RegularExpressions;
 
 namespace LeokaEstetica.Platform.Models.Extensions;
 
-/// <summary>
-/// Этот класс дубликат из Base, так как нельзя добавить ссылки.
-/// Класс расширений строк.
-/// </summary>
 public static class StringExtensions
 {
     /// <summary>

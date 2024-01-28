@@ -1,9 +1,14 @@
+using System.Runtime.CompilerServices;
+using LeokaEstetica.Platform.Models.Extensions;
+
+[assembly: InternalsVisibleTo("LeokaEstetica.Platform.Base")]
+
 namespace LeokaEstetica.Platform.Models.Enums;
 
 /// <summary>
 /// Класс для преставления типа SQL Enums в Postgres.
 /// </summary>
-public class Enum : IEnum
+internal class Enum : IEnum
 {
     /// <summary>
     /// Тип Enum для типов БВС.
@@ -26,7 +31,7 @@ public class Enum : IEnum
     public Enum(ObjectTagTypeEnum value)
     {
         Type = ObjectTagType;
-        Value = ToSnakeCase(value.ToString());
+        Value = value.ToString().ToSnakeCase();
     }
 
     /// <inheritdoc/>
@@ -34,15 +39,4 @@ public class Enum : IEnum
 
     /// <inheritdoc/>
     public string Type { get; }
-
-    /// <summary>
-    /// Этот метод дубликат из Base, так как ссылки не добавить.
-    /// Конвертирует строковое значение в snake-case.
-    /// </summary>
-    /// <param name="value"> Значение для конвертации. </param>
-    /// <returns> Конвертированное значение. </returns>
-    public static string ToSnakeCase(string value)
-    {
-        return string.Concat(value.Select((x, i) => i > 0 && char.IsUpper(x) ? "_" + x : x.ToString())).ToLower();
-    }
 }

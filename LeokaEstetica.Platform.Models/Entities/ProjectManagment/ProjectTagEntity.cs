@@ -1,4 +1,9 @@
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Runtime.CompilerServices;
 using LeokaEstetica.Platform.Models.Enums;
+using LeokaEstetica.Platform.Models.Extensions;
+
+[assembly: InternalsVisibleTo("LeokaEstetica.Platform.Models.Entities.ProjectManagment")]
 
 namespace LeokaEstetica.Platform.Models.Entities.ProjectManagment;
 
@@ -41,4 +46,18 @@ public class ProjectTagEntity
     /// Тип объекта тега.
     /// </summary>
     public ObjectTagTypeEnum ObjectTagTypeValue { get; set; }
+    
+    /// <summary>
+    /// Статус полёта
+    /// </summary>
+    [NotMapped]
+    public IEnum ObjectTagType
+    {
+        get => new Enums.Enum(Enums.Enum.ObjectTagType)
+        {
+            Value = ObjectTagTypeValue.ToString().ToSnakeCase()
+        };
+
+        set => ObjectTagTypeValue = System.Enum.Parse<ObjectTagTypeEnum>(value.Value.ToPascalCase());
+    }
 }

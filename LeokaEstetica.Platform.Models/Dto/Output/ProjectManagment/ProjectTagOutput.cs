@@ -1,6 +1,5 @@
 using LeokaEstetica.Platform.Models.Enums;
 using LeokaEstetica.Platform.Models.Extensions;
-using Enum = LeokaEstetica.Platform.Models.Enums.Enum;
 
 namespace LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 
@@ -44,9 +43,9 @@ public class ProjectTagOutput
     /// </summary>
     public IEnum ObjectTagType
     {
-        get => new Enum(Enum.ObjectTagType)
+        get => new Enums.Enum(Enums.Enum.ObjectTagType)
         {
-            Value = ObjectTagType.ToString().ToSnakeCase()
+            Value = ObjectTagTypeValue.ToString().ToSnakeCase()
         };
 
         set => ObjectTagTypeValue = System.Enum.Parse<ObjectTagTypeEnum>(value.Value.ToPascalCase());

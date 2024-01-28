@@ -41,14 +41,4 @@ public static class StringExtensions
     {
         return string.Concat(str.Split('_').Select(Thread.CurrentThread.CurrentCulture.TextInfo.ToTitleCase));
     }
-    
-    /// <summary>
-    /// Конвертирует строковое значение в snake-case.
-    /// </summary>
-    /// <param name="value"> Значение для конвертации. </param>
-    /// <returns> Конвертированное значение. </returns>
-    public static string ToSnakeCase(this string value)
-    {
-        return string.Concat(value.Select((x, i) => i > 0 && char.IsUpper(x) ? "_" + x : x.ToString())).ToLower();
-    }
 }

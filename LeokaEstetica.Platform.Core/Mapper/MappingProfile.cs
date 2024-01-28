@@ -221,6 +221,8 @@ public class MappingProfile : Profile
         CreateMap<TaskPriorityEntity, TaskPriorityOutput>();
         CreateMap<TaskTypeEntity, TaskTypeOutput>();
         CreateMap<ProjectTagEntity, ProjectTagOutput>();
+            // .ForMember(p => p.ObjectTagType, p => p.MapFrom(src => src.ObjectTagType))
+            // .ForMember(p => p.ObjectTagTypeValue, p => p.MapFrom(src => src.ObjectTagType));
         CreateMap<ProjectManagmentTaskStatusTemplateEntity, TaskStatusOutput>();
         
         CreateMap<ProfileInfoEntity, TaskPeopleOutput>()
