@@ -210,4 +210,12 @@ public interface IProjectManagmentRepository
     /// <param name="taskId">Id задачи в рамках проекта.</param>
     /// <param name="projectId">Id проекта.</param>
     Task AttachTaskTagAsync(int tagId, long projectTaskId, long projectId);
+    
+    /// <summary>
+    /// Метод отвязывает тег от задачи проекта.
+    /// </summary>
+    /// <param name="tagId">Id тега, который нужно привязать к задаче.</param>
+    /// <param name="taskId">Id задачи в рамках проекта.</param>
+    /// <param name="projectId">Id проекта.</param>
+    Task DetachTaskTagAsync(int tagId, long projectTaskId, long projectId);
 }
