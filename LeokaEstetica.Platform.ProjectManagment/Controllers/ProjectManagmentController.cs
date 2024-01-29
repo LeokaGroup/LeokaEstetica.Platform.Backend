@@ -287,20 +287,20 @@ public class ProjectManagmentController : BaseController
     }
 
     /// <summary>
-    /// Метод получает список тегов для выбора в задаче.
+    /// Метод получает список тегов проекта для выбора в задаче.
     /// </summary>
     /// <returns>Список тегов.</returns>
     [HttpGet]
-    [Route("task-tags")]
-    [ProducesResponseType(200, Type = typeof(IEnumerable<UserTaskTagOutput>))]
+    [Route("project-tags")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<ProjectTagOutput>))]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<IEnumerable<UserTaskTagOutput>> GetTaskTagsAsync()
+    public async Task<IEnumerable<ProjectTagOutput>> GetProjectTagsAsync()
     {
-        var items = await _projectManagmentService.GetTaskTagsAsync();
-        var result = _mapper.Map<IEnumerable<UserTaskTagOutput>>(items);
+        var items = await _projectManagmentService.GetProjectTagsAsync();
+        var result = _mapper.Map<IEnumerable<ProjectTagOutput>>(items);
 
         return result;
     }
@@ -387,19 +387,19 @@ public class ProjectManagmentController : BaseController
     }
 
     /// <summary>
-    /// Метод создает метку (тег) для задач пользователя.
+    /// Метод создает метку (тег) проекта.
     /// </summary>
-    /// <param name="userTaskTagInput">Входная модель.</param>
+    /// <param name="projectTagInput">Входная модель.</param>
     [HttpPost]
-    [Route("user-tag")]
+    [Route("project-tag")]
     [ProducesResponseType(200)]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task CreateUserTaskTagAsync([FromBody] UserTaskTagInput userTaskTagInput)
+    public async Task CreateProjectTagAsync([FromBody] ProjectTagInput projectTagInput)
     {
-        var validator = await new CreateUserTaskTagValidator().ValidateAsync(userTaskTagInput);
+        var validator = await new CreateUserTaskTagValidator().ValidateAsync(projectTagInput);
 
         if (validator.Errors.Any())
         {
@@ -419,8 +419,8 @@ public class ProjectManagmentController : BaseController
             throw ex;
         }
 
-        await _projectManagmentService.CreateUserTaskTagAsync(userTaskTagInput.TagName,
-            userTaskTagInput.TagDescription, GetUserName());
+        await _projectManagmentService.CreateProjectTagAsync(projectTagInput.TagName,
+            projectTagInput.TagDescription, projectTagInput.ProjectId, GetUserName());
     }
 
     /// <summary>
@@ -676,5 +676,78 @@ public class ProjectManagmentController : BaseController
 
         await _projectManagmentService.UpdateTaskNameAsync(changeTaskNameInput.ProjectId,
             changeTaskNameInput.TaskId, changeTaskNameInput.ChangedTaskName, GetUserName());
+    }
+
+    /// <summary>
+    /// Метод привязывает тег к задаче проекта.
+    /// Выбор происходит из набора тегов проекта.
+    /// </summary>
+    /// <param name="projectTaskTagInput">Входная модель.</param>
+    [HttpPatch]
+    [Route("attach-task-tag")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task AttachTaskTagAsync([FromBody] ProjectTaskTagInput projectTaskTagInput)
+    {
+        var validator = await new AttachProjectTaskTagValidator().ValidateAsync(projectTaskTagInput);
+
+        if (validator.Errors.Any())
+        {
+            var exceptions = new List<InvalidOperationException>();
+
+            foreach (var err in validator.Errors)
+            {
+                exceptions.Add(new InvalidOperationException(err.ErrorMessage));
+            }
+            
+            var ex = new AggregateException("Ошибка привязки тега к задаче.", exceptions);
+            _logger.LogError(ex, ex.Message);
+            
+            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            
+            throw ex;
+        }
+
+        await _projectManagmentService.AttachTaskTagAsync(projectTaskTagInput.TagId, projectTaskTagInput.ProjectTaskId,
+            projectTaskTagInput.ProjectId, GetUserName());
+    }
+    
+    /// <summary>
+    /// Метод отвязывает тег от задачи проекта.
+    /// </summary>
+    /// <param name="projectTaskTagInput">Входная модель.</param>
+    [HttpPatch]
+    [Route("detach-task-tag")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)] 
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task DetachTaskTagAsync([FromBody] ProjectTaskTagInput projectTaskTagInput)
+    {
+        var validator = await new AttachProjectTaskTagValidator().ValidateAsync(projectTaskTagInput);
+
+        if (validator.Errors.Any())
+        {
+            var exceptions = new List<InvalidOperationException>();
+
+            foreach (var err in validator.Errors)
+            {
+                exceptions.Add(new InvalidOperationException(err.ErrorMessage));
+            }
+            
+            var ex = new AggregateException("Ошибка привязки тега к задаче.", exceptions);
+            _logger.LogError(ex, ex.Message);
+            
+            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            
+            throw ex;
+        }
+
+        await _projectManagmentService.DetachTaskTagAsync(projectTaskTagInput.TagId, projectTaskTagInput.ProjectTaskId,
+            projectTaskTagInput.ProjectId, GetUserName());
     }
 }

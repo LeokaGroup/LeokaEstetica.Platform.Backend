@@ -1,5 +1,4 @@
 using LeokaEstetica.Platform.Models.Entities.Moderation;
-using LeokaEstetica.Platform.Models.Entities.ProjectManagment;
 
 namespace LeokaEstetica.Platform.Models.Entities.Project;
 

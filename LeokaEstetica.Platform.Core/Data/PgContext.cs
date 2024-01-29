@@ -530,11 +530,6 @@ public class PgContext : DbContext
     public DbSet<TaskTypeEntity> TaskTypes { get; set; }
 
     /// <summary>
-    /// Таблица тегов (меток) задач пользователя.
-    /// </summary>
-    public DbSet<UserTaskTagEntity> UserTaskTags { get; set; }
-
-    /// <summary>
     /// Таблица комментариев к задачам.
     /// </summary>
     public DbSet<TaskCommentEntity> TaskComments { get; set; }

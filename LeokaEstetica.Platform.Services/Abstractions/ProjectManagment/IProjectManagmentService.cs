@@ -92,10 +92,10 @@ public interface IProjectManagmentService
     Task<IEnumerable<TaskPriorityEntity>> GetTaskPrioritiesAsync();
 
     /// <summary>
-    /// Метод получает список тегов пользователя для выбора в задаче.
+    /// Метод получает список тегов проекта для выбора в задаче.
     /// </summary>
     /// <returns>Список тегов.</returns>
-    Task<IEnumerable<UserTaskTagEntity>> GetTaskTagsAsync();
+    Task<IEnumerable<ProjectTagEntity>> GetProjectTagsAsync();
 
     /// <summary>
     /// Метод получает список статусов задачи для выбора.
@@ -118,8 +118,9 @@ public interface IProjectManagmentService
     /// </summary>
     /// <param name="tagName">Название метки (тега).</param>
     /// <param name="tagDescription">Описание метки (тега).</param>
+    /// <param name="projectId">Id проекта.</param>
     /// <param name="account">Аккаунт.</param>
-    Task CreateUserTaskTagAsync(string tagName, string tagDescription, string account);
+    Task CreateProjectTagAsync(string tagName, string tagDescription, long projectId, string account);
 
     /// <summary>
     /// Метод получает список статусов для выбора для создания нового статуса.
@@ -175,4 +176,23 @@ public interface IProjectManagmentService
     /// <param name="changedTaskDetails">Новое название задачи.</param>
     /// <param name="account">Аккаунт.</param>
     Task UpdateTaskNameAsync(long projectId, long taskId, string changedTaskName, string account);
+
+    /// <summary>
+    /// Метод привязывает тег к задаче проекта.
+    /// Выбор происходит из набора тегов проекта.
+    /// </summary>
+    /// <param name="tagId">Id тега, который нужно привязать к задаче.</param>
+    /// <param name="taskId">Id задачи в рамках проекта.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="account">Аккаунт.</param>
+    Task AttachTaskTagAsync(int tagId, long projectTaskId, long projectId, string account);
+    
+    /// <summary>
+    /// Метод отвязывает тег от задачи проекта.
+    /// </summary>
+    /// <param name="tagId">Id тега, который нужно привязать к задаче.</param>
+    /// <param name="taskId">Id задачи в рамках проекта.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="account">Аккаунт.</param>
+    Task DetachTaskTagAsync(int tagId, long projectTaskId, long projectId, string account);
 }

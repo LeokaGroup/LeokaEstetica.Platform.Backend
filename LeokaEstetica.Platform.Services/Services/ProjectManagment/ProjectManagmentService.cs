@@ -832,15 +832,12 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         }
     }
 
-    /// <summary>
-    /// Метод получает список тегов пользователя для выбора в задаче.
-    /// </summary>
-    /// <returns>Список тегов.</returns>
-    public async Task<IEnumerable<UserTaskTagEntity>> GetTaskTagsAsync()
+    /// <inheritdoc/>
+    public async Task<IEnumerable<ProjectTagEntity>> GetProjectTagsAsync()
     {
         try
         {
-            var result = await _projectManagmentRepository.GetTaskTagsAsync();
+            var result = await _projectManagmentRepository.GetProjectTagsAsync();
 
             return result;
         }
@@ -980,7 +977,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     }
 
     /// <inheritdoc />
-    public async Task CreateUserTaskTagAsync(string tagName, string tagDescription, string account)
+    public async Task CreateProjectTagAsync(string tagName, string tagDescription, long projectId, string account)
     {
         try
         {
@@ -1000,9 +997,9 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 
             var maxUserTagPosition = await _projectManagmentRepository.GetLastPositionUserTaskTagAsync(userId);
             
-            var userTag = CreateUserTaskTagFactory.CreateUserTaskTag(tagName, tagDescription, tagSysName, userId,
-                    ++maxUserTagPosition);
-            await _projectManagmentRepository.CreateUserTaskTagAsync(userTag);
+            var userTag = CreateUserTaskTagFactory.CreateProjectTag(tagName, tagDescription, tagSysName,
+                    ++maxUserTagPosition, projectId);
+            await _projectManagmentRepository.CreateProjectTaskTagAsync(userTag);
         }
         
         catch (Exception ex)
@@ -1403,6 +1400,38 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         }
     }
 
+    /// <inheritdoc />
+    public async Task AttachTaskTagAsync(int tagId, long projectTaskId, long projectId, string account)
+    {
+        var userId = await _userRepository.GetUserByEmailAsync(account);
+
+        if (userId <= 0)
+        {
+            var ex = new NotFoundUserIdByAccountException(account);
+            throw ex;
+        }
+
+        await _projectManagmentRepository.AttachTaskTagAsync(tagId, projectTaskId, projectId);
+
+        // TODO: Тут добавить запись активности пользователя по userId.
+    }
+
+    /// <inheritdoc />
+    public async Task DetachTaskTagAsync(int tagId, long projectTaskId, long projectId, string account)
+    {
+        var userId = await _userRepository.GetUserByEmailAsync(account);
+
+        if (userId <= 0)
+        {
+            var ex = new NotFoundUserIdByAccountException(account);
+            throw ex;
+        }
+
+        await _projectManagmentRepository.DetachTaskTagAsync(tagId, projectTaskId, projectId);
+
+        // TODO: Тут добавить запись активности пользователя по userId.
+    }
+
     #endregion
 
     #region Приватные методы.
@@ -1453,7 +1482,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             throw new InvalidOperationException("Не удалось получить исполнителей задач.");
         }
 
-        IDictionary<int, UserTaskTagOutput> tags = null;
+        IDictionary<int, ProjectTagOutput> tags = null;
 
         // Если есть теги, то пойдем получать.
         if (tasks.Any(x => x.TagIds is not null))

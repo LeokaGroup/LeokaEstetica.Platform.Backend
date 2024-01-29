@@ -6,7 +6,6 @@ using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.Validation;
 using LeokaEstetica.Platform.Base.Abstractions.Services.Messaging.Mail;
 using LeokaEstetica.Platform.Base.Abstractions.Services.Validation;
-using LeokaEstetica.Platform.Base.Enums;
 using LeokaEstetica.Platform.Base.Factors;
 using LeokaEstetica.Platform.Base.Repositories.Chat;
 using LeokaEstetica.Platform.Base.Repositories.User;
@@ -14,7 +13,8 @@ using LeokaEstetica.Platform.Base.Repositories.Validation;
 using LeokaEstetica.Platform.Base.Services.Connection;
 using LeokaEstetica.Platform.Base.Services.Validation;
 using LeokaEstetica.Platform.Core.Attributes;
-using Enum = LeokaEstetica.Platform.Base.Enums.Enum;
+using LeokaEstetica.Platform.Models.Enums;
+using Enum = LeokaEstetica.Platform.Models.Enums;
 
 namespace LeokaEstetica.Platform.Base.AutofacModules;
 
@@ -86,12 +86,12 @@ public class BaseModule : Module
             .InstancePerLifetimeScope();
         
         // Обобщенная енамка для работы с енамками в БД.
-        builder.RegisterType<Enum>()
-            .Named<IEnum>("Enum")
-            .InstancePerLifetimeScope();
-        builder.RegisterType<Enum>()
-            .As<IEnum>()
-            .InstancePerLifetimeScope();
+        // builder.RegisterType<Enum>()
+        //     .Named<IEnum>("Enum")
+        //     .InstancePerLifetimeScope();
+        // builder.RegisterType<Enum>()
+        //     .As<IEnum>()
+        //     .InstancePerLifetimeScope();
         
         // Провайдер подключений к БД.
         builder.RegisterType<ConnectionProvider>()

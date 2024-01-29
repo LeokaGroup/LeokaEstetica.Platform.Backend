@@ -1,9 +1,9 @@
 namespace LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
 
 /// <summary>
-/// Класс входной модели тегов задачи пользователя.
+/// Класс входной модели тегов проекта.
 /// </summary>
-public class UserTaskTagInput
+public class ProjectTagInput
 {
     /// <summary>
     /// Название тега.
@@ -14,4 +14,9 @@ public class UserTaskTagInput
     /// Описание метки (тега).
     /// </summary>
     public string TagDescription { get; set; }
+
+    /// <summary>
+    /// Id проекта.
+    /// </summary>
+    public long ProjectId { get; set; }
 }

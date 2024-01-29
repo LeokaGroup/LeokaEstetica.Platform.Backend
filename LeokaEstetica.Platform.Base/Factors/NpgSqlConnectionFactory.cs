@@ -1,9 +1,8 @@
 using System.Data;
 using System.Runtime.CompilerServices;
-using LeokaEstetica.Platform.Base.Enums;
 using LeokaEstetica.Platform.Base.Handlers;
+using LeokaEstetica.Platform.Models.Enums;
 using Npgsql;
-using Enum = LeokaEstetica.Platform.Base.Enums.Enum;
 
 [assembly: InternalsVisibleTo("LeokaEstetica.Platform.Backend")]
 [assembly: InternalsVisibleTo("LeokaEstetica.Platform.ProjectManagment")]
@@ -35,7 +34,7 @@ internal class NpgSqlConnectionFactory : IConnectionFactory
         Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
 
         Dapper.SqlMapper.AddTypeHandler(new NpgEnumHandler<IEnum>());
-        Dapper.SqlMapper.AddTypeHandler(new NpgEnumHandler<Enum>());
+        Dapper.SqlMapper.AddTypeHandler(new NpgEnumHandler<LeokaEstetica.Platform.Models.Enums.Enum>());
         Dapper.SqlMapper.AddTypeHandler(new NpgJsonHandler());
         Dapper.SqlMapper.AddTypeHandler(typeof(DateTime), new NpgDateTimeHandler());
         Dapper.SqlMapper.AddTypeHandler(typeof(DateTime?), new NpgDateTimeNullableHandler());

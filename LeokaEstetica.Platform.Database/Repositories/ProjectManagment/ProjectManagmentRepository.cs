@@ -158,24 +158,25 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
     /// </summary>
     /// <param name="tagIds">Id тегов (меток) задач.</param>
     /// <returns>Словарь с тегами (метками) задач.</returns>
-    public async Task<IDictionary<int, UserTaskTagOutput>> GetTagNamesByTagIdsAsync(IEnumerable<int> tagIds)
+    public async Task<IDictionary<int, ProjectTagOutput>> GetTagNamesByTagIdsAsync(IEnumerable<int> tagIds)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
         var compiler = new PostgresCompiler();
-        var query = new Query("project_management.user_task_tags")
+        var query = new Query("project_management.project_tags")
             .WhereIn("tag_id", tagIds)
-            .Select("tag_id", "tag_name", "position")
+            .Select("tag_id", "tag_name", "position") // TODO: Добавить поле тип объекта из енамки.
             .OrderBy("position");
         var sql = compiler.Compile(query).ToString();
         
-        var result = (await connection.QueryAsync<UserTaskTagOutput>(sql))
-            .ToDictionary(k => k.TagId, v => new UserTaskTagOutput
+        // TODO: Добавить поле тип объекта из енамки.
+        var result = (await connection.QueryAsync<ProjectTagOutput>(sql))
+            .ToDictionary(k => k.TagId, v => new ProjectTagOutput
             {
                 TagName = v.TagName,
                 TagSysName = v.TagSysName,
                 TagDescription = v.TagDescription,
-                UserId = v.UserId,
-                TagId = v.TagId
+                TagId = v.TagId,
+                ProjectId = v.ProjectId
             });
 
         return result;
@@ -335,20 +336,16 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
         return result;
     }
 
-    /// <summary>
-    /// Метод получает список тегов пользователя для выбора в задаче.
-    /// </summary>
-    /// <returns>Список тегов.</returns>
-    public async Task<IEnumerable<UserTaskTagEntity>> GetTaskTagsAsync()
+    /// <inheritdoc/>
+    public async Task<IEnumerable<ProjectTagEntity>> GetProjectTagsAsync()
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
-        var compiler = new PostgresCompiler();
-        var query = new Query("project_management.user_task_tags")
-            .Select("tag_id", "tag_name", "tag_sys_name", "user_id", "tag_description")
-            .OrderBy("position");
-        var sql = compiler.Compile(query).ToString();
 
-        var result = await connection.QueryAsync<UserTaskTagEntity>(sql);
+        var query = @"SELECT tag_id, tag_name, tag_sys_name, tag_description, project_id, object_tag_type 
+                      FROM project_management.project_tags 
+                      ORDER BY position";
+
+        var result = await connection.QueryAsync<ProjectTagEntity>(query);
 
         return result;
     }
@@ -387,7 +384,7 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
         var compiler = new PostgresCompiler();
-        var query = new Query("project_management.user_task_tags")
+        var query = new Query("project_management.project_tags")
             .Where("user_id", userId)
             .Select("position")
             .AsMax("position");
@@ -405,20 +402,19 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
     }
 
     /// <inheritdoc />
-    public async Task CreateUserTaskTagAsync(UserTaskTagEntity tag)
+    public async Task CreateProjectTaskTagAsync(ProjectTagEntity tag)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
         
+        // TODO: Добавить новые поля при создании.
         var parameters = new DynamicParameters();
         parameters.Add("@tag_name", tag.TagName);
         parameters.Add("@tag_sys_name", tag.TagSysName);
         parameters.Add("@tag_description", tag.TagDescription);
         parameters.Add("@position", tag.Position);
-        parameters.Add("@user_id", tag.UserId);
 
-        var query = @"INSERT INTO project_management.user_task_tags (tag_name, tag_sys_name, position, user_id, 
-                                               tag_description) 
-VALUES (@tag_name, @tag_sys_name, @tag_description, @position, @user_id)";
+        var query = @"INSERT INTO project_management.project_tags (tag_name, tag_sys_name, position, tag_description) 
+                      VALUES (@tag_name, @tag_sys_name, @tag_description, @position)";
 
         await connection.ExecuteAsync(query, parameters);
     }
@@ -616,6 +612,42 @@ VALUES (@tag_name, @tag_sys_name, @tag_description, @position, @user_id)";
                     WHERE project_id = @project_id 
                       AND project_task_id = @task_id";
         
+        await connection.ExecuteAsync(sql, parameters);
+    }
+
+    /// <inheritdoc />
+    public async Task AttachTaskTagAsync(int tagId, long projectTaskId, long projectId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@tag_id", tagId);
+        parameters.Add("@project_task_id", projectTaskId);
+        parameters.Add("@project_id", projectId);
+
+        var sql = @"UPDATE project_management.project_tasks 
+                    SET tag_ids = ARRAY_APPEND(tag_ids, @tag_id) 
+                    WHERE project_task_id = @project_task_id 
+                      AND project_id = @project_id";
+                      
+        await connection.ExecuteAsync(sql, parameters);
+    }
+
+    /// <inheritdoc />
+    public async Task DetachTaskTagAsync(int tagId, long projectTaskId, long projectId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@tag_id", tagId);
+        parameters.Add("@project_task_id", projectTaskId);
+        parameters.Add("@project_id", projectId);
+
+        var sql = @"UPDATE project_management.project_tasks 
+                    SET tag_ids = ARRAY_REMOVE(tag_ids, @tag_id) 
+                    WHERE project_task_id = @project_task_id 
+                      AND project_id = @project_id";
+                      
         await connection.ExecuteAsync(sql, parameters);
     }
 
