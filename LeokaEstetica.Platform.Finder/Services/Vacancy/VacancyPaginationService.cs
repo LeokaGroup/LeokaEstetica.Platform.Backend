@@ -48,7 +48,7 @@ public class VacancyPaginationService : BaseIndexRamDirectory, IVacancyPaginatio
 
             using var reader = IndexReader.Open(_index.Value, true);
             using var searcher = new IndexSearcher(reader);
-            var scoreDocs = CreateScoreDocsBuilder.CreateScoreDocsResult(page, searcher);
+            var scoreDocs = CreateScoreDocsBuilder.CreateScoreDocsResult(page, searcher, vacancies.Count());
 
             result.Vacancies = CreateVacanciesSearchResultBuilder
                 .CreateVacanciesSearchResult(scoreDocs, searcher)
