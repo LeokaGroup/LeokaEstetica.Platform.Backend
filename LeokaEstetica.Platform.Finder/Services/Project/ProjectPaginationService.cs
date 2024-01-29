@@ -48,7 +48,7 @@ public class ProjectPaginationService : BaseIndexRamDirectory, IProjectPaginatio
 
             using var reader = IndexReader.Open(_index.Value, true);
             using var searcher = new IndexSearcher(reader);
-            var scoreDocs = CreateScoreDocsBuilder.CreateScoreDocsResult(page, searcher);
+            var scoreDocs = CreateScoreDocsBuilder.CreateScoreDocsResult(page, searcher, projects.Count);
 
             result.Projects = CreateProjectsSearchResultBuilder
                 .CreateProjectsSearchResult(scoreDocs, searcher)
