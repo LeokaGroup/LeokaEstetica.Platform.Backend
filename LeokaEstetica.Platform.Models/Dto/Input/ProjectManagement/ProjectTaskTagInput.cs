@@ -11,7 +11,7 @@ public class ProjectTaskTagInput
     public int TagId { get; set; }
 
     /// <summary>
-    /// Id задачив рамках проекта.
+    /// Id задачи в рамках проекта.
     /// </summary>
     public long ProjectTaskId { get; set; }
 
