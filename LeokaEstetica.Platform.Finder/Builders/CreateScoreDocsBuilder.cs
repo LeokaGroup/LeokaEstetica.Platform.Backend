@@ -15,18 +15,19 @@ public static class CreateScoreDocsBuilder
     /// </summary>
     /// <param name="page">Номер страницы.</param>
     /// <param name="searcher">Поисковый индекс.</param>
+    /// <param name="rowsCount">Кол-во записей, которые надо брать (все записи).</param>
     /// <returns>Список документов.</returns>
-    public static ScoreDoc[] CreateScoreDocsResult(int page, IndexSearcher searcher)
+    public static ScoreDoc[] CreateScoreDocsResult(int page, IndexSearcher searcher, int rowsCount)
     {
         _scoreDocs.Clear();
         
         var skipRows = (page - 1) * PaginationConst.TAKE_COUNT;
-        var searchResults = searcher.Search(new MatchAllDocsQuery(), skipRows + PaginationConst.TAKE_COUNT)
+        var searchResults = searcher.Search(new MatchAllDocsQuery(), skipRows + rowsCount)
             .ScoreDocs;
 
         for (var i = skipRows; i < searchResults.Length; i++)
         {
-            if (i > skipRows + PaginationConst.TAKE_COUNT - 1)
+            if (i > skipRows + rowsCount - 1)
             {
                 break;
             }
