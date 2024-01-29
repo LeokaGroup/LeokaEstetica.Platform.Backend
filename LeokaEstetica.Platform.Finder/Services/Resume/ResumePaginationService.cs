@@ -55,7 +55,7 @@ public class ResumePaginationService : BaseIndexRamDirectory, IResumePaginationS
                 PaginationInfo = new PaginationInfoOutput(projects.Count(), page, PaginationConst.TAKE_COUNT)
             };
 
-            // Получаем все проекты из БД без выгрузки в память.
+            // Получаем все анкеты из БД без выгрузки в память.
             ResumesDocumentLoader.Load(projects, _index, _analyzer);
 
             using var reader = IndexReader.Open(_index.Value, true);

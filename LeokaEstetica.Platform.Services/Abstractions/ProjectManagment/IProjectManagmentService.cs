@@ -176,4 +176,14 @@ public interface IProjectManagmentService
     /// <param name="changedTaskDetails">Новое название задачи.</param>
     /// <param name="account">Аккаунт.</param>
     Task UpdateTaskNameAsync(long projectId, long taskId, string changedTaskName, string account);
+
+    /// <summary>
+    /// Метод привязывает тег к задаче проекта.
+    /// Выбор происходит из набора тегов проекта.
+    /// </summary>
+    /// <param name="tagId">Id тега, который нужно привязать к задаче.</param>
+    /// <param name="taskId">Id задачи в рамках проекта.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="account">Аккаунт.</param>
+    Task AttachTaskTagAsync(int tagId, long projectTaskId, long projectId, string account);
 }

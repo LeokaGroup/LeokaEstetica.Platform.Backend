@@ -1400,6 +1400,20 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         }
     }
 
+    /// <inheritdoc />
+    public async Task AttachTaskTagAsync(int tagId, long projectTaskId, long projectId, string account)
+    {
+        var userId = await _userRepository.GetUserByEmailAsync(account);
+
+        if (userId <= 0)
+        {
+            var ex = new NotFoundUserIdByAccountException(account);
+            throw ex;
+        }
+        
+         // TODO: Тут добавить запись активности пользователя по userId.
+    }
+
     #endregion
 
     #region Приватные методы.

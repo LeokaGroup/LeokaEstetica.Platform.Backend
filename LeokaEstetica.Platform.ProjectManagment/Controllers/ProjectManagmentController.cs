@@ -677,4 +677,38 @@ public class ProjectManagmentController : BaseController
         await _projectManagmentService.UpdateTaskNameAsync(changeTaskNameInput.ProjectId,
             changeTaskNameInput.TaskId, changeTaskNameInput.ChangedTaskName, GetUserName());
     }
+
+    /// <summary>
+    /// Метод привязывает тег к задаче проекта.
+    /// Выбор происходит из набора тегов проекта.
+    /// </summary>
+    /// <param name="projectTaskTagInput">Входная модель.</param>
+    [HttpPost]
+    [Route("attach-task-tag")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task AttachTaskTagAsync([FromBody] ProjectTaskTagInput projectTaskTagInput)
+    {
+        var validator = await new AttachProjectTaskTagValidator().ValidateAsync(projectTaskTagInput);
+
+        if (validator.Errors.Any())
+        {
+            var exceptions = new List<InvalidOperationException>();
+
+            foreach (var err in validator.Errors)
+            {
+                exceptions.Add(new InvalidOperationException(err.ErrorMessage));
+            }
+            
+            var ex = new AggregateException("Ошибка привязки тега к задаче.", exceptions);
+            _logger.LogError(ex, ex.Message);
+            
+            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            
+            throw ex;
+        }
+    }
 }
