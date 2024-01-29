@@ -615,6 +615,24 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         await connection.ExecuteAsync(sql, parameters);
     }
 
+    /// <inheritdoc />
+    public async Task AttachTaskTagAsync(int tagId, long projectTaskId, long projectId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@tag_id", tagId);
+        parameters.Add("@project_task_id", projectTaskId);
+        parameters.Add("@project_id", projectId);
+
+        var sql = @"UPDATE project_management.project_tasks 
+                    SET tag_ids = ARRAY_APPEND(tag_ids, @tag_id) 
+                    WHERE project_task_id = @project_task_id 
+                      AND project_id = @project_id";
+                      
+        await connection.ExecuteAsync(sql, parameters);
+    }
+
     #endregion
 
     #region Приватные методы.

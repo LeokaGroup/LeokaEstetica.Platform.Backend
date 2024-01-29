@@ -710,5 +710,8 @@ public class ProjectManagmentController : BaseController
             
             throw ex;
         }
+
+        await _projectManagmentService.AttachTaskTagAsync(projectTaskTagInput.TagId, projectTaskTagInput.ProjectTaskId,
+            projectTaskTagInput.ProjectId, GetUserName());
     }
 }

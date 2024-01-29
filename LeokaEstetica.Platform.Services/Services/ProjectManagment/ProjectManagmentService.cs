@@ -1410,8 +1410,10 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             var ex = new NotFoundUserIdByAccountException(account);
             throw ex;
         }
-        
-         // TODO: Тут добавить запись активности пользователя по userId.
+
+        await _projectManagmentRepository.AttachTaskTagAsync(tagId, projectTaskId, projectId);
+
+        // TODO: Тут добавить запись активности пользователя по userId.
     }
 
     #endregion
