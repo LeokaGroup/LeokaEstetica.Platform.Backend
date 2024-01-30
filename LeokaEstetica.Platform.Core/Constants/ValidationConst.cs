@@ -197,5 +197,10 @@ public static class ValidationConst
         /// Если не передали Id тега задачи.
         /// </summary>
         public const string NOT_VALID_TASK_TAG_ID = "Id тега задачи не передан.";
+
+        /// <summary>
+        /// Если не передали Id наблюдателя задачи.
+        /// </summary>
+        public const string NOT_VALID_TASK_WATCHER_ID = "Id наблюдателя задачи не передан.";
     }
 }

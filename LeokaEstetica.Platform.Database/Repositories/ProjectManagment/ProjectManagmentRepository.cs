@@ -651,6 +651,23 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         await connection.ExecuteAsync(sql, parameters);
     }
 
+    public async Task UpdateTaskWatcherAsync(long watcherId, long projectTaskId, long projectId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@watcher_ids", watcherId);
+        parameters.Add("@project_task_id", projectTaskId);
+        parameters.Add("@project_id", projectId);
+
+        var sql = @"UPDATE project_management.project_tasks 
+                    SET watcher_ids = ARRAY_APPEND(watcher_ids, @watcher_ids) 
+                    WHERE project_task_id = @project_task_id 
+                      AND project_id = @project_id";
+                      
+        await connection.ExecuteAsync(sql, parameters);
+    }
+
     #endregion
 
     #region Приватные методы.
