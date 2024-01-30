@@ -618,7 +618,17 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 
                     foreach (var w in result.WatcherIds)
                     {
-                        watcherNames.Add(watchers.TryGet(w)?.FullName);
+                        var watcher = watchers.TryGet(w);
+
+                        if (!string.IsNullOrWhiteSpace(watcher?.FullName))
+                        {
+                            watcherNames.Add(watcher.FullName);
+                        }
+
+                        else
+                        {
+                            watcherNames.Add(watcher!.Email);
+                        }
                     }
 
                     result.WatcherNames = watcherNames;
