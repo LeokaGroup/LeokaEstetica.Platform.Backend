@@ -651,7 +651,7 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         await connection.ExecuteAsync(sql, parameters);
     }
 
-    public async Task UpdateTaskWatcherAsync(long watcherId, long projectTaskId, long projectId)
+    public async Task AttachTaskWatcherAsync(long watcherId, long projectTaskId, long projectId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
 

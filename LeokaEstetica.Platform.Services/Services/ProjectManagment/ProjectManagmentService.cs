@@ -1432,7 +1432,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         // TODO: Тут добавить запись активности пользователя по userId.
     }
 
-    public async Task UpdateTaskWatcherAsync(long watcherId, long projectTaskId, long projectId, string account)
+    public async Task AttachTaskWatcherAsync(long watcherId, long projectTaskId, long projectId, string account)
     {
         var userId = await _userRepository.GetUserByEmailAsync(account);
 
@@ -1442,7 +1442,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             throw ex;
         }
 
-        await _projectManagmentRepository.UpdateTaskWatcherAsync(watcherId, projectTaskId, projectId);
+        await _projectManagmentRepository.AttachTaskWatcherAsync(watcherId, projectTaskId, projectId);
 
         // TODO: Тут добавить запись активности пользователя по userId.
     }

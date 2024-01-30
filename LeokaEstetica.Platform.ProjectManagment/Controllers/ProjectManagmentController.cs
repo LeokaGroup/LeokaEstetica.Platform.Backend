@@ -752,17 +752,17 @@ public class ProjectManagmentController : BaseController
     }
 
     /// <summary>
-    /// Метод обновляет наблюдателя задачи.
+    /// Метод привязывает наблюдателя задачи.
     /// </summary>
     /// <param name="projectTaskWatcherInput">Входная модель.</param>
     [HttpPatch]
-    [Route("task-watcher")]
+    [Route("attach-task-watcher")]
     [ProducesResponseType(200)]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)] 
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task UpdateTaskWatcherAsync([FromBody] ProjectTaskWatcherInput projectTaskWatcherInput)
+    public async Task AttachTaskWatcherAsync([FromBody] ProjectTaskWatcherInput projectTaskWatcherInput)
     {
         var validator = await new ProjectTaskWatcherValidator().ValidateAsync(projectTaskWatcherInput);
 
@@ -783,7 +783,7 @@ public class ProjectManagmentController : BaseController
             throw ex;
         }
 
-        await _projectManagmentService.UpdateTaskWatcherAsync(projectTaskWatcherInput.WatcherId,
+        await _projectManagmentService.AttachTaskWatcherAsync(projectTaskWatcherInput.WatcherId,
             projectTaskWatcherInput.ProjectTaskId, projectTaskWatcherInput.ProjectId, GetUserName());
     }
 }
