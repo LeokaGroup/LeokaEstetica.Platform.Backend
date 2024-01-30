@@ -680,7 +680,7 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         parameters.Add("@project_id", projectId);
 
         var sql = @"UPDATE project_management.project_tasks 
-                    SET watcher_ids = ARRAY_REMOVE(watcher_ids, @watcherId) 
+                    SET watcher_ids = ARRAY_REMOVE(watcher_ids, @watcherId::BIGINT) 
                     WHERE project_task_id = @project_task_id 
                       AND project_id = @project_id";
                       
