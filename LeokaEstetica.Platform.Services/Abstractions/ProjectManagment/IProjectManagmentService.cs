@@ -195,4 +195,13 @@ public interface IProjectManagmentService
     /// <param name="projectId">Id проекта.</param>
     /// <param name="account">Аккаунт.</param>
     Task DetachTaskTagAsync(int tagId, long projectTaskId, long projectId, string account);
+
+    /// <summary>
+    /// Метод обновляет исполнителя задачи.
+    /// </summary>
+    /// <param name="executorId">Id нового исполнителя задачи.</param>
+    /// <param name="taskId">Id задачи в рамках проекта.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="account">Аккаунт.</param>
+    Task UpdateTaskExecutorAsync(long executorId, long projectTaskId, long projectId, string account);
 }
