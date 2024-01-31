@@ -195,4 +195,13 @@ public interface IProjectManagmentService
     /// <param name="projectId">Id проекта.</param>
     /// <param name="account">Аккаунт.</param>
     Task DetachTaskTagAsync(int tagId, long projectTaskId, long projectId, string account);
+
+    /// <summary>
+    /// Метод обновляет приоритет задачи.
+    /// </summary>
+    /// <param name="priorityId">Id приоритета.</param>
+    /// <param name="taskId">Id задачи в рамках проекта.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="account">Аккаунт.</param>
+    Task UpdateTaskPriorityAsync(int priorityId, long projectTaskId, long projectId, string account);
 }

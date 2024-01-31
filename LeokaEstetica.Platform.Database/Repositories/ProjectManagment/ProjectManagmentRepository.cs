@@ -651,6 +651,24 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         await connection.ExecuteAsync(sql, parameters);
     }
 
+    /// <inheritdoc />
+    public async Task UpdateTaskPriorityAsync(int priorityId, long projectTaskId, long projectId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@priority_id", priorityId);
+        parameters.Add("@project_task_id", projectTaskId);
+        parameters.Add("@project_id", projectId);
+
+        var sql = @"UPDATE project_management.project_tasks 
+                    SET priority_id = @priority_id 
+                    WHERE project_task_id = @project_task_id 
+                      AND project_id = @project_id";
+                      
+        await connection.ExecuteAsync(sql, parameters);
+    }
+
     #endregion
 
     #region Приватные методы.
