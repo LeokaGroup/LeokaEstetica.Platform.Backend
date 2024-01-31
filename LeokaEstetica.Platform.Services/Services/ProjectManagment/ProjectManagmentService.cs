@@ -1448,6 +1448,22 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         // TODO: Тут добавить запись активности пользователя по userId.
     }
 
+    /// <inheritdoc />
+    public async Task UpdateTaskPriorityAsync(int priorityId, long projectTaskId, long projectId, string account)
+    {
+        var userId = await _userRepository.GetUserByEmailAsync(account);
+
+        if (userId <= 0)
+        {
+            var ex = new NotFoundUserIdByAccountException(account);
+            throw ex;
+        }
+        
+        await _projectManagmentRepository.UpdateTaskPriorityAsync(priorityId, projectTaskId, projectId);
+        
+        // TODO: Тут добавить запись активности пользователя по userId.
+    }
+
     #endregion
 
     #region Приватные методы.
