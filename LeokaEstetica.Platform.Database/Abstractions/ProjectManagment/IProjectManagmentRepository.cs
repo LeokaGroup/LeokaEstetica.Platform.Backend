@@ -234,4 +234,21 @@ public interface IProjectManagmentRepository
     /// <param name="taskId">Id задачи в рамках проекта.</param>
     /// <param name="projectId">Id проекта.</param>
     Task UpdateTaskExecutorAsync(long executorId, long projectTaskId, long projectId);
+    
+    /// <summary>
+    /// Метод привязывает наблюдателя задачи.
+    /// </summary>
+    /// <param name="watcherId">Id наблюдателя, которого нужно добавить к задаче..</param>
+    /// <param name="taskId">Id задачи в рамках проекта.</param>
+    /// <param name="projectId">Id проекта.</param>
+    Task AttachTaskWatcherAsync(long watcherId, long projectTaskId, long projectId);
+    
+    /// <summary>
+    /// Метод отвязывает наблюдателя задачи.
+    /// </summary>
+    /// <param name="watcherId">Id наблюдателя, которого нужно добавить к задаче..</param>
+    /// <param name="taskId">Id задачи в рамках проекта.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="account">Аккаунт.</param>
+    Task DetachTaskWatcherAsync(long watcherId, long projectTaskId, long projectId);
 }

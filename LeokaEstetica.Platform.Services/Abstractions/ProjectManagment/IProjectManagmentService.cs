@@ -197,6 +197,24 @@ public interface IProjectManagmentService
     Task DetachTaskTagAsync(int tagId, long projectTaskId, long projectId, string account);
 
     /// <summary>
+    /// Метод привязывает наблюдателя задачи.
+    /// </summary>
+    /// <param name="watcherId">Id наблюдателя, которого нужно добавить к задаче..</param>
+    /// <param name="taskId">Id задачи в рамках проекта.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="account">Аккаунт.</param>
+    Task AttachTaskWatcherAsync(long watcherId, long projectTaskId, long projectId, string account);
+    
+    /// <summary>
+    /// Метод отвязывает наблюдателя задачи.
+    /// </summary>
+    /// <param name="watcherId">Id наблюдателя, которого нужно добавить к задаче..</param>
+    /// <param name="taskId">Id задачи в рамках проекта.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="account">Аккаунт.</param>
+    Task DetachTaskWatcherAsync(long watcherId, long projectTaskId, long projectId, string account);
+
+    /// <summary>
     /// Метод обновляет исполнителя задачи.
     /// </summary>
     /// <param name="executorId">Id нового исполнителя задачи.</param>

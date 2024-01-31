@@ -652,6 +652,42 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
     }
 
     /// <inheritdoc />
+    public async Task AttachTaskWatcherAsync(long watcherId, long projectTaskId, long projectId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@watcher_ids", watcherId);
+        parameters.Add("@project_task_id", projectTaskId);
+        parameters.Add("@project_id", projectId);
+
+        var sql = @"UPDATE project_management.project_tasks 
+                    SET watcher_ids = ARRAY_APPEND(watcher_ids, @watcher_ids) 
+                    WHERE project_task_id = @project_task_id 
+                      AND project_id = @project_id";
+                      
+        await connection.ExecuteAsync(sql, parameters);
+    }
+
+    /// <inheritdoc />
+    public async Task DetachTaskWatcherAsync(long watcherId, long projectTaskId, long projectId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@watcherId", watcherId);
+        parameters.Add("@project_task_id", projectTaskId);
+        parameters.Add("@project_id", projectId);
+
+        var sql = @"UPDATE project_management.project_tasks 
+                    SET watcher_ids = ARRAY_REMOVE(watcher_ids, @watcherId::BIGINT) 
+                    WHERE project_task_id = @project_task_id 
+                      AND project_id = @project_id";
+                      
+        await connection.ExecuteAsync(sql, parameters);
+    }
+
+    /// <inheritdoc />
     public async Task UpdateTaskExecutorAsync(long executorId, long projectTaskId, long projectId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();

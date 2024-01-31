@@ -752,6 +752,78 @@ public class ProjectManagmentController : BaseController
     }
 
     /// <summary>
+    /// Метод привязывает наблюдателя задачи.
+    /// </summary>
+    /// <param name="projectTaskWatcherInput">Входная модель.</param>
+    [HttpPatch]
+    [Route("attach-task-watcher")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)] 
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task AttachTaskWatcherAsync([FromBody] ProjectTaskWatcherInput projectTaskWatcherInput)
+    {
+        var validator = await new ProjectTaskWatcherValidator().ValidateAsync(projectTaskWatcherInput);
+
+        if (validator.Errors.Any())
+        {
+            var exceptions = new List<InvalidOperationException>();
+
+            foreach (var err in validator.Errors)
+            {
+                exceptions.Add(new InvalidOperationException(err.ErrorMessage));
+            }
+            
+            var ex = new AggregateException("Ошибка привязки наблюдателя задачи.", exceptions);
+            _logger.LogError(ex, ex.Message);
+            
+            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            
+            throw ex;
+        }
+
+        await _projectManagmentService.AttachTaskWatcherAsync(projectTaskWatcherInput.WatcherId,
+            projectTaskWatcherInput.ProjectTaskId, projectTaskWatcherInput.ProjectId, GetUserName());
+    }
+    
+    /// <summary>
+    /// Метод отвязывает наблюдателя задачи.
+    /// </summary>
+    /// <param name="projectTaskWatcherInput">Входная модель.</param>
+    [HttpPatch]
+    [Route("detach-task-watcher")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)] 
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task DetachTaskWatcherAsync([FromBody] ProjectTaskWatcherInput projectTaskWatcherInput)
+    {
+        var validator = await new ProjectTaskWatcherValidator().ValidateAsync(projectTaskWatcherInput);
+
+        if (validator.Errors.Any())
+        {
+            var exceptions = new List<InvalidOperationException>();
+
+            foreach (var err in validator.Errors)
+            {
+                exceptions.Add(new InvalidOperationException(err.ErrorMessage));
+            }
+            
+            var ex = new AggregateException("Ошибка отвязки наблюдателя задачи.", exceptions);
+            _logger.LogError(ex, ex.Message);
+            
+            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            
+            throw ex;
+        }
+
+        await _projectManagmentService.DetachTaskWatcherAsync(projectTaskWatcherInput.WatcherId,
+            projectTaskWatcherInput.ProjectTaskId, projectTaskWatcherInput.ProjectId, GetUserName());
+    }
+
+    /// <summary>
     /// Метод обновляет исполнителя задачи.
     /// </summary>
     /// <param name="projectTaskExecutorInput">Входная модель.</param>

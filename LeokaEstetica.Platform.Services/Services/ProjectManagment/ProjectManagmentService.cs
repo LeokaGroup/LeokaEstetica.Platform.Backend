@@ -618,7 +618,17 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 
                     foreach (var w in result.WatcherIds)
                     {
-                        watcherNames.Add(watchers.TryGet(w)?.FullName);
+                        var watcher = watchers.TryGet(w);
+
+                        if (!string.IsNullOrWhiteSpace(watcher?.FullName))
+                        {
+                            watcherNames.Add(watcher.FullName);
+                        }
+
+                        else
+                        {
+                            watcherNames.Add(watcher!.Email);
+                        }
                     }
 
                     result.WatcherNames = watcherNames;
@@ -1428,6 +1438,38 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         }
 
         await _projectManagmentRepository.DetachTaskTagAsync(tagId, projectTaskId, projectId);
+
+        // TODO: Тут добавить запись активности пользователя по userId.
+    }
+
+    /// <inheritdoc />
+    public async Task AttachTaskWatcherAsync(long watcherId, long projectTaskId, long projectId, string account)
+    {
+        var userId = await _userRepository.GetUserByEmailAsync(account);
+
+        if (userId <= 0)
+        {
+            var ex = new NotFoundUserIdByAccountException(account);
+            throw ex;
+        }
+
+        await _projectManagmentRepository.AttachTaskWatcherAsync(watcherId, projectTaskId, projectId);
+
+        // TODO: Тут добавить запись активности пользователя по userId.
+    }
+
+    /// <inheritdoc />
+    public async Task DetachTaskWatcherAsync(long watcherId, long projectTaskId, long projectId, string account)
+    {
+        var userId = await _userRepository.GetUserByEmailAsync(account);
+
+        if (userId <= 0)
+        {
+            var ex = new NotFoundUserIdByAccountException(account);
+            throw ex;
+        }
+
+        await _projectManagmentRepository.DetachTaskWatcherAsync(watcherId, projectTaskId, projectId);
 
         // TODO: Тут добавить запись активности пользователя по userId.
     }
