@@ -226,4 +226,12 @@ public interface IProjectManagmentRepository
     /// <param name="taskId">Id задачи в рамках проекта.</param>
     /// <param name="projectId">Id проекта.</param>
     Task UpdateTaskPriorityAsync(int priorityId, long projectTaskId, long projectId);
+    
+    /// <summary>
+    /// Метод обновляет исполнителя задачи.
+    /// </summary>
+    /// <param name="executorId">Id нового исполнителя задачи.</param>
+    /// <param name="taskId">Id задачи в рамках проекта.</param>
+    /// <param name="projectId">Id проекта.</param>
+    Task UpdateTaskExecutorAsync(long executorId, long projectTaskId, long projectId);
 }

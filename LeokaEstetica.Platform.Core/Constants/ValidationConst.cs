@@ -199,6 +199,11 @@ public static class ValidationConst
         public const string NOT_VALID_TASK_TAG_ID = "Id тега задачи не передан.";
 
         /// <summary>
+        /// Если не передали Id исполнителя задачи.
+        /// </summary>
+        public const string NOT_VALID_TASK_EXECUTOR_ID = "Id исполнителя задачи не передан.";
+
+        /// <summary>
         /// Если не передали Id приоритета.
         /// </summary>
         public const string NOT_VALID_TASK_PRIORITY_ID = "Id приоритета задачи не передан.";

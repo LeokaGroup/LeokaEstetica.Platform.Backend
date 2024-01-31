@@ -1433,6 +1433,22 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     }
 
     /// <inheritdoc />
+    public async Task UpdateTaskExecutorAsync(long executorId, long projectTaskId, long projectId, string account)
+    {
+        var userId = await _userRepository.GetUserByEmailAsync(account);
+
+        if (userId <= 0)
+        {
+            var ex = new NotFoundUserIdByAccountException(account);
+            throw ex;
+        }
+
+        await _projectManagmentRepository.UpdateTaskExecutorAsync(executorId, projectTaskId, projectId);
+
+        // TODO: Тут добавить запись активности пользователя по userId.
+    }
+
+    /// <inheritdoc />
     public async Task UpdateTaskPriorityAsync(int priorityId, long projectTaskId, long projectId, string account)
     {
         var userId = await _userRepository.GetUserByEmailAsync(account);
