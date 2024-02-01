@@ -4,6 +4,7 @@ using LeokaEstetica.Platform.Models.Dto.Output.Template;
 using LeokaEstetica.Platform.Models.Entities.Profile;
 using LeokaEstetica.Platform.Models.Entities.ProjectManagment;
 using LeokaEstetica.Platform.Models.Entities.Template;
+using LeokaEstetica.Platform.Models.Enums;
 
 namespace LeokaEstetica.Platform.Services.Abstractions.ProjectManagment;
 
@@ -195,4 +196,15 @@ public interface IProjectManagmentService
     /// <param name="projectId">Id проекта.</param>
     /// <param name="account">Аккаунт.</param>
     Task DetachTaskTagAsync(int tagId, long projectTaskId, long projectId, string account);
+
+    /// <summary>
+    /// Метод создает связь с задачей (обычная связь).
+    /// </summary>
+    /// <param name="taskFromLink">Id задачи, от которой исходит связь.</param>
+    /// <param name="taskToLink">Id задачи, которую связывают.</param>
+    /// <param name="linkType">Тип связи.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="account">Аккаунт.</param>
+    Task CreateTaskLinkDefaultAsync(long taskFromLink, long taskToLink, LinkTypeEnum linkType, long projectId,
+        string account);
 }

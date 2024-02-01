@@ -22,10 +22,12 @@ using LeokaEstetica.Platform.Models.Dto.ProjectManagement.Output;
 using LeokaEstetica.Platform.Models.Entities.Profile;
 using LeokaEstetica.Platform.Models.Entities.ProjectManagment;
 using LeokaEstetica.Platform.Models.Entities.Template;
+using LeokaEstetica.Platform.Models.Enums;
 using LeokaEstetica.Platform.Services.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Services.Factors;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using Enum = System.Enum;
 
 [assembly: InternalsVisibleTo("LeokaEstetica.Platform.Tests")]
 
@@ -1428,6 +1430,23 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         }
 
         await _projectManagmentRepository.DetachTaskTagAsync(tagId, projectTaskId, projectId);
+
+        // TODO: Тут добавить запись активности пользователя по userId.
+    }
+
+    /// <inheritdoc />
+    public async Task CreateTaskLinkDefaultAsync(long taskFromLink, long taskToLink, LinkTypeEnum linkType,
+        long projectId, string account)
+    {
+        var userId = await _userRepository.GetUserByEmailAsync(account);
+
+        if (userId <= 0)
+        {
+            var ex = new NotFoundUserIdByAccountException(account);
+            throw ex;
+        }
+
+        await _projectManagmentRepository.CreateTaskLinkDefaultAsync(taskFromLink, taskToLink, linkType, projectId);
 
         // TODO: Тут добавить запись активности пользователя по userId.
     }

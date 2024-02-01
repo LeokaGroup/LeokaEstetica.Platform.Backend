@@ -750,4 +750,40 @@ public class ProjectManagmentController : BaseController
         await _projectManagmentService.DetachTaskTagAsync(projectTaskTagInput.TagId, projectTaskTagInput.ProjectTaskId,
             projectTaskTagInput.ProjectId, GetUserName());
     }
+
+    /// <summary>
+    /// Метод создает связь с задачей (обычная связь).
+    /// </summary>
+    /// <param name="taskLinkInput">Входная модель.</param>
+    [HttpPost]
+    [Route("task-link-default")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)] 
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task CreateTaskLinkDefaultAsync([FromBody] TaskLinkInput taskLinkInput)
+    {
+        var validator = await new TaskLinkValidator().ValidateAsync(taskLinkInput);
+
+        if (validator.Errors.Any())
+        {
+            var exceptions = new List<InvalidOperationException>();
+
+            foreach (var err in validator.Errors)
+            {
+                exceptions.Add(new InvalidOperationException(err.ErrorMessage));
+            }
+            
+            var ex = new AggregateException("Ошибка создания связи задачи (обычная связь).", exceptions);
+            _logger.LogError(ex, ex.Message);
+            
+            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            
+            throw ex;
+        }
+
+        await _projectManagmentService.CreateTaskLinkDefaultAsync(taskLinkInput.TaskFromLink, taskLinkInput.TaskToLink,
+            taskLinkInput.LinkType, taskLinkInput.ProjectId, GetUserName());
+    }
 }

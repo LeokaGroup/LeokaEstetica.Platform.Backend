@@ -7,8 +7,10 @@ using LeokaEstetica.Platform.Models.Dto.Output.Template;
 using LeokaEstetica.Platform.Models.Dto.ProjectManagement.Output;
 using LeokaEstetica.Platform.Models.Entities.ProjectManagment;
 using LeokaEstetica.Platform.Models.Entities.Template;
+using LeokaEstetica.Platform.Models.Enums;
 using SqlKata;
 using SqlKata.Compilers;
+using Enum = LeokaEstetica.Platform.Models.Enums.Enum;
 
 namespace LeokaEstetica.Platform.Database.Repositories.ProjectManagment;
 
@@ -649,6 +651,30 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
                       AND project_id = @project_id";
                       
         await connection.ExecuteAsync(sql, parameters);
+    }
+
+    /// <inheritdoc />
+    public async Task CreateTaskLinkDefaultAsync(long taskFromLink, long taskToLink, LinkTypeEnum linkType,
+        long projectId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+        var firstParameters = new DynamicParameters();
+        firstParameters.Add("@task_id", taskFromLink);
+        firstParameters.Add("@link_type", new Enum(linkType));
+        firstParameters.Add("@is_blocked", false);
+        firstParameters.Add("@project_id", projectId);
+        
+        var secondParameters = new DynamicParameters();
+        secondParameters.Add("@task_id", taskToLink);
+        secondParameters.Add("@link_type", new Enum(linkType));
+        secondParameters.Add("@is_blocked", false);
+        secondParameters.Add("@project_id", projectId);
+
+        var query = @"INSERT INTO project_management.task_links (task_id, link_type, is_blocked, project_id) 
+                      VALUES (@task_id, @link_type, @is_blocked, @project_id)";
+
+        await connection.ExecuteAsync(query, firstParameters);
+        await connection.ExecuteAsync(query, secondParameters);
     }
 
     #endregion

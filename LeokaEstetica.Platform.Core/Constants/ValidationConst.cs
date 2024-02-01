@@ -197,5 +197,20 @@ public static class ValidationConst
         /// Если не передали Id тега задачи.
         /// </summary>
         public const string NOT_VALID_TASK_TAG_ID = "Id тега задачи не передан.";
+
+        /// <summary>
+        /// Если не передали Id задачи, от которой исходит связь не передана.
+        /// </summary>
+        public const string NOT_VALID_TASK_FROM_LINK = "Id задачи, от которой исходит связь не передана.";
+        
+        /// <summary>
+        /// Если не передали Id задачи, которую связывают.
+        /// </summary>
+        public const string NOT_VALID_TASK_TO_LINK = "Id задачи, которую связывают.";
+
+        /// <summary>
+        /// Если передали недопустимый тип связи.
+        /// </summary>
+        public const string NOT_VALID_TASK_LINK_ENUM_VALUE = "Значение не является допустимым типом связи.";
     }
 }
