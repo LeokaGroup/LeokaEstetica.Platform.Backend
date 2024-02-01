@@ -1,1 +1,1 @@
-CREATE TYPE project_management.link_type_enum AS ENUM ('link', 'parent', 'child');
+CREATE TYPE project_management.link_type_enum AS ENUM ('link', 'parent', 'child', 'depend');
