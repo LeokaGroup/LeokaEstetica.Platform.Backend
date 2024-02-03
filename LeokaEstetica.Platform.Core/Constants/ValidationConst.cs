@@ -206,7 +206,7 @@ public static class ValidationConst
         /// <summary>
         /// Если не передали Id задачи, которую связывают.
         /// </summary>
-        public const string NOT_VALID_TASK_TO_LINK = "Id задачи, которую связывают.";
+        public const string NOT_VALID_TASK_TO_LINK = "Id задачи, которую связывают не передали.";
 
         /// <summary>
         /// Если передали недопустимый тип связи.

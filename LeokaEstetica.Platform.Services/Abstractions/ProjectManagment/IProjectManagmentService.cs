@@ -207,4 +207,12 @@ public interface IProjectManagmentService
     /// <param name="account">Аккаунт.</param>
     Task CreateTaskLinkDefaultAsync(long taskFromLink, long taskToLink, LinkTypeEnum linkType, long projectId,
         string account);
+
+    /// <summary>
+    /// Метод получает связи задачи (обычные связи).
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
+    /// <returns>Список связей задачи.</returns>
+    Task<IEnumerable<GetTaskLinkOutput>> GetTaskLinkDefaultAsync(long projectId, long projectTaskId);
 }

@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using AutoMapper;
+using Dapper;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.Base.Extensions.StringExtensions;
 using LeokaEstetica.Platform.Base.Factors;
@@ -1451,6 +1452,46 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         // TODO: Тут добавить запись активности пользователя по userId.
     }
 
+    /// <inheritdoc />
+    public async Task<IEnumerable<GetTaskLinkOutput>> GetTaskLinkDefaultAsync(long projectId, long projectTaskId)
+    {
+        try
+        {
+            var tasks = (await _projectManagmentRepository
+                    .GetProjectTaskByProjectIdProjectTaskIdAsync(projectId, projectTaskId))
+                .AsList();
+
+            if (tasks is null || !tasks.Any())
+            {
+                throw new InvalidOperationException(
+                    "Не удалось получить связи задачи по Id проекта и Id задачи в рамках проекта." +
+                    $"ProjectId: {projectId}. ProjectTaskId: {projectTaskId}.");
+            }
+            
+            // Текущую задачу не надо выводить в связях текущей задачи.
+            var removedCurrentTask = tasks.Find(x => x.ProjectTaskId == projectTaskId);
+
+            if (removedCurrentTask is null)
+            {
+                throw new InvalidOperationException(
+                    "Не удалось получить текущую задачу для исключения ее из связей." +
+                    $"ProjectId: {projectId}. ProjectTaskId: {projectTaskId}.");
+            }
+
+            tasks.Remove(removedCurrentTask);
+
+            var result = await ModifyTaskLinkResultAsync(tasks);
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
     #endregion
 
     #region Приватные методы.
@@ -1657,6 +1698,47 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 ps.Total = ps.ProjectManagmentTasks.Count;
             }
         }
+    }
+
+    /// <summary>
+    /// Метод модифицирует результаты связей задачи.
+    /// </summary>
+    /// <param name="links">Связи задач.</param>
+    /// <returns>Модифицированные данные связей.</returns>
+    private async Task<IEnumerable<GetTaskLinkOutput>> ModifyTaskLinkResultAsync(List<ProjectTaskEntity> tasks)
+    {
+        var result = new List<GetTaskLinkOutput>();
+        
+        // Получаем имена исполнителей задач.
+        var executorIds = tasks.Where(x => x.ExecutorId > 0).Select(x => x.ExecutorId);
+        var executors = await _userRepository.GetExecutorNamesByExecutorIdsAsync(executorIds);
+
+        if (executors.Count == 0)
+        {
+            throw new InvalidOperationException("Не удалось получить исполнителей задач.");
+        }
+        
+        var statusIds = tasks.Select(x => x.TaskStatusId);
+        var statuseNames = (await _projectManagmentTemplateRepository.GetTaskTemplateStatusesAsync(statusIds))
+            .ToList();
+
+        // Наполняем выходные данные задачи.
+        foreach (var t in tasks)
+        {
+            var link = new GetTaskLinkOutput
+            {
+                ExecutorName = executors.TryGet(t.ExecutorId).FullName,
+                TaskName = t.Name,
+                TaskCode = null, /// TODO: Пока не используется. Вернуться, когда будет реализован вывод названия проекта.
+                TaskStatusName = statuseNames.Find(x => x.StatusId == t.TaskStatusId)?.StatusName,
+                LastUpdated = t.Updated.ToString("f"), // Например, 17 июля 2015 г. 17:04
+                ProjectTaskId = t.ProjectTaskId
+            };
+
+            result.Add(link);
+        }
+
+        return result;
     }
 
     #endregion

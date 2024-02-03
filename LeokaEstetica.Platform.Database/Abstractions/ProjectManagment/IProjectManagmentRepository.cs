@@ -228,4 +228,13 @@ public interface IProjectManagmentRepository
     /// <param name="linkType">Тип связи.</param>
     /// <param name="projectId">Id проекта.</param>
     Task CreateTaskLinkDefaultAsync(long taskFromLink, long taskToLink, LinkTypeEnum linkType, long projectId);
+
+    /// <summary>
+    /// Метод получает задачу по Id проекта и Id задачи в рамках проекта.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
+    /// <returns>Данные задачи.</returns>
+    Task<IEnumerable<ProjectTaskEntity>> GetProjectTaskByProjectIdProjectTaskIdAsync(long projectId,
+        long projectTaskId);
 }

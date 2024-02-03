@@ -786,4 +786,44 @@ public class ProjectManagmentController : BaseController
         await _projectManagmentService.CreateTaskLinkDefaultAsync(taskLinkInput.TaskFromLink, taskLinkInput.TaskToLink,
             taskLinkInput.LinkType, taskLinkInput.ProjectId, GetUserName());
     }
+
+    /// <summary>
+    /// Метод получает связи задачи (обычные связи).
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
+    /// <returns>Список связей задачи.</returns>
+    [HttpGet]
+    [Route("task-link-default")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<GetTaskLinkOutput>))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)] 
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<IEnumerable<GetTaskLinkOutput>> GetTaskLinkDefaultAsync([FromQuery] long projectId,
+        [FromQuery] long projectTaskId)
+    {
+        var validator = await new GetTaskLinkValidator().ValidateAsync((projectId, projectTaskId));
+
+        if (validator.Errors.Any())
+        {
+            var exceptions = new List<InvalidOperationException>();
+
+            foreach (var err in validator.Errors)
+            {
+                exceptions.Add(new InvalidOperationException(err.ErrorMessage));
+            }
+            
+            var ex = new AggregateException("Ошибка получения связей задачи (обычные связи).", exceptions);
+            _logger.LogError(ex, ex.Message);
+            
+            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            
+            throw ex;
+        }
+
+        var result = await _projectManagmentService.GetTaskLinkDefaultAsync(projectId, projectTaskId);
+
+        return result;
+    }
 }

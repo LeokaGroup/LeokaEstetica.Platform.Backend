@@ -245,13 +245,16 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
     public async Task<ProjectTaskEntity> GetTaskDetailsByTaskIdAsync(long projectTaskId, long projectId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
-        var compiler = new PostgresCompiler();
-        var query = new Query("project_management.project_tasks")
-            .Where("project_id", projectId)
-            .Where("project_task_id", projectTaskId);
-        var sql = compiler.Compile(query).ToString();
+        var parameters = new DynamicParameters();
+        parameters.Add("@project_id", projectId);
+        parameters.Add("@project_task_id", projectTaskId);
 
-        var result = await connection.QueryFirstOrDefaultAsync<ProjectTaskEntity>(sql);
+        var query = @"SELECT task_id, task_status_id, author_id, watcher_ids, name, details, created, updated,
+                      project_id, project_task_id, resolution_id, tag_ids, task_type_id, executor_id, priority_id 
+                      FROM project_management.project_tasks 
+                      WHERE project_id = @project_id AND project_task_id = @project_task_id";
+
+        var result = await connection.QueryFirstOrDefaultAsync<ProjectTaskEntity>(query, parameters);
 
         return result;
     }
@@ -675,6 +678,27 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
 
         await connection.ExecuteAsync(query, firstParameters);
         await connection.ExecuteAsync(query, secondParameters);
+    }
+
+    /// <inheritdoc />
+    public async Task<IEnumerable<ProjectTaskEntity>> GetProjectTaskByProjectIdProjectTaskIdAsync(long projectId,
+        long projectTaskId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@project_id", projectId);
+        parameters.Add("@project_task_id", projectTaskId);
+
+        var query = @"SELECT task_id, task_status_id, author_id, watcher_ids, name, details, created, updated,
+                      project_id, project_task_id, resolution_id, tag_ids, task_type_id, executor_id, priority_id 
+                      FROM project_management.project_tasks 
+                      WHERE project_id = @project_id 
+                        AND project_task_id = @project_task_id";
+        
+        var result = await connection.QueryAsync<ProjectTaskEntity>(query, parameters);
+
+        return result;
     }
 
     #endregion
