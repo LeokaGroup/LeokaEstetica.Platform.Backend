@@ -1457,9 +1457,29 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     {
         try
         {
-            var tasks = (await _projectManagmentRepository
-                    .GetProjectTaskByProjectIdProjectTaskIdAsync(projectId, projectTaskId))
-                .AsList();
+            var currentTask = await _projectManagmentRepository.GetTaskDetailsByTaskIdAsync(projectTaskId,
+                projectId);
+                
+            if (currentTask is null)
+            {
+                throw new InvalidOperationException(
+                    "Не удалось получить текущую задачу." +
+                    $"ProjectId: {projectId}. ProjectTaskId: {projectTaskId}.");
+            }
+
+            var links = (await _projectManagmentRepository.GetTaskLinksByProjectIdProjectTaskIdAsync(projectId,
+                currentTask.TaskId))
+                ?.AsList();
+
+            if (links is null || !links.Any())
+            {
+                return Enumerable.Empty<GetTaskLinkOutput>();
+            }
+
+            var linkIds = links.Select(x => x.TaskId);
+            
+            var tasks = (await _projectManagmentRepository.GetProjectTaskByProjectIdTaskIdsAsync(projectId, linkIds))
+                ?.AsList();
 
             if (tasks is null || !tasks.Any())
             {

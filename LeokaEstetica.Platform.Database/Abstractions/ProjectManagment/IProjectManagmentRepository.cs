@@ -216,7 +216,7 @@ public interface IProjectManagmentRepository
     /// Метод отвязывает тег от задачи проекта.
     /// </summary>
     /// <param name="tagId">Id тега, который нужно привязать к задаче.</param>
-    /// <param name="taskId">Id задачи в рамках проекта.</param>
+    /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
     /// <param name="projectId">Id проекта.</param>
     Task DetachTaskTagAsync(int tagId, long projectTaskId, long projectId);
     
@@ -230,11 +230,19 @@ public interface IProjectManagmentRepository
     Task CreateTaskLinkDefaultAsync(long taskFromLink, long taskToLink, LinkTypeEnum linkType, long projectId);
 
     /// <summary>
-    /// Метод получает задачу по Id проекта и Id задачи в рамках проекта.
+    /// Метод получает список задач по Id проекта и списку Id задач.
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
-    /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
+    /// <param name="taskId">Id задачи.</param>
     /// <returns>Данные задачи.</returns>
-    Task<IEnumerable<ProjectTaskEntity>> GetProjectTaskByProjectIdProjectTaskIdAsync(long projectId,
-        long projectTaskId);
+    Task<IEnumerable<ProjectTaskEntity>> GetProjectTaskByProjectIdTaskIdsAsync(long projectId,
+        IEnumerable<long> taskId);
+
+    /// <summary>
+    /// Метод получает связи задачи.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="taskId">Id задачи.</param>
+    /// <returns>Список связей.</returns>
+    Task<IEnumerable<TaskLinkEntity>> GetTaskLinksByProjectIdProjectTaskIdAsync(long projectId, long taskId);
 }

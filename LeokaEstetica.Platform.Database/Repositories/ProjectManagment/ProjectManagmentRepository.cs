@@ -681,22 +681,55 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<ProjectTaskEntity>> GetProjectTaskByProjectIdProjectTaskIdAsync(long projectId,
-        long projectTaskId)
+    public async Task<IEnumerable<ProjectTaskEntity>> GetProjectTaskByProjectIdTaskIdsAsync(long projectId,
+        IEnumerable<long> taskId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
 
         var parameters = new DynamicParameters();
         parameters.Add("@project_id", projectId);
-        parameters.Add("@project_task_id", projectTaskId);
+        parameters.Add("@task_ids", taskId);
 
-        var query = @"SELECT task_id, task_status_id, author_id, watcher_ids, name, details, created, updated,
-                      project_id, project_task_id, resolution_id, tag_ids, task_type_id, executor_id, priority_id 
+        var query = @"SELECT task_id,
+                             task_status_id,
+                             author_id,
+                             watcher_ids,
+                             name,
+                             details,
+                             created,
+                             updated,
+                             project_id,
+                             project_task_id,
+                             resolution_id,
+                             tag_ids,
+                             task_type_id,
+                             executor_id,
+                             priority_id 
                       FROM project_management.project_tasks 
                       WHERE project_id = @project_id 
-                        AND project_task_id = @project_task_id";
+                        AND task_id = ANY(@task_ids)";
         
         var result = await connection.QueryAsync<ProjectTaskEntity>(query, parameters);
+
+        return result;
+    }
+
+    /// <inheritdoc />
+    public async Task<IEnumerable<TaskLinkEntity>> GetTaskLinksByProjectIdProjectTaskIdAsync(long projectId,
+        long taskId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@project_id", projectId);
+        parameters.Add("@task_id", taskId);
+
+        var query = @"SELECT link_id, task_id, link_type, parent_id, child_id, is_blocked, project_id 
+                      FROM project_management.task_links 
+                      WHERE project_id = @project_id 
+                        AND task_id = @task_id";
+
+        var result = await connection.QueryAsync<TaskLinkEntity>(query, parameters);
 
         return result;
     }

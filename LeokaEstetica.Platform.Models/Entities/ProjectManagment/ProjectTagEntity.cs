@@ -48,7 +48,7 @@ public class ProjectTagEntity
     public ObjectTagTypeEnum ObjectTagTypeValue { get; set; }
     
     /// <summary>
-    /// Статус полёта
+    /// Тип тега.
     /// </summary>
     [NotMapped]
     public IEnum ObjectTagType
