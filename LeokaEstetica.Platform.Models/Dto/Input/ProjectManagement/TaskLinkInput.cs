@@ -18,7 +18,7 @@ public class TaskLinkInput
     public long TaskToLink { get; set; }
 
     /// <summary>
-    /// Типа связи задачи.
+    /// Тип связи задачи.
     /// </summary>
     public LinkTypeEnum LinkType { get; set; }
 

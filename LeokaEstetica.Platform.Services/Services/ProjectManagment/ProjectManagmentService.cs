@@ -1439,6 +1439,11 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     public async Task CreateTaskLinkDefaultAsync(long taskFromLink, long taskToLink, LinkTypeEnum linkType,
         long projectId, string account)
     {
+        if (linkType != LinkTypeEnum.Link)
+        {
+            throw new InvalidOperationException($"Тип связи {linkType} не является обычной связью.");
+        }
+        
         var userId = await _userRepository.GetUserByEmailAsync(account);
 
         if (userId <= 0)
@@ -1446,8 +1451,19 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             var ex = new NotFoundUserIdByAccountException(account);
             throw ex;
         }
+        
+        var currentTask = await _projectManagmentRepository.GetTaskDetailsByTaskIdAsync(taskFromLink,
+            projectId);
+                
+        if (currentTask is null)
+        {
+            throw new InvalidOperationException(
+                "Не удалось получить текущую задачу." +
+                $"ProjectId: {projectId}. ProjectTaskId: {taskFromLink}.");
+        }
 
-        await _projectManagmentRepository.CreateTaskLinkDefaultAsync(taskFromLink, taskToLink, linkType, projectId);
+        await _projectManagmentRepository.CreateTaskLinkDefaultAsync(currentTask.TaskId, taskToLink, linkType,
+            projectId);
 
         // TODO: Тут добавить запись активности пользователя по userId.
     }
