@@ -15,9 +15,14 @@ public class TaskLinkEntity
     public long LinkId { get; set; }
 
     /// <summary>
-    /// Id задачи.
+    /// Id задачи, которую связывают.
     /// </summary>
-    public long TaskId { get; set; }
+    public long? FromTaskId { get; set; }
+    
+    /// <summary>
+    /// Id задачи, с которой связывают.
+    /// </summary>
+    public long? ToTaskId { get; set; }
 
     /// <summary>
     /// Значение типа связи.

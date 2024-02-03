@@ -242,7 +242,7 @@ public interface IProjectManagmentRepository
     /// Метод получает связи задачи.
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
-    /// <param name="taskId">Id задачи.</param>
+    /// <param name="fromTaskId">Id задачи, которую связывают.</param>
     /// <returns>Список связей.</returns>
-    Task<IEnumerable<TaskLinkEntity>> GetTaskLinksByProjectIdProjectTaskIdAsync(long projectId, long taskId);
+    Task<IEnumerable<TaskLinkEntity>> GetTaskLinksByProjectIdProjectTaskIdAsync(long projectId, long fromTaskId);
 }

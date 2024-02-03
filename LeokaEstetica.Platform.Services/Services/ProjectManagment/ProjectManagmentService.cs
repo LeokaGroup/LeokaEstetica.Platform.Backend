@@ -1476,7 +1476,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 return Enumerable.Empty<GetTaskLinkOutput>();
             }
 
-            var linkIds = links.Select(x => x.TaskId);
+            var linkIds = links.Select(x => x.ToTaskId!.Value);
             
             var tasks = (await _projectManagmentRepository.GetProjectTaskByProjectIdTaskIdsAsync(projectId, linkIds))
                 ?.AsList();
@@ -1487,18 +1487,6 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                     "Не удалось получить связи задачи по Id проекта и Id задачи в рамках проекта." +
                     $"ProjectId: {projectId}. ProjectTaskId: {projectTaskId}.");
             }
-            
-            // Текущую задачу не надо выводить в связях текущей задачи.
-            var removedCurrentTask = tasks.Find(x => x.ProjectTaskId == projectTaskId);
-
-            if (removedCurrentTask is null)
-            {
-                throw new InvalidOperationException(
-                    "Не удалось получить текущую задачу для исключения ее из связей." +
-                    $"ProjectId: {projectId}. ProjectTaskId: {projectTaskId}.");
-            }
-
-            tasks.Remove(removedCurrentTask);
 
             var result = await ModifyTaskLinkResultAsync(tasks);
 

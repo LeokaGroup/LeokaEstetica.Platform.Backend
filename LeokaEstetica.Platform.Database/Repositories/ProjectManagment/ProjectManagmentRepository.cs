@@ -682,13 +682,13 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
 
     /// <inheritdoc />
     public async Task<IEnumerable<ProjectTaskEntity>> GetProjectTaskByProjectIdTaskIdsAsync(long projectId,
-        IEnumerable<long> taskId)
+        IEnumerable<long> taskIds)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
 
         var parameters = new DynamicParameters();
         parameters.Add("@project_id", projectId);
-        parameters.Add("@task_ids", taskId);
+        parameters.Add("@task_ids", taskIds.AsList());
 
         var query = @"SELECT task_id,
                              task_status_id,
@@ -716,18 +716,18 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
 
     /// <inheritdoc />
     public async Task<IEnumerable<TaskLinkEntity>> GetTaskLinksByProjectIdProjectTaskIdAsync(long projectId,
-        long taskId)
+        long fromTaskId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
 
         var parameters = new DynamicParameters();
         parameters.Add("@project_id", projectId);
-        parameters.Add("@task_id", taskId);
+        parameters.Add("@from_task_id", fromTaskId);
 
-        var query = @"SELECT link_id, task_id, link_type, parent_id, child_id, is_blocked, project_id 
+        var query = @"SELECT link_id, from_task_id, to_task_id, link_type, parent_id, child_id, is_blocked, project_id 
                       FROM project_management.task_links 
                       WHERE project_id = @project_id 
-                        AND task_id = @task_id";
+                        AND from_task_id = @from_task_id";
 
         var result = await connection.QueryAsync<TaskLinkEntity>(query, parameters);
 
