@@ -694,7 +694,7 @@ public class ProjectManagmentController : BaseController
     [ProducesResponseType(404)]
     public async Task AttachTaskTagAsync([FromBody] ProjectTaskTagInput projectTaskTagInput)
     {
-        var validator = await new AttachProjectTaskTagValidator().ValidateAsync(projectTaskTagInput);
+        var validator = await new ProjectTaskTagValidator().ValidateAsync(projectTaskTagInput);
 
         if (validator.Errors.Any())
         {
@@ -730,7 +730,7 @@ public class ProjectManagmentController : BaseController
     [ProducesResponseType(404)]
     public async Task DetachTaskTagAsync([FromBody] ProjectTaskTagInput projectTaskTagInput)
     {
-        var validator = await new AttachProjectTaskTagValidator().ValidateAsync(projectTaskTagInput);
+        var validator = await new ProjectTaskTagValidator().ValidateAsync(projectTaskTagInput);
 
         if (validator.Errors.Any())
         {
@@ -741,7 +741,7 @@ public class ProjectManagmentController : BaseController
                 exceptions.Add(new InvalidOperationException(err.ErrorMessage));
             }
             
-            var ex = new AggregateException("Ошибка привязки тега к задаче.", exceptions);
+            var ex = new AggregateException("Ошибка отвязки тега от задачи.", exceptions);
             _logger.LogError(ex, ex.Message);
             
             await _pachcaService.Value.SendNotificationErrorAsync(ex);
@@ -886,5 +886,149 @@ public class ProjectManagmentController : BaseController
         var result = Enum.GetNames(typeof(LinkTypeEnum)).Select(x => x.ToString());
 
         return Task.FromResult(result);
+    }
+
+    /// <summary>
+    /// Метод привязывает наблюдателя задачи.
+    /// </summary>
+    /// <param name="projectTaskWatcherInput">Входная модель.</param>
+    [HttpPatch]
+    [Route("attach-task-watcher")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)] 
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task AttachTaskWatcherAsync([FromBody] ProjectTaskWatcherInput projectTaskWatcherInput)
+    {
+        var validator = await new ProjectTaskWatcherValidator().ValidateAsync(projectTaskWatcherInput);
+
+        if (validator.Errors.Any())
+        {
+            var exceptions = new List<InvalidOperationException>();
+
+            foreach (var err in validator.Errors)
+            {
+                exceptions.Add(new InvalidOperationException(err.ErrorMessage));
+            }
+            
+            var ex = new AggregateException("Ошибка привязки наблюдателя задачи.", exceptions);
+            _logger.LogError(ex, ex.Message);
+            
+            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            
+            throw ex;
+        }
+
+        await _projectManagmentService.AttachTaskWatcherAsync(projectTaskWatcherInput.WatcherId,
+            projectTaskWatcherInput.ProjectTaskId, projectTaskWatcherInput.ProjectId, GetUserName());
+    }
+    
+    /// <summary>
+    /// Метод отвязывает наблюдателя задачи.
+    /// </summary>
+    /// <param name="projectTaskWatcherInput">Входная модель.</param>
+    [HttpPatch]
+    [Route("detach-task-watcher")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)] 
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task DetachTaskWatcherAsync([FromBody] ProjectTaskWatcherInput projectTaskWatcherInput)
+    {
+        var validator = await new ProjectTaskWatcherValidator().ValidateAsync(projectTaskWatcherInput);
+
+        if (validator.Errors.Any())
+        {
+            var exceptions = new List<InvalidOperationException>();
+
+            foreach (var err in validator.Errors)
+            {
+                exceptions.Add(new InvalidOperationException(err.ErrorMessage));
+            }
+            
+            var ex = new AggregateException("Ошибка отвязки наблюдателя задачи.", exceptions);
+            _logger.LogError(ex, ex.Message);
+            
+            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            
+            throw ex;
+        }
+
+        await _projectManagmentService.DetachTaskWatcherAsync(projectTaskWatcherInput.WatcherId,
+            projectTaskWatcherInput.ProjectTaskId, projectTaskWatcherInput.ProjectId, GetUserName());
+    }
+
+    /// <summary>
+    /// Метод обновляет исполнителя задачи.
+    /// </summary>
+    /// <param name="projectTaskExecutorInput">Входная модель.</param>
+    [HttpPatch]
+    [Route("task-executor")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)] 
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task UpdateTaskExecutorAsync([FromBody] ProjectTaskExecutorInput projectTaskExecutorInput)
+    {
+        var validator = await new ProjectTaskExecutorValidator().ValidateAsync(projectTaskExecutorInput);
+
+        if (validator.Errors.Any())
+        {
+            var exceptions = new List<InvalidOperationException>();
+
+            foreach (var err in validator.Errors)
+            {
+                exceptions.Add(new InvalidOperationException(err.ErrorMessage));
+            }
+            
+            var ex = new AggregateException("Ошибка изменения исполнителя задачи.", exceptions);
+            _logger.LogError(ex, ex.Message);
+            
+            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            
+            throw ex;
+        }
+
+        await _projectManagmentService.UpdateTaskExecutorAsync(projectTaskExecutorInput.ExecutorId,
+            projectTaskExecutorInput.ProjectTaskId, projectTaskExecutorInput.ProjectId, GetUserName());
+    }
+
+    /// <summary>
+    /// Метод обновляет приоритет задачи.
+    /// </summary>
+    /// <param name="taskPriorityInput">Входная модель.</param>
+    [HttpPatch]
+    [Route("task-priority")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task UpdateTaskPriorityAsync([FromBody] TaskPriorityInput taskPriorityInput)
+    {
+        var validator = await new UpdateTaskPriorityValidator().ValidateAsync(taskPriorityInput);
+
+        if (validator.Errors.Any())
+        {
+            var exceptions = new List<InvalidOperationException>();
+
+            foreach (var err in validator.Errors)
+            {
+                exceptions.Add(new InvalidOperationException(err.ErrorMessage));
+            }
+            
+            var ex = new AggregateException("Ошибка привязки тега к задаче.", exceptions);
+            _logger.LogError(ex, ex.Message);
+            
+            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            
+            throw ex;
+        }
+
+        await _projectManagmentService.UpdateTaskPriorityAsync(taskPriorityInput.PriorityId,
+            taskPriorityInput.ProjectTaskId, taskPriorityInput.ProjectId, GetUserName());
     }
 }

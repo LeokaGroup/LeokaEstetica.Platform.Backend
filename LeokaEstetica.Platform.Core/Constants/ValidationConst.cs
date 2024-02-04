@@ -212,5 +212,20 @@ public static class ValidationConst
         /// Если передали недопустимый тип связи.
         /// </summary>
         public const string NOT_VALID_TASK_LINK_ENUM_VALUE = "Значение не является допустимым типом связи.";
+
+        /// <summary>
+        /// Если не передали Id наблюдателя задачи.
+        /// </summary>
+        public const string NOT_VALID_TASK_WATCHER_ID = "Id наблюдателя задачи не передан.";
+
+        /// <summary>
+        /// Если не передали Id исполнителя задачи.
+        /// </summary>
+        public const string NOT_VALID_TASK_EXECUTOR_ID = "Id исполнителя задачи не передан.";
+
+        /// <summary>
+        /// Если не передали Id приоритета.
+        /// </summary>
+        public const string NOT_VALID_TASK_PRIORITY_ID = "Id приоритета задачи не передан.";
     }
 }

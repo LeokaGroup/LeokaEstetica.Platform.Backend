@@ -5,14 +5,14 @@ using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
 namespace LeokaEstetica.Platform.ProjectManagment.Validators;
 
 /// <summary>
-/// Класс валидатора
+/// Класс валидатора наблюдателя задачи.
 /// </summary>
-public class AttachProjectTaskTagValidator : AbstractValidator<ProjectTaskTagInput>
+public class ProjectTaskWatcherValidator : AbstractValidator<ProjectTaskWatcherInput>
 {
     /// <summary>
     /// Конструктор.
     /// </summary>
-    public AttachProjectTaskTagValidator()
+    public ProjectTaskWatcherValidator()
     {
         RuleFor(p => p.ProjectId)
             .Must(p => p > 0)
@@ -22,8 +22,8 @@ public class AttachProjectTaskTagValidator : AbstractValidator<ProjectTaskTagInp
             .Must(p => p > 0)
             .WithMessage(ValidationConst.ProjectManagmentValidation.NOT_VALID_PROJECT_TASK_ID);
             
-        RuleFor(p => p.TagId)
+        RuleFor(p => p.WatcherId)
             .Must(p => p > 0)
-            .WithMessage(ValidationConst.ProjectManagmentValidation.NOT_VALID_TASK_TAG_ID);
+            .WithMessage(ValidationConst.ProjectManagmentValidation.NOT_VALID_TASK_WATCHER_ID);
     }
 }
