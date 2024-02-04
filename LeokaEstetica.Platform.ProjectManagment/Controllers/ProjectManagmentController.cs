@@ -13,6 +13,7 @@ using LeokaEstetica.Platform.ProjectManagment.Validators;
 using LeokaEstetica.Platform.Services.Abstractions.Project;
 using LeokaEstetica.Platform.Services.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Services.Abstractions.User;
+using LeokaEstetica.Platform.Services.Factors;
 using Microsoft.AspNetCore.Mvc;
 using Enum = System.Enum;
 
@@ -871,21 +872,21 @@ public class ProjectManagmentController : BaseController
     }
 
     /// <summary>
-    /// Метод получает 
+    /// Метод получает список типов связей задач.
     /// </summary>
-    /// <returns></returns>
+    /// <returns>Список типов связей задач.</returns>
     [HttpGet]
     [Route("link-types")]
-    [ProducesResponseType(200, Type = typeof(IEnumerable<string>))]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<KeyValuePair<string,string>>))]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)] 
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public Task<IEnumerable<string>> GetLinkTypesAsync()
+    public async Task<IEnumerable<KeyValuePair<string,string>>> GetLinkTypesAsync()
     {
-        var result = Enum.GetNames(typeof(LinkTypeEnum)).Select(x => x.ToString());
+        var result = await GetLinkTypeFactory.GetLinkTypes();
 
-        return Task.FromResult(result);
+        return await Task.FromResult(result);
     }
 
     /// <summary>

@@ -11,4 +11,9 @@ public class AvailableTaskLinkOutput : GetTaskLinkOutput
     /// Тип связи.
     /// </summary>
     public LinkTypeEnum LinkType { get; set; }
+
+    /// <summary>
+    /// Текст для поиска. Состоит из кода задачи + название задачи.
+    /// </summary>
+    public string FilterText => "#" + TaskCode + " " + TaskName;
 }

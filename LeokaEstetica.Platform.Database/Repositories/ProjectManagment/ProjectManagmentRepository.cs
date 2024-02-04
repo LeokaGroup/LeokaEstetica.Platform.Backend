@@ -816,18 +816,21 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         parameters.Add("@project_id", projectId);
         parameters.Add("@link_type", new Enum(linkType));
 
-        var query = @"SELECT DISTINCT (pt.task_id),
-                                        pt.name,
-                                        pt.project_task_id,
-                                        pt.task_status_id,
-                                        pt.executor_id,
-                                        pt.priority_id 
+        var query = @"SELECT DISTINCT (pt.task_id) AS TaskId,
+                                        pt.name AS TaskName,
+                                        pt.project_task_id AS ProjectTaskId,
+                                        pt.task_status_id AS TaskStatusId,
+                                        pt.executor_id AS ExecutorId,
+                                        pt.priority_id AS PriorityId,
+                                        pt.updated AS LastUpdated,
+                                        pt.created 
                       FROM project_management.project_tasks AS pt 
                                LEFT JOIN project_management.task_links AS tl ON pt.task_id = tl.to_task_id 
                       WHERE pt.project_id = @project_id 
                         AND pt.task_id NOT IN (SELECT tl.to_task_id 
                                                FROM project_management.task_links 
-                                               WHERE tl.link_type = @link_type)";
+                                               WHERE tl.link_type = @link_type) 
+                       ORDER BY pt.created";
 
         var result = await connection.QueryAsync<AvailableTaskLinkOutput>(query, parameters);
 

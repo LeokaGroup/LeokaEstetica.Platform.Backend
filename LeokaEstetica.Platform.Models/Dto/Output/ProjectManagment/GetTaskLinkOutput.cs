@@ -36,4 +36,24 @@ public class GetTaskLinkOutput
     /// Id задачи
     /// </summary>
     public long ProjectTaskId { get; set; }
+
+    /// <summary>
+    /// Id статуса.
+    /// </summary>
+    public long TaskStatusId { get; set; }
+
+    /// <summary>
+    /// Id исполнителя.
+    /// </summary>
+    public long ExecutorId { get; set; }
+
+    /// <summary>
+    /// Id приоритета.
+    /// </summary>
+    public int PriorityId { get; set; }
+
+    /// <summary>
+    /// Id задачи.
+    /// </summary>
+    public long TaskId { get; set; }
 }

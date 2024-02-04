@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using AutoMapper;
 using Dapper;
@@ -1596,7 +1597,31 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     {
         try
         {
-            var result = await _projectManagmentRepository.GetAvailableTaskLinkAsync(projectId, linkType);
+            var result = (await _projectManagmentRepository.GetAvailableTaskLinkAsync(projectId, linkType)).AsList();
+            
+            // Получаем имена исполнителей задач.
+            var executorIds = result.Where(x => x.ExecutorId > 0).Select(x => x.ExecutorId);
+            var executors = await _userRepository.GetExecutorNamesByExecutorIdsAsync(executorIds);
+
+            if (executors.Count == 0)
+            {
+                throw new InvalidOperationException("Не удалось получить исполнителей задач.");
+            }
+        
+            var statusIds = result.Select(x => x.TaskStatusId);
+            var statuseNames = (await _projectManagmentTemplateRepository.GetTaskTemplateStatusesAsync(statusIds))
+                .ToList();
+
+            // Наполняем выходные данные задач.
+            foreach (var t in result)
+            {
+                t.ExecutorName = executors.TryGet(t.ExecutorId).FullName;
+                t.TaskStatusName = statuseNames.Find(x => x.StatusId == t.TaskStatusId)?.StatusName;
+                
+                // Например, 17 июля 2015 г. 17:04
+                // t.LastUpdated = DateTime.ParseExact(t.LastUpdated, "f", null).ToString(CultureInfo.InvariantCulture);
+                t.LinkType = linkType;
+            }
 
             return result;
         }
