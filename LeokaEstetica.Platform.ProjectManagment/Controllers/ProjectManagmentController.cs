@@ -14,6 +14,7 @@ using LeokaEstetica.Platform.Services.Abstractions.Project;
 using LeokaEstetica.Platform.Services.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Services.Abstractions.User;
 using Microsoft.AspNetCore.Mvc;
+using Enum = System.Enum;
 
 namespace LeokaEstetica.Platform.ProjectManagment.Controllers;
 
@@ -867,5 +868,23 @@ public class ProjectManagmentController : BaseController
         var result = await _projectManagmentService.GetAvailableTaskLinkAsync(projectId, linkType);
 
         return result;
+    }
+
+    /// <summary>
+    /// Метод получает 
+    /// </summary>
+    /// <returns></returns>
+    [HttpGet]
+    [Route("link-types")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<string>))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)] 
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public Task<IEnumerable<string>> GetLinkTypesAsync()
+    {
+        var result = Enum.GetNames(typeof(LinkTypeEnum)).Select(x => x.ToString());
+
+        return Task.FromResult(result);
     }
 }
