@@ -215,4 +215,13 @@ public interface IProjectManagmentService
     /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
     /// <returns>Список связей задачи.</returns>
     Task<IEnumerable<GetTaskLinkOutput>> GetTaskLinkDefaultAsync(long projectId, long projectTaskId);
+
+    /// <summary>
+    /// Метод получает задачи проекта, которые доступны для создания связи с текущей задачей (разных типов связей).
+    /// Под текущей задачей понимается задача, которую просматривает пользователь.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="linkType">Тип связи.</param>
+    /// <returns>Список задач, доступных к созданию связи.</returns>
+    Task<IEnumerable<AvailableTaskLinkOutput>> GetAvailableTaskLinkAsync(long projectId, LinkTypeEnum linkType);
 }

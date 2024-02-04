@@ -7,6 +7,7 @@ using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
 using LeokaEstetica.Platform.Models.Dto.Output.Project;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.Template;
+using LeokaEstetica.Platform.Models.Enums;
 using LeokaEstetica.Platform.ProjectManagment.ValidationModels;
 using LeokaEstetica.Platform.ProjectManagment.Validators;
 using LeokaEstetica.Platform.Services.Abstractions.Project;
@@ -823,6 +824,47 @@ public class ProjectManagmentController : BaseController
         }
 
         var result = await _projectManagmentService.GetTaskLinkDefaultAsync(projectId, projectTaskId);
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод получает задачи проекта, которые доступны для создания связи с текущей задачей (разных типов связей).
+    /// Под текущей задачей понимается задача, которую просматривает пользователь.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="linkType">Тип связи.</param>
+    /// <returns>Список задач, доступных к созданию связи.</returns>
+    [HttpGet]
+    [Route("available-task-link")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<AvailableTaskLinkOutput>))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)] 
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<IEnumerable<AvailableTaskLinkOutput>> GetAvailableTaskLinkAsync([FromQuery] long projectId,
+        [FromQuery] LinkTypeEnum linkType)
+    {
+        var validator = await new AvailableTaskLinkValidator().ValidateAsync((projectId, linkType));
+
+        if (validator.Errors.Any())
+        {
+            var exceptions = new List<InvalidOperationException>();
+
+            foreach (var err in validator.Errors)
+            {
+                exceptions.Add(new InvalidOperationException(err.ErrorMessage));
+            }
+            
+            var ex = new AggregateException("Ошибка получения доступных задач для создания связи.", exceptions);
+            _logger.LogError(ex, ex.Message);
+            
+            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            
+            throw ex;
+        }
+
+        var result = await _projectManagmentService.GetAvailableTaskLinkAsync(projectId, linkType);
 
         return result;
     }

@@ -734,6 +734,34 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         return result;
     }
 
+    /// <inheritdoc />
+    public async Task<IEnumerable<AvailableTaskLinkOutput>> GetAvailableTaskLinkAsync(long projectId,
+        LinkTypeEnum linkType)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@project_id", projectId);
+        parameters.Add("@link_type", new Enum(linkType));
+
+        var query = @"SELECT DISTINCT (pt.task_id),
+                                        pt.name,
+                                        pt.project_task_id,
+                                        pt.task_status_id,
+                                        pt.executor_id,
+                                        pt.priority_id 
+                      FROM project_management.project_tasks AS pt 
+                               LEFT JOIN project_management.task_links AS tl ON pt.task_id = tl.to_task_id 
+                      WHERE pt.project_id = @project_id 
+                        AND pt.task_id NOT IN (SELECT tl.to_task_id 
+                                               FROM project_management.task_links 
+                                               WHERE tl.link_type = @link_type)";
+
+        var result = await connection.QueryAsync<AvailableTaskLinkOutput>(query, parameters);
+
+        return result;
+    }
+
     #endregion
 
     #region Приватные методы.

@@ -1516,6 +1516,24 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         }
     }
 
+    /// <inheritdoc />
+    public async Task<IEnumerable<AvailableTaskLinkOutput>> GetAvailableTaskLinkAsync(long projectId,
+        LinkTypeEnum linkType)
+    {
+        try
+        {
+            var result = await _projectManagmentRepository.GetAvailableTaskLinkAsync(projectId, linkType);
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
     #endregion
 
     #region Приватные методы.
