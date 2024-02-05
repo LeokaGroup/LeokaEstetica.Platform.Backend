@@ -56,4 +56,11 @@ public class GetTaskLinkOutput
     /// Id задачи.
     /// </summary>
     public long TaskId { get; set; }
+    
+    /// <summary>
+    /// Id блокируемой задачи.
+    /// Задача, которая ее блокирует определяется по признаку IsBlocked.
+    /// Блокируемая задача становится зависимой от блокирующей.
+    /// </summary>
+    public long? BlockedTaskId { get; set; }
 }

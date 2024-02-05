@@ -234,15 +234,11 @@ public interface IProjectManagmentService
     Task UpdateTaskPriorityAsync(int priorityId, long projectTaskId, long projectId, string account);
 
     /// <summary>
-    /// Метод создает связь с задачей (обычная связь).
+    /// Метод создает связь с задачей (в зависимости от типа связи, который передали).
     /// </summary>
-    /// <param name="taskFromLink">Id задачи, от которой исходит связь.</param>
-    /// <param name="taskToLink">Id задачи, которую связывают.</param>
-    /// <param name="linkType">Тип связи.</param>
-    /// <param name="projectId">Id проекта.</param>
+    /// <param name="taskLinkInputstring">Входная модель.</param>
     /// <param name="account">Аккаунт.</param>
-    Task CreateTaskLinkDefaultAsync(long taskFromLink, long taskToLink, LinkTypeEnum linkType, long projectId,
-        string account);
+    Task CreateTaskLinkAsync(TaskLinkInput taskLinkInput, string account);
 
     /// <summary>
     /// Метод получает связи задачи (обычные связи).

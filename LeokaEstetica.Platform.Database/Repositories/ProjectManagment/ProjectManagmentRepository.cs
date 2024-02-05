@@ -1,7 +1,9 @@
-﻿using Dapper;
+﻿using System.Data;
+using Dapper;
 using LeokaEstetica.Platform.Base.Abstractions.Connection;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.Base;
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
+using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.Template;
 using LeokaEstetica.Platform.Models.Dto.ProjectManagement.Output;
@@ -729,30 +731,34 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
     }
 
     /// <inheritdoc />
-    public async Task CreateTaskLinkDefaultAsync(long taskFromLink, long taskToLink, LinkTypeEnum linkType,
-        long projectId)
+    public async Task CreateTaskLinkAsync(TaskLinkInput taskLinkInputd)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
-        var firstParameters = new DynamicParameters();
-        firstParameters.Add("@from_task_id", taskFromLink);
-        firstParameters.Add("@to_task_id", taskToLink);
-        firstParameters.Add("@link_type", new Enum(linkType));
-        firstParameters.Add("@is_blocked", false);
-        firstParameters.Add("@project_id", projectId);
-        
-        var secondParameters = new DynamicParameters();
-        secondParameters.Add("@from_task_id", taskFromLink);
-        secondParameters.Add("@to_task_id", taskToLink);
-        secondParameters.Add("@link_type", new Enum(linkType));
-        secondParameters.Add("@is_blocked", false);
-        secondParameters.Add("@project_id", projectId);
+        var transaction = connection.BeginTransaction();
 
-        var query = @"INSERT INTO project_management.task_links (from_task_id, to_task_id, link_type, is_blocked,
-                                           project_id) 
-                      VALUES (@from_task_id, @to_task_id, @link_type, @is_blocked, @project_id)";
-
-        await connection.ExecuteAsync(query, firstParameters);
-        await connection.ExecuteAsync(query, secondParameters);
+        switch (taskLinkInputd.LinkType)
+        {
+            // Если создается обычная связь.
+            case LinkTypeEnum.Link:
+                await CreateTaskLinkDefaultAsync(taskLinkInputd.TaskFromLink, taskLinkInputd.TaskToLink,
+                    LinkTypeEnum.Link, taskLinkInputd.ProjectId, connection, transaction);
+                break;
+            
+            // Если создается родительская связь.
+            case LinkTypeEnum.Parent:
+                break;
+            
+            // Если создается дочерняя связь.
+            case LinkTypeEnum.Child:
+                break;
+            
+            // Если создается тип связи "зависит от".
+            case LinkTypeEnum.Depend:
+                break;
+            
+            default:
+                throw new InvalidOperationException($"Недопустимый тип связи {taskLinkInputd.LinkType}.");
+        }
     }
 
     /// <inheritdoc />
@@ -799,7 +805,15 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         parameters.Add("@project_id", projectId);
         parameters.Add("@from_task_id", fromTaskId);
 
-        var query = @"SELECT link_id, from_task_id, to_task_id, link_type, parent_id, child_id, is_blocked, project_id 
+        var query = @"SELECT link_id, 
+                       from_task_id, 
+                       to_task_id, 
+                       link_type, 
+                       parent_id, 
+                       child_id, 
+                       is_blocked, 
+                       project_id, 
+                       blocked_task_id 
                       FROM project_management.task_links 
                       WHERE project_id = @project_id 
                         AND from_task_id = @from_task_id";
@@ -843,6 +857,71 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
     #endregion
 
     #region Приватные методы.
+
+    /// <summary>
+    /// Метод создает обычную связь между задачами.
+    /// </summary>
+    /// <param name="taskFromLink">Id задачи, от которой исходит связь.</param>
+    /// <param name="taskToLink">Id задачи, которую связывают.</param>
+    /// <param name="linkType">Тип связи.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="connection">Подключение к БД.</param>
+    /// <param name="transaction">Транзакция.</param>
+    private async Task CreateTaskLinkDefaultAsync(long taskFromLink, long taskToLink, LinkTypeEnum linkType,
+        long projectId, IDbConnection connection = null, IDbTransaction transaction = null)
+    {
+        try
+        {
+            var firstParameters = new DynamicParameters();
+            firstParameters.Add("@from_task_id", taskFromLink);
+            firstParameters.Add("@to_task_id", taskToLink);
+            firstParameters.Add("@link_type", new Enum(linkType));
+            firstParameters.Add("@is_blocked", false);
+            firstParameters.Add("@project_id", projectId);
+
+            var secondParameters = new DynamicParameters();
+            secondParameters.Add("@from_task_id", taskFromLink);
+            secondParameters.Add("@to_task_id", taskToLink);
+            secondParameters.Add("@link_type", new Enum(linkType));
+            secondParameters.Add("@is_blocked", false);
+            secondParameters.Add("@project_id", projectId);
+
+            var query = @"INSERT INTO project_management.task_links (
+                                           from_task_id, to_task_id, link_type, is_blocked, project_id) 
+                      VALUES (@from_task_id, @to_task_id, @link_type, @is_blocked, @project_id)";
+
+            if (connection is not null && transaction is not null)
+            {
+                transaction = connection.BeginTransaction();
+
+                await connection.ExecuteAsync(query, firstParameters);
+                await connection.ExecuteAsync(query, secondParameters);
+
+                transaction.Commit();
+            }
+
+            else
+            {
+                await connection!.ExecuteAsync(query, firstParameters);
+                await connection.ExecuteAsync(query, secondParameters);
+            }
+        }
+
+        catch
+        {
+            if (connection is not null && transaction is not null)
+            {
+                transaction.Rollback();
+            }
+
+            throw;
+        }
+
+        finally
+        {
+            transaction?.Dispose();
+        }
+    }
 
     #endregion
 }

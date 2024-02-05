@@ -62,4 +62,11 @@ public class TaskLinkEntity
     /// Id проекта.
     /// </summary>
     public long ProjectId { get; set; }
+
+    /// <summary>
+    /// Id блокируемой задачи.
+    /// Задача, которая ее блокирует определяется по признаку IsBlocked.
+    /// Блокируемая задача становится зависимой от блокирующей.
+    /// </summary>
+    public long? BlockedTaskId { get; set; }
 }

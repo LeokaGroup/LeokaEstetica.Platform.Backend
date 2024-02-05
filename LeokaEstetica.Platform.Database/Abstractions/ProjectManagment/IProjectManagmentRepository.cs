@@ -1,4 +1,5 @@
-﻿using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
+﻿using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
+using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.Template;
 using LeokaEstetica.Platform.Models.Dto.ProjectManagement.Output;
 using LeokaEstetica.Platform.Models.Entities.ProjectManagment;
@@ -254,13 +255,10 @@ public interface IProjectManagmentRepository
     Task DetachTaskWatcherAsync(long watcherId, long projectTaskId, long projectId);
     
     /// <summary>
-    /// Метод создает связь с задачей (обычная связь).
+    /// Метод создает связь с задачей (в зависимости от типа связи, который передали).
     /// </summary>
-    /// <param name="taskFromLink">Id задачи, от которой исходит связь.</param>
-    /// <param name="taskToLink">Id задачи, которую связывают.</param>
-    /// <param name="linkType">Тип связи.</param>
-    /// <param name="projectId">Id проекта.</param>
-    Task CreateTaskLinkDefaultAsync(long taskFromLink, long taskToLink, LinkTypeEnum linkType, long projectId);
+    /// <param name="taskLinkInput">Входная модель.</param>
+    Task CreateTaskLinkAsync(TaskLinkInput taskLinkInput);
 
     /// <summary>
     /// Метод получает список задач по Id проекта и списку Id задач.

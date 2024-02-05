@@ -15,7 +15,6 @@ using LeokaEstetica.Platform.Services.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Services.Abstractions.User;
 using LeokaEstetica.Platform.Services.Factors;
 using Microsoft.AspNetCore.Mvc;
-using Enum = System.Enum;
 
 namespace LeokaEstetica.Platform.ProjectManagment.Controllers;
 
@@ -755,17 +754,17 @@ public class ProjectManagmentController : BaseController
     }
 
     /// <summary>
-    /// Метод создает связь с задачей (обычная связь).
+    /// Метод создает связь с задачей (в зависимости от типа связи, который передали).
     /// </summary>
     /// <param name="taskLinkInput">Входная модель.</param>
     [HttpPost]
-    [Route("task-link-default")]
+    [Route("task-link")]
     [ProducesResponseType(200)]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)] 
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task CreateTaskLinkDefaultAsync([FromBody] TaskLinkInput taskLinkInput)
+    public async Task CreateTaskLinkAsync([FromBody] TaskLinkInput taskLinkInput)
     {
         var validator = await new TaskLinkValidator().ValidateAsync(taskLinkInput);
 
@@ -777,8 +776,9 @@ public class ProjectManagmentController : BaseController
             {
                 exceptions.Add(new InvalidOperationException(err.ErrorMessage));
             }
-            
-            var ex = new AggregateException("Ошибка создания связи задачи (обычная связь).", exceptions);
+
+            var ex = new AggregateException($"Ошибка создания связи задачи (тип связи: {taskLinkInput.LinkType}).",
+                exceptions);
             _logger.LogError(ex, ex.Message);
             
             await _pachcaService.Value.SendNotificationErrorAsync(ex);
@@ -786,8 +786,7 @@ public class ProjectManagmentController : BaseController
             throw ex;
         }
 
-        await _projectManagmentService.CreateTaskLinkDefaultAsync(taskLinkInput.TaskFromLink, taskLinkInput.TaskToLink,
-            taskLinkInput.LinkType, taskLinkInput.ProjectId, GetUserName());
+        await _projectManagmentService.CreateTaskLinkAsync(taskLinkInput, GetUserName());
     }
 
     /// <summary>

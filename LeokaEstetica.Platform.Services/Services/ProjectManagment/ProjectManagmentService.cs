@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using System.Globalization;
 using System.Runtime.CompilerServices;
 using AutoMapper;
 using Dapper;
@@ -1511,16 +1510,69 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     }
 
     /// <inheritdoc />
-    public async Task CreateTaskLinkDefaultAsync(long taskFromLink, long taskToLink, LinkTypeEnum linkType,
-        long projectId, string account)
+    public async Task CreateTaskLinkAsync(TaskLinkInput taskLinkInput, string account)
     {
         try
         {
-            if (linkType != LinkTypeEnum.Link)
+            // Валидируем типы связи.
+            if (new[] { LinkTypeEnum.Link, LinkTypeEnum.Child, LinkTypeEnum.Parent, LinkTypeEnum.Depend }.Contains(
+                    taskLinkInput.LinkType))
             {
-                throw new InvalidOperationException($"Тип связи {linkType} не является обычной связью.");
+                if (taskLinkInput.TaskFromLink <= 0
+                    || taskLinkInput.TaskToLink <= 0
+                    || taskLinkInput.ProjectId <= 0)
+                {
+                    throw new InvalidOperationException(
+                        $"Невалидные входные данные для создания типа связи {taskLinkInput.LinkType}. " +
+                        $"TaskFromLink: {taskLinkInput.TaskFromLink}. " +
+                        $"TaskToLink: {taskLinkInput.TaskToLink}. " +
+                        $"ProjectId: {taskLinkInput.ProjectId}. " +
+                        $"Account: {account}");
+                }
             }
-        
+
+            if (taskLinkInput.LinkType == LinkTypeEnum.Parent)
+            {
+                if (!taskLinkInput.ParentId.HasValue)
+                {
+                    throw new InvalidOperationException(
+                        "Id родителя невалидный." +
+                        $"ParentId: {taskLinkInput.ParentId}. " +
+                        $"TaskFromLink: {taskLinkInput.TaskFromLink}. " +
+                        $"TaskToLink: {taskLinkInput.TaskToLink}. " +
+                        $"ProjectId: {taskLinkInput.ProjectId}. " +
+                        $"Account: {account}");
+                }
+            }
+            
+            if (taskLinkInput.LinkType == LinkTypeEnum.Child)
+            {
+                if (!taskLinkInput.ChildId.HasValue)
+                {
+                    throw new InvalidOperationException(
+                        "Id дочки невалидный." +
+                        $"ChildId: {taskLinkInput.ChildId}. " +
+                        $"TaskFromLink: {taskLinkInput.TaskFromLink}. " +
+                        $"TaskToLink: {taskLinkInput.TaskToLink}. " +
+                        $"ProjectId: {taskLinkInput.ProjectId}. " +
+                        $"Account: {account}");
+                }
+            }
+            
+            if (taskLinkInput.LinkType == LinkTypeEnum.Depend)
+            {
+                if (!taskLinkInput.DependId.HasValue)
+                {
+                    throw new InvalidOperationException(
+                        "Id блокирующей задачи невалидный." +
+                        $"DependId: {taskLinkInput.DependId}. " +
+                        $"TaskFromLink: {taskLinkInput.TaskFromLink}. " +
+                        $"TaskToLink: {taskLinkInput.TaskToLink}. " +
+                        $"ProjectId: {taskLinkInput.ProjectId}. " +
+                        $"Account: {account}");
+                }
+            }
+            
             var userId = await _userRepository.GetUserByEmailAsync(account);
 
             if (userId <= 0)
@@ -1529,18 +1581,21 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 throw ex;
             }
         
-            var currentTask = await _projectManagmentRepository.GetTaskDetailsByTaskIdAsync(taskFromLink,
-                projectId);
+            var currentTask = await _projectManagmentRepository.GetTaskDetailsByTaskIdAsync(taskLinkInput.TaskFromLink,
+                taskLinkInput.ProjectId);
                 
             if (currentTask is null)
             {
                 throw new InvalidOperationException(
                     "Не удалось получить текущую задачу." +
-                    $"ProjectId: {projectId}. ProjectTaskId: {taskFromLink}.");
+                    $"ProjectId: {taskLinkInput.ProjectId}. " +
+                    $"ProjectTaskId: {taskLinkInput.TaskFromLink}.");
             }
 
-            await _projectManagmentRepository.CreateTaskLinkDefaultAsync(currentTask.TaskId, taskToLink, linkType,
-                projectId);
+            // Id задачи в рамках проекта становится Id задачи.
+            taskLinkInput.TaskFromLink = currentTask.TaskId;
+
+            await _projectManagmentRepository.CreateTaskLinkAsync(taskLinkInput);
 
             // TODO: Тут добавить запись активности пользователя по userId.
         }
@@ -1882,7 +1937,9 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 TaskCode = null, /// TODO: Пока не используется. Вернуться, когда будет реализован вывод названия проекта.
                 TaskStatusName = statuseNames.Find(x => x.StatusId == t.TaskStatusId)?.StatusName,
                 LastUpdated = t.Updated.ToString("f"), // Например, 17 июля 2015 г. 17:04
-                ProjectTaskId = t.ProjectTaskId
+                ProjectTaskId = t.ProjectTaskId,
+                PriorityId = t.PriorityId!.Value,
+                TaskId = t.TaskId
             };
 
             result.Add(link);
