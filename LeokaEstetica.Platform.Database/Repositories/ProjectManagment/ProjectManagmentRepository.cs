@@ -1018,7 +1018,9 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
             
             // Текущая задача становится родителем для дочки.
             otherParameters.Add("@parent_id", taskFromLink);
-            otherParameters.Add("@link_type", new Enum(linkType));
+            
+            // Для дочки текущая задача становится родителем.
+            otherParameters.Add("@link_type", new Enum(LinkTypeEnum.Parent));
             otherParameters.Add("@is_blocked", false);
             otherParameters.Add("@project_id", projectId);
             
@@ -1081,6 +1083,8 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
             // Указываем, какую задачу блокирует.
             currentParameters.Add("@blocked_task_id", taskFromLink);
             otherParameters.Add("@link_type", new Enum(linkType));
+            
+            // Задача, от которой зависит текущая становится для нее блокирующей.
             otherParameters.Add("@is_blocked", true);
             otherParameters.Add("@project_id", projectId);
             
