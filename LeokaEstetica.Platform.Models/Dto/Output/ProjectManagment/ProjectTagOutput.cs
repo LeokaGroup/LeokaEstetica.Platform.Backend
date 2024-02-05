@@ -39,7 +39,7 @@ public class ProjectTagOutput
     public ObjectTagTypeEnum ObjectTagTypeValue { get; set; }
     
     /// <summary>
-    /// Статус полёта
+    /// Значение типа объекта тега.
     /// </summary>
     public IEnum ObjectTagType
     {

@@ -7,11 +7,13 @@ using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
 using LeokaEstetica.Platform.Models.Dto.Output.Project;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.Template;
+using LeokaEstetica.Platform.Models.Enums;
 using LeokaEstetica.Platform.ProjectManagment.ValidationModels;
 using LeokaEstetica.Platform.ProjectManagment.Validators;
 using LeokaEstetica.Platform.Services.Abstractions.Project;
 using LeokaEstetica.Platform.Services.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Services.Abstractions.User;
+using LeokaEstetica.Platform.Services.Factors;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LeokaEstetica.Platform.ProjectManagment.Controllers;
@@ -749,6 +751,306 @@ public class ProjectManagmentController : BaseController
 
         await _projectManagmentService.DetachTaskTagAsync(projectTaskTagInput.TagId, projectTaskTagInput.ProjectTaskId,
             projectTaskTagInput.ProjectId, GetUserName());
+    }
+
+    /// <summary>
+    /// Метод создает связь с задачей (в зависимости от типа связи, который передали).
+    /// </summary>
+    /// <param name="taskLinkInput">Входная модель.</param>
+    [HttpPost]
+    [Route("task-link")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)] 
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task CreateTaskLinkAsync([FromBody] TaskLinkInput taskLinkInput)
+    {
+        var validator = await new TaskLinkValidator().ValidateAsync(taskLinkInput);
+
+        if (validator.Errors.Any())
+        {
+            var exceptions = new List<InvalidOperationException>();
+
+            foreach (var err in validator.Errors)
+            {
+                exceptions.Add(new InvalidOperationException(err.ErrorMessage));
+            }
+
+            var ex = new AggregateException($"Ошибка создания связи задачи (тип связи: {taskLinkInput.LinkType}).",
+                exceptions);
+            _logger.LogError(ex, ex.Message);
+            
+            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            
+            throw ex;
+        }
+
+        await _projectManagmentService.CreateTaskLinkAsync(taskLinkInput, GetUserName());
+    }
+
+    /// <summary>
+    /// Метод получает связи задачи (обычные связи).
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
+    /// <param name="linkType">Тип связи.</param>
+    /// <returns>Список связей задачи.</returns>
+    [HttpGet]
+    [Route("task-link-default")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<GetTaskLinkOutput>))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)] 
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<IEnumerable<GetTaskLinkOutput>> GetTaskLinkDefaultAsync([FromQuery] long projectId,
+        [FromQuery] long projectTaskId, [FromQuery] LinkTypeEnum linkType)
+    {
+        var validator = await new GetTaskLinkValidator().ValidateAsync((projectId, projectTaskId));
+
+        if (validator.Errors.Any())
+        {
+            var exceptions = new List<InvalidOperationException>();
+
+            foreach (var err in validator.Errors)
+            {
+                exceptions.Add(new InvalidOperationException(err.ErrorMessage));
+            }
+            
+            var ex = new AggregateException("Ошибка получения связей задачи (обычные связи).", exceptions);
+            _logger.LogError(ex, ex.Message);
+            
+            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            
+            throw ex;
+        }
+
+        var result = await _projectManagmentService.GetTaskLinkDefaultAsync(projectId, projectTaskId, linkType);
+
+        return result;
+    }
+    
+    /// <summary>
+    /// Метод получает связи задачи (родительские связи).
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
+    /// <param name="linkType">Тип связи.</param>
+    /// <returns>Список связей задачи.</returns>
+    [HttpGet]
+    [Route("task-link-parent")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<GetTaskLinkOutput>))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)] 
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<IEnumerable<GetTaskLinkOutput>> GetTaskLinkParentAsync([FromQuery] long projectId,
+        [FromQuery] long projectTaskId, [FromQuery] LinkTypeEnum linkType)
+    {
+        var validator = await new GetTaskLinkValidator().ValidateAsync((projectId, projectTaskId));
+
+        if (validator.Errors.Any())
+        {
+            var exceptions = new List<InvalidOperationException>();
+
+            foreach (var err in validator.Errors)
+            {
+                exceptions.Add(new InvalidOperationException(err.ErrorMessage));
+            }
+            
+            var ex = new AggregateException("Ошибка получения связей задачи (родительские связи).", exceptions);
+            _logger.LogError(ex, ex.Message);
+            
+            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            
+            throw ex;
+        }
+
+        var result = await _projectManagmentService.GetTaskLinkParentAsync(projectId, projectTaskId, linkType);
+
+        return result;
+    }
+    
+    /// <summary>
+    /// Метод получает связи задачи (дочерние связи).
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
+    /// <param name="linkType">Тип связи.</param>
+    /// <returns>Список связей задачи.</returns>
+    [HttpGet]
+    [Route("task-link-child")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<GetTaskLinkOutput>))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)] 
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<IEnumerable<GetTaskLinkOutput>> GetTaskLinkChildAsync([FromQuery] long projectId,
+        [FromQuery] long projectTaskId, [FromQuery] LinkTypeEnum linkType)
+    {
+        var validator = await new GetTaskLinkValidator().ValidateAsync((projectId, projectTaskId));
+
+        if (validator.Errors.Any())
+        {
+            var exceptions = new List<InvalidOperationException>();
+
+            foreach (var err in validator.Errors)
+            {
+                exceptions.Add(new InvalidOperationException(err.ErrorMessage));
+            }
+            
+            var ex = new AggregateException("Ошибка получения связей задачи (дочерние связи).", exceptions);
+            _logger.LogError(ex, ex.Message);
+            
+            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            
+            throw ex;
+        }
+
+        var result = await _projectManagmentService.GetTaskLinkChildAsync(projectId, projectTaskId, linkType);
+
+        return result;
+    }
+    
+    /// <summary>
+    /// Метод получает связи задачи (связи зависит от).
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
+    /// <param name="linkType">Тип связи.</param>
+    /// <returns>Список связей задачи.</returns>
+    [HttpGet]
+    [Route("task-link-depend")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<GetTaskLinkOutput>))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)] 
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<IEnumerable<GetTaskLinkOutput>> GetTaskLinkDependAsync([FromQuery] long projectId,
+        [FromQuery] long projectTaskId, [FromQuery] LinkTypeEnum linkType)
+    {
+        var validator = await new GetTaskLinkValidator().ValidateAsync((projectId, projectTaskId));
+
+        if (validator.Errors.Any())
+        {
+            var exceptions = new List<InvalidOperationException>();
+
+            foreach (var err in validator.Errors)
+            {
+                exceptions.Add(new InvalidOperationException(err.ErrorMessage));
+            }
+            
+            var ex = new AggregateException("Ошибка получения связей задачи (связи зависит от).", exceptions);
+            _logger.LogError(ex, ex.Message);
+            
+            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            
+            throw ex;
+        }
+
+        var result = await _projectManagmentService.GetTaskLinkDependAsync(projectId, projectTaskId, linkType);
+
+        return result;
+    }
+    
+    /// <summary>
+    /// Метод получает связи задачи (связи блокирующие).
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
+    /// <param name="linkType">Тип связи.</param>
+    /// <returns>Список связей задачи.</returns>
+    [HttpGet]
+    [Route("task-link-blocked")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<GetTaskLinkOutput>))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)] 
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<IEnumerable<GetTaskLinkOutput>> GetTaskLinkBlockedAsync([FromQuery] long projectId,
+        [FromQuery] long projectTaskId, [FromQuery] LinkTypeEnum linkType)
+    {
+        var validator = await new GetTaskLinkValidator().ValidateAsync((projectId, projectTaskId));
+
+        if (validator.Errors.Any())
+        {
+            var exceptions = new List<InvalidOperationException>();
+
+            foreach (var err in validator.Errors)
+            {
+                exceptions.Add(new InvalidOperationException(err.ErrorMessage));
+            }
+            
+            var ex = new AggregateException("Ошибка получения связей задачи (блокирующая связь).", exceptions);
+            _logger.LogError(ex, ex.Message);
+            
+            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            
+            throw ex;
+        }
+
+        var result = await _projectManagmentService.GetTaskLinkBlockedAsync(projectId, projectTaskId, linkType);
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод получает задачи проекта, которые доступны для создания связи с текущей задачей (разных типов связей).
+    /// Под текущей задачей понимается задача, которую просматривает пользователь.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="linkType">Тип связи.</param>
+    /// <returns>Список задач, доступных к созданию связи.</returns>
+    [HttpGet]
+    [Route("available-task-link")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<AvailableTaskLinkOutput>))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)] 
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<IEnumerable<AvailableTaskLinkOutput>> GetAvailableTaskLinkAsync([FromQuery] long projectId,
+        [FromQuery] LinkTypeEnum linkType)
+    {
+        var validator = await new AvailableTaskLinkValidator().ValidateAsync((projectId, linkType));
+
+        if (validator.Errors.Any())
+        {
+            var exceptions = new List<InvalidOperationException>();
+
+            foreach (var err in validator.Errors)
+            {
+                exceptions.Add(new InvalidOperationException(err.ErrorMessage));
+            }
+            
+            var ex = new AggregateException("Ошибка получения доступных задач для создания связи.", exceptions);
+            _logger.LogError(ex, ex.Message);
+            
+            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            
+            throw ex;
+        }
+
+        var result = await _projectManagmentService.GetAvailableTaskLinkAsync(projectId, linkType);
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод получает список типов связей задач.
+    /// </summary>
+    /// <returns>Список типов связей задач.</returns>
+    [HttpGet]
+    [Route("link-types")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<KeyValuePair<string,string>>))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)] 
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<IEnumerable<KeyValuePair<string,string>>> GetLinkTypesAsync()
+    {
+        var result = await GetLinkTypeFactory.GetLinkTypes();
+
+        return await Task.FromResult(result);
     }
 
     /// <summary>

@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using AutoMapper;
+using Dapper;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.Base.Extensions.StringExtensions;
 using LeokaEstetica.Platform.Base.Factors;
@@ -22,10 +23,12 @@ using LeokaEstetica.Platform.Models.Dto.ProjectManagement.Output;
 using LeokaEstetica.Platform.Models.Entities.Profile;
 using LeokaEstetica.Platform.Models.Entities.ProjectManagment;
 using LeokaEstetica.Platform.Models.Entities.Template;
+using LeokaEstetica.Platform.Models.Enums;
 using LeokaEstetica.Platform.Services.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Services.Factors;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using Enum = System.Enum;
 
 [assembly: InternalsVisibleTo("LeokaEstetica.Platform.Tests")]
 
@@ -1506,6 +1509,402 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         // TODO: Тут добавить запись активности пользователя по userId.
     }
 
+    /// <inheritdoc />
+    public async Task CreateTaskLinkAsync(TaskLinkInput taskLinkInput, string account)
+    {
+        try
+        {
+            // Валидируем типы связи.
+            if (!new[] { LinkTypeEnum.Link, LinkTypeEnum.Child, LinkTypeEnum.Parent, LinkTypeEnum.Depend }.Contains(
+                    taskLinkInput.LinkType))
+            {
+                if (taskLinkInput.TaskFromLink <= 0
+                    || taskLinkInput.TaskToLink <= 0
+                    || taskLinkInput.ProjectId <= 0)
+                {
+                    throw new InvalidOperationException(
+                        $"Невалидные входные данные для создания типа связи {taskLinkInput.LinkType}. " +
+                        $"TaskFromLink: {taskLinkInput.TaskFromLink}. " +
+                        $"TaskToLink: {taskLinkInput.TaskToLink}. " +
+                        $"ProjectId: {taskLinkInput.ProjectId}. " +
+                        $"Account: {account}");
+                }
+            }
+
+            if (taskLinkInput.LinkType == LinkTypeEnum.Parent)
+            {
+                // Проставляем родителя.
+                taskLinkInput.ParentId = taskLinkInput.TaskToLink;
+                
+                if (!taskLinkInput.ParentId.HasValue)
+                {
+                    throw new InvalidOperationException(
+                        "Id родителя невалидный." +
+                        $"ParentId: {taskLinkInput.ParentId}. " +
+                        $"TaskFromLink: {taskLinkInput.TaskFromLink}. " +
+                        $"TaskToLink: {taskLinkInput.TaskToLink}. " +
+                        $"ProjectId: {taskLinkInput.ProjectId}. " +
+                        $"Account: {account}");
+                }
+            }
+            
+            if (taskLinkInput.LinkType == LinkTypeEnum.Child)
+            {
+                // Проставляем дочку.
+                taskLinkInput.ChildId = taskLinkInput.TaskToLink;
+                
+                if (!taskLinkInput.ChildId.HasValue)
+                {
+                    throw new InvalidOperationException(
+                        "Id дочки невалидный." +
+                        $"ChildId: {taskLinkInput.ChildId}. " +
+                        $"TaskFromLink: {taskLinkInput.TaskFromLink}. " +
+                        $"TaskToLink: {taskLinkInput.TaskToLink}. " +
+                        $"ProjectId: {taskLinkInput.ProjectId}. " +
+                        $"Account: {account}");
+                }
+            }
+            
+            if (taskLinkInput.LinkType == LinkTypeEnum.Depend)
+            {
+                // Проставляем от какой задачи зависит текущая.
+                taskLinkInput.DependId = taskLinkInput.TaskToLink;
+                
+                if (!taskLinkInput.DependId.HasValue)
+                {
+                    throw new InvalidOperationException(
+                        "Id блокирующей задачи невалидный." +
+                        $"DependId: {taskLinkInput.DependId}. " +
+                        $"TaskFromLink: {taskLinkInput.TaskFromLink}. " +
+                        $"TaskToLink: {taskLinkInput.TaskToLink}. " +
+                        $"ProjectId: {taskLinkInput.ProjectId}. " +
+                        $"Account: {account}");
+                }
+            }
+            
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+        
+            var currentTask = await _projectManagmentRepository.GetTaskDetailsByTaskIdAsync(taskLinkInput.TaskFromLink,
+                taskLinkInput.ProjectId);
+                
+            if (currentTask is null)
+            {
+                throw new InvalidOperationException(
+                    "Не удалось получить текущую задачу." +
+                    $"ProjectId: {taskLinkInput.ProjectId}. " +
+                    $"ProjectTaskId: {taskLinkInput.TaskFromLink}.");
+            }
+
+            // Id задачи в рамках проекта становится Id задачи.
+            taskLinkInput.TaskFromLink = currentTask.TaskId;
+
+            await _projectManagmentRepository.CreateTaskLinkAsync(taskLinkInput);
+
+            // TODO: Тут добавить запись активности пользователя по userId.
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task<IEnumerable<GetTaskLinkOutput>> GetTaskLinkDefaultAsync(long projectId, long projectTaskId,
+        LinkTypeEnum linkType)
+    {
+        try
+        {
+            var currentTask = await _projectManagmentRepository.GetTaskDetailsByTaskIdAsync(projectTaskId,
+                projectId);
+                
+            if (currentTask is null)
+            {
+                throw new InvalidOperationException(
+                    "Не удалось получить текущую задачу." +
+                    $"ProjectId: {projectId}. ProjectTaskId: {projectTaskId}.");
+            }
+
+            var links = (await _projectManagmentRepository.GetTaskLinksByProjectIdProjectTaskIdAsync(projectId,
+                currentTask.TaskId, linkType))
+                ?.AsList();
+
+            if (links is null || !links.Any())
+            {
+                return Enumerable.Empty<GetTaskLinkOutput>();
+            }
+
+            // У обычных связей нет родителя и ребенка.
+            var linkIds = links
+                .Where(x => x.ParentId is null && x.ChildId is null)
+                .Select(x => x.ToTaskId!.Value);
+            
+            var tasks = (await _projectManagmentRepository.GetProjectTaskByProjectIdTaskIdsAsync(projectId, linkIds))
+                ?.AsList();
+
+            if (tasks is null || !tasks.Any())
+            {
+                throw new InvalidOperationException(
+                    "Не удалось получить связи задачи по Id проекта и Id задачи в рамках проекта." +
+                    $"ProjectId: {projectId}. ProjectTaskId: {projectTaskId}.");
+            }
+
+            var result = await ModifyTaskLinkResultAsync(tasks);
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task<IEnumerable<AvailableTaskLinkOutput>> GetAvailableTaskLinkAsync(long projectId,
+        LinkTypeEnum linkType)
+    {
+        try
+        {
+            var result = (await _projectManagmentRepository.GetAvailableTaskLinkAsync(projectId, linkType)).AsList();
+            
+            // Получаем имена исполнителей задач.
+            var executorIds = result.Where(x => x.ExecutorId > 0).Select(x => x.ExecutorId);
+            var executors = await _userRepository.GetExecutorNamesByExecutorIdsAsync(executorIds);
+
+            if (executors.Count == 0)
+            {
+                throw new InvalidOperationException("Не удалось получить исполнителей задач.");
+            }
+        
+            var statusIds = result.Select(x => x.TaskStatusId);
+            var statuseNames = (await _projectManagmentTemplateRepository.GetTaskTemplateStatusesAsync(statusIds))
+                .ToList();
+
+            // Наполняем выходные данные задач.
+            foreach (var t in result)
+            {
+                t.ExecutorName = executors.TryGet(t.ExecutorId).FullName;
+                t.TaskStatusName = statuseNames.Find(x => x.StatusId == t.TaskStatusId)?.StatusName;
+                t.LinkType = linkType;
+            }
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task<IEnumerable<GetTaskLinkOutput>> GetTaskLinkParentAsync(long projectId, long projectTaskId,
+        LinkTypeEnum linkType)
+    {
+        try
+        {
+            var currentTask = await _projectManagmentRepository.GetTaskDetailsByTaskIdAsync(projectTaskId,
+                projectId);
+                
+            if (currentTask is null)
+            {
+                throw new InvalidOperationException(
+                    "Не удалось получить текущую задачу." +
+                    $"ProjectId: {projectId}. ProjectTaskId: {projectTaskId}.");
+            }
+
+            var links = (await _projectManagmentRepository.GetTaskLinksByProjectIdProjectTaskIdAsync(projectId,
+                    currentTask.TaskId, linkType))
+                ?.AsList();
+
+            if (links is null || !links.Any())
+            {
+                return Enumerable.Empty<GetTaskLinkOutput>();
+            }
+            
+            var linkIds = links
+                .Where(x => x.ParentId is not null)
+                .Select(x => x.ParentId!.Value);
+            
+            var tasks = (await _projectManagmentRepository.GetProjectTaskByProjectIdTaskIdsAsync(projectId, linkIds))
+                ?.AsList();
+
+            if (tasks is null || !tasks.Any())
+            {
+                return Enumerable.Empty<GetTaskLinkOutput>();
+            }
+
+            var result = await ModifyTaskLinkResultAsync(tasks);
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task<IEnumerable<GetTaskLinkOutput>> GetTaskLinkChildAsync(long projectId, long projectTaskId,
+        LinkTypeEnum linkType)
+    {
+        try
+        {
+            var currentTask = await _projectManagmentRepository.GetTaskDetailsByTaskIdAsync(projectTaskId,
+                projectId);
+                
+            if (currentTask is null)
+            {
+                throw new InvalidOperationException(
+                    "Не удалось получить текущую задачу." +
+                    $"ProjectId: {projectId}. ProjectTaskId: {projectTaskId}.");
+            }
+
+            var links = (await _projectManagmentRepository.GetTaskLinksByProjectIdProjectTaskIdAsync(projectId,
+                    currentTask.TaskId, linkType))
+                ?.AsList();
+
+            if (links is null || !links.Any())
+            {
+                return Enumerable.Empty<GetTaskLinkOutput>();
+            }
+            
+            var linkIds = links
+                .Where(x => x.ChildId is not null)
+                .Select(x => x.ChildId!.Value);
+            
+            var tasks = (await _projectManagmentRepository.GetProjectTaskByProjectIdTaskIdsAsync(projectId, linkIds))
+                ?.AsList();
+
+            if (tasks is null || !tasks.Any())
+            {
+                return Enumerable.Empty<GetTaskLinkOutput>();
+            }
+
+            var result = await ModifyTaskLinkResultAsync(tasks);
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task<IEnumerable<GetTaskLinkOutput>> GetTaskLinkDependAsync(long projectId, long projectTaskId,
+        LinkTypeEnum linkType)
+    {
+        try
+        {
+            var currentTask = await _projectManagmentRepository.GetTaskDetailsByTaskIdAsync(projectTaskId,
+                projectId);
+                
+            if (currentTask is null)
+            {
+                throw new InvalidOperationException(
+                    "Не удалось получить текущую задачу." +
+                    $"ProjectId: {projectId}. ProjectTaskId: {projectTaskId}.");
+            }
+
+            var links = (await _projectManagmentRepository.GetTaskLinksByProjectIdProjectTaskIdAsync(projectId,
+                    currentTask.TaskId, linkType))
+                ?.AsList();
+
+            if (links is null || !links.Any())
+            {
+                return Enumerable.Empty<GetTaskLinkOutput>();
+            }
+            
+            // Получаем задачи, которые блокируют текущую. Текущая зависит от них.
+            var linkIds = links
+                .Where(x => x.IsBlocked)
+                .Select(x => x.FromTaskId!.Value);
+            
+            var tasks = (await _projectManagmentRepository.GetProjectTaskByProjectIdTaskIdsAsync(projectId, linkIds))
+                ?.AsList();
+
+            if (tasks is null || !tasks.Any())
+            {
+                return Enumerable.Empty<GetTaskLinkOutput>();
+            }
+
+            var result = await ModifyTaskLinkResultAsync(tasks);
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task<IEnumerable<GetTaskLinkOutput>> GetTaskLinkBlockedAsync(long projectId, long projectTaskId,
+        LinkTypeEnum linkType)
+    {
+        try
+        {
+            var currentTask = await _projectManagmentRepository.GetTaskDetailsByTaskIdAsync(projectTaskId,
+                projectId);
+                
+            if (currentTask is null)
+            {
+                throw new InvalidOperationException(
+                    "Не удалось получить текущую задачу." +
+                    $"ProjectId: {projectId}. ProjectTaskId: {projectTaskId}.");
+            }
+
+            var links = (await _projectManagmentRepository.GetTaskLinksByProjectIdProjectTaskIdAsync(projectId,
+                    currentTask.TaskId, linkType))
+                ?.AsList();
+
+            if (links is null || !links.Any())
+            {
+                return Enumerable.Empty<GetTaskLinkOutput>();
+            }
+            
+            // Получаем задачи, которые текущая задача блокирует.
+            var linkIds = links
+                .Where(x => x.ToTaskId == currentTask.TaskId && !x.IsBlocked)
+                .Select(x => x.FromTaskId!.Value);
+            
+            var tasks = (await _projectManagmentRepository.GetProjectTaskByProjectIdTaskIdsAsync(projectId, linkIds))
+                ?.AsList();
+
+            if (tasks is null || !tasks.Any())
+            {
+                return Enumerable.Empty<GetTaskLinkOutput>();
+            }
+
+            var result = await ModifyTaskLinkResultAsync(tasks);
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
     #endregion
 
     #region Приватные методы.
@@ -1712,6 +2111,49 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 ps.Total = ps.ProjectManagmentTasks.Count;
             }
         }
+    }
+
+    /// <summary>
+    /// Метод модифицирует результаты связей задачи.
+    /// </summary>
+    /// <param name="links">Связи задач.</param>
+    /// <returns>Модифицированные данные связей.</returns>
+    private async Task<IEnumerable<GetTaskLinkOutput>> ModifyTaskLinkResultAsync(List<ProjectTaskEntity> tasks)
+    {
+        var result = new List<GetTaskLinkOutput>();
+        
+        // Получаем имена исполнителей задач.
+        var executorIds = tasks.Where(x => x.ExecutorId > 0).Select(x => x.ExecutorId);
+        var executors = await _userRepository.GetExecutorNamesByExecutorIdsAsync(executorIds);
+
+        if (executors.Count == 0)
+        {
+            throw new InvalidOperationException("Не удалось получить исполнителей задач.");
+        }
+        
+        var statusIds = tasks.Select(x => x.TaskStatusId);
+        var statuseNames = (await _projectManagmentTemplateRepository.GetTaskTemplateStatusesAsync(statusIds))
+            .ToList();
+
+        // Наполняем выходные данные задачи.
+        foreach (var t in tasks)
+        {
+            var link = new GetTaskLinkOutput
+            {
+                ExecutorName = executors.TryGet(t.ExecutorId).FullName,
+                TaskName = t.Name,
+                TaskCode = null, /// TODO: Пока не используется. Вернуться, когда будет реализован вывод названия проекта.
+                TaskStatusName = statuseNames.Find(x => x.StatusId == t.TaskStatusId)?.StatusName,
+                LastUpdated = t.Updated.ToString("f"), // Например, 17 июля 2015 г. 17:04
+                ProjectTaskId = t.ProjectTaskId,
+                PriorityId = t.PriorityId!.Value,
+                TaskId = t.TaskId
+            };
+
+            result.Add(link);
+        }
+
+        return result;
     }
 
     #endregion

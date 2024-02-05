@@ -1,8 +1,10 @@
-﻿using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
+﻿using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
+using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.Template;
 using LeokaEstetica.Platform.Models.Dto.ProjectManagement.Output;
 using LeokaEstetica.Platform.Models.Entities.ProjectManagment;
 using LeokaEstetica.Platform.Models.Entities.Template;
+using LeokaEstetica.Platform.Models.Enums;
 
 namespace LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 
@@ -215,7 +217,7 @@ public interface IProjectManagmentRepository
     /// Метод отвязывает тег от задачи проекта.
     /// </summary>
     /// <param name="tagId">Id тега, который нужно привязать к задаче.</param>
-    /// <param name="taskId">Id задачи в рамках проекта.</param>
+    /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
     /// <param name="projectId">Id проекта.</param>
     Task DetachTaskTagAsync(int tagId, long projectTaskId, long projectId);
     
@@ -251,4 +253,38 @@ public interface IProjectManagmentRepository
     /// <param name="projectId">Id проекта.</param>
     /// <param name="account">Аккаунт.</param>
     Task DetachTaskWatcherAsync(long watcherId, long projectTaskId, long projectId);
+    
+    /// <summary>
+    /// Метод создает связь с задачей (в зависимости от типа связи, который передали).
+    /// </summary>
+    /// <param name="taskLinkInput">Входная модель.</param>
+    Task CreateTaskLinkAsync(TaskLinkInput taskLinkInput);
+
+    /// <summary>
+    /// Метод получает список задач по Id проекта и списку Id задач.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="taskId">Id задачи.</param>
+    /// <returns>Данные задачи.</returns>
+    Task<IEnumerable<ProjectTaskEntity>> GetProjectTaskByProjectIdTaskIdsAsync(long projectId,
+        IEnumerable<long> taskId);
+
+    /// <summary>
+    /// Метод получает связи задачи.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="fromTaskId">Id задачи, которую связывают.</param>
+    /// <param name="linkType">Тип связи.</param>
+    /// <returns>Список связей.</returns>
+    Task<IEnumerable<TaskLinkEntity>> GetTaskLinksByProjectIdProjectTaskIdAsync(long projectId, long fromTaskId,
+        LinkTypeEnum linkType);
+
+    /// <summary>
+    /// Метод получает задачи проекта, которые доступны для создания связи с текущей задачей (разных типов связей).
+    /// Под текущей задачей понимается задача, которую просматривает пользователь.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="linkType">Тип связи.</param>
+    /// <returns>Список задач, доступных к созданию связи.</returns>
+    Task<IEnumerable<AvailableTaskLinkOutput>> GetAvailableTaskLinkAsync(long projectId, LinkTypeEnum linkType);
 }

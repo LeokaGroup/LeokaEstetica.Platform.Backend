@@ -4,6 +4,7 @@ using LeokaEstetica.Platform.Models.Dto.Output.Template;
 using LeokaEstetica.Platform.Models.Entities.Profile;
 using LeokaEstetica.Platform.Models.Entities.ProjectManagment;
 using LeokaEstetica.Platform.Models.Entities.Template;
+using LeokaEstetica.Platform.Models.Enums;
 
 namespace LeokaEstetica.Platform.Services.Abstractions.ProjectManagment;
 
@@ -231,4 +232,70 @@ public interface IProjectManagmentService
     /// <param name="projectId">Id проекта.</param>
     /// <param name="account">Аккаунт.</param>
     Task UpdateTaskPriorityAsync(int priorityId, long projectTaskId, long projectId, string account);
+
+    /// <summary>
+    /// Метод создает связь с задачей (в зависимости от типа связи, который передали).
+    /// </summary>
+    /// <param name="taskLinkInputstring">Входная модель.</param>
+    /// <param name="account">Аккаунт.</param>
+    Task CreateTaskLinkAsync(TaskLinkInput taskLinkInput, string account);
+
+    /// <summary>
+    /// Метод получает связи задачи (обычные связи).
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
+    /// <param name="linkType">Тип связи.</param>
+    /// <returns>Список связей задачи.</returns>
+    Task<IEnumerable<GetTaskLinkOutput>> GetTaskLinkDefaultAsync(long projectId, long projectTaskId,
+        LinkTypeEnum linkType);
+
+    /// <summary>
+    /// Метод получает задачи проекта, которые доступны для создания связи с текущей задачей (разных типов связей).
+    /// Под текущей задачей понимается задача, которую просматривает пользователь.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="linkType">Тип связи.</param>
+    /// <returns>Список задач, доступных к созданию связи.</returns>
+    Task<IEnumerable<AvailableTaskLinkOutput>> GetAvailableTaskLinkAsync(long projectId, LinkTypeEnum linkType);
+    
+    /// <summary>
+    /// Метод получает связи задачи (родительские связи).
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
+    /// <param name="linkType">Тип связи.</param>
+    /// <returns>Список связей задачи.</returns>
+    Task<IEnumerable<GetTaskLinkOutput>> GetTaskLinkParentAsync(long projectId, long projectTaskId,
+        LinkTypeEnum linkType);
+    
+    /// <summary>
+    /// Метод получает связи задачи (дочерние связи).
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
+    /// <param name="linkType">Тип связи.</param>
+    /// <returns>Список связей задачи.</returns>
+    Task<IEnumerable<GetTaskLinkOutput>> GetTaskLinkChildAsync(long projectId, long projectTaskId,
+        LinkTypeEnum linkType);
+    
+    /// <summary>
+    /// Метод получает связи задачи (связи зависит от).
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
+    /// <param name="linkType">Тип связи.</param>
+    /// <returns>Список связей задачи.</returns>
+    Task<IEnumerable<GetTaskLinkOutput>> GetTaskLinkDependAsync(long projectId, long projectTaskId,
+        LinkTypeEnum linkType);
+    
+    /// <summary>
+    /// Метод получает связи задачи (связи блокирующие).
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
+    /// <param name="linkType">Тип связи.</param>
+    /// <returns>Список связей задачи.</returns>
+    Task<IEnumerable<GetTaskLinkOutput>> GetTaskLinkBlockedAsync(long projectId, long projectTaskId,
+        LinkTypeEnum linkType);
 }
