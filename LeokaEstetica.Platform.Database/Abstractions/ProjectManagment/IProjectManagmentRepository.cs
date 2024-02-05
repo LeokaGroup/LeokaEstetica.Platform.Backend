@@ -274,8 +274,10 @@ public interface IProjectManagmentRepository
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
     /// <param name="fromTaskId">Id задачи, которую связывают.</param>
+    /// <param name="linkType">Тип связи.</param>
     /// <returns>Список связей.</returns>
-    Task<IEnumerable<TaskLinkEntity>> GetTaskLinksByProjectIdProjectTaskIdAsync(long projectId, long fromTaskId);
+    Task<IEnumerable<TaskLinkEntity>> GetTaskLinksByProjectIdProjectTaskIdAsync(long projectId, long fromTaskId,
+        LinkTypeEnum linkType);
 
     /// <summary>
     /// Метод получает задачи проекта, которые доступны для создания связи с текущей задачей (разных типов связей).

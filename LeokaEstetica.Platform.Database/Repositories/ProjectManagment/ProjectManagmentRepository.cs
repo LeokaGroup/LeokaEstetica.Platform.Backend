@@ -800,13 +800,14 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
 
     /// <inheritdoc />
     public async Task<IEnumerable<TaskLinkEntity>> GetTaskLinksByProjectIdProjectTaskIdAsync(long projectId,
-        long fromTaskId)
+        long fromTaskId, LinkTypeEnum linkType)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
 
         var parameters = new DynamicParameters();
         parameters.Add("@project_id", projectId);
         parameters.Add("@from_task_id", fromTaskId);
+        parameters.Add("@link_type", new Enum(linkType));
 
         var query = @"SELECT link_id, 
                        from_task_id, 
@@ -819,7 +820,8 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
                        blocked_task_id 
                       FROM project_management.task_links 
                       WHERE project_id = @project_id 
-                        AND from_task_id = @from_task_id";
+                        AND from_task_id = @from_task_id 
+                        AND link_type = @link_type";
 
         var result = await connection.QueryAsync<TaskLinkEntity>(query, parameters);
 

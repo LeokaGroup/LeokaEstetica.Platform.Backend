@@ -63,4 +63,19 @@ public class GetTaskLinkOutput
     /// Блокируемая задача становится зависимой от блокирующей.
     /// </summary>
     public long? BlockedTaskId { get; set; }
+
+    /// <summary>
+    /// Id родителя.
+    /// </summary>
+    public long? ParentId { get; set; }
+
+    /// <summary>
+    /// Id ребенка.
+    /// </summary>
+    public long? ChildId { get; set; }
+    
+    /// <summary>
+    /// Признак блокирующей задачи.
+    /// </summary>
+    public bool IsBlocked { get; set; }
 }

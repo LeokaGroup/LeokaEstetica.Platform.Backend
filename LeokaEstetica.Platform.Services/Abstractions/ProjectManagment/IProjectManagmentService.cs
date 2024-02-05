@@ -245,8 +245,10 @@ public interface IProjectManagmentService
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
     /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
+    /// <param name="linkType">Тип связи.</param>
     /// <returns>Список связей задачи.</returns>
-    Task<IEnumerable<GetTaskLinkOutput>> GetTaskLinkDefaultAsync(long projectId, long projectTaskId);
+    Task<IEnumerable<GetTaskLinkOutput>> GetTaskLinkDefaultAsync(long projectId, long projectTaskId,
+        LinkTypeEnum linkType);
 
     /// <summary>
     /// Метод получает задачи проекта, которые доступны для создания связи с текущей задачей (разных типов связей).
@@ -256,4 +258,14 @@ public interface IProjectManagmentService
     /// <param name="linkType">Тип связи.</param>
     /// <returns>Список задач, доступных к созданию связи.</returns>
     Task<IEnumerable<AvailableTaskLinkOutput>> GetAvailableTaskLinkAsync(long projectId, LinkTypeEnum linkType);
+    
+    /// <summary>
+    /// Метод получает связи задачи (родительские связи).
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
+    /// <param name="linkType">Тип связи.</param>
+    /// <returns>Список связей задачи.</returns>
+    Task<IEnumerable<GetTaskLinkOutput>> GetTaskLinkParentAsync(long projectId, long projectTaskId,
+        LinkTypeEnum linkType);
 }

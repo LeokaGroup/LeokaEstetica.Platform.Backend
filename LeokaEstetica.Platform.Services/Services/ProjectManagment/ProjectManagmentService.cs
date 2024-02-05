@@ -1617,7 +1617,8 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<GetTaskLinkOutput>> GetTaskLinkDefaultAsync(long projectId, long projectTaskId)
+    public async Task<IEnumerable<GetTaskLinkOutput>> GetTaskLinkDefaultAsync(long projectId, long projectTaskId,
+        LinkTypeEnum linkType)
     {
         try
         {
@@ -1632,7 +1633,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             }
 
             var links = (await _projectManagmentRepository.GetTaskLinksByProjectIdProjectTaskIdAsync(projectId,
-                currentTask.TaskId))
+                currentTask.TaskId, linkType))
                 ?.AsList();
 
             if (links is null || !links.Any())
@@ -1693,11 +1694,59 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             {
                 t.ExecutorName = executors.TryGet(t.ExecutorId).FullName;
                 t.TaskStatusName = statuseNames.Find(x => x.StatusId == t.TaskStatusId)?.StatusName;
-                
-                // Например, 17 июля 2015 г. 17:04
-                // t.LastUpdated = DateTime.ParseExact(t.LastUpdated, "f", null).ToString(CultureInfo.InvariantCulture);
                 t.LinkType = linkType;
             }
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task<IEnumerable<GetTaskLinkOutput>> GetTaskLinkParentAsync(long projectId, long projectTaskId,
+        LinkTypeEnum linkType)
+    {
+        try
+        {
+            var currentTask = await _projectManagmentRepository.GetTaskDetailsByTaskIdAsync(projectTaskId,
+                projectId);
+                
+            if (currentTask is null)
+            {
+                throw new InvalidOperationException(
+                    "Не удалось получить текущую задачу." +
+                    $"ProjectId: {projectId}. ProjectTaskId: {projectTaskId}.");
+            }
+
+            var links = (await _projectManagmentRepository.GetTaskLinksByProjectIdProjectTaskIdAsync(projectId,
+                    currentTask.TaskId, linkType))
+                ?.AsList();
+
+            if (links is null || !links.Any())
+            {
+                return Enumerable.Empty<GetTaskLinkOutput>();
+            }
+            
+            var linkIds = links
+                .Where(x => x.ParentId is not null)
+                .Select(x => x.ParentId!.Value);
+            
+            var tasks = (await _projectManagmentRepository.GetProjectTaskByProjectIdTaskIdsAsync(projectId, linkIds))
+                ?.AsList();
+
+            if (tasks is null || !tasks.Any())
+            {
+                throw new InvalidOperationException(
+                    "Не удалось получить связи задачи по Id проекта и Id задачи в рамках проекта." +
+                    $"ProjectId: {projectId}. ProjectTaskId: {projectTaskId}.");
+            }
+
+            var result = await ModifyTaskLinkResultAsync(tasks);
 
             return result;
         }
