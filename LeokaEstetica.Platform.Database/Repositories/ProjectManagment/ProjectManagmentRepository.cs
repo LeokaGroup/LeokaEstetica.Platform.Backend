@@ -952,7 +952,9 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
             
             // Текущая задача становится дочкой для родителя.
             otherParameters.Add("@child_id", taskFromLink);
-            otherParameters.Add("@link_type", new Enum(linkType));
+            
+            // Для родителя текущая задача становится дочкой.
+            otherParameters.Add("@link_type", new Enum(LinkTypeEnum.Child));
             otherParameters.Add("@is_blocked", false);
             otherParameters.Add("@project_id", projectId);
             
