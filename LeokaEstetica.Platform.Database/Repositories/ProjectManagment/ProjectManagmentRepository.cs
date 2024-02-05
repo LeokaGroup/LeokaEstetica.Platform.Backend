@@ -734,19 +734,22 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
         var firstParameters = new DynamicParameters();
-        firstParameters.Add("@task_id", taskFromLink);
+        firstParameters.Add("@from_task_id", taskFromLink);
+        firstParameters.Add("@to_task_id", taskToLink);
         firstParameters.Add("@link_type", new Enum(linkType));
         firstParameters.Add("@is_blocked", false);
         firstParameters.Add("@project_id", projectId);
         
         var secondParameters = new DynamicParameters();
-        secondParameters.Add("@task_id", taskToLink);
+        secondParameters.Add("@from_task_id", taskFromLink);
+        secondParameters.Add("@to_task_id", taskToLink);
         secondParameters.Add("@link_type", new Enum(linkType));
         secondParameters.Add("@is_blocked", false);
         secondParameters.Add("@project_id", projectId);
 
-        var query = @"INSERT INTO project_management.task_links (task_id, link_type, is_blocked, project_id) 
-                      VALUES (@task_id, @link_type, @is_blocked, @project_id)";
+        var query = @"INSERT INTO project_management.task_links (from_task_id, to_task_id, link_type, is_blocked,
+                                           project_id) 
+                      VALUES (@from_task_id, @to_task_id, @link_type, @is_blocked, @project_id)";
 
         await connection.ExecuteAsync(query, firstParameters);
         await connection.ExecuteAsync(query, secondParameters);

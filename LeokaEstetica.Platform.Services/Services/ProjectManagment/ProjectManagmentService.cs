@@ -1514,33 +1514,42 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     public async Task CreateTaskLinkDefaultAsync(long taskFromLink, long taskToLink, LinkTypeEnum linkType,
         long projectId, string account)
     {
-        if (linkType != LinkTypeEnum.Link)
+        try
         {
-            throw new InvalidOperationException($"Тип связи {linkType} не является обычной связью.");
-        }
+            if (linkType != LinkTypeEnum.Link)
+            {
+                throw new InvalidOperationException($"Тип связи {linkType} не является обычной связью.");
+            }
         
-        var userId = await _userRepository.GetUserByEmailAsync(account);
+            var userId = await _userRepository.GetUserByEmailAsync(account);
 
-        if (userId <= 0)
-        {
-            var ex = new NotFoundUserIdByAccountException(account);
-            throw ex;
-        }
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
         
-        var currentTask = await _projectManagmentRepository.GetTaskDetailsByTaskIdAsync(taskFromLink,
-            projectId);
+            var currentTask = await _projectManagmentRepository.GetTaskDetailsByTaskIdAsync(taskFromLink,
+                projectId);
                 
-        if (currentTask is null)
-        {
-            throw new InvalidOperationException(
-                "Не удалось получить текущую задачу." +
-                $"ProjectId: {projectId}. ProjectTaskId: {taskFromLink}.");
+            if (currentTask is null)
+            {
+                throw new InvalidOperationException(
+                    "Не удалось получить текущую задачу." +
+                    $"ProjectId: {projectId}. ProjectTaskId: {taskFromLink}.");
+            }
+
+            await _projectManagmentRepository.CreateTaskLinkDefaultAsync(currentTask.TaskId, taskToLink, linkType,
+                projectId);
+
+            // TODO: Тут добавить запись активности пользователя по userId.
         }
-
-        await _projectManagmentRepository.CreateTaskLinkDefaultAsync(currentTask.TaskId, taskToLink, linkType,
-            projectId);
-
-        // TODO: Тут добавить запись активности пользователя по userId.
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            throw;
+        }
     }
 
     /// <inheritdoc />
