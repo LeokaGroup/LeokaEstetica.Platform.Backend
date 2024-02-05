@@ -746,6 +746,8 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
             
             // Если создается родительская связь.
             case LinkTypeEnum.Parent:
+                await CreateTaskLinkParentAsync(taskLinkInputd.TaskFromLink, taskLinkInputd.ParentId!.Value,
+                    LinkTypeEnum.Link, taskLinkInputd.ProjectId, connection, transaction);
                 break;
             
             // Если создается дочерняя связь.
@@ -904,6 +906,81 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
             {
                 await connection!.ExecuteAsync(query, firstParameters);
                 await connection.ExecuteAsync(query, secondParameters);
+            }
+        }
+
+        catch
+        {
+            if (connection is not null && transaction is not null)
+            {
+                transaction.Rollback();
+            }
+
+            throw;
+        }
+
+        finally
+        {
+            transaction?.Dispose();
+        }
+    }
+    
+    /// <summary>
+    /// Метод создает родительскую связь между задачами.
+    /// </summary>
+    /// <param name="taskFromLink">Id задачи, от которой исходит связь.</param>
+    /// <param name="parentId">Id родительской задачи.</param>
+    /// <param name="linkType">Тип связи.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="connection">Подключение к БД.</param>
+    /// <param name="transaction">Транзакция.</param>
+    private async Task CreateTaskLinkParentAsync(long taskFromLink, long parentId, LinkTypeEnum linkType,
+        long projectId, IDbConnection connection = null, IDbTransaction transaction = null)
+    {
+        try
+        {
+            var firstParameters = new DynamicParameters();
+            firstParameters.Add("@from_task_id", taskFromLink);
+            
+            // Проставляем родителя текущей задаче.
+            firstParameters.Add("@parent_id", parentId);
+            firstParameters.Add("@link_type", new Enum(linkType));
+            firstParameters.Add("@is_blocked", false);
+            firstParameters.Add("@project_id", projectId);
+            
+            var queryFirst = @"INSERT INTO project_management.task_links (
+                                           from_task_id, parent_id, link_type, is_blocked, project_id) 
+                      VALUES (@from_task_id, @parent_id, @link_type, @is_blocked, @project_id)";
+
+            var secondParameters = new DynamicParameters();
+            
+            // Родительская задача становится текущей.
+            secondParameters.Add("@from_task_id", parentId);
+            
+            // Текущая задача становится дочкой для родителя.
+            secondParameters.Add("@child_id", taskFromLink);
+            secondParameters.Add("@link_type", new Enum(linkType));
+            secondParameters.Add("@is_blocked", false);
+            secondParameters.Add("@project_id", projectId);
+            
+            var querySecond = @"INSERT INTO project_management.task_links (
+                                           from_task_id, child_id, link_type, is_blocked, project_id) 
+                      VALUES (@from_task_id, @child_id, @link_type, @is_blocked, @project_id)";
+
+            if (connection is not null && transaction is not null)
+            {
+                transaction = connection.BeginTransaction();
+
+                await connection.ExecuteAsync(queryFirst, firstParameters);
+                await connection.ExecuteAsync(querySecond, secondParameters);
+
+                transaction.Commit();
+            }
+
+            else
+            {
+                await connection!.ExecuteAsync(queryFirst, firstParameters);
+                await connection.ExecuteAsync(querySecond, secondParameters);
             }
         }
 
