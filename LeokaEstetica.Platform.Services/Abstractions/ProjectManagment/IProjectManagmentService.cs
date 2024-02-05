@@ -268,4 +268,14 @@ public interface IProjectManagmentService
     /// <returns>Список связей задачи.</returns>
     Task<IEnumerable<GetTaskLinkOutput>> GetTaskLinkParentAsync(long projectId, long projectTaskId,
         LinkTypeEnum linkType);
+    
+    /// <summary>
+    /// Метод получает связи задачи (дочерние связи).
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
+    /// <param name="linkType">Тип связи.</param>
+    /// <returns>Список связей задачи.</returns>
+    Task<IEnumerable<GetTaskLinkOutput>> GetTaskLinkChildAsync(long projectId, long projectTaskId,
+        LinkTypeEnum linkType);
 }
