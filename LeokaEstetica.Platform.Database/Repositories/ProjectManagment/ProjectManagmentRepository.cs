@@ -803,13 +803,40 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         long fromTaskId, LinkTypeEnum linkType)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
+        IEnumerable<TaskLinkEntity> result;
 
-        var parameters = new DynamicParameters();
-        parameters.Add("@project_id", projectId);
-        parameters.Add("@from_task_id", fromTaskId);
-        parameters.Add("@link_type", new Enum(linkType));
+        if (linkType == LinkTypeEnum.Depend)
+        {
+            var parameters = new DynamicParameters();
+            parameters.Add("@project_id", projectId);
+            parameters.Add("@blocked_task_id", fromTaskId);
+            parameters.Add("@link_type", new Enum(linkType));
 
-        var query = @"SELECT link_id, 
+            var query = @"SELECT link_id, 
+                       from_task_id, 
+                       to_task_id, 
+                       link_type, 
+                       parent_id, 
+                       child_id, 
+                       is_blocked, 
+                       project_id, 
+                       blocked_task_id 
+                      FROM project_management.task_links 
+                      WHERE project_id = @project_id 
+                        AND blocked_task_id = @blocked_task_id 
+                        AND link_type = @link_type";
+
+            result = await connection.QueryAsync<TaskLinkEntity>(query, parameters);
+        }
+
+        else
+        {
+            var parameters = new DynamicParameters();
+            parameters.Add("@project_id", projectId);
+            parameters.Add("@from_task_id", fromTaskId);
+            parameters.Add("@link_type", new Enum(linkType));
+
+            var query = @"SELECT link_id, 
                        from_task_id, 
                        to_task_id, 
                        link_type, 
@@ -823,7 +850,8 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
                         AND from_task_id = @from_task_id 
                         AND link_type = @link_type";
 
-        var result = await connection.QueryAsync<TaskLinkEntity>(query, parameters);
+            result = await connection.QueryAsync<TaskLinkEntity>(query, parameters);
+        }
 
         return result;
     }

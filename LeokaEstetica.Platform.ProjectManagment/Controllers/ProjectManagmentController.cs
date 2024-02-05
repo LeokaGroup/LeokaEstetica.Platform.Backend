@@ -940,7 +940,7 @@ public class ProjectManagmentController : BaseController
                 exceptions.Add(new InvalidOperationException(err.ErrorMessage));
             }
             
-            var ex = new AggregateException("Ошибка получения связей задачи (дочерние связи).", exceptions);
+            var ex = new AggregateException("Ошибка получения связей задачи (связи зависит от).", exceptions);
             _logger.LogError(ex, ex.Message);
             
             await _pachcaService.Value.SendNotificationErrorAsync(ex);
@@ -949,6 +949,47 @@ public class ProjectManagmentController : BaseController
         }
 
         var result = await _projectManagmentService.GetTaskLinkDependAsync(projectId, projectTaskId, linkType);
+
+        return result;
+    }
+    
+    /// <summary>
+    /// Метод получает связи задачи (связи блокирующие).
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
+    /// <param name="linkType">Тип связи.</param>
+    /// <returns>Список связей задачи.</returns>
+    [HttpGet]
+    [Route("task-link-blocked")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<GetTaskLinkOutput>))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)] 
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<IEnumerable<GetTaskLinkOutput>> GetTaskLinkBlockedAsync([FromQuery] long projectId,
+        [FromQuery] long projectTaskId, [FromQuery] LinkTypeEnum linkType)
+    {
+        var validator = await new GetTaskLinkValidator().ValidateAsync((projectId, projectTaskId));
+
+        if (validator.Errors.Any())
+        {
+            var exceptions = new List<InvalidOperationException>();
+
+            foreach (var err in validator.Errors)
+            {
+                exceptions.Add(new InvalidOperationException(err.ErrorMessage));
+            }
+            
+            var ex = new AggregateException("Ошибка получения связей задачи (блокирующая связь).", exceptions);
+            _logger.LogError(ex, ex.Message);
+            
+            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            
+            throw ex;
+        }
+
+        var result = await _projectManagmentService.GetTaskLinkBlockedAsync(projectId, projectTaskId, linkType);
 
         return result;
     }
