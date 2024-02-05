@@ -1809,6 +1809,57 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         }
     }
 
+    /// <inheritdoc />
+    public async Task<IEnumerable<GetTaskLinkOutput>> GetTaskLinkDependAsync(long projectId, long projectTaskId,
+        LinkTypeEnum linkType)
+    {
+        try
+        {
+            var currentTask = await _projectManagmentRepository.GetTaskDetailsByTaskIdAsync(projectTaskId,
+                projectId);
+                
+            if (currentTask is null)
+            {
+                throw new InvalidOperationException(
+                    "Не удалось получить текущую задачу." +
+                    $"ProjectId: {projectId}. ProjectTaskId: {projectTaskId}.");
+            }
+
+            var links = (await _projectManagmentRepository.GetTaskLinksByProjectIdProjectTaskIdAsync(projectId,
+                    currentTask.TaskId, linkType))
+                ?.AsList();
+
+            if (links is null || !links.Any())
+            {
+                return Enumerable.Empty<GetTaskLinkOutput>();
+            }
+            
+            var linkIds = links
+                .Where(x => x.ChildId is not null)
+                .Select(x => x.ChildId!.Value);
+            
+            var tasks = (await _projectManagmentRepository.GetProjectTaskByProjectIdTaskIdsAsync(projectId, linkIds))
+                ?.AsList();
+
+            if (tasks is null || !tasks.Any())
+            {
+                throw new InvalidOperationException(
+                    "Не удалось получить связи задачи по Id проекта и Id задачи в рамках проекта." +
+                    $"ProjectId: {projectId}. ProjectTaskId: {projectTaskId}.");
+            }
+
+            var result = await ModifyTaskLinkResultAsync(tasks);
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
     #endregion
 
     #region Приватные методы.

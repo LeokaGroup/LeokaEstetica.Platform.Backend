@@ -911,6 +911,47 @@ public class ProjectManagmentController : BaseController
 
         return result;
     }
+    
+    /// <summary>
+    /// Метод получает связи задачи (связи зависит от).
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
+    /// <param name="linkType">Тип связи.</param>
+    /// <returns>Список связей задачи.</returns>
+    [HttpGet]
+    [Route("task-link-depend")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<GetTaskLinkOutput>))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)] 
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<IEnumerable<GetTaskLinkOutput>> GetTaskLinkDependAsync([FromQuery] long projectId,
+        [FromQuery] long projectTaskId, [FromQuery] LinkTypeEnum linkType)
+    {
+        var validator = await new GetTaskLinkValidator().ValidateAsync((projectId, projectTaskId));
+
+        if (validator.Errors.Any())
+        {
+            var exceptions = new List<InvalidOperationException>();
+
+            foreach (var err in validator.Errors)
+            {
+                exceptions.Add(new InvalidOperationException(err.ErrorMessage));
+            }
+            
+            var ex = new AggregateException("Ошибка получения связей задачи (дочерние связи).", exceptions);
+            _logger.LogError(ex, ex.Message);
+            
+            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            
+            throw ex;
+        }
+
+        var result = await _projectManagmentService.GetTaskLinkDependAsync(projectId, projectTaskId, linkType);
+
+        return result;
+    }
 
     /// <summary>
     /// Метод получает задачи проекта, которые доступны для создания связи с текущей задачей (разных типов связей).

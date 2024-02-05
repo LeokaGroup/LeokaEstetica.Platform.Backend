@@ -1083,7 +1083,7 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
             otherParameters.Add("@from_task_id", dependId);
             
             // Указываем, какую задачу блокирует.
-            currentParameters.Add("@blocked_task_id", taskFromLink);
+            otherParameters.Add("@blocked_task_id", taskFromLink);
             otherParameters.Add("@link_type", new Enum(linkType));
             
             // Задача, от которой зависит текущая становится для нее блокирующей.
