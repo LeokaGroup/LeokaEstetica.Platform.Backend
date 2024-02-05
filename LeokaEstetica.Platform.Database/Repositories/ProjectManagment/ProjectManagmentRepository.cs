@@ -733,33 +733,30 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
     /// <inheritdoc />
     public async Task CreateTaskLinkAsync(TaskLinkInput taskLinkInputd)
     {
-        using var connection = await ConnectionProvider.GetConnectionAsync();
-        var transaction = connection.BeginTransaction();
-
         switch (taskLinkInputd.LinkType)
         {
             // Если создается обычная связь.
             case LinkTypeEnum.Link:
                 await CreateTaskLinkDefaultAsync(taskLinkInputd.TaskFromLink, taskLinkInputd.TaskToLink,
-                    LinkTypeEnum.Link, taskLinkInputd.ProjectId, connection, transaction);
+                    LinkTypeEnum.Link, taskLinkInputd.ProjectId);
                 break;
             
             // Если создается родительская связь.
             case LinkTypeEnum.Parent:
                 await CreateTaskLinkParentAsync(taskLinkInputd.TaskFromLink, taskLinkInputd.ParentId!.Value,
-                    LinkTypeEnum.Parent, taskLinkInputd.ProjectId, connection, transaction);
+                    LinkTypeEnum.Parent, taskLinkInputd.ProjectId);
                 break;
             
             // Если создается дочерняя связь.
             case LinkTypeEnum.Child:
                 await CreateTaskLinkChildAsync(taskLinkInputd.TaskFromLink, taskLinkInputd.ChildId!.Value,
-                    LinkTypeEnum.Child, taskLinkInputd.ProjectId, connection, transaction);
+                    LinkTypeEnum.Child, taskLinkInputd.ProjectId);
                 break;
             
             // Если создается тип связи "зависит от".
             case LinkTypeEnum.Depend:
                 await CreateTaskLinkDependAsync(taskLinkInputd.TaskFromLink, taskLinkInputd.DependId!.Value,
-                    LinkTypeEnum.Depend, taskLinkInputd.ProjectId, connection, transaction);
+                    LinkTypeEnum.Depend, taskLinkInputd.ProjectId);
                 break;
             
             default:
@@ -871,11 +868,12 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
     /// <param name="taskToLink">Id задачи, которую связывают.</param>
     /// <param name="linkType">Тип связи.</param>
     /// <param name="projectId">Id проекта.</param>
-    /// <param name="connection">Подключение к БД.</param>
-    /// <param name="transaction">Транзакция.</param>
     private async Task CreateTaskLinkDefaultAsync(long taskFromLink, long taskToLink, LinkTypeEnum linkType,
-        long projectId, IDbConnection connection = null, IDbTransaction transaction = null)
+        long projectId)
     {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+        var transaction = connection.BeginTransaction();
+        
         try
         {
             // Параметры текущей задачи.
@@ -898,36 +896,22 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
                                            from_task_id, to_task_id, link_type, is_blocked, project_id) 
                       VALUES (@from_task_id, @to_task_id, @link_type, @is_blocked, @project_id)";
 
-            if (connection is not null && transaction is not null)
-            {
-                transaction = connection.BeginTransaction();
+            await connection.ExecuteAsync(query, currentParameters);
+            await connection.ExecuteAsync(query, otherParameters);
 
-                await connection.ExecuteAsync(query, currentParameters);
-                await connection.ExecuteAsync(query, otherParameters);
-
-                transaction.Commit();
-            }
-
-            else
-            {
-                await connection!.ExecuteAsync(query, currentParameters);
-                await connection.ExecuteAsync(query, otherParameters);
-            }
+            transaction.Commit();
         }
 
         catch
         {
-            if (connection is not null && transaction is not null)
-            {
-                transaction.Rollback();
-            }
+            transaction.Rollback();
 
             throw;
         }
 
         finally
         {
-            transaction?.Dispose();
+            transaction.Dispose();
         }
     }
     
@@ -938,11 +922,12 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
     /// <param name="parentId">Id родительской задачи.</param>
     /// <param name="linkType">Тип связи.</param>
     /// <param name="projectId">Id проекта.</param>
-    /// <param name="connection">Подключение к БД.</param>
-    /// <param name="transaction">Транзакция.</param>
     private async Task CreateTaskLinkParentAsync(long taskFromLink, long parentId, LinkTypeEnum linkType,
-        long projectId, IDbConnection connection = null, IDbTransaction transaction = null)
+        long projectId)
     {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+        var transaction = connection.BeginTransaction();
+        
         try
         {
             // Параметры текущей задачи.
@@ -975,36 +960,22 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
                                            from_task_id, child_id, link_type, is_blocked, project_id) 
                       VALUES (@from_task_id, @child_id, @link_type, @is_blocked, @project_id)";
 
-            if (connection is not null && transaction is not null)
-            {
-                transaction = connection.BeginTransaction();
+            await connection.ExecuteAsync(queryFirst, currentParameters);
+            await connection.ExecuteAsync(querySecond, otherParameters);
 
-                await connection.ExecuteAsync(queryFirst, currentParameters);
-                await connection.ExecuteAsync(querySecond, otherParameters);
-
-                transaction.Commit();
-            }
-
-            else
-            {
-                await connection!.ExecuteAsync(queryFirst, currentParameters);
-                await connection.ExecuteAsync(querySecond, otherParameters);
-            }
+            transaction.Commit();
         }
 
         catch
         {
-            if (connection is not null && transaction is not null)
-            {
-                transaction.Rollback();
-            }
+            transaction.Rollback();
 
             throw;
         }
 
         finally
         {
-            transaction?.Dispose();
+            transaction.Dispose();
         }
     }
     
@@ -1015,11 +986,12 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
     /// <param name="childId">Id дочерней задачи.</param>
     /// <param name="linkType">Тип связи.</param>
     /// <param name="projectId">Id проекта.</param>
-    /// <param name="connection">Подключение к БД.</param>
-    /// <param name="transaction">Транзакция.</param>
     private async Task CreateTaskLinkChildAsync(long taskFromLink, long childId, LinkTypeEnum linkType,
-        long projectId, IDbConnection connection = null, IDbTransaction transaction = null)
+        long projectId)
     {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+        var transaction = connection.BeginTransaction();
+        
         try
         {
             // Параметры текущей задачи.
@@ -1052,36 +1024,22 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
                                            from_task_id, parent_id, link_type, is_blocked, project_id) 
                       VALUES (@from_task_id, @parent_id, @link_type, @is_blocked, @project_id)";
 
-            if (connection is not null && transaction is not null)
-            {
-                transaction = connection.BeginTransaction();
+            await connection.ExecuteAsync(queryFirst, currentParameters);
+            await connection.ExecuteAsync(querySecond, otherParameters);
 
-                await connection.ExecuteAsync(queryFirst, currentParameters);
-                await connection.ExecuteAsync(querySecond, otherParameters);
-
-                transaction.Commit();
-            }
-
-            else
-            {
-                await connection!.ExecuteAsync(queryFirst, currentParameters);
-                await connection.ExecuteAsync(querySecond, otherParameters);
-            }
+            transaction.Commit();
         }
 
         catch
         {
-            if (connection is not null && transaction is not null)
-            {
-                transaction.Rollback();
-            }
+            transaction.Rollback();
 
             throw;
         }
 
         finally
         {
-            transaction?.Dispose();
+            transaction.Dispose();
         }
     }
     
@@ -1092,11 +1050,12 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
     /// <param name="childId">Id дочерней задачи.</param>
     /// <param name="linkType">Тип связи.</param>
     /// <param name="projectId">Id проекта.</param>
-    /// <param name="connection">Подключение к БД.</param>
-    /// <param name="transaction">Транзакция.</param>
     private async Task CreateTaskLinkDependAsync(long taskFromLink, long dependId, LinkTypeEnum linkType,
-        long projectId, IDbConnection connection = null, IDbTransaction transaction = null)
+        long projectId)
     {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+        var transaction = connection.BeginTransaction();
+        
         try
         {
             // Параметры текущей задачи.
@@ -1127,36 +1086,22 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
                                            from_task_id, blocked_task_id, link_type, is_blocked, project_id) 
                       VALUES (@from_task_id, @blocked_task_id, @link_type, @is_blocked, @project_id)";
 
-            if (connection is not null && transaction is not null)
-            {
-                transaction = connection.BeginTransaction();
+            await connection.ExecuteAsync(queryFirst, currentParameters);
+            await connection.ExecuteAsync(querySecond, otherParameters);
 
-                await connection.ExecuteAsync(queryFirst, currentParameters);
-                await connection.ExecuteAsync(querySecond, otherParameters);
-
-                transaction.Commit();
-            }
-
-            else
-            {
-                await connection!.ExecuteAsync(queryFirst, currentParameters);
-                await connection.ExecuteAsync(querySecond, otherParameters);
-            }
+            transaction.Commit();
         }
 
         catch
         {
-            if (connection is not null && transaction is not null)
-            {
-                transaction.Rollback();
-            }
+            transaction.Rollback();
 
             throw;
         }
 
         finally
         {
-            transaction?.Dispose();
+            transaction.Dispose();
         }
     }
 

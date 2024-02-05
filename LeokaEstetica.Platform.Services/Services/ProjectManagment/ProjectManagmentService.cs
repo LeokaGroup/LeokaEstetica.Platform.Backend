@@ -1533,6 +1533,9 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 
             if (taskLinkInput.LinkType == LinkTypeEnum.Parent)
             {
+                // Проставляем родителя.
+                taskLinkInput.ParentId = taskLinkInput.TaskToLink;
+                
                 if (!taskLinkInput.ParentId.HasValue)
                 {
                     throw new InvalidOperationException(
@@ -1547,6 +1550,9 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             
             if (taskLinkInput.LinkType == LinkTypeEnum.Child)
             {
+                // Проставляем дочку.
+                taskLinkInput.ChildId = taskLinkInput.TaskToLink;
+                
                 if (!taskLinkInput.ChildId.HasValue)
                 {
                     throw new InvalidOperationException(
@@ -1561,6 +1567,9 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             
             if (taskLinkInput.LinkType == LinkTypeEnum.Depend)
             {
+                // Проставляем от какой задачи зависит текущая.
+                taskLinkInput.DependId = taskLinkInput.TaskToLink;
+                
                 if (!taskLinkInput.DependId.HasValue)
                 {
                     throw new InvalidOperationException(
@@ -1631,7 +1640,10 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 return Enumerable.Empty<GetTaskLinkOutput>();
             }
 
-            var linkIds = links.Select(x => x.ToTaskId!.Value);
+            // У обычных связей нет родителя и ребенка.
+            var linkIds = links
+                .Where(x => x.ParentId is null && x.ChildId is null)
+                .Select(x => x.ToTaskId!.Value);
             
             var tasks = (await _projectManagmentRepository.GetProjectTaskByProjectIdTaskIdsAsync(projectId, linkIds))
                 ?.AsList();
