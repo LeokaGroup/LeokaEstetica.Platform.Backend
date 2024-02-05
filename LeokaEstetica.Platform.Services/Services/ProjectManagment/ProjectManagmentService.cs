@@ -1515,7 +1515,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         try
         {
             // Валидируем типы связи.
-            if (new[] { LinkTypeEnum.Link, LinkTypeEnum.Child, LinkTypeEnum.Parent, LinkTypeEnum.Depend }.Contains(
+            if (!new[] { LinkTypeEnum.Link, LinkTypeEnum.Child, LinkTypeEnum.Parent, LinkTypeEnum.Depend }.Contains(
                     taskLinkInput.LinkType))
             {
                 if (taskLinkInput.TaskFromLink <= 0
