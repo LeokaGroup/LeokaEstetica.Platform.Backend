@@ -287,4 +287,13 @@ public interface IProjectManagmentRepository
     /// <param name="linkType">Тип связи.</param>
     /// <returns>Список задач, доступных к созданию связи.</returns>
     Task<IEnumerable<AvailableTaskLinkOutput>> GetAvailableTaskLinkAsync(long projectId, LinkTypeEnum linkType);
+    
+    /// <summary>
+    /// Метод разрывает связь определенного типа между задачами.
+    /// </summary>
+    /// <param name="linkType">Тип связи.</param>
+    /// <param name="removedLinkId">Id задачи, с которой разрывается связь (задача в рамках проекта).</param>
+    /// <param name="currentTaskId">Id текущей задачи (задача в рамках проекта).</param>
+    /// <param name="projectId">Id проекта.</param>
+    Task RemoveTaskLinkAsync(LinkTypeEnum linkType, long removedLinkId, long currentTaskId, long projectId);
 }

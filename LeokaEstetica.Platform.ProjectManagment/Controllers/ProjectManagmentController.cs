@@ -1048,7 +1048,7 @@ public class ProjectManagmentController : BaseController
     [ProducesResponseType(404)]
     public async Task<IEnumerable<KeyValuePair<string,string>>> GetLinkTypesAsync()
     {
-        var result = await GetLinkTypeFactory.GetLinkTypes();
+        var result = await GetLinkTypeFactory.GetLinkTypesAsync();
 
         return await Task.FromResult(result);
     }
@@ -1195,5 +1195,45 @@ public class ProjectManagmentController : BaseController
 
         await _projectManagmentService.UpdateTaskPriorityAsync(taskPriorityInput.PriorityId,
             taskPriorityInput.ProjectTaskId, taskPriorityInput.ProjectId, GetUserName());
+    }
+
+    /// <summary>
+    /// Метод разрывает связь определенного типа между задачами.
+    /// </summary>
+    /// <param name="removeTaskLinkInput">Входная модель.</param>
+    [HttpDelete]
+    [Route("task-link")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task RemoveTaskLinkAsync([FromQuery] RemoveTaskLinkInput removeTaskLinkInput)
+    {
+        var validator = await new RemoveTaskLinkValidator().ValidateAsync(removeTaskLinkInput);
+
+        if (validator.Errors.Any())
+        {
+            var exceptions = new List<InvalidOperationException>();
+
+            foreach (var err in validator.Errors)
+            {
+                exceptions.Add(new InvalidOperationException(err.ErrorMessage));
+            }
+
+            var ex = new AggregateException(
+                $"Ошибка разрыва связи: {removeTaskLinkInput.LinkType} между задачами: " +
+                $"{removeTaskLinkInput.CurrentTaskId} и {removeTaskLinkInput.RemovedLinkId}.",
+                exceptions);
+            _logger.LogError(ex, ex.Message);
+            
+            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            
+            throw ex;
+        }
+
+        await _projectManagmentService.RemoveTaskLinkAsync(removeTaskLinkInput.LinkType,
+            removeTaskLinkInput.RemovedLinkId, removeTaskLinkInput.CurrentTaskId, removeTaskLinkInput.ProjectId,
+            GetUserName());
     }
 }

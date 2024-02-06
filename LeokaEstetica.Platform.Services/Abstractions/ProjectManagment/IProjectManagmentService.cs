@@ -298,4 +298,15 @@ public interface IProjectManagmentService
     /// <returns>Список связей задачи.</returns>
     Task<IEnumerable<GetTaskLinkOutput>> GetTaskLinkBlockedAsync(long projectId, long projectTaskId,
         LinkTypeEnum linkType);
+
+    /// <summary>
+    /// Метод разрывает связь определенного типа между задачами.
+    /// </summary>
+    /// <param name="linkType">Тип связи.</param>
+    /// <param name="removedLinkId">Id задачи, с которой разрывается связь (задача в рамках проекта).</param>
+    /// <param name="currentTaskId">Id текущей задачи (задача в рамках проекта).</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="account">Аккаунт.</param>
+    Task RemoveTaskLinkAsync(LinkTypeEnum linkType, long removedLinkId, long currentTaskId, long projectId,
+        string account);
 }
