@@ -24,8 +24,10 @@ using LeokaEstetica.Platform.Models.Entities.Profile;
 using LeokaEstetica.Platform.Models.Entities.ProjectManagment;
 using LeokaEstetica.Platform.Models.Entities.Template;
 using LeokaEstetica.Platform.Models.Enums;
+using LeokaEstetica.Platform.ProjectManagment.Documents.Abstractions;
 using LeokaEstetica.Platform.Services.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Services.Factors;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Enum = System.Enum;
@@ -49,6 +51,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     private readonly ITransactionScopeFactory _transactionScopeFactory;
     private readonly IProjectSettingsConfigRepository _projectSettingsConfigRepository;
     private readonly Lazy<IReversoService> _reversoService;
+    private readonly Lazy<IFileManagerService> _fileManagerService;
 
     /// <summary>
     /// Статусы задач, которые являются самыми базовыми и никогда не меняются независимо от шаблона проекта.
@@ -71,6 +74,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     /// <param name="transactionScopeFactory">Факторка транзакций.</param>
     /// <param name="projectSettingsConfigRepository">Репозиторий настроек проектов.</param>
     /// <param name="projectSettingsConfigRepository">Сервис транслитера.</param>
+    /// <param name="fileManagerService">Сервис менеджера файлов.</param>
     /// </summary>
     public ProjectManagmentService(ILogger<ProjectManagmentService> logger,
         IProjectManagmentRepository projectManagmentRepository,
@@ -81,7 +85,8 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         IProjectManagmentTemplateRepository projectManagmentTemplateRepository,
         ITransactionScopeFactory transactionScopeFactory,
         IProjectSettingsConfigRepository projectSettingsConfigRepository,
-        Lazy<IReversoService> reversoService)
+        Lazy<IReversoService> reversoService,
+        Lazy<IFileManagerService> fileManagerService)
     {
         _logger = logger;
         _projectManagmentRepository = projectManagmentRepository;
@@ -93,6 +98,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         _transactionScopeFactory = transactionScopeFactory;
         _projectSettingsConfigRepository = projectSettingsConfigRepository;
         _reversoService = reversoService;
+        _fileManagerService = fileManagerService;
     }
 
     #region Публичные методы.
@@ -1903,6 +1909,37 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             _logger.LogError(ex, ex.Message);
             throw;
         }
+    }
+
+    /// <inheritdoc />
+    public async Task UploadFilesFtpAsync(IFormFileCollection files, string account, long projectId, long taskId)
+    {
+        try
+        {
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+            
+            await _fileManagerService.Value.UploadFilesAsync(files, projectId, taskId);
+            
+            // TODO: Тут добавить запись активности пользователя по userId.
+        }
+        
+        catch (Exception ex)
+        {
+             _logger.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
+    /// <inheritdoc />
+    public Task DownloadFileAsync(string fileName)
+    {
+        throw new NotImplementedException();
     }
 
     #endregion

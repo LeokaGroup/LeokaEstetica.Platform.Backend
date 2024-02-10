@@ -13,7 +13,6 @@ using LeokaEstetica.Platform.Base.Repositories.Validation;
 using LeokaEstetica.Platform.Base.Services.Connection;
 using LeokaEstetica.Platform.Base.Services.Validation;
 using LeokaEstetica.Platform.Core.Attributes;
-using LeokaEstetica.Platform.Models.Enums;
 using Enum = LeokaEstetica.Platform.Models.Enums;
 
 namespace LeokaEstetica.Platform.Base.AutofacModules;

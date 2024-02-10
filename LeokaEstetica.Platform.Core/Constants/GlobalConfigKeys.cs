@@ -153,4 +153,15 @@ public static class GlobalConfigKeys
         /// </summary>
         public const string PROJECT_MANAGMENT_SPACE_URL = "ProjectManagment.SpaceUrl";
     }
+
+    /// <summary>
+    /// Класс ключей настроек менеджера файлов.
+    /// </summary>
+    public static class FileManagerSettings
+    {
+        /// <summary>
+        /// Ключ настроек менеджера файлов.
+        /// </summary>
+        public const string PROJECT_MANAGMENT_FILE_MANAGER_SETTINGS = "ProjectManagment.FileManagerSettings";
+    }
 }

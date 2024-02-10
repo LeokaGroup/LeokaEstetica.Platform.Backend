@@ -8,6 +8,7 @@ using LeokaEstetica.Platform.Models.Dto.Output.Project;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.Template;
 using LeokaEstetica.Platform.Models.Enums;
+using LeokaEstetica.Platform.ProjectManagment.Models.Input;
 using LeokaEstetica.Platform.ProjectManagment.ValidationModels;
 using LeokaEstetica.Platform.ProjectManagment.Validators;
 using LeokaEstetica.Platform.Services.Abstractions.Project;
@@ -1195,5 +1196,17 @@ public class ProjectManagmentController : BaseController
 
         await _projectManagmentService.UpdateTaskPriorityAsync(taskPriorityInput.PriorityId,
             taskPriorityInput.ProjectTaskId, taskPriorityInput.ProjectId, GetUserName());
+    }
+
+    /// <summary>
+    /// Метод добавляет файлы к задаче.
+    /// </summary>
+    /// <param name="projectTaskFileInput">Входная модель.</param>
+    [HttpPost]
+    [Route("upload-task-file")]
+    public async Task UploadFilesFtpAsync([FromForm] ProjectTaskFileInput projectTaskFileInput)
+    {
+        await _projectManagmentService.UploadFilesFtpAsync(projectTaskFileInput.FormCollection.Files, GetUserName(),
+            projectTaskFileInput.ProjectId, projectTaskFileInput.TaskId);
     }
 }

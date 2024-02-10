@@ -305,5 +305,7 @@ public class RepositoriesModule : Module
         builder.RegisterType<NpgSqlConnectionFactory>()
             .As<IConnectionFactory>()
             .InstancePerLifetimeScope();
+
+        builder.RegisterLazy<IGlobalConfigRepository, GlobalConfigRepository>();
     }
 }

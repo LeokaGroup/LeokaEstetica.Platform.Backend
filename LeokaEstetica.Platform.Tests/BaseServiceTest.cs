@@ -157,7 +157,7 @@ internal class BaseServiceTest
         FareRuleRepository = new FareRuleRepository(pgContext, AppConfiguration);
         
         var availableLimitsRepository = new AvailableLimitsRepository(pgContext);
-        var globalConfigRepository = new GlobalConfigRepository(pgContext, null, AppConfiguration);
+        var globalConfigRepository = new GlobalConfigRepository(pgContext, null, AppConfiguration, null);
         var pachcaService = new PachcaService(AppConfiguration, null);
 
         UserService = new UserService(null, userRepository, mapper, null, pgContext, profileRepository,
@@ -277,6 +277,6 @@ internal class BaseServiceTest
         ReversoService = new ReversoService(null);
         ProjectManagmentService = new ProjectManagmentService(null, projectManagmentRepository, mapper, userRepository,
             projectRepository, pachcaService, projectManagmentTemplateRepository, transactionScopeFactory,
-            projectSettingsConfigRepository, new Lazy<IReversoService>(ReversoService));
+            projectSettingsConfigRepository, new Lazy<IReversoService>(ReversoService), null);
     }
 }
