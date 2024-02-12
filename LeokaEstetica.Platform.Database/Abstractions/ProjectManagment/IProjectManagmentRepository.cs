@@ -2,6 +2,7 @@
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.Template;
 using LeokaEstetica.Platform.Models.Dto.ProjectManagement.Output;
+using LeokaEstetica.Platform.Models.Entities.Document;
 using LeokaEstetica.Platform.Models.Entities.ProjectManagment;
 using LeokaEstetica.Platform.Models.Entities.Template;
 using LeokaEstetica.Platform.Models.Enums;
@@ -287,4 +288,11 @@ public interface IProjectManagmentRepository
     /// <param name="linkType">Тип связи.</param>
     /// <returns>Список задач, доступных к созданию связи.</returns>
     Task<IEnumerable<AvailableTaskLinkOutput>> GetAvailableTaskLinkAsync(long projectId, LinkTypeEnum linkType);
+
+    /// <summary>
+    /// Метод создает документы задачи проекта.
+    /// Документы уже загружены на сервер, теперь идет их создание в БД.
+    /// </summary>
+    /// <param name="documents">Список документов к созданию.</param>
+    Task CreateProjectTaskDocumentsAsync(IEnumerable<ProjectTaskDocumentEntity> documents);
 }

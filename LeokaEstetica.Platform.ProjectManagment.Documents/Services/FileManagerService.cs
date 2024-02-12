@@ -1,5 +1,4 @@
 using System.Net.Sockets;
-using LeokaEstetica.Platform.Base.Factors;
 using LeokaEstetica.Platform.Database.Abstractions.Config;
 using LeokaEstetica.Platform.ProjectManagment.Documents.Abstractions;
 using Microsoft.AspNetCore.Http;
@@ -15,21 +14,17 @@ namespace LeokaEstetica.Platform.ProjectManagment.Documents.Services;
 internal sealed class FileManagerService : IFileManagerService
 {
     private readonly ILogger<FileManagerService> _logger;
-    private readonly Lazy<ITransactionScopeFactory> _transactionScopeFactory;
     private readonly Lazy<IGlobalConfigRepository> _globalConfigRepository;
 
     /// <summary>
     /// Конструктор.
     /// </summary>
     /// <param name="logger">Логгер.</param>
-    /// <param name="transactionScopeFactory">Факторка для создания транзакций.</param>
     /// <param name="globalConfigRepository">Репозиторий глобал конфига.</param>
     public FileManagerService(ILogger<FileManagerService> logger,
-        Lazy<ITransactionScopeFactory> transactionScopeFactory,
         Lazy<IGlobalConfigRepository> globalConfigRepository)
     {
         _logger = logger;
-        _transactionScopeFactory = transactionScopeFactory;
         _globalConfigRepository = globalConfigRepository;
     }
 
@@ -65,15 +60,27 @@ internal sealed class FileManagerService : IFileManagerService
                 sftpClient.CreateDirectory(userProjectPath);
             }
 
-            var userProjectTaskPath = userProjectPath + "/" + taskId;
+            var userProjectTaskPath = userProjectPath + "/" + taskId + "/";
             
             // Если папка задачи проекта не существует, то создаем ее.
             if (!sftpClient.Exists(userProjectTaskPath))
             {
                 sftpClient.CreateDirectory(userProjectTaskPath);
             }
-
-            using var scope = _transactionScopeFactory.Value.CreateTransactionScope();
+            
+            // Повторно проверяем создалась ли папка проекта.
+            if (!sftpClient.Exists(userProjectPath))
+            {
+                throw new InvalidOperationException("Папка проекта не существует.");
+            }
+            
+            // Повторно проверяем создалась ли папка задачи проекта.
+            if (!sftpClient.Exists(userProjectTaskPath))
+            {
+                throw new InvalidOperationException("Папка задачи проекта не существует.");
+            }
+            
+            // sftpClient.ChangeDirectory(userProjectTaskPath);
 
             foreach (var f in files)
             {
@@ -83,12 +90,11 @@ internal sealed class FileManagerService : IFileManagerService
                 
                 _logger.LogInformation($"Загружается файл {0} ({1:N0} байт)", fileName, fileStreamLength);
                 
-                sftpClient.UploadFile(stream, string.Concat(sftpTaskPath, Path.GetFileName(fileName)));
+                sftpClient.UploadFile(stream, string.Concat(userProjectTaskPath, Path.GetFileName(fileName)));
                 
                 _logger.LogInformation($"Файл {0} ({1:N0} байт) успешно загружен.", fileName, fileStreamLength);
             }
             
-            scope.Complete();
             sftpClient.Disconnect();
         }
 

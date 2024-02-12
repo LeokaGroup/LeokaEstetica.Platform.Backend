@@ -14,9 +14,4 @@ public class ProjectTaskFileInput
     /// Id задачи.
     /// </summary>
     public long TaskId { get; set; }
-
-    /// <summary>
-    /// Файлы задачи.
-    /// </summary>
-    public IFormCollection FormCollection { get; set; }
 }

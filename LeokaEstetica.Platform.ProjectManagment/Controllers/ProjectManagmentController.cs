@@ -16,6 +16,7 @@ using LeokaEstetica.Platform.Services.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Services.Abstractions.User;
 using LeokaEstetica.Platform.Services.Factors;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 
 namespace LeokaEstetica.Platform.ProjectManagment.Controllers;
 
@@ -1201,12 +1202,15 @@ public class ProjectManagmentController : BaseController
     /// <summary>
     /// Метод добавляет файлы к задаче.
     /// </summary>
-    /// <param name="projectTaskFileInput">Входная модель.</param>
+    /// <param name="formCollection">Данные формы.</param>
     [HttpPost]
     [Route("upload-task-file")]
-    public async Task UploadFilesFtpAsync([FromForm] ProjectTaskFileInput projectTaskFileInput)
+    public async Task UploadFilesFtpAsync([FromForm] IFormCollection formCollection)
     {
-        await _projectManagmentService.UploadFilesFtpAsync(projectTaskFileInput.FormCollection.Files, GetUserName(),
-            projectTaskFileInput.ProjectId, projectTaskFileInput.TaskId);
+        var projectTaskFileInput = JsonConvert.DeserializeObject<ProjectTaskFileInput>(
+            formCollection["projectTaskFileInput"]);
+        
+        await _projectManagmentService.UploadFilesFtpAsync(formCollection.Files, GetUserName(),
+            projectTaskFileInput!.ProjectId, projectTaskFileInput!.TaskId);
     }
 }

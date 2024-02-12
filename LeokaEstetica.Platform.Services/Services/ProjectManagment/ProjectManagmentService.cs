@@ -1925,7 +1925,13 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             }
             
             await _fileManagerService.Value.UploadFilesAsync(files, projectId, taskId);
+
+            var projectTaskFiles = CreateProjectTaskDocumentsFactory.CreateProjectTaskDocuments(files, projectId,
+                taskId);
             
+            // Сохраняем файлы задачи проекта.
+            await _projectManagmentRepository.CreateProjectTaskDocumentsAsync(projectTaskFiles);
+
             // TODO: Тут добавить запись активности пользователя по userId.
         }
         
