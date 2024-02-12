@@ -304,4 +304,12 @@ public interface IProjectManagmentRepository
     /// </summary>
     /// <param name="documents">Список документов к созданию.</param>
     Task CreateProjectTaskDocumentsAsync(IEnumerable<ProjectTaskDocumentEntity> documents);
+    
+    /// <summary>
+    /// Метод получает файлы задачи.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="taskId">Id задачи.</param>
+    /// <returns>Файлы задачи.</returns>
+    Task<IEnumerable<ProjectTaskDocumentEntity>> GetProjectTaskFilesAsync(long projectId, long taskId);
 }

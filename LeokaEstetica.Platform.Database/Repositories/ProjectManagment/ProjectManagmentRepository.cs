@@ -1066,6 +1066,25 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         }
     }
 
+    /// <inheritdoc />
+    public async Task<IEnumerable<ProjectTaskDocumentEntity>> GetProjectTaskFilesAsync(long projectId, long taskId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@projectId", projectId);
+        parameters.Add("@taskId", taskId);
+
+        var query = @"SELECT document_id, document_name, document_extension 
+                      FROM documents.project_documents 
+                      WHERE project_id = @projectId 
+                        AND task_id = @taskId";
+
+        var result = await connection.QueryAsync<ProjectTaskDocumentEntity>(query, parameters);
+
+        return result;
+    }
+
     #endregion
 
     #region Приватные методы.

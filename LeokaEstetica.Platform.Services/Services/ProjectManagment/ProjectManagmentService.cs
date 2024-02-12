@@ -20,6 +20,7 @@ using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.Template;
 using LeokaEstetica.Platform.Models.Dto.Output.User;
 using LeokaEstetica.Platform.Models.Dto.ProjectManagement.Output;
+using LeokaEstetica.Platform.Models.Entities.Document;
 using LeokaEstetica.Platform.Models.Entities.Profile;
 using LeokaEstetica.Platform.Models.Entities.ProjectManagment;
 using LeokaEstetica.Platform.Models.Entities.Template;
@@ -1964,6 +1965,33 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     public Task DownloadFileAsync(string fileName)
     {
         throw new NotImplementedException();
+    }
+
+    /// <inheritdoc />
+    public async Task<IEnumerable<ProjectTaskDocumentEntity>> GetProjectTaskFilesAsync(long projectId,
+        long projectTaskId)
+    {
+        try
+        {
+            var task = await _projectManagmentRepository.GetTaskDetailsByTaskIdAsync(projectTaskId, projectId);
+            
+            if (task is null)
+            {
+                throw new InvalidOperationException("Не удалось получить задачу. " +
+                                                    $"ProjectId: {projectId}. " +
+                                                    $"ProjectTaskId: {projectTaskId}.");
+            }
+            
+            var result = await _projectManagmentRepository.GetProjectTaskFilesAsync(projectId, task.TaskId);
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            throw;
+        }
     }
 
     #endregion

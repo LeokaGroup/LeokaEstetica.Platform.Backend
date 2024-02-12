@@ -1,6 +1,8 @@
 ﻿using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
+using LeokaEstetica.Platform.Models.Dto.Output.Document;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.Template;
+using LeokaEstetica.Platform.Models.Entities.Document;
 using LeokaEstetica.Platform.Models.Entities.Profile;
 using LeokaEstetica.Platform.Models.Entities.ProjectManagment;
 using LeokaEstetica.Platform.Models.Entities.Template;
@@ -326,4 +328,12 @@ public interface IProjectManagmentService
     /// <param name="fileName">Имя файла.</param>
     /// <returns>Файл для скачивания фронтом.</returns>
     Task DownloadFileAsync(string fileName);
+
+    /// <summary>
+    /// Метод получает файлы задачи.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
+    /// <returns>Файлы задачи.</returns>
+    Task<IEnumerable<ProjectTaskDocumentEntity>> GetProjectTaskFilesAsync(long projectId, long projectTaskId);
 }
