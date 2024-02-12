@@ -1,5 +1,4 @@
-﻿using System.Data;
-using Dapper;
+﻿using Dapper;
 using LeokaEstetica.Platform.Base.Abstractions.Connection;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.Base;
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
@@ -885,6 +884,144 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         var result = await connection.QueryAsync<AvailableTaskLinkOutput>(query, parameters);
 
         return result;
+    }
+
+    /// <inheritdoc />
+    public async Task RemoveTaskLinkAsync(LinkTypeEnum linkType, long removedLinkId, long currentTaskId,
+        long projectId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        // Если идет удаление обычной связи.
+        if (linkType == LinkTypeEnum.Link)
+        {
+            var parameters = new DynamicParameters();
+            parameters.Add("@from_task_id", currentTaskId);
+            parameters.Add("@to_task_id", removedLinkId);
+            parameters.Add("@project_id", projectId);
+            parameters.Add("@link_type", new Enum(linkType));
+            
+            var query = @"DELETE 
+                          FROM project_management.task_links 
+                          WHERE from_task_id = @from_task_id 
+                            AND to_task_id = @to_task_id 
+                            AND project_id = @project_id 
+                            AND link_type = @link_type";
+            
+            await connection.ExecuteAsync(query, parameters);
+        }
+        
+        // Если идет удаление родительской связи.
+        if (linkType == LinkTypeEnum.Parent)
+        {
+            // Сначала удаляем запись родителя.
+            var parentParameters = new DynamicParameters();
+            parentParameters.Add("@parent_id", removedLinkId);
+            parentParameters.Add("@from_task_id", currentTaskId);
+            parentParameters.Add("@project_id", projectId);
+            parentParameters.Add("@link_type", new Enum(LinkTypeEnum.Parent));
+            
+            var parentQuery = @"DELETE 
+                          FROM project_management.task_links 
+                          WHERE parent_id = @parent_id 
+                            AND from_task_id = @from_task_id 
+                            AND project_id = @project_id 
+                            AND link_type = @link_type";
+            
+            await connection.ExecuteAsync(parentQuery, parentParameters);
+            
+            // Затем удаляем запись дочки этого родителя.
+            var childParameters = new DynamicParameters();
+            parentParameters.Add("@child_id", removedLinkId);
+            parentParameters.Add("@from_task_id", currentTaskId);
+            parentParameters.Add("@project_id", projectId);
+            parentParameters.Add("@link_type", new Enum(LinkTypeEnum.Child));
+            
+            var childQuery = @"DELETE 
+                          FROM project_management.task_links 
+                          WHERE child_id = @child_id 
+                            AND from_task_id = @from_task_id 
+                            AND project_id = @project_id 
+                            AND link_type = @link_type";
+            
+            await connection.ExecuteAsync(childQuery, childParameters);
+        }
+        
+        // Если идет удаление дочерней связи.
+        if (linkType == LinkTypeEnum.Child)
+        {
+            // Сначала удаляем запись дочки.
+            var childParameters = new DynamicParameters();
+            childParameters.Add("@child_id", removedLinkId);
+            childParameters.Add("@from_task_id", currentTaskId);
+            childParameters.Add("@project_id", projectId);
+            childParameters.Add("@link_type", new Enum(LinkTypeEnum.Child));
+            
+            var childQuery = @"DELETE 
+                          FROM project_management.task_links 
+                          WHERE child_id = @child_id 
+                            AND from_task_id = @from_task_id 
+                            AND project_id = @project_id 
+                            AND link_type = @link_type";
+            
+            await connection.ExecuteAsync(childQuery, childParameters);
+            
+            // Затем удаляем запись родителя этой дочки.
+            var parentParameters = new DynamicParameters();
+            parentParameters.Add("@parent_id", currentTaskId);
+            parentParameters.Add("@from_task_id", removedLinkId);
+            parentParameters.Add("@project_id", projectId);
+            parentParameters.Add("@link_type", new Enum(LinkTypeEnum.Parent));
+            
+            var parentQuery = @"DELETE 
+                          FROM project_management.task_links 
+                          WHERE child_id = @child_id 
+                            AND from_task_id = @from_task_id 
+                            AND project_id = @project_id 
+                            AND link_type = @link_type";
+            
+            await connection.ExecuteAsync(parentQuery, parentParameters);
+        }
+
+        // Если идет удаление зависимой задачи.
+        if (linkType == LinkTypeEnum.Depend)
+        {
+            // Сначала удаляем связь зависит от.
+            var firstParameters = new DynamicParameters();
+            firstParameters.Add("@from_task_id", currentTaskId);
+            firstParameters.Add("@to_task_id", removedLinkId);
+            firstParameters.Add("@project_id", projectId);
+            firstParameters.Add("@is_blocked", false);
+            firstParameters.Add("@link_type", new Enum(LinkTypeEnum.Depend));
+            
+            var firstQuery = @"DELETE 
+                          FROM project_management.task_links 
+                          WHERE from_task_id = @from_task_id 
+                            AND to_task_id = @to_task_id 
+                            AND project_id = @project_id 
+                            AND is_blocked = @is_blocked 
+                            AND link_type = @link_type";
+            
+            await connection.ExecuteAsync(firstQuery, firstParameters);
+            
+            // Затем удаляем связь блокирует.
+            var secondParameters = new DynamicParameters();
+            secondParameters.Add("@from_task_id", removedLinkId);
+            secondParameters.Add("@blocked_task_id", currentTaskId);
+            secondParameters.Add("@project_id", projectId);
+            secondParameters.Add("@is_blocked", true);
+            secondParameters.Add("@link_type", new Enum(LinkTypeEnum.Depend));
+            
+            var secondQuery = @"DELETE 
+                          FROM project_management.task_links 
+                          WHERE from_task_id = @from_task_id 
+                            AND blocked_task_id = @blocked_task_id 
+                            AND is_blocked = @is_blocked 
+                            AND project_id = @project_id 
+                            AND link_type = @link_type";
+            
+            await connection.ExecuteAsync(secondQuery, secondParameters);
+        }
     }
 
     #endregion

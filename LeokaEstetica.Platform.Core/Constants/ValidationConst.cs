@@ -227,5 +227,10 @@ public static class ValidationConst
         /// Если не передали Id приоритета.
         /// </summary>
         public const string NOT_VALID_TASK_PRIORITY_ID = "Id приоритета задачи не передан.";
+        
+        /// <summary>
+        /// Если передали невалидный Id задачи проекта для разрыва связи.
+        /// </summary>
+        public const string NOT_VALID_TASK_LINK_REMOVED_TASK_ID = "Id задачи проекта для разрыва связи не передан.";
     }
 }

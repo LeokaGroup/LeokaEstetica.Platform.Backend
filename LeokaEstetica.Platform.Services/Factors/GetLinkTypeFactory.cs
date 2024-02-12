@@ -13,7 +13,7 @@ public static class GetLinkTypeFactory
     /// Метод получает список типов связей задач.
     /// </summary>
     /// <returns>Список типов связей задач.</returns>
-    public static async Task<IEnumerable<KeyValuePair<string, string>>> GetLinkTypes()
+    public static async Task<IEnumerable<KeyValuePair<string, string>>> GetLinkTypesAsync()
     {
         var result = new List<KeyValuePair<string, string>>();
         
