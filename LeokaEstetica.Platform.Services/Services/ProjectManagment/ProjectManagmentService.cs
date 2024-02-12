@@ -1912,6 +1912,24 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     }
 
     /// <inheritdoc />
+    public async Task RemoveTaskLinkAsync(LinkTypeEnum linkType, long removedLinkId, long currentTaskId,
+        long projectId, string account)
+    {
+        try
+        {
+            await _projectManagmentRepository.RemoveTaskLinkAsync(linkType, removedLinkId, currentTaskId, projectId);
+
+            // TODO: Тут добавить запись активности пользователя по userId.
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
+    /// <inheritdoc />
     public async Task UploadFilesFtpAsync(IFormFileCollection files, string account, long projectId, long taskId)
     {
         try
