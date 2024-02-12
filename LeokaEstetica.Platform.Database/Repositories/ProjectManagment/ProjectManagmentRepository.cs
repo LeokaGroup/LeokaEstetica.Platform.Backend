@@ -6,6 +6,7 @@ using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.Template;
 using LeokaEstetica.Platform.Models.Dto.ProjectManagement.Output;
+using LeokaEstetica.Platform.Models.Entities.Document;
 using LeokaEstetica.Platform.Models.Entities.ProjectManagment;
 using LeokaEstetica.Platform.Models.Entities.Template;
 using LeokaEstetica.Platform.Models.Enums;
@@ -1021,6 +1022,47 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
                             AND link_type = @link_type";
             
             await connection.ExecuteAsync(secondQuery, secondParameters);
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task CreateProjectTaskDocumentsAsync(IEnumerable<ProjectTaskDocumentEntity> documents)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+        var transaction = connection.BeginTransaction();
+
+        var parameters = new List<DynamicParameters>();
+
+        try
+        {
+            foreach (var d in documents)
+            {
+                var tempParameters = new DynamicParameters();
+                tempParameters.Add("@document_type", new Enum(DocumentTypeEnum.ProjectTask));
+                tempParameters.Add("@document_name", d.DocumentName);
+                tempParameters.Add("@document_extension", Path.GetExtension(d.DocumentName));
+                tempParameters.Add("@created", DateTime.UtcNow);
+                tempParameters.Add("@updated", DateTime.UtcNow);
+                tempParameters.Add("@project_id", d.ProjectId);
+                tempParameters.Add("@task_id", d.TaskId);
+
+                parameters.Add(tempParameters);
+            }
+
+            var query = @"INSERT INTO documents.project_documents (document_type, document_name, document_extension,
+                                         created, updated, project_id, task_id) 
+                      VALUES (@document_type, @document_name, @document_extension, @created, @updated, @project_id,
+                              @task_id)";
+                              
+            await connection.ExecuteAsync(query, parameters);
+            
+            transaction.Commit();
+        }
+        
+        catch
+        {
+            transaction.Rollback();
+            throw;
         }
     }
 

@@ -8,6 +8,7 @@ using LeokaEstetica.Platform.Models.Dto.Output.Project;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.Template;
 using LeokaEstetica.Platform.Models.Enums;
+using LeokaEstetica.Platform.ProjectManagment.Models.Input;
 using LeokaEstetica.Platform.ProjectManagment.ValidationModels;
 using LeokaEstetica.Platform.ProjectManagment.Validators;
 using LeokaEstetica.Platform.Services.Abstractions.Project;
@@ -15,6 +16,7 @@ using LeokaEstetica.Platform.Services.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Services.Abstractions.User;
 using LeokaEstetica.Platform.Services.Factors;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 
 namespace LeokaEstetica.Platform.ProjectManagment.Controllers;
 
@@ -1235,5 +1237,20 @@ public class ProjectManagmentController : BaseController
         await _projectManagmentService.RemoveTaskLinkAsync(removeTaskLinkInput.LinkType,
             removeTaskLinkInput.RemovedLinkId, removeTaskLinkInput.CurrentTaskId, removeTaskLinkInput.ProjectId,
             GetUserName());
+    }
+
+    /// <summary>
+    /// Метод добавляет файлы к задаче.
+    /// </summary>
+    /// <param name="formCollection">Данные формы.</param>
+    [HttpPost]
+    [Route("upload-task-file")]
+    public async Task UploadFilesFtpAsync([FromForm] IFormCollection formCollection)
+    {
+        var projectTaskFileInput = JsonConvert.DeserializeObject<ProjectTaskFileInput>(
+            formCollection["projectTaskFileInput"]);
+        
+        await _projectManagmentService.UploadFilesFtpAsync(formCollection.Files, GetUserName(),
+            projectTaskFileInput!.ProjectId, projectTaskFileInput!.TaskId);
     }
 }

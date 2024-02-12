@@ -5,6 +5,7 @@ using LeokaEstetica.Platform.Models.Entities.Profile;
 using LeokaEstetica.Platform.Models.Entities.ProjectManagment;
 using LeokaEstetica.Platform.Models.Entities.Template;
 using LeokaEstetica.Platform.Models.Enums;
+using Microsoft.AspNetCore.Http;
 
 namespace LeokaEstetica.Platform.Services.Abstractions.ProjectManagment;
 
@@ -309,4 +310,20 @@ public interface IProjectManagmentService
     /// <param name="account">Аккаунт.</param>
     Task RemoveTaskLinkAsync(LinkTypeEnum linkType, long removedLinkId, long currentTaskId, long projectId,
         string account);
+    
+    /// <summary>
+    /// Метод загружает файлы по SFTP на сервер.
+    /// </summary>
+    /// <param name="files">Файлы для отправки.</param>
+    /// <param name="account">Аккаунт.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="taskId">Id задачи.</param>
+    Task UploadFilesFtpAsync(IFormFileCollection files, string account, long projectId, long taskId);
+
+    /// <summary>
+    /// Метод скачивает файл с сервера по SFTP.
+    /// </summary>
+    /// <param name="fileName">Имя файла.</param>
+    /// <returns>Файл для скачивания фронтом.</returns>
+    Task DownloadFileAsync(string fileName);
 }
