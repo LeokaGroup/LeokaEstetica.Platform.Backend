@@ -9,7 +9,6 @@ using LeokaEstetica.Platform.Models.Dto.Output.Project;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.Template;
 using LeokaEstetica.Platform.Models.Enums;
-using LeokaEstetica.Platform.ProjectManagment.Models.Input;
 using LeokaEstetica.Platform.ProjectManagment.ValidationModels;
 using LeokaEstetica.Platform.ProjectManagment.Validators;
 using LeokaEstetica.Platform.Services.Abstractions.Project;
@@ -1251,12 +1250,12 @@ public class ProjectManagmentController : BaseController
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task UploadFilesFtpAsync([FromForm] IFormCollection formCollection)
+    public async Task UploadFilesAsync([FromForm] IFormCollection formCollection)
     {
         var projectTaskFileInput = JsonConvert.DeserializeObject<ProjectTaskFileInput>(
             formCollection["projectTaskFileInput"]);
         
-        await _projectManagmentService.UploadFilesFtpAsync(formCollection.Files, GetUserName(),
+        await _projectManagmentService.UploadFilesAsync(formCollection.Files, GetUserName(),
             projectTaskFileInput!.ProjectId, projectTaskFileInput!.TaskId);
     }
     
@@ -1299,6 +1298,50 @@ public class ProjectManagmentController : BaseController
         
         var items = await _projectManagmentService.GetProjectTaskFilesAsync(projectId, projectTaskId);
         var result = _mapper.Map<IEnumerable<ProjectTaskFileOutput>>(items);
+
+        return result;
+    }
+    
+    /// <summary>
+    /// Метод скачивает файл задачи.
+    /// </summary>
+    /// <param name="documentId">Id документа.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
+    /// <returns>Файл задачи.</returns>
+    [HttpGet]
+    [Route("download-task-file")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<FileContentResult> DownloadTaskFileAsync([FromQuery] long documentId, [FromQuery] long projectId,
+        [FromQuery] long projectTaskId)
+    {
+        var validator = await new ProjectTaskFileValidator().ValidateAsync((projectId, projectTaskId));
+
+        if (validator.Errors.Any())
+        {
+            var exceptions = new List<InvalidOperationException>();
+
+            foreach (var err in validator.Errors)
+            {
+                exceptions.Add(new InvalidOperationException(err.ErrorMessage));
+            }
+
+            var ex = new AggregateException("Ошибка валидации при скачивании файла задачи проекта. " +
+                                            $"ProjectId: {projectId}. " +
+                                            $"ProjectTaskId: {projectTaskId}. " +
+                                            $"DocumentId: {documentId}.", exceptions);
+            _logger.LogError(ex, ex.Message);
+            
+            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            
+            throw ex;
+        }
+        
+        var result = await _projectManagmentService.DownloadFileAsync(documentId, projectId, projectTaskId);
 
         return result;
     }
