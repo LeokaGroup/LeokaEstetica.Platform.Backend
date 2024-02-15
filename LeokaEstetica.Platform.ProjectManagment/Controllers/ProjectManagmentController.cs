@@ -4,6 +4,7 @@ using LeokaEstetica.Platform.Base.Filters;
 using LeokaEstetica.Platform.Database.Abstractions.Template;
 using LeokaEstetica.Platform.Integrations.Abstractions.Pachca;
 using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
+using LeokaEstetica.Platform.Models.Dto.Output.Document;
 using LeokaEstetica.Platform.Models.Dto.Output.Project;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.Template;
@@ -1245,6 +1246,11 @@ public class ProjectManagmentController : BaseController
     /// <param name="formCollection">Данные формы.</param>
     [HttpPost]
     [Route("upload-task-file")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
     public async Task UploadFilesFtpAsync([FromForm] IFormCollection formCollection)
     {
         var projectTaskFileInput = JsonConvert.DeserializeObject<ProjectTaskFileInput>(
@@ -1252,5 +1258,48 @@ public class ProjectManagmentController : BaseController
         
         await _projectManagmentService.UploadFilesFtpAsync(formCollection.Files, GetUserName(),
             projectTaskFileInput!.ProjectId, projectTaskFileInput!.TaskId);
+    }
+    
+    /// <summary>
+    /// Метод получает файлы задачи.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
+    /// <returns>Файлы задачи.</returns>
+    [HttpGet]
+    [Route("task-files")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<ProjectTaskFileOutput>))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)] 
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<IEnumerable<ProjectTaskFileOutput>> GetProjectTaskFilesAsync([FromQuery] long projectId,
+        long projectTaskId)
+    {
+        var validator = await new ProjectTaskFileValidator().ValidateAsync((projectId, projectTaskId));
+
+        if (validator.Errors.Any())
+        {
+            var exceptions = new List<InvalidOperationException>();
+
+            foreach (var err in validator.Errors)
+            {
+                exceptions.Add(new InvalidOperationException(err.ErrorMessage));
+            }
+
+            var ex = new AggregateException("Ошибка получение файлов задачи проекта. " +
+                                            $"ProjectId: {projectId}. " +
+                                            $"ProjectTaskId: {projectTaskId}.", exceptions);
+            _logger.LogError(ex, ex.Message);
+            
+            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            
+            throw ex;
+        }
+        
+        var items = await _projectManagmentService.GetProjectTaskFilesAsync(projectId, projectTaskId);
+        var result = _mapper.Map<IEnumerable<ProjectTaskFileOutput>>(items);
+
+        return result;
     }
 }
