@@ -24,4 +24,13 @@ public interface IFileManagerService
     /// <param name="taskId">Id задачи.</param>
     /// <returns>Поток стрима.</returns>
     Task<FileContentResult> DownloadFileAsync(string fileName, long projectId, long taskId);
+    
+    /// <summary>
+    /// Метод удаляет файл с сервера по SFTP.
+    /// </summary>
+    /// <param name="fileName">Имя файла.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="taskId">Id задачи.</param>
+    /// <returns>Поток стрима.</returns>
+    Task RemoveFileAsync(string fileName, long projectId, long taskId);
 }

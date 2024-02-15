@@ -1952,7 +1952,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             // Сохраняем файлы задачи проекта.
             await _projectManagmentRepository.CreateProjectTaskDocumentsAsync(projectTaskFiles);
 
-            // TODO: Тут добавить запись активности пользователя по userId.
+            // TODO: Тут добавить запись активности пользователя по userId (писать кто добавил файл).
         }
         
         catch (Exception ex)
@@ -2008,6 +2008,38 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             var result = await _projectManagmentRepository.GetProjectTaskFilesAsync(projectId, task.TaskId);
 
             return result;
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task RemoveTaskFileAsync(long documentId, long projectId, long projectTaskId)
+    {
+        try
+        {
+            var task = await _projectManagmentRepository.GetTaskDetailsByTaskIdAsync(projectTaskId, projectId);
+            
+            if (task is null)
+            {
+                throw new InvalidOperationException("Не удалось получить задачу. " +
+                                                    $"ProjectId: {projectId}. " +
+                                                    $"ProjectTaskId: {projectTaskId}.");
+            }
+
+            var documentName = await _projectManagmentRepository.GetDocumentNameByDocumentIdAsync(documentId);
+            
+            // Удаляем файл на сервере.
+            await _fileManagerService.Value.RemoveFileAsync(documentName, projectId, task.TaskId);
+            
+            // Удаляем файл в БД.
+            await _projectManagmentRepository.RemoveDocumentAsync(documentId);
+            
+            // TODO: Тут добавить запись активности пользователя по userId (писать кто удалил файл).
         }
         
         catch (Exception ex)

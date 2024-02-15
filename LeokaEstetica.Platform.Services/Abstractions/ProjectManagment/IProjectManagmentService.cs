@@ -338,4 +338,12 @@ public interface IProjectManagmentService
     /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
     /// <returns>Файлы задачи.</returns>
     Task<IEnumerable<ProjectTaskDocumentEntity>> GetProjectTaskFilesAsync(long projectId, long projectTaskId);
+
+    /// <summary>
+    /// Метод удаляет файл задачи.
+    /// </summary>
+    /// <param name="documentId">Id документа.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
+    Task RemoveTaskFileAsync(long documentId, long projectId, long projectTaskId);
 }

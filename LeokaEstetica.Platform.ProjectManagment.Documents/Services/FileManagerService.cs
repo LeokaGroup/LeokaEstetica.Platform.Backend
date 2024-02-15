@@ -207,10 +207,88 @@ internal sealed class FileManagerService : IFileManagerService
         finally
         {
             sftpClient.Disconnect();
-            sftpClient.Dispose();
         }
     }
-    
+
+    /// <inheritdoc />
+    public async Task RemoveFileAsync(string fileName, long projectId, long taskId)
+    {
+        var settings = await _globalConfigRepository.Value.GetFileManagerSettingsAsync();
+        
+        using var sftpClient = new SftpClient(settings.Host, settings.Port, settings.Login, settings.Password);
+        
+        try
+        {
+            sftpClient.Connect();
+            
+            var sftpTaskPath = settings.SftpTaskPath;
+
+            // Путь к файлам задач проекта.
+            var userProjectPath = string.Concat(sftpTaskPath, projectId);
+            var userProjectTaskPath = userProjectPath + "/" + taskId + "/";
+            
+            // Удаляем файл с сервера.
+            await sftpClient.DeleteFileAsync(userProjectTaskPath + fileName, default);
+            
+            // Проверяем, сколько файлов осталось у задачи на сервере.
+            // IsRegularFile - определяет только наши нужные файлы.
+            // Также бывают файлы системные, у них названия "." или ".." Такие исключаем через этот признак.
+            var taskFiles = sftpClient.ListDirectory(userProjectTaskPath).Where(f => f.IsRegularFile);
+
+            // Если файлов не осталось, то удаляем папку задачи проекта.
+            if (!taskFiles.Any())
+            {
+                sftpClient.DeleteDirectory(userProjectTaskPath);
+            }
+            
+            // Проверяем, есть ли у проекта папки задач.
+            // IsRegularFile - определяет только наши нужные файлы.
+            // Также бывают файлы системные, у них названия "." или ".." Такие исключаем через этот признак.
+            var projectTaskFolders = sftpClient.ListDirectory(userProjectPath).Where(f => f.IsRegularFile);
+
+            // Если папок не осталось, то удаляем папку файлов проекта.
+            if (!projectTaskFolders.Any())
+            {
+                sftpClient.DeleteDirectory(userProjectPath);
+            }
+        }
+        
+        catch (Exception ex) when (ex is SshConnectionException or SocketException or ProxyException)
+        {
+            _logger.LogError(ex, "Ошибка подключения к серверу по Sftp.");
+            throw;
+        }
+
+        catch (SshAuthenticationException ex)
+        {
+            _logger.LogError(ex, "Ошибка аутентификации к серверу по Sftp.");
+            throw;
+        }
+
+        catch (SftpPermissionDeniedException ex)
+        {
+            _logger.LogError(ex, "Ошибка доступа к серверу по Sftp.");
+            throw;
+        }
+
+        catch (SshException ex)
+        {
+            _logger.LogError(ex, "Ошибка Sftp.");
+            throw;
+        }
+
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Ошибка при удалении файла с сервера.");
+            throw;
+        }
+
+        finally
+        {
+            sftpClient.Disconnect();
+        }
+    }
+
     /// <summary>
     /// Метод получит массив байт из потока.
     /// </summary>
