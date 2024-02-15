@@ -228,10 +228,12 @@ internal sealed class FileManagerService : IFileManagerService
             var userProjectTaskPath = userProjectPath + "/" + taskId + "/";
             
             // Удаляем файл с сервера.
-            await sftpClient.DeleteFileAsync(userProjectTaskPath, default);
+            await sftpClient.DeleteFileAsync(userProjectTaskPath + fileName, default);
             
             // Проверяем, сколько файлов осталось у задачи на сервере.
-            var taskFiles = sftpClient.ListDirectory(userProjectTaskPath);
+            // IsRegularFile - определяет только наши нужные файлы.
+            // Также бывают файлы системные, у них названия "." или ".." Такие исключаем через этот признак.
+            var taskFiles = sftpClient.ListDirectory(userProjectTaskPath).Where(f => f.IsRegularFile);
 
             // Если файлов не осталось, то удаляем папку задачи проекта.
             if (!taskFiles.Any())
@@ -240,7 +242,9 @@ internal sealed class FileManagerService : IFileManagerService
             }
             
             // Проверяем, есть ли у проекта папки задач.
-            var projectTaskFolders = sftpClient.ListDirectory(userProjectPath);
+            // IsRegularFile - определяет только наши нужные файлы.
+            // Также бывают файлы системные, у них названия "." или ".." Такие исключаем через этот признак.
+            var projectTaskFolders = sftpClient.ListDirectory(userProjectPath).Where(f => f.IsRegularFile);
 
             // Если папок не осталось, то удаляем папку файлов проекта.
             if (!projectTaskFolders.Any())
