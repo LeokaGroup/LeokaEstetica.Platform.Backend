@@ -312,4 +312,11 @@ public interface IProjectManagmentRepository
     /// <param name="taskId">Id задачи.</param>
     /// <returns>Файлы задачи.</returns>
     Task<IEnumerable<ProjectTaskDocumentEntity>> GetProjectTaskFilesAsync(long projectId, long taskId);
+    
+    /// <summary>
+    /// Метод получает название документа по его Id.
+    /// </summary>
+    /// <param name="documentId">Id документа.</param>
+    /// <returns>Название документа.</returns>
+    Task<string> GetDocumentNameByDocumentIdAsync(long documentId);
 }

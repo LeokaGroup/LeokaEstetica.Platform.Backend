@@ -1085,6 +1085,23 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         return result;
     }
 
+    /// <inheritdoc />
+    public async Task<string> GetDocumentNameByDocumentIdAsync(long documentId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@documentId", documentId);
+
+        var query = @"SELECT document_name 
+                      FROM documents.project_documents 
+                      WHERE document_id = @documentId";
+
+        var result = await connection.QueryFirstOrDefaultAsync<string>(query, parameters);
+
+        return result;
+    }
+
     #endregion
 
     #region Приватные методы.

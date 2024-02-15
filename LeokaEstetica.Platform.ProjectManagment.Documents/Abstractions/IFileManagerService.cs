@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 
 namespace LeokaEstetica.Platform.ProjectManagment.Documents.Abstractions;
 
@@ -19,6 +20,8 @@ public interface IFileManagerService
     /// Метод скачивает файл с сервера по SFTP.
     /// </summary>
     /// <param name="fileName">Имя файла.</param>
-    /// <returns>Файл для скачивания фронтом.</returns>
-    Task DownloadFileAsync(string fileName);
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="taskId">Id задачи.</param>
+    /// <returns>Поток стрима.</returns>
+    Task<FileContentResult> DownloadFileAsync(string fileName, long projectId, long taskId);
 }

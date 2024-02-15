@@ -1,5 +1,4 @@
 ﻿using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
-using LeokaEstetica.Platform.Models.Dto.Output.Document;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.Template;
 using LeokaEstetica.Platform.Models.Entities.Document;
@@ -8,6 +7,7 @@ using LeokaEstetica.Platform.Models.Entities.ProjectManagment;
 using LeokaEstetica.Platform.Models.Entities.Template;
 using LeokaEstetica.Platform.Models.Enums;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 
 namespace LeokaEstetica.Platform.Services.Abstractions.ProjectManagment;
 
@@ -320,14 +320,16 @@ public interface IProjectManagmentService
     /// <param name="account">Аккаунт.</param>
     /// <param name="projectId">Id проекта.</param>
     /// <param name="taskId">Id задачи.</param>
-    Task UploadFilesFtpAsync(IFormFileCollection files, string account, long projectId, long taskId);
+    Task UploadFilesAsync(IFormFileCollection files, string account, long projectId, long taskId);
 
     /// <summary>
     /// Метод скачивает файл с сервера по SFTP.
     /// </summary>
-    /// <param name="fileName">Имя файла.</param>
-    /// <returns>Файл для скачивания фронтом.</returns>
-    Task DownloadFileAsync(string fileName);
+    /// <param name="documentId">Id документа.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
+    /// <returns>Данные документа.</returns>
+    Task<FileContentResult> DownloadFileAsync(long documentId, long projectId, long projectTaskId);
 
     /// <summary>
     /// Метод получает файлы задачи.

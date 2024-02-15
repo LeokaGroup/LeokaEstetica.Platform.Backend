@@ -1,4 +1,4 @@
-namespace LeokaEstetica.Platform.ProjectManagment.Models.Input;
+namespace LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
 
 /// <summary>
 /// Класс входной модели файлов задачи.

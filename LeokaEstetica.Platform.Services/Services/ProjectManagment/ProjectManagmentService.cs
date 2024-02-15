@@ -29,6 +29,7 @@ using LeokaEstetica.Platform.ProjectManagment.Documents.Abstractions;
 using LeokaEstetica.Platform.Services.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Services.Factors;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Enum = System.Enum;
@@ -1931,7 +1932,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     }
 
     /// <inheritdoc />
-    public async Task UploadFilesFtpAsync(IFormFileCollection files, string account, long projectId, long taskId)
+    public async Task UploadFilesAsync(IFormFileCollection files, string account, long projectId, long taskId)
     {
         try
         {
@@ -1962,9 +1963,31 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     }
 
     /// <inheritdoc />
-    public Task DownloadFileAsync(string fileName)
+    public async Task<FileContentResult> DownloadFileAsync(long documentId, long projectId, long projectTaskId)
     {
-        throw new NotImplementedException();
+        try
+        {
+            var task = await _projectManagmentRepository.GetTaskDetailsByTaskIdAsync(projectTaskId, projectId);
+            
+            if (task is null)
+            {
+                throw new InvalidOperationException("Не удалось получить задачу. " +
+                                                    $"ProjectId: {projectId}. " +
+                                                    $"ProjectTaskId: {projectTaskId}.");
+            }
+
+            var documentName = await _projectManagmentRepository.GetDocumentNameByDocumentIdAsync(documentId);
+            
+            var result = await _fileManagerService.Value.DownloadFileAsync(documentName, projectId, task.TaskId);
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            throw;
+        }
     }
 
     /// <inheritdoc />
