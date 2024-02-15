@@ -233,13 +233,13 @@ internal sealed class FileManagerService : IFileManagerService
             // Проверяем, сколько файлов осталось у задачи на сервере.
             var taskFiles = sftpClient.ListDirectory(userProjectTaskPath);
 
-            // Если файлов не осталось ,то удаляем папку задачи проекта.
+            // Если файлов не осталось, то удаляем папку задачи проекта.
             if (!taskFiles.Any())
             {
                 sftpClient.DeleteDirectory(userProjectTaskPath);
             }
             
-            // Проверяе, есть ли у проекта папки задач.
+            // Проверяем, есть ли у проекта папки задач.
             var projectTaskFolders = sftpClient.ListDirectory(userProjectPath);
 
             // Если папок не осталось, то удаляем папку файлов проекта.
@@ -275,7 +275,7 @@ internal sealed class FileManagerService : IFileManagerService
 
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Ошибка при скачивании файла с сервера.");
+            _logger.LogError(ex, "Ошибка при удалении файла с сервера.");
             throw;
         }
 
