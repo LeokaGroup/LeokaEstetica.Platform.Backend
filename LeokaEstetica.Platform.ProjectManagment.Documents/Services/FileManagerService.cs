@@ -229,6 +229,24 @@ internal sealed class FileManagerService : IFileManagerService
             
             // Удаляем файл с сервера.
             await sftpClient.DeleteFileAsync(userProjectTaskPath, default);
+            
+            // Проверяем, сколько файлов осталось у задачи на сервере.
+            var taskFiles = sftpClient.ListDirectory(userProjectTaskPath);
+
+            // Если файлов не осталось ,то удаляем папку задачи проекта.
+            if (!taskFiles.Any())
+            {
+                sftpClient.DeleteDirectory(userProjectTaskPath);
+            }
+            
+            // Проверяе, есть ли у проекта папки задач.
+            var projectTaskFolders = sftpClient.ListDirectory(userProjectPath);
+
+            // Если папок не осталось, то удаляем папку файлов проекта.
+            if (!projectTaskFolders.Any())
+            {
+                sftpClient.DeleteDirectory(userProjectPath);
+            }
         }
         
         catch (Exception ex) when (ex is SshConnectionException or SocketException or ProxyException)
