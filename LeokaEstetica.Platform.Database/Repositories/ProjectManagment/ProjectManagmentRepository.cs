@@ -1102,6 +1102,21 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         return result;
     }
 
+    /// <inheritdoc />
+    public async Task RemoveDocumentAsync(long documentId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@documentId", documentId);
+
+        var query = @"DELETE 
+                      FROM documents.project_documents 
+                      WHERE document_id = @documentId";
+
+        await connection.ExecuteAsync(query, parameters);
+    }
+
     #endregion
 
     #region Приватные методы.

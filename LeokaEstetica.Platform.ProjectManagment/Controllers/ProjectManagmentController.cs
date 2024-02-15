@@ -1345,4 +1345,45 @@ public class ProjectManagmentController : BaseController
 
         return result;
     }
+
+    /// <summary>
+    /// Метод удаляет файл задачи.
+    /// </summary>
+    /// <param name="documentId">Id документа.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
+    [HttpDelete]
+    [Route("task-file")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task RemoveTaskFileAsync([FromQuery] long documentId, [FromQuery] long projectId,
+        [FromQuery] long projectTaskId)
+    {
+        var validator = await new RemoveTaskFileValidator().ValidateAsync((documentId, projectId, projectTaskId));
+
+        if (validator.Errors.Any())
+        {
+            var exceptions = new List<InvalidOperationException>();
+
+            foreach (var err in validator.Errors)
+            {
+                exceptions.Add(new InvalidOperationException(err.ErrorMessage));
+            }
+
+            var ex = new AggregateException("Ошибка валидации при удалении файла задачи проекта. " +
+                                            $"ProjectId: {projectId}. " +
+                                            $"ProjectTaskId: {projectTaskId}. " +
+                                            $"DocumentId: {documentId}.", exceptions);
+            _logger.LogError(ex, ex.Message);
+            
+            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            
+            throw ex;
+        }
+
+        await _projectManagmentService.RemoveTaskFileAsync(documentId, projectId, projectTaskId);
+    }
 }

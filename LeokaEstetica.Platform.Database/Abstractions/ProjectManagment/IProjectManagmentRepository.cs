@@ -319,4 +319,10 @@ public interface IProjectManagmentRepository
     /// <param name="documentId">Id документа.</param>
     /// <returns>Название документа.</returns>
     Task<string> GetDocumentNameByDocumentIdAsync(long documentId);
+    
+    /// <summary>
+    /// Метод удаляет документ по его Id.
+    /// </summary>
+    /// <param name="documentId">Id документа.</param>
+    Task RemoveDocumentAsync(long documentId);
 }

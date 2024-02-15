@@ -232,5 +232,10 @@ public static class ValidationConst
         /// Если передали невалидный Id задачи проекта для разрыва связи.
         /// </summary>
         public const string NOT_VALID_TASK_LINK_REMOVED_TASK_ID = "Id задачи проекта для разрыва связи не передан.";
+
+        /// <summary>
+        /// Если передали невалидный Id документа.
+        /// </summary>
+        public const string NOT_VALID_DOCUMENT_ID = "Id документа не передан.";
     }
 }
