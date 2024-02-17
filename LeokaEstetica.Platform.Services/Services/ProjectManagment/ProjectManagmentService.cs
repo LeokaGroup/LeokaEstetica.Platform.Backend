@@ -484,7 +484,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             // Получаем настройки проекта.
             var projectSettings = await _projectSettingsConfigRepository.GetProjectSpaceSettingsByProjectIdAsync(
                 projectId, userId);
-            var projectSettingsItems = projectSettings?.ToList();
+            var projectSettingsItems = projectSettings?.AsList();
 
             if (projectSettingsItems is null || !projectSettingsItems.Any())
             {
@@ -500,7 +500,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             // Получаем набор статусов, которые входят в выбранный шаблон.
             var items = await GetProjectManagmentTemplatesAsync(templateId);
             var templateStatusesItems = _mapper.Map<IEnumerable<ProjectManagmentTaskTemplateResult>>(items);
-            var statuses = templateStatusesItems?.ToList();
+            var statuses = templateStatusesItems?.AsList();
 
             if (statuses is null || !statuses.Any())
             {
@@ -524,7 +524,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 
             // Получаем задачи пользователя, которые принадлежат проекту в рабочем пространстве.
             var projectTasks = await _projectManagmentRepository.GetProjectTasksAsync(projectId);
-            var tasks = projectTasks?.ToList();
+            var tasks = projectTasks?.AsList();
 
             if (tasks is not null && tasks.Any())
             {
