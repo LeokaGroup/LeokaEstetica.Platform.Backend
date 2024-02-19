@@ -150,7 +150,7 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
             .Select("task_id", "task_status_id", "author_id", "watcher_ids", "name", "details", "created", "updated",
                 "project_id", "project_task_id", "resolution_id", "tag_ids", "task_type_id", "executor_id",
                 "priority_id")
-            .OrderBy("project_id");
+            .OrderByDesc("created");
         var sql = compiler.Compile(query).ToString();
 
         var result = await connection.QueryAsync<ProjectTaskEntity>(sql);
