@@ -1,6 +1,7 @@
 ﻿using Dapper;
 using LeokaEstetica.Platform.Base.Abstractions.Connection;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.Base;
+using LeokaEstetica.Platform.Core.Constants;
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
@@ -1115,6 +1116,63 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
                       WHERE document_id = @documentId";
 
         await connection.ExecuteAsync(query, parameters);
+    }
+
+    /// <inheritdoc />
+    public async Task FixationProjectViewStrategyAsync(string strategySysName, long projectId, long userId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@strategySysName", strategySysName);
+        parameters.Add("@projectId", projectId);
+        parameters.Add("@userId", userId);
+        parameters.Add("@key", GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_STRATEGY);
+        parameters.Add("@paramType", "String");
+        parameters.Add("@description", "Выбранная пользователем стратегия представления.");
+        parameters.Add("@tag", "Project management settings");
+        parameters.Add("@lastUserDate", DateTime.UtcNow);
+
+        var existsParameters = new DynamicParameters();
+        existsParameters.Add("@userId", userId);
+        existsParameters.Add("@key", GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_STRATEGY);
+
+        var existsQuery = "SELECT EXISTS (SELECT \"ConfigId\" " +
+                          "FROM \"Configs\".\"ProjectManagmentProjectSettings\" " +
+                          "WHERE \"UserId\" = @userId " +
+                          "AND \"ParamKey\" = @key)";
+        var existsSetting = await connection.QueryFirstOrDefaultAsync<bool>(existsQuery, existsParameters);
+
+        // Такой настройки нет, добавляем.
+        if (!existsSetting)
+        {
+            var queryInsertSetting = "INSERT INTO \"Configs\".\"ProjectManagmentProjectSettings\" " +
+                        "(\"ProjectId\", \"UserId\", \"ParamKey\", \"ParamValue\", \"ParamType\", \"ParamDescription\"," +
+                        " \"ParamTag\", \"LastUserDate\") " +
+                        "VALUES (@projectId, @userId, @key, @strategySysName, @paramType, @description, @tag," +
+                        " @lastUserDate)";
+            
+            await connection.ExecuteAsync(queryInsertSetting, parameters);
+        }
+        
+        // Такая настройка есть, обновляем.
+        else
+        {
+            var queryUpdateSetting = "UPDATE \"Configs\".\"ProjectManagmentProjectSettings\" " +
+                                     "SET \"ProjectId\" = @projectId" +
+                                     ", \"UserId\" = @userId" +
+                                     ", \"ParamKey\" = @key" +
+                                     ", \"ParamValue\" = @strategySysName" +
+                                     ", \"ParamType\" = @paramType" +
+                                     ", \"ParamDescription\" = @description" +
+                                     ", \"ParamTag\" = @tag" +
+                                     ", \"LastUserDate\" = @lastUserDate " +
+                                     "WHERE \"UserId\" = @userId " +
+                                     "AND \"ProjectId\" = @projectId " +
+                                     "AND \"ParamKey\" = @key";
+                                     
+            await connection.ExecuteAsync(queryUpdateSetting, parameters);
+        }
     }
 
     #endregion
