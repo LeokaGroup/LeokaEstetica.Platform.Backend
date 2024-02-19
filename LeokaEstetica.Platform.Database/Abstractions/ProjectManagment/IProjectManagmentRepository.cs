@@ -325,4 +325,12 @@ public interface IProjectManagmentRepository
     /// </summary>
     /// <param name="documentId">Id документа.</param>
     Task RemoveDocumentAsync(long documentId);
+    
+    /// <summary>
+    /// Метод фиксирует выбранную пользователем стратегию представления.
+    /// </summary>
+    /// <param name="strategySysName">Системное название стратегии.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="account">Id пользователя.</param>
+    Task FixationProjectViewStrategyAsync(string strategySysName, long projectId, long userId);
 }

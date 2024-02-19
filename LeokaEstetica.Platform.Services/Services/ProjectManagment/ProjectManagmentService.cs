@@ -2049,6 +2049,45 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         }
     }
 
+    /// <inheritdoc />
+    public async Task FixationProjectViewStrategyAsync(string strategySysName, long projectId, string account)
+    {
+        try
+        {
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+
+            string shortSysName;
+
+            switch (strategySysName)
+            {
+                case "Kanban":
+                    shortSysName = "kn";
+                    break;
+
+                case "Scrum":
+                    shortSysName = "sm";
+                    break;
+
+                default:
+                    throw new InvalidOperationException($"Неизвестный тип стратегии: {strategySysName}.");
+            }
+
+            await _projectManagmentRepository.FixationProjectViewStrategyAsync(shortSysName, projectId, userId);
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
     #endregion
 
     #region Приватные методы.

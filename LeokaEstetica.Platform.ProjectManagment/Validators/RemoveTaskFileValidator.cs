@@ -15,7 +15,7 @@ public class RemoveTaskFileValidator : AbstractValidator<(long DocumentId, long 
     {
         RuleFor(p => p.DocumentId)
             .Must(p => p > 0)
-            .WithMessage(ValidationConst.ProjectManagmentValidation.NOT_VALID_TASK_FROM_LINK);
+            .WithMessage(ValidationConst.ProjectManagmentValidation.NOT_VALID_DOCUMENT_ID);
         
         RuleFor(p => p.ProjectId)
             .Must(p => p > 0)

@@ -179,16 +179,51 @@ public class ProjectManagmentSettingsController : BaseController
             createTaskStatusInput.StatusDescription, createTaskStatusInput.ProjectId, GetUserName());
     }
 
+    // /// <summary>
+    // /// TODO: Этот метод еще не доработан. Сделана лишь валидация.
+    // /// Метод создает переход между статусами пользователя.
+    // /// <param name="createTaskTransitionInput">Входная модель.</param>
+    // /// </summary>
+    // /// <exception cref="AggregateException">Если входные параметры не прошли валидацию.</exception>
+    // [HttpPost]
+    // [Route("user-transition")]
+    // public async Task CreateUserTransitionAsync([FromBody] CreateTaskTransitionInput createTaskTransitionInput)
+    // {
+    //     var validator = await new CreateTaskTransitionValidator().ValidateAsync(createTaskTransitionInput);
+    //
+    //     if (validator.Errors.Any())
+    //     {
+    //         var exceptions = new List<InvalidOperationException>();
+    //
+    //         foreach (var err in validator.Errors)
+    //         {
+    //             exceptions.Add(new InvalidOperationException(err.ErrorMessage));
+    //         }
+    //         
+    //         var ex = new AggregateException("Ошибка создания перехода между статусами пользователя.", exceptions);
+    //         _logger.LogError(ex, ex.Message);
+    //         
+    //         await _pachcaService.Value.SendNotificationErrorAsync(ex);
+    //         
+    //         throw ex;
+    //     }
+    // }
+    
     /// <summary>
-    /// Метод создает переход между статусами пользователя.
-    /// <param name="createTaskTransitionInput">Входная модель.</param>
+    /// Метод фиксирует выбранную пользователем стратегию представления.
     /// </summary>
-    /// <exception cref="AggregateException">Если входные параметры не прошли валидацию.</exception>
-    [HttpPost]
-    [Route("user-transition")]
-    public async Task CreateUserTransitionAsync([FromBody] CreateTaskTransitionInput createTaskTransitionInput)
+    /// <param name="fixationStrategyInput">Входная модель.</param>
+    [HttpPatch]
+    [Route("fixation-strategy")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task FixationProjectViewStrategyAsync(
+        [FromBody] FixationProjectViewStrategyInput fixationStrategyInput)
     {
-        var validator = await new CreateTaskTransitionValidator().ValidateAsync(createTaskTransitionInput);
+        var validator = await new FixationProjectViewStrategyValidator().ValidateAsync(fixationStrategyInput);
 
         if (validator.Errors.Any())
         {
@@ -199,12 +234,15 @@ public class ProjectManagmentSettingsController : BaseController
                 exceptions.Add(new InvalidOperationException(err.ErrorMessage));
             }
             
-            var ex = new AggregateException("Ошибка создания перехода между статусами пользователя.", exceptions);
+            var ex = new AggregateException("Ошибка фиксации стратегии представления пользователя.", exceptions);
             _logger.LogError(ex, ex.Message);
             
             await _pachcaService.Value.SendNotificationErrorAsync(ex);
             
             throw ex;
         }
+
+        await _projectManagmentService.FixationProjectViewStrategyAsync(fixationStrategyInput.StrategySysName,
+            fixationStrategyInput.ProjectId, GetUserName());
     }
 }

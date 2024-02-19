@@ -237,5 +237,10 @@ public static class ValidationConst
         /// Если передали невалидный Id документа.
         /// </summary>
         public const string NOT_VALID_DOCUMENT_ID = "Id документа не передан.";
+
+        /// <summary>
+        /// Если не передали системное название представления.
+        /// </summary>
+        public const string NOT_VALID_STRATEGY_SYS_NAME = "Системное название представления не передано.";
     }
 }

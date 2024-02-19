@@ -346,4 +346,12 @@ public interface IProjectManagmentService
     /// <param name="projectId">Id проекта.</param>
     /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
     Task RemoveTaskFileAsync(long documentId, long projectId, long projectTaskId);
+
+    /// <summary>
+    /// Метод фиксирует выбранную пользователем стратегию представления.
+    /// </summary>
+    /// <param name="strategySysName">Системное название стратегии.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="account">Аккаунт.</param>
+    Task FixationProjectViewStrategyAsync(string strategySysName, long projectId, string account);
 }
