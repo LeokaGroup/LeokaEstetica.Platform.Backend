@@ -165,7 +165,7 @@ public class ProjectManagmentController : BaseController
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
     public async Task<ProjectManagmentWorkspaceResult> GetConfigurationWorkSpaceBySelectedTemplateAsync(
-        [FromQuery] long projectId, int? paginatorStatusId, int page = 1)
+        [FromQuery] long projectId, [FromQuery] int? paginatorStatusId, [FromQuery] int page = 1)
     {
         var validator = await new GetConfigurationValidator().ValidateAsync(
             new GetConfigurationValidationModel(projectId));

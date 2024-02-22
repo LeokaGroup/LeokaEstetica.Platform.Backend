@@ -2295,63 +2295,69 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 }
                 
                 var statusTasksCount = mapTasks.Count; // Всего задач у статуса.
+                var isAppended = false;
 
                 // Действия с задачами, если стратегий представления Scrum.
                 if (strategy.Equals("sm"))
                 {
-                    // Выдаем до 10 задач включительно, так как подразумевается, что у статуса их <= 10.
-                    if (mapTasks.Count <= 10)
+                    if (mapTasks.Count > 10)
                     {
-                        continue;
-                    }
-
-                    // Проверяем кол-во задач у статуса. Если их > 10, то применяем пагинацию.
-                    // Выполняет разбиение задач в рамках статуса.
-                    // Применяется, если у статуса > 10 задач.
-                    // Если задач у статуса <= 10, то не применяется.
-                    // Применяем пагинатор для статуса, с которым работаем в итерации,
-                    // только если он совпал с тем. что передал фронт.
-                    // Это нужно для пагинации при нажатии на кнопку "Показать больше".
-                    if (paginatorStatusId.HasValue && paginatorStatusId == ps.TaskStatusId)
-                    {
-                        // TODO: Надо переделать на IQueryable, чтобы не работать со всем массивом данных.
-                        mapTasks = mapTasks
-                            .Skip((page - 1) * _scrumPageSize)
-                            .Take(_scrumPageSize)
-                            .AsList();
-
-                        // Для первой странице не инкрементим страницу.
-                        // Каждое последующее нажатие на "Показать больше" требует инкремента page.
-                        if (page > 1)
+                        // При нажатии на кнопку "Показать больше", докидываем в список задач определенного
+                        // статуса следующие 10.
+                        if (paginatorStatusId.HasValue && paginatorStatusId == ps.TaskStatusId)
                         {
-                            // Инкрементимм страницу.
-                            ++page;
-                        }
-                    }
+                            ps.ProjectManagmentTasks = new List<ProjectManagmentTaskOutput>(statusTasksCount);
+                            
+                            // TODO: Надо переделать на IQueryable, чтобы не работать со всем массивом данных.
+                            // Разбиваем пагинатором следующие 10 задач, которые будем докидывать в список.
+                            var appendedTasks = mapTasks
+                                .Skip((page - 1) * _scrumPageSize)
+                                .Take(_scrumPageSize)
+                                .AsList();
+                            var appendedTaskIds = appendedTasks.Select(x => x.TaskId).AsList();
 
-                    // Иначе применить пагинатор для всех статусов шаблона.
-                    else if (!paginatorStatusId.HasValue)
-                    {
-                        // TODO: Надо переделать на IQueryable, чтобы не работать со всем массивом данных.
-                        mapTasks = mapTasks
-                            .Skip((page - 1) * _scrumPageSize)
-                            .Take(_scrumPageSize)
-                            .AsList();
+                            foreach (var t in mapTasks)
+                            {
+                                // Наполняем уже существующий список определенного статуса.
+                                if (!appendedTaskIds.Contains(t.TaskId))
+                                {
+                                    ps.ProjectManagmentTasks.Add(t);
+                                }
+                            }
+
+                            // Добавляем новые 10 задач к тем, что уже выведены на фронте.
+                            ps.ProjectManagmentTasks.AddRange(appendedTasks);
+                            isAppended = true;
+                        }
+
+                        // Иначе применить пагинатор для всех статусов шаблона.
+                        else if (!paginatorStatusId.HasValue)
+                        {
+                            // TODO: Надо переделать на IQueryable, чтобы не работать со всем массивом данных.
+                            mapTasks = mapTasks
+                                .Skip((page - 1) * _scrumPageSize)
+                                .Take(_scrumPageSize)
+                                .AsList();
+                        }
                     }
                 }
                 
                 // Заполняем модель пагинатора для фронта, чтобы он кидал последующие запросы с параметрами страниц.
-                ps.Paginator = new Paginator(statusTasksCount, page, _scrumPageSize);   
+                ps.Paginator = new Paginator(statusTasksCount, page, _scrumPageSize);
 
-                // Добавляем задачи статуса.
-                ps.ProjectManagmentTasks = new List<ProjectManagmentTaskOutput>(statusTasksCount);
-                ps.ProjectManagmentTasks.AddRange(mapTasks);
-                
-                // Кол-во задач в статусе.
-                ps.Total = ps.ProjectManagmentTasks.Count;
+                // Если задачи уже докидывались, не добавляем снова.
+                if (!isAppended)
+                {
+                    // Добавляем задачи статуса.
+                    ps.ProjectManagmentTasks = new List<ProjectManagmentTaskOutput>(statusTasksCount);
+                    ps.ProjectManagmentTasks.AddRange(mapTasks);
+                }
                 
                 // Сортируем задачи статуса по убываниию даты создания. Новые задачи будут выше.
                 ps.ProjectManagmentTasks = ps.ProjectManagmentTasks.OrderByDescending(o => o.Created).AsList();
+
+                // Кол-во задач в статусе.
+                ps.Total = statusTasksCount;
             }
         }
     }
