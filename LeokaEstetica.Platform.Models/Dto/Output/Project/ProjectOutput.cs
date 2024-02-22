@@ -93,4 +93,14 @@ public class ProjectOutput : ProjectRemarkResult, IFrontError
     /// Признак доступа.
     /// </summary>
     public bool IsAccess { get; set; }
+    
+    /// <summary>
+    /// Название проекта для модуля УП (управление проектами).
+    /// </summary>
+    public string ProjectManagementName { get; set; }
+
+    /// <summary>
+    /// Префикс названия проекта для модуля УП (управление проектами).
+    /// </summary>
+    public string ProjectManagementNamePrefix { get; set; }
 }
