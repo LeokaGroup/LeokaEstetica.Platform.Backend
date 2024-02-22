@@ -61,9 +61,12 @@ public interface IProjectManagmentService
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
     /// <param name="account">Аккаунт.</param>
+    /// <param name="paginatorStatusId">Id статуса, для которого нужно применить пагинатор.
+    /// Если он null, то пагинатор применится для задач всех статусов шаблона.</param>
+    /// <param name="page">Номер страницы.</param>
     /// <returns>Данные конфигурации рабочего пространства.</returns>
     Task<ProjectManagmentWorkspaceResult> GetConfigurationWorkSpaceBySelectedTemplateAsync(long projectId,
-        string account);
+        string account, int? paginatorStatusId, int page = 1);
 
     /// <summary>
     /// Метод получает детали задачи.

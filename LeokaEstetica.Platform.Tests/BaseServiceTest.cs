@@ -157,7 +157,7 @@ internal class BaseServiceTest
         FareRuleRepository = new FareRuleRepository(pgContext, AppConfiguration);
         
         var availableLimitsRepository = new AvailableLimitsRepository(pgContext);
-        var globalConfigRepository = new GlobalConfigRepository(pgContext, null, AppConfiguration, null);
+        var globalConfigRepository = new GlobalConfigRepository(pgContext, null, AppConfiguration, connectionProvider);
         var pachcaService = new PachcaService(AppConfiguration, null);
 
         UserService = new UserService(null, userRepository, mapper, null, pgContext, profileRepository,

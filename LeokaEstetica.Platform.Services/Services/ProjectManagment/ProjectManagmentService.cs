@@ -15,6 +15,7 @@ using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Database.Abstractions.Template;
 using LeokaEstetica.Platform.Integrations.Abstractions.Pachca;
 using LeokaEstetica.Platform.Integrations.Abstractions.Reverso;
+using LeokaEstetica.Platform.Models.Dto.Base.ProjectManagement.Paginator;
 using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.Template;
@@ -63,6 +64,11 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     {
         "New", "InWork", "InDevelopment", "Completed"
     };
+
+    /// <summary>
+    /// Кол-во задач у статуса. Если применяется Scrum.
+    /// </summary>
+    private const int _scrumPageSize = 10;
 
     /// <summary>
     /// Конструктор.
@@ -450,16 +456,9 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         }
     }
 
-    /// <summary>
-    /// Метод получает конфигурацию рабочего пространства по выбранному шаблону.
-    /// Под конфигурацией понимаются основные элементы рабочего пространства (набор задач, статусов, фильтров, колонок и тд)
-    /// если выбранный шаблон это предполагает.
-    /// </summary>
-    /// <param name="projectId">Id проекта.</param>
-    /// <param name="account">Аккаунт.</param>
-    /// <returns>Данные конфигурации рабочего пространства.</returns>
+    /// <inheritdoc />
     public async Task<ProjectManagmentWorkspaceResult> GetConfigurationWorkSpaceBySelectedTemplateAsync(long projectId,
-        string account)
+        string account, int? paginatorStatusId, int page = 1)
     {
         try
         {
@@ -486,7 +485,9 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 projectId, userId);
             var projectSettingsItems = projectSettings?.AsList();
 
-            if (projectSettingsItems is null || !projectSettingsItems.Any())
+            if (projectSettingsItems is null
+                || !projectSettingsItems.Any()
+                || projectSettingsItems.Any(x => x is null))
             {
                 throw new InvalidOperationException("Ошибка получения настроек проекта. " +
                                                     $"ProjectId: {projectId}. " +
@@ -521,29 +522,30 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                     .Where(x => x.TemplateId == templateId),
                 Strategy = strategy!.ParamValue
             };
+            
+            var modifyStatusesTimer = new Stopwatch();
+                
+            _logger?.LogInformation(
+                $"Начали получение списка задач для рабочего пространства для проекта {projectId}");
+                
+            modifyStatusesTimer.Start();
 
             // Получаем задачи пользователя, которые принадлежат проекту в рабочем пространстве.
             var projectTasks = await _projectManagmentRepository.GetProjectTasksAsync(projectId);
+            
+            modifyStatusesTimer.Stop();
+                
+            _logger?.LogInformation(
+                $"Закончили получение списка задач для рабочего пространства для проекта {projectId} " +
+                $"за: {modifyStatusesTimer.ElapsedMilliseconds} мсек.");
+            
             var tasks = projectTasks?.AsList();
 
+            // Если задачи есть, то модифицируем выходные данные.
             if (tasks is not null && tasks.Any())
             {
-                var modifyStatusesTimer = new Stopwatch();
-                
-                _logger.LogInformation(
-                    $"Начали получение списка задач для рабочего пространства для проекта {projectId}");
-                
-                modifyStatusesTimer.Start();
-
-                // Наполняем названиями исходя из Id полей.
                 await ModifyProjectManagmentTaskStatusesResultAsync(result.ProjectManagmentTaskStatuses, tasks,
-                    projectId);
-                
-                modifyStatusesTimer.Stop();
-                
-                _logger.LogInformation(
-                    $"Закончили получение списка задач для рабочего пространства для проекта {projectId} " +
-                    $"за: {modifyStatusesTimer.ElapsedMilliseconds} мсек.");
+                    projectId, result.Strategy, paginatorStatusId, page);
             }
 
             return result;
@@ -2093,16 +2095,19 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     #region Приватные методы.
 
     /// <summary>
-    /// Метод наполняет названия исходя из Id записей.
+    /// Метод модифицирует выходной результат.
     /// </summary>
     /// <param name="projectManagmentTaskStatusTemplates">Список статусов, каждый статус может включать
     /// или не включать в себя задачи.</param>
     /// <param name="tasks">Список задач рабочего пространства проекта.</param>
     /// <param name="projectId">Id проекта</param>
+    /// <param name="strategy">Выбранная пользователем стратегия представления.</param>
+    /// <param name="paginatorStatusId">Id статуса, для которого нужно применить пагинатор.</param>
+    /// <param name="page">Номер страницы.</param>
     /// <exception cref="InvalidOperationException">Может бахнуть, если какое-то условие не прошли.</exception>
     private async Task ModifyProjectManagmentTaskStatusesResultAsync(
         IEnumerable<ProjectManagmentTaskStatusTemplateOutput> projectManagmentTaskStatusTemplates,
-        List<ProjectTaskEntity> tasks, long projectId)
+        List<ProjectTaskEntity> tasks, long projectId, string strategy, int? paginatorStatusId, int page = 1)
     {
         // Получаем имена авторов задач.
         var authorIds = tasks.Select(x => x.AuthorId);
@@ -2201,7 +2206,9 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         // Распределяем задачи по статусам.
         foreach (var ps in projectManagmentTaskStatusTemplates)
         {
-            var tasksByStatus = tasks.Where(s => s.TaskStatusId == ps.TaskStatusId);
+            var tasksByStatus = tasks
+                .Where(s => s.TaskStatusId == ps.TaskStatusId)
+                .OrderByDescending(o => o.Created); // Новые задачи статуса будут выше.
 
             // Для этого статуса нет задач, пропускаем.
             if (!tasksByStatus.Any())
@@ -2286,12 +2293,71 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                         }
                     }
                 }
-
-                ps.ProjectManagmentTasks = new List<ProjectManagmentTaskOutput>(mapTasks.Count);
-                ps.ProjectManagmentTasks.AddRange(mapTasks);
                 
+                var statusTasksCount = mapTasks.Count; // Всего задач у статуса.
+                var isAppended = false;
+
+                // Действия с задачами, если стратегий представления Scrum.
+                if (strategy.Equals("sm"))
+                {
+                    if (mapTasks.Count > 10)
+                    {
+                        // При нажатии на кнопку "Показать больше", докидываем в список задач определенного
+                        // статуса следующие 10.
+                        if (paginatorStatusId.HasValue && paginatorStatusId == ps.TaskStatusId)
+                        {
+                            ps.ProjectManagmentTasks = new List<ProjectManagmentTaskOutput>(statusTasksCount);
+                            
+                            // TODO: Надо переделать на IQueryable, чтобы не работать со всем массивом данных.
+                            // Разбиваем пагинатором следующие 10 задач, которые будем докидывать в список.
+                            var appendedTasks = mapTasks
+                                .Skip((page - 1) * _scrumPageSize)
+                                .Take(_scrumPageSize)
+                                .AsList();
+                            var appendedTaskIds = appendedTasks.Select(x => x.TaskId).AsList();
+
+                            foreach (var t in mapTasks)
+                            {
+                                // Наполняем уже существующий список определенного статуса.
+                                if (!appendedTaskIds.Contains(t.TaskId))
+                                {
+                                    ps.ProjectManagmentTasks.Add(t);
+                                }
+                            }
+
+                            // Добавляем новые 10 задач к тем, что уже выведены на фронте.
+                            ps.ProjectManagmentTasks.AddRange(appendedTasks);
+                            isAppended = true;
+                        }
+
+                        // Иначе применить пагинатор для всех статусов шаблона.
+                        else if (!paginatorStatusId.HasValue)
+                        {
+                            // TODO: Надо переделать на IQueryable, чтобы не работать со всем массивом данных.
+                            mapTasks = mapTasks
+                                .Skip((page - 1) * _scrumPageSize)
+                                .Take(_scrumPageSize)
+                                .AsList();
+                        }
+                    }
+                }
+                
+                // Заполняем модель пагинатора для фронта, чтобы он кидал последующие запросы с параметрами страниц.
+                ps.Paginator = new Paginator(statusTasksCount, page, _scrumPageSize);
+
+                // Если задачи уже докидывались, не добавляем снова.
+                if (!isAppended)
+                {
+                    // Добавляем задачи статуса.
+                    ps.ProjectManagmentTasks = new List<ProjectManagmentTaskOutput>(statusTasksCount);
+                    ps.ProjectManagmentTasks.AddRange(mapTasks);
+                }
+                
+                // Сортируем задачи статуса по убываниию даты создания. Новые задачи будут выше.
+                ps.ProjectManagmentTasks = ps.ProjectManagmentTasks.OrderByDescending(o => o.Created).AsList();
+
                 // Кол-во задач в статусе.
-                ps.Total = ps.ProjectManagmentTasks.Count;
+                ps.Total = statusTasksCount;
             }
         }
     }
