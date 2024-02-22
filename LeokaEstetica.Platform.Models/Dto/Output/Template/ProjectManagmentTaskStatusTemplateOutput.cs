@@ -1,3 +1,5 @@
+using LeokaEstetica.Platform.Models.Dto.Base.ProjectManagement.Paginator;
+
 namespace LeokaEstetica.Platform.Models.Dto.Output.Template;
 
 /// <summary>
@@ -36,7 +38,12 @@ public class ProjectManagmentTaskStatusTemplateOutput
     public List<ProjectManagmentTaskOutput> ProjectManagmentTasks { get; set; }
 
     /// <summary>
-    /// Кол-во всего.
+    /// Кол-во всего задач у статуса.
     /// </summary>
     public long Total { get; set; }
+
+    /// <summary>
+    /// Класс пагинатора.
+    /// </summary>
+    public Paginator Paginator { get; set; }
 }

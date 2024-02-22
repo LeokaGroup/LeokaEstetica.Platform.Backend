@@ -83,15 +83,7 @@ public class BaseModule : Module
         builder.RegisterType<NpgSqlConnectionFactory>()
             .As<IConnectionFactory>()
             .InstancePerLifetimeScope();
-        
-        // Обобщенная енамка для работы с енамками в БД.
-        // builder.RegisterType<Enum>()
-        //     .Named<IEnum>("Enum")
-        //     .InstancePerLifetimeScope();
-        // builder.RegisterType<Enum>()
-        //     .As<IEnum>()
-        //     .InstancePerLifetimeScope();
-        
+
         // Провайдер подключений к БД.
         builder.RegisterType<ConnectionProvider>()
             .Named<IConnectionProvider>("ConnectionProvider")

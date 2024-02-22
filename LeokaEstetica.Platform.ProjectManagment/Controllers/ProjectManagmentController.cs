@@ -153,6 +153,9 @@ public class ProjectManagmentController : BaseController
     /// если выбранный шаблон это предполагает.
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
+    /// <param name="paginatorStatusId">Id статуса, для которого нужно применить пагинатор.
+    /// Если он null, то пагинатор применится для задач всех статусов шаблона.</param>
+    /// <param name="page">Номер страницы.</param>
     /// <returns>Данные конфигурации рабочего пространства.</returns>
     [HttpGet]
     [Route("config-workspace-template")]
@@ -162,7 +165,7 @@ public class ProjectManagmentController : BaseController
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
     public async Task<ProjectManagmentWorkspaceResult> GetConfigurationWorkSpaceBySelectedTemplateAsync(
-        [FromQuery] long projectId)
+        [FromQuery] long projectId, int? paginatorStatusId, int page = 1)
     {
         var validator = await new GetConfigurationValidator().ValidateAsync(
             new GetConfigurationValidationModel(projectId));
@@ -184,7 +187,7 @@ public class ProjectManagmentController : BaseController
         }
 
         var result = await _projectManagmentService.GetConfigurationWorkSpaceBySelectedTemplateAsync(
-            projectId, GetUserName());
+            projectId, GetUserName(), paginatorStatusId, page);
 
         return result;
     }
