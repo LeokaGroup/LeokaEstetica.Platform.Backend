@@ -124,7 +124,7 @@ internal sealed class ProjectSettingsConfigRepository : IProjectSettingsConfigRe
             })
             .ToListAsync();
 
-        result.ProjectId = result.Settings.First().ProjectId;
+        result.ProjectId = result.Settings.FirstOrDefault()?.ProjectId ?? 0;
 
         return result;
     }

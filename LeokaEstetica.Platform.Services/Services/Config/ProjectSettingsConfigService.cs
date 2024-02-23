@@ -95,11 +95,14 @@ internal sealed class ProjectSettingsConfigService : IProjectSettingsConfigServi
             }
 
             var settingsItems = await _projectSettingsConfigRepository.GetBuildProjectSpaceSettingsAsync(userId);
-            var settings = settingsItems.Settings.AsList();
+            var settings = settingsItems.Settings?.AsList();
+            var result = new ConfigSpaceSettingOutput();
             
-            if (settings is null)
+            if (settings is null || !settings.Any() || settingsItems.ProjectId <= 0)
             {
-                throw new InvalidOperationException("Ошибка получения настроек проекта settings.");
+                result.IsCommitProjectSettings = false;
+                
+                return result;
             }
             
             var templateId = Convert.ToInt32(settings.Find(x =>
@@ -116,7 +119,6 @@ internal sealed class ProjectSettingsConfigService : IProjectSettingsConfigServi
                 ?.ParamValue;
 
             var projectId = settingsItems.ProjectId;
-            var result = new ConfigSpaceSettingOutput();
 
             // Если все настройки были заполнены пользователем, то разрешаем генерацию ссылки в раб.пространство.
             if (projectId > 0
