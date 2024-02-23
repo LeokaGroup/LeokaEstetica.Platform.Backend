@@ -27,5 +27,17 @@ public class CommitProjectManagementSpaceSettingValidator : AbstractValidator<Co
             .WithMessage(ValidationConst.ProjectManagmentValidation.EMPTY_STRATEGY)
             .NotEmpty()
             .WithMessage(ValidationConst.ProjectManagmentValidation.EMPTY_STRATEGY);
+            
+        RuleFor(p => p.ProjectManagementName)
+            .NotNull()
+            .WithMessage(ValidationConst.ProjectManagmentValidation.NOT_VALID_PROJECT_MANAGEMENT_PROJECT_NAME)
+            .NotEmpty()
+            .WithMessage(ValidationConst.ProjectManagmentValidation.NOT_VALID_PROJECT_MANAGEMENT_PROJECT_NAME);
+            
+        RuleFor(p => p.ProjectManagementNamePrefix)
+            .NotNull()
+            .WithMessage(ValidationConst.ProjectManagmentValidation.NOT_VALID_PROJECT_MANAGEMENT_PROJECT_NAME_PREFIX)
+            .NotEmpty()
+            .WithMessage(ValidationConst.ProjectManagmentValidation.NOT_VALID_PROJECT_MANAGEMENT_PROJECT_NAME_PREFIX);
     }
 }

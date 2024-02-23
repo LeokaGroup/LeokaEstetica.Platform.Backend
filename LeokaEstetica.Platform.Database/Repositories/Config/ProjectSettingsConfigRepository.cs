@@ -22,7 +22,7 @@ internal sealed class ProjectSettingsConfigRepository : IProjectSettingsConfigRe
 
     /// <inheritdoc />
     public async Task CommitSpaceSettingsAsync(string strategy, int templateId, long projectId, long userId,
-        bool isProjectOwner, string redirectUrl)
+        bool isProjectOwner, string redirectUrl, string projectManagementName, string projectManagementNamePrefix)
     {
         var settings = new List<ConfigSpaceSettingEntity>();
 
@@ -33,7 +33,7 @@ internal sealed class ProjectSettingsConfigRepository : IProjectSettingsConfigRe
         {
             settings.Add(new ConfigSpaceSettingEntity
             {
-                ParamKey = GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGMENT_TEMPLATE_ID,
+                ParamKey = GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_TEMPLATE_ID,
                 ParamValue = templateId.ToString(),
                 ParamType = "Int64",
                 UserId = userId,
@@ -59,7 +59,7 @@ internal sealed class ProjectSettingsConfigRepository : IProjectSettingsConfigRe
             },
             new ()
             {
-                ParamKey = GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGMENT_SPACE_URL,
+                ParamKey = GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_SPACE_URL,
                 ParamValue = redirectUrl,
                 ParamType = "String",
                 UserId = userId,
@@ -70,24 +70,61 @@ internal sealed class ProjectSettingsConfigRepository : IProjectSettingsConfigRe
                 LastUserDate = DateTime.UtcNow
             }
         });
+        
+        settings.Add(new ConfigSpaceSettingEntity
+        {
+            ParamKey = GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_PROJECT_NAME,
+            ParamValue = projectManagementName,
+            ParamType = "String",
+            UserId = userId,
+            ProjectId = projectId,
+            ParamDescription = "Название проекта в модуле УП.",
+            ParamTag = "Project management settings",
+            LastUserDate = DateTime.UtcNow
+        });
+        
+        settings.Add(new ConfigSpaceSettingEntity
+        {
+            ParamKey = GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_PROJECT_NAME_PREFIX,
+            ParamValue = projectManagementNamePrefix,
+            ParamType = "String",
+            UserId = userId,
+            ProjectId = projectId,
+            ParamDescription = "Префикс названия проекта в модуле УП.",
+            ParamTag = "Project management settings",
+            LastUserDate = DateTime.UtcNow
+        });
 
         await _pgContext.ConfigSpaceSettings.AddRangeAsync(settings);
         await _pgContext.SaveChangesAsync();
     }
 
     /// <inheritdoc />
-    public async Task<ConfigSpaceSettingEntity> GetBuildProjectSpaceSettingsAsync(long userId)
+    public async Task<(IEnumerable<ConfigSpaceSettingEntity> Settings, long ProjectId)>
+        GetBuildProjectSpaceSettingsAsync(long userId)
     {
-        var result = await _pgContext.ConfigSpaceSettings
+        (IEnumerable<ConfigSpaceSettingEntity> Settings, long ProjectId) result =
+            (new List<ConfigSpaceSettingEntity>(), 0);
+        
+        result.Settings = await _pgContext.ConfigSpaceSettings
             .Where(c => c.UserId == userId
-                        && c.ParamKey.Equals(GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGMENT_SPACE_URL))
-            .OrderByDescending(o => o.LastUserDate)
+                        && new[]
+                        {
+                            GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_SPACE_URL,
+                            GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_STRATEGY,
+                            GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_TEMPLATE_ID,
+                            GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_PROJECT_NAME,
+                            GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_PROJECT_NAME_PREFIX
+                        }.Contains(c.ParamKey))
             .Select(c => new ConfigSpaceSettingEntity
             {
                 ProjectId = c.ProjectId,
-                ParamValue = c.ParamValue
+                ParamValue = c.ParamValue,
+                ParamKey = c.ParamKey
             })
-            .FirstOrDefaultAsync();
+            .ToListAsync();
+
+        result.ProjectId = result.Settings.First().ProjectId;
 
         return result;
     }
@@ -101,7 +138,7 @@ internal sealed class ProjectSettingsConfigRepository : IProjectSettingsConfigRe
         // Получаем шаблон проекта, который был задан владельцем проекта.
         var projectTemplate = await _pgContext.ConfigSpaceSettings
             .Where(s => s.ProjectId == projectId
-                        && s.ParamKey.Equals(GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGMENT_TEMPLATE_ID))
+                        && s.ParamKey.Equals(GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_TEMPLATE_ID))
             .Select(s => new ConfigSpaceSettingEntity
             {
                 ParamKey = s.ParamKey,
@@ -125,10 +162,10 @@ internal sealed class ProjectSettingsConfigRepository : IProjectSettingsConfigRe
         
         result.Add(userStrategy);
         
-        // Получаем роута представления с задачами.
+        // Получаем роут представления с задачами.
         var url = await _pgContext.ConfigSpaceSettings
             .Where(s => s.ProjectId == projectId
-                        && s.ParamKey.Equals(GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGMENT_SPACE_URL))
+                        && s.ParamKey.Equals(GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_SPACE_URL))
             .Select(s => new ConfigSpaceSettingEntity
             {
                 ParamKey = s.ParamKey,
@@ -149,7 +186,7 @@ internal sealed class ProjectSettingsConfigRepository : IProjectSettingsConfigRe
         // Получаем шаблон проекта, который был задан владельцем проекта.
         var projectTemplate = await _pgContext.ConfigSpaceSettings
             .Where(s => s.ProjectId == projectId
-                        && s.ParamKey.Equals(GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGMENT_TEMPLATE_ID))
+                        && s.ParamKey.Equals(GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_TEMPLATE_ID))
             .Select(s => new ConfigSpaceSettingEntity
             {
                 ParamKey = s.ParamKey,
@@ -175,7 +212,7 @@ internal sealed class ProjectSettingsConfigRepository : IProjectSettingsConfigRe
         // Получаем роута представления с задачами.
         var url = await _pgContext.ConfigSpaceSettings
             .Where(s => s.ProjectId == projectId
-                        && s.ParamKey.Equals(GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGMENT_SPACE_URL))
+                        && s.ParamKey.Equals(GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_SPACE_URL))
             .Select(s => new ConfigSpaceSettingEntity
             {
                 ParamKey = s.ParamKey,

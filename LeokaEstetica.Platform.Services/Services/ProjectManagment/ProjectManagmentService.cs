@@ -495,7 +495,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             }
 
             var template = projectSettingsItems.Find(x =>
-                x.ParamKey.Equals(GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGMENT_TEMPLATE_ID));
+                x.ParamKey.Equals(GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_TEMPLATE_ID));
             var templateId = Convert.ToInt32(template!.ParamValue);
 
             // Получаем набор статусов, которые входят в выбранный шаблон.
@@ -796,7 +796,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             }
 
             var redirectUrl = projectSettingsItems.Find(x =>
-                x.ParamKey.Equals(GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGMENT_SPACE_URL));
+                x.ParamKey.Equals(GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_SPACE_URL));
 
             var result = new CreateProjectManagementTaskOutput
             {
@@ -898,7 +898,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             }
 
             var template = projectSettingsItems.Find(x =>
-                x.ParamKey.Equals(GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGMENT_TEMPLATE_ID));
+                x.ParamKey.Equals(GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_TEMPLATE_ID));
             var templateId = Convert.ToInt32(template!.ParamValue);
 
             var statusIds = (await _projectManagmentTemplateRepository.GetTemplateStatusIdsAsync(templateId))
@@ -1254,7 +1254,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             }
 
             var template = projectSettingsItems.Find(x =>
-                x.ParamKey.Equals(GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGMENT_TEMPLATE_ID));
+                x.ParamKey.Equals(GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_TEMPLATE_ID));
             var templateId = Convert.ToInt32(template!.ParamValue);
 
             // Получаем все Id статусов, которые входят в шаблон текущего проекта.

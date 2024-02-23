@@ -339,7 +339,7 @@ internal sealed class ProjectRepository : IProjectRepository
             .Where(p => p.ProjectId == projectId)
             .Select(p => p.StageId)
             .FirstOrDefaultAsync();
-
+ 
         // Берем полные данные о стадии проекта.
         result.Item2 = await _pgContext.ProjectStages.AsNoTracking()
             .Where(ps => ps.StageId == projectStageId)

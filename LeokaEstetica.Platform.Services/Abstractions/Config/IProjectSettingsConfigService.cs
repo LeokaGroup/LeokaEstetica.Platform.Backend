@@ -10,9 +10,15 @@ public interface IProjectSettingsConfigService
     /// <summary>
     /// Метод фиксирует выбранные пользователем настройки рабочего пространства проекта.
     /// </summary>
-    /// <param name="configSpaceSettingInput">Входная модель.</param>
+    /// <param name="strategy">Выбранная пользователем стратегия представления.</param>
+    /// <param name="templateId">Выбранный пользователем шаблон управления проектом.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="account">Аккаунт.</param>
+    /// <param name="projectManagementName">Название в управлении проектом.</param>
+    /// <param name="projectManagementNamePrefix">Префикс названия в управлении проектом.</param>
+    /// <returns>Выходная модель.</returns>
     Task<ConfigSpaceSettingOutput> CommitSpaceSettingsAsync(string strategy, int templateId, long projectId,
-        string account);
+        string account, string projectManagementName, string projectManagementNamePrefix);
 
     /// <summary>
     /// Метод получает Id проекта, который был ранее выбран пользователем для перехода к управлению проектом.
