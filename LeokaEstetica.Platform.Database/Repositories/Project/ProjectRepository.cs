@@ -1245,6 +1245,15 @@ internal sealed class ProjectRepository : IProjectRepository
         return result;
     }
 
+    /// <inheritdoc />
+    public async Task SetProjectManagementNameAsync(long projectId, string projectManagementName)
+    {
+        var prj = await _pgContext.UserProjects.FirstOrDefaultAsync(p => p.ProjectId == projectId);
+        prj!.ProjectManagementName = projectManagementName;
+        
+        await _pgContext.SaveChangesAsync();
+    }
+
     #region Приватные методы.
 
     /// Метод првоеряет, был ли уже такой проект на модерации. 

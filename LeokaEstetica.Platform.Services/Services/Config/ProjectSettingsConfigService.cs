@@ -61,6 +61,8 @@ internal sealed class ProjectSettingsConfigService : IProjectSettingsConfigServi
 
             await _projectSettingsConfigRepository.CommitSpaceSettingsAsync(strategy, templateId, projectId, userId,
                 isProjectOwner, redirectUrl, projectManagementName, projectManagementNamePrefix);
+
+            await _projectRepository.SetProjectManagementNameAsync(projectId, projectManagementName);
                 
             var result = new ConfigSpaceSettingOutput
             {
