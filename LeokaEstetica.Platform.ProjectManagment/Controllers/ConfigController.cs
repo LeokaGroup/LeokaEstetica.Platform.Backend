@@ -55,7 +55,7 @@ public class ConfigController : BaseController
     {
         _logger.LogInformation("Начали проверку доступности модуля управления проектами.");
         var result = await _globalConfigRepository.GetValueByKeyAsync<bool>(GlobalConfigKeys.ProjectManagment
-                .PROJECT_MANAGMENT_MODE_ENABLED);
+                .PROJECT_MANAGEMENT_MODE_ENABLED);
         _logger.LogInformation($"Закончили проверку доступности модуля управления проектами. Result: {result}");
 
         return result;
@@ -68,7 +68,7 @@ public class ConfigController : BaseController
     /// <returns>Выходная модель.</returns>
     [HttpPost]
     [Route("space-settings")]
-    [ProducesResponseType(200)]
+    [ProducesResponseType(200, Type = typeof(ConfigSpaceSettingOutput))]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
@@ -98,7 +98,8 @@ public class ConfigController : BaseController
         }
 
         var result = await _projectSettingsConfigService.CommitSpaceSettingsAsync(configSpaceSettingInput.Strategy,
-            configSpaceSettingInput.TemplateId, configSpaceSettingInput.ProjectId, GetUserName());
+            configSpaceSettingInput.TemplateId, configSpaceSettingInput.ProjectId, GetUserName(),
+            configSpaceSettingInput.ProjectManagementName, configSpaceSettingInput.ProjectManagementNamePrefix);
 
         return result;
     }

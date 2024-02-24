@@ -1,3 +1,4 @@
+using Dapper;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.Core.Constants;
 using LeokaEstetica.Platform.Core.Exceptions;
@@ -41,7 +42,7 @@ internal sealed class ProjectSettingsConfigService : IProjectSettingsConfigServi
 
     /// <inheritdoc />
     public async Task<ConfigSpaceSettingOutput> CommitSpaceSettingsAsync(string strategy, int templateId,
-        long projectId, string account)
+        long projectId, string account, string projectManagementName, string projectManagementNamePrefix)
     {
         try
         {
@@ -56,10 +57,12 @@ internal sealed class ProjectSettingsConfigService : IProjectSettingsConfigServi
             // Проверяем, является ли текущий пользователь владельцем проекта.
             var isProjectOwner = await _projectRepository.CheckProjectOwnerAsync(projectId, userId);
             var redirectUrl = await _globalConfigRepository.GetValueByKeyAsync<string>(
-                GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGMENT_SPACE_URL);
+                GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_SPACE_URL);
 
             await _projectSettingsConfigRepository.CommitSpaceSettingsAsync(strategy, templateId, projectId, userId,
-                isProjectOwner, redirectUrl);
+                isProjectOwner, redirectUrl, projectManagementName, projectManagementNamePrefix);
+
+            await _projectRepository.SetProjectManagementNameAsync(projectId, projectManagementName);
                 
             var result = new ConfigSpaceSettingOutput
             {
@@ -91,33 +94,55 @@ internal sealed class ProjectSettingsConfigService : IProjectSettingsConfigServi
                 throw ex;
             }
 
+            var settingsItems = await _projectSettingsConfigRepository.GetBuildProjectSpaceSettingsAsync(userId);
+            var settings = settingsItems.Settings?.AsList();
             var result = new ConfigSpaceSettingOutput();
-
-            var settings = await _projectSettingsConfigRepository.GetBuildProjectSpaceSettingsAsync(userId);
             
-            if (settings is null)
+            if (settings is null || !settings.Any() || settingsItems.ProjectId <= 0)
             {
-                throw new InvalidOperationException("Ошибка получения настроек проекта settings.");
+                result.IsCommitProjectSettings = false;
+                
+                return result;
+            }
+            
+            var templateId = Convert.ToInt32(settings.Find(x =>
+                x.ParamKey.Equals(GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_TEMPLATE_ID))?.ParamValue);
+
+            var strategy = settings.Find(x =>
+                x.ParamKey.Equals(GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_STRATEGY))?.ParamValue;
+                
+            var projectManagementName = settings.Find(x =>
+                x.ParamKey.Equals(GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_PROJECT_NAME))?.ParamValue;
+
+            var projectManagementNamePrefix = settings.Find(x =>
+                    x.ParamKey.Equals(GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_PROJECT_NAME_PREFIX))
+                ?.ParamValue;
+
+            var projectId = settingsItems.ProjectId;
+
+            // Если все настройки были заполнены пользователем, то разрешаем генерацию ссылки в раб.пространство.
+            if (projectId > 0
+                && templateId > 0
+                && !string.IsNullOrEmpty(strategy)
+                && !string.IsNullOrEmpty(projectManagementName)
+                && !string.IsNullOrEmpty(projectManagementNamePrefix))
+            {
+                result.IsCommitProjectSettings = true;
             }
 
-            result.IsCommitProjectSettings = settings.ProjectId > 0;
-
+            // Не все настройки были зафиксированы, требуем от пользователя заполнить их все.
             if (!result.IsCommitProjectSettings)
             {
-                throw new InvalidOperationException("Ошибка получения настроек проекта IsCommitProjectSettings.");
+                result.IsCommitProjectSettings = false;
+                
+                return result;
             }
 
-            var projectId = settings.ProjectId;
-
-            result.ProjectId = projectId;
-
-            // Если ранее фиксировали шаблон и стратегию представления,
-            // то можем сформировать строку в раб.пространство сразу.
-            // Иначе фронт будем предлагать к выбору проект, шаблон и стратегию представления.
-            if (result.IsCommitProjectSettings)
-            {
-                result.ProjectManagmentSpaceUrl = string.Concat(settings.ParamValue, $"?projectId={projectId}");
-            }
+            // Если ранее фиксировали настройки проекта, то можем сформировать ссылку в раб.пространство.
+            // Иначе фронт будем предлагать недостающие настройки.
+            var spaceUrl = settings.Find(x =>
+                x.ParamKey.Equals(GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_SPACE_URL))?.ParamValue;
+            result.ProjectManagmentSpaceUrl = string.Concat(spaceUrl, $"?projectId={projectId}");
 
             return result;
         }

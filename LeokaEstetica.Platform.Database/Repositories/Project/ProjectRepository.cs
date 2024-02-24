@@ -339,7 +339,7 @@ internal sealed class ProjectRepository : IProjectRepository
             .Where(p => p.ProjectId == projectId)
             .Select(p => p.StageId)
             .FirstOrDefaultAsync();
-
+ 
         // Берем полные данные о стадии проекта.
         result.Item2 = await _pgContext.ProjectStages.AsNoTracking()
             .Where(ps => ps.StageId == projectStageId)
@@ -1243,6 +1243,15 @@ internal sealed class ProjectRepository : IProjectRepository
             .ToListAsync();
 
         return result;
+    }
+
+    /// <inheritdoc />
+    public async Task SetProjectManagementNameAsync(long projectId, string projectManagementName)
+    {
+        var prj = await _pgContext.UserProjects.FirstOrDefaultAsync(p => p.ProjectId == projectId);
+        prj!.ProjectManagementName = projectManagementName;
+        
+        await _pgContext.SaveChangesAsync();
     }
 
     #region Приватные методы.

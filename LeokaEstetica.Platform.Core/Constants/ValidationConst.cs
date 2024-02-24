@@ -242,5 +242,16 @@ public static class ValidationConst
         /// Если не передали системное название представления.
         /// </summary>
         public const string NOT_VALID_STRATEGY_SYS_NAME = "Системное название представления не передано.";
+        
+        /// <summary>
+        /// Если не передали название в управлении проектом.
+        /// </summary>
+        public const string NOT_VALID_PROJECT_MANAGEMENT_PROJECT_NAME = "Название в управлении проектом не передано.";
+        
+        /// <summary>
+        /// Если не передали префикс названия в управлении проектом.
+        /// </summary>
+        public const string NOT_VALID_PROJECT_MANAGEMENT_PROJECT_NAME_PREFIX =
+            "Префикс названия в управлении проектом не передано.";
     }
 }

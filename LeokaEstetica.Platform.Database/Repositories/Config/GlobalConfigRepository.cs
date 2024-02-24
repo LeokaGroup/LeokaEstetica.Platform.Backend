@@ -172,7 +172,7 @@ internal sealed class GlobalConfigRepository : BaseRepository, IGlobalConfigRepo
         using var connection = await ConnectionProvider.GetConnectionAsync();
 
         var parameters = new DynamicParameters();
-        parameters.Add("@key", GlobalConfigKeys.FileManagerSettings.PROJECT_MANAGMENT_FILE_MANAGER_SETTINGS);
+        parameters.Add("@key", GlobalConfigKeys.FileManagerSettings.PROJECT_MANAGEMENT_FILE_MANAGER_SETTINGS);
 
         var query = "SELECT \"ParamValue\" " +
                     "FROM \"Configs\".\"GlobalConfig\" " +

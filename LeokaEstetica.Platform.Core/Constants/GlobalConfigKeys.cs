@@ -130,7 +130,7 @@ public static class GlobalConfigKeys
         /// <summary>
         /// Ключ вкл/откл модуль управления проектами.
         /// </summary>
-        public const string PROJECT_MANAGMENT_MODE_ENABLED = "ProjectManagment.Mode.Enabled";
+        public const string PROJECT_MANAGEMENT_MODE_ENABLED = "ProjectManagement.Mode.Enabled";
     }
 
     /// <summary>
@@ -146,12 +146,22 @@ public static class GlobalConfigKeys
         /// <summary>
         /// Ключ шаблона.
         /// </summary>
-        public const string PROJECT_MANAGMENT_TEMPLATE_ID = "ProjectManagment.TemplateId";
+        public const string PROJECT_MANAGEMENT_TEMPLATE_ID = "ProjectManagement.TemplateId";
 
         /// <summary>
         /// Ключ url к управлению проектом.
         /// </summary>
-        public const string PROJECT_MANAGMENT_SPACE_URL = "ProjectManagment.SpaceUrl";
+        public const string PROJECT_MANAGEMENT_SPACE_URL = "ProjectManagement.SpaceUrl";
+
+        /// <summary>
+        /// Ключ названия проекта в управлении проектом.
+        /// </summary>
+        public const string PROJECT_MANAGEMENT_PROJECT_NAME = "ProjectManagement.ProjectName";
+
+        /// <summary>
+        /// Ключ префикса названия проекта в управлении проектом.
+        /// </summary>
+        public const string PROJECT_MANAGEMENT_PROJECT_NAME_PREFIX = "ProjectManagement.ProjectName.Prefix";
     }
 
     /// <summary>
@@ -162,6 +172,6 @@ public static class GlobalConfigKeys
         /// <summary>
         /// Ключ настроек менеджера файлов.
         /// </summary>
-        public const string PROJECT_MANAGMENT_FILE_MANAGER_SETTINGS = "ProjectManagment.FileManagerSettings";
+        public const string PROJECT_MANAGEMENT_FILE_MANAGER_SETTINGS = "ProjectManagement.FileManagerSettings";
     }
 }

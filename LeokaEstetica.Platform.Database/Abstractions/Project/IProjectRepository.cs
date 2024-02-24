@@ -308,4 +308,11 @@ public interface IProjectRepository
     /// <param name="teamId">Id команды.</param>
     /// <returns>Список Id пользователей.</returns>
     Task<IEnumerable<long>> GetProjectTeamMemberIdsAsync(long teamId);
+
+    /// <summary>
+    /// Метод записывает название проекта в управлении проектами.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="projectManagementName">Название проекта в управлении проектами.</param>
+    Task SetProjectManagementNameAsync(long projectId, string projectManagementName);
 }

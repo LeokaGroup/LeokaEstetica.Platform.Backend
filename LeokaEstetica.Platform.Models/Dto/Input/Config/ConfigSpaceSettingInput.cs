@@ -19,4 +19,14 @@ public class ConfigSpaceSettingInput
     /// Id проекта.
     /// </summary>
     public long ProjectId { get; set; }
+
+    /// <summary>
+    /// Название проекта в модуле УП.
+    /// </summary>
+    public string ProjectManagementName { get; set; }
+
+    /// <summary>
+    /// Префикс названия проекта в модуле УП.
+    /// </summary>
+    public string ProjectManagementNamePrefix { get; set; }
 }
