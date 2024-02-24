@@ -202,6 +202,8 @@ internal sealed class ProjectRepository : IProjectRepository
     /// <returns>Список проектов.</returns>
     public async Task<IEnumerable<CatalogProjectOutput>> CatalogProjectsAsync()
     {
+        var archivedProjects = _pgContext.ArchivedProjects.Select(x => x.ProjectId).AsQueryable();
+        
         var result = await (from cp in _pgContext.CatalogProjects.AsNoTracking()
                 join p in _pgContext.UserProjects.AsNoTracking()
                     on cp.ProjectId
@@ -220,7 +222,7 @@ internal sealed class ProjectRepository : IProjectRepository
                 join ups in _pgContext.UserProjectsStages.AsNoTracking()
                     on p.ProjectId
                     equals ups.ProjectId
-                where p.ArchivedProjects.All(a => a.ProjectId != p.ProjectId)
+                where !archivedProjects.Contains(p.ProjectId)
                       && !new[]
                           {
                               (int)VacancyModerationStatusEnum.ModerationVacancy,
