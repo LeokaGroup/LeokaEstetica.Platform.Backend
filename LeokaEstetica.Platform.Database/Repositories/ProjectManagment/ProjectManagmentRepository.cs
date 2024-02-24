@@ -89,7 +89,8 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
                       tsit.is_custom_status, 
                       tst.status_name, 
                       tst.status_sys_name,
-                      tst.task_status_id 
+                      tst.task_status_id,
+                      ptt.template_name 
                       FROM templates.project_management_task_status_intermediate_templates AS tsit 
                       INNER JOIN templates.project_management_task_status_templates AS tst 
                         ON tsit.status_id = tst.status_id 
