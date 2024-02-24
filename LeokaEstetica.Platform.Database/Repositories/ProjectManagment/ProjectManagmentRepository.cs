@@ -142,19 +142,37 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
     /// <returns>Задачи проекта.</returns>
-    public async Task<IEnumerable<ProjectTaskEntity>> GetProjectTasksAsync(long projectId)
+    public async Task<IEnumerable<ProjectTaskExtendedEntity>> GetProjectTasksAsync(long projectId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
-        var compiler = new PostgresCompiler();
-        var query = new Query("project_management.project_tasks")
-            .Where("project_id", projectId)
-            .Select("task_id", "task_status_id", "author_id", "watcher_ids", "name", "details", "created", "updated",
-                "project_id", "project_task_id", "resolution_id", "tag_ids", "task_type_id", "executor_id",
-                "priority_id")
-            .OrderByDesc("created");
-        var sql = compiler.Compile(query).ToString();
+        
+        var parameters = new DynamicParameters();
+        parameters.Add("@projectId", projectId);
+        parameters.Add("@prefix", GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_PROJECT_NAME_PREFIX);
 
-        var result = await connection.QueryAsync<ProjectTaskEntity>(sql);
+        var query = "SELECT t.task_id," +
+                            "t.task_status_id," +
+                             "t.author_id," +
+                             "t.watcher_ids," +
+                             "t.name," +
+                             "t.details," +
+                             "t.created," +
+                             "t.updated," +
+                            "t.project_id," +
+                            "t.project_task_id," +
+                            "t.resolution_id," +
+                            "t.tag_ids," +
+                            "t.task_type_id," +
+                            "t.executor_id," +
+                            "t.priority_id," +
+                            "(SELECT \"ParamValue\"" +
+                            "FROM \"Configs\".\"ProjectManagmentProjectSettings\" AS ps " +
+                            "WHERE ps.\"ProjectId\" = @projectId " +
+                            "AND ps.\"ParamKey\" = @prefix) AS TaskIdPrefix " + 
+                                        "FROM project_management.project_tasks AS t " +
+                                        "WHERE t.project_id = @projectId ";
+
+        var result = await connection.QueryAsync<ProjectTaskExtendedEntity>(query, parameters);
 
         return result;
     }

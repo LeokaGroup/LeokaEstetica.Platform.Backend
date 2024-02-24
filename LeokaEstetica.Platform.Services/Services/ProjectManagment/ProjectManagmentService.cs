@@ -2107,7 +2107,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     /// <exception cref="InvalidOperationException">Может бахнуть, если какое-то условие не прошли.</exception>
     private async Task ModifyProjectManagmentTaskStatusesResultAsync(
         IEnumerable<ProjectManagmentTaskStatusTemplateOutput> projectManagmentTaskStatusTemplates,
-        List<ProjectTaskEntity> tasks, long projectId, string strategy, int? paginatorStatusId, int page = 1)
+        List<ProjectTaskExtendedEntity> tasks, long projectId, string strategy, int? paginatorStatusId, int page = 1)
     {
         // Получаем имена авторов задач.
         var authorIds = tasks.Select(x => x.AuthorId);

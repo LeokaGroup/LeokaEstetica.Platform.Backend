@@ -46,7 +46,7 @@ public interface IProjectManagmentRepository
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
     /// <returns>Задачи проекта.</returns>
-    Task<IEnumerable<ProjectTaskEntity>> GetProjectTasksAsync(long projectId);
+    Task<IEnumerable<ProjectTaskExtendedEntity>> GetProjectTasksAsync(long projectId);
     
     /// <summary>
     /// Метод получает названия тегов (меток) задач по их Id.
