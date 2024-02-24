@@ -104,12 +104,17 @@ public class UserProjectEntity
     public ICollection<VacancyRemarkEntity> VacancyRemarks { get; set; }
 
     /// <summary>
-    /// FK на задачу.
-    /// </summary>
-    // public ProjectTaskEntity ProjectTask { get; set; }
-
-    /// <summary>
     /// Id шаблона, если выбран был.
     /// </summary>
     public int? TemplateId { get; set; }
+
+    /// <summary>
+    /// Название проекта для модуля УП (управление проектами).
+    /// </summary>
+    public string ProjectManagementName { get; set; }
+
+    /// <summary>
+    /// Префикс названия проекта для модуля УП (управление проектами).
+    /// </summary>
+    public string ProjectManagementNamePrefix { get; set; }
 }
