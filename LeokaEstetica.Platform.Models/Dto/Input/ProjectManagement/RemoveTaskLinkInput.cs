@@ -15,12 +15,12 @@ public class RemoveTaskLinkInput
     /// <summary>
     /// Id задачи, с которой разрывается связь (задача в рамках проекта).
     /// </summary>
-    public long RemovedLinkId { get; set; }
+    public string RemovedLinkId { get; set; }
 
     /// <summary>
     /// Id текущей задачи (задача в рамках проекта).
     /// </summary>
-    public long CurrentTaskId { get; set; }
+    public string CurrentTaskId { get; set; }
 
     /// <summary>
     /// Id проекта.

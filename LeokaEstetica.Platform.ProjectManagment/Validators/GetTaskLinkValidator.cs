@@ -6,7 +6,7 @@ namespace LeokaEstetica.Platform.ProjectManagment.Validators;
 /// <summary>
 /// Класс валидатора получения связей задачи.
 /// </summary>
-public class GetTaskLinkValidator : AbstractValidator<(long ProjectId, long ProjectTaskId)>
+public class GetTaskLinkValidator : AbstractValidator<(long ProjectId, string ProjectTaskId)>
 {
     /// <summary>
     /// Конструктор.
@@ -18,7 +18,9 @@ public class GetTaskLinkValidator : AbstractValidator<(long ProjectId, long Proj
             .WithMessage(ValidationConst.ProjectManagmentValidation.NOT_VALID_PROJECT_ID);
         
         RuleFor(p => p.ProjectTaskId)
-            .Must(p => p > 0)
+            .NotNull()
+            .WithMessage(ValidationConst.ProjectManagmentValidation.NOT_VALID_PROJECT_TASK_ID)
+            .NotEmpty()
             .WithMessage(ValidationConst.ProjectManagmentValidation.NOT_VALID_PROJECT_TASK_ID);
     }
 }

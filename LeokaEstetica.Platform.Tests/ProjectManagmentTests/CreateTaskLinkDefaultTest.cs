@@ -20,8 +20,8 @@ internal class CreateTaskLinkDefaultTest : BaseServiceTest
         Assert.DoesNotThrowAsync(async () =>
             await ProjectManagmentService.CreateTaskLinkAsync(new TaskLinkInput
             {
-                TaskFromLink = 1,
-                TaskToLink = 2,
+                TaskFromLink = "TE-1",
+                TaskToLink = "TE-2",
                 LinkType = LinkTypeEnum.Link,
                 ProjectId = 272
             }, "sierra_93@mail.ru"));

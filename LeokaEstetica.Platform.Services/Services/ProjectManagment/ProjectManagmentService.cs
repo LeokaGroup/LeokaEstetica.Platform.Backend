@@ -29,6 +29,7 @@ using LeokaEstetica.Platform.Models.Enums;
 using LeokaEstetica.Platform.ProjectManagment.Documents.Abstractions;
 using LeokaEstetica.Platform.Services.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Services.Factors;
+using LeokaEstetica.Platform.Services.Helpers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -565,7 +566,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     /// <param name="account">Аккаунт.</param>
     /// <param name="projectId">Id проекта.</param>
     /// <returns>Данные задачи.</returns>
-    public async Task<ProjectManagmentTaskOutput> GetTaskDetailsByTaskIdAsync(long projectTaskId, string account,
+    public async Task<ProjectManagmentTaskOutput> GetTaskDetailsByTaskIdAsync(string projectTaskId, string account,
         long projectId)
     {
         try
@@ -579,7 +580,8 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             }
 
             // TODO: Добавить проверку. Является ли пользователь участником проекта. Если нет, то не давать доступ к задаче.
-            var task = await _projectManagmentRepository.GetTaskDetailsByTaskIdAsync(projectTaskId, projectId);
+            var task = await _projectManagmentRepository.GetTaskDetailsByTaskIdAsync(
+                projectTaskId.GetProjectTaskIdFromPrefixLink(), projectId);
 
             // Получаем имя автора задачи.
             var authors = await _userRepository.GetAuthorNamesByAuthorIdsAsync(new[] { task.AuthorId });
@@ -1162,12 +1164,13 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 
     /// <inheritdoc />
     public async Task<IEnumerable<AvailableTaskStatusTransitionOutput>> GetAvailableTaskStatusTransitionsAsync(
-        long projectId, long projectTaskId)
+        long projectId, string projectTaskId)
     {
         try
         {
+            var onlyProjectTaskId = projectTaskId.GetProjectTaskIdFromPrefixLink();
             var ifProjectHavingTask = await _projectManagmentRepository.IfProjectHavingProjectTaskIdAsync(projectId,
-                projectTaskId);
+                onlyProjectTaskId);
 
             // Если задача не принадлежит проекту.
             if (!ifProjectHavingTask)
@@ -1179,7 +1182,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 
             // Получаем текущий статус задачи.
             var currentTaskStatusId = await _projectManagmentRepository
-                .GetProjectTaskStatusIdByProjectIdProjectTaskIdAsync(projectId, projectTaskId);
+                .GetProjectTaskStatusIdByProjectIdProjectTaskIdAsync(projectId, onlyProjectTaskId);
 
             if (currentTaskStatusId <= 0)
             {
@@ -1374,7 +1377,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     }
 
     /// <inheritdoc />
-    public async Task UpdateTaskDetailsAsync(long projectId, long taskId, string changedTaskDetails, string account)
+    public async Task UpdateTaskDetailsAsync(long projectId, string taskId, string changedTaskDetails, string account)
     {
         try
         {
@@ -1386,7 +1389,8 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 throw ex;
             }
 
-            await _projectManagmentRepository.UpdateTaskDetailsAsync(projectId, taskId, changedTaskDetails);
+            await _projectManagmentRepository.UpdateTaskDetailsAsync(projectId, taskId.GetProjectTaskIdFromPrefixLink(),
+                changedTaskDetails);
             
             // TODO: Тут добавить запись активности пользователя по userId.
         }
@@ -1399,7 +1403,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     }
 
     /// <inheritdoc />
-    public async Task UpdateTaskNameAsync(long projectId, long taskId, string changedTaskName, string account)
+    public async Task UpdateTaskNameAsync(long projectId, string taskId, string changedTaskName, string account)
     {
         try
         {
@@ -1411,7 +1415,8 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 throw ex;
             }
 
-            await _projectManagmentRepository.UpdateTaskNameAsync(projectId, taskId, changedTaskName);
+            await _projectManagmentRepository.UpdateTaskNameAsync(projectId, taskId.GetProjectTaskIdFromPrefixLink(),
+                changedTaskName);
             
             // TODO: Тут добавить запись активности пользователя по userId.
         }
@@ -1424,7 +1429,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     }
 
     /// <inheritdoc />
-    public async Task AttachTaskTagAsync(int tagId, long projectTaskId, long projectId, string account)
+    public async Task AttachTaskTagAsync(int tagId, string projectTaskId, long projectId, string account)
     {
         var userId = await _userRepository.GetUserByEmailAsync(account);
 
@@ -1434,13 +1439,14 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             throw ex;
         }
 
-        await _projectManagmentRepository.AttachTaskTagAsync(tagId, projectTaskId, projectId);
+        await _projectManagmentRepository.AttachTaskTagAsync(tagId, projectTaskId.GetProjectTaskIdFromPrefixLink(),
+            projectId);
 
         // TODO: Тут добавить запись активности пользователя по userId.
     }
 
     /// <inheritdoc />
-    public async Task DetachTaskTagAsync(int tagId, long projectTaskId, long projectId, string account)
+    public async Task DetachTaskTagAsync(int tagId, string projectTaskId, long projectId, string account)
     {
         var userId = await _userRepository.GetUserByEmailAsync(account);
 
@@ -1450,13 +1456,14 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             throw ex;
         }
 
-        await _projectManagmentRepository.DetachTaskTagAsync(tagId, projectTaskId, projectId);
+        await _projectManagmentRepository.DetachTaskTagAsync(tagId, projectTaskId.GetProjectTaskIdFromPrefixLink(),
+            projectId);
 
         // TODO: Тут добавить запись активности пользователя по userId.
     }
 
     /// <inheritdoc />
-    public async Task AttachTaskWatcherAsync(long watcherId, long projectTaskId, long projectId, string account)
+    public async Task AttachTaskWatcherAsync(long watcherId, string projectTaskId, long projectId, string account)
     {
         var userId = await _userRepository.GetUserByEmailAsync(account);
 
@@ -1466,13 +1473,14 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             throw ex;
         }
 
-        await _projectManagmentRepository.AttachTaskWatcherAsync(watcherId, projectTaskId, projectId);
+        await _projectManagmentRepository.AttachTaskWatcherAsync(watcherId,
+            projectTaskId.GetProjectTaskIdFromPrefixLink(), projectId);
 
         // TODO: Тут добавить запись активности пользователя по userId.
     }
 
     /// <inheritdoc />
-    public async Task DetachTaskWatcherAsync(long watcherId, long projectTaskId, long projectId, string account)
+    public async Task DetachTaskWatcherAsync(long watcherId, string projectTaskId, long projectId, string account)
     {
         var userId = await _userRepository.GetUserByEmailAsync(account);
 
@@ -1482,13 +1490,14 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             throw ex;
         }
 
-        await _projectManagmentRepository.DetachTaskWatcherAsync(watcherId, projectTaskId, projectId);
+        await _projectManagmentRepository.DetachTaskWatcherAsync(watcherId,
+            projectTaskId.GetProjectTaskIdFromPrefixLink(), projectId);
 
         // TODO: Тут добавить запись активности пользователя по userId.
     }
 
     /// <inheritdoc />
-    public async Task UpdateTaskExecutorAsync(long executorId, long projectTaskId, long projectId, string account)
+    public async Task UpdateTaskExecutorAsync(long executorId, string projectTaskId, long projectId, string account)
     {
         var userId = await _userRepository.GetUserByEmailAsync(account);
 
@@ -1498,13 +1507,14 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             throw ex;
         }
 
-        await _projectManagmentRepository.UpdateTaskExecutorAsync(executorId, projectTaskId, projectId);
+        await _projectManagmentRepository.UpdateTaskExecutorAsync(executorId,
+            projectTaskId.GetProjectTaskIdFromPrefixLink(), projectId);
 
         // TODO: Тут добавить запись активности пользователя по userId.
     }
 
     /// <inheritdoc />
-    public async Task UpdateTaskPriorityAsync(int priorityId, long projectTaskId, long projectId, string account)
+    public async Task UpdateTaskPriorityAsync(int priorityId, string projectTaskId, long projectId, string account)
     {
         var userId = await _userRepository.GetUserByEmailAsync(account);
 
@@ -1513,8 +1523,9 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             var ex = new NotFoundUserIdByAccountException(account);
             throw ex;
         }
-        
-        await _projectManagmentRepository.UpdateTaskPriorityAsync(priorityId, projectTaskId, projectId);
+
+        await _projectManagmentRepository.UpdateTaskPriorityAsync(priorityId,
+            projectTaskId.GetProjectTaskIdFromPrefixLink(), projectId);
         
         // TODO: Тут добавить запись активности пользователя по userId.
     }
@@ -1524,19 +1535,22 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     {
         try
         {
+            // Убираем префикс оставляя только Id задач.
+            var taskFromLink = taskLinkInput.TaskFromLink.GetProjectTaskIdFromPrefixLink();
+            var taskToLink = taskLinkInput.TaskToLink.GetProjectTaskIdFromPrefixLink();
+            var projectId = taskLinkInput.ProjectId;
+            
             // Валидируем типы связи.
             if (!new[] { LinkTypeEnum.Link, LinkTypeEnum.Child, LinkTypeEnum.Parent, LinkTypeEnum.Depend }.Contains(
                     taskLinkInput.LinkType))
             {
-                if (taskLinkInput.TaskFromLink <= 0
-                    || taskLinkInput.TaskToLink <= 0
-                    || taskLinkInput.ProjectId <= 0)
+                if (taskFromLink <= 0 || taskToLink <= 0 || projectId <= 0)
                 {
                     throw new InvalidOperationException(
                         $"Невалидные входные данные для создания типа связи {taskLinkInput.LinkType}. " +
                         $"TaskFromLink: {taskLinkInput.TaskFromLink}. " +
                         $"TaskToLink: {taskLinkInput.TaskToLink}. " +
-                        $"ProjectId: {taskLinkInput.ProjectId}. " +
+                        $"ProjectId: {projectId}. " +
                         $"Account: {account}");
                 }
             }
@@ -1546,14 +1560,14 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 // Проставляем родителя.
                 taskLinkInput.ParentId = taskLinkInput.TaskToLink;
                 
-                if (!taskLinkInput.ParentId.HasValue)
+                if (string.IsNullOrWhiteSpace(taskLinkInput.ParentId))
                 {
                     throw new InvalidOperationException(
                         "Id родителя невалидный." +
                         $"ParentId: {taskLinkInput.ParentId}. " +
                         $"TaskFromLink: {taskLinkInput.TaskFromLink}. " +
                         $"TaskToLink: {taskLinkInput.TaskToLink}. " +
-                        $"ProjectId: {taskLinkInput.ProjectId}. " +
+                        $"ProjectId: {projectId}. " +
                         $"Account: {account}");
                 }
             }
@@ -1563,14 +1577,14 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 // Проставляем дочку.
                 taskLinkInput.ChildId = taskLinkInput.TaskToLink;
                 
-                if (!taskLinkInput.ChildId.HasValue)
+                if (string.IsNullOrWhiteSpace(taskLinkInput.ChildId))
                 {
                     throw new InvalidOperationException(
                         "Id дочки невалидный." +
                         $"ChildId: {taskLinkInput.ChildId}. " +
                         $"TaskFromLink: {taskLinkInput.TaskFromLink}. " +
                         $"TaskToLink: {taskLinkInput.TaskToLink}. " +
-                        $"ProjectId: {taskLinkInput.ProjectId}. " +
+                        $"ProjectId: {projectId}. " +
                         $"Account: {account}");
                 }
             }
@@ -1580,14 +1594,14 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 // Проставляем от какой задачи зависит текущая.
                 taskLinkInput.DependId = taskLinkInput.TaskToLink;
                 
-                if (!taskLinkInput.DependId.HasValue)
+                if (string.IsNullOrWhiteSpace(taskLinkInput.DependId))
                 {
                     throw new InvalidOperationException(
                         "Id блокирующей задачи невалидный." +
                         $"DependId: {taskLinkInput.DependId}. " +
                         $"TaskFromLink: {taskLinkInput.TaskFromLink}. " +
                         $"TaskToLink: {taskLinkInput.TaskToLink}. " +
-                        $"ProjectId: {taskLinkInput.ProjectId}. " +
+                        $"ProjectId: {projectId}. " +
                         $"Account: {account}");
                 }
             }
@@ -1600,21 +1614,31 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 throw ex;
             }
         
-            var currentTask = await _projectManagmentRepository.GetTaskDetailsByTaskIdAsync(taskLinkInput.TaskFromLink,
-                taskLinkInput.ProjectId);
+            var currentTask = await _projectManagmentRepository.GetTaskDetailsByTaskIdAsync(taskFromLink, projectId);
                 
             if (currentTask is null)
             {
                 throw new InvalidOperationException(
                     "Не удалось получить текущую задачу." +
-                    $"ProjectId: {taskLinkInput.ProjectId}. " +
+                    $"ProjectId: {projectId}. " +
                     $"ProjectTaskId: {taskLinkInput.TaskFromLink}.");
             }
 
-            // Id задачи в рамках проекта становится Id задачи.
-            taskLinkInput.TaskFromLink = currentTask.TaskId;
-
-            await _projectManagmentRepository.CreateTaskLinkAsync(taskLinkInput);
+            // Создаем связь в БД.
+            // TaskFromLink - Id задачи в рамках проекта становится Id задачи.
+            await _projectManagmentRepository.CreateTaskLinkAsync(currentTask.TaskId,
+                taskLinkInput.TaskToLink.GetProjectTaskIdFromPrefixLink(),
+                taskLinkInput.LinkType,
+                projectId,
+                !string.IsNullOrWhiteSpace(taskLinkInput.ChildId)
+                    ? taskLinkInput.ChildId.GetProjectTaskIdFromPrefixLink()
+                    : null,
+                !string.IsNullOrWhiteSpace(taskLinkInput.ParentId)
+                    ? taskLinkInput.ParentId.GetProjectTaskIdFromPrefixLink()
+                    : null,
+                !string.IsNullOrWhiteSpace(taskLinkInput.DependId)
+                    ? taskLinkInput.DependId.GetProjectTaskIdFromPrefixLink()
+                    : null);
 
             // TODO: Тут добавить запись активности пользователя по userId.
         }
@@ -1627,13 +1651,13 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<GetTaskLinkOutput>> GetTaskLinkDefaultAsync(long projectId, long projectTaskId,
+    public async Task<IEnumerable<GetTaskLinkOutput>> GetTaskLinkDefaultAsync(long projectId, string projectTaskId,
         LinkTypeEnum linkType)
     {
         try
         {
-            var currentTask = await _projectManagmentRepository.GetTaskDetailsByTaskIdAsync(projectTaskId,
-                projectId);
+            var currentTask = await _projectManagmentRepository.GetTaskDetailsByTaskIdAsync(
+                    projectTaskId.GetProjectTaskIdFromPrefixLink(), projectId);
                 
             if (currentTask is null)
             {
@@ -1718,13 +1742,13 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<GetTaskLinkOutput>> GetTaskLinkParentAsync(long projectId, long projectTaskId,
+    public async Task<IEnumerable<GetTaskLinkOutput>> GetTaskLinkParentAsync(long projectId, string projectTaskId,
         LinkTypeEnum linkType)
     {
         try
         {
-            var currentTask = await _projectManagmentRepository.GetTaskDetailsByTaskIdAsync(projectTaskId,
-                projectId);
+            var currentTask = await _projectManagmentRepository.GetTaskDetailsByTaskIdAsync(
+                    projectTaskId.GetProjectTaskIdFromPrefixLink(), projectId);
                 
             if (currentTask is null)
             {
@@ -1767,13 +1791,13 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<GetTaskLinkOutput>> GetTaskLinkChildAsync(long projectId, long projectTaskId,
+    public async Task<IEnumerable<GetTaskLinkOutput>> GetTaskLinkChildAsync(long projectId, string projectTaskId,
         LinkTypeEnum linkType)
     {
         try
         {
-            var currentTask = await _projectManagmentRepository.GetTaskDetailsByTaskIdAsync(projectTaskId,
-                projectId);
+            var currentTask = await _projectManagmentRepository.GetTaskDetailsByTaskIdAsync(
+                    projectTaskId.GetProjectTaskIdFromPrefixLink(), projectId);
                 
             if (currentTask is null)
             {
@@ -1816,13 +1840,13 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<GetTaskLinkOutput>> GetTaskLinkDependAsync(long projectId, long projectTaskId,
+    public async Task<IEnumerable<GetTaskLinkOutput>> GetTaskLinkDependAsync(long projectId, string projectTaskId,
         LinkTypeEnum linkType)
     {
         try
         {
-            var currentTask = await _projectManagmentRepository.GetTaskDetailsByTaskIdAsync(projectTaskId,
-                projectId);
+            var currentTask = await _projectManagmentRepository.GetTaskDetailsByTaskIdAsync(
+                    projectTaskId.GetProjectTaskIdFromPrefixLink(), projectId);
                 
             if (currentTask is null)
             {
@@ -1866,13 +1890,13 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<GetTaskLinkOutput>> GetTaskLinkBlockedAsync(long projectId, long projectTaskId,
+    public async Task<IEnumerable<GetTaskLinkOutput>> GetTaskLinkBlockedAsync(long projectId, string projectTaskId,
         LinkTypeEnum linkType)
     {
         try
         {
-            var currentTask = await _projectManagmentRepository.GetTaskDetailsByTaskIdAsync(projectTaskId,
-                projectId);
+            var currentTask = await _projectManagmentRepository.GetTaskDetailsByTaskIdAsync(
+                    projectTaskId.GetProjectTaskIdFromPrefixLink(), projectId);
                 
             if (currentTask is null)
             {
@@ -1892,8 +1916,8 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             
             // Получаем задачи, которые текущая задача блокирует.
             var linkIds = links
-                .Where(x => x.ToTaskId == currentTask.TaskId && !x.IsBlocked)
-                .Select(x => x.FromTaskId!.Value);
+                .Where(x => x.FromTaskId == currentTask.TaskId && x.IsBlocked)
+                .Select(x => x.BlockedTaskId!.Value);
             
             var tasks = (await _projectManagmentRepository.GetProjectTaskByProjectIdTaskIdsAsync(projectId, linkIds))
                 ?.AsList();
@@ -1916,12 +1940,16 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     }
 
     /// <inheritdoc />
-    public async Task RemoveTaskLinkAsync(LinkTypeEnum linkType, long removedLinkId, long currentTaskId,
+    public async Task RemoveTaskLinkAsync(LinkTypeEnum linkType, string removedLinkId, string currentTaskId,
         long projectId, string account)
     {
         try
         {
-            await _projectManagmentRepository.RemoveTaskLinkAsync(linkType, removedLinkId, currentTaskId, projectId);
+            // Разрываем связь в БД.
+            await _projectManagmentRepository.RemoveTaskLinkAsync(linkType,
+                removedLinkId.GetProjectTaskIdFromPrefixLink(),
+                currentTaskId.GetProjectTaskIdFromPrefixLink(),
+                projectId);
 
             // TODO: Тут добавить запись активности пользователя по userId.
         }
@@ -1965,11 +1993,12 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     }
 
     /// <inheritdoc />
-    public async Task<FileContentResult> DownloadFileAsync(long documentId, long projectId, long projectTaskId)
+    public async Task<FileContentResult> DownloadFileAsync(long documentId, long projectId, string projectTaskId)
     {
         try
         {
-            var task = await _projectManagmentRepository.GetTaskDetailsByTaskIdAsync(projectTaskId, projectId);
+            var task = await _projectManagmentRepository.GetTaskDetailsByTaskIdAsync(
+                projectTaskId.GetProjectTaskIdFromPrefixLink(), projectId);
             
             if (task is null)
             {
@@ -1994,11 +2023,12 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 
     /// <inheritdoc />
     public async Task<IEnumerable<ProjectTaskDocumentEntity>> GetProjectTaskFilesAsync(long projectId,
-        long projectTaskId)
+        string projectTaskId)
     {
         try
         {
-            var task = await _projectManagmentRepository.GetTaskDetailsByTaskIdAsync(projectTaskId, projectId);
+            var task = await _projectManagmentRepository.GetTaskDetailsByTaskIdAsync(
+                projectTaskId.GetProjectTaskIdFromPrefixLink(), projectId);
             
             if (task is null)
             {
@@ -2367,7 +2397,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     /// </summary>
     /// <param name="links">Связи задач.</param>
     /// <returns>Модифицированные данные связей.</returns>
-    private async Task<IEnumerable<GetTaskLinkOutput>> ModifyTaskLinkResultAsync(List<ProjectTaskEntity> tasks)
+    private async Task<IEnumerable<GetTaskLinkOutput>> ModifyTaskLinkResultAsync(List<ProjectTaskExtendedEntity> tasks)
     {
         var result = new List<GetTaskLinkOutput>();
         
@@ -2391,12 +2421,12 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             {
                 ExecutorName = executors.TryGet(t.ExecutorId).FullName,
                 TaskName = t.Name,
-                TaskCode = null, /// TODO: Пока не используется. Вернуться, когда будет реализован вывод названия проекта.
                 TaskStatusName = statuseNames.Find(x => x.StatusId == t.TaskStatusId)?.StatusName,
                 LastUpdated = t.Updated.ToString("f"), // Например, 17 июля 2015 г. 17:04
                 ProjectTaskId = t.ProjectTaskId,
                 PriorityId = t.PriorityId!.Value,
-                TaskId = t.TaskId
+                TaskId = t.TaskId,
+                TaskIdPrefix = t.TaskIdPrefix
             };
 
             result.Add(link);

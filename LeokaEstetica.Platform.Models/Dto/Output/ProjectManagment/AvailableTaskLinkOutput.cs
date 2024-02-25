@@ -15,5 +15,5 @@ public class AvailableTaskLinkOutput : GetTaskLinkOutput
     /// <summary>
     /// Текст для поиска. Состоит из кода задачи + название задачи.
     /// </summary>
-    public string FilterText => "#" + TaskCode + " " + TaskName;
+    public string FilterText => "#" + ProjectTaskId + " " + TaskName;
 }

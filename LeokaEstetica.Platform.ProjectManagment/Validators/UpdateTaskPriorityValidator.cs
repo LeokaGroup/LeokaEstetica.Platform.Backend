@@ -19,7 +19,9 @@ public class UpdateTaskPriorityValidator : AbstractValidator<TaskPriorityInput>
             .WithMessage(ValidationConst.ProjectManagmentValidation.NOT_VALID_PROJECT_ID);
 
         RuleFor(p => p.ProjectTaskId)
-            .Must(p => p > 0)
+            .NotNull()
+            .WithMessage(ValidationConst.ProjectManagmentValidation.NOT_VALID_PROJECT_TASK_ID)
+            .NotEmpty()
             .WithMessage(ValidationConst.ProjectManagmentValidation.NOT_VALID_PROJECT_TASK_ID);
             
         RuleFor(p => p.PriorityId)

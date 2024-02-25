@@ -19,7 +19,9 @@ public class BaseChangeTaskValidator : AbstractValidator<BaseChangeTaskInput>
             .WithMessage(ValidationConst.ProjectManagmentValidation.NOT_VALID_PROJECT_ID);
 
         RuleFor(p => p.TaskId)
-            .Must(p => p > 0)
+            .NotNull()
+            .WithMessage(ValidationConst.ProjectManagmentValidation.NOT_VALID_PROJECT_TASK_ID)
+            .NotEmpty()
             .WithMessage(ValidationConst.ProjectManagmentValidation.NOT_VALID_PROJECT_TASK_ID);
     }
 }

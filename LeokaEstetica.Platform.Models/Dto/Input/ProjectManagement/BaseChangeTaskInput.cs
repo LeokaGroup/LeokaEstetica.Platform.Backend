@@ -13,5 +13,5 @@ public class BaseChangeTaskInput
     /// <summary>
     /// Id задачи (здесь имеется в виду Id задачи в рамках проекта).
     /// </summary>
-    public long TaskId { get; set; }
+    public string TaskId { get; set; }
 }

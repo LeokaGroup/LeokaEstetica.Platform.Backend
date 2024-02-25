@@ -16,11 +16,15 @@ public class TaskLinkValidator : AbstractValidator<TaskLinkInput>
     public TaskLinkValidator()
     {
         RuleFor(p => p.TaskFromLink)
-            .Must(p => p > 0)
+            .NotNull()
+            .WithMessage(ValidationConst.ProjectManagmentValidation.NOT_VALID_TASK_FROM_LINK)
+            .NotEmpty()
             .WithMessage(ValidationConst.ProjectManagmentValidation.NOT_VALID_TASK_FROM_LINK);
 
         RuleFor(p => p.TaskToLink)
-            .Must(p => p > 0)
+            .NotNull()
+            .WithMessage(ValidationConst.ProjectManagmentValidation.NOT_VALID_TASK_TO_LINK)
+            .NotEmpty()
             .WithMessage(ValidationConst.ProjectManagmentValidation.NOT_VALID_TASK_TO_LINK);
 
         RuleFor(p => p.LinkType)
