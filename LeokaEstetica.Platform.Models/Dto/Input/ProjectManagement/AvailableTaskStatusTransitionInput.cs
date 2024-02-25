@@ -13,5 +13,5 @@ public class AvailableTaskStatusTransitionInput
     /// <summary>
     /// Id задачи в рамках проекта.
     /// </summary>
-    public long ProjectTaskId { get; set; }
+    public string ProjectTaskId { get; set; }
 }

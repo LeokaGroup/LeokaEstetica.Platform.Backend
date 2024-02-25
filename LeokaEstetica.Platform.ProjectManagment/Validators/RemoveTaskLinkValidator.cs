@@ -25,11 +25,15 @@ public class RemoveTaskLinkValidator : AbstractValidator<RemoveTaskLinkInput>
             .WithMessage(ValidationConst.ProjectManagmentValidation.NOT_VALID_TASK_LINK_ENUM_VALUE);
         
         RuleFor(p => p.CurrentTaskId)
-            .Must(p => p > 0)
+            .NotNull()
+            .WithMessage(ValidationConst.ProjectManagmentValidation.NOT_VALID_PROJECT_TASK_ID)
+            .NotEmpty()
             .WithMessage(ValidationConst.ProjectManagmentValidation.NOT_VALID_PROJECT_TASK_ID);
-            
+
         RuleFor(p => p.RemovedLinkId)
-            .Must(p => p > 0)
+            .NotNull()
+            .WithMessage(ValidationConst.ProjectManagmentValidation.NOT_VALID_TASK_LINK_REMOVED_TASK_ID)
+            .NotEmpty()
             .WithMessage(ValidationConst.ProjectManagmentValidation.NOT_VALID_TASK_LINK_REMOVED_TASK_ID);
     }
 }

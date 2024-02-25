@@ -10,12 +10,12 @@ public class TaskLinkInput
     /// <summary>
     /// Id задачи, от которой исходит связь.
     /// </summary>
-    public long TaskFromLink { get; set; }
+    public string TaskFromLink { get; set; }
 
     /// <summary>
     /// Id задачи, которую связывают.
     /// </summary>
-    public long TaskToLink { get; set; }
+    public string TaskToLink { get; set; }
 
     /// <summary>
     /// Тип связи задачи.
@@ -31,18 +31,18 @@ public class TaskLinkInput
     /// Id родительской задачи.
     /// Дочерней задачей при этом становится текущая задача, в которой создается связь.
     /// </summary>
-    public long? ParentId { get; set; }
+    public string ParentId { get; set; }
     
     /// <summary>
     /// Id дочерней задачи.
     /// Родительской задачей при этом становится текущая задача, в которой создается связь.
     /// </summary>
-    public long? ChildId { get; set; }
+    public string ChildId { get; set; }
 
     /// <summary>
     /// Id задачи, от которой зависит текущая.
     /// При этом указанная задача становится блокирующей текущую.
     /// У текущей выставляется "зависит от" указанной задачи.
     /// </summary>
-    public long? DependId { get; set; }
+    public string DependId { get; set; }
 }

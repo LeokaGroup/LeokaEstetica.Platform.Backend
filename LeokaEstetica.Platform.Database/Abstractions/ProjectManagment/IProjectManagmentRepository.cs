@@ -46,7 +46,7 @@ public interface IProjectManagmentRepository
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
     /// <returns>Задачи проекта.</returns>
-    Task<IEnumerable<ProjectTaskEntity>> GetProjectTasksAsync(long projectId);
+    Task<IEnumerable<ProjectTaskExtendedEntity>> GetProjectTasksAsync(long projectId);
     
     /// <summary>
     /// Метод получает названия тегов (меток) задач по их Id.
@@ -258,8 +258,15 @@ public interface IProjectManagmentRepository
     /// <summary>
     /// Метод создает связь с задачей (в зависимости от типа связи, который передали).
     /// </summary>
-    /// <param name="taskLinkInput">Входная модель.</param>
-    Task CreateTaskLinkAsync(TaskLinkInput taskLinkInput);
+    /// <param name="taskFromLink">Id задачи, от которой исходит связь.</param>
+    /// <param name="taskToLink">Id задачи, которую связывают.</param>
+    /// <param name="linkType">Тип связи.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="childId">Id дочерней связи.</param>
+    /// <param name="parentId">Id родительской связи.</param>
+    /// <param name="dependId">Id зависящей связи.</param>
+    Task CreateTaskLinkAsync(long taskFromLink, long taskToLink, LinkTypeEnum linkType, long projectId, long? childId,
+        long? parentId, long? dependId);
 
     /// <summary>
     /// Метод получает список задач по Id проекта и списку Id задач.
@@ -267,7 +274,7 @@ public interface IProjectManagmentRepository
     /// <param name="projectId">Id проекта.</param>
     /// <param name="taskId">Id задачи.</param>
     /// <returns>Данные задачи.</returns>
-    Task<IEnumerable<ProjectTaskEntity>> GetProjectTaskByProjectIdTaskIdsAsync(long projectId,
+    Task<IEnumerable<ProjectTaskExtendedEntity>> GetProjectTaskByProjectIdTaskIdsAsync(long projectId,
         IEnumerable<long> taskId);
 
     /// <summary>
@@ -277,8 +284,8 @@ public interface IProjectManagmentRepository
     /// <param name="fromTaskId">Id задачи, которую связывают.</param>
     /// <param name="linkType">Тип связи.</param>
     /// <returns>Список связей.</returns>
-    Task<IEnumerable<TaskLinkEntity>> GetTaskLinksByProjectIdProjectTaskIdAsync(long projectId, long fromTaskId,
-        LinkTypeEnum linkType);
+    Task<IEnumerable<TaskLinkExtendedEntity>> GetTaskLinksByProjectIdProjectTaskIdAsync(long projectId,
+        long fromTaskId, LinkTypeEnum linkType);
 
     /// <summary>
     /// Метод получает задачи проекта, которые доступны для создания связи с текущей задачей (разных типов связей).

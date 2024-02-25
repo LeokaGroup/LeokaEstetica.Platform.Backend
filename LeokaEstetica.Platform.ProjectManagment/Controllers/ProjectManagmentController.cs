@@ -205,7 +205,7 @@ public class ProjectManagmentController : BaseController
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<ProjectManagmentTaskOutput> GetTaskDetailsByTaskIdAsync([FromQuery] long projectTaskId,
+    public async Task<ProjectManagmentTaskOutput> GetTaskDetailsByTaskIdAsync([FromQuery] string projectTaskId,
         [FromQuery] long projectId)
     {
         var result = await _projectManagmentService.GetTaskDetailsByTaskIdAsync(projectTaskId, GetUserName(),
@@ -809,7 +809,7 @@ public class ProjectManagmentController : BaseController
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
     public async Task<IEnumerable<GetTaskLinkOutput>> GetTaskLinkDefaultAsync([FromQuery] long projectId,
-        [FromQuery] long projectTaskId, [FromQuery] LinkTypeEnum linkType)
+        [FromQuery] string projectTaskId, [FromQuery] LinkTypeEnum linkType)
     {
         var validator = await new GetTaskLinkValidator().ValidateAsync((projectId, projectTaskId));
 
@@ -850,7 +850,7 @@ public class ProjectManagmentController : BaseController
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
     public async Task<IEnumerable<GetTaskLinkOutput>> GetTaskLinkParentAsync([FromQuery] long projectId,
-        [FromQuery] long projectTaskId, [FromQuery] LinkTypeEnum linkType)
+        [FromQuery] string projectTaskId, [FromQuery] LinkTypeEnum linkType)
     {
         var validator = await new GetTaskLinkValidator().ValidateAsync((projectId, projectTaskId));
 
@@ -891,7 +891,7 @@ public class ProjectManagmentController : BaseController
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
     public async Task<IEnumerable<GetTaskLinkOutput>> GetTaskLinkChildAsync([FromQuery] long projectId,
-        [FromQuery] long projectTaskId, [FromQuery] LinkTypeEnum linkType)
+        [FromQuery] string projectTaskId, [FromQuery] LinkTypeEnum linkType)
     {
         var validator = await new GetTaskLinkValidator().ValidateAsync((projectId, projectTaskId));
 
@@ -932,7 +932,7 @@ public class ProjectManagmentController : BaseController
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
     public async Task<IEnumerable<GetTaskLinkOutput>> GetTaskLinkDependAsync([FromQuery] long projectId,
-        [FromQuery] long projectTaskId, [FromQuery] LinkTypeEnum linkType)
+        [FromQuery] string projectTaskId, [FromQuery] LinkTypeEnum linkType)
     {
         var validator = await new GetTaskLinkValidator().ValidateAsync((projectId, projectTaskId));
 
@@ -973,7 +973,7 @@ public class ProjectManagmentController : BaseController
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
     public async Task<IEnumerable<GetTaskLinkOutput>> GetTaskLinkBlockedAsync([FromQuery] long projectId,
-        [FromQuery] long projectTaskId, [FromQuery] LinkTypeEnum linkType)
+        [FromQuery] string projectTaskId, [FromQuery] LinkTypeEnum linkType)
     {
         var validator = await new GetTaskLinkValidator().ValidateAsync((projectId, projectTaskId));
 
@@ -1276,7 +1276,7 @@ public class ProjectManagmentController : BaseController
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
     public async Task<IEnumerable<ProjectTaskFileOutput>> GetProjectTaskFilesAsync([FromQuery] long projectId,
-        long projectTaskId)
+        string projectTaskId)
     {
         var validator = await new ProjectTaskFileValidator().ValidateAsync((projectId, projectTaskId));
 
@@ -1320,7 +1320,7 @@ public class ProjectManagmentController : BaseController
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
     public async Task<FileContentResult> DownloadTaskFileAsync([FromQuery] long documentId, [FromQuery] long projectId,
-        [FromQuery] long projectTaskId)
+        [FromQuery] string projectTaskId)
     {
         var validator = await new ProjectTaskFileValidator().ValidateAsync((projectId, projectTaskId));
 

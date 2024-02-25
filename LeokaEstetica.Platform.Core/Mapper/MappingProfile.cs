@@ -216,6 +216,7 @@ public class MappingProfile : Profile
         
         CreateMap<ProjectManagmentHeaderEntity, ProjectManagmentHeaderOutput>();
         CreateMap<ProjectTaskEntity, ProjectManagmentTaskOutput>();
+        CreateMap<ProjectTaskExtendedEntity, ProjectManagmentTaskOutput>();
 
         CreateMap<ProjectManagmentTaskTemplateEntity, ProjectManagmentTaskTemplateOutput>();
         CreateMap<ProjectManagmentTaskStatusTemplateEntity, ProjectManagmentTaskStatusTemplateOutput>();

@@ -6,12 +6,6 @@ namespace LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 public class GetTaskLinkOutput
 {
     /// <summary>
-    /// TODO: Пока не используется. Вернуться, когда будет реализован вывод названия проекта.
-    /// Код задачи. Состоит из краткого названия проекта + номер задачи в рамках проекта.
-    /// </summary>
-    public string TaskCode { get; set; }
-
-    /// <summary>
     /// Название задачи.
     /// </summary>
     public string TaskName { get; set; }
@@ -78,4 +72,19 @@ public class GetTaskLinkOutput
     /// Признак блокирующей задачи.
     /// </summary>
     public bool IsBlocked { get; set; }
+    
+    /// <summary>
+    /// Префикс номера задачи.
+    /// </summary>
+    public string TaskIdPrefix { get; set; }
+    
+    /// <summary>
+    /// Id задачи в рамках проекта вместе с префиксом.
+    /// </summary>
+    public string FullProjectTaskId => string.Concat(TaskIdPrefix + "-", ProjectTaskId);
+    
+    /// <summary>
+    /// Id задачи вместе с префиксом.
+    /// </summary>
+    public string FullTaskId => string.Concat(TaskIdPrefix + "-", TaskId);
 }

@@ -3,7 +3,6 @@ using LeokaEstetica.Platform.Base.Abstractions.Connection;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.Base;
 using LeokaEstetica.Platform.Core.Constants;
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
-using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.Template;
 using LeokaEstetica.Platform.Models.Dto.ProjectManagement.Output;
@@ -142,19 +141,37 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
     /// <returns>Задачи проекта.</returns>
-    public async Task<IEnumerable<ProjectTaskEntity>> GetProjectTasksAsync(long projectId)
+    public async Task<IEnumerable<ProjectTaskExtendedEntity>> GetProjectTasksAsync(long projectId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
-        var compiler = new PostgresCompiler();
-        var query = new Query("project_management.project_tasks")
-            .Where("project_id", projectId)
-            .Select("task_id", "task_status_id", "author_id", "watcher_ids", "name", "details", "created", "updated",
-                "project_id", "project_task_id", "resolution_id", "tag_ids", "task_type_id", "executor_id",
-                "priority_id")
-            .OrderByDesc("created");
-        var sql = compiler.Compile(query).ToString();
+        
+        var parameters = new DynamicParameters();
+        parameters.Add("@projectId", projectId);
+        parameters.Add("@prefix", GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_PROJECT_NAME_PREFIX);
 
-        var result = await connection.QueryAsync<ProjectTaskEntity>(sql);
+        var query = "SELECT t.task_id," +
+                            "t.task_status_id," +
+                             "t.author_id," +
+                             "t.watcher_ids," +
+                             "t.name," +
+                             "t.details," +
+                             "t.created," +
+                             "t.updated," +
+                            "t.project_id," +
+                            "t.project_task_id," +
+                            "t.resolution_id," +
+                            "t.tag_ids," +
+                            "t.task_type_id," +
+                            "t.executor_id," +
+                            "t.priority_id," +
+                            "(SELECT \"ParamValue\"" +
+                            "FROM \"Configs\".\"ProjectManagmentProjectSettings\" AS ps " +
+                            "WHERE ps.\"ProjectId\" = @projectId " +
+                            "AND ps.\"ParamKey\" = @prefix) AS TaskIdPrefix " + 
+                                        "FROM project_management.project_tasks AS t " +
+                                        "WHERE t.project_id = @projectId ";
+
+        var result = await connection.QueryAsync<ProjectTaskExtendedEntity>(query, parameters);
 
         return result;
     }
@@ -733,102 +750,109 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
     }
 
     /// <inheritdoc />
-    public async Task CreateTaskLinkAsync(TaskLinkInput taskLinkInputd)
+    public async Task CreateTaskLinkAsync(long taskFromLink, long taskToLink, LinkTypeEnum linkType, long projectId,
+        long? childId, long? parentId, long? dependId)
     {
-        switch (taskLinkInputd.LinkType)
+        switch (linkType)
         {
             // Если создается обычная связь.
             case LinkTypeEnum.Link:
-                await CreateTaskLinkDefaultAsync(taskLinkInputd.TaskFromLink, taskLinkInputd.TaskToLink,
-                    LinkTypeEnum.Link, taskLinkInputd.ProjectId);
+                await CreateTaskLinkDefaultAsync(taskFromLink, taskToLink, LinkTypeEnum.Link, projectId);
                 break;
             
             // Если создается родительская связь.
             case LinkTypeEnum.Parent:
-                await CreateTaskLinkParentAsync(taskLinkInputd.TaskFromLink, taskLinkInputd.ParentId!.Value,
-                    LinkTypeEnum.Parent, taskLinkInputd.ProjectId);
+                await CreateTaskLinkParentAsync(taskFromLink, parentId!.Value, LinkTypeEnum.Parent, projectId);
                 break;
             
             // Если создается дочерняя связь.
             case LinkTypeEnum.Child:
-                await CreateTaskLinkChildAsync(taskLinkInputd.TaskFromLink, taskLinkInputd.ChildId!.Value,
-                    LinkTypeEnum.Child, taskLinkInputd.ProjectId);
+                await CreateTaskLinkChildAsync(taskFromLink, childId!.Value, LinkTypeEnum.Child, projectId);
                 break;
             
             // Если создается тип связи "зависит от".
             case LinkTypeEnum.Depend:
-                await CreateTaskLinkDependAsync(taskLinkInputd.TaskFromLink, taskLinkInputd.DependId!.Value,
-                    LinkTypeEnum.Depend, taskLinkInputd.ProjectId);
+                await CreateTaskLinkDependAsync(taskFromLink, dependId!.Value, LinkTypeEnum.Depend, projectId);
                 break;
             
             default:
-                throw new InvalidOperationException($"Недопустимый тип связи {taskLinkInputd.LinkType}.");
+                throw new InvalidOperationException($"Недопустимый тип связи {linkType}.");
         }
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<ProjectTaskEntity>> GetProjectTaskByProjectIdTaskIdsAsync(long projectId,
+    public async Task<IEnumerable<ProjectTaskExtendedEntity>> GetProjectTaskByProjectIdTaskIdsAsync(long projectId,
         IEnumerable<long> taskIds)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
 
         var parameters = new DynamicParameters();
-        parameters.Add("@project_id", projectId);
-        parameters.Add("@task_ids", taskIds.AsList());
+        parameters.Add("@projectId", projectId);
+        parameters.Add("@taskIds", taskIds.AsList());
+        parameters.Add("@prefix", GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_PROJECT_NAME_PREFIX);
 
-        var query = @"SELECT task_id,
-                             task_status_id,
-                             author_id,
-                             watcher_ids,
-                             name,
-                             details,
-                             created,
-                             updated,
-                             project_id,
-                             project_task_id,
-                             resolution_id,
-                             tag_ids,
-                             task_type_id,
-                             executor_id,
-                             priority_id 
-                      FROM project_management.project_tasks 
-                      WHERE project_id = @project_id 
-                        AND task_id = ANY(@task_ids)";
+        var query = "SELECT t.task_id," +
+                             "t.task_status_id," +
+                             "t.author_id," +
+                             "t.watcher_ids," +
+                             "t.name," +
+                             "t.details," +
+                             "t.created," +
+                             "t.updated," +
+                             "t.project_id," +
+                             "t.project_task_id," +
+                             "t.resolution_id," +
+                             "t.tag_ids," +
+                             "t.task_type_id," +
+                             "t.executor_id," +
+                             "t.priority_id," +
+                             "(SELECT \"ParamValue\"" +
+                                       "FROM \"Configs\".\"ProjectManagmentProjectSettings\" AS ps " +
+                                       "WHERE ps.\"ProjectId\" = @projectId " +
+                                       "AND ps.\"ParamKey\" = @prefix) AS TaskIdPrefix " +
+                      "FROM project_management.project_tasks AS t " +
+                      "WHERE t.project_id = @projectId " + 
+                        "AND t.task_id = ANY(@taskIds)";
         
-        var result = await connection.QueryAsync<ProjectTaskEntity>(query, parameters);
+        var result = await connection.QueryAsync<ProjectTaskExtendedEntity>(query, parameters);
 
         return result;
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<TaskLinkEntity>> GetTaskLinksByProjectIdProjectTaskIdAsync(long projectId,
+    public async Task<IEnumerable<TaskLinkExtendedEntity>> GetTaskLinksByProjectIdProjectTaskIdAsync(long projectId,
         long fromTaskId, LinkTypeEnum linkType)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
-        IEnumerable<TaskLinkEntity> result;
+        IEnumerable<TaskLinkExtendedEntity> result;
 
         if (linkType == LinkTypeEnum.Depend)
         {
             var parameters = new DynamicParameters();
             parameters.Add("@project_id", projectId);
-            parameters.Add("@blocked_task_id", fromTaskId);
+            parameters.Add("@from_task_id", fromTaskId);
             parameters.Add("@link_type", new Enum(linkType));
+            parameters.Add("@prefix", GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_PROJECT_NAME_PREFIX);
 
-            var query = @"SELECT link_id, 
-                       from_task_id, 
-                       to_task_id, 
-                       link_type, 
-                       parent_id, 
-                       child_id, 
-                       is_blocked, 
-                       project_id, 
-                       blocked_task_id 
-                      FROM project_management.task_links 
-                      WHERE project_id = @project_id 
-                        AND blocked_task_id = @blocked_task_id 
-                        AND link_type = @link_type";
+            var query = "SELECT link_id," + 
+                       "from_task_id," + 
+                       "to_task_id," + 
+                       "link_type," + 
+                       "parent_id," + 
+                       "child_id," + 
+                       "is_blocked," + 
+                       "project_id," + 
+                       "blocked_task_id," +
+                       "(SELECT \"ParamValue\"" +
+                                 "FROM \"Configs\".\"ProjectManagmentProjectSettings\" AS ps " +
+                                 "WHERE ps.\"ProjectId\" = @project_id " +
+                                 "AND ps.\"ParamKey\" = @prefix) AS TaskIdPrefix " +
+                      "FROM project_management.task_links " + 
+                      "WHERE project_id = @project_id " + 
+                        "AND from_task_id = @from_task_id " + 
+                        "AND link_type = @link_type";
 
-            result = await connection.QueryAsync<TaskLinkEntity>(query, parameters);
+            result = await connection.QueryAsync<TaskLinkExtendedEntity>(query, parameters);
         }
 
         else
@@ -837,22 +861,27 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
             parameters.Add("@project_id", projectId);
             parameters.Add("@from_task_id", fromTaskId);
             parameters.Add("@link_type", new Enum(linkType));
+            parameters.Add("@prefix", GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_PROJECT_NAME_PREFIX);
 
-            var query = @"SELECT link_id, 
-                       from_task_id, 
-                       to_task_id, 
-                       link_type, 
-                       parent_id, 
-                       child_id, 
-                       is_blocked, 
-                       project_id, 
-                       blocked_task_id 
-                      FROM project_management.task_links 
-                      WHERE project_id = @project_id 
-                        AND from_task_id = @from_task_id 
-                        AND link_type = @link_type";
+            var query = "SELECT link_id," + 
+                       "from_task_id," + 
+                       "to_task_id," + 
+                       "link_type," + 
+                       "parent_id," + 
+                       "child_id," + 
+                       "is_blocked," + 
+                       "project_id," + 
+                       "blocked_task_id, " + 
+                       "(SELECT \"ParamValue\"" +
+                       "FROM \"Configs\".\"ProjectManagmentProjectSettings\" AS ps " +
+                       "WHERE ps.\"ProjectId\" = @project_id " +
+                       "AND ps.\"ParamKey\" = @prefix) AS TaskIdPrefix " +
+                      "FROM project_management.task_links " + 
+                      "WHERE project_id = @project_id " + 
+                        "AND from_task_id = @from_task_id " + 
+                        "AND link_type = @link_type";
 
-            result = await connection.QueryAsync<TaskLinkEntity>(query, parameters);
+            result = await connection.QueryAsync<TaskLinkExtendedEntity>(query, parameters);
         }
 
         return result;
@@ -865,24 +894,29 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         using var connection = await ConnectionProvider.GetConnectionAsync();
 
         var parameters = new DynamicParameters();
-        parameters.Add("@project_id", projectId);
-        parameters.Add("@link_type", new Enum(linkType));
+        parameters.Add("@projectId", projectId);
+        parameters.Add("@linkType", new Enum(linkType));
+        parameters.Add("@prefix", GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_PROJECT_NAME_PREFIX);
 
-        var query = @"SELECT DISTINCT (pt.task_id) AS TaskId,
-                                        pt.name AS TaskName,
-                                        pt.project_task_id AS ProjectTaskId,
-                                        pt.task_status_id AS TaskStatusId,
-                                        pt.executor_id AS ExecutorId,
-                                        pt.priority_id AS PriorityId,
-                                        pt.updated AS LastUpdated,
-                                        pt.created 
-                      FROM project_management.project_tasks AS pt 
-                               LEFT JOIN project_management.task_links AS tl ON pt.task_id = tl.to_task_id 
-                      WHERE pt.project_id = @project_id 
-                        AND pt.task_id NOT IN (SELECT tl.to_task_id 
-                                               FROM project_management.task_links 
-                                               WHERE tl.link_type = @link_type) 
-                       ORDER BY pt.created";
+        var query = "SELECT DISTINCT (pt.task_id) AS TaskId," +
+                                        "pt.name AS TaskName," +
+                                        "pt.project_task_id AS ProjectTaskId," +
+                                        "pt.task_status_id AS TaskStatusId," +
+                                        "pt.executor_id AS ExecutorId," +
+                                        "pt.priority_id AS PriorityId," +
+                                        "pt.updated AS LastUpdated," +
+                                        "pt.created," +
+                                        "(SELECT \"ParamValue\"" +
+                                                  "FROM \"Configs\".\"ProjectManagmentProjectSettings\" AS ps " +
+                                                  "WHERE ps.\"ProjectId\" = @projectId " +
+                                                  "AND ps.\"ParamKey\" = @prefix) AS TaskIdPrefix " +
+                      "FROM project_management.project_tasks AS pt " + 
+                               "LEFT JOIN project_management.task_links AS tl ON pt.task_id = tl.to_task_id " +
+                      "WHERE pt.project_id = @projectId " + 
+                        "AND pt.task_id NOT IN (SELECT tl.to_task_id " + 
+                                               "FROM project_management.task_links " + 
+                                               "WHERE tl.link_type = @linkType) " + 
+                       "ORDER BY pt.created";
 
         var result = await connection.QueryAsync<AvailableTaskLinkOutput>(query, parameters);
 

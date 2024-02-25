@@ -118,4 +118,19 @@ public class ProjectManagmentTaskOutput
     /// Название приоритета задачи.
     /// </summary>
     public string PriorityName { get; set; }
+
+    /// <summary>
+    /// Префикс номера задачи.
+    /// </summary>
+    public string TaskIdPrefix { get; set; }
+
+    /// <summary>
+    /// Id задачи в рамках проекта вместе с префиксом.
+    /// </summary>
+    public string FullProjectTaskId => string.Concat(TaskIdPrefix + "-", ProjectTaskId);
+    
+    /// <summary>
+    /// Id задачи вместе с префиксом.
+    /// </summary>
+    public string FullTaskId => string.Concat(TaskIdPrefix + "-", TaskId);
 }

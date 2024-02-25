@@ -75,7 +75,7 @@ public interface IProjectManagmentService
     /// <param name="account">Аккаунт.</param>
     /// <param name="projectId">Id проекта.</param>
     /// <returns>Данные задачи.</returns>
-    Task<ProjectManagmentTaskOutput> GetTaskDetailsByTaskIdAsync(long projectTaskId, string account, long projectId);
+    Task<ProjectManagmentTaskOutput> GetTaskDetailsByTaskIdAsync(string projectTaskId, string account, long projectId);
 
     /// <summary>
     /// Метод получает список типов задач.
@@ -156,7 +156,7 @@ public interface IProjectManagmentService
     /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
     /// <returns>Список доступных переходов.</returns>
     Task<IEnumerable<AvailableTaskStatusTransitionOutput>> GetAvailableTaskStatusTransitionsAsync(long projectId,
-        long projectTaskId);
+        string projectTaskId);
 
     /// <summary>
     /// Метод изменяет статус задачи.
@@ -173,7 +173,7 @@ public interface IProjectManagmentService
     /// <param name="taskId">Id задачи (здесь имеется в виду Id задачи в рамках проекта).</param>
     /// <param name="changedTaskDetails">Новое описание задачи.</param>
     /// <param name="account">Аккаунт.</param>
-    Task UpdateTaskDetailsAsync(long projectId, long taskId, string changedTaskDetails, string account);
+    Task UpdateTaskDetailsAsync(long projectId, string taskId, string changedTaskDetails, string account);
     
     /// <summary>
     /// Метод обновления названия задачи.
@@ -182,7 +182,7 @@ public interface IProjectManagmentService
     /// <param name="taskId">Id задачи (здесь имеется в виду Id задачи в рамках проекта).</param>
     /// <param name="changedTaskDetails">Новое название задачи.</param>
     /// <param name="account">Аккаунт.</param>
-    Task UpdateTaskNameAsync(long projectId, long taskId, string changedTaskName, string account);
+    Task UpdateTaskNameAsync(long projectId, string taskId, string changedTaskName, string account);
 
     /// <summary>
     /// Метод привязывает тег к задаче проекта.
@@ -192,7 +192,7 @@ public interface IProjectManagmentService
     /// <param name="taskId">Id задачи в рамках проекта.</param>
     /// <param name="projectId">Id проекта.</param>
     /// <param name="account">Аккаунт.</param>
-    Task AttachTaskTagAsync(int tagId, long projectTaskId, long projectId, string account);
+    Task AttachTaskTagAsync(int tagId, string projectTaskId, long projectId, string account);
     
     /// <summary>
     /// Метод отвязывает тег от задачи проекта.
@@ -201,7 +201,7 @@ public interface IProjectManagmentService
     /// <param name="taskId">Id задачи в рамках проекта.</param>
     /// <param name="projectId">Id проекта.</param>
     /// <param name="account">Аккаунт.</param>
-    Task DetachTaskTagAsync(int tagId, long projectTaskId, long projectId, string account);
+    Task DetachTaskTagAsync(int tagId, string projectTaskId, long projectId, string account);
 
     /// <summary>
     /// Метод привязывает наблюдателя задачи.
@@ -210,7 +210,7 @@ public interface IProjectManagmentService
     /// <param name="taskId">Id задачи в рамках проекта.</param>
     /// <param name="projectId">Id проекта.</param>
     /// <param name="account">Аккаунт.</param>
-    Task AttachTaskWatcherAsync(long watcherId, long projectTaskId, long projectId, string account);
+    Task AttachTaskWatcherAsync(long watcherId, string projectTaskId, long projectId, string account);
     
     /// <summary>
     /// Метод отвязывает наблюдателя задачи.
@@ -219,7 +219,7 @@ public interface IProjectManagmentService
     /// <param name="taskId">Id задачи в рамках проекта.</param>
     /// <param name="projectId">Id проекта.</param>
     /// <param name="account">Аккаунт.</param>
-    Task DetachTaskWatcherAsync(long watcherId, long projectTaskId, long projectId, string account);
+    Task DetachTaskWatcherAsync(long watcherId, string projectTaskId, long projectId, string account);
 
     /// <summary>
     /// Метод обновляет исполнителя задачи.
@@ -228,7 +228,7 @@ public interface IProjectManagmentService
     /// <param name="taskId">Id задачи в рамках проекта.</param>
     /// <param name="projectId">Id проекта.</param>
     /// <param name="account">Аккаунт.</param>
-    Task UpdateTaskExecutorAsync(long executorId, long projectTaskId, long projectId, string account);
+    Task UpdateTaskExecutorAsync(long executorId, string projectTaskId, long projectId, string account);
 
     /// <summary>
     /// Метод обновляет приоритет задачи.
@@ -237,12 +237,12 @@ public interface IProjectManagmentService
     /// <param name="taskId">Id задачи в рамках проекта.</param>
     /// <param name="projectId">Id проекта.</param>
     /// <param name="account">Аккаунт.</param>
-    Task UpdateTaskPriorityAsync(int priorityId, long projectTaskId, long projectId, string account);
+    Task UpdateTaskPriorityAsync(int priorityId, string projectTaskId, long projectId, string account);
 
     /// <summary>
     /// Метод создает связь с задачей (в зависимости от типа связи, который передали).
     /// </summary>
-    /// <param name="taskLinkInputstring">Входная модель.</param>
+    /// <param name="taskLinkInput">Входная модель.</param>
     /// <param name="account">Аккаунт.</param>
     Task CreateTaskLinkAsync(TaskLinkInput taskLinkInput, string account);
 
@@ -253,7 +253,7 @@ public interface IProjectManagmentService
     /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
     /// <param name="linkType">Тип связи.</param>
     /// <returns>Список связей задачи.</returns>
-    Task<IEnumerable<GetTaskLinkOutput>> GetTaskLinkDefaultAsync(long projectId, long projectTaskId,
+    Task<IEnumerable<GetTaskLinkOutput>> GetTaskLinkDefaultAsync(long projectId, string projectTaskId,
         LinkTypeEnum linkType);
 
     /// <summary>
@@ -272,7 +272,7 @@ public interface IProjectManagmentService
     /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
     /// <param name="linkType">Тип связи.</param>
     /// <returns>Список связей задачи.</returns>
-    Task<IEnumerable<GetTaskLinkOutput>> GetTaskLinkParentAsync(long projectId, long projectTaskId,
+    Task<IEnumerable<GetTaskLinkOutput>> GetTaskLinkParentAsync(long projectId, string projectTaskId,
         LinkTypeEnum linkType);
     
     /// <summary>
@@ -282,7 +282,7 @@ public interface IProjectManagmentService
     /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
     /// <param name="linkType">Тип связи.</param>
     /// <returns>Список связей задачи.</returns>
-    Task<IEnumerable<GetTaskLinkOutput>> GetTaskLinkChildAsync(long projectId, long projectTaskId,
+    Task<IEnumerable<GetTaskLinkOutput>> GetTaskLinkChildAsync(long projectId, string projectTaskId,
         LinkTypeEnum linkType);
     
     /// <summary>
@@ -292,7 +292,7 @@ public interface IProjectManagmentService
     /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
     /// <param name="linkType">Тип связи.</param>
     /// <returns>Список связей задачи.</returns>
-    Task<IEnumerable<GetTaskLinkOutput>> GetTaskLinkDependAsync(long projectId, long projectTaskId,
+    Task<IEnumerable<GetTaskLinkOutput>> GetTaskLinkDependAsync(long projectId, string projectTaskId,
         LinkTypeEnum linkType);
     
     /// <summary>
@@ -302,7 +302,7 @@ public interface IProjectManagmentService
     /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
     /// <param name="linkType">Тип связи.</param>
     /// <returns>Список связей задачи.</returns>
-    Task<IEnumerable<GetTaskLinkOutput>> GetTaskLinkBlockedAsync(long projectId, long projectTaskId,
+    Task<IEnumerable<GetTaskLinkOutput>> GetTaskLinkBlockedAsync(long projectId, string projectTaskId,
         LinkTypeEnum linkType);
 
     /// <summary>
@@ -313,7 +313,7 @@ public interface IProjectManagmentService
     /// <param name="currentTaskId">Id текущей задачи (задача в рамках проекта).</param>
     /// <param name="projectId">Id проекта.</param>
     /// <param name="account">Аккаунт.</param>
-    Task RemoveTaskLinkAsync(LinkTypeEnum linkType, long removedLinkId, long currentTaskId, long projectId,
+    Task RemoveTaskLinkAsync(LinkTypeEnum linkType, string removedLinkId, string currentTaskId, long projectId,
         string account);
     
     /// <summary>
@@ -332,7 +332,7 @@ public interface IProjectManagmentService
     /// <param name="projectId">Id проекта.</param>
     /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
     /// <returns>Данные документа.</returns>
-    Task<FileContentResult> DownloadFileAsync(long documentId, long projectId, long projectTaskId);
+    Task<FileContentResult> DownloadFileAsync(long documentId, long projectId, string projectTaskId);
 
     /// <summary>
     /// Метод получает файлы задачи.
@@ -340,7 +340,7 @@ public interface IProjectManagmentService
     /// <param name="projectId">Id проекта.</param>
     /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
     /// <returns>Файлы задачи.</returns>
-    Task<IEnumerable<ProjectTaskDocumentEntity>> GetProjectTaskFilesAsync(long projectId, long projectTaskId);
+    Task<IEnumerable<ProjectTaskDocumentEntity>> GetProjectTaskFilesAsync(long projectId, string projectTaskId);
 
     /// <summary>
     /// Метод удаляет файл задачи.
