@@ -6,7 +6,7 @@ namespace LeokaEstetica.Platform.ProjectManagment.Validators;
 /// <summary>
 /// Класс валидатора удаления файла задачи.
 /// </summary>
-public class RemoveTaskFileValidator : AbstractValidator<(long DocumentId, long ProjectId, long ProjectTaskId)>
+public class RemoveTaskFileValidator : AbstractValidator<(long DocumentId, long ProjectId, string ProjectTaskId)>
 {
     /// <summary>
     /// Конструктор.
@@ -22,7 +22,9 @@ public class RemoveTaskFileValidator : AbstractValidator<(long DocumentId, long 
             .WithMessage(ValidationConst.ProjectManagmentValidation.NOT_VALID_TASK_FROM_LINK);
             
         RuleFor(p => p.ProjectTaskId)
-            .Must(p => p > 0)
+            .NotNull()
+            .WithMessage(ValidationConst.ProjectManagmentValidation.NOT_VALID_PROJECT_TASK_ID)
+            .NotEmpty()
             .WithMessage(ValidationConst.ProjectManagmentValidation.NOT_VALID_PROJECT_TASK_ID);
     }
 }
