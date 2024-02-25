@@ -13,10 +13,10 @@ public class ChangeTaskStatusInput
     /// <summary>
     /// Id статуса, на который нужно обновить.
     /// </summary>
-    public long ChangeStatusId { get; set; }
+    public string ChangeStatusId { get; set; }
 
     /// <summary>
     /// Id задачи (здесь имеется в виду Id задачи в рамках проекта).
     /// </summary>
-    public long TaskId { get; set; }
+    public string TaskId { get; set; }
 }

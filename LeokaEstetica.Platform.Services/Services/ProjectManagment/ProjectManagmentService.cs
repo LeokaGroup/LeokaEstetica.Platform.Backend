@@ -1371,9 +1371,10 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     }
 
     /// <inheritdoc />
-    public async Task ChangeTaskStatusAsync(long projectId, long changeStatusId, long taskId)
+    public async Task ChangeTaskStatusAsync(long projectId, string changeStatusId, string taskId)
     {
-        await _projectManagmentRepository.ChangeTaskStatusAsync(projectId, changeStatusId, taskId);
+        await _projectManagmentRepository.ChangeTaskStatusAsync(projectId,
+            changeStatusId.GetProjectTaskIdFromPrefixLink(), taskId.GetProjectTaskIdFromPrefixLink());
     }
 
     /// <inheritdoc />
