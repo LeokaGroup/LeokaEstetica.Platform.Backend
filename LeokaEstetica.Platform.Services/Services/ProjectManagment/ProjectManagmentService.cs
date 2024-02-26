@@ -2178,6 +2178,33 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         }
     }
 
+    /// <inheritdoc />
+    public async Task UpdateTaskCommentAsync(string projectTaskId, long projectId, long commentId, string comment,
+        string account)
+    {
+        try
+        {
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+
+            await _projectManagmentRepository.UpdateTaskCommentAsync(projectTaskId.GetProjectTaskIdFromPrefixLink(),
+                projectId, commentId, comment, userId);
+            
+            // TODO: Тут добавить запись активности пользователя по userId.
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
     #endregion
 
     #region Приватные методы.

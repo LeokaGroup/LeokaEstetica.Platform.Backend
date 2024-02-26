@@ -356,4 +356,14 @@ public interface IProjectManagmentRepository
     /// <param name="projectId">Id проекта.</param>
     /// <returns>Список комментариев задачи.</returns>
     Task<IEnumerable<ProjectTaskCommentExtendedEntity>> GetTaskCommentsAsync(long projectTaskId, long projectId);
+
+    /// <summary>
+    /// Метод обновляет комментарий задачи.
+    /// </summary>
+    /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="commentId">Id комментария.</param>
+    /// <param name="comment">Новый комментарий.</param>
+    /// <param name="userId">Id пользователя.</param>
+    Task UpdateTaskCommentAsync(long projectTaskId, long projectId, long commentId, string comment, long userId);
 }

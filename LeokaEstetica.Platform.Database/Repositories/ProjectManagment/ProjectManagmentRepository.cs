@@ -1262,6 +1262,30 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         return result;
     }
 
+    public async Task UpdateTaskCommentAsync(long projectTaskId, long projectId, long commentId, string comment,
+        long userId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@projectId", projectId);
+        parameters.Add("@projectTaskId", projectTaskId);
+        parameters.Add("@commentId", commentId);
+        parameters.Add("@comment", comment);
+        parameters.Add("@updatedAt", DateTime.UtcNow);
+        parameters.Add("@userId", userId);
+
+        var query = @"UPDATE project_management.task_comments 
+                      SET comment = @comment,
+                          updated_at = @updatedAt,
+                          updated_by = @userId 
+                          WHERE project_id = @projectId 
+                            AND project_task_id = @projectTaskId 
+                            AND comment_id = @commentId";
+
+        await connection.ExecuteAsync(query, parameters);
+    }
+
     #endregion
 
     #region Приватные методы.

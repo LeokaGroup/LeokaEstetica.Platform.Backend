@@ -258,5 +258,10 @@ public static class ValidationConst
         /// Если не передали комментарий задачи.
         /// </summary>
         public const string EMPTY_TASK_COMMENT = "Не передан комментарий задачи.";
+        
+        /// <summary>
+        /// Если не передали Id комментария задачи.
+        /// </summary>
+        public const string EMPTY_TASK_COMMENT_ID = "Не передан Id комментария задачи.";
     }
 }
