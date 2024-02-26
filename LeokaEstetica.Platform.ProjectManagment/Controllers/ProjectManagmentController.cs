@@ -1429,4 +1429,25 @@ public class ProjectManagmentController : BaseController
         await _projectManagmentService.CreateTaskCommentAsync(taskCommentInput.ProjectTaskId,
             taskCommentInput.ProjectId, taskCommentInput.Comment, GetUserName());
     }
+
+    /// <summary>
+    /// Метод получает список комментариев задачи.
+    /// </summary>
+    /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Список комментариев задачи.</returns>
+    [HttpGet]
+    [Route("task-comment")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<TaskCommentOutput>))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<IEnumerable<TaskCommentOutput>> GetTaskCommentsAsync([FromQuery] string projectTaskId,
+        [FromQuery] long projectId)
+    {
+        var result = await _projectManagmentService.GetTaskCommentsAsync(projectTaskId, projectId);
+
+        return result;
+    }
 }

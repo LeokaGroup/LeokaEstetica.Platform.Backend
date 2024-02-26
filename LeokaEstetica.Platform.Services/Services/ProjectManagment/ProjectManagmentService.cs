@@ -2153,6 +2153,31 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         }
     }
 
+    /// <inheritdoc />
+    public async Task<IEnumerable<TaskCommentOutput>> GetTaskCommentsAsync(string projectTaskId, long projectId)
+    {
+        try
+        {
+            var items = (await _projectManagmentRepository.GetTaskCommentsAsync(
+                projectTaskId.GetProjectTaskIdFromPrefixLink(), projectId))?.AsList();
+
+            if (items is null || !items.Any())
+            {
+                return Enumerable.Empty<TaskCommentOutput>();
+            }
+
+            var result = _mapper.Map<IEnumerable<TaskCommentOutput>>(items);
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+             _logger.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
     #endregion
 
     #region Приватные методы.

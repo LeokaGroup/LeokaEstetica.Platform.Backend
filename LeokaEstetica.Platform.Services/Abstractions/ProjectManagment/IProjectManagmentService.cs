@@ -366,4 +366,12 @@ public interface IProjectManagmentService
     /// <param name="comment">Комментарий задачи.</param>
     /// <param name="account">Аккаунт.</param>
     Task CreateTaskCommentAsync(string projectTaskId, long projectId, string comment, string account);
+
+    /// <summary>
+    /// Метод получает список комментариев задачи.
+    /// </summary>
+    /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Список комментариев задачи.</returns>
+    Task<IEnumerable<TaskCommentOutput>> GetTaskCommentsAsync(string projectTaskId, long projectId);
 }
