@@ -2194,6 +2194,8 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 
             await _projectManagmentRepository.UpdateTaskCommentAsync(projectTaskId.GetProjectTaskIdFromPrefixLink(),
                 projectId, commentId, comment, userId);
+            
+            // TODO: Тут добавить запись активности пользователя по userId.
         }
         
         catch (Exception ex)
