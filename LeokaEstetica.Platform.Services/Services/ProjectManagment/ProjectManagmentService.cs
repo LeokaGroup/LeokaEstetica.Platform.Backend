@@ -2205,6 +2205,22 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         }
     }
 
+    public async Task DeleteTaskCommentAsync(long commentId, string account)
+    {
+        try
+        {
+            await _projectManagmentRepository.DeleteTaskCommentAsync(commentId);
+            
+            // TODO: Тут добавить запись активности пользователя по userId.
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
     #endregion
 
     #region Приватные методы.

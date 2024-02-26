@@ -366,4 +366,10 @@ public interface IProjectManagmentRepository
     /// <param name="comment">Новый комментарий.</param>
     /// <param name="userId">Id пользователя.</param>
     Task UpdateTaskCommentAsync(long projectTaskId, long projectId, long commentId, string comment, long userId);
+    
+    /// <summary>
+    /// Метод удаляет комментарий задачи.
+    /// </summary>
+    /// <param name="commentId">Id комментария для удаления.</param>
+    Task DeleteTaskCommentAsync(long commentId);
 }

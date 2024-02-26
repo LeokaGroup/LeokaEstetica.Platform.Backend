@@ -1262,6 +1262,7 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         return result;
     }
 
+    /// <inheritdoc />
     public async Task UpdateTaskCommentAsync(long projectTaskId, long projectId, long commentId, string comment,
         long userId)
     {
@@ -1283,6 +1284,20 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
                             AND project_task_id = @projectTaskId 
                             AND comment_id = @commentId";
 
+        await connection.ExecuteAsync(query, parameters);
+    }
+
+    /// <inheritdoc />
+    public async Task DeleteTaskCommentAsync(long commentId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@commentId", commentId);
+        
+        var query = @"DELETE FROM project_management.task_comments 
+                      WHERE comment_id = @commentId";
+                      
         await connection.ExecuteAsync(query, parameters);
     }
 
