@@ -2121,6 +2121,24 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         }
     }
 
+    /// <inheritdoc />
+    public async Task CreateTaskCommentAsync(string projectTaskId, long projectId, string comment, string account)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(comment))
+            {
+                return;
+            }
+        }
+        
+        catch (Exception ex)
+        {
+             _logger.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
     #endregion
 
     #region Приватные методы.

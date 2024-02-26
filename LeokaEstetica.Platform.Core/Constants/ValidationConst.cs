@@ -253,5 +253,10 @@ public static class ValidationConst
         /// </summary>
         public const string NOT_VALID_PROJECT_MANAGEMENT_PROJECT_NAME_PREFIX =
             "Префикс названия в управлении проектом не передано.";
+
+        /// <summary>
+        /// Если не передали комментарий задачи.
+        /// </summary>
+        public const string EMPTY_TASK_COMMENT = "Не передан комментарий задачи.";
     }
 }

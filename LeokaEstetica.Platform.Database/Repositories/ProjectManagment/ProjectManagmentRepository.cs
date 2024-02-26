@@ -1210,6 +1210,11 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         }
     }
 
+    public async Task CreateTaskCommentAsync(string projectTaskId, long projectId, string comment)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+    }
+
     #endregion
 
     #region Приватные методы.

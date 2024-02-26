@@ -357,4 +357,13 @@ public interface IProjectManagmentService
     /// <param name="projectId">Id проекта.</param>
     /// <param name="account">Аккаунт.</param>
     Task FixationProjectViewStrategyAsync(string strategySysName, long projectId, string account);
+
+    /// <summary>
+    /// Метод создает комментарий задачи.
+    /// </summary>
+    /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="comment">Комментарий задачи.</param>
+    /// <param name="account">Аккаунт.</param>
+    Task CreateTaskCommentAsync(string projectTaskId, long projectId, string comment, string account);
 }
