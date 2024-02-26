@@ -230,6 +230,8 @@ public class MappingProfile : Profile
             .ForMember(p => p.SecondName, p => p.MapFrom(src => src.Patronymic));
         
         CreateMap<ProjectTaskDocumentEntity, ProjectTaskFileOutput>();
+        
+        CreateMap<ProjectTaskCommentEntity, TaskCommentOutput>();
     }
     
     /// <summary>

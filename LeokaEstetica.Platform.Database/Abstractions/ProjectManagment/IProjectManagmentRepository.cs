@@ -1,5 +1,4 @@
-﻿using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
-using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
+﻿using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.Template;
 using LeokaEstetica.Platform.Models.Dto.ProjectManagement.Output;
 using LeokaEstetica.Platform.Models.Entities.Document;
@@ -338,6 +337,15 @@ public interface IProjectManagmentRepository
     /// </summary>
     /// <param name="strategySysName">Системное название стратегии.</param>
     /// <param name="projectId">Id проекта.</param>
-    /// <param name="account">Id пользователя.</param>
+    /// <param name="userId">Id пользователя.</param>
     Task FixationProjectViewStrategyAsync(string strategySysName, long projectId, long userId);
+
+    /// <summary>
+    /// Метод создает комментарий задачи.
+    /// </summary>
+    /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="comment">Комментарий задачи.</param>
+    /// <param name="userId">Id пользователя.</param>
+    Task CreateTaskCommentAsync(long projectTaskId, long projectId, string comment, long userId);
 }

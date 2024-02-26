@@ -1210,6 +1210,23 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         }
     }
 
+    /// <inheritdoc />
+    public async Task CreateTaskCommentAsync(long projectTaskId, long projectId, string comment, long userId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@projectId", projectId);
+        parameters.Add("@projectTaskId", projectTaskId);
+        parameters.Add("@comment", comment);
+        parameters.Add("@createdBy", userId);
+
+        var query = @"INSERT INTO project_management.task_comments (project_id, project_task_id, comment, created_by) 
+                      VALUES (@projectId, @projectTaskId, @comment, @createdBy)";
+                      
+        await connection.ExecuteAsync(query, parameters);
+    }
+
     #endregion
 
     #region Приватные методы.
