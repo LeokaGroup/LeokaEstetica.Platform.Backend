@@ -40,7 +40,7 @@ public class ProjectPaginationService : BaseIndexRamDirectory, IProjectPaginatio
             var result = new PaginationProjectOutput
             {
                 IsVisiblePagination = true,
-                PaginationInfo = new PaginationInfoOutput(projects.Count(), page, PaginationConst.TAKE_COUNT)
+                PaginationInfo = new PaginationInfoOutput(projects.Count, page, PaginationConst.TAKE_COUNT)
             };
 
             // Получаем все проекты из БД без выгрузки в память.
@@ -48,7 +48,7 @@ public class ProjectPaginationService : BaseIndexRamDirectory, IProjectPaginatio
 
             using var reader = IndexReader.Open(_index.Value, true);
             using var searcher = new IndexSearcher(reader);
-            var scoreDocs = CreateScoreDocsBuilder.CreateScoreDocsResult(page, searcher);
+            var scoreDocs = CreateScoreDocsBuilder.CreateScoreDocsResult(page, searcher, projects.Count);
 
             result.Projects = CreateProjectsSearchResultBuilder
                 .CreateProjectsSearchResult(scoreDocs, searcher)

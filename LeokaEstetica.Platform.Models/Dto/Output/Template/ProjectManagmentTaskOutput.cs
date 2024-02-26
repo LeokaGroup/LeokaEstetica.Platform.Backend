@@ -1,5 +1,3 @@
-using Newtonsoft.Json;
-
 namespace LeokaEstetica.Platform.Models.Dto.Output.Template;
 
 /// <summary>
@@ -20,13 +18,11 @@ public class ProjectManagmentTaskOutput
     /// <summary>
     /// Id статуса задачи.
     /// </summary>
-    [JsonIgnore]
     public int TaskStatusId { get; set; }
 
     /// <summary>
     /// Id автора задачи.
     /// </summary>
-    [JsonIgnore]
     public long AuthorId { get; set; }
 
     /// <summary>
@@ -44,7 +40,6 @@ public class ProjectManagmentTaskOutput
     /// <summary>
     /// Id наблюдателей задачи.
     /// </summary>
-    [JsonIgnore]
     public List<long> WatcherIds { get; set; }
 
     /// <summary>
@@ -80,7 +75,6 @@ public class ProjectManagmentTaskOutput
     /// <summary>
     /// Id резолюции (если указана).
     /// </summary>
-    [JsonIgnore]
     public int ResolutionId { get; set; }
 
     /// <summary>
@@ -92,7 +86,6 @@ public class ProjectManagmentTaskOutput
     /// <summary>
     /// Id тегов (меток).
     /// </summary>
-    [JsonIgnore]
     public List<int> TagIds { get; set; }
 
     /// <summary>
@@ -103,7 +96,6 @@ public class ProjectManagmentTaskOutput
     /// <summary>
     /// Id типа задачи.
     /// </summary>
-    [JsonIgnore]
     public int TaskTypeId { get; set; }
 
     /// <summary>
@@ -115,17 +107,30 @@ public class ProjectManagmentTaskOutput
     /// <summary>
     /// Id исполнителя задачи.
     /// </summary>
-    [JsonIgnore]
     public long ExecutorId { get; set; }
     
     /// <summary>
     /// Id приоритета задачи (если указана).
     /// </summary>
-    [JsonIgnore]
     public int PriorityId { get; set; }
 
     /// <summary>
     /// Название приоритета задачи.
     /// </summary>
     public string PriorityName { get; set; }
+
+    /// <summary>
+    /// Префикс номера задачи.
+    /// </summary>
+    public string TaskIdPrefix { get; set; }
+
+    /// <summary>
+    /// Id задачи в рамках проекта вместе с префиксом.
+    /// </summary>
+    public string FullProjectTaskId => string.Concat(TaskIdPrefix + "-", ProjectTaskId);
+    
+    /// <summary>
+    /// Id задачи вместе с префиксом.
+    /// </summary>
+    public string FullTaskId => string.Concat(TaskIdPrefix + "-", TaskId);
 }

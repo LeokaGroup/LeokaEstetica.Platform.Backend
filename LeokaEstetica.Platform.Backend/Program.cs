@@ -4,9 +4,10 @@ using FluentValidation.AspNetCore;
 using Hellang.Middleware.ProblemDetails;
 using LeokaEstetica.Platform.Backend.Loaders.Bots;
 using LeokaEstetica.Platform.Backend.Loaders.Jobs;
-using LeokaEstetica.Platform.Base.Filters;
+using LeokaEstetica.Platform.Base.Factors;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Utils;
+using LeokaEstetica.Platform.Integrations.Filters;
 using LeokaEstetica.Platform.Notifications.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -20,7 +21,7 @@ var configuration = builder.Configuration;
 
 builder.Services.AddControllers(opt =>
     {
-        opt.Filters.Add(typeof(LogExceptionFilter));
+        opt.Filters.Add(typeof(PachcaLogExceptionFilter));
     })
     .AddControllersAsServices()
     .AddNewtonsoftJson();
@@ -37,11 +38,14 @@ builder.Environment.EnvironmentName = configuration["Environment"];
 
 builder.Services.AddHttpContextAccessor();
 
+string connection = null;
+
 if (builder.Environment.IsDevelopment())
 {
     builder.Services.AddDbContext<PgContext>(options =>
             options.UseNpgsql(configuration["ConnectionStrings:NpgDevSqlConnection"]),
         ServiceLifetime.Transient);
+    connection = configuration["ConnectionStrings:NpgDevSqlConnection"];
 }
 
 if (builder.Environment.IsStaging())
@@ -49,6 +53,7 @@ if (builder.Environment.IsStaging())
     builder.Services.AddDbContext<PgContext>(options =>
             options.UseNpgsql(configuration["ConnectionStrings:NpgTestSqlConnection"]),
         ServiceLifetime.Transient);
+    connection = configuration["ConnectionStrings:NpgTestSqlConnection"];
 }
 
 if (builder.Environment.IsProduction())
@@ -56,7 +61,10 @@ if (builder.Environment.IsProduction())
     builder.Services.AddDbContext<PgContext>(options =>
             options.UseNpgsql(configuration["ConnectionStrings:NpgSqlConnection"]),
         ServiceLifetime.Transient);
+    connection = configuration["ConnectionStrings:NpgSqlConnection"];
 }
+
+// builder.Services.AddTransient<IConnectionFactory>(_ => new NpgSqlConnectionFactory(connection));
 
 builder.Services.AddSwaggerGen(c =>
 {
@@ -119,11 +127,74 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory())
-    .ConfigureContainer<ContainerBuilder>(AutoFac.Init);
+// builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory())
+//     .ConfigureContainer<ContainerBuilder>(AutoFac.Init);
+// builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory())
+//     .ConfigureContainer<ContainerBuilder>(b =>
+//     {
+//         // b.RegisterModule(new RepositoriesModule());
+//         // b.RegisterModule(new ServicesModule());
+//         // b.RegisterModule(new CallCenterModule());
+//         // b.RegisterModule(new ProcessingModule());
+//         // b.RegisterModule(new AccessModule());
+//         // b.RegisterModule(new MetricsModule());
+//         // b.RegisterModule(new FinderModule());
+//         // b.RegisterModule(new IntegrationModule());
+//         // b.RegisterModule(new MessagingModule());
+//         // b.RegisterModule(new NotificationsModule());
+//         // b.RegisterModule(new RedisModule());
+//         // b.RegisterModule(new BaseModule());
+//         
+//         RepositoriesModule.InitModules(b);
+//         ServicesModule.InitModules(b);
+//         CallCenterModule.InitModules(b);
+//         ProcessingModule.InitModules(b);
+//         AccessModule.InitModules(b);
+//         MetricsModule.InitModules(b);
+//         FinderModule.InitModules(b);
+//         IntegrationModule.InitModules(b);
+//         MessagingModule.InitModules(b);
+//         NotificationsModule.InitModules(b);
+//         RedisModule.InitModules(b);
+//         BaseModule.InitModules(b);
+//     });
 
-// Нужно для типа timestamp в Postgres.
-AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory())
+    .ConfigureContainer<ContainerBuilder>(b =>
+    {
+        // b.RegisterModule(new RepositoriesModule());
+        // b.RegisterModule(new ServicesModule());
+        // b.RegisterModule(new CallCenterModule());
+        // b.RegisterModule(new ProcessingModule());
+        // b.RegisterModule(new AccessModule());
+        // b.RegisterModule(new MetricsModule());
+        // b.RegisterModule(new FinderModule());
+        // b.RegisterModule(new IntegrationModule());
+        // b.RegisterModule(new MessagingModule());
+        // b.RegisterModule(new NotificationsModule());
+        // b.RegisterModule(new RedisModule());
+        // b.RegisterModule(new BaseModule());
+
+        // RepositoriesModule.InitModules(b);
+        // ServicesModule.InitModules(b);
+        // CallCenterModule.InitModules(b);
+        // ProcessingModule.InitModules(b);
+        // AccessModule.InitModules(b);
+        // MetricsModule.InitModules(b);
+        // FinderModule.InitModules(b);
+        // IntegrationModule.InitModules(b);
+        // MessagingModule.InitModules(b);
+        // NotificationsModule.InitModules(b);
+        // RedisModule.InitModules(b);
+        // BaseModule.InitModules(b);
+
+        AutoFac.Init(b);
+        
+        b.RegisterType<NpgSqlConnectionFactory>()
+            .As<IConnectionFactory>()
+            .WithParameter("connectionString", connection)
+            .InstancePerLifetimeScope();
+    });
 
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 

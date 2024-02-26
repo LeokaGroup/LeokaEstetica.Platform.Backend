@@ -9,6 +9,7 @@ using LeokaEstetica.Platform.Models.Dto.Output.Commerce.PayMaster;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce.YandexKassa;
 using LeokaEstetica.Platform.Models.Dto.Output.Communication;
 using LeokaEstetica.Platform.Models.Dto.Output.Configs;
+using LeokaEstetica.Platform.Models.Dto.Output.Document;
 using LeokaEstetica.Platform.Models.Dto.Output.FareRule;
 using LeokaEstetica.Platform.Models.Dto.Output.Header;
 using LeokaEstetica.Platform.Models.Dto.Output.Landing;
@@ -34,6 +35,7 @@ using LeokaEstetica.Platform.Models.Entities.Commerce;
 using LeokaEstetica.Platform.Models.Entities.Common;
 using LeokaEstetica.Platform.Models.Entities.Communication;
 using LeokaEstetica.Platform.Models.Entities.Configs;
+using LeokaEstetica.Platform.Models.Entities.Document;
 using LeokaEstetica.Platform.Models.Entities.FareRule;
 using LeokaEstetica.Platform.Models.Entities.Landing;
 using LeokaEstetica.Platform.Models.Entities.Moderation;
@@ -214,13 +216,23 @@ public class MappingProfile : Profile
         
         CreateMap<ProjectManagmentHeaderEntity, ProjectManagmentHeaderOutput>();
         CreateMap<ProjectTaskEntity, ProjectManagmentTaskOutput>();
+        CreateMap<ProjectTaskExtendedEntity, ProjectManagmentTaskOutput>();
 
         CreateMap<ProjectManagmentTaskTemplateEntity, ProjectManagmentTaskTemplateOutput>();
         CreateMap<ProjectManagmentTaskStatusTemplateEntity, ProjectManagmentTaskStatusTemplateOutput>();
         CreateMap<ProjectManagmentTaskTemplateEntityResult, ProjectManagmentTaskTemplateResult>();
         CreateMap<TaskPriorityEntity, TaskPriorityOutput>();
         CreateMap<TaskTypeEntity, TaskTypeOutput>();
-        CreateMap<TaskTagEntity, TaskTagOutput>();
+        CreateMap<ProjectTagEntity, ProjectTagOutput>();
+        CreateMap<ProjectManagmentTaskStatusTemplateEntity, TaskStatusOutput>();
+        
+        CreateMap<ProfileInfoEntity, TaskPeopleOutput>()
+            .ForMember(p => p.SecondName, p => p.MapFrom(src => src.Patronymic));
+        
+        CreateMap<ProjectTaskDocumentEntity, ProjectTaskFileOutput>();
+        
+        CreateMap<ProjectTaskCommentEntity, TaskCommentOutput>();
+        CreateMap<ProjectTaskCommentExtendedEntity, TaskCommentOutput>();
     }
     
     /// <summary>

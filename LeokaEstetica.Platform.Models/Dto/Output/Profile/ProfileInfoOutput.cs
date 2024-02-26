@@ -103,4 +103,9 @@ public class ProfileInfoOutput : ResumeRemarkResult, IFrontError
     /// Признак изменения почты пользователя. Нужно для повторного создания токена и релогина в системе.
     /// </summary>
     public bool IsEmailChanged { get; set; }
+
+    /// <summary>
+    /// Признак незаполненной анкеты.
+    /// </summary>
+    public bool IsEmptyProfile { get; set; }
 }

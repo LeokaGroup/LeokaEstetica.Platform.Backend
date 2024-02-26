@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace LeokaEstetica.Platform.Models.Mappings.Template;
 
+// TODO: Проверить, похоже маппинг не правильно сделан многие-многие. Пока не через EF используем эту связь и выглядит не критично, но надо отрефачить и написать корректно многие-многие.
 public partial class ProjectManagmentTaskTemplateConfiguration : IEntityTypeConfiguration<ProjectManagmentTaskTemplateEntity>
 {
     public void Configure(EntityTypeBuilder<ProjectManagmentTaskTemplateEntity> entity)
@@ -37,24 +38,6 @@ public partial class ProjectManagmentTaskTemplateConfiguration : IEntityTypeConf
         entity.HasIndex(u => u.TemplateId)
             .HasDatabaseName("PK_ProjectManagmentTaskTemplates_TemplateId")
             .IsUnique();
-
-        // Для связей многие-ко-многим это обязательно.
-        entity.HasMany(c => c.ProjectManagmentTaskStatusTemplates)
-            .WithMany(s => s.ProjectManagmentTaskTemplates)
-            .UsingEntity<ProjectManagmentTaskStatusIntermediateTemplateEntity>(
-                j => j
-                    .HasOne(pt => pt.ProjectManagmentTaskStatusTemplate)
-                    .WithMany(t => t.ProjectManagmentTaskStatusIntermediateTemplates)
-                    .HasForeignKey(pt => pt.StatusId),
-                j => j
-                    .HasOne(pt => pt.ProjectManagmentTaskTemplate)
-                    .WithMany(p => p.ProjectManagmentTaskStatusIntermediateTemplates)
-                    .HasForeignKey(pt => pt.TemplateId),
-                j =>
-                {
-                    j.HasKey(t => new { t.TemplateId, t.StatusId });
-                    j.ToTable("ProjectManagmentTaskStatusIntermediateTemplates", "Templates");
-                });
 
         OnConfigurePartial(entity);
     }

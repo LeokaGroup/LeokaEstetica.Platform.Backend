@@ -318,10 +318,10 @@ internal sealed class UserRepository : IUserRepository
     /// </summary>
     /// <param name="userCode">Код пользователя.</param>
     /// <returns>Id пользователя.</returns>
-    public async Task<long> GetUserIdByCodeAsync(string userCode)
+    public async Task<long> GetUserIdByCodeAsync(Guid userCode)
     {
         var result = await _pgContext.Users
-            .Where(u => u.UserCode.Equals(userCode))
+            .Where(u => u.UserCode == userCode)
             .Select(u => u.UserId)
             .FirstOrDefaultAsync();
 
@@ -722,6 +722,27 @@ internal sealed class UserRepository : IUserRepository
                 UserId = u.UserId
             })
             .ToDictionaryAsync(k => k.UserId, v => v);
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод получает данные профиля пользователей по их Id.
+    /// </summary>
+    /// <param name="userIds">Id пользователей.</param>
+    /// <returns>Данные профиля пользователей.</returns>
+    public async Task<IEnumerable<ProfileInfoEntity>> GetProfileInfoByUserIdsAsync(IEnumerable<long> userIds)
+    {
+        var result = await _pgContext.ProfilesInfo
+            .Where(p => userIds.Contains(p.UserId))
+            .Select(p => new ProfileInfoEntity
+            {
+                UserId = p.UserId,
+                FirstName = p.FirstName,
+                LastName = p.LastName,
+                Patronymic = p.Patronymic
+            })
+            .ToListAsync();
 
         return result;
     }

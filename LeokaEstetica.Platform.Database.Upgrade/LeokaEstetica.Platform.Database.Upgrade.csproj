@@ -8,47 +8,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <EmbeddedResource Include="Scripts\001.Esta.DDL_Create_Trigger_Orders.sql" />
-        <EmbeddedResource Include="Scripts\002.Esta.DDL_Alter_Table_ModerationVacancies.sql" />
-        <EmbeddedResource Include="Scripts\003.Esta.DDL_Drop_FK_ProjectTeamMembers_2.sql" />
-        <EmbeddedResource Include="Scripts\004.Esta.DDL_Alter_ProjectTeamMembers.sql" />
-        <EmbeddedResource Include="Scripts\005.Esta.DDL_Alter_Refunds.sql" />
-        <EmbeddedResource Include="Scripts\006.Esta.DML_Insert_GlobalConfig.sql" />
-        <EmbeddedResource Include="Scripts\007.Esta.DDL_Alter_ProjectComments.sql" />
-        <EmbeddedResource Include="Scripts\008.Esta.DDL_Drop_ProjectCommentsModeration.sql" />
-        <EmbeddedResource Include="Scripts\009.Esta.DDL_Alter_GlobalConfig.sql" />
-        <EmbeddedResource Include="Scripts\010.Esta.DDL_Alter_PlatformOffersItems.sql" />
-        <EmbeddedResource Include="Scripts\011.Esta.DML_Insert_Headers.sql" />
-        <EmbeddedResource Include="Scripts\012.Esta.DDL_Create_ViewStrategies.sql" />
-        <EmbeddedResource Include="Scripts\013.Esta.DML_Insert_ViewStrategies.sql" />
-        <EmbeddedResource Include="Scripts\014.Esta.DDL_Create_Header.sql" />
-        <EmbeddedResource Include="Scripts\015.Esta.DML_Insert_Header.sql" />
-        <EmbeddedResource Include="Scripts\016.Esta.DDL_Create_Schema_Templates.sql" />
-        <EmbeddedResource Include="Scripts\017.Esta.DDL_Create_Table_ProjectManagmentTaskTemplates.sql" />
-        <EmbeddedResource Include="Scripts\018.Esta.DDL_Create_Table_ProjectManagmentTaskStatusTemplates.sql" />
-        <EmbeddedResource Include="Scripts\019.Esta.DDL_Create_Table_ProjectManagmentUserTaskTemplates.sql" />
-        <EmbeddedResource Include="Scripts\020.Esta.DML_Insert_ProjectManagmentTaskTemplates.sql" />
-        <EmbeddedResource Include="Scripts\021.Esta.DML_Insert_ProjectManagmentTaskStatusTemplates.sql" />
-        <EmbeddedResource Include="Scripts\022.Esta.DDL_Delete_ForeignKeys_Templates.sql" />
-        <EmbeddedResource Include="Scripts\023.Esta.DDL_Delete_TemplateId_Templates.sql" />
-        <EmbeddedResource Include="Scripts\024.Esta.DDL_Create_ProjectManagmentTaskStatusIntermediateTemplates.sql" />
-        <EmbeddedResource Include="Scripts\025.Esta.DML_Insert_ProjectManagmentTaskStatusIntermediateTemplates.sql" />
-        <EmbeddedResource Include="Scripts\026.Esta.DDL_Alter_ProjectManagmentUserTaskTemplates.sql" />
-        <EmbeddedResource Include="Scripts\027.Esta.DDL_Create_UserTasks.sql" />
-        <EmbeddedResource Include="Scripts\028.Esta.DDL_Create_TaskStatuses.sql" />
-        <EmbeddedResource Include="Scripts\029.Esta.DDL_Create_TaskRelations.sql" />
-        <EmbeddedResource Include="Scripts\030.Esta.DDL_Create_TaskDependencies.sql" />
-        <EmbeddedResource Include="Scripts\031.Esta.DDL_Create_TaskResolutions.sql" />
-        <EmbeddedResource Include="Scripts\032.Esta.DDL_Create_TaskTypes.sql" />
-        <EmbeddedResource Include="Scripts\033.Esta.DDL_Create_TaskTags.sql" />
-        <EmbeddedResource Include="Scripts\034.Esta.DDL_Create_TaskComments.sql" />
-        <EmbeddedResource Include="Scripts\035.Esta.DDL_Create_TaskHistory.sql" />
-        <EmbeddedResource Include="Scripts\036.Esta.DDL_Create_HistoryActions.sql" />
-        <EmbeddedResource Include="Scripts\037.Esta.DDL_Alter_UserTasks.sql" />
-        <EmbeddedResource Include="Scripts\038.Esta.DDL_Alter_TaskHistory.sql" />
-        <EmbeddedResource Include="Scripts\039.Esta.DDL_Alter_ProjectTasks.sql" />
-        <EmbeddedResource Include="Scripts\040.Esta.DDL_Alter_ProjectManagmentTaskStatusTemplates.sql" />
-        <EmbeddedResource Include="Scripts\041.Esta.DDL_Alter_Create_Index_ProjectTasks.sql" />
+        <EmbeddedResource Include="Scripts\*.sql" />
     </ItemGroup>
 
     <ItemGroup>

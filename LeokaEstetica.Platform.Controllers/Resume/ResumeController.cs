@@ -71,6 +71,14 @@ public class ResumeController : BaseController
     [ProducesResponseType(404)]
     public async Task<ResumeResultOutput> GetProfileInfosAsync()
     {
+        // TODO: Закомментил ,так как у нас идет 2 вызова на получение анкет. Это надо рефачить.
+        // TODO: Сначала идет запрос на этот ендпоинт, затем на пагинацию.
+        // TODO: Этот ендпоинт приносит лишь 1 анкету, что не имеет смысла.
+        // TODO: Потому что ендпоинт пагинации анкет приносит все остальные включая те записи, что на этом ендпоинте.
+        // TODO: В митоге надо уйти скорее всего от 2 ендпоинтов и получать единым вызовом анкеты.
+        // TODO: Также надо фильтровать сначала по приоритету тарифа, затем по дате создания анкеты.
+        // TODO: А то сейчас в конце новые анкеты.
+        return new ResumeResultOutput() { CatalogResumes = new List<ResumeOutput>() };
         var result = await _resumeService.GetProfileInfosAsync();
 
         return result;
@@ -102,6 +110,8 @@ public class ResumeController : BaseController
     }
     
     /// <summary>
+    /// TODO: Есть лишняя логика в GetProfileInfosAsync по отображению анкет.
+    /// TODO: Смотреть там todo и отрефачить.
     /// Метод пагинации резюме.
     /// </summary>
     /// <param name="page">Номер страницы.</param>

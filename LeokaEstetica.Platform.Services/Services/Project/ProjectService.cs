@@ -6,7 +6,6 @@ using LeokaEstetica.Platform.Access.Abstractions.User;
 using LeokaEstetica.Platform.Access.Consts;
 using LeokaEstetica.Platform.Access.Enums;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
-using LeokaEstetica.Platform.Base.Abstractions.Services.Pachca;
 using LeokaEstetica.Platform.Core.Constants;
 using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Core.Exceptions;
@@ -38,10 +37,12 @@ using LeokaEstetica.Platform.Services.Strategies.Project.Team;
 using LeokaEstetica.Platform.Base.Extensions.HtmlExtensions;
 using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Project;
+using LeokaEstetica.Platform.Integrations.Abstractions.Pachca;
 using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Project;
 using LeokaEstetica.Platform.Models.Entities.Moderation;
 using LeokaEstetica.Platform.Services.Helpers;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 
 [assembly: InternalsVisibleTo("LeokaEstetica.Platform.Tests")]
 
@@ -354,6 +355,12 @@ internal sealed class ProjectService : IProjectService
             foreach (var prj in result.UserProjects)
             {
                 prj.ProjectDetails = ClearHtmlBuilder.Clear(prj.ProjectDetails);
+
+                // Если описание слишком большое, то урезаем для умещения в таблице проектов пользователя на UI.
+                if (prj.ProjectDetails.Length > 40)
+                {
+                    prj.ProjectDetails = string.Concat(prj.ProjectDetails.Substring(0, 40), "...");
+                }
             }
 
             return result;
@@ -608,6 +615,16 @@ internal sealed class ProjectService : IProjectService
                 throw ex;
             }
 
+            var token = createProjectVacancyInput.Token;
+
+            if (string.IsNullOrEmpty(token))
+            {
+                var ex = new ArgumentException(
+                    "Невалидный токен при создании вакансии проекта. " +
+                    $"Данные вакансии проекта был {JsonConvert.SerializeObject(createProjectVacancyInput)}");
+                throw ex;
+            }
+
             // Создаем вакансию.
             var createdVacancy = await _vacancyService.CreateVacancyAsync(new VacancyInput
             {
@@ -617,12 +634,13 @@ internal sealed class ProjectService : IProjectService
                 Employment = createProjectVacancyInput.Employment,
                 Payment = createProjectVacancyInput.Payment,
                 Account = createProjectVacancyInput.Account,
-                ProjectId = createProjectVacancyInput.ProjectId
+                ProjectId = createProjectVacancyInput.ProjectId,
+                Token = token
             });
 
             // Автоматически привязываем вакансию к проекту.
             await AttachProjectVacancyAsync(createProjectVacancyInput.ProjectId, createdVacancy.VacancyId,
-                createProjectVacancyInput.Account, createProjectVacancyInput.Token);
+                createProjectVacancyInput.Account, token);
 
             return createdVacancy;
         }

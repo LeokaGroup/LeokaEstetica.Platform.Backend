@@ -1,3 +1,4 @@
+using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.User;
 
 namespace LeokaEstetica.Platform.Services.Abstractions.User;
@@ -76,4 +77,11 @@ public interface IUserService
     /// </summary>
     /// <returns>Данные с ссылками для аутентификации через провайдеров.</returns>
     Task<AuthProviderConfigOutput> GetAuthProviderConfigAsync();
+    
+    /// <summary>
+    /// Метод записывает коды пользователей.
+    /// </summary>
+    /// <param name="profileInfos">Список анкет пользователей.</param>
+    /// <returns>Результирующий список.</returns>
+    Task<IEnumerable<TaskPeopleOutput>> SetUserCodesAsync(List<TaskPeopleOutput> profileInfos);
 }

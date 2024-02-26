@@ -3,9 +3,10 @@ using AutoMapper;
 using LeokaEstetica.Platform.Access.Services.AvailableLimits;
 using LeokaEstetica.Platform.Access.Services.Moderation;
 using LeokaEstetica.Platform.Access.Services.User;
+using LeokaEstetica.Platform.Base.Factors;
 using LeokaEstetica.Platform.Base.Repositories.Chat;
 using LeokaEstetica.Platform.Base.Repositories.User;
-using LeokaEstetica.Platform.Base.Services.Pachca;
+using LeokaEstetica.Platform.Base.Services.Connection;
 using LeokaEstetica.Platform.CallCenter.Services.Project;
 using LeokaEstetica.Platform.CallCenter.Services.Resume;
 using LeokaEstetica.Platform.CallCenter.Services.Ticket;
@@ -33,12 +34,16 @@ using LeokaEstetica.Platform.Database.Repositories.Project;
 using LeokaEstetica.Platform.Database.Repositories.ProjectManagment;
 using LeokaEstetica.Platform.Database.Repositories.Resume;
 using LeokaEstetica.Platform.Database.Repositories.Subscription;
+using LeokaEstetica.Platform.Database.Repositories.Templates;
 using LeokaEstetica.Platform.Database.Repositories.TIcket;
 using LeokaEstetica.Platform.Database.Repositories.Vacancy;
 using LeokaEstetica.Platform.Diagnostics.Services.Metrics;
 using LeokaEstetica.Platform.Finder.Services.Project;
 using LeokaEstetica.Platform.Finder.Services.Resume;
 using LeokaEstetica.Platform.Finder.Services.Vacancy;
+using LeokaEstetica.Platform.Integrations.Abstractions.Reverso;
+using LeokaEstetica.Platform.Integrations.Services.Pachca;
+using LeokaEstetica.Platform.Integrations.Services.Reverso;
 using LeokaEstetica.Platform.Integrations.Services.Telegram;
 using LeokaEstetica.Platform.Messaging.Services.Chat;
 using LeokaEstetica.Platform.Messaging.Services.Project;
@@ -76,7 +81,8 @@ namespace LeokaEstetica.Platform.Tests;
 internal class BaseServiceTest
 {
     private IConfiguration AppConfiguration { get; }
-    private string PostgreConfigString { get; set; }
+    private string PostgreConfigString { get; }
+
     protected readonly UserService UserService;
     protected readonly ProfileService ProfileService;
     protected readonly ProjectService ProjectService;
@@ -114,6 +120,7 @@ internal class BaseServiceTest
     protected readonly ChatRepository ChatRepository;
     protected readonly PressService PressService;
     protected readonly ProjectManagmentService ProjectManagmentService;
+    protected readonly ReversoService ReversoService;
 
     protected BaseServiceTest()
     {
@@ -134,6 +141,8 @@ internal class BaseServiceTest
         var pgContext = new PgContext(optionsBuilder.Options);
 
         PgContext = pgContext;
+        var npgSqlConnectionFactory = new NpgSqlConnectionFactory(PostgreConfigString);
+        var connectionProvider = new ConnectionProvider(npgSqlConnectionFactory);
         
         var optionsForCache = new OptionsWrapper<MemoryDistributedCacheOptions>(new MemoryDistributedCacheOptions());
         var distributedCache = new MemoryDistributedCache(optionsForCache);
@@ -148,7 +157,7 @@ internal class BaseServiceTest
         FareRuleRepository = new FareRuleRepository(pgContext, AppConfiguration);
         
         var availableLimitsRepository = new AvailableLimitsRepository(pgContext);
-        var globalConfigRepository = new GlobalConfigRepository(pgContext, null, AppConfiguration);
+        var globalConfigRepository = new GlobalConfigRepository(pgContext, null, AppConfiguration, connectionProvider);
         var pachcaService = new PachcaService(AppConfiguration, null);
 
         UserService = new UserService(null, userRepository, mapper, null, pgContext, profileRepository,
@@ -260,8 +269,14 @@ internal class BaseServiceTest
         var pressRepository = new PressRepository(pgContext);
         PressService = new PressService(pressRepository, null);
 
-        var projectManagmentRepository = new ProjectManagmentRepository(pgContext);
+        var transactionScopeFactory = new TransactionScopeFactory();
+
+        var projectManagmentRepository = new ProjectManagmentRepository(connectionProvider);
+        var projectManagmentTemplateRepository = new ProjectManagmentTemplateRepository(connectionProvider);
+        var projectSettingsConfigRepository = new ProjectSettingsConfigRepository(pgContext);
+        ReversoService = new ReversoService(null);
         ProjectManagmentService = new ProjectManagmentService(null, projectManagmentRepository, mapper, userRepository,
-            projectRepository, pachcaService);
+            projectRepository, pachcaService, projectManagmentTemplateRepository, transactionScopeFactory,
+            projectSettingsConfigRepository, new Lazy<IReversoService>(ReversoService), null);
     }
 }

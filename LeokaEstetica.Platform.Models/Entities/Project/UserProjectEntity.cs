@@ -1,5 +1,4 @@
 using LeokaEstetica.Platform.Models.Entities.Moderation;
-using LeokaEstetica.Platform.Models.Entities.ProjectManagment;
 
 namespace LeokaEstetica.Platform.Models.Entities.Project;
 
@@ -105,7 +104,17 @@ public class UserProjectEntity
     public ICollection<VacancyRemarkEntity> VacancyRemarks { get; set; }
 
     /// <summary>
-    /// FK на задачу.
+    /// Id шаблона, если выбран был.
     /// </summary>
-    // public ProjectTaskEntity ProjectTask { get; set; }
+    public int? TemplateId { get; set; }
+
+    /// <summary>
+    /// Название проекта для модуля УП (управление проектами).
+    /// </summary>
+    public string ProjectManagementName { get; set; }
+
+    /// <summary>
+    /// Префикс названия проекта для модуля УП (управление проектами).
+    /// </summary>
+    public string ProjectManagementNamePrefix { get; set; }
 }

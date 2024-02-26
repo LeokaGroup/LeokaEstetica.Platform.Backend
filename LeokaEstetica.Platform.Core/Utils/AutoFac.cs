@@ -35,7 +35,8 @@ public static class AutoFac
         "LeokaEstetica.Platform.Finder",
         "LeokaEstetica.Platform.Processing",
         "LeokaEstetica.Platform.Diagnostics",
-        "LeokaEstetica.Platform.Integrations"
+        "LeokaEstetica.Platform.Integrations",
+        "LeokaEstetica.Platform.ProjectManagment.Documents"
     };
 
     private static readonly List<Assembly> _assemblies = new();

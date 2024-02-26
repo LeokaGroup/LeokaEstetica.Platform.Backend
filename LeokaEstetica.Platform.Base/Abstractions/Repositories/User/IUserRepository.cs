@@ -126,7 +126,7 @@ public interface IUserRepository
     /// </summary>
     /// <param name="userCode">Код пользователя.</param>
     /// <returns>Id пользователя.</returns>
-    Task<long> GetUserIdByCodeAsync(string userCode);
+    Task<long> GetUserIdByCodeAsync(Guid userCode);
     
     /// <summary>
     /// Метод находит Id пользователя по его Email.
@@ -264,4 +264,11 @@ public interface IUserRepository
     /// <param name="watcherIds">Id наблюдателей задач.</param>
     /// <returns>Словарь с наблюдателями задач.</returns>
     Task<IDictionary<long, UserInfoOutput>> GetWatcherNamesByWatcherIdsAsync(IEnumerable<long> watcherIds);
+
+    /// <summary>
+    /// Метод получает данные профиля пользователей по их Id.
+    /// </summary>
+    /// <param name="userIds">Id пользователей.</param>
+    /// <returns>Данные профиля пользователей.</returns>
+    Task<IEnumerable<ProfileInfoEntity>> GetProfileInfoByUserIdsAsync(IEnumerable<long> userIds);
 }

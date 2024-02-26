@@ -52,16 +52,18 @@ public interface IProfileService
     /// <summary>
     /// Метод получает выбранные пользователем навыки.
     /// </summary>
+    /// <param name="userCode">Код пользователя.</param>
     /// <param name="account">Аккаунт пользователя.</param>
     /// <returns>Список навыков.</returns>
-    Task<List<SkillOutput>> SelectedProfileUserSkillsAsync(string account);
+    Task<List<SkillOutput>> SelectedProfileUserSkillsAsync(Guid? userCode, string account);
     
     /// <summary>
     /// Метод получает выбранные пользователем цели.
     /// </summary>
+    /// <param name="userCode">Код пользователя.</param>
     /// <param name="account">Аккаунт пользователя.</param>
     /// <returns>Список целей.</returns>
-    Task<List<IntentOutput>> SelectedProfileUserIntentsAsync(string account);
+    Task<List<IntentOutput>> SelectedProfileUserIntentsAsync(Guid? userCode, string account);
     
     /// <summary>
     /// Метод получает данные профиля.

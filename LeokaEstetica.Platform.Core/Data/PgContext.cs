@@ -495,6 +495,9 @@ public class PgContext : DbContext
     /// </summary>
     public DbSet<ProjectManagmentUserTaskTemplateEntity> ProjectManagmentUserTaskTemplates { get; set; }
 
+    /// <summary>
+    /// Таблица статусов многие-многие.
+    /// </summary>
     public DbSet<ProjectManagmentTaskStatusIntermediateTemplateEntity> ProjectManagmentTaskStatusIntermediateTemplates
     {
         get;
@@ -505,11 +508,6 @@ public class PgContext : DbContext
     /// Таблица задач проекта.
     /// </summary>
     public DbSet<ProjectTaskEntity> ProjectTasks { get; set; }
-
-    /// <summary>
-    /// Таблица статусов задач.
-    /// </summary>
-    public DbSet<TaskStatusEntity> TaskStatuses { get; set; }
 
     /// <summary>
     /// Таблица отношений между задачами.
@@ -532,11 +530,6 @@ public class PgContext : DbContext
     public DbSet<TaskTypeEntity> TaskTypes { get; set; }
 
     /// <summary>
-    /// Таблица тегов (меток) задач.
-    /// </summary>
-    public DbSet<TaskTagEntity> TaskTags { get; set; }
-
-    /// <summary>
     /// Таблица комментариев к задачам.
     /// </summary>
     public DbSet<TaskCommentEntity> TaskComments { get; set; }
@@ -555,4 +548,33 @@ public class PgContext : DbContext
     /// Таблица приоритетов.
     /// </summary>
     public DbSet<TaskPriorityEntity> TaskPriorities { get; set; }
+
+    /// <summary>
+    /// Таблица настроек рабочего пространства проектов.
+    /// </summary>
+    public DbSet<ConfigSpaceSettingEntity> ConfigSpaceSettings { get; set; }
+
+    /// <summary>
+    /// Таблица кастомных статусов шаблонов пользователя.
+    /// </summary>
+    public DbSet<ProjectManagementUserStatuseTemplateEntity> ProjectManagementUserStatuseTemplates { get; set; }
+
+    /// <summary>
+    /// Таблица переходов статусов шаблонов.
+    /// </summary>
+    public DbSet<ProjectManagementTransitionTemplateEntity> ProjectManagementTransitionTemplates { get; set; }
+
+    /// <summary>
+    /// Таблица переходов статусов шаблонов пользователя.
+    /// </summary>
+    public DbSet<ProjectManagementUserTransitionTemplateEntity> ProjectManagementUserTransitionTemplates { get; set; }
+    
+    /// <summary>
+    /// Таблица переходов многие-многие.
+    /// </summary>
+    public DbSet<ProjectManagementTransitionIntermediateTemplateEntity> ProjectManagementTransitionIntermediateTemplates
+    {
+        get;
+        set;
+    }
 }

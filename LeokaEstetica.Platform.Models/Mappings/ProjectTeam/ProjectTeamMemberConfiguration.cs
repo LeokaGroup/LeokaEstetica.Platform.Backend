@@ -22,7 +22,7 @@ public partial class ProjectTeamMemberConfiguration : IEntityTypeConfiguration<P
         
         entity.Property(e => e.Joined)
             .HasColumnName("Joined")
-            .HasColumnType("timestamp")
+            .HasColumnType("timestamp with time zone")
             .IsRequired();
 
         entity.HasOne(p => p.ProjectTeam)
