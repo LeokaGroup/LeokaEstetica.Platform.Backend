@@ -337,7 +337,7 @@ public interface IProjectManagmentRepository
     /// </summary>
     /// <param name="strategySysName">Системное название стратегии.</param>
     /// <param name="projectId">Id проекта.</param>
-    /// <param name="account">Id пользователя.</param>
+    /// <param name="userId">Id пользователя.</param>
     Task FixationProjectViewStrategyAsync(string strategySysName, long projectId, long userId);
 
     /// <summary>
@@ -346,5 +346,6 @@ public interface IProjectManagmentRepository
     /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
     /// <param name="projectId">Id проекта.</param>
     /// <param name="comment">Комментарий задачи.</param>
-    Task CreateTaskCommentAsync(string projectTaskId, long projectId, string comment);
+    /// <param name="userId">Id пользователя.</param>
+    Task CreateTaskCommentAsync(long projectTaskId, long projectId, string comment, long userId);
 }

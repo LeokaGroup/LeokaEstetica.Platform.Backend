@@ -1425,5 +1425,8 @@ public class ProjectManagmentController : BaseController
             
             throw ex;
         }
+
+        await _projectManagmentService.CreateTaskCommentAsync(taskCommentInput.ProjectTaskId,
+            taskCommentInput.ProjectId, taskCommentInput.Comment, GetUserName());
     }
 }
