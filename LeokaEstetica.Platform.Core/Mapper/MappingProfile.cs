@@ -232,6 +232,7 @@ public class MappingProfile : Profile
         CreateMap<ProjectTaskDocumentEntity, ProjectTaskFileOutput>();
         
         CreateMap<ProjectTaskCommentEntity, TaskCommentOutput>();
+        CreateMap<ProjectTaskCommentExtendedEntity, TaskCommentOutput>();
     }
     
     /// <summary>

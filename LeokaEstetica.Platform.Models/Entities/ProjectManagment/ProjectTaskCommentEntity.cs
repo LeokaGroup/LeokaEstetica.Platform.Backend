@@ -28,7 +28,7 @@ public class ProjectTaskCommentEntity
     /// <summary>
     /// Дата изменения комментария.
     /// </summary>
-    public DateTime UpdatedAt { get; set; }
+    public DateTime? UpdatedAt { get; set; }
 
     /// <summary>
     /// Id пользователя создавшего комментарий.
@@ -38,7 +38,7 @@ public class ProjectTaskCommentEntity
     /// <summary>
     /// Id пользователя изменившего комментарий.
     /// </summary>
-    public long UpdatedBy { get; set; }
+    public long? UpdatedBy { get; set; }
 
     /// <summary>
     /// Текст комментария.

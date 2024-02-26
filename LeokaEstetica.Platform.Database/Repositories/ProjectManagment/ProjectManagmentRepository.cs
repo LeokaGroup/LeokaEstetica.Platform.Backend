@@ -1227,6 +1227,39 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         await connection.ExecuteAsync(query, parameters);
     }
 
+    /// <inheritdoc />
+    public async Task<IEnumerable<ProjectTaskCommentExtendedEntity>> GetTaskCommentsAsync(long projectTaskId,
+        long projectId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@projectId", projectId);
+        parameters.Add("@projectTaskId", projectTaskId);
+        parameters.Add("@prefix", GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_PROJECT_NAME_PREFIX);
+
+        var query = "SELECT comment_id," +
+                    " project_id," +
+                    " project_task_id," +
+                    " created_at," +
+                    " updated_at," +
+                    " comment," +
+                    " created_by," +
+                    " updated_by, " +
+                    "(SELECT \"ParamValue\"" +
+                    "FROM \"Configs\".\"ProjectManagmentProjectSettings\" AS ps " +
+                    "WHERE ps.\"ProjectId\" = @projectId " +
+                    "AND ps.\"ParamKey\" = @prefix) AS TaskIdPrefix " +
+                    " FROM project_management.task_comments " +
+                    "WHERE project_id = @projectId " +
+                    "AND project_task_id = @projectTaskId " +
+                    "ORDER BY created_at DESC";
+
+        var result = await connection.QueryAsync<ProjectTaskCommentExtendedEntity>(query, parameters);
+
+        return result;
+    }
+
     #endregion
 
     #region Приватные методы.
