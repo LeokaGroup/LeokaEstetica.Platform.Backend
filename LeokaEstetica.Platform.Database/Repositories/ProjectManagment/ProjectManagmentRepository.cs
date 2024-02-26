@@ -1238,22 +1238,24 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         parameters.Add("@projectTaskId", projectTaskId);
         parameters.Add("@prefix", GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_PROJECT_NAME_PREFIX);
 
-        var query = "SELECT comment_id," +
-                    " project_id," +
-                    " project_task_id," +
-                    " created_at," +
-                    " updated_at," +
-                    " comment," +
-                    " created_by," +
-                    " updated_by, " +
+        var query = "SELECT tc.comment_id," +
+                    " tc.project_id," +
+                    " tc.project_task_id," +
+                    " tc.created_at," +
+                    " tc.updated_at," +
+                    " tc.comment," +
+                    " tc.created_by," +
+                    " tc.updated_by, " +
                     "(SELECT \"ParamValue\"" +
                     "FROM \"Configs\".\"ProjectManagmentProjectSettings\" AS ps " +
                     "WHERE ps.\"ProjectId\" = @projectId " +
-                    "AND ps.\"ParamKey\" = @prefix) AS TaskIdPrefix " +
-                    " FROM project_management.task_comments " +
-                    "WHERE project_id = @projectId " +
-                    "AND project_task_id = @projectTaskId " +
-                    "ORDER BY created_at DESC";
+                    "AND ps.\"ParamKey\" = @prefix) AS TaskIdPrefix, " +
+                    "pi.\"FirstName\" || ' ' || pi.\"LastName\" || ' ' || (pi.\"Patronymic\") AS UserName" +
+                    " FROM project_management.task_comments AS tc " +
+                    " INNER JOIN \"Profile\".\"ProfilesInfo\" AS pi ON tc.created_by = pi.\"UserId\"" +
+                    "WHERE tc.project_id = @projectId " +
+                    "AND tc.project_task_id = @projectTaskId " +
+                    "ORDER BY tc.created_at DESC";
 
         var result = await connection.QueryAsync<ProjectTaskCommentExtendedEntity>(query, parameters);
 

@@ -9,4 +9,9 @@ public class ProjectTaskCommentExtendedEntity : ProjectTaskCommentEntity
     /// Префикс номера задачи.
     /// </summary>
     public string TaskIdPrefix { get; set; }
+
+    /// <summary>
+    /// ФИО или почта или логин пользователя, который добавил или изменил комментарий.
+    /// </summary>
+    public string UserName { get; set; }
 }
