@@ -323,7 +323,7 @@ public interface IProjectManagmentService
     /// <param name="account">Аккаунт.</param>
     /// <param name="projectId">Id проекта.</param>
     /// <param name="taskId">Id задачи.</param>
-    Task UploadFilesAsync(IFormFileCollection files, string account, long projectId, long taskId);
+    Task UploadFilesAsync(IFormFileCollection files, string account, long projectId, string taskId);
 
     /// <summary>
     /// Метод скачивает файл с сервера по SFTP.
@@ -348,7 +348,7 @@ public interface IProjectManagmentService
     /// <param name="documentId">Id документа.</param>
     /// <param name="projectId">Id проекта.</param>
     /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
-    Task RemoveTaskFileAsync(long documentId, long projectId, long projectTaskId);
+    Task RemoveTaskFileAsync(long documentId, long projectId, string projectTaskId);
 
     /// <summary>
     /// Метод фиксирует выбранную пользователем стратегию представления.

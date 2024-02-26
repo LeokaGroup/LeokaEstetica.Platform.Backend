@@ -1363,7 +1363,7 @@ public class ProjectManagmentController : BaseController
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
     public async Task RemoveTaskFileAsync([FromQuery] long documentId, [FromQuery] long projectId,
-        [FromQuery] long projectTaskId)
+        [FromQuery] string projectTaskId)
     {
         var validator = await new RemoveTaskFileValidator().ValidateAsync((documentId, projectId, projectTaskId));
 

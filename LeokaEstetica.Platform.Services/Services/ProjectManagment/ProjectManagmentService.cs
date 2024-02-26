@@ -1963,7 +1963,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     }
 
     /// <inheritdoc />
-    public async Task UploadFilesAsync(IFormFileCollection files, string account, long projectId, long taskId)
+    public async Task UploadFilesAsync(IFormFileCollection files, string account, long projectId, string taskId)
     {
         try
         {
@@ -1974,11 +1974,11 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 var ex = new NotFoundUserIdByAccountException(account);
                 throw ex;
             }
-            
-            await _fileManagerService.Value.UploadFilesAsync(files, projectId, taskId);
+
+            await _fileManagerService.Value.UploadFilesAsync(files, projectId, taskId.GetProjectTaskIdFromPrefixLink());
 
             var projectTaskFiles = CreateProjectTaskDocumentsFactory.CreateProjectTaskDocuments(files, projectId,
-                taskId);
+                taskId.GetProjectTaskIdFromPrefixLink());
             
             // Сохраняем файлы задачи проекта.
             await _projectManagmentRepository.CreateProjectTaskDocumentsAsync(projectTaskFiles);
@@ -2051,11 +2051,12 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     }
 
     /// <inheritdoc />
-    public async Task RemoveTaskFileAsync(long documentId, long projectId, long projectTaskId)
+    public async Task RemoveTaskFileAsync(long documentId, long projectId, string projectTaskId)
     {
         try
         {
-            var task = await _projectManagmentRepository.GetTaskDetailsByTaskIdAsync(projectTaskId, projectId);
+            var task = await _projectManagmentRepository.GetTaskDetailsByTaskIdAsync(
+                projectTaskId.GetProjectTaskIdFromPrefixLink(), projectId);
             
             if (task is null)
             {

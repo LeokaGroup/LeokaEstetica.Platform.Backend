@@ -11,7 +11,7 @@ public class ProjectTaskFileInput
     public long ProjectId { get; set; }
 
     /// <summary>
-    /// Id задачи.
+    /// Id задачи (в рамках проекта).
     /// </summary>
-    public long TaskId { get; set; }
+    public string TaskId { get; set; }
 }
