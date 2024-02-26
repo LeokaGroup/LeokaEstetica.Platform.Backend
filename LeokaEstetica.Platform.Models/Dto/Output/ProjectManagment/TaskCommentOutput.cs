@@ -21,4 +21,10 @@ public class TaskCommentOutput : ProjectTaskCommentEntity
     /// ФИО или почта или логин пользователя, который добавил или изменил комментарий.
     /// </summary>
     public string UserName { get; set; }
+
+    /// <summary>
+    /// Признак активности комментария.
+    /// Это поле нужно фронту для управления состоянием редактирования. На бэке не используется.
+    /// </summary>
+    public bool IsActiveTaskComment { get; set; }
 }
