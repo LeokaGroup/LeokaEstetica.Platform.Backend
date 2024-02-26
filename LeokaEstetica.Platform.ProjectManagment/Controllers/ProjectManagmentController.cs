@@ -1490,4 +1490,31 @@ public class ProjectManagmentController : BaseController
         await _projectManagmentService.UpdateTaskCommentAsync(taskCommentInput.ProjectTaskId,
             taskCommentInput.ProjectId, taskCommentInput.CommentId, taskCommentInput.Comment, GetUserName());
     }
+
+    /// <summary>
+    /// Метод удаляет комментарий задачи.
+    /// </summary>
+    /// <param name="commentId">Id комментария для удаления.</param>
+    /// <exception cref="InvalidOperationException">Если входные данные невалидны.</exception>
+    [HttpDelete]
+    [Route("task-comment")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task DeleteTaskCommentAsync([FromQuery] long commentId)
+    {
+        if (commentId <= 0)
+        {
+            var ex = new InvalidOperationException($"Ошибка удаления комментария задачи. CommentId: {commentId}");
+            _logger.LogError(ex, ex.Message);
+            
+            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            
+            throw ex;
+        }
+
+        await _projectManagmentService.DeleteTaskCommentAsync(commentId, GetUserName());
+    }
 }

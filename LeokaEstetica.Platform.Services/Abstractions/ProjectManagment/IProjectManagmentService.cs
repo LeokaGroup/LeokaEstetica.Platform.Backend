@@ -384,4 +384,11 @@ public interface IProjectManagmentService
     /// <param name="comment">Новый комментарий.</param>
     /// <param name="account">Аккаунт.</param>
     Task UpdateTaskCommentAsync(string projectTaskId, long projectId, long commentId, string comment, string account);
+
+    /// <summary>
+    /// Метод удаляет комментарий задачи.
+    /// </summary>
+    /// <param name="commentId">Id комментария для удаления.</param>
+    /// <param name="account">Аккаунт.</param>
+    Task DeleteTaskCommentAsync(long commentId, string account);
 }
