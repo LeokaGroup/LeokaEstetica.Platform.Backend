@@ -289,6 +289,97 @@ internal sealed class FileManagerService : IFileManagerService
         }
     }
 
+    /// <inheritdoc />
+    public async Task<FileContentResult> DownloadFileUserAvatarAsync(string fileName, long projectId, long userId,
+        bool isNoPhoto)
+    {
+        var settings = await _globalConfigRepository.Value.GetFileManagerSettingsAsync();
+        
+        using var sftpClient = new SftpClient(settings.Host, settings.Port, settings.Login, settings.Password);
+        
+        try
+        {
+            sftpClient.Connect();
+            
+            if (!sftpClient.IsConnected)
+            {
+                throw new InvalidOperationException(
+                    "Sftp клиент не подключен. Невозможно скачать файл изображения аватара пользователя с сервера.");
+            }
+            
+            var sftpAvatarPath = string.Concat(settings.SftpUserAvatarPath, "/");
+
+            // Путь к изображениям аватара пользователей проекта.
+            var userProjectPath = string.Concat(sftpAvatarPath, projectId);
+            string userProjectAvatarPath;
+
+            // Если нужно подгрузить дефолтное изображение аватара.
+            if (isNoPhoto)
+            {
+                userProjectAvatarPath = userProjectPath + "/";
+            }
+
+            else
+            {
+                userProjectAvatarPath = userProjectPath + "/" + userId + "/";
+            }
+            
+            _logger.LogInformation($"Скачивается файл {0} ({1:N0} байт)", fileName);
+
+            var path = userProjectAvatarPath + Path.GetFileName(fileName);
+            var remotePath = Path.Combine(sftpClient.WorkingDirectory, path);
+            using var stream = new MemoryStream();
+
+            sftpClient.DownloadFile(remotePath, stream);
+            
+            // Сбрасываем позицию на 0, иначе у файла будет размер 0 байтов,
+            // если не сбросить указатель позиции в начало.
+            stream.Seek(0, SeekOrigin.Begin);
+            
+            _logger.LogInformation($"Файл {0} ({1:N0} байт) успешно скачан.", fileName);
+
+            var byteData = await GetByteArrayAsync(stream);
+            var result = new FileContentResult(byteData, "application/octet-stream");
+
+            return result;
+        }
+       
+        catch (Exception ex) when (ex is SshConnectionException or SocketException or ProxyException)
+        {
+            _logger.LogError(ex, "Ошибка подключения к серверу по Sftp.");
+            throw;
+        }
+
+        catch (SshAuthenticationException ex)
+        {
+            _logger.LogError(ex, "Ошибка аутентификации к серверу по Sftp.");
+            throw;
+        }
+
+        catch (SftpPermissionDeniedException ex)
+        {
+            _logger.LogError(ex, "Ошибка доступа к серверу по Sftp.");
+            throw;
+        }
+
+        catch (SshException ex)
+        {
+            _logger.LogError(ex, "Ошибка Sftp.");
+            throw;
+        }
+
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Ошибка при получении файла изображения аватара пользователя с сервера.");
+            throw;
+        }
+
+        finally
+        {
+            sftpClient.Disconnect();
+        }
+    }
+
     /// <summary>
     /// Метод получит массив байт из потока.
     /// </summary>

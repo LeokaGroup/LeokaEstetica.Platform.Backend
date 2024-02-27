@@ -34,4 +34,9 @@ public class FileManagerSettingsOutput
     /// Путь к файлам Wiki на сервере.
     /// </summary>
     public string SftpWikiPath { get; set; }
+
+    /// <summary>
+    /// Путь к файлам изображений аватара пользователей на сервере.
+    /// </summary>
+    public string SftpUserAvatarPath { get; set; }
 }

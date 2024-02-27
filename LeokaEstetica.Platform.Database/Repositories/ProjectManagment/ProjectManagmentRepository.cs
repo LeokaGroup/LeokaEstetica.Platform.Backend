@@ -1301,6 +1301,26 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         await connection.ExecuteAsync(query, parameters);
     }
 
+    /// <inheritdoc />
+    public async Task<long?> GetUserAvatarDocumentIdByUserIdAsync(long userId, long projectId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@userId", userId);
+        parameters.Add("@projectId", projectId);
+
+        var query = @"SELECT document_id 
+                      FROM documents.project_documents 
+                      WHERE project_id = @projectId 
+                        AND user_id = @userId 
+                        LIMIT 1";
+
+        var result = await connection.QuerySingleOrDefaultAsync<long?>(query, parameters);
+
+        return result;
+    }
+
     #endregion
 
     #region Приватные методы.

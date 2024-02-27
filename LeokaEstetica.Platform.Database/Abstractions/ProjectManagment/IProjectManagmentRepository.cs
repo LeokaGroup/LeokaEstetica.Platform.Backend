@@ -372,4 +372,12 @@ public interface IProjectManagmentRepository
     /// </summary>
     /// <param name="commentId">Id комментария для удаления.</param>
     Task DeleteTaskCommentAsync(long commentId);
+
+    /// <summary>
+    /// Метод получает Id изображения аватара пользователя проекта.
+    /// </summary>
+     /// <param name="userId">Id пользователя.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Id документа. Может вернуть null, тогда будет выбран файл о дефолту nophoto.</returns>
+    Task<long?> GetUserAvatarDocumentIdByUserIdAsync(long userId, long projectId);
 }

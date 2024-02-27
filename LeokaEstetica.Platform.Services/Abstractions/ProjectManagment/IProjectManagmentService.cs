@@ -391,4 +391,12 @@ public interface IProjectManagmentService
     /// <param name="commentId">Id комментария для удаления.</param>
     /// <param name="account">Аккаунт.</param>
     Task DeleteTaskCommentAsync(long commentId, string account);
+    
+    /// <summary>
+    /// Метод получает изображение аватара пользователя.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="account">Аккаунт.</param>
+    /// <returns>Данные файла.</returns>
+    Task<FileContentResult> DownloadFileUserAvatarAsync(long projectId, string account);
 }

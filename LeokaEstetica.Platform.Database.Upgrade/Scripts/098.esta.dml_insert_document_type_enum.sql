@@ -1,0 +1,1 @@
+ALTER TYPE documents.document_type_enum ADD VALUE 'project_user_avatar' AFTER 'wiki';

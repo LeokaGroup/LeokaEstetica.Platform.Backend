@@ -22,7 +22,7 @@ public interface IFileManagerService
     /// <param name="fileName">Имя файла.</param>
     /// <param name="projectId">Id проекта.</param>
     /// <param name="taskId">Id задачи.</param>
-    /// <returns>Поток стрима.</returns>
+    /// <returns>Данные файла.</returns>
     Task<FileContentResult> DownloadFileAsync(string fileName, long projectId, long taskId);
     
     /// <summary>
@@ -31,6 +31,15 @@ public interface IFileManagerService
     /// <param name="fileName">Имя файла.</param>
     /// <param name="projectId">Id проекта.</param>
     /// <param name="taskId">Id задачи.</param>
-    /// <returns>Поток стрима.</returns>
     Task RemoveFileAsync(string fileName, long projectId, long taskId);
+
+    /// <summary>
+    /// Метод получает изображение аватара пользователя.
+    /// </summary>
+    /// <param name="fileName">Имя файла.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="taskId">Id пользователя.</param>
+    /// <param name="isNoPhoto">Признак необходимости подгрузить дефолтное изображение..</param>
+    /// <returns>Данные файла.</returns>
+    Task<FileContentResult> DownloadFileUserAvatarAsync(string fileName, long projectId, long userId, bool isNoPhoto);
 }

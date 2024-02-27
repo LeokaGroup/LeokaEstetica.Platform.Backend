@@ -1314,7 +1314,7 @@ public class ProjectManagmentController : BaseController
     /// <returns>Файл задачи.</returns>
     [HttpGet]
     [Route("download-task-file")]
-    [ProducesResponseType(200)]
+    [ProducesResponseType(200, Type = typeof(FileContentResult))]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]

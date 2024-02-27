@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using System.Globalization;
 using System.Runtime.CompilerServices;
 using AutoMapper;
 using Dapper;
@@ -2206,6 +2205,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         }
     }
 
+    /// <inheritdoc />
     public async Task DeleteTaskCommentAsync(long commentId, string account)
     {
         try
@@ -2213,6 +2213,45 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             await _projectManagmentRepository.DeleteTaskCommentAsync(commentId);
             
             // TODO: Тут добавить запись активности пользователя по userId.
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task<FileContentResult> DownloadFileUserAvatarAsync(long projectId, string account)
+    {
+        try
+        {
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+
+            var documentId = await _projectManagmentRepository.GetUserAvatarDocumentIdByUserIdAsync(userId, projectId);
+
+            // Если у пользователя не был выбран аватар ранее, то подгрузим дефолтный nophoto.
+            if (!documentId.HasValue)
+            {
+                var noPhotoResult = await _fileManagerService.Value.DownloadFileUserAvatarAsync("nophoto.jpg",
+                    projectId, userId, true);
+
+                return noPhotoResult;
+            }
+
+            var documentName = await _projectManagmentRepository.GetDocumentNameByDocumentIdAsync(documentId.Value);
+
+            var result = await _fileManagerService.Value.DownloadFileUserAvatarAsync(documentName, projectId, userId,
+                false);
+
+            return result;
         }
         
         catch (Exception ex)

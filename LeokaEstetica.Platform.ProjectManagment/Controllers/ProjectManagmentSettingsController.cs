@@ -245,4 +245,34 @@ public class ProjectManagmentSettingsController : BaseController
         await _projectManagmentService.FixationProjectViewStrategyAsync(fixationStrategyInput.StrategySysName,
             fixationStrategyInput.ProjectId, GetUserName());
     }
+    
+    /// <summary>
+    /// Метод скачивает файл изображения аватара пользователя.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Файл изображения аватара пользователя.</returns>
+    [HttpGet]
+    [Route("download-user-avatar-file")]
+    [ProducesResponseType(200, Type = typeof(FileContentResult))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<FileContentResult> DownloadUserAvatarFileAsync([FromQuery] long projectId)
+    {
+        if (projectId <= 0)
+        {
+            var ex = new AggregateException("Ошибка валидации при скачивании файла изображения аватара пользователя. " +
+                                            $"ProjectId: {projectId}.");
+            _logger.LogError(ex, ex.Message);
+            
+            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            
+            throw ex;
+        }
+        
+        var result = await _projectManagmentService.DownloadFileUserAvatarAsync(projectId, GetUserName());
+
+        return result;
+    }
 }
