@@ -50,7 +50,7 @@ public class ProjectTaskEntity
     /// <summary>
     /// Дата обновления задачи.
     /// </summary>
-    public DateTime Updated { get; set; }
+    public DateTime? Updated { get; set; }
 
     /// <summary>
     /// Id проекта, к которому принадлежит задача.
@@ -91,21 +91,6 @@ public class ProjectTaskEntity
     /// Список зависимостей.
     /// </summary>
     public IEnumerable<TaskDependencyEntity> TaskDependencies { get; set; }
-
-    /// <summary>
-    /// FK на резолюцию задачи.
-    /// </summary>
-    // public TaskResolutionEntity TaskResolution { get; set; }
-
-    /// <summary>
-    /// FK на проект.
-    /// </summary>
-    // public UserProjectEntity UserProject { get; set; }
-
-    /// <summary>
-    /// FK на тип задачи.
-    /// </summary>
-    // public TaskTypeEntity TaskType { get; set; }
 
     /// <summary>
     /// Список комментариев задачи.

@@ -55,12 +55,12 @@ public class ProjectManagmentTaskOutput
     /// <summary>
     /// Дата создания задачи.
     /// </summary>
-    public DateTime Created { get; set; }
+    public string Created { get; set; }
     
     /// <summary>
     /// Дата обновление задачи.
     /// </summary>
-    public DateTime Updated { get; set; }
+    public string Updated { get; set; }
 
     /// <summary>
     /// Id задачи в рамках проекта.

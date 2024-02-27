@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using AutoMapper;
 using Dapper;
@@ -2373,7 +2374,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 
                     if (string.IsNullOrEmpty(taskStatusName))
                     {
-                        throw new InvalidOperationException("Не удалось получить TaskStatusName: {ts.TaskStatusId}.");
+                        throw new InvalidOperationException($"Не удалось получить TaskStatusName: {ts.TaskStatusId}.");
                     }
 
                     // Название статуса.
@@ -2428,7 +2429,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 var statusTasksCount = mapTasks.Count; // Всего задач у статуса.
                 var isAppended = false;
 
-                // Действия с задачами, если стратегий представления Scrum.
+                // Действия с задачами, если стратегия представления Scrum.
                 if (strategy.Equals("sm"))
                 {
                     if (mapTasks.Count > 10)
@@ -2523,7 +2524,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 ExecutorName = executors.TryGet(t.ExecutorId).FullName,
                 TaskName = t.Name,
                 TaskStatusName = statuseNames.Find(x => x.StatusId == t.TaskStatusId)?.StatusName,
-                LastUpdated = t.Updated.ToString("f"), // Например, 17 июля 2015 г. 17:04
+                LastUpdated = t.Updated?.ToString("f"), // Например, 17 июля 2015 г. 17:04
                 ProjectTaskId = t.ProjectTaskId,
                 PriorityId = t.PriorityId!.Value,
                 TaskId = t.TaskId,
