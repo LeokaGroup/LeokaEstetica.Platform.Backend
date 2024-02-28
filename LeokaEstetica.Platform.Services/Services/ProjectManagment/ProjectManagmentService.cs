@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using System.Globalization;
 using System.Runtime.CompilerServices;
 using AutoMapper;
 using Dapper;
@@ -616,7 +615,15 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             }
 
             var result = _mapper.Map<ProjectManagmentTaskOutput>(task);
-            result.ExecutorName = executors.TryGet(executors.First().Key).FullName;
+            
+            var executorName = executors.TryGet(executors.First().Key).FullName;
+            var userEmails = await _userRepository.GetUserEmailByUserIdsAsync(new List<long> { executorId });
+            var avatarFiles = await GetUserAvatarFilesAsync(projectId, userEmails);
+            result.Executor = new Executor
+            {
+                ExecutorName = executorName,
+                Avatar = avatarFiles.TryGet(executorId)
+            };
             result.AuthorName = authors.TryGet(authors.First().Key).FullName;
 
             var watcherIds = task.WatcherIds;
@@ -1978,11 +1985,12 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 
             await _fileManagerService.Value.UploadFilesAsync(files, projectId, taskId.GetProjectTaskIdFromPrefixLink());
 
-            var projectTaskFiles = CreateProjectTaskDocumentsFactory.CreateProjectTaskDocuments(files, projectId,
-                taskId.GetProjectTaskIdFromPrefixLink());
+            var projectTaskFiles = CreateProjectDocumentsFactory.CreateProjectDocuments(files, projectId,
+                taskId.GetProjectTaskIdFromPrefixLink(), userId);
             
             // Сохраняем файлы задачи проекта.
-            await _projectManagmentRepository.CreateProjectTaskDocumentsAsync(projectTaskFiles);
+            await _projectManagmentRepository.CreateProjectTaskDocumentsAsync(projectTaskFiles,
+                DocumentTypeEnum.ProjectTask);
 
             // TODO: Тут добавить запись активности пользователя по userId (писать кто добавил файл).
         }
@@ -2024,7 +2032,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<ProjectTaskDocumentEntity>> GetProjectTaskFilesAsync(long projectId,
+    public async Task<IEnumerable<ProjectDocumentEntity>> GetProjectTaskFilesAsync(long projectId,
         string projectTaskId)
     {
         try
@@ -2206,6 +2214,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         }
     }
 
+    /// <inheritdoc />
     public async Task DeleteTaskCommentAsync(long commentId, string account)
     {
         try
@@ -2213,6 +2222,149 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             await _projectManagmentRepository.DeleteTaskCommentAsync(commentId);
             
             // TODO: Тут добавить запись активности пользователя по userId.
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task<FileContentResult> GetUserAvatarFileAsync(long projectId, string account)
+    {
+        try
+        {
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+
+            var documentId = await _projectManagmentRepository.GetUserAvatarDocumentIdByUserIdAsync(userId, projectId);
+
+            // Если у пользователя не был выбран аватар ранее, то подгрузим дефолтный nophoto.
+            if (!documentId.HasValue)
+            {
+                var noPhotoResult = await _fileManagerService.Value.GetUserAvatarFileAsync("nophoto.jpg",
+                    projectId, userId, true);
+
+                return noPhotoResult;
+            }
+
+            var documentName = await _projectManagmentRepository.GetDocumentNameByDocumentIdAsync(documentId.Value);
+
+            var result = await _fileManagerService.Value.GetUserAvatarFileAsync(documentName, projectId, userId,
+                false);
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task<IDictionary<long, FileContentResult>> GetUserAvatarFilesAsync(long projectId,
+        IEnumerable<string> accounts)
+    {
+        try
+        {
+            var userIds = (await _userRepository.GetUserByEmailsAsync(accounts))?.AsList();
+
+            if (userIds is null || !userIds.Any())
+            {
+                var ex = new InvalidOperationException("Не удалось получить Id пользователей.");
+                throw ex;
+            }
+
+            var userDocuments = (await _projectManagmentRepository.GetUserAvatarDocumentIdByUserIdsAsync(userIds,
+                projectId))?.AsList();
+                
+            var result = new Dictionary<long, FileContentResult>();
+
+            // Если нету изображений вообще, то оставим только дефолтное для всех пользователей.
+            if (userDocuments is null)
+            {
+                var noPhoto = await _fileManagerService.Value.GetUserAvatarFileAsync("nophoto.jpg",
+                    projectId, null, true);
+                
+                result.Add(0, noPhoto);
+                
+                return result;
+            }
+
+            // Если есть пользователь, у которого нету аватара, то это уже причина подгрузить дефолтный аватар.
+            if (userDocuments.Any(x => x.UserId is null))
+            {
+                var noPhoto = await _fileManagerService.Value.GetUserAvatarFileAsync("nophoto.jpg",
+                    projectId, null, true);
+                
+                result.Add(0, noPhoto);
+            }
+
+            var userDocs = userDocuments.Where(x => x.UserId.HasValue && x.DocumentId.HasValue);
+            var documents = await _projectManagmentRepository.GetDocumentNameByDocumentIdsAsync(userDocs);
+
+            var files = await _fileManagerService.Value.GetUserAvatarFilesAsync(documents, projectId);
+
+            // Если файлов нету и если словарь не был наполнен дефолтным изображением, то вернем только дефолтный файл.
+            if (files.Count == 0 && result.Count == 0)
+            {
+                var noPhoto = await _fileManagerService.Value.GetUserAvatarFileAsync("nophoto.jpg",
+                    projectId, null, true);
+                
+                result.Add(0, noPhoto);
+                
+                return result;
+            }
+            
+            // Если файлов нету, но есть дефолтный файл, то вернем только его.
+            if (files.Count == 0 && result.Count > 0)
+            {
+                return result;
+            }
+            
+            // Изображения есть, возвращаем словарь с результатами.
+            return files;
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task UploadUserAvatarFileAsync(IFormFileCollection files, string account, long projectId)
+    {
+        try
+        {
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+            
+            await _fileManagerService.Value.UploadUserAvatarFileAsync(files, projectId, userId);
+
+            var userAvatarFile = CreateProjectDocumentsFactory.CreateProjectDocuments(files, projectId, null,
+                userId);
+            
+            // Сохраняем файлы проекта.
+            await _projectManagmentRepository.CreateProjectTaskDocumentsAsync(userAvatarFile,
+                DocumentTypeEnum.ProjectUserAvatar);
+            
+            // TODO: Тут добавить запись активности пользователя по userId (кто загрузил файл).
         }
         
         catch (Exception ex)
@@ -2353,6 +2505,9 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             // Добавляем задачи статуса, если есть что добавлять.
             if (mapTasks.Any())
             {
+                var userEmails = await _userRepository.GetUserEmailByUserIdsAsync(mapTasks.Select(x => x.ExecutorId));
+                var avatarFiles = await GetUserAvatarFilesAsync(projectId, userEmails);
+                
                 // Записываем названия исходя от Id полей.
                 foreach (var ts in mapTasks)
                 {
@@ -2367,9 +2522,14 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                                                             $" ExecutorId: {executorId}");
                     }
 
-                    // ФИО исполнителя задачи (если назначен).
-                    ts.ExecutorName = executors.TryGet(ts.ExecutorId)?.FullName;
-                    
+                    // Заполняем данные исполнителя задачи (если назначен).
+                    var executorName = executors.TryGet(ts.ExecutorId)?.FullName;
+                    ts.Executor = new Executor
+                    {
+                        ExecutorName = executorName,
+                        Avatar = avatarFiles.TryGet(ts.ExecutorId)
+                    };
+
                     var taskStatusName = statuseNames.Find(x => x.StatusId == ts.TaskStatusId)?.StatusName;
 
                     if (string.IsNullOrEmpty(taskStatusName))

@@ -3,12 +3,14 @@ using LeokaEstetica.Platform.Base;
 using LeokaEstetica.Platform.Base.Filters;
 using LeokaEstetica.Platform.Database.Abstractions.Template;
 using LeokaEstetica.Platform.Integrations.Abstractions.Pachca;
+using LeokaEstetica.Platform.Models.Dto.Input.Config;
 using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 using LeokaEstetica.Platform.ProjectManagment.ValidationModels;
 using LeokaEstetica.Platform.ProjectManagment.Validators;
 using LeokaEstetica.Platform.Services.Abstractions.ProjectManagment;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 
 namespace LeokaEstetica.Platform.ProjectManagment.Controllers;
 
@@ -244,5 +246,60 @@ public class ProjectManagmentSettingsController : BaseController
 
         await _projectManagmentService.FixationProjectViewStrategyAsync(fixationStrategyInput.StrategySysName,
             fixationStrategyInput.ProjectId, GetUserName());
+    }
+    
+    /// <summary>
+    /// Метод скачивает файл изображения аватара пользователя.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Файл изображения аватара пользователя.</returns>
+    [HttpGet]
+    [Route("user-avatar-file")]
+    [ProducesResponseType(200, Type = typeof(FileContentResult))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<FileContentResult> GetUserAvatarFileAsync([FromQuery] long projectId)
+    {
+        if (projectId <= 0)
+        {
+            var ex = new AggregateException("Ошибка валидации при скачивании файла изображения аватара пользователя. " +
+                                            $"ProjectId: {projectId}.");
+            _logger.LogError(ex, ex.Message);
+            
+            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            
+            throw ex;
+        }
+        
+        var result = await _projectManagmentService.GetUserAvatarFileAsync(projectId, GetUserName());
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод загружает новое изображение аватара пользователя.
+    /// </summary>
+    /// <param name="formCollection">Данные формы.</param>
+    [HttpPost]
+    [Route("user-avatar-file")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task UploadUserAvatarFileAsync([FromForm] IFormCollection formCollection)
+    {
+        if (!formCollection.Files.Any())
+        {
+            return;
+        }
+        
+        var uploadUserAvatarInput = JsonConvert.DeserializeObject<UploadUserAvatarInput>(
+            formCollection["uploadUserAvatarInput"]);
+
+        await _projectManagmentService.UploadUserAvatarFileAsync(formCollection.Files, GetUserName(),
+            uploadUserAvatarInput!.ProjectId);
     }
 }

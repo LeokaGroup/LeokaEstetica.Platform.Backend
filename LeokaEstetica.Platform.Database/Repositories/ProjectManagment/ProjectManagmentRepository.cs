@@ -1062,7 +1062,8 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
     }
 
     /// <inheritdoc />
-    public async Task CreateProjectTaskDocumentsAsync(IEnumerable<ProjectTaskDocumentEntity> documents)
+    public async Task CreateProjectTaskDocumentsAsync(IEnumerable<ProjectDocumentEntity> documents,
+        DocumentTypeEnum documentType)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
         var transaction = connection.BeginTransaction();
@@ -1074,11 +1075,10 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
             foreach (var d in documents)
             {
                 var tempParameters = new DynamicParameters();
-                tempParameters.Add("@document_type", new Enum(DocumentTypeEnum.ProjectTask));
+                tempParameters.Add("@document_type", new Enum(documentType));
                 tempParameters.Add("@document_name", d.DocumentName);
                 tempParameters.Add("@document_extension", Path.GetExtension(d.DocumentName));
                 tempParameters.Add("@created", DateTime.UtcNow);
-                tempParameters.Add("@updated", DateTime.UtcNow);
                 tempParameters.Add("@project_id", d.ProjectId);
                 tempParameters.Add("@task_id", d.TaskId);
 
@@ -1086,8 +1086,8 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
             }
 
             var query = @"INSERT INTO documents.project_documents (document_type, document_name, document_extension,
-                                         created, updated, project_id, task_id) 
-                      VALUES (@document_type, @document_name, @document_extension, @created, @updated, @project_id,
+                                         created, project_id, task_id) 
+                      VALUES (@document_type, @document_name, @document_extension, @created, @project_id,
                               @task_id)";
                               
             await connection.ExecuteAsync(query, parameters);
@@ -1103,7 +1103,7 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<ProjectTaskDocumentEntity>> GetProjectTaskFilesAsync(long projectId, long taskId)
+    public async Task<IEnumerable<ProjectDocumentEntity>> GetProjectTaskFilesAsync(long projectId, long taskId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
 
@@ -1116,7 +1116,7 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
                       WHERE project_id = @projectId 
                         AND task_id = @taskId";
 
-        var result = await connection.QueryAsync<ProjectTaskDocumentEntity>(query, parameters);
+        var result = await connection.QueryAsync<ProjectDocumentEntity>(query, parameters);
 
         return result;
     }
@@ -1134,6 +1134,28 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
                       WHERE document_id = @documentId";
 
         var result = await connection.QueryFirstOrDefaultAsync<string>(query, parameters);
+
+        return result;
+    }
+
+    /// <inheritdoc />
+    public async Task<IEnumerable<(long? UserId, string DocumentName)>> GetDocumentNameByDocumentIdsAsync(
+        IEnumerable<(long? UserId, long? DocumentId)> userDocs)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+        var docs = userDocs.AsList();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@documentIds", docs.Select(x => x.DocumentId).AsList());
+        parameters.Add("@userIds", docs.Select(x => x.UserId).AsList());
+
+        var query = @"SELECT user_id, document_name 
+                      FROM documents.project_documents 
+                      WHERE document_id = ANY(@documentIds) 
+                        AND user_id IS NOT NULL 
+                        AND user_id = ANY(@userIds)";
+
+        var result = await connection.QueryAsync<(long? UserId, string DocumentName)>(query, parameters);
 
         return result;
     }
@@ -1299,6 +1321,47 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
                       WHERE comment_id = @commentId";
                       
         await connection.ExecuteAsync(query, parameters);
+    }
+
+    /// <inheritdoc />
+    public async Task<long?> GetUserAvatarDocumentIdByUserIdAsync(long userId, long projectId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@userId", userId);
+        parameters.Add("@projectId", projectId);
+
+        var query = @"SELECT document_id 
+                      FROM documents.project_documents 
+                      WHERE project_id = @projectId 
+                        AND user_id = @userId 
+                        LIMIT 1";
+
+        var result = await connection.QuerySingleOrDefaultAsync<long?>(query, parameters);
+
+        return result;
+    }
+
+    /// <inheritdoc />
+    public async Task<IEnumerable<(long? UserId, long? DocumentId)>> GetUserAvatarDocumentIdByUserIdsAsync(
+        IEnumerable<long> userIds,
+        long projectId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@userIds", userIds.AsList());
+        parameters.Add("@projectId", projectId);
+
+        var query = @"SELECT user_id, document_id 
+                      FROM documents.project_documents 
+                      WHERE project_id = @projectId 
+                        AND user_id = ANY(@userIds)";
+
+        var result = await connection.QueryAsync<(long? UserId, long? DocumentId)>(query, parameters);
+
+        return result;
     }
 
     #endregion

@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Mvc;
+
 namespace LeokaEstetica.Platform.Models.Dto.Output.Template;
 
 /// <summary>
@@ -99,10 +101,9 @@ public class ProjectManagmentTaskOutput
     public int TaskTypeId { get; set; }
 
     /// <summary>
-    /// TODO: В будущем будет изменен на объект, содержащий фото и тд.
-    /// ФИО исполнителя задачи.
+    /// Данные исполнителя задачи.
     /// </summary>
-    public string ExecutorName { get; set; }
+    public Executor Executor { get; set; }
 
     /// <summary>
     /// Id исполнителя задачи.
@@ -133,4 +134,20 @@ public class ProjectManagmentTaskOutput
     /// Id задачи вместе с префиксом.
     /// </summary>
     public string FullTaskId => string.Concat(TaskIdPrefix + "-", TaskId);
+}
+
+/// <summary>
+/// Класс исполнителя задачи.
+/// </summary>
+public class Executor
+{
+    /// <summary>
+    /// ФИО исполнителя задачи.
+    /// </summary>
+    public string ExecutorName { get; set; }
+
+    /// <summary>
+    /// Файл аватара исполнителя.
+    /// </summary>
+    public FileContentResult Avatar { get; set; }
 }

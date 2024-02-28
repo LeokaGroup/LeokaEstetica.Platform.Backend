@@ -335,12 +335,12 @@ public interface IProjectManagmentService
     Task<FileContentResult> DownloadFileAsync(long documentId, long projectId, string projectTaskId);
 
     /// <summary>
-    /// Метод получает файлы задачи.
+    /// Метод получает файлы.
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
     /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
     /// <returns>Файлы задачи.</returns>
-    Task<IEnumerable<ProjectTaskDocumentEntity>> GetProjectTaskFilesAsync(long projectId, string projectTaskId);
+    Task<IEnumerable<ProjectDocumentEntity>> GetProjectTaskFilesAsync(long projectId, string projectTaskId);
 
     /// <summary>
     /// Метод удаляет файл задачи.
@@ -391,4 +391,28 @@ public interface IProjectManagmentService
     /// <param name="commentId">Id комментария для удаления.</param>
     /// <param name="account">Аккаунт.</param>
     Task DeleteTaskCommentAsync(long commentId, string account);
+    
+    /// <summary>
+    /// Метод получает изображение аватара пользователя.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="account">Аккаунт.</param>
+    /// <returns>Данные файла.</returns>
+    Task<FileContentResult> GetUserAvatarFileAsync(long projectId, string account);
+    
+    /// <summary>
+    /// Метод получает изображения аватара пользователей.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="accounts">Аккаунты пользователей.</param>
+    /// <returns>Словарь с файлами изображений аватара пользователей.</returns>
+    Task<IDictionary<long, FileContentResult>> GetUserAvatarFilesAsync(long projectId, IEnumerable<string> accounts);
+    
+    /// <summary>
+    /// Метод загружает файл изображения аватара пользователя по SFTP на сервер.
+    /// </summary>
+    /// <param name="files">Файлы для отправки.</param>
+    /// <param name="account">Аккаунт.</param>
+    /// <param name="projectId">Id проекта.</param>
+    Task UploadUserAvatarFileAsync(IFormFileCollection files, string account, long projectId);
 }

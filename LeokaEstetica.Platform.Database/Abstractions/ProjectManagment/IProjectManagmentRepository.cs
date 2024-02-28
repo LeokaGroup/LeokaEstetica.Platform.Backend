@@ -309,7 +309,8 @@ public interface IProjectManagmentRepository
     /// Документы уже загружены на сервер, теперь идет их создание в БД.
     /// </summary>
     /// <param name="documents">Список документов к созданию.</param>
-    Task CreateProjectTaskDocumentsAsync(IEnumerable<ProjectTaskDocumentEntity> documents);
+    /// <param name="documentType">Тип документа.</param>
+    Task CreateProjectTaskDocumentsAsync(IEnumerable<ProjectDocumentEntity> documents, DocumentTypeEnum documentType);
     
     /// <summary>
     /// Метод получает файлы задачи.
@@ -317,7 +318,7 @@ public interface IProjectManagmentRepository
     /// <param name="projectId">Id проекта.</param>
     /// <param name="taskId">Id задачи.</param>
     /// <returns>Файлы задачи.</returns>
-    Task<IEnumerable<ProjectTaskDocumentEntity>> GetProjectTaskFilesAsync(long projectId, long taskId);
+    Task<IEnumerable<ProjectDocumentEntity>> GetProjectTaskFilesAsync(long projectId, long taskId);
     
     /// <summary>
     /// Метод получает название документа по его Id.
@@ -325,6 +326,14 @@ public interface IProjectManagmentRepository
     /// <param name="documentId">Id документа.</param>
     /// <returns>Название документа.</returns>
     Task<string> GetDocumentNameByDocumentIdAsync(long documentId);
+    
+    /// <summary>
+    /// Метод получает список названий документов по их Id.
+    /// </summary>
+    /// <param name="userDocs">Документы пользователей.</param>
+    /// <returns>список названий документов.</returns>
+    Task<IEnumerable<(long? UserId, string DocumentName)>> GetDocumentNameByDocumentIdsAsync(
+        IEnumerable<(long? UserId, long? DocumentId)> userDocs);
     
     /// <summary>
     /// Метод удаляет документ по его Id.
@@ -372,4 +381,21 @@ public interface IProjectManagmentRepository
     /// </summary>
     /// <param name="commentId">Id комментария для удаления.</param>
     Task DeleteTaskCommentAsync(long commentId);
+
+    /// <summary>
+    /// Метод получает Id изображения аватара пользователя проекта.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Id документа. Может вернуть null, тогда будет выбран файл по дефолту nophoto.</returns>
+    Task<long?> GetUserAvatarDocumentIdByUserIdAsync(long userId, long projectId);
+    
+    /// <summary>
+    /// Метод получает массив Id изображений аватара пользователей проекта.
+    /// </summary>
+    /// <param name="userIds">Массив Id пользователей.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Id документов. Может вернуть null, тогда будет выбран файл по дефолту nophoto.</returns>
+    Task<IEnumerable<(long? UserId, long? DocumentId)>> GetUserAvatarDocumentIdByUserIdsAsync(IEnumerable<long> userIds,
+        long projectId);
 }
