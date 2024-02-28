@@ -2223,7 +2223,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     }
 
     /// <inheritdoc />
-    public async Task<FileContentResult> DownloadFileUserAvatarAsync(long projectId, string account)
+    public async Task<FileContentResult> GetUserAvatarFileAsync(long projectId, string account)
     {
         try
         {
@@ -2240,7 +2240,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             // Если у пользователя не был выбран аватар ранее, то подгрузим дефолтный nophoto.
             if (!documentId.HasValue)
             {
-                var noPhotoResult = await _fileManagerService.Value.DownloadFileUserAvatarAsync("nophoto.jpg",
+                var noPhotoResult = await _fileManagerService.Value.GetUserAvatarFileAsync("nophoto.jpg",
                     projectId, userId, true);
 
                 return noPhotoResult;
@@ -2248,7 +2248,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 
             var documentName = await _projectManagmentRepository.GetDocumentNameByDocumentIdAsync(documentId.Value);
 
-            var result = await _fileManagerService.Value.DownloadFileUserAvatarAsync(documentName, projectId, userId,
+            var result = await _fileManagerService.Value.GetUserAvatarFileAsync(documentName, projectId, userId,
                 false);
 
             return result;

@@ -290,7 +290,7 @@ internal sealed class FileManagerService : IFileManagerService
     }
 
     /// <inheritdoc />
-    public async Task<FileContentResult> DownloadFileUserAvatarAsync(string fileName, long projectId, long userId,
+    public async Task<FileContentResult> GetUserAvatarFileAsync(string fileName, long projectId, long userId,
         bool isNoPhoto)
     {
         var settings = await _globalConfigRepository.Value.GetFileManagerSettingsAsync();

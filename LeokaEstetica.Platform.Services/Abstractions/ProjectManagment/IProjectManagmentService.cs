@@ -398,5 +398,5 @@ public interface IProjectManagmentService
     /// <param name="projectId">Id проекта.</param>
     /// <param name="account">Аккаунт.</param>
     /// <returns>Данные файла.</returns>
-    Task<FileContentResult> DownloadFileUserAvatarAsync(long projectId, string account);
+    Task<FileContentResult> GetUserAvatarFileAsync(long projectId, string account);
 }

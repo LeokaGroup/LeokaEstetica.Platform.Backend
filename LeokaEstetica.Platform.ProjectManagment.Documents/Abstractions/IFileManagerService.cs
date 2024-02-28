@@ -41,5 +41,5 @@ public interface IFileManagerService
     /// <param name="taskId">Id пользователя.</param>
     /// <param name="isNoPhoto">Признак необходимости подгрузить дефолтное изображение..</param>
     /// <returns>Данные файла.</returns>
-    Task<FileContentResult> DownloadFileUserAvatarAsync(string fileName, long projectId, long userId, bool isNoPhoto);
+    Task<FileContentResult> GetUserAvatarFileAsync(string fileName, long projectId, long userId, bool isNoPhoto);
 }

@@ -252,13 +252,13 @@ public class ProjectManagmentSettingsController : BaseController
     /// <param name="projectId">Id проекта.</param>
     /// <returns>Файл изображения аватара пользователя.</returns>
     [HttpGet]
-    [Route("download-user-avatar-file")]
+    [Route("user-avatar-file")]
     [ProducesResponseType(200, Type = typeof(FileContentResult))]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<FileContentResult> DownloadUserAvatarFileAsync([FromQuery] long projectId)
+    public async Task<FileContentResult> GetUserAvatarFileAsync([FromQuery] long projectId)
     {
         if (projectId <= 0)
         {
@@ -271,7 +271,7 @@ public class ProjectManagmentSettingsController : BaseController
             throw ex;
         }
         
-        var result = await _projectManagmentService.DownloadFileUserAvatarAsync(projectId, GetUserName());
+        var result = await _projectManagmentService.GetUserAvatarFileAsync(projectId, GetUserName());
 
         return result;
     }
