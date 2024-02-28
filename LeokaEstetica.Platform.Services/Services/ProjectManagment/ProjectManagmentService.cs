@@ -621,9 +621,20 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             var avatarFiles = await GetUserAvatarFilesAsync(projectId, userEmails);
             result.Executor = new Executor
             {
-                ExecutorName = executorName,
-                Avatar = avatarFiles.TryGet(executorId)
+                ExecutorName = executorName
             };
+            
+            if (!avatarFiles.ContainsKey(executorId))
+            {
+                // Получаем дефолтное изображение.
+                result.Executor.Avatar = avatarFiles.TryGet(0);
+            }
+
+            else
+            {
+                result.Executor.Avatar = avatarFiles.TryGet(executorId);
+            }
+            
             result.AuthorName = authors.TryGet(authors.First().Key).FullName;
 
             var watcherIds = task.WatcherIds;
@@ -2290,7 +2301,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             var result = new Dictionary<long, FileContentResult>();
 
             // Если нету изображений вообще, то оставим только дефолтное для всех пользователей.
-            if (userDocuments is null)
+            if (userDocuments is null || !userDocuments.Any())
             {
                 var noPhoto = await _fileManagerService.Value.GetUserAvatarFileAsync("nophoto.jpg",
                     projectId, null, true);
@@ -2526,9 +2537,19 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                     var executorName = executors.TryGet(ts.ExecutorId)?.FullName;
                     ts.Executor = new Executor
                     {
-                        ExecutorName = executorName,
-                        Avatar = avatarFiles.TryGet(ts.ExecutorId)
+                        ExecutorName = executorName
                     };
+
+                    if (!avatarFiles.ContainsKey(ts.ExecutorId))
+                    {
+                        // Получаем дефолтное изображение.
+                        ts.Executor.Avatar = avatarFiles.TryGet(0);
+                    }
+
+                    else
+                    {
+                        ts.Executor.Avatar = avatarFiles.TryGet(ts.ExecutorId);
+                    }
 
                     var taskStatusName = statuseNames.Find(x => x.StatusId == ts.TaskStatusId)?.StatusName;
 

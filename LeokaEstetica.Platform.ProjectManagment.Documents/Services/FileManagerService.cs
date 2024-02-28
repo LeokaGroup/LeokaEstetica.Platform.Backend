@@ -1,6 +1,6 @@
-using System.Diagnostics;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.Net.Sockets;
-using Dapper;
 using LeokaEstetica.Platform.Database.Abstractions.Config;
 using LeokaEstetica.Platform.ProjectManagment.Documents.Abstractions;
 using Microsoft.AspNetCore.Http;
@@ -498,15 +498,17 @@ internal sealed class FileManagerService : IFileManagerService
             }
             
             var fileName = files.First().FileName;
-
             var path = userProjectAvatarPath + Path.GetFileName(fileName);
 
             var stream = files.First().OpenReadStream();
-            var fileStreamLength = stream.Length;
+            var bytes = await GetByteArrayAsync(stream);
+            var ResizedImage = Resize(bytes);
+            var resultStream = new MemoryStream(ResizedImage);
+            var fileStreamLength = resultStream.Length;
                 
             _logger.LogInformation($"Загружается файл {0} ({1:N0} байт)", fileName, fileStreamLength);
             
-            sftpClient.UploadFile(stream, path);
+            sftpClient.UploadFile(resultStream, path);
                 
             _logger.LogInformation($"Файл {0} ({1:N0} байт) успешно загружен.", fileName, fileStreamLength);
         }
@@ -564,5 +566,23 @@ internal sealed class FileManagerService : IFileManagerService
         }
                 
         return ms.ToArray();
+    }
+    
+    /// <summary>
+    /// Метод изменяет размер изорбажения 50 на 50, чтобы уменьшить его размер.
+    /// </summary>
+    /// <param name="data">Массив байт.</param>
+    /// <returns>Уменьшенный массив байт.</returns>
+    private byte[] Resize(byte[] bytes)
+    {
+        using var stream = new MemoryStream(bytes);
+        var image = Image.FromStream(stream);
+ 
+        var height = (50 * image.Height) / image.Width;
+        var thumbnail = image.GetThumbnailImage(50, 50, null, IntPtr.Zero);
+
+        using var thumbnailStream = new MemoryStream();
+        thumbnail.Save(thumbnailStream, ImageFormat.Jpeg);
+        return thumbnailStream.ToArray();
     }
 }
