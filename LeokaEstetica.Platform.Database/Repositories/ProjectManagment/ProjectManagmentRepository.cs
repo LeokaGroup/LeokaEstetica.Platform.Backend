@@ -1139,6 +1139,28 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
     }
 
     /// <inheritdoc />
+    public async Task<IEnumerable<(long? UserId, string DocumentName)>> GetDocumentNameByDocumentIdsAsync(
+        IEnumerable<(long? UserId, long? DocumentId)> userDocs)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+        var docs = userDocs.AsList();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@documentIds", docs.Select(x => x.DocumentId).AsList());
+        parameters.Add("@userIds", docs.Select(x => x.UserId).AsList());
+
+        var query = @"SELECT user_id, document_name 
+                      FROM documents.project_documents 
+                      WHERE document_id = ANY(@documentIds) 
+                        AND user_id IS NOT NULL 
+                        AND user_id = ANY(@userIds)";
+
+        var result = await connection.QueryAsync<(long? UserId, string DocumentName)>(query, parameters);
+
+        return result;
+    }
+
+    /// <inheritdoc />
     public async Task RemoveDocumentAsync(long documentId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
@@ -1317,6 +1339,27 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
                         LIMIT 1";
 
         var result = await connection.QuerySingleOrDefaultAsync<long?>(query, parameters);
+
+        return result;
+    }
+
+    /// <inheritdoc />
+    public async Task<IEnumerable<(long? UserId, long? DocumentId)>> GetUserAvatarDocumentIdByUserIdsAsync(
+        IEnumerable<long> userIds,
+        long projectId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@userIds", userIds.AsList());
+        parameters.Add("@projectId", projectId);
+
+        var query = @"SELECT user_id, document_id 
+                      FROM documents.project_documents 
+                      WHERE project_id = @projectId 
+                        AND user_id = ANY(@userIds)";
+
+        var result = await connection.QueryAsync<(long? UserId, long? DocumentId)>(query, parameters);
 
         return result;
     }

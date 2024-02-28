@@ -401,6 +401,14 @@ public interface IProjectManagmentService
     Task<FileContentResult> GetUserAvatarFileAsync(long projectId, string account);
     
     /// <summary>
+    /// Метод получает изображения аватара пользователей.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="accounts">Аккаунты пользователей.</param>
+    /// <returns>Словарь с файлами изображений аватара пользователей.</returns>
+    Task<IDictionary<long, FileContentResult>> GetUserAvatarFilesAsync(long projectId, IEnumerable<string> accounts);
+    
+    /// <summary>
     /// Метод загружает файл изображения аватара пользователя по SFTP на сервер.
     /// </summary>
     /// <param name="files">Файлы для отправки.</param>
