@@ -309,7 +309,8 @@ public interface IProjectManagmentRepository
     /// Документы уже загружены на сервер, теперь идет их создание в БД.
     /// </summary>
     /// <param name="documents">Список документов к созданию.</param>
-    Task CreateProjectTaskDocumentsAsync(IEnumerable<ProjectTaskDocumentEntity> documents);
+    /// <param name="documentType">Тип документа.</param>
+    Task CreateProjectTaskDocumentsAsync(IEnumerable<ProjectDocumentEntity> documents, DocumentTypeEnum documentType);
     
     /// <summary>
     /// Метод получает файлы задачи.
@@ -317,7 +318,7 @@ public interface IProjectManagmentRepository
     /// <param name="projectId">Id проекта.</param>
     /// <param name="taskId">Id задачи.</param>
     /// <returns>Файлы задачи.</returns>
-    Task<IEnumerable<ProjectTaskDocumentEntity>> GetProjectTaskFilesAsync(long projectId, long taskId);
+    Task<IEnumerable<ProjectDocumentEntity>> GetProjectTaskFilesAsync(long projectId, long taskId);
     
     /// <summary>
     /// Метод получает название документа по его Id.

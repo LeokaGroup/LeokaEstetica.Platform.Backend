@@ -13,5 +13,10 @@ public enum DocumentTypeEnum
     /// <summary>
     /// Документ вики.
     /// </summary>
-    Wiki = 2
+    Wiki = 2,
+    
+    /// <summary>
+    /// Изображение аватара пользователя проекта.
+    /// </summary>
+    ProjectUserAvatar = 3
 }

@@ -5,9 +5,9 @@ using LeokaEstetica.Platform.Models.Extensions;
 namespace LeokaEstetica.Platform.Models.Entities.Document;
 
 /// <summary>
-/// Класс сопоставляется с таблицей документов задач проекта.
+/// Класс сопоставляется с таблицей документов проекта.
 /// </summary>
-public class ProjectTaskDocumentEntity
+public class ProjectDocumentEntity
 {
     /// <summary>
     /// PK. Id документа.
@@ -51,7 +51,7 @@ public class ProjectTaskDocumentEntity
     /// <summary>
     /// Дата обновления документа.
     /// </summary>
-    public DateTime Updated { get; set; }
+    public DateTime? Updated { get; set; }
     
     /// <summary>
     /// Id проекта.
@@ -61,5 +61,10 @@ public class ProjectTaskDocumentEntity
     /// <summary>
     /// Id задачи.
     /// </summary>
-    public long TaskId { get; set; }
+    public long? TaskId { get; set; }
+
+    /// <summary>
+    /// Id пользователя.
+    /// </summary>
+    public long? UserId { get; set; }
 }

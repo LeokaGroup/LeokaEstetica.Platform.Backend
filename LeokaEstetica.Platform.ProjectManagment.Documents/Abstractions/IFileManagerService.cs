@@ -42,4 +42,12 @@ public interface IFileManagerService
     /// <param name="isNoPhoto">Признак необходимости подгрузить дефолтное изображение..</param>
     /// <returns>Данные файла.</returns>
     Task<FileContentResult> GetUserAvatarFileAsync(string fileName, long projectId, long userId, bool isNoPhoto);
+    
+    /// <summary>
+    /// Метод загружает файлы по SFTP на сервер.
+    /// </summary>
+    /// <param name="files">Файлы для отправки.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="userId">Id пользователя.</param>
+    Task UploadUserAvatarFileAsync(IFormFileCollection files, long projectId, long userId);
 }

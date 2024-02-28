@@ -1977,11 +1977,12 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 
             await _fileManagerService.Value.UploadFilesAsync(files, projectId, taskId.GetProjectTaskIdFromPrefixLink());
 
-            var projectTaskFiles = CreateProjectTaskDocumentsFactory.CreateProjectTaskDocuments(files, projectId,
-                taskId.GetProjectTaskIdFromPrefixLink());
+            var projectTaskFiles = CreateProjectDocumentsFactory.CreateProjectDocuments(files, projectId,
+                taskId.GetProjectTaskIdFromPrefixLink(), userId);
             
             // Сохраняем файлы задачи проекта.
-            await _projectManagmentRepository.CreateProjectTaskDocumentsAsync(projectTaskFiles);
+            await _projectManagmentRepository.CreateProjectTaskDocumentsAsync(projectTaskFiles,
+                DocumentTypeEnum.ProjectTask);
 
             // TODO: Тут добавить запись активности пользователя по userId (писать кто добавил файл).
         }
@@ -2023,7 +2024,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<ProjectTaskDocumentEntity>> GetProjectTaskFilesAsync(long projectId,
+    public async Task<IEnumerable<ProjectDocumentEntity>> GetProjectTaskFilesAsync(long projectId,
         string projectTaskId)
     {
         try
@@ -2252,6 +2253,38 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 false);
 
             return result;
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task UploadUserAvatarFileAsync(IFormFileCollection files, string account, long projectId)
+    {
+        try
+        {
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+            
+            await _fileManagerService.Value.UploadUserAvatarFileAsync(files, projectId, userId);
+
+            var userAvatarFile = CreateProjectDocumentsFactory.CreateProjectDocuments(files, projectId, null,
+                userId);
+            
+            // Сохраняем файлы проекта.
+            await _projectManagmentRepository.CreateProjectTaskDocumentsAsync(userAvatarFile,
+                DocumentTypeEnum.ProjectUserAvatar);
+            
+            // TODO: Тут добавить запись активности пользователя по userId (кто загрузил файл).
         }
         
         catch (Exception ex)
