@@ -1075,20 +1075,21 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
             foreach (var d in documents)
             {
                 var tempParameters = new DynamicParameters();
-                tempParameters.Add("@document_type", new Enum(documentType));
-                tempParameters.Add("@document_name", d.DocumentName);
-                tempParameters.Add("@document_extension", Path.GetExtension(d.DocumentName));
+                tempParameters.Add("@documentType", new Enum(documentType));
+                tempParameters.Add("@documentName", d.DocumentName);
+                tempParameters.Add("@documentExtension", Path.GetExtension(d.DocumentName));
                 tempParameters.Add("@created", DateTime.UtcNow);
-                tempParameters.Add("@project_id", d.ProjectId);
-                tempParameters.Add("@task_id", d.TaskId);
+                tempParameters.Add("@projectId", d.ProjectId);
+                tempParameters.Add("@taskId", d.TaskId);
+                tempParameters.Add("@userId", d.UserId);
 
                 parameters.Add(tempParameters);
             }
 
             var query = @"INSERT INTO documents.project_documents (document_type, document_name, document_extension,
-                                         created, project_id, task_id) 
-                      VALUES (@document_type, @document_name, @document_extension, @created, @project_id,
-                              @task_id)";
+                                         created, project_id, task_id, user_id) 
+                      VALUES (@documentType, @documentName, @documentExtension, @created, @projectId,
+                              @taskId, @userId)";
                               
             await connection.ExecuteAsync(query, parameters);
             
