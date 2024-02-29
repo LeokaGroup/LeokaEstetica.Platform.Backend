@@ -21,6 +21,7 @@ using LeokaEstetica.Platform.Database.Abstractions.Profile;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Database.Abstractions.Resume;
+using LeokaEstetica.Platform.Database.Abstractions.Search;
 using LeokaEstetica.Platform.Database.Abstractions.Subscription;
 using LeokaEstetica.Platform.Database.Abstractions.Template;
 using LeokaEstetica.Platform.Database.Abstractions.Ticket;
@@ -48,6 +49,7 @@ using LeokaEstetica.Platform.Database.Repositories.Profile;
 using LeokaEstetica.Platform.Database.Repositories.Project;
 using LeokaEstetica.Platform.Database.Repositories.ProjectManagment;
 using LeokaEstetica.Platform.Database.Repositories.Resume;
+using LeokaEstetica.Platform.Database.Repositories.Search;
 using LeokaEstetica.Platform.Database.Repositories.Subscription;
 using LeokaEstetica.Platform.Database.Repositories.Templates;
 using LeokaEstetica.Platform.Database.Repositories.TIcket;
@@ -259,16 +261,7 @@ public class RepositoriesModule : Module
         builder.RegisterType<PressRepository>()
             .As<IPressRepository>()
             .InstancePerLifetimeScope();
-            
-        // TODO: Эта регистрация уже есть в слое Shared. Убрать отсюда если ничего не сломается.
-        // Транзакции.
-        // builder.RegisterType<TransactionScopeFactory>()
-        //     .Named<ITransactionScopeFactory>("TransactionScopeFactory")
-        //     .InstancePerLifetimeScope();
-        // builder.RegisterType<TransactionScopeFactory>()
-        //     .As<ITransactionScopeFactory>()
-        //     .InstancePerLifetimeScope();
-        
+
         builder.RegisterType<FareRuleRepository>()
             .Named<IFareRuleRepository>("FareRuleRepository")
             .InstancePerLifetimeScope();
@@ -307,5 +300,12 @@ public class RepositoriesModule : Module
             .InstancePerLifetimeScope();
 
         builder.RegisterLazy<IGlobalConfigRepository, GlobalConfigRepository>();
+        
+        builder.RegisterType<SearchProjectManagementRepository>()
+            .Named<ISearchProjectManagementRepository>("SearchProjectManagementRepository")
+            .InstancePerLifetimeScope();
+        builder.RegisterType<SearchProjectManagementRepository>()
+            .As<ISearchProjectManagementRepository>()
+            .InstancePerLifetimeScope();
     }
 }
