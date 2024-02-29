@@ -24,4 +24,9 @@ public class SearchTaskOutput
     /// Id задачи в рамках проекта вместе с префиксом.
     /// </summary>
     public string FullProjectTaskId => string.Concat(TaskIdPrefix + "-", ProjectTaskId);
+
+    /// <summary>
+    /// Найденный текст.
+    /// </summary>
+    public string FindText => string.Concat(FullProjectTaskId + " ", Name);
 }
