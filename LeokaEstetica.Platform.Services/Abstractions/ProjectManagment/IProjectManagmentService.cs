@@ -23,17 +23,18 @@ public interface IProjectManagmentService
     Task<IEnumerable<ViewStrategyEntity>> GetViewStrategiesAsync();
 
     /// <summary>
-    /// Метод получает элементы верхнего меню (хидера).
+    /// Метод получает элементы панели.
+    /// Панель это и хидер модуля УП и левое выдвижное меню и меню документации проектов.
     /// Этот метод не заполняет доп.списки.
     /// </summary>
     /// <returns>Список элементов.</returns>
-    Task<IEnumerable<ProjectManagmentHeaderEntity>> GetHeaderItemsAsync();
+    Task<IEnumerable<PanelEntity>> GetPanelItemsAsync();
 
     /// <summary>
-    /// Метод наполняет доп.списки элементов хидера.
+    /// Метод наполняет доп.списки элементов панели.
     /// </summary>
     /// <param name="items">Список элементов.</param>
-    Task<List<ProjectManagmentHeaderResult>> ModifyHeaderItemsAsync(IEnumerable<ProjectManagmentHeaderOutput> items);
+    Task<List<PanelResult>> ModifyPanelItemsAsync(IEnumerable<PanelOutput> items);
 
     /// <summary>
     /// Метод получает список шаблонов задач, которые пользователь может выбрать перед переходом в рабочее пространство.

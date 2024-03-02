@@ -11,14 +11,14 @@ internal class GetHeaderItemsTest : BaseServiceTest
     [Test]
     public async Task GetHeaderItemsAsyncTest()
     {
-        var unprocessedItems = await ProjectManagmentService.GetHeaderItemsAsync();
+        var unprocessedItems = await ProjectManagmentService.GetPanelItemsAsync();
 
         Assert.NotNull(unprocessedItems);
 
         var mapper = AutoFac.Resolve<IMapper>();
-        var mapItems = mapper.Map<IEnumerable<ProjectManagmentHeaderOutput>>(unprocessedItems);
+        var mapItems = mapper.Map<IEnumerable<PanelOutput>>(unprocessedItems);
         
-        var result = await ProjectManagmentService.ModifyHeaderItemsAsync(mapItems);
+        var result = await ProjectManagmentService.ModifyPanelItemsAsync(mapItems);
         
         Assert.NotNull(result.All(x => x.Items is not null && x.Items.Any() && !string.IsNullOrEmpty(x.Label)));
     }

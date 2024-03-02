@@ -52,23 +52,24 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
     /// Метод получает элементы верхнего меню (хидера).
     /// </summary>
     /// <returns>Список элементов.</returns>
-    public async Task<IEnumerable<ProjectManagmentHeaderEntity>> GetHeaderItemsAsync()
+    public async Task<IEnumerable<PanelEntity>> GetPanelItemsAsync()
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
-        var query = @"SELECT header_id,
+        var query = @"SELECT panel_id,
                              item_name,
                              item_url,
                              position,
-                             header_type,
+                             panel_type,
                              items,
                              has_items,
                              is_disabled,
                              control_type,
-                             destination
-                             FROM project_management.header
-                             ORDER BY position";
+                             destination 
+                             FROM project_management.panel_items 
+                             GROUP BY panel_type 
+                             ORDER BY position ";
 
-        var result = await connection.QueryAsync<ProjectManagmentHeaderEntity>(query);
+        var result = await connection.QueryAsync<PanelEntity>(query);
 
         return result;
     }

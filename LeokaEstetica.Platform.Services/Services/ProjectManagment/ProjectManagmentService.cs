@@ -137,32 +137,28 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     /// Этот метод не заполняет доп.списки.
     /// </summary>
     /// <returns>Список элементов.</returns>
-    public async Task<IEnumerable<ProjectManagmentHeaderEntity>> GetHeaderItemsAsync()
+    public async Task<IEnumerable<PanelEntity>> GetPanelItemsAsync()
     {
         try
         {
-            var result = await _projectManagmentRepository.GetHeaderItemsAsync();
+            var result = await _projectManagmentRepository.GetPanelItemsAsync();
 
             return result;
         }
 
         catch (Exception ex)
         {
-            _logger?.LogError(ex, "Ошибка при получении элементов верхнего меню (хидера).");
+            _logger?.LogError(ex, "Ошибка при получении элементов меню панели.");
             throw;
         }
     }
 
-    /// <summary>
-    /// Метод наполняет доп.списки элементов хидера.
-    /// </summary>
-    /// <param name="items">Список элементов.</param>
-    public async Task<List<ProjectManagmentHeaderResult>> ModifyHeaderItemsAsync(
-        IEnumerable<ProjectManagmentHeaderOutput> items)
+    /// <inheritdoc />
+    public async Task<List<PanelResult>> ModifyPanelItemsAsync(IEnumerable<PanelOutput> items)
     {
         try
         {
-            var result = new List<ProjectManagmentHeaderResult>();
+            var result = new List<PanelResult>();
 
             // Будем наполнять доп.списки.
             foreach (var item in items)
@@ -197,14 +193,14 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                     {
                         var strategyItems = mapItems.Items.OrderBy(o => o.Position);
 
-                        var selectedStrategyItems = strategyItems.Select(x => new ProjectManagmentHeader
+                        var selectedStrategyItems = strategyItems.Select(x => new Panel
                         {
                             Label = x.ItemName,
                             Id = x.Id,
                             Disabled = x.Disabled
                         });
 
-                        result.Add(new ProjectManagmentHeaderResult
+                        result.Add(new PanelResult
                         {
                             Label = item.ItemName,
                             Items = selectedStrategyItems,
@@ -235,14 +231,14 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                     {
                         var createItems = mapItems.Items.OrderBy(o => o.Position);
 
-                        var selectedCreateItems = createItems.Select(x => new ProjectManagmentHeader
+                        var selectedCreateItems = createItems.Select(x => new Panel
                         {
                             Label = x.ItemName,
                             Id = x.Id,
                             Disabled = x.Disabled
                         });
 
-                        result.Add(new ProjectManagmentHeaderResult
+                        result.Add(new PanelResult
                         {
                             Label = item.ItemName,
                             Items = selectedCreateItems,
@@ -273,14 +269,14 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                     {
                         var filters = mapItems.Items.OrderBy(o => o.Position);
 
-                        var selectedFilters = filters.Select(x => new ProjectManagmentHeader
+                        var selectedFilters = filters.Select(x => new Panel
                         {
                             Label = x.ItemName,
                             Id = x.Id,
                             Disabled = x.Disabled
                         });
 
-                        result.Add(new ProjectManagmentHeaderResult
+                        result.Add(new PanelResult
                         {
                             Label = item.ItemName,
                             Items = selectedFilters,
@@ -311,14 +307,14 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                     {
                         var filters = mapItems.Items.OrderBy(o => o.Position);
 
-                        var selectedFilters = filters.Select(x => new ProjectManagmentHeader
+                        var selectedFilters = filters.Select(x => new Panel
                         {
                             Label = x.ItemName,
                             Id = x.Id,
                             Disabled = x.Disabled
                         });
 
-                        result.Add(new ProjectManagmentHeaderResult
+                        result.Add(new PanelResult
                         {
                             Label = item.ItemName,
                             Items = selectedFilters,
