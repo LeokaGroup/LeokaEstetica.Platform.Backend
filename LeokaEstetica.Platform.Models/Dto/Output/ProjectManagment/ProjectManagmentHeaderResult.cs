@@ -1,3 +1,5 @@
+using Newtonsoft.Json;
+
 namespace LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 
 /// <summary>
@@ -13,12 +15,19 @@ public class ProjectManagmentHeaderResult
     /// <summary>
     /// Уникальный идентификатор (обычно системное название).
     /// </summary>
+    [System.Text.Json.Serialization.JsonIgnore]
+    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
     public string Id { get; set; }
     
     /// <summary>
     /// Вложенные элементы.
     /// </summary>
     public IEnumerable<ProjectManagmentHeader> Items { get; set; }
+    
+    /// <summary>
+    /// Признак неактивности пункта меню.
+    /// </summary>
+    public bool Disabled { get; set; }
 }
 
 public class ProjectManagmentHeader
@@ -36,7 +45,14 @@ public class ProjectManagmentHeader
     /// <summary>
     /// Уникальный идентификатор (обычно системное название).
     /// </summary>
+    [System.Text.Json.Serialization.JsonIgnore]
+    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
     public string Id { get; set; }
+
+    /// <summary>
+    /// Признак неактивности пункта меню.
+    /// </summary>
+    public bool Disabled { get; set; }
 }
 
 public class ProjectManagmentHeaderItems
@@ -49,5 +65,12 @@ public class ProjectManagmentHeaderItems
     /// <summary>
     /// Уникальный идентификатор (обычно системное название).
     /// </summary>
+    [System.Text.Json.Serialization.JsonIgnore]
+    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
     public string Id { get; set; }
+    
+    /// <summary>
+    /// Признак неактивности пункта меню.
+    /// </summary>
+    public bool Disabled { get; set; }
 }
