@@ -1,3 +1,5 @@
+using Newtonsoft.Json;
+
 namespace LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 
 /// <summary>
@@ -9,6 +11,18 @@ public class ProjectManagmentHeaderFilters
     /// Список элементов.
     /// </summary>
     public List<Filters> Items { get; set; }
+    
+    /// <summary>
+    /// Уникальный идентификатор (обычно системное название).
+    /// </summary>
+    [System.Text.Json.Serialization.JsonIgnore]
+    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+    public string Id { get; set; }
+    
+    /// <summary>
+    /// Признак неактивности пункта.
+    /// </summary>
+    public bool Disabled { get; set; }
 }
 
 public class Filters
@@ -26,5 +40,12 @@ public class Filters
     /// <summary>
     /// Признак неактивности пункта.
     /// </summary>
-    public bool IsDisabled { get; set; }
+    public bool Disabled { get; set; }
+    
+    /// <summary>
+    /// Уникальный идентификатор (обычно системное название).
+    /// </summary>
+    [System.Text.Json.Serialization.JsonIgnore]
+    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+    public string Id { get; set; }
 }

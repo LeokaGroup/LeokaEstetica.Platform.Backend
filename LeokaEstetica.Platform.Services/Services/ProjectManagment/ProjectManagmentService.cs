@@ -200,13 +200,16 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                         var selectedStrategyItems = strategyItems.Select(x => new ProjectManagmentHeader
                         {
                             Label = x.ItemName,
-                            Id = ProjectManagmentDestinationTypeEnum.Strategy.ToString()
+                            Id = x.Id,
+                            Disabled = x.Disabled
                         });
 
                         result.Add(new ProjectManagmentHeaderResult
                         {
                             Label = item.ItemName,
-                            Items = selectedStrategyItems
+                            Items = selectedStrategyItems,
+                            Id = ProjectManagmentDestinationTypeEnum.Strategy.ToString(),
+                            Disabled = item.IsDisabled
                         });
                     }
                 }
@@ -235,13 +238,16 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                         var selectedCreateItems = createItems.Select(x => new ProjectManagmentHeader
                         {
                             Label = x.ItemName,
-                            Id = ProjectManagmentDestinationTypeEnum.Create.ToString()
+                            Id = x.Id,
+                            Disabled = x.Disabled
                         });
 
                         result.Add(new ProjectManagmentHeaderResult
                         {
                             Label = item.ItemName,
-                            Items = selectedCreateItems
+                            Items = selectedCreateItems,
+                            Id = ProjectManagmentDestinationTypeEnum.Create.ToString(),
+                            Disabled = item.IsDisabled
                         });
                     }
                 }
@@ -270,13 +276,16 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                         var selectedFilters = filters.Select(x => new ProjectManagmentHeader
                         {
                             Label = x.ItemName,
-                            Id = ProjectManagmentDestinationTypeEnum.Filters.ToString()
+                            Id = x.Id,
+                            Disabled = x.Disabled
                         });
 
                         result.Add(new ProjectManagmentHeaderResult
                         {
                             Label = item.ItemName,
-                            Items = selectedFilters
+                            Items = selectedFilters,
+                            Id = ProjectManagmentDestinationTypeEnum.Filters.ToString(),
+                            Disabled = item.IsDisabled
                         });
                     }
                 }
@@ -305,13 +314,16 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                         var selectedFilters = filters.Select(x => new ProjectManagmentHeader
                         {
                             Label = x.ItemName,
-                            Id = ProjectManagmentDestinationTypeEnum.Settings.ToString()
+                            Id = x.Id,
+                            Disabled = x.Disabled
                         });
 
                         result.Add(new ProjectManagmentHeaderResult
                         {
                             Label = item.ItemName,
-                            Items = selectedFilters
+                            Items = selectedFilters,
+                            Id = ProjectManagmentDestinationTypeEnum.Settings.ToString(),
+                            Disabled = item.IsDisabled
                         });
                     }
                 }

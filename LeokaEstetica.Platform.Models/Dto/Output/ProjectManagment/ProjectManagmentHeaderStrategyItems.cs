@@ -6,6 +6,11 @@ namespace LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 public class ProjectManagmentHeaderStrategyItems
 {
     /// <summary>
+    /// Id (системный идентификатор в БД).
+    /// </summary>
+    public string Id { get; set; }
+    
+    /// <summary>
     /// Список элементов.
     /// </summary>
     public List<StrategyItems> Items { get; set; }
@@ -13,6 +18,11 @@ public class ProjectManagmentHeaderStrategyItems
 
 public class StrategyItems
 {
+    /// <summary>
+    /// Id (системный идентификатор в БД).
+    /// </summary>
+    public string Id { get; set; }
+    
     /// <summary>
     /// Название пункта хидера.
     /// </summary>
@@ -36,7 +46,7 @@ public class StrategyItems
     /// <summary>
     /// Признак неактивности пункта.
     /// </summary>
-    public bool IsDisabled { get; set; }
+    public bool Disabled { get; set; }
     
     /// <summary>
     /// Вложенные элементы в формате jsonb.
