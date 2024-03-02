@@ -13,6 +13,7 @@ using LeokaEstetica.Platform.Services.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Services.Abstractions.Refunds;
 using LeokaEstetica.Platform.Services.Abstractions.Resume;
 using LeokaEstetica.Platform.Services.Abstractions.Search.Project;
+using LeokaEstetica.Platform.Services.Abstractions.Search.ProjectManagment;
 using LeokaEstetica.Platform.Services.Abstractions.Subscription;
 using LeokaEstetica.Platform.Services.Abstractions.User;
 using LeokaEstetica.Platform.Services.Abstractions.Vacancy;
@@ -29,6 +30,7 @@ using LeokaEstetica.Platform.Services.Services.ProjectManagment;
 using LeokaEstetica.Platform.Services.Services.Refunds;
 using LeokaEstetica.Platform.Services.Services.Resume;
 using LeokaEstetica.Platform.Services.Services.Search.Project;
+using LeokaEstetica.Platform.Services.Services.Search.ProjectManagment;
 using LeokaEstetica.Platform.Services.Services.Subscription;
 using LeokaEstetica.Platform.Services.Services.User;
 using LeokaEstetica.Platform.Services.Services.Vacancy;
@@ -262,6 +264,14 @@ public class ServicesModule : Module
             .InstancePerLifetimeScope();
         builder.RegisterType<ProjectSettingsConfigService>()
             .As<IProjectSettingsConfigService>()
+            .InstancePerLifetimeScope();
+            
+        // Сервис поиска в модуле УП.
+        builder.RegisterType<SearchProjectManagementService>()
+            .Named<ISearchProjectManagementService>("SearchProjectManagementService")
+            .InstancePerLifetimeScope();
+        builder.RegisterType<SearchProjectManagementService>()
+            .As<ISearchProjectManagementService>()
             .InstancePerLifetimeScope();
     }
 }
