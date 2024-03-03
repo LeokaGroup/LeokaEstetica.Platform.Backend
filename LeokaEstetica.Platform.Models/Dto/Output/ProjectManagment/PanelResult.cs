@@ -28,6 +28,11 @@ public class PanelResult
     /// Признак неактивности пункта меню.
     /// </summary>
     public bool Disabled { get; set; }
+    
+    /// <summary>
+    /// Признак элемента футера меню.
+    /// </summary>
+    public bool IsFooterItem { get; set; }
 }
 
 public class Panel
@@ -53,6 +58,11 @@ public class Panel
     /// Признак неактивности пункта меню.
     /// </summary>
     public bool Disabled { get; set; }
+    
+    /// <summary>
+    /// Признак элемента футера меню.
+    /// </summary>
+    public bool IsFooterItem { get; set; }
 }
 
 public class PanelItems
@@ -73,4 +83,9 @@ public class PanelItems
     /// Признак неактивности пункта меню.
     /// </summary>
     public bool Disabled { get; set; }
+    
+    /// <summary>
+    /// Признак элемента футера меню.
+    /// </summary>
+    public bool IsFooterItem { get; set; }
 }

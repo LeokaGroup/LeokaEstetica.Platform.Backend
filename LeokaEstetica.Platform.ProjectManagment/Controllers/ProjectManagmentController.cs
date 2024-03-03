@@ -108,12 +108,12 @@ public class ProjectManagmentController : BaseController
     /// <returns>Список элементов панели.</returns>
     [HttpGet]
     [Route("panel")]
-    [ProducesResponseType(200, Type = typeof(List<PanelResult>))]
+    [ProducesResponseType(200, Type = typeof(GetPanelResult))]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<List<PanelResult>> GetPanelItemsAsync()
+    public async Task<GetPanelResult> GetPanelItemsAsync()
     {
         // Получаем необработанные списки. Доп.списки пока не заполнены.
         var unprocessedItems = await _projectManagmentService.GetPanelItemsAsync();

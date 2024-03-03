@@ -19,7 +19,11 @@ internal class GetHeaderItemsTest : BaseServiceTest
         var mapItems = mapper.Map<IEnumerable<PanelOutput>>(unprocessedItems);
         
         var result = await ProjectManagmentService.ModifyPanelItemsAsync(mapItems);
+
+        Assert.NotNull(result.HeaderItems.All(x =>
+            x.Items is not null && x.Items.Any() && !string.IsNullOrEmpty(x.Label)));
         
-        Assert.NotNull(result.All(x => x.Items is not null && x.Items.Any() && !string.IsNullOrEmpty(x.Label)));
+        Assert.NotNull(
+            result.PanelItems.All(x => x.Items is not null && x.Items.Any() && !string.IsNullOrEmpty(x.Label)));
     }
 }

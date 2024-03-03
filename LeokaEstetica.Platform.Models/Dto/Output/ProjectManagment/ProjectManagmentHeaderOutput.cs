@@ -50,4 +50,9 @@ public class PanelOutput
     /// Порядковый номер элемента меню.
     /// </summary>
     public int Position { get; set; }
+
+    /// <summary>
+    /// Признак элемента футера меню.
+    /// </summary>
+    public bool IsFooterItem { get; set; }
 }

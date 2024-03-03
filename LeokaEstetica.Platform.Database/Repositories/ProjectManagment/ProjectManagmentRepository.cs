@@ -66,7 +66,7 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
                              control_type,
                              destination 
                              FROM project_management.panel_items 
-                             GROUP BY panel_type 
+                             GROUP BY panel_type, panel_id 
                              ORDER BY position ";
 
         var result = await connection.QueryAsync<PanelEntity>(query);

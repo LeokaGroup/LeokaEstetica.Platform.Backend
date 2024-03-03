@@ -1,52 +1,23 @@
+using Newtonsoft.Json;
+
 namespace LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 
 /// <summary>
-/// Класс списка вложенных элементов хидера модуля УП (стратегии представления).
+/// Класс списка вложенных элементов панели модуля УП (фильтры).
 /// </summary>
-public class ProjectManagmentHeaderStrategyItems
+public class ProjectManagmentPanelFilters
 {
-    /// <summary>
-    /// Id (системный идентификатор в БД).
-    /// </summary>
-    public string Id { get; set; }
-    
     /// <summary>
     /// Список элементов.
     /// </summary>
-    public List<StrategyItems> Items { get; set; }
+    public List<Filters> Items { get; set; }
     
     /// <summary>
-    /// Признак элемента футера меню.
+    /// Уникальный идентификатор (обычно системное название).
     /// </summary>
-    public bool IsFooterItem { get; set; }
-}
-
-public class StrategyItems
-{
-    /// <summary>
-    /// Id (системный идентификатор в БД).
-    /// </summary>
+    [System.Text.Json.Serialization.JsonIgnore]
+    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
     public string Id { get; set; }
-    
-    /// <summary>
-    /// Название пункта хидера.
-    /// </summary>
-    public string ItemName { get; set; }
-
-    /// <summary>
-    /// Путь (ссылка).
-    /// </summary>
-    public string ItemUrl { get; set; }
-    
-    /// <summary>
-    /// Порядковый номер элемента меню.
-    /// </summary>
-    public int Position { get; set; }
-    
-    /// <summary>
-    /// Признак наличие вложенных элементов пункта хидера.
-    /// </summary>
-    public bool HasItems { get; set; }
     
     /// <summary>
     /// Признак неактивности пункта.
@@ -54,9 +25,34 @@ public class StrategyItems
     public bool Disabled { get; set; }
     
     /// <summary>
-    /// Вложенные элементы в формате jsonb.
+    /// Признак элемента футера меню.
     /// </summary>
-    public string Items { get; set; }
+    public bool IsFooterItem { get; set; }
+}
+
+public class Filters
+{
+    /// <summary>
+    /// Название пункта хидера.
+    /// </summary>
+    public string ItemName { get; set; }
+    
+    /// <summary>
+    /// Порядковый номер элемента меню.
+    /// </summary>
+    public int Position { get; set; }
+    
+    /// <summary>
+    /// Признак неактивности пункта.
+    /// </summary>
+    public bool Disabled { get; set; }
+    
+    /// <summary>
+    /// Уникальный идентификатор (обычно системное название).
+    /// </summary>
+    [System.Text.Json.Serialization.JsonIgnore]
+    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+    public string Id { get; set; }
     
     /// <summary>
     /// Признак элемента футера меню.

@@ -3,14 +3,14 @@ using Newtonsoft.Json;
 namespace LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 
 /// <summary>
-/// Класс списка вложенных элементов хидера модуля УП (фильтры).
+/// Класс списка вложенных элементов панели модуля УП (настройки).
 /// </summary>
-public class ProjectManagmentHeaderFilters
+public class PanelSettings
 {
     /// <summary>
     /// Список элементов.
     /// </summary>
-    public List<Filters> Items { get; set; }
+    public List<Settings> Items { get; set; }
     
     /// <summary>
     /// Уникальный идентификатор (обычно системное название).
@@ -23,9 +23,14 @@ public class ProjectManagmentHeaderFilters
     /// Признак неактивности пункта.
     /// </summary>
     public bool Disabled { get; set; }
+    
+    /// <summary>
+    /// Признак элемента футера меню.
+    /// </summary>
+    public bool IsFooterItem { get; set; }
 }
 
-public class Filters
+public class Settings
 {
     /// <summary>
     /// Название пункта хидера.
@@ -48,4 +53,9 @@ public class Filters
     [System.Text.Json.Serialization.JsonIgnore]
     [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
     public string Id { get; set; }
+    
+    /// <summary>
+    /// Признак элемента футера меню.
+    /// </summary>
+    public bool IsFooterItem { get; set; }
 }

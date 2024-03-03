@@ -31,10 +31,11 @@ public interface IProjectManagmentService
     Task<IEnumerable<PanelEntity>> GetPanelItemsAsync();
 
     /// <summary>
+    /// TODO: Код дублируется местами. Если не будет явных расширений в логике, то убрать лишнюю логику.
     /// Метод наполняет доп.списки элементов панели.
     /// </summary>
     /// <param name="items">Список элементов.</param>
-    Task<List<PanelResult>> ModifyPanelItemsAsync(IEnumerable<PanelOutput> items);
+    Task<GetPanelResult> ModifyPanelItemsAsync(IEnumerable<PanelOutput> items);
 
     /// <summary>
     /// Метод получает список шаблонов задач, которые пользователь может выбрать перед переходом в рабочее пространство.

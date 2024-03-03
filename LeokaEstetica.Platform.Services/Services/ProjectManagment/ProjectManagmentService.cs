@@ -154,11 +154,15 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     }
 
     /// <inheritdoc />
-    public async Task<List<PanelResult>> ModifyPanelItemsAsync(IEnumerable<PanelOutput> items)
+    public async Task<GetPanelResult> ModifyPanelItemsAsync(IEnumerable<PanelOutput> items)
     {
         try
         {
-            var result = new List<PanelResult>();
+            var result = new GetPanelResult
+            {
+                HeaderItems = new List<PanelResult>(),
+                PanelItems = new List<PanelResult>()
+            };
 
             // Будем наполнять доп.списки.
             foreach (var item in items)
@@ -197,15 +201,17 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                         {
                             Label = x.ItemName,
                             Id = x.Id,
-                            Disabled = x.Disabled
+                            Disabled = x.Disabled,
+                            IsFooterItem = x.IsFooterItem
                         });
 
-                        result.Add(new PanelResult
+                        result.HeaderItems.Add(new PanelResult
                         {
                             Label = item.ItemName,
                             Items = selectedStrategyItems,
                             Id = ProjectManagmentDestinationTypeEnum.Strategy.ToString(),
-                            Disabled = item.IsDisabled
+                            Disabled = item.IsDisabled,
+                            IsFooterItem = item.IsFooterItem
                         });
                     }
                 }
@@ -235,15 +241,17 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                         {
                             Label = x.ItemName,
                             Id = x.Id,
-                            Disabled = x.Disabled
+                            Disabled = x.Disabled,
+                            IsFooterItem = x.IsFooterItem
                         });
 
-                        result.Add(new PanelResult
+                        result.HeaderItems.Add(new PanelResult
                         {
                             Label = item.ItemName,
                             Items = selectedCreateItems,
                             Id = ProjectManagmentDestinationTypeEnum.Create.ToString(),
-                            Disabled = item.IsDisabled
+                            Disabled = item.IsDisabled,
+                            IsFooterItem = item.IsFooterItem
                         });
                     }
                 }
@@ -251,11 +259,11 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 // Если фильтры.
                 if (destination == ProjectManagmentDestinationTypeEnum.Filters)
                 {
-                    ProjectManagmentHeaderFilters mapItems;
+                    ProjectManagmentPanelFilters mapItems;
 
                     try
                     {
-                        mapItems = JsonConvert.DeserializeObject<ProjectManagmentHeaderFilters>(item.Items);
+                        mapItems = JsonConvert.DeserializeObject<ProjectManagmentPanelFilters>(item.Items);
                     }
 
                     catch (Exception ex)
@@ -273,15 +281,17 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                         {
                             Label = x.ItemName,
                             Id = x.Id,
-                            Disabled = x.Disabled
+                            Disabled = x.Disabled,
+                            IsFooterItem = x.IsFooterItem
                         });
 
-                        result.Add(new PanelResult
+                        result.HeaderItems.Add(new PanelResult
                         {
                             Label = item.ItemName,
                             Items = selectedFilters,
                             Id = ProjectManagmentDestinationTypeEnum.Filters.ToString(),
-                            Disabled = item.IsDisabled
+                            Disabled = item.IsDisabled,
+                            IsFooterItem = item.IsFooterItem
                         });
                     }
                 }
@@ -289,11 +299,11 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 // Если настройки.
                 if (destination == ProjectManagmentDestinationTypeEnum.Settings)
                 {
-                    ProjectManagmentHeaderFilters mapItems;
+                    PanelSettings mapItems;
 
                     try
                     {
-                        mapItems = JsonConvert.DeserializeObject<ProjectManagmentHeaderFilters>(item.Items);
+                        mapItems = JsonConvert.DeserializeObject<PanelSettings>(item.Items);
                     }
 
                     catch (Exception ex)
@@ -311,15 +321,97 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                         {
                             Label = x.ItemName,
                             Id = x.Id,
-                            Disabled = x.Disabled
+                            Disabled = x.Disabled,
+                            IsFooterItem = x.IsFooterItem
                         });
 
-                        result.Add(new PanelResult
+                        result.HeaderItems.Add(new PanelResult
                         {
                             Label = item.ItemName,
                             Items = selectedFilters,
                             Id = ProjectManagmentDestinationTypeEnum.Settings.ToString(),
-                            Disabled = item.IsDisabled
+                            Disabled = item.IsDisabled,
+                            IsFooterItem = item.IsFooterItem
+                        });
+                    }
+                }
+                
+                // Если левая панель.
+                if (destination == ProjectManagmentDestinationTypeEnum.LeftPanel)
+                {
+                    ProjectManagmentPanelFilters mapItems;
+
+                    try
+                    {
+                        mapItems = JsonConvert.DeserializeObject<ProjectManagmentPanelFilters>(item.Items);
+                    }
+
+                    catch (Exception ex)
+                    {
+                        _logger?.LogError(ex, "Ошибка при десериализации элементов меню левой панели." +
+                                              $" Filters: {item.Items}");
+                        throw;
+                    }
+
+                    if (mapItems is not null)
+                    {
+                        var filters = mapItems.Items.OrderBy(o => o.Position);
+
+                        var selectedFilters = filters.Select(x => new Panel
+                        {
+                            Label = x.ItemName,
+                            Id = x.Id,
+                            Disabled = x.Disabled,
+                            IsFooterItem = x.IsFooterItem
+                        });
+
+                        result.PanelItems.Add(new PanelResult
+                        {
+                            Label = item.ItemName,
+                            Items = selectedFilters,
+                            Id = ProjectManagmentDestinationTypeEnum.LeftPanel.ToString(),
+                            Disabled = item.IsDisabled,
+                            IsFooterItem = item.IsFooterItem
+                        });
+                    }
+                }
+                
+                // Если список экспорта.
+                if (destination == ProjectManagmentDestinationTypeEnum.Export)
+                {
+                    ProjectManagmentHeaderExportItems mapItems;
+
+                    try
+                    {
+                        mapItems = JsonConvert.DeserializeObject<ProjectManagmentHeaderExportItems>(item.Items);
+                    }
+
+                    catch (JsonSerializationException ex)
+                    {
+                        _logger?.LogError(ex, "Ошибка при десериализации элементов меню экспорта." +
+                                              $" ExportItems: {item.Items}");
+                        throw;
+                    }
+
+                    if (mapItems is not null)
+                    {
+                        var exportItems = mapItems.Items.OrderBy(o => o.Position);
+
+                        var selectedExportItems = exportItems.Select(x => new Panel
+                        {
+                            Label = x.ItemName,
+                            Id = x.Id,
+                            Disabled = x.Disabled,
+                            IsFooterItem = x.IsFooterItem
+                        });
+
+                        result.HeaderItems.Add(new PanelResult
+                        {
+                            Label = item.ItemName,
+                            Items = selectedExportItems,
+                            Id = ProjectManagmentDestinationTypeEnum.Export.ToString(),
+                            Disabled = item.IsDisabled,
+                            IsFooterItem = item.IsFooterItem
                         });
                     }
                 }
