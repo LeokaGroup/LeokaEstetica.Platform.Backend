@@ -24,6 +24,7 @@ using Microsoft.EntityFrameworkCore;
 namespace LeokaEstetica.Platform.Core.Data;
 
 /// <summary>
+/// TODO: В конечном счете все удалим PgContext, когда переведем все на Dapper.
 /// Класс датаконтекста Postgres.
 /// </summary>
 public class PgContext : DbContext
@@ -467,16 +468,6 @@ public class PgContext : DbContext
     /// Таблица публичной оферты.
     /// </summary>
     public DbSet<PublicOfferEntity> PublicOffer { get; set; }
-
-    /// <summary>
-    /// Таблица стратегий представления рабочего пространства проектов.
-    /// </summary>
-    public DbSet<ViewStrategyEntity> ViewStrategies { get; set; }
-
-    /// <summary>
-    /// Таблица элементов меню хидера модуля УП.
-    /// </summary>
-    public DbSet<ProjectManagmentHeaderEntity> ProjectManagmentHeader { get; set; }
 
     /// <summary>
     /// Таблица шаблонов задач. Содержит в себе шаблоны, которые касаются только задач (поддерживает и Kanban и Scrum).

@@ -1,9 +1,9 @@
 namespace LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 
 /// <summary>
-/// Класс списка вложенных элементов хидера модуля УП (стратегии представления).
+/// Класс списка вложенных элементов хидера модуля УП (экспорт).
 /// </summary>
-public class ProjectManagmentHeaderStrategyItems
+public class ProjectManagmentHeaderExportItems
 {
     /// <summary>
     /// Id (системный идентификатор в БД).
@@ -13,7 +13,7 @@ public class ProjectManagmentHeaderStrategyItems
     /// <summary>
     /// Список элементов.
     /// </summary>
-    public List<StrategyItems> Items { get; set; }
+    public List<ExportItems> Items { get; set; }
     
     /// <summary>
     /// Признак элемента футера меню.
@@ -21,7 +21,7 @@ public class ProjectManagmentHeaderStrategyItems
     public bool IsFooterItem { get; set; }
 }
 
-public class StrategyItems
+public class ExportItems
 {
     /// <summary>
     /// Id (системный идентификатор в БД).

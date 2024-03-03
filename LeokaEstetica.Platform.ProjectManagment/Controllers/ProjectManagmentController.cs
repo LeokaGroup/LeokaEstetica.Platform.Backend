@@ -102,24 +102,25 @@ public class ProjectManagmentController : BaseController
     }
 
     /// <summary>
-    /// Метод получает элементы верхнего меню (хидера).
+    /// Метод получает элементы панели.
+    /// Панель это и хидер модуля УП и левое выдвижное меню и меню документации проектов.
     /// </summary>
-    /// <returns>Список элементов.</returns>
+    /// <returns>Список элементов панели.</returns>
     [HttpGet]
-    [Route("header")]
-    [ProducesResponseType(200, Type = typeof(List<ProjectManagmentHeaderResult>))]
+    [Route("panel")]
+    [ProducesResponseType(200, Type = typeof(GetPanelResult))]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<List<ProjectManagmentHeaderResult>> GetHeaderItemsAsync()
+    public async Task<GetPanelResult> GetPanelItemsAsync()
     {
         // Получаем необработанные списки. Доп.списки пока не заполнены.
-        var unprocessedItems = await _projectManagmentService.GetHeaderItemsAsync();
-        var mapItems = _mapper.Map<IEnumerable<ProjectManagmentHeaderOutput>>(unprocessedItems);
+        var unprocessedItems = await _projectManagmentService.GetPanelItemsAsync();
+        var mapItems = _mapper.Map<IEnumerable<PanelOutput>>(unprocessedItems);
         
         // Наполняем доп.списки.
-        var result = await _projectManagmentService.ModifyHeaderItemsAsync(mapItems);
+        var result = await _projectManagmentService.ModifyPanelItemsAsync(mapItems);
 
         return result;
     }

@@ -3,9 +3,9 @@ using Newtonsoft.Json;
 namespace LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 
 /// <summary>
-/// Класс результата выходной модели хидера модуля УП (управление проектами).
+/// Класс результата выходной модели панели модуля УП (управление проектами) и модуля документации УП.
 /// </summary>
-public class ProjectManagmentHeaderResult
+public class PanelResult
 {
     /// <summary>
     /// Название.
@@ -22,15 +22,20 @@ public class ProjectManagmentHeaderResult
     /// <summary>
     /// Вложенные элементы.
     /// </summary>
-    public IEnumerable<ProjectManagmentHeader> Items { get; set; }
+    public IEnumerable<Panel> Items { get; set; }
     
     /// <summary>
     /// Признак неактивности пункта меню.
     /// </summary>
     public bool Disabled { get; set; }
+    
+    /// <summary>
+    /// Признак элемента футера меню.
+    /// </summary>
+    public bool IsFooterItem { get; set; }
 }
 
-public class ProjectManagmentHeader
+public class Panel
 {
     /// <summary>
     /// Название.
@@ -40,7 +45,7 @@ public class ProjectManagmentHeader
     /// <summary>
     /// Вложенные элементы.
     /// </summary>
-    public IEnumerable<ProjectManagmentHeaderItems> Items { get; set; }
+    public IEnumerable<PanelItems> Items { get; set; }
     
     /// <summary>
     /// Уникальный идентификатор (обычно системное название).
@@ -53,9 +58,14 @@ public class ProjectManagmentHeader
     /// Признак неактивности пункта меню.
     /// </summary>
     public bool Disabled { get; set; }
+    
+    /// <summary>
+    /// Признак элемента футера меню.
+    /// </summary>
+    public bool IsFooterItem { get; set; }
 }
 
-public class ProjectManagmentHeaderItems
+public class PanelItems
 {
     /// <summary>
     /// Название.
@@ -73,4 +83,9 @@ public class ProjectManagmentHeaderItems
     /// Признак неактивности пункта меню.
     /// </summary>
     public bool Disabled { get; set; }
+    
+    /// <summary>
+    /// Признак элемента футера меню.
+    /// </summary>
+    public bool IsFooterItem { get; set; }
 }

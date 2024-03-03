@@ -23,6 +23,11 @@ public class ProjectManagmentHeaderCreateItems
     [System.Text.Json.Serialization.JsonIgnore]
     [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
     public string Id { get; set; }
+    
+    /// <summary>
+    /// Признак элемента футера меню.
+    /// </summary>
+    public bool IsFooterItem { get; set; }
 }
 
 public class CreateItems
@@ -48,4 +53,9 @@ public class CreateItems
     [System.Text.Json.Serialization.JsonIgnore]
     [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
     public string Id { get; set; }
+    
+    /// <summary>
+    /// Признак элемента футера меню.
+    /// </summary>
+    public bool IsFooterItem { get; set; }
 }

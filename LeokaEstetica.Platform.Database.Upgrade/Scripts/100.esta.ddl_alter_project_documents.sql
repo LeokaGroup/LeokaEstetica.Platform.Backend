@@ -1,2 +1,2 @@
 ALTER TABLE documents.project_documents
-    ADD COLUMN user_id BIGINT NULL;
+    ADD COLUMN IF NOT EXISTS user_id BIGINT NULL;
