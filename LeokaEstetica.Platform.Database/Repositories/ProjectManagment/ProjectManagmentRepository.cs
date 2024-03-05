@@ -1374,18 +1374,16 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         var parameters = new DynamicParameters();
         parameters.Add("@projectId", projectId);
 
-        var query = @"SELECT epic_id,
-                               epic_name,
-                               epic_description,
-                               created_by,
-                               created_at,
-                               updated_at,
-                               updated_by,
-                               project_task_id,
-                               project_id,
-                               initiative_id 
-                      FROM project_management.epics 
-                      WHERE project_id = @projectId";
+        var query = "SELECT epic_id," +
+                    "epic_name," +
+                    "epic_description," +
+                    "created_by," +
+                    "created_at," +
+                    "updated_at," +
+                    "updated_by, " +
+                    "project_id " +
+                    "FROM project_management.epics " + 
+                    "WHERE project_id = @projectId";
 
         var result = await connection.QueryAsync<EpicEntity>(query, parameters);
 

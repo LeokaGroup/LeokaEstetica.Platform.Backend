@@ -40,19 +40,4 @@ public class EpicEntity
     /// Пользователь, который обновил эпик.
     /// </summary>
     public long? UpdatedBy { get; set; }
-
-    /// <summary>
-    /// Id задачи в рамках проекта, которая включена в эпик.
-    /// </summary>
-    public long ProjectTaskId { get; set; }
-
-    /// <summary>
-    /// Id проекта.
-    /// </summary>
-    public long ProjectId { get; set; }
-
-    /// <summary>
-    /// Id инициативы, включающая в себя эпики.
-    /// </summary>
-    public long? InitiativeId { get; set; }
 }
