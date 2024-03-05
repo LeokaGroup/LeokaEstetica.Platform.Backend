@@ -1518,4 +1518,34 @@ public class ProjectManagmentController : BaseController
 
         await _projectManagmentService.DeleteTaskCommentAsync(commentId, GetUserName());
     }
+
+    /// <summary>
+    /// Метод получает список эпиков.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Список эпиков.</returns>
+    [HttpGet]
+    [Route("epics")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<EpicOutput>))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<IEnumerable<EpicOutput>> GetEpicsAsync([FromQuery] long projectId)
+    {
+        if (projectId <= 0)
+        {
+            var ex = new InvalidOperationException($"Ошибка получение эпиков проекта. ProjectId: {projectId}");
+            _logger.LogError(ex, ex.Message);
+            
+            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            
+            throw ex;
+        }
+
+        var items = await _projectManagmentService.GetEpicsAsync(projectId);
+        var result = _mapper.Map<IEnumerable<EpicOutput>>(items);
+
+        return result;
+    }
 }

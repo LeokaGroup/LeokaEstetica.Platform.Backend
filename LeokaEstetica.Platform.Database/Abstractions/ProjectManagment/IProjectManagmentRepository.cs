@@ -399,4 +399,11 @@ public interface IProjectManagmentRepository
     /// <returns>Id документов. Может вернуть null, тогда будет выбран файл по дефолту nophoto.</returns>
     Task<IEnumerable<(long? UserId, long? DocumentId)>> GetUserAvatarDocumentIdByUserIdsAsync(IEnumerable<long> userIds,
         long projectId);
+    
+    /// <summary>
+    /// Метод получает список эпиков.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Список эпиков.</returns>
+    Task<IEnumerable<EpicEntity>> GetEpicsAsync(long projectId);
 }

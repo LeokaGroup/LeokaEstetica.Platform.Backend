@@ -1366,6 +1366,32 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         return result;
     }
 
+    /// <inheritdoc/>
+    public async Task<IEnumerable<EpicEntity>> GetEpicsAsync(long projectId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@projectId", projectId);
+
+        var query = @"SELECT epic_id,
+                               epic_name,
+                               epic_description,
+                               created_by,
+                               created_at,
+                               updated_at,
+                               updated_by,
+                               project_task_id,
+                               project_id,
+                               initiative_id 
+                      FROM project_management.epics 
+                      WHERE project_id = @projectId";
+
+        var result = await connection.QueryAsync<EpicEntity>(query, parameters);
+
+        return result;
+    }
+
     #endregion
 
     #region Приватные методы.

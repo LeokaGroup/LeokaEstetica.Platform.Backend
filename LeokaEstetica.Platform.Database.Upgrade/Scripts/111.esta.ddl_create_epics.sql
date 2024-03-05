@@ -6,7 +6,7 @@ CREATE TABLE project_management.epics
     created_by       BIGINT       NOT NULL,
     created_at       TIMESTAMP    NOT NULL DEFAULT NOW(),
     updated_at       TIMESTAMP    NULL,
-    updated_by       BIGINT       NOT NULL,
+    updated_by       BIGINT       NULL,
     project_task_id  BIGINT       NOT NULL,
     project_id       BIGINT       NOT NULL,
     initiative_id    BIGINT       NULL,

@@ -417,4 +417,11 @@ public interface IProjectManagmentService
     /// <param name="account">Аккаунт.</param>
     /// <param name="projectId">Id проекта.</param>
     Task UploadUserAvatarFileAsync(IFormFileCollection files, string account, long projectId);
+
+    /// <summary>
+    /// Метод получает список эпиков.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Список эпиков.</returns>
+    Task<IEnumerable<EpicEntity>> GetEpicsAsync(long projectId);
 }

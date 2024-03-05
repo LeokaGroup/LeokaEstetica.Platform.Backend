@@ -233,6 +233,8 @@ public class MappingProfile : Profile
         
         CreateMap<ProjectTaskCommentEntity, TaskCommentOutput>();
         CreateMap<ProjectTaskCommentExtendedEntity, TaskCommentOutput>();
+        
+        CreateMap<EpicEntity, EpicOutput>();
     }
     
     /// <summary>
