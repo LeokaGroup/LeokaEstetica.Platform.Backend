@@ -424,4 +424,12 @@ public interface IProjectManagmentService
     /// <param name="projectId">Id проекта.</param>
     /// <returns>Список эпиков.</returns>
     Task<IEnumerable<EpicEntity>> GetEpicsAsync(long projectId);
+
+    /// <summary>
+    /// Метод получает список задач, историй для бэклога.
+    /// Исключаются задачи в статусах: В архиве, готово, решена и тд.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Список задач для бэклога.</returns>
+    Task<BacklogOutput> GetBacklogTasksAsync(long projectId);
 }

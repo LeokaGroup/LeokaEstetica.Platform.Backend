@@ -2502,6 +2502,25 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         }
     }
 
+    /// <inheritdoc />
+    public async Task<BacklogOutput> GetBacklogTasksAsync(long projectId)
+    {
+        try
+        {
+            var result = new BacklogOutput();
+            var tasks = await _projectManagmentRepository.GetBacklogTasksAsync(projectId);
+            result.Tasks = _mapper.Map<IEnumerable<ProjectManagmentTaskOutput>>(tasks);
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
     #endregion
 
     #region Приватные методы.

@@ -1548,4 +1548,34 @@ public class ProjectManagmentController : BaseController
 
         return result;
     }
+
+    /// <summary>
+    /// Метод получает список задач, историй для бэклога.
+    /// Исключаются задачи в статусах: В архиве, готово, решена и тд.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Список задач для бэклога.</returns>
+    [HttpGet]
+    [Route("backlog-tasks")]
+    [ProducesResponseType(200, Type = typeof(BacklogOutput))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<BacklogOutput> GetBacklogTasksAsync([FromQuery] long projectId)
+    {
+        if (projectId <= 0)
+        {
+            var ex = new InvalidOperationException($"Ошибка получения задач бэклога проекта. ProjectId: {projectId}");
+            _logger.LogError(ex, ex.Message);
+            
+            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            
+            throw ex;
+        }
+
+        var result = await _projectManagmentService.GetBacklogTasksAsync(projectId);
+
+        return result;
+    }
 }
