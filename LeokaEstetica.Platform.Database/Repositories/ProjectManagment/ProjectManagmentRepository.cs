@@ -1366,6 +1366,60 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         return result;
     }
 
+    /// <inheritdoc/>
+    public async Task<IEnumerable<EpicEntity>> GetEpicsAsync(long projectId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@projectId", projectId);
+
+        var query = "SELECT epic_id," +
+                    "epic_name," +
+                    "epic_description," +
+                    "created_by," +
+                    "created_at," +
+                    "updated_at," +
+                    "updated_by, " +
+                    "project_id " +
+                    "FROM project_management.epics " + 
+                    "WHERE project_id = @projectId";
+
+        var result = await connection.QueryAsync<EpicEntity>(query, parameters);
+
+        return result;
+    }
+
+    /// <inheritdoc/>
+    public async Task<IEnumerable<ProjectTaskExtendedEntity>> GetBacklogTasksAsync(long projectId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+        var parameters = new DynamicParameters();
+        parameters.Add("@projectId", projectId);
+
+        var query = @"SELECT pt.task_id,
+                       pt.task_status_id,
+                       pt.author_id,
+                       pt.watcher_ids,
+                       pt.name,
+                       pt.details,
+                       pt.created,
+                       pt.updated,
+                       pt.project_id,
+                       pt.project_task_id,
+                       pt.resolution_id,
+                       pt.tag_ids,
+                       pt.task_type_id,
+                       pt.executor_id,
+                       pt.priority_id 
+                        FROM project_management.project_tasks AS pt 
+                        WHERE pt.project_id = @projectId";
+
+        var result = await connection.QueryAsync<ProjectTaskExtendedEntity>(query, parameters);
+
+        return result;
+    }
+
     #endregion
 
     #region Приватные методы.

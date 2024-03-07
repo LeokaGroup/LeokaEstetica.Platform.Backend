@@ -156,6 +156,7 @@ public class ProjectManagmentController : BaseController
     /// <param name="projectId">Id проекта.</param>
     /// <param name="paginatorStatusId">Id статуса, для которого нужно применить пагинатор.
     /// Если он null, то пагинатор применится для задач всех статусов шаблона.</param>
+    /// <param name="modifyTaskStatuseType">Компонент, данные которого будем модифицировать.</param>
     /// <param name="page">Номер страницы.</param>
     /// <returns>Данные конфигурации рабочего пространства.</returns>
     [HttpGet]
@@ -166,7 +167,8 @@ public class ProjectManagmentController : BaseController
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
     public async Task<ProjectManagmentWorkspaceResult> GetConfigurationWorkSpaceBySelectedTemplateAsync(
-        [FromQuery] long projectId, [FromQuery] int? paginatorStatusId, [FromQuery] int page = 1)
+        [FromQuery] long projectId, [FromQuery] int? paginatorStatusId,
+        [FromQuery] ModifyTaskStatuseTypeEnum modifyTaskStatuseType, [FromQuery] int page = 1)
     {
         var validator = await new GetConfigurationValidator().ValidateAsync(
             new GetConfigurationValidationModel(projectId));
@@ -188,7 +190,7 @@ public class ProjectManagmentController : BaseController
         }
 
         var result = await _projectManagmentService.GetConfigurationWorkSpaceBySelectedTemplateAsync(
-            projectId, GetUserName(), paginatorStatusId, page);
+            projectId, GetUserName(), paginatorStatusId, modifyTaskStatuseType, page);
 
         return result;
     }
@@ -1517,5 +1519,65 @@ public class ProjectManagmentController : BaseController
         }
 
         await _projectManagmentService.DeleteTaskCommentAsync(commentId, GetUserName());
+    }
+
+    /// <summary>
+    /// Метод получает список эпиков.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Список эпиков.</returns>
+    [HttpGet]
+    [Route("epics")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<EpicOutput>))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<IEnumerable<EpicOutput>> GetEpicsAsync([FromQuery] long projectId)
+    {
+        if (projectId <= 0)
+        {
+            var ex = new InvalidOperationException($"Ошибка получение эпиков проекта. ProjectId: {projectId}");
+            _logger.LogError(ex, ex.Message);
+            
+            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            
+            throw ex;
+        }
+
+        var items = await _projectManagmentService.GetEpicsAsync(projectId);
+        var result = _mapper.Map<IEnumerable<EpicOutput>>(items);
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод получает список задач, историй для бэклога.
+    /// Исключаются задачи в статусах: В архиве, готово, решена и тд.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Список задач для бэклога.</returns>
+    [HttpGet]
+    [Route("backlog-tasks")]
+    [ProducesResponseType(200, Type = typeof(ProjectManagmentWorkspaceResult))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<ProjectManagmentWorkspaceResult> GetBacklogTasksAsync([FromQuery] long projectId)
+    {
+        if (projectId <= 0)
+        {
+            var ex = new InvalidOperationException($"Ошибка получения задач бэклога проекта. ProjectId: {projectId}");
+            _logger.LogError(ex, ex.Message);
+            
+            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            
+            throw ex;
+        }
+
+        var result = await _projectManagmentService.GetBacklogTasksAsync(projectId, GetUserName());
+
+        return result;
     }
 }

@@ -65,10 +65,11 @@ public interface IProjectManagmentService
     /// <param name="account">Аккаунт.</param>
     /// <param name="paginatorStatusId">Id статуса, для которого нужно применить пагинатор.
     /// Если он null, то пагинатор применится для задач всех статусов шаблона.</param>
+    /// <param name="modifyTaskStatuseType">Компонент, данные которого будем модифицировать.</param>
     /// <param name="page">Номер страницы.</param>
     /// <returns>Данные конфигурации рабочего пространства.</returns>
     Task<ProjectManagmentWorkspaceResult> GetConfigurationWorkSpaceBySelectedTemplateAsync(long projectId,
-        string account, int? paginatorStatusId, int page = 1);
+        string account, int? paginatorStatusId, ModifyTaskStatuseTypeEnum modifyTaskStatuseType, int page = 1);
 
     /// <summary>
     /// Метод получает детали задачи.
@@ -417,4 +418,20 @@ public interface IProjectManagmentService
     /// <param name="account">Аккаунт.</param>
     /// <param name="projectId">Id проекта.</param>
     Task UploadUserAvatarFileAsync(IFormFileCollection files, string account, long projectId);
+
+    /// <summary>
+    /// Метод получает список эпиков.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Список эпиков.</returns>
+    Task<IEnumerable<EpicEntity>> GetEpicsAsync(long projectId);
+
+    /// <summary>
+    /// Метод получает список задач, историй для бэклога.
+    /// Исключаются задачи в статусах: В архиве, готово, решена и тд.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="account">Аккаунт.</param>
+    /// <returns>Список задач для бэклога.</returns>
+    Task<ProjectManagmentWorkspaceResult> GetBacklogTasksAsync(long projectId, string account);
 }

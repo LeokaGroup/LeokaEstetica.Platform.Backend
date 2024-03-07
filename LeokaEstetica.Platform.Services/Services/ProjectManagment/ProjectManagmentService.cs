@@ -559,7 +559,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 
     /// <inheritdoc />
     public async Task<ProjectManagmentWorkspaceResult> GetConfigurationWorkSpaceBySelectedTemplateAsync(long projectId,
-        string account, int? paginatorStatusId, int page = 1)
+        string account, int? paginatorStatusId, ModifyTaskStatuseTypeEnum modifyTaskStatuseType, int page = 1)
     {
         try
         {
@@ -571,16 +571,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 throw ex;
             }
 
-            // Проверяем доступ к проекту.
-            var isOwner = await _projectRepository.CheckProjectOwnerAsync(projectId, userId);
-
-            if (!isOwner)
-            {
-                throw new InvalidOperationException("Пользователь не является владельцем проекта." +
-                                                    $"ProjectId: {projectId}." +
-                                                    $"UserId: {userId}");
-            }
-            
+            // TODO: Этот код дублируется в этом сервисе. Вынести в приватный метод и кортежем вернуть нужные данные.
             // Получаем настройки проекта.
             var projectSettings = await _projectSettingsConfigRepository.GetProjectSpaceSettingsByProjectIdAsync(
                 projectId, userId);
@@ -645,6 +636,22 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             // Если задачи есть, то модифицируем выходные данные.
             if (tasks is not null && tasks.Any())
             {
+                // Исключаем некоторые статусы из бэклога, так как из них нельзя спланировать спринт.
+                if (modifyTaskStatuseType == ModifyTaskStatuseTypeEnum.Backlog)
+                {
+                    var excludedStatuses = new[]
+                    {
+                        (long)ProjectTaskStatusEnum.Completed,
+                        (long)ProjectTaskStatusEnum.Archive,
+                        (long)ProjectTaskStatusEnum.Closed
+                    };
+                
+                    result.ProjectManagmentTaskStatuses = result.ProjectManagmentTaskStatuses
+                        .Where(x => !excludedStatuses.Contains(x.TaskStatusId));
+                    
+                    tasks = tasks.Where(x => !excludedStatuses.Contains(x.TaskStatusId)).AsList();
+                }
+                
                 await ModifyProjectManagmentTaskStatusesResultAsync(result.ProjectManagmentTaskStatuses, tasks,
                     projectId, result.Strategy, paginatorStatusId, page);
             }
@@ -904,6 +911,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             // Создаем задачу в БД.
             await _projectManagmentRepository.CreateProjectTaskAsync(addedProjectTask);
 
+            // TODO: Этот код дублируется в этом сервисе. Вынести в приватный метод и кортежем вернуть нужные данные.
             // Получаем настройки проекта.
             var projectSettings = await _projectSettingsConfigRepository.GetProjectSpaceSettingsByProjectIdAsync(
                 projectId, userId);
@@ -1006,6 +1014,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 throw ex;
             }
             
+            // TODO: Этот код дублируется в этом сервисе. Вынести в приватный метод и кортежем вернуть нужные данные.
             // Получаем все статусы, которые входят в шаблон текущего проекта.
             // Получаем настройки проекта.
             var projectSettings = await _projectSettingsConfigRepository.GetProjectSpaceSettingsByProjectIdAsync(
@@ -1363,6 +1372,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                     $"{JsonConvert.SerializeObject(transitionStatuses)}.");
             }
             
+            // TODO: Этот код дублируется в этом сервисе. Вынести в приватный метод и кортежем вернуть нужные данные.
             // Получаем все статусы, которые входят в шаблон текущего проекта.
             // Получаем настройки проекта.
             var projectSettings = await _projectSettingsConfigRepository.GetProjectSpaceSettingsByProjectIdAsync(
@@ -2485,6 +2495,49 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         }
     }
 
+    /// <inheritdoc />
+    public async Task<IEnumerable<EpicEntity>> GetEpicsAsync(long projectId)
+    {
+        try
+        {
+            var result = await _projectManagmentRepository.GetEpicsAsync(projectId);
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task<ProjectManagmentWorkspaceResult> GetBacklogTasksAsync(long projectId, string account)
+    {
+        try
+        {
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+
+            var result = await GetConfigurationWorkSpaceBySelectedTemplateAsync(projectId, account, null,
+                ModifyTaskStatuseTypeEnum.Backlog);
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
     #endregion
 
     #region Приватные методы.
@@ -2502,7 +2555,8 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     /// <exception cref="InvalidOperationException">Может бахнуть, если какое-то условие не прошли.</exception>
     private async Task ModifyProjectManagmentTaskStatusesResultAsync(
         IEnumerable<ProjectManagmentTaskStatusTemplateOutput> projectManagmentTaskStatusTemplates,
-        List<ProjectTaskExtendedEntity> tasks, long projectId, string strategy, int? paginatorStatusId, int page = 1)
+        List<ProjectTaskExtendedEntity> tasks, long projectId, string strategy, int? paginatorStatusId = null,
+        int page = 1)
     {
         // Получаем имена авторов задач.
         var authorIds = tasks.Select(x => x.AuthorId);
