@@ -156,6 +156,7 @@ public class ProjectManagmentController : BaseController
     /// <param name="projectId">Id проекта.</param>
     /// <param name="paginatorStatusId">Id статуса, для которого нужно применить пагинатор.
     /// Если он null, то пагинатор применится для задач всех статусов шаблона.</param>
+    /// <param name="modifyTaskStatuseType">Компонент, данные которого будем модифицировать.</param>
     /// <param name="page">Номер страницы.</param>
     /// <returns>Данные конфигурации рабочего пространства.</returns>
     [HttpGet]
@@ -166,7 +167,8 @@ public class ProjectManagmentController : BaseController
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
     public async Task<ProjectManagmentWorkspaceResult> GetConfigurationWorkSpaceBySelectedTemplateAsync(
-        [FromQuery] long projectId, [FromQuery] int? paginatorStatusId, [FromQuery] int page = 1)
+        [FromQuery] long projectId, [FromQuery] int? paginatorStatusId,
+        [FromQuery] ModifyTaskStatuseTypeEnum modifyTaskStatuseType, [FromQuery] int page = 1)
     {
         var validator = await new GetConfigurationValidator().ValidateAsync(
             new GetConfigurationValidationModel(projectId));
@@ -188,7 +190,7 @@ public class ProjectManagmentController : BaseController
         }
 
         var result = await _projectManagmentService.GetConfigurationWorkSpaceBySelectedTemplateAsync(
-            projectId, GetUserName(), paginatorStatusId, page);
+            projectId, GetUserName(), paginatorStatusId, modifyTaskStatuseType, page);
 
         return result;
     }
@@ -1557,12 +1559,12 @@ public class ProjectManagmentController : BaseController
     /// <returns>Список задач для бэклога.</returns>
     [HttpGet]
     [Route("backlog-tasks")]
-    [ProducesResponseType(200, Type = typeof(BacklogOutput))]
+    [ProducesResponseType(200, Type = typeof(ProjectManagmentWorkspaceResult))]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<BacklogOutput> GetBacklogTasksAsync([FromQuery] long projectId)
+    public async Task<ProjectManagmentWorkspaceResult> GetBacklogTasksAsync([FromQuery] long projectId)
     {
         if (projectId <= 0)
         {
@@ -1574,7 +1576,7 @@ public class ProjectManagmentController : BaseController
             throw ex;
         }
 
-        var result = await _projectManagmentService.GetBacklogTasksAsync(projectId);
+        var result = await _projectManagmentService.GetBacklogTasksAsync(projectId, GetUserName());
 
         return result;
     }
