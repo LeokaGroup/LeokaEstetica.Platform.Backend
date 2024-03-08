@@ -40,4 +40,44 @@ public class EpicEntity
     /// Пользователь, который обновил эпик.
     /// </summary>
     public long? UpdatedBy { get; set; }
+
+    /// <summary>
+    /// Id проекта.
+    /// </summary>
+    public long ProjectId { get; set; }
+
+    /// <summary>
+    /// Дата начала эпика.
+    /// </summary>
+    public DateTime? DateStart { get; set; }
+    
+    /// <summary>
+    /// Дата окончания эпика.
+    /// </summary>
+    public DateTime? DateEnd { get; set; }
+
+    /// <summary>
+    /// Приоритет задачи.
+    /// </summary>
+    public int PriorityId { get; set; }
+    
+    /// <summary>
+    /// Id резолюции.
+    /// </summary>
+    public int? ResolutionId { get; set; }
+
+    /// <summary>
+    /// Список Id тегов задачи.
+    /// </summary>
+    public int[] TagIds { get; set; }
+    
+    /// <summary>
+    /// Id статуса задачи.
+    /// </summary>
+    public long TaskStatusId { get; set; }
+
+    /// <summary>
+    /// Id инициативы.
+    /// </summary>
+    public long? InitiativeId { get; set; }
 }

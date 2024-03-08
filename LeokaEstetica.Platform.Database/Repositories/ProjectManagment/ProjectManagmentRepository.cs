@@ -377,10 +377,7 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
         return result;
     }
 
-    /// <summary>
-    /// Метод создает задачу проекта.
-    /// </summary>
-    /// <param name="task">Задача для создания.</param>
+    /// <inheritdoc />
     public async Task CreateProjectTaskAsync(ProjectTaskEntity task)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
@@ -402,6 +399,33 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
 
         var sql = @"INSERT INTO project_management.project_tasks (task_status_id, author_id, watcher_ids, name, details, created, project_id, project_task_id, resolution_id, tag_ids, task_type_id, executor_id, priority_id) 
 VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @project_id, @project_task_id, @resolution_id, @tag_ids, @task_type_id, @executor_id, @priority_id)";
+
+        await connection.ExecuteAsync(sql, parameters);
+    }
+
+    /// <inheritdoc />
+    public async Task CreateProjectEpicAsync(EpicEntity epic)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@epic_name", epic.EpicName);
+        parameters.Add("@epic_description", epic.EpicDescription);
+        parameters.Add("@created_at", DateTime.UtcNow);
+        parameters.Add("@created_by", epic.CreatedBy);
+        parameters.Add("@project_id", epic.ProjectId);
+        parameters.Add("@resolution_id", epic.ResolutionId);
+        parameters.Add("@tag_ids", epic.TagIds);
+        parameters.Add("@date_start", epic.DateStart);
+        parameters.Add("@date_end", epic.DateEnd);
+        parameters.Add("@priority_id", epic.PriorityId);
+        parameters.Add("@initiative_id", epic.InitiativeId);
+
+        var sql = @"INSERT INTO project_management.epics (epic_name, epic_description, created_by, created_at,
+                                      project_id, initiative_id, date_start, date_end, priority_id, tag_ids,
+                                      resolution_id) 
+        VALUES (@epic_name, @epic_description, @created_at, @created_by, @project_id, @resolution_id, @tag_ids,
+                @date_start, @date_end, @priority_id, @initiative_id)";
 
         await connection.ExecuteAsync(sql, parameters);
     }

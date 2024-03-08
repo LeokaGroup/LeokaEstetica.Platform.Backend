@@ -99,4 +99,45 @@ internal static class CreateProjectTaskFactory
 
         return result;
     }
+    
+    /// <summary>
+    /// Метод создает сущность епика для сохранения в БД.
+    /// </summary>
+    /// <param name="projectManagementTaskInput">Входная модель.</param>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Наполненная сущность епика.</returns>
+    public static EpicEntity CreateProjectEpic(CreateProjectManagementTaskInput projectManagementTaskInput,
+        long userId)
+    {
+        var result = new EpicEntity
+        {
+            EpicName = projectManagementTaskInput.Name,
+            CreatedBy = userId,
+            ProjectId = projectManagementTaskInput.ProjectId,
+            TaskStatusId = projectManagementTaskInput.TaskStatusId,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow,
+            PriorityId = projectManagementTaskInput.PriorityId!.Value
+        };
+
+        // Если к задаче добавили описание.
+        if (!string.IsNullOrWhiteSpace(projectManagementTaskInput.Details))
+        {
+            result.EpicDescription = projectManagementTaskInput.Details;
+        }
+        
+        // Если к задаче добавили теги (метки).
+        if (projectManagementTaskInput.TagIds is not null && projectManagementTaskInput.TagIds.Any())
+        {
+            result.TagIds = projectManagementTaskInput.TagIds;
+        }
+
+        // Если к задаче не добавили приоритет, то по дефолту проставим средний.
+        if (!projectManagementTaskInput.PriorityId.HasValue)
+        {
+            result.PriorityId = (int)TaskPriorityEnum.Medium;
+        }
+
+        return result;
+    }
 }
