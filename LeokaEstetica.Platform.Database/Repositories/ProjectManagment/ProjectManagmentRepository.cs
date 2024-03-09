@@ -409,23 +409,23 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         using var connection = await ConnectionProvider.GetConnectionAsync();
 
         var parameters = new DynamicParameters();
-        parameters.Add("@epic_name", epic.EpicName);
-        parameters.Add("@epic_description", epic.EpicDescription);
-        parameters.Add("@created_at", DateTime.UtcNow);
-        parameters.Add("@created_by", epic.CreatedBy);
-        parameters.Add("@project_id", epic.ProjectId);
-        parameters.Add("@resolution_id", epic.ResolutionId);
-        parameters.Add("@tag_ids", epic.TagIds);
-        parameters.Add("@date_start", epic.DateStart);
-        parameters.Add("@date_end", epic.DateEnd);
-        parameters.Add("@priority_id", epic.PriorityId);
-        parameters.Add("@initiative_id", epic.InitiativeId);
+        parameters.Add("@epicName", epic.EpicName);
+        parameters.Add("@epicDescription", epic.EpicDescription);
+        parameters.Add("@createdAt", DateTime.UtcNow);
+        parameters.Add("@createdBy", epic.CreatedBy);
+        parameters.Add("@projectId", epic.ProjectId);
+        parameters.Add("@resolutionId", epic.ResolutionId);
+        parameters.Add("@tagIds", epic.TagIds);
+        parameters.Add("@dateStart", epic.DateStart);
+        parameters.Add("@dateEnd", epic.DateEnd);
+        parameters.Add("@priorityId", epic.PriorityId);
+        parameters.Add("@initiativeId", epic.InitiativeId);
 
         var sql = @"INSERT INTO project_management.epics (epic_name, epic_description, created_by, created_at,
                                       project_id, initiative_id, date_start, date_end, priority_id, tag_ids,
                                       resolution_id) 
-        VALUES (@epic_name, @epic_description, @created_at, @created_by, @project_id, @resolution_id, @tag_ids,
-                @date_start, @date_end, @priority_id, @initiative_id)";
+        VALUES (@epicName, @epicDescription, @createdBy, @createdAt, @projectId, @initiativeId, @dateStart, @dateEnd,
+                @priorityId, @tagIds, @resolutionId)";
 
         await connection.ExecuteAsync(sql, parameters);
     }

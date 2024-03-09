@@ -138,6 +138,18 @@ internal static class CreateProjectTaskFactory
             result.PriorityId = (int)TaskPriorityEnum.Medium;
         }
 
+        // Если заполнили дату начала эпика.
+        if (projectManagementTaskInput.DateStart.HasValue)
+        {
+            result.DateStart = projectManagementTaskInput.DateStart.Value;
+        }
+        
+        // Если заполнили дату окончания эпика.
+        if (projectManagementTaskInput.DateEnd.HasValue)
+        {
+            result.DateEnd = projectManagementTaskInput.DateEnd.Value;
+        }
+
         return result;
     }
 }

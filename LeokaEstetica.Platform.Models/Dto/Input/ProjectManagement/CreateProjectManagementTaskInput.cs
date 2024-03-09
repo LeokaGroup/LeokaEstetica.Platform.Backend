@@ -54,4 +54,14 @@ public class CreateProjectManagementTaskInput
     /// Id приоритета задачи.
     /// </summary>
     public int? PriorityId { get; set; }
+    
+    /// <summary>
+    /// Дата начала эпика.
+    /// </summary>
+    public DateTime? DateStart { get; set; }
+    
+    /// <summary>
+    /// Дата окончания эпика.
+    /// </summary>
+    public DateTime? DateEnd { get; set; }
 }
