@@ -115,6 +115,12 @@ public interface IProjectManagmentRepository
     /// </summary>
     /// <param name="task">Задача для создания.</param>
     Task CreateProjectTaskAsync (ProjectTaskEntity task);
+    
+    /// <summary>
+    /// Метод создает задачу эпика.
+    /// </summary>
+    /// <param name="epic">Эпик для создания.</param>
+    Task CreateProjectEpicAsync (EpicEntity epic);
 
     /// <summary>
     /// Метод получает максимальный Position у тегов задач пользователя.
