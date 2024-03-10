@@ -434,4 +434,11 @@ public interface IProjectManagmentService
     /// <param name="account">Аккаунт.</param>
     /// <returns>Список задач для бэклога.</returns>
     Task<ProjectManagmentWorkspaceResult> GetBacklogTasksAsync(long projectId, string account);
+
+    /// <summary>
+    /// Метод получает эпики, доступные к добавлению в них задачи.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Список эпиков.</returns>
+    Task<IEnumerable<EpicEntity>> GetAvailableEpicsAsync(long projectId);
 }

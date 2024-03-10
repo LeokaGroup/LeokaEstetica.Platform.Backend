@@ -1580,4 +1580,35 @@ public class ProjectManagmentController : BaseController
 
         return result;
     }
+
+    /// <summary>
+    /// Метод получает эпики, доступные к добавлению в них задачи.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Список эпиков.</returns>
+    [HttpGet]
+    [Route("available-epics")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<AvailableEpicOutput>))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<IEnumerable<AvailableEpicOutput>> GetAvailableEpicsAsync([FromQuery] long projectId)
+    {
+        if (projectId <= 0)
+        {
+            var ex = new InvalidOperationException("Ошибка получения доступных эпиков для добавления задачи в эпик." +
+                                                   $" ProjectId: {projectId}");
+            _logger.LogError(ex, ex.Message);
+            
+            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            
+            throw ex;
+        }
+
+        var items = await _projectManagmentService.GetAvailableEpicsAsync(projectId);
+        var result = _mapper.Map<IEnumerable<AvailableEpicOutput>>(items);
+
+        return result;
+    }
 }

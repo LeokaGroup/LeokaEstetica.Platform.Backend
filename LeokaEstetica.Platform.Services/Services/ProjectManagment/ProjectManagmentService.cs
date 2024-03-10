@@ -2561,6 +2561,23 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         }
     }
 
+    /// <inheritdoc />
+    public async Task<IEnumerable<EpicEntity>> GetAvailableEpicsAsync(long projectId)
+    {
+        try
+        {
+            var result = await _projectManagmentRepository.GetAvailableEpicsAsync(projectId);
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
     #endregion
 
     #region Приватные методы.
