@@ -1,12 +1,13 @@
 using FluentValidation;
 using LeokaEstetica.Platform.Core.Constants;
+using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
 
 namespace LeokaEstetica.Platform.ProjectManagment.Validators;
 
 /// <summary>
 /// Класс валидатора эпика.
 /// </summary>
-public class TaskEpicValidator : AbstractValidator<(long EpicId, long ProjectId, string ProjectTaskId)>
+public class TaskEpicValidator : AbstractValidator<IncludeTaskEpicInput>
 {
     /// <summary>
     /// Конструктор.

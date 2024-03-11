@@ -1615,9 +1615,7 @@ public class ProjectManagmentController : BaseController
     /// <summary>
     /// Метод добавляет задачу в эпик.
     /// </summary>
-    /// <param name="epicId">Id эпика.</param>
-    /// <param name="projectId">Id проекта.</param>
-    /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
+    /// <param name="includeTaskEpicInput">Входная модель.</param>
     [HttpPost]
     [Route("task-epic")]
     [ProducesResponseType(200)]
@@ -1625,10 +1623,9 @@ public class ProjectManagmentController : BaseController
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task IncludeTaskEpicAsync([FromQuery] long epicId, [FromQuery] long projectId,
-        [FromQuery] string projectTaskId)
+    public async Task IncludeTaskEpicAsync([FromBody] IncludeTaskEpicInput includeTaskEpicInput)
     {
-        var validator = await new TaskEpicValidator().ValidateAsync((epicId, projectId, projectTaskId));
+        var validator = await new TaskEpicValidator().ValidateAsync(includeTaskEpicInput);
 
         if (validator.Errors.Any())
         {
@@ -1640,9 +1637,9 @@ public class ProjectManagmentController : BaseController
             }
 
             var ex = new AggregateException("Ошибка добавления задачи в эпик. " +
-                                            $"ProjectId: {projectId}. " +
-                                            $"ProjectTaskId: {projectTaskId}. " +
-                                            $"EpicId: {epicId}", exceptions);
+                                            $"ProjectId: {includeTaskEpicInput.ProjectId}. " +
+                                            $"ProjectTaskId: {includeTaskEpicInput.ProjectTaskId}. " +
+                                            $"EpicId: {includeTaskEpicInput.EpicId}", exceptions);
             _logger.LogError(ex, ex.Message);
             
             await _pachcaService.Value.SendNotificationErrorAsync(ex);
@@ -1650,6 +1647,7 @@ public class ProjectManagmentController : BaseController
             throw ex;
         }
 
-        await _projectManagmentService.IncludeTaskEpicAsync(epicId, projectId, projectTaskId, GetUserName());
+        await _projectManagmentService.IncludeTaskEpicAsync(includeTaskEpicInput.EpicId, includeTaskEpicInput.ProjectId,
+            includeTaskEpicInput.ProjectTaskId, GetUserName());
     }
 }
