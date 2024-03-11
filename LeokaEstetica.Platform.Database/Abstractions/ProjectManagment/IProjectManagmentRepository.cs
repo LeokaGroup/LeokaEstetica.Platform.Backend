@@ -434,4 +434,13 @@ public interface IProjectManagmentRepository
     /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
     /// <returns>Признак нахождения задачи в эпике.</returns>
     Task<bool> IfIncludedTaskEpicAsync(long epicId, long projectTaskId);
+
+    /// <summary>
+    /// Метод получает эпик, в который входит задача.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="epicId">Id эпика.</param>
+    /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
+    /// <returns>Данные эпика.</returns>
+    Task<AvailableEpicOutput> GetTaskEpicAsync(long projectId, long projectTaskId);
 }

@@ -1647,7 +1647,7 @@ public class ProjectManagmentController : BaseController
             throw ex;
         }
 
-        await _projectManagmentService.IncludeTaskEpicAsync(includeTaskEpicInput.EpicId, includeTaskEpicInput.ProjectId,
-            includeTaskEpicInput.ProjectTaskId, GetUserName());
+        await _projectManagmentService.IncludeTaskEpicAsync(includeTaskEpicInput.EpicId,
+            includeTaskEpicInput.ProjectId, includeTaskEpicInput.ProjectTaskId, GetUserName());
     }
 }

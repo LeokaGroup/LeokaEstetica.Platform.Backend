@@ -686,9 +686,10 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 throw ex;
             }
 
+            var projectTaskIdToNumber = projectTaskId.GetProjectTaskIdFromPrefixLink();
+
             // TODO: Добавить проверку. Является ли пользователь участником проекта. Если нет, то не давать доступ к задаче.
-            var task = await _projectManagmentRepository.GetTaskDetailsByTaskIdAsync(
-                projectTaskId.GetProjectTaskIdFromPrefixLink(), projectId);
+            var task = await _projectManagmentRepository.GetTaskDetailsByTaskIdAsync(projectTaskIdToNumber, projectId);
 
             // Получаем имя автора задачи.
             var authors = await _userRepository.GetAuthorNamesByAuthorIdsAsync(new[] { task.AuthorId });
@@ -847,6 +848,15 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                         result.PriorityName = priorities.TryGet(priorityId.Value).PriorityName;
                     }
                 }
+            }
+            
+            // Получаем эпик, в которую добавлена задача.
+            var taskEpic = await _projectManagmentRepository.GetTaskEpicAsync(projectId, projectTaskIdToNumber);
+
+            if (taskEpic is not null)
+            {
+                result.EpicId = taskEpic.EpicId;
+                result.EpicName = taskEpic.EpicName;
             }
 
             return result;

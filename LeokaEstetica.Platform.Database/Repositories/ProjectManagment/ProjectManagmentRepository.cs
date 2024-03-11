@@ -1466,6 +1466,39 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         return result;
     }
 
+    /// <inheritdoc/>
+    public async Task<AvailableEpicOutput> GetTaskEpicAsync(long projectId, long projectTaskId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var epicTaskParameters = new DynamicParameters();
+        epicTaskParameters.Add("@projectTaskId", projectTaskId);
+
+        var epicTaskQuery = @"SELECT epic_id 
+                              FROM project_management.epic_tasks 
+                              WHERE project_task_id = @projectTaskId";
+
+        var epicIdResult = await connection.QuerySingleOrDefaultAsync<long?>(epicTaskQuery, epicTaskParameters);
+
+        if (epicIdResult is null)
+        {
+            return null;
+        }
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@epicId", epicIdResult);
+        parameters.Add("@projectId", projectId);
+
+        var query = @"SELECT epic_id, epic_name 
+                      FROM project_management.epics 
+                      WHERE epic_id = @epicId 
+                        AND project_id = @projectId";
+        
+        var result = await connection.QuerySingleOrDefaultAsync<AvailableEpicOutput>(query, parameters);
+
+        return result;
+    }
+
     #endregion
 
     #region Приватные методы.
