@@ -441,4 +441,13 @@ public interface IProjectManagmentService
     /// <param name="projectId">Id проекта.</param>
     /// <returns>Список эпиков.</returns>
     Task<IEnumerable<EpicEntity>> GetAvailableEpicsAsync(long projectId);
+
+    /// <summary>
+    /// Метод добавляет задачу в эпик.
+    /// </summary>
+    /// <param name="epicId">Id эпика.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
+    /// <param name="account">Аккаунт.</param>
+    Task IncludeTaskEpicAsync(long epicId, long projectId, string projectTaskId, string account);
 }

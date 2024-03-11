@@ -1432,6 +1432,40 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         return result;
     }
 
+    /// <inheritdoc/>
+    public async Task IncludeTaskEpicAsync(long epicId, long projectTaskId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@epicId", epicId);
+        parameters.Add("@projectTaskId", projectTaskId);
+
+        var query = @"INSERT INTO project_management.epic_tasks (project_task_id, epic_id) 
+                      VALUES (@projectTaskId, @epicId)";
+
+        await connection.ExecuteAsync(query, parameters);
+    }
+
+    /// <inheritdoc/>
+    public async Task<bool> IfIncludedTaskEpicAsync(long epicId, long projectTaskId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@epicId", epicId);
+        parameters.Add("@projectTaskId", projectTaskId);
+
+        var query = @"SELECT EXISTS(SELECT epic_tasks_id
+              FROM project_management.epic_tasks
+              WHERE project_task_id = @projectTaskId
+                AND epic_id = @epicId)";
+        
+        var result = await connection.QuerySingleOrDefaultAsync<bool>(query, parameters);
+
+        return result;
+    }
+
     #endregion
 
     #region Приватные методы.

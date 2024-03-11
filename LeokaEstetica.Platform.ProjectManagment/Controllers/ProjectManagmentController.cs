@@ -1611,4 +1611,45 @@ public class ProjectManagmentController : BaseController
 
         return result;
     }
+
+    /// <summary>
+    /// Метод добавляет задачу в эпик.
+    /// </summary>
+    /// <param name="epicId">Id эпика.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
+    [HttpPost]
+    [Route("task-epic")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task IncludeTaskEpicAsync([FromQuery] long epicId, [FromQuery] long projectId,
+        [FromQuery] string projectTaskId)
+    {
+        var validator = await new TaskEpicValidator().ValidateAsync((epicId, projectId, projectTaskId));
+
+        if (validator.Errors.Any())
+        {
+            var exceptions = new List<InvalidOperationException>();
+
+            foreach (var err in validator.Errors)
+            {
+                exceptions.Add(new InvalidOperationException(err.ErrorMessage));
+            }
+
+            var ex = new AggregateException("Ошибка добавления задачи в эпик. " +
+                                            $"ProjectId: {projectId}. " +
+                                            $"ProjectTaskId: {projectTaskId}. " +
+                                            $"EpicId: {epicId}", exceptions);
+            _logger.LogError(ex, ex.Message);
+            
+            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            
+            throw ex;
+        }
+
+        await _projectManagmentService.IncludeTaskEpicAsync(epicId, projectId, projectTaskId, GetUserName());
+    }
 }

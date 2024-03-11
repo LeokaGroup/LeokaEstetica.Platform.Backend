@@ -419,4 +419,19 @@ public interface IProjectManagmentRepository
     /// <param name="projectId">Id проекта.</param>
     /// <returns>Список эпиков.</returns>
     Task<IEnumerable<EpicEntity>> GetAvailableEpicsAsync(long projectId);
+    
+    /// <summary>
+    /// Метод добавляет задачу в эпик.
+    /// </summary>
+    /// <param name="epicId">Id эпика.</param>
+    /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
+    Task IncludeTaskEpicAsync(long epicId, long projectTaskId);
+
+    /// <summary>
+    /// Метод проверяет, чтобы задача уже не находилась в эпике.
+    /// </summary>
+    /// <param name="epicId">Id эпика.</param>
+    /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
+    /// <returns>Признак нахождения задачи в эпике.</returns>
+    Task<bool> IfIncludedTaskEpicAsync(long epicId, long projectTaskId);
 }

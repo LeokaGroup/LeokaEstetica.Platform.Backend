@@ -268,5 +268,10 @@ public static class ValidationConst
         /// Если не передали поисковый текст.
         /// </summary>
         public const string EMPTY_SEARCH_TEXT = "Поисковый текст не передан.";
+        
+        /// <summary>
+        /// Если передали невалидный Id эпика.
+        /// </summary>
+        public const string NOT_VALID_EPIC_ID = "Id эпика не передан.";
     }
 }

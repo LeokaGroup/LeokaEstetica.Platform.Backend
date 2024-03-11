@@ -2578,6 +2578,44 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         }
     }
 
+    /// <inheritdoc />
+    public async Task IncludeTaskEpicAsync(long epicId, long projectId, string projectTaskId, string account)
+    {
+        try
+        {
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+
+            var projectTaskIdToNumber = projectTaskId.GetProjectTaskIdFromPrefixLink();
+            
+            // Проверяем, чтобы задача уже не находилась в эпике.
+            var ifIncluded = await _projectManagmentRepository.IfIncludedTaskEpicAsync(epicId, projectTaskIdToNumber);
+
+            if (ifIncluded)
+            {
+                throw new InvalidOperationException("Задача уже находится в эпике. Ее добавление в эпик невозможно. " +
+                                                    $"ProjectTaskId: {projectTaskId}. " +
+                                                    $"ProjectTaskId: {projectTaskId}. " +
+                                                    $"ProjectId: {projectId}.");
+            }
+            
+            await _projectManagmentRepository.IncludeTaskEpicAsync(epicId, projectTaskIdToNumber);
+
+            // TODO: Тут добавить запись активности пользователя по userId (кто добавил задачу в эпик).
+        }
+        
+        catch (Exception ex)
+        {
+             _logger.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
     #endregion
 
     #region Приватные методы.
