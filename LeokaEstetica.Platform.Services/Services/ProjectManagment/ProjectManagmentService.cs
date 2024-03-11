@@ -686,9 +686,10 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 throw ex;
             }
 
+            var projectTaskIdToNumber = projectTaskId.GetProjectTaskIdFromPrefixLink();
+
             // TODO: Добавить проверку. Является ли пользователь участником проекта. Если нет, то не давать доступ к задаче.
-            var task = await _projectManagmentRepository.GetTaskDetailsByTaskIdAsync(
-                projectTaskId.GetProjectTaskIdFromPrefixLink(), projectId);
+            var task = await _projectManagmentRepository.GetTaskDetailsByTaskIdAsync(projectTaskIdToNumber, projectId);
 
             // Получаем имя автора задачи.
             var authors = await _userRepository.GetAuthorNamesByAuthorIdsAsync(new[] { task.AuthorId });
@@ -847,6 +848,15 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                         result.PriorityName = priorities.TryGet(priorityId.Value).PriorityName;
                     }
                 }
+            }
+            
+            // Получаем эпик, в которую добавлена задача.
+            var taskEpic = await _projectManagmentRepository.GetTaskEpicAsync(projectId, projectTaskIdToNumber);
+
+            if (taskEpic is not null)
+            {
+                result.EpicId = taskEpic.EpicId;
+                result.EpicName = taskEpic.EpicName;
             }
 
             return result;
@@ -2557,6 +2567,61 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         catch (Exception ex)
         {
             _logger.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task<IEnumerable<EpicEntity>> GetAvailableEpicsAsync(long projectId)
+    {
+        try
+        {
+            var result = await _projectManagmentRepository.GetAvailableEpicsAsync(projectId);
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task IncludeTaskEpicAsync(long epicId, long projectId, string projectTaskId, string account)
+    {
+        try
+        {
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+
+            var projectTaskIdToNumber = projectTaskId.GetProjectTaskIdFromPrefixLink();
+            
+            // Проверяем, чтобы задача уже не находилась в эпике.
+            var ifIncluded = await _projectManagmentRepository.IfIncludedTaskEpicAsync(epicId, projectTaskIdToNumber);
+
+            if (ifIncluded)
+            {
+                throw new InvalidOperationException("Задача уже находится в эпике. Ее добавление в эпик невозможно. " +
+                                                    $"ProjectTaskId: {projectTaskId}. " +
+                                                    $"ProjectTaskId: {projectTaskId}. " +
+                                                    $"ProjectId: {projectId}.");
+            }
+            
+            await _projectManagmentRepository.IncludeTaskEpicAsync(epicId, projectTaskIdToNumber);
+
+            // TODO: Тут добавить запись активности пользователя по userId (кто добавил задачу в эпик).
+        }
+        
+        catch (Exception ex)
+        {
+             _logger.LogError(ex, ex.Message);
             throw;
         }
     }

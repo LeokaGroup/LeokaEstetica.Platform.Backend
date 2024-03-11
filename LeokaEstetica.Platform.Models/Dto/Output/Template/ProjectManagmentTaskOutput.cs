@@ -134,6 +134,16 @@ public class ProjectManagmentTaskOutput
     /// Id задачи вместе с префиксом.
     /// </summary>
     public string FullTaskId => string.Concat(TaskIdPrefix + "-", TaskId);
+    
+    /// <summary>
+    /// Название эпика, в который добавлена задача.
+    /// </summary>
+    public string EpicName { get; set; }
+
+    /// <summary>
+    /// Id эпика, в который добавлена задача.
+    /// </summary>
+    public long? EpicId { get; set; }
 }
 
 /// <summary>

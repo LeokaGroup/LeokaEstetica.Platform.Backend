@@ -414,10 +414,33 @@ public interface IProjectManagmentRepository
     Task<IEnumerable<EpicEntity>> GetEpicsAsync(long projectId);
     
     /// <summary>
-    /// Метод получает список задач для бэклога.
-    /// Исключаются задачи в статусах: В архиве, готово, решена и тд.
+    /// Метод получает эпики, доступные к добавлению в них задачи.
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
-    /// <returns>Список задач для бэклога.</returns>
-    Task<IEnumerable<ProjectTaskExtendedEntity>> GetBacklogTasksAsync(long projectId);
+    /// <returns>Список эпиков.</returns>
+    Task<IEnumerable<EpicEntity>> GetAvailableEpicsAsync(long projectId);
+    
+    /// <summary>
+    /// Метод добавляет задачу в эпик.
+    /// </summary>
+    /// <param name="epicId">Id эпика.</param>
+    /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
+    Task IncludeTaskEpicAsync(long epicId, long projectTaskId);
+
+    /// <summary>
+    /// Метод проверяет, чтобы задача уже не находилась в эпике.
+    /// </summary>
+    /// <param name="epicId">Id эпика.</param>
+    /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
+    /// <returns>Признак нахождения задачи в эпике.</returns>
+    Task<bool> IfIncludedTaskEpicAsync(long epicId, long projectTaskId);
+
+    /// <summary>
+    /// Метод получает эпик, в который входит задача.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="epicId">Id эпика.</param>
+    /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
+    /// <returns>Данные эпика.</returns>
+    Task<AvailableEpicOutput> GetTaskEpicAsync(long projectId, long projectTaskId);
 }
