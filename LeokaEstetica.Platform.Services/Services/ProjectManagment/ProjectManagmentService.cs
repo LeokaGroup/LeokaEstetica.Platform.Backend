@@ -907,13 +907,13 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 
             var parseTaskType = Enum.GetName((ProjectTaskTypeEnum)projectManagementTaskInput.TaskTypeId);
             var taskType = Enum.Parse<ProjectTaskTypeEnum>(parseTaskType!);
+            
+            // Находим наибольший Id задачи в рамках проекта и увеличиваем его.
+            var maxProjectTaskId = await _projectManagmentRepository.GetLastProjectTaskIdAsync(projectId);
 
             // Если идет создание задачи или ошибки.
             if (new[] { ProjectTaskTypeEnum.Task, ProjectTaskTypeEnum.Error }.Contains(taskType))
             {
-                // Находим наибольший Id задачи в рамках проекта и увеличиваем его.
-                var maxProjectTaskId = await _projectManagmentRepository.GetLastProjectTaskIdAsync(projectId);
-
                 if (maxProjectTaskId <= 0)
                 {
                     throw new InvalidOperationException("Не удалось получить наибольший Id задачи в рамках проекта." +
@@ -927,8 +927,8 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 // Ускоренное создание задачи.
                 if (projectManagementTaskInput.IsQuickCreate)
                 {
-                    addedProjectTask =
-                        CreateProjectTaskFactory.CreateQuickProjectTask(projectManagementTaskInput, userId);
+                    addedProjectTask = CreateProjectTaskFactory.CreateQuickProjectTask(projectManagementTaskInput,
+                        userId);
                 }
 
                 // Обычное создание задачи.

@@ -315,14 +315,32 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
     public async Task<long> GetLastProjectTaskIdAsync(long projectId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
-        var compiler = new PostgresCompiler();
-        var query = new Query("project_management.project_tasks")
-            .Where("project_id", projectId)
-            .Select("task_id")
-            .AsMax("task_id");
-        var sql = compiler.Compile(query).ToString();
+        var parameters = new DynamicParameters();
+        parameters.Add("@projectId", projectId);
 
-        var result = await connection.ExecuteScalarAsync<long>(sql);
+        // Скрипт учитывает все таблицы, где есть айдишники задач в рамках проекта (эпики, истории, задачи, ошибки).
+        var query = @"DROP TABLE IF EXISTS temp_max_table;
+                    WITH max_task_id AS (SELECT MAX(COALESCE(pt.project_task_id, 0)) AS max_project_project_task_id,
+                            MAX(COALESCE(e.project_epic_id, 0))     AS max_epic_project_epic_id,
+                            MAX(COALESCE(et.project_task_id, 0))    AS max_epic_tasks_project_task_id,
+                            MAX(COALESCE(us.user_story_task_id, 0)) AS max_user_story_task_id 
+                     FROM project_management.project_tasks AS pt 
+                              LEFT JOIN project_management.epics AS e 
+                                        ON pt.project_id = e.project_id 
+                              LEFT JOIN project_management.epic_tasks AS et 
+                                        ON et.epic_id = e.epic_id 
+                              LEFT JOIN project_management.user_stories AS us 
+                                        ON pt.project_id = us.project_id 
+                     WHERE pt.project_id = @projectId) 
+                    SELECT UNNEST(ARRAY [max_task_id.max_project_project_task_id, max_task_id.max_epic_project_epic_id,
+                                 max_task_id.max_epic_tasks_project_task_id, max_task_id.max_user_story_task_id]) AS x 
+                    INTO temp_max_table 
+                    FROM max_task_id;
+
+                    SELECT MAX(x) 
+                    FROM temp_max_table;";
+
+        var result = await connection.ExecuteScalarAsync<long>(query, parameters);
 
         return result;
     }
