@@ -966,6 +966,12 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 
                 return result;
             }
+            
+            // Если идет создание истории/требования.
+            if (taskType == ProjectTaskTypeEnum.History)
+            {
+                
+            }
 
             return result;
         }
