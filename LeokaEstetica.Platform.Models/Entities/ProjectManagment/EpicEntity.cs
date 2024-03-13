@@ -80,4 +80,9 @@ public class EpicEntity
     /// Id инициативы.
     /// </summary>
     public long? InitiativeId { get; set; }
+
+    /// <summary>
+    /// Id эпика в рамках проекта.
+    /// </summary>
+    public long ProjectEpicId { get; set; }
 }
