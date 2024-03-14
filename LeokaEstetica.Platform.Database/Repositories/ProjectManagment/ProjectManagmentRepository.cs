@@ -1568,6 +1568,19 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         return result;
     }
 
+    /// <inheritdoc/>
+    public async Task<IEnumerable<UserStoryStatusEntity>> GetUserStoryStatusesAsync()
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var query = @"SELECT status_id, status_name, status_sys_name 
+                      FROM project_management.user_story_statuses";
+        
+        var result = await connection.QueryAsync<UserStoryStatusEntity>(query);
+
+        return result;
+    }
+
     #endregion
 
     #region Приватные методы.

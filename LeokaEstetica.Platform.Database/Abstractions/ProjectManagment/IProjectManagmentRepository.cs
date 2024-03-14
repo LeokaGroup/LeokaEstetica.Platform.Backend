@@ -449,4 +449,10 @@ public interface IProjectManagmentRepository
     /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
     /// <returns>Данные эпика.</returns>
     Task<AvailableEpicOutput> GetTaskEpicAsync(long projectId, long projectTaskId);
+    
+    /// <summary>
+    /// Метод получает список статусов истории для выбора.
+    /// </summary>
+    /// <returns>Список статусов истории.</returns>
+    Task<IEnumerable<UserStoryStatusEntity>> GetUserStoryStatusesAsync();
 }

@@ -2647,6 +2647,14 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         }
     }
 
+    /// <inheritdoc />
+    public async Task<IEnumerable<UserStoryStatusEntity>> GetUserStoryStatusesAsync()
+    {
+        var result = await _projectManagmentRepository.GetUserStoryStatusesAsync();
+
+        return result;
+    }
+
     #endregion
 
     #region Приватные методы.

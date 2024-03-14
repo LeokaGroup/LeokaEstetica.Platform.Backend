@@ -238,6 +238,7 @@ public class MappingProfile : Profile
         CreateMap<EpicEntity, AvailableEpicOutput>();
         
         CreateMap<UserStoryEntity, UserStoryOutput>();
+        CreateMap<UserStoryStatusEntity, UserStoryStatusOutput>();
     }
     
     /// <summary>
