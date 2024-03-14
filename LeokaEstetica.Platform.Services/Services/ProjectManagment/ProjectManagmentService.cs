@@ -907,8 +907,16 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 
             var parseTaskType = Enum.GetName((ProjectTaskTypeEnum)projectManagementTaskInput.TaskTypeId);
             var taskType = Enum.Parse<ProjectTaskTypeEnum>(parseTaskType!);
-            
+
             // Находим наибольший Id задачи в рамках проекта и увеличиваем его.
+            /*
+            Описание алгоритма:
+                1. При создании задачи, вне зависимости от ее типа, идти брать максимальное значение поля
+                 project_task_id  из всех этих таблиц project_tasks, epics, user_stories.
+                2. Считать максимальное из этих взятых чисел.
+                3. Писать project_task_id в нужную таблицу с этим значением (оно и будет самым актуальным Id задачи
+            в рамках проекта).
+            */
             var maxProjectTaskId = await _projectManagmentRepository.GetLastProjectTaskIdAsync(projectId);
 
             // Если идет создание задачи или ошибки.
