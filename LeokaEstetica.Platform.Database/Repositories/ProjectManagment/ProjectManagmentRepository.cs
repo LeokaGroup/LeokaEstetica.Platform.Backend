@@ -457,7 +457,7 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         parameters.Add("@createdBy", story.CreatedBy);
         parameters.Add("@projectId", story.ProjectId);
         parameters.Add("@storyStatusId", story.StoryStatusId);
-        parameters.Add("@userStoryTaskId", story.StoryStatusId);
+        parameters.Add("@userStoryTaskId", story.UserStoryTaskId);
 
         var columns = new StringBuilder(
             @"INSERT INTO project_management.user_stories (story_name, story_description, created_by, created_at,
