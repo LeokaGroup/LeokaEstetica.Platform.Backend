@@ -15,9 +15,10 @@ internal static class CreateProjectTaskFactory
     /// </summary>
     /// <param name="projectManagementTaskInput">Входная модель.</param>
     /// <param name="userId">Id пользователя.</param>
+    /// <param name="maxProjectTaskId">Максимальное значение последнего Id задачи в рамках проекта.</param>
     /// <returns>Наполненная сущность задачи.</returns>
     public static ProjectTaskEntity CreateQuickProjectTask(CreateProjectManagementTaskInput projectManagementTaskInput,
-        long userId)
+        long userId, long maxProjectTaskId)
     {
         var result = new ProjectTaskEntity
         {
@@ -26,8 +27,8 @@ internal static class CreateProjectTaskFactory
             ProjectId = projectManagementTaskInput.ProjectId,
             TaskStatusId = (int)ProjectTaskStatusEnum.New,
             Created = DateTime.UtcNow,
-            Updated = DateTime.UtcNow,
-            TaskTypeId = (int)ProjectTaskTypeEnum.Task
+            TaskTypeId = (int)ProjectTaskTypeEnum.Task,
+            ProjectTaskId = maxProjectTaskId
         };
 
         // Если к задаче добавили исполнителя.
@@ -51,9 +52,10 @@ internal static class CreateProjectTaskFactory
     /// </summary>
     /// <param name="projectManagementTaskInput">Входная модель.</param>
     /// <param name="userId">Id пользователя.</param>
+    /// <param name="maxProjectTaskId">Максимальное значение последнего Id задачи в рамках проекта.</param>
     /// <returns>Наполненная сущность задачи.</returns>
     public static ProjectTaskEntity CreateProjectTask(CreateProjectManagementTaskInput projectManagementTaskInput,
-        long userId)
+        long userId, long maxProjectTaskId)
     {
         var result = new ProjectTaskEntity
         {
@@ -62,9 +64,9 @@ internal static class CreateProjectTaskFactory
             ProjectId = projectManagementTaskInput.ProjectId,
             TaskStatusId = projectManagementTaskInput.TaskStatusId,
             Created = DateTime.UtcNow,
-            Updated = DateTime.UtcNow,
             TaskTypeId = projectManagementTaskInput.TaskTypeId,
-            PriorityId = projectManagementTaskInput.PriorityId
+            PriorityId = projectManagementTaskInput.PriorityId,
+            ProjectTaskId = maxProjectTaskId
         };
 
         // Если к задаче добавили наблюдателей.
@@ -105,9 +107,10 @@ internal static class CreateProjectTaskFactory
     /// </summary>
     /// <param name="projectManagementTaskInput">Входная модель.</param>
     /// <param name="userId">Id пользователя.</param>
+    /// <param name="maxProjectTaskId">Максимальное значение последнего Id задачи в рамках проекта.</param>
     /// <returns>Наполненная сущность епика.</returns>
     public static EpicEntity CreateProjectEpic(CreateProjectManagementTaskInput projectManagementTaskInput,
-        long userId)
+        long userId, long maxProjectTaskId)
     {
         var result = new EpicEntity
         {
@@ -116,8 +119,8 @@ internal static class CreateProjectTaskFactory
             ProjectId = projectManagementTaskInput.ProjectId,
             TaskStatusId = projectManagementTaskInput.TaskStatusId,
             CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow,
-            PriorityId = projectManagementTaskInput.PriorityId!.Value
+            PriorityId = projectManagementTaskInput.PriorityId!.Value,
+            ProjectEpicId = maxProjectTaskId
         };
 
         // Если к задаче добавили описание.
@@ -148,6 +151,54 @@ internal static class CreateProjectTaskFactory
         if (projectManagementTaskInput.DateEnd.HasValue)
         {
             result.DateEnd = projectManagementTaskInput.DateEnd.Value;
+        }
+
+        return result;
+    }
+    
+    /// <summary>
+    /// Метод создает сущность истории для сохранения в БД.
+    /// </summary>
+    /// <param name="projectManagementTaskInput">Входная модель.</param>
+    /// <param name="userId">Id пользователя.</param>
+    /// <param name="maxProjectTaskId">Максимальное значение последнего Id задачи в рамках проекта.</param>
+    /// <returns>Наполненная сущность епика.</returns>
+    public static UserStoryEntity CreateProjectUserStory(CreateProjectManagementTaskInput projectManagementTaskInput,
+        long userId, long maxProjectTaskId)
+    {
+        var result = new UserStoryEntity
+        {
+            StoryName = projectManagementTaskInput.Name,
+            StoryDescription = projectManagementTaskInput.Details,
+            CreatedBy = userId,
+            ProjectId = projectManagementTaskInput.ProjectId,
+            StoryStatusId = projectManagementTaskInput.TaskStatusId,
+            CreatedAt = DateTime.UtcNow,
+            UserStoryTaskId = maxProjectTaskId
+        };
+
+        // Если к задаче добавили теги (метки).
+        if (projectManagementTaskInput.TagIds is not null && projectManagementTaskInput.TagIds.Any())
+        {
+            result.TagIds = projectManagementTaskInput.TagIds;
+        }
+        
+        // Если к задаче добавили наблюдателей.
+        if (projectManagementTaskInput.WatcherIds is not null && projectManagementTaskInput.WatcherIds.Any())
+        {
+            result.WatcherIds = projectManagementTaskInput.WatcherIds;
+        }
+        
+        // Если к задаче добавили исполнителя.
+        if (projectManagementTaskInput.ExecutorId.HasValue)
+        {
+            result.ExecutorId = projectManagementTaskInput.ExecutorId.Value;
+        }
+        
+        // Если к задаче добавили эпик.
+        if (projectManagementTaskInput.EpicId.HasValue)
+        {
+            result.EpicId = projectManagementTaskInput.EpicId.Value;
         }
 
         return result;

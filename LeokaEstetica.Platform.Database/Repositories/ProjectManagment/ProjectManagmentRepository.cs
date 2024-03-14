@@ -1,4 +1,5 @@
-﻿using Dapper;
+﻿using System.Text;
+using Dapper;
 using LeokaEstetica.Platform.Base.Abstractions.Connection;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.Base;
 using LeokaEstetica.Platform.Core.Constants;
@@ -307,11 +308,7 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
         return result;
     }
 
-    /// <summary>
-    /// Метод получает последний Id задачи в рамках проекта.
-    /// </summary>
-    /// <param name="projectId">Id проекта.</param>
-    /// <returns>Последний Id задачи в рамках проекта.</returns>
+    /// <inheritdoc />
     public async Task<long> GetLastProjectTaskIdAsync(long projectId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
@@ -446,6 +443,60 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
                 @priorityId, @tagIds, @resolutionId)";
 
         await connection.ExecuteAsync(sql, parameters);
+    }
+
+    /// <inheritdoc />
+    public async Task CreateProjectUserStoryAsync(UserStoryEntity story)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+        
+        var parameters = new DynamicParameters();
+        parameters.Add("@storyName", story.StoryName);
+        parameters.Add("@storyDescription", story.StoryDescription);
+        parameters.Add("@createdAt", DateTime.UtcNow);
+        parameters.Add("@createdBy", story.CreatedBy);
+        parameters.Add("@projectId", story.ProjectId);
+        parameters.Add("@storyStatusId", story.StoryStatusId);
+        parameters.Add("@userStoryTaskId", story.StoryStatusId);
+
+        var columns = new StringBuilder(
+            @"INSERT INTO project_management.user_stories (story_name, story_description, created_by, created_at,
+                                                           project_id, story_status_id, executor_id,
+                                                           user_story_task_id");
+        var values = new StringBuilder(
+            @" VALUES (@storyName, @storyDescription, @createdBy, @createdAt, @projectId, @storyStatusId, @executorId,
+                       @userStoryTaskId");
+        
+        // Если исполнитель не назначался, то автор истории становится исполнителем.
+        story.ExecutorId ??= story.CreatedBy;
+
+        parameters.Add("@executorId", story.ExecutorId);
+
+        if (story.EpicId.HasValue)
+        {
+            parameters.Add("@epicId", story.EpicId);
+            columns.Append(", epic_id");
+            values.Append(", @epicId");
+        }
+        
+        if (story.TagIds is not null && story.TagIds.Any())
+        {
+            parameters.Add("@tagIds", story.TagIds);
+            columns.Append(", tag_ids");
+            values.Append(", @tagIds");
+        }
+        
+        if (story.WatcherIds is not null && story.WatcherIds.Any())
+        {
+            parameters.Add("@watcherIds", story.WatcherIds);
+            columns.Append(", watcher_ids");
+            values.Append(", @watcherIds");
+        }
+
+        columns.Append(")");
+        values.Append(")");
+
+        await connection.ExecuteAsync(string.Concat(columns, values), parameters);
     }
 
     /// <inheritdoc />

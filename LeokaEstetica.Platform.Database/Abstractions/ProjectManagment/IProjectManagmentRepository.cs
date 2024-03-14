@@ -40,21 +40,21 @@ public interface IProjectManagmentRepository
     /// <returns>Словарь с Id шаблонов и статусов.</returns>
     Task<IEnumerable<GetTemplateStatusIdByStatusIdOutput>> GetTemplateStatusIdsByStatusIdsAsync(
         IEnumerable<long> templateStatusIds);
-    
+
     /// <summary>
     /// Метод получает задачи проекта для рабочего пространства.
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
     /// <returns>Задачи проекта.</returns>
     Task<IEnumerable<ProjectTaskExtendedEntity>> GetProjectTasksAsync(long projectId);
-    
+
     /// <summary>
     /// Метод получает названия тегов (меток) задач по их Id.
     /// </summary>
     /// <param name="tagIds">Id тегов (меток) задач.</param>
     /// <returns>Словарь с тегами (метками) задач.</returns>
     Task<IDictionary<int, ProjectTagOutput>> GetTagNamesByTagIdsAsync(IEnumerable<int> tagIds);
-    
+
     /// <summary>
     /// Метод получает названия типов задач по их Id.
     /// </summary>
@@ -69,7 +69,7 @@ public interface IProjectManagmentRepository
     /// <returns>Словарь с резолюциями задач.</returns>
     Task<IDictionary<int, TaskResolutionOutput>> GetResolutionNamesByResolutionIdsAsync(
         IEnumerable<int> resolutionIds);
-    
+
     /// <summary>
     /// Метод получает детали задачи.
     /// </summary>
@@ -77,7 +77,7 @@ public interface IProjectManagmentRepository
     /// <param name="projectId">Id проекта.</param>
     /// <returns>Данные задачи.</returns>
     Task<ProjectTaskEntity> GetTaskDetailsByTaskIdAsync(long projectTaskId, long projectId);
-    
+
     /// <summary>
     /// Метод получает названия приоритетов задач по их Id.
     /// </summary>
@@ -91,13 +91,13 @@ public interface IProjectManagmentRepository
     /// <param name="projectId">Id проекта.</param>
     /// <returns>Последний Id задачи в рамках проекта.</returns>
     Task<long> GetLastProjectTaskIdAsync(long projectId);
-    
+
     /// <summary>
     /// Метод получает список приоритетов задачи.
     /// </summary>
     /// <returns>Список приоритетов задачи.</returns>
     Task<IEnumerable<TaskPriorityEntity>> GetTaskPrioritiesAsync();
-    
+
     /// <summary>
     /// Метод получает список типов задач.
     /// </summary>
@@ -114,13 +114,19 @@ public interface IProjectManagmentRepository
     /// Метод создает задачу проекта.
     /// </summary>
     /// <param name="task">Задача для создания.</param>
-    Task CreateProjectTaskAsync (ProjectTaskEntity task);
-    
+    Task CreateProjectTaskAsync(ProjectTaskEntity task);
+
     /// <summary>
     /// Метод создает задачу эпика.
     /// </summary>
     /// <param name="epic">Эпик для создания.</param>
-    Task CreateProjectEpicAsync (EpicEntity epic);
+    Task CreateProjectEpicAsync(EpicEntity epic);
+
+    /// <summary>
+    /// Метод создает историю.
+    /// </summary>
+    /// <param name="story">История для создания.</param>
+    Task CreateProjectUserStoryAsync(UserStoryEntity story);
 
     /// <summary>
     /// Метод получает максимальный Position у тегов задач пользователя.
@@ -172,7 +178,7 @@ public interface IProjectManagmentRepository
     /// </summary>
     /// <returns>Список статусов задач.</returns>
     Task<IDictionary<long, GetTaskStatusTemplateOutput>> GetTaskStatusTemplatesAsync();
-    
+
     /// <summary>
     /// Метод получает все статусы задач пользователя.
     /// </summary>
@@ -202,7 +208,7 @@ public interface IProjectManagmentRepository
     /// <param name="taskId">Id задачи (здесь имеется в виду Id задачи в рамках проекта).</param>
     /// <param name="changedTaskDetails">Новое описание задачи.</param>
     Task UpdateTaskDetailsAsync(long projectId, long taskId, string changedTaskDetails);
-    
+
     /// <summary>
     /// Метод обновления названия задачи.
     /// </summary>
@@ -219,7 +225,7 @@ public interface IProjectManagmentRepository
     /// <param name="taskId">Id задачи в рамках проекта.</param>
     /// <param name="projectId">Id проекта.</param>
     Task AttachTaskTagAsync(int tagId, long projectTaskId, long projectId);
-    
+
     /// <summary>
     /// Метод отвязывает тег от задачи проекта.
     /// </summary>
@@ -227,7 +233,7 @@ public interface IProjectManagmentRepository
     /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
     /// <param name="projectId">Id проекта.</param>
     Task DetachTaskTagAsync(int tagId, long projectTaskId, long projectId);
-    
+
     /// <summary>
     /// Метод обновляет приоритет задачи.
     /// </summary>
@@ -235,7 +241,7 @@ public interface IProjectManagmentRepository
     /// <param name="taskId">Id задачи в рамках проекта.</param>
     /// <param name="projectId">Id проекта.</param>
     Task UpdateTaskPriorityAsync(int priorityId, long projectTaskId, long projectId);
-    
+
     /// <summary>
     /// Метод обновляет исполнителя задачи.
     /// </summary>
@@ -243,7 +249,7 @@ public interface IProjectManagmentRepository
     /// <param name="taskId">Id задачи в рамках проекта.</param>
     /// <param name="projectId">Id проекта.</param>
     Task UpdateTaskExecutorAsync(long executorId, long projectTaskId, long projectId);
-    
+
     /// <summary>
     /// Метод привязывает наблюдателя задачи.
     /// </summary>
@@ -251,7 +257,7 @@ public interface IProjectManagmentRepository
     /// <param name="taskId">Id задачи в рамках проекта.</param>
     /// <param name="projectId">Id проекта.</param>
     Task AttachTaskWatcherAsync(long watcherId, long projectTaskId, long projectId);
-    
+
     /// <summary>
     /// Метод отвязывает наблюдателя задачи.
     /// </summary>
@@ -260,7 +266,7 @@ public interface IProjectManagmentRepository
     /// <param name="projectId">Id проекта.</param>
     /// <param name="account">Аккаунт.</param>
     Task DetachTaskWatcherAsync(long watcherId, long projectTaskId, long projectId);
-    
+
     /// <summary>
     /// Метод создает связь с задачей (в зависимости от типа связи, который передали).
     /// </summary>
@@ -301,7 +307,7 @@ public interface IProjectManagmentRepository
     /// <param name="linkType">Тип связи.</param>
     /// <returns>Список задач, доступных к созданию связи.</returns>
     Task<IEnumerable<AvailableTaskLinkOutput>> GetAvailableTaskLinkAsync(long projectId, LinkTypeEnum linkType);
-    
+
     /// <summary>
     /// Метод разрывает связь определенного типа между задачами.
     /// </summary>
@@ -318,7 +324,7 @@ public interface IProjectManagmentRepository
     /// <param name="documents">Список документов к созданию.</param>
     /// <param name="documentType">Тип документа.</param>
     Task CreateProjectTaskDocumentsAsync(IEnumerable<ProjectDocumentEntity> documents, DocumentTypeEnum documentType);
-    
+
     /// <summary>
     /// Метод получает файлы задачи.
     /// </summary>
@@ -326,14 +332,14 @@ public interface IProjectManagmentRepository
     /// <param name="taskId">Id задачи.</param>
     /// <returns>Файлы задачи.</returns>
     Task<IEnumerable<ProjectDocumentEntity>> GetProjectTaskFilesAsync(long projectId, long taskId);
-    
+
     /// <summary>
     /// Метод получает название документа по его Id.
     /// </summary>
     /// <param name="documentId">Id документа.</param>
     /// <returns>Название документа.</returns>
     Task<string> GetDocumentNameByDocumentIdAsync(long documentId);
-    
+
     /// <summary>
     /// Метод получает список названий документов по их Id.
     /// </summary>
@@ -341,13 +347,13 @@ public interface IProjectManagmentRepository
     /// <returns>список названий документов.</returns>
     Task<IEnumerable<(long? UserId, string DocumentName)>> GetDocumentNameByDocumentIdsAsync(
         IEnumerable<(long? UserId, long? DocumentId)> userDocs);
-    
+
     /// <summary>
     /// Метод удаляет документ по его Id.
     /// </summary>
     /// <param name="documentId">Id документа.</param>
     Task RemoveDocumentAsync(long documentId);
-    
+
     /// <summary>
     /// Метод фиксирует выбранную пользователем стратегию представления.
     /// </summary>
@@ -382,7 +388,7 @@ public interface IProjectManagmentRepository
     /// <param name="comment">Новый комментарий.</param>
     /// <param name="userId">Id пользователя.</param>
     Task UpdateTaskCommentAsync(long projectTaskId, long projectId, long commentId, string comment, long userId);
-    
+
     /// <summary>
     /// Метод удаляет комментарий задачи.
     /// </summary>
@@ -396,7 +402,7 @@ public interface IProjectManagmentRepository
     /// <param name="projectId">Id проекта.</param>
     /// <returns>Id документа. Может вернуть null, тогда будет выбран файл по дефолту nophoto.</returns>
     Task<long?> GetUserAvatarDocumentIdByUserIdAsync(long userId, long projectId);
-    
+
     /// <summary>
     /// Метод получает массив Id изображений аватара пользователей проекта.
     /// </summary>
@@ -405,21 +411,21 @@ public interface IProjectManagmentRepository
     /// <returns>Id документов. Может вернуть null, тогда будет выбран файл по дефолту nophoto.</returns>
     Task<IEnumerable<(long? UserId, long? DocumentId)>> GetUserAvatarDocumentIdByUserIdsAsync(IEnumerable<long> userIds,
         long projectId);
-    
+
     /// <summary>
     /// Метод получает список эпиков.
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
     /// <returns>Список эпиков.</returns>
     Task<IEnumerable<EpicEntity>> GetEpicsAsync(long projectId);
-    
+
     /// <summary>
     /// Метод получает эпики, доступные к добавлению в них задачи.
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
     /// <returns>Список эпиков.</returns>
     Task<IEnumerable<EpicEntity>> GetAvailableEpicsAsync(long projectId);
-    
+
     /// <summary>
     /// Метод добавляет задачу в эпик.
     /// </summary>

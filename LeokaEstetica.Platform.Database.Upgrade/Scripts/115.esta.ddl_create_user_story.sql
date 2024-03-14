@@ -6,7 +6,7 @@ CREATE TABLE project_management.user_stories
     created_by        BIGINT       NOT NULL,
     created_at        TIMESTAMP    NOT NULL DEFAULT NOW(),
     updated_at        TIMESTAMP,
-    updated_by        BIGINT       NOT NULL,
+    updated_by        BIGINT,
     project_id        BIGINT       NOT NULL,
     story_status_id   INT          NOT NULL,
     watcher_ids       BIGINT[],

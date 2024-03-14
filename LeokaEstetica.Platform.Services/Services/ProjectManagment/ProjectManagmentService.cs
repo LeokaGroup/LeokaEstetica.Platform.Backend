@@ -914,10 +914,16 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             // Если идет создание задачи или ошибки.
             if (new[] { ProjectTaskTypeEnum.Task, ProjectTaskTypeEnum.Error }.Contains(taskType))
             {
-                if (maxProjectTaskId <= 0)
+                if (maxProjectTaskId < 0)
                 {
                     throw new InvalidOperationException("Не удалось получить наибольший Id задачи в рамках проекта." +
                                                         $"ProjectId: {projectId}");
+                }
+
+                // Если не было добавленной записи, то начнем с 1.
+                if (maxProjectTaskId == 0)
+                {
+                    maxProjectTaskId++;
                 }
 
                 ProjectTaskEntity addedProjectTask;
@@ -928,7 +934,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 if (projectManagementTaskInput.IsQuickCreate)
                 {
                     addedProjectTask = CreateProjectTaskFactory.CreateQuickProjectTask(projectManagementTaskInput,
-                        userId);
+                        userId, ++maxProjectTaskId);
                 }
 
                 // Обычное создание задачи.
@@ -940,10 +946,9 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                         projectManagementTaskInput.ExecutorId = userId;
                     }
 
-                    addedProjectTask = CreateProjectTaskFactory.CreateProjectTask(projectManagementTaskInput, userId);
+                    addedProjectTask = CreateProjectTaskFactory.CreateProjectTask(projectManagementTaskInput, userId,
+                        ++maxProjectTaskId);
                 }
-
-                addedProjectTask.ProjectTaskId = ++maxProjectTaskId;
 
                 // Создаем задачу в БД.
                 await _projectManagmentRepository.CreateProjectTaskAsync(addedProjectTask);
@@ -957,7 +962,8 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             if (taskType == ProjectTaskTypeEnum.Epic)
             {
                 using var transactionScope = _transactionScopeFactory.CreateTransactionScope();
-                var addedProjectEpic = CreateProjectTaskFactory.CreateProjectEpic(projectManagementTaskInput, userId);
+                var addedProjectEpic = CreateProjectTaskFactory.CreateProjectEpic(projectManagementTaskInput, userId,
+                    ++maxProjectTaskId);
                 
                 // Создаем эпик в БД.
                 await _projectManagmentRepository.CreateProjectEpicAsync(addedProjectEpic);
@@ -970,7 +976,16 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             // Если идет создание истории/требования.
             if (taskType == ProjectTaskTypeEnum.History)
             {
+                using var transactionScope = _transactionScopeFactory.CreateTransactionScope();
+                var addedProjectUserStory = CreateProjectTaskFactory.CreateProjectUserStory(projectManagementTaskInput,
+                    userId, ++maxProjectTaskId);
                 
+                // Создаем историю в БД.
+                await _projectManagmentRepository.CreateProjectUserStoryAsync(addedProjectUserStory);
+                
+                transactionScope.Complete();
+                
+                return result;
             }
 
             return result;

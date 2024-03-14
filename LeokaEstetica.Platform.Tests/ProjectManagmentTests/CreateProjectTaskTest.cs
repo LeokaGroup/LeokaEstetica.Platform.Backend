@@ -42,7 +42,7 @@ internal class CreateProjectTaskTest : BaseServiceTest
     /// <summary>
     /// Метод создает тестовые данные для обычного создания задачи.
     /// </summary>
-    /// <returns></returns>
+    /// <returns>Тестовые данные.</returns>
     private CreateProjectManagementTaskInput CreateProjectTaskRequest()
     {
         var task = new CreateProjectManagementTaskInput
@@ -65,7 +65,7 @@ internal class CreateProjectTaskTest : BaseServiceTest
     /// <summary>
     /// Метод создает тестовые данные для быстрого создания задачи.
     /// </summary>
-    /// <returns></returns>
+    /// <returns>Тестовые данные.</returns>
     private CreateProjectManagementTaskInput CreateQuickProjectTaskRequest()
     {
         var task = new CreateProjectManagementTaskInput

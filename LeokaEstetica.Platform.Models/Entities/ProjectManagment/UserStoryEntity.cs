@@ -69,4 +69,14 @@ public class UserStoryEntity
     /// Id исполнителя истории, если назначался.
     /// </summary>
     public long? ExecutorId { get; set; }
+
+    /// <summary>
+    /// Id истории в рамках проекта.
+    /// </summary>
+    public long UserStoryTaskId { get; set; }
+    
+    /// <summary>
+    /// Id резолюции.
+    /// </summary>
+    public int? ResolutionId { get; set; }
 }
