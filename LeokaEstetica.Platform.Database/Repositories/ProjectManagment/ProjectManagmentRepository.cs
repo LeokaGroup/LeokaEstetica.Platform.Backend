@@ -194,7 +194,31 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
                     "FROM project_management.epics AS e " +
                     "INNER JOIN project_management.epic_statuses AS es " +
                     "ON e.status_id = es.status_id " +
-                    "WHERE e.project_id = @projectId;";
+                    "WHERE e.project_id = @projectId " +
+                    "UNION " +
+                    "SELECT us.story_id," +
+                    "us.status_id," +
+                    "us.created_by AS author_id," +
+                    "us.watcher_ids," +
+                    "us.story_name AS name," +
+                    "us.story_name AS details," +
+                    "us.created_at AS created," +
+                    "us.updated_at AS updated," +
+                    "us.project_id," +
+                    "us.user_story_task_id AS project_task_id," +
+                    "us.resolution_id," +
+                    "us.tag_ids," +
+                    "3 AS task_type_id," +
+                    "us.created_by AS executor_id," +
+                    "NULL," +
+                    "(SELECT \"ParamValue\"" +
+                    "FROM \"Configs\".\"ProjectManagmentProjectSettings\" AS ps " +
+                    "WHERE ps.\"ProjectId\" = @projectId " +
+                    "AND ps.\"ParamKey\" = @prefix) AS TaskIdPrefix " +
+                    "FROM project_management.user_stories AS us " +
+                    "INNER JOIN project_management.user_story_statuses AS uss " +
+                    "ON us.status_id = uss.status_id " +
+                    "WHERE us.project_id = @projectId;";
 
         var result = await connection.QueryAsync<ProjectTaskExtendedEntity>(query, parameters);
 
