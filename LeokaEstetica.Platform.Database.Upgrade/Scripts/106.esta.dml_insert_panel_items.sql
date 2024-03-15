@@ -16,7 +16,6 @@ VALUES ('Левая панель модуля управления проект�
             "Id": "Wiki",
             "IsFooterItem": false
         },
-        {
             "Disabled": false,
             "ItemName": "Задачи",
             "Position": 3,

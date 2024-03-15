@@ -151,26 +151,50 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
         parameters.Add("@prefix", GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_PROJECT_NAME_PREFIX);
 
         var query = "SELECT t.task_id," +
-                            "t.task_status_id," +
-                             "t.author_id," +
-                             "t.watcher_ids," +
-                             "t.name," +
-                             "t.details," +
-                             "t.created," +
-                             "t.updated," +
-                            "t.project_id," +
-                            "t.project_task_id," +
-                            "t.resolution_id," +
-                            "t.tag_ids," +
-                            "t.task_type_id," +
-                            "t.executor_id," +
-                            "t.priority_id," +
-                            "(SELECT \"ParamValue\"" +
-                            "FROM \"Configs\".\"ProjectManagmentProjectSettings\" AS ps " +
-                            "WHERE ps.\"ProjectId\" = @projectId " +
-                            "AND ps.\"ParamKey\" = @prefix) AS TaskIdPrefix " + 
-                                        "FROM project_management.project_tasks AS t " +
-                                        "WHERE t.project_id = @projectId ";
+                    "t.task_status_id," +
+                    "t.author_id," +
+                    "t.watcher_ids," +
+                    "t.name," +
+                    "t.details," +
+                    "t.created," +
+                    "t.updated," +
+                    "t.project_id," +
+                    "t.project_task_id," +
+                    "t.resolution_id," +
+                    "t.tag_ids," +
+                    "t.task_type_id," +
+                    "t.executor_id," +
+                    "t.priority_id," +
+                    "(SELECT \"ParamValue\" " +
+                    "FROM \"Configs\".\"ProjectManagmentProjectSettings\" AS ps " +
+                    "WHERE ps.\"ProjectId\" = @projectId " +
+                    "AND ps.\"ParamKey\" = @prefix) AS TaskIdPrefix " +
+                    "FROM project_management.project_tasks AS t " +
+                    "WHERE t.project_id = @projectId " +
+                    "UNION " +
+                    "SELECT e.epic_id," +
+                    "es.status_id," +
+                    "e.created_by AS author_id," +
+                    "NULL," +
+                    "e.epic_name AS name," +
+                    "e.epic_description AS details," +
+                    "e.created_at AS created," +
+                    "e.updated_at AS updated," +
+                    "e.project_id," +
+                    "e.project_epic_id  AS project_task_id," +
+                    "e.resolution_id," +
+                    "e.tag_ids," +
+                    "4 AS task_type_id," +
+                    "e.created_by AS executor_id," +
+                    "e.priority_id," +
+                    "(SELECT \"ParamValue\"" +
+                    "FROM \"Configs\".\"ProjectManagmentProjectSettings\" AS ps " +
+                    "WHERE ps.\"ProjectId\" = @projectId " +
+                    "AND ps.\"ParamKey\" = @prefix) AS TaskIdPrefix " +
+                    "FROM project_management.epics AS e " +
+                    "INNER JOIN project_management.epic_statuses AS es " +
+                    "ON e.status_id = es.status_id " +
+                    "WHERE e.project_id = @projectId;";
 
         var result = await connection.QueryAsync<ProjectTaskExtendedEntity>(query, parameters);
 
