@@ -64,4 +64,9 @@ public class CreateProjectManagementTaskInput
     /// Дата окончания эпика.
     /// </summary>
     public DateTime? DateEnd { get; set; }
+    
+    /// <summary>
+    /// Id эпика, в который входит история, если назначался.
+    /// </summary>
+    public long? EpicId { get; set; }
 }

@@ -908,16 +908,30 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             var parseTaskType = Enum.GetName((ProjectTaskTypeEnum)projectManagementTaskInput.TaskTypeId);
             var taskType = Enum.Parse<ProjectTaskTypeEnum>(parseTaskType!);
 
+            // Находим наибольший Id задачи в рамках проекта и увеличиваем его.
+            /*
+            Описание алгоритма:
+                1. При создании задачи, вне зависимости от ее типа, идти брать максимальное значение поля
+                 project_task_id  из всех этих таблиц project_tasks, epics, user_stories.
+                2. Считать максимальное из этих взятых чисел.
+                3. Писать project_task_id в нужную таблицу с этим значением (оно и будет самым актуальным Id задачи
+            в рамках проекта).
+            */
+            var maxProjectTaskId = await _projectManagmentRepository.GetLastProjectTaskIdAsync(projectId);
+
             // Если идет создание задачи или ошибки.
             if (new[] { ProjectTaskTypeEnum.Task, ProjectTaskTypeEnum.Error }.Contains(taskType))
             {
-                // Находим наибольший Id задачи в рамках проекта и увеличиваем его.
-                var maxProjectTaskId = await _projectManagmentRepository.GetLastProjectTaskIdAsync(projectId);
-
-                if (maxProjectTaskId <= 0)
+                if (maxProjectTaskId < 0)
                 {
                     throw new InvalidOperationException("Не удалось получить наибольший Id задачи в рамках проекта." +
                                                         $"ProjectId: {projectId}");
+                }
+
+                // Если не было добавленной записи, то начнем с 1.
+                if (maxProjectTaskId == 0)
+                {
+                    maxProjectTaskId++;
                 }
 
                 ProjectTaskEntity addedProjectTask;
@@ -927,8 +941,8 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 // Ускоренное создание задачи.
                 if (projectManagementTaskInput.IsQuickCreate)
                 {
-                    addedProjectTask =
-                        CreateProjectTaskFactory.CreateQuickProjectTask(projectManagementTaskInput, userId);
+                    addedProjectTask = CreateProjectTaskFactory.CreateQuickProjectTask(projectManagementTaskInput,
+                        userId, ++maxProjectTaskId);
                 }
 
                 // Обычное создание задачи.
@@ -940,10 +954,9 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                         projectManagementTaskInput.ExecutorId = userId;
                     }
 
-                    addedProjectTask = CreateProjectTaskFactory.CreateProjectTask(projectManagementTaskInput, userId);
+                    addedProjectTask = CreateProjectTaskFactory.CreateProjectTask(projectManagementTaskInput, userId,
+                        ++maxProjectTaskId);
                 }
-
-                addedProjectTask.ProjectTaskId = ++maxProjectTaskId;
 
                 // Создаем задачу в БД.
                 await _projectManagmentRepository.CreateProjectTaskAsync(addedProjectTask);
@@ -957,10 +970,26 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             if (taskType == ProjectTaskTypeEnum.Epic)
             {
                 using var transactionScope = _transactionScopeFactory.CreateTransactionScope();
-                var addedProjectEpic = CreateProjectTaskFactory.CreateProjectEpic(projectManagementTaskInput, userId);
+                var addedProjectEpic = CreateProjectTaskFactory.CreateProjectEpic(projectManagementTaskInput, userId,
+                    ++maxProjectTaskId);
                 
                 // Создаем эпик в БД.
                 await _projectManagmentRepository.CreateProjectEpicAsync(addedProjectEpic);
+                
+                transactionScope.Complete();
+                
+                return result;
+            }
+            
+            // Если идет создание истории/требования.
+            if (taskType == ProjectTaskTypeEnum.History)
+            {
+                using var transactionScope = _transactionScopeFactory.CreateTransactionScope();
+                var addedProjectUserStory = CreateProjectTaskFactory.CreateProjectUserStory(projectManagementTaskInput,
+                    userId, ++maxProjectTaskId);
+                
+                // Создаем историю в БД.
+                await _projectManagmentRepository.CreateProjectUserStoryAsync(addedProjectUserStory);
                 
                 transactionScope.Complete();
                 
@@ -2624,6 +2653,14 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
              _logger.LogError(ex, ex.Message);
             throw;
         }
+    }
+
+    /// <inheritdoc />
+    public async Task<IEnumerable<UserStoryStatusEntity>> GetUserStoryStatusesAsync()
+    {
+        var result = await _projectManagmentRepository.GetUserStoryStatusesAsync();
+
+        return result;
     }
 
     #endregion

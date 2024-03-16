@@ -1650,4 +1650,23 @@ public class ProjectManagmentController : BaseController
         await _projectManagmentService.IncludeTaskEpicAsync(includeTaskEpicInput.EpicId,
             includeTaskEpicInput.ProjectId, includeTaskEpicInput.ProjectTaskId, GetUserName());
     }
+
+    /// <summary>
+    /// Метод получает список статусов истории для выбора.
+    /// </summary>
+    /// <returns>Список статусов истории.</returns>
+    [HttpGet]
+    [Route("history-statuses")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<UserStoryStatusOutput>))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<IEnumerable<UserStoryStatusOutput>> GetUserStoryStatusesAsync()
+    {
+        var items = await _projectManagmentService.GetUserStoryStatusesAsync();
+        var result = _mapper.Map<IEnumerable<UserStoryStatusOutput>>(items);
+
+        return result;
+    }
 }

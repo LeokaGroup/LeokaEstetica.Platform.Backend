@@ -1,26 +1,25 @@
 namespace LeokaEstetica.Platform.Models.Entities.ProjectManagment;
 
 /// <summary>
-/// Класс сопоставляется с таблицей эпиков.
+/// Класс сопоставляется с таблицей истории пользователей.
 /// </summary>
-public class EpicEntity
+public class UserStoryEntity
 {
     /// <summary>
     /// PK.
-    /// Id эпика.
     /// </summary>
-    public long EpicId { get; set; }
+    public long StoryId { get; set; }
 
     /// <summary>
-    /// Название эпика.
+    /// Название истории.
     /// </summary>
-    public string EpicName { get; set; }
+    public string StoryName { get; set; }
 
     /// <summary>
-    /// Описание эпика.
+    /// Описание истории.
     /// </summary>
-    public string EpicDescription { get; set; }
-
+    public string StoryDescription { get; set; }
+    
     /// <summary>
     /// Пользователь, который создал эпик.
     /// </summary>
@@ -47,42 +46,37 @@ public class EpicEntity
     public long ProjectId { get; set; }
 
     /// <summary>
-    /// Дата начала эпика.
+    /// Id статуса истории.
     /// </summary>
-    public DateTime? DateStart { get; set; }
-    
-    /// <summary>
-    /// Дата окончания эпика.
-    /// </summary>
-    public DateTime? DateEnd { get; set; }
+    public int StoryStatusId { get; set; }
 
     /// <summary>
-    /// Приоритет задачи.
+    /// Id наблюдателей.
     /// </summary>
-    public int PriorityId { get; set; }
+    public long[] WatcherIds { get; set; }
+    
+    /// <summary>
+    /// Список Id тегов задачи.
+    /// </summary>
+    public int[] TagIds { get; set; }
+
+    /// <summary>
+    /// Id эпика, в который входит история, если назначался.
+    /// </summary>
+    public long? EpicId { get; set; }
+
+    /// <summary>
+    /// Id исполнителя истории, если назначался.
+    /// </summary>
+    public long? ExecutorId { get; set; }
+
+    /// <summary>
+    /// Id истории в рамках проекта.
+    /// </summary>
+    public long UserStoryTaskId { get; set; }
     
     /// <summary>
     /// Id резолюции.
     /// </summary>
     public int? ResolutionId { get; set; }
-
-    /// <summary>
-    /// Список Id тегов задачи.
-    /// </summary>
-    public int[] TagIds { get; set; }
-    
-    /// <summary>
-    /// Id статуса задачи.
-    /// </summary>
-    public long TaskStatusId { get; set; }
-
-    /// <summary>
-    /// Id инициативы.
-    /// </summary>
-    public long? InitiativeId { get; set; }
-
-    /// <summary>
-    /// Id эпика в рамках проекта.
-    /// </summary>
-    public long ProjectEpicId { get; set; }
 }

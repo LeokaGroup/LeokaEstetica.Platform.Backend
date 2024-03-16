@@ -450,4 +450,10 @@ public interface IProjectManagmentService
     /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
     /// <param name="account">Аккаунт.</param>
     Task IncludeTaskEpicAsync(long epicId, long projectId, string projectTaskId, string account);
+
+    /// <summary>
+    /// Метод получает список статусов истории для выбора.
+    /// </summary>
+    /// <returns>Список статусов истории.</returns>
+    Task<IEnumerable<UserStoryStatusEntity>> GetUserStoryStatusesAsync();
 }
