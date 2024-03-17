@@ -273,5 +273,10 @@ public static class ValidationConst
         /// Если передали невалидный Id эпика.
         /// </summary>
         public const string NOT_VALID_EPIC_ID = "Id эпика не передан.";
+        
+        /// <summary>
+        /// Если не передано название спринта.
+        /// </summary>
+        public const string NOT_VALID_SPRINT_NAME = "Не передано название спринта.";
     }
 }

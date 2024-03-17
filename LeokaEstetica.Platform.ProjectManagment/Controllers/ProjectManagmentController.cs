@@ -1669,4 +1669,42 @@ public class ProjectManagmentController : BaseController
 
         return result;
     }
+
+    /// <summary>
+    /// Метод планирует спринт.
+    /// Добавляет задачи в спринт, если их указали при планировании спринта.
+    /// </summary>
+    /// <param name="planingSprintInput">Входная модель.</param>
+    [HttpPost]
+    [Route("sprint/planing")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task PlaningSprintAsync([FromBody] PlaningSprintInput planingSprintInput)
+    {
+        var validator = await new PlaningSprintValidator().ValidateAsync(planingSprintInput);
+
+        if (validator.Errors.Any())
+        {
+            var exceptions = new List<InvalidOperationException>();
+
+            foreach (var err in validator.Errors)
+            {
+                exceptions.Add(new InvalidOperationException(err.ErrorMessage));
+            }
+
+            var ex = new AggregateException("Ошибка планирования спринта. " +
+                                            $"ProjectId: {planingSprintInput.ProjectId}. " +
+                                            $"SprintName: {planingSprintInput.SprintName}", exceptions);
+            _logger.LogError(ex, ex.Message);
+            
+            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            
+            throw ex;
+        }
+
+        await _projectManagmentService.PlaningSprintAsync(planingSprintInput, GetUserName());
+    }
 }
