@@ -1639,7 +1639,7 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         parameters.Add("@dateStart", planingSprintInput.DateStart);
         parameters.Add("@dateEnd", planingSprintInput.DateEnd);
         parameters.Add("@sprintGoal", planingSprintInput.SprintDescription);
-        parameters.Add("@sprintStatusId", planingSprintInput.SprintStatus);
+        parameters.Add("@sprintStatusId", planingSprintInput.SprintStatus!.Value);
         parameters.Add("@projectId", planingSprintInput.ProjectId);
         parameters.Add("@sprintName", planingSprintInput.SprintName);
 

@@ -47,6 +47,7 @@ public class PlaningSprintInput
     /// <summary>
     /// Id статуса спринта. Заполняется в процессе планирования спринта.
     /// </summary>
-    [JsonIgnore]
-    public int SprintStatus { get; set; }
+    [System.Text.Json.Serialization.JsonIgnore]
+    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+    public int? SprintStatus { get; set; }
 }
