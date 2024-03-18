@@ -1708,9 +1708,59 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
     }
 
     /// <inheritdoc/>
-    public Task<IEnumerable<SearchTaskOutput>> SearchIncludeSprintTaskByTaskNameAsync(string taskName, long projectId)
+    public async Task<IEnumerable<SearchTaskOutput>> SearchIncludeSprintTaskByTaskNameAsync(string taskName,
+        long projectId)
     {
-        throw new NotImplementedException();
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+        
+        var parameters = new DynamicParameters();
+        parameters.Add("@projectId", projectId);
+        parameters.Add("@prefix", GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_PROJECT_NAME_PREFIX);
+        parameters.Add("@taskName", taskName);
+
+        var query = "SELECT t.task_id," +
+                    "t.name," +
+                    "t.project_id," +
+                    "t.project_task_id," +
+                    "(SELECT \"ParamValue\" " +
+                    "FROM \"Configs\".\"ProjectManagmentProjectSettings\" AS ps " +
+                    "WHERE ps.\"ProjectId\" = @projectId " +
+                    "AND ps.\"ParamKey\" = @prefix) AS TaskIdPrefix " +
+                    "FROM project_management.project_tasks AS t " +
+                    "WHERE t.project_id = @projectId " +
+                    "AND t.details LIKE '%' || @taskName || '%' " +
+                    "UNION " +
+                    "SELECT e.epic_id," +
+                    "e.epic_name AS name," +
+                    "e.project_id," +
+                    "e.project_epic_id  AS project_task_id," +
+                    "(SELECT \"ParamValue\"" +
+                    "FROM \"Configs\".\"ProjectManagmentProjectSettings\" AS ps " +
+                    "WHERE ps.\"ProjectId\" = @projectId " +
+                    "AND ps.\"ParamKey\" = @prefix) AS TaskIdPrefix " +
+                    "FROM project_management.epics AS e " +
+                    "INNER JOIN project_management.epic_statuses AS es " +
+                    "ON e.status_id = es.status_id " +
+                    "WHERE e.project_id = @projectId " +
+                    "AND e.epic_name LIKE '%' || @taskName || '%' " +
+                    "UNION " +
+                    "SELECT us.story_id," +
+                    "us.story_name AS name," +
+                    "us.project_id," +
+                    "us.user_story_task_id AS project_task_id," +
+                    "(SELECT \"ParamValue\"" +
+                    "FROM \"Configs\".\"ProjectManagmentProjectSettings\" AS ps " +
+                    "WHERE ps.\"ProjectId\" = @projectId " +
+                    "AND ps.\"ParamKey\" = @prefix) AS TaskIdPrefix " +
+                    "FROM project_management.user_stories AS us " +
+                    "INNER JOIN project_management.user_story_statuses AS uss " +
+                    "ON us.status_id = uss.status_id " +
+                    "WHERE us.project_id = @projectId " +
+                    "AND e.story_name LIKE '%' || @taskName || '%';";
+
+        var result = await connection.QueryAsync<SearchTaskOutput>(query, parameters);
+
+        return result;
     }
 
     /// <inheritdoc/>

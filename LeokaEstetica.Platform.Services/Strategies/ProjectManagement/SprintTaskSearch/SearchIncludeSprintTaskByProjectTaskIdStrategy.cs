@@ -28,7 +28,7 @@ internal class SearchIncludeSprintTaskByProjectTaskIdStrategy : BaseSearchSprint
 
         return result;
     }
-    
+
     /// <inheritdoc />
     public override Task<IEnumerable<SearchTaskOutput>>
         SearchIncludeSprintTaskByTaskNameAsync(string taskName, long projectId)
@@ -36,12 +36,12 @@ internal class SearchIncludeSprintTaskByProjectTaskIdStrategy : BaseSearchSprint
         throw new NotImplementedException(
             "В стратегии SearchIncludeSprintTaskByProjectTaskIdStrategy не предполагается реализация SearchIncludeSprintTaskByTaskNameAsync.");
     }
-    
+
     /// <inheritdoc />
     public override Task<IEnumerable<SearchTaskOutput>> SearchIncludeSprintTaskByTaskDescriptionAsync(
         string taskDescription, long projectId)
     {
-         throw new NotImplementedException(
-                    "В стратегии SearchIncludeSprintTaskByProjectTaskIdStrategy не предполагается реализация SearchIncludeSprintTaskByTaskDescriptionAsync.");
+        throw new NotImplementedException(
+            "В стратегии SearchIncludeSprintTaskByProjectTaskIdStrategy не предполагается реализация SearchIncludeSprintTaskByTaskDescriptionAsync.");
     }
 }

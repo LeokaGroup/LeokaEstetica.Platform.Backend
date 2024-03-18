@@ -85,6 +85,13 @@ internal sealed class SearchProjectManagementService : ISearchProjectManagementS
                     searchText.GetProjectTaskIdFromPrefixLink(), projectId);
             }
 
+            // Если нужно искать по названию задачи.
+            if (isSearchByTaskName)
+            {
+                result = await strategy.SearchIncludeSprintTaskByTaskNameAsync(
+                    new SearchIncludeSprintTaskByTaskNameStrategy(_projectManagmentRepository), searchText, projectId);
+            }
+
             return result;
         }
         
