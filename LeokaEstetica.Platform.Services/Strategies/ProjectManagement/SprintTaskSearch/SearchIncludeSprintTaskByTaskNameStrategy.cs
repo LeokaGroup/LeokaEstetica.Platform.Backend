@@ -9,7 +9,11 @@ namespace LeokaEstetica.Platform.Services.Strategies.ProjectManagement.SprintTas
 /// </summary>
 internal sealed class SearchIncludeSprintTaskByTaskNameStrategy : BaseSearchSprintTaskStrategy
 {
-    public SearchIncludeSprintTaskByTaskNameStrategy(IProjectManagmentRepository projectManagmentRepository) : base(
+    /// <summary>
+    /// Конструктор.
+    /// </summary>
+    /// <param name="projectManagmentRepository">Репозитрий модуля УП.</param>
+    internal SearchIncludeSprintTaskByTaskNameStrategy(IProjectManagmentRepository projectManagmentRepository) : base(
         projectManagmentRepository)
     {
     }

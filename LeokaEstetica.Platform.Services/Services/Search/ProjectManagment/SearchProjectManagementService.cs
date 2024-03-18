@@ -91,6 +91,13 @@ internal sealed class SearchProjectManagementService : ISearchProjectManagementS
                 result = await strategy.SearchIncludeSprintTaskByTaskNameAsync(
                     new SearchIncludeSprintTaskByTaskNameStrategy(_projectManagmentRepository), searchText, projectId);
             }
+            
+            // Если нужно искать по описанию задачи.
+            if (isSearchByTaskDescription)
+            {
+                result = await strategy.SearchIncludeSprintTaskByTaskDescriptionAsync(
+                    new SearchIncludeSprintTaskByTaskNameStrategy(_projectManagmentRepository), searchText, projectId);
+            }
 
             return result;
         }

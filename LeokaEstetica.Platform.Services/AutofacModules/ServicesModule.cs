@@ -276,13 +276,27 @@ public class ServicesModule : Module
             .InstancePerLifetimeScope();
             
         // Класс стратегии поиска задачи по Id задачи в рамках проекта.
-        builder
-            .RegisterType<SearchIncludeSprintTaskByProjectTaskIdStrategy>()
-            .Named<SearchIncludeSprintTaskByProjectTaskIdStrategy>("SearchIncludeSprintTaskByProjectTaskIdStrategy")
+        builder.RegisterType<SearchIncludeSprintTaskByProjectTaskIdStrategy>()
+            .Named<BaseSearchSprintTaskStrategy>("SearchIncludeSprintTaskByProjectTaskIdStrategy")
             .InstancePerLifetimeScope();
-        builder
-            .RegisterType<SearchIncludeSprintTaskByProjectTaskIdStrategy>()
-            .As<SearchIncludeSprintTaskByProjectTaskIdStrategy>()
+        builder.RegisterType<SearchIncludeSprintTaskByProjectTaskIdStrategy>()
+            .As<BaseSearchSprintTaskStrategy>()
+            .InstancePerLifetimeScope();
+            
+        // Класс стратегии поиска задачи по названию задачи.
+        builder.RegisterType<SearchIncludeSprintTaskByTaskNameStrategy>()
+            .Named<BaseSearchSprintTaskStrategy>("SearchIncludeSprintTaskByTaskNameStrategy")
+            .InstancePerLifetimeScope();
+        builder.RegisterType<SearchIncludeSprintTaskByTaskNameStrategy>()
+            .As<BaseSearchSprintTaskStrategy>()
+            .InstancePerLifetimeScope();
+            
+        // Класс стратегии поиска задачи по описанию задачи.
+        builder.RegisterType<SearchIncludeSprintTaskByTaskDescriptionStrategy>()
+            .Named<BaseSearchSprintTaskStrategy>("SearchIncludeSprintTaskByTaskDescriptionStrategy")
+            .InstancePerLifetimeScope();
+        builder.RegisterType<SearchIncludeSprintTaskByTaskDescriptionStrategy>()
+            .As<BaseSearchSprintTaskStrategy>()
             .InstancePerLifetimeScope();
     }
 }
