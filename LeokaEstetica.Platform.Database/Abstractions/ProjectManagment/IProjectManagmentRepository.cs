@@ -1,4 +1,5 @@
-﻿using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
+﻿using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
+using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.Template;
 using LeokaEstetica.Platform.Models.Dto.ProjectManagement.Output;
 using LeokaEstetica.Platform.Models.Entities.Document;
@@ -455,4 +456,11 @@ public interface IProjectManagmentRepository
     /// </summary>
     /// <returns>Список статусов истории.</returns>
     Task<IEnumerable<UserStoryStatusEntity>> GetUserStoryStatusesAsync();
+    
+    /// <summary>
+    /// Метод планирует спринт.
+    /// Добавляет задачи в спринт, если их указали при планировании спринта.
+    /// </summary>
+    /// <param name="planingSprintInput">Входная модель.</param>
+    Task PlaningSprintAsync(PlaningSprintInput planingSprintInput);
 }

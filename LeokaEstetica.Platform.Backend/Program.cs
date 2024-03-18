@@ -64,8 +64,6 @@ if (builder.Environment.IsProduction())
     connection = configuration["ConnectionStrings:NpgSqlConnection"];
 }
 
-// builder.Services.AddTransient<IConnectionFactory>(_ => new NpgSqlConnectionFactory(connection));
-
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "Leoka.Estetica.Platform" });
@@ -127,67 +125,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-// builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory())
-//     .ConfigureContainer<ContainerBuilder>(AutoFac.Init);
-// builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory())
-//     .ConfigureContainer<ContainerBuilder>(b =>
-//     {
-//         // b.RegisterModule(new RepositoriesModule());
-//         // b.RegisterModule(new ServicesModule());
-//         // b.RegisterModule(new CallCenterModule());
-//         // b.RegisterModule(new ProcessingModule());
-//         // b.RegisterModule(new AccessModule());
-//         // b.RegisterModule(new MetricsModule());
-//         // b.RegisterModule(new FinderModule());
-//         // b.RegisterModule(new IntegrationModule());
-//         // b.RegisterModule(new MessagingModule());
-//         // b.RegisterModule(new NotificationsModule());
-//         // b.RegisterModule(new RedisModule());
-//         // b.RegisterModule(new BaseModule());
-//         
-//         RepositoriesModule.InitModules(b);
-//         ServicesModule.InitModules(b);
-//         CallCenterModule.InitModules(b);
-//         ProcessingModule.InitModules(b);
-//         AccessModule.InitModules(b);
-//         MetricsModule.InitModules(b);
-//         FinderModule.InitModules(b);
-//         IntegrationModule.InitModules(b);
-//         MessagingModule.InitModules(b);
-//         NotificationsModule.InitModules(b);
-//         RedisModule.InitModules(b);
-//         BaseModule.InitModules(b);
-//     });
-
 builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory())
     .ConfigureContainer<ContainerBuilder>(b =>
     {
-        // b.RegisterModule(new RepositoriesModule());
-        // b.RegisterModule(new ServicesModule());
-        // b.RegisterModule(new CallCenterModule());
-        // b.RegisterModule(new ProcessingModule());
-        // b.RegisterModule(new AccessModule());
-        // b.RegisterModule(new MetricsModule());
-        // b.RegisterModule(new FinderModule());
-        // b.RegisterModule(new IntegrationModule());
-        // b.RegisterModule(new MessagingModule());
-        // b.RegisterModule(new NotificationsModule());
-        // b.RegisterModule(new RedisModule());
-        // b.RegisterModule(new BaseModule());
-
-        // RepositoriesModule.InitModules(b);
-        // ServicesModule.InitModules(b);
-        // CallCenterModule.InitModules(b);
-        // ProcessingModule.InitModules(b);
-        // AccessModule.InitModules(b);
-        // MetricsModule.InitModules(b);
-        // FinderModule.InitModules(b);
-        // IntegrationModule.InitModules(b);
-        // MessagingModule.InitModules(b);
-        // NotificationsModule.InitModules(b);
-        // RedisModule.InitModules(b);
-        // BaseModule.InitModules(b);
-
         AutoFac.Init(b);
         
         b.RegisterType<NpgSqlConnectionFactory>()

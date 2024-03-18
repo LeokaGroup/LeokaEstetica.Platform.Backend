@@ -4,6 +4,7 @@ using LeokaEstetica.Platform.Base.Abstractions.Connection;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.Base;
 using LeokaEstetica.Platform.Core.Constants;
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
+using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.Template;
 using LeokaEstetica.Platform.Models.Dto.ProjectManagement.Output;
@@ -1627,6 +1628,26 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         var result = await connection.QueryAsync<UserStoryStatusEntity>(query);
 
         return result;
+    }
+
+    /// <inheritdoc/>
+    public async Task PlaningSprintAsync(PlaningSprintInput planingSprintInput)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@dateStart", planingSprintInput.DateStart);
+        parameters.Add("@dateEnd", planingSprintInput.DateEnd);
+        parameters.Add("@sprintGoal", planingSprintInput.SprintDescription);
+        parameters.Add("@sprintStatusId", planingSprintInput.SprintStatus!.Value);
+        parameters.Add("@projectId", planingSprintInput.ProjectId);
+        parameters.Add("@sprintName", planingSprintInput.SprintName);
+
+        var query = @"INSERT INTO project_management.sprints (date_start, date_end, sprint_goal, sprint_status_id,
+                                        project_id, sprint_name) 
+                      VALUES (@dateStart, @dateEnd, @sprintGoal, @sprintStatusId, @projectId, @sprintName)";
+
+        await connection.ExecuteAsync(query, parameters);
     }
 
     #endregion

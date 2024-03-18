@@ -456,4 +456,13 @@ public interface IProjectManagmentService
     /// </summary>
     /// <returns>Список статусов истории.</returns>
     Task<IEnumerable<UserStoryStatusEntity>> GetUserStoryStatusesAsync();
+
+    /// <summary>
+    /// Метод планирует спринт.
+    /// Добавляет задачи в спринт, если их указали при планировании спринта.
+    /// </summary>
+    /// <param name="planingSprintInput">Входная модель.</param>
+    /// <param name="account">Аккаунт.</param>
+    /// <param name="token">Токен.</param>
+    Task PlaningSprintAsync(PlaningSprintInput planingSprintInput, string account, string token);
 }

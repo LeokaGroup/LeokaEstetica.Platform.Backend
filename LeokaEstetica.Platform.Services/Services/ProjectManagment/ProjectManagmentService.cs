@@ -26,6 +26,8 @@ using LeokaEstetica.Platform.Models.Entities.Profile;
 using LeokaEstetica.Platform.Models.Entities.ProjectManagment;
 using LeokaEstetica.Platform.Models.Entities.Template;
 using LeokaEstetica.Platform.Models.Enums;
+using LeokaEstetica.Platform.Notifications.Abstractions;
+using LeokaEstetica.Platform.Notifications.Consts;
 using LeokaEstetica.Platform.ProjectManagment.Documents.Abstractions;
 using LeokaEstetica.Platform.Services.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Services.Factors;
@@ -56,6 +58,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     private readonly IProjectSettingsConfigRepository _projectSettingsConfigRepository;
     private readonly Lazy<IReversoService> _reversoService;
     private readonly Lazy<IFileManagerService> _fileManagerService;
+    private readonly ISprintNotificationsService _sprintNotificationsService;
 
     /// <summary>
     /// Статусы задач, которые являются самыми базовыми и никогда не меняются независимо от шаблона проекта.
@@ -84,6 +87,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     /// <param name="projectSettingsConfigRepository">Репозиторий настроек проектов.</param>
     /// <param name="projectSettingsConfigRepository">Сервис транслитера.</param>
     /// <param name="fileManagerService">Сервис менеджера файлов.</param>
+    /// <param name="sprintNotificationsService">Сервис уведомлений спринтов.</param>
     /// </summary>
     public ProjectManagmentService(ILogger<ProjectManagmentService> logger,
         IProjectManagmentRepository projectManagmentRepository,
@@ -95,7 +99,8 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         ITransactionScopeFactory transactionScopeFactory,
         IProjectSettingsConfigRepository projectSettingsConfigRepository,
         Lazy<IReversoService> reversoService,
-        Lazy<IFileManagerService> fileManagerService)
+        Lazy<IFileManagerService> fileManagerService,
+        ISprintNotificationsService sprintNotificationsService)
     {
         _logger = logger;
         _projectManagmentRepository = projectManagmentRepository;
@@ -108,6 +113,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         _projectSettingsConfigRepository = projectSettingsConfigRepository;
         _reversoService = reversoService;
         _fileManagerService = fileManagerService;
+        _sprintNotificationsService = sprintNotificationsService;
     }
 
     #region Публичные методы.
@@ -941,6 +947,9 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 // Ускоренное создание задачи.
                 if (projectManagementTaskInput.IsQuickCreate)
                 {
+                    // TODO: Для чего вообще использовать класс сущности?
+                    // TODO: С Dapper не нужно все это.
+                    // TODO: Использовать просто классы DTO для этого, и факторки эти не нужны будут.
                     addedProjectTask = CreateProjectTaskFactory.CreateQuickProjectTask(projectManagementTaskInput,
                         userId, ++maxProjectTaskId);
                 }
@@ -954,6 +963,9 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                         projectManagementTaskInput.ExecutorId = userId;
                     }
 
+                    // TODO: Для чего вообще использовать класс сущности?
+                    // TODO: С Dapper не нужно все это.
+                    // TODO: Использовать просто классы DTO для этого, и факторки эти не нужны будут.
                     addedProjectTask = CreateProjectTaskFactory.CreateProjectTask(projectManagementTaskInput, userId,
                         ++maxProjectTaskId);
                 }
@@ -970,6 +982,10 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             if (taskType == ProjectTaskTypeEnum.Epic)
             {
                 using var transactionScope = _transactionScopeFactory.CreateTransactionScope();
+                
+                // TODO: Для чего вообще использовать класс сущности?
+                // TODO: С Dapper не нужно все это.
+                // TODO: Использовать просто классы DTO для этого, и факторки эти не нужны будут.
                 var addedProjectEpic = CreateProjectTaskFactory.CreateProjectEpic(projectManagementTaskInput, userId,
                     ++maxProjectTaskId);
                 
@@ -985,6 +1001,10 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             if (taskType == ProjectTaskTypeEnum.History)
             {
                 using var transactionScope = _transactionScopeFactory.CreateTransactionScope();
+                
+                // TODO: Для чего вообще использовать класс сущности?
+                // TODO: С Dapper не нужно все это.
+                // TODO: Использовать просто классы DTO для этого, и факторки эти не нужны будут.
                 var addedProjectUserStory = CreateProjectTaskFactory.CreateProjectUserStory(projectManagementTaskInput,
                     userId, ++maxProjectTaskId);
                 
@@ -1212,6 +1232,9 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 
             var maxUserTagPosition = await _projectManagmentRepository.GetLastPositionUserTaskTagAsync(userId);
             
+            // TODO: Для чего вообще использовать класс сущности?
+            // TODO: С Dapper не нужно все это.
+            // TODO: Использовать просто классы DTO для этого, и факторки эти не нужны будут.
             var userTag = CreateUserTaskTagFactory.CreateProjectTag(tagName, tagDescription, tagSysName,
                     ++maxUserTagPosition, projectId);
             await _projectManagmentRepository.CreateProjectTaskTagAsync(userTag);
@@ -1312,6 +1335,9 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             // Разбиваем строку на пробелы и приводим каждое слово к PascalCase и соединяем снова в строку.
             statusSysName = string.Join("", statusSysName.Split(" ").Select(x => x.ToPascalCase()));
 
+            // TODO: Для чего вообще использовать класс сущности?
+            // TODO: С Dapper не нужно все это.
+            // TODO: Использовать просто классы DTO для этого, и факторки эти не нужны будут.
             var addedCustomUserStatus = CreateTaskStatusFactory.CreateUserStatuseTemplate(statusName, statusSysName,
                 ++lastUserPosition, userId, statusDescription);
 
@@ -2168,6 +2194,9 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 
             await _fileManagerService.Value.UploadFilesAsync(files, projectId, taskId.GetProjectTaskIdFromPrefixLink());
 
+            // TODO: Для чего вообще использовать класс сущности?
+            // TODO: С Dapper не нужно все это.
+            // TODO: Использовать просто классы DTO для этого, и факторки эти не нужны будут.
             var projectTaskFiles = CreateProjectDocumentsFactory.CreateProjectDocuments(files, projectId,
                 taskId.GetProjectTaskIdFromPrefixLink(), userId);
             
@@ -2540,6 +2569,9 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             
             await _fileManagerService.Value.UploadUserAvatarFileAsync(files, projectId, userId);
 
+            // TODO: Для чего вообще использовать класс сущности?
+            // TODO: С Dapper не нужно все это.
+            // TODO: Использовать просто классы DTO для этого, и факторки эти не нужны будут.
             var userAvatarFile = CreateProjectDocumentsFactory.CreateProjectDocuments(files, projectId, null,
                 userId);
             
@@ -2661,6 +2693,101 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         var result = await _projectManagmentRepository.GetUserStoryStatusesAsync();
 
         return result;
+    }
+
+    /// <inheritdoc />
+    public async Task PlaningSprintAsync(PlaningSprintInput planingSprintInput, string account, string token)
+    {
+        try
+        {
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+        
+            // TODO: Добавить проверку на роль (когда внедрим систему ролей) позволяющую пользователю спланировать спринт.
+
+            // TODO: Реализовать, когда будет реализована логика начала спринта.
+            // Автоматически начинаем спринт, если нужно.
+            if (planingSprintInput.IsAuthStartSprint)
+            {
+                // Если не указали даты спринта, но захотели автоматически начать спринт, то это недопустимо.
+                if (!planingSprintInput.DateStart.HasValue || !planingSprintInput.DateEnd.HasValue)
+                {
+                    throw new InvalidOperationException("Не указаны даты спринта. Невозможно начать спринт. " +
+                                                        $"ProjectId: {planingSprintInput.ProjectId}. " +
+                                                        $"DateStart: {planingSprintInput.DateStart}. " +
+                                                        $"DateEnd: {planingSprintInput.DateEnd}.");
+                }
+            
+                // TODO: Добавить проверку, что даты спринта не находятся в прошлом.
+
+                var isQueueSprint = false; // Признак наличия уже активного спринта у проекта.
+            
+                // TODO: Раскоментить, когда будет реализована логика начала спринта.
+                // Проверяем, что уже нет активного спринта. Если он есть уже, то начать автоматически спринт недопустимо.
+                // if (expr)
+                // {
+                //     // Помещаем в очередь бэклога этот спринт.
+                //     planingSprintInput.SprintStatus = (int)SprintStatusEnum.Backlog;
+                //     await _projectManagmentRepository.PlaningSprintAsync(planingSprintInput);
+                //
+                //     if (isQueueSprint)
+                //     {
+                //         if (!string.IsNullOrEmpty(token))
+                //         {
+                //             await _sprintNotificationsService.Value.SendNotifySuccessPlaningSprintAsync("Все хорошо",
+                //                 "Спринт успешно спланирован. Проект уже имеет активный спринт." +
+                //                 " Спланированный спринт был помещен в очередь бэклога.",
+                //                 NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);
+                //         }
+                //     }
+                // }
+
+                // Автоматическое начало спринта после его планирования.
+                // else
+                // {
+                //     planingSprintInput.SprintStatus = (int)SprintStatusEnum.InWork;
+                //     await _projectManagmentRepository.PlaningSprintAsync(planingSprintInput);
+                //     
+                //     if (!string.IsNullOrEmpty(token))
+                //     {
+                //         await _sprintNotificationsService.Value.SendNotifySuccessPlaningSprintAsync("Все хорошо",
+                //             "Спринт успешно спланирован. Спринт автоматически был начат." +
+                //             " Его можно увидеть в активных спринтах.",
+                //             NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);   
+                //     }
+                // }
+            }
+
+            // Обычное создание спринта (без его автоматического начала).
+            else
+            {
+                planingSprintInput.SprintStatus = (int)SprintStatusEnum.Backlog;
+                await _projectManagmentRepository.PlaningSprintAsync(planingSprintInput);
+
+                if (planingSprintInput.DateStart.HasValue && planingSprintInput.DateEnd.HasValue)
+                {
+                    if (!string.IsNullOrEmpty(token))
+                    {
+                        await _sprintNotificationsService.SendNotifySuccessPlaningSprintAsync("Все хорошо",
+                            "Спринт успешно спланирован. Теперь его можно начать.",
+                            NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);   
+                    }
+                }
+            }
+        
+            // TODO: Тут добавить запись активности пользователя по userId (кто спланировал спринт).
+        }
+        
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, ex.Message);
+            throw;
+        }
     }
 
     #endregion
