@@ -58,7 +58,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     private readonly IProjectSettingsConfigRepository _projectSettingsConfigRepository;
     private readonly Lazy<IReversoService> _reversoService;
     private readonly Lazy<IFileManagerService> _fileManagerService;
-    private readonly Lazy<ISprintNotificationsService> _sprintNotificationsService;
+    private readonly ISprintNotificationsService _sprintNotificationsService;
 
     /// <summary>
     /// Статусы задач, которые являются самыми базовыми и никогда не меняются независимо от шаблона проекта.
@@ -100,7 +100,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         IProjectSettingsConfigRepository projectSettingsConfigRepository,
         Lazy<IReversoService> reversoService,
         Lazy<IFileManagerService> fileManagerService,
-        Lazy<ISprintNotificationsService> sprintNotificationsService)
+        ISprintNotificationsService sprintNotificationsService)
     {
         _logger = logger;
         _projectManagmentRepository = projectManagmentRepository;
@@ -2773,7 +2773,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 {
                     if (!string.IsNullOrEmpty(token))
                     {
-                        await _sprintNotificationsService.Value.SendNotifySuccessPlaningSprintAsync("Все хорошо",
+                        await _sprintNotificationsService.SendNotifySuccessPlaningSprintAsync("Все хорошо",
                             "Спринт успешно спланирован. Теперь его можно начать.",
                             NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);   
                     }

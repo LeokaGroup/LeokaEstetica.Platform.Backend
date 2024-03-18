@@ -5,7 +5,6 @@ using Hellang.Middleware.ProblemDetails;
 using LeokaEstetica.Platform.Base.Factors;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Utils;
-using LeokaEstetica.Platform.Integrations.AutofacModules;
 using LeokaEstetica.Platform.Integrations.Filters;
 using LeokaEstetica.Platform.Notifications.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -23,8 +22,6 @@ builder.Services.AddControllers(opt =>
     })
     .AddControllersAsServices()
     .AddNewtonsoftJson();
-// builder.Services.AddEndpointsApiExplorer();
-// builder.Services.AddSwaggerGen();
 
 builder.Services.AddCors(options => options.AddPolicy("ApiCorsPolicy", b =>
 {
@@ -61,8 +58,6 @@ if (builder.Environment.IsProduction())
         ServiceLifetime.Transient);
     connection = configuration["ConnectionStrings:NpgSqlConnection"];
 }
-
-// builder.Services.AddTransient<IConnectionFactory>(_ => new NpgSqlConnectionFactory(connection));
 
 builder.Services.AddHttpContextAccessor();
 
@@ -127,47 +122,14 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-// builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory())
-//     .ConfigureContainer<ContainerBuilder>(AutoFac.Init);
-// builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory());
-// builder.Host.ConfigureContainer<ContainerBuilder>(b =>
-//     b.RegisterAssemblyModules(new ));
 builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory())
     .ConfigureContainer<ContainerBuilder>(b =>
     {
-        // b.RegisterModule(new RepositoriesModule());
-        // b.RegisterModule(new ServicesModule());
-        // b.RegisterModule(new CallCenterModule());
-        // b.RegisterModule(new ProcessingModule());
-        // b.RegisterModule(new AccessModule());
-        // b.RegisterModule(new MetricsModule());
-        // b.RegisterModule(new FinderModule());
-        // b.RegisterModule(new IntegrationModule());
-        // b.RegisterModule(new MessagingModule());
-        // b.RegisterModule(new NotificationsModule());
-        // b.RegisterModule(new RedisModule());
-        // b.RegisterModule(new BaseModule());
-
-        // RepositoriesModule.InitModules(b);
-        // ServicesModule.InitModules(b);
-        // CallCenterModule.InitModules(b);
-        // ProcessingModule.InitModules(b);
-        // AccessModule.InitModules(b);
-        // MetricsModule.InitModules(b);
-        // FinderModule.InitModules(b);
-        // IntegrationModule.InitModules(b);
-        // MessagingModule.InitModules(b);
-        // NotificationsModule.InitModules(b);
-        // RedisModule.InitModules(b);
-        // BaseModule.InitModules(b);
-
         AutoFac.Init(b);
-
-        // builder.Services.AddTransient<IConnectionFactory>(_ => new NpgSqlConnectionFactory(connection));
 
         b.RegisterType<NpgSqlConnectionFactory>()
             .As<IConnectionFactory>()
-            .WithParameter("connectionString", connection)
+            .WithParameter("connectionString", connection!)
             .InstancePerLifetimeScope();
     });
 
@@ -211,7 +173,7 @@ if (builder.Environment.IsDevelopment() || builder.Environment.IsStaging())
 }
 
 // Добавляем хаб приложения для работы через сокеты.
-app.MapHub<ChatHub>("/notify");
+app.MapHub<ProjectManagementHub>("/project-management-notify");
 
 app.UseProblemDetails();
 

@@ -92,6 +92,12 @@ public class NotificationsModule : Module
             .InstancePerLifetimeScope();
             
         // Сервис уведомлений спринтов.
-        builder.RegisterLazy<ISprintNotificationsService, SprintNotificationsService>();
+        // builder.RegisterLazy<ISprintNotificationsService, SprintNotificationsService>();
+        builder.RegisterType<SprintNotificationsService>()
+            .Named<ISprintNotificationsService>("SprintNotificationsService")
+            .InstancePerLifetimeScope();
+        builder.RegisterType<SprintNotificationsService>()
+            .As<ISprintNotificationsService>()
+            .InstancePerLifetimeScope();
     }
 }
