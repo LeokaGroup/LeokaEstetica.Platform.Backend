@@ -26,6 +26,8 @@ using LeokaEstetica.Platform.Models.Entities.Profile;
 using LeokaEstetica.Platform.Models.Entities.ProjectManagment;
 using LeokaEstetica.Platform.Models.Entities.Template;
 using LeokaEstetica.Platform.Models.Enums;
+using LeokaEstetica.Platform.Notifications.Abstractions;
+using LeokaEstetica.Platform.Notifications.Consts;
 using LeokaEstetica.Platform.ProjectManagment.Documents.Abstractions;
 using LeokaEstetica.Platform.Services.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Services.Factors;
@@ -56,6 +58,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     private readonly IProjectSettingsConfigRepository _projectSettingsConfigRepository;
     private readonly Lazy<IReversoService> _reversoService;
     private readonly Lazy<IFileManagerService> _fileManagerService;
+    private readonly Lazy<ISprintNotificationsService> _sprintNotificationsService;
 
     /// <summary>
     /// Статусы задач, которые являются самыми базовыми и никогда не меняются независимо от шаблона проекта.
@@ -84,6 +87,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     /// <param name="projectSettingsConfigRepository">Репозиторий настроек проектов.</param>
     /// <param name="projectSettingsConfigRepository">Сервис транслитера.</param>
     /// <param name="fileManagerService">Сервис менеджера файлов.</param>
+    /// <param name="sprintNotificationsService">Сервис уведомлений спринтов.</param>
     /// </summary>
     public ProjectManagmentService(ILogger<ProjectManagmentService> logger,
         IProjectManagmentRepository projectManagmentRepository,
@@ -95,7 +99,8 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         ITransactionScopeFactory transactionScopeFactory,
         IProjectSettingsConfigRepository projectSettingsConfigRepository,
         Lazy<IReversoService> reversoService,
-        Lazy<IFileManagerService> fileManagerService)
+        Lazy<IFileManagerService> fileManagerService,
+        Lazy<ISprintNotificationsService> sprintNotificationsService)
     {
         _logger = logger;
         _projectManagmentRepository = projectManagmentRepository;
@@ -108,6 +113,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         _projectSettingsConfigRepository = projectSettingsConfigRepository;
         _reversoService = reversoService;
         _fileManagerService = fileManagerService;
+        _sprintNotificationsService = sprintNotificationsService;
     }
 
     #region Публичные методы.
@@ -2690,7 +2696,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     }
 
     /// <inheritdoc />
-    public async Task PlaningSprintAsync(PlaningSprintInput planingSprintInput, string account)
+    public async Task PlaningSprintAsync(PlaningSprintInput planingSprintInput, string account, string token)
     {
         try
         {
@@ -2718,6 +2724,8 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 }
             
                 // TODO: Добавить проверку, что даты спринта не находятся в прошлом.
+
+                var isQueueSprint = false; // Признак наличия уже активного спринта у проекта.
             
                 // TODO: Раскоментить, когда будет реализована логика начала спринта.
                 // Проверяем, что уже нет активного спринта. Если он есть уже, то начать автоматически спринт недопустимо.
@@ -2726,6 +2734,17 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 //     // Помещаем в очередь бэклога этот спринт.
                 //     planingSprintInput.SprintStatus = (int)SprintStatusEnum.Backlog;
                 //     await _projectManagmentRepository.PlaningSprintAsync(planingSprintInput);
+                //
+                //     if (isQueueSprint)
+                //     {
+                //         if (!string.IsNullOrEmpty(token))
+                //         {
+                //             await _sprintNotificationsService.Value.SendNotifySuccessPlaningSprintAsync("Все хорошо",
+                //                 "Спринт успешно спланирован. Проект уже имеет активный спринт." +
+                //                 " Спланированный спринт был помещен в очередь бэклога.",
+                //                 NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);
+                //         }
+                //     }
                 // }
 
                 // Автоматическое начало спринта после его планирования.
@@ -2733,15 +2752,32 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 // {
                 //     planingSprintInput.SprintStatus = (int)SprintStatusEnum.InWork;
                 //     await _projectManagmentRepository.PlaningSprintAsync(planingSprintInput);
+                //     
+                //     if (!string.IsNullOrEmpty(token))
+                //     {
+                //         await _sprintNotificationsService.Value.SendNotifySuccessPlaningSprintAsync("Все хорошо",
+                //             "Спринт успешно спланирован. Спринт автоматически был начат." +
+                //             " Его можно увидеть в активных спринтах.",
+                //             NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);   
+                //     }
                 // }
             }
 
             // Обычное создание спринта (без его автоматического начала).
-            // Никаких проверок дат тут не делаем, так как нам все равно, ведь не будет автоматического начала спринта.
             else
             {
                 planingSprintInput.SprintStatus = (int)SprintStatusEnum.Backlog;
                 await _projectManagmentRepository.PlaningSprintAsync(planingSprintInput);
+
+                if (planingSprintInput.DateStart.HasValue && planingSprintInput.DateEnd.HasValue)
+                {
+                    if (!string.IsNullOrEmpty(token))
+                    {
+                        await _sprintNotificationsService.Value.SendNotifySuccessPlaningSprintAsync("Все хорошо",
+                            "Спринт успешно спланирован. Теперь его можно начать.",
+                            NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);   
+                    }
+                }
             }
         
             // TODO: Тут добавить запись активности пользователя по userId (кто спланировал спринт).
@@ -2749,7 +2785,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         
         catch (Exception ex)
         {
-            _logger.LogError(ex, ex.Message);
+            _logger?.LogError(ex, ex.Message);
             throw;
         }
     }

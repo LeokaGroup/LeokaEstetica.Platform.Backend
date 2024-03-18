@@ -1705,6 +1705,6 @@ public class ProjectManagmentController : BaseController
             throw ex;
         }
 
-        await _projectManagmentService.PlaningSprintAsync(planingSprintInput, GetUserName());
+        await _projectManagmentService.PlaningSprintAsync(planingSprintInput, GetUserName(), CreateTokenFromHeader());
     }
 }

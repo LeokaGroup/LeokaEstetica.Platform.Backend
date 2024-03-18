@@ -463,5 +463,6 @@ public interface IProjectManagmentService
     /// </summary>
     /// <param name="planingSprintInput">Входная модель.</param>
     /// <param name="account">Аккаунт.</param>
-    Task PlaningSprintAsync(PlaningSprintInput planingSprintInput, string account);
+    /// <param name="token">Токен.</param>
+    Task PlaningSprintAsync(PlaningSprintInput planingSprintInput, string account, string token);
 }

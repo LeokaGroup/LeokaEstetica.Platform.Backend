@@ -16,7 +16,7 @@ internal class PlaningSprintTest : BaseServiceTest
             DateStart = DateTime.UtcNow,
             DateEnd = DateTime.UtcNow.AddDays(4),
             ProjectId = 274
-        }, "sierra_93@mail.ru"));
+        }, "sierra_93@mail.ru", null));
 
         await Task.CompletedTask;
     }
