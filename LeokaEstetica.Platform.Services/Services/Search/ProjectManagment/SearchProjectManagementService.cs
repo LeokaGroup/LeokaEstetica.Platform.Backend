@@ -1,6 +1,9 @@
+using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Database.Abstractions.Search;
 using LeokaEstetica.Platform.Models.Dto.Output.Search.ProjectManagement;
 using LeokaEstetica.Platform.Services.Abstractions.Search.ProjectManagment;
+using LeokaEstetica.Platform.Services.Helpers;
+using LeokaEstetica.Platform.Services.Strategies.ProjectManagement.SprintTaskSearch;
 using Microsoft.Extensions.Logging;
 
 namespace LeokaEstetica.Platform.Services.Services.Search.ProjectManagment;
@@ -12,17 +15,21 @@ internal sealed class SearchProjectManagementService : ISearchProjectManagementS
 {
     private readonly ILogger<SearchProjectManagementService> _logger;
     private readonly ISearchProjectManagementRepository _searchProjectManagementRepository;
+    private readonly IProjectManagmentRepository _projectManagmentRepository;
 
     /// <summary>
     /// Конструктор.
     /// </summary>
     /// <param name="logger">Логгер.</param>
     /// <param name="searchProjectManagementRepository">Репозиторий поиска в модуле УП.</param>
+    /// <param name="searchProjectManagementRepository">Репозиторий модуля УП.</param>
     public SearchProjectManagementService(ILogger<SearchProjectManagementService> logger,
-     ISearchProjectManagementRepository searchProjectManagementRepository)
+     ISearchProjectManagementRepository searchProjectManagementRepository,
+     IProjectManagmentRepository projectManagmentRepository)
     {
         _logger = logger;
         _searchProjectManagementRepository = searchProjectManagementRepository;
+        _projectManagmentRepository = projectManagmentRepository;
     }
 
     /// <inheritdoc />
@@ -50,6 +57,33 @@ internal sealed class SearchProjectManagementService : ISearchProjectManagementS
 
             var result = await _searchProjectManagementRepository.SearchTaskAsync(searchText, projectIds, isById,
                 isByName, isByDescription, projectTaskId);
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task<IEnumerable<SearchTaskOutput>> SearchIncludeSprintTaskAsync(string searchText,
+        bool isSearchByProjectTaskId, bool isSearchByTaskName, bool isSearchByTaskDescription, long projectId)
+    {
+        try
+        {
+            IEnumerable<SearchTaskOutput> result = null;
+            var strategy = new BaseSearchSprintTaskAlgorithm();
+            
+            // Если нужно искать по Id задачи в рамках проекта.
+            if (isSearchByProjectTaskId)
+            {
+                result = await strategy.SearchIncludeSprintTaskByProjectTaskIdAsync(
+                    new SearchIncludeSprintTaskByProjectTaskIdStrategy(_projectManagmentRepository),
+                    searchText.GetProjectTaskIdFromPrefixLink(), projectId);
+            }
 
             return result;
         }

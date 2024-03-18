@@ -1,5 +1,6 @@
 ﻿using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
+using LeokaEstetica.Platform.Models.Dto.Output.Search.ProjectManagement;
 using LeokaEstetica.Platform.Models.Dto.Output.Template;
 using LeokaEstetica.Platform.Models.Dto.ProjectManagement.Output;
 using LeokaEstetica.Platform.Models.Entities.Document;
@@ -10,6 +11,7 @@ using LeokaEstetica.Platform.Models.Enums;
 namespace LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 
 /// <summary>
+/// TODO: Разделить в рамках рефача методы на отдельные репозитории, чтобы этот репо не был таким толстым.
 /// Абстракция репозитория управления проектами.
 /// </summary>
 public interface IProjectManagmentRepository
@@ -463,4 +465,30 @@ public interface IProjectManagmentRepository
     /// </summary>
     /// <param name="planingSprintInput">Входная модель.</param>
     Task PlaningSprintAsync(PlaningSprintInput planingSprintInput);
+    
+    /// <summary>
+    /// Метод ищет задачи, истории, эпики, ошибки по Id задачи в рамках проекта.
+    /// </summary>
+    /// <param name="projectTaskId">Id задачи в рамках проекта./</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Найденные задачи, истории, эпики, ошибки.</returns>
+    public Task<IEnumerable<SearchTaskOutput>> SearchIncludeSprintTaskByProjectTaskIdAsync(
+        long projectTaskId, long projectId);
+    
+    /// <summary>
+    /// Метод ищет задачи, истории, эпики, ошибки по названию задачи, эпика, истории, ошибки.
+    /// </summary>
+    /// <param name="taskName">Название задачи, эпика, истории, ошибки./</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Найденные задачи, истории, эпики, ошибки.</returns>
+    public Task<IEnumerable<SearchTaskOutput>> SearchIncludeSprintTaskByTaskNameAsync(string taskName, long projectId);
+    
+    /// <summary>
+    /// Метод ищет задачи, истории, эпики, ошибки по совпадении в описании задачи, эпика, истории, ошибки.
+    /// </summary>
+    /// <param name="taskDescription">Описание задачи, эпика, истории, ошибки./</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Найденные задачи, истории, эпики, ошибки.</returns>
+    public Task<IEnumerable<SearchTaskOutput>> SearchIncludeSprintTaskByTaskDescriptionAsync(
+        string taskDescription, long projectId);
 }

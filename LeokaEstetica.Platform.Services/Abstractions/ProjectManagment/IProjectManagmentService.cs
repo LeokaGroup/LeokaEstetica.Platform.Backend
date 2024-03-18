@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace LeokaEstetica.Platform.Services.Abstractions.ProjectManagment;
 
 /// <summary>
+/// TODO: Разделить в рамках рефача методы на отдельные сервисы, чтобы этот сервис не был таким толстым.
 /// Абстракция сервиса управления проектами.
 /// </summary>
 public interface IProjectManagmentService

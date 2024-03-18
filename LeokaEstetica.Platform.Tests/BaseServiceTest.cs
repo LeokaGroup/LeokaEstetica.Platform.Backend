@@ -283,6 +283,7 @@ internal class BaseServiceTest
             projectSettingsConfigRepository, new Lazy<IReversoService>(ReversoService), null, null);
 
         var searchProjectManagementRepository = new SearchProjectManagementRepository(connectionProvider);
-        SearchProjectManagementService = new SearchProjectManagementService(null, searchProjectManagementRepository);
+        SearchProjectManagementService = new SearchProjectManagementService(null,
+            searchProjectManagementRepository, projectManagmentRepository);
     }
 }

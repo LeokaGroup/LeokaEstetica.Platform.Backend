@@ -35,6 +35,7 @@ using LeokaEstetica.Platform.Services.Services.Subscription;
 using LeokaEstetica.Platform.Services.Services.User;
 using LeokaEstetica.Platform.Services.Services.Vacancy;
 using LeokaEstetica.Platform.Services.Strategies.Project.Team;
+using LeokaEstetica.Platform.Services.Strategies.ProjectManagement.SprintTaskSearch;
 using LeokaEstetica.Platform.Services.Strategies.Refunds;
 
 namespace LeokaEstetica.Platform.Services.AutofacModules;
@@ -272,6 +273,16 @@ public class ServicesModule : Module
             .InstancePerLifetimeScope();
         builder.RegisterType<SearchProjectManagementService>()
             .As<ISearchProjectManagementService>()
+            .InstancePerLifetimeScope();
+            
+        // Класс стратегии поиска задачи по Id задачи в рамках проекта.
+        builder
+            .RegisterType<SearchIncludeSprintTaskByProjectTaskIdStrategy>()
+            .Named<SearchIncludeSprintTaskByProjectTaskIdStrategy>("SearchIncludeSprintTaskByProjectTaskIdStrategy")
+            .InstancePerLifetimeScope();
+        builder
+            .RegisterType<SearchIncludeSprintTaskByProjectTaskIdStrategy>()
+            .As<SearchIncludeSprintTaskByProjectTaskIdStrategy>()
             .InstancePerLifetimeScope();
     }
 }
