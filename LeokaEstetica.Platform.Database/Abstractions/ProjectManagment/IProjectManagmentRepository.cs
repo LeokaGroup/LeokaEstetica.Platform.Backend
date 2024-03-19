@@ -464,7 +464,8 @@ public interface IProjectManagmentRepository
     /// Добавляет задачи в спринт, если их указали при планировании спринта.
     /// </summary>
     /// <param name="planingSprintInput">Входная модель.</param>
-    Task PlaningSprintAsync(PlaningSprintInput planingSprintInput);
+    /// <returns>Id нового спринта.</returns>
+    Task<long> PlaningSprintAsync(PlaningSprintInput planingSprintInput);
     
     /// <summary>
     /// Метод ищет задачи, истории, эпики, ошибки по Id задачи в рамках проекта.
@@ -491,4 +492,6 @@ public interface IProjectManagmentRepository
     /// <returns>Найденные задачи, истории, эпики, ошибки.</returns>
     public Task<IEnumerable<SearchTaskOutput>> SearchIncludeSprintTaskByTaskDescriptionAsync(
         string taskDescription, long projectId);
+
+    Task IncludeProjectTaskSprintASync(IEnumerable<long> projectTaskIds, long sprintId);
 }

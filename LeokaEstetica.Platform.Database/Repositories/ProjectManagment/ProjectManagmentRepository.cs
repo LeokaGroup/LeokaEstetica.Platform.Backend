@@ -1632,7 +1632,7 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
     }
 
     /// <inheritdoc/>
-    public async Task PlaningSprintAsync(PlaningSprintInput planingSprintInput)
+    public async Task<long> PlaningSprintAsync(PlaningSprintInput planingSprintInput)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
 
@@ -1646,9 +1646,12 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
 
         var query = @"INSERT INTO project_management.sprints (date_start, date_end, sprint_goal, sprint_status_id,
                                         project_id, sprint_name) 
-                      VALUES (@dateStart, @dateEnd, @sprintGoal, @sprintStatusId, @projectId, @sprintName)";
+                      VALUES (@dateStart, @dateEnd, @sprintGoal, @sprintStatusId, @projectId, @sprintName) 
+                      RETURNING sprint_id";
 
-        await connection.ExecuteAsync(query, parameters);
+        var result = await connection.ExecuteScalarAsync<long>(query, parameters);
+
+        return result;
     }
 
     /// <inheritdoc/>
@@ -1817,6 +1820,21 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         var result = await connection.QueryAsync<SearchTaskOutput>(query, parameters);
 
         return result;
+    }
+
+    /// <inheritdoc/>
+    public async Task IncludeProjectTaskSprintASync(IEnumerable<long> projectTaskIds, long sprintId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+        
+        var parameters = new DynamicParameters();
+        parameters.Add("@sprintId", sprintId);
+        parameters.Add("@projectTaskIds", projectTaskIds.AsList());
+
+        var query = @"INSERT INTO project_management.sprint_tasks (sprint_id, project_task_id) 
+                      VALUES (@sprintId, @projectTaskIds)";
+
+        await connection.ExecuteAsync(query, parameters);
     }
 
     #endregion
