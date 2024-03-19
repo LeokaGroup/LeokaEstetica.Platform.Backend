@@ -6,7 +6,7 @@ namespace LeokaEstetica.Platform.Services.Strategies.ProjectManagement.SprintTas
 /// <summary>
 /// Базовый класс поиска задач для включения их в спринт.
 /// </summary>
-public abstract class BaseSearchSprintTaskStrategy
+internal abstract class BaseSearchSprintTaskStrategy
 {
     protected readonly IProjectManagmentRepository ProjectManagmentRepository;
 

@@ -1700,7 +1700,7 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
                     "INNER JOIN project_management.user_story_statuses AS uss " +
                     "ON us.status_id = uss.status_id " +
                     "WHERE us.project_id = @projectId " +
-                    "AND e.user_story_task_id = @projectTaskId;";
+                    "AND us.user_story_task_id = @projectTaskId;";
 
         var result = await connection.QueryAsync<SearchTaskOutput>(query, parameters);
 
@@ -1728,7 +1728,7 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
                     "AND ps.\"ParamKey\" = @prefix) AS TaskIdPrefix " +
                     "FROM project_management.project_tasks AS t " +
                     "WHERE t.project_id = @projectId " +
-                    "AND t.name LIKE '%' || @taskName || '%' " +
+                    "AND t.name ILIKE @taskName || '%' " +
                     "UNION " +
                     "SELECT e.epic_id," +
                     "e.epic_name AS name," +
@@ -1742,7 +1742,7 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
                     "INNER JOIN project_management.epic_statuses AS es " +
                     "ON e.status_id = es.status_id " +
                     "WHERE e.project_id = @projectId " +
-                    "AND e.epic_name LIKE '%' || @taskName || '%' " +
+                    "AND e.epic_name ILIKE @taskName || '%' " +
                     "UNION " +
                     "SELECT us.story_id," +
                     "us.story_name AS name," +
@@ -1756,7 +1756,7 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
                     "INNER JOIN project_management.user_story_statuses AS uss " +
                     "ON us.status_id = uss.status_id " +
                     "WHERE us.project_id = @projectId " +
-                    "AND e.story_name LIKE '%' || @taskName || '%';";
+                    "AND us.story_name ILIKE @taskName || '%';";
 
         var result = await connection.QueryAsync<SearchTaskOutput>(query, parameters);
 
@@ -1784,7 +1784,7 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
                     "AND ps.\"ParamKey\" = @prefix) AS TaskIdPrefix " +
                     "FROM project_management.project_tasks AS t " +
                     "WHERE t.project_id = @projectId " +
-                    "AND t.details LIKE '%' || @taskDescription || '%' " +
+                    "AND t.details ILIKE '%' || @taskDescription || '%' " +
                     "UNION " +
                     "SELECT e.epic_id," +
                     "e.epic_name AS name," +
@@ -1798,7 +1798,7 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
                     "INNER JOIN project_management.epic_statuses AS es " +
                     "ON e.status_id = es.status_id " +
                     "WHERE e.project_id = @projectId " +
-                    "AND e.epic_description LIKE '%' || @taskDescription || '%' " +
+                    "AND e.epic_description ILIKE '%' || @taskDescription || '%' " +
                     "UNION " +
                     "SELECT us.story_id," +
                     "us.story_name AS name," +
@@ -1812,7 +1812,7 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
                     "INNER JOIN project_management.user_story_statuses AS uss " +
                     "ON us.status_id = uss.status_id " +
                     "WHERE us.project_id = @projectId " +
-                    "AND e.story_description LIKE '%' || @taskDescription || '%';";
+                    "AND us.story_description ILIKE '%' || @taskDescription || '%';";
 
         var result = await connection.QueryAsync<SearchTaskOutput>(query, parameters);
 

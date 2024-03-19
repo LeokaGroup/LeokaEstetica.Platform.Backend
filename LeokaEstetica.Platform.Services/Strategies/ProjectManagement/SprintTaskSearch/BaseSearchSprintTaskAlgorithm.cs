@@ -5,7 +5,7 @@ namespace LeokaEstetica.Platform.Services.Strategies.ProjectManagement.SprintTas
 /// <summary>
 /// Класс представляет семейство алгоритмов для поиска задач для включения их в спринт.
 /// </summary>
-internal sealed class BaseSearchSprintTaskAlgorithm
+internal class BaseSearchSprintTaskAlgorithm
 {
     /// <summary>
     /// Метод ищет задачи, истории, эпики, ошибки по Id задачи в рамках проекта.
