@@ -493,5 +493,5 @@ public interface IProjectManagmentRepository
     public Task<IEnumerable<SearchTaskOutput>> SearchIncludeSprintTaskByTaskDescriptionAsync(
         string taskDescription, long projectId);
 
-    Task IncludeProjectTaskSprintASync(IEnumerable<long> projectTaskIds, long sprintId);
+    Task IncludeProjectTaskSprintAsync(IEnumerable<long> projectTaskIds, long sprintId);
 }

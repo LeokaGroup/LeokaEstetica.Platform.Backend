@@ -1823,13 +1823,21 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
     }
 
     /// <inheritdoc/>
-    public async Task IncludeProjectTaskSprintASync(IEnumerable<long> projectTaskIds, long sprintId)
+    public async Task IncludeProjectTaskSprintAsync(IEnumerable<long> projectTaskIds, long sprintId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
+        var projectTaskIdsItems = projectTaskIds.AsList();
         
-        var parameters = new DynamicParameters();
-        parameters.Add("@sprintId", sprintId);
-        parameters.Add("@projectTaskIds", projectTaskIds.AsList());
+        var parameters = new List<DynamicParameters>(projectTaskIdsItems.Count);
+
+        foreach (var id in projectTaskIdsItems)
+        {
+            var tempParameters = new DynamicParameters();
+            tempParameters.Add("@sprintId", sprintId);
+            tempParameters.Add("@projectTaskIds", id);
+            
+            parameters.Add(tempParameters);
+        }
 
         var query = @"INSERT INTO project_management.sprint_tasks (sprint_id, project_task_id) 
                       VALUES (@sprintId, @projectTaskIds)";

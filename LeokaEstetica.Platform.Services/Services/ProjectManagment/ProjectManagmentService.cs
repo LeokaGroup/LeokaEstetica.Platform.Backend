@@ -2806,7 +2806,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 // Добавляем задачи в спринт, если их включили в спринт.
                 if (projectTaskIds is not null && projectTaskIds.Any())
                 {
-                    await _projectManagmentRepository.IncludeProjectTaskSprintASync(projectTaskIds, addedSprintId);
+                    await _projectManagmentRepository.IncludeProjectTaskSprintAsync(projectTaskIds, addedSprintId);
                 }
 
                 if (planingSprintInput.DateStart.HasValue && planingSprintInput.DateEnd.HasValue)

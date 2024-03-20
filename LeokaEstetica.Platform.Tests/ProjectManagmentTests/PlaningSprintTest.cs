@@ -15,7 +15,8 @@ internal class PlaningSprintTest : BaseServiceTest
             SprintDescription = "Тестовый спринт 1 тестовое описание",
             DateStart = DateTime.UtcNow,
             DateEnd = DateTime.UtcNow.AddDays(4),
-            ProjectId = 274
+            ProjectId = 274,
+            ProjectTaskIds = new [] { "TE-1", "TE-2", "TE-3" }
         }, "sierra_93@mail.ru", null));
 
         await Task.CompletedTask;
