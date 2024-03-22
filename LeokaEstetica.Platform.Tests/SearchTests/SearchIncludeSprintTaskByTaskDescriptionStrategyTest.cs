@@ -10,7 +10,7 @@ internal class SearchIncludeSprintTaskByTaskDescriptionStrategyTest : BaseServic
     public async Task SearchIncludeSprintTaskByTaskDescriptionStrategyAsyncTest()
     {
         var result = await BaseSearchSprintTaskAlgorithm.SearchIncludeSprintTaskByTaskDescriptionAsync(
-            new SearchIncludeSprintTaskByTaskDescriptionStrategy(ProjectManagmentRepository), "test", 274);
+            new SearchIncludeSprintTaskByTaskDescriptionStrategy(ProjectManagmentRepository), "test", 274, 2);
 
         Assert.IsTrue(result.Any());
     }

@@ -288,7 +288,8 @@ internal class BaseServiceTest
 
         var searchProjectManagementRepository = new SearchProjectManagementRepository(connectionProvider);
         SearchProjectManagementService = new SearchProjectManagementService(null,
-            searchProjectManagementRepository, ProjectManagmentRepository);
+            searchProjectManagementRepository, ProjectManagmentRepository, projectSettingsConfigRepository,
+            userRepository);
 
         BaseSearchSprintTaskAlgorithm = new BaseSearchSprintTaskAlgorithm();
     }

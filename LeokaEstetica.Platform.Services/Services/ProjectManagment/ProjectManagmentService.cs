@@ -1333,6 +1333,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 TranslateLangTypeEnum.Russian, TranslateLangTypeEnum.English);
 
             // Разбиваем строку на пробелы и приводим каждое слово к PascalCase и соединяем снова в строку.
+            // Это нужно, если пользователь ввел название с пробелами и тд.
             statusSysName = string.Join("", statusSysName.Split(" ").Select(x => x.ToPascalCase()));
 
             // TODO: Для чего вообще использовать класс сущности?

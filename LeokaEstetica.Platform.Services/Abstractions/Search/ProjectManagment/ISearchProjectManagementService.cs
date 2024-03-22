@@ -28,7 +28,8 @@ public interface ISearchProjectManagementService
     /// <param name="isSearchByTaskName">Признак поиска по названию задачи.</param>
     /// <param name="isSearchByTaskDescription">Признак поиска по совпадению в описании.</param>
     /// <param name="projectId">Id проекта.</param>
+    /// <param name="account">Аккаунт.</param>
     /// <returns>Найденные задачи, истории, эпики, ошибки.</returns>
     Task<IEnumerable<SearchTaskOutput>> SearchIncludeSprintTaskAsync(string searchText, bool isSearchByProjectTaskId,
-        bool isSearchByTaskName, bool isSearchByTaskDescription, long projectId);
+        bool isSearchByTaskName, bool isSearchByTaskDescription, long projectId, string account);
 }

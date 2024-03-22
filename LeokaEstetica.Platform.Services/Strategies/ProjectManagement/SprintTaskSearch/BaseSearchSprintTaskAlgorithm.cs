@@ -12,11 +12,12 @@ internal class BaseSearchSprintTaskAlgorithm
     /// </summary>
     /// <param name="strategy">Стратегия поиска.</param>
     /// <param name="inviteText">Текст для приглашения.</param>
+    /// <param name="templateId">Id шаблона.</param>
     /// <returns>Найденные задачи, истории, эпики, ошибки.</returns>
     internal async Task<IEnumerable<SearchTaskOutput>> SearchIncludeSprintTaskByProjectTaskIdAsync(
-        BaseSearchSprintTaskStrategy strategy, long projectTaskId, long projectId)
+        BaseSearchSprintTaskStrategy strategy, long projectTaskId, long projectId, int templateId)
     {
-        var result = await strategy.SearchIncludeSprintTaskByProjectTaskIdAsync(projectTaskId, projectId);
+        var result = await strategy.SearchIncludeSprintTaskByProjectTaskIdAsync(projectTaskId, projectId, templateId);
 
         return result;
     }
@@ -26,11 +27,12 @@ internal class BaseSearchSprintTaskAlgorithm
     /// </summary>
     /// <param name="taskName">Название задачи, эпика, истории, ошибки./</param>
     /// <param name="projectId">Id проекта./</param>
+    /// <param name="templateId">Id шаблона.</param>
     /// <returns>Найденные задачи, истории, эпики, ошибки.</returns>
     public async Task<IEnumerable<SearchTaskOutput>> SearchIncludeSprintTaskByTaskNameAsync(
-        BaseSearchSprintTaskStrategy strategy, string taskName, long projectId)
+        BaseSearchSprintTaskStrategy strategy, string taskName, long projectId, int templateId)
     {
-        var result = await strategy.SearchIncludeSprintTaskByTaskNameAsync(taskName, projectId);
+        var result = await strategy.SearchIncludeSprintTaskByTaskNameAsync(taskName, projectId, templateId);
 
         return result;
     }
@@ -40,11 +42,13 @@ internal class BaseSearchSprintTaskAlgorithm
     /// </summary>
     /// <param name="taskDescription">Описание задачи, эпика, истории, ошибки./</param>
     /// <param name="projectId">Id проекта./</param>
+    /// <param name="templateId">Id шаблона.</param>
     /// <returns>Найденные задачи, истории, эпики, ошибки.</returns>
     internal async Task<IEnumerable<SearchTaskOutput>> SearchIncludeSprintTaskByTaskDescriptionAsync(
-        BaseSearchSprintTaskStrategy strategy, string taskDescription, long projectId)
+        BaseSearchSprintTaskStrategy strategy, string taskDescription, long projectId, int templateId)
     {
-        var result = await strategy.SearchIncludeSprintTaskByTaskDescriptionAsync(taskDescription, projectId);
+        var result = await strategy.SearchIncludeSprintTaskByTaskDescriptionAsync(taskDescription, projectId,
+            templateId);
 
         return result;
     }

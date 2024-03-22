@@ -107,7 +107,7 @@ public class SearchController : BaseController
         }
 
         var result = await _searchProjectManagementService.SearchIncludeSprintTaskAsync(searchText,
-            isSearchByProjectTaskId, isSearchByTaskName, isSearchByTaskDescription, projectId);
+            isSearchByProjectTaskId, isSearchByTaskName, isSearchByTaskDescription, projectId, GetUserName());
 
         return result;
     }

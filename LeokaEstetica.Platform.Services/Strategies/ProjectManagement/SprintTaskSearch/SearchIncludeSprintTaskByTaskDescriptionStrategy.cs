@@ -20,7 +20,7 @@ internal sealed class SearchIncludeSprintTaskByTaskDescriptionStrategy : BaseSea
 
     /// <inheritdoc />
     public override Task<IEnumerable<SearchTaskOutput>> SearchIncludeSprintTaskByProjectTaskIdAsync(long projectTaskId,
-        long projectId)
+        long projectId, int templateId)
     {
         throw new NotImplementedException(
             "В стратегии SearchIncludeSprintTaskByTaskDescriptionStrategy не предполагается реализация SearchIncludeSprintTaskByProjectTaskIdAsync.");
@@ -28,7 +28,7 @@ internal sealed class SearchIncludeSprintTaskByTaskDescriptionStrategy : BaseSea
 
     /// <inheritdoc />
     public override Task<IEnumerable<SearchTaskOutput>> SearchIncludeSprintTaskByTaskNameAsync(string taskName,
-        long projectId)
+        long projectId, int templateId)
     {
         throw new NotImplementedException(
             "В стратегии SearchIncludeSprintTaskByTaskDescriptionStrategy не предполагается реализация SearchIncludeSprintTaskByTaskNameAsync.");
@@ -36,10 +36,10 @@ internal sealed class SearchIncludeSprintTaskByTaskDescriptionStrategy : BaseSea
 
     /// <inheritdoc />
     public override async Task<IEnumerable<SearchTaskOutput>> SearchIncludeSprintTaskByTaskDescriptionAsync(
-        string taskDescription, long projectId)
+        string taskDescription, long projectId, int templateId)
     {
         var result = (await ProjectManagmentRepository.SearchIncludeSprintTaskByTaskDescriptionAsync(taskDescription,
-            projectId))?.AsList();
+            projectId, templateId))?.AsList();
 
         if (result is null || !result.Any())
         {

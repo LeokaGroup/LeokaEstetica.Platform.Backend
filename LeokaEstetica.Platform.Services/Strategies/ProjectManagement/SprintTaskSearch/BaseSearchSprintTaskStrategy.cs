@@ -24,25 +24,28 @@ internal abstract class BaseSearchSprintTaskStrategy
     /// </summary>
     /// <param name="projectTaskId">Id задачи в рамках проекта./</param>
     /// <param name="projectId">Id проекта./</param>
+    /// <param name="templateId">Id шаблона.</param>
     /// <returns>Найденные задачи, истории, эпики, ошибки.</returns>
     public abstract Task<IEnumerable<SearchTaskOutput>> SearchIncludeSprintTaskByProjectTaskIdAsync(
-        long projectTaskId, long projectId);
+        long projectTaskId, long projectId, int templateId);
     
     /// <summary>
     /// Метод ищет задачи, истории, эпики, ошибки по названию задачи, эпика, истории, ошибки.
     /// </summary>
     /// <param name="taskName">Название задачи, эпика, истории, ошибки./</param>
     /// <param name="projectId">Id проекта./</param>
+    /// <param name="templateId">Id шаблона.</param>
     /// <returns>Найденные задачи, истории, эпики, ошибки.</returns>
     public abstract Task<IEnumerable<SearchTaskOutput>> SearchIncludeSprintTaskByTaskNameAsync(string taskName,
-        long projectId);
+        long projectId, int templateId);
     
     /// <summary>
     /// Метод ищет задачи, истории, эпики, ошибки по совпадении в описании задачи, эпика, истории, ошибки.
     /// </summary>
     /// <param name="taskDescription">Описание задачи, эпика, истории, ошибки./</param>
     /// <param name="projectId">Id проекта./</param>
+    /// <param name="templateId">Id шаблона.</param>
     /// <returns>Найденные задачи, истории, эпики, ошибки.</returns>
     public abstract Task<IEnumerable<SearchTaskOutput>> SearchIncludeSprintTaskByTaskDescriptionAsync(
-        string taskDescription, long projectId);
+        string taskDescription, long projectId, int templateId);
 }

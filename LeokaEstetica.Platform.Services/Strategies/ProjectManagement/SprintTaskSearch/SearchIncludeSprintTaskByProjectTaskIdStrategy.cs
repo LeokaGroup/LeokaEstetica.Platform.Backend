@@ -20,10 +20,10 @@ internal class SearchIncludeSprintTaskByProjectTaskIdStrategy : BaseSearchSprint
 
     /// <inheritdoc />
     public override async Task<IEnumerable<SearchTaskOutput>> SearchIncludeSprintTaskByProjectTaskIdAsync(
-        long projectTaskId, long projectId)
+        long projectTaskId, long projectId, int templateId)
     {
         var result = (await ProjectManagmentRepository.SearchIncludeSprintTaskByProjectTaskIdAsync(projectTaskId,
-            projectId))?.AsList();
+            projectId, templateId))?.AsList();
 
         if (result is null || !result.Any())
         {
@@ -35,7 +35,7 @@ internal class SearchIncludeSprintTaskByProjectTaskIdStrategy : BaseSearchSprint
 
     /// <inheritdoc />
     public override Task<IEnumerable<SearchTaskOutput>>
-        SearchIncludeSprintTaskByTaskNameAsync(string taskName, long projectId)
+        SearchIncludeSprintTaskByTaskNameAsync(string taskName, long projectId, int templateId)
     {
         throw new NotImplementedException(
             "В стратегии SearchIncludeSprintTaskByProjectTaskIdStrategy не предполагается реализация SearchIncludeSprintTaskByTaskNameAsync.");
@@ -43,7 +43,7 @@ internal class SearchIncludeSprintTaskByProjectTaskIdStrategy : BaseSearchSprint
 
     /// <inheritdoc />
     public override Task<IEnumerable<SearchTaskOutput>> SearchIncludeSprintTaskByTaskDescriptionAsync(
-        string taskDescription, long projectId)
+        string taskDescription, long projectId, int templateId)
     {
         throw new NotImplementedException(
             "В стратегии SearchIncludeSprintTaskByProjectTaskIdStrategy не предполагается реализация SearchIncludeSprintTaskByTaskDescriptionAsync.");

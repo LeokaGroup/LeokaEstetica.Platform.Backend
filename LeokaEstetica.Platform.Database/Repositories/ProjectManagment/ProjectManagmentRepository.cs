@@ -1656,7 +1656,7 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
 
     /// <inheritdoc/>
     public async Task<IEnumerable<SearchTaskOutput>> SearchIncludeSprintTaskByProjectTaskIdAsync(long projectTaskId,
-        long projectId)
+        long projectId, int templateId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
         
@@ -1664,6 +1664,7 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         parameters.Add("@projectId", projectId);
         parameters.Add("@prefix", GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_PROJECT_NAME_PREFIX);
         parameters.Add("@projectTaskId", projectTaskId);
+        parameters.Add("@templateId", templateId);
         
         var query = "SELECT t.task_id," +
                     "t.name," +
@@ -1672,7 +1673,21 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
                     "(SELECT \"ParamValue\" " +
                     "FROM \"Configs\".\"ProjectManagmentProjectSettings\" AS ps " +
                     "WHERE ps.\"ProjectId\" = @projectId " +
-                    "AND ps.\"ParamKey\" = @prefix) AS TaskIdPrefix " +
+                    "AND ps.\"ParamKey\" = @prefix) AS TaskIdPrefix, " +
+                    "t.task_status_id, " +
+                    "t.executor_id," +
+                    "t.task_type_id," +
+                    "(SELECT CASE WHEN t.task_type_id = 1 THEN 'Задача' " +
+                    "WHEN t.task_type_id = 2 THEN 'Ошибка' END) AS TaskTypeName, " +
+                    "(SELECT \"FirstName\" || ' ' || \"LastName\" || ' ' || (COALESCE(\"Patronymic\", '')) " +
+                    "FROM \"Profile\".\"ProfilesInfo\"" + "WHERE \"UserId\" = t.executor_id) AS ExecutorName, " +
+                    "(SELECT tpmtst.status_name " +
+                    "FROM templates.project_management_task_status_templates AS tpmtst " +
+                    "INNER JOIN templates.project_management_task_status_intermediate_templates AS tpmtsit " +
+                    "ON tpmtst.task_status_id = tpmtsit.status_id " +
+                    "WHERE t.task_status_id = tpmtst.task_status_id " +
+                    "AND tpmtsit.template_id = @templateId " +
+                    "AND NOT tpmtst.is_system_status) AS StatusName " +
                     "FROM project_management.project_tasks AS t " +
                     "WHERE t.project_id = @projectId " +
                     "AND t.project_task_id = @projectTaskId " +
@@ -1684,7 +1699,16 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
                     "(SELECT \"ParamValue\"" +
                     "FROM \"Configs\".\"ProjectManagmentProjectSettings\" AS ps " +
                     "WHERE ps.\"ProjectId\" = @projectId " +
-                    "AND ps.\"ParamKey\" = @prefix) AS TaskIdPrefix " +
+                    "AND ps.\"ParamKey\" = @prefix) AS TaskIdPrefix, " +
+                    "e.status_id AS TaskStatusId, " +
+                    "e.created_by AS ExecutorId, " +
+                    "4 AS TaskTypeId, " +
+                    "\'Эпик\' AS TaskTypeName, " +
+                    "(SELECT \"FirstName\" || ' ' || \"LastName\" || ' ' || (COALESCE(\"Patronymic\", '')) " +
+                    "FROM \"Profile\".\"ProfilesInfo\"" + "WHERE \"UserId\" = e.created_by) AS ExecutorName, " +
+                    "(SELECT status_name " +
+                    "FROM project_management.epic_statuses " +
+                    "WHERE status_id = e.status_id) AS StatusName " +
                     "FROM project_management.epics AS e " +
                     "INNER JOIN project_management.epic_statuses AS es " +
                     "ON e.status_id = es.status_id " +
@@ -1698,7 +1722,16 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
                     "(SELECT \"ParamValue\"" +
                     "FROM \"Configs\".\"ProjectManagmentProjectSettings\" AS ps " +
                     "WHERE ps.\"ProjectId\" = @projectId " +
-                    "AND ps.\"ParamKey\" = @prefix) AS TaskIdPrefix " +
+                    "AND ps.\"ParamKey\" = @prefix) AS TaskIdPrefix, " +
+                    "us.status_id AS TaskStatusId, " +
+                    "us.executor_id, " +
+                    "3 AS TaskTypeId, " +
+                    "'История/Требование' AS TaskTypeName, " +
+                    "(SELECT \"FirstName\" || ' ' || \"LastName\" || ' ' || (COALESCE(\"Patronymic\", '')) " +
+                    "FROM \"Profile\".\"ProfilesInfo\"" + "WHERE \"UserId\" = us.executor_id) AS ExecutorName, " +
+                    "(SELECT status_name " +
+                    "FROM project_management.user_story_statuses " +
+                    "WHERE status_id = us.status_id) AS StatusName " +
                     "FROM project_management.user_stories AS us " +
                     "INNER JOIN project_management.user_story_statuses AS uss " +
                     "ON us.status_id = uss.status_id " +
@@ -1712,7 +1745,7 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
 
     /// <inheritdoc/>
     public async Task<IEnumerable<SearchTaskOutput>> SearchIncludeSprintTaskByTaskNameAsync(string taskName,
-        long projectId)
+        long projectId, int templateId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
         
@@ -1720,6 +1753,7 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         parameters.Add("@projectId", projectId);
         parameters.Add("@prefix", GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_PROJECT_NAME_PREFIX);
         parameters.Add("@taskName", taskName);
+        parameters.Add("@templateId", templateId);
 
         var query = "SELECT t.task_id," +
                     "t.name," +
@@ -1728,7 +1762,21 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
                     "(SELECT \"ParamValue\" " +
                     "FROM \"Configs\".\"ProjectManagmentProjectSettings\" AS ps " +
                     "WHERE ps.\"ProjectId\" = @projectId " +
-                    "AND ps.\"ParamKey\" = @prefix) AS TaskIdPrefix " +
+                    "AND ps.\"ParamKey\" = @prefix) AS TaskIdPrefix, " +
+                    "t.task_status_id, " +
+                    "t.executor_id, " +
+                    "t.task_type_id, " +
+                    "(SELECT CASE WHEN t.task_type_id = 1 THEN 'Задача' " +
+                    "WHEN t.task_type_id = 2 THEN 'Ошибка' END) AS TaskTypeName, " +
+                    "(SELECT \"FirstName\" || ' ' || \"LastName\" || ' ' || (COALESCE(\"Patronymic\", '')) " +
+                    "FROM \"Profile\".\"ProfilesInfo\"" + "WHERE \"UserId\" = t.executor_id) AS ExecutorName, " +
+                    "(SELECT tpmtst.status_name " +
+                    "FROM templates.project_management_task_status_templates AS tpmtst " +
+                    "INNER JOIN templates.project_management_task_status_intermediate_templates AS tpmtsit " +
+                    "ON tpmtst.task_status_id = tpmtsit.status_id " +
+                    "WHERE t.task_status_id = tpmtst.task_status_id " +
+                    "AND tpmtsit.template_id = @templateId " +
+                    "AND NOT tpmtst.is_system_status) AS StatusName " +
                     "FROM project_management.project_tasks AS t " +
                     "WHERE t.project_id = @projectId " +
                     "AND t.name ILIKE @taskName || '%' " +
@@ -1740,7 +1788,16 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
                     "(SELECT \"ParamValue\"" +
                     "FROM \"Configs\".\"ProjectManagmentProjectSettings\" AS ps " +
                     "WHERE ps.\"ProjectId\" = @projectId " +
-                    "AND ps.\"ParamKey\" = @prefix) AS TaskIdPrefix " +
+                    "AND ps.\"ParamKey\" = @prefix) AS TaskIdPrefix, " +
+                    "e.status_id AS TaskStatusId, " +
+                    "e.created_by AS ExecutorId, " +
+                    "4 AS TaskTypeId, " +
+                    "\'Эпик\' AS TaskTypeName, " +
+                    "(SELECT \"FirstName\" || ' ' || \"LastName\" || ' ' || (COALESCE(\"Patronymic\", '')) " +
+                    "FROM \"Profile\".\"ProfilesInfo\"" + "WHERE \"UserId\" = e.created_by) AS ExecutorName, " +
+                    "(SELECT status_name " +
+                    "FROM project_management.epic_statuses " +
+                    "WHERE status_id = e.status_id) AS StatusName " +
                     "FROM project_management.epics AS e " +
                     "INNER JOIN project_management.epic_statuses AS es " +
                     "ON e.status_id = es.status_id " +
@@ -1754,7 +1811,16 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
                     "(SELECT \"ParamValue\"" +
                     "FROM \"Configs\".\"ProjectManagmentProjectSettings\" AS ps " +
                     "WHERE ps.\"ProjectId\" = @projectId " +
-                    "AND ps.\"ParamKey\" = @prefix) AS TaskIdPrefix " +
+                    "AND ps.\"ParamKey\" = @prefix) AS TaskIdPrefix, " +
+                    "us.status_id AS TaskStatusId, " +
+                    "us.executor_id, " +
+                    "3 AS TaskTypeId, " +
+                    "\'История/Требование\' AS TaskTypeName, " +
+                    "(SELECT \"FirstName\" || ' ' || \"LastName\" || ' ' || (COALESCE(\"Patronymic\", '')) " +
+                    "FROM \"Profile\".\"ProfilesInfo\"" + "WHERE \"UserId\" = us.executor_id) AS ExecutorName, " +
+                    "(SELECT status_name " +
+                    "FROM project_management.user_story_statuses " +
+                    "WHERE status_id = us.status_id) AS StatusName " +
                     "FROM project_management.user_stories AS us " +
                     "INNER JOIN project_management.user_story_statuses AS uss " +
                     "ON us.status_id = uss.status_id " +
@@ -1768,7 +1834,7 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
 
     /// <inheritdoc/>
     public async Task<IEnumerable<SearchTaskOutput>> SearchIncludeSprintTaskByTaskDescriptionAsync(
-        string taskDescription, long projectId)
+        string taskDescription, long projectId, int templateId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
         
@@ -1776,6 +1842,7 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         parameters.Add("@projectId", projectId);
         parameters.Add("@prefix", GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_PROJECT_NAME_PREFIX);
         parameters.Add("@taskDescription", taskDescription);
+        parameters.Add("@templateId", templateId);
 
         var query = "SELECT t.task_id," +
                     "t.name," +
@@ -1784,7 +1851,21 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
                     "(SELECT \"ParamValue\" " +
                     "FROM \"Configs\".\"ProjectManagmentProjectSettings\" AS ps " +
                     "WHERE ps.\"ProjectId\" = @projectId " +
-                    "AND ps.\"ParamKey\" = @prefix) AS TaskIdPrefix " +
+                    "AND ps.\"ParamKey\" = @prefix) AS TaskIdPrefix, " +
+                    "t.task_status_id, " +
+                    "t.executor_id, " +
+                    "t.task_type_id, " +
+                    "(SELECT CASE WHEN t.task_type_id = 1 THEN 'Задача' " +
+                    "WHEN t.task_type_id = 2 THEN 'Ошибка' END) AS TaskTypeName, " +
+                    "(SELECT \"FirstName\" || ' ' || \"LastName\" || ' ' || (COALESCE(\"Patronymic\", '')) " +
+                    "FROM \"Profile\".\"ProfilesInfo\"" + "WHERE \"UserId\" = t.executor_id) AS ExecutorName, " +
+                    "(SELECT tpmtst.status_name " +
+                    "FROM templates.project_management_task_status_templates AS tpmtst " +
+                    "INNER JOIN templates.project_management_task_status_intermediate_templates AS tpmtsit " +
+                    "ON tpmtst.task_status_id = tpmtsit.status_id " +
+                    "WHERE t.task_status_id = tpmtst.task_status_id " +
+                    "AND tpmtsit.template_id = @templateId " +
+                    "AND NOT tpmtst.is_system_status) AS StatusName " +
                     "FROM project_management.project_tasks AS t " +
                     "WHERE t.project_id = @projectId " +
                     "AND t.details ILIKE '%' || @taskDescription || '%' " +
@@ -1796,7 +1877,16 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
                     "(SELECT \"ParamValue\"" +
                     "FROM \"Configs\".\"ProjectManagmentProjectSettings\" AS ps " +
                     "WHERE ps.\"ProjectId\" = @projectId " +
-                    "AND ps.\"ParamKey\" = @prefix) AS TaskIdPrefix " +
+                    "AND ps.\"ParamKey\" = @prefix) AS TaskIdPrefix, " +
+                    "e.status_id AS TaskStatusId, " +
+                    "e.created_by AS ExecutorId, " +
+                    "4 AS TaskTypeId, " +
+                    "\'Эпик\' AS TaskTypeName, " +
+                    "(SELECT \"FirstName\" || ' ' || \"LastName\" || ' ' || (COALESCE(\"Patronymic\", '')) " +
+                    "FROM \"Profile\".\"ProfilesInfo\"" + "WHERE \"UserId\" = e.created_by) AS ExecutorName, " +
+                    "(SELECT status_name " +
+                    "FROM project_management.epic_statuses " +
+                    "WHERE status_id = e.status_id) AS StatusName " +
                     "FROM project_management.epics AS e " +
                     "INNER JOIN project_management.epic_statuses AS es " +
                     "ON e.status_id = es.status_id " +
@@ -1810,7 +1900,16 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
                     "(SELECT \"ParamValue\"" +
                     "FROM \"Configs\".\"ProjectManagmentProjectSettings\" AS ps " +
                     "WHERE ps.\"ProjectId\" = @projectId " +
-                    "AND ps.\"ParamKey\" = @prefix) AS TaskIdPrefix " +
+                    "AND ps.\"ParamKey\" = @prefix) AS TaskIdPrefix, " +
+                    "us.status_id AS TaskStatusId, " +
+                    "us.executor_id, " +
+                    "3 AS TaskTypeId, " +
+                    "\'История/Требование\' AS TaskTypeName, " +
+                    "(SELECT \"FirstName\" || ' ' || \"LastName\" || ' ' || (COALESCE(\"Patronymic\", '')) " +
+                    "FROM \"Profile\".\"ProfilesInfo\"" + "WHERE \"UserId\" = us.executor_id) AS ExecutorName, " +
+                    "(SELECT status_name " +
+                    "FROM project_management.user_story_statuses " +
+                    "WHERE status_id = us.status_id) AS StatusName " +
                     "FROM project_management.user_stories AS us " +
                     "INNER JOIN project_management.user_story_statuses AS uss " +
                     "ON us.status_id = uss.status_id " +
