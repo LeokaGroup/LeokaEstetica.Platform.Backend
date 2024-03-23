@@ -1,6 +1,14 @@
+using Dapper;
+using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
+using LeokaEstetica.Platform.Core.Constants;
+using LeokaEstetica.Platform.Core.Exceptions;
+using LeokaEstetica.Platform.Database.Abstractions.Config;
+using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Database.Abstractions.Search;
 using LeokaEstetica.Platform.Models.Dto.Output.Search.ProjectManagement;
 using LeokaEstetica.Platform.Services.Abstractions.Search.ProjectManagment;
+using LeokaEstetica.Platform.Services.Helpers;
+using LeokaEstetica.Platform.Services.Strategies.ProjectManagement.SprintTaskSearch;
 using Microsoft.Extensions.Logging;
 
 namespace LeokaEstetica.Platform.Services.Services.Search.ProjectManagment;
@@ -12,17 +20,28 @@ internal sealed class SearchProjectManagementService : ISearchProjectManagementS
 {
     private readonly ILogger<SearchProjectManagementService> _logger;
     private readonly ISearchProjectManagementRepository _searchProjectManagementRepository;
+    private readonly IProjectManagmentRepository _projectManagmentRepository;
+    private readonly IProjectSettingsConfigRepository _projectSettingsConfigRepository;
+    private readonly IUserRepository _userRepository;
 
     /// <summary>
     /// Конструктор.
     /// </summary>
     /// <param name="logger">Логгер.</param>
     /// <param name="searchProjectManagementRepository">Репозиторий поиска в модуле УП.</param>
+    /// <param name="projectSettingsConfigRepository">Репозиторий настроек проектов.</param>
+    /// <param name="userRepository">Репозиторий пользователей.</param>
     public SearchProjectManagementService(ILogger<SearchProjectManagementService> logger,
-     ISearchProjectManagementRepository searchProjectManagementRepository)
+     ISearchProjectManagementRepository searchProjectManagementRepository,
+     IProjectManagmentRepository projectManagmentRepository,
+     IProjectSettingsConfigRepository projectSettingsConfigRepository,
+     IUserRepository userRepository)
     {
         _logger = logger;
         _searchProjectManagementRepository = searchProjectManagementRepository;
+        _projectManagmentRepository = projectManagmentRepository;
+        _projectSettingsConfigRepository = projectSettingsConfigRepository;
+        _userRepository = userRepository;
     }
 
     /// <inheritdoc />
@@ -50,6 +69,77 @@ internal sealed class SearchProjectManagementService : ISearchProjectManagementS
 
             var result = await _searchProjectManagementRepository.SearchTaskAsync(searchText, projectIds, isById,
                 isByName, isByDescription, projectTaskId);
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task<IEnumerable<SearchTaskOutput>> SearchIncludeSprintTaskAsync(string searchText,
+        bool isSearchByProjectTaskId, bool isSearchByTaskName, bool isSearchByTaskDescription, long projectId,
+        string account)
+    {
+        try
+        {
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+
+            // TODO: Этот код дублируется в этом сервисе. Вынести в приватный метод и кортежем вернуть нужные данные.
+            // Получаем настройки проекта.
+            var projectSettings = await _projectSettingsConfigRepository.GetProjectSpaceSettingsByProjectIdAsync(
+                projectId, userId);
+            var projectSettingsItems = projectSettings?.AsList();
+
+            if (projectSettingsItems is null
+                || !projectSettingsItems.Any()
+                || projectSettingsItems.Any(x => x is null))
+            {
+                throw new InvalidOperationException("Ошибка получения настроек проекта. " +
+                                                    $"ProjectId: {projectId}. " +
+                                                    $"UserId: {userId}");
+            }
+
+            var template = projectSettingsItems.Find(x =>
+                x.ParamKey.Equals(GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_TEMPLATE_ID));
+            var templateId = Convert.ToInt32(template!.ParamValue);
+            
+            IEnumerable<SearchTaskOutput> result = null;
+            var strategy = new BaseSearchSprintTaskAlgorithm();
+            
+            // Если нужно искать по Id задачи в рамках проекта.
+            if (isSearchByProjectTaskId)
+            {
+                result = await strategy.SearchIncludeSprintTaskByProjectTaskIdAsync(
+                    new SearchIncludeSprintTaskByProjectTaskIdStrategy(_projectManagmentRepository),
+                    searchText.GetProjectTaskIdFromPrefixLink(), projectId, templateId);
+            }
+
+            // Если нужно искать по названию задачи.
+            if (isSearchByTaskName)
+            {
+                result = await strategy.SearchIncludeSprintTaskByTaskNameAsync(
+                    new SearchIncludeSprintTaskByTaskNameStrategy(_projectManagmentRepository), searchText, projectId,
+                    templateId);
+            }
+            
+            // Если нужно искать по описанию задачи.
+            if (isSearchByTaskDescription)
+            {
+                result = await strategy.SearchIncludeSprintTaskByTaskDescriptionAsync(
+                    new SearchIncludeSprintTaskByTaskDescriptionStrategy(_projectManagmentRepository), searchText,
+                    projectId, templateId);
+            }
 
             return result;
         }

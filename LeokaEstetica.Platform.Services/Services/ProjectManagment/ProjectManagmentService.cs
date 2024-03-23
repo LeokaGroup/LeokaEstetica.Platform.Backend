@@ -58,7 +58,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     private readonly IProjectSettingsConfigRepository _projectSettingsConfigRepository;
     private readonly Lazy<IReversoService> _reversoService;
     private readonly Lazy<IFileManagerService> _fileManagerService;
-    private readonly ISprintNotificationsService _sprintNotificationsService;
+    private readonly Lazy<ISprintNotificationsService> _sprintNotificationsService;
 
     /// <summary>
     /// Статусы задач, которые являются самыми базовыми и никогда не меняются независимо от шаблона проекта.
@@ -100,7 +100,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         IProjectSettingsConfigRepository projectSettingsConfigRepository,
         Lazy<IReversoService> reversoService,
         Lazy<IFileManagerService> fileManagerService,
-        ISprintNotificationsService sprintNotificationsService)
+        Lazy<ISprintNotificationsService> sprintNotificationsService)
     {
         _logger = logger;
         _projectManagmentRepository = projectManagmentRepository;
@@ -1333,6 +1333,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 TranslateLangTypeEnum.Russian, TranslateLangTypeEnum.English);
 
             // Разбиваем строку на пробелы и приводим каждое слово к PascalCase и соединяем снова в строку.
+            // Это нужно, если пользователь ввел название с пробелами и тд.
             statusSysName = string.Join("", statusSysName.Split(" ").Select(x => x.ToPascalCase()));
 
             // TODO: Для чего вообще использовать класс сущности?
@@ -2707,6 +2708,12 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 var ex = new NotFoundUserIdByAccountException(account);
                 throw ex;
             }
+
+            List<long> projectTaskIds = null;
+            if (planingSprintInput.ProjectTaskIds is not null && planingSprintInput.ProjectTaskIds.Any())
+            {
+                projectTaskIds = GetProjectTaskIdsWithoutPrefix(planingSprintInput.ProjectTaskIds.AsList());
+            }
         
             // TODO: Добавить проверку на роль (когда внедрим систему ролей) позволяющую пользователю спланировать спринт.
 
@@ -2733,7 +2740,15 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 // {
                 //     // Помещаем в очередь бэклога этот спринт.
                 //     planingSprintInput.SprintStatus = (int)SprintStatusEnum.Backlog;
-                //     await _projectManagmentRepository.PlaningSprintAsync(planingSprintInput);
+                //     
+                //     using var transactionScope = _transactionScopeFactory.CreateTransactionScope();
+                //     var addedSprintId = await _projectManagmentRepository.PlaningSprintAsync(planingSprintInput);
+                //     
+                //     // Добавляем задачи в спринт, если их включили в спринт.
+                //     if (projectTaskIds is not null && projectTaskIds.Any())
+                //     {
+                //         await _projectManagmentRepository.IncludeProjectTaskSprintASync(projectTaskIds, addedSprintId);
+                //     }
                 //
                 //     if (isQueueSprint)
                 //     {
@@ -2745,21 +2760,39 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 //                 NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);
                 //         }
                 //     }
+                //     
+                //     // TODO: Тут добавить запись активности пользователя по userId (кто спланировал спринт).
+                //     
+                //     transactionScope.Complete();
                 // }
 
                 // Автоматическое начало спринта после его планирования.
                 // else
                 // {
                 //     planingSprintInput.SprintStatus = (int)SprintStatusEnum.InWork;
-                //     await _projectManagmentRepository.PlaningSprintAsync(planingSprintInput);
+                //
+                //     using var transactionScope = _transactionScopeFactory.CreateTransactionScope();
+                //     var addedSprintId = await _projectManagmentRepository.PlaningSprintAsync(planingSprintInput);
                 //     
+                //     // Добавляем задачи в спринт, если их включили в спринт.
+                //     if (projectTaskIds is not null && projectTaskIds.Any())
+                //     {
+                //         await _projectManagmentRepository.IncludeProjectTaskSprintASync(projectTaskIds, addedSprintId);
+                //     }
+                //
+                //     // TODO: Начинать автоматически спринт, только после добавления в спринт задач, если их указали.
+                //
                 //     if (!string.IsNullOrEmpty(token))
                 //     {
                 //         await _sprintNotificationsService.Value.SendNotifySuccessPlaningSprintAsync("Все хорошо",
                 //             "Спринт успешно спланирован. Спринт автоматически был начат." +
                 //             " Его можно увидеть в активных спринтах.",
-                //             NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);   
+                //             NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);
                 //     }
+                //
+                //     // TODO: Тут добавить запись активности пользователя по userId (кто спланировал спринт).
+                //
+                //     transactionScope.Complete();
                 // }
             }
 
@@ -2767,20 +2800,30 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             else
             {
                 planingSprintInput.SprintStatus = (int)SprintStatusEnum.Backlog;
-                await _projectManagmentRepository.PlaningSprintAsync(planingSprintInput);
+                
+                using var transactionScope = _transactionScopeFactory.CreateTransactionScope();
+                var addedSprintId = await _projectManagmentRepository.PlaningSprintAsync(planingSprintInput);
+                
+                // Добавляем задачи в спринт, если их включили в спринт.
+                if (projectTaskIds is not null && projectTaskIds.Any())
+                {
+                    await _projectManagmentRepository.IncludeProjectTaskSprintAsync(projectTaskIds, addedSprintId);
+                }
 
                 if (planingSprintInput.DateStart.HasValue && planingSprintInput.DateEnd.HasValue)
                 {
                     if (!string.IsNullOrEmpty(token))
                     {
-                        await _sprintNotificationsService.SendNotifySuccessPlaningSprintAsync("Все хорошо",
+                        await _sprintNotificationsService.Value.SendNotifySuccessPlaningSprintAsync("Все хорошо",
                             "Спринт успешно спланирован. Теперь его можно начать.",
                             NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);   
                     }
                 }
+                
+                // TODO: Тут добавить запись активности пользователя по userId (кто спланировал спринт).
+                
+                transactionScope.Complete();
             }
-        
-            // TODO: Тут добавить запись активности пользователя по userId (кто спланировал спринт).
         }
         
         catch (Exception ex)
@@ -3120,6 +3163,20 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 
             result.Add(link);
         }
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод получает из префиксных Id задач в рамках проекта только число,
+    /// чтобы в итоге работать именно с числовыми Id задач в рамках проекта. 
+    /// </summary>
+    /// <param name="projectTaskIds">Массив префиксных Id задач в рамках проекта. </param>
+    /// <returns>Id задач в рамках проекта только число.</returns>
+    private List<long> GetProjectTaskIdsWithoutPrefix(List<string> projectTaskIds)
+    {
+        var result = new List<long>(projectTaskIds.Count);
+        result.AddRange(projectTaskIds.Select(pti => pti.GetProjectTaskIdFromPrefixLink()));
 
         return result;
     }

@@ -80,4 +80,35 @@ public class SearchController : BaseController
 
         return result;
     }
+
+    /// <summary>
+    /// Метод ищет задачи, истории, эпики, ошибки по разным критериям.
+    /// </summary>
+    /// <param name="searchText">Поисковый текст./</param>
+    /// <param name="isSearchByProjectTaskId">Признак поиска по Id задачи в рамках проекта.</param>
+    /// <param name="isSearchByTaskName">Признак поиска по названию задачи.</param>
+    /// <param name="isSearchByTaskDescription">Признак поиска по совпадению в описании.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Найденные задачи, истории, эпики, ошибки.</returns>
+    [HttpGet]
+    [Route("include-sprint-task")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<SearchTaskOutput>))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<IEnumerable<SearchTaskOutput>> SearchIncludeSprintTaskAsync([FromQuery] string searchText,
+        [FromQuery] bool isSearchByProjectTaskId, [FromQuery] bool isSearchByTaskName,
+        [FromQuery] bool isSearchByTaskDescription, [FromQuery] long projectId)
+    {
+        if (string.IsNullOrWhiteSpace(searchText))
+        {
+            return Enumerable.Empty<SearchTaskOutput>();
+        }
+
+        var result = await _searchProjectManagementService.SearchIncludeSprintTaskAsync(searchText,
+            isSearchByProjectTaskId, isSearchByTaskName, isSearchByTaskDescription, projectId, GetUserName());
+
+        return result;
+    }
 }

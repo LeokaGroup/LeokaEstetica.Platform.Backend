@@ -13,6 +13,7 @@ using LeokaEstetica.Platform.CallCenter.Services.Ticket;
 using LeokaEstetica.Platform.CallCenter.Services.Vacancy;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Utils;
+using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Database.Repositories.Access.Ticket;
 using LeokaEstetica.Platform.Database.Repositories.Access.User;
 using LeokaEstetica.Platform.Database.Repositories.AvailableLimits;
@@ -68,6 +69,7 @@ using LeokaEstetica.Platform.Services.Services.Search.ProjectManagment;
 using LeokaEstetica.Platform.Services.Services.Subscription;
 using LeokaEstetica.Platform.Services.Services.User;
 using LeokaEstetica.Platform.Services.Services.Vacancy;
+using LeokaEstetica.Platform.Services.Strategies.ProjectManagement.SprintTaskSearch;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
@@ -124,6 +126,8 @@ internal class BaseServiceTest
     protected readonly ProjectManagmentService ProjectManagmentService;
     protected readonly ReversoService ReversoService;
     protected readonly SearchProjectManagementService SearchProjectManagementService;
+    protected readonly BaseSearchSprintTaskAlgorithm BaseSearchSprintTaskAlgorithm;
+    protected readonly IProjectManagmentRepository ProjectManagmentRepository;
 
     protected BaseServiceTest()
     {
@@ -274,15 +278,19 @@ internal class BaseServiceTest
 
         var transactionScopeFactory = new TransactionScopeFactory();
 
-        var projectManagmentRepository = new ProjectManagmentRepository(connectionProvider);
+        ProjectManagmentRepository = new ProjectManagmentRepository(connectionProvider);
         var projectManagmentTemplateRepository = new ProjectManagmentTemplateRepository(connectionProvider);
         var projectSettingsConfigRepository = new ProjectSettingsConfigRepository(pgContext);
         ReversoService = new ReversoService(null);
-        ProjectManagmentService = new ProjectManagmentService(null, projectManagmentRepository, mapper, userRepository,
+        ProjectManagmentService = new ProjectManagmentService(null, ProjectManagmentRepository, mapper, userRepository,
             projectRepository, pachcaService, projectManagmentTemplateRepository, transactionScopeFactory,
             projectSettingsConfigRepository, new Lazy<IReversoService>(ReversoService), null, null);
 
         var searchProjectManagementRepository = new SearchProjectManagementRepository(connectionProvider);
-        SearchProjectManagementService = new SearchProjectManagementService(null, searchProjectManagementRepository);
+        SearchProjectManagementService = new SearchProjectManagementService(null,
+            searchProjectManagementRepository, ProjectManagmentRepository, projectSettingsConfigRepository,
+            userRepository);
+
+        BaseSearchSprintTaskAlgorithm = new BaseSearchSprintTaskAlgorithm();
     }
 }

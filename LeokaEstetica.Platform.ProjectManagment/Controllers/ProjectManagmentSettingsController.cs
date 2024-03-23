@@ -168,7 +168,7 @@ public class ProjectManagmentSettingsController : BaseController
                 exceptions.Add(new InvalidOperationException(err.ErrorMessage));
             }
             
-            var ex = new AggregateException("Ошибка получения статусов для создания нового статуса.", exceptions);
+            var ex = new AggregateException("Ошибка создания статуса шаблона проекта.", exceptions);
             _logger.LogError(ex, ex.Message);
             
             await _pachcaService.Value.SendNotificationErrorAsync(ex);

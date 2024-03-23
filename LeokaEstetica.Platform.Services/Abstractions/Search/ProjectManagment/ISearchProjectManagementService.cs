@@ -19,4 +19,17 @@ public interface ISearchProjectManagementService
     /// <returns>Список найденных задач.</returns>
     Task<IEnumerable<SearchTaskOutput>> SearchTaskAsync(string searchText, IEnumerable<long> projectIds, bool isById,
         bool isByName, bool isByDescription);
+
+    /// <summary>
+    /// Метод ищет задачи, истории, эпики, ошибки по разным критериям.
+    /// </summary>
+    /// <param name="searchText">Поисковый текст./</param>
+    /// <param name="isSearchByProjectTaskId">Признак поиска по Id задачи в рамках проекта.</param>
+    /// <param name="isSearchByTaskName">Признак поиска по названию задачи.</param>
+    /// <param name="isSearchByTaskDescription">Признак поиска по совпадению в описании.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="account">Аккаунт.</param>
+    /// <returns>Найденные задачи, истории, эпики, ошибки.</returns>
+    Task<IEnumerable<SearchTaskOutput>> SearchIncludeSprintTaskAsync(string searchText, bool isSearchByProjectTaskId,
+        bool isSearchByTaskName, bool isSearchByTaskDescription, long projectId, string account);
 }
