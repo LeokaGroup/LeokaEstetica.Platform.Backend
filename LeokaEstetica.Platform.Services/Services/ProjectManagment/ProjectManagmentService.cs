@@ -2833,6 +2833,50 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         }
     }
 
+    /// <inheritdoc />
+    public async Task<EpicTaskResult> GetEpicTasksAsync(long projectId, long epicId, string account)
+    {
+        try
+        {
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+
+            // TODO: Этот код дублируется в этом сервисе. Вынести в приватный метод и кортежем вернуть нужные данные.
+            // Получаем настройки проекта.
+            var projectSettings = await _projectSettingsConfigRepository.GetProjectSpaceSettingsByProjectIdAsync(
+                projectId, userId);
+            var projectSettingsItems = projectSettings?.AsList();
+
+            if (projectSettingsItems is null
+                || !projectSettingsItems.Any()
+                || projectSettingsItems.Any(x => x is null))
+            {
+                throw new InvalidOperationException("Ошибка получения настроек проекта. " +
+                                                    $"ProjectId: {projectId}. " +
+                                                    $"UserId: {userId}");
+            }
+
+            var template = projectSettingsItems.Find(x =>
+                x.ParamKey.Equals(GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_TEMPLATE_ID));
+            var templateId = Convert.ToInt32(template!.ParamValue);
+
+            var result = await _projectManagmentRepository.GetEpicTasksAsync(projectId, epicId, templateId);
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
     #endregion
 
     #region Приватные методы.

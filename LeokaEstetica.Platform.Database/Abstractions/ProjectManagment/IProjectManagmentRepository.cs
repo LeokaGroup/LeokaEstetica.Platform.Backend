@@ -497,5 +497,20 @@ public interface IProjectManagmentRepository
     public Task<IEnumerable<SearchTaskOutput>> SearchIncludeSprintTaskByTaskDescriptionAsync(
         string taskDescription, long projectId, int templateId);
 
+    /// <summary>
+    /// Метод планирует спринт.
+    /// Добавляет задачи в спринт, если их указали при планировании спринта.
+    /// </summary>
+    /// <param name="projectTaskIds">Список задач для добавления их в спринт.</param>
+    /// <param name="sprintId">Id спринта.</param>
     Task IncludeProjectTaskSprintAsync(IEnumerable<long> projectTaskIds, long sprintId);
+    
+    /// <summary>
+    /// Метод получает задачи эпика.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="epicId">Id эпика.</param>
+    /// <param name="templateId">Id шаблона.</param>
+    /// <returns>Список задач эпика.</returns>
+    Task<EpicTaskResult> GetEpicTasksAsync(long projectId, long epicId, int templateId);
 }
