@@ -466,4 +466,12 @@ public interface IProjectManagmentService
     /// <param name="account">Аккаунт.</param>
     /// <param name="token">Токен.</param>
     Task PlaningSprintAsync(PlaningSprintInput planingSprintInput, string account, string token);
+
+    /// <summary>
+    /// Метод получает название спринта, в который входит задача.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
+    /// <returns>Данные спринта.</returns>
+    Task<TaskSprintOutput> GetSprintTaskAsync(long projectId, string projectTaskId);
 }
