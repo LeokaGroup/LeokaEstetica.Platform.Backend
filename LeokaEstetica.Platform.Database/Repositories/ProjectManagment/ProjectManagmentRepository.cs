@@ -1989,6 +1989,22 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         return result;
     }
 
+    /// <inheritdoc/>
+    public async Task UpdateTaskSprintAsync(long sprintId, long projectTaskId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@projectTaskId", projectTaskId);
+        parameters.Add("@sprintId", sprintId);
+
+        var query = @"UPDATE project_management.sprint_tasks 
+                      SET sprint_id = @sprintId 
+                      WHERE project_task_id = @projectTaskId";
+
+        await connection.ExecuteAsync(query, parameters);
+    }
+
     #endregion
 
     #region Приватные методы.

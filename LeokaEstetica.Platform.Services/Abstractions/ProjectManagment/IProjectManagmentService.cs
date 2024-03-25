@@ -483,4 +483,11 @@ public interface IProjectManagmentService
     /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
     /// <returns>Список спринтов, в которые может быть добавлена задача.</returns>
     Task<IEnumerable<TaskSprintOutput>> GetAvailableProjectSprintsAsync(long projectId, string projectTaskId);
+
+    /// <summary>
+    /// Метод обновляет спринт, в который входит задача.
+    /// </summary>
+    /// <param name="sprintId">Id спринта.</param>
+    /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
+    Task UpdateTaskSprintAsync(long sprintId, string projectTaskId);
 }
