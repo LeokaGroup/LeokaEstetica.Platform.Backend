@@ -144,6 +144,16 @@ public class ProjectManagmentTaskOutput
     /// Id эпика, в который добавлена задача.
     /// </summary>
     public long? EpicId { get; set; }
+
+    /// <summary>
+    /// Id спринта, в который добавлена задача.
+    /// </summary>
+    public long? SprintId { get; set; }
+
+    /// <summary>
+    /// Название спринта, в который добавлена задача.
+    /// </summary>
+    public string SprintName { get; set; }
 }
 
 /// <summary>

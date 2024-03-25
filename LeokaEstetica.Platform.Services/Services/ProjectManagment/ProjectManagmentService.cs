@@ -864,6 +864,15 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 result.EpicId = taskEpic.EpicId;
                 result.EpicName = taskEpic.EpicName;
             }
+            
+            // Получаем спринт, в который входит задача.
+            var sprint = await _projectManagmentRepository.GetSprintTaskAsync(projectId, task.ProjectTaskId);
+
+            if (sprint is not null)
+            {
+                result.SprintId = sprint.SprintId;
+                result.SprintName = sprint.SprintName;
+            }
 
             return result;
         }
