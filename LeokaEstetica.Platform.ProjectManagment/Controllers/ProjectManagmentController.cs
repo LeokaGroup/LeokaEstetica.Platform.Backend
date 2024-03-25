@@ -1749,4 +1749,47 @@ public class ProjectManagmentController : BaseController
 
         return result;
     }
+
+    /// <summary>
+    /// Метод получает спринты, в которые может быть добавлена задача.
+    /// Исключается спринт, в который задача уже добавлена.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
+    /// <returns>Список спринтов, в которые может быть добавлена задача.</returns>
+    [HttpGet]
+    [Route("available-sprints")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<TaskSprintOutput>))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<IEnumerable<TaskSprintOutput>> GetAvailableProjectSprintsAsync([FromQuery] long projectId,
+        [FromQuery] string projectTaskId)
+    {
+        var validator = await new SprintTaskValidator().ValidateAsync((projectId, projectTaskId));
+
+        if (validator.Errors.Any())
+        {
+            var exceptions = new List<InvalidOperationException>();
+
+            foreach (var err in validator.Errors)
+            {
+                exceptions.Add(new InvalidOperationException(err.ErrorMessage));
+            }
+
+            var ex = new AggregateException("Ошибка получения спринтов, в которые может входить задача. " +
+                                            $"ProjectId: {projectId}. " +
+                                            $"ProjectTaskId: {projectTaskId}", exceptions);
+            _logger.LogError(ex, ex.Message);
+            
+            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            
+            throw ex;
+        }
+
+        var result = await _projectManagmentService.GetAvailableProjectSprintsAsync(projectId, projectTaskId);
+
+        return result;
+    }
 }
