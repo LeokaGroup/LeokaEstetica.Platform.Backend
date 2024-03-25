@@ -2860,6 +2860,25 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         }
     }
 
+    /// <inheritdoc />
+    public async Task<IEnumerable<TaskSprintOutput>> GetAvailableProjectSprintsAsync(long projectId,
+        string projectTaskId)
+    {
+        try
+        {
+            var result = await _projectManagmentRepository.GetAvailableProjectSprintsAsync(projectId,
+                projectTaskId.GetProjectTaskIdFromPrefixLink());
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
     #endregion
 
     #region Приватные методы.
