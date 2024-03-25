@@ -498,4 +498,12 @@ public interface IProjectManagmentRepository
         string taskDescription, long projectId, int templateId);
 
     Task IncludeProjectTaskSprintAsync(IEnumerable<long> projectTaskIds, long sprintId);
+    
+    /// <summary>
+    /// Метод получает название спринта, в который входит задача.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
+    /// <returns>Данные спринта.</returns>
+    Task<TaskSprintOutput> GetSprintTaskAsync(long projectId, long projectTaskId);
 }

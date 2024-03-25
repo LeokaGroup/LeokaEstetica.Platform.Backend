@@ -1707,4 +1707,46 @@ public class ProjectManagmentController : BaseController
 
         await _projectManagmentService.PlaningSprintAsync(planingSprintInput, GetUserName(), CreateTokenFromHeader());
     }
+
+    /// <summary>
+    /// Метод получает название спринта, в который входит задача.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
+    /// <returns>Данные спринта.</returns>
+    [HttpGet]
+    [Route("task/sprint")]
+    [ProducesResponseType(200, Type = typeof(TaskSprintOutput))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<TaskSprintOutput> GetSprintTaskAsync([FromQuery] long projectId,
+        [FromQuery] string projectTaskId)
+    {
+        var validator = await new SprintTaskValidator().ValidateAsync((projectId, projectTaskId));
+
+        if (validator.Errors.Any())
+        {
+            var exceptions = new List<InvalidOperationException>();
+
+            foreach (var err in validator.Errors)
+            {
+                exceptions.Add(new InvalidOperationException(err.ErrorMessage));
+            }
+
+            var ex = new AggregateException("Ошибка получения спринта, в который входит задача. " +
+                                            $"ProjectId: {projectId}. " +
+                                            $"ProjectTaskId: {projectTaskId}", exceptions);
+            _logger.LogError(ex, ex.Message);
+            
+            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            
+            throw ex;
+        }
+
+        var result = await _projectManagmentService.GetSprintTaskAsync(projectId, projectTaskId);
+
+        return result;
+    }
 }
