@@ -1976,13 +1976,13 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         parameters.Add("@projectId", projectId);
         parameters.Add("@projectTaskId", projectTaskId);
         
-        var query = "SELECT DISTINCT (s.sprint_id)," +
-                    "s.sprint_name " +
-                    "FROM project_management.sprints AS s " +
-                    "INNER JOIN project_management.sprint_tasks AS st " +
-                    "ON s.sprint_id = st.sprint_id " +
-                    "WHERE s.project_id = @projectId " +
-                    "AND st.project_task_id <> @projectTaskId";
+        var query = "WITH cte_sprint_tasks AS ( " +
+                    "SELECT project_task_id " +
+                    "FROM project_management.sprint_tasks) " +
+                    "SELECT sprint_id, sprint_name " +
+                    "FROM project_management.sprints " +
+                    "WHERE project_id = @projectId " +
+                    "AND @projectTaskId <> ANY (SELECT * FROM cte_sprint_tasks)";
 
         var result = await connection.QueryAsync<TaskSprintOutput>(query, parameters);
 
