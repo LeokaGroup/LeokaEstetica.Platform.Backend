@@ -466,4 +466,12 @@ public interface IProjectManagmentService
     /// <param name="account">Аккаунт.</param>
     /// <param name="token">Токен.</param>
     Task PlaningSprintAsync(PlaningSprintInput planingSprintInput, string account, string token);
+
+    /// <summary>
+    /// Метод получает эпик, в который входит задача.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
+    /// <returns>Эпик, в который входит задача.</returns>
+    Task<EpicTaskOutput> GetEpicTaskAsync(long projectId, string projectTaskId);
 }

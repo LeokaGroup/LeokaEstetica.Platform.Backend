@@ -1944,6 +1944,34 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         await connection.ExecuteAsync(query, parameters);
     }
 
+    /// <inheritdoc/>
+    public async Task<EpicTaskOutput> GetEpicTaskAsync(long projectId, long projectTaskId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@projectId", projectId);
+        parameters.Add("@projectTaskId", projectTaskId);
+        parameters.Add("@prefix", GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_PROJECT_NAME_PREFIX);
+
+        var query = "SELECT e.epic_id," +
+                    " e.epic_name," +
+                    " e.project_epic_id, " + 
+                    "(SELECT \"ParamValue\"" +
+                    "FROM \"Configs\".\"ProjectManagmentProjectSettings\" AS ps " +
+                    "WHERE ps.\"ProjectId\" = @project_id " +
+                    "AND ps.\"ParamKey\" = @prefix) AS TaskIdPrefix " +
+                    "FROM project_management.epics AS e " + 
+                    "INNER JOIN project_management.epic_tasks AS et " + 
+                        "ON e.epic_id = et.epic_id " + 
+                    "WHERE e.project_id = @projectId " + 
+                      "AND et.project_task_id = @projectTaskId";
+
+        var result = await connection.QueryFirstOrDefaultAsync<EpicTaskOutput>(query, parameters);
+
+        return result;
+    }
+
     #endregion
 
     #region Приватные методы.

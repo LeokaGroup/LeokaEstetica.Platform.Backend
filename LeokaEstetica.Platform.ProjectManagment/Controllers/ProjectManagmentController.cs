@@ -1707,4 +1707,45 @@ public class ProjectManagmentController : BaseController
 
         await _projectManagmentService.PlaningSprintAsync(planingSprintInput, GetUserName(), CreateTokenFromHeader());
     }
+
+    /// <summary>
+    /// Метод получает эпик, в который входит задача.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
+    /// <returns>Эпик, в который входит задача.</returns>
+    [HttpGet]
+    [Route("task/epic")]
+    [ProducesResponseType(200, Type = typeof(EpicTaskOutput))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<EpicTaskOutput> GetEpicTaskAsync([FromQuery] long projectId, [FromQuery] string projectTaskId)
+    {
+        var validator = await new EpicTaskValidator().ValidateAsync((projectId, projectTaskId));
+
+        if (validator.Errors.Any())
+        {
+            var exceptions = new List<InvalidOperationException>();
+
+            foreach (var err in validator.Errors)
+            {
+                exceptions.Add(new InvalidOperationException(err.ErrorMessage));
+            }
+
+            var ex = new AggregateException("Ошибка получение эпика, в который входит задача. " +
+                                            $"ProjectId: {projectId}. " +
+                                            $"SprintName: {projectTaskId}", exceptions);
+            _logger.LogError(ex, ex.Message);
+            
+            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            
+            throw ex;
+        }
+
+        var result = await _projectManagmentService.GetEpicTaskAsync(projectId, projectTaskId);
+
+        return result;
+    }
 }

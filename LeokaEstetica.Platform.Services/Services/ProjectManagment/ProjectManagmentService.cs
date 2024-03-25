@@ -2833,6 +2833,24 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         }
     }
 
+    /// <inheritdoc />
+    public async Task<EpicTaskOutput> GetEpicTaskAsync(long projectId, string projectTaskId)
+    {
+        try
+        {
+            var result = await _projectManagmentRepository.GetEpicTaskAsync(projectId,
+                    projectTaskId.GetProjectTaskIdFromPrefixLink());
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
     #endregion
 
     #region Приватные методы.

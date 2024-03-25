@@ -498,4 +498,12 @@ public interface IProjectManagmentRepository
         string taskDescription, long projectId, int templateId);
 
     Task IncludeProjectTaskSprintAsync(IEnumerable<long> projectTaskIds, long sprintId);
+    
+    /// <summary>
+    /// Метод получает эпик, в который входит задача.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
+    /// <returns>Эпик, в который входит задача.</returns>
+    Task<EpicTaskOutput> GetEpicTaskAsync(long projectId, long projectTaskId);
 }
