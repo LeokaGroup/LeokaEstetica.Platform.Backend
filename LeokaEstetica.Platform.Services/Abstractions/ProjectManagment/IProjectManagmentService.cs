@@ -475,4 +475,21 @@ public interface IProjectManagmentService
     /// <param name="account">Аккаунт.</param>
     /// <returns>Список задач эпика.</returns>
     Task<EpicTaskResult> GetEpicTasksAsync(long projectId, long epicId, string account);
+
+    /// <summary>
+    /// Метод получает название спринта, в который входит задача.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
+    /// <returns>Данные спринта.</returns>
+    Task<TaskSprintOutput> GetSprintTaskAsync(long projectId, string projectTaskId);
+
+    /// <summary>
+    /// Метод получает спринты, в которые может быть добавлена задача.
+    /// Исключается спринт, в который задача уже добавлена.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
+    /// <returns>Список спринтов, в которые может быть добавлена задача.</returns>
+    Task<IEnumerable<TaskSprintOutput>> GetAvailableProjectSprintsAsync(long projectId, string projectTaskId);
 }

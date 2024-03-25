@@ -2020,6 +2020,51 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         return result;
     }
 
+    /// <inheritdoc/>
+    public async Task<TaskSprintOutput> GetSprintTaskAsync(long projectId, long projectTaskId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@projectId", projectId);
+        parameters.Add("@projectTaskId", projectTaskId);
+
+        var query = "SELECT s.sprint_id," +
+                    "s.sprint_name " +
+                    "FROM project_management.sprints AS s " +
+                    "INNER JOIN project_management.sprint_tasks AS st " +
+                    "ON s.sprint_id = st.sprint_id " +
+                    "WHERE s.project_id = @projectId " +
+                    "AND st.project_task_id = @projectTaskId";
+
+        var result = await connection.QueryFirstOrDefaultAsync<TaskSprintOutput>(query, parameters);
+
+        return result;
+    }
+
+    /// <inheritdoc/>
+    public async Task<IEnumerable<TaskSprintOutput>> GetAvailableProjectSprintsAsync(long projectId,
+        long projectTaskId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@projectId", projectId);
+        parameters.Add("@projectTaskId", projectTaskId);
+        
+        var query = "SELECT DISTINCT (s.sprint_id)," +
+                    "s.sprint_name " +
+                    "FROM project_management.sprints AS s " +
+                    "INNER JOIN project_management.sprint_tasks AS st " +
+                    "ON s.sprint_id = st.sprint_id " +
+                    "WHERE s.project_id = @projectId " +
+                    "AND st.project_task_id <> @projectTaskId";
+
+        var result = await connection.QueryAsync<TaskSprintOutput>(query, parameters);
+
+        return result;
+    }
+
     #endregion
 
     #region Приватные методы.

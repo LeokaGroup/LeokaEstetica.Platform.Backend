@@ -864,6 +864,15 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 result.EpicId = taskEpic.EpicId;
                 result.EpicName = taskEpic.EpicName;
             }
+            
+            // Получаем спринт, в который входит задача.
+            var sprint = await _projectManagmentRepository.GetSprintTaskAsync(projectId, task.ProjectTaskId);
+
+            if (sprint is not null)
+            {
+                result.SprintId = sprint.SprintId;
+                result.SprintName = sprint.SprintName;
+            }
 
             return result;
         }
@@ -2824,6 +2833,43 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 
                 transactionScope.Complete();
             }
+        }
+        
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task<TaskSprintOutput> GetSprintTaskAsync(long projectId, string projectTaskId)
+    {
+        try
+        {
+            var result = await _projectManagmentRepository.GetSprintTaskAsync(projectId,
+                projectTaskId.GetProjectTaskIdFromPrefixLink());
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task<IEnumerable<TaskSprintOutput>> GetAvailableProjectSprintsAsync(long projectId,
+        string projectTaskId)
+    {
+        try
+        {
+            var result = await _projectManagmentRepository.GetAvailableProjectSprintsAsync(projectId,
+                projectTaskId.GetProjectTaskIdFromPrefixLink());
+
+            return result;
         }
         
         catch (Exception ex)
