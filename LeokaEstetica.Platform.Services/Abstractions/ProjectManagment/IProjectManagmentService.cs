@@ -1,4 +1,5 @@
-﻿using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
+﻿using LeokaEstetica.Platform.Core.Enums;
+using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.Template;
 using LeokaEstetica.Platform.Models.Entities.Document;
@@ -78,8 +79,10 @@ public interface IProjectManagmentService
     /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
     /// <param name="account">Аккаунт.</param>
     /// <param name="projectId">Id проекта.</param>
+    /// <param name="taskDetailType">Тип детализации.</param>
     /// <returns>Данные задачи.</returns>
-    Task<ProjectManagmentTaskOutput> GetTaskDetailsByTaskIdAsync(string projectTaskId, string account, long projectId);
+    Task<ProjectManagmentTaskOutput> GetTaskDetailsByTaskIdAsync(string projectTaskId, string account, long projectId,
+        TaskDetailTypeEnum taskDetailType);
 
     /// <summary>
     /// Метод получает список типов задач.
@@ -403,15 +406,7 @@ public interface IProjectManagmentService
     /// <param name="account">Аккаунт.</param>
     /// <returns>Данные файла.</returns>
     Task<FileContentResult> GetUserAvatarFileAsync(long projectId, string account);
-    
-    /// <summary>
-    /// Метод получает изображения аватара пользователей.
-    /// </summary>
-    /// <param name="projectId">Id проекта.</param>
-    /// <param name="accounts">Аккаунты пользователей.</param>
-    /// <returns>Словарь с файлами изображений аватара пользователей.</returns>
-    Task<IDictionary<long, FileContentResult>> GetUserAvatarFilesAsync(long projectId, IEnumerable<string> accounts);
-    
+
     /// <summary>
     /// Метод загружает файл изображения аватара пользователя по SFTP на сервер.
     /// </summary>

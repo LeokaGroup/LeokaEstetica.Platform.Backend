@@ -1,6 +1,7 @@
 using AutoMapper;
 using LeokaEstetica.Platform.Base;
 using LeokaEstetica.Platform.Base.Filters;
+using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Database.Abstractions.Template;
 using LeokaEstetica.Platform.Integrations.Abstractions.Pachca;
 using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
@@ -197,22 +198,45 @@ public class ProjectManagmentController : BaseController
 
     /// <summary>
     /// Метод получает детали задачи.
+    /// Детали задачи могут быть разные, в зависимости от типа задачи, который передали.
     /// </summary>
     /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
     /// <param name="projectId">Id проекта.</param>
+    /// <param name="taskDetailType">Тип детализации.</param>
     /// <returns>Данные задачи.</returns>
     [HttpGet]
-    [Route("task")]
+    [Route("task-details")]
     [ProducesResponseType(200, Type = typeof(ProjectManagmentTaskOutput))]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
     public async Task<ProjectManagmentTaskOutput> GetTaskDetailsByTaskIdAsync([FromQuery] string projectTaskId,
-        [FromQuery] long projectId)
+        [FromQuery] long projectId, [FromQuery] TaskDetailTypeEnum taskDetailType)
     {
+        var validator = await new TaskDetailValidator().ValidateAsync((projectTaskId, projectId, taskDetailType));
+
+        if (validator.Errors.Any())
+        {
+            var exceptions = new List<InvalidOperationException>();
+
+            foreach (var err in validator.Errors)
+            {
+                exceptions.Add(new InvalidOperationException(err.ErrorMessage));
+            }
+            
+            var ex = new AggregateException("Ошибка получения деталей задачи. " +
+                                            $"ProjectTaskId: {projectTaskId}. " +
+                                            $"ProjectId: {projectId}. " +
+                                            $"TaskDetailType: {taskDetailType}.", exceptions);
+            _logger.LogError(ex, ex.Message);
+            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            
+            throw ex;
+        }
+        
         var result = await _projectManagmentService.GetTaskDetailsByTaskIdAsync(projectTaskId, GetUserName(),
-            projectId);
+            projectId, taskDetailType);
 
         return result;
     }

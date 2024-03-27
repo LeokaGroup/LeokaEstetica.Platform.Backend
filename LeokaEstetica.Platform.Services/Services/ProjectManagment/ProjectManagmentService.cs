@@ -30,6 +30,8 @@ using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Notifications.Consts;
 using LeokaEstetica.Platform.ProjectManagment.Documents.Abstractions;
 using LeokaEstetica.Platform.Services.Abstractions.ProjectManagment;
+using LeokaEstetica.Platform.Services.Abstractions.User;
+using LeokaEstetica.Platform.Services.Builders.AgileObjectBuilder;
 using LeokaEstetica.Platform.Services.Factors;
 using LeokaEstetica.Platform.Services.Helpers;
 using Microsoft.AspNetCore.Http;
@@ -59,6 +61,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     private readonly Lazy<IReversoService> _reversoService;
     private readonly Lazy<IFileManagerService> _fileManagerService;
     private readonly Lazy<ISprintNotificationsService> _sprintNotificationsService;
+    private readonly IUserService _userService;
 
     /// <summary>
     /// Статусы задач, которые являются самыми базовыми и никогда не меняются независимо от шаблона проекта.
@@ -88,6 +91,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     /// <param name="projectSettingsConfigRepository">Сервис транслитера.</param>
     /// <param name="fileManagerService">Сервис менеджера файлов.</param>
     /// <param name="sprintNotificationsService">Сервис уведомлений спринтов.</param>
+    /// <param name="userService">Сервис пользователей.</param>
     /// </summary>
     public ProjectManagmentService(ILogger<ProjectManagmentService> logger,
         IProjectManagmentRepository projectManagmentRepository,
@@ -100,7 +104,8 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         IProjectSettingsConfigRepository projectSettingsConfigRepository,
         Lazy<IReversoService> reversoService,
         Lazy<IFileManagerService> fileManagerService,
-        Lazy<ISprintNotificationsService> sprintNotificationsService)
+        Lazy<ISprintNotificationsService> sprintNotificationsService,
+        IUserService userService)
     {
         _logger = logger;
         _projectManagmentRepository = projectManagmentRepository;
@@ -114,6 +119,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         _reversoService = reversoService;
         _fileManagerService = fileManagerService;
         _sprintNotificationsService = sprintNotificationsService;
+        _userService = userService;
     }
 
     #region Публичные методы.
@@ -672,15 +678,9 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         }
     }
 
-    /// <summary>
-    /// Метод получает детали задачи.
-    /// </summary>
-    /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
-    /// <param name="account">Аккаунт.</param>
-    /// <param name="projectId">Id проекта.</param>
-    /// <returns>Данные задачи.</returns>
+    /// <inheritdoc />
     public async Task<ProjectManagmentTaskOutput> GetTaskDetailsByTaskIdAsync(string projectTaskId, string account,
-        long projectId)
+        long projectId, TaskDetailTypeEnum taskDetailType)
     {
         try
         {
@@ -692,186 +692,22 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 throw ex;
             }
 
-            var projectTaskIdToNumber = projectTaskId.GetProjectTaskIdFromPrefixLink();
-
             // TODO: Добавить проверку. Является ли пользователь участником проекта. Если нет, то не давать доступ к задаче.
-            var task = await _projectManagmentRepository.GetTaskDetailsByTaskIdAsync(projectTaskIdToNumber, projectId);
+            var result = new ProjectManagmentTaskOutput();
 
-            // Получаем имя автора задачи.
-            var authors = await _userRepository.GetAuthorNamesByAuthorIdsAsync(new[] { task.AuthorId });
-
-            if (authors.Count == 0)
+            // Если просматриваем задачу.
+            if (taskDetailType == TaskDetailTypeEnum.Task)
             {
-                throw new InvalidOperationException("Не удалось получить автора задачи.");
-            }
-
-            var executorId = task.ExecutorId;
-
-            // Обязательно логируем такое если обнаружили, но не стопаем выполнение логики.
-            if (executorId <= 0)
-            {
-                var ex = new InvalidOperationException(
-                    "Найден невалидный исполнитель задачи." +
-                    $" ExecutorIds: {JsonConvert.SerializeObject(executorId)}.");
-
-                _logger.LogError(ex, ex.Message);
-
-                // Отправляем ивент в пачку.
-                await _pachcaService.SendNotificationErrorAsync(ex);
-            }
-
-            // Получаем имена исполнителя задачи.
-            var executors = await _userRepository.GetExecutorNamesByExecutorIdsAsync(new[] { executorId });
-
-            if (executors.Count == 0)
-            {
-                throw new InvalidOperationException("Не удалось получить исполнителей задач.");
-            }
-
-            var result = _mapper.Map<ProjectManagmentTaskOutput>(task);
-            
-            var executorName = executors.TryGet(executors.First().Key).FullName;
-            var userEmails = await _userRepository.GetUserEmailByUserIdsAsync(new List<long> { executorId });
-            var avatarFiles = await GetUserAvatarFilesAsync(projectId, userEmails);
-            result.Executor = new Executor
-            {
-                ExecutorName = executorName
-            };
-            
-            if (!avatarFiles.ContainsKey(executorId))
-            {
-                // Получаем дефолтное изображение.
-                result.Executor.Avatar = avatarFiles.TryGet(0);
-            }
-
-            else
-            {
-                result.Executor.Avatar = avatarFiles.TryGet(executorId);
-            }
-            
-            result.AuthorName = authors.TryGet(authors.First().Key).FullName;
-
-            var watcherIds = task.WatcherIds;
-
-            // Если есть наблюдатели, пойдем получать их.
-            // Если каких то нет, не страшно, значит они не заполнены у задач.
-            if (watcherIds is not null && watcherIds.Any())
-            {
-                var watchers = await _userRepository.GetWatcherNamesByWatcherIdsAsync(watcherIds);
-
-                // Наблюдатели задачи.
-                if (watchers is not null && watchers.Count > 0)
-                {
-                    var watcherNames = new List<string>();
-
-                    foreach (var w in result.WatcherIds)
-                    {
-                        var watcher = watchers.TryGet(w);
-
-                        if (!string.IsNullOrWhiteSpace(watcher?.FullName))
-                        {
-                            watcherNames.Add(watcher.FullName);
-                        }
-
-                        else
-                        {
-                            watcherNames.Add(watcher!.Email);
-                        }
-                    }
-
-                    result.WatcherNames = watcherNames;
-                }
-            }
-
-            var tagIds = task.TagIds;
-
-            // Если есть теги, то пойдем получать.
-            if (tagIds is not null && tagIds.Any())
-            {
-                var tags = await _projectManagmentRepository.GetTagNamesByTagIdsAsync(tagIds);
-
-                // Название тегов (меток) задачи.
-                if (tags is not null && tags.Count > 0)
-                {
-                    var tagNames = new List<string>();
-
-                    foreach (var tg in result.TagIds)
-                    {
-                        var tgName = tags.TryGet(tg).TagName;
-                        tagNames.Add(tgName);
-                    }
-
-                    result.TagNames = tagNames;
-                }
-            }
-
-            var taskStatusId = task.TaskTypeId;
-            var types = await _projectManagmentRepository.GetTypeNamesByTypeIdsAsync(new[] { taskStatusId });
-            result.TaskTypeName = types.TryGet(result.TaskTypeId).TypeName;
-
-            var statuseName = await _projectManagmentTemplateRepository.GetStatusNameByTaskStatusIdAsync(
-                Convert.ToInt32(task.TaskStatusId));
-
-            if (string.IsNullOrEmpty(statuseName))
-            {
-                throw new InvalidOperationException($"Не удалось получить TaskStatusName: {taskStatusId}.");
-            }
-
-            result.TaskStatusName = statuseName;
-
-            var resolutionId = task.ResolutionId;
-
-            // Если есть резолюции задач, пойдем получать их.
-            // Если каких то нет, не страшно, значит они не заполнены у задач.
-            if (resolutionId.HasValue)
-            {
-                var resolutions = await _projectManagmentRepository.GetResolutionNamesByResolutionIdsAsync(
-                    new[] { resolutionId.Value });
-
-                // Получаем резолюцию задачи, если она есть.
-                if (resolutions is not null && resolutions.Count > 0)
-                {
-                    result.ResolutionName = resolutions.TryGet(result.ResolutionId).ResolutionName;
-                }
-            }
-
-            var priorityId = task.PriorityId;
-
-            // Если есть приоритеты задач, пойдем получать их.
-            // Если каких то нет, не страшно, значит они не заполнены у задач.
-            if (priorityId.HasValue)
-            {
-                var priorities = await _projectManagmentRepository.GetPriorityNamesByPriorityIdsAsync(
-                    new[] { priorityId.Value });
-
-                if (priorities is not null && priorities.Count > 0)
-                {
-                    var priorityName = priorities.TryGet(priorityId.Value);
-
-                    // Если приоритета нет, не страшно. Значит не указана у задачи.
-                    if (priorityName is not null)
-                    {
-                        result.PriorityName = priorities.TryGet(priorityId.Value).PriorityName;
-                    }
-                }
-            }
-            
-            // Получаем эпик, в которую добавлена задача.
-            var taskEpic = await _projectManagmentRepository.GetTaskEpicAsync(projectId, projectTaskIdToNumber);
-
-            if (taskEpic is not null)
-            {
-                result.EpicId = taskEpic.EpicId;
-                result.EpicName = taskEpic.EpicName;
-            }
-            
-            // Получаем спринт, в который входит задача.
-            var sprint = await _projectManagmentRepository.GetSprintTaskAsync(projectId, task.ProjectTaskId);
-
-            if (sprint is not null)
-            {
-                result.SprintId = sprint.SprintId;
-                result.SprintName = sprint.SprintName;
+                var agileObject = new AgileObject();
+                
+                // Создаем билдер для построения задачи.
+                AgileObjectBuilder taskBuilder = new TaskBuilder(_projectManagmentRepository, _userRepository,
+                    _pachcaService, _userService, _projectManagmentTemplateRepository, _mapper);
+                
+                // Строим задачу.
+                await agileObject.BuildAsync(taskBuilder, projectTaskId.GetProjectTaskIdFromPrefixLink(), projectId);
+                
+                result = taskBuilder.ProjectManagmentTask;
             }
 
             return result;
@@ -2493,78 +2329,6 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     }
 
     /// <inheritdoc />
-    public async Task<IDictionary<long, FileContentResult>> GetUserAvatarFilesAsync(long projectId,
-        IEnumerable<string> accounts)
-    {
-        try
-        {
-            var userIds = (await _userRepository.GetUserByEmailsAsync(accounts))?.AsList();
-
-            if (userIds is null || !userIds.Any())
-            {
-                var ex = new InvalidOperationException("Не удалось получить Id пользователей.");
-                throw ex;
-            }
-
-            var userDocuments = (await _projectManagmentRepository.GetUserAvatarDocumentIdByUserIdsAsync(userIds,
-                projectId))?.AsList();
-                
-            var result = new Dictionary<long, FileContentResult>();
-
-            // Если нету изображений вообще, то оставим только дефолтное для всех пользователей.
-            if (userDocuments is null || !userDocuments.Any())
-            {
-                var noPhoto = await _fileManagerService.Value.GetUserAvatarFileAsync("nophoto.jpg",
-                    projectId, null, true);
-                
-                result.Add(0, noPhoto);
-                
-                return result;
-            }
-
-            // Если есть пользователь, у которого нету аватара, то это уже причина подгрузить дефолтный аватар.
-            if (userDocuments.Any(x => x.UserId is null))
-            {
-                var noPhoto = await _fileManagerService.Value.GetUserAvatarFileAsync("nophoto.jpg",
-                    projectId, null, true);
-                
-                result.Add(0, noPhoto);
-            }
-
-            var userDocs = userDocuments.Where(x => x.UserId.HasValue && x.DocumentId.HasValue);
-            var documents = await _projectManagmentRepository.GetDocumentNameByDocumentIdsAsync(userDocs);
-
-            var files = await _fileManagerService.Value.GetUserAvatarFilesAsync(documents, projectId);
-
-            // Если файлов нету и если словарь не был наполнен дефолтным изображением, то вернем только дефолтный файл.
-            if (files.Count == 0 && result.Count == 0)
-            {
-                var noPhoto = await _fileManagerService.Value.GetUserAvatarFileAsync("nophoto.jpg",
-                    projectId, null, true);
-                
-                result.Add(0, noPhoto);
-                
-                return result;
-            }
-            
-            // Если файлов нету, но есть дефолтный файл, то вернем только его.
-            if (files.Count == 0 && result.Count > 0)
-            {
-                return result;
-            }
-            
-            // Изображения есть, возвращаем словарь с результатами.
-            return files;
-        }
-        
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, ex.Message);
-            throw;
-        }
-    }
-
-    /// <inheritdoc />
     public async Task UploadUserAvatarFileAsync(IFormFileCollection files, string account, long projectId)
     {
         try
@@ -3056,7 +2820,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             if (mapTasks.Any())
             {
                 var userEmails = await _userRepository.GetUserEmailByUserIdsAsync(mapTasks.Select(x => x.ExecutorId));
-                var avatarFiles = await GetUserAvatarFilesAsync(projectId, userEmails);
+                var avatarFiles = await _userService.GetUserAvatarFilesAsync(projectId, userEmails);
                 
                 // Записываем названия исходя от Id полей.
                 foreach (var ts in mapTasks)
