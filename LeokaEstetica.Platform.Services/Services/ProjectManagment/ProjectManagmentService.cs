@@ -703,22 +703,27 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             var builderData = new AgileObjectBuilderData(_projectManagmentRepository, _userRepository,
                 _pachcaService, _userService, _projectManagmentTemplateRepository, _mapper,
                 projectTaskId.GetProjectTaskIdFromPrefixLink(), projectId);
-            var agileObject = new AgileObject();
-            
-            // Создаем билдер для построения задачи.
-            AgileObjectBuilder taskBuilder = new TaskBuilder();
-            taskBuilder.BuilderData = builderData;
+            AgileObjectBuilder taskBuilder = null;
 
             // Если просматриваем задачу.
             if (taskDetailType == TaskDetailTypeEnum.Task)
             {
-                // Строим задачу.
-                await agileObject.BuildAsync(taskBuilder);
-                
-                return taskBuilder.ProjectManagmentTask;
+                // Настраиваем билдер для построения задачи.
+                taskBuilder = new TaskBuilder { BuilderData = builderData };
             }
 
-            throw new InvalidOperationException("Ни один билдер не сработал, данные Agile-объекта не заполнились.");
+            if (taskBuilder is null)
+            {
+                throw new InvalidOperationException("Тип билдера не определен. Построения не будет происходить. " +
+                                                    $"TaskDetailTypeEnum: {taskDetailType}");
+            }
+            
+            var agileObject = new AgileObject();
+
+            // Запускаем построение нужного Agile-объекта.
+            await agileObject.BuildAsync(taskBuilder, taskDetailType);
+                
+            return taskBuilder.ProjectManagmentTask;
         }
 
         catch (Exception ex)

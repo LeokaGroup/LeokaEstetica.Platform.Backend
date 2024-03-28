@@ -1,3 +1,5 @@
+using LeokaEstetica.Platform.Core.Enums;
+
 namespace LeokaEstetica.Platform.Services.Builders.AgileObjectBuilder;
 
 /// <summary>
@@ -9,8 +11,9 @@ internal class AgileObject
     /// Метод строит нужный тип объекта.
     /// </summary>
     /// <param name="builder">Строитель, который занимается построением нужного объекта.</param>
+    /// <param name="taskDetailType">Тип детализации.</param>
     /// <returns>Результирующая модель.</returns>
-    public async Task BuildAsync(AgileObjectBuilder builder)
+    public async Task BuildAsync(AgileObjectBuilder builder, TaskDetailTypeEnum taskDetailType)
     {
         await builder.CreateProjectManagmentTaskAsync();
         await builder.InitObjectAsync();
@@ -23,7 +26,11 @@ internal class AgileObject
         await builder.FillTaskStatusNameAsync();
         await builder.FillResolutionNameAsync();
         await builder.FillPriorityNameAsync();
-        await builder.FillEpicIdAndEpicNameAsync();
-        await builder.FillSprintIdAndSprintNameAsync();
+
+        if (taskDetailType == TaskDetailTypeEnum.Task)
+        {
+            await builder.FillEpicIdAndEpicNameAsync();
+            await builder.FillSprintIdAndSprintNameAsync();
+        }
     }
 }
