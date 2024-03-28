@@ -586,8 +586,12 @@ public class ProjectManagmentController : BaseController
             throw ex;
         }
 
+        var parseTaskDetailType = System.Enum.Parse<TaskDetailTypeEnum>(
+            availableTaskStatusTransitionInput.TaskDetailType);
+
         var result = await _projectManagmentService.GetAvailableTaskStatusTransitionsAsync(
-            availableTaskStatusTransitionInput.ProjectId, availableTaskStatusTransitionInput.ProjectTaskId);
+            availableTaskStatusTransitionInput.ProjectId, availableTaskStatusTransitionInput.ProjectTaskId,
+            parseTaskDetailType);
 
         return result;
     }
@@ -1294,6 +1298,7 @@ public class ProjectManagmentController : BaseController
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
     /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
+    /// <param name="taskDetailType">Тип детализации.</param>
     /// <returns>Файлы задачи.</returns>
     [HttpGet]
     [Route("task-files")]
@@ -1303,7 +1308,7 @@ public class ProjectManagmentController : BaseController
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
     public async Task<IEnumerable<ProjectTaskFileOutput>> GetProjectTaskFilesAsync([FromQuery] long projectId,
-        string projectTaskId)
+        [FromQuery] string projectTaskId, [FromQuery] TaskDetailTypeEnum taskDetailType)
     {
         var validator = await new ProjectTaskFileValidator().ValidateAsync((projectId, projectTaskId));
 
@@ -1326,7 +1331,7 @@ public class ProjectManagmentController : BaseController
             throw ex;
         }
         
-        var items = await _projectManagmentService.GetProjectTaskFilesAsync(projectId, projectTaskId);
+        var items = await _projectManagmentService.GetProjectTaskFilesAsync(projectId, projectTaskId, taskDetailType);
         var result = _mapper.Map<IEnumerable<ProjectTaskFileOutput>>(items);
 
         return result;

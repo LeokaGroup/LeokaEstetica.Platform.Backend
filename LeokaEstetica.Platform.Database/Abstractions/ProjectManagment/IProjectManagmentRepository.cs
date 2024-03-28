@@ -74,12 +74,20 @@ public interface IProjectManagmentRepository
         IEnumerable<int> resolutionIds);
 
     /// <summary>
-    /// Метод получает детали задачи.
+    /// Метод получает детали задачи или ошибки.
     /// </summary>
     /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
     /// <param name="projectId">Id проекта.</param>
     /// <returns>Данные задачи.</returns>
     Task<ProjectTaskEntity> GetTaskDetailsByTaskIdAsync(long projectTaskId, long projectId);
+    
+    /// <summary>
+    /// Метод получает детали эпика.
+    /// </summary>
+    /// <param name="projectTaskId">Id эпика в рамках проекта.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Данные эпика.</returns>
+    Task<EpicEntity> GetEpicDetailsByEpicIdAsync(long projectEpicId, long projectId);
 
     /// <summary>
     /// Метод получает названия приоритетов задач по их Id.
@@ -151,6 +159,14 @@ public interface IProjectManagmentRepository
     /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
     /// <returns>Признак результата проверки.</returns>
     Task<bool> IfProjectHavingProjectTaskIdAsync(long projectId, long projectTaskId);
+    
+    /// <summary>
+    /// Метод проверяет принадлежность эпика к проекту по EpicId.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="projectEpicId">Id эпика в рамках проекта.</param>
+    /// <returns>Признак результата проверки.</returns>
+    Task<bool> IfProjectHavingEpicIdAsync(long projectId, long projectTaskId);
 
     /// <summary>
     /// Метод получает Id статуса задачи по Id проекта и Id задачи в рамках проекта.
@@ -159,6 +175,14 @@ public interface IProjectManagmentRepository
     /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
     /// <returns>Id статуса задачи.</returns>
     Task<long> GetProjectTaskStatusIdByProjectIdProjectTaskIdAsync(long projectId, long projectTaskId);
+    
+    /// <summary>
+    /// Метод получает Id статуса эпика по Id проекта и Id эпика в рамках проекта.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="projectEpicId">Id эпика в рамках проекта.</param>
+    /// <returns>Id статуса эпика.</returns>
+    Task<long> GetProjectEpicStatusIdByProjectIdEpicIdIdAsync(long projectId, long projectEpicId);
 
     /// <summary>
     /// Метод получает все доступные переходы в статусы задачи из промежуточной задачи.
@@ -530,4 +554,11 @@ public interface IProjectManagmentRepository
     /// <param name="templateId">Id шаблона.</param>
     /// <returns>Список задач эпика.</returns>
     Task<EpicTaskResult> GetEpicTasksAsync(long projectId, long epicId, int templateId);
+    
+    /// <summary>
+    /// Метод получает название статуса эпика по StatusId.
+    /// </summary>
+    /// <param name="statusId">Id статуса эпика.</param>
+    /// <returns>Название статуса.</returns>
+    Task<string> GetEpicStatusNameByEpicStatusIdAsync(int statusId);
 }

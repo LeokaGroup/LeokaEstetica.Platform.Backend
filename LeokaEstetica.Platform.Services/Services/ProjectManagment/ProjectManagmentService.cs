@@ -703,16 +703,23 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             var builderData = new AgileObjectBuilderData(_projectManagmentRepository, _userRepository,
                 _pachcaService, _userService, _projectManagmentTemplateRepository, _mapper,
                 projectTaskId.GetProjectTaskIdFromPrefixLink(), projectId);
-            AgileObjectBuilder taskBuilder = null;
+            AgileObjectBuilder builder = null;
 
             // Если просматриваем задачу.
-            if (taskDetailType == TaskDetailTypeEnum.Task)
+            if (taskDetailType is TaskDetailTypeEnum.Task or TaskDetailTypeEnum.Error)
             {
                 // Настраиваем билдер для построения задачи.
-                taskBuilder = new TaskBuilder { BuilderData = builderData };
+                builder = new TaskBuilder { BuilderData = builderData };
+            }
+            
+            // Если просматриваем эпик.
+            if (taskDetailType is TaskDetailTypeEnum.Epic)
+            {
+                // Настраиваем билдер для построения эпика.
+                builder = new EpicBuilder { BuilderData = builderData };
             }
 
-            if (taskBuilder is null)
+            if (builder is null)
             {
                 throw new InvalidOperationException("Тип билдера не определен. Построения не будет происходить. " +
                                                     $"TaskDetailTypeEnum: {taskDetailType}");
@@ -721,9 +728,9 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             var agileObject = new AgileObject();
 
             // Запускаем построение нужного Agile-объекта.
-            await agileObject.BuildAsync(taskBuilder, taskDetailType);
+            await agileObject.BuildAsync(builder, taskDetailType);
                 
-            return taskBuilder.ProjectManagmentTask;
+            return builder.ProjectManagmentTask;
         }
 
         catch (Exception ex)
@@ -1239,36 +1246,67 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 
     /// <inheritdoc />
     public async Task<IEnumerable<AvailableTaskStatusTransitionOutput>> GetAvailableTaskStatusTransitionsAsync(
-        long projectId, string projectTaskId)
+        long projectId, string projectTaskId, TaskDetailTypeEnum taskDetailType)
     {
         try
         {
             var onlyProjectTaskId = projectTaskId.GetProjectTaskIdFromPrefixLink();
-            var ifProjectHavingTask = await _projectManagmentRepository.IfProjectHavingProjectTaskIdAsync(projectId,
-                onlyProjectTaskId);
+            bool ifProjectHavingTask;
+            long currentTaskStatusId = 0;
 
-            // Если задача не принадлежит проекту.
-            if (!ifProjectHavingTask)
+            if (taskDetailType is TaskDetailTypeEnum.Task or TaskDetailTypeEnum.Error)
             {
-                throw new InvalidOperationException("Задача не принадлежит проекту. " +
-                                                    $"ProjectId: {projectId}. " +
-                                                    $"ProjectTaskId: {projectTaskId}");
+                ifProjectHavingTask = await _projectManagmentRepository.IfProjectHavingProjectTaskIdAsync(projectId,
+                    onlyProjectTaskId);
+
+                // Если задача не принадлежит проекту.
+                if (!ifProjectHavingTask)
+                {
+                    throw new InvalidOperationException("Задача не принадлежит проекту. " +
+                                                        $"ProjectId: {projectId}. " +
+                                                        $"ProjectTaskId: {projectTaskId}");
+                }
+                
+                // Получаем текущий статус задачи.
+                currentTaskStatusId = await _projectManagmentRepository
+                    .GetProjectTaskStatusIdByProjectIdProjectTaskIdAsync(projectId, onlyProjectTaskId);
+
+                if (currentTaskStatusId <= 0)
+                {
+                    throw new InvalidOperationException("Не удалось получить текущий статус задачи. " +
+                                                        $"ProjectId: {projectId}. " +
+                                                        $"ProjectTaskId: {projectTaskId}");
+                }
             }
 
-            // Получаем текущий статус задачи.
-            var currentTaskStatusId = await _projectManagmentRepository
-                .GetProjectTaskStatusIdByProjectIdProjectTaskIdAsync(projectId, onlyProjectTaskId);
-
-            if (currentTaskStatusId <= 0)
+            if (taskDetailType == TaskDetailTypeEnum.Epic)
             {
-                throw new InvalidOperationException("Не удалось получить текущий статус задачи. " +
-                                                    $"ProjectId: {projectId}. " +
-                                                    $"ProjectTaskId: {projectTaskId}");
+                ifProjectHavingTask = await _projectManagmentRepository.IfProjectHavingEpicIdAsync(projectId,
+                    onlyProjectTaskId);
+
+                // Если эпик не принадлежит проекту.
+                if (!ifProjectHavingTask)
+                {
+                    throw new InvalidOperationException("Эпик не принадлежит проекту. " +
+                                                        $"ProjectId: {projectId}. " +
+                                                        $"ProjectEpicId: {projectTaskId}");
+                }
+                
+                // Получаем текущий статус эпика.
+                currentTaskStatusId = await _projectManagmentRepository
+                    .GetProjectEpicStatusIdByProjectIdEpicIdIdAsync(projectId, onlyProjectTaskId);
+
+                if (currentTaskStatusId <= 0)
+                {
+                    throw new InvalidOperationException("Не удалось получить текущий статус эпика. " +
+                                                        $"ProjectId: {projectId}. " +
+                                                        $"ProjectEpicId: {projectTaskId}");
+                }
             }
 
             // Получаем все переходы из промежуточной таблицы отталкиваясь от текущего статуса задачи.
             var statusIds = (await _projectManagmentRepository
-                    .GetProjectManagementTransitionIntermediateTemplatesAsync(currentTaskStatusId))?.ToList();
+                    .GetProjectManagementTransitionIntermediateTemplatesAsync(currentTaskStatusId))?.AsList();
 
             if (statusIds is null || !statusIds.Any())
             {
@@ -1280,7 +1318,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 
             // Получаем все статусы по переходам.
             var transitionStatuses = (await _projectManagmentRepository.GetTaskStatusIntermediateTemplatesAsync(
-                statusIds))?.ToList();
+                statusIds))?.AsList();
 
             if (transitionStatuses is null || !transitionStatuses.Any())
             {
@@ -1309,8 +1347,6 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             
             var userStatuses = await _projectManagmentRepository.GetUserTaskStatusTemplatesAsync();
             
-            // Если нету кастомных статусов, но среди переходов был минимум 1 кастомный,
-            // то это ошибка и опасно продолжать дальше. Это может нарушить целостность переходов.
             if (userStatuses is null)
             {
                 throw new InvalidOperationException(
@@ -1324,7 +1360,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             // Получаем настройки проекта.
             var projectSettings = await _projectSettingsConfigRepository.GetProjectSpaceSettingsByProjectIdAsync(
                 projectId);
-            var projectSettingsItems = projectSettings?.ToList();
+            var projectSettingsItems = projectSettings?.AsList();
 
             if (projectSettingsItems is null || !projectSettingsItems.Any())
             {
@@ -1338,7 +1374,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 
             // Получаем все Id статусов, которые входят в шаблон текущего проекта.
             var templateStatusIds = (await _projectManagmentTemplateRepository.GetTemplateStatusIdsAsync(templateId))
-                ?.ToList();
+                ?.AsList();
 
             if (templateStatusIds is null || !templateStatusIds.Any())
             {
@@ -2104,21 +2140,44 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 
     /// <inheritdoc />
     public async Task<IEnumerable<ProjectDocumentEntity>> GetProjectTaskFilesAsync(long projectId,
-        string projectTaskId)
+        string projectTaskId, TaskDetailTypeEnum taskDetailType)
     {
         try
         {
-            var task = await _projectManagmentRepository.GetTaskDetailsByTaskIdAsync(
-                projectTaskId.GetProjectTaskIdFromPrefixLink(), projectId);
+            long taskId = 0;
+            long projectTaskIdNumber = projectTaskId.GetProjectTaskIdFromPrefixLink();
             
-            if (task is null)
+            if (taskDetailType is TaskDetailTypeEnum.Task or TaskDetailTypeEnum.Error)
             {
-                throw new InvalidOperationException("Не удалось получить задачу. " +
-                                                    $"ProjectId: {projectId}. " +
-                                                    $"ProjectTaskId: {projectTaskId}.");
-            }
+                var task = await _projectManagmentRepository.GetTaskDetailsByTaskIdAsync(projectTaskIdNumber,
+                    projectId);
             
-            var result = await _projectManagmentRepository.GetProjectTaskFilesAsync(projectId, task.TaskId);
+                if (task is null)
+                {
+                    throw new InvalidOperationException("Не удалось получить задачу. " +
+                                                        $"ProjectId: {projectId}. " +
+                                                        $"ProjectTaskId: {projectTaskId}.");
+                }
+
+                taskId = task.TaskId;
+            }
+
+            if (taskDetailType == TaskDetailTypeEnum.Epic)
+            {
+                var task = await _projectManagmentRepository.GetEpicDetailsByEpicIdAsync(projectTaskIdNumber,
+                    projectId);
+            
+                if (task is null)
+                {
+                    throw new InvalidOperationException("Не удалось получить эпик. " +
+                                                        $"ProjectId: {projectId}. " +
+                                                        $"ProjectTaskId: {projectTaskId}.");
+                }
+                
+                taskId = task.EpicId;
+            }
+
+            var result = await _projectManagmentRepository.GetProjectTaskFilesAsync(projectId, taskId);
 
             return result;
         }

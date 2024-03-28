@@ -161,9 +161,10 @@ public interface IProjectManagmentService
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
     /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
+    /// <param name="taskDetailType">Тип детализации.</param>
     /// <returns>Список доступных переходов.</returns>
     Task<IEnumerable<AvailableTaskStatusTransitionOutput>> GetAvailableTaskStatusTransitionsAsync(long projectId,
-        string projectTaskId);
+        string projectTaskId, TaskDetailTypeEnum taskDetailType);
 
     /// <summary>
     /// Метод изменяет статус задачи.
@@ -347,7 +348,8 @@ public interface IProjectManagmentService
     /// <param name="projectId">Id проекта.</param>
     /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
     /// <returns>Файлы задачи.</returns>
-    Task<IEnumerable<ProjectDocumentEntity>> GetProjectTaskFilesAsync(long projectId, string projectTaskId);
+    Task<IEnumerable<ProjectDocumentEntity>> GetProjectTaskFilesAsync(long projectId, string projectTaskId,
+        TaskDetailTypeEnum taskDetailType);
 
     /// <summary>
     /// Метод удаляет файл задачи.

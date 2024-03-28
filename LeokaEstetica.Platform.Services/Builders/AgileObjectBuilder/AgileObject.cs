@@ -24,10 +24,15 @@ internal class AgileObject
         await builder.FillTagIdsAsync();
         await builder.FillTaskTypeNameAsync();
         await builder.FillTaskStatusNameAsync();
-        await builder.FillResolutionNameAsync();
+
+        if (taskDetailType is TaskDetailTypeEnum.Task or TaskDetailTypeEnum.Error)
+        {
+            await builder.FillResolutionNameAsync();
+        }
+        
         await builder.FillPriorityNameAsync();
 
-        if (taskDetailType == TaskDetailTypeEnum.Task)
+        if (taskDetailType is TaskDetailTypeEnum.Task or TaskDetailTypeEnum.Error)
         {
             await builder.FillEpicIdAndEpicNameAsync();
             await builder.FillSprintIdAndSprintNameAsync();
