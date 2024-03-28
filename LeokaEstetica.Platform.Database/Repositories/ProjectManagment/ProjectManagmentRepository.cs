@@ -338,12 +338,12 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
         parameters.Add("@project_id", projectId);
         parameters.Add("@projectEpicId", projectEpicId);
 
-        var query = @"SELECT epic_id AS task_id,
+        var query = @"SELECT epic_id,
                        epic_name,
                        epic_description,
                        created_by,
-                       created_at AS created,
-                       updated_at AS updated,
+                       created_at,
+                       updated_at,
                        updated_by,
                        project_id,
                        initiative_id,
@@ -353,7 +353,7 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
                        tag_ids,
                        resolution_id,
                        project_epic_id,
-                       status_id AS task_status_id 
+                       status_id AS TaskStatusId
                       FROM project_management.epics 
                       WHERE project_id = @project_id 
                         AND project_epic_id = @projectEpicId";
