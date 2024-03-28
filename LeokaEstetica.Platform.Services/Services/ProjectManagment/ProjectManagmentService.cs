@@ -32,6 +32,7 @@ using LeokaEstetica.Platform.ProjectManagment.Documents.Abstractions;
 using LeokaEstetica.Platform.Services.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Services.Abstractions.User;
 using LeokaEstetica.Platform.Services.Builders.AgileObjectBuilder;
+using LeokaEstetica.Platform.Services.Builders.BuilderData;
 using LeokaEstetica.Platform.Services.Factors;
 using LeokaEstetica.Platform.Services.Helpers;
 using Microsoft.AspNetCore.Http;
@@ -684,6 +685,12 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     {
         try
         {
+            if (taskDetailType == TaskDetailTypeEnum.None)
+            {
+                throw new InvalidOperationException("Неизвестный тип детализации. " +
+                                                    " Заполнение Agile-объекта не будет происходить.");
+            }
+            
             var userId = await _userRepository.GetUserByEmailAsync(account);
 
             if (userId <= 0)
@@ -693,24 +700,25 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             }
 
             // TODO: Добавить проверку. Является ли пользователь участником проекта. Если нет, то не давать доступ к задаче.
-            var result = new ProjectManagmentTaskOutput();
+            var builderData = new AgileObjectBuilderData(_projectManagmentRepository, _userRepository,
+                _pachcaService, _userService, _projectManagmentTemplateRepository, _mapper,
+                projectTaskId.GetProjectTaskIdFromPrefixLink(), projectId);
+            var agileObject = new AgileObject();
+            
+            // Создаем билдер для построения задачи.
+            AgileObjectBuilder taskBuilder = new TaskBuilder();
+            taskBuilder.BuilderData = builderData;
 
             // Если просматриваем задачу.
             if (taskDetailType == TaskDetailTypeEnum.Task)
             {
-                var agileObject = new AgileObject();
-                
-                // Создаем билдер для построения задачи.
-                AgileObjectBuilder taskBuilder = new TaskBuilder(_projectManagmentRepository, _userRepository,
-                    _pachcaService, _userService, _projectManagmentTemplateRepository, _mapper);
-                
                 // Строим задачу.
-                await agileObject.BuildAsync(taskBuilder, projectTaskId.GetProjectTaskIdFromPrefixLink(), projectId);
+                await agileObject.BuildAsync(taskBuilder);
                 
-                result = taskBuilder.ProjectManagmentTask;
+                return taskBuilder.ProjectManagmentTask;
             }
 
-            return result;
+            throw new InvalidOperationException("Ни один билдер не сработал, данные Agile-объекта не заполнились.");
         }
 
         catch (Exception ex)

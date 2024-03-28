@@ -1,11 +1,5 @@
-using AutoMapper;
-using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.Core.Extensions;
-using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
-using LeokaEstetica.Platform.Database.Abstractions.Template;
-using LeokaEstetica.Platform.Integrations.Abstractions.Pachca;
 using LeokaEstetica.Platform.Models.Dto.Output.Template;
-using LeokaEstetica.Platform.Services.Abstractions.User;
 using Newtonsoft.Json;
 
 namespace LeokaEstetica.Platform.Services.Builders.AgileObjectBuilder;
@@ -13,50 +7,15 @@ namespace LeokaEstetica.Platform.Services.Builders.AgileObjectBuilder;
 /// <summary>
 /// Строитель задачи.
 /// </summary>
-public class TaskBuilder : AgileObjectBuilder
+internal class TaskBuilder : AgileObjectBuilder
 {
-    private readonly IProjectManagmentRepository _projectManagmentRepository;
-    private readonly IUserRepository _userRepository;
-    private readonly IPachcaService _pachcaService;
-    private readonly IUserService _userService;
-    private readonly IProjectManagmentTemplateRepository _projectManagmentTemplateRepository;
-
-    /// <summary>
-    /// Конструктор.
-    /// </summary>
-    /// <param name="projectManagmentRepository">Репозиторий модуля УП.</param>
-    /// <param name="userRepository">Репозиторий пользователей.</param>
-    /// <param name="pachcaService">Сервис пачки.</param>
-    /// <param name="userService">Сервис пользователей.</param>
-    /// <param name="projectManagmentTemplateRepository">Репозиторий шаблонов модуля УП.</param>
-    /// <param name="mapper">Маппер.</param>
-    public TaskBuilder(IProjectManagmentRepository projectManagmentRepository,
-        IUserRepository userRepository,
-        IPachcaService pachcaService,
-        IUserService userService,
-        IProjectManagmentTemplateRepository projectManagmentTemplateRepository,
-        IMapper mapper)
-        : base(projectManagmentRepository,
-            userRepository,
-            pachcaService,
-            userService,
-            projectManagmentTemplateRepository,
-            mapper)
-    {
-        _projectManagmentRepository = projectManagmentRepository;
-        _userRepository = userRepository;
-        _pachcaService = pachcaService;
-        _userService = userService;
-        _projectManagmentTemplateRepository = projectManagmentTemplateRepository;
-    }
-
     /// <inheritdoc />
-    public override async Task InitObjectAsync(long projectTaskId, long projectId)
+    public override async Task InitObjectAsync()
     {
-        var task = await _projectManagmentRepository.GetTaskDetailsByTaskIdAsync(ProjectTaskId, ProjectId);
+        var task = await BuilderData.ProjectManagmentRepository.GetTaskDetailsByTaskIdAsync(BuilderData.ProjectId,
+            BuilderData.ProjectTaskId);
         
-        ProjectManagmentTask = Mapper.Map<ProjectManagmentTaskOutput>(task);
-        
+        ProjectManagmentTask = BuilderData.Mapper.Map<ProjectManagmentTaskOutput>(task);
         ProjectManagmentTask.Executor = new Executor();
     }
 
@@ -64,7 +23,8 @@ public class TaskBuilder : AgileObjectBuilder
     public override async Task FillAuthorNameAsync()
     {
         // Получаем имя автора задачи.
-        var authors = await _userRepository.GetAuthorNamesByAuthorIdsAsync(new[] { ProjectManagmentTask.AuthorId });
+        var authors = await BuilderData.UserRepository.GetAuthorNamesByAuthorIdsAsync(
+            new[] { ProjectManagmentTask.AuthorId });
 
         if (authors.Count == 0)
         {
@@ -87,11 +47,11 @@ public class TaskBuilder : AgileObjectBuilder
                 $" ExecutorIds: {JsonConvert.SerializeObject(executorId)}.");
 
             // Отправляем ивент в пачку.
-            await _pachcaService.SendNotificationErrorAsync(ex);
+            await BuilderData.PachcaService.SendNotificationErrorAsync(ex);
         }
         
         // Получаем имена исполнителя задачи.
-        var executors = await _userRepository.GetExecutorNamesByExecutorIdsAsync(new[] { executorId });
+        var executors = await BuilderData.UserRepository.GetExecutorNamesByExecutorIdsAsync(new[] { executorId });
 
         if (executors.Count == 0)
         {
@@ -105,8 +65,8 @@ public class TaskBuilder : AgileObjectBuilder
     public override async Task FillExecutorAvatarAsync()
     {
         var executorId = ProjectManagmentTask.ExecutorId;
-        var userEmails = await _userRepository.GetUserEmailByUserIdsAsync(new List<long> { executorId });
-        var avatarFiles = await _userService.GetUserAvatarFilesAsync(ProjectId, userEmails);
+        var userEmails = await BuilderData.UserRepository.GetUserEmailByUserIdsAsync(new List<long> { executorId });
+        var avatarFiles = await BuilderData.UserService.GetUserAvatarFilesAsync(BuilderData.ProjectId, userEmails);
         
         if (!avatarFiles.ContainsKey(executorId))
         {
@@ -129,7 +89,7 @@ public class TaskBuilder : AgileObjectBuilder
         // Если каких то нет, не страшно, значит они не заполнены у задач.
         if (watcherIds is not null && watcherIds.Any())
         {
-            var watchers = await _userRepository.GetWatcherNamesByWatcherIdsAsync(watcherIds);
+            var watchers = await BuilderData.UserRepository.GetWatcherNamesByWatcherIdsAsync(watcherIds);
 
             // Наблюдатели задачи.
             if (watchers is not null && watchers.Count > 0)
@@ -164,7 +124,7 @@ public class TaskBuilder : AgileObjectBuilder
         // Если есть теги, то пойдем получать.
         if (tagIds is not null && tagIds.Any())
         {
-            var tags = await _projectManagmentRepository.GetTagNamesByTagIdsAsync(tagIds);
+            var tags = await BuilderData.ProjectManagmentRepository.GetTagNamesByTagIdsAsync(tagIds);
 
             // Название тегов (меток) задачи.
             if (tags is not null && tags.Count > 0)
@@ -186,7 +146,7 @@ public class TaskBuilder : AgileObjectBuilder
     public override async Task FillTaskTypeNameAsync()
     {
         var taskTypeId = ProjectManagmentTask.TaskTypeId;
-        var types = await _projectManagmentRepository.GetTypeNamesByTypeIdsAsync(new[] { taskTypeId });
+        var types = await BuilderData.ProjectManagmentRepository.GetTypeNamesByTypeIdsAsync(new[] { taskTypeId });
         ProjectManagmentTask.TaskTypeName = types.TryGet(taskTypeId).TypeName;
     }
 
@@ -194,7 +154,7 @@ public class TaskBuilder : AgileObjectBuilder
     public override async Task FillTaskStatusNameAsync()
     {
         var taskStatusId = ProjectManagmentTask.TaskStatusId;
-        var statuseName = await _projectManagmentTemplateRepository.GetStatusNameByTaskStatusIdAsync(
+        var statuseName = await BuilderData.ProjectManagmentTemplateRepository.GetStatusNameByTaskStatusIdAsync(
             Convert.ToInt32(taskStatusId));
 
         if (string.IsNullOrEmpty(statuseName))
@@ -214,7 +174,7 @@ public class TaskBuilder : AgileObjectBuilder
         // Если каких то нет, не страшно, значит они не заполнены у задач.
         if (resolutionId > 0)
         {
-            var resolutions = await _projectManagmentRepository.GetResolutionNamesByResolutionIdsAsync(
+            var resolutions = await BuilderData.ProjectManagmentRepository.GetResolutionNamesByResolutionIdsAsync(
                 new[] { resolutionId });
 
             // Получаем резолюцию задачи, если она есть.
@@ -234,7 +194,7 @@ public class TaskBuilder : AgileObjectBuilder
         // Если каких то нет, не страшно, значит они не заполнены у задач.
         if (priorityId > 0)
         {
-            var priorities = await _projectManagmentRepository.GetPriorityNamesByPriorityIdsAsync(
+            var priorities = await BuilderData.ProjectManagmentRepository.GetPriorityNamesByPriorityIdsAsync(
                 new[] { priorityId });
 
             if (priorities is not null && priorities.Count > 0)
@@ -254,7 +214,8 @@ public class TaskBuilder : AgileObjectBuilder
     public override async Task FillEpicIdAndEpicNameAsync()
     {
         // Получаем эпик, в которую добавлена задача.
-        var taskEpic = await _projectManagmentRepository.GetTaskEpicAsync(ProjectId, ProjectTaskId);
+        var taskEpic = await BuilderData.ProjectManagmentRepository.GetTaskEpicAsync(BuilderData.ProjectId,
+            BuilderData.ProjectTaskId);
 
         if (taskEpic is not null)
         {
@@ -267,7 +228,8 @@ public class TaskBuilder : AgileObjectBuilder
     public override async Task FillSprintIdAndSprintNameAsync()
     {
         // Получаем спринт, в который входит задача.
-        var sprint = await _projectManagmentRepository.GetSprintTaskAsync(ProjectId, ProjectTaskId);
+        var sprint = await BuilderData.ProjectManagmentRepository.GetSprintTaskAsync(BuilderData.ProjectId,
+            BuilderData.ProjectTaskId);
 
         if (sprint is not null)
         {
