@@ -586,12 +586,9 @@ public class ProjectManagmentController : BaseController
             throw ex;
         }
 
-        var parseTaskDetailType = System.Enum.Parse<TaskDetailTypeEnum>(
-            availableTaskStatusTransitionInput.TaskDetailType);
-
         var result = await _projectManagmentService.GetAvailableTaskStatusTransitionsAsync(
             availableTaskStatusTransitionInput.ProjectId, availableTaskStatusTransitionInput.ProjectTaskId,
-            parseTaskDetailType);
+            availableTaskStatusTransitionInput.TaskDetailType);
 
         return result;
     }

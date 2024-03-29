@@ -3,6 +3,7 @@ using Dapper;
 using LeokaEstetica.Platform.Base.Abstractions.Connection;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.Base;
 using LeokaEstetica.Platform.Core.Constants;
+using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
@@ -686,12 +687,13 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
 
     /// <inheritdoc />
     public async Task<IEnumerable<long>> GetProjectManagementTransitionIntermediateTemplatesAsync(
-        long currentTaskStatusId)
+        long currentTaskStatusId, TransitionTypeEnum transitionType)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
         var compiler = new PostgresCompiler();
         var query = new Query("templates.project_management_transition_intermediate_templates")
             .Where("from_status_id", currentTaskStatusId)
+            .Where("transition_type", new Enum(transitionType).Value)
             .Select("to_status_id");
         var sql = compiler.Compile(query).ToString();
         

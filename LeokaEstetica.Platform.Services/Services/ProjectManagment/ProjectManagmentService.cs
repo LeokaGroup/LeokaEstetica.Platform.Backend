@@ -1246,15 +1246,17 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 
     /// <inheritdoc />
     public async Task<IEnumerable<AvailableTaskStatusTransitionOutput>> GetAvailableTaskStatusTransitionsAsync(
-        long projectId, string projectTaskId, TaskDetailTypeEnum taskDetailType)
+        long projectId, string projectTaskId, string taskDetailType)
     {
         try
         {
+            var detailType = Enum.Parse<TaskDetailTypeEnum>(taskDetailType);
             var onlyProjectTaskId = projectTaskId.GetProjectTaskIdFromPrefixLink();
             bool ifProjectHavingTask;
             long currentTaskStatusId = 0;
+            var transitionType = TransitionTypeEnum.None;
 
-            if (taskDetailType is TaskDetailTypeEnum.Task or TaskDetailTypeEnum.Error)
+            if (detailType is TaskDetailTypeEnum.Task or TaskDetailTypeEnum.Error)
             {
                 ifProjectHavingTask = await _projectManagmentRepository.IfProjectHavingProjectTaskIdAsync(projectId,
                     onlyProjectTaskId);
@@ -1277,9 +1279,11 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                                                         $"ProjectId: {projectId}. " +
                                                         $"ProjectTaskId: {projectTaskId}");
                 }
+
+                transitionType = TransitionTypeEnum.Task;
             }
 
-            if (taskDetailType == TaskDetailTypeEnum.Epic)
+            if (detailType == TaskDetailTypeEnum.Epic)
             {
                 ifProjectHavingTask = await _projectManagmentRepository.IfProjectHavingEpicIdAsync(projectId,
                     onlyProjectTaskId);
@@ -1302,11 +1306,14 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                                                         $"ProjectId: {projectId}. " +
                                                         $"ProjectEpicId: {projectTaskId}");
                 }
+                
+                transitionType = TransitionTypeEnum.Epic;
             }
 
             // Получаем все переходы из промежуточной таблицы отталкиваясь от текущего статуса задачи.
             var statusIds = (await _projectManagmentRepository
-                    .GetProjectManagementTransitionIntermediateTemplatesAsync(currentTaskStatusId))?.AsList();
+                    .GetProjectManagementTransitionIntermediateTemplatesAsync(currentTaskStatusId, transitionType))
+                ?.AsList();
 
             if (statusIds is null || !statusIds.Any())
             {
@@ -1337,6 +1344,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             
             // Если нету общих статусов, но среди переходов был минимум 1 общий,
             // то это ошибка и опасно продолжать дальше. Это может нарушить целостность переходов.
+            // TODO: Почему это может нарушить целостность переходов? Точно ли нужна эта проверка?
             if (commonStatuses is null)
             {
                 throw new InvalidOperationException(
@@ -1356,7 +1364,6 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             }
             
             // TODO: Этот код дублируется в этом сервисе. Вынести в приватный метод и кортежем вернуть нужные данные.
-            // Получаем все статусы, которые входят в шаблон текущего проекта.
             // Получаем настройки проекта.
             var projectSettings = await _projectSettingsConfigRepository.GetProjectSpaceSettingsByProjectIdAsync(
                 projectId);
@@ -1373,6 +1380,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             var templateId = Convert.ToInt32(template!.ParamValue);
 
             // Получаем все Id статусов, которые входят в шаблон текущего проекта.
+            // Получаем все статусы, которые входят в шаблон текущего проекта.
             var templateStatusIds = (await _projectManagmentTemplateRepository.GetTemplateStatusIdsAsync(templateId))
                 ?.AsList();
 

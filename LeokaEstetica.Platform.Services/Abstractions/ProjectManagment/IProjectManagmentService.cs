@@ -164,7 +164,7 @@ public interface IProjectManagmentService
     /// <param name="taskDetailType">Тип детализации.</param>
     /// <returns>Список доступных переходов.</returns>
     Task<IEnumerable<AvailableTaskStatusTransitionOutput>> GetAvailableTaskStatusTransitionsAsync(long projectId,
-        string projectTaskId, TaskDetailTypeEnum taskDetailType);
+        string projectTaskId, string taskDetailType);
 
     /// <summary>
     /// Метод изменяет статус задачи.

@@ -1,4 +1,5 @@
-﻿using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
+﻿using LeokaEstetica.Platform.Core.Enums;
+using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.Search.ProjectManagement;
 using LeokaEstetica.Platform.Models.Dto.Output.Template;
@@ -188,8 +189,10 @@ public interface IProjectManagmentRepository
     /// Метод получает все доступные переходы в статусы задачи из промежуточной задачи.
     /// </summary>
     /// <param name="currentTaskStatusId">Id текущего статуса задачи.</param>
+    /// <param name="transitionType">Тип перехода.</param>
     /// <returns>Список переходов.</returns>
-    Task<IEnumerable<long>> GetProjectManagementTransitionIntermediateTemplatesAsync(long currentTaskStatusId);
+    Task<IEnumerable<long>> GetProjectManagementTransitionIntermediateTemplatesAsync(long currentTaskStatusId,
+        TransitionTypeEnum transitionType);
 
     /// <summary>
     /// Метод получает статусы из таблицы связей многие-многие, чтобы дальше работать с

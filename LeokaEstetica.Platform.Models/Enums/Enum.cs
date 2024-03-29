@@ -23,6 +23,11 @@ public class Enum : IEnum
     public const string DocumentType = "document_type_enum";
 
     /// <summary>
+    /// Тип Enum для типа перехода.
+    /// </summary>
+    public const string TransitionType = "transition_type_enum";
+
+    /// <summary>
     /// Конструктор по дефолту.
     /// </summary>
     /// <param name="type">Тип Enum в базе данных.</param>
@@ -58,6 +63,16 @@ public class Enum : IEnum
     public Enum(DocumentTypeEnum value)
     {
         Type = DocumentType;
+        Value = value.ToString().ToSnakeCase();
+    }
+    
+    /// <summary>
+    /// Конструктор.
+    /// </summary>
+    /// <param name="value">Значение типа документа.</param>
+    public Enum(TransitionTypeEnum value)
+    {
+        Type = TransitionType;
         Value = value.ToString().ToSnakeCase();
     }
 
