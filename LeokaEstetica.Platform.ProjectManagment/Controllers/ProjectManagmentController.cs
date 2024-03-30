@@ -626,7 +626,7 @@ public class ProjectManagmentController : BaseController
         }
 
         await _projectManagmentService.ChangeTaskStatusAsync(changeTaskStatusInput.ProjectId,
-            changeTaskStatusInput.ChangeStatusId, changeTaskStatusInput.TaskId);
+            changeTaskStatusInput.ChangeStatusId, changeTaskStatusInput.TaskId, changeTaskStatusInput.TaskDetailType);
     }
 
     /// <summary>

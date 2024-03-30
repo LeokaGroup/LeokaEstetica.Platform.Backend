@@ -222,6 +222,14 @@ public interface IProjectManagmentRepository
     /// <param name="changeStatusId">Id статуса задачи, на который нужно изменить.</param>
     /// <param name="taskId">Id задачи (здесь имеется в виду Id задачи в рамках проекта).</param>
     Task ChangeTaskStatusAsync(long projectId, long changeStatusId, long taskId);
+    
+    /// <summary>
+    /// Метод изменяет статус эпика.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="changeStatusId">Id статуса задачи, на который нужно изменить.</param>
+    /// <param name="projectEpicId">Id эпика (здесь имеется в виду Id эпика в рамках проекта).</param>
+    Task ChangeEpicStatusAsync(long projectId, long changeStatusId, long projectEpicId);
 
     /// <summary>
     /// Метод получает данные статуса задачи по ее TaskStatusId.

@@ -19,4 +19,9 @@ public class ChangeTaskStatusInput
     /// Id задачи (здесь имеется в виду Id задачи в рамках проекта).
     /// </summary>
     public string TaskId { get; set; }
+
+    /// <summary>
+    /// Тип детализации.
+    /// </summary>
+    public string TaskDetailType { get; set; }
 }

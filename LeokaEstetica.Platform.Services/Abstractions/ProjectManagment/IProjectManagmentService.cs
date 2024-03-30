@@ -172,7 +172,8 @@ public interface IProjectManagmentService
     /// <param name="projectId">Id проекта.</param>
     /// <param name="changeStatusId">Id статуса задачи, на который нужно изменить.</param>
     /// <param name="taskId">Id задачи (здесь имеется в виду Id задачи в рамках проекта).</param>
-    Task ChangeTaskStatusAsync(long projectId, string changeStatusId, string taskId);
+    /// <param name="taskDetailType">Тип детализации.</param>
+    Task ChangeTaskStatusAsync(long projectId, string changeStatusId, string taskId, string taskDetailType);
     
     /// <summary>
     /// Метод обновления описание задачи.

@@ -1491,10 +1491,24 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     }
 
     /// <inheritdoc />
-    public async Task ChangeTaskStatusAsync(long projectId, string changeStatusId, string taskId)
+    public async Task ChangeTaskStatusAsync(long projectId, string changeStatusId, string taskId,
+        string taskDetailType)
     {
-        await _projectManagmentRepository.ChangeTaskStatusAsync(projectId,
-            changeStatusId.GetProjectTaskIdFromPrefixLink(), taskId.GetProjectTaskIdFromPrefixLink());
+        var detailType = Enum.Parse<TaskDetailTypeEnum>(taskDetailType);
+        var onlyTaskId = taskId.GetProjectTaskIdFromPrefixLink();
+        
+        switch (detailType)
+        {
+            case TaskDetailTypeEnum.Task or TaskDetailTypeEnum.Error:
+                await _projectManagmentRepository.ChangeTaskStatusAsync(projectId,
+                    changeStatusId.GetProjectTaskIdFromPrefixLink(), onlyTaskId);
+                break;
+
+            case TaskDetailTypeEnum.Epic:
+                await _projectManagmentRepository.ChangeEpicStatusAsync(projectId,
+                    changeStatusId.GetProjectTaskIdFromPrefixLink(), onlyTaskId);
+                break;
+        }
     }
 
     /// <inheritdoc />
