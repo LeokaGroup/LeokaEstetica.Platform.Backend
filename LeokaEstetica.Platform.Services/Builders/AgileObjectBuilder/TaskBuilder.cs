@@ -14,8 +14,8 @@ internal class TaskBuilder : AgileObjectBuilder
     /// <inheritdoc />
     public override async Task InitObjectAsync()
     {
-        var task = await BuilderData.ProjectManagmentRepository.GetTaskDetailsByTaskIdAsync(BuilderData.ProjectId,
-            BuilderData.ProjectTaskId);
+        var task = await BuilderData.ProjectManagmentRepository.GetTaskDetailsByTaskIdAsync(BuilderData.ProjectTaskId,
+            BuilderData.ProjectId);
         
         ProjectManagmentTask = BuilderData.Mapper.Map<ProjectManagmentTaskOutput>(task);
         ProjectManagmentTask.Executor = new Executor();
