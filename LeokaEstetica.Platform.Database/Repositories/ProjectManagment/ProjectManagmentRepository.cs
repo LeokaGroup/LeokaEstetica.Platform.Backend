@@ -3,7 +3,6 @@ using Dapper;
 using LeokaEstetica.Platform.Base.Abstractions.Connection;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.Base;
 using LeokaEstetica.Platform.Core.Constants;
-using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
@@ -2085,6 +2084,7 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         return result;
     }
 
+    /// <inheritdoc/>
     public async Task<string> GetEpicStatusNameByEpicStatusIdAsync(int statusId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
@@ -2097,6 +2097,19 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
                     "WHERE status_id = @statusId";
 
         var result = await connection.QueryFirstOrDefaultAsync<string>(query, parameters);
+
+        return result;
+    }
+
+    /// <inheritdoc/>
+    public async Task<IEnumerable<EpicStatusOutput>> GetEpicStatusesAsync()
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+        
+        var query = @"SELECT status_id, status_name, status_sys_name 
+                      FROM project_management.epic_statuses";
+
+        var result = await connection.QueryAsync<EpicStatusOutput>(query);
 
         return result;
     }

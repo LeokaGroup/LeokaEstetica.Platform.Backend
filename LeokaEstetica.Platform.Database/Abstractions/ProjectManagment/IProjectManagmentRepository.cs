@@ -1,5 +1,4 @@
-﻿using LeokaEstetica.Platform.Core.Enums;
-using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
+﻿using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.Search.ProjectManagement;
 using LeokaEstetica.Platform.Models.Dto.Output.Template;
@@ -564,4 +563,10 @@ public interface IProjectManagmentRepository
     /// <param name="statusId">Id статуса эпика.</param>
     /// <returns>Название статуса.</returns>
     Task<string> GetEpicStatusNameByEpicStatusIdAsync(int statusId);
+
+    /// <summary>
+    /// Метод получает статусы эпиков.
+    /// </summary>
+    /// <returns>Статусы эпиков.</returns>
+    Task<IEnumerable<EpicStatusOutput>> GetEpicStatusesAsync();
 }

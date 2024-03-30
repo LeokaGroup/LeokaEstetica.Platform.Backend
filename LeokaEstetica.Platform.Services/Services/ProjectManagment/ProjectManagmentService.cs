@@ -1472,13 +1472,35 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             // Добавляем текущий статус в доступный переход.
             var currentTaskStatus = await _projectManagmentRepository
                 .GetTaskStatusByTaskStatusIdAsync(currentTaskStatusId, templateId);
-                
-            result.Add(new AvailableTaskStatusTransitionOutput
+
+            // Не добавляем текущий статус для этих типов задач, так как у них есть свои и они не кастомные.
+            if (!new[] { TransitionTypeEnum.Epic, TransitionTypeEnum.History, TransitionTypeEnum.Sprint }.Contains(
+                    transitionType))
             {
-                StatusName = currentTaskStatus.StatusName,
-                StatusId = currentTaskStatus.StatusId,
-                TaskStatusId = currentTaskStatus.TaskStatusId
-            });
+                result.Add(new AvailableTaskStatusTransitionOutput
+                {
+                    StatusName = currentTaskStatus.StatusName,
+                    StatusId = currentTaskStatus.StatusId,
+                    TaskStatusId = currentTaskStatus.TaskStatusId
+                });
+            }
+
+            // Дополняем статусами, в зависимости от типа задачи.
+            // Если нужно получить доступные статусы (переходы) для эпика.
+            if (transitionType == TransitionTypeEnum.Epic)
+            {
+                // TODO: Если в будущем будет функционал для создания кастомных статусов эпика пользователем,
+                // TODO: то придется заводить поле TaskStatusId в таблице статусов эпиков и тогда его тут получать уже.
+                // Сейчас StatusId и TaskStatusId у эпиков одинаковые будут, так как нет отдельного поля под TaskStatusId у них,
+                // потому что создание кастомных статусов для эпика пока не предполагается в системе.
+                var epicStatuses = await _projectManagmentRepository.GetEpicStatusesAsync();
+                result.AddRange(epicStatuses.Select(x => new AvailableTaskStatusTransitionOutput
+                {
+                    StatusName = x.StatusName,
+                    StatusId = x.StatusId,
+                    TaskStatusId = x.StatusId
+                }));
+            }
 
             return result;
         }
