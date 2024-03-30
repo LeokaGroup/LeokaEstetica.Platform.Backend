@@ -217,6 +217,18 @@ public class MappingProfile : Profile
         CreateMap<PanelEntity, PanelOutput>();
         CreateMap<ProjectTaskEntity, ProjectManagmentTaskOutput>();
         CreateMap<ProjectTaskExtendedEntity, ProjectManagmentTaskOutput>();
+        
+        CreateMap<EpicEntity, ProjectManagmentTaskOutput>()
+            .ForMember(p => p.Name, p => p.MapFrom(src => src.EpicName))
+            .ForMember(p => p.AuthorId, p => p.MapFrom(src => src.CreatedBy))
+            .ForMember(p => p.Details, p => p.MapFrom(src => src.EpicDescription))
+            .ForMember(p => p.Updated, p => p.MapFrom(src => src.UpdatedAt ?? src.CreatedAt))
+            .ForMember(p => p.ProjectTaskId, p => p.MapFrom(src => src.ProjectEpicId))
+            .ForMember(p => p.ExecutorId, p => p.MapFrom(src => src.CreatedBy))
+            .ForMember(p => p.Created, p => p.MapFrom(src => src.CreatedAt))
+            .ForMember(p => p.TaskId, p => p.MapFrom(src => src.EpicId));
+        
+        CreateMap<HistoryEntity, ProjectManagmentTaskOutput>();
 
         CreateMap<ProjectManagmentTaskTemplateEntity, ProjectManagmentTaskTemplateOutput>();
         CreateMap<ProjectManagmentTaskStatusTemplateEntity, ProjectManagmentTaskStatusTemplateOutput>();

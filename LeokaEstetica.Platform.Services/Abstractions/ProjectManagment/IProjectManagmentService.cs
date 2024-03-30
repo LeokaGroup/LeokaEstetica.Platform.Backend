@@ -1,4 +1,5 @@
-﻿using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
+﻿using LeokaEstetica.Platform.Core.Enums;
+using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.Template;
 using LeokaEstetica.Platform.Models.Entities.Document;
@@ -78,8 +79,10 @@ public interface IProjectManagmentService
     /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
     /// <param name="account">Аккаунт.</param>
     /// <param name="projectId">Id проекта.</param>
+    /// <param name="taskDetailType">Тип детализации.</param>
     /// <returns>Данные задачи.</returns>
-    Task<ProjectManagmentTaskOutput> GetTaskDetailsByTaskIdAsync(string projectTaskId, string account, long projectId);
+    Task<ProjectManagmentTaskOutput> GetTaskDetailsByTaskIdAsync(string projectTaskId, string account, long projectId,
+        TaskDetailTypeEnum taskDetailType);
 
     /// <summary>
     /// Метод получает список типов задач.
@@ -158,9 +161,10 @@ public interface IProjectManagmentService
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
     /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
+    /// <param name="taskDetailType">Тип детализации.</param>
     /// <returns>Список доступных переходов.</returns>
     Task<IEnumerable<AvailableTaskStatusTransitionOutput>> GetAvailableTaskStatusTransitionsAsync(long projectId,
-        string projectTaskId);
+        string projectTaskId, string taskDetailType);
 
     /// <summary>
     /// Метод изменяет статус задачи.
@@ -344,7 +348,8 @@ public interface IProjectManagmentService
     /// <param name="projectId">Id проекта.</param>
     /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
     /// <returns>Файлы задачи.</returns>
-    Task<IEnumerable<ProjectDocumentEntity>> GetProjectTaskFilesAsync(long projectId, string projectTaskId);
+    Task<IEnumerable<ProjectDocumentEntity>> GetProjectTaskFilesAsync(long projectId, string projectTaskId,
+        TaskDetailTypeEnum taskDetailType);
 
     /// <summary>
     /// Метод удаляет файл задачи.
@@ -403,15 +408,7 @@ public interface IProjectManagmentService
     /// <param name="account">Аккаунт.</param>
     /// <returns>Данные файла.</returns>
     Task<FileContentResult> GetUserAvatarFileAsync(long projectId, string account);
-    
-    /// <summary>
-    /// Метод получает изображения аватара пользователей.
-    /// </summary>
-    /// <param name="projectId">Id проекта.</param>
-    /// <param name="accounts">Аккаунты пользователей.</param>
-    /// <returns>Словарь с файлами изображений аватара пользователей.</returns>
-    Task<IDictionary<long, FileContentResult>> GetUserAvatarFilesAsync(long projectId, IEnumerable<string> accounts);
-    
+
     /// <summary>
     /// Метод загружает файл изображения аватара пользователя по SFTP на сервер.
     /// </summary>
@@ -466,6 +463,15 @@ public interface IProjectManagmentService
     /// <param name="account">Аккаунт.</param>
     /// <param name="token">Токен.</param>
     Task PlaningSprintAsync(PlaningSprintInput planingSprintInput, string account, string token);
+
+    /// <summary>
+    /// Метод получает задачи эпика.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="epicId">Id эпика.</param>
+    /// <param name="account">Аккаунт.</param>
+    /// <returns>Список задач эпика.</returns>
+    Task<EpicTaskResult> GetEpicTasksAsync(long projectId, long epicId, string account);
 
     /// <summary>
     /// Метод получает название спринта, в который входит задача.

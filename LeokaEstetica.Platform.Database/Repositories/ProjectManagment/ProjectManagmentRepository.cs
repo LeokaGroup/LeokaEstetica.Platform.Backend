@@ -3,6 +3,7 @@ using Dapper;
 using LeokaEstetica.Platform.Base.Abstractions.Connection;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.Base;
 using LeokaEstetica.Platform.Core.Constants;
+using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
@@ -309,15 +310,11 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
         return result;
     }
 
-    /// <summary>
-    /// Метод получает детали задачи.
-    /// </summary>
-    /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
-    /// <param name="projectId">Id проекта.</param>
-    /// <returns>Данные задачи.</returns>
+    /// <inheritdoc />
     public async Task<ProjectTaskEntity> GetTaskDetailsByTaskIdAsync(long projectTaskId, long projectId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
+        
         var parameters = new DynamicParameters();
         parameters.Add("@project_id", projectId);
         parameters.Add("@project_task_id", projectTaskId);
@@ -325,9 +322,44 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
         var query = @"SELECT task_id, task_status_id, author_id, watcher_ids, name, details, created, updated,
                       project_id, project_task_id, resolution_id, tag_ids, task_type_id, executor_id, priority_id 
                       FROM project_management.project_tasks 
-                      WHERE project_id = @project_id AND project_task_id = @project_task_id";
+                      WHERE project_id = @project_id 
+                        AND project_task_id = @project_task_id";
 
         var result = await connection.QueryFirstOrDefaultAsync<ProjectTaskEntity>(query, parameters);
+
+        return result;
+    }
+
+    /// <inheritdoc />
+    public async Task<EpicEntity> GetEpicDetailsByEpicIdAsync(long projectEpicId, long projectId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+        
+        var parameters = new DynamicParameters();
+        parameters.Add("@project_id", projectId);
+        parameters.Add("@projectEpicId", projectEpicId);
+
+        var query = @"SELECT epic_id,
+                       epic_name,
+                       epic_description,
+                       created_by,
+                       created_at,
+                       updated_at,
+                       updated_by,
+                       project_id,
+                       initiative_id,
+                       date_start,
+                       date_end,
+                       priority_id,
+                       tag_ids,
+                       resolution_id,
+                       project_epic_id,
+                       status_id AS TaskStatusId
+                      FROM project_management.epics 
+                      WHERE project_id = @project_id 
+                        AND project_epic_id = @projectEpicId";
+
+        var result = await connection.QueryFirstOrDefaultAsync<EpicEntity>(query, parameters);
 
         return result;
     }
@@ -606,6 +638,22 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
     }
 
     /// <inheritdoc />
+    public async Task<bool> IfProjectHavingEpicIdAsync(long projectId, long projectEpicId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+        var compiler = new PostgresCompiler();
+        var query = new Query("project_management.epics")
+            .Where("project_id", projectId)
+            .Where("project_epic_id", projectEpicId)
+            .AsCount();
+        var sql = compiler.Compile(query).ToString();
+            
+        var count = await connection.ExecuteScalarAsync<int>(sql);
+
+        return count > 0;
+    }
+
+    /// <inheritdoc />
     public async Task<long> GetProjectTaskStatusIdByProjectIdProjectTaskIdAsync(long projectId, long projectTaskId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
@@ -622,13 +670,30 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
     }
 
     /// <inheritdoc />
+    public async Task<long> GetProjectEpicStatusIdByProjectIdEpicIdIdAsync(long projectId, long projectEpicId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+        var compiler = new PostgresCompiler();
+        var query = new Query("project_management.epics")
+            .Where("project_id", projectId)
+            .Where("project_epic_id", projectEpicId)
+            .Select("status_id");
+        var sql = compiler.Compile(query).ToString();
+
+        var result = await connection.QueryFirstOrDefaultAsync<long>(sql);
+
+        return result;
+    }
+
+    /// <inheritdoc />
     public async Task<IEnumerable<long>> GetProjectManagementTransitionIntermediateTemplatesAsync(
-        long currentTaskStatusId)
+        long currentTaskStatusId, TransitionTypeEnum transitionType)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
         var compiler = new PostgresCompiler();
         var query = new Query("templates.project_management_transition_intermediate_templates")
             .Where("from_status_id", currentTaskStatusId)
+            .Where("transition_type", new Enum(transitionType).Value)
             .Select("to_status_id");
         var sql = compiler.Compile(query).ToString();
         
@@ -1942,6 +2007,98 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
                       VALUES (@sprintId, @projectTaskIds)";
 
         await connection.ExecuteAsync(query, parameters);
+    }
+
+    /// <inheritdoc/>
+    public async Task<EpicTaskResult> GetEpicTasksAsync(long projectId, long epicId, int templateId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+        
+        var parameters = new DynamicParameters();
+        parameters.Add("@projectId", projectId);
+        parameters.Add("@epicId", epicId);
+        parameters.Add("@prefix", GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_PROJECT_NAME_PREFIX);
+        parameters.Add("@templateId", templateId);
+
+        var result = new EpicTaskResult
+        {
+            EpicTasks = new List<EpicTaskOutput>()
+        };
+        
+        var query = "DROP TABLE IF EXISTS temp_epic_task_ids; " +
+                    "SELECT project_task_id " +
+                    "INTO temp_epic_task_ids " +
+                    "FROM project_management.epic_tasks " +
+                    "WHERE epic_id = @epicId; " +
+                    
+                    "SELECT t.task_id," +
+                    "t.name," +
+                    "t.project_id," +
+                    "t.project_task_id," +
+                    "(SELECT \"ParamValue\" " +
+                    "FROM \"Configs\".\"ProjectManagmentProjectSettings\" AS ps " +
+                    "WHERE ps.\"ProjectId\" = @projectId " +
+                    "AND ps.\"ParamKey\" = @prefix) AS TaskIdPrefix, " +
+                    "t.task_status_id, " +
+                    "t.executor_id, " +
+                    "t.task_type_id, " +
+                    "(SELECT CASE WHEN t.task_type_id = 1 THEN 'Задача' " +
+                    "WHEN t.task_type_id = 2 THEN 'Ошибка' END) AS TaskTypeName, " +
+                    "(SELECT \"FirstName\" || ' ' || \"LastName\" || ' ' || (COALESCE(\"Patronymic\", '')) " +
+                    "FROM \"Profile\".\"ProfilesInfo\"" + "WHERE \"UserId\" = t.executor_id) AS ExecutorName, " +
+                    "(SELECT tpmtst.status_name " +
+                    "FROM templates.project_management_task_status_templates AS tpmtst " +
+                    "INNER JOIN templates.project_management_task_status_intermediate_templates AS tpmtsit " +
+                    "ON tpmtst.task_status_id = tpmtsit.status_id " +
+                    "WHERE t.task_status_id = tpmtst.task_status_id " +
+                    "AND tpmtsit.template_id = @templateId " +
+                    "AND NOT tpmtst.is_system_status) AS StatusName " +
+                    "FROM project_management.project_tasks AS t " +
+                    "WHERE t.project_id = @projectId " +
+                    "AND t.project_task_id IN (SELECT project_task_id FROM temp_epic_task_ids) " +
+                    "UNION " +
+                    "SELECT us.story_id," +
+                    "us.story_name AS name," +
+                    "us.project_id," +
+                    "us.user_story_task_id AS project_task_id," +
+                    "(SELECT \"ParamValue\"" +
+                    "FROM \"Configs\".\"ProjectManagmentProjectSettings\" AS ps " +
+                    "WHERE ps.\"ProjectId\" = @projectId " +
+                    "AND ps.\"ParamKey\" = @prefix) AS TaskIdPrefix, " +
+                    "us.status_id AS TaskStatusId, " +
+                    "us.executor_id, " +
+                    "3 AS TaskTypeId, " +
+                    "\'История/Требование\' AS TaskTypeName, " +
+                    "(SELECT \"FirstName\" || ' ' || \"LastName\" || ' ' || (COALESCE(\"Patronymic\", '')) " +
+                    "FROM \"Profile\".\"ProfilesInfo\"" + "WHERE \"UserId\" = us.executor_id) AS ExecutorName, " +
+                    "(SELECT status_name " +
+                    "FROM project_management.user_story_statuses " +
+                    "WHERE status_id = us.status_id) AS StatusName " +
+                    "FROM project_management.user_stories AS us " +
+                    "INNER JOIN project_management.user_story_statuses AS uss " +
+                    "ON us.status_id = uss.status_id " +
+                    "WHERE us.project_id = @projectId " +
+                    "AND us.user_story_task_id IN (SELECT project_task_id FROM temp_epic_task_ids)";
+
+        result.EpicTasks = await connection.QueryAsync<EpicTaskOutput>(query, parameters);
+
+        return result;
+    }
+
+    public async Task<string> GetEpicStatusNameByEpicStatusIdAsync(int statusId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@statusId", statusId);
+
+        var query = "SELECT status_name " +
+                    "FROM project_management.epic_statuses " +
+                    "WHERE status_id = @statusId";
+
+        var result = await connection.QueryFirstOrDefaultAsync<string>(query, parameters);
+
+        return result;
     }
 
     /// <inheritdoc/>

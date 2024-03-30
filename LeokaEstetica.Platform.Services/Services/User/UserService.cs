@@ -3,6 +3,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Runtime.CompilerServices;
 using System.Security.Claims;
 using AutoMapper;
+using Dapper;
 using LeokaEstetica.Platform.Access.Abstractions.User;
 using LeokaEstetica.Platform.Access.Helpers;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
@@ -16,6 +17,7 @@ using LeokaEstetica.Platform.Database.Abstractions.Config;
 using LeokaEstetica.Platform.Database.Abstractions.FareRule;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Resume;
 using LeokaEstetica.Platform.Database.Abstractions.Profile;
+using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Database.Abstractions.Subscription;
 using LeokaEstetica.Platform.Integrations.Abstractions.Pachca;
 using LeokaEstetica.Platform.Messaging.Abstractions.Mail;
@@ -23,9 +25,11 @@ using LeokaEstetica.Platform.Models.Dto.Input.User;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.User;
 using LeokaEstetica.Platform.Models.Entities.User;
+using LeokaEstetica.Platform.ProjectManagment.Documents.Abstractions;
 using LeokaEstetica.Platform.Redis.Abstractions.User;
 using LeokaEstetica.Platform.Services.Abstractions.User;
 using LeokaEstetica.Platform.Services.Consts;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -54,6 +58,8 @@ internal sealed class UserService : IUserService
     private readonly IAvailableLimitsRepository _availableLimitsRepository;
     private readonly IGlobalConfigRepository _globalConfigRepository;
     private readonly IPachcaService _pachcaService;
+    private readonly Lazy<IFileManagerService> _fileManagerService;
+    private readonly IProjectManagmentRepository _projectManagmentRepository;
 
     /// <summary>
     /// Конструктор.
@@ -70,6 +76,8 @@ internal sealed class UserService : IUserService
     /// <param name="availableLimitsRepository">Репозиторий лимитов.</param>
     /// <param name="globalConfigRepository">Репозиторий глобал конфига.</param>
     /// <param name="pachcaService">Сервис пачки.</param>
+    /// <param name="fileManagerService">Сервис менеджера файлов.</param>
+    /// <param name="projectManagmentRepository">Репозиторий модуля УП.</param>
     public UserService(ILogger<UserService> logger, 
         IUserRepository userRepository, 
         IMapper mapper, 
@@ -83,7 +91,9 @@ internal sealed class UserService : IUserService
         IFareRuleRepository fareRuleRepository,
         IAvailableLimitsRepository availableLimitsRepository,
         IGlobalConfigRepository globalConfigRepository,
-        IPachcaService pachcaService)
+        IPachcaService pachcaService,
+        Lazy<IFileManagerService> fileManagerService,
+        IProjectManagmentRepository projectManagmentRepository)
     {
         _logger = logger;
         _userRepository = userRepository;
@@ -99,6 +109,8 @@ internal sealed class UserService : IUserService
         _availableLimitsRepository = availableLimitsRepository;
         _globalConfigRepository = globalConfigRepository;
         _pachcaService = pachcaService;
+        _fileManagerService = fileManagerService;
+        _projectManagmentRepository = projectManagmentRepository;
     }
 
     #region Публичные методы.
@@ -681,6 +693,78 @@ internal sealed class UserService : IUserService
         }
 
         return profileInfos;
+    }
+
+    /// <inheritdoc />
+    public async Task<IDictionary<long, FileContentResult>> GetUserAvatarFilesAsync(long projectId,
+        IEnumerable<string> accounts)
+    {
+        try
+        {
+            var userIds = (await _userRepository.GetUserByEmailsAsync(accounts))?.AsList();
+
+            if (userIds is null || !userIds.Any())
+            {
+                var ex = new InvalidOperationException("Не удалось получить Id пользователей.");
+                throw ex;
+            }
+
+            var userDocuments = (await _projectManagmentRepository.GetUserAvatarDocumentIdByUserIdsAsync(userIds,
+                projectId))?.AsList();
+                
+            var result = new Dictionary<long, FileContentResult>();
+
+            // Если нету изображений вообще, то оставим только дефолтное для всех пользователей.
+            if (userDocuments is null || !userDocuments.Any())
+            {
+                var noPhoto = await _fileManagerService.Value.GetUserAvatarFileAsync("nophoto.jpg",
+                    projectId, null, true);
+                
+                result.Add(0, noPhoto);
+                
+                return result;
+            }
+
+            // Если есть пользователь, у которого нету аватара, то это уже причина подгрузить дефолтный аватар.
+            if (userDocuments.Any(x => x.UserId is null))
+            {
+                var noPhoto = await _fileManagerService.Value.GetUserAvatarFileAsync("nophoto.jpg",
+                    projectId, null, true);
+                
+                result.Add(0, noPhoto);
+            }
+
+            var userDocs = userDocuments.Where(x => x.UserId.HasValue && x.DocumentId.HasValue);
+            var documents = await _projectManagmentRepository.GetDocumentNameByDocumentIdsAsync(userDocs);
+
+            var files = await _fileManagerService.Value.GetUserAvatarFilesAsync(documents, projectId);
+
+            // Если файлов нету и если словарь не был наполнен дефолтным изображением, то вернем только дефолтный файл.
+            if (files.Count == 0 && result.Count == 0)
+            {
+                var noPhoto = await _fileManagerService.Value.GetUserAvatarFileAsync("nophoto.jpg",
+                    projectId, null, true);
+                
+                result.Add(0, noPhoto);
+                
+                return result;
+            }
+            
+            // Если файлов нету, но есть дефолтный файл, то вернем только его.
+            if (files.Count == 0 && result.Count > 0)
+            {
+                return result;
+            }
+            
+            // Изображения есть, возвращаем словарь с результатами.
+            return files;
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            throw;
+        }
     }
 
     /// <summary>
