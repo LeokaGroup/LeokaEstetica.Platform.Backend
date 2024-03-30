@@ -38,7 +38,7 @@ public partial class UserConfiguration : IEntityTypeConfiguration<UserEntity>
         
         entity.Property(e => e.DateRegister)
             .HasColumnName("DateRegister")
-            .HasColumnType("timestamp")
+            .HasColumnType("timestamp with time zone")
             .IsRequired();
         
         entity.Property(e => e.Email)
@@ -91,11 +91,11 @@ public partial class UserConfiguration : IEntityTypeConfiguration<UserEntity>
         
         entity.Property(e => e.LockoutEnabledDate)
             .HasColumnName("LockoutEnabledDate")
-            .HasColumnType("timestamp");
+            .HasColumnType("timestamp with time zone");
         
         entity.Property(e => e.LockoutEndDate)
             .HasColumnName("LockoutEndDate")
-            .HasColumnType("timestamp");
+            .HasColumnType("timestamp with time zone");
         
         entity.Property(e => e.IsVkAuth)
             .HasColumnName("IsVkAuth")
@@ -125,11 +125,11 @@ public partial class UserConfiguration : IEntityTypeConfiguration<UserEntity>
         
         entity.Property(e => e.SubscriptionStartDate)
             .HasColumnName("SubscriptionStartDate")
-            .HasColumnType("timestamp");
+            .HasColumnType("timestamp with time zone");
         
         entity.Property(e => e.SubscriptionEndDate)
             .HasColumnName("SubscriptionEndDate")
-            .HasColumnType("timestamp");
+            .HasColumnType("timestamp with time zone");
 
         entity.HasIndex(u => u.UserId)
             .HasDatabaseName("PK_Users_UserId")
