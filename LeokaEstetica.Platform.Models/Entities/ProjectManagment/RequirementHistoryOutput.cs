@@ -1,12 +1,13 @@
 namespace LeokaEstetica.Platform.Models.Entities.ProjectManagment;
 
 /// <summary>
-/// Класс сопоставляется с таблицей истории пользователей.
+/// Класс выходной модели для историй, требований. Этот класс относится к типу задачи "История".
 /// </summary>
-public class UserStoryEntity
+public class RequirementUserStoryOutput
 {
     /// <summary>
     /// PK.
+    /// Id истории.
     /// </summary>
     public long StoryId { get; set; }
 
@@ -19,24 +20,24 @@ public class UserStoryEntity
     /// Описание истории.
     /// </summary>
     public string StoryDescription { get; set; }
-    
+
     /// <summary>
-    /// Пользователь, который создал эпик.
+    /// Пользователь, который создал историю.
     /// </summary>
     public long CreatedBy { get; set; }
 
     /// <summary>
-    /// Дата создания эпика.
+    /// Дата создания истории.
     /// </summary>
     public DateTime CreatedAt { get; set; }
 
     /// <summary>
-    /// Дата обновления эпика.
+    /// Дата обновления истории.
     /// </summary>
     public DateTime? UpdatedAt { get; set; }
 
     /// <summary>
-    /// Пользователь, который обновил эпик.
+    /// Пользователь, который обновил историю.
     /// </summary>
     public long? UpdatedBy { get; set; }
 
@@ -46,39 +47,34 @@ public class UserStoryEntity
     public long ProjectId { get; set; }
 
     /// <summary>
-    /// Id статуса истории.
+    /// Дата начала истории.
     /// </summary>
-    public int StoryStatusId { get; set; }
-
-    /// <summary>
-    /// Id наблюдателей.
-    /// </summary>
-    public long[] WatcherIds { get; set; }
+    public DateTime? DateStart { get; set; }
     
     /// <summary>
-    /// Список Id тегов задачи.
+    /// Дата окончания истории.
     /// </summary>
-    public int[] TagIds { get; set; }
+    public DateTime? DateEnd { get; set; }
 
     /// <summary>
-    /// Id эпика, в который входит история, если назначался.
+    /// Приоритет истории.
     /// </summary>
-    public long? EpicId { get; set; }
-
-    /// <summary>
-    /// Id исполнителя истории, если назначался.
-    /// </summary>
-    public long? ExecutorId { get; set; }
-
-    /// <summary>
-    /// Id статуса истории.
-    /// </summary>
-    public long TaskStatusId { get; set; }
+    public int PriorityId { get; set; }
     
     /// <summary>
     /// Id резолюции.
     /// </summary>
     public int? ResolutionId { get; set; }
+
+    /// <summary>
+    /// Список Id тегов истории.
+    /// </summary>
+    public int[] TagIds { get; set; }
+    
+    /// <summary>
+    /// Id статуса истории.
+    /// </summary>
+    public long StoryStatusId { get; set; }
 
     /// <summary>
     /// Id истории в рамках проекта.

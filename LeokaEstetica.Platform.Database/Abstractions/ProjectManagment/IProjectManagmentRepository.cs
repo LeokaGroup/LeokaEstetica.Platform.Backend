@@ -88,6 +88,14 @@ public interface IProjectManagmentRepository
     /// <param name="projectId">Id проекта.</param>
     /// <returns>Данные эпика.</returns>
     Task<EpicEntity> GetEpicDetailsByEpicIdAsync(long projectEpicId, long projectId);
+    
+    /// <summary>
+    /// Метод получает детали истории.
+    /// </summary>
+    /// <param name="projectTaskId">Id истории в рамках проекта.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Данные истории.</returns>
+    Task<UserStoryOutput> GetUserStoryDetailsByUserStoryIdAsync(long projectStoryId, long projectId);
 
     /// <summary>
     /// Метод получает названия приоритетов задач по их Id.
@@ -563,6 +571,13 @@ public interface IProjectManagmentRepository
     /// <param name="statusId">Id статуса эпика.</param>
     /// <returns>Название статуса.</returns>
     Task<string> GetEpicStatusNameByEpicStatusIdAsync(int statusId);
+    
+    /// <summary>
+    /// Метод получает название статуса истории по StatusId.
+    /// </summary>
+    /// <param name="statusId">Id статуса истории.</param>
+    /// <returns>Название статуса.</returns>
+    Task<string> GetUserStoryStatusNameByStoryStatusIdAsync(int statusId);
 
     /// <summary>
     /// Метод получает статусы эпиков.

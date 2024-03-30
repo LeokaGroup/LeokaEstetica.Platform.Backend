@@ -718,6 +718,13 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 // Настраиваем билдер для построения эпика.
                 builder = new EpicBuilder { BuilderData = builderData };
             }
+            
+            // Если просматриваем историю.
+            if (taskDetailType is TaskDetailTypeEnum.History)
+            {
+                // Настраиваем билдер для построения истории.
+                builder = new UserStory { BuilderData = builderData };
+            }
 
             if (builder is null)
             {

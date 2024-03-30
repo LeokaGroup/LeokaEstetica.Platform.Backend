@@ -1,6 +1,7 @@
 namespace LeokaEstetica.Platform.Models.Entities.ProjectManagment;
 
 /// <summary>
+/// TODO: От сущностей уйдем, будет ренейм на EpicOutput, если такой уже нету.
 /// Класс сопоставляется с таблицей эпиков.
 /// </summary>
 public class EpicEntity

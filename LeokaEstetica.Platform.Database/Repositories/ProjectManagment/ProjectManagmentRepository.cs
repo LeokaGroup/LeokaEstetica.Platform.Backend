@@ -339,26 +339,60 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
         parameters.Add("@projectEpicId", projectEpicId);
 
         var query = @"SELECT epic_id,
-                       epic_name,
-                       epic_description,
-                       created_by,
-                       created_at,
-                       updated_at,
-                       updated_by,
-                       project_id,
-                       initiative_id,
-                       date_start,
-                       date_end,
-                       priority_id,
-                       tag_ids,
-                       resolution_id,
-                       project_epic_id,
-                       status_id AS TaskStatusId
-                      FROM project_management.epics 
-                      WHERE project_id = @project_id 
-                        AND project_epic_id = @projectEpicId";
+                           epic_name,
+                           epic_description,
+                           created_by,
+                           created_at,
+                           updated_at,
+                           updated_by,
+                           project_id,
+                           initiative_id,
+                           date_start,
+                           date_end,
+                           priority_id,
+                           tag_ids,
+                           resolution_id,
+                           project_epic_id,
+                           status_id AS TaskStatusId
+                        FROM project_management.epics
+                        WHERE project_id = @project_id
+                          AND project_epic_id = @projectEpicId";
 
         var result = await connection.QueryFirstOrDefaultAsync<EpicEntity>(query, parameters);
+
+        return result;
+    }
+
+    /// <inheritdoc />
+    public async Task<UserStoryOutput> GetUserStoryDetailsByUserStoryIdAsync(long projectStoryId, long projectId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+        
+        var parameters = new DynamicParameters();
+        parameters.Add("@project_id", projectId);
+        parameters.Add("@projectStoryId", projectStoryId);
+
+        var query = "SELECT story_id," +
+                    "story_name," +
+                    "story_description," +
+                    "created_by," +
+                    "created_at," +
+                    "updated_at," +
+                    "updated_by," +
+                    "project_id," +
+                    "story_status_id," +
+                    "watcher_ids," +
+                    "resolution_id," +
+                    "tag_ids," +
+                    "epic_id," +
+                    "executor_id," +
+                    "user_story_task_id," +
+                    "status_id AS TaskStatusId " +
+                    "FROM project_management.user_stories " +
+                    "WHERE project_id = @project_id " +
+                    "AND user_story_task_id = @projectStoryId";
+        
+        var result = await connection.QueryFirstOrDefaultAsync<UserStoryOutput>(query, parameters);
 
         return result;
     }
@@ -538,7 +572,7 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         parameters.Add("@createdBy", story.CreatedBy);
         parameters.Add("@projectId", story.ProjectId);
         parameters.Add("@storyStatusId", story.StoryStatusId);
-        parameters.Add("@userStoryTaskId", story.UserStoryTaskId);
+        parameters.Add("@userStoryTaskId", story.TaskStatusId);
 
         var columns = new StringBuilder(
             @"INSERT INTO project_management.user_stories (story_name, story_description, created_by, created_at,
@@ -2094,6 +2128,23 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
 
         var query = "SELECT status_name " +
                     "FROM project_management.epic_statuses " +
+                    "WHERE status_id = @statusId";
+
+        var result = await connection.QueryFirstOrDefaultAsync<string>(query, parameters);
+
+        return result;
+    }
+
+    /// <inheritdoc/>
+    public async Task<string> GetUserStoryStatusNameByStoryStatusIdAsync(int statusId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@statusId", statusId);
+
+        var query = "SELECT status_name " +
+                    "FROM project_management.user_story_statuses " +
                     "WHERE status_id = @statusId";
 
         var result = await connection.QueryFirstOrDefaultAsync<string>(query, parameters);
