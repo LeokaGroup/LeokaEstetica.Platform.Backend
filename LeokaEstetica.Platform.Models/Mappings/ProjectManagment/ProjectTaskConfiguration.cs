@@ -47,9 +47,7 @@ public partial class ProjectTaskConfiguration : IEntityTypeConfiguration<Project
         
         entity.Property(e => e.Updated)
             .HasColumnName("Updated")
-            .HasColumnType("timestamp with time zone")
-            .HasDefaultValue(DateTime.UtcNow)
-            .IsRequired();
+            .HasColumnType("timestamp with time zone");
 
         entity.HasIndex(u => u.TaskId)
             .HasDatabaseName("PK_UserTasks_TaskId")
