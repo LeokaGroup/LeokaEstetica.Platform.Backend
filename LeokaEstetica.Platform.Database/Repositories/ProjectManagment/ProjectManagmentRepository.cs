@@ -768,19 +768,8 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
     public async Task ChangeTaskStatusAsync(long projectId, long changeStatusId, long taskId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
+        
         var compiler = new PostgresCompiler();
-        var queryGetTask = new Query("project_management.project_tasks")
-            .Where("project_id", projectId)
-            .Where("task_id", taskId)
-            .AsCount();
-        var sqlGetTask = compiler.Compile(queryGetTask).ToString();
-        var task = await connection.ExecuteScalarAsync<long?>(sqlGetTask);
-
-        if (task is null)
-        {
-            throw new InvalidOperationException($"Задача с Id: {taskId} не найдена у проекта: {projectId}.");
-        }
-
         var queryUpdateTask = new Query("project_management.project_tasks")
             .Where("project_id", projectId)
             .Where("task_id", taskId)
@@ -788,6 +777,24 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         var sqlUpdateTask = compiler.Compile(queryUpdateTask).ToString();
 
         await connection.ExecuteAsync(sqlUpdateTask);
+    }
+
+    /// <inheritdoc />
+    public async Task ChangeEpicStatusAsync(long projectId, long changeStatusId, long projectEpicId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@projectId", projectId);
+        parameters.Add("@changeStatusId", changeStatusId);
+        parameters.Add("@projectEpicId", projectEpicId);
+
+        var query = "UPDATE project_management.epics " +
+                    "SET status_id = @changeStatusId " +
+                    "WHERE project_id = @projectId " +
+                    "AND project_epic_id = @projectEpicId";
+
+        await connection.ExecuteAsync(query, parameters);
     }
 
     /// <inheritdoc />
