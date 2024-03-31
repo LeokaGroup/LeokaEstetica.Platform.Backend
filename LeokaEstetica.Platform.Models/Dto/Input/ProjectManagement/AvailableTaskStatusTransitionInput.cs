@@ -14,4 +14,9 @@ public class AvailableTaskStatusTransitionInput
     /// Id задачи в рамках проекта.
     /// </summary>
     public string ProjectTaskId { get; set; }
+
+    /// <summary>
+    /// Тип детализации.
+    /// </summary>
+    public string TaskDetailType { get; set; }
 }

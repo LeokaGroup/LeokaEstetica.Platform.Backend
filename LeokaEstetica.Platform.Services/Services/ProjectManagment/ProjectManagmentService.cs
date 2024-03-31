@@ -30,6 +30,9 @@ using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Notifications.Consts;
 using LeokaEstetica.Platform.ProjectManagment.Documents.Abstractions;
 using LeokaEstetica.Platform.Services.Abstractions.ProjectManagment;
+using LeokaEstetica.Platform.Services.Abstractions.User;
+using LeokaEstetica.Platform.Services.Builders.AgileObjectBuilder;
+using LeokaEstetica.Platform.Services.Builders.BuilderData;
 using LeokaEstetica.Platform.Services.Factors;
 using LeokaEstetica.Platform.Services.Helpers;
 using Microsoft.AspNetCore.Http;
@@ -59,6 +62,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     private readonly Lazy<IReversoService> _reversoService;
     private readonly Lazy<IFileManagerService> _fileManagerService;
     private readonly Lazy<ISprintNotificationsService> _sprintNotificationsService;
+    private readonly IUserService _userService;
 
     /// <summary>
     /// Статусы задач, которые являются самыми базовыми и никогда не меняются независимо от шаблона проекта.
@@ -88,6 +92,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     /// <param name="projectSettingsConfigRepository">Сервис транслитера.</param>
     /// <param name="fileManagerService">Сервис менеджера файлов.</param>
     /// <param name="sprintNotificationsService">Сервис уведомлений спринтов.</param>
+    /// <param name="userService">Сервис пользователей.</param>
     /// </summary>
     public ProjectManagmentService(ILogger<ProjectManagmentService> logger,
         IProjectManagmentRepository projectManagmentRepository,
@@ -100,7 +105,8 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         IProjectSettingsConfigRepository projectSettingsConfigRepository,
         Lazy<IReversoService> reversoService,
         Lazy<IFileManagerService> fileManagerService,
-        Lazy<ISprintNotificationsService> sprintNotificationsService)
+        Lazy<ISprintNotificationsService> sprintNotificationsService,
+        IUserService userService)
     {
         _logger = logger;
         _projectManagmentRepository = projectManagmentRepository;
@@ -114,6 +120,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         _reversoService = reversoService;
         _fileManagerService = fileManagerService;
         _sprintNotificationsService = sprintNotificationsService;
+        _userService = userService;
     }
 
     #region Публичные методы.
@@ -672,18 +679,18 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         }
     }
 
-    /// <summary>
-    /// Метод получает детали задачи.
-    /// </summary>
-    /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
-    /// <param name="account">Аккаунт.</param>
-    /// <param name="projectId">Id проекта.</param>
-    /// <returns>Данные задачи.</returns>
+    /// <inheritdoc />
     public async Task<ProjectManagmentTaskOutput> GetTaskDetailsByTaskIdAsync(string projectTaskId, string account,
-        long projectId)
+        long projectId, TaskDetailTypeEnum taskDetailType)
     {
         try
         {
+            if (taskDetailType == TaskDetailTypeEnum.None)
+            {
+                throw new InvalidOperationException("Неизвестный тип детализации. " +
+                                                    " Заполнение Agile-объекта не будет происходить.");
+            }
+            
             var userId = await _userRepository.GetUserByEmailAsync(account);
 
             if (userId <= 0)
@@ -692,189 +699,38 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 throw ex;
             }
 
-            var projectTaskIdToNumber = projectTaskId.GetProjectTaskIdFromPrefixLink();
-
             // TODO: Добавить проверку. Является ли пользователь участником проекта. Если нет, то не давать доступ к задаче.
-            var task = await _projectManagmentRepository.GetTaskDetailsByTaskIdAsync(projectTaskIdToNumber, projectId);
+            var builderData = new AgileObjectBuilderData(_projectManagmentRepository, _userRepository,
+                _pachcaService, _userService, _projectManagmentTemplateRepository, _mapper,
+                projectTaskId.GetProjectTaskIdFromPrefixLink(), projectId);
+            AgileObjectBuilder builder = null;
 
-            // Получаем имя автора задачи.
-            var authors = await _userRepository.GetAuthorNamesByAuthorIdsAsync(new[] { task.AuthorId });
-
-            if (authors.Count == 0)
+            // Если просматриваем задачу.
+            if (taskDetailType is TaskDetailTypeEnum.Task or TaskDetailTypeEnum.Error)
             {
-                throw new InvalidOperationException("Не удалось получить автора задачи.");
-            }
-
-            var executorId = task.ExecutorId;
-
-            // Обязательно логируем такое если обнаружили, но не стопаем выполнение логики.
-            if (executorId <= 0)
-            {
-                var ex = new InvalidOperationException(
-                    "Найден невалидный исполнитель задачи." +
-                    $" ExecutorIds: {JsonConvert.SerializeObject(executorId)}.");
-
-                _logger.LogError(ex, ex.Message);
-
-                // Отправляем ивент в пачку.
-                await _pachcaService.SendNotificationErrorAsync(ex);
-            }
-
-            // Получаем имена исполнителя задачи.
-            var executors = await _userRepository.GetExecutorNamesByExecutorIdsAsync(new[] { executorId });
-
-            if (executors.Count == 0)
-            {
-                throw new InvalidOperationException("Не удалось получить исполнителей задач.");
-            }
-
-            var result = _mapper.Map<ProjectManagmentTaskOutput>(task);
-            
-            var executorName = executors.TryGet(executors.First().Key).FullName;
-            var userEmails = await _userRepository.GetUserEmailByUserIdsAsync(new List<long> { executorId });
-            var avatarFiles = await GetUserAvatarFilesAsync(projectId, userEmails);
-            result.Executor = new Executor
-            {
-                ExecutorName = executorName
-            };
-            
-            if (!avatarFiles.ContainsKey(executorId))
-            {
-                // Получаем дефолтное изображение.
-                result.Executor.Avatar = avatarFiles.TryGet(0);
-            }
-
-            else
-            {
-                result.Executor.Avatar = avatarFiles.TryGet(executorId);
+                // Настраиваем билдер для построения задачи.
+                builder = new TaskBuilder { BuilderData = builderData };
             }
             
-            result.AuthorName = authors.TryGet(authors.First().Key).FullName;
-
-            var watcherIds = task.WatcherIds;
-
-            // Если есть наблюдатели, пойдем получать их.
-            // Если каких то нет, не страшно, значит они не заполнены у задач.
-            if (watcherIds is not null && watcherIds.Any())
+            // Если просматриваем эпик.
+            if (taskDetailType is TaskDetailTypeEnum.Epic)
             {
-                var watchers = await _userRepository.GetWatcherNamesByWatcherIdsAsync(watcherIds);
-
-                // Наблюдатели задачи.
-                if (watchers is not null && watchers.Count > 0)
-                {
-                    var watcherNames = new List<string>();
-
-                    foreach (var w in result.WatcherIds)
-                    {
-                        var watcher = watchers.TryGet(w);
-
-                        if (!string.IsNullOrWhiteSpace(watcher?.FullName))
-                        {
-                            watcherNames.Add(watcher.FullName);
-                        }
-
-                        else
-                        {
-                            watcherNames.Add(watcher!.Email);
-                        }
-                    }
-
-                    result.WatcherNames = watcherNames;
-                }
+                // Настраиваем билдер для построения эпика.
+                builder = new EpicBuilder { BuilderData = builderData };
             }
 
-            var tagIds = task.TagIds;
-
-            // Если есть теги, то пойдем получать.
-            if (tagIds is not null && tagIds.Any())
+            if (builder is null)
             {
-                var tags = await _projectManagmentRepository.GetTagNamesByTagIdsAsync(tagIds);
-
-                // Название тегов (меток) задачи.
-                if (tags is not null && tags.Count > 0)
-                {
-                    var tagNames = new List<string>();
-
-                    foreach (var tg in result.TagIds)
-                    {
-                        var tgName = tags.TryGet(tg).TagName;
-                        tagNames.Add(tgName);
-                    }
-
-                    result.TagNames = tagNames;
-                }
-            }
-
-            var taskStatusId = task.TaskTypeId;
-            var types = await _projectManagmentRepository.GetTypeNamesByTypeIdsAsync(new[] { taskStatusId });
-            result.TaskTypeName = types.TryGet(result.TaskTypeId).TypeName;
-
-            var statuseName = await _projectManagmentTemplateRepository.GetStatusNameByTaskStatusIdAsync(
-                Convert.ToInt32(task.TaskStatusId));
-
-            if (string.IsNullOrEmpty(statuseName))
-            {
-                throw new InvalidOperationException($"Не удалось получить TaskStatusName: {taskStatusId}.");
-            }
-
-            result.TaskStatusName = statuseName;
-
-            var resolutionId = task.ResolutionId;
-
-            // Если есть резолюции задач, пойдем получать их.
-            // Если каких то нет, не страшно, значит они не заполнены у задач.
-            if (resolutionId.HasValue)
-            {
-                var resolutions = await _projectManagmentRepository.GetResolutionNamesByResolutionIdsAsync(
-                    new[] { resolutionId.Value });
-
-                // Получаем резолюцию задачи, если она есть.
-                if (resolutions is not null && resolutions.Count > 0)
-                {
-                    result.ResolutionName = resolutions.TryGet(result.ResolutionId).ResolutionName;
-                }
-            }
-
-            var priorityId = task.PriorityId;
-
-            // Если есть приоритеты задач, пойдем получать их.
-            // Если каких то нет, не страшно, значит они не заполнены у задач.
-            if (priorityId.HasValue)
-            {
-                var priorities = await _projectManagmentRepository.GetPriorityNamesByPriorityIdsAsync(
-                    new[] { priorityId.Value });
-
-                if (priorities is not null && priorities.Count > 0)
-                {
-                    var priorityName = priorities.TryGet(priorityId.Value);
-
-                    // Если приоритета нет, не страшно. Значит не указана у задачи.
-                    if (priorityName is not null)
-                    {
-                        result.PriorityName = priorities.TryGet(priorityId.Value).PriorityName;
-                    }
-                }
+                throw new InvalidOperationException("Тип билдера не определен. Построения не будет происходить. " +
+                                                    $"TaskDetailTypeEnum: {taskDetailType}");
             }
             
-            // Получаем эпик, в которую добавлена задача.
-            var taskEpic = await _projectManagmentRepository.GetTaskEpicAsync(projectId, projectTaskIdToNumber);
+            var agileObject = new AgileObject();
 
-            if (taskEpic is not null)
-            {
-                result.EpicId = taskEpic.EpicId;
-                result.EpicName = taskEpic.EpicName;
-            }
-            
-            // Получаем спринт, в который входит задача.
-            var sprint = await _projectManagmentRepository.GetSprintTaskAsync(projectId, task.ProjectTaskId);
-
-            if (sprint is not null)
-            {
-                result.SprintId = sprint.SprintId;
-                result.SprintName = sprint.SprintName;
-            }
-
-            return result;
+            // Запускаем построение нужного Agile-объекта.
+            await agileObject.BuildAsync(builder, taskDetailType);
+                
+            return builder.ProjectManagmentTask;
         }
 
         catch (Exception ex)
@@ -1390,36 +1246,74 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 
     /// <inheritdoc />
     public async Task<IEnumerable<AvailableTaskStatusTransitionOutput>> GetAvailableTaskStatusTransitionsAsync(
-        long projectId, string projectTaskId)
+        long projectId, string projectTaskId, string taskDetailType)
     {
         try
         {
+            var detailType = Enum.Parse<TaskDetailTypeEnum>(taskDetailType);
             var onlyProjectTaskId = projectTaskId.GetProjectTaskIdFromPrefixLink();
-            var ifProjectHavingTask = await _projectManagmentRepository.IfProjectHavingProjectTaskIdAsync(projectId,
-                onlyProjectTaskId);
+            bool ifProjectHavingTask;
+            long currentTaskStatusId = 0;
+            var transitionType = TransitionTypeEnum.None;
 
-            // Если задача не принадлежит проекту.
-            if (!ifProjectHavingTask)
+            if (detailType is TaskDetailTypeEnum.Task or TaskDetailTypeEnum.Error)
             {
-                throw new InvalidOperationException("Задача не принадлежит проекту. " +
-                                                    $"ProjectId: {projectId}. " +
-                                                    $"ProjectTaskId: {projectTaskId}");
+                ifProjectHavingTask = await _projectManagmentRepository.IfProjectHavingProjectTaskIdAsync(projectId,
+                    onlyProjectTaskId);
+
+                // Если задача не принадлежит проекту.
+                if (!ifProjectHavingTask)
+                {
+                    throw new InvalidOperationException("Задача не принадлежит проекту. " +
+                                                        $"ProjectId: {projectId}. " +
+                                                        $"ProjectTaskId: {projectTaskId}");
+                }
+                
+                // Получаем текущий статус задачи.
+                currentTaskStatusId = await _projectManagmentRepository
+                    .GetProjectTaskStatusIdByProjectIdProjectTaskIdAsync(projectId, onlyProjectTaskId);
+
+                if (currentTaskStatusId <= 0)
+                {
+                    throw new InvalidOperationException("Не удалось получить текущий статус задачи. " +
+                                                        $"ProjectId: {projectId}. " +
+                                                        $"ProjectTaskId: {projectTaskId}");
+                }
+
+                transitionType = TransitionTypeEnum.Task;
             }
 
-            // Получаем текущий статус задачи.
-            var currentTaskStatusId = await _projectManagmentRepository
-                .GetProjectTaskStatusIdByProjectIdProjectTaskIdAsync(projectId, onlyProjectTaskId);
-
-            if (currentTaskStatusId <= 0)
+            if (detailType == TaskDetailTypeEnum.Epic)
             {
-                throw new InvalidOperationException("Не удалось получить текущий статус задачи. " +
-                                                    $"ProjectId: {projectId}. " +
-                                                    $"ProjectTaskId: {projectTaskId}");
+                ifProjectHavingTask = await _projectManagmentRepository.IfProjectHavingEpicIdAsync(projectId,
+                    onlyProjectTaskId);
+
+                // Если эпик не принадлежит проекту.
+                if (!ifProjectHavingTask)
+                {
+                    throw new InvalidOperationException("Эпик не принадлежит проекту. " +
+                                                        $"ProjectId: {projectId}. " +
+                                                        $"ProjectEpicId: {projectTaskId}");
+                }
+                
+                // Получаем текущий статус эпика.
+                currentTaskStatusId = await _projectManagmentRepository
+                    .GetProjectEpicStatusIdByProjectIdEpicIdIdAsync(projectId, onlyProjectTaskId);
+
+                if (currentTaskStatusId <= 0)
+                {
+                    throw new InvalidOperationException("Не удалось получить текущий статус эпика. " +
+                                                        $"ProjectId: {projectId}. " +
+                                                        $"ProjectEpicId: {projectTaskId}");
+                }
+                
+                transitionType = TransitionTypeEnum.Epic;
             }
 
             // Получаем все переходы из промежуточной таблицы отталкиваясь от текущего статуса задачи.
             var statusIds = (await _projectManagmentRepository
-                    .GetProjectManagementTransitionIntermediateTemplatesAsync(currentTaskStatusId))?.ToList();
+                    .GetProjectManagementTransitionIntermediateTemplatesAsync(currentTaskStatusId, transitionType))
+                ?.AsList();
 
             if (statusIds is null || !statusIds.Any())
             {
@@ -1431,7 +1325,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 
             // Получаем все статусы по переходам.
             var transitionStatuses = (await _projectManagmentRepository.GetTaskStatusIntermediateTemplatesAsync(
-                statusIds))?.ToList();
+                statusIds))?.AsList();
 
             if (transitionStatuses is null || !transitionStatuses.Any())
             {
@@ -1450,6 +1344,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             
             // Если нету общих статусов, но среди переходов был минимум 1 общий,
             // то это ошибка и опасно продолжать дальше. Это может нарушить целостность переходов.
+            // TODO: Почему это может нарушить целостность переходов? Точно ли нужна эта проверка?
             if (commonStatuses is null)
             {
                 throw new InvalidOperationException(
@@ -1460,8 +1355,6 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             
             var userStatuses = await _projectManagmentRepository.GetUserTaskStatusTemplatesAsync();
             
-            // Если нету кастомных статусов, но среди переходов был минимум 1 кастомный,
-            // то это ошибка и опасно продолжать дальше. Это может нарушить целостность переходов.
             if (userStatuses is null)
             {
                 throw new InvalidOperationException(
@@ -1471,11 +1364,10 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             }
             
             // TODO: Этот код дублируется в этом сервисе. Вынести в приватный метод и кортежем вернуть нужные данные.
-            // Получаем все статусы, которые входят в шаблон текущего проекта.
             // Получаем настройки проекта.
             var projectSettings = await _projectSettingsConfigRepository.GetProjectSpaceSettingsByProjectIdAsync(
                 projectId);
-            var projectSettingsItems = projectSettings?.ToList();
+            var projectSettingsItems = projectSettings?.AsList();
 
             if (projectSettingsItems is null || !projectSettingsItems.Any())
             {
@@ -1488,8 +1380,9 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             var templateId = Convert.ToInt32(template!.ParamValue);
 
             // Получаем все Id статусов, которые входят в шаблон текущего проекта.
+            // Получаем все статусы, которые входят в шаблон текущего проекта.
             var templateStatusIds = (await _projectManagmentTemplateRepository.GetTemplateStatusIdsAsync(templateId))
-                ?.ToList();
+                ?.AsList();
 
             if (templateStatusIds is null || !templateStatusIds.Any())
             {
@@ -2255,21 +2148,44 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 
     /// <inheritdoc />
     public async Task<IEnumerable<ProjectDocumentEntity>> GetProjectTaskFilesAsync(long projectId,
-        string projectTaskId)
+        string projectTaskId, TaskDetailTypeEnum taskDetailType)
     {
         try
         {
-            var task = await _projectManagmentRepository.GetTaskDetailsByTaskIdAsync(
-                projectTaskId.GetProjectTaskIdFromPrefixLink(), projectId);
+            long taskId = 0;
+            long projectTaskIdNumber = projectTaskId.GetProjectTaskIdFromPrefixLink();
             
-            if (task is null)
+            if (taskDetailType is TaskDetailTypeEnum.Task or TaskDetailTypeEnum.Error)
             {
-                throw new InvalidOperationException("Не удалось получить задачу. " +
-                                                    $"ProjectId: {projectId}. " +
-                                                    $"ProjectTaskId: {projectTaskId}.");
-            }
+                var task = await _projectManagmentRepository.GetTaskDetailsByTaskIdAsync(projectTaskIdNumber,
+                    projectId);
             
-            var result = await _projectManagmentRepository.GetProjectTaskFilesAsync(projectId, task.TaskId);
+                if (task is null)
+                {
+                    throw new InvalidOperationException("Не удалось получить задачу. " +
+                                                        $"ProjectId: {projectId}. " +
+                                                        $"ProjectTaskId: {projectTaskId}.");
+                }
+
+                taskId = task.TaskId;
+            }
+
+            if (taskDetailType == TaskDetailTypeEnum.Epic)
+            {
+                var task = await _projectManagmentRepository.GetEpicDetailsByEpicIdAsync(projectTaskIdNumber,
+                    projectId);
+            
+                if (task is null)
+                {
+                    throw new InvalidOperationException("Не удалось получить эпик. " +
+                                                        $"ProjectId: {projectId}. " +
+                                                        $"ProjectTaskId: {projectTaskId}.");
+                }
+                
+                taskId = task.EpicId;
+            }
+
+            var result = await _projectManagmentRepository.GetProjectTaskFilesAsync(projectId, taskId);
 
             return result;
         }
@@ -2483,78 +2399,6 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 false);
 
             return result;
-        }
-        
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, ex.Message);
-            throw;
-        }
-    }
-
-    /// <inheritdoc />
-    public async Task<IDictionary<long, FileContentResult>> GetUserAvatarFilesAsync(long projectId,
-        IEnumerable<string> accounts)
-    {
-        try
-        {
-            var userIds = (await _userRepository.GetUserByEmailsAsync(accounts))?.AsList();
-
-            if (userIds is null || !userIds.Any())
-            {
-                var ex = new InvalidOperationException("Не удалось получить Id пользователей.");
-                throw ex;
-            }
-
-            var userDocuments = (await _projectManagmentRepository.GetUserAvatarDocumentIdByUserIdsAsync(userIds,
-                projectId))?.AsList();
-                
-            var result = new Dictionary<long, FileContentResult>();
-
-            // Если нету изображений вообще, то оставим только дефолтное для всех пользователей.
-            if (userDocuments is null || !userDocuments.Any())
-            {
-                var noPhoto = await _fileManagerService.Value.GetUserAvatarFileAsync("nophoto.jpg",
-                    projectId, null, true);
-                
-                result.Add(0, noPhoto);
-                
-                return result;
-            }
-
-            // Если есть пользователь, у которого нету аватара, то это уже причина подгрузить дефолтный аватар.
-            if (userDocuments.Any(x => x.UserId is null))
-            {
-                var noPhoto = await _fileManagerService.Value.GetUserAvatarFileAsync("nophoto.jpg",
-                    projectId, null, true);
-                
-                result.Add(0, noPhoto);
-            }
-
-            var userDocs = userDocuments.Where(x => x.UserId.HasValue && x.DocumentId.HasValue);
-            var documents = await _projectManagmentRepository.GetDocumentNameByDocumentIdsAsync(userDocs);
-
-            var files = await _fileManagerService.Value.GetUserAvatarFilesAsync(documents, projectId);
-
-            // Если файлов нету и если словарь не был наполнен дефолтным изображением, то вернем только дефолтный файл.
-            if (files.Count == 0 && result.Count == 0)
-            {
-                var noPhoto = await _fileManagerService.Value.GetUserAvatarFileAsync("nophoto.jpg",
-                    projectId, null, true);
-                
-                result.Add(0, noPhoto);
-                
-                return result;
-            }
-            
-            // Если файлов нету, но есть дефолтный файл, то вернем только его.
-            if (files.Count == 0 && result.Count > 0)
-            {
-                return result;
-            }
-            
-            // Изображения есть, возвращаем словарь с результатами.
-            return files;
         }
         
         catch (Exception ex)
@@ -2880,6 +2724,50 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     }
 
     /// <inheritdoc />
+    public async Task<EpicTaskResult> GetEpicTasksAsync(long projectId, long epicId, string account)
+    {
+        try
+        {
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+
+            // TODO: Этот код дублируется в этом сервисе. Вынести в приватный метод и кортежем вернуть нужные данные.
+            // Получаем настройки проекта.
+            var projectSettings = await _projectSettingsConfigRepository.GetProjectSpaceSettingsByProjectIdAsync(
+                projectId, userId);
+            var projectSettingsItems = projectSettings?.AsList();
+
+            if (projectSettingsItems is null
+                || !projectSettingsItems.Any()
+                || projectSettingsItems.Any(x => x is null))
+            {
+                throw new InvalidOperationException("Ошибка получения настроек проекта. " +
+                                                    $"ProjectId: {projectId}. " +
+                                                    $"UserId: {userId}");
+            }
+
+            var template = projectSettingsItems.Find(x =>
+                x.ParamKey.Equals(GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_TEMPLATE_ID));
+            var templateId = Convert.ToInt32(template!.ParamValue);
+
+            var result = await _projectManagmentRepository.GetEpicTasksAsync(projectId, epicId, templateId);
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
+    /// <inheritdoc />
     public async Task UpdateTaskSprintAsync(long sprintId, string projectTaskId)
     {
         await _projectManagmentRepository.UpdateTaskSprintAsync(sprintId,
@@ -3021,7 +2909,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             if (mapTasks.Any())
             {
                 var userEmails = await _userRepository.GetUserEmailByUserIdsAsync(mapTasks.Select(x => x.ExecutorId));
-                var avatarFiles = await GetUserAvatarFilesAsync(projectId, userEmails);
+                var avatarFiles = await _userService.GetUserAvatarFilesAsync(projectId, userEmails);
                 
                 // Записываем названия исходя от Id полей.
                 foreach (var ts in mapTasks)

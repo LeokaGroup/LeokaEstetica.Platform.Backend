@@ -1,6 +1,7 @@
 using AutoMapper;
 using LeokaEstetica.Platform.Base;
 using LeokaEstetica.Platform.Base.Filters;
+using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Database.Abstractions.Template;
 using LeokaEstetica.Platform.Integrations.Abstractions.Pachca;
 using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
@@ -197,22 +198,45 @@ public class ProjectManagmentController : BaseController
 
     /// <summary>
     /// Метод получает детали задачи.
+    /// Детали задачи могут быть разные, в зависимости от типа задачи, который передали.
     /// </summary>
     /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
     /// <param name="projectId">Id проекта.</param>
+    /// <param name="taskDetailType">Тип детализации.</param>
     /// <returns>Данные задачи.</returns>
     [HttpGet]
-    [Route("task")]
+    [Route("task-details")]
     [ProducesResponseType(200, Type = typeof(ProjectManagmentTaskOutput))]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
     public async Task<ProjectManagmentTaskOutput> GetTaskDetailsByTaskIdAsync([FromQuery] string projectTaskId,
-        [FromQuery] long projectId)
+        [FromQuery] long projectId, [FromQuery] TaskDetailTypeEnum taskDetailType)
     {
+        var validator = await new TaskDetailValidator().ValidateAsync((projectTaskId, projectId, taskDetailType));
+
+        if (validator.Errors.Any())
+        {
+            var exceptions = new List<InvalidOperationException>();
+
+            foreach (var err in validator.Errors)
+            {
+                exceptions.Add(new InvalidOperationException(err.ErrorMessage));
+            }
+            
+            var ex = new AggregateException("Ошибка получения деталей задачи. " +
+                                            $"ProjectTaskId: {projectTaskId}. " +
+                                            $"ProjectId: {projectId}. " +
+                                            $"TaskDetailType: {taskDetailType}.", exceptions);
+            _logger.LogError(ex, ex.Message);
+            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            
+            throw ex;
+        }
+        
         var result = await _projectManagmentService.GetTaskDetailsByTaskIdAsync(projectTaskId, GetUserName(),
-            projectId);
+            projectId, taskDetailType);
 
         return result;
     }
@@ -563,7 +587,8 @@ public class ProjectManagmentController : BaseController
         }
 
         var result = await _projectManagmentService.GetAvailableTaskStatusTransitionsAsync(
-            availableTaskStatusTransitionInput.ProjectId, availableTaskStatusTransitionInput.ProjectTaskId);
+            availableTaskStatusTransitionInput.ProjectId, availableTaskStatusTransitionInput.ProjectTaskId,
+            availableTaskStatusTransitionInput.TaskDetailType);
 
         return result;
     }
@@ -1270,6 +1295,7 @@ public class ProjectManagmentController : BaseController
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
     /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
+    /// <param name="taskDetailType">Тип детализации.</param>
     /// <returns>Файлы задачи.</returns>
     [HttpGet]
     [Route("task-files")]
@@ -1279,7 +1305,7 @@ public class ProjectManagmentController : BaseController
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
     public async Task<IEnumerable<ProjectTaskFileOutput>> GetProjectTaskFilesAsync([FromQuery] long projectId,
-        string projectTaskId)
+        [FromQuery] string projectTaskId, [FromQuery] TaskDetailTypeEnum taskDetailType)
     {
         var validator = await new ProjectTaskFileValidator().ValidateAsync((projectId, projectTaskId));
 
@@ -1302,7 +1328,7 @@ public class ProjectManagmentController : BaseController
             throw ex;
         }
         
-        var items = await _projectManagmentService.GetProjectTaskFilesAsync(projectId, projectTaskId);
+        var items = await _projectManagmentService.GetProjectTaskFilesAsync(projectId, projectTaskId, taskDetailType);
         var result = _mapper.Map<IEnumerable<ProjectTaskFileOutput>>(items);
 
         return result;
@@ -1706,6 +1732,47 @@ public class ProjectManagmentController : BaseController
         }
 
         await _projectManagmentService.PlaningSprintAsync(planingSprintInput, GetUserName(), CreateTokenFromHeader());
+    }
+
+    /// <summary>
+    /// Метод получает задачи эпика.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="epicId">Id эпика.</param>
+    /// <returns>Список задач эпика.</returns>
+    [HttpGet]
+    [Route("epic-task")]
+    [ProducesResponseType(200, Type = typeof(EpicTaskResult))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<EpicTaskResult> GetEpicTasksAsync([FromQuery] long projectId, [FromQuery] long epicId)
+    {
+        var validator = await new EpicTaskValidator().ValidateAsync((projectId, epicId));
+
+        if (validator.Errors.Any())
+        {
+            var exceptions = new List<InvalidOperationException>();
+
+            foreach (var err in validator.Errors)
+            {
+                exceptions.Add(new InvalidOperationException(err.ErrorMessage));
+            }
+
+            var ex = new AggregateException("Ошибка получения задач эпика " +
+                                            $"ProjectId: {projectId}. " +
+                                            $"EpicId: {epicId}", exceptions);
+            _logger.LogError(ex, ex.Message);
+            
+            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            
+            throw ex;
+        }
+
+        var result = await _projectManagmentService.GetEpicTasksAsync(projectId, epicId, GetUserName());
+
+        return result;
     }
 
     /// <summary>

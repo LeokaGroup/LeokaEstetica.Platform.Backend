@@ -4,6 +4,7 @@ namespace LeokaEstetica.Platform.Models.Dto.Output.Template;
 
 /// <summary>
 /// Класс выходной модели задач проекта.
+/// Здесь под названием "задача" понимается Agile-объект (задач, эпиков, историй, ошибок, спринтов).
 /// </summary>
 public class ProjectManagmentTaskOutput
 {
@@ -154,6 +155,16 @@ public class ProjectManagmentTaskOutput
     /// Название спринта, в который добавлена задача.
     /// </summary>
     public string SprintName { get; set; }
+
+    /// <summary>
+    /// Список задач эпика.
+    /// </summary>
+    public IEnumerable<ProjectManagmentTaskOutput> EpicTasks { get; set; }
+
+    /// <summary>
+    /// Список задач спринта.
+    /// </summary>
+    public IEnumerable<ProjectManagmentTaskOutput> SprintTasks { get; set; }
 }
 
 /// <summary>

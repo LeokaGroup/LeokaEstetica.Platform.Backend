@@ -1,5 +1,6 @@
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.User;
+using Microsoft.AspNetCore.Mvc;
 
 namespace LeokaEstetica.Platform.Services.Abstractions.User;
 
@@ -84,4 +85,12 @@ public interface IUserService
     /// <param name="profileInfos">Список анкет пользователей.</param>
     /// <returns>Результирующий список.</returns>
     Task<IEnumerable<TaskPeopleOutput>> SetUserCodesAsync(List<TaskPeopleOutput> profileInfos);
+
+    /// <summary>
+    /// Метод получает изображения аватара пользователей.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="accounts">Аккаунты пользователей.</param>
+    /// <returns>Словарь с файлами изображений аватара пользователей.</returns>
+    Task<IDictionary<long, FileContentResult>> GetUserAvatarFilesAsync(long projectId, IEnumerable<string> accounts);
 }

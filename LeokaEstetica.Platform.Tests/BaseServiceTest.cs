@@ -166,10 +166,13 @@ internal class BaseServiceTest
         var availableLimitsRepository = new AvailableLimitsRepository(pgContext);
         var globalConfigRepository = new GlobalConfigRepository(pgContext, null, AppConfiguration, connectionProvider);
         var pachcaService = new PachcaService(AppConfiguration, null);
+        
+        ProjectManagmentRepository = new ProjectManagmentRepository(connectionProvider);
 
         UserService = new UserService(null, userRepository, mapper, null, pgContext, profileRepository,
             subscriptionRepository, resumeModerationRepository, accessUserService, userRedisService,
-            FareRuleRepository, availableLimitsRepository, globalConfigRepository, pachcaService);
+            FareRuleRepository, availableLimitsRepository, globalConfigRepository, pachcaService, null,
+            ProjectManagmentRepository);
         ProfileService = new ProfileService(null, profileRepository, userRepository, mapper, null, null,
             accessUserService, resumeModerationRepository, pachcaService);
 
@@ -277,14 +280,13 @@ internal class BaseServiceTest
         PressService = new PressService(pressRepository, null);
 
         var transactionScopeFactory = new TransactionScopeFactory();
-
-        ProjectManagmentRepository = new ProjectManagmentRepository(connectionProvider);
+        
         var projectManagmentTemplateRepository = new ProjectManagmentTemplateRepository(connectionProvider);
         var projectSettingsConfigRepository = new ProjectSettingsConfigRepository(pgContext);
         ReversoService = new ReversoService(null);
         ProjectManagmentService = new ProjectManagmentService(null, ProjectManagmentRepository, mapper, userRepository,
             projectRepository, pachcaService, projectManagmentTemplateRepository, transactionScopeFactory,
-            projectSettingsConfigRepository, new Lazy<IReversoService>(ReversoService), null, null);
+            projectSettingsConfigRepository, new Lazy<IReversoService>(ReversoService), null, null, UserService);
 
         var searchProjectManagementRepository = new SearchProjectManagementRepository(connectionProvider);
         SearchProjectManagementService = new SearchProjectManagementService(null,
