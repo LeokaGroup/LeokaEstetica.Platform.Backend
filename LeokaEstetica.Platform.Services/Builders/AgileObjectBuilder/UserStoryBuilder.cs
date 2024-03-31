@@ -5,17 +5,17 @@ using Newtonsoft.Json;
 namespace LeokaEstetica.Platform.Services.Builders.AgileObjectBuilder;
 
 /// <summary>
-/// TODO: Код, который дублируется в этом и в других билдерах, подумать, как можно вынести куда то.
-/// TODO: Например через паттерн шаблонный метод или еще + паттерн адаптер, так как наследование от нескольких классов невозможно.
-/// Строитель задачи.
+/// Строитель истории.
 /// </summary>
-internal class TaskBuilder : AgileObjectBuilder
+internal class UserStory : AgileObjectBuilder
 {
+    private const int STORY_TYPE_ID = 3;
+    
     /// <inheritdoc />
     public override async Task InitObjectAsync()
     {
-        var task = await BuilderData.ProjectManagmentRepository.GetTaskDetailsByTaskIdAsync(BuilderData.ProjectTaskId,
-            BuilderData.ProjectId);
+        var task = await BuilderData.ProjectManagmentRepository.GetUserStoryDetailsByUserStoryIdAsync(
+            BuilderData.ProjectTaskId, BuilderData.ProjectId);
         
         ProjectManagmentTask = BuilderData.Mapper.Map<ProjectManagmentTaskOutput>(task);
         ProjectManagmentTask.Executor = new Executor();
@@ -25,13 +25,13 @@ internal class TaskBuilder : AgileObjectBuilder
     /// <inheritdoc />
     public override async Task FillAuthorNameAsync()
     {
-        // Получаем имя автора задачи.
+        // Получаем имя автора истории.
         var authors = await BuilderData.UserRepository.GetAuthorNamesByAuthorIdsAsync(
             new[] { ProjectManagmentTask.AuthorId });
 
         if (authors.Count == 0)
         {
-            throw new InvalidOperationException("Не удалось получить автора задачи.");
+            throw new InvalidOperationException("Не удалось получить автора истории.");
         }
 
         ProjectManagmentTask.AuthorName = authors.TryGet(authors.First().Key).FullName;
@@ -47,24 +47,25 @@ internal class TaskBuilder : AgileObjectBuilder
         if (executorId <= 0)
         {
             var ex = new InvalidOperationException(
-                "Найден невалидный исполнитель задачи." +
+                "Найден невалидный исполнитель истории." +
                 $" ExecutorIds: {JsonConvert.SerializeObject(executorId)}.");
 
             // Отправляем ивент в пачку.
             await BuilderData.PachcaService.SendNotificationErrorAsync(ex);
         }
         
-        // Получаем имена исполнителя задачи.
+        // Получаем имена исполнителя эпика.
         var executors = await BuilderData.UserRepository.GetExecutorNamesByExecutorIdsAsync(new[] { executorId });
 
         if (executors.Count == 0)
         {
-            throw new InvalidOperationException("Не удалось получить исполнителей задач.");
+            throw new InvalidOperationException("Не удалось получить исполнителей истории.");
         }
         
         ProjectManagmentTask.Executor.ExecutorName = executors.TryGet(executors.First().Key).FullName;
     }
 
+    // TODO: Дублируется.
     /// <inheritdoc />
     public override async Task FillExecutorAvatarAsync()
     {
@@ -84,18 +85,19 @@ internal class TaskBuilder : AgileObjectBuilder
         }
     }
 
+    // TODO: Дублируется.
     /// <inheritdoc />
     public override async Task FillWatcherNamesAsync()
     {
         var watcherIds = ProjectManagmentTask.WatcherIds;
         
         // Если есть наблюдатели, пойдем получать их.
-        // Если каких то нет, не страшно, значит они не заполнены у задач.
+        // Если каких то нет, не страшно, значит они не заполнены у истории.
         if (watcherIds is not null && watcherIds.Any())
         {
             var watchers = await BuilderData.UserRepository.GetWatcherNamesByWatcherIdsAsync(watcherIds);
 
-            // Наблюдатели задачи.
+            // Наблюдатели истории.
             if (watchers is not null && watchers.Count > 0)
             {
                 var watcherNames = new List<string>();
@@ -120,6 +122,7 @@ internal class TaskBuilder : AgileObjectBuilder
         }
     }
 
+    // TODO: Дублируется.
     /// <inheritdoc />
     public override async Task FillTagIdsAsync()
     {
@@ -130,7 +133,7 @@ internal class TaskBuilder : AgileObjectBuilder
         {
             var tags = await BuilderData.ProjectManagmentRepository.GetTagNamesByTagIdsAsync(tagIds);
 
-            // Название тегов (меток) задачи.
+            // Название тегов (меток) истории.
             if (tags is not null && tags.Count > 0)
             {
                 var tagNames = new List<string>();
@@ -149,16 +152,15 @@ internal class TaskBuilder : AgileObjectBuilder
     /// <inheritdoc />
     public override async Task FillTaskTypeNameAsync()
     {
-        var taskTypeId = ProjectManagmentTask.TaskTypeId;
-        var types = await BuilderData.ProjectManagmentRepository.GetTypeNamesByTypeIdsAsync(new[] { taskTypeId });
-        ProjectManagmentTask.TaskTypeName = types.TryGet(taskTypeId).TypeName;
+        var types = await BuilderData.ProjectManagmentRepository.GetTypeNamesByTypeIdsAsync(new[] { STORY_TYPE_ID });
+        ProjectManagmentTask.TaskTypeName = types.TryGet(STORY_TYPE_ID).TypeName;
     }
 
     /// <inheritdoc />
     public override async Task FillTaskStatusNameAsync()
     {
         var taskStatusId = ProjectManagmentTask.TaskStatusId;
-        var statuseName = await BuilderData.ProjectManagmentTemplateRepository.GetStatusNameByTaskStatusIdAsync(
+        var statuseName = await BuilderData.ProjectManagmentRepository.GetUserStoryStatusNameByStoryStatusIdAsync(
             Convert.ToInt32(taskStatusId));
 
         if (string.IsNullOrEmpty(statuseName))
@@ -175,14 +177,14 @@ internal class TaskBuilder : AgileObjectBuilder
     {
         var resolutionId = ProjectManagmentTask.ResolutionId;
         
-        // Если есть резолюции задач, пойдем получать их.
-        // Если каких то нет, не страшно, значит они не заполнены у задач.
+        // Если есть резолюции истории, пойдем получать их.
+        // Если каких то нет, не страшно, значит они не заполнены у истории.
         if (resolutionId > 0)
         {
             var resolutions = await BuilderData.ProjectManagmentRepository.GetResolutionNamesByResolutionIdsAsync(
                 new[] { resolutionId });
 
-            // Получаем резолюцию задачи, если она есть.
+            // Получаем резолюцию истории, если она есть.
             if (resolutions is not null && resolutions.Count > 0)
             {
                 ProjectManagmentTask.ResolutionName = resolutions.TryGet(resolutionId).ResolutionName;
@@ -190,13 +192,14 @@ internal class TaskBuilder : AgileObjectBuilder
         }
     }
 
+    // TODO: Дублируется.
     /// <inheritdoc />
     public override async Task FillPriorityNameAsync()
     {
         var priorityId = ProjectManagmentTask.PriorityId;
 
-        // Если есть приоритеты задач, пойдем получать их.
-        // Если каких то нет, не страшно, значит они не заполнены у задач.
+        // Если есть приоритеты истории, пойдем получать их.
+        // Если каких то нет, не страшно, значит они не заполнены у истории.
         if (priorityId > 0)
         {
             var priorities = await BuilderData.ProjectManagmentRepository.GetPriorityNamesByPriorityIdsAsync(
@@ -206,7 +209,7 @@ internal class TaskBuilder : AgileObjectBuilder
             {
                 var priorityName = priorities.TryGet(priorityId);
 
-                // Если приоритета нет, не страшно. Значит не указана у задачи.
+                // Если приоритета нет, не страшно. Значит не указана у истории.
                 if (priorityName is not null)
                 {
                     ProjectManagmentTask.PriorityName = priorities.TryGet(priorityId).PriorityName;
@@ -215,31 +218,17 @@ internal class TaskBuilder : AgileObjectBuilder
         }
     }
 
+    // TODO: Функционал еще не сделан.
     /// <inheritdoc />
-    public override async Task FillEpicIdAndEpicNameAsync()
+    public override Task FillEpicIdAndEpicNameAsync()
     {
-        // Получаем эпик, в которую добавлена задача.
-        var taskEpic = await BuilderData.ProjectManagmentRepository.GetTaskEpicAsync(BuilderData.ProjectId,
-            BuilderData.ProjectTaskId);
-
-        if (taskEpic is not null)
-        {
-            ProjectManagmentTask.EpicId = taskEpic.EpicId;
-            ProjectManagmentTask.EpicName = taskEpic.EpicName;
-        }
+        throw new NotImplementedException();
     }
 
+    // TODO: Функционал еще не сделан.
     /// <inheritdoc />
-    public override async Task FillSprintIdAndSprintNameAsync()
+    public override Task FillSprintIdAndSprintNameAsync()
     {
-        // Получаем спринт, в который входит задача.
-        var sprint = await BuilderData.ProjectManagmentRepository.GetSprintTaskAsync(BuilderData.ProjectId,
-            BuilderData.ProjectTaskId);
-
-        if (sprint is not null)
-        {
-            ProjectManagmentTask.SprintId = sprint.SprintId;
-            ProjectManagmentTask.SprintName = sprint.SprintName;
-        }
+        throw new NotImplementedException();
     }
 }

@@ -1,5 +1,4 @@
-﻿using LeokaEstetica.Platform.Core.Enums;
-using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
+﻿using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.Search.ProjectManagement;
 using LeokaEstetica.Platform.Models.Dto.Output.Template;
@@ -89,6 +88,14 @@ public interface IProjectManagmentRepository
     /// <param name="projectId">Id проекта.</param>
     /// <returns>Данные эпика.</returns>
     Task<EpicEntity> GetEpicDetailsByEpicIdAsync(long projectEpicId, long projectId);
+    
+    /// <summary>
+    /// Метод получает детали истории.
+    /// </summary>
+    /// <param name="projectTaskId">Id истории в рамках проекта.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Данные истории.</returns>
+    Task<UserStoryOutput> GetUserStoryDetailsByUserStoryIdAsync(long projectStoryId, long projectId);
 
     /// <summary>
     /// Метод получает названия приоритетов задач по их Id.
@@ -162,6 +169,14 @@ public interface IProjectManagmentRepository
     Task<bool> IfProjectHavingProjectTaskIdAsync(long projectId, long projectTaskId);
     
     /// <summary>
+    /// Метод проверяет принадлежность истории к проекту по ProjectTaskId.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="projectStoryId">Id истории в рамках проекта.</param>
+    /// <returns>Признак результата проверки.</returns>
+    Task<bool> IfProjectHavingProjectUserStoryIdAsync(long projectId, long projectStoryId);
+    
+    /// <summary>
     /// Метод проверяет принадлежность эпика к проекту по EpicId.
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
@@ -184,6 +199,14 @@ public interface IProjectManagmentRepository
     /// <param name="projectEpicId">Id эпика в рамках проекта.</param>
     /// <returns>Id статуса эпика.</returns>
     Task<long> GetProjectEpicStatusIdByProjectIdEpicIdIdAsync(long projectId, long projectEpicId);
+    
+    /// <summary>
+    /// Метод получает Id статуса истории по Id проекта и Id истории в рамках проекта.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="projectStoryId">Id истории в рамках проекта.</param>
+    /// <returns>Id статуса истории.</returns>
+    Task<long> GetProjectUserStoryStatusIdByUserStoryIdAsync(long projectId, long projectStoryId);
 
     /// <summary>
     /// Метод получает все доступные переходы в статусы задачи из промежуточной задачи.
@@ -579,4 +602,17 @@ public interface IProjectManagmentRepository
     /// <param name="statusId">Id статуса эпика.</param>
     /// <returns>Название статуса.</returns>
     Task<string> GetEpicStatusNameByEpicStatusIdAsync(int statusId);
+    
+    /// <summary>
+    /// Метод получает название статуса истории по StatusId.
+    /// </summary>
+    /// <param name="statusId">Id статуса истории.</param>
+    /// <returns>Название статуса.</returns>
+    Task<string> GetUserStoryStatusNameByStoryStatusIdAsync(int statusId);
+
+    /// <summary>
+    /// Метод получает статусы эпиков.
+    /// </summary>
+    /// <returns>Статусы эпиков.</returns>
+    Task<IEnumerable<EpicStatusOutput>> GetEpicStatusesAsync();
 }

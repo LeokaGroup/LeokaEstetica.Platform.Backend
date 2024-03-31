@@ -174,7 +174,7 @@ internal static class CreateProjectTaskFactory
             ProjectId = projectManagementTaskInput.ProjectId,
             StoryStatusId = projectManagementTaskInput.TaskStatusId,
             CreatedAt = DateTime.UtcNow,
-            UserStoryTaskId = maxProjectTaskId
+            TaskStatusId = maxProjectTaskId
         };
 
         // Если к задаче добавили теги (метки).
