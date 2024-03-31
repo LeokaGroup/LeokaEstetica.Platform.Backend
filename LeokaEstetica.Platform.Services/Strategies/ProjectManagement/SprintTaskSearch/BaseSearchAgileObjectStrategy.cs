@@ -4,9 +4,9 @@ using LeokaEstetica.Platform.Models.Dto.Output.Search.ProjectManagement;
 namespace LeokaEstetica.Platform.Services.Strategies.ProjectManagement.SprintTaskSearch;
 
 /// <summary>
-/// Базовый класс поиска задач для включения их в спринт.
+/// Базовый класс поиска Agile-объектов.
 /// </summary>
-internal abstract class BaseSearchSprintTaskStrategy
+internal abstract class BaseSearchAgileObjectStrategy
 {
     protected readonly IProjectManagmentRepository ProjectManagmentRepository;
 
@@ -14,7 +14,7 @@ internal abstract class BaseSearchSprintTaskStrategy
     /// Конструктор.
     /// </summary>
     /// <param name="projectManagmentRepository">Репозиторий модуля УП.</param>
-    protected BaseSearchSprintTaskStrategy(IProjectManagmentRepository projectManagmentRepository)
+    protected BaseSearchAgileObjectStrategy(IProjectManagmentRepository projectManagmentRepository)
     {
         ProjectManagmentRepository = projectManagmentRepository;
     }
@@ -26,7 +26,7 @@ internal abstract class BaseSearchSprintTaskStrategy
     /// <param name="projectId">Id проекта./</param>
     /// <param name="templateId">Id шаблона.</param>
     /// <returns>Найденные задачи, истории, эпики, ошибки.</returns>
-    public abstract Task<IEnumerable<SearchTaskOutput>> SearchIncludeSprintTaskByProjectTaskIdAsync(
+    public abstract Task<IEnumerable<SearchAgileObjectOutput>> SearchAgileObjectByProjectTaskIdAsync(
         long projectTaskId, long projectId, int templateId);
     
     /// <summary>
@@ -36,7 +36,7 @@ internal abstract class BaseSearchSprintTaskStrategy
     /// <param name="projectId">Id проекта./</param>
     /// <param name="templateId">Id шаблона.</param>
     /// <returns>Найденные задачи, истории, эпики, ошибки.</returns>
-    public abstract Task<IEnumerable<SearchTaskOutput>> SearchIncludeSprintTaskByTaskNameAsync(string taskName,
+    public abstract Task<IEnumerable<SearchAgileObjectOutput>> SearchAgileObjectByTaskNameAsync(string taskName,
         long projectId, int templateId);
     
     /// <summary>
@@ -46,6 +46,6 @@ internal abstract class BaseSearchSprintTaskStrategy
     /// <param name="projectId">Id проекта./</param>
     /// <param name="templateId">Id шаблона.</param>
     /// <returns>Найденные задачи, истории, эпики, ошибки.</returns>
-    public abstract Task<IEnumerable<SearchTaskOutput>> SearchIncludeSprintTaskByTaskDescriptionAsync(
+    public abstract Task<IEnumerable<SearchAgileObjectOutput>> SearchAgileObjectByTaskDescriptionAsync(
         string taskDescription, long projectId, int templateId);
 }

@@ -532,7 +532,7 @@ public interface IProjectManagmentRepository
     /// <param name="projectId">Id проекта.</param>
     /// <param name="templateId">Id шаблона.</param>
     /// <returns>Найденные задачи, истории, эпики, ошибки.</returns>
-    public Task<IEnumerable<SearchTaskOutput>> SearchIncludeSprintTaskByProjectTaskIdAsync(
+    public Task<IEnumerable<SearchAgileObjectOutput>> SearchAgileObjectByProjectTaskIdAsync(
         long projectTaskId, long projectId, int templateId);
     
     /// <summary>
@@ -542,7 +542,7 @@ public interface IProjectManagmentRepository
     /// <param name="projectId">Id проекта.</param>
     /// <param name="templateId">Id шаблона.</param>
     /// <returns>Найденные задачи, истории, эпики, ошибки.</returns>
-    public Task<IEnumerable<SearchTaskOutput>> SearchIncludeSprintTaskByTaskNameAsync(string taskName, long projectId,
+    public Task<IEnumerable<SearchAgileObjectOutput>> SearchAgileObjectByTaskNameAsync(string taskName, long projectId,
         int templateId);
     
     /// <summary>
@@ -552,7 +552,7 @@ public interface IProjectManagmentRepository
     /// <param name="projectId">Id проекта.</param>
     /// <param name="templateId">Id шаблона.</param>
     /// <returns>Найденные задачи, истории, эпики, ошибки.</returns>
-    public Task<IEnumerable<SearchTaskOutput>> SearchIncludeSprintTaskByTaskDescriptionAsync(
+    public Task<IEnumerable<SearchAgileObjectOutput>> SearchAgileObjectByTaskDescriptionAsync(
         string taskDescription, long projectId, int templateId);
 
     /// <summary>

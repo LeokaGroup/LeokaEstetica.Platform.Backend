@@ -1792,7 +1792,7 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<SearchTaskOutput>> SearchIncludeSprintTaskByProjectTaskIdAsync(long projectTaskId,
+    public async Task<IEnumerable<SearchAgileObjectOutput>> SearchAgileObjectByProjectTaskIdAsync(long projectTaskId,
         long projectId, int templateId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
@@ -1875,13 +1875,13 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
                     "WHERE us.project_id = @projectId " +
                     "AND us.user_story_task_id = @projectTaskId;";
 
-        var result = await connection.QueryAsync<SearchTaskOutput>(query, parameters);
+        var result = await connection.QueryAsync<SearchAgileObjectOutput>(query, parameters);
 
         return result;
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<SearchTaskOutput>> SearchIncludeSprintTaskByTaskNameAsync(string taskName,
+    public async Task<IEnumerable<SearchAgileObjectOutput>> SearchAgileObjectByTaskNameAsync(string taskName,
         long projectId, int templateId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
@@ -1964,13 +1964,13 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
                     "WHERE us.project_id = @projectId " +
                     "AND us.story_name ILIKE @taskName || '%';";
 
-        var result = await connection.QueryAsync<SearchTaskOutput>(query, parameters);
+        var result = await connection.QueryAsync<SearchAgileObjectOutput>(query, parameters);
 
         return result;
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<SearchTaskOutput>> SearchIncludeSprintTaskByTaskDescriptionAsync(
+    public async Task<IEnumerable<SearchAgileObjectOutput>> SearchAgileObjectByTaskDescriptionAsync(
         string taskDescription, long projectId, int templateId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
@@ -2053,7 +2053,7 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
                     "WHERE us.project_id = @projectId " +
                     "AND us.story_description ILIKE '%' || @taskDescription || '%';";
 
-        var result = await connection.QueryAsync<SearchTaskOutput>(query, parameters);
+        var result = await connection.QueryAsync<SearchAgileObjectOutput>(query, parameters);
 
         return result;
     }

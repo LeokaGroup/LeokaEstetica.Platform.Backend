@@ -5,21 +5,21 @@ using LeokaEstetica.Platform.Models.Dto.Output.Search.ProjectManagement;
 namespace LeokaEstetica.Platform.Services.Strategies.ProjectManagement.SprintTaskSearch;
 
 /// <summary>
-/// Стратегия поиска задачи по названию задачи.
+/// Стратегия поиска Agile-объекта по названию Agile-объекта.
 /// </summary>
-internal sealed class SearchIncludeSprintTaskByTaskNameStrategy : BaseSearchSprintTaskStrategy
+internal sealed class SearchAgileObjectByTaskNameStrategy : BaseSearchAgileObjectStrategy
 {
     /// <summary>
     /// Конструктор.
     /// </summary>
     /// <param name="projectManagmentRepository">Репозитрий модуля УП.</param>
-    internal SearchIncludeSprintTaskByTaskNameStrategy(IProjectManagmentRepository projectManagmentRepository) : base(
+    internal SearchAgileObjectByTaskNameStrategy(IProjectManagmentRepository projectManagmentRepository) : base(
         projectManagmentRepository)
     {
     }
 
     /// <inheritdoc />
-    public override Task<IEnumerable<SearchTaskOutput>> SearchIncludeSprintTaskByProjectTaskIdAsync(long projectTaskId,
+    public override Task<IEnumerable<SearchAgileObjectOutput>> SearchAgileObjectByProjectTaskIdAsync(long projectTaskId,
         long projectId, int templateId)
     {
         throw new NotImplementedException(
@@ -27,22 +27,22 @@ internal sealed class SearchIncludeSprintTaskByTaskNameStrategy : BaseSearchSpri
     }
 
     /// <inheritdoc />
-    public override async Task<IEnumerable<SearchTaskOutput>> SearchIncludeSprintTaskByTaskNameAsync(string taskName,
+    public override async Task<IEnumerable<SearchAgileObjectOutput>> SearchAgileObjectByTaskNameAsync(string taskName,
         long projectId, int templateId)
     {
-        var result = (await ProjectManagmentRepository.SearchIncludeSprintTaskByTaskNameAsync(taskName,
+        var result = (await ProjectManagmentRepository.SearchAgileObjectByTaskNameAsync(taskName,
             projectId, templateId))?.AsList();
 
         if (result is null || !result.Any())
         {
-            return Enumerable.Empty<SearchTaskOutput>();
+            return Enumerable.Empty<SearchAgileObjectOutput>();
         }
 
         return result;
     }
 
     /// <inheritdoc />
-    public override Task<IEnumerable<SearchTaskOutput>> SearchIncludeSprintTaskByTaskDescriptionAsync(
+    public override Task<IEnumerable<SearchAgileObjectOutput>> SearchAgileObjectByTaskDescriptionAsync(
         string taskDescription, long projectId, int templateId)
     {
         throw new NotImplementedException(

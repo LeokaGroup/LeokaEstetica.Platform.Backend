@@ -12,8 +12,8 @@ internal class SearchIncludeSprintTaskByTaskNameStrategyTest : BaseServiceTest
     [Test]
     public async Task SearchIncludeSprintTaskByTaskNameStrategyAsyncTest()
     {
-        var result = await BaseSearchSprintTaskAlgorithm.SearchIncludeSprintTaskByTaskNameAsync(
-            new SearchIncludeSprintTaskByTaskNameStrategy(ProjectManagmentRepository), "тестовая задача", 274, 2);
+        var result = await BaseSearchSprintTaskAlgorithm.SearchSearchAgileObjectByTaskNameAsync(
+            new SearchAgileObjectByTaskNameStrategy(ProjectManagmentRepository), "тестовая задача", 274, 2);
 
         Assert.IsTrue(result.Any());
     }

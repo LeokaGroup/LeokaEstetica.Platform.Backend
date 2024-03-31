@@ -1,5 +1,6 @@
 using LeokaEstetica.Platform.Base;
 using LeokaEstetica.Platform.Base.Filters;
+using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Integrations.Abstractions.Pachca;
 using LeokaEstetica.Platform.Models.Dto.Input.Search.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.Search.ProjectManagement;
@@ -44,16 +45,16 @@ public class SearchController : BaseController
     /// <returns>Список найденных задач.</returns>
     [HttpGet]
     [Route("search-task")]
-    [ProducesResponseType(200, Type = typeof(IEnumerable<SearchTaskOutput>))]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<SearchAgileObjectOutput>))]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<IEnumerable<SearchTaskOutput>> SearchTaskAsync([FromQuery] SearchTaskInput searchTaskInput)
+    public async Task<IEnumerable<SearchAgileObjectOutput>> SearchTaskAsync([FromQuery] SearchTaskInput searchTaskInput)
     {
         if (string.IsNullOrWhiteSpace(searchTaskInput.SearchText))
         {
-            return Enumerable.Empty<SearchTaskOutput>();
+            return Enumerable.Empty<SearchAgileObjectOutput>();
         }
         
         var validator = await new SearchTaskValidator().ValidateAsync(searchTaskInput);
@@ -82,32 +83,35 @@ public class SearchController : BaseController
     }
 
     /// <summary>
-    /// Метод ищет задачи, истории, эпики, ошибки по разным критериям.
+    /// Метод находит Agile-объект. Это может быть задача, эпик, история, ошибка, спринт.
     /// </summary>
     /// <param name="searchText">Поисковый текст./</param>
     /// <param name="isSearchByProjectTaskId">Признак поиска по Id задачи в рамках проекта.</param>
     /// <param name="isSearchByTaskName">Признак поиска по названию задачи.</param>
     /// <param name="isSearchByTaskDescription">Признак поиска по совпадению в описании.</param>
     /// <param name="projectId">Id проекта.</param>
-    /// <returns>Найденные задачи, истории, эпики, ошибки.</returns>
+    /// <param name="searchAgileObjectType">Тип поиска объекта (чтобы понимать, что искать).</param>
+    /// <returns>Результат поиска.</returns>
     [HttpGet]
-    [Route("include-sprint-task")]
-    [ProducesResponseType(200, Type = typeof(IEnumerable<SearchTaskOutput>))]
+    [Route("search-agile-object")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<SearchAgileObjectOutput>))]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<IEnumerable<SearchTaskOutput>> SearchIncludeSprintTaskAsync([FromQuery] string searchText,
+    public async Task<IEnumerable<SearchAgileObjectOutput>> SearchIncludeSprintTaskAsync([FromQuery] string searchText,
         [FromQuery] bool isSearchByProjectTaskId, [FromQuery] bool isSearchByTaskName,
-        [FromQuery] bool isSearchByTaskDescription, [FromQuery] long projectId)
+        [FromQuery] bool isSearchByTaskDescription, [FromQuery] long projectId,
+        [FromQuery] SearchAgileObjectTypeEnum searchAgileObjectType)
     {
         if (string.IsNullOrWhiteSpace(searchText))
         {
-            return Enumerable.Empty<SearchTaskOutput>();
+            return Enumerable.Empty<SearchAgileObjectOutput>();
         }
 
-        var result = await _searchProjectManagementService.SearchIncludeSprintTaskAsync(searchText,
-            isSearchByProjectTaskId, isSearchByTaskName, isSearchByTaskDescription, projectId, GetUserName());
+        var result = await _searchProjectManagementService.SearchAgileObjectAsync(searchText,
+            isSearchByProjectTaskId, isSearchByTaskName, isSearchByTaskDescription, projectId, GetUserName(),
+            searchAgileObjectType);
 
         return result;
     }

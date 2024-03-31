@@ -22,7 +22,7 @@ internal sealed class SearchProjectManagementRepository : BaseRepository, ISearc
     }
     
     /// <inheritdoc />
-    public async Task<IEnumerable<SearchTaskOutput>> SearchTaskAsync(string searchText, IEnumerable<long> projectIds,
+    public async Task<IEnumerable<SearchAgileObjectOutput>> SearchTaskAsync(string searchText, IEnumerable<long> projectIds,
         bool isById, bool isByName, bool isByDescription, long? projectTaskId = null)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
@@ -65,7 +65,7 @@ internal sealed class SearchProjectManagementRepository : BaseRepository, ISearc
                 : " AND details LIKE '%' || @searchText || '%'";
         }
 
-        var result = await connection.QueryAsync<SearchTaskOutput>(query, parameters);
+        var result = await connection.QueryAsync<SearchAgileObjectOutput>(query, parameters);
 
         return result;
     }
