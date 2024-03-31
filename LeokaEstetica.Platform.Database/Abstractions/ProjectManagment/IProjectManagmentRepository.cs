@@ -550,6 +550,13 @@ public interface IProjectManagmentRepository
     Task<IEnumerable<TaskSprintOutput>> GetAvailableProjectSprintsAsync(long projectId, long projectTaskId);
     
     /// <summary>
+    /// Метод обновляет спринт, в который входит задача.
+    /// </summary>
+    /// <param name="sprintId">Id спринта.</param>
+    /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
+    Task UpdateTaskSprintAsync(long sprintId, long projectTaskId);
+    
+    /// <summary>
     /// Метод получает задачи эпика.
     /// </summary>
     /// <param name="projectId">Id проекта.</param>

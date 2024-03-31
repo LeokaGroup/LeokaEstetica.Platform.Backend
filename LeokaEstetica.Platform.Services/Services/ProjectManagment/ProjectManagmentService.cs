@@ -2767,6 +2767,15 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         }
     }
 
+    /// <inheritdoc />
+    public async Task UpdateTaskSprintAsync(long sprintId, string projectTaskId)
+    {
+        await _projectManagmentRepository.UpdateTaskSprintAsync(sprintId,
+            projectTaskId.GetProjectTaskIdFromPrefixLink());
+            
+        // TODO: Тут добавить запись активности пользователя по userId (кто обновил спринт задачи).
+    }
+
     #endregion
 
     #region Приватные методы.

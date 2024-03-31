@@ -283,5 +283,10 @@ public static class ValidationConst
         /// Если не передали тип детализации.
         /// </summary>
         public const string NOT_VALID_TASK_DETAIL_TYPE = "Не передан тип детализации.";
+
+        /// <summary>
+        /// Если не передали Id спринта.
+        /// </summary>
+        public const string NOT_VALID_SPRINT_ID = "Id спринта не передан.";
     }
 }

@@ -1859,4 +1859,42 @@ public class ProjectManagmentController : BaseController
 
         return result;
     }
+
+    /// <summary>
+    /// Метод обновляет спринт, в который входит задача.
+    /// </summary>
+    /// <param name="updateTaskSprintInput">Входная модель.</param>
+    [HttpPut]
+    [Route("task/sprint")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task UpdateTaskSprintAsync([FromBody] UpdateTaskSprintInput updateTaskSprintInput)
+    {
+        var validator = await new UpdateTaskSprintValidator().ValidateAsync(updateTaskSprintInput);
+
+        if (validator.Errors.Any())
+        {
+            var exceptions = new List<InvalidOperationException>();
+
+            foreach (var err in validator.Errors)
+            {
+                exceptions.Add(new InvalidOperationException(err.ErrorMessage));
+            }
+
+            var ex = new AggregateException("Ошибка обновления спринта задачи. " +
+                                            $"SprintId: {updateTaskSprintInput.SprintId}. " +
+                                            $"ProjectTaskId: {updateTaskSprintInput.ProjectTaskId}", exceptions);
+            _logger.LogError(ex, ex.Message);
+            
+            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            
+            throw ex;
+        }
+
+        await _projectManagmentService.UpdateTaskSprintAsync(updateTaskSprintInput.SprintId,
+            updateTaskSprintInput.ProjectTaskId);
+    }
 }
