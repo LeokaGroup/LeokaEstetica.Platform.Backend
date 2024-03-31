@@ -1,3 +1,4 @@
+using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.Search.ProjectManagement;
 
@@ -25,9 +26,10 @@ internal abstract class BaseSearchAgileObjectStrategy
     /// <param name="projectTaskId">Id задачи в рамках проекта./</param>
     /// <param name="projectId">Id проекта./</param>
     /// <param name="templateId">Id шаблона.</param>
+    /// <param name="searchAgileObjectType">Тип поиска объекта (чтобы понимать, что искать).</param>
     /// <returns>Найденные задачи, истории, эпики, ошибки.</returns>
     public abstract Task<IEnumerable<SearchAgileObjectOutput>> SearchAgileObjectByProjectTaskIdAsync(
-        long projectTaskId, long projectId, int templateId);
+        long projectTaskId, long projectId, int templateId, SearchAgileObjectTypeEnum searchAgileObjectType);
     
     /// <summary>
     /// Метод ищет задачи, истории, эпики, ошибки по названию задачи, эпика, истории, ошибки.
@@ -35,9 +37,10 @@ internal abstract class BaseSearchAgileObjectStrategy
     /// <param name="taskName">Название задачи, эпика, истории, ошибки./</param>
     /// <param name="projectId">Id проекта./</param>
     /// <param name="templateId">Id шаблона.</param>
+    /// <param name="searchAgileObjectType">Тип поиска объекта (чтобы понимать, что искать).</param>
     /// <returns>Найденные задачи, истории, эпики, ошибки.</returns>
     public abstract Task<IEnumerable<SearchAgileObjectOutput>> SearchAgileObjectByTaskNameAsync(string taskName,
-        long projectId, int templateId);
+        long projectId, int templateId, SearchAgileObjectTypeEnum searchAgileObjectType);
     
     /// <summary>
     /// Метод ищет задачи, истории, эпики, ошибки по совпадении в описании задачи, эпика, истории, ошибки.
@@ -45,7 +48,8 @@ internal abstract class BaseSearchAgileObjectStrategy
     /// <param name="taskDescription">Описание задачи, эпика, истории, ошибки./</param>
     /// <param name="projectId">Id проекта./</param>
     /// <param name="templateId">Id шаблона.</param>
+    /// <param name="searchAgileObjectType">Тип поиска объекта (чтобы понимать, что искать).</param>
     /// <returns>Найденные задачи, истории, эпики, ошибки.</returns>
     public abstract Task<IEnumerable<SearchAgileObjectOutput>> SearchAgileObjectByTaskDescriptionAsync(
-        string taskDescription, long projectId, int templateId);
+        string taskDescription, long projectId, int templateId, SearchAgileObjectTypeEnum searchAgileObjectType);
 }

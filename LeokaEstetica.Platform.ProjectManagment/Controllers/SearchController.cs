@@ -83,7 +83,7 @@ public class SearchController : BaseController
     }
 
     /// <summary>
-    /// Метод находит Agile-объект. Это может быть задача, эпик, история, ошибка, спринт.
+    /// Метод находит Agile-объект. Это может быть задача, эпик, история, ошибка.
     /// </summary>
     /// <param name="searchText">Поисковый текст./</param>
     /// <param name="isSearchByProjectTaskId">Признак поиска по Id задачи в рамках проекта.</param>

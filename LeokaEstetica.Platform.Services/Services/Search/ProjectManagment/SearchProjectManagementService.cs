@@ -118,28 +118,28 @@ internal sealed class SearchProjectManagementService : ISearchProjectManagementS
             IEnumerable<SearchAgileObjectOutput> result = null;
             var strategy = new BaseSearchAgileObjectAlgorithm();
             
-            // Если нужно искать по Id задачи в рамках проекта.
+            // Если нужно искать по Id объекта в рамках проекта.
             if (isSearchByProjectTaskId)
             {
                 result = await strategy.SearchSearchAgileObjectByProjectTaskIdAsync(
                     new SearchAgileObjectByProjectTaskIdStrategy(_projectManagmentRepository),
-                    searchText.GetProjectTaskIdFromPrefixLink(), projectId, templateId);
+                    searchText.GetProjectTaskIdFromPrefixLink(), projectId, templateId, searchAgileObjectType);
             }
 
-            // Если нужно искать по названию задачи.
+            // Если нужно искать по названию объекта.
             if (isSearchByTaskName)
             {
                 result = await strategy.SearchSearchAgileObjectByTaskNameAsync(
                     new SearchAgileObjectByTaskNameStrategy(_projectManagmentRepository), searchText, projectId,
-                    templateId);
+                    templateId, searchAgileObjectType);
             }
             
-            // Если нужно искать по описанию задачи.
+            // Если нужно искать по описанию объекта.
             if (isSearchByTaskDescription)
             {
                 result = await strategy.SearchSearchAgileObjectByTaskDescriptionAsync(
                     new SearchAgileObjectByTaskDescriptionStrategy(_projectManagmentRepository), searchText,
-                    projectId, templateId);
+                    projectId, templateId, searchAgileObjectType);
             }
 
             return result;

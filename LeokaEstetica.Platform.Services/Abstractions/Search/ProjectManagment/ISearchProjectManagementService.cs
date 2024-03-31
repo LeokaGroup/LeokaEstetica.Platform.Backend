@@ -22,7 +22,7 @@ public interface ISearchProjectManagementService
         bool isByName, bool isByDescription);
 
     /// <summary>
-    /// Метод находит Agile-объект. Это может быть задача, эпик, история, ошибка, спринт.
+    /// Метод находит Agile-объект. Это может быть задача, эпик, история, ошибка.
     /// </summary>
     /// <param name="searchText">Поисковый текст./</param>
     /// <param name="isSearchByProjectTaskId">Признак поиска по Id задачи в рамках проекта.</param>
@@ -30,7 +30,9 @@ public interface ISearchProjectManagementService
     /// <param name="isSearchByTaskDescription">Признак поиска по совпадению в описании.</param>
     /// <param name="projectId">Id проекта.</param>
     /// <param name="account">Аккаунт.</param>
+    /// <param name="searchAgileObjectType">Тип поиска объекта (чтобы понимать, что искать).</param>
     /// <returns>Результат поиска.</returns>
     Task<IEnumerable<SearchAgileObjectOutput>> SearchAgileObjectAsync(string searchText, bool isSearchByProjectTaskId,
-        bool isSearchByTaskName, bool isSearchByTaskDescription, long projectId, string account, SearchAgileObjectTypeEnum searchAgileObjectType);
+        bool isSearchByTaskName, bool isSearchByTaskDescription, long projectId, string account,
+        SearchAgileObjectTypeEnum searchAgileObjectType);
 }

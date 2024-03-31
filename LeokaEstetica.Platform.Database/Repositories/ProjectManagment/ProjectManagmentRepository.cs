@@ -3,6 +3,7 @@ using Dapper;
 using LeokaEstetica.Platform.Base.Abstractions.Connection;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.Base;
 using LeokaEstetica.Platform.Core.Constants;
+using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
@@ -1793,7 +1794,7 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
 
     /// <inheritdoc/>
     public async Task<IEnumerable<SearchAgileObjectOutput>> SearchAgileObjectByProjectTaskIdAsync(long projectTaskId,
-        long projectId, int templateId)
+        long projectId, int templateId, SearchAgileObjectTypeEnum searchAgileObjectType)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
         
@@ -1882,7 +1883,7 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
 
     /// <inheritdoc/>
     public async Task<IEnumerable<SearchAgileObjectOutput>> SearchAgileObjectByTaskNameAsync(string taskName,
-        long projectId, int templateId)
+        long projectId, int templateId, SearchAgileObjectTypeEnum searchAgileObjectType)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
         
@@ -1971,7 +1972,7 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
 
     /// <inheritdoc/>
     public async Task<IEnumerable<SearchAgileObjectOutput>> SearchAgileObjectByTaskDescriptionAsync(
-        string taskDescription, long projectId, int templateId)
+        string taskDescription, long projectId, int templateId, SearchAgileObjectTypeEnum searchAgileObjectType)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
         

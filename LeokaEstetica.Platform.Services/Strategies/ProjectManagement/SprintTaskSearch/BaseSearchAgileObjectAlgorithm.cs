@@ -1,3 +1,4 @@
+using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Models.Dto.Output.Search.ProjectManagement;
 
 namespace LeokaEstetica.Platform.Services.Strategies.ProjectManagement.SprintTaskSearch;
@@ -14,11 +15,14 @@ internal class BaseSearchAgileObjectAlgorithm
     /// <param name="strategy">Стратегия поиска.</param>
     /// <param name="inviteText">Текст для приглашения.</param>
     /// <param name="templateId">Id шаблона.</param>
+    /// <param name="searchAgileObjectType">Тип поиска объекта (чтобы понимать, что искать).</param>
     /// <returns>Найденные задачи, истории, эпики, ошибки.</returns>
     internal async Task<IEnumerable<SearchAgileObjectOutput>> SearchSearchAgileObjectByProjectTaskIdAsync(
-        BaseSearchAgileObjectStrategy strategy, long projectTaskId, long projectId, int templateId)
+        BaseSearchAgileObjectStrategy strategy, long projectTaskId, long projectId, int templateId,
+        SearchAgileObjectTypeEnum searchAgileObjectType)
     {
-        var result = await strategy.SearchAgileObjectByProjectTaskIdAsync(projectTaskId, projectId, templateId);
+        var result = await strategy.SearchAgileObjectByProjectTaskIdAsync(projectTaskId, projectId, templateId,
+                searchAgileObjectType);
 
         return result;
     }
@@ -29,11 +33,14 @@ internal class BaseSearchAgileObjectAlgorithm
     /// <param name="taskName">Название задачи, эпика, истории, ошибки./</param>
     /// <param name="projectId">Id проекта./</param>
     /// <param name="templateId">Id шаблона.</param>
+    /// <param name="searchAgileObjectType">Тип поиска объекта (чтобы понимать, что искать).</param>
     /// <returns>Найденные задачи, истории, эпики, ошибки.</returns>
     public async Task<IEnumerable<SearchAgileObjectOutput>> SearchSearchAgileObjectByTaskNameAsync(
-        BaseSearchAgileObjectStrategy strategy, string taskName, long projectId, int templateId)
+        BaseSearchAgileObjectStrategy strategy, string taskName, long projectId, int templateId,
+        SearchAgileObjectTypeEnum searchAgileObjectType)
     {
-        var result = await strategy.SearchAgileObjectByTaskNameAsync(taskName, projectId, templateId);
+        var result = await strategy.SearchAgileObjectByTaskNameAsync(taskName, projectId, templateId,
+            searchAgileObjectType);
 
         return result;
     }
@@ -44,12 +51,14 @@ internal class BaseSearchAgileObjectAlgorithm
     /// <param name="taskDescription">Описание задачи, эпика, истории, ошибки./</param>
     /// <param name="projectId">Id проекта./</param>
     /// <param name="templateId">Id шаблона.</param>
+    /// <param name="searchAgileObjectType">Тип поиска объекта (чтобы понимать, что искать).</param>
     /// <returns>Найденные задачи, истории, эпики, ошибки.</returns>
     internal async Task<IEnumerable<SearchAgileObjectOutput>> SearchSearchAgileObjectByTaskDescriptionAsync(
-        BaseSearchAgileObjectStrategy strategy, string taskDescription, long projectId, int templateId)
+        BaseSearchAgileObjectStrategy strategy, string taskDescription, long projectId, int templateId,
+        SearchAgileObjectTypeEnum searchAgileObjectType)
     {
         var result = await strategy.SearchAgileObjectByTaskDescriptionAsync(taskDescription, projectId,
-            templateId);
+            templateId, searchAgileObjectType);
 
         return result;
     }

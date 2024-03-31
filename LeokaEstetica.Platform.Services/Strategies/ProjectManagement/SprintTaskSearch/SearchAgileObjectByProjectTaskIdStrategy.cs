@@ -1,4 +1,5 @@
 using Dapper;
+using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.Search.ProjectManagement;
 
@@ -20,10 +21,10 @@ internal class SearchAgileObjectByProjectTaskIdStrategy : BaseSearchAgileObjectS
 
     /// <inheritdoc />
     public override async Task<IEnumerable<SearchAgileObjectOutput>> SearchAgileObjectByProjectTaskIdAsync(
-        long projectTaskId, long projectId, int templateId)
+        long projectTaskId, long projectId, int templateId, SearchAgileObjectTypeEnum searchAgileObjectType)
     {
         var result = (await ProjectManagmentRepository.SearchAgileObjectByProjectTaskIdAsync(projectTaskId,
-            projectId, templateId))?.AsList();
+            projectId, templateId, searchAgileObjectType))?.AsList();
 
         if (result is null || !result.Any())
         {
@@ -35,7 +36,7 @@ internal class SearchAgileObjectByProjectTaskIdStrategy : BaseSearchAgileObjectS
 
     /// <inheritdoc />
     public override Task<IEnumerable<SearchAgileObjectOutput>> SearchAgileObjectByTaskNameAsync(string taskName,
-        long projectId, int templateId)
+        long projectId, int templateId, SearchAgileObjectTypeEnum searchAgileObjectType)
     {
         throw new NotImplementedException(
             "В стратегии SearchIncludeSprintTaskByProjectTaskIdStrategy не предполагается реализация SearchIncludeSprintTaskByTaskNameAsync.");
@@ -43,7 +44,7 @@ internal class SearchAgileObjectByProjectTaskIdStrategy : BaseSearchAgileObjectS
 
     /// <inheritdoc />
     public override Task<IEnumerable<SearchAgileObjectOutput>> SearchAgileObjectByTaskDescriptionAsync(
-        string taskDescription, long projectId, int templateId)
+        string taskDescription, long projectId, int templateId, SearchAgileObjectTypeEnum searchAgileObjectType)
     {
         throw new NotImplementedException(
             "В стратегии SearchIncludeSprintTaskByProjectTaskIdStrategy не предполагается реализация SearchIncludeSprintTaskByTaskDescriptionAsync.");
