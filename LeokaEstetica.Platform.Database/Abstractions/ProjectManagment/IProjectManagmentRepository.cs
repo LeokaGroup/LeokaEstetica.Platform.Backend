@@ -169,6 +169,14 @@ public interface IProjectManagmentRepository
     Task<bool> IfProjectHavingProjectTaskIdAsync(long projectId, long projectTaskId);
     
     /// <summary>
+    /// Метод проверяет принадлежность истории к проекту по ProjectTaskId.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="projectStoryId">Id истории в рамках проекта.</param>
+    /// <returns>Признак результата проверки.</returns>
+    Task<bool> IfProjectHavingProjectUserStoryIdAsync(long projectId, long projectStoryId);
+    
+    /// <summary>
     /// Метод проверяет принадлежность эпика к проекту по EpicId.
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
@@ -191,6 +199,14 @@ public interface IProjectManagmentRepository
     /// <param name="projectEpicId">Id эпика в рамках проекта.</param>
     /// <returns>Id статуса эпика.</returns>
     Task<long> GetProjectEpicStatusIdByProjectIdEpicIdIdAsync(long projectId, long projectEpicId);
+    
+    /// <summary>
+    /// Метод получает Id статуса истории по Id проекта и Id истории в рамках проекта.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="projectStoryId">Id истории в рамках проекта.</param>
+    /// <returns>Id статуса истории.</returns>
+    Task<long> GetProjectUserStoryStatusIdByUserStoryIdAsync(long projectId, long projectStoryId);
 
     /// <summary>
     /// Метод получает все доступные переходы в статусы задачи из промежуточной задачи.

@@ -671,6 +671,22 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
     }
 
     /// <inheritdoc />
+    public async Task<bool> IfProjectHavingProjectUserStoryIdAsync(long projectId, long projectStoryId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+        var compiler = new PostgresCompiler();
+        var query = new Query("project_management.user_stories")
+            .Where("project_id", projectId)
+            .Where("user_story_task_id", projectStoryId)
+            .AsCount();
+        var sql = compiler.Compile(query).ToString();
+            
+        var count = await connection.ExecuteScalarAsync<int>(sql);
+
+        return count > 0;
+    }
+
+    /// <inheritdoc />
     public async Task<bool> IfProjectHavingEpicIdAsync(long projectId, long projectEpicId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
@@ -710,6 +726,22 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         var query = new Query("project_management.epics")
             .Where("project_id", projectId)
             .Where("project_epic_id", projectEpicId)
+            .Select("status_id");
+        var sql = compiler.Compile(query).ToString();
+
+        var result = await connection.QueryFirstOrDefaultAsync<long>(sql);
+
+        return result;
+    }
+
+    /// <inheritdoc />
+    public async Task<long> GetProjectUserStoryStatusIdByUserStoryIdAsync(long projectId, long projectStoryId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+        var compiler = new PostgresCompiler();
+        var query = new Query("project_management.user_stories")
+            .Where("project_id", projectId)
+            .Where("user_story_task_id", projectStoryId)
             .Select("status_id");
         var sql = compiler.Compile(query).ToString();
 
