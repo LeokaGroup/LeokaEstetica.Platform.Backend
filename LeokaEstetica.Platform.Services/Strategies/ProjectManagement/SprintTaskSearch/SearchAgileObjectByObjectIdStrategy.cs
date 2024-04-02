@@ -1,4 +1,5 @@
 using Dapper;
+using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.Search.ProjectManagement;
 
@@ -7,23 +8,23 @@ namespace LeokaEstetica.Platform.Services.Strategies.ProjectManagement.SprintTas
 /// <summary>
 /// Стратегия поиска задачи по Id задачи в рамках проекта.
 /// </summary>
-internal class SearchIncludeSprintTaskByProjectTaskIdStrategy : BaseSearchSprintTaskStrategy
+internal class SearchAgileObjectByObjectIdStrategy : BaseSearchAgileObjectStrategy
 {
     /// <summary>
     /// Конструктор.
     /// </summary>
     /// <param name="projectManagmentRepository">Репозитрий модуля УП.</param>
-    internal SearchIncludeSprintTaskByProjectTaskIdStrategy(IProjectManagmentRepository projectManagmentRepository) :
+    internal SearchAgileObjectByObjectIdStrategy(IProjectManagmentRepository projectManagmentRepository) :
         base(projectManagmentRepository)
     {
     }
 
     /// <inheritdoc />
-    public override async Task<IEnumerable<SearchTaskOutput>> SearchIncludeSprintTaskByProjectTaskIdAsync(
-        long projectTaskId, long projectId, int templateId)
+    internal override async Task<IEnumerable<SearchTaskOutput>> SearchAgileObjectByObjectIdAsync(
+        long projectTaskId, long projectId, int templateId, SearchAgileObjectTypeEnum searchAgileObjectType)
     {
-        var result = (await ProjectManagmentRepository.SearchIncludeSprintTaskByProjectTaskIdAsync(projectTaskId,
-            projectId, templateId))?.AsList();
+        var result = (await ProjectManagmentRepository.SearchAgileObjectAsyncByObjectIdAsync(projectTaskId,
+            projectId, templateId, searchAgileObjectType))?.AsList();
 
         if (result is null || !result.Any())
         {
@@ -34,16 +35,17 @@ internal class SearchIncludeSprintTaskByProjectTaskIdStrategy : BaseSearchSprint
     }
 
     /// <inheritdoc />
-    public override Task<IEnumerable<SearchTaskOutput>>
-        SearchIncludeSprintTaskByTaskNameAsync(string taskName, long projectId, int templateId)
+    internal override Task<IEnumerable<SearchTaskOutput>>
+        SearchAgileObjectByObjectNameAsync(string taskName, long projectId, int templateId,
+            SearchAgileObjectTypeEnum searchAgileObjectType)
     {
         throw new NotImplementedException(
             "В стратегии SearchIncludeSprintTaskByProjectTaskIdStrategy не предполагается реализация SearchIncludeSprintTaskByTaskNameAsync.");
     }
 
     /// <inheritdoc />
-    public override Task<IEnumerable<SearchTaskOutput>> SearchIncludeSprintTaskByTaskDescriptionAsync(
-        string taskDescription, long projectId, int templateId)
+    internal override Task<IEnumerable<SearchTaskOutput>> SearchAgileObjectByObjectDescriptionAsync(
+        string taskDescription, long projectId, int templateId, SearchAgileObjectTypeEnum searchAgileObjectType)
     {
         throw new NotImplementedException(
             "В стратегии SearchIncludeSprintTaskByProjectTaskIdStrategy не предполагается реализация SearchIncludeSprintTaskByTaskDescriptionAsync.");

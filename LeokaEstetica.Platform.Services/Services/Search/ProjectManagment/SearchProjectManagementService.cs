@@ -1,6 +1,7 @@
 using Dapper;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.Core.Constants;
+using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.Config;
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
@@ -81,9 +82,9 @@ internal sealed class SearchProjectManagementService : ISearchProjectManagementS
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<SearchTaskOutput>> SearchIncludeSprintTaskAsync(string searchText,
+    public async Task<IEnumerable<SearchTaskOutput>> SearchAgileObjectAsync(string searchText,
         bool isSearchByProjectTaskId, bool isSearchByTaskName, bool isSearchByTaskDescription, long projectId,
-        string account)
+        string account, SearchAgileObjectTypeEnum searchAgileObjectType)
     {
         try
         {
@@ -115,30 +116,30 @@ internal sealed class SearchProjectManagementService : ISearchProjectManagementS
             var templateId = Convert.ToInt32(template!.ParamValue);
             
             IEnumerable<SearchTaskOutput> result = null;
-            var strategy = new BaseSearchSprintTaskAlgorithm();
+            var strategy = new BaseSearchAgileObjectAlgorithm();
             
             // Если нужно искать по Id задачи в рамках проекта.
             if (isSearchByProjectTaskId)
             {
-                result = await strategy.SearchIncludeSprintTaskByProjectTaskIdAsync(
-                    new SearchIncludeSprintTaskByProjectTaskIdStrategy(_projectManagmentRepository),
-                    searchText.GetProjectTaskIdFromPrefixLink(), projectId, templateId);
+                result = await strategy.SearchAgileObjectByObjectIdAsync(
+                    new SearchAgileObjectByObjectIdStrategy(_projectManagmentRepository),
+                    searchText.GetProjectTaskIdFromPrefixLink(), projectId, templateId, searchAgileObjectType);
             }
 
             // Если нужно искать по названию задачи.
             if (isSearchByTaskName)
             {
-                result = await strategy.SearchIncludeSprintTaskByTaskNameAsync(
-                    new SearchIncludeSprintTaskByTaskNameStrategy(_projectManagmentRepository), searchText, projectId,
-                    templateId);
+                result = await strategy.SearchAgileObjectByObjectNameAsync(
+                    new SearchAgileObjectByObjectNameStrategy(_projectManagmentRepository), searchText, projectId,
+                    templateId, searchAgileObjectType);
             }
             
             // Если нужно искать по описанию задачи.
             if (isSearchByTaskDescription)
             {
-                result = await strategy.SearchIncludeSprintTaskByTaskDescriptionAsync(
-                    new SearchIncludeSprintTaskByTaskDescriptionStrategy(_projectManagmentRepository), searchText,
-                    projectId, templateId);
+                result = await strategy.SearchAgileObjectByObjectDescriptionAsync(
+                    new SearchAgileObjectByObjectDescriptionStrategy(_projectManagmentRepository), searchText,
+                    projectId, templateId, searchAgileObjectType);
             }
 
             return result;

@@ -1,3 +1,4 @@
+using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Models.Dto.Output.Search.ProjectManagement;
 
 namespace LeokaEstetica.Platform.Services.Abstractions.Search.ProjectManagment;
@@ -29,7 +30,9 @@ public interface ISearchProjectManagementService
     /// <param name="isSearchByTaskDescription">Признак поиска по совпадению в описании.</param>
     /// <param name="projectId">Id проекта.</param>
     /// <param name="account">Аккаунт.</param>
+    /// <param name="searchAgileObjectType">Тип поиска Agile-объекта.</param>
     /// <returns>Найденные задачи, истории, эпики, ошибки.</returns>
-    Task<IEnumerable<SearchTaskOutput>> SearchIncludeSprintTaskAsync(string searchText, bool isSearchByProjectTaskId,
-        bool isSearchByTaskName, bool isSearchByTaskDescription, long projectId, string account);
+    Task<IEnumerable<SearchTaskOutput>> SearchAgileObjectAsync(string searchText, bool isSearchByProjectTaskId,
+        bool isSearchByTaskName, bool isSearchByTaskDescription, long projectId, string account,
+        SearchAgileObjectTypeEnum searchAgileObjectType);
 }

@@ -3,6 +3,7 @@ using Dapper;
 using LeokaEstetica.Platform.Base.Abstractions.Connection;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.Base;
 using LeokaEstetica.Platform.Core.Constants;
+using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
@@ -1792,8 +1793,8 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<SearchTaskOutput>> SearchIncludeSprintTaskByProjectTaskIdAsync(long projectTaskId,
-        long projectId, int templateId)
+    public async Task<IEnumerable<SearchTaskOutput>> SearchAgileObjectAsyncByObjectIdAsync(long projectTaskId,
+        long projectId, int templateId, SearchAgileObjectTypeEnum searchAgileObjectType)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
         
@@ -1881,8 +1882,8 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<SearchTaskOutput>> SearchIncludeSprintTaskByTaskNameAsync(string taskName,
-        long projectId, int templateId)
+    public async Task<IEnumerable<SearchTaskOutput>> SearchAgileObjectByObjectNameAsync(string taskName,
+        long projectId, int templateId, SearchAgileObjectTypeEnum searchAgileObjectType)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
         
@@ -1970,8 +1971,8 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<SearchTaskOutput>> SearchIncludeSprintTaskByTaskDescriptionAsync(
-        string taskDescription, long projectId, int templateId)
+    public async Task<IEnumerable<SearchTaskOutput>> SearchAgileObjectByObjectDescriptionAsync(
+        string taskDescription, long projectId, int templateId, SearchAgileObjectTypeEnum searchAgileObjectType)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
         

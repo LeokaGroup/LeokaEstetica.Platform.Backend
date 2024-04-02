@@ -275,28 +275,28 @@ public class ServicesModule : Module
             .As<ISearchProjectManagementService>()
             .InstancePerLifetimeScope();
             
-        // Класс стратегии поиска задачи по Id задачи в рамках проекта.
-        builder.RegisterType<SearchIncludeSprintTaskByProjectTaskIdStrategy>()
-            .Named<BaseSearchSprintTaskStrategy>("SearchIncludeSprintTaskByProjectTaskIdStrategy")
+        // Класс стратегии поиска Agile-объекта по Id.
+        builder.RegisterType<SearchAgileObjectByObjectIdStrategy>()
+            .Named<BaseSearchAgileObjectStrategy>("SearchIncludeSprintTaskByProjectTaskIdStrategy")
             .InstancePerLifetimeScope();
-        builder.RegisterType<SearchIncludeSprintTaskByProjectTaskIdStrategy>()
-            .As<BaseSearchSprintTaskStrategy>()
-            .InstancePerLifetimeScope();
-            
-        // Класс стратегии поиска задачи по названию задачи.
-        builder.RegisterType<SearchIncludeSprintTaskByTaskNameStrategy>()
-            .Named<BaseSearchSprintTaskStrategy>("SearchIncludeSprintTaskByTaskNameStrategy")
-            .InstancePerLifetimeScope();
-        builder.RegisterType<SearchIncludeSprintTaskByTaskNameStrategy>()
-            .As<BaseSearchSprintTaskStrategy>()
+        builder.RegisterType<SearchAgileObjectByObjectIdStrategy>()
+            .As<BaseSearchAgileObjectStrategy>()
             .InstancePerLifetimeScope();
             
-        // Класс стратегии поиска задачи по описанию задачи.
-        builder.RegisterType<SearchIncludeSprintTaskByTaskDescriptionStrategy>()
-            .Named<BaseSearchSprintTaskStrategy>("SearchIncludeSprintTaskByTaskDescriptionStrategy")
+        // Класс стратегии поиска Agile-объекта по названию.
+        builder.RegisterType<SearchAgileObjectByObjectNameStrategy>()
+            .Named<BaseSearchAgileObjectStrategy>("SearchIncludeSprintTaskByTaskNameStrategy")
             .InstancePerLifetimeScope();
-        builder.RegisterType<SearchIncludeSprintTaskByTaskDescriptionStrategy>()
-            .As<BaseSearchSprintTaskStrategy>()
+        builder.RegisterType<SearchAgileObjectByObjectNameStrategy>()
+            .As<BaseSearchAgileObjectStrategy>()
+            .InstancePerLifetimeScope();
+            
+        // Класс стратегии поиска Agile-объекта по описанию.
+        builder.RegisterType<SearchAgileObjectByObjectDescriptionStrategy>()
+            .Named<BaseSearchAgileObjectStrategy>("SearchIncludeSprintTaskByTaskDescriptionStrategy")
+            .InstancePerLifetimeScope();
+        builder.RegisterType<SearchAgileObjectByObjectDescriptionStrategy>()
+            .As<BaseSearchAgileObjectStrategy>()
             .InstancePerLifetimeScope();
     }
 }

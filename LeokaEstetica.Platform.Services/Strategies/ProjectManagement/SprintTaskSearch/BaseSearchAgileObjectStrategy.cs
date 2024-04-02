@@ -1,3 +1,4 @@
+using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.Search.ProjectManagement;
 
@@ -6,7 +7,7 @@ namespace LeokaEstetica.Platform.Services.Strategies.ProjectManagement.SprintTas
 /// <summary>
 /// Базовый класс поиска задач для включения их в спринт.
 /// </summary>
-internal abstract class BaseSearchSprintTaskStrategy
+internal abstract class BaseSearchAgileObjectStrategy
 {
     protected readonly IProjectManagmentRepository ProjectManagmentRepository;
 
@@ -14,38 +15,41 @@ internal abstract class BaseSearchSprintTaskStrategy
     /// Конструктор.
     /// </summary>
     /// <param name="projectManagmentRepository">Репозиторий модуля УП.</param>
-    protected BaseSearchSprintTaskStrategy(IProjectManagmentRepository projectManagmentRepository)
+    internal BaseSearchAgileObjectStrategy(IProjectManagmentRepository projectManagmentRepository)
     {
         ProjectManagmentRepository = projectManagmentRepository;
     }
 
     /// <summary>
-    /// Метод ищет задачи, истории, эпики, ошибки по Id задачи в рамках проекта.
+    /// Метод находит Agile-объекты. Это может быть задача, эпик, история, ошибка, спринт.
     /// </summary>
     /// <param name="projectTaskId">Id задачи в рамках проекта./</param>
     /// <param name="projectId">Id проекта./</param>
     /// <param name="templateId">Id шаблона.</param>
+    /// <param name="searchAgileObjectType">Тип поиска Agile-объекта.</param>
     /// <returns>Найденные задачи, истории, эпики, ошибки.</returns>
-    public abstract Task<IEnumerable<SearchTaskOutput>> SearchIncludeSprintTaskByProjectTaskIdAsync(
-        long projectTaskId, long projectId, int templateId);
+    internal abstract Task<IEnumerable<SearchTaskOutput>> SearchAgileObjectByObjectIdAsync(
+        long projectTaskId, long projectId, int templateId, SearchAgileObjectTypeEnum searchAgileObjectType);
     
     /// <summary>
-    /// Метод ищет задачи, истории, эпики, ошибки по названию задачи, эпика, истории, ошибки.
+    /// Метод находит Agile-объекты. Это может быть задача, эпик, история, ошибка, спринт.
     /// </summary>
     /// <param name="taskName">Название задачи, эпика, истории, ошибки./</param>
     /// <param name="projectId">Id проекта./</param>
     /// <param name="templateId">Id шаблона.</param>
+    /// <param name="searchAgileObjectType">Тип поиска Agile-объекта.</param>
     /// <returns>Найденные задачи, истории, эпики, ошибки.</returns>
-    public abstract Task<IEnumerable<SearchTaskOutput>> SearchIncludeSprintTaskByTaskNameAsync(string taskName,
-        long projectId, int templateId);
+    internal abstract Task<IEnumerable<SearchTaskOutput>> SearchAgileObjectByObjectNameAsync(string taskName,
+        long projectId, int templateId, SearchAgileObjectTypeEnum searchAgileObjectType);
     
     /// <summary>
-    /// Метод ищет задачи, истории, эпики, ошибки по совпадении в описании задачи, эпика, истории, ошибки.
+    /// Метод находит Agile-объекты. Это может быть задача, эпик, история, ошибка, спринт.
     /// </summary>
     /// <param name="taskDescription">Описание задачи, эпика, истории, ошибки./</param>
     /// <param name="projectId">Id проекта./</param>
     /// <param name="templateId">Id шаблона.</param>
+    /// <param name="searchAgileObjectType">Тип поиска Agile-объекта.</param>
     /// <returns>Найденные задачи, истории, эпики, ошибки.</returns>
-    public abstract Task<IEnumerable<SearchTaskOutput>> SearchIncludeSprintTaskByTaskDescriptionAsync(
-        string taskDescription, long projectId, int templateId);
+    internal abstract Task<IEnumerable<SearchTaskOutput>> SearchAgileObjectByObjectDescriptionAsync(
+        string taskDescription, long projectId, int templateId, SearchAgileObjectTypeEnum searchAgileObjectType);
 }
