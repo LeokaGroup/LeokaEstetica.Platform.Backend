@@ -18,6 +18,6 @@ public interface ISearchProjectManagementRepository
     /// <param name="isByDescription">Признак поиска по описанию задачи.</param>
     /// <param name="projectTaskId">Id задачи.</param>
     /// <returns>Список найденных задач.</returns>
-    Task<IEnumerable<SearchTaskOutput>> SearchTaskAsync(string searchText, IEnumerable<long> projectIds, bool isById,
+    Task<IEnumerable<SearchAgileObjectOutput>> SearchTaskAsync(string searchText, IEnumerable<long> projectIds, bool isById,
         bool isByName, bool isByDescription, long? projectTaskId = null);
 }

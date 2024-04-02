@@ -1,6 +1,7 @@
 using Dapper;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.Core.Constants;
+using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.Config;
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
@@ -45,7 +46,7 @@ internal sealed class SearchProjectManagementService : ISearchProjectManagementS
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<SearchTaskOutput>> SearchTaskAsync(string searchText, IEnumerable<long> projectIds,
+    public async Task<IEnumerable<SearchAgileObjectOutput>> SearchTaskAsync(string searchText, IEnumerable<long> projectIds,
         bool isById, bool isByName, bool isByDescription)
     {
         try
@@ -81,9 +82,9 @@ internal sealed class SearchProjectManagementService : ISearchProjectManagementS
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<SearchTaskOutput>> SearchIncludeSprintTaskAsync(string searchText,
+    public async Task<IEnumerable<SearchAgileObjectOutput>> SearchAgileObjectAsync(string searchText,
         bool isSearchByProjectTaskId, bool isSearchByTaskName, bool isSearchByTaskDescription, long projectId,
-        string account)
+        string account, SearchAgileObjectTypeEnum searchAgileObjectType)
     {
         try
         {
@@ -114,31 +115,31 @@ internal sealed class SearchProjectManagementService : ISearchProjectManagementS
                 x.ParamKey.Equals(GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_TEMPLATE_ID));
             var templateId = Convert.ToInt32(template!.ParamValue);
             
-            IEnumerable<SearchTaskOutput> result = null;
-            var strategy = new BaseSearchSprintTaskAlgorithm();
+            IEnumerable<SearchAgileObjectOutput> result = null;
+            var strategy = new BaseSearchAgileObjectAlgorithm();
             
-            // Если нужно искать по Id задачи в рамках проекта.
+            // Если нужно искать по Id объекта в рамках проекта.
             if (isSearchByProjectTaskId)
             {
-                result = await strategy.SearchIncludeSprintTaskByProjectTaskIdAsync(
-                    new SearchIncludeSprintTaskByProjectTaskIdStrategy(_projectManagmentRepository),
-                    searchText.GetProjectTaskIdFromPrefixLink(), projectId, templateId);
+                result = await strategy.SearchSearchAgileObjectByProjectTaskIdAsync(
+                    new SearchAgileObjectByProjectTaskIdStrategy(_projectManagmentRepository),
+                    searchText.GetProjectTaskIdFromPrefixLink(), projectId, templateId, searchAgileObjectType);
             }
 
-            // Если нужно искать по названию задачи.
+            // Если нужно искать по названию объекта.
             if (isSearchByTaskName)
             {
-                result = await strategy.SearchIncludeSprintTaskByTaskNameAsync(
-                    new SearchIncludeSprintTaskByTaskNameStrategy(_projectManagmentRepository), searchText, projectId,
-                    templateId);
+                result = await strategy.SearchSearchAgileObjectByTaskNameAsync(
+                    new SearchAgileObjectByTaskNameStrategy(_projectManagmentRepository), searchText, projectId,
+                    templateId, searchAgileObjectType);
             }
             
-            // Если нужно искать по описанию задачи.
+            // Если нужно искать по описанию объекта.
             if (isSearchByTaskDescription)
             {
-                result = await strategy.SearchIncludeSprintTaskByTaskDescriptionAsync(
-                    new SearchIncludeSprintTaskByTaskDescriptionStrategy(_projectManagmentRepository), searchText,
-                    projectId, templateId);
+                result = await strategy.SearchSearchAgileObjectByTaskDescriptionAsync(
+                    new SearchAgileObjectByTaskDescriptionStrategy(_projectManagmentRepository), searchText,
+                    projectId, templateId, searchAgileObjectType);
             }
 
             return result;

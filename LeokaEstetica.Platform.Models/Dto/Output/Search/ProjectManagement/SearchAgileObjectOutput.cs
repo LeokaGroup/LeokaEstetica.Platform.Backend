@@ -1,9 +1,9 @@
 namespace LeokaEstetica.Platform.Models.Dto.Output.Search.ProjectManagement;
 
 /// <summary>
-/// Класс выходной модели поиска задач.
+/// Класс выходной модели поиска.
 /// </summary>
-public class SearchTaskOutput
+public class SearchAgileObjectOutput
 {
     /// <summary>
     /// Название задачи.

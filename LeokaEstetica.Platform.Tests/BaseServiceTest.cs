@@ -126,7 +126,7 @@ internal class BaseServiceTest
     protected readonly ProjectManagmentService ProjectManagmentService;
     protected readonly ReversoService ReversoService;
     protected readonly SearchProjectManagementService SearchProjectManagementService;
-    protected readonly BaseSearchSprintTaskAlgorithm BaseSearchSprintTaskAlgorithm;
+    protected readonly BaseSearchAgileObjectAlgorithm BaseSearchSprintTaskAlgorithm;
     protected readonly IProjectManagmentRepository ProjectManagmentRepository;
 
     protected BaseServiceTest()
@@ -293,6 +293,6 @@ internal class BaseServiceTest
             searchProjectManagementRepository, ProjectManagmentRepository, projectSettingsConfigRepository,
             userRepository);
 
-        BaseSearchSprintTaskAlgorithm = new BaseSearchSprintTaskAlgorithm();
+        BaseSearchSprintTaskAlgorithm = new BaseSearchAgileObjectAlgorithm();
     }
 }
