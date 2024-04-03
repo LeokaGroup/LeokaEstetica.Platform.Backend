@@ -1,9 +1,9 @@
 using LeokaEstetica.Platform.Base;
 using LeokaEstetica.Platform.Base.Filters;
-using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Integrations.Abstractions.Pachca;
 using LeokaEstetica.Platform.Models.Dto.Input.Search.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.Search.ProjectManagement;
+using LeokaEstetica.Platform.Models.Enums;
 using LeokaEstetica.Platform.ProjectManagment.Validators;
 using LeokaEstetica.Platform.Services.Abstractions.Search.ProjectManagment;
 using Microsoft.AspNetCore.Mvc;

@@ -3,7 +3,6 @@ using Dapper;
 using LeokaEstetica.Platform.Base.Abstractions.Connection;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.Base;
 using LeokaEstetica.Platform.Core.Constants;
-using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
@@ -1794,7 +1793,7 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
 
     /// <inheritdoc/>
     public async Task<IEnumerable<SearchTaskOutput>> SearchAgileObjectAsyncByObjectIdAsync(long projectTaskId,
-        long projectId, int templateId, SearchAgileObjectTypeEnum searchAgileObjectType)
+        long projectId, int templateId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
         
@@ -1803,7 +1802,7 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         parameters.Add("@prefix", GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_PROJECT_NAME_PREFIX);
         parameters.Add("@projectTaskId", projectTaskId);
         parameters.Add("@templateId", templateId);
-        
+
         var query = "SELECT t.task_id," +
                     "t.name," +
                     "t.project_id," +
@@ -1829,6 +1828,8 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
                     "FROM project_management.project_tasks AS t " +
                     "WHERE t.project_id = @projectId " +
                     "AND t.project_task_id = @projectTaskId " +
+                    "AND t.project_task_id NOT IN (SELECT project_task_id " +
+                    "FROM project_management.epic_tasks)" +
                     "UNION " +
                     "SELECT e.epic_id," +
                     "e.epic_name AS name," +
@@ -1852,6 +1853,8 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
                     "ON e.status_id = es.status_id " +
                     "WHERE e.project_id = @projectId " +
                     "AND e.project_epic_id = @projectTaskId " +
+                    "AND e.project_epic_id NOT IN (SELECT project_task_id " +
+                    "FROM project_management.epic_tasks)" +
                     "UNION " +
                     "SELECT us.story_id," +
                     "us.story_name AS name," +
@@ -1874,7 +1877,9 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
                     "INNER JOIN project_management.user_story_statuses AS uss " +
                     "ON us.status_id = uss.status_id " +
                     "WHERE us.project_id = @projectId " +
-                    "AND us.user_story_task_id = @projectTaskId;";
+                    "AND us.user_story_task_id = @projectTaskId " +
+                    "AND us.user_story_task_id NOT IN (SELECT project_task_id " +
+                    "FROM project_management.epic_tasks)";
 
         var result = await connection.QueryAsync<SearchTaskOutput>(query, parameters);
 
@@ -1883,7 +1888,7 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
 
     /// <inheritdoc/>
     public async Task<IEnumerable<SearchTaskOutput>> SearchAgileObjectByObjectNameAsync(string taskName,
-        long projectId, int templateId, SearchAgileObjectTypeEnum searchAgileObjectType)
+        long projectId, int templateId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
         
@@ -1918,6 +1923,8 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
                     "FROM project_management.project_tasks AS t " +
                     "WHERE t.project_id = @projectId " +
                     "AND t.name ILIKE @taskName || '%' " +
+                    "AND t.project_task_id NOT IN (SELECT project_task_id " +
+                    "FROM project_management.epic_tasks)" +
                     "UNION " +
                     "SELECT e.epic_id," +
                     "e.epic_name AS name," +
@@ -1963,7 +1970,9 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
                     "INNER JOIN project_management.user_story_statuses AS uss " +
                     "ON us.status_id = uss.status_id " +
                     "WHERE us.project_id = @projectId " +
-                    "AND us.story_name ILIKE @taskName || '%';";
+                    "AND us.story_name ILIKE @taskName || '%'" +
+                    "AND us.user_story_task_id NOT IN (SELECT project_task_id " +
+                    "FROM project_management.epic_tasks)";
 
         var result = await connection.QueryAsync<SearchTaskOutput>(query, parameters);
 
@@ -1972,7 +1981,7 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
 
     /// <inheritdoc/>
     public async Task<IEnumerable<SearchTaskOutput>> SearchAgileObjectByObjectDescriptionAsync(
-        string taskDescription, long projectId, int templateId, SearchAgileObjectTypeEnum searchAgileObjectType)
+        string taskDescription, long projectId, int templateId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
         
@@ -2007,6 +2016,8 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
                     "FROM project_management.project_tasks AS t " +
                     "WHERE t.project_id = @projectId " +
                     "AND t.details ILIKE '%' || @taskDescription || '%' " +
+                    "AND t.project_task_id NOT IN (SELECT project_task_id " +
+                    "FROM project_management.epic_tasks)" +
                     "UNION " +
                     "SELECT e.epic_id," +
                     "e.epic_name AS name," +
@@ -2052,7 +2063,9 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
                     "INNER JOIN project_management.user_story_statuses AS uss " +
                     "ON us.status_id = uss.status_id " +
                     "WHERE us.project_id = @projectId " +
-                    "AND us.story_description ILIKE '%' || @taskDescription || '%';";
+                    "AND us.story_description ILIKE '%' || @taskDescription || '%'" +
+                    "AND us.user_story_task_id NOT IN (SELECT project_task_id " +
+                    "FROM project_management.epic_tasks)";
 
         var result = await connection.QueryAsync<SearchTaskOutput>(query, parameters);
 

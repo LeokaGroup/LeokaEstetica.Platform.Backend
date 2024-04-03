@@ -1,5 +1,4 @@
 using Dapper;
-using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.Search.ProjectManagement;
 
@@ -21,7 +20,7 @@ internal class SearchAgileObjectByObjectNameStrategy : BaseSearchAgileObjectStra
 
     /// <inheritdoc />
     internal override Task<IEnumerable<SearchTaskOutput>> SearchAgileObjectByObjectIdAsync(
-        long projectTaskId, long projectId, int templateId, SearchAgileObjectTypeEnum searchAgileObjectType)
+        long projectTaskId, long projectId, int templateId)
     {
         throw new NotImplementedException(
             "В стратегии SearchIncludeSprintTaskByTaskNameStrategy не предполагается реализация SearchIncludeSprintTaskByProjectTaskIdAsync.");
@@ -29,10 +28,10 @@ internal class SearchAgileObjectByObjectNameStrategy : BaseSearchAgileObjectStra
 
     /// <inheritdoc />
     internal override async Task<IEnumerable<SearchTaskOutput>> SearchAgileObjectByObjectNameAsync(string taskName,
-        long projectId, int templateId, SearchAgileObjectTypeEnum searchAgileObjectType)
+        long projectId, int templateId)
     {
         var result = (await ProjectManagmentRepository.SearchAgileObjectByObjectNameAsync(taskName,
-            projectId, templateId, searchAgileObjectType))?.AsList();
+            projectId, templateId))?.AsList();
 
         if (result is null || !result.Any())
         {
@@ -44,7 +43,7 @@ internal class SearchAgileObjectByObjectNameStrategy : BaseSearchAgileObjectStra
 
     /// <inheritdoc />
     internal override Task<IEnumerable<SearchTaskOutput>> SearchAgileObjectByObjectDescriptionAsync(
-        string taskDescription, long projectId, int templateId, SearchAgileObjectTypeEnum searchAgileObjectType)
+        string taskDescription, long projectId, int templateId)
     {
         throw new NotImplementedException(
             "В стратегии SearchIncludeSprintTaskByTaskNameStrategy не предполагается реализация SearchIncludeSprintTaskByTaskDescriptionAsync.");

@@ -26,6 +26,11 @@ public class Enum : IEnum
     /// Тип Enum для типа перехода.
     /// </summary>
     public const string TransitionType = "transition_type_enum";
+    
+    /// <summary>
+    /// Тип Enum для типа заадчи.
+    /// </summary>
+    public const string TaskType = "task_type_enum";
 
     /// <summary>
     /// Конструктор по дефолту.
@@ -69,10 +74,20 @@ public class Enum : IEnum
     /// <summary>
     /// Конструктор.
     /// </summary>
-    /// <param name="value">Значение типа документа.</param>
+    /// <param name="value">Значение типа перехода.</param>
     public Enum(TransitionTypeEnum value)
     {
         Type = TransitionType;
+        Value = value.ToString().ToSnakeCase();
+    }
+    
+    /// <summary>
+    /// Конструктор.
+    /// </summary>
+    /// <param name="value">Значение типа задачи.</param>
+    public Enum(SearchAgileObjectTypeEnum value)
+    {
+        Type = TaskType;
         Value = value.ToString().ToSnakeCase();
     }
 

@@ -1,5 +1,4 @@
 using Dapper;
-using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.Search.ProjectManagement;
 
@@ -21,10 +20,10 @@ internal class SearchAgileObjectByObjectIdStrategy : BaseSearchAgileObjectStrate
 
     /// <inheritdoc />
     internal override async Task<IEnumerable<SearchTaskOutput>> SearchAgileObjectByObjectIdAsync(
-        long projectTaskId, long projectId, int templateId, SearchAgileObjectTypeEnum searchAgileObjectType)
+        long projectTaskId, long projectId, int templateId)
     {
         var result = (await ProjectManagmentRepository.SearchAgileObjectAsyncByObjectIdAsync(projectTaskId,
-            projectId, templateId, searchAgileObjectType))?.AsList();
+            projectId, templateId))?.AsList();
 
         if (result is null || !result.Any())
         {
@@ -36,8 +35,7 @@ internal class SearchAgileObjectByObjectIdStrategy : BaseSearchAgileObjectStrate
 
     /// <inheritdoc />
     internal override Task<IEnumerable<SearchTaskOutput>>
-        SearchAgileObjectByObjectNameAsync(string taskName, long projectId, int templateId,
-            SearchAgileObjectTypeEnum searchAgileObjectType)
+        SearchAgileObjectByObjectNameAsync(string taskName, long projectId, int templateId)
     {
         throw new NotImplementedException(
             "В стратегии SearchIncludeSprintTaskByProjectTaskIdStrategy не предполагается реализация SearchIncludeSprintTaskByTaskNameAsync.");
@@ -45,7 +43,7 @@ internal class SearchAgileObjectByObjectIdStrategy : BaseSearchAgileObjectStrate
 
     /// <inheritdoc />
     internal override Task<IEnumerable<SearchTaskOutput>> SearchAgileObjectByObjectDescriptionAsync(
-        string taskDescription, long projectId, int templateId, SearchAgileObjectTypeEnum searchAgileObjectType)
+        string taskDescription, long projectId, int templateId)
     {
         throw new NotImplementedException(
             "В стратегии SearchIncludeSprintTaskByProjectTaskIdStrategy не предполагается реализация SearchIncludeSprintTaskByTaskDescriptionAsync.");

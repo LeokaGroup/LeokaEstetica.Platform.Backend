@@ -1,4 +1,4 @@
-namespace LeokaEstetica.Platform.Core.Enums;
+namespace LeokaEstetica.Platform.Models.Enums;
 
 /// <summary>
 /// Перечисление типов поиска Agile-объектов.

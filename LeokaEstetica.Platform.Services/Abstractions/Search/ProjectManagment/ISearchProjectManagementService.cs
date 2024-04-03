@@ -1,5 +1,5 @@
-using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Models.Dto.Output.Search.ProjectManagement;
+using LeokaEstetica.Platform.Models.Enums;
 
 namespace LeokaEstetica.Platform.Services.Abstractions.Search.ProjectManagment;
 
@@ -22,6 +22,7 @@ public interface ISearchProjectManagementService
         bool isByName, bool isByDescription);
 
     /// <summary>
+    /// TODO: SearchAgileObjectTypeEnum пригодится, когда метод поиска задач объединим с этим методом.
     /// Метод ищет задачи, истории, эпики, ошибки по разным критериям.
     /// </summary>
     /// <param name="searchText">Поисковый текст./</param>

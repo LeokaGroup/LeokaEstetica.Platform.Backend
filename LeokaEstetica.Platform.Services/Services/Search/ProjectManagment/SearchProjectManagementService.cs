@@ -1,12 +1,12 @@
 using Dapper;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.Core.Constants;
-using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.Config;
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Database.Abstractions.Search;
 using LeokaEstetica.Platform.Models.Dto.Output.Search.ProjectManagement;
+using LeokaEstetica.Platform.Models.Enums;
 using LeokaEstetica.Platform.Services.Abstractions.Search.ProjectManagment;
 using LeokaEstetica.Platform.Services.Helpers;
 using LeokaEstetica.Platform.Services.Strategies.ProjectManagement.SprintTaskSearch;
@@ -123,7 +123,7 @@ internal sealed class SearchProjectManagementService : ISearchProjectManagementS
             {
                 result = await strategy.SearchAgileObjectByObjectIdAsync(
                     new SearchAgileObjectByObjectIdStrategy(_projectManagmentRepository),
-                    searchText.GetProjectTaskIdFromPrefixLink(), projectId, templateId, searchAgileObjectType);
+                    searchText.GetProjectTaskIdFromPrefixLink(), projectId, templateId);
             }
 
             // Если нужно искать по названию задачи.
@@ -131,7 +131,7 @@ internal sealed class SearchProjectManagementService : ISearchProjectManagementS
             {
                 result = await strategy.SearchAgileObjectByObjectNameAsync(
                     new SearchAgileObjectByObjectNameStrategy(_projectManagmentRepository), searchText, projectId,
-                    templateId, searchAgileObjectType);
+                    templateId);
             }
             
             // Если нужно искать по описанию задачи.
@@ -139,7 +139,7 @@ internal sealed class SearchProjectManagementService : ISearchProjectManagementS
             {
                 result = await strategy.SearchAgileObjectByObjectDescriptionAsync(
                     new SearchAgileObjectByObjectDescriptionStrategy(_projectManagmentRepository), searchText,
-                    projectId, templateId, searchAgileObjectType);
+                    projectId, templateId);
             }
 
             return result;

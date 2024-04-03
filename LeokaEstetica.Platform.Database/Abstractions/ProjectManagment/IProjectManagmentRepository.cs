@@ -1,5 +1,4 @@
-﻿using LeokaEstetica.Platform.Core.Enums;
-using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
+﻿using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.Search.ProjectManagement;
 using LeokaEstetica.Platform.Models.Dto.Output.Template;
@@ -532,10 +531,9 @@ public interface IProjectManagmentRepository
     /// <param name="projectTaskId">Id задачи в рамках проекта./</param>
     /// <param name="projectId">Id проекта.</param>
     /// <param name="templateId">Id шаблона.</param>
-    /// <param name="searchAgileObjectType">Тип поиска Agile-объекта.</param>
     /// <returns>Найденные задачи, истории, эпики, ошибки.</returns>
     public Task<IEnumerable<SearchTaskOutput>> SearchAgileObjectAsyncByObjectIdAsync(
-        long projectTaskId, long projectId, int templateId, SearchAgileObjectTypeEnum searchAgileObjectType);
+        long projectTaskId, long projectId, int templateId);
     
     /// <summary>
     /// Метод ищет задачи, истории, эпики, ошибки по названию задачи, эпика, истории, ошибки.
@@ -543,10 +541,9 @@ public interface IProjectManagmentRepository
     /// <param name="taskName">Название задачи, эпика, истории, ошибки./</param>
     /// <param name="projectId">Id проекта.</param>
     /// <param name="templateId">Id шаблона.</param>
-    /// <param name="searchAgileObjectType">Тип поиска Agile-объекта.</param>
     /// <returns>Найденные задачи, истории, эпики, ошибки.</returns>
     public Task<IEnumerable<SearchTaskOutput>> SearchAgileObjectByObjectNameAsync(string taskName, long projectId,
-        int templateId, SearchAgileObjectTypeEnum searchAgileObjectType);
+        int templateId);
     
     /// <summary>
     /// Метод ищет задачи, истории, эпики, ошибки по совпадении в описании задачи, эпика, истории, ошибки.
@@ -554,10 +551,9 @@ public interface IProjectManagmentRepository
     /// <param name="taskDescription">Описание задачи, эпика, истории, ошибки./</param>
     /// <param name="projectId">Id проекта.</param>
     /// <param name="templateId">Id шаблона.</param>
-    /// <param name="searchAgileObjectType">Тип поиска Agile-объекта.</param>
     /// <returns>Найденные задачи, истории, эпики, ошибки.</returns>
     public Task<IEnumerable<SearchTaskOutput>> SearchAgileObjectByObjectDescriptionAsync(
-        string taskDescription, long projectId, int templateId, SearchAgileObjectTypeEnum searchAgileObjectType);
+        string taskDescription, long projectId, int templateId);
 
     /// <summary>
     /// Метод планирует спринт.
