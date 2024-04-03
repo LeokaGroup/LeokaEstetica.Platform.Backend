@@ -464,7 +464,7 @@ internal sealed class VacancyService : IVacancyService
             // Разбиваем строку занятости, так как там может приходить несколько значений в строке.
             filters.Employments = CreateEmploymentsBuilder.CreateEmploymentsResult(filters.EmploymentsValues);
             
-            var items = await _vacancyRepository.GetFiltersVacanciesAsync();
+            var items = await _vacancyRepository.CatalogVacanciesWithoutMemoryAsync();
             
             result.CatalogVacancies = await _salaryFilterVacanciesChain.FilterVacanciesAsync(filters, items);
 
