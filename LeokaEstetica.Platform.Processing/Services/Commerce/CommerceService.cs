@@ -262,7 +262,9 @@ internal sealed class CommerceService : ICommerceService
 
             if (subscription is null)
             {
-                throw new InvalidOperationException($"Не удалось получить подписку. UserId: {userId}");
+                throw new InvalidOperationException("Найдена невалидная подписка пользователя. " +
+                                                    $"UserId: {userId}. " +
+                                                    "Подписка была NULL или невалидная.");
             }
 
             var subscriptionId = subscription.SubscriptionId;

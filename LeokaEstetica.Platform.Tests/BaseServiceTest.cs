@@ -243,7 +243,8 @@ internal class BaseServiceTest
             FareRuleRepository);
         var fillColorResumeService = new FillColorResumeService();
         ResumeService = new ResumeService(null, resumeRepository, mapper, subscriptionRepository,
-            FareRuleRepository, userRepository, fillColorResumeService, resumeModerationRepository, accessUserService);
+            FareRuleRepository, userRepository, fillColorResumeService, resumeModerationRepository, accessUserService,
+            pachcaService);
         VacancyFinderService = new VacancyFinderService(vacancyRepository, null);
         FinderProjectService = new Finder.Services.Project.ProjectFinderService(projectRepository, null);
         ResumeFinderService = new ResumeFinderService(null, resumeRepository);
