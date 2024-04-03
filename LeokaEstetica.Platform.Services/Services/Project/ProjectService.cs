@@ -222,6 +222,13 @@ internal sealed class ProjectService : IProjectService
             // Получаем подписку пользователя.
             var userSubscription = await _subscriptionRepository.GetUserSubscriptionAsync(userId);
             
+            if (userSubscription is null)
+            {
+                throw new InvalidOperationException("Найдена невалидная подписка пользователя. " +
+                                                    $"UserId: {userId}. " +
+                                                    "Подписка была NULL или невалидная.");
+            }
+            
             // Получаем тариф, на который оформлена подписка у пользователя.
             var fareRule = await _fareRuleRepository.GetByIdAsync(userSubscription.ObjectId);
             
@@ -1333,6 +1340,13 @@ internal sealed class ProjectService : IProjectService
             // Получаем подписку пользователя.
             var userSubscription = await _subscriptionRepository.GetUserSubscriptionAsync(userId);
             
+            if (userSubscription is null)
+            {
+                throw new InvalidOperationException("Найдена невалидная подписка пользователя. " +
+                                                    $"UserId: {userId}. " +
+                                                    "Подписка была NULL или невалидная.");
+            }
+            
             // Получаем тариф, на который оформлена подписка у пользователя.
             var fareRule = await _fareRuleRepository.GetByIdAsync(userSubscription.ObjectId);
             var fareRuleName = fareRule.Name;
@@ -2153,15 +2167,22 @@ internal sealed class ProjectService : IProjectService
     {
         foreach (var p in projects)
         {
+            var userId = p.UserId;
+            
             // Получаем подписку пользователя.
-            var userSubscription = await _subscriptionRepository.GetUserSubscriptionAsync(p.UserId);
+            var userSubscription = await _subscriptionRepository.GetUserSubscriptionAsync(userId);
 
             if (userSubscription is null)
             {
-                // TODO: Как то было такое, если будет еще. То тут проблема была в данных.
-                // TODO: У пользователя не стоял признак IsActive = true.
-                throw new InvalidOperationException("Не удалось получить подписку пользователя." +
-                                                    $"UserIdL {p.UserId}.");
+                var ex = new InvalidOperationException("Найдена невалидная подписка пользователя. " +
+                                                    $"UserId: {userId}. " +
+                                                    "Подписка была NULL или невалидная.");
+                // Отправляем ивент в пачку.
+                await _pachcaService.SendNotificationErrorAsync(ex);
+                
+                // Если ошибка, то не стопаем выполнение логики, а вернем проекты, пока будем разбираться с ошибкой.
+                // Без тегов не страшно отобразить проекты.
+                return projects;
             }
 
             // Такая подписка не дает тегов.
