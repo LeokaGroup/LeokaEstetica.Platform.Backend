@@ -178,7 +178,7 @@ internal class BaseServiceTest
 
         var projectRepository = new ProjectRepository(pgContext, ChatRepository);
         var projectNotificationsRepository = new ProjectNotificationsRepository(pgContext);
-        var vacancyRepository = new VacancyRepository(pgContext, null);
+        var vacancyRepository = new VacancyRepository(pgContext);
         var projectNotificationsService = new ProjectNotificationsService(null, null, userRepository, mapper,
             projectNotificationsRepository, null, projectRepository, null, null, vacancyRepository);
         var vacancyModerationRepository = new VacancyModerationRepository(pgContext);
