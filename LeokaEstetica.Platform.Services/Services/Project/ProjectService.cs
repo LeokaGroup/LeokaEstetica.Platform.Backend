@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using AutoMapper;
+using Dapper;
 using LeokaEstetica.Platform.Access.Abstractions.AvailableLimits;
 using LeokaEstetica.Platform.Access.Abstractions.User;
 using LeokaEstetica.Platform.Access.Consts;
@@ -1964,7 +1965,7 @@ internal sealed class ProjectService : IProjectService
             // Находим проекты в архиве.
             var archivedProjects = await _projectRepository.GetUserProjectsArchiveAsync(userId);
 
-            var archivedProjectEntities = archivedProjects.ToList();
+            var archivedProjectEntities = archivedProjects.AsList();
             
             if (!archivedProjectEntities.Any())
             {
@@ -1974,7 +1975,7 @@ internal sealed class ProjectService : IProjectService
             result.ProjectsArchive = _mapper.Map<List<ProjectArchiveOutput>>(archivedProjects);
             
             await CreateProjectsDatesHelper.CreateDatesResultAsync(archivedProjectEntities,
-                result.ProjectsArchive.ToList());
+                result.ProjectsArchive.AsList());
 
             return result;
         }
