@@ -14,7 +14,7 @@ internal class BaseSearchAgileObjectAlgorithm
     /// <param name="inviteText">Текст для приглашения.</param>
     /// <param name="templateId">Id шаблона.</param>
     /// <returns>Найденные задачи, истории, эпики, ошибки.</returns>
-    internal async Task<IEnumerable<SearchTaskOutput>> SearchAgileObjectByObjectIdAsync(
+    internal async Task<IEnumerable<SearchAgileObjectOutput>> SearchAgileObjectByObjectIdAsync(
         BaseSearchAgileObjectStrategy strategy, long projectTaskId, long projectId, int templateId)
     {
         var result = await strategy.SearchAgileObjectByObjectIdAsync(projectTaskId, projectId, templateId);
@@ -29,7 +29,7 @@ internal class BaseSearchAgileObjectAlgorithm
     /// <param name="projectId">Id проекта./</param>
     /// <param name="templateId">Id шаблона.</param>
     /// <returns>Найденные задачи, истории, эпики, ошибки.</returns>
-    internal async Task<IEnumerable<SearchTaskOutput>> SearchAgileObjectByObjectNameAsync(
+    internal async Task<IEnumerable<SearchAgileObjectOutput>> SearchAgileObjectByObjectNameAsync(
         BaseSearchAgileObjectStrategy strategy, string taskName, long projectId, int templateId)
     {
         var result = await strategy.SearchAgileObjectByObjectNameAsync(taskName, projectId, templateId);
@@ -44,7 +44,7 @@ internal class BaseSearchAgileObjectAlgorithm
     /// <param name="projectId">Id проекта./</param>
     /// <param name="templateId">Id шаблона.</param>
     /// <returns>Найденные задачи, истории, эпики, ошибки.</returns>
-    internal async Task<IEnumerable<SearchTaskOutput>> SearchAgileObjectByObjectDescriptionAsync(
+    internal async Task<IEnumerable<SearchAgileObjectOutput>> SearchAgileObjectByObjectDescriptionAsync(
         BaseSearchAgileObjectStrategy strategy, string taskDescription, long projectId, int templateId)
     {
         var result = await strategy.SearchAgileObjectByObjectDescriptionAsync(taskDescription, projectId,

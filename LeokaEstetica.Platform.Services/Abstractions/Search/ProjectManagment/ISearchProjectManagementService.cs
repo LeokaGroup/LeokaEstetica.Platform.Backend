@@ -1,5 +1,4 @@
 using LeokaEstetica.Platform.Models.Dto.Output.Search.ProjectManagement;
-using LeokaEstetica.Platform.Models.Enums;
 
 namespace LeokaEstetica.Platform.Services.Abstractions.Search.ProjectManagment;
 
@@ -18,8 +17,8 @@ public interface ISearchProjectManagementService
     /// <param name="isByName">Признак поиска по названию задачи.</param>
     /// <param name="isByDescription">Признак поиска по описанию задачи.</param>
     /// <returns>Список найденных задач.</returns>
-    Task<IEnumerable<SearchTaskOutput>> SearchTaskAsync(string searchText, IEnumerable<long> projectIds, bool isById,
-        bool isByName, bool isByDescription);
+    Task<IEnumerable<SearchAgileObjectOutput>> SearchTaskAsync(string searchText, IEnumerable<long> projectIds,
+        bool isById, bool isByName, bool isByDescription);
 
     /// <summary>
     /// TODO: SearchAgileObjectTypeEnum пригодится, когда метод поиска задач объединим с этим методом.
@@ -31,9 +30,7 @@ public interface ISearchProjectManagementService
     /// <param name="isSearchByTaskDescription">Признак поиска по совпадению в описании.</param>
     /// <param name="projectId">Id проекта.</param>
     /// <param name="account">Аккаунт.</param>
-    /// <param name="searchAgileObjectType">Тип поиска Agile-объекта.</param>
     /// <returns>Найденные задачи, истории, эпики, ошибки.</returns>
-    Task<IEnumerable<SearchTaskOutput>> SearchAgileObjectAsync(string searchText, bool isSearchByProjectTaskId,
-        bool isSearchByTaskName, bool isSearchByTaskDescription, long projectId, string account,
-        SearchAgileObjectTypeEnum searchAgileObjectType);
+    Task<IEnumerable<SearchAgileObjectOutput>> SearchAgileObjectAsync(string searchText, bool isSearchByProjectTaskId,
+        bool isSearchByTaskName, bool isSearchByTaskDescription, long projectId, string account);
 }

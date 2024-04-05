@@ -19,7 +19,7 @@ internal class SearchAgileObjectByObjectNameStrategy : BaseSearchAgileObjectStra
     }
 
     /// <inheritdoc />
-    internal override Task<IEnumerable<SearchTaskOutput>> SearchAgileObjectByObjectIdAsync(
+    internal override Task<IEnumerable<SearchAgileObjectOutput>> SearchAgileObjectByObjectIdAsync(
         long projectTaskId, long projectId, int templateId)
     {
         throw new NotImplementedException(
@@ -27,22 +27,22 @@ internal class SearchAgileObjectByObjectNameStrategy : BaseSearchAgileObjectStra
     }
 
     /// <inheritdoc />
-    internal override async Task<IEnumerable<SearchTaskOutput>> SearchAgileObjectByObjectNameAsync(string taskName,
-        long projectId, int templateId)
+    internal override async Task<IEnumerable<SearchAgileObjectOutput>> SearchAgileObjectByObjectNameAsync(
+        string taskName, long projectId, int templateId)
     {
         var result = (await ProjectManagmentRepository.SearchAgileObjectByObjectNameAsync(taskName,
             projectId, templateId))?.AsList();
 
         if (result is null || !result.Any())
         {
-            return Enumerable.Empty<SearchTaskOutput>();
+            return Enumerable.Empty<SearchAgileObjectOutput>();
         }
 
         return result;
     }
 
     /// <inheritdoc />
-    internal override Task<IEnumerable<SearchTaskOutput>> SearchAgileObjectByObjectDescriptionAsync(
+    internal override Task<IEnumerable<SearchAgileObjectOutput>> SearchAgileObjectByObjectDescriptionAsync(
         string taskDescription, long projectId, int templateId)
     {
         throw new NotImplementedException(

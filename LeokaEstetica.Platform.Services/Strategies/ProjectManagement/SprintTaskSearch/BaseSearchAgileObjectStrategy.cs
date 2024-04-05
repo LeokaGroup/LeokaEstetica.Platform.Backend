@@ -26,7 +26,7 @@ internal abstract class BaseSearchAgileObjectStrategy
     /// <param name="projectId">Id проекта./</param>
     /// <param name="templateId">Id шаблона.</param>
     /// <returns>Найденные задачи, истории, эпики, ошибки.</returns>
-    internal abstract Task<IEnumerable<SearchTaskOutput>> SearchAgileObjectByObjectIdAsync(
+    internal abstract Task<IEnumerable<SearchAgileObjectOutput>> SearchAgileObjectByObjectIdAsync(
         long projectTaskId, long projectId, int templateId);
     
     /// <summary>
@@ -36,7 +36,7 @@ internal abstract class BaseSearchAgileObjectStrategy
     /// <param name="projectId">Id проекта./</param>
     /// <param name="templateId">Id шаблона.</param>
     /// <returns>Найденные задачи, истории, эпики, ошибки.</returns>
-    internal abstract Task<IEnumerable<SearchTaskOutput>> SearchAgileObjectByObjectNameAsync(string taskName,
+    internal abstract Task<IEnumerable<SearchAgileObjectOutput>> SearchAgileObjectByObjectNameAsync(string taskName,
         long projectId, int templateId);
     
     /// <summary>
@@ -46,6 +46,6 @@ internal abstract class BaseSearchAgileObjectStrategy
     /// <param name="projectId">Id проекта./</param>
     /// <param name="templateId">Id шаблона.</param>
     /// <returns>Найденные задачи, истории, эпики, ошибки.</returns>
-    internal abstract Task<IEnumerable<SearchTaskOutput>> SearchAgileObjectByObjectDescriptionAsync(
+    internal abstract Task<IEnumerable<SearchAgileObjectOutput>> SearchAgileObjectByObjectDescriptionAsync(
         string taskDescription, long projectId, int templateId);
 }

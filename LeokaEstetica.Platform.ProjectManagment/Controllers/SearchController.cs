@@ -3,7 +3,6 @@ using LeokaEstetica.Platform.Base.Filters;
 using LeokaEstetica.Platform.Integrations.Abstractions.Pachca;
 using LeokaEstetica.Platform.Models.Dto.Input.Search.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.Search.ProjectManagement;
-using LeokaEstetica.Platform.Models.Enums;
 using LeokaEstetica.Platform.ProjectManagment.Validators;
 using LeokaEstetica.Platform.Services.Abstractions.Search.ProjectManagment;
 using Microsoft.AspNetCore.Mvc;
@@ -45,16 +44,16 @@ public class SearchController : BaseController
     /// <returns>Список найденных задач.</returns>
     [HttpGet]
     [Route("search-task")]
-    [ProducesResponseType(200, Type = typeof(IEnumerable<SearchTaskOutput>))]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<SearchAgileObjectOutput>))]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<IEnumerable<SearchTaskOutput>> SearchTaskAsync([FromQuery] SearchTaskInput searchTaskInput)
+    public async Task<IEnumerable<SearchAgileObjectOutput>> SearchTaskAsync([FromQuery] SearchTaskInput searchTaskInput)
     {
         if (string.IsNullOrWhiteSpace(searchTaskInput.SearchText))
         {
-            return Enumerable.Empty<SearchTaskOutput>();
+            return Enumerable.Empty<SearchAgileObjectOutput>();
         }
         
         var validator = await new SearchTaskValidator().ValidateAsync(searchTaskInput);
@@ -94,22 +93,21 @@ public class SearchController : BaseController
     /// <returns>Найденные задачи, истории, эпики, ошибки.</returns>
     [HttpGet]
     [Route("search-agile-object")]
-    [ProducesResponseType(200, Type = typeof(IEnumerable<SearchTaskOutput>))]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<SearchAgileObjectOutput>))]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<IEnumerable<SearchTaskOutput>> SearchAgileObjectAsync([FromQuery] string searchText,
+    public async Task<IEnumerable<SearchAgileObjectOutput>> SearchAgileObjectAsync([FromQuery] string searchText,
         [FromQuery] bool isSearchByProjectTaskId, [FromQuery] bool isSearchByTaskName,
-        [FromQuery] bool isSearchByTaskDescription, [FromQuery] long projectId,
-        [FromQuery] SearchAgileObjectTypeEnum searchAgileObjectType)
+        [FromQuery] bool isSearchByTaskDescription, [FromQuery] long projectId)
     {
         if (string.IsNullOrWhiteSpace(searchText))
         {
-            return Enumerable.Empty<SearchTaskOutput>();
+            return Enumerable.Empty<SearchAgileObjectOutput>();
         }
 
-        var result = await _searchProjectManagementService.SearchIncludeSprintTaskAsync(searchText,
+        var result = await _searchProjectManagementService.SearchAgileObjectAsync(searchText,
             isSearchByProjectTaskId, isSearchByTaskName, isSearchByTaskDescription, projectId, GetUserName());
 
         return result;

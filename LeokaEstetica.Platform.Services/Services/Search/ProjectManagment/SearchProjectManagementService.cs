@@ -6,7 +6,6 @@ using LeokaEstetica.Platform.Database.Abstractions.Config;
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Database.Abstractions.Search;
 using LeokaEstetica.Platform.Models.Dto.Output.Search.ProjectManagement;
-using LeokaEstetica.Platform.Models.Enums;
 using LeokaEstetica.Platform.Services.Abstractions.Search.ProjectManagment;
 using LeokaEstetica.Platform.Services.Helpers;
 using LeokaEstetica.Platform.Services.Strategies.ProjectManagement.SprintTaskSearch;
@@ -46,8 +45,8 @@ internal sealed class SearchProjectManagementService : ISearchProjectManagementS
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<SearchTaskOutput>> SearchTaskAsync(string searchText, IEnumerable<long> projectIds,
-        bool isById, bool isByName, bool isByDescription)
+    public async Task<IEnumerable<SearchAgileObjectOutput>> SearchTaskAsync(string searchText,
+        IEnumerable<long> projectIds, bool isById, bool isByName, bool isByDescription)
     {
         try
         {
@@ -82,9 +81,9 @@ internal sealed class SearchProjectManagementService : ISearchProjectManagementS
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<SearchTaskOutput>> SearchAgileObjectAsync(string searchText,
+    public async Task<IEnumerable<SearchAgileObjectOutput>> SearchAgileObjectAsync(string searchText,
         bool isSearchByProjectTaskId, bool isSearchByTaskName, bool isSearchByTaskDescription, long projectId,
-        string account, SearchAgileObjectTypeEnum searchAgileObjectType)
+        string account)
     {
         try
         {
@@ -115,7 +114,7 @@ internal sealed class SearchProjectManagementService : ISearchProjectManagementS
                 x.ParamKey.Equals(GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_TEMPLATE_ID));
             var templateId = Convert.ToInt32(template!.ParamValue);
             
-            IEnumerable<SearchTaskOutput> result = null;
+            IEnumerable<SearchAgileObjectOutput> result = null;
             var strategy = new BaseSearchAgileObjectAlgorithm();
             
             // Если нужно искать по Id задачи в рамках проекта.

@@ -1780,7 +1780,7 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<SearchTaskOutput>> SearchAgileObjectAsyncByObjectIdAsync(long projectTaskId,
+    public async Task<IEnumerable<SearchAgileObjectOutput>> SearchAgileObjectByObjectIdAsync(long projectTaskId,
         long projectId, int templateId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
@@ -1869,13 +1869,13 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
                     "AND us.user_story_task_id NOT IN (SELECT project_task_id " +
                     "FROM project_management.epic_tasks)";
 
-        var result = await connection.QueryAsync<SearchTaskOutput>(query, parameters);
+        var result = await connection.QueryAsync<SearchAgileObjectOutput>(query, parameters);
 
         return result;
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<SearchTaskOutput>> SearchAgileObjectByObjectNameAsync(string taskName,
+    public async Task<IEnumerable<SearchAgileObjectOutput>> SearchAgileObjectByObjectNameAsync(string taskName,
         long projectId, int templateId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
@@ -1962,13 +1962,13 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
                     "AND us.user_story_task_id NOT IN (SELECT project_task_id " +
                     "FROM project_management.epic_tasks)";
 
-        var result = await connection.QueryAsync<SearchTaskOutput>(query, parameters);
+        var result = await connection.QueryAsync<SearchAgileObjectOutput>(query, parameters);
 
         return result;
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<SearchTaskOutput>> SearchAgileObjectByObjectDescriptionAsync(
+    public async Task<IEnumerable<SearchAgileObjectOutput>> SearchAgileObjectByObjectDescriptionAsync(
         string taskDescription, long projectId, int templateId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
@@ -2055,7 +2055,7 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
                     "AND us.user_story_task_id NOT IN (SELECT project_task_id " +
                     "FROM project_management.epic_tasks)";
 
-        var result = await connection.QueryAsync<SearchTaskOutput>(query, parameters);
+        var result = await connection.QueryAsync<SearchAgileObjectOutput>(query, parameters);
 
         return result;
     }

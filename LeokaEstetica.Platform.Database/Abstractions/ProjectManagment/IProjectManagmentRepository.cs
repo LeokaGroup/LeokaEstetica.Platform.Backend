@@ -524,7 +524,7 @@ public interface IProjectManagmentRepository
     /// <param name="projectId">Id проекта.</param>
     /// <param name="templateId">Id шаблона.</param>
     /// <returns>Найденные задачи, истории, эпики, ошибки.</returns>
-    public Task<IEnumerable<SearchTaskOutput>> SearchAgileObjectAsyncByObjectIdAsync(
+    public Task<IEnumerable<SearchAgileObjectOutput>> SearchAgileObjectByObjectIdAsync(
         long projectTaskId, long projectId, int templateId);
     
     /// <summary>
@@ -534,8 +534,8 @@ public interface IProjectManagmentRepository
     /// <param name="projectId">Id проекта.</param>
     /// <param name="templateId">Id шаблона.</param>
     /// <returns>Найденные задачи, истории, эпики, ошибки.</returns>
-    public Task<IEnumerable<SearchTaskOutput>> SearchAgileObjectByObjectNameAsync(string taskName, long projectId,
-        int templateId);
+    public Task<IEnumerable<SearchAgileObjectOutput>> SearchAgileObjectByObjectNameAsync(string taskName,
+        long projectId, int templateId);
     
     /// <summary>
     /// Метод ищет задачи, истории, эпики, ошибки по совпадении в описании задачи, эпика, истории, ошибки.
@@ -544,7 +544,7 @@ public interface IProjectManagmentRepository
     /// <param name="projectId">Id проекта.</param>
     /// <param name="templateId">Id шаблона.</param>
     /// <returns>Найденные задачи, истории, эпики, ошибки.</returns>
-    public Task<IEnumerable<SearchTaskOutput>> SearchAgileObjectByObjectDescriptionAsync(
+    public Task<IEnumerable<SearchAgileObjectOutput>> SearchAgileObjectByObjectDescriptionAsync(
         string taskDescription, long projectId, int templateId);
 
     /// <summary>
