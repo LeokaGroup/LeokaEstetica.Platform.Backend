@@ -1862,7 +1862,7 @@ public class ProjectManagmentController : BaseController
     }
 
     /// <summary>
-    /// Метод обновляет спринт, в который входит задача.
+    /// Метод добавляет/обновляет спринт, в который входит задача.
     /// </summary>
     /// <param name="updateTaskSprintInput">Входная модель.</param>
     [HttpPut]
@@ -1872,7 +1872,7 @@ public class ProjectManagmentController : BaseController
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task UpdateTaskSprintAsync([FromBody] UpdateTaskSprintInput updateTaskSprintInput)
+    public async Task InsertOrUpdateTaskSprintAsync([FromBody] UpdateTaskSprintInput updateTaskSprintInput)
     {
         var validator = await new UpdateTaskSprintValidator().ValidateAsync(updateTaskSprintInput);
 
@@ -1895,7 +1895,7 @@ public class ProjectManagmentController : BaseController
             throw ex;
         }
 
-        await _projectManagmentService.UpdateTaskSprintAsync(updateTaskSprintInput.SprintId,
+        await _projectManagmentService.InsertOrUpdateTaskSprintAsync(updateTaskSprintInput.SprintId,
             updateTaskSprintInput.ProjectTaskId);
     }
 }

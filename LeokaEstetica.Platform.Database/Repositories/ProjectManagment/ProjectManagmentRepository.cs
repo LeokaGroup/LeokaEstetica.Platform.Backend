@@ -2252,7 +2252,7 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
     }
 
     /// <inheritdoc/>
-    public async Task UpdateTaskSprintAsync(long sprintId, long projectTaskId)
+    public async Task InsertOrUpdateTaskSprintAsync(long sprintId, long projectTaskId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
 
@@ -2260,11 +2260,27 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         parameters.Add("@projectTaskId", projectTaskId);
         parameters.Add("@sprintId", sprintId);
 
-        var query = @"UPDATE project_management.sprint_tasks 
-                      SET sprint_id = @sprintId 
-                      WHERE project_task_id = @projectTaskId";
+        var queryIfExists = "SELECT EXISTS (SELECT sprint_task_id " +
+                            "FROM project_management.sprint_tasks " +
+                            "WHERE project_task_id = @projectTaskId)";
+        var queryCheck = await connection.ExecuteScalarAsync<bool>(queryIfExists, parameters);
 
-        await connection.ExecuteAsync(query, parameters);
+        // Если уже есть такая задача в каком то спринте, то обновляем ей спринт.
+        if (queryCheck)
+        {
+            var updateQuery = "UPDATE project_management.sprint_tasks " +
+                              "SET sprint_id = @sprintId " +
+                              "WHERE project_task_id = @projectTaskId";
+            await connection.ExecuteAsync(updateQuery, parameters);
+        }
+
+        // Иначе включаем задачу в спринт.
+        else
+        {
+            var insertQuery = "INSERT INTO project_management.sprint_tasks (sprint_id, project_task_id) " +
+                              "VALUES (@sprintId, @projectTaskId)";
+            await connection.ExecuteAsync(insertQuery, parameters);
+        }
     }
 
     #endregion
