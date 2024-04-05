@@ -211,6 +211,13 @@ internal sealed class VacancyService : IVacancyService
 
             // Получаем подписку пользователя.
             var userSubscription = await _subscriptionRepository.GetUserSubscriptionAsync(userId);
+            
+            if (userSubscription is null)
+            {
+                throw new InvalidOperationException("Найдена невалидная подписка пользователя. " +
+                                                    $"UserId: {userId}. " +
+                                                    "Подписка была NULL или невалидная.");
+            }
 
             // Получаем тариф, на который оформлена подписка у пользователя.
             var fareRule = await _fareRuleRepository.GetByIdAsync(userSubscription.ObjectId);
@@ -464,7 +471,7 @@ internal sealed class VacancyService : IVacancyService
             // Разбиваем строку занятости, так как там может приходить несколько значений в строке.
             filters.Employments = CreateEmploymentsBuilder.CreateEmploymentsResult(filters.EmploymentsValues);
             
-            var items = await _vacancyRepository.GetFiltersVacanciesAsync();
+            var items = await _vacancyRepository.CatalogVacanciesWithoutMemoryAsync();
             
             result.CatalogVacancies = await _salaryFilterVacanciesChain.FilterVacanciesAsync(filters, items);
 
@@ -773,6 +780,13 @@ internal sealed class VacancyService : IVacancyService
             
             // Получаем подписку пользователя.
             var userSubscription = await _subscriptionRepository.GetUserSubscriptionAsync(userId);
+            
+            if (userSubscription is null)
+            {
+                throw new InvalidOperationException("Найдена невалидная подписка пользователя. " +
+                                                    $"UserId: {userId}. " +
+                                                    "Подписка была NULL или невалидная.");
+            }
             
             // Получаем тариф, на который оформлена подписка у пользователя.
             var fareRule = await _fareRuleRepository.GetByIdAsync(userSubscription.ObjectId);
@@ -1089,8 +1103,24 @@ internal sealed class VacancyService : IVacancyService
     {
         foreach (var v in vacancies)
         {
+            var userId = v.UserId;
+            
             // Получаем подписку пользователя.
-            var userSubscription = await _subscriptionRepository.GetUserSubscriptionAsync(v.UserId);
+            var userSubscription = await _subscriptionRepository.GetUserSubscriptionAsync(userId);
+            
+            if (userSubscription is null)
+            {
+                var ex = new InvalidOperationException("Найдена невалидная подписка пользователя. " +
+                                                    $"UserId: {userId}. " +
+                                                    "Подписка была NULL или невалидная.");
+                
+                // Отправляем ивент в пачку.
+                await _pachcaService.SendNotificationErrorAsync(ex);
+                
+                // Если ошибка, то не стопаем выполнение логики, а вернем вакансии, пока будем разбираться с ошибкой.
+                // Без тегов не страшно отобразить вакансии.
+                return vacancies;
+            }
 
             // Такая подписка не дает тегов.
             if (userSubscription.ObjectId < 3)

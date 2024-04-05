@@ -109,9 +109,8 @@ public class SearchController : BaseController
             return Enumerable.Empty<SearchTaskOutput>();
         }
 
-        var result = await _searchProjectManagementService.SearchAgileObjectAsync(searchText,
-            isSearchByProjectTaskId, isSearchByTaskName, isSearchByTaskDescription, projectId, GetUserName(),
-            searchAgileObjectType);
+        var result = await _searchProjectManagementService.SearchIncludeSprintTaskAsync(searchText,
+            isSearchByProjectTaskId, isSearchByTaskName, isSearchByTaskDescription, projectId, GetUserName());
 
         return result;
     }

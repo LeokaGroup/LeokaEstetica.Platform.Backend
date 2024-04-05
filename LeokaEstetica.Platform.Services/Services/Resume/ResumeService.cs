@@ -8,6 +8,7 @@ using LeokaEstetica.Platform.Database.Abstractions.FareRule;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Resume;
 using LeokaEstetica.Platform.Database.Abstractions.Resume;
 using LeokaEstetica.Platform.Database.Abstractions.Subscription;
+using LeokaEstetica.Platform.Integrations.Abstractions.Pachca;
 using LeokaEstetica.Platform.Models.Dto.Output.Resume;
 using LeokaEstetica.Platform.Models.Entities.Moderation;
 using LeokaEstetica.Platform.Models.Entities.Profile;
@@ -32,6 +33,7 @@ internal sealed class ResumeService : IResumeService
     private readonly IFillColorResumeService _fillColorResumeService;
     private readonly IResumeModerationRepository _resumeModerationRepository;
     private readonly IAccessUserService _accessUserService;
+    private readonly IPachcaService _pachcaService;
     
     /// <summary>
     /// Конструктор.
@@ -45,6 +47,7 @@ internal sealed class ResumeService : IResumeService
     /// <param name="fillColorResumeService">Сервис выделение цветом резюме пользователей.</param>
     /// <param name="resumeModerationRepository">Репозиторий модерации анкет.</param>
     /// <param name="accessUserService">Сервис проверки доступа.</param>
+    /// <param name="pachcaService">Сервис пачки.</param>
     public ResumeService(ILogger<ResumeService> logger, 
         IResumeRepository resumeRepository, 
         IMapper mapper, 
@@ -53,7 +56,8 @@ internal sealed class ResumeService : IResumeService
         IUserRepository userRepository,
         IFillColorResumeService fillColorResumeService, 
         IResumeModerationRepository resumeModerationRepository,
-        IAccessUserService accessUserService)
+        IAccessUserService accessUserService,
+        IPachcaService pachcaService)
     {
         _logger = logger;
         _resumeRepository = resumeRepository;
@@ -64,6 +68,7 @@ internal sealed class ResumeService : IResumeService
         _fillColorResumeService = fillColorResumeService;
         _resumeModerationRepository = resumeModerationRepository;
         _accessUserService = accessUserService;
+        _pachcaService = pachcaService;
     }
 
     #region Публичные методы.
@@ -221,8 +226,23 @@ internal sealed class ResumeService : IResumeService
     {
         foreach (var v in vacancies)
         {
+            var userId = v.UserId;
+
             // Получаем подписку пользователя.
-            var userSubscription = await _subscriptionRepository.GetUserSubscriptionAsync(v.UserId);
+            var userSubscription = await _subscriptionRepository.GetUserSubscriptionAsync(userId);
+
+            if (userSubscription is null)
+            {
+                var ex = new InvalidOperationException("Найденf невалидная подписка пользователя. " +
+                                                    $"UserId: {userId}. " +
+                                                    "Подписка была NULL или невалидная.");
+                // Отправляем ивент в пачку.
+                await _pachcaService.SendNotificationErrorAsync(ex);
+                
+                // Если ошибка, то не стопаем выполнение логики, а вернем вакансии, пока будем разбираться с ошибкой.
+                // Без тегов не страшно отобразить вакансии.
+                return vacancies;
+            }
 
             // Такая подписка не дает тегов.
             if (userSubscription.ObjectId < 3)

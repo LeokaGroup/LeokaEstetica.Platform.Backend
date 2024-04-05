@@ -5,6 +5,6 @@ namespace LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 /// <summary>
 /// Класс выходной модели задач эпика.
 /// </summary>
-public class EpicTaskOutput : SearchTaskOutput
+public class EpicTaskOutput : SearchAgileObjectOutput
 {
 }

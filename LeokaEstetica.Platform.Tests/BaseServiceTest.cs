@@ -178,7 +178,7 @@ internal class BaseServiceTest
 
         var projectRepository = new ProjectRepository(pgContext, ChatRepository);
         var projectNotificationsRepository = new ProjectNotificationsRepository(pgContext);
-        var vacancyRepository = new VacancyRepository(pgContext, null);
+        var vacancyRepository = new VacancyRepository(pgContext);
         var projectNotificationsService = new ProjectNotificationsService(null, null, userRepository, mapper,
             projectNotificationsRepository, null, projectRepository, null, null, vacancyRepository);
         var vacancyModerationRepository = new VacancyModerationRepository(pgContext);
@@ -243,7 +243,8 @@ internal class BaseServiceTest
             FareRuleRepository);
         var fillColorResumeService = new FillColorResumeService();
         ResumeService = new ResumeService(null, resumeRepository, mapper, subscriptionRepository,
-            FareRuleRepository, userRepository, fillColorResumeService, resumeModerationRepository, accessUserService);
+            FareRuleRepository, userRepository, fillColorResumeService, resumeModerationRepository, accessUserService,
+            pachcaService);
         VacancyFinderService = new VacancyFinderService(vacancyRepository, null);
         FinderProjectService = new Finder.Services.Project.ProjectFinderService(projectRepository, null);
         ResumeFinderService = new ResumeFinderService(null, resumeRepository);

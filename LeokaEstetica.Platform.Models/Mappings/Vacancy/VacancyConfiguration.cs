@@ -23,7 +23,7 @@ public partial class VacancyConfiguration : IEntityTypeConfiguration<UserVacancy
 
         entity.Property(e => e.DateCreated)
             .HasColumnName("DateCreated")
-            .HasColumnType("timestamp")
+            .HasColumnType("timestamp with time zone")
             .IsRequired();
 
         entity.Property(e => e.VacancyText)
