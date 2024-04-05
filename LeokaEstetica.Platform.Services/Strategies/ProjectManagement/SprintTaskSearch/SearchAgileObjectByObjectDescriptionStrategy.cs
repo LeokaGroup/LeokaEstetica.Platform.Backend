@@ -5,22 +5,22 @@ using LeokaEstetica.Platform.Models.Dto.Output.Search.ProjectManagement;
 namespace LeokaEstetica.Platform.Services.Strategies.ProjectManagement.SprintTaskSearch;
 
 /// <summary>
-/// Стратегия поиска Agile-объекта по описанию Agile-объекта.
+/// Стратегия поиска задачи по описанию задачи.
 /// </summary>
-internal sealed class SearchAgileObjectByTaskDescriptionStrategy : BaseSearchAgileObjectStrategy
+internal class SearchAgileObjectByObjectDescriptionStrategy : BaseSearchAgileObjectStrategy
 {
     /// <summary>
     /// Конструктор.
     /// </summary>
     /// <param name="projectManagmentRepository">Репозитрий модуля УП.</param>
-    public SearchAgileObjectByTaskDescriptionStrategy(IProjectManagmentRepository projectManagmentRepository) :
+    public SearchAgileObjectByObjectDescriptionStrategy(IProjectManagmentRepository projectManagmentRepository) :
         base(projectManagmentRepository)
     {
     }
 
     /// <inheritdoc />
-    internal override Task<IEnumerable<SearchAgileObjectOutput>> SearchAgileObjectByObjectIdAsync(long projectTaskId,
-        long projectId, int templateId)
+    internal override Task<IEnumerable<SearchAgileObjectOutput>> SearchAgileObjectByObjectIdAsync(
+        long projectTaskId, long projectId, int templateId)
     {
         throw new NotImplementedException(
             "В стратегии SearchIncludeSprintTaskByTaskDescriptionStrategy не предполагается реализация SearchIncludeSprintTaskByProjectTaskIdAsync.");

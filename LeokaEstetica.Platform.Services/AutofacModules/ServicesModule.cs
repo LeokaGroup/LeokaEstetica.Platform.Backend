@@ -275,27 +275,27 @@ public class ServicesModule : Module
             .As<ISearchProjectManagementService>()
             .InstancePerLifetimeScope();
             
-        // Класс стратегии поиска задачи по Id задачи в рамках проекта.
-        builder.RegisterType<SearchAgileObjectByProjectTaskIdStrategy>()
+        // Класс стратегии поиска Agile-объекта по Id.
+        builder.RegisterType<SearchAgileObjectByObjectIdStrategy>()
             .Named<BaseSearchAgileObjectStrategy>("SearchIncludeSprintTaskByProjectTaskIdStrategy")
             .InstancePerLifetimeScope();
-        builder.RegisterType<SearchAgileObjectByProjectTaskIdStrategy>()
+        builder.RegisterType<SearchAgileObjectByObjectIdStrategy>()
             .As<BaseSearchAgileObjectStrategy>()
             .InstancePerLifetimeScope();
             
-        // Класс стратегии поиска задачи по названию задачи.
-        builder.RegisterType<SearchAgileObjectByTaskNameStrategy>()
+        // Класс стратегии поиска Agile-объекта по названию.
+        builder.RegisterType<SearchAgileObjectByObjectNameStrategy>()
             .Named<BaseSearchAgileObjectStrategy>("SearchIncludeSprintTaskByTaskNameStrategy")
             .InstancePerLifetimeScope();
-        builder.RegisterType<SearchAgileObjectByTaskNameStrategy>()
+        builder.RegisterType<SearchAgileObjectByObjectNameStrategy>()
             .As<BaseSearchAgileObjectStrategy>()
             .InstancePerLifetimeScope();
             
-        // Класс стратегии поиска задачи по описанию задачи.
-        builder.RegisterType<SearchAgileObjectByTaskDescriptionStrategy>()
+        // Класс стратегии поиска Agile-объекта по описанию.
+        builder.RegisterType<SearchAgileObjectByObjectDescriptionStrategy>()
             .Named<BaseSearchAgileObjectStrategy>("SearchIncludeSprintTaskByTaskDescriptionStrategy")
             .InstancePerLifetimeScope();
-        builder.RegisterType<SearchAgileObjectByTaskDescriptionStrategy>()
+        builder.RegisterType<SearchAgileObjectByObjectDescriptionStrategy>()
             .As<BaseSearchAgileObjectStrategy>()
             .InstancePerLifetimeScope();
     }

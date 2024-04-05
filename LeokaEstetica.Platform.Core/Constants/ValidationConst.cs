@@ -186,7 +186,7 @@ public static class ValidationConst
         /// <summary>
         /// Если передали невалидный Id задачи проекта.
         /// </summary>
-        public const string NOT_VALID_PROJECT_TASK_ID = "Id задачи проекта не передан.";
+        public const string NOT_VALID_PROJECT_TASK_ID = "Id задач проекта не передан.";
         
         /// <summary>
         /// Если передали невалидный Id статуса задачи.

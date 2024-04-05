@@ -90,8 +90,8 @@ public class NotificationsModule : Module
         builder.RegisterType<TicketNotificationService>()
             .As<ITicketNotificationService>()
             .InstancePerLifetimeScope();
-            
-        // Сервис уведомлений спринтов.
-        builder.RegisterLazy<ISprintNotificationsService, SprintNotificationsService>();
+
+        // Сервис уведомлений модуля УП.
+        builder.RegisterLazy<IProjectManagementNotificationService, ProjectManagementNotificationService>();
     }
 }

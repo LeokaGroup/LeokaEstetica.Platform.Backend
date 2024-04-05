@@ -1,4 +1,3 @@
-using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Services.Strategies.ProjectManagement.SprintTaskSearch;
 using NUnit.Framework;
 
@@ -13,9 +12,8 @@ internal class SearchIncludeSprintTaskByTaskNameStrategyTest : BaseServiceTest
     [Test]
     public async Task SearchIncludeSprintTaskByTaskNameStrategyAsyncTest()
     {
-        var result = await BaseSearchSprintTaskAlgorithm.SearchSearchAgileObjectByTaskNameAsync(
-            new SearchAgileObjectByTaskNameStrategy(ProjectManagmentRepository), "тестовая задача", 274, 2,
-            SearchAgileObjectTypeEnum.Sprint);
+        var result = await BaseSearchSprintTaskAlgorithm.SearchAgileObjectByObjectDescriptionAsync(
+            new SearchAgileObjectByObjectDescriptionStrategy(ProjectManagmentRepository), "тестовая задача", 274, 2);
 
         Assert.IsTrue(result.Any());
     }

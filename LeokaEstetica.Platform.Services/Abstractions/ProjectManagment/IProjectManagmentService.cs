@@ -445,10 +445,10 @@ public interface IProjectManagmentService
     /// Метод добавляет задачу в эпик.
     /// </summary>
     /// <param name="epicId">Id эпика.</param>
-    /// <param name="projectId">Id проекта.</param>
     /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
     /// <param name="account">Аккаунт.</param>
-    Task IncludeTaskEpicAsync(long epicId, long projectId, string projectTaskId, string account);
+    /// <param name="token">Токен.</param>
+    Task IncludeTaskEpicAsync(long epicId, IEnumerable<string> projectTaskIds, string account, string token);
 
     /// <summary>
     /// Метод получает список статусов истории для выбора.

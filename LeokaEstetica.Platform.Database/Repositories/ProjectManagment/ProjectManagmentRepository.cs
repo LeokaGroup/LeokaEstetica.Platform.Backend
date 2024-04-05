@@ -3,7 +3,6 @@ using Dapper;
 using LeokaEstetica.Platform.Base.Abstractions.Connection;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.Base;
 using LeokaEstetica.Platform.Core.Constants;
-using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
@@ -1690,37 +1689,25 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
     }
 
     /// <inheritdoc/>
-    public async Task IncludeTaskEpicAsync(long epicId, long projectTaskId)
+    public async Task IncludeTaskEpicAsync(long epicId, IEnumerable<long> projectTaskIds)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
+        
+        var parameters = new List<DynamicParameters>();
 
-        var parameters = new DynamicParameters();
-        parameters.Add("@epicId", epicId);
-        parameters.Add("@projectTaskId", projectTaskId);
+        foreach (var p in projectTaskIds)
+        {
+            var tempParameters = new DynamicParameters();
+            tempParameters.Add("@epicId", epicId);
+            tempParameters.Add("@projectTaskIds", p);
+            
+            parameters.Add(tempParameters);
+        }
 
         var query = @"INSERT INTO project_management.epic_tasks (project_task_id, epic_id) 
-                      VALUES (@projectTaskId, @epicId)";
+                      VALUES (@projectTaskIds, @epicId)";
 
         await connection.ExecuteAsync(query, parameters);
-    }
-
-    /// <inheritdoc/>
-    public async Task<bool> IfIncludedTaskEpicAsync(long epicId, long projectTaskId)
-    {
-        using var connection = await ConnectionProvider.GetConnectionAsync();
-
-        var parameters = new DynamicParameters();
-        parameters.Add("@epicId", epicId);
-        parameters.Add("@projectTaskId", projectTaskId);
-
-        var query = @"SELECT EXISTS(SELECT epic_tasks_id
-              FROM project_management.epic_tasks
-              WHERE project_task_id = @projectTaskId
-                AND epic_id = @epicId)";
-        
-        var result = await connection.QuerySingleOrDefaultAsync<bool>(query, parameters);
-
-        return result;
     }
 
     /// <inheritdoc/>
@@ -1793,22 +1780,18 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<SearchAgileObjectOutput>> SearchAgileObjectByProjectTaskIdAsync(long projectTaskId,
-        long projectId, int templateId, SearchAgileObjectTypeEnum searchAgileObjectType)
+    public async Task<IEnumerable<SearchAgileObjectOutput>> SearchAgileObjectByObjectIdAsync(long projectTaskId,
+        long projectId, int templateId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
         
-        var query = string.Empty;
         var parameters = new DynamicParameters();
         parameters.Add("@projectId", projectId);
         parameters.Add("@prefix", GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_PROJECT_NAME_PREFIX);
-        parameters.Add("@templateId", templateId);
         parameters.Add("@projectTaskId", projectTaskId);
+        parameters.Add("@templateId", templateId);
 
-        // Если добавление задач в спринт.
-        if (searchAgileObjectType == SearchAgileObjectTypeEnum.Sprint)
-        {
-            query = "SELECT t.task_id," +
+        var query = "SELECT t.task_id," +
                     "t.name," +
                     "t.project_id," +
                     "t.project_task_id," +
@@ -1833,6 +1816,8 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
                     "FROM project_management.project_tasks AS t " +
                     "WHERE t.project_id = @projectId " +
                     "AND t.project_task_id = @projectTaskId " +
+                    "AND t.project_task_id NOT IN (SELECT project_task_id " +
+                    "FROM project_management.epic_tasks)" +
                     "UNION " +
                     "SELECT e.epic_id," +
                     "e.epic_name AS name," +
@@ -1856,6 +1841,8 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
                     "ON e.status_id = es.status_id " +
                     "WHERE e.project_id = @projectId " +
                     "AND e.project_epic_id = @projectTaskId " +
+                    "AND e.project_epic_id NOT IN (SELECT project_task_id " +
+                    "FROM project_management.epic_tasks)" +
                     "UNION " +
                     "SELECT us.story_id," +
                     "us.story_name AS name," +
@@ -1878,61 +1865,9 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
                     "INNER JOIN project_management.user_story_statuses AS uss " +
                     "ON us.status_id = uss.status_id " +
                     "WHERE us.project_id = @projectId " +
-                    "AND us.user_story_task_id = @projectTaskId;";
-        }
-
-        // Если добавление задач в эпик.
-        if (searchAgileObjectType == SearchAgileObjectTypeEnum.Epic)
-        {
-             query = "SELECT t.task_id," +
-                    "t.name," +
-                    "t.project_id," +
-                    "t.project_task_id," +
-                    "(SELECT \"ParamValue\" " +
-                    "FROM \"Configs\".\"ProjectManagmentProjectSettings\" AS ps " +
-                    "WHERE ps.\"ProjectId\" = @projectId " +
-                    "AND ps.\"ParamKey\" = @prefix) AS TaskIdPrefix, " +
-                    "t.task_status_id, " +
-                    "t.executor_id," +
-                    "t.task_type_id," +
-                    "(SELECT CASE WHEN t.task_type_id = 1 THEN 'Задача' " +
-                    "WHEN t.task_type_id = 2 THEN 'Ошибка' END) AS TaskTypeName, " +
-                    "(SELECT \"FirstName\" || ' ' || \"LastName\" || ' ' || (COALESCE(\"Patronymic\", '')) " +
-                    "FROM \"Profile\".\"ProfilesInfo\"" + "WHERE \"UserId\" = t.executor_id) AS ExecutorName, " +
-                    "(SELECT tpmtst.status_name " +
-                    "FROM templates.project_management_task_status_templates AS tpmtst " +
-                    "INNER JOIN templates.project_management_task_status_intermediate_templates AS tpmtsit " +
-                    "ON tpmtst.task_status_id = tpmtsit.status_id " +
-                    "WHERE t.task_status_id = tpmtst.task_status_id " +
-                    "AND tpmtsit.template_id = @templateId " +
-                    "AND NOT tpmtst.is_system_status) AS StatusName " +
-                    "FROM project_management.project_tasks AS t " +
-                    "WHERE t.project_id = @projectId " +
-                    "AND t.project_task_id = @projectTaskId " +
-                    "UNION " +
-                    "SELECT us.story_id," +
-                    "us.story_name AS name," +
-                    "us.project_id," +
-                    "us.user_story_task_id AS project_task_id," +
-                    "(SELECT \"ParamValue\"" +
-                    "FROM \"Configs\".\"ProjectManagmentProjectSettings\" AS ps " +
-                    "WHERE ps.\"ProjectId\" = @projectId " +
-                    "AND ps.\"ParamKey\" = @prefix) AS TaskIdPrefix, " +
-                    "us.status_id AS TaskStatusId, " +
-                    "us.executor_id, " +
-                    "3 AS TaskTypeId, " +
-                    "'История/Требование' AS TaskTypeName, " +
-                    "(SELECT \"FirstName\" || ' ' || \"LastName\" || ' ' || (COALESCE(\"Patronymic\", '')) " +
-                    "FROM \"Profile\".\"ProfilesInfo\"" + "WHERE \"UserId\" = us.executor_id) AS ExecutorName, " +
-                    "(SELECT status_name " +
-                    "FROM project_management.user_story_statuses " +
-                    "WHERE status_id = us.status_id) AS StatusName " +
-                    "FROM project_management.user_stories AS us " +
-                    "INNER JOIN project_management.user_story_statuses AS uss " +
-                    "ON us.status_id = uss.status_id " +
-                    "WHERE us.project_id = @projectId " +
-                    "AND us.user_story_task_id = @projectTaskId;";
-        }
+                    "AND us.user_story_task_id = @projectTaskId " +
+                    "AND us.user_story_task_id NOT IN (SELECT project_task_id " +
+                    "FROM project_management.epic_tasks)";
 
         var result = await connection.QueryAsync<SearchAgileObjectOutput>(query, parameters);
 
@@ -1940,22 +1875,18 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<SearchAgileObjectOutput>> SearchAgileObjectByTaskNameAsync(string taskName,
-        long projectId, int templateId, SearchAgileObjectTypeEnum searchAgileObjectType)
+    public async Task<IEnumerable<SearchAgileObjectOutput>> SearchAgileObjectByObjectNameAsync(string taskName,
+        long projectId, int templateId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
-
-        var query = string.Empty;
+        
         var parameters = new DynamicParameters();
         parameters.Add("@projectId", projectId);
         parameters.Add("@prefix", GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_PROJECT_NAME_PREFIX);
-        parameters.Add("@taskName", taskName.Trim());
+        parameters.Add("@taskName", taskName);
         parameters.Add("@templateId", templateId);
 
-        // Если добавление задач в спринт.
-        if (searchAgileObjectType == SearchAgileObjectTypeEnum.Sprint)
-        {
-             query = "SELECT t.task_id," +
+        var query = "SELECT t.task_id," +
                     "t.name," +
                     "t.project_id," +
                     "t.project_task_id," +
@@ -1980,6 +1911,8 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
                     "FROM project_management.project_tasks AS t " +
                     "WHERE t.project_id = @projectId " +
                     "AND t.name ILIKE @taskName || '%' " +
+                    "AND t.project_task_id NOT IN (SELECT project_task_id " +
+                    "FROM project_management.epic_tasks)" +
                     "UNION " +
                     "SELECT e.epic_id," +
                     "e.epic_name AS name," +
@@ -2025,61 +1958,9 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
                     "INNER JOIN project_management.user_story_statuses AS uss " +
                     "ON us.status_id = uss.status_id " +
                     "WHERE us.project_id = @projectId " +
-                    "AND us.story_name ILIKE @taskName || '%';";
-        }
-        
-        // Если добавление задач в эпик.
-        if (searchAgileObjectType == SearchAgileObjectTypeEnum.Epic)
-        {
-            query = "SELECT t.task_id," +
-                    "t.name," +
-                    "t.project_id," +
-                    "t.project_task_id," +
-                    "(SELECT \"ParamValue\" " +
-                    "FROM \"Configs\".\"ProjectManagmentProjectSettings\" AS ps " +
-                    "WHERE ps.\"ProjectId\" = @projectId " +
-                    "AND ps.\"ParamKey\" = @prefix) AS TaskIdPrefix, " +
-                    "t.task_status_id, " +
-                    "t.executor_id, " +
-                    "t.task_type_id, " +
-                    "(SELECT CASE WHEN t.task_type_id = 1 THEN 'Задача' " +
-                    "WHEN t.task_type_id = 2 THEN 'Ошибка' END) AS TaskTypeName, " +
-                    "(SELECT \"FirstName\" || ' ' || \"LastName\" || ' ' || (COALESCE(\"Patronymic\", '')) " +
-                    "FROM \"Profile\".\"ProfilesInfo\"" + "WHERE \"UserId\" = t.executor_id) AS ExecutorName, " +
-                    "(SELECT tpmtst.status_name " +
-                    "FROM templates.project_management_task_status_templates AS tpmtst " +
-                    "INNER JOIN templates.project_management_task_status_intermediate_templates AS tpmtsit " +
-                    "ON tpmtst.task_status_id = tpmtsit.status_id " +
-                    "WHERE t.task_status_id = tpmtst.task_status_id " +
-                    "AND tpmtsit.template_id = @templateId " +
-                    "AND NOT tpmtst.is_system_status) AS StatusName " +
-                    "FROM project_management.project_tasks AS t " +
-                    "WHERE t.project_id = @projectId " +
-                    "AND t.name ILIKE @taskName || '%' " +
-                    "UNION " +
-                    "SELECT us.story_id," +
-                    "us.story_name AS name," +
-                    "us.project_id," +
-                    "us.user_story_task_id AS project_task_id," +
-                    "(SELECT \"ParamValue\"" +
-                    "FROM \"Configs\".\"ProjectManagmentProjectSettings\" AS ps " +
-                    "WHERE ps.\"ProjectId\" = @projectId " +
-                    "AND ps.\"ParamKey\" = @prefix) AS TaskIdPrefix, " +
-                    "us.status_id AS TaskStatusId, " +
-                    "us.executor_id, " +
-                    "3 AS TaskTypeId, " +
-                    "\'История/Требование\' AS TaskTypeName, " +
-                    "(SELECT \"FirstName\" || ' ' || \"LastName\" || ' ' || (COALESCE(\"Patronymic\", '')) " +
-                    "FROM \"Profile\".\"ProfilesInfo\"" + "WHERE \"UserId\" = us.executor_id) AS ExecutorName, " +
-                    "(SELECT status_name " +
-                    "FROM project_management.user_story_statuses " +
-                    "WHERE status_id = us.status_id) AS StatusName " +
-                    "FROM project_management.user_stories AS us " +
-                    "INNER JOIN project_management.user_story_statuses AS uss " +
-                    "ON us.status_id = uss.status_id " +
-                    "WHERE us.project_id = @projectId " +
-                    "AND us.story_name ILIKE @taskName || '%';";
-        }
+                    "AND us.story_name ILIKE @taskName || '%'" +
+                    "AND us.user_story_task_id NOT IN (SELECT project_task_id " +
+                    "FROM project_management.epic_tasks)";
 
         var result = await connection.QueryAsync<SearchAgileObjectOutput>(query, parameters);
 
@@ -2087,22 +1968,18 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<SearchAgileObjectOutput>> SearchAgileObjectByTaskDescriptionAsync(
-        string taskDescription, long projectId, int templateId, SearchAgileObjectTypeEnum searchAgileObjectType)
+    public async Task<IEnumerable<SearchAgileObjectOutput>> SearchAgileObjectByObjectDescriptionAsync(
+        string taskDescription, long projectId, int templateId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
         
         var parameters = new DynamicParameters();
-        var query = string.Empty;
         parameters.Add("@projectId", projectId);
         parameters.Add("@prefix", GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_PROJECT_NAME_PREFIX);
-        parameters.Add("@taskDescription", taskDescription.Trim());
+        parameters.Add("@taskDescription", taskDescription);
         parameters.Add("@templateId", templateId);
-        
-        // Если добавление задач в спринт.
-        if (searchAgileObjectType == SearchAgileObjectTypeEnum.Sprint)
-        {
-             query = "SELECT t.task_id," +
+
+        var query = "SELECT t.task_id," +
                     "t.name," +
                     "t.project_id," +
                     "t.project_task_id," +
@@ -2127,6 +2004,8 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
                     "FROM project_management.project_tasks AS t " +
                     "WHERE t.project_id = @projectId " +
                     "AND t.details ILIKE '%' || @taskDescription || '%' " +
+                    "AND t.project_task_id NOT IN (SELECT project_task_id " +
+                    "FROM project_management.epic_tasks)" +
                     "UNION " +
                     "SELECT e.epic_id," +
                     "e.epic_name AS name," +
@@ -2172,61 +2051,9 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
                     "INNER JOIN project_management.user_story_statuses AS uss " +
                     "ON us.status_id = uss.status_id " +
                     "WHERE us.project_id = @projectId " +
-                    "AND us.story_description ILIKE '%' || @taskDescription || '%';";
-        }
-        
-        // Если добавление задач в эпик.
-        if (searchAgileObjectType == SearchAgileObjectTypeEnum.Epic)
-        {
-            query = "SELECT t.task_id," +
-                    "t.name," +
-                    "t.project_id," +
-                    "t.project_task_id," +
-                    "(SELECT \"ParamValue\" " +
-                    "FROM \"Configs\".\"ProjectManagmentProjectSettings\" AS ps " +
-                    "WHERE ps.\"ProjectId\" = @projectId " +
-                    "AND ps.\"ParamKey\" = @prefix) AS TaskIdPrefix, " +
-                    "t.task_status_id, " +
-                    "t.executor_id, " +
-                    "t.task_type_id, " +
-                    "(SELECT CASE WHEN t.task_type_id = 1 THEN 'Задача' " +
-                    "WHEN t.task_type_id = 2 THEN 'Ошибка' END) AS TaskTypeName, " +
-                    "(SELECT \"FirstName\" || ' ' || \"LastName\" || ' ' || (COALESCE(\"Patronymic\", '')) " +
-                    "FROM \"Profile\".\"ProfilesInfo\"" + "WHERE \"UserId\" = t.executor_id) AS ExecutorName, " +
-                    "(SELECT tpmtst.status_name " +
-                    "FROM templates.project_management_task_status_templates AS tpmtst " +
-                    "INNER JOIN templates.project_management_task_status_intermediate_templates AS tpmtsit " +
-                    "ON tpmtst.task_status_id = tpmtsit.status_id " +
-                    "WHERE t.task_status_id = tpmtst.task_status_id " +
-                    "AND tpmtsit.template_id = @templateId " +
-                    "AND NOT tpmtst.is_system_status) AS StatusName " +
-                    "FROM project_management.project_tasks AS t " +
-                    "WHERE t.project_id = @projectId " +
-                    "AND t.details ILIKE '%' || @taskDescription || '%' " +
-                    "UNION " +
-                    "SELECT us.story_id," +
-                    "us.story_name AS name," +
-                    "us.project_id," +
-                    "us.user_story_task_id AS project_task_id," +
-                    "(SELECT \"ParamValue\"" +
-                    "FROM \"Configs\".\"ProjectManagmentProjectSettings\" AS ps " +
-                    "WHERE ps.\"ProjectId\" = @projectId " +
-                    "AND ps.\"ParamKey\" = @prefix) AS TaskIdPrefix, " +
-                    "us.status_id AS TaskStatusId, " +
-                    "us.executor_id, " +
-                    "3 AS TaskTypeId, " +
-                    "\'История/Требование\' AS TaskTypeName, " +
-                    "(SELECT \"FirstName\" || ' ' || \"LastName\" || ' ' || (COALESCE(\"Patronymic\", '')) " +
-                    "FROM \"Profile\".\"ProfilesInfo\"" + "WHERE \"UserId\" = us.executor_id) AS ExecutorName, " +
-                    "(SELECT status_name " +
-                    "FROM project_management.user_story_statuses " +
-                    "WHERE status_id = us.status_id) AS StatusName " +
-                    "FROM project_management.user_stories AS us " +
-                    "INNER JOIN project_management.user_story_statuses AS uss " +
-                    "ON us.status_id = uss.status_id " +
-                    "WHERE us.project_id = @projectId " +
-                    "AND us.story_description ILIKE '%' || @taskDescription || '%';";
-        }
+                    "AND us.story_description ILIKE '%' || @taskDescription || '%'" +
+                    "AND us.user_story_task_id NOT IN (SELECT project_task_id " +
+                    "FROM project_management.epic_tasks)";
 
         var result = await connection.QueryAsync<SearchAgileObjectOutput>(query, parameters);
 

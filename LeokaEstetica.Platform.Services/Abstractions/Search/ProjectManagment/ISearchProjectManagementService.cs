@@ -1,4 +1,3 @@
-using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Models.Dto.Output.Search.ProjectManagement;
 
 namespace LeokaEstetica.Platform.Services.Abstractions.Search.ProjectManagment;
@@ -9,7 +8,7 @@ namespace LeokaEstetica.Platform.Services.Abstractions.Search.ProjectManagment;
 public interface ISearchProjectManagementService
 {
     /// <summary>
-    /// Метод поиска Agile-объекта.
+    /// Метод поиска задач.
     /// Поиск происходит по атрибутам, которые передали.
     /// </summary>
     /// <param name="searchText">Поисковый текст.</param>
@@ -18,11 +17,12 @@ public interface ISearchProjectManagementService
     /// <param name="isByName">Признак поиска по названию задачи.</param>
     /// <param name="isByDescription">Признак поиска по описанию задачи.</param>
     /// <returns>Список найденных задач.</returns>
-    Task<IEnumerable<SearchAgileObjectOutput>> SearchTaskAsync(string searchText, IEnumerable<long> projectIds, bool isById,
-        bool isByName, bool isByDescription);
+    Task<IEnumerable<SearchAgileObjectOutput>> SearchTaskAsync(string searchText, IEnumerable<long> projectIds,
+        bool isById, bool isByName, bool isByDescription);
 
     /// <summary>
-    /// Метод находит Agile-объект. Это может быть задача, эпик, история, ошибка.
+    /// TODO: SearchAgileObjectTypeEnum пригодится, когда метод поиска задач объединим с этим методом.
+    /// Метод ищет задачи, истории, эпики, ошибки по разным критериям.
     /// </summary>
     /// <param name="searchText">Поисковый текст./</param>
     /// <param name="isSearchByProjectTaskId">Признак поиска по Id задачи в рамках проекта.</param>
@@ -30,9 +30,7 @@ public interface ISearchProjectManagementService
     /// <param name="isSearchByTaskDescription">Признак поиска по совпадению в описании.</param>
     /// <param name="projectId">Id проекта.</param>
     /// <param name="account">Аккаунт.</param>
-    /// <param name="searchAgileObjectType">Тип поиска объекта (чтобы понимать, что искать).</param>
-    /// <returns>Результат поиска.</returns>
+    /// <returns>Найденные задачи, истории, эпики, ошибки.</returns>
     Task<IEnumerable<SearchAgileObjectOutput>> SearchAgileObjectAsync(string searchText, bool isSearchByProjectTaskId,
-        bool isSearchByTaskName, bool isSearchByTaskDescription, long projectId, string account,
-        SearchAgileObjectTypeEnum searchAgileObjectType);
+        bool isSearchByTaskName, bool isSearchByTaskDescription, long projectId, string account);
 }

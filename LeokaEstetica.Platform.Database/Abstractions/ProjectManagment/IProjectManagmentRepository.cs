@@ -1,5 +1,4 @@
-﻿using LeokaEstetica.Platform.Core.Enums;
-using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
+﻿using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.Search.ProjectManagement;
 using LeokaEstetica.Platform.Models.Dto.Output.Template;
@@ -492,16 +491,8 @@ public interface IProjectManagmentRepository
     /// Метод добавляет задачу в эпик.
     /// </summary>
     /// <param name="epicId">Id эпика.</param>
-    /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
-    Task IncludeTaskEpicAsync(long epicId, long projectTaskId);
-
-    /// <summary>
-    /// Метод проверяет, чтобы задача уже не находилась в эпике.
-    /// </summary>
-    /// <param name="epicId">Id эпика.</param>
-    /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
-    /// <returns>Признак нахождения задачи в эпике.</returns>
-    Task<bool> IfIncludedTaskEpicAsync(long epicId, long projectTaskId);
+    /// <param name="projectTaskIds">Id задач в рамках проекта.</param>
+    Task IncludeTaskEpicAsync(long epicId, IEnumerable<long> projectTaskIds);
 
     /// <summary>
     /// Метод получает эпик, в который входит задача.
@@ -532,10 +523,9 @@ public interface IProjectManagmentRepository
     /// <param name="projectTaskId">Id задачи в рамках проекта./</param>
     /// <param name="projectId">Id проекта.</param>
     /// <param name="templateId">Id шаблона.</param>
-    /// <param name="searchAgileObjectType">Тип поиска объекта (чтобы понимать, что искать).</param>
     /// <returns>Найденные задачи, истории, эпики, ошибки.</returns>
-    public Task<IEnumerable<SearchAgileObjectOutput>> SearchAgileObjectByProjectTaskIdAsync(
-        long projectTaskId, long projectId, int templateId, SearchAgileObjectTypeEnum searchAgileObjectType);
+    public Task<IEnumerable<SearchAgileObjectOutput>> SearchAgileObjectByObjectIdAsync(
+        long projectTaskId, long projectId, int templateId);
     
     /// <summary>
     /// Метод ищет задачи, истории, эпики, ошибки по названию задачи, эпика, истории, ошибки.
@@ -543,10 +533,9 @@ public interface IProjectManagmentRepository
     /// <param name="taskName">Название задачи, эпика, истории, ошибки./</param>
     /// <param name="projectId">Id проекта.</param>
     /// <param name="templateId">Id шаблона.</param>
-    /// <param name="searchAgileObjectType">Тип поиска объекта (чтобы понимать, что искать).</param>
     /// <returns>Найденные задачи, истории, эпики, ошибки.</returns>
-    public Task<IEnumerable<SearchAgileObjectOutput>> SearchAgileObjectByTaskNameAsync(string taskName, long projectId,
-        int templateId, SearchAgileObjectTypeEnum searchAgileObjectType);
+    public Task<IEnumerable<SearchAgileObjectOutput>> SearchAgileObjectByObjectNameAsync(string taskName,
+        long projectId, int templateId);
     
     /// <summary>
     /// Метод ищет задачи, истории, эпики, ошибки по совпадении в описании задачи, эпика, истории, ошибки.
@@ -554,10 +543,9 @@ public interface IProjectManagmentRepository
     /// <param name="taskDescription">Описание задачи, эпика, истории, ошибки./</param>
     /// <param name="projectId">Id проекта.</param>
     /// <param name="templateId">Id шаблона.</param>
-    /// <param name="searchAgileObjectType">Тип поиска объекта (чтобы понимать, что искать).</param>
     /// <returns>Найденные задачи, истории, эпики, ошибки.</returns>
-    public Task<IEnumerable<SearchAgileObjectOutput>> SearchAgileObjectByTaskDescriptionAsync(
-        string taskDescription, long projectId, int templateId, SearchAgileObjectTypeEnum searchAgileObjectType);
+    public Task<IEnumerable<SearchAgileObjectOutput>> SearchAgileObjectByObjectDescriptionAsync(
+        string taskDescription, long projectId, int templateId);
 
     /// <summary>
     /// Метод планирует спринт.

@@ -16,6 +16,7 @@ using LeokaEstetica.Platform.Services.Abstractions.Project;
 using LeokaEstetica.Platform.Services.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Services.Abstractions.User;
 using LeokaEstetica.Platform.Services.Factors;
+using LeokaEstetica.Platform.Services.Helpers;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 
@@ -1662,9 +1663,8 @@ public class ProjectManagmentController : BaseController
                 exceptions.Add(new InvalidOperationException(err.ErrorMessage));
             }
 
-            var ex = new AggregateException("Ошибка добавления задачи в эпик. " +
-                                            $"ProjectId: {includeTaskEpicInput.ProjectId}. " +
-                                            $"ProjectTaskId: {includeTaskEpicInput.ProjectTaskId}. " +
+            var ex = new AggregateException("Ошибка добавления задач в эпик. " +
+                                            $"ProjectTaskIds: {includeTaskEpicInput.ProjectTaskIds}. " +
                                             $"EpicId: {includeTaskEpicInput.EpicId}", exceptions);
             _logger.LogError(ex, ex.Message);
             
@@ -1673,8 +1673,9 @@ public class ProjectManagmentController : BaseController
             throw ex;
         }
 
-        await _projectManagmentService.IncludeTaskEpicAsync(includeTaskEpicInput.EpicId,
-            includeTaskEpicInput.ProjectId, includeTaskEpicInput.ProjectTaskId, GetUserName());
+        await _projectManagmentService.IncludeTaskEpicAsync(
+            includeTaskEpicInput.EpicId.GetProjectTaskIdFromPrefixLink(), includeTaskEpicInput.ProjectTaskIds,
+            GetUserName(), CreateTokenFromHeader());
     }
 
     /// <summary>
