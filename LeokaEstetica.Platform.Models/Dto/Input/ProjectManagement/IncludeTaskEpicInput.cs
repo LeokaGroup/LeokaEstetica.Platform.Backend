@@ -8,15 +8,10 @@ public class IncludeTaskEpicInput
     /// <summary>
     /// Id эпика.
     /// </summary>
-    public long EpicId { get; set; }
+    public string EpicId { get; set; }
 
     /// <summary>
-    /// Id проекта.
+    /// Id задач в рамках проекта, которые добавляются в эпик.
     /// </summary>
-    public long ProjectId { get; set; }
-
-    /// <summary>
-    /// Id проекта в рамках задачи.
-    /// </summary>
-    public string ProjectTaskId { get; set; }
+    public IEnumerable<string> ProjectTaskIds { get; set; }
 }

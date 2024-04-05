@@ -61,7 +61,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     private readonly IProjectSettingsConfigRepository _projectSettingsConfigRepository;
     private readonly Lazy<IReversoService> _reversoService;
     private readonly Lazy<IFileManagerService> _fileManagerService;
-    private readonly Lazy<ISprintNotificationsService> _sprintNotificationsService;
+    private readonly Lazy<IProjectManagementNotificationService> _projectManagementNotificationService;
     private readonly IUserService _userService;
 
     /// <summary>
@@ -105,7 +105,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         IProjectSettingsConfigRepository projectSettingsConfigRepository,
         Lazy<IReversoService> reversoService,
         Lazy<IFileManagerService> fileManagerService,
-        Lazy<ISprintNotificationsService> sprintNotificationsService,
+        Lazy<IProjectManagementNotificationService> projectManagementNotificationService,
         IUserService userService)
     {
         _logger = logger;
@@ -119,7 +119,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         _projectSettingsConfigRepository = projectSettingsConfigRepository;
         _reversoService = reversoService;
         _fileManagerService = fileManagerService;
-        _sprintNotificationsService = sprintNotificationsService;
+        _projectManagementNotificationService = projectManagementNotificationService;
         _userService = userService;
     }
 
@@ -2591,7 +2591,8 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     }
 
     /// <inheritdoc />
-    public async Task IncludeTaskEpicAsync(long epicId, long projectId, string projectTaskId, string account)
+    public async Task IncludeTaskEpicAsync(long epicId, IEnumerable<string> projectTaskIds, string account,
+        string token)
     {
         try
         {
@@ -2603,27 +2604,33 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 throw ex;
             }
 
-            var projectTaskIdToNumber = projectTaskId.GetProjectTaskIdFromPrefixLink();
-            
-            // Проверяем, чтобы задача уже не находилась в эпике.
-            var ifIncluded = await _projectManagmentRepository.IfIncludedTaskEpicAsync(epicId, projectTaskIdToNumber);
+            var projectTaskIdToNumbers = projectTaskIds.Select(x => x.GetProjectTaskIdFromPrefixLink());
 
-            if (ifIncluded)
-            {
-                throw new InvalidOperationException("Задача уже находится в эпике. Ее добавление в эпик невозможно. " +
-                                                    $"ProjectTaskId: {projectTaskId}. " +
-                                                    $"ProjectTaskId: {projectTaskId}. " +
-                                                    $"ProjectId: {projectId}.");
-            }
+            await _projectManagmentRepository.IncludeTaskEpicAsync(epicId, projectTaskIdToNumbers);
             
-            await _projectManagmentRepository.IncludeTaskEpicAsync(epicId, projectTaskIdToNumber);
+            if (!string.IsNullOrEmpty(token))
+            {
+                await _projectManagementNotificationService.Value.SendNotifySuccessIncludeEpicTaskAsync(
+                    "Все хорошо",
+                    "Задачи успешно добавлены в эпик.",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);   
+            }
 
             // TODO: Тут добавить запись активности пользователя по userId (кто добавил задачу в эпик).
         }
-        
+
         catch (Exception ex)
         {
-             _logger.LogError(ex, ex.Message);
+            _logger?.LogError(ex, ex.Message);
+
+            if (!string.IsNullOrEmpty(token))
+            {
+                await _projectManagementNotificationService.Value.SendNotifyErrorIncludeEpicTaskAsync(
+                    "Что то пошло не так",
+                    "Ошибка при добавлении задач в эпик. Мы уже знаем о проблеме и уже занимаемся ей.",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, token);
+            }
+
             throw;
         }
     }
@@ -2754,7 +2761,8 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 {
                     if (!string.IsNullOrEmpty(token))
                     {
-                        await _sprintNotificationsService.Value.SendNotifySuccessPlaningSprintAsync("Все хорошо",
+                        await _projectManagementNotificationService.Value.SendNotifySuccessPlaningSprintAsync(
+                            "Все хорошо",
                             "Спринт успешно спланирован. Теперь его можно начать.",
                             NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);   
                     }

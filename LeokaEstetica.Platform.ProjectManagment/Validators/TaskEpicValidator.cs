@@ -14,18 +14,18 @@ public class TaskEpicValidator : AbstractValidator<IncludeTaskEpicInput>
     /// </summary>
     public TaskEpicValidator()
     {
-        RuleFor(p => p.ProjectTaskId)
+        RuleFor(p => p.ProjectTaskIds)
             .NotNull()
             .WithMessage(ValidationConst.ProjectManagmentValidation.NOT_VALID_PROJECT_TASK_ID)
             .NotEmpty()
+            .WithMessage(ValidationConst.ProjectManagmentValidation.NOT_VALID_PROJECT_TASK_ID)
+            .Must(x => x.Any())
             .WithMessage(ValidationConst.ProjectManagmentValidation.NOT_VALID_PROJECT_TASK_ID);
-        
-        RuleFor(p => p.ProjectId)
-            .Must(p => p > 0)
-            .WithMessage(ValidationConst.ProjectManagmentValidation.NOT_VALID_PROJECT_ID);
-            
+
         RuleFor(p => p.EpicId)
-            .Must(p => p > 0)
+            .NotNull()
+            .WithMessage(ValidationConst.ProjectManagmentValidation.NOT_VALID_EPIC_ID)
+            .NotEmpty()
             .WithMessage(ValidationConst.ProjectManagmentValidation.NOT_VALID_EPIC_ID);
     }
 }
