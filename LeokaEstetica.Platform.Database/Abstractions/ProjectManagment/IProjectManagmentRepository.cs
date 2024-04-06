@@ -48,8 +48,9 @@ public interface IProjectManagmentRepository
     /// Метод получает задачи проекта для рабочего пространства.
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
+    /// <param name="strategy">Стратегия пользователя.</param>
     /// <returns>Задачи проекта.</returns>
-    Task<IEnumerable<ProjectTaskExtendedEntity>> GetProjectTasksAsync(long projectId);
+    Task<IEnumerable<ProjectTaskExtendedEntity>> GetProjectTasksAsync(long projectId, string strategy);
 
     /// <summary>
     /// Метод получает названия тегов (меток) задач по их Id.

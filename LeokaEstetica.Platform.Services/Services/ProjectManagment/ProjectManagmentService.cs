@@ -618,6 +618,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             // Проставляем Id шаблона статусам.
             await SetProjectManagmentTemplateIdsAsync(statuses);
             
+            // TODO: Получать сохраненную стратегию пользователя, а не всего проекта.
             var strategy = projectSettingsItems.Find(x =>
                 x.ParamKey.Equals(GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_STRATEGY));
 
@@ -636,7 +637,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             modifyStatusesTimer.Start();
 
             // Получаем задачи пользователя, которые принадлежат проекту в рабочем пространстве.
-            var projectTasks = await _projectManagmentRepository.GetProjectTasksAsync(projectId);
+            var projectTasks = await _projectManagmentRepository.GetProjectTasksAsync(projectId, strategy!.ParamValue);
             
             modifyStatusesTimer.Stop();
                 
