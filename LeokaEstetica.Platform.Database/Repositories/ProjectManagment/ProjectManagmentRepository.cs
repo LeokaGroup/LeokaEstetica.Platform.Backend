@@ -145,20 +145,24 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
     /// <returns>Задачи проекта.</returns>
-    public async Task<IEnumerable<ProjectTaskExtendedEntity>> GetProjectTasksAsync(long projectId)
+    public async Task<IEnumerable<ProjectTaskExtendedEntity>> GetProjectTasksAsync(long projectId, string strategy)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
         
         var parameters = new DynamicParameters();
         parameters.Add("@projectId", projectId);
         parameters.Add("@prefix", GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_PROJECT_NAME_PREFIX);
+        parameters.Add("@strategy", strategy);
 
         var query = "SELECT t.task_id," +
                     "t.task_status_id," +
                     "t.author_id," +
                     "t.watcher_ids," +
-                    "t.name," +
-                    "t.details," +
+                    "CASE " +
+                    "WHEN @strategy = 'sm' THEN LEFT(t.name, 40) " +
+                    "WHEN @strategy = 'kn' THEN LEFT(t.name, 100) " +
+                    "END AS name," +
+                    "t.details AS details," +
                     "t.created," +
                     "t.updated," +
                     "t.project_id," +
@@ -179,7 +183,10 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
                     "es.status_id," +
                     "e.created_by AS author_id," +
                     "NULL," +
-                    "e.epic_name AS name," +
+                    "CASE " +
+                    "WHEN @strategy = 'sm' THEN LEFT(e.epic_name, 40) " +
+                    "WHEN @strategy = 'kn'THEN LEFT(e.epic_name, 100) " +
+                    "END AS name," +
                     "e.epic_description AS details," +
                     "e.created_at AS created," +
                     "e.updated_at AS updated," +
@@ -203,7 +210,10 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
                     "us.status_id," +
                     "us.created_by AS author_id," +
                     "us.watcher_ids," +
-                    "us.story_name AS name," +
+                    "CASE " +
+                    " WHEN @strategy = 'sm' THEN LEFT(us.story_name, 40) " +
+                    "WHEN @strategy = 'kn' THEN LEFT(us.story_name, 100) " +
+                    "END AS name," +
                     "us.story_description AS details," +
                     "us.created_at AS created," +
                     "us.updated_at AS updated," +
