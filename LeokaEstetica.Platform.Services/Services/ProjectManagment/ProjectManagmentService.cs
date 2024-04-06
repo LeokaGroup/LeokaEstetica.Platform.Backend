@@ -2863,9 +2863,9 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     }
 
     /// <inheritdoc />
-    public async Task UpdateTaskSprintAsync(long sprintId, string projectTaskId)
+    public async Task InsertOrUpdateTaskSprintAsync(long sprintId, string projectTaskId)
     {
-        await _projectManagmentRepository.UpdateTaskSprintAsync(sprintId,
+        await _projectManagmentRepository.InsertOrUpdateTaskSprintAsync(sprintId,
             projectTaskId.GetProjectTaskIdFromPrefixLink());
             
         // TODO: Тут добавить запись активности пользователя по userId (кто обновил спринт задачи).
