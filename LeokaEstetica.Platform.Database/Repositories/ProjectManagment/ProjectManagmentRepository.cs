@@ -560,12 +560,13 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         parameters.Add("@dateEnd", epic.DateEnd);
         parameters.Add("@priorityId", epic.PriorityId);
         parameters.Add("@initiativeId", epic.InitiativeId);
+        parameters.Add("@projectEpicId", epic.ProjectEpicId);
 
         var sql = @"INSERT INTO project_management.epics (epic_name, epic_description, created_by, created_at,
                                       project_id, initiative_id, date_start, date_end, priority_id, tag_ids,
-                                      resolution_id) 
+                                      resolution_id, project_epic_id) 
         VALUES (@epicName, @epicDescription, @createdBy, @createdAt, @projectId, @initiativeId, @dateStart, @dateEnd,
-                @priorityId, @tagIds, @resolutionId)";
+                @priorityId, @tagIds, @resolutionId, @projectEpicId)";
 
         await connection.ExecuteAsync(sql, parameters);
     }
