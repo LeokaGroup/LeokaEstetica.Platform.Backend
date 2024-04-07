@@ -848,7 +848,7 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         var compiler = new PostgresCompiler();
         var queryUpdateTask = new Query("project_management.project_tasks")
             .Where("project_id", projectId)
-            .Where("task_id", taskId)
+            .Where("project_task_id", taskId)
             .AsUpdate(new { task_status_id = changeStatusId });
         var sqlUpdateTask = compiler.Compile(queryUpdateTask).ToString();
 
