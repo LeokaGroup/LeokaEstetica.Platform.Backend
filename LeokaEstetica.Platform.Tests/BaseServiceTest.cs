@@ -43,6 +43,7 @@ using LeokaEstetica.Platform.Diagnostics.Services.Metrics;
 using LeokaEstetica.Platform.Finder.Services.Project;
 using LeokaEstetica.Platform.Finder.Services.Resume;
 using LeokaEstetica.Platform.Finder.Services.Vacancy;
+using LeokaEstetica.Platform.Integrations.Abstractions.Pachca;
 using LeokaEstetica.Platform.Integrations.Abstractions.Reverso;
 using LeokaEstetica.Platform.Integrations.Services.Pachca;
 using LeokaEstetica.Platform.Integrations.Services.Reverso;
@@ -69,7 +70,7 @@ using LeokaEstetica.Platform.Services.Services.Search.ProjectManagment;
 using LeokaEstetica.Platform.Services.Services.Subscription;
 using LeokaEstetica.Platform.Services.Services.User;
 using LeokaEstetica.Platform.Services.Services.Vacancy;
-using LeokaEstetica.Platform.Services.Strategies.ProjectManagement.SprintTaskSearch;
+using LeokaEstetica.Platform.Services.Strategies.ProjectManagement.AgileObjectSearch;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
@@ -292,7 +293,7 @@ internal class BaseServiceTest
         var searchProjectManagementRepository = new SearchProjectManagementRepository(connectionProvider);
         SearchProjectManagementService = new SearchProjectManagementService(null,
             searchProjectManagementRepository, ProjectManagmentRepository, projectSettingsConfigRepository,
-            userRepository);
+            userRepository, new Lazy<IPachcaService>(pachcaService));
 
         BaseSearchSprintTaskAlgorithm = new BaseSearchAgileObjectAlgorithm();
     }

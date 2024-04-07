@@ -22,8 +22,7 @@ public interface IProjectSettingsConfigRepository
         string redirectUrl, string projectManagementName, string projectManagementNamePrefix);
 
     /// <summary>
-    /// Метод получает Id проекта, который был ранее выбран пользователем для перехода к управлению проектом.
-    /// Необходимо для построения ссылки в рабочее пространство проекта.
+    /// Метод получает настройки и Id проекта.
     /// </summary>
     /// <returns>Данные конфигурации.</returns>
     Task<(IEnumerable<ConfigSpaceSettingEntity> Settings, long ProjectId)>
