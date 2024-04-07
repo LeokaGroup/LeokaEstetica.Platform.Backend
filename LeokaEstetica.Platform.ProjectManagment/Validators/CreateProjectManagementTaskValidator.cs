@@ -17,5 +17,11 @@ public class CreateProjectManagementTaskValidator : AbstractValidator<CreateProj
         RuleFor(p => p.ProjectId)
             .Must(p => p > 0)
             .WithMessage(ValidationConst.ProjectManagmentValidation.NOT_VALID_PROJECT_ID);
+            
+        RuleFor(p => p.Name)
+            .NotNull()
+            .WithMessage(ValidationConst.ProjectManagmentValidation.NOT_VALID_NAME)
+            .NotEmpty()
+            .WithMessage(ValidationConst.ProjectManagmentValidation.NOT_VALID_NAME);
     }
 }

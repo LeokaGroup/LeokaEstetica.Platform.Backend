@@ -288,5 +288,10 @@ public static class ValidationConst
         /// Если не передали Id спринта.
         /// </summary>
         public const string NOT_VALID_SPRINT_ID = "Id спринта не передан.";
+        
+        /// <summary>
+        /// Если передали невалидный название.
+        /// </summary>
+        public const string NOT_VALID_NAME = "Название не передано.";
     }
 }

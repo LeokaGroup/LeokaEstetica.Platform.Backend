@@ -258,8 +258,7 @@ public class ProjectManagmentController : BaseController
         [FromBody] CreateProjectManagementTaskInput projectManagementTaskInput)
     {
         var validator = await new CreateProjectManagementTaskValidator().ValidateAsync(projectManagementTaskInput);
-
-        // TODO: Добавить отправку на фронт ивент на каждое сообщение через сокеты.
+        
         if (validator.Errors.Any())
         {
             var exceptions = new List<InvalidOperationException>();
@@ -269,13 +268,16 @@ public class ProjectManagmentController : BaseController
                 exceptions.Add(new InvalidOperationException(err.ErrorMessage));
             }
 
-            var ex = new AggregateException($"Ошибка создания задачи проекта {projectManagementTaskInput.ProjectId}.",
+            var ex = new AggregateException($"Ошибка создания задачи проекта {projectManagementTaskInput.ProjectId}. " +
+                                            $"Тип задачи был: {projectManagementTaskInput.TaskTypeId}. " +
+                                            $"Название задачи: {projectManagementTaskInput.Name}. " +
+                                            $"Статус задачи: {projectManagementTaskInput.TaskStatusId}.",
                 exceptions);
             _logger.LogError(ex, ex.Message);
             
             await _pachcaService.Value.SendNotificationErrorAsync(ex);
-            
-            throw ex;
+
+            return new CreateProjectManagementTaskOutput { Errors = validator.Errors };
         }
 
         var result = await _projectManagmentService.CreateProjectTaskAsync(projectManagementTaskInput, GetUserName());

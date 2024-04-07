@@ -1,3 +1,5 @@
+using FluentValidation.Results;
+
 namespace LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 
 /// <summary>
@@ -9,4 +11,9 @@ public class CreateProjectManagementTaskOutput
     /// Url редиректа к задачам после создания задачи.
     /// </summary>
     public string RedirectUrl { get; set; }
+
+    /// <summary>
+    /// Ошибки валидации, если они есть.
+    /// </summary>
+    public List<ValidationFailure> Errors { get; set; }
 }
