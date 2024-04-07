@@ -1,4 +1,4 @@
-using LeokaEstetica.Platform.Services.Strategies.ProjectManagement.SprintTaskSearch;
+using LeokaEstetica.Platform.Services.Strategies.ProjectManagement.AgileObjectSearch;
 using NUnit.Framework;
 
 namespace LeokaEstetica.Platform.Tests.SearchTests;

@@ -5,10 +5,11 @@ using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.Config;
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Database.Abstractions.Search;
+using LeokaEstetica.Platform.Integrations.Abstractions.Pachca;
 using LeokaEstetica.Platform.Models.Dto.Output.Search.ProjectManagement;
 using LeokaEstetica.Platform.Services.Abstractions.Search.ProjectManagment;
 using LeokaEstetica.Platform.Services.Helpers;
-using LeokaEstetica.Platform.Services.Strategies.ProjectManagement.SprintTaskSearch;
+using LeokaEstetica.Platform.Services.Strategies.ProjectManagement.AgileObjectSearch;
 using Microsoft.Extensions.Logging;
 
 namespace LeokaEstetica.Platform.Services.Services.Search.ProjectManagment;
@@ -23,6 +24,7 @@ internal sealed class SearchProjectManagementService : ISearchProjectManagementS
     private readonly IProjectManagmentRepository _projectManagmentRepository;
     private readonly IProjectSettingsConfigRepository _projectSettingsConfigRepository;
     private readonly IUserRepository _userRepository;
+    private readonly Lazy<IPachcaService> _pachcaService;
 
     /// <summary>
     /// Конструктор.
@@ -31,17 +33,20 @@ internal sealed class SearchProjectManagementService : ISearchProjectManagementS
     /// <param name="searchProjectManagementRepository">Репозиторий поиска в модуле УП.</param>
     /// <param name="projectSettingsConfigRepository">Репозиторий настроек проектов.</param>
     /// <param name="userRepository">Репозиторий пользователей.</param>
+    /// <param name="pachcaService">Сервис пачки.</param>
     public SearchProjectManagementService(ILogger<SearchProjectManagementService> logger,
      ISearchProjectManagementRepository searchProjectManagementRepository,
      IProjectManagmentRepository projectManagmentRepository,
      IProjectSettingsConfigRepository projectSettingsConfigRepository,
-     IUserRepository userRepository)
+     IUserRepository userRepository,
+     Lazy<IPachcaService> pachcaService)
     {
         _logger = logger;
         _searchProjectManagementRepository = searchProjectManagementRepository;
         _projectManagmentRepository = projectManagmentRepository;
         _projectSettingsConfigRepository = projectSettingsConfigRepository;
         _userRepository = userRepository;
+        _pachcaService = pachcaService;
     }
 
     /// <inheritdoc />
@@ -94,12 +99,10 @@ internal sealed class SearchProjectManagementService : ISearchProjectManagementS
                 var ex = new NotFoundUserIdByAccountException(account);
                 throw ex;
             }
-
-            // TODO: Этот код дублируется в этом сервисе. Вынести в приватный метод и кортежем вернуть нужные данные.
+            
             // Получаем настройки проекта.
-            var projectSettings = await _projectSettingsConfigRepository.GetProjectSpaceSettingsByProjectIdAsync(
-                projectId, userId);
-            var projectSettingsItems = projectSettings?.AsList();
+            var projectSettings = await _projectSettingsConfigRepository.GetBuildProjectSpaceSettingsAsync(userId);
+            var projectSettingsItems = projectSettings.Settings?.AsList();
 
             if (projectSettingsItems is null
                 || !projectSettingsItems.Any()
@@ -110,17 +113,12 @@ internal sealed class SearchProjectManagementService : ISearchProjectManagementS
                                                     $"UserId: {userId}");
             }
 
-            var template = projectSettingsItems.Find(x =>
-                x.ParamKey.Equals(GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_TEMPLATE_ID))!.ParamValue;
-            var templateId = Convert.ToInt32(template);
-            
-            IEnumerable<SearchAgileObjectOutput> result = null;
+            List<SearchAgileObjectOutput> result = null;
             var strategy = new BaseSearchAgileObjectAlgorithm();
             var searchConditions = new List<bool>
             {
                 isSearchByProjectTaskId, isSearchByTaskName, isSearchByTaskDescription
             };
-            var isSplitProjectTaskId = false;
             long parsedProjectTaskId = 0;
             
             // Разбиваем поисковую строку по пробелам.
@@ -135,80 +133,125 @@ internal sealed class SearchProjectManagementService : ISearchProjectManagementS
 
                 // Если есть признак поиска по Id и если сплитованная строка содержит Id задачи с префиксом.
                 // То отделяем Id задачи от название или описания.
-                if (isSearchByProjectTaskId && splitedConditions.Contains(projectTaskPrefix))
+                if (isSearchByProjectTaskId && splitedConditions
+                        .Select(x => x.Contains(projectTaskPrefix))
+                        .Any(x => x))
                 {
                     try
                     {
                         // Успешно спарсили Id задачи с префиксом.
                         parsedProjectTaskId = splitedConditions.First().GetProjectTaskIdFromPrefixLink();
-                        isSplitProjectTaskId = true;
                     }
-                    catch (InvalidOperationException)
+                    catch (InvalidOperationException ex)
                     {
                         // Спарсить Id задачи с префиксом не удалось.
-                        isSplitProjectTaskId = false;
+                        await _pachcaService.Value.SendNotificationErrorAsync(ex);
+                        _logger?.LogError(ex, ex.Message);
+                    }
+                }
+
+                // Пробуем распарсить как число, вдруг передали просто Id задачи.
+                else
+                {
+                    // Если не получится как число, значит там текст и продолжим выполнять логику.
+                    if (long.TryParse(splitedConditions.First(), out parsedProjectTaskId))
+                    {
+                        parsedProjectTaskId = long.Parse(splitedConditions.First());
                     }
                 }
             }
             
+            var template = projectSettingsItems.Find(x =>
+                x.ParamKey.Equals(GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_TEMPLATE_ID))!.ParamValue;
+            var templateId = Convert.ToInt32(template);
+            
             // Если нужно искать по Id задачи в рамках проекта.
             // Если успешно распарсили Id задачи с префиксом.
-            if (isSearchByProjectTaskId && isSplitProjectTaskId)
+            if (isSearchByProjectTaskId || parsedProjectTaskId > 0)
             {
-                result = await strategy.SearchAgileObjectByObjectIdAsync(
+                if (parsedProjectTaskId == 0)
+                {
+                    parsedProjectTaskId = searchText.GetProjectTaskIdFromPrefixLink();
+                }
+                
+                result = (await strategy.SearchAgileObjectByObjectIdAsync(
                     new SearchAgileObjectByObjectIdStrategy(_projectManagmentRepository), parsedProjectTaskId,
-                    projectId, templateId);
+                    projectId, templateId))?.AsList();
             }
 
             // Если нужно искать по названию задачи.
             if (isSearchByTaskName)
             {
-                var joinedSearchText = string.Join(" ", ",");
+                var joinedSearchText = splitedConditions.Length > 1
+                    ? string.Join(" ", splitedConditions.Skip(1))
+                    : splitedConditions.First();
                 
                 // Если поиск по нескольким критериям, то дополняем результаты.
                 if (result is not null)
                 {
-                    var resultByObjectName = await strategy.SearchAgileObjectByObjectNameAsync(
-                        new SearchAgileObjectByObjectNameStrategy(_projectManagmentRepository), joinedSearchText,
-                        projectId, templateId);
-
-                    if (resultByObjectName is not null)
+                    try
                     {
-                        result = result.Union(resultByObjectName);
+                        var resultByObjectName = (await strategy.SearchAgileObjectByObjectNameAsync(
+                            new SearchAgileObjectByObjectNameStrategy(_projectManagmentRepository), joinedSearchText,
+                            projectId, templateId))?.AsList();
+
+                        if (resultByObjectName is not null && resultByObjectName.Any())
+                        {
+                            result = result.Union(resultByObjectName).AsList();
+                        }
+                    }
+                    
+                    // Если не реализовано, то не стапаем приложение, пропустим такой поиск.
+                    catch (NotImplementedException ex)
+                    {
+                        await _pachcaService.Value.SendNotificationErrorAsync(ex);
+                        _logger?.LogError(ex, ex.Message);
                     }
                 }
                 
                 else
                 {
-                    result = await strategy.SearchAgileObjectByObjectNameAsync(
-                        new SearchAgileObjectByObjectNameStrategy(_projectManagmentRepository), joinedSearchText, projectId,
-                        templateId);
+                    result = (await strategy.SearchAgileObjectByObjectNameAsync(
+                        new SearchAgileObjectByObjectNameStrategy(_projectManagmentRepository), joinedSearchText,
+                        projectId, templateId))?.AsList();
                 }
             }
             
             // Если нужно искать по описанию задачи.
             if (isSearchByTaskDescription)
             {
-                var joinedSearchText = string.Join(" ", ",");
+                var joinedSearchText = splitedConditions.Length > 1
+                    ? string.Join(" ", splitedConditions.Skip(1))
+                    : splitedConditions.First();
                 
                 // Если поиск по нескольким критериям, то дополняем результаты.
                 if (result is not null)
                 {
-                    var resultByObjectDescription = await strategy.SearchAgileObjectByObjectDescriptionAsync(
-                        new SearchAgileObjectByObjectNameStrategy(_projectManagmentRepository), joinedSearchText,
-                        projectId, templateId);
-
-                    if (resultByObjectDescription is not null)
+                    try
                     {
-                        result = result.Union(resultByObjectDescription);
+                        var resultByObjectDescription = (await strategy.SearchAgileObjectByObjectDescriptionAsync(
+                            new SearchAgileObjectByObjectDescriptionStrategy(_projectManagmentRepository), joinedSearchText,
+                            projectId, templateId))?.AsList();
+
+                        if (resultByObjectDescription is not null && resultByObjectDescription.Any())
+                        {
+                            result = result.Union(resultByObjectDescription).AsList();
+                        }
+                    }
+                    
+                    // Если не реализовано, то не стапаем приложение, пропустим такой поиск.
+                    catch (NotImplementedException ex)
+                    {
+                        await _pachcaService.Value.SendNotificationErrorAsync(ex);
+                        _logger?.LogError(ex, ex.Message);
                     }
                 }
 
                 else
                 {
-                    result = await strategy.SearchAgileObjectByObjectDescriptionAsync(
+                    result = (await strategy.SearchAgileObjectByObjectDescriptionAsync(
                         new SearchAgileObjectByObjectDescriptionStrategy(_projectManagmentRepository),
-                        joinedSearchText, projectId, templateId);
+                        joinedSearchText, projectId, templateId))?.AsList();
                 }
             }
 

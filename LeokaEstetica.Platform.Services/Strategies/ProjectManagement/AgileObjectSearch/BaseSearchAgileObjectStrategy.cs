@@ -1,7 +1,7 @@
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.Search.ProjectManagement;
 
-namespace LeokaEstetica.Platform.Services.Strategies.ProjectManagement.SprintTaskSearch;
+namespace LeokaEstetica.Platform.Services.Strategies.ProjectManagement.AgileObjectSearch;
 
 /// <summary>
 /// Базовый класс поиска задач для включения их в спринт.

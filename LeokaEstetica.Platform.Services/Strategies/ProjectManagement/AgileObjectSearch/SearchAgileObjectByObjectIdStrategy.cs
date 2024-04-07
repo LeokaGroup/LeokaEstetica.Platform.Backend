@@ -2,7 +2,7 @@ using Dapper;
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.Search.ProjectManagement;
 
-namespace LeokaEstetica.Platform.Services.Strategies.ProjectManagement.SprintTaskSearch;
+namespace LeokaEstetica.Platform.Services.Strategies.ProjectManagement.AgileObjectSearch;
 
 /// <summary>
 /// Стратегия поиска задачи по Id задачи в рамках проекта.
@@ -38,7 +38,7 @@ internal class SearchAgileObjectByObjectIdStrategy : BaseSearchAgileObjectStrate
         SearchAgileObjectByObjectNameAsync(string taskName, long projectId, int templateId)
     {
         throw new NotImplementedException(
-            "В стратегии SearchIncludeSprintTaskByProjectTaskIdStrategy не предполагается реализация SearchIncludeSprintTaskByTaskNameAsync.");
+            "В стратегии SearchAgileObjectByObjectIdStrategy не предполагается реализация SearchAgileObjectByObjectName.");
     }
 
     /// <inheritdoc />
@@ -46,6 +46,6 @@ internal class SearchAgileObjectByObjectIdStrategy : BaseSearchAgileObjectStrate
         string taskDescription, long projectId, int templateId)
     {
         throw new NotImplementedException(
-            "В стратегии SearchIncludeSprintTaskByProjectTaskIdStrategy не предполагается реализация SearchIncludeSprintTaskByTaskDescriptionAsync.");
+            "В стратегии SearchAgileObjectByObjectIdStrategy не предполагается реализация SearchAgileObjectByObjectDescription.");
     }
 }
