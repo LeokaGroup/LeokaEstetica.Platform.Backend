@@ -512,10 +512,21 @@ internal sealed class ProjectService : IProjectService
             var remarks = await _projectModerationRepository.GetProjectRemarksAsync(projectId);
             result.ProjectRemarks = _mapper.Map<IEnumerable<ProjectRemarkOutput>>(remarks);
             result.IsAccess = true;
+
+            if (!string.IsNullOrEmpty(result.ProjectDetails))
+            {
+                result.ProjectDetails = ClearHtmlBuilder.Clear(result.ProjectDetails);
+            }
             
-            result.ProjectDetails = ClearHtmlBuilder.Clear(result.ProjectDetails);
-            result.Conditions = ClearHtmlBuilder.Clear(result.Conditions);
-            result.Demands = ClearHtmlBuilder.Clear(result.Demands);
+            if (!string.IsNullOrEmpty(result.Conditions))
+            {
+                result.Conditions = ClearHtmlBuilder.Clear(result.Conditions);
+            }
+            
+            if (!string.IsNullOrEmpty(result.Demands))
+            {
+                result.Demands = ClearHtmlBuilder.Clear(result.Demands);
+            }
 
             return result;
         }
