@@ -230,8 +230,8 @@ internal sealed class SearchProjectManagementService : ISearchProjectManagementS
                     try
                     {
                         var resultByObjectDescription = (await strategy.SearchAgileObjectByObjectDescriptionAsync(
-                            new SearchAgileObjectByObjectDescriptionStrategy(_projectManagmentRepository), joinedSearchText,
-                            projectId, templateId))?.AsList();
+                            new SearchAgileObjectByObjectDescriptionStrategy(_projectManagmentRepository),
+                            joinedSearchText, projectId, templateId))?.AsList();
 
                         if (resultByObjectDescription is not null && resultByObjectDescription.Any())
                         {
