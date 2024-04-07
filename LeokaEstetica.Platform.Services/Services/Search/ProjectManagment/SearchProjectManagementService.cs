@@ -111,37 +111,108 @@ internal sealed class SearchProjectManagementService : ISearchProjectManagementS
             }
 
             var template = projectSettingsItems.Find(x =>
-                x.ParamKey.Equals(GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_TEMPLATE_ID));
-            var templateId = Convert.ToInt32(template!.ParamValue);
+                x.ParamKey.Equals(GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_TEMPLATE_ID))!.ParamValue;
+            var templateId = Convert.ToInt32(template);
             
             IEnumerable<SearchAgileObjectOutput> result = null;
             var strategy = new BaseSearchAgileObjectAlgorithm();
+            var searchConditions = new List<bool>
+            {
+                isSearchByProjectTaskId, isSearchByTaskName, isSearchByTaskDescription
+            };
+            var isSplitProjectTaskId = false;
+            long parsedProjectTaskId = 0;
+            
+            // Разбиваем поисковую строку по пробелам.
+            var splitedConditions = searchText.Split(" ");
+            
+            // Если комбинированный режим поиска (т.е. поиск идет по нескольким или всем критериям).
+            if (searchConditions.Count(x => x) > 1)
+            {
+                var projectTaskPrefix = projectSettingsItems.Find(x =>
+                        x.ParamKey.Equals(GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_PROJECT_NAME_PREFIX))!
+                    .ParamValue;
+
+                // Если есть признак поиска по Id и если сплитованная строка содержит Id задачи с префиксом.
+                // То отделяем Id задачи от название или описания.
+                if (isSearchByProjectTaskId && splitedConditions.Contains(projectTaskPrefix))
+                {
+                    try
+                    {
+                        // Успешно спарсили Id задачи с префиксом.
+                        parsedProjectTaskId = splitedConditions.First().GetProjectTaskIdFromPrefixLink();
+                        isSplitProjectTaskId = true;
+                    }
+                    catch (InvalidOperationException)
+                    {
+                        // Спарсить Id задачи с префиксом не удалось.
+                        isSplitProjectTaskId = false;
+                    }
+                }
+            }
             
             // Если нужно искать по Id задачи в рамках проекта.
-            if (isSearchByProjectTaskId)
+            // Если успешно распарсили Id задачи с префиксом.
+            if (isSearchByProjectTaskId && isSplitProjectTaskId)
             {
                 result = await strategy.SearchAgileObjectByObjectIdAsync(
-                    new SearchAgileObjectByObjectIdStrategy(_projectManagmentRepository),
-                    searchText.GetProjectTaskIdFromPrefixLink(), projectId, templateId);
+                    new SearchAgileObjectByObjectIdStrategy(_projectManagmentRepository), parsedProjectTaskId,
+                    projectId, templateId);
             }
 
             // Если нужно искать по названию задачи.
             if (isSearchByTaskName)
             {
-                result = await strategy.SearchAgileObjectByObjectNameAsync(
-                    new SearchAgileObjectByObjectNameStrategy(_projectManagmentRepository), searchText, projectId,
-                    templateId);
+                var joinedSearchText = string.Join(" ", ",");
+                
+                // Если поиск по нескольким критериям, то дополняем результаты.
+                if (result is not null)
+                {
+                    var resultByObjectName = await strategy.SearchAgileObjectByObjectNameAsync(
+                        new SearchAgileObjectByObjectNameStrategy(_projectManagmentRepository), joinedSearchText,
+                        projectId, templateId);
+
+                    if (resultByObjectName is not null)
+                    {
+                        result = result.Union(resultByObjectName);
+                    }
+                }
+                
+                else
+                {
+                    result = await strategy.SearchAgileObjectByObjectNameAsync(
+                        new SearchAgileObjectByObjectNameStrategy(_projectManagmentRepository), joinedSearchText, projectId,
+                        templateId);
+                }
             }
             
             // Если нужно искать по описанию задачи.
             if (isSearchByTaskDescription)
             {
-                result = await strategy.SearchAgileObjectByObjectDescriptionAsync(
-                    new SearchAgileObjectByObjectDescriptionStrategy(_projectManagmentRepository), searchText,
-                    projectId, templateId);
+                var joinedSearchText = string.Join(" ", ",");
+                
+                // Если поиск по нескольким критериям, то дополняем результаты.
+                if (result is not null)
+                {
+                    var resultByObjectDescription = await strategy.SearchAgileObjectByObjectDescriptionAsync(
+                        new SearchAgileObjectByObjectNameStrategy(_projectManagmentRepository), joinedSearchText,
+                        projectId, templateId);
+
+                    if (resultByObjectDescription is not null)
+                    {
+                        result = result.Union(resultByObjectDescription);
+                    }
+                }
+
+                else
+                {
+                    result = await strategy.SearchAgileObjectByObjectDescriptionAsync(
+                        new SearchAgileObjectByObjectDescriptionStrategy(_projectManagmentRepository),
+                        joinedSearchText, projectId, templateId);
+                }
             }
 
-            return result;
+            return result!.OrderBy(o => o.ProjectTaskId);
         }
         
         catch (Exception ex)

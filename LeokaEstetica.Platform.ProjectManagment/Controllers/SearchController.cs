@@ -89,7 +89,6 @@ public class SearchController : BaseController
     /// <param name="isSearchByTaskName">Признак поиска по названию задачи.</param>
     /// <param name="isSearchByTaskDescription">Признак поиска по совпадению в описании.</param>
     /// <param name="projectId">Id проекта.</param>
-    /// <param name="searchAgileObjectType">Тип поиска Agile-объекта.</param>
     /// <returns>Найденные задачи, истории, эпики, ошибки.</returns>
     [HttpGet]
     [Route("search-agile-object")]
@@ -107,7 +106,7 @@ public class SearchController : BaseController
             return Enumerable.Empty<SearchAgileObjectOutput>();
         }
 
-        var result = await _searchProjectManagementService.SearchAgileObjectAsync(searchText,
+        var result = await _searchProjectManagementService.SearchAgileObjectAsync(searchText.Trim(),
             isSearchByProjectTaskId, isSearchByTaskName, isSearchByTaskDescription, projectId, GetUserName());
 
         return result;
