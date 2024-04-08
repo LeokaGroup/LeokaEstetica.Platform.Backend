@@ -1582,6 +1582,16 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 await _projectManagmentRepository.ChangeEpicStatusAsync(projectId,
                     changeStatusId.GetProjectTaskIdFromPrefixLink(), onlyTaskId);
                 break;
+            
+            case TaskDetailTypeEnum.History:
+                await _projectManagmentRepository.ChangeStoryStatusAsync(projectId,
+                    changeStatusId.GetProjectTaskIdFromPrefixLink(), onlyTaskId);
+                break;
+                
+            case TaskDetailTypeEnum.Sprint:
+                await _projectManagmentRepository.ChangeSprintStatusAsync(projectId,
+                    changeStatusId.GetProjectTaskIdFromPrefixLink(), onlyTaskId);
+                break;
         }
     }
 

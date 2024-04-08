@@ -875,6 +875,42 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
     }
 
     /// <inheritdoc />
+    public async Task ChangeStoryStatusAsync(long projectId, long changeStatusId, long projectStoryId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@projectId", projectId);
+        parameters.Add("@changeStatusId", changeStatusId);
+        parameters.Add("@userStoryTaskId", projectStoryId);
+
+        var query = "UPDATE project_management.user_stories " +
+                    "SET status_id = @changeStatusId " +
+                    "WHERE project_id = @projectId " +
+                    "AND user_story_task_id = @userStoryTaskId";
+
+        await connection.ExecuteAsync(query, parameters);
+    }
+
+    /// <inheritdoc />
+    public async Task ChangeSprintStatusAsync(long projectId, long changeStatusId, long sprintStatusId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@projectId", projectId);
+        parameters.Add("@changeStatusId", changeStatusId);
+        parameters.Add("@sprintStatusId", sprintStatusId);
+
+        var query = "UPDATE project_management.sprints " +
+                    "SET status_id = @changeStatusId " +
+                    "WHERE project_id = @projectId " +
+                    "AND sprint_status_id = @sprintStatusId";
+
+        await connection.ExecuteAsync(query, parameters);
+    }
+
+    /// <inheritdoc />
     public async Task<ProjectManagmentTaskStatusTemplateEntity> GetTaskStatusByTaskStatusIdAsync(long taskStatusId,
         int templateId)
     {

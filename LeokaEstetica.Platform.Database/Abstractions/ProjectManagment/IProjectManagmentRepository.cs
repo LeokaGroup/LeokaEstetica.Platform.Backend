@@ -254,6 +254,22 @@ public interface IProjectManagmentRepository
     /// <param name="changeStatusId">Id статуса задачи, на который нужно изменить.</param>
     /// <param name="projectEpicId">Id эпика (здесь имеется в виду Id эпика в рамках проекта).</param>
     Task ChangeEpicStatusAsync(long projectId, long changeStatusId, long projectEpicId);
+    
+    /// <summary>
+    /// Метод изменяет статус истории.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="changeStatusId">Id статуса задачи, на который нужно изменить.</param>
+    /// <param name="projectStoryId">Id истории (здесь имеется в виду Id истории в рамках проекта).</param>
+    Task ChangeStoryStatusAsync(long projectId, long changeStatusId, long projectStoryId);
+    
+    /// <summary>
+    /// Метод изменяет статус спринта.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="changeStatusId">Id статуса задачи, на который нужно изменить.</param>
+    /// <param name="sprintStatusId">Id спринта (здесь имеется в виду Id спринта в рамках проекта).</param>
+    Task ChangeSprintStatusAsync(long projectId, long changeStatusId, long sprintStatusId);
 
     /// <summary>
     /// Метод получает данные статуса задачи по ее TaskStatusId.
