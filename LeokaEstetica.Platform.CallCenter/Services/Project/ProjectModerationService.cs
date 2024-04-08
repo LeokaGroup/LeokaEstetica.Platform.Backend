@@ -131,6 +131,14 @@ internal sealed class ProjectModerationService : IProjectModerationService
     {
         try
         {
+            var userId = await _userRepository.GetUserIdByEmailOrLoginAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+
             var result = new ApproveProjectOutput
             {
                 IsSuccess = await _projectModerationRepository.ApproveProjectAsync(projectId)
@@ -141,15 +149,7 @@ internal sealed class ProjectModerationService : IProjectModerationService
                 var ex = new InvalidOperationException($"Ошибка при одобрении проекта. ProjectId: {projectId}");
                 throw ex;
             }
-            
-            var userId = await _userRepository.GetUserIdByEmailOrLoginAsync(account);
 
-            if (userId <= 0)
-            {
-                var ex = new NotFoundUserIdByAccountException(account);
-                throw ex;
-            }
-            
             var user = await _userRepository.GetUserPhoneEmailByUserIdAsync(userId);
 
             var project = await _projectRepository.GetProjectAsync(projectId);
