@@ -2,6 +2,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.Net.Sockets;
 using LeokaEstetica.Platform.Database.Abstractions.Config;
+using LeokaEstetica.Platform.Models.Enums;
 using LeokaEstetica.Platform.ProjectManagment.Documents.Abstractions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -382,7 +383,7 @@ internal sealed class FileManagerService : IFileManagerService
 
     /// <inheritdoc />
     public async Task<IDictionary<long, FileContentResult>> GetUserAvatarFilesAsync(
-        IEnumerable<(long? UserId, string DocumentName)> documents, long projectId)
+        IEnumerable<(long? UserId, string DocumentName, DocumentTypeEnum DocumentType)> documents, long projectId)
     {
         var settings = await _globalConfigRepository.Value.GetFileManagerSettingsAsync();
         

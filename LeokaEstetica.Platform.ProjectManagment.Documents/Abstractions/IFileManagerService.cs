@@ -1,3 +1,4 @@
+using LeokaEstetica.Platform.Models.Enums;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -50,7 +51,7 @@ public interface IFileManagerService
     /// <param name="projectId">Id проекта.</param>
     /// <returns>Словарь с изображениями аватаров пользователей.</returns>
     Task<IDictionary<long, FileContentResult>> GetUserAvatarFilesAsync(
-        IEnumerable<(long? UserId, string DocumentName)> documents, long projectId);
+        IEnumerable<(long? UserId, string DocumentName, DocumentTypeEnum DocumentType)> documents, long projectId);
     
     /// <summary>
     /// Метод загружает файлы по SFTP на сервер.

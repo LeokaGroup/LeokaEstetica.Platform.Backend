@@ -423,8 +423,9 @@ public interface IProjectManagmentRepository
     /// </summary>
     /// <param name="userDocs">Документы пользователей.</param>
     /// <returns>список названий документов.</returns>
-    Task<IEnumerable<(long? UserId, string DocumentName)>> GetDocumentNameByDocumentIdsAsync(
-        IEnumerable<(long? UserId, long? DocumentId)> userDocs);
+    Task<IEnumerable<(long? UserId, string DocumentName, DocumentTypeEnum DocumentType)>>
+        GetDocumentNameByDocumentIdsAsync(IEnumerable<(long? UserId, long? DocumentId,
+            DocumentTypeEnum DocumentType)> userDocs);
 
     /// <summary>
     /// Метод удаляет документ по его Id.
@@ -487,8 +488,8 @@ public interface IProjectManagmentRepository
     /// <param name="userIds">Массив Id пользователей.</param>
     /// <param name="projectId">Id проекта.</param>
     /// <returns>Id документов. Может вернуть null, тогда будет выбран файл по дефолту nophoto.</returns>
-    Task<IEnumerable<(long? UserId, long? DocumentId)>> GetUserAvatarDocumentIdByUserIdsAsync(IEnumerable<long> userIds,
-        long projectId);
+    Task<IEnumerable<(long? UserId, long? DocumentId, DocumentTypeEnum DocumentType)>>
+        GetUserAvatarDocumentIdByUserIdsAsync(IEnumerable<long> userIds, long projectId);
 
     /// <summary>
     /// Метод получает список эпиков.

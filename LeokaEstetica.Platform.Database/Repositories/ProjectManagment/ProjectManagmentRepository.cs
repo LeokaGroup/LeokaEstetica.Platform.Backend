@@ -2,6 +2,7 @@
 using Dapper;
 using LeokaEstetica.Platform.Base.Abstractions.Connection;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.Base;
+using LeokaEstetica.Platform.Base.Extensions.StringExtensions;
 using LeokaEstetica.Platform.Core.Constants;
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
@@ -1468,8 +1469,9 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<(long? UserId, string DocumentName)>> GetDocumentNameByDocumentIdsAsync(
-        IEnumerable<(long? UserId, long? DocumentId)> userDocs)
+    public async Task<IEnumerable<(long? UserId, string DocumentName, DocumentTypeEnum DocumentType)>>
+        GetDocumentNameByDocumentIdsAsync(
+            IEnumerable<(long? UserId, long? DocumentId, DocumentTypeEnum DocumentType)> userDocs)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
         var docs = userDocs.AsList();
@@ -1477,14 +1479,25 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         var parameters = new DynamicParameters();
         parameters.Add("@documentIds", docs.Select(x => x.DocumentId).AsList());
         parameters.Add("@userIds", docs.Select(x => x.UserId).AsList());
+        parameters.Add("@documentTypes",
+            docs.Select(x => System.Enum.Parse<DocumentTypeEnum>(x.DocumentType.ToString())).AsList());
 
-        var query = @"SELECT user_id, document_name 
+        var query = @"SELECT user_id, document_name, document_type 
                       FROM documents.project_documents 
                       WHERE document_id = ANY(@documentIds) 
                         AND user_id IS NOT NULL 
-                        AND user_id = ANY(@userIds)";
+                        AND user_id = ANY(@userIds) 
+                        AND document_type = ANY(@documentTypes)";
 
-        var result = await connection.QueryAsync<(long? UserId, string DocumentName)>(query, parameters);
+        var items = await connection.QueryAsync<(long? UserId, string DocumentName, string DocumentType)>(
+            query, parameters);
+        var result = new List<(long? UserId, string DocumentName, DocumentTypeEnum DocumentType)>();
+
+        foreach (var item in items)
+        {
+            result.Add((item.UserId, item.DocumentName,
+                System.Enum.Parse<DocumentTypeEnum>(item.DocumentType.ToPascalCaseFromSnakeCase())));
+        }
 
         return result;
     }
@@ -1673,22 +1686,31 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<(long? UserId, long? DocumentId)>> GetUserAvatarDocumentIdByUserIdsAsync(
-        IEnumerable<long> userIds,
-        long projectId)
+    public async Task<IEnumerable<(long? UserId, long? DocumentId, DocumentTypeEnum DocumentType)>>
+        GetUserAvatarDocumentIdByUserIdsAsync(IEnumerable<long> userIds, long projectId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
 
         var parameters = new DynamicParameters();
         parameters.Add("@userIds", userIds.AsList());
         parameters.Add("@projectId", projectId);
+        parameters.Add("@documentType", new Enum(DocumentTypeEnum.ProjectUserAvatar));
 
-        var query = @"SELECT user_id, document_id 
+        var query = @"SELECT user_id, document_id, document_type 
                       FROM documents.project_documents 
                       WHERE project_id = @projectId 
-                        AND user_id = ANY(@userIds)";
+                        AND user_id = ANY(@userIds) 
+                        AND document_type = @documentType";
 
-        var result = await connection.QueryAsync<(long? UserId, long? DocumentId)>(query, parameters);
+        var items = await connection.QueryAsync<(long? UserId, long? DocumentId, string DocumentType)>(
+            query, parameters);
+        var result = new List<(long? UserId, long? DocumentId, DocumentTypeEnum DocumentType)>();
+
+        foreach (var item in items)
+        {
+            result.Add((item.UserId, item.DocumentId,
+                System.Enum.Parse<DocumentTypeEnum>(item.DocumentType.ToPascalCaseFromSnakeCase())));
+        }
 
         return result;
     }

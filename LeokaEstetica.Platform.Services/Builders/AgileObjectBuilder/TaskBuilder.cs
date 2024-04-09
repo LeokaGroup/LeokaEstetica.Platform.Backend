@@ -137,8 +137,11 @@ internal class TaskBuilder : AgileObjectBuilder
 
                 foreach (var tg in tagIds)
                 {
-                    var tgName = tags.TryGet(tg).TagName;
-                    tagNames.Add(tgName);
+                    var tgName = tags.TryGet(tg)?.TagName;
+                    if (tgName is not null)
+                    {
+                        tagNames.Add(tgName);
+                    }
                 }
 
                 ProjectManagmentTask.TagNames = tagNames;
