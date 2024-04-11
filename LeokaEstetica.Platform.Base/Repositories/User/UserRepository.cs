@@ -154,23 +154,36 @@ internal sealed class UserRepository : IUserRepository
     /// <returns>Id пользователя.</returns>
     public async Task<long> GetUserByEmailAsync(string account)
     {
-        try
-        {
-            var result = await _pgContext.Users
-                .Where(u => u.Email.Equals(account))
-                .Select(u => u.UserId)
-                .FirstOrDefaultAsync();
+        var result = await _pgContext.Users
+            .Where(u => u.Email.Equals(account))
+            .Select(u => u.UserId)
+            .FirstOrDefaultAsync();
 
-            return result;
-        }
-        
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, ex.Message);
-            throw;
-        }
+        return result;
     }
-    
+
+    /// <inheritdoc />
+    public async Task<IEnumerable<string>> GetUserEmailByUserIdsAsync(IEnumerable<long> userIds)
+    {
+        var result = await _pgContext.Users
+            .Where(u => userIds.Contains(u.UserId))
+            .Select(u => u.Email)
+            .ToListAsync();
+
+        return result;
+    }
+
+    /// <inheritdoc />
+    public async Task<IEnumerable<long>> GetUserByEmailsAsync(IEnumerable<string> accounts)
+    {
+        var result = await _pgContext.Users
+            .Where(u => accounts.Contains(u.Email))
+            .Select(u => u.UserId)
+            .ToListAsync();
+
+        return result;
+    }
+
     /// <summary>
     /// Метод получает код пользователя по его почте.
     /// </summary>
@@ -722,6 +735,27 @@ internal sealed class UserRepository : IUserRepository
                 UserId = u.UserId
             })
             .ToDictionaryAsync(k => k.UserId, v => v);
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод получает данные профиля пользователей по их Id.
+    /// </summary>
+    /// <param name="userIds">Id пользователей.</param>
+    /// <returns>Данные профиля пользователей.</returns>
+    public async Task<IEnumerable<ProfileInfoEntity>> GetProfileInfoByUserIdsAsync(IEnumerable<long> userIds)
+    {
+        var result = await _pgContext.ProfilesInfo
+            .Where(p => userIds.Contains(p.UserId))
+            .Select(p => new ProfileInfoEntity
+            {
+                UserId = p.UserId,
+                FirstName = p.FirstName,
+                LastName = p.LastName,
+                Patronymic = p.Patronymic
+            })
+            .ToListAsync();
 
         return result;
     }

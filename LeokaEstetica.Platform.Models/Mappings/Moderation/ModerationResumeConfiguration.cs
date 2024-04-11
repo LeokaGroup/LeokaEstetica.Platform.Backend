@@ -18,7 +18,7 @@ public partial class ModerationResumeConfiguration : IEntityTypeConfiguration<Mo
 
         entity.Property(e => e.DateModeration)
             .HasColumnName("DateModeration")
-            .HasColumnType("timestamp");
+            .HasColumnType("timestamp with time zone");
 
         entity.HasOne(p => p.ModerationStatus)
             .WithMany(b => b.ModerationResumes)

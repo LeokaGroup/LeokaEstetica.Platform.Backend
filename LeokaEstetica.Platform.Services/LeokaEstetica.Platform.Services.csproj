@@ -16,10 +16,11 @@
       <ProjectReference Include="..\LeokaEstetica.Platform.CallCenter\LeokaEstetica.Platform.CallCenter.csproj" />
       <ProjectReference Include="..\LeokaEstetica.Platform.Notifications\LeokaEstetica.Platform.Notifications.csproj" />
       <ProjectReference Include="..\LeokaEstetica.Platform.Processing\LeokaEstetica.Platform.Processing.csproj" />
+      <ProjectReference Include="..\LeokaEstetica.Platform.ProjectManagment.Documents\LeokaEstetica.Platform.ProjectManagment.Documents.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.10.0" />
+      <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.24.0" />
     </ItemGroup>
 
 </Project>

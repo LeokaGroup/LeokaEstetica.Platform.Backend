@@ -1,3 +1,4 @@
+using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 using LeokaEstetica.Platform.Models.Entities.Configs;
 
 namespace LeokaEstetica.Platform.Database.Abstractions.Config;
@@ -21,4 +22,10 @@ public interface IGlobalConfigRepository
     /// <param name="key">Ключ для получения значения.</param>
     /// <returns>Данные из конфига.</returns>
     Task<GlobalConfigEntity> GetConfigByKeyAsync(string key);
+
+    /// <summary>
+    /// Метод получает настройки сервиса работы с файлами.
+    /// </summary>
+    /// <returns>Настройки.</returns>
+    Task<FileManagerSettingsOutput> GetFileManagerSettingsAsync();
 }

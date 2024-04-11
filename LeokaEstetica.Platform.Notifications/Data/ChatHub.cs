@@ -12,14 +12,15 @@ using LeokaEstetica.Platform.Redis.Models.Chat;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using Enum = System.Enum;
 
 [assembly: InternalsVisibleTo("LeokaEstetica.Platform.Backend")]
-[assembly: InternalsVisibleTo("LeokaEstetica.Platform.ProjectManagment")]
 
 namespace LeokaEstetica.Platform.Notifications.Data;
 
 /// <summary>
 /// Класс логики хаба для чатов.
+/// Также используется для уведомлений у основного модуля системы.
 /// </summary>
 internal sealed class ChatHub : Hub
 {

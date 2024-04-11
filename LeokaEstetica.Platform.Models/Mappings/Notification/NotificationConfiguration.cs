@@ -61,7 +61,7 @@ public partial class NotificationConfiguration : IEntityTypeConfiguration<Notifi
         
         entity.Property(e => e.Created)
             .HasColumnName("Created")
-            .HasColumnType("timestamp")
+            .HasColumnType("timestamp with time zone")
             .HasDefaultValue(DateTime.UtcNow)
             .IsRequired();
         

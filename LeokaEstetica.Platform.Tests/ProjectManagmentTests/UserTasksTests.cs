@@ -16,12 +16,7 @@ internal class UserTasksTests : BaseServiceTest
         {
             _ = await PgContext.ProjectTasks.FirstOrDefaultAsync();
         });
-        
-        Assert.DoesNotThrowAsync(async () =>
-        {
-            _ = await PgContext.TaskStatuses.FirstOrDefaultAsync();
-        });
-        
+
         Assert.DoesNotThrowAsync(async () =>
         {
             _ = await PgContext.TaskRelations.FirstOrDefaultAsync();
@@ -41,12 +36,7 @@ internal class UserTasksTests : BaseServiceTest
         {
             _ = await PgContext.TaskComments.FirstOrDefaultAsync();
         });
-        
-        Assert.DoesNotThrowAsync(async () =>
-        {
-            _ = await PgContext.TaskTags.FirstOrDefaultAsync();
-        });
-        
+
         Assert.DoesNotThrowAsync(async () =>
         {
             _ = await PgContext.TaskTypes.FirstOrDefaultAsync();

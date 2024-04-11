@@ -1,12 +1,12 @@
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using AutoMapper;
+using Dapper;
 using LeokaEstetica.Platform.Access.Abstractions.AvailableLimits;
 using LeokaEstetica.Platform.Access.Abstractions.User;
 using LeokaEstetica.Platform.Access.Consts;
 using LeokaEstetica.Platform.Access.Enums;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
-using LeokaEstetica.Platform.Base.Abstractions.Services.Pachca;
 using LeokaEstetica.Platform.Core.Constants;
 using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Core.Exceptions;
@@ -38,6 +38,7 @@ using LeokaEstetica.Platform.Services.Strategies.Project.Team;
 using LeokaEstetica.Platform.Base.Extensions.HtmlExtensions;
 using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Project;
+using LeokaEstetica.Platform.Integrations.Abstractions.Discord;
 using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Project;
 using LeokaEstetica.Platform.Models.Entities.Moderation;
 using LeokaEstetica.Platform.Services.Helpers;
@@ -112,7 +113,7 @@ internal sealed class ProjectService : IProjectService
     
     private const string NOT_AVAILABLE_DELETE_PROJECT_ARCHIVE = "Невозможно убрать проект из архива, так как у Вас уже опубликовано максимальное количество проектов соответствующих максимальному лимиту тарифа. Добавьте в архив проекты, чтобы освободить лимиты либо перейдите на тариф, который имеет большие лимиты";
 
-    private readonly IPachcaService _pachcaService;
+    private readonly IDiscordService _discordService;
 
     /// <summary>
     /// Конструктор.
@@ -130,7 +131,7 @@ internal sealed class ProjectService : IProjectService
     /// <param name="accessUserNotificationsService">Сервис уведомлений доступа пользователя.</param>
     /// <param name="accessUserService">Сервис доступа пользователя.</param>
     /// <param name="projectModerationRepository">Репозиторий модерации проектов.</param>
-    /// <param name="pachcaService">Сервис уведомлений пачки.</param>
+    /// <param name="discordService">Сервис уведомлений дискорда.</param>
     public ProjectService(IProjectRepository projectRepository,
         ILogger<ProjectService> logger,
         IUserRepository userRepository,
@@ -148,7 +149,7 @@ internal sealed class ProjectService : IProjectService
         IFillColorProjectsService fillColorProjectsService, 
         IMailingsService mailingsService, 
         IProjectModerationRepository projectModerationRepository,
-        IPachcaService pachcaService)
+        IDiscordService discordService)
     {
         _projectRepository = projectRepository;
         _logger = logger;
@@ -167,7 +168,7 @@ internal sealed class ProjectService : IProjectService
         _fillColorProjectsService = fillColorProjectsService;
         _mailingsService = mailingsService;
         _projectModerationRepository = projectModerationRepository;
-        _pachcaService = pachcaService;
+        _discordService = discordService;
 
         // Определяем обработчики цепочки фильтров.
         _dateProjectsFilterChain.Successor = _projectsVacanciesFilterChain;
@@ -220,6 +221,13 @@ internal sealed class ProjectService : IProjectService
             
             // Получаем подписку пользователя.
             var userSubscription = await _subscriptionRepository.GetUserSubscriptionAsync(userId);
+            
+            if (userSubscription is null)
+            {
+                throw new InvalidOperationException("Найдена невалидная подписка пользователя. " +
+                                                    $"UserId: {userId}. " +
+                                                    "Подписка была NULL или невалидная.");
+            }
             
             // Получаем тариф, на который оформлена подписка у пользователя.
             var fareRule = await _fareRuleRepository.GetByIdAsync(userSubscription.ObjectId);
@@ -293,7 +301,7 @@ internal sealed class ProjectService : IProjectService
             await _mailingsService.SendNotificationCreatedProjectAsync(user.Email, projectName, projectId);
 
             // Отправляем уведомление об отправленном проекте на модерацию.
-            await _pachcaService.SendNotificationCreatedProjectBeforeModerationAsync(projectId);
+            await _discordService.SendNotificationCreatedProjectBeforeModerationAsync(projectId);
 
             return project;
         }
@@ -504,10 +512,21 @@ internal sealed class ProjectService : IProjectService
             var remarks = await _projectModerationRepository.GetProjectRemarksAsync(projectId);
             result.ProjectRemarks = _mapper.Map<IEnumerable<ProjectRemarkOutput>>(remarks);
             result.IsAccess = true;
+
+            if (!string.IsNullOrEmpty(result.ProjectDetails))
+            {
+                result.ProjectDetails = ClearHtmlBuilder.Clear(result.ProjectDetails);
+            }
             
-            result.ProjectDetails = ClearHtmlBuilder.Clear(result.ProjectDetails);
-            result.Conditions = ClearHtmlBuilder.Clear(result.Conditions);
-            result.Demands = ClearHtmlBuilder.Clear(result.Demands);
+            if (!string.IsNullOrEmpty(result.Conditions))
+            {
+                result.Conditions = ClearHtmlBuilder.Clear(result.Conditions);
+            }
+            
+            if (!string.IsNullOrEmpty(result.Demands))
+            {
+                result.Demands = ClearHtmlBuilder.Clear(result.Demands);
+            }
 
             return result;
         }
@@ -1332,6 +1351,13 @@ internal sealed class ProjectService : IProjectService
             // Получаем подписку пользователя.
             var userSubscription = await _subscriptionRepository.GetUserSubscriptionAsync(userId);
             
+            if (userSubscription is null)
+            {
+                throw new InvalidOperationException("Найдена невалидная подписка пользователя. " +
+                                                    $"UserId: {userId}. " +
+                                                    "Подписка была NULL или невалидная.");
+            }
+            
             // Получаем тариф, на который оформлена подписка у пользователя.
             var fareRule = await _fareRuleRepository.GetByIdAsync(userSubscription.ObjectId);
             var fareRuleName = fareRule.Name;
@@ -1964,7 +1990,7 @@ internal sealed class ProjectService : IProjectService
             // Находим проекты в архиве.
             var archivedProjects = await _projectRepository.GetUserProjectsArchiveAsync(userId);
 
-            var archivedProjectEntities = archivedProjects.ToList();
+            var archivedProjectEntities = archivedProjects.AsList();
             
             if (!archivedProjectEntities.Any())
             {
@@ -1974,7 +2000,7 @@ internal sealed class ProjectService : IProjectService
             result.ProjectsArchive = _mapper.Map<List<ProjectArchiveOutput>>(archivedProjects);
             
             await CreateProjectsDatesHelper.CreateDatesResultAsync(archivedProjectEntities,
-                result.ProjectsArchive.ToList());
+                result.ProjectsArchive.AsList());
 
             return result;
         }
@@ -2152,15 +2178,22 @@ internal sealed class ProjectService : IProjectService
     {
         foreach (var p in projects)
         {
+            var userId = p.UserId;
+            
             // Получаем подписку пользователя.
-            var userSubscription = await _subscriptionRepository.GetUserSubscriptionAsync(p.UserId);
+            var userSubscription = await _subscriptionRepository.GetUserSubscriptionAsync(userId);
 
             if (userSubscription is null)
             {
-                // TODO: Как то было такое, если будет еще. То тут проблема была в данных.
-                // TODO: У пользователя не стоял признак IsActive = true.
-                throw new InvalidOperationException("Не удалось получить подписку пользователя." +
-                                                    $"UserIdL {p.UserId}.");
+                var ex = new InvalidOperationException("Найдена невалидная подписка пользователя. " +
+                                                    $"UserId: {userId}. " +
+                                                    "Подписка была NULL или невалидная.");
+                // Отправляем ивент в пачку.
+                await _discordService.SendNotificationErrorAsync(ex);
+                
+                // Если ошибка, то не стопаем выполнение логики, а вернем проекты, пока будем разбираться с ошибкой.
+                // Без тегов не страшно отобразить проекты.
+                return projects;
             }
 
             // Такая подписка не дает тегов.
@@ -2269,7 +2302,7 @@ internal sealed class ProjectService : IProjectService
             _logger.LogError(aggEx, aggEx.Message);
             
             // Отправляем ошибки в чат пачки.
-            await _pachcaService.SendNotificationErrorAsync(aggEx);
+            await _discordService.SendNotificationErrorAsync(aggEx);
         }
     }
     

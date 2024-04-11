@@ -9,6 +9,7 @@ using LeokaEstetica.Platform.Models.Dto.Output.Commerce.PayMaster;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce.YandexKassa;
 using LeokaEstetica.Platform.Models.Dto.Output.Communication;
 using LeokaEstetica.Platform.Models.Dto.Output.Configs;
+using LeokaEstetica.Platform.Models.Dto.Output.Document;
 using LeokaEstetica.Platform.Models.Dto.Output.FareRule;
 using LeokaEstetica.Platform.Models.Dto.Output.Header;
 using LeokaEstetica.Platform.Models.Dto.Output.Landing;
@@ -34,6 +35,7 @@ using LeokaEstetica.Platform.Models.Entities.Commerce;
 using LeokaEstetica.Platform.Models.Entities.Common;
 using LeokaEstetica.Platform.Models.Entities.Communication;
 using LeokaEstetica.Platform.Models.Entities.Configs;
+using LeokaEstetica.Platform.Models.Entities.Document;
 using LeokaEstetica.Platform.Models.Entities.FareRule;
 using LeokaEstetica.Platform.Models.Entities.Landing;
 using LeokaEstetica.Platform.Models.Entities.Moderation;
@@ -212,15 +214,52 @@ public class MappingProfile : Profile
         
         CreateMap<ViewStrategyEntity, ViewStrategyOutput>();
         
-        CreateMap<ProjectManagmentHeaderEntity, ProjectManagmentHeaderOutput>();
+        CreateMap<PanelEntity, PanelOutput>();
         CreateMap<ProjectTaskEntity, ProjectManagmentTaskOutput>();
+        CreateMap<ProjectTaskExtendedEntity, ProjectManagmentTaskOutput>();
+        
+        CreateMap<EpicEntity, ProjectManagmentTaskOutput>()
+            .ForMember(p => p.Name, p => p.MapFrom(src => src.EpicName))
+            .ForMember(p => p.AuthorId, p => p.MapFrom(src => src.CreatedBy))
+            .ForMember(p => p.Details, p => p.MapFrom(src => src.EpicDescription))
+            .ForMember(p => p.Updated, p => p.MapFrom(src => src.UpdatedAt ?? src.CreatedAt))
+            .ForMember(p => p.ProjectTaskId, p => p.MapFrom(src => src.ProjectEpicId))
+            .ForMember(p => p.ExecutorId, p => p.MapFrom(src => src.CreatedBy))
+            .ForMember(p => p.Created, p => p.MapFrom(src => src.CreatedAt))
+            .ForMember(p => p.TaskId, p => p.MapFrom(src => src.EpicId));
+        
+        // CreateMap<HistoryEntity, ProjectManagmentTaskOutput>();
+        CreateMap<UserStoryOutput, ProjectManagmentTaskOutput>()
+            .ForMember(p => p.Name, p => p.MapFrom(src => src.StoryName))
+            .ForMember(p => p.AuthorId, p => p.MapFrom(src => src.CreatedBy))
+            .ForMember(p => p.Details, p => p.MapFrom(src => src.StoryDescription))
+            .ForMember(p => p.Updated, p => p.MapFrom(src => src.UpdatedAt ?? src.CreatedAt))
+            .ForMember(p => p.ProjectTaskId, p => p.MapFrom(src => src.UserStoryTaskId))
+            .ForMember(p => p.ExecutorId, p => p.MapFrom(src => src.CreatedBy))
+            .ForMember(p => p.Created, p => p.MapFrom(src => src.CreatedAt))
+            .ForMember(p => p.TaskId, p => p.MapFrom(src => src.EpicId));
 
         CreateMap<ProjectManagmentTaskTemplateEntity, ProjectManagmentTaskTemplateOutput>();
         CreateMap<ProjectManagmentTaskStatusTemplateEntity, ProjectManagmentTaskStatusTemplateOutput>();
         CreateMap<ProjectManagmentTaskTemplateEntityResult, ProjectManagmentTaskTemplateResult>();
         CreateMap<TaskPriorityEntity, TaskPriorityOutput>();
         CreateMap<TaskTypeEntity, TaskTypeOutput>();
-        CreateMap<TaskTagEntity, TaskTagOutput>();
+        CreateMap<ProjectTagEntity, ProjectTagOutput>();
+        CreateMap<ProjectManagmentTaskStatusTemplateEntity, TaskStatusOutput>();
+        
+        CreateMap<ProfileInfoEntity, TaskPeopleOutput>()
+            .ForMember(p => p.SecondName, p => p.MapFrom(src => src.Patronymic));
+        
+        CreateMap<ProjectDocumentEntity, ProjectTaskFileOutput>();
+        
+        CreateMap<ProjectTaskCommentEntity, TaskCommentOutput>();
+        CreateMap<ProjectTaskCommentExtendedEntity, TaskCommentOutput>();
+        
+        CreateMap<EpicEntity, EpicOutput>();
+        CreateMap<EpicEntity, AvailableEpicOutput>();
+        
+        CreateMap<UserStoryEntity, UserStoryOutput>();
+        CreateMap<UserStoryStatusEntity, UserStoryStatusOutput>();
     }
     
     /// <summary>

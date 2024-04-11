@@ -14,7 +14,7 @@ public partial class ProjectManagmentTaskStatusTemplateConfiguration : IEntityTy
 
         entity.Property(e => e.StatusId)
             .HasColumnName("StatusId")
-            .HasColumnType("serial");
+            .HasColumnType("bigserial");
 
         entity.Property(e => e.StatusName)
             .HasColumnName("StatusName")
