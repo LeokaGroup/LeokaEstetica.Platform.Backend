@@ -8,6 +8,7 @@ using LeokaEstetica.Platform.Core.Utils;
 using LeokaEstetica.Platform.Integrations.Filters;
 using LeokaEstetica.Platform.Notifications.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -154,7 +155,14 @@ builder.Services.AddFluentValidation(conf =>
 builder.Logging.ClearProviders();
 builder.Host.UseNLog();
 
-builder.Services.AddProblemDetails();
+builder.Services.AddProblemDetails(x =>
+{
+    x.CustomizeProblemDetails = ctx =>
+    {
+        var exception = ctx.HttpContext.Features.Get<IExceptionHandlerPathFeature>()?.Error;
+        throw exception!;
+    };
+});
 
 var app = builder.Build();
 
