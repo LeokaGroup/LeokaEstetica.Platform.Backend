@@ -36,12 +36,6 @@ public interface IVacancyRepository
     /// </summary>
     /// <returns>Список вакансий.</returns>
     Task<List<CatalogVacancyOutput>> CatalogVacanciesAsync();
-    
-    /// <summary>
-    /// Метод получает список вакансий для каталога (без выгрузки в память).
-    /// </summary>
-    /// <returns>Список вакансий.</returns>
-    Task<IOrderedQueryable<CatalogVacancyOutput>> CatalogVacanciesWithoutMemoryAsync();
 
     /// <summary>
     /// Метод получает названия полей для таблицы вакансий проектов пользователя.

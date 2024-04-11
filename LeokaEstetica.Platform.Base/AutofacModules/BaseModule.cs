@@ -1,19 +1,17 @@
 using Autofac;
-using LeokaEstetica.Platform.Base.Abstractions.Connection;
 using LeokaEstetica.Platform.Base.Abstractions.Messaging.Mail;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.Chat;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.Validation;
 using LeokaEstetica.Platform.Base.Abstractions.Services.Messaging.Mail;
+using LeokaEstetica.Platform.Base.Abstractions.Services.Pachca;
 using LeokaEstetica.Platform.Base.Abstractions.Services.Validation;
-using LeokaEstetica.Platform.Base.Factors;
 using LeokaEstetica.Platform.Base.Repositories.Chat;
 using LeokaEstetica.Platform.Base.Repositories.User;
 using LeokaEstetica.Platform.Base.Repositories.Validation;
-using LeokaEstetica.Platform.Base.Services.Connection;
+using LeokaEstetica.Platform.Base.Services.Pachca;
 using LeokaEstetica.Platform.Base.Services.Validation;
 using LeokaEstetica.Platform.Core.Attributes;
-using Enum = LeokaEstetica.Platform.Models.Enums;
 
 namespace LeokaEstetica.Platform.Base.AutofacModules;
 
@@ -67,29 +65,13 @@ public class BaseModule : Module
         builder.RegisterType<ChatRepository>()
             .As<IChatRepository>()
             .InstancePerLifetimeScope();
-
-        // Факторка транзакций.
-        builder.RegisterType<TransactionScopeFactory>()
-            .Named<ITransactionScopeFactory>("TransactionScopeFactory")
-            .InstancePerLifetimeScope();
-        builder.RegisterType<TransactionScopeFactory>()
-            .As<ITransactionScopeFactory>()
-            .InstancePerLifetimeScope();
         
-        // Факторка подключений к БД Postgres.
-        builder.RegisterType<NpgSqlConnectionFactory>()
-            .Named<IConnectionFactory>("NpgSqlConnectionFactory")
+        // Сервис пачки.
+        builder.RegisterType<PachcaService>()
+            .Named<IPachcaService>("PachcaService")
             .InstancePerLifetimeScope();
-        builder.RegisterType<NpgSqlConnectionFactory>()
-            .As<IConnectionFactory>()
-            .InstancePerLifetimeScope();
-
-        // Провайдер подключений к БД.
-        builder.RegisterType<ConnectionProvider>()
-            .Named<IConnectionProvider>("ConnectionProvider")
-            .InstancePerLifetimeScope();
-        builder.RegisterType<ConnectionProvider>()
-            .As<IConnectionProvider>()
+        builder.RegisterType<PachcaService>()
+            .As<IPachcaService>()
             .InstancePerLifetimeScope();
     }
 }

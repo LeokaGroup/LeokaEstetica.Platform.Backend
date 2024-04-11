@@ -1,9 +1,9 @@
 namespace LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 
 /// <summary>
-/// Класс выходной модели панели модуля УП, документации УП.
+/// Класс выходной модели хидера модуля УП (управление проектами).
 /// </summary>
-public class PanelOutput
+public class ProjectManagmentHeaderOutput
 {
     /// <summary>
     /// Название пункта хидера.
@@ -16,9 +16,9 @@ public class PanelOutput
     public string ItemUrl { get; set; }
     
     /// <summary>
-    /// Тип элемента панели. Например, dropdown - выпадающий список.
+    /// Тип элемента хидера. Например, dropdown - выпадающий список.
     /// </summary>
-    public string PanelType { get; set; }
+    public string HeaderType { get; set; }
     
     /// <summary>
     /// Элементы пункта хидера. Содержат вложенные элементы пункта хидера, которые могут содержать также вложенные элементы.
@@ -50,9 +50,4 @@ public class PanelOutput
     /// Порядковый номер элемента меню.
     /// </summary>
     public int Position { get; set; }
-
-    /// <summary>
-    /// Признак элемента футера меню.
-    /// </summary>
-    public bool IsFooterItem { get; set; }
 }

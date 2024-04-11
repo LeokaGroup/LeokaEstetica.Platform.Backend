@@ -1,1 +1,0 @@
-CREATE TYPE templates.transition_type_enum AS ENUM ('task', 'epic', 'history', 'sprint');

@@ -1,7 +1,7 @@
 namespace LeokaEstetica.Platform.Models.Entities.Template;
 
 /// <summary>
-/// Класс описывает связи многие-ко-многим таблиц статусов.
+/// Класс описывает связи многие-ко-многим.
 /// </summary>
 public class ProjectManagmentTaskStatusIntermediateTemplateEntity
 {
@@ -11,12 +11,17 @@ public class ProjectManagmentTaskStatusIntermediateTemplateEntity
     public int TemplateId { get; set; }
 
     /// <summary>
-    /// Id статуса.
+    /// FK.
     /// </summary>
-    public long StatusId { get; set; }
+    public ProjectManagmentTaskTemplateEntity ProjectManagmentTaskTemplate { get; set; }
 
     /// <summary>
-    /// Признак кастомного статуса (если статус создал пользователь).
+    /// Id статуса.
     /// </summary>
-    public bool IsCustomStatus { get; set; }
+    public int StatusId { get; set; }
+
+    /// <summary>
+    /// FK.
+    /// </summary>
+    public ProjectManagmentTaskStatusTemplateEntity ProjectManagmentTaskStatusTemplate { get; set; }
 }

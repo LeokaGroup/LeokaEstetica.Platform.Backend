@@ -7,7 +7,6 @@ using LeokaEstetica.Platform.Models.Dto.Chat.Input;
 using LeokaEstetica.Platform.Models.Dto.Chat.Output;
 using LeokaEstetica.Platform.Models.Enums;
 using Microsoft.AspNetCore.Mvc;
-using Enum = System.Enum;
 
 namespace LeokaEstetica.Platform.Controllers.Chat;
 

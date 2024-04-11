@@ -22,7 +22,7 @@ public partial class ProjectTeamConfiguration : IEntityTypeConfiguration<Project
         
         entity.Property(e => e.Created)
             .HasColumnName("Created")
-            .HasColumnType("timestamp with time zone");
+            .HasColumnType("timestamp");
 
         entity.HasOne(p => p.CatalogProject)
             .WithMany(b => b.ProjectsTeams)

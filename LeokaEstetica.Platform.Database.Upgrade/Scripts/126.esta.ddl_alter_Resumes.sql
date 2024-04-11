@@ -1,2 +1,0 @@
-ALTER TABLE "Moderation"."Resumes"
-    ALTER COLUMN "DateModeration" TYPE TIMESTAMP WITH TIME ZONE;

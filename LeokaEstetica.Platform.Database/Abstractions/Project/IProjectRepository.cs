@@ -294,25 +294,4 @@ public interface IProjectRepository
     /// <param name="userId">Id пользователя.</param>
     /// <returns>Кол-во проектов в каталоге.</returns>
     Task<long> GetUserProjectsCatalogCountAsync(long userId);
-    
-    /// <summary>
-    /// Метод получает Id команды проекта по Id проекта.
-    /// </summary>
-    /// <param name="projectId">Id проекта.</param>
-    /// <returns>Id команды.</returns>
-    Task<long> GetProjectTeamIdByProjectIdAsync(long projectId);
-
-    /// <summary>
-    /// Метод получает список Id пользователей, которые находся в команде проекта.
-    /// </summary>
-    /// <param name="teamId">Id команды.</param>
-    /// <returns>Список Id пользователей.</returns>
-    Task<IEnumerable<long>> GetProjectTeamMemberIdsAsync(long teamId);
-
-    /// <summary>
-    /// Метод записывает название проекта в управлении проектами.
-    /// </summary>
-    /// <param name="projectId">Id проекта.</param>
-    /// <param name="projectManagementName">Название проекта в управлении проектами.</param>
-    Task SetProjectManagementNameAsync(long projectId, string projectManagementName);
 }

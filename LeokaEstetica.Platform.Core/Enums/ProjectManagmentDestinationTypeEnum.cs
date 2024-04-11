@@ -28,15 +28,5 @@ public enum ProjectManagmentDestinationTypeEnum
     /// <summary>
     /// Настройки.
     /// </summary>
-    Settings,
-    
-    /// <summary>
-    /// Левая панель.
-    /// </summary>
-    LeftPanel,
-    
-    /// <summary>
-    /// Экспортировать.
-    /// </summary>
-    Export
+    Settings
 }

@@ -5,7 +5,6 @@ using LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
 using LeokaEstetica.Platform.Models.Enums;
 using Lucene.Net.Index;
 using Lucene.Net.Search;
-using Enum = System.Enum;
 
 namespace LeokaEstetica.Platform.Finder.Chains.Vacancy;
 

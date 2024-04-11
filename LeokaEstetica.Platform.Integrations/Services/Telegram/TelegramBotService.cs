@@ -128,11 +128,8 @@ internal sealed class TelegramBotService : ITelegramBotService
 
             if (new[] {"Development", "Staging"}.Contains(_configuration["Environment"]))
             {
-                // TODO: Надо добавить управляющий флаг в БД для управления девом и тестом,
-                // TODO: но все равно если тип канала в телеге не публичный, то будет падать ошибка.
-                // TODO: Видимость канала дева/теста нельзя открыть публичной, иначе станет виден в поиске среди каналов.
-                // await botClient.SendTextMessageAsync(_configuration["NotificationsBot:ChatIdDevelopTest"],
-                //     notifyMessage.ToString());
+                await botClient.SendTextMessageAsync(_configuration["NotificationsBot:ChatIdDevelopTest"],
+                    notifyMessage.ToString());
             }
         
             else

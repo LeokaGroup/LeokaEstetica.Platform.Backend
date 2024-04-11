@@ -11,9 +11,4 @@ public class ProjectManagmentWorkspaceResult
     /// Список статусов.
     /// </summary>
     public IEnumerable<ProjectManagmentTaskStatusTemplateOutput> ProjectManagmentTaskStatuses { get; set; }
-
-    /// <summary>
-    /// Стратегия представления.
-    /// </summary>
-    public string Strategy { get; set; }
 }

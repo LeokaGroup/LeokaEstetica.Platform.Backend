@@ -1,5 +1,4 @@
 using LeokaEstetica.Platform.Models.Enums;
-using Enum = System.Enum;
 
 namespace LeokaEstetica.Platform.Services.Builders;
 

@@ -202,8 +202,6 @@ internal sealed class ProjectRepository : IProjectRepository
     /// <returns>Список проектов.</returns>
     public async Task<IEnumerable<CatalogProjectOutput>> CatalogProjectsAsync()
     {
-        var archivedProjects = _pgContext.ArchivedProjects.Select(x => x.ProjectId).AsQueryable();
-        
         var result = await (from cp in _pgContext.CatalogProjects.AsNoTracking()
                 join p in _pgContext.UserProjects.AsNoTracking()
                     on cp.ProjectId
@@ -222,7 +220,7 @@ internal sealed class ProjectRepository : IProjectRepository
                 join ups in _pgContext.UserProjectsStages.AsNoTracking()
                     on p.ProjectId
                     equals ups.ProjectId
-                where !archivedProjects.Contains(p.ProjectId)
+                where p.ArchivedProjects.All(a => a.ProjectId != p.ProjectId)
                       && !new[]
                           {
                               (int)VacancyModerationStatusEnum.ModerationVacancy,
@@ -341,7 +339,7 @@ internal sealed class ProjectRepository : IProjectRepository
             .Where(p => p.ProjectId == projectId)
             .Select(p => p.StageId)
             .FirstOrDefaultAsync();
- 
+
         // Берем полные данные о стадии проекта.
         result.Item2 = await _pgContext.ProjectStages.AsNoTracking()
             .Where(ps => ps.StageId == projectStageId)
@@ -1214,46 +1212,6 @@ internal sealed class ProjectRepository : IProjectRepository
             .CountAsync(p => p.Project.UserId == userId);
 
         return result;
-    }
-
-    /// <summary>
-    /// Метод получает Id команды проекта по Id проекта.
-    /// </summary>
-    /// <param name="projectId">Id проекта.</param>
-    /// <returns>Id команды.</returns>
-    public async Task<long> GetProjectTeamIdByProjectIdAsync(long projectId)
-    {
-        var result = await _pgContext.ProjectsTeams
-            .Where(t => t.ProjectId == projectId)
-            .Select(t => t.TeamId)
-            .FirstOrDefaultAsync();
-
-        return result;
-    }
-
-    /// <summary>
-    /// Метод получает список Id пользователей, которые находся в команде проекта.
-    /// </summary>
-    /// <param name="teamId">Id команды.</param>
-    /// <returns>Список Id пользователей.</returns>
-    public async Task<IEnumerable<long>> GetProjectTeamMemberIdsAsync(long teamId)
-    {
-        var result = await _pgContext.ProjectTeamMembers
-            .Where(t => t.TeamId == teamId)
-            .Select(t => t.UserId)
-            .Distinct()
-            .ToListAsync();
-
-        return result;
-    }
-
-    /// <inheritdoc />
-    public async Task SetProjectManagementNameAsync(long projectId, string projectManagementName)
-    {
-        var prj = await _pgContext.UserProjects.FirstOrDefaultAsync(p => p.ProjectId == projectId);
-        prj!.ProjectManagementName = projectManagementName;
-        
-        await _pgContext.SaveChangesAsync();
     }
 
     #region Приватные методы.

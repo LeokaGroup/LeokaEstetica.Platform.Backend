@@ -1,5 +1,6 @@
 using AutoMapper;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
+using LeokaEstetica.Platform.Base.Abstractions.Services.Pachca;
 using LeokaEstetica.Platform.Base.Enums;
 using LeokaEstetica.Platform.Base.Extensions.HtmlExtensions;
 using LeokaEstetica.Platform.CallCenter.Abstractions.Messaging.Mail;
@@ -12,7 +13,6 @@ using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Vacancy;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
 using LeokaEstetica.Platform.Database.Abstractions.Vacancy;
-using LeokaEstetica.Platform.Integrations.Abstractions.Discord;
 using LeokaEstetica.Platform.Integrations.Abstractions.Telegram;
 using LeokaEstetica.Platform.Models.Dto.Input.Moderation;
 using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Vacancy;
@@ -37,7 +37,7 @@ public class VacancyModerationService : IVacancyModerationService
     private readonly IUserRepository _userRepository;
     private readonly IProjectRepository _projectRepository;
     private readonly IVacancyModerationNotificationService _vacancyModerationNotificationService;
-    private readonly IDiscordService _discordService;
+    private readonly IPachcaService _pachcaService;
     private readonly ITelegramBotService _telegramBotService;
 
     /// <summary>
@@ -61,7 +61,7 @@ public class VacancyModerationService : IVacancyModerationService
         IUserRepository userRepository, 
         IProjectRepository projectRepository, 
         IVacancyModerationNotificationService vacancyModerationNotificationService,
-        IDiscordService discordService,
+        IPachcaService pachcaService,
         ITelegramBotService telegramBotService)
     {
         _vacancyModerationRepository = vacancyModerationRepository;
@@ -72,7 +72,7 @@ public class VacancyModerationService : IVacancyModerationService
         _userRepository = userRepository;
         _projectRepository = projectRepository;
         _vacancyModerationNotificationService = vacancyModerationNotificationService;
-        _discordService = discordService;
+        _pachcaService = pachcaService;
         _telegramBotService = telegramBotService;
     }
 
@@ -165,7 +165,7 @@ public class VacancyModerationService : IVacancyModerationService
             await _vacancyModerationRepository.AddNotificationApproveVacancyAsync(vacancyId, vacancyOwnerId,
                 vacancyName, projectId);
             
-            await _discordService.SendNotificationCreatedObjectAsync(ObjectTypeEnum.Vacancy, vacancyName);
+            await _pachcaService.SendNotificationCreatedObjectAsync(ObjectTypeEnum.Vacancy, vacancyName);
             
             var vacancyText = ClearHtmlBuilder.Clear(vacancy.VacancyText);
             await _telegramBotService.SendNotificationCreatedObjectAsync(ObjectTypeEnum.Vacancy, vacancyName,

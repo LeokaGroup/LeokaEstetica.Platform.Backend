@@ -5,7 +5,7 @@ namespace LeokaEstetica.Platform.Models.Dto.Output.Template;
 /// <summary>
 /// Класс результата шаблонов содержащих статусы. Эта модель нужна для данных из БД для маппинга в выходную модель.
 /// </summary>
-public class ProjectManagmentTaskTemplateEntityResult : ProjectManagmentTaskStatusTemplateEntity
+public class ProjectManagmentTaskTemplateEntityResult
 {
     /// <summary>
     /// Название шаблона.
@@ -13,7 +13,7 @@ public class ProjectManagmentTaskTemplateEntityResult : ProjectManagmentTaskStat
     public string TemplateName { get; set; }
 
     /// <summary>
-    /// Id шаблона.
+    /// Список статусов шаблона.
     /// </summary>
-    public long TemplateId { get; set; }
+    public IEnumerable<ProjectManagmentTaskStatusTemplateEntity> ProjectManagmentTaskStatusTemplates { get; set; }
 }

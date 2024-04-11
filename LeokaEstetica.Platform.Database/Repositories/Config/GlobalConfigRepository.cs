@@ -1,19 +1,13 @@
 using System.Globalization;
 using System.Runtime.CompilerServices;
-using Dapper;
-using LeokaEstetica.Platform.Base.Abstractions.Connection;
-using LeokaEstetica.Platform.Base.Abstractions.Repositories.Base;
 using LeokaEstetica.Platform.Base.Factors;
-using LeokaEstetica.Platform.Core.Constants;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.Config;
-using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 using LeokaEstetica.Platform.Models.Entities.Configs;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 
 [assembly: InternalsVisibleTo("LeokaEstetica.Platform.Tests")]
 
@@ -22,30 +16,27 @@ namespace LeokaEstetica.Platform.Database.Repositories.Config;
 /// <summary>
 /// Класс реализует методы репозитория глобал конфига.
 /// </summary>
-internal sealed class GlobalConfigRepository : BaseRepository, IGlobalConfigRepository
+internal sealed class GlobalConfigRepository : IGlobalConfigRepository
 {
     private readonly PgContext _pgContext;
     private readonly ILogger<GlobalConfigRepository> _logger;
     private readonly IConfiguration _configuration;
 
-    /// <summary>
-    /// Конструктор.
-    /// </summary>
-    /// <param name="pgContext">Датаконтекст.</param>
-    /// <param name="logger">Логгер.</param>
-    /// <param name="configuration">Конфигурация приложения.</param>
-    /// <param name="connectionProvider">Провайдер подключений к БД.</param>
     public GlobalConfigRepository(PgContext pgContext,
         ILogger<GlobalConfigRepository> logger,
-        IConfiguration configuration,
-        IConnectionProvider connectionProvider) : base(connectionProvider)
+        IConfiguration configuration)
     {
         _pgContext = pgContext;
         _logger = logger;
         _configuration = configuration;
     }
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Метод получает значение по ключу.
+    /// </summary>
+    /// <param name="key">Ключ для получения значения.</param>
+    /// <typeparam name="T">Значение, тип которого определится дженериками.</typeparam>
+    /// <returns>Значение из конфига.</returns>
     public async Task<T> GetValueByKeyAsync<T>(string key)
     {
         var type = typeof(T);
@@ -156,30 +147,16 @@ internal sealed class GlobalConfigRepository : BaseRepository, IGlobalConfigRepo
         return result;
     }
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Метод получает все данные по ключу.
+    /// </summary>
+    /// <param name="key">Ключ для получения значения.</param>
+    /// <returns>Данные из конфига.</returns>
     public async Task<GlobalConfigEntity> GetConfigByKeyAsync(string key)
     {
         var result = await _pgContext.GlobalConfig
             .Where(gc => gc.ParamKey.Equals(key))
             .FirstOrDefaultAsync();
-
-        return result;
-    }
-
-    /// <inheritdoc />
-    public async Task<FileManagerSettingsOutput> GetFileManagerSettingsAsync()
-    {
-        using var connection = await ConnectionProvider.GetConnectionAsync();
-
-        var parameters = new DynamicParameters();
-        parameters.Add("@key", GlobalConfigKeys.FileManagerSettings.PROJECT_MANAGEMENT_FILE_MANAGER_SETTINGS);
-
-        var query = "SELECT \"ParamValue\" " +
-                    "FROM \"Configs\".\"GlobalConfig\" " +
-                    "WHERE \"ParamKey\" = @key";
-        
-        var settings = await connection.QueryFirstOrDefaultAsync<string>(query, parameters);
-        var result = JsonConvert.DeserializeObject<FileManagerSettingsOutput>(settings!);
 
         return result;
     }
