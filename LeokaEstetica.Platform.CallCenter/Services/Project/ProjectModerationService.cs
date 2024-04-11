@@ -12,7 +12,7 @@ using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Project;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
-using LeokaEstetica.Platform.Integrations.Abstractions.Pachca;
+using LeokaEstetica.Platform.Integrations.Abstractions.Discord;
 using LeokaEstetica.Platform.Integrations.Abstractions.Telegram;
 using LeokaEstetica.Platform.Models.Dto.Input.Moderation;
 using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Project;
@@ -37,7 +37,7 @@ internal sealed class ProjectModerationService : IProjectModerationService
     private readonly IUserRepository _userRepository;
     private readonly IProjectRepository _projectRepository;
     private readonly IProjectModerationNotificationService _projectModerationNotificationService;
-    private readonly IPachcaService _pachcaService;
+    private readonly IDiscordService _discordService;
     private readonly ITelegramBotService _telegramBotService;
 
     /// <summary>
@@ -50,7 +50,7 @@ internal sealed class ProjectModerationService : IProjectModerationService
     /// <param name="userRepository">Репозиторий пользователя.</param>
     /// <param name="projectRepository">Репозиторий проектов.</param>
     /// <param name="projectModerationNotificationService">Сервис уведомлений модерации проектов.</param>
-    /// <param name="pachcaService">Сервис пачки.</param>
+    /// <param name="pachcaService">Сервис дискорда.</param>
     /// <param name="telegramService">Сервис бота телеграма.</param>
     public ProjectModerationService(IProjectModerationRepository projectModerationRepository,
         ILogger<ProjectModerationService> logger,
@@ -59,7 +59,7 @@ internal sealed class ProjectModerationService : IProjectModerationService
         IUserRepository userRepository, 
         IProjectRepository projectRepository, 
         IProjectModerationNotificationService projectModerationNotificationService,
-        IPachcaService pachcaService,
+        IDiscordService discordService,
         ITelegramBotService telegramBotService)
     {
         _projectModerationRepository = projectModerationRepository;
@@ -69,7 +69,7 @@ internal sealed class ProjectModerationService : IProjectModerationService
         _userRepository = userRepository;
         _projectRepository = projectRepository;
         _projectModerationNotificationService = projectModerationNotificationService;
-        _pachcaService = pachcaService;
+        _discordService = discordService;
         _telegramBotService = telegramBotService;
     }
 
@@ -161,7 +161,7 @@ internal sealed class ProjectModerationService : IProjectModerationService
             // Отправляем уведомление в приложении об одобрении проекта модератором.
             await _projectModerationRepository.AddNotificationApproveProjectAsync(projectId, userId, projectName);
 
-            await _pachcaService.SendNotificationCreatedObjectAsync(ObjectTypeEnum.Project, projectName);
+            await _discordService.SendNotificationCreatedObjectAsync(ObjectTypeEnum.Project, projectName);
             
             var projectDetails = ClearHtmlBuilder.Clear(project.UserProject.ProjectDetails);
             await _telegramBotService.SendNotificationCreatedObjectAsync(ObjectTypeEnum.Project, projectName,

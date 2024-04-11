@@ -13,7 +13,7 @@ using LeokaEstetica.Platform.Database.Abstractions.Config;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Database.Abstractions.Template;
-using LeokaEstetica.Platform.Integrations.Abstractions.Pachca;
+using LeokaEstetica.Platform.Integrations.Abstractions.Discord;
 using LeokaEstetica.Platform.Integrations.Abstractions.Reverso;
 using LeokaEstetica.Platform.Models.Dto.Base.ProjectManagement.Paginator;
 using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
@@ -55,7 +55,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     private readonly IMapper _mapper;
     private readonly IUserRepository _userRepository;
     private readonly IProjectRepository _projectRepository;
-    private readonly IPachcaService _pachcaService;
+    private readonly IDiscordService _discordService;
     private readonly IProjectManagmentTemplateRepository _projectManagmentTemplateRepository;
     private readonly ITransactionScopeFactory _transactionScopeFactory;
     private readonly IProjectSettingsConfigRepository _projectSettingsConfigRepository;
@@ -85,7 +85,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     /// <param name="mapper">Маппер.</param>
     /// <param name="mapper">Репозиторий пользователей.</param>
     /// <param name="projectRepository">Репозиторий проектов.</param>
-    /// <param name="pachcaService">Сервис уведомлений пачки.</param>
+    /// <param name="discordService">Сервис уведомлений дискорда.</param>
     /// <param name="projectManagmentTemplateRepository">Репозиторий шаблонов проектов.</param>
     /// <param name="transactionScopeFactory">Факторка транзакций.</param>
     /// <param name="projectSettingsConfigRepository">Репозиторий настроек проектов.</param>
@@ -99,7 +99,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         IMapper mapper,
         IUserRepository userRepository,
         IProjectRepository projectRepository,
-        IPachcaService pachcaService,
+        IDiscordService discordService,
         IProjectManagmentTemplateRepository projectManagmentTemplateRepository,
         ITransactionScopeFactory transactionScopeFactory,
         IProjectSettingsConfigRepository projectSettingsConfigRepository,
@@ -113,7 +113,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         _mapper = mapper;
         _userRepository = userRepository;
         _projectRepository = projectRepository;
-        _pachcaService = pachcaService;
+        _discordService = discordService;
         _projectManagmentTemplateRepository = projectManagmentTemplateRepository;
         _transactionScopeFactory = transactionScopeFactory;
         _projectSettingsConfigRepository = projectSettingsConfigRepository;
@@ -702,7 +702,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 
             // TODO: Добавить проверку. Является ли пользователь участником проекта. Если нет, то не давать доступ к задаче.
             var builderData = new AgileObjectBuilderData(_projectManagmentRepository, _userRepository,
-                _pachcaService, _userService, _projectManagmentTemplateRepository, _mapper,
+                _discordService, _userService, _projectManagmentTemplateRepository, _mapper,
                 projectTaskId.GetProjectTaskIdFromPrefixLink(), projectId);
             AgileObjectBuilder builder = null;
 
@@ -2924,7 +2924,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             _logger.LogError(ex, ex.Message);
 
             // Отправляем ивент в пачку.
-            await _pachcaService.SendNotificationErrorAsync(ex);
+            await _discordService.SendNotificationErrorAsync(ex);
         }
 
         // Получаем имена исполнителей задач.

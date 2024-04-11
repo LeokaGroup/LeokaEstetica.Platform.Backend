@@ -51,7 +51,7 @@ internal class EpicBuilder : AgileObjectBuilder
                 $" ExecutorIds: {JsonConvert.SerializeObject(executorId)}.");
 
             // Отправляем ивент в пачку.
-            await BuilderData.PachcaService.SendNotificationErrorAsync(ex);
+            await BuilderData.DiscordService.SendNotificationErrorAsync(ex);
         }
         
         // Получаем имена исполнителя эпика.

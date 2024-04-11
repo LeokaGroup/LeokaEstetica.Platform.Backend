@@ -38,7 +38,7 @@ using LeokaEstetica.Platform.Services.Strategies.Project.Team;
 using LeokaEstetica.Platform.Base.Extensions.HtmlExtensions;
 using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Project;
-using LeokaEstetica.Platform.Integrations.Abstractions.Pachca;
+using LeokaEstetica.Platform.Integrations.Abstractions.Discord;
 using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Project;
 using LeokaEstetica.Platform.Models.Entities.Moderation;
 using LeokaEstetica.Platform.Services.Helpers;
@@ -113,7 +113,7 @@ internal sealed class ProjectService : IProjectService
     
     private const string NOT_AVAILABLE_DELETE_PROJECT_ARCHIVE = "Невозможно убрать проект из архива, так как у Вас уже опубликовано максимальное количество проектов соответствующих максимальному лимиту тарифа. Добавьте в архив проекты, чтобы освободить лимиты либо перейдите на тариф, который имеет большие лимиты";
 
-    private readonly IPachcaService _pachcaService;
+    private readonly IDiscordService _discordService;
 
     /// <summary>
     /// Конструктор.
@@ -131,7 +131,7 @@ internal sealed class ProjectService : IProjectService
     /// <param name="accessUserNotificationsService">Сервис уведомлений доступа пользователя.</param>
     /// <param name="accessUserService">Сервис доступа пользователя.</param>
     /// <param name="projectModerationRepository">Репозиторий модерации проектов.</param>
-    /// <param name="pachcaService">Сервис уведомлений пачки.</param>
+    /// <param name="discordService">Сервис уведомлений дискорда.</param>
     public ProjectService(IProjectRepository projectRepository,
         ILogger<ProjectService> logger,
         IUserRepository userRepository,
@@ -149,7 +149,7 @@ internal sealed class ProjectService : IProjectService
         IFillColorProjectsService fillColorProjectsService, 
         IMailingsService mailingsService, 
         IProjectModerationRepository projectModerationRepository,
-        IPachcaService pachcaService)
+        IDiscordService discordService)
     {
         _projectRepository = projectRepository;
         _logger = logger;
@@ -168,7 +168,7 @@ internal sealed class ProjectService : IProjectService
         _fillColorProjectsService = fillColorProjectsService;
         _mailingsService = mailingsService;
         _projectModerationRepository = projectModerationRepository;
-        _pachcaService = pachcaService;
+        _discordService = discordService;
 
         // Определяем обработчики цепочки фильтров.
         _dateProjectsFilterChain.Successor = _projectsVacanciesFilterChain;
@@ -301,7 +301,7 @@ internal sealed class ProjectService : IProjectService
             await _mailingsService.SendNotificationCreatedProjectAsync(user.Email, projectName, projectId);
 
             // Отправляем уведомление об отправленном проекте на модерацию.
-            await _pachcaService.SendNotificationCreatedProjectBeforeModerationAsync(projectId);
+            await _discordService.SendNotificationCreatedProjectBeforeModerationAsync(projectId);
 
             return project;
         }
@@ -2189,7 +2189,7 @@ internal sealed class ProjectService : IProjectService
                                                     $"UserId: {userId}. " +
                                                     "Подписка была NULL или невалидная.");
                 // Отправляем ивент в пачку.
-                await _pachcaService.SendNotificationErrorAsync(ex);
+                await _discordService.SendNotificationErrorAsync(ex);
                 
                 // Если ошибка, то не стопаем выполнение логики, а вернем проекты, пока будем разбираться с ошибкой.
                 // Без тегов не страшно отобразить проекты.
@@ -2302,7 +2302,7 @@ internal sealed class ProjectService : IProjectService
             _logger.LogError(aggEx, aggEx.Message);
             
             // Отправляем ошибки в чат пачки.
-            await _pachcaService.SendNotificationErrorAsync(aggEx);
+            await _discordService.SendNotificationErrorAsync(aggEx);
         }
     }
     

@@ -1,10 +1,10 @@
 using Autofac;
 using LazyProxy.Autofac;
 using LeokaEstetica.Platform.Core.Attributes;
-using LeokaEstetica.Platform.Integrations.Abstractions.Pachca;
+using LeokaEstetica.Platform.Integrations.Abstractions.Discord;
 using LeokaEstetica.Platform.Integrations.Abstractions.Reverso;
 using LeokaEstetica.Platform.Integrations.Abstractions.Telegram;
-using LeokaEstetica.Platform.Integrations.Services.Pachca;
+using LeokaEstetica.Platform.Integrations.Services.Discord;
 using LeokaEstetica.Platform.Integrations.Services.Reverso;
 using LeokaEstetica.Platform.Integrations.Services.Telegram;
 
@@ -32,11 +32,19 @@ public class IntegrationModule : Module
             .InstancePerLifetimeScope();
         
         // Сервис пачки.
-        builder.RegisterType<PachcaService>()
-            .Named<IPachcaService>("PachcaService")
+        // builder.RegisterType<PachcaService>()
+        //     .Named<IPachcaService>("PachcaService")
+        //     .InstancePerLifetimeScope();
+        // builder.RegisterType<PachcaService>()
+        //     .As<IPachcaService>()
+        //     .InstancePerLifetimeScope();
+        
+        // Сервис дискорда.
+        builder.RegisterType<DiscordService>()
+            .Named<IDiscordService>("DiscordService")
             .InstancePerLifetimeScope();
-        builder.RegisterType<PachcaService>()
-            .As<IPachcaService>()
+        builder.RegisterType<DiscordService>()
+            .As<IDiscordService>()
             .InstancePerLifetimeScope();
         
         // Сервис транслитера ReversoAPI.
@@ -51,6 +59,7 @@ public class IntegrationModule : Module
         //     .InstancePerLifetimeScope();
 
         builder.RegisterLazy<IReversoService, ReversoService>();
-        builder.RegisterLazy<IPachcaService, PachcaService>();
+        // builder.RegisterLazy<IPachcaService, PachcaService>();
+        builder.RegisterLazy<IDiscordService, DiscordService>();
     }
 }

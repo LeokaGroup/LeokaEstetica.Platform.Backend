@@ -18,7 +18,7 @@ var configuration = builder.Configuration;
 
 builder.Services.AddControllers(opt =>
     {
-        opt.Filters.Add(typeof(PachcaLogExceptionFilter));
+        opt.Filters.Add(typeof(DiscordLogExceptionFilter));
     })
     .AddControllersAsServices()
     .AddNewtonsoftJson();

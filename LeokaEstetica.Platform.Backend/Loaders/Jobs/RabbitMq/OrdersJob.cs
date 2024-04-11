@@ -8,7 +8,7 @@ using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.Commerce;
 using LeokaEstetica.Platform.Database.Abstractions.Config;
 using LeokaEstetica.Platform.Database.Abstractions.FareRule;
-using LeokaEstetica.Platform.Integrations.Abstractions.Pachca;
+using LeokaEstetica.Platform.Integrations.Abstractions.Discord;
 using LeokaEstetica.Platform.Models.Dto.Base.Commerce;
 using LeokaEstetica.Platform.Processing.Abstractions.Commerce;
 using LeokaEstetica.Platform.Processing.Enums;
@@ -34,7 +34,7 @@ internal sealed class OrdersJob : IJob
     private readonly ISubscriptionService _subscriptionService;
     private readonly IFareRuleRepository _fareRuleRepository;
     private readonly IGlobalConfigRepository _globalConfigRepository;
-    private readonly IPachcaService _pachcaService;
+    private readonly IDiscordService _discordService;
     private readonly ICommerceService _commerceService;
 
     /// <summary>
@@ -56,7 +56,7 @@ internal sealed class OrdersJob : IJob
     /// <param name="subscriptionService">Сервис подписок.</param>
     /// <param name="fareRuleRepository">Репозиторий тарифов.</param>
     /// <param name="globalConfigRepository">Репозиторий глобал конфигов.</param>
-    /// <param name="pachcaService">Сервис пачки.</param>
+    /// <param name="discordService">Сервис дискорд.</param>
     /// <param name="commerceService">Сервис коммерции.</param>
     public OrdersJob(IConfiguration configuration,
         ICommerceRepository commerceRepository, 
@@ -64,7 +64,7 @@ internal sealed class OrdersJob : IJob
         ISubscriptionService subscriptionService, 
         IFareRuleRepository fareRuleRepository,
         IGlobalConfigRepository globalConfigRepository,
-        IPachcaService pachcaService,
+        IDiscordService discordService,
         ICommerceService commerceService)
     {
         _commerceRepository = commerceRepository;
@@ -72,7 +72,7 @@ internal sealed class OrdersJob : IJob
         _subscriptionService = subscriptionService;
         _fareRuleRepository = fareRuleRepository;
         _globalConfigRepository = globalConfigRepository;
-        _pachcaService = pachcaService;
+        _discordService = discordService;
         _commerceService = commerceService;
         
         var connection = new ConnectionFactory
@@ -164,7 +164,7 @@ internal sealed class OrdersJob : IJob
                 {
                     logger.LogCritical(ex, "Ошибка при чтении очереди заказов.");
                         
-                    await _pachcaService.SendNotificationErrorAsync(ex);
+                    await _discordService.SendNotificationErrorAsync(ex);
                     throw;
                 }
 
@@ -209,7 +209,7 @@ internal sealed class OrdersJob : IJob
                     {
                         logger.LogCritical(ex, "Ошибка при чтении очереди заказов.");
                         
-                        await _pachcaService.SendNotificationErrorAsync(ex);
+                        await _discordService.SendNotificationErrorAsync(ex);
                         throw;
                     }
                     

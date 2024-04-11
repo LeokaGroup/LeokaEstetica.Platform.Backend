@@ -2,7 +2,7 @@ using AutoMapper;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Database.Abstractions.Template;
-using LeokaEstetica.Platform.Integrations.Abstractions.Pachca;
+using LeokaEstetica.Platform.Integrations.Abstractions.Discord;
 using LeokaEstetica.Platform.Services.Abstractions.User;
 
 namespace LeokaEstetica.Platform.Services.Builders.BuilderData;
@@ -14,7 +14,7 @@ internal class AgileObjectBuilderData
 {
     internal IProjectManagmentRepository ProjectManagmentRepository;
     internal IUserRepository UserRepository;
-    internal IPachcaService PachcaService;
+    internal IDiscordService DiscordService;
     internal IUserService UserService;
     internal IProjectManagmentTemplateRepository ProjectManagmentTemplateRepository;
     internal IMapper Mapper;
@@ -34,14 +34,14 @@ internal class AgileObjectBuilderData
     /// </summary>
     /// <param name="projectManagmentRepository">Репозиторий модуля УП.</param>
     /// <param name="userRepository">Репозиторий пользователей.</param>
-    /// <param name="pachcaService">Сервис пачки.</param>
+    /// <param name="discordService">Сервис дискорда.</param>
     /// <param name="userService">Сервис пользователей.</param>
     /// <param name="projectManagmentTemplateRepository">Репозиторий шаблонов модуля УП.</param>
     /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
     /// <param name="projectId">Id проекта.</param>
     public AgileObjectBuilderData(IProjectManagmentRepository projectManagmentRepository,
         IUserRepository userRepository,
-        IPachcaService pachcaService,
+        IDiscordService discordService,
         IUserService userService,
         IProjectManagmentTemplateRepository projectManagmentTemplateRepository,
         IMapper mapper,
@@ -50,7 +50,7 @@ internal class AgileObjectBuilderData
     {
         ProjectManagmentRepository = projectManagmentRepository;
         UserRepository = userRepository;
-        PachcaService = pachcaService;
+        DiscordService = discordService;
         UserService = userService;
         ProjectManagmentTemplateRepository = projectManagmentTemplateRepository;
         Mapper = mapper;

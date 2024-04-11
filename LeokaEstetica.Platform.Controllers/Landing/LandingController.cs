@@ -41,6 +41,7 @@ public class LandingController : BaseController
     [ProducesResponseType(404)]
     public async Task<LandingStartFonOutput> LandingStartFonAsync()
     {
+        throw new InvalidOperationException("test exception");
         var result = await _landingService.LandingStartFonAsync();
 
         return result;

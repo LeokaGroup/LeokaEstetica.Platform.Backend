@@ -2,7 +2,7 @@ using AutoMapper;
 using LeokaEstetica.Platform.Base;
 using LeokaEstetica.Platform.Base.Filters;
 using LeokaEstetica.Platform.Database.Abstractions.Template;
-using LeokaEstetica.Platform.Integrations.Abstractions.Pachca;
+using LeokaEstetica.Platform.Integrations.Abstractions.Discord;
 using LeokaEstetica.Platform.Models.Dto.Input.Config;
 using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
@@ -24,7 +24,7 @@ public class ProjectManagmentSettingsController : BaseController
 {
     private readonly ILogger<ProjectManagmentController> _logger;
     private readonly Lazy<IProjectManagmentTemplateRepository> _projectManagmentTemplateRepository;
-    private readonly Lazy<IPachcaService> _pachcaService;
+    private readonly Lazy<IDiscordService> _discordService;
     private readonly IProjectManagmentService _projectManagmentService;
     private readonly IMapper _mapper;
 
@@ -33,18 +33,18 @@ public class ProjectManagmentSettingsController : BaseController
     /// </summary>
     /// <param name="logger"></param>
     /// <param name="projectManagmentTemplateRepository"></param>
-    /// <param name="pachcaService"></param>
+    /// <param name="discordService">Сервис дискорда.</param>
     /// <param name="projectManagmentService"></param>
     /// <param name="mapper"></param>
     public ProjectManagmentSettingsController(ILogger<ProjectManagmentController> logger,
         Lazy<IProjectManagmentTemplateRepository> projectManagmentTemplateRepository,
-        Lazy<IPachcaService> pachcaService,
+        Lazy<IDiscordService> discordService,
         IProjectManagmentService projectManagmentService,
          IMapper mapper)
     {
         _logger = logger;
         _projectManagmentTemplateRepository = projectManagmentTemplateRepository;
-        _pachcaService = pachcaService;
+        _discordService = discordService;
         _projectManagmentService = projectManagmentService;
         _mapper = mapper;
     }
@@ -78,7 +78,7 @@ public class ProjectManagmentSettingsController : BaseController
                 exceptions);
             _logger.LogError(ex, ex.Message);
             
-            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            await _discordService.Value.SendNotificationErrorAsync(ex);
             
             throw ex;
         }
@@ -116,7 +116,7 @@ public class ProjectManagmentSettingsController : BaseController
             var ex = new AggregateException("Ошибка получения статусов для создания нового статуса.", exceptions);
             _logger.LogError(ex, ex.Message);
             
-            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            await _discordService.Value.SendNotificationErrorAsync(ex);
             
             throw ex;
         }
@@ -171,7 +171,7 @@ public class ProjectManagmentSettingsController : BaseController
             var ex = new AggregateException("Ошибка создания статуса шаблона проекта.", exceptions);
             _logger.LogError(ex, ex.Message);
             
-            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            await _discordService.Value.SendNotificationErrorAsync(ex);
             
             throw ex;
         }
@@ -205,7 +205,7 @@ public class ProjectManagmentSettingsController : BaseController
     //         var ex = new AggregateException("Ошибка создания перехода между статусами пользователя.", exceptions);
     //         _logger.LogError(ex, ex.Message);
     //         
-    //         await _pachcaService.Value.SendNotificationErrorAsync(ex);
+    //         await _discordService.Value.SendNotificationErrorAsync(ex);
     //         
     //         throw ex;
     //     }
@@ -239,7 +239,7 @@ public class ProjectManagmentSettingsController : BaseController
             var ex = new AggregateException("Ошибка фиксации стратегии представления пользователя.", exceptions);
             _logger.LogError(ex, ex.Message);
             
-            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            await _discordService.Value.SendNotificationErrorAsync(ex);
             
             throw ex;
         }
@@ -268,7 +268,7 @@ public class ProjectManagmentSettingsController : BaseController
                                             $"ProjectId: {projectId}.");
             _logger.LogError(ex, ex.Message);
             
-            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            await _discordService.Value.SendNotificationErrorAsync(ex);
             
             throw ex;
         }

@@ -1,6 +1,6 @@
 using LeokaEstetica.Platform.Base;
 using LeokaEstetica.Platform.Base.Filters;
-using LeokaEstetica.Platform.Integrations.Abstractions.Pachca;
+using LeokaEstetica.Platform.Integrations.Abstractions.Discord;
 using LeokaEstetica.Platform.Models.Dto.Input.Search.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.Search.ProjectManagement;
 using LeokaEstetica.Platform.ProjectManagment.Validators;
@@ -18,21 +18,21 @@ namespace LeokaEstetica.Platform.ProjectManagment.Controllers;
 public class SearchController : BaseController
 {
     private readonly ILogger<SearchController> _logger;
-    private readonly Lazy<IPachcaService> _pachcaService;
+    private readonly Lazy<IDiscordService> _discordService;
     private readonly ISearchProjectManagementService _searchProjectManagementService;
 
     /// <summary>
     /// Контроллер.
     /// <param name="logger">Логгер.</param>
-    /// <param name="pachcaService">Сервис пачки.</param>
+    /// <param name="discordService">Сервис дискорда.</param>
     /// <param name="searchProjectManagementService">Сервис поиска в модуле УП.</param>
     /// </summary>
     public SearchController(ILogger<SearchController> logger,
-     Lazy<IPachcaService> pachcaService,
+     Lazy<IDiscordService> discordService,
      ISearchProjectManagementService searchProjectManagementService)
     {
         _logger = logger;
-        _pachcaService = pachcaService;
+        _discordService = discordService;
         _searchProjectManagementService = searchProjectManagementService;
     }
 
@@ -69,7 +69,7 @@ public class SearchController : BaseController
             
             var ex = new AggregateException("Ошибка поиска задач.", exceptions);
             _logger.LogError(ex, ex.Message);
-            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            await _discordService.Value.SendNotificationErrorAsync(ex);
             
             throw ex;
         }

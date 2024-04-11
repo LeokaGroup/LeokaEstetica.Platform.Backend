@@ -3,7 +3,7 @@ using LeokaEstetica.Platform.Base;
 using LeokaEstetica.Platform.Base.Filters;
 using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Database.Abstractions.Template;
-using LeokaEstetica.Platform.Integrations.Abstractions.Pachca;
+using LeokaEstetica.Platform.Integrations.Abstractions.Discord;
 using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
 using LeokaEstetica.Platform.Models.Dto.Output.Document;
 using LeokaEstetica.Platform.Models.Dto.Output.Project;
@@ -35,7 +35,7 @@ public class ProjectManagmentController : BaseController
     private readonly IMapper _mapper;
     private readonly ILogger<ProjectManagmentController> _logger;
     private readonly IUserService _userService;
-    private readonly Lazy<IPachcaService> _pachcaService;
+    private readonly Lazy<IDiscordService> _discordService;
     private readonly Lazy<IProjectManagmentTemplateRepository> _projectManagmentTemplateRepository;
 
     /// <summary>
@@ -46,14 +46,14 @@ public class ProjectManagmentController : BaseController
     /// <param name="mapper">Маппер.</param>
     /// <param name="logger">Логгер.</param>
     /// <param name="userService">Сервис пользователей.</param>
-    /// <param name="pachcaService">Сервис пачки.</param>
+    /// <param name="discordService">Сервис дискорда.</param>
     /// <param name="projectManagmentTemplateRepository">Репозиторий шаблонов проектов.</param>
     public ProjectManagmentController(IProjectService projectService,
         IProjectManagmentService projectManagmentService,
         IMapper mapper,
         ILogger<ProjectManagmentController> logger,
         IUserService userService,
-        Lazy<IPachcaService> pachcaService,
+        Lazy<IDiscordService> discordService,
         Lazy<IProjectManagmentTemplateRepository> projectManagmentTemplateRepository)
     {
         _projectService = projectService;
@@ -61,7 +61,7 @@ public class ProjectManagmentController : BaseController
         _mapper = mapper;
         _logger = logger;
         _userService = userService;
-        _pachcaService = pachcaService;
+        _discordService = discordService;
         _projectManagmentTemplateRepository = projectManagmentTemplateRepository;
     }
 
@@ -186,7 +186,7 @@ public class ProjectManagmentController : BaseController
             
             var ex = new AggregateException("Ошибка получения конфигурации рабочего пространства.", exceptions);
             _logger.LogError(ex, ex.Message);
-            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            await _discordService.Value.SendNotificationErrorAsync(ex);
             
             throw ex;
         }
@@ -231,7 +231,7 @@ public class ProjectManagmentController : BaseController
                                             $"ProjectId: {projectId}. " +
                                             $"TaskDetailType: {taskDetailType}.", exceptions);
             _logger.LogError(ex, ex.Message);
-            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            await _discordService.Value.SendNotificationErrorAsync(ex);
             
             throw ex;
         }
@@ -275,7 +275,7 @@ public class ProjectManagmentController : BaseController
                 exceptions);
             _logger.LogError(ex, ex.Message);
             
-            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            await _discordService.Value.SendNotificationErrorAsync(ex);
 
             return new CreateProjectManagementTaskOutput { Errors = validator.Errors };
         }
@@ -371,7 +371,7 @@ public class ProjectManagmentController : BaseController
             var ex = new AggregateException("Ошибка получения статусов задачи проекта.", exceptions);
             _logger.LogError(ex, ex.Message);
             
-            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            await _discordService.Value.SendNotificationErrorAsync(ex);
             
             throw ex;
         }
@@ -411,7 +411,7 @@ public class ProjectManagmentController : BaseController
                 exceptions);
             _logger.LogError(ex, ex.Message);
             
-            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            await _discordService.Value.SendNotificationErrorAsync(ex);
             
             throw ex;
         }
@@ -451,7 +451,7 @@ public class ProjectManagmentController : BaseController
                 exceptions);
             _logger.LogError(ex, ex.Message);
             
-            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            await _discordService.Value.SendNotificationErrorAsync(ex);
             
             throw ex;
         }
@@ -489,7 +489,7 @@ public class ProjectManagmentController : BaseController
             var ex = new AggregateException("Ошибка получения статусов для создания нового статуса.", exceptions);
             _logger.LogError(ex, ex.Message);
             
-            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            await _discordService.Value.SendNotificationErrorAsync(ex);
             
             throw ex;
         }
@@ -544,7 +544,7 @@ public class ProjectManagmentController : BaseController
             var ex = new AggregateException("Ошибка получения статусов для создания нового статуса.", exceptions);
             _logger.LogError(ex, ex.Message);
             
-            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            await _discordService.Value.SendNotificationErrorAsync(ex);
             
             throw ex;
         }
@@ -584,7 +584,7 @@ public class ProjectManagmentController : BaseController
             var ex = new AggregateException("Ошибка получения возможных переходов статусов задачи.", exceptions);
             _logger.LogError(ex, ex.Message);
             
-            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            await _discordService.Value.SendNotificationErrorAsync(ex);
             
             throw ex;
         }
@@ -623,7 +623,7 @@ public class ProjectManagmentController : BaseController
             var ex = new AggregateException("Ошибка изменения статуса задачи.", exceptions);
             _logger.LogError(ex, ex.Message);
             
-            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            await _discordService.Value.SendNotificationErrorAsync(ex);
             
             throw ex;
         }
@@ -665,7 +665,7 @@ public class ProjectManagmentController : BaseController
             var ex = new AggregateException("Ошибка изменения описания задачи.", exceptions);
             _logger.LogError(ex, ex.Message);
             
-            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            await _discordService.Value.SendNotificationErrorAsync(ex);
             
             throw ex;
         }
@@ -707,7 +707,7 @@ public class ProjectManagmentController : BaseController
             var ex = new AggregateException("Ошибка изменения названия задачи.", exceptions);
             _logger.LogError(ex, ex.Message);
             
-            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            await _discordService.Value.SendNotificationErrorAsync(ex);
             
             throw ex;
         }
@@ -744,7 +744,7 @@ public class ProjectManagmentController : BaseController
             var ex = new AggregateException("Ошибка привязки тега к задаче.", exceptions);
             _logger.LogError(ex, ex.Message);
             
-            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            await _discordService.Value.SendNotificationErrorAsync(ex);
             
             throw ex;
         }
@@ -780,7 +780,7 @@ public class ProjectManagmentController : BaseController
             var ex = new AggregateException("Ошибка отвязки тега от задачи.", exceptions);
             _logger.LogError(ex, ex.Message);
             
-            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            await _discordService.Value.SendNotificationErrorAsync(ex);
             
             throw ex;
         }
@@ -817,7 +817,7 @@ public class ProjectManagmentController : BaseController
                 exceptions);
             _logger.LogError(ex, ex.Message);
             
-            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            await _discordService.Value.SendNotificationErrorAsync(ex);
             
             throw ex;
         }
@@ -856,7 +856,7 @@ public class ProjectManagmentController : BaseController
             var ex = new AggregateException("Ошибка получения связей задачи (обычные связи).", exceptions);
             _logger.LogError(ex, ex.Message);
             
-            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            await _discordService.Value.SendNotificationErrorAsync(ex);
             
             throw ex;
         }
@@ -897,7 +897,7 @@ public class ProjectManagmentController : BaseController
             var ex = new AggregateException("Ошибка получения связей задачи (родительские связи).", exceptions);
             _logger.LogError(ex, ex.Message);
             
-            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            await _discordService.Value.SendNotificationErrorAsync(ex);
             
             throw ex;
         }
@@ -938,7 +938,7 @@ public class ProjectManagmentController : BaseController
             var ex = new AggregateException("Ошибка получения связей задачи (дочерние связи).", exceptions);
             _logger.LogError(ex, ex.Message);
             
-            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            await _discordService.Value.SendNotificationErrorAsync(ex);
             
             throw ex;
         }
@@ -979,7 +979,7 @@ public class ProjectManagmentController : BaseController
             var ex = new AggregateException("Ошибка получения связей задачи (связи зависит от).", exceptions);
             _logger.LogError(ex, ex.Message);
             
-            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            await _discordService.Value.SendNotificationErrorAsync(ex);
             
             throw ex;
         }
@@ -1020,7 +1020,7 @@ public class ProjectManagmentController : BaseController
             var ex = new AggregateException("Ошибка получения связей задачи (блокирующая связь).", exceptions);
             _logger.LogError(ex, ex.Message);
             
-            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            await _discordService.Value.SendNotificationErrorAsync(ex);
             
             throw ex;
         }
@@ -1061,7 +1061,7 @@ public class ProjectManagmentController : BaseController
             var ex = new AggregateException("Ошибка получения доступных задач для создания связи.", exceptions);
             _logger.LogError(ex, ex.Message);
             
-            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            await _discordService.Value.SendNotificationErrorAsync(ex);
             
             throw ex;
         }
@@ -1116,7 +1116,7 @@ public class ProjectManagmentController : BaseController
             var ex = new AggregateException("Ошибка привязки наблюдателя задачи.", exceptions);
             _logger.LogError(ex, ex.Message);
             
-            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            await _discordService.Value.SendNotificationErrorAsync(ex);
             
             throw ex;
         }
@@ -1152,7 +1152,7 @@ public class ProjectManagmentController : BaseController
             var ex = new AggregateException("Ошибка отвязки наблюдателя задачи.", exceptions);
             _logger.LogError(ex, ex.Message);
             
-            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            await _discordService.Value.SendNotificationErrorAsync(ex);
             
             throw ex;
         }
@@ -1188,7 +1188,7 @@ public class ProjectManagmentController : BaseController
             var ex = new AggregateException("Ошибка изменения исполнителя задачи.", exceptions);
             _logger.LogError(ex, ex.Message);
             
-            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            await _discordService.Value.SendNotificationErrorAsync(ex);
             
             throw ex;
         }
@@ -1224,7 +1224,7 @@ public class ProjectManagmentController : BaseController
             var ex = new AggregateException("Ошибка привязки тега к задаче.", exceptions);
             _logger.LogError(ex, ex.Message);
             
-            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            await _discordService.Value.SendNotificationErrorAsync(ex);
             
             throw ex;
         }
@@ -1263,7 +1263,7 @@ public class ProjectManagmentController : BaseController
                 exceptions);
             _logger.LogError(ex, ex.Message);
             
-            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            await _discordService.Value.SendNotificationErrorAsync(ex);
             
             throw ex;
         }
@@ -1326,7 +1326,7 @@ public class ProjectManagmentController : BaseController
                                             $"ProjectTaskId: {projectTaskId}.", exceptions);
             _logger.LogError(ex, ex.Message);
             
-            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            await _discordService.Value.SendNotificationErrorAsync(ex);
             
             throw ex;
         }
@@ -1371,7 +1371,7 @@ public class ProjectManagmentController : BaseController
                                             $"DocumentId: {documentId}.", exceptions);
             _logger.LogError(ex, ex.Message);
             
-            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            await _discordService.Value.SendNotificationErrorAsync(ex);
             
             throw ex;
         }
@@ -1414,7 +1414,7 @@ public class ProjectManagmentController : BaseController
                                             $"DocumentId: {documentId}.", exceptions);
             _logger.LogError(ex, ex.Message);
             
-            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            await _discordService.Value.SendNotificationErrorAsync(ex);
             
             throw ex;
         }
@@ -1453,7 +1453,7 @@ public class ProjectManagmentController : BaseController
                                             $"Comment: {taskCommentInput.Comment}.", exceptions);
             _logger.LogError(ex, ex.Message);
             
-            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            await _discordService.Value.SendNotificationErrorAsync(ex);
             
             throw ex;
         }
@@ -1514,7 +1514,7 @@ public class ProjectManagmentController : BaseController
                                             $"CommentId: {taskCommentInput.CommentId}", exceptions);
             _logger.LogError(ex, ex.Message);
             
-            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            await _discordService.Value.SendNotificationErrorAsync(ex);
             
             throw ex;
         }
@@ -1542,7 +1542,7 @@ public class ProjectManagmentController : BaseController
             var ex = new InvalidOperationException($"Ошибка удаления комментария задачи. CommentId: {commentId}");
             _logger.LogError(ex, ex.Message);
             
-            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            await _discordService.Value.SendNotificationErrorAsync(ex);
             
             throw ex;
         }
@@ -1569,7 +1569,7 @@ public class ProjectManagmentController : BaseController
             var ex = new InvalidOperationException($"Ошибка получение эпиков проекта. ProjectId: {projectId}");
             _logger.LogError(ex, ex.Message);
             
-            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            await _discordService.Value.SendNotificationErrorAsync(ex);
             
             throw ex;
         }
@@ -1600,7 +1600,7 @@ public class ProjectManagmentController : BaseController
             var ex = new InvalidOperationException($"Ошибка получения задач бэклога проекта. ProjectId: {projectId}");
             _logger.LogError(ex, ex.Message);
             
-            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            await _discordService.Value.SendNotificationErrorAsync(ex);
             
             throw ex;
         }
@@ -1630,7 +1630,7 @@ public class ProjectManagmentController : BaseController
                                                    $" ProjectId: {projectId}");
             _logger.LogError(ex, ex.Message);
             
-            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            await _discordService.Value.SendNotificationErrorAsync(ex);
             
             throw ex;
         }
@@ -1670,7 +1670,7 @@ public class ProjectManagmentController : BaseController
                                             $"EpicId: {includeTaskEpicInput.EpicId}", exceptions);
             _logger.LogError(ex, ex.Message);
             
-            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            await _discordService.Value.SendNotificationErrorAsync(ex);
             
             throw ex;
         }
@@ -1729,7 +1729,7 @@ public class ProjectManagmentController : BaseController
                                             $"SprintName: {planingSprintInput.SprintName}", exceptions);
             _logger.LogError(ex, ex.Message);
             
-            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            await _discordService.Value.SendNotificationErrorAsync(ex);
             
             throw ex;
         }
@@ -1768,7 +1768,7 @@ public class ProjectManagmentController : BaseController
                                             $"EpicId: {epicId}", exceptions);
             _logger.LogError(ex, ex.Message);
             
-            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            await _discordService.Value.SendNotificationErrorAsync(ex);
             
             throw ex;
         }
@@ -1810,7 +1810,7 @@ public class ProjectManagmentController : BaseController
                                             $"ProjectTaskId: {projectTaskId}", exceptions);
             _logger.LogError(ex, ex.Message);
             
-            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            await _discordService.Value.SendNotificationErrorAsync(ex);
             
             throw ex;
         }
@@ -1853,7 +1853,7 @@ public class ProjectManagmentController : BaseController
                                             $"ProjectTaskId: {projectTaskId}", exceptions);
             _logger.LogError(ex, ex.Message);
             
-            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            await _discordService.Value.SendNotificationErrorAsync(ex);
             
             throw ex;
         }
@@ -1892,7 +1892,7 @@ public class ProjectManagmentController : BaseController
                                             $"ProjectTaskId: {updateTaskSprintInput.ProjectTaskId}", exceptions);
             _logger.LogError(ex, ex.Message);
             
-            await _pachcaService.Value.SendNotificationErrorAsync(ex);
+            await _discordService.Value.SendNotificationErrorAsync(ex);
             
             throw ex;
         }
