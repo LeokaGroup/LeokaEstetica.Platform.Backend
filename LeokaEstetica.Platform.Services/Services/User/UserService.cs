@@ -19,7 +19,7 @@ using LeokaEstetica.Platform.Database.Abstractions.Moderation.Resume;
 using LeokaEstetica.Platform.Database.Abstractions.Profile;
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Database.Abstractions.Subscription;
-using LeokaEstetica.Platform.Integrations.Abstractions.Pachca;
+using LeokaEstetica.Platform.Integrations.Abstractions.Discord;
 using LeokaEstetica.Platform.Messaging.Abstractions.Mail;
 using LeokaEstetica.Platform.Models.Dto.Input.User;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
@@ -57,7 +57,7 @@ internal sealed class UserService : IUserService
     private readonly IFareRuleRepository _fareRuleRepository;
     private readonly IAvailableLimitsRepository _availableLimitsRepository;
     private readonly IGlobalConfigRepository _globalConfigRepository;
-    private readonly IPachcaService _pachcaService;
+    private readonly IDiscordService _discordService;
     private readonly Lazy<IFileManagerService> _fileManagerService;
     private readonly IProjectManagmentRepository _projectManagmentRepository;
 
@@ -75,7 +75,7 @@ internal sealed class UserService : IUserService
     /// <param name="fareRuleRepository">Репозиторий тарифов.</param>
     /// <param name="availableLimitsRepository">Репозиторий лимитов.</param>
     /// <param name="globalConfigRepository">Репозиторий глобал конфига.</param>
-    /// <param name="pachcaService">Сервис пачки.</param>
+    /// <param name="discordService">Сервис дискорда.</param>
     /// <param name="fileManagerService">Сервис менеджера файлов.</param>
     /// <param name="projectManagmentRepository">Репозиторий модуля УП.</param>
     public UserService(ILogger<UserService> logger, 
@@ -91,7 +91,7 @@ internal sealed class UserService : IUserService
         IFareRuleRepository fareRuleRepository,
         IAvailableLimitsRepository availableLimitsRepository,
         IGlobalConfigRepository globalConfigRepository,
-        IPachcaService pachcaService,
+        IDiscordService discordService,
         Lazy<IFileManagerService> fileManagerService,
         IProjectManagmentRepository projectManagmentRepository)
     {
@@ -108,7 +108,7 @@ internal sealed class UserService : IUserService
         _fareRuleRepository = fareRuleRepository;
         _availableLimitsRepository = availableLimitsRepository;
         _globalConfigRepository = globalConfigRepository;
-        _pachcaService = pachcaService;
+        _discordService = discordService;
         _fileManagerService = fileManagerService;
         _projectManagmentRepository = projectManagmentRepository;
     }
@@ -181,8 +181,8 @@ internal sealed class UserService : IUserService
             
             result.IsSuccess = true;
             
-            // Отправляем уведомление в чат пачки о новом пользователе.
-            await _pachcaService.SendNotificationCreatedNewUserAsync(email);
+            // Отправляем уведомление в чат дискорда о новом пользователе.
+            await _discordService.SendNotificationCreatedNewUserAsync(email);
 
             await tran.CommitAsync();
 

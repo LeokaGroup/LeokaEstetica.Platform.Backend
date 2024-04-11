@@ -8,7 +8,7 @@ using LeokaEstetica.Platform.Database.Abstractions.FareRule;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Resume;
 using LeokaEstetica.Platform.Database.Abstractions.Resume;
 using LeokaEstetica.Platform.Database.Abstractions.Subscription;
-using LeokaEstetica.Platform.Integrations.Abstractions.Pachca;
+using LeokaEstetica.Platform.Integrations.Abstractions.Discord;
 using LeokaEstetica.Platform.Models.Dto.Output.Resume;
 using LeokaEstetica.Platform.Models.Entities.Moderation;
 using LeokaEstetica.Platform.Models.Entities.Profile;
@@ -33,7 +33,7 @@ internal sealed class ResumeService : IResumeService
     private readonly IFillColorResumeService _fillColorResumeService;
     private readonly IResumeModerationRepository _resumeModerationRepository;
     private readonly IAccessUserService _accessUserService;
-    private readonly IPachcaService _pachcaService;
+    private readonly IDiscordService _discordService;
     
     /// <summary>
     /// Конструктор.
@@ -57,7 +57,7 @@ internal sealed class ResumeService : IResumeService
         IFillColorResumeService fillColorResumeService, 
         IResumeModerationRepository resumeModerationRepository,
         IAccessUserService accessUserService,
-        IPachcaService pachcaService)
+        IDiscordService discordService)
     {
         _logger = logger;
         _resumeRepository = resumeRepository;
@@ -68,7 +68,7 @@ internal sealed class ResumeService : IResumeService
         _fillColorResumeService = fillColorResumeService;
         _resumeModerationRepository = resumeModerationRepository;
         _accessUserService = accessUserService;
-        _pachcaService = pachcaService;
+        _discordService = discordService;
     }
 
     #region Публичные методы.
@@ -237,7 +237,7 @@ internal sealed class ResumeService : IResumeService
                                                     $"UserId: {userId}. " +
                                                     "Подписка была NULL или невалидная.");
                 // Отправляем ивент в пачку.
-                await _pachcaService.SendNotificationErrorAsync(ex);
+                await _discordService.SendNotificationErrorAsync(ex);
                 
                 // Если ошибка, то не стопаем выполнение логики, а вернем вакансии, пока будем разбираться с ошибкой.
                 // Без тегов не страшно отобразить вакансии.

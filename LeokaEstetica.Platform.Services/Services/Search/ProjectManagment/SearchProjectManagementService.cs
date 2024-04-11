@@ -5,7 +5,7 @@ using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.Config;
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Database.Abstractions.Search;
-using LeokaEstetica.Platform.Integrations.Abstractions.Pachca;
+using LeokaEstetica.Platform.Integrations.Abstractions.Discord;
 using LeokaEstetica.Platform.Models.Dto.Output.Search.ProjectManagement;
 using LeokaEstetica.Platform.Services.Abstractions.Search.ProjectManagment;
 using LeokaEstetica.Platform.Services.Helpers;
@@ -24,7 +24,7 @@ internal sealed class SearchProjectManagementService : ISearchProjectManagementS
     private readonly IProjectManagmentRepository _projectManagmentRepository;
     private readonly IProjectSettingsConfigRepository _projectSettingsConfigRepository;
     private readonly IUserRepository _userRepository;
-    private readonly Lazy<IPachcaService> _pachcaService;
+    private readonly Lazy<IDiscordService> _discordService;
 
     /// <summary>
     /// Конструктор.
@@ -33,20 +33,20 @@ internal sealed class SearchProjectManagementService : ISearchProjectManagementS
     /// <param name="searchProjectManagementRepository">Репозиторий поиска в модуле УП.</param>
     /// <param name="projectSettingsConfigRepository">Репозиторий настроек проектов.</param>
     /// <param name="userRepository">Репозиторий пользователей.</param>
-    /// <param name="pachcaService">Сервис пачки.</param>
+    /// <param name="discordService">Сервис дискорда.</param>
     public SearchProjectManagementService(ILogger<SearchProjectManagementService> logger,
      ISearchProjectManagementRepository searchProjectManagementRepository,
      IProjectManagmentRepository projectManagmentRepository,
      IProjectSettingsConfigRepository projectSettingsConfigRepository,
      IUserRepository userRepository,
-     Lazy<IPachcaService> pachcaService)
+     Lazy<IDiscordService> discordService)
     {
         _logger = logger;
         _searchProjectManagementRepository = searchProjectManagementRepository;
         _projectManagmentRepository = projectManagmentRepository;
         _projectSettingsConfigRepository = projectSettingsConfigRepository;
         _userRepository = userRepository;
-        _pachcaService = pachcaService;
+        _discordService = discordService;
     }
 
     /// <inheritdoc />
@@ -145,7 +145,7 @@ internal sealed class SearchProjectManagementService : ISearchProjectManagementS
                     catch (InvalidOperationException ex)
                     {
                         // Спарсить Id задачи с префиксом не удалось.
-                        await _pachcaService.Value.SendNotificationErrorAsync(ex);
+                        await _discordService.Value.SendNotificationErrorAsync(ex);
                         _logger?.LogError(ex, ex.Message);
                     }
                 }
@@ -204,7 +204,7 @@ internal sealed class SearchProjectManagementService : ISearchProjectManagementS
                     // Если не реализовано, то не стапаем приложение, пропустим такой поиск.
                     catch (NotImplementedException ex)
                     {
-                        await _pachcaService.Value.SendNotificationErrorAsync(ex);
+                        await _discordService.Value.SendNotificationErrorAsync(ex);
                         _logger?.LogError(ex, ex.Message);
                     }
                 }
@@ -242,7 +242,7 @@ internal sealed class SearchProjectManagementService : ISearchProjectManagementS
                     // Если не реализовано, то не стапаем приложение, пропустим такой поиск.
                     catch (NotImplementedException ex)
                     {
-                        await _pachcaService.Value.SendNotificationErrorAsync(ex);
+                        await _discordService.Value.SendNotificationErrorAsync(ex);
                         _logger?.LogError(ex, ex.Message);
                     }
                 }
