@@ -1,8 +1,8 @@
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
-using LeokaEstetica.Platform.Base.Abstractions.Services.Pachca;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Resume;
 using LeokaEstetica.Platform.Database.Abstractions.Resume;
 using LeokaEstetica.Platform.Database.Abstractions.Ticket;
+using LeokaEstetica.Platform.Integrations.Abstractions.Discord;
 using LeokaEstetica.Platform.Redis.Abstractions.User;
 using LeokaEstetica.Platform.Redis.Consts;
 using LeokaEstetica.Platform.Services.Abstractions.Project;
@@ -24,7 +24,7 @@ public class DeleteDeactivatedAccountsJob : BackgroundService
     private readonly IVacancyService _vacancyService;
     private readonly IResumeRepository _resumeRepository;
     private readonly IResumeModerationRepository _resumeModerationRepository;
-    private readonly IPachcaService _pachcaService;
+    private readonly IDiscordService _discordService;
     private readonly ITicketRepository _ticketRepository;
 
     /// <summary>
@@ -36,7 +36,7 @@ public class DeleteDeactivatedAccountsJob : BackgroundService
     /// <param name="vacancyService">Репозиторий вакансий.</param>
     /// <param name="resumeRepository">Репозиторий анкет.</param>
     /// <param name="resumeModerationRepository">Репозиторий модерации анкет.</param>
-    /// <param name="pachcaService">Сервис пачки.</param>
+    /// <param name="discordService">Сервис дискорда.</param>
     /// <param name="ticketRepository">Репозиторий тикетов.</param>
     /// </summary>
     public DeleteDeactivatedAccountsJob(ILogger<DeleteDeactivatedAccountsJob> logger,
@@ -46,7 +46,7 @@ public class DeleteDeactivatedAccountsJob : BackgroundService
         IVacancyService vacancyService,
         IResumeRepository resumeRepository,
         IResumeModerationRepository resumeModerationRepository,
-        IPachcaService pachcaService,
+        IDiscordService discordService,
         ITicketRepository ticketRepository)
     {
         _logger = logger;
@@ -56,7 +56,7 @@ public class DeleteDeactivatedAccountsJob : BackgroundService
         _vacancyService = vacancyService;
         _resumeRepository = resumeRepository;
         _resumeModerationRepository = resumeModerationRepository;
-        _pachcaService = pachcaService;
+        _discordService = discordService;
         _ticketRepository = ticketRepository;
     }
 
@@ -195,7 +195,7 @@ public class DeleteDeactivatedAccountsJob : BackgroundService
         {
             _logger.LogCritical(ex, "Ошибка при выполнении фоновой задачи DeleteDeactivatedAccounts.");
             
-            await _pachcaService.SendNotificationErrorAsync(ex);
+            await _discordService.SendNotificationErrorAsync(ex);
             
             throw;
         }

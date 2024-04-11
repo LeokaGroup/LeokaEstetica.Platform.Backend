@@ -11,4 +11,8 @@
       <ProjectReference Include="..\LeokaEstetica.Platform.Database\LeokaEstetica.Platform.Database.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <PackageReference Include="ReversoAPI" Version="2.0.0" />
+    </ItemGroup>
+
 </Project>

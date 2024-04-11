@@ -1,4 +1,5 @@
 using Autofac;
+using LazyProxy.Autofac;
 using LeokaEstetica.Platform.Core.Attributes;
 using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Notifications.Services;
@@ -89,5 +90,8 @@ public class NotificationsModule : Module
         builder.RegisterType<TicketNotificationService>()
             .As<ITicketNotificationService>()
             .InstancePerLifetimeScope();
+
+        // Сервис уведомлений модуля УП.
+        builder.RegisterLazy<IProjectManagementNotificationService, ProjectManagementNotificationService>();
     }
 }

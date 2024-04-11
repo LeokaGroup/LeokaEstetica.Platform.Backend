@@ -9,27 +9,13 @@ public class GetConfigurationValidationModel
     /// Конструктор.
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
-    /// <param name="strategy">Стратегия представления.</param>
-    /// <param name="templateId">Id шаблона.</param>
-    public GetConfigurationValidationModel(long projectId, string strategy, int templateId)
+    public GetConfigurationValidationModel(long projectId)
     {
         ProjectId = projectId;
-        Strategy = strategy;
-        TemplateId = templateId;
     }
 
     /// <summary>
     /// Id проекта.
     /// </summary>
     public long ProjectId { get; }
-
-    /// <summary>
-    /// Стратегия представления.
-    /// </summary>
-    public string Strategy { get; }
-
-    /// <summary>
-    /// Id шаблона.
-    /// </summary>
-    public int TemplateId { get; }
 }

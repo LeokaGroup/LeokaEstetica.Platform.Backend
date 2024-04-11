@@ -103,6 +103,13 @@ internal sealed class RefundsService : IRefundsService
 
             // Получаем подписку.
             var currentSubscription = await _subscriptionRepository.GetUserSubscriptionAsync(userId);
+            
+            if (currentSubscription is null)
+            {
+                throw new InvalidOperationException("Найдена невалидная подписка пользователя. " +
+                                                    $"UserId: {userId}. " +
+                                                    "Подписка была NULL или невалидная.");
+            }
 
             // Получаем подписку пользователя.
             var userSubscription = await _subscriptionRepository
