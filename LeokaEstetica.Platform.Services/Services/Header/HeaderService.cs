@@ -52,7 +52,7 @@ internal sealed class HeaderService : IHeaderService
         var items = (await _headerRepository.HeaderItemsAsync(headerType)).ToList();
         
         var isAvailableProjectManagment = await _globalConfigRepository.GetValueByKeyAsync<bool>(
-            GlobalConfigKeys.ProjectManagment.PROJECT_MANAGEMENT_MODE_ENABLED);
+            GlobalConfigKeys.ProjectManagment.PROJECT_MANAGMENT_MODE_ENABLED);
 
         // Исключаем пункт меню модуля управления проектами, если в БД не включен этот модуль.
         if (!isAvailableProjectManagment)

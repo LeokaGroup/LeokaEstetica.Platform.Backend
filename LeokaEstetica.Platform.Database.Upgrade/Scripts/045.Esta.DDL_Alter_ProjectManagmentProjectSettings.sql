@@ -1,2 +1,0 @@
-ALTER TABLE IF EXISTS "Configs"."ProjectManagmentProjectSettings"
-    ADD COLUMN IF NOT EXISTS "LastUserDate" TIMESTAMP NOT NULL DEFAULT NOW();

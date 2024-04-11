@@ -24,4 +24,16 @@ public class ProjectManagmentTaskTemplateEntity
     /// Системное название шаблона.
     /// </summary>
     public string TemplateSysName { get; set; }
+
+    /// <summary>
+    /// Список статусов шаблонов задач.
+    /// </summary>
+    public IEnumerable<ProjectManagmentTaskStatusTemplateEntity> ProjectManagmentTaskStatusTemplates { get; set; }
+
+    //
+    // /// <summary>
+    // /// Список статусов шаблонов задач пользователя.
+    // /// </summary>
+    public IEnumerable<ProjectManagmentTaskStatusIntermediateTemplateEntity>
+        ProjectManagmentTaskStatusIntermediateTemplates { get; set; }
 }

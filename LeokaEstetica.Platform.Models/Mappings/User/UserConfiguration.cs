@@ -38,7 +38,7 @@ public partial class UserConfiguration : IEntityTypeConfiguration<UserEntity>
         
         entity.Property(e => e.DateRegister)
             .HasColumnName("DateRegister")
-            .HasColumnType("timestamp with time zone")
+            .HasColumnType("timestamp")
             .IsRequired();
         
         entity.Property(e => e.Email)
@@ -91,11 +91,11 @@ public partial class UserConfiguration : IEntityTypeConfiguration<UserEntity>
         
         entity.Property(e => e.LockoutEnabledDate)
             .HasColumnName("LockoutEnabledDate")
-            .HasColumnType("timestamp with time zone");
+            .HasColumnType("timestamp");
         
         entity.Property(e => e.LockoutEndDate)
             .HasColumnName("LockoutEndDate")
-            .HasColumnType("timestamp with time zone");
+            .HasColumnType("timestamp");
         
         entity.Property(e => e.IsVkAuth)
             .HasColumnName("IsVkAuth")
@@ -108,13 +108,13 @@ public partial class UserConfiguration : IEntityTypeConfiguration<UserEntity>
         
         entity.Property(e => e.LastAutorization)
             .HasColumnName("LastAutorization")
-            .HasColumnType("timestamp with time zone")
+            .HasColumnType("timestamp")
             .HasDefaultValue(DateTime.UtcNow)
             .IsRequired();
         
         entity.Property(e => e.DateCreatedMark)
             .HasColumnName("DateCreatedMark")
-            .HasColumnType("timestamp with time zone")
+            .HasColumnType("timestamp")
             .HasDefaultValue(DateTime.UtcNow)
             .IsRequired();
         
@@ -125,11 +125,11 @@ public partial class UserConfiguration : IEntityTypeConfiguration<UserEntity>
         
         entity.Property(e => e.SubscriptionStartDate)
             .HasColumnName("SubscriptionStartDate")
-            .HasColumnType("timestamp with time zone");
+            .HasColumnType("timestamp");
         
         entity.Property(e => e.SubscriptionEndDate)
             .HasColumnName("SubscriptionEndDate")
-            .HasColumnType("timestamp with time zone");
+            .HasColumnType("timestamp");
 
         entity.HasIndex(u => u.UserId)
             .HasDatabaseName("PK_Users_UserId")

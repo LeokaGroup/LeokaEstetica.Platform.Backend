@@ -1,3 +1,0 @@
-ALTER TABLE IF EXISTS "ProjectManagment"."UserTaskTags"
-    ADD COLUMN IF NOT EXISTS "UserId"         BIGINT NOT NULL,
-    ADD COLUMN IF NOT EXISTS "TagDescription" VARCHAR(255);

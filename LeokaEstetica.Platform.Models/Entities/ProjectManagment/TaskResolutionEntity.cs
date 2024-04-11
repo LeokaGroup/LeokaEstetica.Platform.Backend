@@ -24,4 +24,9 @@ public class TaskResolutionEntity
     /// Порядковый номер.
     /// </summary>
     public int Position { get; set; }
+
+    /// <summary>
+    /// FK на задачу.
+    /// </summary>
+    // public UserTaskEntity UserTask { get; set; }
 }

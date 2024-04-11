@@ -44,7 +44,7 @@ public partial class UserProjectConfiguration : IEntityTypeConfiguration<UserPro
 
         entity.Property(e => e.DateCreated)
             .HasColumnName("DateCreated")
-            .HasColumnType("timestamp with time zone")
+            .HasColumnType("timestamp")
             .IsRequired();
 
         entity.Property(e => e.PublicId)
@@ -60,10 +60,6 @@ public partial class UserProjectConfiguration : IEntityTypeConfiguration<UserPro
         entity.Property(e => e.Demands)
             .HasColumnName("Demands")
             .HasColumnType("text");
-        
-        entity.Property(e => e.TemplateId)
-            .HasColumnName("TemplateId")
-            .HasColumnType("int");
 
         entity.HasIndex(u => u.ProjectId)
             .HasDatabaseName("PK_UserProjects_ProjectId")

@@ -3,17 +3,15 @@ using AutoMapper;
 using LeokaEstetica.Platform.Access.Services.AvailableLimits;
 using LeokaEstetica.Platform.Access.Services.Moderation;
 using LeokaEstetica.Platform.Access.Services.User;
-using LeokaEstetica.Platform.Base.Factors;
 using LeokaEstetica.Platform.Base.Repositories.Chat;
 using LeokaEstetica.Platform.Base.Repositories.User;
-using LeokaEstetica.Platform.Base.Services.Connection;
+using LeokaEstetica.Platform.Base.Services.Pachca;
 using LeokaEstetica.Platform.CallCenter.Services.Project;
 using LeokaEstetica.Platform.CallCenter.Services.Resume;
 using LeokaEstetica.Platform.CallCenter.Services.Ticket;
 using LeokaEstetica.Platform.CallCenter.Services.Vacancy;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Utils;
-using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Database.Repositories.Access.Ticket;
 using LeokaEstetica.Platform.Database.Repositories.Access.User;
 using LeokaEstetica.Platform.Database.Repositories.AvailableLimits;
@@ -34,19 +32,13 @@ using LeokaEstetica.Platform.Database.Repositories.Profile;
 using LeokaEstetica.Platform.Database.Repositories.Project;
 using LeokaEstetica.Platform.Database.Repositories.ProjectManagment;
 using LeokaEstetica.Platform.Database.Repositories.Resume;
-using LeokaEstetica.Platform.Database.Repositories.Search;
 using LeokaEstetica.Platform.Database.Repositories.Subscription;
-using LeokaEstetica.Platform.Database.Repositories.Templates;
 using LeokaEstetica.Platform.Database.Repositories.TIcket;
 using LeokaEstetica.Platform.Database.Repositories.Vacancy;
 using LeokaEstetica.Platform.Diagnostics.Services.Metrics;
 using LeokaEstetica.Platform.Finder.Services.Project;
 using LeokaEstetica.Platform.Finder.Services.Resume;
 using LeokaEstetica.Platform.Finder.Services.Vacancy;
-using LeokaEstetica.Platform.Integrations.Abstractions.Discord;
-using LeokaEstetica.Platform.Integrations.Abstractions.Reverso;
-using LeokaEstetica.Platform.Integrations.Services.Discord;
-using LeokaEstetica.Platform.Integrations.Services.Reverso;
 using LeokaEstetica.Platform.Integrations.Services.Telegram;
 using LeokaEstetica.Platform.Messaging.Services.Chat;
 using LeokaEstetica.Platform.Messaging.Services.Project;
@@ -66,11 +58,9 @@ using LeokaEstetica.Platform.Services.Services.Project;
 using LeokaEstetica.Platform.Services.Services.ProjectManagment;
 using LeokaEstetica.Platform.Services.Services.Refunds;
 using LeokaEstetica.Platform.Services.Services.Resume;
-using LeokaEstetica.Platform.Services.Services.Search.ProjectManagment;
 using LeokaEstetica.Platform.Services.Services.Subscription;
 using LeokaEstetica.Platform.Services.Services.User;
 using LeokaEstetica.Platform.Services.Services.Vacancy;
-using LeokaEstetica.Platform.Services.Strategies.ProjectManagement.AgileObjectSearch;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
@@ -86,8 +76,7 @@ namespace LeokaEstetica.Platform.Tests;
 internal class BaseServiceTest
 {
     private IConfiguration AppConfiguration { get; }
-    private string PostgreConfigString { get; }
-
+    private string PostgreConfigString { get; set; }
     protected readonly UserService UserService;
     protected readonly ProfileService ProfileService;
     protected readonly ProjectService ProjectService;
@@ -125,10 +114,6 @@ internal class BaseServiceTest
     protected readonly ChatRepository ChatRepository;
     protected readonly PressService PressService;
     protected readonly ProjectManagmentService ProjectManagmentService;
-    protected readonly ReversoService ReversoService;
-    protected readonly SearchProjectManagementService SearchProjectManagementService;
-    protected readonly BaseSearchAgileObjectAlgorithm BaseSearchSprintTaskAlgorithm;
-    protected readonly IProjectManagmentRepository ProjectManagmentRepository;
 
     protected BaseServiceTest()
     {
@@ -149,8 +134,6 @@ internal class BaseServiceTest
         var pgContext = new PgContext(optionsBuilder.Options);
 
         PgContext = pgContext;
-        var npgSqlConnectionFactory = new NpgSqlConnectionFactory(PostgreConfigString);
-        var connectionProvider = new ConnectionProvider(npgSqlConnectionFactory);
         
         var optionsForCache = new OptionsWrapper<MemoryDistributedCacheOptions>(new MemoryDistributedCacheOptions());
         var distributedCache = new MemoryDistributedCache(optionsForCache);
@@ -165,21 +148,18 @@ internal class BaseServiceTest
         FareRuleRepository = new FareRuleRepository(pgContext, AppConfiguration);
         
         var availableLimitsRepository = new AvailableLimitsRepository(pgContext);
-        var globalConfigRepository = new GlobalConfigRepository(pgContext, null, AppConfiguration, connectionProvider);
-        var discordService = new DiscordService(AppConfiguration, null);
-        
-        ProjectManagmentRepository = new ProjectManagmentRepository(connectionProvider);
+        var globalConfigRepository = new GlobalConfigRepository(pgContext, null, AppConfiguration);
+        var pachcaService = new PachcaService(AppConfiguration, null);
 
         UserService = new UserService(null, userRepository, mapper, null, pgContext, profileRepository,
             subscriptionRepository, resumeModerationRepository, accessUserService, userRedisService,
-            FareRuleRepository, availableLimitsRepository, globalConfigRepository, discordService, null,
-            ProjectManagmentRepository);
+            FareRuleRepository, availableLimitsRepository, globalConfigRepository, pachcaService);
         ProfileService = new ProfileService(null, profileRepository, userRepository, mapper, null, null,
-            accessUserService, resumeModerationRepository, discordService);
+            accessUserService, resumeModerationRepository, pachcaService);
 
         var projectRepository = new ProjectRepository(pgContext, ChatRepository);
         var projectNotificationsRepository = new ProjectNotificationsRepository(pgContext);
-        var vacancyRepository = new VacancyRepository(pgContext);
+        var vacancyRepository = new VacancyRepository(pgContext, null);
         var projectNotificationsService = new ProjectNotificationsService(null, null, userRepository, mapper,
             projectNotificationsRepository, null, projectRepository, null, null, vacancyRepository);
         var vacancyModerationRepository = new VacancyModerationRepository(pgContext);
@@ -195,7 +175,7 @@ internal class BaseServiceTest
         // Не получится сделать просто, VacancyService и ProjectService нужны друг другу тесно.
         VacancyService = new VacancyService(null, vacancyRepository, mapper, null, userRepository,
             VacancyModerationService, subscriptionRepository, FareRuleRepository, availableLimitsService,
-            vacancyNotificationsService, null, null, null, vacancyModerationRepository, discordService);
+            vacancyNotificationsService, null, null, null, vacancyModerationRepository, pachcaService);
 
         var projectResponseRepository = new ProjectResponseRepository(pgContext);
 
@@ -226,7 +206,7 @@ internal class BaseServiceTest
         ProjectService = new ProjectService(projectRepository, null, userRepository, mapper,
             projectNotificationsService, VacancyService, vacancyRepository, availableLimitsService,
             subscriptionRepository, FareRuleRepository, VacancyModerationService, projectNotificationsRepository, null,
-            accessUserService, fillColorProjectsService, null, ProjectModerationRepository, discordService);
+            accessUserService, fillColorProjectsService, null, ProjectModerationRepository, pachcaService);
         
         var ordersRepository = new OrdersRepository(pgContext);
         var commerceRepository = new CommerceRepository(pgContext, AppConfiguration);
@@ -244,8 +224,7 @@ internal class BaseServiceTest
             FareRuleRepository);
         var fillColorResumeService = new FillColorResumeService();
         ResumeService = new ResumeService(null, resumeRepository, mapper, subscriptionRepository,
-            FareRuleRepository, userRepository, fillColorResumeService, resumeModerationRepository, accessUserService,
-            discordService);
+            FareRuleRepository, userRepository, fillColorResumeService, resumeModerationRepository, accessUserService);
         VacancyFinderService = new VacancyFinderService(vacancyRepository, null);
         FinderProjectService = new Finder.Services.Project.ProjectFinderService(projectRepository, null);
         ResumeFinderService = new ResumeFinderService(null, resumeRepository);
@@ -281,20 +260,8 @@ internal class BaseServiceTest
         var pressRepository = new PressRepository(pgContext);
         PressService = new PressService(pressRepository, null);
 
-        var transactionScopeFactory = new TransactionScopeFactory();
-        
-        var projectManagmentTemplateRepository = new ProjectManagmentTemplateRepository(connectionProvider);
-        var projectSettingsConfigRepository = new ProjectSettingsConfigRepository(pgContext);
-        ReversoService = new ReversoService(null);
-        ProjectManagmentService = new ProjectManagmentService(null, ProjectManagmentRepository, mapper, userRepository,
-            projectRepository, discordService, projectManagmentTemplateRepository, transactionScopeFactory,
-            projectSettingsConfigRepository, new Lazy<IReversoService>(ReversoService), null, null, UserService);
-
-        var searchProjectManagementRepository = new SearchProjectManagementRepository(connectionProvider);
-        SearchProjectManagementService = new SearchProjectManagementService(null,
-            searchProjectManagementRepository, ProjectManagmentRepository, projectSettingsConfigRepository,
-            userRepository, new Lazy<IDiscordService>(discordService));
-
-        BaseSearchSprintTaskAlgorithm = new BaseSearchAgileObjectAlgorithm();
+        var projectManagmentRepository = new ProjectManagmentRepository(pgContext);
+        ProjectManagmentService = new ProjectManagmentService(null, projectManagmentRepository, mapper, userRepository,
+            projectRepository, pachcaService);
     }
 }

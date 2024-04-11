@@ -1,10 +1,9 @@
-using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 
 namespace LeokaEstetica.Platform.Models.Dto.Output.Template;
 
 /// <summary>
 /// Класс выходной модели задач проекта.
-/// Здесь под названием "задача" понимается Agile-объект (задач, эпиков, историй, ошибок, спринтов).
 /// </summary>
 public class ProjectManagmentTaskOutput
 {
@@ -21,11 +20,13 @@ public class ProjectManagmentTaskOutput
     /// <summary>
     /// Id статуса задачи.
     /// </summary>
+    [JsonIgnore]
     public int TaskStatusId { get; set; }
 
     /// <summary>
     /// Id автора задачи.
     /// </summary>
+    [JsonIgnore]
     public long AuthorId { get; set; }
 
     /// <summary>
@@ -43,6 +44,7 @@ public class ProjectManagmentTaskOutput
     /// <summary>
     /// Id наблюдателей задачи.
     /// </summary>
+    [JsonIgnore]
     public List<long> WatcherIds { get; set; }
 
     /// <summary>
@@ -58,12 +60,12 @@ public class ProjectManagmentTaskOutput
     /// <summary>
     /// Дата создания задачи.
     /// </summary>
-    public string Created { get; set; }
+    public DateTime Created { get; set; }
     
     /// <summary>
     /// Дата обновление задачи.
     /// </summary>
-    public string Updated { get; set; }
+    public DateTime Updated { get; set; }
 
     /// <summary>
     /// Id задачи в рамках проекта.
@@ -78,6 +80,7 @@ public class ProjectManagmentTaskOutput
     /// <summary>
     /// Id резолюции (если указана).
     /// </summary>
+    [JsonIgnore]
     public int ResolutionId { get; set; }
 
     /// <summary>
@@ -89,6 +92,7 @@ public class ProjectManagmentTaskOutput
     /// <summary>
     /// Id тегов (меток).
     /// </summary>
+    [JsonIgnore]
     public List<int> TagIds { get; set; }
 
     /// <summary>
@@ -99,86 +103,29 @@ public class ProjectManagmentTaskOutput
     /// <summary>
     /// Id типа задачи.
     /// </summary>
+    [JsonIgnore]
     public int TaskTypeId { get; set; }
 
     /// <summary>
-    /// Данные исполнителя задачи.
+    /// TODO: В будущем будет изменен на объект, содержащий фото и тд.
+    /// ФИО исполнителя задачи.
     /// </summary>
-    public Executor Executor { get; set; }
+    public string ExecutorName { get; set; }
 
     /// <summary>
     /// Id исполнителя задачи.
     /// </summary>
+    [JsonIgnore]
     public long ExecutorId { get; set; }
     
     /// <summary>
     /// Id приоритета задачи (если указана).
     /// </summary>
+    [JsonIgnore]
     public int PriorityId { get; set; }
 
     /// <summary>
     /// Название приоритета задачи.
     /// </summary>
     public string PriorityName { get; set; }
-
-    /// <summary>
-    /// Префикс номера задачи.
-    /// </summary>
-    public string TaskIdPrefix { get; set; }
-
-    /// <summary>
-    /// Id задачи в рамках проекта вместе с префиксом.
-    /// </summary>
-    public string FullProjectTaskId => string.Concat(TaskIdPrefix + "-", ProjectTaskId);
-    
-    /// <summary>
-    /// Id задачи вместе с префиксом.
-    /// </summary>
-    public string FullTaskId => string.Concat(TaskIdPrefix + "-", TaskId);
-    
-    /// <summary>
-    /// Название эпика, в который добавлена задача.
-    /// </summary>
-    public string EpicName { get; set; }
-
-    /// <summary>
-    /// Id эпика, в который добавлена задача.
-    /// </summary>
-    public long? EpicId { get; set; }
-
-    /// <summary>
-    /// Id спринта, в который добавлена задача.
-    /// </summary>
-    public long? SprintId { get; set; }
-
-    /// <summary>
-    /// Название спринта, в который добавлена задача.
-    /// </summary>
-    public string SprintName { get; set; }
-
-    /// <summary>
-    /// Список задач эпика.
-    /// </summary>
-    public IEnumerable<ProjectManagmentTaskOutput> EpicTasks { get; set; }
-
-    /// <summary>
-    /// Список задач спринта.
-    /// </summary>
-    public IEnumerable<ProjectManagmentTaskOutput> SprintTasks { get; set; }
-}
-
-/// <summary>
-/// Класс исполнителя задачи.
-/// </summary>
-public class Executor
-{
-    /// <summary>
-    /// ФИО исполнителя задачи.
-    /// </summary>
-    public string ExecutorName { get; set; }
-
-    /// <summary>
-    /// Файл аватара исполнителя.
-    /// </summary>
-    public FileContentResult Avatar { get; set; }
 }

@@ -4,16 +4,16 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace LeokaEstetica.Platform.Models.Mappings.ProjectManagment;
 
-public partial class ProjectManagmentHeaderConfiguration : IEntityTypeConfiguration<PanelEntity>
+public partial class ProjectManagmentHeaderConfiguration : IEntityTypeConfiguration<ProjectManagmentHeaderEntity>
 {
-    public void Configure(EntityTypeBuilder<PanelEntity> entity)
+    public void Configure(EntityTypeBuilder<ProjectManagmentHeaderEntity> entity)
     {
-        entity.ToTable("panel_items", "ProjectManagment");
+        entity.ToTable("Header", "ProjectManagment");
 
-        entity.HasKey(e => e.PanelId);
+        entity.HasKey(e => e.HeaderId);
 
-        entity.Property(e => e.PanelId)
-            .HasColumnName("PanelId")
+        entity.Property(e => e.HeaderId)
+            .HasColumnName("HeaderId")
             .HasColumnType("serial")
             .IsRequired();
         
@@ -30,7 +30,7 @@ public partial class ProjectManagmentHeaderConfiguration : IEntityTypeConfigurat
             .HasColumnName("Position")
             .HasColumnType("int");
         
-        entity.Property(e => e.PanelType)
+        entity.Property(e => e.HeaderType)
             .HasColumnName("HeaderType")
             .HasColumnType("varchar(50)")
             .IsRequired();
@@ -60,12 +60,12 @@ public partial class ProjectManagmentHeaderConfiguration : IEntityTypeConfigurat
             .HasColumnType("varchar(100)")
             .IsRequired();
 
-        entity.HasIndex(u => u.PanelId)
+        entity.HasIndex(u => u.HeaderId)
             .HasDatabaseName("PK_ProjectManagment_Header_HeaderId")
             .IsUnique();
 
         OnConfigurePartial(entity);
     }
 
-    partial void OnConfigurePartial(EntityTypeBuilder<PanelEntity> entity);
+    partial void OnConfigurePartial(EntityTypeBuilder<ProjectManagmentHeaderEntity> entity);
 }

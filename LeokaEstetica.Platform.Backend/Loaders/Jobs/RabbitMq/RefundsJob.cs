@@ -1,5 +1,6 @@
 using System.Runtime.CompilerServices;
 using System.Text;
+using LeokaEstetica.Platform.Base.Abstractions.Services.Pachca;
 using LeokaEstetica.Platform.Base.Enums;
 using LeokaEstetica.Platform.Base.Extensions.StringExtensions;
 using LeokaEstetica.Platform.Base.Models.IntegrationEvents.Refunds;
@@ -7,7 +8,6 @@ using LeokaEstetica.Platform.Core.Constants;
 using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.Commerce;
 using LeokaEstetica.Platform.Database.Abstractions.Config;
-using LeokaEstetica.Platform.Integrations.Abstractions.Discord;
 using LeokaEstetica.Platform.Messaging.Factors;
 using LeokaEstetica.Platform.Processing.Abstractions.PayMaster;
 using LeokaEstetica.Platform.Processing.Enums;
@@ -33,7 +33,7 @@ internal sealed class RefundsJob : IJob
     private readonly ICommerceRepository _commerceRepository;
     private readonly ILogger<OrdersJob> _logger;
     private readonly IGlobalConfigRepository _globalConfigRepository;
-    private readonly IDiscordService _discordService;
+    private readonly IPachcaService _pachcaService;
     
     /// <summary>
     /// Название очереди.
@@ -48,20 +48,20 @@ internal sealed class RefundsJob : IJob
     /// <param name="commerceRepository">Репозиторий коммерции.</param>
     /// <param name="logger">Сервис логов.</param>
     /// <param name="globalConfigRepository">Репозиторий глобал конфигов.</param>
-    /// <param name="discordService">Сервис дискорда.</param>
+    /// <param name="pachcaService">Сервис пачки.</param>
     public RefundsJob(IConfiguration configuration, 
         IPayMasterService payMasterService,
         ICommerceRepository commerceRepository, 
         ILogger<OrdersJob> logger,
         IGlobalConfigRepository globalConfigRepository,
-        IDiscordService discordService)
+        IPachcaService pachcaService)
     {
         _payMasterService = payMasterService;
         _httpClient = new HttpClient();
         _commerceRepository = commerceRepository;
         _logger = logger;
         _globalConfigRepository = globalConfigRepository;
-        _discordService = discordService;
+        _pachcaService = pachcaService;
 
         var factory = CreateRabbitMqConnectionFactory.CreateRabbitMqConnection(configuration);
         var connection = factory.CreateConnection();
@@ -145,7 +145,7 @@ internal sealed class RefundsJob : IJob
                     {
                         _logger.LogCritical(ex, "Ошибка при чтении очереди возвратов.");
                         
-                        await _discordService.SendNotificationErrorAsync(ex);
+                        await _pachcaService.SendNotificationErrorAsync(ex);
                         
                         throw;
                     }

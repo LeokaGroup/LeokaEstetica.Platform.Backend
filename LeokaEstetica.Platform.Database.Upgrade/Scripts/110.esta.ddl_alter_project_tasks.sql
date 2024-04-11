@@ -1,1 +1,0 @@
-CREATE UNIQUE INDEX IF NOT EXISTS uniq_project_tasks_project_task_id_idx ON project_management.project_tasks (project_task_id);

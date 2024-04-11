@@ -1,14 +1,14 @@
 namespace LeokaEstetica.Platform.Models.Entities.ProjectManagment;
 
 /// <summary>
-/// Класс сопоставляется с таблицей панели модуля УП, документации УП.
+/// Класс сопоставляется с таблицей хидера модуля УП (управление проектами).
 /// </summary>
-public class PanelEntity
+public class ProjectManagmentHeaderEntity
 {
     /// <summary>
     /// PK.
     /// </summary>
-    public int PanelId { get; set; }
+    public int HeaderId { get; set; }
 
     /// <summary>
     /// Название пункта хидера.
@@ -26,9 +26,9 @@ public class PanelEntity
     public int Position { get; set; }
 
     /// <summary>
-    /// Тип элемента панели. Например, dropdown - выпадающий список.
+    /// Тип элемента хидера. Например, dropdown - выпадающий список.
     /// </summary>
-    public string PanelType { get; set; }
+    public string HeaderType { get; set; }
 
     /// <summary>
     /// Элементы пункта хидера. Содержат вложенные элементы пункта хидера, которые могут содержать также вложенные элементы.

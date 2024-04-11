@@ -1,1 +1,0 @@
-CREATE TYPE project_management.task_type_enum AS ENUM ('task', 'epic', 'sprint', 'story', 'error');

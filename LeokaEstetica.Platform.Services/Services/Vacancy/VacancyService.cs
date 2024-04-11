@@ -4,6 +4,7 @@ using LeokaEstetica.Platform.Access.Abstractions.AvailableLimits;
 using LeokaEstetica.Platform.Access.Consts;
 using LeokaEstetica.Platform.Access.Enums;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
+using LeokaEstetica.Platform.Base.Abstractions.Services.Pachca;
 using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.FareRule;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
@@ -28,7 +29,6 @@ using LeokaEstetica.Platform.Base.Extensions.PriceExtensions;
 using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Vacancy;
-using LeokaEstetica.Platform.Integrations.Abstractions.Discord;
 using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Vacancy;
 using LeokaEstetica.Platform.Models.Entities.Moderation;
 using LeokaEstetica.Platform.Services.Helpers;
@@ -100,7 +100,7 @@ internal sealed class VacancyService : IVacancyService
     
     private const string NOT_AVAILABLE_DELETE_VACANCY_ARCHIVE = "Невозможно убрать вакансию из архива, так как у Вас уже опубликовано максимальное количество вакансий соответствующих максимальному лимиту тарифа. Добавьте в архив вакансии, чтобы освободить лимиты либо перейдите на тариф, который имеет большие лимиты";
 
-    private readonly IDiscordService _discordService;
+    private readonly IPachcaService _pachcaService;
 
     /// <summary>
     /// Конструктор.
@@ -111,7 +111,7 @@ internal sealed class VacancyService : IVacancyService
     /// <param name="vacancyRedisService">Сервис вакансий кэша.</param>
     /// <param name="userRepository">Репозиторий пользователя.</param>
     /// <param name="vacancyModerationService">Сервис модерации вакансий.</param>
-    /// <param name="discordService">Сервис уведомления дискорда.</param>
+    /// <param name="pachcaService">Сервис уведомления пачки.</param>
     public VacancyService(ILogger<VacancyService> logger,
         IVacancyRepository vacancyRepository,
         IMapper mapper,
@@ -126,7 +126,7 @@ internal sealed class VacancyService : IVacancyService
         IFillColorVacanciesService fillColorVacanciesService, 
         IMailingsService mailingsService, 
         IVacancyModerationRepository vacancyModerationRepository,
-        IDiscordService discordService)
+        IPachcaService pachcaService)
     {
         _logger = logger;
         _vacancyRepository = vacancyRepository;
@@ -142,7 +142,7 @@ internal sealed class VacancyService : IVacancyService
         _fillColorVacanciesService = fillColorVacanciesService;
         _mailingsService = mailingsService;
         _vacancyModerationRepository = vacancyModerationRepository;
-        _discordService = discordService;
+        _pachcaService = pachcaService;
 
         // Определяем обработчики цепочки фильтров.
         _salaryFilterVacanciesChain.Successor = _descSalaryVacanciesFilterChain;
@@ -211,13 +211,6 @@ internal sealed class VacancyService : IVacancyService
 
             // Получаем подписку пользователя.
             var userSubscription = await _subscriptionRepository.GetUserSubscriptionAsync(userId);
-            
-            if (userSubscription is null)
-            {
-                throw new InvalidOperationException("Найдена невалидная подписка пользователя. " +
-                                                    $"UserId: {userId}. " +
-                                                    "Подписка была NULL или невалидная.");
-            }
 
             // Получаем тариф, на который оформлена подписка у пользователя.
             var fareRule = await _fareRuleRepository.GetByIdAsync(userSubscription.ObjectId);
@@ -262,8 +255,8 @@ internal sealed class VacancyService : IVacancyService
             await _mailingsService.SendNotificationCreateVacancyAsync(user.Email, createdVacancy.VacancyName,
                 vacancyId);
 
-            // Отправляем уведомление о созданной вакансии в дискорд.
-            await _discordService.SendNotificationCreatedVacancyBeforeModerationAsync(vacancyId);
+            // Отправляем уведомление о созданной вакансии в пачку.
+            await _pachcaService.SendNotificationCreatedVacancyBeforeModerationAsync(vacancyId);
             
             var result = _mapper.Map<VacancyOutput>(createdVacancy);
 
@@ -471,7 +464,7 @@ internal sealed class VacancyService : IVacancyService
             // Разбиваем строку занятости, так как там может приходить несколько значений в строке.
             filters.Employments = CreateEmploymentsBuilder.CreateEmploymentsResult(filters.EmploymentsValues);
             
-            var items = await _vacancyRepository.CatalogVacanciesWithoutMemoryAsync();
+            var items = await _vacancyRepository.GetFiltersVacanciesAsync();
             
             result.CatalogVacancies = await _salaryFilterVacanciesChain.FilterVacanciesAsync(filters, items);
 
@@ -780,13 +773,6 @@ internal sealed class VacancyService : IVacancyService
             
             // Получаем подписку пользователя.
             var userSubscription = await _subscriptionRepository.GetUserSubscriptionAsync(userId);
-            
-            if (userSubscription is null)
-            {
-                throw new InvalidOperationException("Найдена невалидная подписка пользователя. " +
-                                                    $"UserId: {userId}. " +
-                                                    "Подписка была NULL или невалидная.");
-            }
             
             // Получаем тариф, на который оформлена подписка у пользователя.
             var fareRule = await _fareRuleRepository.GetByIdAsync(userSubscription.ObjectId);
@@ -1103,24 +1089,8 @@ internal sealed class VacancyService : IVacancyService
     {
         foreach (var v in vacancies)
         {
-            var userId = v.UserId;
-            
             // Получаем подписку пользователя.
-            var userSubscription = await _subscriptionRepository.GetUserSubscriptionAsync(userId);
-            
-            if (userSubscription is null)
-            {
-                var ex = new InvalidOperationException("Найдена невалидная подписка пользователя. " +
-                                                    $"UserId: {userId}. " +
-                                                    "Подписка была NULL или невалидная.");
-                
-                // Отправляем ивент в пачку.
-                await _discordService.SendNotificationErrorAsync(ex);
-                
-                // Если ошибка, то не стопаем выполнение логики, а вернем вакансии, пока будем разбираться с ошибкой.
-                // Без тегов не страшно отобразить вакансии.
-                return vacancies;
-            }
+            var userSubscription = await _subscriptionRepository.GetUserSubscriptionAsync(v.UserId);
 
             // Такая подписка не дает тегов.
             if (userSubscription.ObjectId < 3)

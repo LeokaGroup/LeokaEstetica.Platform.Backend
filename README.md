@@ -14,7 +14,7 @@
 # Стек проекта бэка:
 <strong>Серверный язык:</strong> C#, ASP.NET Core Web API (.NET 6).<br/>
 <strong>Tests:</strong> NUnit (юнит-тесты + интеграционные).<br/>
-<strong>ORM:</strong> LINQ, Entity Framework Core. Но переходим полностью на Dapper (EF выпилим).<br/>
+<strong>ORM:</strong> LINQ, Entity Framework Core.<br/>
 <strong>SQL:</strong> Postgres.<br/>
 <strong>NoSQL:</strong> Redis.<br/>
 <strong>DI:</strong> Autofac.<br/>
