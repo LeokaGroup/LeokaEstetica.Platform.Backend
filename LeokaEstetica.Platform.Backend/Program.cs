@@ -2,8 +2,6 @@ using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using FluentValidation.AspNetCore;
 using Hellang.Middleware.ProblemDetails;
-using LeokaEstetica.Platform.Backend.Loaders.Bots;
-using LeokaEstetica.Platform.Backend.Loaders.Jobs;
 using LeokaEstetica.Platform.Base.Factors;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Utils;
@@ -14,7 +12,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using NLog.Web;
-using Quartz;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
@@ -23,8 +20,8 @@ builder.Services.AddControllers(opt =>
     {
         opt.Filters.Add(typeof(DiscordLogExceptionFilter));
     })
-    .AddControllersAsServices()
-    .AddNewtonsoftJson();
+    .AddControllersAsServices();
+    // .AddNewtonsoftJson();
 
 builder.Services.AddCors(options => options.AddPolicy("ApiCorsPolicy", b =>
 {
@@ -154,15 +151,15 @@ builder.Services.AddFluentValidation(conf =>
     conf.AutomaticValidationEnabled = false;
 });
 
-builder.Services.AddQuartz(q =>
-{
-    q.UseMicrosoftDependencyInjectionJobFactory();
+// builder.Services.AddQuartz(q =>
+// {
+//     q.UseMicrosoftDependencyInjectionJobFactory();
+//
+//     // Запуск джоб при старте ядра системы.
+//     StartJobs.Start(q, builder.Services);
+// });
 
-    // Запуск джоб при старте ядра системы.
-    StartJobs.Start(q, builder.Services);
-});
-
-builder.Services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
+// builder.Services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
 
 builder.Logging.ClearProviders();
 builder.Host.UseNLog();
@@ -170,7 +167,7 @@ builder.Host.UseNLog();
 builder.Services.AddProblemDetails();
 
 // Запускаем ботов.
-await LogNotifyBot.RunAsync(configuration);
+// await LogNotifyBot.RunAsync(configuration);
 
 var app = builder.Build();
 
