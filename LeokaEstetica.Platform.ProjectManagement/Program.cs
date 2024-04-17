@@ -152,7 +152,7 @@ builder.Services.AddFluentValidation(conf =>
 builder.Logging.ClearProviders();
 builder.Host.UseNLog();
 
-builder.Services.AddProblemDetails();
+// builder.Services.AddProblemDetails();
 
 var app = builder.Build();
 
@@ -173,6 +173,6 @@ if (builder.Environment.IsDevelopment() || builder.Environment.IsStaging())
 // Добавляем хаб приложения для работы через сокеты.
 // app.MapHub<ProjectManagementHub>("/project-management-notify");
 
-app.UseProblemDetails();
+// app.UseProblemDetails();
 
 app.Run();

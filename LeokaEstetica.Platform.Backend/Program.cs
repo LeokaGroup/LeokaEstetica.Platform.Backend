@@ -164,7 +164,7 @@ builder.Services.AddFluentValidation(conf =>
 builder.Logging.ClearProviders();
 builder.Host.UseNLog();
 
-builder.Services.AddProblemDetails();
+// builder.Services.AddProblemDetails();
 
 // Запускаем ботов.
 // await LogNotifyBot.RunAsync(configuration);
@@ -188,6 +188,6 @@ if (builder.Environment.IsDevelopment() || builder.Environment.IsStaging())
 // Добавляем хаб приложения для работы через сокеты.
 app.MapHub<ChatHub>("/notify");
 
-app.UseProblemDetails();
+// app.UseProblemDetails();
 
 app.Run();

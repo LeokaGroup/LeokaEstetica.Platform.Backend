@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "j4PkvZEwAfbmCRf9fZknxL9IDztqV1B+P/tGh5lorFK0kLhT11CjuyEpp4h9E0vbivFk++z1OPLoRPY7JIoJzw==",
+  "dgSpecHash": "ahSNh+5jbWHKRFz+QD3j7sXSz8+zp6W1x+AzKPOe/gHPwxnEx1eWxfKhipQVasTGZLjA2BNP6LRmkBf0b/90wg==",
   "success": true,
   "projectFilePath": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.ProjectManagement\\LeokaEstetica.Platform.ProjectManagement.csproj",
   "expectedPackageFiles": [
@@ -265,30 +265,30 @@
       "code": "NU1608",
       "level": "Warning",
       "warningLevel": 1,
-      "message": "Detected package version outside of dependency constraint: EasyNetQ 6.5.2 requires RabbitMQ.Client (>= 6.2.1 && < 6.5.0) but version RabbitMQ.Client 6.5.0 was resolved.",
+      "message": "Версия обнаруженного пакета нарушает ограничение зависимости: EasyNetQ 6.5.2 требуется RabbitMQ.Client (>= 6.2.1 && < 6.5.0), но в результате разрешения получена версия RabbitMQ.Client 6.5.0.",
       "libraryId": "RabbitMQ.Client",
       "targetGraphs": [
-        "net6.0"
+        "net8.0"
       ]
     },
     {
       "code": "NU1701",
       "level": "Warning",
       "warningLevel": 1,
-      "message": "Package 'Lucene.Net 3.0.3' was restored using '.NETFramework,Version=v4.6.1, .NETFramework,Version=v4.6.2, .NETFramework,Version=v4.7, .NETFramework,Version=v4.7.1, .NETFramework,Version=v4.7.2, .NETFramework,Version=v4.8' instead of the project target framework 'net6.0'. This package may not be fully compatible with your project.",
+      "message": "Пакет \"Lucene.Net 3.0.3\" был восстановлен с помощью \".NETFramework,Version=v4.6.1, .NETFramework,Version=v4.6.2, .NETFramework,Version=v4.7, .NETFramework,Version=v4.7.1, .NETFramework,Version=v4.7.2, .NETFramework,Version=v4.8, .NETFramework,Version=v4.8.1\", а не целевой платформы проекта \"net8.0\". Этот пакет может быть не полностью совместим с вашим проектом.",
       "libraryId": "Lucene.Net",
       "targetGraphs": [
-        "net6.0"
+        "net8.0"
       ]
     },
     {
       "code": "NU1701",
       "level": "Warning",
       "warningLevel": 1,
-      "message": "Package 'SharpZipLib 0.86.0' was restored using '.NETFramework,Version=v4.6.1, .NETFramework,Version=v4.6.2, .NETFramework,Version=v4.7, .NETFramework,Version=v4.7.1, .NETFramework,Version=v4.7.2, .NETFramework,Version=v4.8' instead of the project target framework 'net6.0'. This package may not be fully compatible with your project.",
+      "message": "Пакет \"SharpZipLib 0.86.0\" был восстановлен с помощью \".NETFramework,Version=v4.6.1, .NETFramework,Version=v4.6.2, .NETFramework,Version=v4.7, .NETFramework,Version=v4.7.1, .NETFramework,Version=v4.7.2, .NETFramework,Version=v4.8, .NETFramework,Version=v4.8.1\", а не целевой платформы проекта \"net8.0\". Этот пакет может быть не полностью совместим с вашим проектом.",
       "libraryId": "SharpZipLib",
       "targetGraphs": [
-        "net6.0"
+        "net8.0"
       ]
     }
   ]
