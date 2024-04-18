@@ -32,9 +32,11 @@ COPY ["LeokaEstetica.Platform.ProjectManagment.Documents/LeokaEstetica.Platform.
 RUN dotnet restore "LeokaEstetica.Platform.Backend/LeokaEstetica.Platform.Backend.csproj"
 COPY . .
 WORKDIR "/src/LeokaEstetica.Platform.Backend"
+
+# Создаем контейнер.
 RUN dotnet build "LeokaEstetica.Platform.Backend.csproj" -c Release -o /app/build
 
-# Строим образ и создаем контейнер.
+# Публикуем основной модуль приложения для более оптимального выполнения в контейнере.
 FROM build AS publish
 RUN dotnet publish "LeokaEstetica.Platform.Backend.csproj" -c Release -o /app/publish
 
