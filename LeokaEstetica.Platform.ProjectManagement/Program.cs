@@ -18,8 +18,8 @@ builder.Services.AddControllers(opt =>
     {
         opt.Filters.Add(typeof(DiscordLogExceptionFilter));
     })
+    .AddNewtonsoftJson()
     .AddControllersAsServices();
-    // .AddNewtonsoftJson();
 
 builder.Services.AddCors(options => options.AddPolicy("ApiCorsPolicy", b =>
 {
