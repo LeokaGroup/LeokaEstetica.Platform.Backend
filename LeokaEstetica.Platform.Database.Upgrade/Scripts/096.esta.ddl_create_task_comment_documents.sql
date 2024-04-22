@@ -16,6 +16,6 @@ CREATE TABLE documents.task_comment_documents
 COMMENT ON TABLE documents.task_comment_documents IS 'Таблица файлов комментариев задачи.';
 COMMENT ON COLUMN documents.task_comment_documents.comment_document_id IS 'PK. Id файла комментария.';
 COMMENT ON COLUMN documents.task_comment_documents.document_id IS 'Id документа.';
-COMMENT ON COLUMN project_management.task_comments.project_id IS 'Id проекта.';
+COMMENT ON COLUMN documents.task_comment_documents.project_id IS 'Id проекта.';
 COMMENT ON COLUMN documents.task_comment_documents.created_at IS 'Дата создания комментария.';
 COMMENT ON COLUMN documents.task_comment_documents.created_by IS 'Id пользователя создавшего комментарий.';

@@ -1,1 +1,1 @@
-CREATE SCHEMA documents;
+-- CREATE SCHEMA documents;

@@ -1,5 +1,4 @@
-INSERT INTO project_management.panel_items (item_name, item_url, position, panel_type, items, has_items, is_disabled,
-                                            control_type, destination)
+INSERT INTO project_management.panel_items (item_name, item_url, position, panel_type, items, has_items, is_disabled)
 VALUES ('Левая панель модуля управления проектами', NULL, 0, 'ProjectManagementLeftPanel', '{
     "Items": [
         {
@@ -15,7 +14,7 @@ VALUES ('Левая панель модуля управления проект�
             "Position": 2,
             "Id": "Wiki",
             "IsFooterItem": false
-        },
+        },{
             "Disabled": false,
             "ItemName": "Задачи",
             "Position": 3,
@@ -79,4 +78,4 @@ VALUES ('Левая панель модуля управления проект�
             "IsFooterItem": false
         }
     ]
-}', TRUE, FALSE, 'dropdown', 'LeftPanel');
+}', TRUE, FALSE);

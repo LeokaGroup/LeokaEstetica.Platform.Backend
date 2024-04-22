@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS "ProjectManagment"."TaskStatuses";
+-- DROP TABLE IF EXISTS "ProjectManagment"."TaskStatuses";
