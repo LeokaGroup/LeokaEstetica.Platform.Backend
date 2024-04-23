@@ -6,8 +6,8 @@ ALTER TABLE IF EXISTS project_management.history_actions
     RENAME CONSTRAINT "PK_HistoryActions_ActionId" TO pk_history_actions_action_id;
 
 
-ALTER TABLE IF EXISTS project_management.project_tasks
-    RENAME CONSTRAINT "PK_UserTasks_TaskId" TO pk_user_tasks_task_id;
+-- ALTER TABLE IF EXISTS project_management.project_tasks
+--     RENAME CONSTRAINT "PK_UserTasks_TaskId" TO pk_user_tasks_task_id;
 
 ALTER TABLE IF EXISTS project_management.project_tasks
     RENAME CONSTRAINT "FK_TaskResolutions_ResolutionId" TO fk_task_resolutions_resolution_id;

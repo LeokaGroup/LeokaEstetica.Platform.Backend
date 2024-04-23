@@ -1,7 +1,7 @@
 TRUNCATE TABLE project_management.header;
 
 INSERT INTO project_management.header (header_id, item_name, item_url, position, header_type, items, has_items,
-                                       is_disabled, control_type, destination)
+                                       is_disabled)
 VALUES (9, 'Стратегия представления', NULL, 1, 'ProjectManagment', '{
   "Items": [
     {
@@ -23,7 +23,7 @@ VALUES (9, 'Стратегия представления', NULL, 1, 'ProjectMan
       "Position": 2
     }
   ]
-}', TRUE, TRUE, 'dropdown', 'Strategy'),
+}', TRUE, TRUE),
        (10, 'Создать', NULL, 2, 'ProjectManagment', '{
          "Items": [
            {
@@ -33,7 +33,7 @@ VALUES (9, 'Стратегия представления', NULL, 1, 'ProjectMan
              "Position": 1
            }
          ]
-       }', TRUE, FALSE, 'dropdown', 'Create'),
+       }', TRUE, FALSE),
        (11, 'Фильтры', NULL, 3, 'ProjectManagment', '{
          "Items": [
            {
@@ -144,7 +144,7 @@ VALUES (9, 'Стратегия представления', NULL, 1, 'ProjectMan
              "Position": 18
            }
          ]
-       }', TRUE, FALSE, 'dropdown', 'Filters'),
+       }', TRUE, FALSE),
        (12, 'Настройки', NULL, 4, 'ProjectManagment', '{
          "Items": [
            {
@@ -166,4 +166,4 @@ VALUES (9, 'Стратегия представления', NULL, 1, 'ProjectMan
              "Position": 2
            }
          ]
-       }', TRUE, FALSE, 'dropdown', 'Settings');
+       }', TRUE, FALSE);
