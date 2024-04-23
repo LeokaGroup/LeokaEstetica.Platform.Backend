@@ -33,6 +33,8 @@
         <Content Include="Scripts\217.esta.ddl_create_CatalogVacancies.sql" />
         <Content Include="Scripts\218.esta.ddl_create_VacancyMenuItems.sql" />
         <Content Include="Scripts\219.esta.ddl_create_VacancyStatuses.sql" />
+        <Content Include="Scripts\220.esta.ddl_create_task_links.sql" />
+        <Content Include="Scripts\221.esta.ddl_create_user_stories.sql" />
         <EmbeddedResource Include="Scripts\*.sql" />
         <Content Include="Scripts\194.esta.ddl_create_CatalogProjects.sql" />
     </ItemGroup>
