@@ -9,5 +9,5 @@ CREATE TABLE "Communications"."TicketMembers"
     "Joined"   TIMESTAMP DEFAULT NOW() NOT NULL,
     "TicketId" BIGINT                  NOT NULL
         CONSTRAINT "FK_MainInfoTickets_TicketId"
-            REFERENCES "MainInfoTickets"
+            REFERENCES "Communications"."MainInfoTickets"
 );

@@ -1,7 +1,7 @@
-CREATE TABLE IF NOT EXISTS "Moderation"."RemarksStatuses"
+CREATE TABLE "Projects"."ProjectCommentsStatuses"
 (
     "StatusId"      SERIAL
-        CONSTRAINT "PK_StatusId"
+        CONSTRAINT "PK_ProjectCommentsStatuses_StatusId"
             PRIMARY KEY,
     "StatusName"    VARCHAR(150) NOT NULL,
     "StatusSysName" VARCHAR(150) NOT NULL

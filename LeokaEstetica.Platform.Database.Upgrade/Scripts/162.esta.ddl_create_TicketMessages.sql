@@ -5,7 +5,7 @@ CREATE TABLE "Communications"."TicketMessages"
             PRIMARY KEY,
     "TicketId"    BIGINT                  NOT NULL
         CONSTRAINT "FK_TicketMessages_TicketId"
-            REFERENCES "MainInfoTickets",
+            REFERENCES "Communications"."MainInfoTickets",
     "Message"     TEXT                    NOT NULL,
     "DateCreated" TIMESTAMP DEFAULT NOW() NOT NULL,
     "UserId"      BIGINT                  NOT NULL
