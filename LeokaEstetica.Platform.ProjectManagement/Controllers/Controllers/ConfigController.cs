@@ -44,8 +44,8 @@ public class ConfigController : BaseController
     /// </summary>
     /// <returns>Признак активности модуля.</returns>
     [AllowAnonymous]
-    [HttpPost]
-    [Route("is-available-project-managment")]
+    [HttpGet]
+    [Route("is-available-project-management")]
     [ProducesResponseType(200, Type = typeof(bool))]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]
