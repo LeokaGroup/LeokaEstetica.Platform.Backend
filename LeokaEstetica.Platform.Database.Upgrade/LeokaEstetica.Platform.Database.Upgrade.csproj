@@ -8,35 +8,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Content Include="Scripts\195.esta.ddl_create_ProjectCommentsStatuses.sql" />
-        <Content Include="Scripts\196.esta.ddl_create_ProjectResponses.sql" />
-        <Content Include="Scripts\197.esta.ddl_create_ProjectResponseStatuses.sql" />
-        <Content Include="Scripts\198.esta.ddl_create_ProjectStages.sql" />
-        <Content Include="Scripts\199.esta.ddl_create_ProjectStatuses.sql" />
-        <Content Include="Scripts\200.esta.ddl_create_ProjectVacancies.sql" />
-        <Content Include="Scripts\201.esta.ddl_create_UserProjectsStages.sql" />
-        <Content Include="Scripts\202.esta.ddl_create_schema_Rules.sql" />
-        <Content Include="Scripts\203.esta.ddl_create_DiscountRules.sql" />
-        <Content Include="Scripts\204.esta.ddl_create_FareRules.sql" />
-        <Content Include="Scripts\205.esta.ddl_create_FareRulesItems.sql" />
-        <Content Include="Scripts\206.esta.ddl_create_schema_settings.sql" />
-        <Content Include="Scripts\207.esta.ddl_create_project_strategy_enum.sql" />
-        <Content Include="Scripts\208.esta.ddl_create_project_user_strategy.sql" />
-        <Content Include="Scripts\209.esta.ddl_create_schema_Subscriptions.sql" />
-        <Content Include="Scripts\210.esta.ddl_create_Subscriptions.sql" />
-        <Content Include="Scripts\211.esta.ddl_create_UserSubscriptions.sql" />
-        <Content Include="Scripts\212.esta.ddl_create_schema_Teams.sql" />
-        <Content Include="Scripts\213.esta.ddl_create_ProjectsTeams.sql" />
-        <Content Include="Scripts\214.esta.ddl_create_ProjectsTeamsMembers.sql" />
-        <Content Include="Scripts\215.esta.ddl_create_ProjectsTeamsVacancies.sql" />
-        <Content Include="Scripts\216.esta.ddl_create_ArchivedVacancies.sql" />
-        <Content Include="Scripts\217.esta.ddl_create_CatalogVacancies.sql" />
-        <Content Include="Scripts\218.esta.ddl_create_VacancyMenuItems.sql" />
-        <Content Include="Scripts\219.esta.ddl_create_VacancyStatuses.sql" />
-        <Content Include="Scripts\220.esta.ddl_create_task_links.sql" />
-        <Content Include="Scripts\221.esta.ddl_create_user_stories.sql" />
         <EmbeddedResource Include="Scripts\*.sql" />
-        <Content Include="Scripts\194.esta.ddl_create_CatalogProjects.sql" />
     </ItemGroup>
 
     <ItemGroup>
