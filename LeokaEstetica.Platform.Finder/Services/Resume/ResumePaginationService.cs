@@ -48,19 +48,19 @@ public class ResumePaginationService : BaseIndexRamDirectory, IResumePaginationS
     {
         try
         {
-            var projects = await _resumeRepository.GetFilterResumesAsync();
+            var resumes = await _resumeRepository.GetFilterResumesAsync();
             var result = new PaginationResumeOutput
             {
                 IsVisiblePagination = true,
-                PaginationInfo = new PaginationInfoOutput(projects.Count(), page, PaginationConst.TAKE_COUNT)
+                PaginationInfo = new PaginationInfoOutput(resumes.Count(), page, PaginationConst.TAKE_COUNT)
             };
-
-            // Получаем все проекты из БД без выгрузки в память.
-            ResumesDocumentLoader.Load(projects, _index, _analyzer);
+            
+            // Получаем все анкеты из БД без выгрузки в память.
+            ResumesDocumentLoader.Load(resumes, _index, _analyzer);
 
             using var reader = IndexReader.Open(_index.Value, true);
             using var searcher = new IndexSearcher(reader);
-            var scoreDocs = CreateScoreDocsBuilder.CreateScoreDocsResult(page, searcher);
+            var scoreDocs = CreateScoreDocsBuilder.CreateScoreDocsResult(page, searcher, resumes.Count());
 
             result.Resumes = CreateResumesSearchResultBuilder.CreateResumesSearchResult(scoreDocs, searcher).ToList();
 

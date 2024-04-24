@@ -1,5 +1,6 @@
 ﻿using Autofac;
 using LeokaEstetica.Platform.Core.Attributes;
+using LeokaEstetica.Platform.Services.Abstractions.Config;
 using LeokaEstetica.Platform.Services.Abstractions.FareRule;
 using LeokaEstetica.Platform.Services.Abstractions.Header;
 using LeokaEstetica.Platform.Services.Abstractions.Knowledge;
@@ -12,9 +13,11 @@ using LeokaEstetica.Platform.Services.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Services.Abstractions.Refunds;
 using LeokaEstetica.Platform.Services.Abstractions.Resume;
 using LeokaEstetica.Platform.Services.Abstractions.Search.Project;
+using LeokaEstetica.Platform.Services.Abstractions.Search.ProjectManagment;
 using LeokaEstetica.Platform.Services.Abstractions.Subscription;
 using LeokaEstetica.Platform.Services.Abstractions.User;
 using LeokaEstetica.Platform.Services.Abstractions.Vacancy;
+using LeokaEstetica.Platform.Services.Services.Config;
 using LeokaEstetica.Platform.Services.Services.FareRule;
 using LeokaEstetica.Platform.Services.Services.Header;
 using LeokaEstetica.Platform.Services.Services.Knowledge;
@@ -27,10 +30,12 @@ using LeokaEstetica.Platform.Services.Services.ProjectManagment;
 using LeokaEstetica.Platform.Services.Services.Refunds;
 using LeokaEstetica.Platform.Services.Services.Resume;
 using LeokaEstetica.Platform.Services.Services.Search.Project;
+using LeokaEstetica.Platform.Services.Services.Search.ProjectManagment;
 using LeokaEstetica.Platform.Services.Services.Subscription;
 using LeokaEstetica.Platform.Services.Services.User;
 using LeokaEstetica.Platform.Services.Services.Vacancy;
 using LeokaEstetica.Platform.Services.Strategies.Project.Team;
+using LeokaEstetica.Platform.Services.Strategies.ProjectManagement.AgileObjectSearch;
 using LeokaEstetica.Platform.Services.Strategies.Refunds;
 
 namespace LeokaEstetica.Platform.Services.AutofacModules;
@@ -252,6 +257,46 @@ public class ServicesModule : Module
             .InstancePerLifetimeScope();
         builder.RegisterType<ProjectManagmentService>()
             .As<IProjectManagmentService>()
+            .InstancePerLifetimeScope();
+            
+        // Сервис настроек проектов.
+        builder.RegisterType<ProjectSettingsConfigService>()
+            .Named<IProjectSettingsConfigService>("ProjectSettingsConfigService")
+            .InstancePerLifetimeScope();
+        builder.RegisterType<ProjectSettingsConfigService>()
+            .As<IProjectSettingsConfigService>()
+            .InstancePerLifetimeScope();
+            
+        // Сервис поиска в модуле УП.
+        builder.RegisterType<SearchProjectManagementService>()
+            .Named<ISearchProjectManagementService>("SearchProjectManagementService")
+            .InstancePerLifetimeScope();
+        builder.RegisterType<SearchProjectManagementService>()
+            .As<ISearchProjectManagementService>()
+            .InstancePerLifetimeScope();
+            
+        // Класс стратегии поиска Agile-объекта по Id.
+        builder.RegisterType<SearchAgileObjectByObjectIdStrategy>()
+            .Named<BaseSearchAgileObjectStrategy>("SearchIncludeSprintTaskByProjectTaskIdStrategy")
+            .InstancePerLifetimeScope();
+        builder.RegisterType<SearchAgileObjectByObjectIdStrategy>()
+            .As<BaseSearchAgileObjectStrategy>()
+            .InstancePerLifetimeScope();
+            
+        // Класс стратегии поиска Agile-объекта по названию.
+        builder.RegisterType<SearchAgileObjectByObjectNameStrategy>()
+            .Named<BaseSearchAgileObjectStrategy>("SearchIncludeSprintTaskByTaskNameStrategy")
+            .InstancePerLifetimeScope();
+        builder.RegisterType<SearchAgileObjectByObjectNameStrategy>()
+            .As<BaseSearchAgileObjectStrategy>()
+            .InstancePerLifetimeScope();
+            
+        // Класс стратегии поиска Agile-объекта по описанию.
+        builder.RegisterType<SearchAgileObjectByObjectDescriptionStrategy>()
+            .Named<BaseSearchAgileObjectStrategy>("SearchIncludeSprintTaskByTaskDescriptionStrategy")
+            .InstancePerLifetimeScope();
+        builder.RegisterType<SearchAgileObjectByObjectDescriptionStrategy>()
+            .As<BaseSearchAgileObjectStrategy>()
             .InstancePerLifetimeScope();
     }
 }

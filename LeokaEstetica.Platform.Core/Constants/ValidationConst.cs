@@ -30,33 +30,7 @@ public static class ValidationConst
         /// </summary>
         public const string EMPTY_MODE = "Передан некорректный режим. Mode был ";
     }
-    
-    /// <summary>
-    /// Класс описывает ключи для валидации вакансий.
-    /// </summary>
-    public static class VacancyValidation
-    {
-        /// <summary>
-        /// Если не заполнили название вакансии.
-        /// </summary>
-        public const string EMPTY_VACANCY_NAME = "Не заполнено название вакансии.";
 
-        /// <summary>
-        /// Если не заполнили описание вакансии.
-        /// </summary>
-        public const string EMPTY_VACANCY_DETAILS = "Не заполнено описание вакансии.";
-
-        /// <summary>
-        /// Если передали некорректный Id вакансии.
-        /// </summary>
-        public const string NOT_VALID_VACANCY_ID = "Некорректный Id вакансии. VacancyId был ";
-
-        /// <summary>
-        /// Если передали некорректный режим.
-        /// </summary>
-        public const string EMPTY_MODE = "Передан некорректный режим. Mode был ";
-    }
-    
     /// <summary>
     /// Класс описывает ключи поиска в проектах.
     /// </summary>
@@ -190,8 +164,134 @@ public static class ValidationConst
         public const string NOT_VALID_TEMPLATE_ID = "Id шаблона не передан.";
 
         /// <summary>
-        /// Если не заполнили название задачи проекта.
+        /// Если не заполнили название тега.
         /// </summary>
-        public const string EMPTY_TASK_NAME = "Название задачи не заполнено.";
+        public const string EMPTY_TAG_NAME = "Не заполнено название тега.";
+
+        /// <summary>
+        /// Если не заполнили название статуса.
+        /// </summary>
+        public const string EMPTY_STATUS_NAME = "Не заполнено название статуса.";
+
+        /// <summary>
+        /// Если не заполнили название статуса ассоциации.
+        /// </summary>
+        public const string ASSOCIATION_SYS_NAME = "Не заполнено название статуса ассоциации.";
+        
+        /// <summary>
+        /// Если не заполнили название перехода.
+        /// </summary>
+        public const string EMPTY_TRANSITION_NAME = "Не заполнено название перехода.";
+        
+        /// <summary>
+        /// Если передали невалидный Id задачи проекта.
+        /// </summary>
+        public const string NOT_VALID_PROJECT_TASK_ID = "Id задач проекта не передан.";
+        
+        /// <summary>
+        /// Если передали невалидный Id статуса задачи.
+        /// </summary>
+        public const string NOT_VALID_TASK_STATUS_ID = "Id статуса задачи не передан.";
+
+        /// <summary>
+        /// Если не передали Id тега задачи.
+        /// </summary>
+        public const string NOT_VALID_TASK_TAG_ID = "Id тега задачи не передан.";
+
+        /// <summary>
+        /// Если не передали Id задачи, от которой исходит связь не передана.
+        /// </summary>
+        public const string NOT_VALID_TASK_FROM_LINK = "Id задачи, от которой исходит связь не передана.";
+        
+        /// <summary>
+        /// Если не передали Id задачи, которую связывают.
+        /// </summary>
+        public const string NOT_VALID_TASK_TO_LINK = "Id задачи, которую связывают не передали.";
+
+        /// <summary>
+        /// Если передали недопустимый тип связи.
+        /// </summary>
+        public const string NOT_VALID_TASK_LINK_ENUM_VALUE = "Значение не является допустимым типом связи.";
+
+        /// <summary>
+        /// Если не передали Id наблюдателя задачи.
+        /// </summary>
+        public const string NOT_VALID_TASK_WATCHER_ID = "Id наблюдателя задачи не передан.";
+
+        /// <summary>
+        /// Если не передали Id исполнителя задачи.
+        /// </summary>
+        public const string NOT_VALID_TASK_EXECUTOR_ID = "Id исполнителя задачи не передан.";
+
+        /// <summary>
+        /// Если не передали Id приоритета.
+        /// </summary>
+        public const string NOT_VALID_TASK_PRIORITY_ID = "Id приоритета задачи не передан.";
+        
+        /// <summary>
+        /// Если передали невалидный Id задачи проекта для разрыва связи.
+        /// </summary>
+        public const string NOT_VALID_TASK_LINK_REMOVED_TASK_ID = "Id задачи проекта для разрыва связи не передан.";
+
+        /// <summary>
+        /// Если передали невалидный Id документа.
+        /// </summary>
+        public const string NOT_VALID_DOCUMENT_ID = "Id документа не передан.";
+
+        /// <summary>
+        /// Если не передали системное название представления.
+        /// </summary>
+        public const string NOT_VALID_STRATEGY_SYS_NAME = "Системное название представления не передано.";
+        
+        /// <summary>
+        /// Если не передали название в управлении проектом.
+        /// </summary>
+        public const string NOT_VALID_PROJECT_MANAGEMENT_PROJECT_NAME = "Название в управлении проектом не передано.";
+        
+        /// <summary>
+        /// Если не передали префикс названия в управлении проектом.
+        /// </summary>
+        public const string NOT_VALID_PROJECT_MANAGEMENT_PROJECT_NAME_PREFIX =
+            "Префикс названия в управлении проектом не передано.";
+
+        /// <summary>
+        /// Если не передали комментарий задачи.
+        /// </summary>
+        public const string EMPTY_TASK_COMMENT = "Не передан комментарий задачи.";
+        
+        /// <summary>
+        /// Если не передали Id комментария задачи.
+        /// </summary>
+        public const string EMPTY_TASK_COMMENT_ID = "Не передан Id комментария задачи.";
+
+        /// <summary>
+        /// Если не передали поисковый текст.
+        /// </summary>
+        public const string EMPTY_SEARCH_TEXT = "Поисковый текст не передан.";
+        
+        /// <summary>
+        /// Если передали невалидный Id эпика.
+        /// </summary>
+        public const string NOT_VALID_EPIC_ID = "Id эпика не передан.";
+        
+        /// <summary>
+        /// Если не передано название спринта.
+        /// </summary>
+        public const string NOT_VALID_SPRINT_NAME = "Не передано название спринта.";
+
+        /// <summary>
+        /// Если не передали тип детализации.
+        /// </summary>
+        public const string NOT_VALID_TASK_DETAIL_TYPE = "Не передан тип детализации.";
+
+        /// <summary>
+        /// Если не передали Id спринта.
+        /// </summary>
+        public const string NOT_VALID_SPRINT_ID = "Id спринта не передан.";
+        
+        /// <summary>
+        /// Если передали невалидный название.
+        /// </summary>
+        public const string NOT_VALID_NAME = "Название не передано.";
     }
 }

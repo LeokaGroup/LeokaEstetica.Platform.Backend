@@ -13,12 +13,12 @@ public class PlatformConditionEntity
     /// <summary>
     /// Заголовок.
     /// </summary>
-    public string PlatformConditionTitle { get; set; }
+    public string? PlatformConditionTitle { get; set; }
 
     /// <summary>
     /// Название преимущества платформы.
     /// </summary>
-    public string PlatformConditionSubTitle { get; set; }
+    public string? PlatformConditionSubTitle { get; set; }
 
     /// <summary>
     /// Позиция.

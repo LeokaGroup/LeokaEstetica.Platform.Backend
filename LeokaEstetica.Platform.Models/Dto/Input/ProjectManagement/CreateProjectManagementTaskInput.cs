@@ -33,17 +33,17 @@ public class CreateProjectManagementTaskInput
     /// <summary>
     /// Id статуса задачи.
     /// </summary>
-    public int? TaskStatusId { get; set; }
+    public int TaskStatusId { get; set; }
     
     /// <summary>
     /// Id тегов (меток) задачи.
     /// </summary>
-    public long[] TagIds { get; set; }
+    public int[] TagIds { get; set; }
 
     /// <summary>
     /// Id типа задачи.
     /// </summary>
-    public int? TaskTypeId { get; set; }
+    public int TaskTypeId { get; set; }
 
     /// <summary>
     /// Id исполнителя задачи.
@@ -54,4 +54,19 @@ public class CreateProjectManagementTaskInput
     /// Id приоритета задачи.
     /// </summary>
     public int? PriorityId { get; set; }
+    
+    /// <summary>
+    /// Дата начала эпика.
+    /// </summary>
+    public DateTime? DateStart { get; set; }
+    
+    /// <summary>
+    /// Дата окончания эпика.
+    /// </summary>
+    public DateTime? DateEnd { get; set; }
+    
+    /// <summary>
+    /// Id эпика, в который входит история, если назначался.
+    /// </summary>
+    public long? EpicId { get; set; }
 }

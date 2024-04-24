@@ -1,0 +1,1 @@
+CREATE INDEX uniq_sprint_tasks_sprint_id_project_task_id_idx ON project_management.sprint_tasks (sprint_id, project_task_id);

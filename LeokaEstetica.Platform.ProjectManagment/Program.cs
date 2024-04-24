@@ -2,8 +2,10 @@ using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using FluentValidation.AspNetCore;
 using Hellang.Middleware.ProblemDetails;
+using LeokaEstetica.Platform.Base.Factors;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Utils;
+using LeokaEstetica.Platform.Integrations.Filters;
 using LeokaEstetica.Platform.Notifications.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -14,9 +16,12 @@ using NLog.Web;
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
 
-builder.Services.AddControllers().AddControllersAsServices().AddNewtonsoftJson();
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddControllers(opt =>
+    {
+        opt.Filters.Add(typeof(DiscordLogExceptionFilter));
+    })
+    .AddControllersAsServices()
+    .AddNewtonsoftJson();
 
 builder.Services.AddCors(options => options.AddPolicy("ApiCorsPolicy", b =>
 {
@@ -28,11 +33,14 @@ builder.Services.AddCors(options => options.AddPolicy("ApiCorsPolicy", b =>
 
 builder.Environment.EnvironmentName = configuration["Environment"];
 
+string connection = null;
+
 if (builder.Environment.IsDevelopment())
 {
     builder.Services.AddDbContext<PgContext>(options =>
             options.UseNpgsql(configuration["ConnectionStrings:NpgDevSqlConnection"]),
         ServiceLifetime.Transient);
+    connection = configuration["ConnectionStrings:NpgDevSqlConnection"];
 }
 
 if (builder.Environment.IsStaging())
@@ -40,6 +48,7 @@ if (builder.Environment.IsStaging())
     builder.Services.AddDbContext<PgContext>(options =>
             options.UseNpgsql(configuration["ConnectionStrings:NpgTestSqlConnection"]),
         ServiceLifetime.Transient);
+    connection = configuration["ConnectionStrings:NpgTestSqlConnection"];
 }
 
 if (builder.Environment.IsProduction())
@@ -47,13 +56,14 @@ if (builder.Environment.IsProduction())
     builder.Services.AddDbContext<PgContext>(options =>
             options.UseNpgsql(configuration["ConnectionStrings:NpgSqlConnection"]),
         ServiceLifetime.Transient);
+    connection = configuration["ConnectionStrings:NpgSqlConnection"];
 }
 
 builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new OpenApiInfo { Title = "Leoka.Estetica.Platform.ProjectManagment" });
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "Leoka.Estetica.Platform.ProjectManagement" });
     AddSwaggerXml(c);
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
@@ -113,10 +123,15 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     });
 
 builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory())
-    .ConfigureContainer<ContainerBuilder>(AutoFac.Init);
+    .ConfigureContainer<ContainerBuilder>(b =>
+    {
+        AutoFac.Init(b);
 
-// Нужно для типа timestamp в Postgres.
-AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+        b.RegisterType<NpgSqlConnectionFactory>()
+            .As<IConnectionFactory>()
+            .WithParameter("connectionString", connection!)
+            .InstancePerLifetimeScope();
+    });
 
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
@@ -151,15 +166,14 @@ app.UseAuthorization();
 app.UseCors("ApiCorsPolicy");
 app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
 
-// TODO: Временно добавил для тестов прода IsProduction. Потом конечно уберу это.
-if (builder.Environment.IsDevelopment() || builder.Environment.IsStaging() || builder.Environment.IsProduction())
+if (builder.Environment.IsDevelopment() || builder.Environment.IsStaging())
 {
     app.UseSwagger();
-    app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Leoka.Estetica.Platform.ProjectManagment"));
+    app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Leoka.Estetica.Platform.ProjectManagement"));
 }
 
 // Добавляем хаб приложения для работы через сокеты.
-app.MapHub<ChatHub>("/notify");
+app.MapHub<ProjectManagementHub>("/project-management-notify");
 
 app.UseProblemDetails();
 

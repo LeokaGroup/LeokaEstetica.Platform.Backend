@@ -8,7 +8,6 @@ using LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
 using LeokaEstetica.Platform.Models.Entities.Configs;
 using LeokaEstetica.Platform.Models.Entities.Vacancy;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using IsolationLevel = System.Data.IsolationLevel;
 
 namespace LeokaEstetica.Platform.Database.Repositories.Vacancy;
@@ -19,17 +18,14 @@ namespace LeokaEstetica.Platform.Database.Repositories.Vacancy;
 internal sealed class VacancyRepository : IVacancyRepository
 {
     private readonly PgContext _pgContext;
-    private readonly ILogger<VacancyRepository> _logger;
 
     /// <summary>
     /// Конструктор.
     /// </summary>
     /// <param name="pgContext">Датаконтекст.</param>
-    public VacancyRepository(PgContext pgContext,
-     ILogger<VacancyRepository> logger)
+    public VacancyRepository(PgContext pgContext)
     {
         _pgContext = pgContext;
-        _logger = logger;
     }
 
     #region Публичные методы.
@@ -98,8 +94,6 @@ internal sealed class VacancyRepository : IVacancyRepository
     /// <returns>Список вакансий.</returns>
     public async Task<List<CatalogVacancyOutput>> CatalogVacanciesAsync()
     {
-        _logger.LogInformation($"Строка подключения теста: {_pgContext.Database.GetConnectionString()}");
-        
         var result = await (from cv in _pgContext.CatalogVacancies
                 join mv in _pgContext.ModerationVacancies
                     on cv.VacancyId
@@ -135,6 +129,51 @@ internal sealed class VacancyRepository : IVacancyRepository
                     UserId = cv.Vacancy.UserId
                 })
             .ToListAsync();
+
+        return result;
+    }
+    
+    /// <summary>
+    /// Метод получает список вакансий для каталога (без выгрузки в память).
+    /// </summary>
+    /// <returns>Список вакансий.</returns>
+    public async Task<IOrderedQueryable<CatalogVacancyOutput>> CatalogVacanciesWithoutMemoryAsync()
+    {
+        var result = (IOrderedQueryable<CatalogVacancyOutput>)(from cv in _pgContext.CatalogVacancies
+                join mv in _pgContext.ModerationVacancies
+                    on cv.VacancyId
+                    equals mv.VacancyId
+                    into table
+                from tbl in table.DefaultIfEmpty()
+                join v in _pgContext.UserVacancies
+                    on tbl.UserVacancy.VacancyId
+                    equals v.VacancyId
+                join us in _pgContext.UserSubscriptions
+                    on tbl.UserVacancy.UserId
+                    equals us.UserId
+                join s in _pgContext.Subscriptions
+                    on us.SubscriptionId
+                    equals s.ObjectId
+                where v.ArchivedVacancies.All(a => a.VacancyId != v.VacancyId)
+                      && !new[]
+                          {
+                              (int)VacancyModerationStatusEnum.ModerationVacancy,
+                              (int)VacancyModerationStatusEnum.RejectedVacancy
+                          }
+                          .Contains(tbl.ModerationStatusId)
+                orderby cv.Vacancy.DateCreated descending, s.ObjectId descending
+                select new CatalogVacancyOutput
+                {
+                    VacancyName = cv.Vacancy.VacancyName,
+                    DateCreated = cv.Vacancy.DateCreated,
+                    Employment = cv.Vacancy.Employment,
+                    Payment = cv.Vacancy.Payment,
+                    VacancyId = cv.Vacancy.VacancyId,
+                    VacancyText = cv.Vacancy.VacancyText,
+                    WorkExperience = cv.Vacancy.WorkExperience,
+                    UserId = cv.Vacancy.UserId
+                })
+            .AsQueryable();
 
         return result;
     }

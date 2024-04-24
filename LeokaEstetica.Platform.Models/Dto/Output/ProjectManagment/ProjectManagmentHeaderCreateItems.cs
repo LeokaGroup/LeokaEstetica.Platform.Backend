@@ -1,3 +1,5 @@
+using Newtonsoft.Json;
+
 namespace LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 
 /// <summary>
@@ -9,6 +11,23 @@ public class ProjectManagmentHeaderCreateItems
     /// Список элементов.
     /// </summary>
     public List<CreateItems> Items { get; set; }   
+    
+    /// <summary>
+    /// Признак неактивности пункта.
+    /// </summary>
+    public bool Disabled { get; set; }
+    
+    /// <summary>
+    /// Уникальный идентификатор (обычно системное название).
+    /// </summary>
+    [System.Text.Json.Serialization.JsonIgnore]
+    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+    public string Id { get; set; }
+    
+    /// <summary>
+    /// Признак элемента футера меню.
+    /// </summary>
+    public bool IsFooterItem { get; set; }
 }
 
 public class CreateItems
@@ -22,4 +41,21 @@ public class CreateItems
     /// Порядковый номер элемента меню.
     /// </summary>
     public int Position { get; set; }
+    
+    /// <summary>
+    /// Признак неактивности пункта.
+    /// </summary>
+    public bool Disabled { get; set; }
+    
+    /// <summary>
+    /// Уникальный идентификатор (обычно системное название).
+    /// </summary>
+    [System.Text.Json.Serialization.JsonIgnore]
+    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+    public string Id { get; set; }
+    
+    /// <summary>
+    /// Признак элемента футера меню.
+    /// </summary>
+    public bool IsFooterItem { get; set; }
 }

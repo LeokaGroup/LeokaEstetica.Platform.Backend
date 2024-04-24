@@ -1,3 +1,31 @@
+create schema "Projects";
+
+CREATE TABLE "Projects"."UserProjects"
+(
+    "ProjectId"                   BIGSERIAL
+        CONSTRAINT "PK_UserProjects_ProjectId"
+            PRIMARY KEY
+        CONSTRAINT "FK_UserProjects_ProjectId"
+            REFERENCES "Projects"."UserProjects",
+    "ProjectName"                 VARCHAR(200)                                                   NOT NULL,
+    "UserId"                      BIGINT                                                         NOT NULL,
+    "ProjectDetails"              TEXT                                                           NOT NULL,
+    "ProjectIcon"                 TEXT,
+    "ProjectCode"                 UUID      DEFAULT '00000000-0000-0000-0000-000000000000'::UUID NOT NULL,
+    "DateCreated"                 TIMESTAMP DEFAULT NOW()                                        NOT NULL,
+    "PublicId"                    UUID      DEFAULT uuid_in(("overlay"(
+            "overlay"(MD5((((RANDOM())::TEXT || ':'::TEXT) || (RANDOM())::TEXT)), '4'::TEXT, 13),
+            TO_HEX((FLOOR(((RANDOM() * (((11 - 8) + 1))::DOUBLE PRECISION) + (8)::DOUBLE PRECISION)))::INTEGER),
+            17))::CSTRING)                                                                       NOT NULL,
+    "Conditions"                  TEXT,
+    "Demands"                     TEXT,
+    "TemplateId"                  INTEGER,
+    "ProjectManagementName"       VARCHAR(200),
+    "ProjectManagementNamePrefix" VARCHAR(50)
+);
+
+COMMENT ON COLUMN "Projects"."UserProjects"."TemplateId" IS 'Id шаблона, который использует проект.';
+
 CREATE TABLE IF NOT EXISTS "ProjectManagment"."ProjectTasks"
 (
     "TaskId"        BIGSERIAL       NOT NULL,

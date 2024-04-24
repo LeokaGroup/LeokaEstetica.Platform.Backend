@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\LeokaEstetica.Platform.Base\LeokaEstetica.Platform.Base.csproj" />
+      <ProjectReference Include="..\LeokaEstetica.Platform.Core\LeokaEstetica.Platform.Core.csproj" />
+      <ProjectReference Include="..\LeokaEstetica.Platform.Database\LeokaEstetica.Platform.Database.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="SSH.NET" Version="2023.0.1" />
+    </ItemGroup>
+
+</Project>

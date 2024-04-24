@@ -22,6 +22,7 @@ public class DatabaseMigrator
             .WithScriptsEmbeddedInAssembly(assembly,
                 s => s.StartsWith(string.Join('.', assemblyName, "Scripts"),
                     StringComparison.InvariantCultureIgnoreCase))
+            .JournalToPostgresqlTable("public", "schemaversions")
             .LogToConsole()
             .Build();
 

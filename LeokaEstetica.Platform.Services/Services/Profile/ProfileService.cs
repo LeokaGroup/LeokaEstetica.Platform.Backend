@@ -2,10 +2,10 @@ using System.Runtime.CompilerServices;
 using AutoMapper;
 using LeokaEstetica.Platform.Access.Abstractions.User;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
-using LeokaEstetica.Platform.Base.Abstractions.Services.Pachca;
 using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Resume;
 using LeokaEstetica.Platform.Database.Abstractions.Profile;
+using LeokaEstetica.Platform.Integrations.Abstractions.Discord;
 using LeokaEstetica.Platform.Models.Dto.Input.Profile;
 using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Resume;
 using LeokaEstetica.Platform.Models.Dto.Output.Profile;
@@ -37,7 +37,7 @@ internal sealed class ProfileService : IProfileService
     private readonly INotificationsService _notificationsService;
     private readonly IAccessUserService _accessUserService;
     private readonly IResumeModerationRepository _resumeModerationRepository;
-    private readonly IPachcaService _pachcaService;
+    private readonly IDiscordService _discordService;
 
     /// <summary>
     /// Конструктор.
@@ -50,7 +50,7 @@ internal sealed class ProfileService : IProfileService
     /// <param name="notificationsService">Сервис уведомлений.</param>
     /// <param name="accessUserService">Сервис доступа пользователей.</param>
     /// <param name="resumeModerationRepository">Репозиторий модерации анкет.</param>
-    /// <param name="pachcaService">Сервис уведомлений пачки.</param>
+    /// <param name="discordService">Сервис уведомлений дискорда.</param>
     public ProfileService(ILogger<ProfileService> logger,
         IProfileRepository profileRepository,
         IUserRepository userRepository,
@@ -59,7 +59,7 @@ internal sealed class ProfileService : IProfileService
         INotificationsService notificationsService,
         IAccessUserService accessUserService,
         IResumeModerationRepository resumeModerationRepository,
-        IPachcaService pachcaService)
+        IDiscordService discordService)
     {
         _logger = logger;
         _profileRepository = profileRepository;
@@ -69,7 +69,7 @@ internal sealed class ProfileService : IProfileService
         _notificationsService = notificationsService;
         _accessUserService = accessUserService;
         _resumeModerationRepository = resumeModerationRepository;
-        _pachcaService = pachcaService;
+        _discordService = discordService;
     }
 
     /// <summary>
@@ -136,6 +136,9 @@ internal sealed class ProfileService : IProfileService
             {
                 result.LastName = string.Concat(result.LastName.Substring(0, 1), ".");
             }
+            
+            // Проверяем заполнение анкеты и даем доступ либо нет.
+            result.IsEmptyProfile = await _accessUserService.IsProfileEmptyAsync(userId);
 
             return result;
         }
@@ -185,7 +188,7 @@ internal sealed class ProfileService : IProfileService
             var result = _mapper.Map<List<SkillOutput>>(items);
             
             // Исключаем те навыки, которые уже выбраны пользователем.
-            var userSkills = await SelectedProfileUserSkillsAsync(account);
+            var userSkills = await SelectedProfileUserSkillsAsync(null, account);
 
             // Находим Id навыков, которые ранее были выбраны пользователем.
             var ids = userSkills.Select(s => s.SkillId);
@@ -214,7 +217,7 @@ internal sealed class ProfileService : IProfileService
             var result = _mapper.Map<List<IntentOutput>>(items);
             
             // Исключаем те цели, которые уже выбраны пользователем.
-            var userIntents = await SelectedProfileUserIntentsAsync(account);
+            var userIntents = await SelectedProfileUserIntentsAsync(null, account);
 
             // Находим Id целей, которые ранее были выбраны пользователем.
             var ids = userIntents.Select(i => i.IntentId);
@@ -309,7 +312,7 @@ internal sealed class ProfileService : IProfileService
             result.IsEmailChanged = savedProfileInfoData.IsEmailChanged;
 
             // Отправляем уведомление в пачку об изменениях анкеты.
-            await _pachcaService.SendNotificationChangedProfileInfoBeforeModerationAsync(profileInfoId);
+            await _discordService.SendNotificationChangedProfileInfoBeforeModerationAsync(profileInfoId);
 
             return result;
         }
@@ -522,19 +525,15 @@ internal sealed class ProfileService : IProfileService
         return sysName;
     }
 
-    /// <summary>
-    /// Метод получает выбранные пользователям навыки.
-    /// </summary>
-    /// <param name="account">Аккаунт пользователя.</param>
-    /// <returns>Список навыков.</returns>
-    public async Task<List<SkillOutput>> SelectedProfileUserSkillsAsync(string account)
+    /// <inheritdoc />
+    public async Task<List<SkillOutput>> SelectedProfileUserSkillsAsync(Guid? userCode, string account)
     {
         try
         {
-            var userId = await _userRepository.GetUserByEmailAsync(account);
+            var userId = await GetUserIdByUserCodeAsync(userCode, account);
 
             // Получаем навыки пользователя.
-            var items = await _profileRepository.SelectedProfileUserSkillsAsync(userId);
+            var items = await _profileRepository.SelectedProfileUserSkillsAsync(userId!.Value);
             
             if (!items.Any())
             {
@@ -557,19 +556,15 @@ internal sealed class ProfileService : IProfileService
         }
     }
 
-    /// <summary>
-    /// Метод получает выбранные пользователем цели.
-    /// </summary>
-    /// <param name="account">Аккаунт пользователя.</param>
-    /// <returns>Список целей.</returns>
-    public async Task<List<IntentOutput>> SelectedProfileUserIntentsAsync(string account)
+    /// <inheritdoc />
+    public async Task<List<IntentOutput>> SelectedProfileUserIntentsAsync(Guid? userCode, string account)
     {
         try
         {
-            var userId = await _userRepository.GetUserByEmailAsync(account);
+            var userId = await GetUserIdByUserCodeAsync(userCode, account);
 
             // Получаем навыки пользователя.
-            var items = await _profileRepository.SelectedProfileUserIntentsAsync(userId);
+            var items = await _profileRepository.SelectedProfileUserIntentsAsync(userId!.Value);
             
             if (!items.Any())
             {
@@ -666,5 +661,38 @@ internal sealed class ProfileService : IProfileService
         {
             await _resumeModerationRepository.UpdateResumeRemarksAsync(awaitingRemarks);
         }
+    }
+
+    /// <summary>
+    /// Метод получает Id пользователя по его коду либо по аккаунту.
+    /// </summary>
+    /// <param name="userCode">Код пользователя.</param>
+    /// <param name="account">Аккаунт.</param>
+    /// <returns>Id пользователя. Может вернуть null.</returns>
+    /// <exception cref="InvalidOperationException">Если не удалось получить Id пользователя.</exception>
+    private async Task<long?> GetUserIdByUserCodeAsync(Guid? userCode, string account)
+    {
+        long? userId;
+
+        // Если просматриваем анкету другого пользователя.
+        if (userCode is not null && userCode != Guid.Empty)
+        {
+            userId = await _userRepository.GetUserIdByCodeAsync(userCode.Value);   
+        }
+
+        // Если просматриваем свою анкету.
+        else
+        {
+            userId = await _userRepository.GetUserByEmailAsync(account);   
+        }
+
+        if (userId is null || userId <= 0)
+        {
+            throw new InvalidOperationException("Не удалось получить Id пользователя. " +
+                                                $"UserCode: {userCode}." +
+                                                $"Account: {account}.");
+        }
+
+        return userId;
     }
 }
