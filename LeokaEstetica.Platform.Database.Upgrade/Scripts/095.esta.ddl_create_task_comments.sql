@@ -1,3 +1,5 @@
+DROP TABLE IF EXISTS project_management.task_comments;
+
 CREATE TABLE project_management.task_comments
 (
     comment_id      BIGSERIAL,
