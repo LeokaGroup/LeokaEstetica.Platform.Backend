@@ -1,0 +1,877 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>LeokaEstetica.Platform.ProjectManagement</name>
+    </assembly>
+    <members>
+        <member name="T:LeokaEstetica.Platform.ProjectManagment.Controllers.ConfigController">
+            <summary>
+            Контроллер конфигураций модуля управления проектами.
+            </summary>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Controllers.ConfigController.#ctor(LeokaEstetica.Platform.Database.Abstractions.Config.IGlobalConfigRepository,Microsoft.Extensions.Logging.ILogger{LeokaEstetica.Platform.ProjectManagment.Controllers.ConfigController},LeokaEstetica.Platform.Services.Abstractions.Config.IProjectSettingsConfigService)">
+            <summary>
+            Конструктор.
+            </summary>
+            <param name="globalConfigRepository">Репозиторий глобал конфига.</param>
+            <param name="logger">Логгер.</param>
+            <param name="projectSettingsConfigService">Сервис настроек проектов.</param>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Controllers.ConfigController.IsAvailableProjectManagmentAsync">
+            <summary>
+            Метод проверяет доступность модуля управления проектами.
+            </summary>
+            <returns>Признак активности модуля.</returns>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Controllers.ConfigController.CommitSpaceSettingsAsync(LeokaEstetica.Platform.Models.Dto.Input.Config.ConfigSpaceSettingInput)">
+            <summary>
+            Метод фиксирует выбранные пользователем настройки рабочего пространства проекта.
+            </summary>
+            <param name="configSpaceSettingInput">Входная модель.</param>
+            <returns>Выходная модель.</returns>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Controllers.ConfigController.GetBuildProjectSpaceSettingsAsync">
+            <summary>
+            Метод получает Id проекта, который был ранее выбран пользователем для перехода к управлению проектом.
+            Необходимо для построения ссылки в рабочее пространство проекта.
+            </summary>
+            <returns>Выходная модель.</returns>
+        </member>
+        <member name="T:LeokaEstetica.Platform.ProjectManagment.Controllers.ProjectManagmentController">
+            <summary>
+            Контроллер управления проектами.
+            </summary>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Controllers.ProjectManagmentController.#ctor(LeokaEstetica.Platform.Services.Abstractions.Project.IProjectService,LeokaEstetica.Platform.Services.Abstractions.ProjectManagment.IProjectManagmentService,AutoMapper.IMapper,Microsoft.Extensions.Logging.ILogger{LeokaEstetica.Platform.ProjectManagment.Controllers.ProjectManagmentController},LeokaEstetica.Platform.Services.Abstractions.User.IUserService,System.Lazy{LeokaEstetica.Platform.Integrations.Abstractions.Discord.IDiscordService},System.Lazy{LeokaEstetica.Platform.Database.Abstractions.Template.IProjectManagmentTemplateRepository})">
+            <summary>
+            Конструктор.
+            </summary>
+            <param name="projectService">Сервис проектов пользователей.</param>
+            <param name="projectManagmentService">Сервис управления проектами.</param>
+            <param name="mapper">Маппер.</param>
+            <param name="logger">Логгер.</param>
+            <param name="userService">Сервис пользователей.</param>
+            <param name="discordService">Сервис дискорда.</param>
+            <param name="projectManagmentTemplateRepository">Репозиторий шаблонов проектов.</param>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Controllers.ProjectManagmentController.UserProjectsAsync">
+            <summary>
+            TODO: Подумать, стоит ли выводить в рабочее пространство архивные проекты и те, что находятся на модерации.
+            Метод получает список проектов пользователя.
+            </summary>
+            <returns>Список проектов пользователя.</returns>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Controllers.ProjectManagmentController.GetViewStrategiesAsync">
+            <summary>
+            Метод получает список стратегий представления рабочего пространства.
+            </summary>
+            <returns>Список стратегий.</returns>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Controllers.ProjectManagmentController.GetPanelItemsAsync">
+            <summary>
+            Метод получает элементы панели.
+            Панель это и хидер модуля УП и левое выдвижное меню и меню документации проектов.
+            </summary>
+            <returns>Список элементов панели.</returns>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Controllers.ProjectManagmentController.GetProjectManagmentTemplatesAsync">
+            <summary>
+            Метод получает список шаблонов задач, которые пользователь может выбрать перед переходом в рабочее пространство.
+            </summary>
+            <returns>Список шаблонов задач.</returns>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Controllers.ProjectManagmentController.GetConfigurationWorkSpaceBySelectedTemplateAsync(System.Int64,System.Nullable{System.Int32},LeokaEstetica.Platform.Models.Enums.ModifyTaskStatuseTypeEnum,System.Int32)">
+            <summary>
+            Метод получает конфигурацию рабочего пространства по выбранному шаблону.
+            Под конфигурацией понимаются основные элементы рабочего пространства (набор задач, статусов, фильтров, колонок и тд)
+            если выбранный шаблон это предполагает.
+            </summary>
+            <param name="projectId">Id проекта.</param>
+            <param name="paginatorStatusId">Id статуса, для которого нужно применить пагинатор.
+            Если он null, то пагинатор применится для задач всех статусов шаблона.</param>
+            <param name="modifyTaskStatuseType">Компонент, данные которого будем модифицировать.</param>
+            <param name="page">Номер страницы.</param>
+            <returns>Данные конфигурации рабочего пространства.</returns>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Controllers.ProjectManagmentController.GetTaskDetailsByTaskIdAsync(System.String,System.Int64,LeokaEstetica.Platform.Core.Enums.TaskDetailTypeEnum)">
+            <summary>
+            Метод получает детали задачи.
+            Детали задачи могут быть разные, в зависимости от типа задачи, который передали.
+            </summary>
+            <param name="projectTaskId">Id задачи в рамках проекта.</param>
+            <param name="projectId">Id проекта.</param>
+            <param name="taskDetailType">Тип детализации.</param>
+            <returns>Данные задачи.</returns>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Controllers.ProjectManagmentController.CreateProjectTaskAsync(LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement.CreateProjectManagementTaskInput)">
+            <summary>
+            Метод создает задачу проекта.
+            </summary>
+            <param name="projectManagementTaskInput">Входная модель.</param>
+            <returns>Выходная модель.</returns>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Controllers.ProjectManagmentController.GetTaskPrioritiesAsync">
+            <summary>
+            Метод получает список приоритетов задачи.
+            </summary>
+            <returns>Список приоритетов задачи.</returns>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Controllers.ProjectManagmentController.GetTaskTypesAsync">
+            <summary>
+            Метод получает список типов задач.
+            </summary>
+            <returns>Список типов задач.</returns>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Controllers.ProjectManagmentController.GetProjectTagsAsync">
+            <summary>
+            Метод получает список тегов проекта для выбора в задаче.
+            </summary>
+            <returns>Список тегов.</returns>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Controllers.ProjectManagmentController.GetTaskStatusesAsync(System.Int64)">
+            <summary>
+            Метод получает список статусов задачи для выбора.
+            </summary>
+            <param name="projectId">Id проекта.</param>
+            <returns>Список статусов.</returns>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Controllers.ProjectManagmentController.GetSelectTaskExecutorsAsync(System.Int64)">
+            <summary>
+            Метод получает пользователей, которые могут быть выбраны в качестве исполнителя или наблюдателей задачи.
+            </summary>
+            <param name="projectId">Id проекта.</param>
+            <returns>Список пользователей.</returns>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Controllers.ProjectManagmentController.CreateProjectTagAsync(LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement.ProjectTagInput)">
+            <summary>
+            Метод создает метку (тег) проекта.
+            </summary>
+            <param name="projectTagInput">Входная модель.</param>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Controllers.ProjectManagmentController.GetSelectableTaskStatusesAsync(System.Int64)">
+            <summary>
+            Метод получает список статусов для выбора для создания нового статуса.
+            </summary>
+            <param name="projectId">Id проекта.</param>
+            <returns>Список статусов.</returns>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Controllers.ProjectManagmentController.CreateUserTaskStatusTemplateAsync(LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement.CreateTaskStatusInput)">
+            <summary>
+            Метод создает новый статус шаблона пользователя учитывая ассоциацию статуса.
+            </summary>
+            <param name="createTaskStatusInput">Входная модель.</param>
+            <exception cref="T:System.AggregateException">Если входные параметры не прошли валидацию.</exception>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Controllers.ProjectManagmentController.GetAvailableTaskStatusTransitionsAsync(LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement.AvailableTaskStatusTransitionInput)">
+            <summary>
+            Метод получает доступные переходы в статусы задачи.
+            </summary>
+            <param name="availableTaskStatusTransitionInput">Входная модель.</param>
+            <returns>Список доступных переходов.</returns>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Controllers.ProjectManagmentController.ChangeTaskStatusAsync(LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement.ChangeTaskStatusInput)">
+            <summary>
+            Метод изменяет статус задачи.
+            </summary>
+            <param name="changeTaskStatusInput">Входная модель.</param>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Controllers.ProjectManagmentController.UpdateTaskDetailsAsync(LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement.ChangeTaskDetailsInput)">
+            <summary>
+            Метод обновления описание задачи.
+            </summary>
+            <param name="changeTaskDetailsInput">Входная модель.</param>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Controllers.ProjectManagmentController.UpdateTaskNameAsync(LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement.ChangeTaskNameInput)">
+            <summary>
+            Метод обновления название задачи.
+            </summary>
+            <param name="changeTaskNameInput">Входная модель.</param>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Controllers.ProjectManagmentController.AttachTaskTagAsync(LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement.ProjectTaskTagInput)">
+            <summary>
+            Метод привязывает тег к задаче проекта.
+            Выбор происходит из набора тегов проекта.
+            </summary>
+            <param name="projectTaskTagInput">Входная модель.</param>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Controllers.ProjectManagmentController.DetachTaskTagAsync(LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement.ProjectTaskTagInput)">
+            <summary>
+            Метод отвязывает тег от задачи проекта.
+            </summary>
+            <param name="projectTaskTagInput">Входная модель.</param>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Controllers.ProjectManagmentController.CreateTaskLinkAsync(LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement.TaskLinkInput)">
+            <summary>
+            Метод создает связь с задачей (в зависимости от типа связи, который передали).
+            </summary>
+            <param name="taskLinkInput">Входная модель.</param>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Controllers.ProjectManagmentController.GetTaskLinkDefaultAsync(System.Int64,System.String,LeokaEstetica.Platform.Models.Enums.LinkTypeEnum)">
+            <summary>
+            Метод получает связи задачи (обычные связи).
+            </summary>
+            <param name="projectId">Id проекта.</param>
+            <param name="projectTaskId">Id задачи в рамках проекта.</param>
+            <param name="linkType">Тип связи.</param>
+            <returns>Список связей задачи.</returns>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Controllers.ProjectManagmentController.GetTaskLinkParentAsync(System.Int64,System.String,LeokaEstetica.Platform.Models.Enums.LinkTypeEnum)">
+            <summary>
+            Метод получает связи задачи (родительские связи).
+            </summary>
+            <param name="projectId">Id проекта.</param>
+            <param name="projectTaskId">Id задачи в рамках проекта.</param>
+            <param name="linkType">Тип связи.</param>
+            <returns>Список связей задачи.</returns>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Controllers.ProjectManagmentController.GetTaskLinkChildAsync(System.Int64,System.String,LeokaEstetica.Platform.Models.Enums.LinkTypeEnum)">
+            <summary>
+            Метод получает связи задачи (дочерние связи).
+            </summary>
+            <param name="projectId">Id проекта.</param>
+            <param name="projectTaskId">Id задачи в рамках проекта.</param>
+            <param name="linkType">Тип связи.</param>
+            <returns>Список связей задачи.</returns>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Controllers.ProjectManagmentController.GetTaskLinkDependAsync(System.Int64,System.String,LeokaEstetica.Platform.Models.Enums.LinkTypeEnum)">
+            <summary>
+            Метод получает связи задачи (связи зависит от).
+            </summary>
+            <param name="projectId">Id проекта.</param>
+            <param name="projectTaskId">Id задачи в рамках проекта.</param>
+            <param name="linkType">Тип связи.</param>
+            <returns>Список связей задачи.</returns>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Controllers.ProjectManagmentController.GetTaskLinkBlockedAsync(System.Int64,System.String,LeokaEstetica.Platform.Models.Enums.LinkTypeEnum)">
+            <summary>
+            Метод получает связи задачи (связи блокирующие).
+            </summary>
+            <param name="projectId">Id проекта.</param>
+            <param name="projectTaskId">Id задачи в рамках проекта.</param>
+            <param name="linkType">Тип связи.</param>
+            <returns>Список связей задачи.</returns>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Controllers.ProjectManagmentController.GetAvailableTaskLinkAsync(System.Int64,LeokaEstetica.Platform.Models.Enums.LinkTypeEnum)">
+            <summary>
+            Метод получает задачи проекта, которые доступны для создания связи с текущей задачей (разных типов связей).
+            Под текущей задачей понимается задача, которую просматривает пользователь.
+            </summary>
+            <param name="projectId">Id проекта.</param>
+            <param name="linkType">Тип связи.</param>
+            <returns>Список задач, доступных к созданию связи.</returns>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Controllers.ProjectManagmentController.GetLinkTypesAsync">
+            <summary>
+            Метод получает список типов связей задач.
+            </summary>
+            <returns>Список типов связей задач.</returns>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Controllers.ProjectManagmentController.AttachTaskWatcherAsync(LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement.ProjectTaskWatcherInput)">
+            <summary>
+            Метод привязывает наблюдателя задачи.
+            </summary>
+            <param name="projectTaskWatcherInput">Входная модель.</param>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Controllers.ProjectManagmentController.DetachTaskWatcherAsync(LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement.ProjectTaskWatcherInput)">
+            <summary>
+            Метод отвязывает наблюдателя задачи.
+            </summary>
+            <param name="projectTaskWatcherInput">Входная модель.</param>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Controllers.ProjectManagmentController.UpdateTaskExecutorAsync(LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement.ProjectTaskExecutorInput)">
+            <summary>
+            Метод обновляет исполнителя задачи.
+            </summary>
+            <param name="projectTaskExecutorInput">Входная модель.</param>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Controllers.ProjectManagmentController.UpdateTaskPriorityAsync(LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement.TaskPriorityInput)">
+            <summary>
+            Метод обновляет приоритет задачи.
+            </summary>
+            <param name="taskPriorityInput">Входная модель.</param>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Controllers.ProjectManagmentController.RemoveTaskLinkAsync(LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement.RemoveTaskLinkInput)">
+            <summary>
+            Метод разрывает связь определенного типа между задачами.
+            </summary>
+            <param name="removeTaskLinkInput">Входная модель.</param>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Controllers.ProjectManagmentController.UploadFilesAsync(Microsoft.AspNetCore.Http.IFormCollection)">
+            <summary>
+            Метод добавляет файлы к задаче.
+            </summary>
+            <param name="formCollection">Данные формы.</param>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Controllers.ProjectManagmentController.GetProjectTaskFilesAsync(System.Int64,System.String,LeokaEstetica.Platform.Core.Enums.TaskDetailTypeEnum)">
+            <summary>
+            Метод получает файлы задачи.
+            </summary>
+            <param name="projectId">Id проекта.</param>
+            <param name="projectTaskId">Id задачи в рамках проекта.</param>
+            <param name="taskDetailType">Тип детализации.</param>
+            <returns>Файлы задачи.</returns>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Controllers.ProjectManagmentController.DownloadTaskFileAsync(System.Int64,System.Int64,System.String)">
+            <summary>
+            Метод скачивает файл задачи.
+            </summary>
+            <param name="documentId">Id документа.</param>
+            <param name="projectId">Id проекта.</param>
+            <param name="projectTaskId">Id задачи в рамках проекта.</param>
+            <returns>Файл задачи.</returns>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Controllers.ProjectManagmentController.RemoveTaskFileAsync(System.Int64,System.Int64,System.String)">
+            <summary>
+            Метод удаляет файл задачи.
+            </summary>
+            <param name="documentId">Id документа.</param>
+            <param name="projectId">Id проекта.</param>
+            <param name="projectTaskId">Id задачи в рамках проекта.</param>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Controllers.ProjectManagmentController.CreateTaskCommentAsync(LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement.TaskCommentInput)">
+            <summary>
+            Метод создает комментарий задачи.
+            </summary>
+            <param name="taskCommentInput">Входная модель.</param>
+            <exception cref="T:System.AggregateException">Если не прошли валидацию входных параметров.</exception>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Controllers.ProjectManagmentController.GetTaskCommentsAsync(System.String,System.Int64)">
+            <summary>
+            Метод получает список комментариев задачи.
+            </summary>
+            <param name="projectTaskId">Id задачи в рамках проекта.</param>
+            <param name="projectId">Id проекта.</param>
+            <returns>Список комментариев задачи.</returns>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Controllers.ProjectManagmentController.UpdateTaskCommentAsync(LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement.TaskCommentExtendedInput)">
+            <summary>
+            Метод обновляет комментарий задачи.
+            </summary>
+            <param name="taskCommentInput">Входная модель.</param>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Controllers.ProjectManagmentController.DeleteTaskCommentAsync(System.Int64)">
+            <summary>
+            Метод удаляет комментарий задачи.
+            </summary>
+            <param name="commentId">Id комментария для удаления.</param>
+            <exception cref="T:System.InvalidOperationException">Если входные данные невалидны.</exception>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Controllers.ProjectManagmentController.GetEpicsAsync(System.Int64)">
+            <summary>
+            Метод получает список эпиков.
+            </summary>
+            <param name="projectId">Id проекта.</param>
+            <returns>Список эпиков.</returns>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Controllers.ProjectManagmentController.GetBacklogTasksAsync(System.Int64)">
+            <summary>
+            Метод получает список задач, историй для бэклога.
+            Исключаются задачи в статусах: В архиве, готово, решена и тд.
+            </summary>
+            <param name="projectId">Id проекта.</param>
+            <returns>Список задач для бэклога.</returns>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Controllers.ProjectManagmentController.GetAvailableEpicsAsync(System.Int64)">
+            <summary>
+            Метод получает эпики, доступные к добавлению в них задачи.
+            </summary>
+            <param name="projectId">Id проекта.</param>
+            <returns>Список эпиков.</returns>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Controllers.ProjectManagmentController.IncludeTaskEpicAsync(LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement.IncludeTaskEpicInput)">
+            <summary>
+            Метод добавляет задачу в эпик.
+            </summary>
+            <param name="includeTaskEpicInput">Входная модель.</param>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Controllers.ProjectManagmentController.GetUserStoryStatusesAsync">
+            <summary>
+            Метод получает список статусов истории для выбора.
+            </summary>
+            <returns>Список статусов истории.</returns>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Controllers.ProjectManagmentController.PlaningSprintAsync(LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement.PlaningSprintInput)">
+            <summary>
+            Метод планирует спринт.
+            Добавляет задачи в спринт, если их указали при планировании спринта.
+            </summary>
+            <param name="planingSprintInput">Входная модель.</param>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Controllers.ProjectManagmentController.GetEpicTasksAsync(System.Int64,System.Int64)">
+            <summary>
+            Метод получает задачи эпика.
+            </summary>
+            <param name="projectId">Id проекта.</param>
+            <param name="epicId">Id эпика.</param>
+            <returns>Список задач эпика.</returns>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Controllers.ProjectManagmentController.GetSprintTaskAsync(System.Int64,System.String)">
+            <summary>
+            Метод получает название спринта, в который входит задача.
+            </summary>
+            <param name="projectId">Id проекта.</param>
+            <param name="projectTaskId">Id задачи в рамках проекта.</param>
+            <returns>Данные спринта.</returns>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Controllers.ProjectManagmentController.GetAvailableProjectSprintsAsync(System.Int64,System.String)">
+            <summary>
+            Метод получает спринты, в которые может быть добавлена задача.
+            Исключается спринт, в который задача уже добавлена.
+            </summary>
+            <param name="projectId">Id проекта.</param>
+            <param name="projectTaskId">Id задачи в рамках проекта.</param>
+            <returns>Список спринтов, в которые может быть добавлена задача.</returns>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Controllers.ProjectManagmentController.InsertOrUpdateTaskSprintAsync(LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement.UpdateTaskSprintInput)">
+            <summary>
+            Метод добавляет/обновляет спринт, в который входит задача.
+            </summary>
+            <param name="updateTaskSprintInput">Входная модель.</param>
+        </member>
+        <member name="T:LeokaEstetica.Platform.ProjectManagment.Controllers.ProjectManagmentSettingsController">
+            <summary>
+            Контроллер настроек управления проектами.
+            </summary>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Controllers.ProjectManagmentSettingsController.#ctor(Microsoft.Extensions.Logging.ILogger{LeokaEstetica.Platform.ProjectManagment.Controllers.ProjectManagmentController},System.Lazy{LeokaEstetica.Platform.Database.Abstractions.Template.IProjectManagmentTemplateRepository},System.Lazy{LeokaEstetica.Platform.Integrations.Abstractions.Discord.IDiscordService},LeokaEstetica.Platform.Services.Abstractions.ProjectManagment.IProjectManagmentService,AutoMapper.IMapper)">
+            <summary>
+            Конструктор.
+            </summary>
+            <param name="logger"></param>
+            <param name="projectManagmentTemplateRepository"></param>
+            <param name="discordService">Сервис дискорда.</param>
+            <param name="projectManagmentService"></param>
+            <param name="mapper"></param>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Controllers.ProjectManagmentSettingsController.CreateUserTaskTagAsync(LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement.ProjectTagInput)">
+            <summary>
+            TODO: Актуализировать название метода, название ендпоинта и тд.
+            Метод создает метку (тег) проекта.
+            </summary>
+            <param name="projectTagInput">Входная модель.</param>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Controllers.ProjectManagmentSettingsController.GetSelectableTaskStatusesAsync(System.Int64)">
+            <summary>
+            Метод получает список статусов для выбора для создания нового статуса.
+            </summary>
+            <param name="projectId">Id проекта.</param>
+            <returns>Список статусов.</returns>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Controllers.ProjectManagmentSettingsController.CreateUserTaskStatusTemplateAsync(LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement.CreateTaskStatusInput)">
+            <summary>
+            Метод создает новый статус шаблона пользователя учитывая ассоциацию статуса.
+            </summary>
+            <param name="createTaskStatusInput">Входная модель.</param>
+            <exception cref="T:System.AggregateException">Если входные параметры не прошли валидацию.</exception>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Controllers.ProjectManagmentSettingsController.FixationProjectViewStrategyAsync(LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement.FixationProjectViewStrategyInput)">
+            <summary>
+            Метод фиксирует выбранную пользователем стратегию представления.
+            </summary>
+            <param name="fixationStrategyInput">Входная модель.</param>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Controllers.ProjectManagmentSettingsController.GetUserAvatarFileAsync(System.Int64)">
+            <summary>
+            Метод скачивает файл изображения аватара пользователя.
+            </summary>
+            <param name="projectId">Id проекта.</param>
+            <returns>Файл изображения аватара пользователя.</returns>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Controllers.ProjectManagmentSettingsController.UploadUserAvatarFileAsync(Microsoft.AspNetCore.Http.IFormCollection)">
+            <summary>
+            Метод загружает новое изображение аватара пользователя.
+            </summary>
+            <param name="formCollection">Данные формы.</param>
+        </member>
+        <member name="T:LeokaEstetica.Platform.ProjectManagment.Controllers.SearchController">
+            <summary>
+            Контроллер поиска в модуле управления проектами.
+            </summary>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Controllers.SearchController.#ctor(Microsoft.Extensions.Logging.ILogger{LeokaEstetica.Platform.ProjectManagment.Controllers.SearchController},System.Lazy{LeokaEstetica.Platform.Integrations.Abstractions.Discord.IDiscordService},LeokaEstetica.Platform.Services.Abstractions.Search.ProjectManagment.ISearchProjectManagementService)">
+            <summary>
+            Контроллер.
+            <param name="logger">Логгер.</param>
+            <param name="discordService">Сервис дискорда.</param>
+            <param name="searchProjectManagementService">Сервис поиска в модуле УП.</param>
+            </summary>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Controllers.SearchController.SearchTaskAsync(LeokaEstetica.Platform.Models.Dto.Input.Search.ProjectManagment.SearchTaskInput)">
+            <summary>
+            Метод поиска задач.
+            Поиск происходит по атрибутам, которые передали.
+            </summary>
+            <param name="searchTaskInput">Входная модель.</param>
+            <returns>Список найденных задач.</returns>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Controllers.SearchController.SearchAgileObjectAsync(System.String,System.Boolean,System.Boolean,System.Boolean,System.Int64)">
+            <summary>
+            Метод находит Agile-объекты. Это может быть задача, эпик, история, ошибка, спринт.
+            </summary>
+            <param name="searchText">Поисковый текст./</param>
+            <param name="isSearchByProjectTaskId">Признак поиска по Id задачи в рамках проекта.</param>
+            <param name="isSearchByTaskName">Признак поиска по названию задачи.</param>
+            <param name="isSearchByTaskDescription">Признак поиска по совпадению в описании.</param>
+            <param name="projectId">Id проекта.</param>
+            <returns>Найденные задачи, истории, эпики, ошибки.</returns>
+        </member>
+        <member name="T:LeokaEstetica.Platform.ProjectManagment.ValidationModels.GetConfigurationValidationModel">
+            <summary>
+            Класс валидации параметров рабочего пространства.
+            </summary>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.ValidationModels.GetConfigurationValidationModel.#ctor(System.Int64)">
+            <summary>
+            Конструктор.
+            </summary>
+            <param name="projectId">Id проекта.</param>
+        </member>
+        <member name="P:LeokaEstetica.Platform.ProjectManagment.ValidationModels.GetConfigurationValidationModel.ProjectId">
+            <summary>
+            Id проекта.
+            </summary>
+        </member>
+        <member name="T:LeokaEstetica.Platform.ProjectManagment.ValidationModels.GetTaskExecutorValidationModel">
+            <summary>
+            Класс валидации исполнителей задачи проекта.
+            </summary>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.ValidationModels.GetTaskExecutorValidationModel.#ctor(System.Int64)">
+            <summary>
+            Конструктор.
+            </summary>
+            <param name="projectId">Id проекта.</param>
+        </member>
+        <member name="P:LeokaEstetica.Platform.ProjectManagment.ValidationModels.GetTaskExecutorValidationModel.ProjectId">
+            <summary>
+            Id проекта.
+            </summary>
+        </member>
+        <member name="T:LeokaEstetica.Platform.ProjectManagment.ValidationModels.GetTaskStatusValidationModel">
+            <summary>
+            Класс валидации статусов задачи проекта.
+            </summary>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.ValidationModels.GetTaskStatusValidationModel.#ctor(System.Int64)">
+            <summary>
+            Конструктор.
+            </summary>
+            <param name="projectId">Id проекта.</param>
+        </member>
+        <member name="P:LeokaEstetica.Platform.ProjectManagment.ValidationModels.GetTaskStatusValidationModel.ProjectId">
+            <summary>
+            Id проекта.
+            </summary>
+        </member>
+        <member name="T:LeokaEstetica.Platform.ProjectManagment.Validators.AvailableTaskLinkValidator">
+            <summary>
+            Класс валидатора доступных к созданию связи задач.
+            </summary>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Validators.AvailableTaskLinkValidator.#ctor">
+            <summary>
+            Конструктор.
+            </summary>
+        </member>
+        <member name="T:LeokaEstetica.Platform.ProjectManagment.Validators.BaseChangeTaskValidator">
+            <summary>
+            Класс базового валидатора изменения задачи.
+            </summary>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Validators.BaseChangeTaskValidator.#ctor">
+            <summary>
+            Конструктор.
+            </summary>
+        </member>
+        <member name="T:LeokaEstetica.Platform.ProjectManagment.Validators.ChangeTaskStatusValidator">
+            <summary>
+            Класс валидатора изменения статуса задачи.
+            </summary>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Validators.ChangeTaskStatusValidator.#ctor">
+            <summary>
+            Конструктор.
+            </summary>
+        </member>
+        <member name="T:LeokaEstetica.Platform.ProjectManagment.Validators.CommitProjectManagementSpaceSettingValidator">
+            <summary>
+            Класс валидатора фиксации настроек рабочего пространства проекта.
+            </summary>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Validators.CommitProjectManagementSpaceSettingValidator.#ctor">
+            <summary>
+            Конструктор.
+            </summary>
+        </member>
+        <member name="T:LeokaEstetica.Platform.ProjectManagment.Validators.CreateProjectManagementTaskValidator">
+            <summary>
+            Класс валидатора создания задачи проекта.
+            </summary>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Validators.CreateProjectManagementTaskValidator.#ctor">
+            <summary>
+            Конструктор.
+            </summary>
+        </member>
+        <member name="T:LeokaEstetica.Platform.ProjectManagment.Validators.CreateTaskStatusValidator">
+            <summary>
+            Класс валидатора создания статуса задачи.
+            </summary>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Validators.CreateTaskStatusValidator.#ctor">
+            <summary>
+            Конструктор.
+            </summary>
+        </member>
+        <member name="T:LeokaEstetica.Platform.ProjectManagment.Validators.CreateTaskTransitionValidator">
+            <summary>
+            Класс валидатора создания перехода.
+            </summary>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Validators.CreateTaskTransitionValidator.#ctor">
+            <summary>
+            Конструктор.
+            </summary>
+        </member>
+        <member name="T:LeokaEstetica.Platform.ProjectManagment.Validators.CreateUserTaskTagValidator">
+            <summary>
+            Класс валидатора создания метки (тега) проекта.
+            </summary>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Validators.CreateUserTaskTagValidator.#ctor">
+            <summary>
+            Конструктор.
+            </summary>
+        </member>
+        <member name="T:LeokaEstetica.Platform.ProjectManagment.Validators.EpicTaskValidator">
+            <summary>
+            Класс валидатора задач эпика.
+            </summary>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Validators.EpicTaskValidator.#ctor">
+            <summary>
+            Конструктор.
+            </summary>
+        </member>
+        <member name="T:LeokaEstetica.Platform.ProjectManagment.Validators.FixationProjectViewStrategyValidator">
+            <summary>
+            Класс валидатора выбранной стратегии представления.
+            </summary>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Validators.FixationProjectViewStrategyValidator.#ctor">
+            <summary>
+            Конструктор.
+            </summary>
+        </member>
+        <member name="T:LeokaEstetica.Platform.ProjectManagment.Validators.GetAvailableTaskStatusTransitionValidator">
+            <summary>
+            Класс валидатора получения возможных переходов статусовв задачи.
+            </summary>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Validators.GetAvailableTaskStatusTransitionValidator.#ctor">
+            <summary>
+            Конструктор.
+            </summary>
+        </member>
+        <member name="T:LeokaEstetica.Platform.ProjectManagment.Validators.GetConfigurationValidator">
+            <summary>
+            Класс валидатора конфигурации рабочего пространства.
+            </summary>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Validators.GetConfigurationValidator.#ctor">
+            <summary>
+            Конструктор.
+            </summary>
+        </member>
+        <member name="T:LeokaEstetica.Platform.ProjectManagment.Validators.GetTaskExecutorValidator">
+            <summary>
+            Класс валидатора исполнителей задачи проекта.
+            </summary>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Validators.GetTaskExecutorValidator.#ctor">
+            <summary>
+            Конструктор.
+            </summary>
+        </member>
+        <member name="T:LeokaEstetica.Platform.ProjectManagment.Validators.GetTaskLinkValidator">
+            <summary>
+            Класс валидатора получения связей задачи.
+            </summary>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Validators.GetTaskLinkValidator.#ctor">
+            <summary>
+            Конструктор.
+            </summary>
+        </member>
+        <member name="T:LeokaEstetica.Platform.ProjectManagment.Validators.GetTaskStatusValidator">
+            <summary>
+            Класс валидатора статусов задачи проекта.
+            </summary>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Validators.GetTaskStatusValidator.#ctor">
+            <summary>
+            Конструктор.
+            </summary>
+        </member>
+        <member name="T:LeokaEstetica.Platform.ProjectManagment.Validators.PlaningSprintValidator">
+            <summary>
+            Класс валидатора планирования спринта.
+            </summary>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Validators.PlaningSprintValidator.#ctor">
+            <summary>
+            Конструктор.
+            </summary>
+        </member>
+        <member name="T:LeokaEstetica.Platform.ProjectManagment.Validators.ProjectTaskExecutorValidator">
+            <summary>
+            Класс валидатора исполнителя задачи.
+            </summary>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Validators.ProjectTaskExecutorValidator.#ctor">
+            <summary>
+            Конструктор.
+            </summary>
+        </member>
+        <member name="T:LeokaEstetica.Platform.ProjectManagment.Validators.ProjectTaskFileValidator">
+            <summary>
+            Класс валидатора файлов задачи проекта
+            </summary>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Validators.ProjectTaskFileValidator.#ctor">
+            <summary>
+            Конструктор.
+            </summary>
+        </member>
+        <member name="T:LeokaEstetica.Platform.ProjectManagment.Validators.ProjectTaskTagValidator">
+            <summary>
+            Класс валидатора привязки/отвязки тега к задаче/от задачи.
+            </summary>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Validators.ProjectTaskTagValidator.#ctor">
+            <summary>
+            Конструктор.
+            </summary>
+        </member>
+        <member name="T:LeokaEstetica.Platform.ProjectManagment.Validators.ProjectTaskWatcherValidator">
+            <summary>
+            Класс валидатора наблюдателя задачи.
+            </summary>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Validators.ProjectTaskWatcherValidator.#ctor">
+            <summary>
+            Конструктор.
+            </summary>
+        </member>
+        <member name="T:LeokaEstetica.Platform.ProjectManagment.Validators.RemoveTaskFileValidator">
+            <summary>
+            Класс валидатора удаления файла задачи.
+            </summary>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Validators.RemoveTaskFileValidator.#ctor">
+            <summary>
+            Конструктор.
+            </summary>
+        </member>
+        <member name="T:LeokaEstetica.Platform.ProjectManagment.Validators.RemoveTaskLinkValidator">
+            <summary>
+            Класс валидатора разрыва связи между задачами.
+            </summary>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Validators.RemoveTaskLinkValidator.#ctor">
+            <summary>
+            Конструктор.
+            </summary>
+        </member>
+        <member name="T:LeokaEstetica.Platform.ProjectManagment.Validators.SearchTaskValidator">
+            <summary>
+            Класс валидатора поиска задач.
+            </summary>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Validators.SearchTaskValidator.#ctor">
+            <summary>
+            Конструктор.
+            </summary>
+        </member>
+        <member name="T:LeokaEstetica.Platform.ProjectManagment.Validators.SprintTaskValidator">
+            <summary>
+            Класс валидатора спринта, в который входит задача.
+            </summary>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Validators.SprintTaskValidator.#ctor">
+            <summary>
+            Конструктор.
+            </summary>
+        </member>
+        <member name="T:LeokaEstetica.Platform.ProjectManagment.Validators.TaskCommentExtendedValidator">
+            <summary>
+            Класс расширенного валидатора комментария задачи.
+            </summary>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Validators.TaskCommentExtendedValidator.#ctor">
+            <summary>
+            Конструктор.
+            </summary>
+        </member>
+        <member name="T:LeokaEstetica.Platform.ProjectManagment.Validators.TaskCommentValidator">
+            <summary>
+            Класс валидатора комментария задачи.
+            </summary>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Validators.TaskCommentValidator.#ctor">
+            <summary>
+            Конструктор.
+            </summary>
+        </member>
+        <member name="T:LeokaEstetica.Platform.ProjectManagment.Validators.TaskDetailValidator">
+            <summary>
+            Класс валидатора деталей задачи.
+            </summary>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Validators.TaskDetailValidator.#ctor">
+            <summary>
+            Конструктор.
+            </summary>
+        </member>
+        <member name="T:LeokaEstetica.Platform.ProjectManagment.Validators.TaskEpicValidator">
+            <summary>
+            Класс валидатора эпика.
+            </summary>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Validators.TaskEpicValidator.#ctor">
+            <summary>
+            Конструктор.
+            </summary>
+        </member>
+        <member name="T:LeokaEstetica.Platform.ProjectManagment.Validators.TaskLinkValidator">
+            <summary>
+            Класс валидатора связи с задачей.
+            </summary>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Validators.TaskLinkValidator.#ctor">
+            <summary>
+            Конструктор.
+            </summary>
+        </member>
+        <member name="T:LeokaEstetica.Platform.ProjectManagment.Validators.UpdateTaskPriorityValidator">
+            <summary>
+            Класс валидатора обновления приоритета задачи.
+            </summary>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Validators.UpdateTaskPriorityValidator.#ctor">
+            <summary>
+            Конструктор.
+            </summary>
+        </member>
+        <member name="T:LeokaEstetica.Platform.ProjectManagment.Validators.UpdateTaskSprintValidator">
+            <summary>
+            Класс валидатора обновления спринта задачи.
+            </summary>
+        </member>
+        <member name="M:LeokaEstetica.Platform.ProjectManagment.Validators.UpdateTaskSprintValidator.#ctor">
+            <summary>
+            Конструктор.
+            </summary>
+        </member>
+    </members>
+</doc>

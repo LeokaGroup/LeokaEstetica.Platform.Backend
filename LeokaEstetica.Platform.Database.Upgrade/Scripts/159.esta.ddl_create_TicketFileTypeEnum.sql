@@ -1,0 +1,1 @@
+CREATE TYPE "TicketFileTypeEnum" AS ENUM ('Document', 'Image');

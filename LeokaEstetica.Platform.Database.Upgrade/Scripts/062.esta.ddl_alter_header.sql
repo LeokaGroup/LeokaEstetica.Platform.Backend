@@ -25,8 +25,8 @@ ALTER TABLE IF EXISTS project_management.header
 ALTER TABLE IF EXISTS project_management.header
     RENAME COLUMN "IsDisabled" TO is_disabled;
 
-ALTER TABLE IF EXISTS project_management.header
-    RENAME COLUMN "ControlType" TO control_type;
+-- ALTER TABLE IF EXISTS project_management.header
+--     RENAME COLUMN "ControlType" TO control_type;
 
-ALTER TABLE IF EXISTS project_management.header
-    RENAME COLUMN "Destination" TO destination;
+-- ALTER TABLE IF EXISTS project_management.header
+--     RENAME COLUMN "Destination" TO destination;
