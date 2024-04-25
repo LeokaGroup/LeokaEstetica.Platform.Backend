@@ -5,6 +5,11 @@ namespace LeokaEstetica.Platform.Models.Entities.Project;
 /// </summary>
 public class ProjectStatusEntity
 {
+    public ProjectStatusEntity(string projectStatusSysName, string projectStatusName)
+    {
+		ProjectStatusSysName = projectStatusSysName;
+		ProjectStatusName = projectStatusName;
+	}
     /// <summary>
     /// PK.
     /// </summary>

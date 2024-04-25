@@ -59,10 +59,8 @@ internal sealed class ProjectRepository : IProjectRepository
 
         try
         {
-            var project = new UserProjectEntity
+            var project = new UserProjectEntity(createProjectInput.ProjectName, createProjectInput.ProjectDetails)
             {
-                ProjectName = createProjectInput.ProjectName,
-                ProjectDetails = createProjectInput.ProjectDetails,
                 UserId = createProjectInput.UserId,
                 ProjectCode = Guid.NewGuid(),
                 DateCreated = DateTime.UtcNow,
@@ -79,11 +77,9 @@ internal sealed class ProjectRepository : IProjectRepository
             var statusName = ProjectStatus.GetProjectStatusNameBySysName(statusSysName);
 
             // Проставляем проекту статус "На модерации".
-            await _pgContext.ProjectStatuses.AddAsync(new ProjectStatusEntity
+            await _pgContext.ProjectStatuses.AddAsync(new ProjectStatusEntity(statusSysName, statusName)
             {
                 ProjectId = project.ProjectId,
-                ProjectStatusSysName = statusSysName,
-                ProjectStatusName = statusName
             });
 
             // Записываем стадию проекта.
@@ -345,10 +341,8 @@ internal sealed class ProjectRepository : IProjectRepository
         // Берем полные данные о стадии проекта.
         result.Item2 = await _pgContext.ProjectStages.AsNoTracking()
             .Where(ps => ps.StageId == projectStageId)
-            .Select(ps => new ProjectStageEntity
+            .Select(ps => new ProjectStageEntity(ps.StageName, ps.StageSysName)
             {
-                StageName = ps.StageName,
-                StageSysName = ps.StageSysName,
                 StageId = ps.StageId
             })
             .FirstOrDefaultAsync();
@@ -485,7 +479,7 @@ internal sealed class ProjectRepository : IProjectRepository
         }
         
         // Отсекаем вакансии с ненужными статусами.
-        result = result.Where(v => !archivedVacancies.Contains(v.VacancyId));
+        result = result.Where(v => !archivedVacancies.Contains((long)v.VacancyId));
 
         result = result.OrderByDescending(o => o.VacancyId);
 
@@ -978,7 +972,7 @@ internal sealed class ProjectRepository : IProjectRepository
         var result = await _pgContext.ProjectVacancies
             .Where(v => v.ProjectId == projectId 
                         && v.UserVacancy.UserId == userId
-                        && !moderationVacanciesIds.Contains(v.VacancyId))
+                        && !moderationVacanciesIds.Contains((long)v.VacancyId))
             .Select(v => new ProjectVacancyEntity
             {
                 ProjectId = projectId,
@@ -992,7 +986,7 @@ internal sealed class ProjectRepository : IProjectRepository
                     DateCreated = v.UserVacancy.DateCreated,
                     Payment = v.UserVacancy.Payment,
                     UserId = userId,
-                    VacancyId = v.VacancyId,
+                    VacancyId = (long)v.VacancyId,
                 }
             })
             .OrderBy(o => o.VacancyId)

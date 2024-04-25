@@ -44,9 +44,8 @@ internal sealed class ProjectModerationRepository : IProjectModerationRepository
             {
                 ModerationId = p.ModerationId,
                 ProjectId = p.ProjectId,
-                UserProject = new UserProjectEntity
+                UserProject = new UserProjectEntity(p.UserProject.ProjectName, p.UserProject.ProjectDetails)
                 {
-                    ProjectName = p.UserProject.ProjectName,
                     DateCreated = p.UserProject.DateCreated
                 },
                 DateModeration = p.DateModeration
@@ -322,10 +321,9 @@ internal sealed class ProjectModerationRepository : IProjectModerationRepository
                     on p.ProjectId
                     equals pr.ProjectId
                 where projectRemarksIds.Contains(pr.ProjectId)
-                select new UserProjectEntity
+                select new UserProjectEntity(p.ProjectName, p.ProjectDetails)
                 {
                     ProjectId = pr.ProjectId,
-                    ProjectName = p.ProjectName
                 })
             .Distinct()
             .ToListAsync();
