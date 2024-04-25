@@ -23,10 +23,8 @@ public static class CreateTaskStatusFactory
             statusDescription = null;
         }
         
-        var result = new ProjectManagementUserStatuseTemplateEntity
+        var result = new ProjectManagementUserStatuseTemplateEntity(statusName, statusSysName)
         {
-            StatusName = statusName,
-            StatusSysName = statusSysName,
             UserId = userId,
             Position = position,
             StatusDescription = statusDescription

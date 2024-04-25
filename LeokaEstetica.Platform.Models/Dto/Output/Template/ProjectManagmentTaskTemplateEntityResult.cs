@@ -7,10 +7,15 @@ namespace LeokaEstetica.Platform.Models.Dto.Output.Template;
 /// </summary>
 public class ProjectManagmentTaskTemplateEntityResult : ProjectManagmentTaskStatusTemplateEntity
 {
-    /// <summary>
-    /// Название шаблона.
-    /// </summary>
-    public string TemplateName { get; set; }
+	public ProjectManagmentTaskTemplateEntityResult(string statusName, string statusSysName) 
+		: base(statusName, statusSysName)
+	{
+	}
+
+	/// <summary>
+	/// Название шаблона.
+	/// </summary>
+	public string TemplateName { get; set; }
 
     /// <summary>
     /// Id шаблона.

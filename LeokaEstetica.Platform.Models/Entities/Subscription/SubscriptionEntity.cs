@@ -5,6 +5,10 @@ namespace LeokaEstetica.Platform.Models.Entities.Subscription;
 /// </summary>
 public class SubscriptionEntity
 {
+    public SubscriptionEntity(string subscriptionType)
+    {
+        SubscriptionType = subscriptionType;
+    }
     /// <summary>
     /// PK.
     /// </summary>

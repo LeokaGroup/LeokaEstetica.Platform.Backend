@@ -5,6 +5,11 @@ namespace LeokaEstetica.Platform.Models.Entities.Template;
 /// </summary>
 public class ProjectManagementUserStatuseTemplateEntity
 {
+    public ProjectManagementUserStatuseTemplateEntity(string statusName, string statusSysName)
+    {
+		StatusName = statusName;
+        StatusSysName = statusSysName;
+	}
     /// <summary>
     /// PK.
     /// </summary>
@@ -33,5 +38,5 @@ public class ProjectManagementUserStatuseTemplateEntity
     /// <summary>
     /// Описание статуса шаблона.
     /// </summary>
-    public string StatusDescription { get; set; }
+    public string? StatusDescription { get; set; }
 }

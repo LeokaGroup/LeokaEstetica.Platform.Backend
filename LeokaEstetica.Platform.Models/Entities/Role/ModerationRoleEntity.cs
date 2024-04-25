@@ -7,8 +7,10 @@ namespace LeokaEstetica.Platform.Models.Entities.Role;
 /// </summary>
 public class ModerationRoleEntity
 {
-    public ModerationRoleEntity()
+    public ModerationRoleEntity(string roleName, string roleSysName)
     {
+        RoleName = roleName;
+        RoleSysName = roleSysName;
         ModerationUsers = new HashSet<ModerationUserEntity>();
     }
 

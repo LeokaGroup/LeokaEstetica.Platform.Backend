@@ -5,6 +5,11 @@ namespace LeokaEstetica.Platform.Models.Entities.Template;
 /// </summary>
 public class ProjectManagementTransitionTemplateEntity
 {
+    public ProjectManagementTransitionTemplateEntity(string transitionName, string transitionSysName)
+    {
+		TransitionName = transitionName;
+        TransitionSysName = transitionSysName;
+	}
     /// <summary>
     /// PK.
     /// </summary>
