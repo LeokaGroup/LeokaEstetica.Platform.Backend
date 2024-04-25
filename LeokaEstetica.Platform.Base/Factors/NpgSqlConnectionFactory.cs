@@ -5,7 +5,7 @@ using LeokaEstetica.Platform.Models.Enums;
 using Npgsql;
 
 [assembly: InternalsVisibleTo("LeokaEstetica.Platform.Backend")]
-[assembly: InternalsVisibleTo("LeokaEstetica.Platform.ProjectManagment")]
+[assembly: InternalsVisibleTo("LeokaEstetica.Platform.ProjectManagement")]
 [assembly: InternalsVisibleTo("LeokaEstetica.Platform.Tests")]
 
 namespace LeokaEstetica.Platform.Base.Factors;

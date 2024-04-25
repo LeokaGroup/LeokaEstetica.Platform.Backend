@@ -40,7 +40,7 @@ public class UserVacancyEntity
     /// Указывается текстом в виде: Требуемый опыт работы: 1–3 года.
     /// Если не указано, то выводится "Без опыта работы".
     /// </summary>
-    public string WorkExperience { get; set; }
+    public string? WorkExperience { get; set; }
 
     /// <summary>
     /// Занятость у вакансии.
@@ -48,7 +48,7 @@ public class UserVacancyEntity
     /// Разделяется сепаратором через запятую.
     /// Если не указано, то выводится текст "Занятость не указана".
     /// </summary>
-    public string Employment { get; set; }
+    public string? Employment { get; set; }
 
     /// <summary>
     /// Дата создания вакансии.
@@ -59,7 +59,7 @@ public class UserVacancyEntity
     /// Оплата у вакансии.
     /// Если не указано, то выводится текст "Не указана".
     /// </summary>
-    public string Payment { get; set; }
+    public string? Payment { get; set; }
 
     /// <summary>
     /// Id пользователя.
@@ -69,12 +69,12 @@ public class UserVacancyEntity
     /// <summary>
     /// Требования.
     /// </summary>
-    public string Demands { get; set; }
+    public string? Demands { get; set; }
 
     /// <summary>
     /// Условия.
     /// </summary>
-    public string Conditions { get; set; }
+    public string? Conditions { get; set; }
 
     /// <summary>
     /// Каталог вакансий.

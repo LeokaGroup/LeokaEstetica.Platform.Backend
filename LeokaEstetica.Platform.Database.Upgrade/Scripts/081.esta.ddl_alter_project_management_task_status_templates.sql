@@ -16,8 +16,8 @@ ALTER TABLE IF EXISTS templates.project_management_task_status_templates
 ALTER TABLE IF EXISTS templates.project_management_task_status_templates
     RENAME COLUMN "TaskStatusId" TO task_status_id;
 
-ALTER TABLE IF EXISTS templates.project_management_task_status_templates
-    RENAME COLUMN "StatusDescription" TO status_description;
+-- ALTER TABLE IF EXISTS templates.project_management_task_status_templates
+--     RENAME COLUMN "StatusDescription" TO status_description;
 
 ALTER TABLE IF EXISTS templates.project_management_task_status_templates
     RENAME CONSTRAINT "PK_ProjectManagmentTaskStatusTemplates_StatusId" TO pk_project_management_task_status_templates_status_id;

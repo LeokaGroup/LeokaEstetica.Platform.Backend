@@ -2,6 +2,7 @@ using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using FluentValidation.AspNetCore;
 using Hellang.Middleware.ProblemDetails;
+using LeokaEstetica.Platform.Base.Factors;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Utils;
 using LeokaEstetica.Platform.Integrations.Filters;
@@ -125,10 +126,10 @@ builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory())
     {
         AutoFac.Init(b);
 
-        // b.RegisterType<NpgSqlConnectionFactory>()
-        //     .As<IConnectionFactory>()
-        //     .WithParameter("connectionString", connection!)
-        //     .InstancePerLifetimeScope();
+        b.RegisterType<NpgSqlConnectionFactory>()
+            .As<IConnectionFactory>()
+            .WithParameter("connectionString", connection!)
+            .InstancePerLifetimeScope();
     });
 
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
