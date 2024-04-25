@@ -37,6 +37,12 @@ public class VacancyPaginationService : BaseIndexRamDirectory, IVacancyPaginatio
         try
         {
             var vacancies = await _vacancyRepository.GetFiltersVacanciesAsync();
+
+            if (!vacancies.Any())
+            {
+                return new PaginationVacancyOutput();
+            }
+            
             var result = new PaginationVacancyOutput
             {
                 IsVisiblePagination = true,
