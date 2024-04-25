@@ -7,10 +7,15 @@ namespace LeokaEstetica.Platform.Models.Dto.Output.Resume;
 /// </summary>
 public class ResumeOutput : ProfileInfoEntity
 {
-    /// <summary>
-    /// Код пользователя.
-    /// </summary>
-    public Guid UserCode { get; set; }
+    public ResumeOutput(string lastName, string firstName, string aboutme, bool isShortFirstName) 
+        : base(lastName, firstName, aboutme, isShortFirstName)
+	{
+	}
+
+	/// <summary>
+	/// Код пользователя.
+	/// </summary>
+	public Guid UserCode { get; set; }
 
     /// <summary>
     /// Признак выделения цветом.

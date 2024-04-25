@@ -484,7 +484,7 @@ internal sealed class UserRepository : IUserRepository
             .Select(u => u.UserId)
             .FirstOrDefaultAsync();
 
-        return result;
+        return (long)result;
     }
 
     /// <summary>
@@ -746,13 +746,11 @@ internal sealed class UserRepository : IUserRepository
     /// <returns>Данные профиля пользователей.</returns>
     public async Task<IEnumerable<ProfileInfoEntity>> GetProfileInfoByUserIdsAsync(IEnumerable<long> userIds)
     {
-        var result = await _pgContext.ProfilesInfo
-            .Where(p => userIds.Contains(p.UserId))
-            .Select(p => new ProfileInfoEntity
+		var result = await _pgContext.ProfilesInfo
+            .Where(p => userIds.Contains((long)p.UserId))
+            .Select(p => new ProfileInfoEntity (p.LastName, p.FirstName, p.Aboutme, p.IsShortFirstName)
             {
                 UserId = p.UserId,
-                FirstName = p.FirstName,
-                LastName = p.LastName,
                 Patronymic = p.Patronymic
             })
             .ToListAsync();

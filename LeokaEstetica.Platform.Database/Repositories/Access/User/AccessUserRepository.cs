@@ -73,7 +73,8 @@ internal sealed class AccessUserRepository : IAccessUserRepository
     public async Task<(ProfileInfoEntity, List<UserIntentEntity>, List<UserSkillEntity>)>
         IsProfileEmptyAsync(long userId)
     {
-        var result = (UserProfile: new ProfileInfoEntity(), UserIntents: new List<UserIntentEntity>(),
+        var result = (UserProfile: new ProfileInfoEntity(string.Empty, string.Empty, string.Empty, false), 
+            UserIntents: new List<UserIntentEntity>(),
             UserSkills: new List<UserSkillEntity>());
 
         result.UserProfile = await _pgContext.ProfilesInfo

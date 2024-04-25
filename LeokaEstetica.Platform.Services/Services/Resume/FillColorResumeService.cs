@@ -45,7 +45,7 @@ internal sealed class FillColorResumeService : IFillColorResumeService
         var fareRulesList = fareRules.ToList();
         
         // Получаем подписки пользователей.
-        var usersSubscriptions = await subscriptionRepository.GetUsersSubscriptionsAsync(userIds);
+        var usersSubscriptions = await subscriptionRepository.GetUsersSubscriptionsAsync((IEnumerable<long>)userIds);
         
         foreach (var resume in resumesList)
         {

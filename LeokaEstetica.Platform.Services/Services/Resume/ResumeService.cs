@@ -88,7 +88,7 @@ internal sealed class ResumeService : IResumeService
             // Исключаем анкеты, которые не проходят по условиям.
             foreach (var p in profiles)
             {
-                var isAccess = await _accessUserService.IsProfileEmptyAsync(p.UserId);
+                var isAccess = await _accessUserService.IsProfileEmptyAsync((long)p.UserId);
                 var isRemarks = await _resumeModerationRepository.GetResumeRemarksAsync(p.ProfileInfoId);
                 
                 if (isAccess || isRemarks.Any())
@@ -211,7 +211,7 @@ internal sealed class ResumeService : IResumeService
         
         foreach (var r in resumes)
         {
-            r.UserCode = userCodesDict.TryGet(r.UserId);   
+            r.UserCode = userCodesDict.TryGet((long)r.UserId);   
         }
 
         return resumes;
@@ -229,7 +229,7 @@ internal sealed class ResumeService : IResumeService
             var userId = v.UserId;
 
             // Получаем подписку пользователя.
-            var userSubscription = await _subscriptionRepository.GetUserSubscriptionAsync(userId);
+            var userSubscription = await _subscriptionRepository.GetUserSubscriptionAsync((long)userId);
 
             if (userSubscription is null)
             {
@@ -276,7 +276,7 @@ internal sealed class ResumeService : IResumeService
     private async Task CreateModifyUserResult(ResumeOutput result)
     {
         var userId = result.UserId;
-        var modifyUser = await _userRepository.GetUserPhoneEmailByUserIdAsync(userId);
+        var modifyUser = await _userRepository.GetUserPhoneEmailByUserIdAsync((long)userId);
 
         if (modifyUser is null)
         {

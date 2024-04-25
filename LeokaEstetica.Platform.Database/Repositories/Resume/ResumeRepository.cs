@@ -50,14 +50,10 @@ internal sealed class ResumeRepository : IResumeRepository
                           }
                           .Contains(tbl.ModerationStatusId)
                 orderby s.ObjectId descending
-                select new ProfileInfoEntity
+                select new ProfileInfoEntity(pi.LastName, pi.FirstName, pi.Aboutme, pi.IsShortFirstName)
                 {
                     ProfileInfoId = pi.ProfileInfoId,
-                    Aboutme = pi.Aboutme,
-                    FirstName = pi.FirstName,
-                    IsShortFirstName = pi.IsShortFirstName,
                     Job = pi.Job,
-                    LastName = pi.LastName,
                     OtherLink = pi.OtherLink,
                     WhatsApp = pi.WhatsApp,
                     Telegram = pi.Telegram,
@@ -78,14 +74,10 @@ internal sealed class ResumeRepository : IResumeRepository
     public async Task<IOrderedQueryable<ProfileInfoEntity>> GetFilterResumesAsync()
     {
         var result = (IOrderedQueryable<ProfileInfoEntity>)_pgContext.ProfilesInfo
-            .Select(pi => new ProfileInfoEntity
+            .Select(pi => new ProfileInfoEntity(pi.LastName, pi.FirstName, pi.Aboutme, pi.IsShortFirstName)
             {
-                LastName = pi.LastName,
-                FirstName = pi.FirstName,
                 Patronymic = pi.Patronymic,
                 Job = pi.Job,
-                Aboutme = pi.Aboutme,
-                IsShortFirstName = pi.IsShortFirstName,
                 UserId = pi.UserId,
                 ProfileInfoId = pi.ProfileInfoId
             })
@@ -115,7 +107,7 @@ internal sealed class ResumeRepository : IResumeRepository
     public async Task<IEnumerable<ProfileInfoEntity>> GetResumesAsync(IEnumerable<long> usersIds)
     {
         var result = await _pgContext.ProfilesInfo
-            .Where(p => usersIds.Contains(p.UserId))
+            .Where(p => usersIds.Contains((long)p.UserId))
             .ToListAsync();
 
         return result;

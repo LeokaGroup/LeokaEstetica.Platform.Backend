@@ -74,15 +74,11 @@ public static class CreateResumesSearchResultBuilder
 
             var isShortFirstName = bool.Parse(document.GetField(ResumeFinderConst.IS_SHORT_FIRST_NAME).StringValue);
 
-            resumes.Add(new ResumeOutput
+            resumes.Add(new ResumeOutput(lastName, firstName, aboutMe, isShortFirstName)
             {
-                LastName = lastName,
-                FirstName = firstName,
                 Patronymic = patronymic,
                 Job = job,
-                IsShortFirstName = isShortFirstName,
                 UserId = userId,
-                Aboutme = aboutMe,
                 ProfileInfoId = profileInfoId
             });
         }

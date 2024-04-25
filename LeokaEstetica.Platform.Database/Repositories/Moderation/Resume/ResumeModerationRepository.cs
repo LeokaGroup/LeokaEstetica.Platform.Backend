@@ -39,12 +39,9 @@ internal sealed class ResumeModerationRepository : IResumeModerationRepository
                 ModerationId = p.ModerationId,
                 ProfileInfoId = p.ProfileInfoId,
                 ProfileInfo = new ProfileInfoEntity
+                (p.ProfileInfo.FirstName, p.ProfileInfo.LastName, p.ProfileInfo.Aboutme, p.ProfileInfo.IsShortFirstName)
                 {
-                    Aboutme = p.ProfileInfo.Aboutme,
-                    FirstName = p.ProfileInfo.FirstName,
-                    IsShortFirstName = p.ProfileInfo.IsShortFirstName,
                     Job = p.ProfileInfo.Job,
-                    LastName = p.ProfileInfo.LastName,
                     Patronymic = p.ProfileInfo.Patronymic,
                     UserId = p.ProfileInfo.UserId,
                     Telegram = p.ProfileInfo.Telegram,
@@ -268,11 +265,9 @@ internal sealed class ResumeModerationRepository : IResumeModerationRepository
                     on pi.ProfileInfoId
                     equals pr.ProfileInfoId
                 where projectRemarksIds.Contains(pr.ProfileInfoId)
-                select new ProfileInfoEntity
+                select new ProfileInfoEntity(pi.LastName, pi.FirstName, pi.Aboutme, pi.IsShortFirstName)
                 {
                     ProfileInfoId = pi.ProfileInfoId,
-                    FirstName = pi.FirstName,
-                    LastName = pi.LastName,
                     Patronymic = pi.Patronymic
                 })
             .Distinct()

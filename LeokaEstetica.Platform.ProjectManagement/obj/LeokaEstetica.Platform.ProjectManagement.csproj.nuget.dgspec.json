@@ -1,28 +1,21 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.ProjectManagement\\LeokaEstetica.Platform.ProjectManagement.csproj": {}
+    "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.ProjectManagement\\LeokaEstetica.Platform.ProjectManagement.csproj": {}
   },
   "projects": {
-    "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Access\\LeokaEstetica.Platform.Access.csproj": {
+    "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Access\\LeokaEstetica.Platform.Access.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Access\\LeokaEstetica.Platform.Access.csproj",
+        "projectUniqueName": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Access\\LeokaEstetica.Platform.Access.csproj",
         "projectName": "LeokaEstetica.Platform.Access",
-        "projectPath": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Access\\LeokaEstetica.Platform.Access.csproj",
-        "packagesPath": "C:\\Users\\sierr\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Access\\obj\\",
+        "projectPath": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Access\\LeokaEstetica.Platform.Access.csproj",
+        "packagesPath": "C:\\Users\\admin\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Access\\obj\\",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages",
-          "C:\\Program Files (x86)\\Microsoft\\Xamarin\\NuGet\\",
-          "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
-        ],
         "configFilePaths": [
-          "C:\\Users\\sierr\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Xamarin.Offline.config"
+          "C:\\Users\\admin\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
@@ -35,11 +28,11 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.CallCenter\\LeokaEstetica.Platform.CallCenter.csproj": {
-                "projectPath": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.CallCenter\\LeokaEstetica.Platform.CallCenter.csproj"
+              "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.CallCenter\\LeokaEstetica.Platform.CallCenter.csproj": {
+                "projectPath": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.CallCenter\\LeokaEstetica.Platform.CallCenter.csproj"
               },
-              "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Core\\LeokaEstetica.Platform.Core.csproj": {
-                "projectPath": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Core\\LeokaEstetica.Platform.Core.csproj"
+              "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Core\\LeokaEstetica.Platform.Core.csproj": {
+                "projectPath": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Core\\LeokaEstetica.Platform.Core.csproj"
               }
             }
           }
@@ -84,25 +77,18 @@
         }
       }
     },
-    "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Base\\LeokaEstetica.Platform.Base.csproj": {
+    "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Base\\LeokaEstetica.Platform.Base.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Base\\LeokaEstetica.Platform.Base.csproj",
+        "projectUniqueName": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Base\\LeokaEstetica.Platform.Base.csproj",
         "projectName": "LeokaEstetica.Platform.Base",
-        "projectPath": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Base\\LeokaEstetica.Platform.Base.csproj",
-        "packagesPath": "C:\\Users\\sierr\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Base\\obj\\",
+        "projectPath": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Base\\LeokaEstetica.Platform.Base.csproj",
+        "packagesPath": "C:\\Users\\admin\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Base\\obj\\",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages",
-          "C:\\Program Files (x86)\\Microsoft\\Xamarin\\NuGet\\",
-          "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
-        ],
         "configFilePaths": [
-          "C:\\Users\\sierr\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Xamarin.Offline.config"
+          "C:\\Users\\admin\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
@@ -115,11 +101,11 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Core\\LeokaEstetica.Platform.Core.csproj": {
-                "projectPath": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Core\\LeokaEstetica.Platform.Core.csproj"
+              "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Core\\LeokaEstetica.Platform.Core.csproj": {
+                "projectPath": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Core\\LeokaEstetica.Platform.Core.csproj"
               },
-              "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Redis\\LeokaEstetica.Platform.Redis.csproj": {
-                "projectPath": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Redis\\LeokaEstetica.Platform.Redis.csproj"
+              "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Redis\\LeokaEstetica.Platform.Redis.csproj": {
+                "projectPath": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Redis\\LeokaEstetica.Platform.Redis.csproj"
               }
             }
           }
@@ -176,25 +162,18 @@
         }
       }
     },
-    "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.CallCenter\\LeokaEstetica.Platform.CallCenter.csproj": {
+    "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.CallCenter\\LeokaEstetica.Platform.CallCenter.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.CallCenter\\LeokaEstetica.Platform.CallCenter.csproj",
+        "projectUniqueName": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.CallCenter\\LeokaEstetica.Platform.CallCenter.csproj",
         "projectName": "LeokaEstetica.Platform.CallCenter",
-        "projectPath": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.CallCenter\\LeokaEstetica.Platform.CallCenter.csproj",
-        "packagesPath": "C:\\Users\\sierr\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.CallCenter\\obj\\",
+        "projectPath": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.CallCenter\\LeokaEstetica.Platform.CallCenter.csproj",
+        "packagesPath": "C:\\Users\\admin\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.CallCenter\\obj\\",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages",
-          "C:\\Program Files (x86)\\Microsoft\\Xamarin\\NuGet\\",
-          "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
-        ],
         "configFilePaths": [
-          "C:\\Users\\sierr\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Xamarin.Offline.config"
+          "C:\\Users\\admin\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
@@ -207,20 +186,20 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Base\\LeokaEstetica.Platform.Base.csproj": {
-                "projectPath": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Base\\LeokaEstetica.Platform.Base.csproj"
+              "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Base\\LeokaEstetica.Platform.Base.csproj": {
+                "projectPath": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Base\\LeokaEstetica.Platform.Base.csproj"
               },
-              "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Core\\LeokaEstetica.Platform.Core.csproj": {
-                "projectPath": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Core\\LeokaEstetica.Platform.Core.csproj"
+              "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Core\\LeokaEstetica.Platform.Core.csproj": {
+                "projectPath": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Core\\LeokaEstetica.Platform.Core.csproj"
               },
-              "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Database\\LeokaEstetica.Platform.Database.csproj": {
-                "projectPath": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Database\\LeokaEstetica.Platform.Database.csproj"
+              "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Database\\LeokaEstetica.Platform.Database.csproj": {
+                "projectPath": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Database\\LeokaEstetica.Platform.Database.csproj"
               },
-              "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Integrations\\LeokaEstetica.Platform.Integrations.csproj": {
-                "projectPath": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Integrations\\LeokaEstetica.Platform.Integrations.csproj"
+              "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Integrations\\LeokaEstetica.Platform.Integrations.csproj": {
+                "projectPath": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Integrations\\LeokaEstetica.Platform.Integrations.csproj"
               },
-              "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Notifications\\LeokaEstetica.Platform.Notifications.csproj": {
-                "projectPath": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Notifications\\LeokaEstetica.Platform.Notifications.csproj"
+              "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Notifications\\LeokaEstetica.Platform.Notifications.csproj": {
+                "projectPath": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Notifications\\LeokaEstetica.Platform.Notifications.csproj"
               }
             }
           }
@@ -259,25 +238,18 @@
         }
       }
     },
-    "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Core\\LeokaEstetica.Platform.Core.csproj": {
+    "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Core\\LeokaEstetica.Platform.Core.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Core\\LeokaEstetica.Platform.Core.csproj",
+        "projectUniqueName": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Core\\LeokaEstetica.Platform.Core.csproj",
         "projectName": "LeokaEstetica.Platform.Core",
-        "projectPath": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Core\\LeokaEstetica.Platform.Core.csproj",
-        "packagesPath": "C:\\Users\\sierr\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Core\\obj\\",
+        "projectPath": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Core\\LeokaEstetica.Platform.Core.csproj",
+        "packagesPath": "C:\\Users\\admin\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Core\\obj\\",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages",
-          "C:\\Program Files (x86)\\Microsoft\\Xamarin\\NuGet\\",
-          "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
-        ],
         "configFilePaths": [
-          "C:\\Users\\sierr\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Xamarin.Offline.config"
+          "C:\\Users\\admin\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
@@ -290,8 +262,8 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Models\\LeokaEstetica.Platform.Models.csproj": {
-                "projectPath": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Models\\LeokaEstetica.Platform.Models.csproj"
+              "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Models\\LeokaEstetica.Platform.Models.csproj": {
+                "projectPath": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Models\\LeokaEstetica.Platform.Models.csproj"
               }
             }
           }
@@ -372,25 +344,18 @@
         }
       }
     },
-    "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Database\\LeokaEstetica.Platform.Database.csproj": {
+    "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Database\\LeokaEstetica.Platform.Database.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Database\\LeokaEstetica.Platform.Database.csproj",
+        "projectUniqueName": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Database\\LeokaEstetica.Platform.Database.csproj",
         "projectName": "LeokaEstetica.Platform.Database",
-        "projectPath": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Database\\LeokaEstetica.Platform.Database.csproj",
-        "packagesPath": "C:\\Users\\sierr\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Database\\obj\\",
+        "projectPath": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Database\\LeokaEstetica.Platform.Database.csproj",
+        "packagesPath": "C:\\Users\\admin\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Database\\obj\\",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages",
-          "C:\\Program Files (x86)\\Microsoft\\Xamarin\\NuGet\\",
-          "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
-        ],
         "configFilePaths": [
-          "C:\\Users\\sierr\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Xamarin.Offline.config"
+          "C:\\Users\\admin\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
@@ -403,11 +368,11 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Base\\LeokaEstetica.Platform.Base.csproj": {
-                "projectPath": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Base\\LeokaEstetica.Platform.Base.csproj"
+              "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Base\\LeokaEstetica.Platform.Base.csproj": {
+                "projectPath": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Base\\LeokaEstetica.Platform.Base.csproj"
               },
-              "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Core\\LeokaEstetica.Platform.Core.csproj": {
-                "projectPath": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Core\\LeokaEstetica.Platform.Core.csproj"
+              "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Core\\LeokaEstetica.Platform.Core.csproj": {
+                "projectPath": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Core\\LeokaEstetica.Platform.Core.csproj"
               }
             }
           }
@@ -464,25 +429,18 @@
         }
       }
     },
-    "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Finder\\LeokaEstetica.Platform.Finder.csproj": {
+    "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Finder\\LeokaEstetica.Platform.Finder.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Finder\\LeokaEstetica.Platform.Finder.csproj",
+        "projectUniqueName": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Finder\\LeokaEstetica.Platform.Finder.csproj",
         "projectName": "LeokaEstetica.Platform.Finder",
-        "projectPath": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Finder\\LeokaEstetica.Platform.Finder.csproj",
-        "packagesPath": "C:\\Users\\sierr\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Finder\\obj\\",
+        "projectPath": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Finder\\LeokaEstetica.Platform.Finder.csproj",
+        "packagesPath": "C:\\Users\\admin\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Finder\\obj\\",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages",
-          "C:\\Program Files (x86)\\Microsoft\\Xamarin\\NuGet\\",
-          "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
-        ],
         "configFilePaths": [
-          "C:\\Users\\sierr\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Xamarin.Offline.config"
+          "C:\\Users\\admin\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
@@ -495,14 +453,14 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Access\\LeokaEstetica.Platform.Access.csproj": {
-                "projectPath": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Access\\LeokaEstetica.Platform.Access.csproj"
+              "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Access\\LeokaEstetica.Platform.Access.csproj": {
+                "projectPath": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Access\\LeokaEstetica.Platform.Access.csproj"
               },
-              "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Core\\LeokaEstetica.Platform.Core.csproj": {
-                "projectPath": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Core\\LeokaEstetica.Platform.Core.csproj"
+              "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Core\\LeokaEstetica.Platform.Core.csproj": {
+                "projectPath": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Core\\LeokaEstetica.Platform.Core.csproj"
               },
-              "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Database\\LeokaEstetica.Platform.Database.csproj": {
-                "projectPath": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Database\\LeokaEstetica.Platform.Database.csproj"
+              "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Database\\LeokaEstetica.Platform.Database.csproj": {
+                "projectPath": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Database\\LeokaEstetica.Platform.Database.csproj"
               }
             }
           }
@@ -547,25 +505,18 @@
         }
       }
     },
-    "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Integrations\\LeokaEstetica.Platform.Integrations.csproj": {
+    "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Integrations\\LeokaEstetica.Platform.Integrations.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Integrations\\LeokaEstetica.Platform.Integrations.csproj",
+        "projectUniqueName": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Integrations\\LeokaEstetica.Platform.Integrations.csproj",
         "projectName": "LeokaEstetica.Platform.Integrations",
-        "projectPath": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Integrations\\LeokaEstetica.Platform.Integrations.csproj",
-        "packagesPath": "C:\\Users\\sierr\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Integrations\\obj\\",
+        "projectPath": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Integrations\\LeokaEstetica.Platform.Integrations.csproj",
+        "packagesPath": "C:\\Users\\admin\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Integrations\\obj\\",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages",
-          "C:\\Program Files (x86)\\Microsoft\\Xamarin\\NuGet\\",
-          "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
-        ],
         "configFilePaths": [
-          "C:\\Users\\sierr\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Xamarin.Offline.config"
+          "C:\\Users\\admin\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
@@ -578,11 +529,11 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Core\\LeokaEstetica.Platform.Core.csproj": {
-                "projectPath": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Core\\LeokaEstetica.Platform.Core.csproj"
+              "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Core\\LeokaEstetica.Platform.Core.csproj": {
+                "projectPath": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Core\\LeokaEstetica.Platform.Core.csproj"
               },
-              "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Database\\LeokaEstetica.Platform.Database.csproj": {
-                "projectPath": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Database\\LeokaEstetica.Platform.Database.csproj"
+              "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Database\\LeokaEstetica.Platform.Database.csproj": {
+                "projectPath": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Database\\LeokaEstetica.Platform.Database.csproj"
               }
             }
           }
@@ -627,25 +578,18 @@
         }
       }
     },
-    "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Messaging\\LeokaEstetica.Platform.Messaging.csproj": {
+    "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Messaging\\LeokaEstetica.Platform.Messaging.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Messaging\\LeokaEstetica.Platform.Messaging.csproj",
+        "projectUniqueName": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Messaging\\LeokaEstetica.Platform.Messaging.csproj",
         "projectName": "LeokaEstetica.Platform.Messaging",
-        "projectPath": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Messaging\\LeokaEstetica.Platform.Messaging.csproj",
-        "packagesPath": "C:\\Users\\sierr\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Messaging\\obj\\",
+        "projectPath": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Messaging\\LeokaEstetica.Platform.Messaging.csproj",
+        "packagesPath": "C:\\Users\\admin\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Messaging\\obj\\",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages",
-          "C:\\Program Files (x86)\\Microsoft\\Xamarin\\NuGet\\",
-          "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
-        ],
         "configFilePaths": [
-          "C:\\Users\\sierr\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Xamarin.Offline.config"
+          "C:\\Users\\admin\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
@@ -658,17 +602,17 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Access\\LeokaEstetica.Platform.Access.csproj": {
-                "projectPath": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Access\\LeokaEstetica.Platform.Access.csproj"
+              "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Access\\LeokaEstetica.Platform.Access.csproj": {
+                "projectPath": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Access\\LeokaEstetica.Platform.Access.csproj"
               },
-              "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Core\\LeokaEstetica.Platform.Core.csproj": {
-                "projectPath": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Core\\LeokaEstetica.Platform.Core.csproj"
+              "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Core\\LeokaEstetica.Platform.Core.csproj": {
+                "projectPath": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Core\\LeokaEstetica.Platform.Core.csproj"
               },
-              "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Database\\LeokaEstetica.Platform.Database.csproj": {
-                "projectPath": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Database\\LeokaEstetica.Platform.Database.csproj"
+              "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Database\\LeokaEstetica.Platform.Database.csproj": {
+                "projectPath": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Database\\LeokaEstetica.Platform.Database.csproj"
               },
-              "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Notifications\\LeokaEstetica.Platform.Notifications.csproj": {
-                "projectPath": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Notifications\\LeokaEstetica.Platform.Notifications.csproj"
+              "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Notifications\\LeokaEstetica.Platform.Notifications.csproj": {
+                "projectPath": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Notifications\\LeokaEstetica.Platform.Notifications.csproj"
               }
             }
           }
@@ -725,25 +669,18 @@
         }
       }
     },
-    "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Models\\LeokaEstetica.Platform.Models.csproj": {
+    "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Models\\LeokaEstetica.Platform.Models.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Models\\LeokaEstetica.Platform.Models.csproj",
+        "projectUniqueName": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Models\\LeokaEstetica.Platform.Models.csproj",
         "projectName": "LeokaEstetica.Platform.Models",
-        "projectPath": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Models\\LeokaEstetica.Platform.Models.csproj",
-        "packagesPath": "C:\\Users\\sierr\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Models\\obj\\",
+        "projectPath": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Models\\LeokaEstetica.Platform.Models.csproj",
+        "packagesPath": "C:\\Users\\admin\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Models\\obj\\",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages",
-          "C:\\Program Files (x86)\\Microsoft\\Xamarin\\NuGet\\",
-          "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
-        ],
         "configFilePaths": [
-          "C:\\Users\\sierr\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Xamarin.Offline.config"
+          "C:\\Users\\admin\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
@@ -830,25 +767,18 @@
         }
       }
     },
-    "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Notifications\\LeokaEstetica.Platform.Notifications.csproj": {
+    "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Notifications\\LeokaEstetica.Platform.Notifications.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Notifications\\LeokaEstetica.Platform.Notifications.csproj",
+        "projectUniqueName": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Notifications\\LeokaEstetica.Platform.Notifications.csproj",
         "projectName": "LeokaEstetica.Platform.Notifications",
-        "projectPath": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Notifications\\LeokaEstetica.Platform.Notifications.csproj",
-        "packagesPath": "C:\\Users\\sierr\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Notifications\\obj\\",
+        "projectPath": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Notifications\\LeokaEstetica.Platform.Notifications.csproj",
+        "packagesPath": "C:\\Users\\admin\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Notifications\\obj\\",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages",
-          "C:\\Program Files (x86)\\Microsoft\\Xamarin\\NuGet\\",
-          "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
-        ],
         "configFilePaths": [
-          "C:\\Users\\sierr\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Xamarin.Offline.config"
+          "C:\\Users\\admin\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
@@ -861,14 +791,14 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Core\\LeokaEstetica.Platform.Core.csproj": {
-                "projectPath": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Core\\LeokaEstetica.Platform.Core.csproj"
+              "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Core\\LeokaEstetica.Platform.Core.csproj": {
+                "projectPath": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Core\\LeokaEstetica.Platform.Core.csproj"
               },
-              "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Database\\LeokaEstetica.Platform.Database.csproj": {
-                "projectPath": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Database\\LeokaEstetica.Platform.Database.csproj"
+              "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Database\\LeokaEstetica.Platform.Database.csproj": {
+                "projectPath": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Database\\LeokaEstetica.Platform.Database.csproj"
               },
-              "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Redis\\LeokaEstetica.Platform.Redis.csproj": {
-                "projectPath": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Redis\\LeokaEstetica.Platform.Redis.csproj"
+              "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Redis\\LeokaEstetica.Platform.Redis.csproj": {
+                "projectPath": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Redis\\LeokaEstetica.Platform.Redis.csproj"
               }
             }
           }
@@ -925,25 +855,18 @@
         }
       }
     },
-    "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Processing\\LeokaEstetica.Platform.Processing.csproj": {
+    "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Processing\\LeokaEstetica.Platform.Processing.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Processing\\LeokaEstetica.Platform.Processing.csproj",
+        "projectUniqueName": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Processing\\LeokaEstetica.Platform.Processing.csproj",
         "projectName": "LeokaEstetica.Platform.Processing",
-        "projectPath": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Processing\\LeokaEstetica.Platform.Processing.csproj",
-        "packagesPath": "C:\\Users\\sierr\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Processing\\obj\\",
+        "projectPath": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Processing\\LeokaEstetica.Platform.Processing.csproj",
+        "packagesPath": "C:\\Users\\admin\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Processing\\obj\\",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages",
-          "C:\\Program Files (x86)\\Microsoft\\Xamarin\\NuGet\\",
-          "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
-        ],
         "configFilePaths": [
-          "C:\\Users\\sierr\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Xamarin.Offline.config"
+          "C:\\Users\\admin\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
@@ -956,20 +879,20 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Access\\LeokaEstetica.Platform.Access.csproj": {
-                "projectPath": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Access\\LeokaEstetica.Platform.Access.csproj"
+              "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Access\\LeokaEstetica.Platform.Access.csproj": {
+                "projectPath": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Access\\LeokaEstetica.Platform.Access.csproj"
               },
-              "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Core\\LeokaEstetica.Platform.Core.csproj": {
-                "projectPath": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Core\\LeokaEstetica.Platform.Core.csproj"
+              "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Core\\LeokaEstetica.Platform.Core.csproj": {
+                "projectPath": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Core\\LeokaEstetica.Platform.Core.csproj"
               },
-              "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Database\\LeokaEstetica.Platform.Database.csproj": {
-                "projectPath": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Database\\LeokaEstetica.Platform.Database.csproj"
+              "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Database\\LeokaEstetica.Platform.Database.csproj": {
+                "projectPath": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Database\\LeokaEstetica.Platform.Database.csproj"
               },
-              "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Messaging\\LeokaEstetica.Platform.Messaging.csproj": {
-                "projectPath": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Messaging\\LeokaEstetica.Platform.Messaging.csproj"
+              "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Messaging\\LeokaEstetica.Platform.Messaging.csproj": {
+                "projectPath": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Messaging\\LeokaEstetica.Platform.Messaging.csproj"
               },
-              "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Notifications\\LeokaEstetica.Platform.Notifications.csproj": {
-                "projectPath": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Notifications\\LeokaEstetica.Platform.Notifications.csproj"
+              "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Notifications\\LeokaEstetica.Platform.Notifications.csproj": {
+                "projectPath": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Notifications\\LeokaEstetica.Platform.Notifications.csproj"
               }
             }
           }
@@ -1008,25 +931,18 @@
         }
       }
     },
-    "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.ProjectManagement\\LeokaEstetica.Platform.ProjectManagement.csproj": {
+    "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.ProjectManagement\\LeokaEstetica.Platform.ProjectManagement.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.ProjectManagement\\LeokaEstetica.Platform.ProjectManagement.csproj",
+        "projectUniqueName": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.ProjectManagement\\LeokaEstetica.Platform.ProjectManagement.csproj",
         "projectName": "LeokaEstetica.Platform.ProjectManagement",
-        "projectPath": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.ProjectManagement\\LeokaEstetica.Platform.ProjectManagement.csproj",
-        "packagesPath": "C:\\Users\\sierr\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.ProjectManagement\\obj\\",
+        "projectPath": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.ProjectManagement\\LeokaEstetica.Platform.ProjectManagement.csproj",
+        "packagesPath": "C:\\Users\\admin\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.ProjectManagement\\obj\\",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages",
-          "C:\\Program Files (x86)\\Microsoft\\Xamarin\\NuGet\\",
-          "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
-        ],
         "configFilePaths": [
-          "C:\\Users\\sierr\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Xamarin.Offline.config"
+          "C:\\Users\\admin\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
@@ -1039,17 +955,17 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Core\\LeokaEstetica.Platform.Core.csproj": {
-                "projectPath": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Core\\LeokaEstetica.Platform.Core.csproj"
+              "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Core\\LeokaEstetica.Platform.Core.csproj": {
+                "projectPath": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Core\\LeokaEstetica.Platform.Core.csproj"
               },
-              "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Notifications\\LeokaEstetica.Platform.Notifications.csproj": {
-                "projectPath": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Notifications\\LeokaEstetica.Platform.Notifications.csproj"
+              "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Notifications\\LeokaEstetica.Platform.Notifications.csproj": {
+                "projectPath": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Notifications\\LeokaEstetica.Platform.Notifications.csproj"
               },
-              "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Redis\\LeokaEstetica.Platform.Redis.csproj": {
-                "projectPath": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Redis\\LeokaEstetica.Platform.Redis.csproj"
+              "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Redis\\LeokaEstetica.Platform.Redis.csproj": {
+                "projectPath": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Redis\\LeokaEstetica.Platform.Redis.csproj"
               },
-              "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Services\\LeokaEstetica.Platform.Services.csproj": {
-                "projectPath": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Services\\LeokaEstetica.Platform.Services.csproj"
+              "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Services\\LeokaEstetica.Platform.Services.csproj": {
+                "projectPath": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Services\\LeokaEstetica.Platform.Services.csproj"
               }
             }
           }
@@ -1153,25 +1069,18 @@
         }
       }
     },
-    "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.ProjectManagment.Documents\\LeokaEstetica.Platform.ProjectManagment.Documents.csproj": {
+    "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.ProjectManagment.Documents\\LeokaEstetica.Platform.ProjectManagment.Documents.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.ProjectManagment.Documents\\LeokaEstetica.Platform.ProjectManagment.Documents.csproj",
+        "projectUniqueName": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.ProjectManagment.Documents\\LeokaEstetica.Platform.ProjectManagment.Documents.csproj",
         "projectName": "LeokaEstetica.Platform.ProjectManagment.Documents",
-        "projectPath": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.ProjectManagment.Documents\\LeokaEstetica.Platform.ProjectManagment.Documents.csproj",
-        "packagesPath": "C:\\Users\\sierr\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.ProjectManagment.Documents\\obj\\",
+        "projectPath": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.ProjectManagment.Documents\\LeokaEstetica.Platform.ProjectManagment.Documents.csproj",
+        "packagesPath": "C:\\Users\\admin\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.ProjectManagment.Documents\\obj\\",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages",
-          "C:\\Program Files (x86)\\Microsoft\\Xamarin\\NuGet\\",
-          "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
-        ],
         "configFilePaths": [
-          "C:\\Users\\sierr\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Xamarin.Offline.config"
+          "C:\\Users\\admin\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
@@ -1184,14 +1093,14 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Base\\LeokaEstetica.Platform.Base.csproj": {
-                "projectPath": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Base\\LeokaEstetica.Platform.Base.csproj"
+              "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Base\\LeokaEstetica.Platform.Base.csproj": {
+                "projectPath": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Base\\LeokaEstetica.Platform.Base.csproj"
               },
-              "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Core\\LeokaEstetica.Platform.Core.csproj": {
-                "projectPath": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Core\\LeokaEstetica.Platform.Core.csproj"
+              "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Core\\LeokaEstetica.Platform.Core.csproj": {
+                "projectPath": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Core\\LeokaEstetica.Platform.Core.csproj"
               },
-              "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Database\\LeokaEstetica.Platform.Database.csproj": {
-                "projectPath": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Database\\LeokaEstetica.Platform.Database.csproj"
+              "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Database\\LeokaEstetica.Platform.Database.csproj": {
+                "projectPath": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Database\\LeokaEstetica.Platform.Database.csproj"
               }
             }
           }
@@ -1236,25 +1145,18 @@
         }
       }
     },
-    "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Redis\\LeokaEstetica.Platform.Redis.csproj": {
+    "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Redis\\LeokaEstetica.Platform.Redis.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Redis\\LeokaEstetica.Platform.Redis.csproj",
+        "projectUniqueName": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Redis\\LeokaEstetica.Platform.Redis.csproj",
         "projectName": "LeokaEstetica.Platform.Redis",
-        "projectPath": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Redis\\LeokaEstetica.Platform.Redis.csproj",
-        "packagesPath": "C:\\Users\\sierr\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Redis\\obj\\",
+        "projectPath": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Redis\\LeokaEstetica.Platform.Redis.csproj",
+        "packagesPath": "C:\\Users\\admin\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Redis\\obj\\",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages",
-          "C:\\Program Files (x86)\\Microsoft\\Xamarin\\NuGet\\",
-          "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
-        ],
         "configFilePaths": [
-          "C:\\Users\\sierr\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Xamarin.Offline.config"
+          "C:\\Users\\admin\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
@@ -1267,8 +1169,8 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Core\\LeokaEstetica.Platform.Core.csproj": {
-                "projectPath": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Core\\LeokaEstetica.Platform.Core.csproj"
+              "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Core\\LeokaEstetica.Platform.Core.csproj": {
+                "projectPath": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Core\\LeokaEstetica.Platform.Core.csproj"
               }
             }
           }
@@ -1325,25 +1227,18 @@
         }
       }
     },
-    "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Services\\LeokaEstetica.Platform.Services.csproj": {
+    "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Services\\LeokaEstetica.Platform.Services.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Services\\LeokaEstetica.Platform.Services.csproj",
+        "projectUniqueName": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Services\\LeokaEstetica.Platform.Services.csproj",
         "projectName": "LeokaEstetica.Platform.Services",
-        "projectPath": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Services\\LeokaEstetica.Platform.Services.csproj",
-        "packagesPath": "C:\\Users\\sierr\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Services\\obj\\",
+        "projectPath": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Services\\LeokaEstetica.Platform.Services.csproj",
+        "packagesPath": "C:\\Users\\admin\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Services\\obj\\",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages",
-          "C:\\Program Files (x86)\\Microsoft\\Xamarin\\NuGet\\",
-          "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
-        ],
         "configFilePaths": [
-          "C:\\Users\\sierr\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Xamarin.Offline.config"
+          "C:\\Users\\admin\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
@@ -1356,35 +1251,35 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Access\\LeokaEstetica.Platform.Access.csproj": {
-                "projectPath": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Access\\LeokaEstetica.Platform.Access.csproj"
+              "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Access\\LeokaEstetica.Platform.Access.csproj": {
+                "projectPath": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Access\\LeokaEstetica.Platform.Access.csproj"
               },
-              "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Base\\LeokaEstetica.Platform.Base.csproj": {
-                "projectPath": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Base\\LeokaEstetica.Platform.Base.csproj"
+              "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Base\\LeokaEstetica.Platform.Base.csproj": {
+                "projectPath": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Base\\LeokaEstetica.Platform.Base.csproj"
               },
-              "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.CallCenter\\LeokaEstetica.Platform.CallCenter.csproj": {
-                "projectPath": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.CallCenter\\LeokaEstetica.Platform.CallCenter.csproj"
+              "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.CallCenter\\LeokaEstetica.Platform.CallCenter.csproj": {
+                "projectPath": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.CallCenter\\LeokaEstetica.Platform.CallCenter.csproj"
               },
-              "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Core\\LeokaEstetica.Platform.Core.csproj": {
-                "projectPath": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Core\\LeokaEstetica.Platform.Core.csproj"
+              "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Core\\LeokaEstetica.Platform.Core.csproj": {
+                "projectPath": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Core\\LeokaEstetica.Platform.Core.csproj"
               },
-              "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Database\\LeokaEstetica.Platform.Database.csproj": {
-                "projectPath": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Database\\LeokaEstetica.Platform.Database.csproj"
+              "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Database\\LeokaEstetica.Platform.Database.csproj": {
+                "projectPath": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Database\\LeokaEstetica.Platform.Database.csproj"
               },
-              "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Finder\\LeokaEstetica.Platform.Finder.csproj": {
-                "projectPath": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Finder\\LeokaEstetica.Platform.Finder.csproj"
+              "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Finder\\LeokaEstetica.Platform.Finder.csproj": {
+                "projectPath": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Finder\\LeokaEstetica.Platform.Finder.csproj"
               },
-              "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Messaging\\LeokaEstetica.Platform.Messaging.csproj": {
-                "projectPath": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Messaging\\LeokaEstetica.Platform.Messaging.csproj"
+              "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Messaging\\LeokaEstetica.Platform.Messaging.csproj": {
+                "projectPath": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Messaging\\LeokaEstetica.Platform.Messaging.csproj"
               },
-              "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Notifications\\LeokaEstetica.Platform.Notifications.csproj": {
-                "projectPath": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Notifications\\LeokaEstetica.Platform.Notifications.csproj"
+              "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Notifications\\LeokaEstetica.Platform.Notifications.csproj": {
+                "projectPath": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Notifications\\LeokaEstetica.Platform.Notifications.csproj"
               },
-              "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Processing\\LeokaEstetica.Platform.Processing.csproj": {
-                "projectPath": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Processing\\LeokaEstetica.Platform.Processing.csproj"
+              "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Processing\\LeokaEstetica.Platform.Processing.csproj": {
+                "projectPath": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Processing\\LeokaEstetica.Platform.Processing.csproj"
               },
-              "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.ProjectManagment.Documents\\LeokaEstetica.Platform.ProjectManagment.Documents.csproj": {
-                "projectPath": "C:\\Users\\repos\\Portfolio\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.ProjectManagment.Documents\\LeokaEstetica.Platform.ProjectManagment.Documents.csproj"
+              "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.ProjectManagment.Documents\\LeokaEstetica.Platform.ProjectManagment.Documents.csproj": {
+                "projectPath": "C:\\Users\\admin\\source\\repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.ProjectManagment.Documents\\LeokaEstetica.Platform.ProjectManagment.Documents.csproj"
               }
             }
           }

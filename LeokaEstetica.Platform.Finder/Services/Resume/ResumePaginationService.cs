@@ -81,7 +81,7 @@ public class ResumePaginationService : BaseIndexRamDirectory, IResumePaginationS
                     var userId = res.UserId;
                     
                     // Проверяем заполнение анкеты.
-                    var isEmptyProfile = await _accessUserService.IsProfileEmptyAsync(userId);
+                    var isEmptyProfile = await _accessUserService.IsProfileEmptyAsync((long)userId);
 
                     // Удаляем анкеты из выборки, которые не заполнены.
                     if (isEmptyProfile)

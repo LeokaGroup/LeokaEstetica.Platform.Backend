@@ -37,13 +37,9 @@ internal sealed class ProfileRepository : IProfileRepository
     /// <returns>Id анкеты пользователя.</returns>
     public async Task<long> AddUserInfoAsync(long userId)
     {
-        var userInfo = new ProfileInfoEntity
+        var userInfo = new ProfileInfoEntity(string.Empty, string.Empty, string.Empty, false)
         {
-            FirstName = string.Empty,
-            LastName = string.Empty,
             UserId = userId,
-            IsShortFirstName = false,
-            Aboutme = string.Empty,
             Job = string.Empty
         };
         await _pgContext.ProfilesInfo.AddAsync(userInfo);
