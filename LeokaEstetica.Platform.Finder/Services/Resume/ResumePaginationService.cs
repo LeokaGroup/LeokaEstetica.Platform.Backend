@@ -49,6 +49,12 @@ public class ResumePaginationService : BaseIndexRamDirectory, IResumePaginationS
         try
         {
             var resumes = await _resumeRepository.GetFilterResumesAsync();
+
+            if (!resumes.Any())
+            {
+                return new PaginationResumeOutput();
+            }
+            
             var result = new PaginationResumeOutput
             {
                 IsVisiblePagination = true,
