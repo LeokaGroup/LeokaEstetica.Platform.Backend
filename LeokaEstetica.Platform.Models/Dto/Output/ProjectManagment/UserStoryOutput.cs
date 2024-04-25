@@ -7,10 +7,14 @@ namespace LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 /// </summary>
 public class UserStoryOutput : UserStoryEntity
 {
-    /// <summary>
-    /// Название статуса истории.
-    /// </summary>
-    public string StoryStatusName { get; set; }
+	public UserStoryOutput(string storyName) : base(storyName)
+	{
+	}
+
+	/// <summary>
+	/// Название статуса истории.
+	/// </summary>
+	public string StoryStatusName { get; set; }
 
     /// <summary>
     /// Названия наблюдателей.

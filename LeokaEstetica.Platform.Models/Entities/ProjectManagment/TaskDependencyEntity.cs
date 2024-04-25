@@ -5,6 +5,11 @@ namespace LeokaEstetica.Platform.Models.Entities.ProjectManagment;
 /// </summary>
 public class TaskDependencyEntity
 {
+    public TaskDependencyEntity(string dependencySysType, string dependencyTypeName)
+    {
+        DependencySysType = dependencySysType;
+        DependencyTypeName = dependencyTypeName;    
+    }
     /// <summary>
     /// PK.
     /// </summary>

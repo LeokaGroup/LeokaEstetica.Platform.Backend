@@ -12,6 +12,11 @@ namespace LeokaEstetica.Platform.Models.Entities.ProjectManagment;
 /// </summary>
 public class ProjectTagEntity
 {
+    public ProjectTagEntity(string tagName, string tagSysName)
+    {
+        TagName = tagName;
+        TagSysName = tagSysName;
+    }
     /// <summary>
     /// PK.
     /// </summary>
@@ -35,12 +40,12 @@ public class ProjectTagEntity
     /// <summary>
     /// Описание метки (тега).
     /// </summary>
-    public string TagDescription { get; set; }
+    public string? TagDescription { get; set; }
     
     /// <summary>
     /// Id проекта.
     /// </summary>
-    public long ProjectId { get; set; }
+    public long? ProjectId { get; set; }
 
     /// <summary>
     /// Тип объекта тега.

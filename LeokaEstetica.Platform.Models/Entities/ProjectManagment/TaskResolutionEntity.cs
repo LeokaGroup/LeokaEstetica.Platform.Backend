@@ -5,6 +5,11 @@ namespace LeokaEstetica.Platform.Models.Entities.ProjectManagment;
 /// </summary>
 public class TaskResolutionEntity
 {
+    public TaskResolutionEntity(string resolutionName, string resolutionSysName)
+    {
+		ResolutionName = resolutionName;
+        ResolutionSysName = resolutionSysName;
+	}
     /// <summary>
     /// PK.
     /// </summary>

@@ -5,8 +5,10 @@ namespace LeokaEstetica.Platform.Models.Entities.ProjectManagment;
 /// </summary>
 public class HistoryActionEntity
 {
-    public HistoryActionEntity()
+    public HistoryActionEntity(string actionName, string actionSysName)
     {
+        ActionName = actionName;
+        ActionSysName = actionSysName;
         TaskHistories = new HashSet<TaskHistoryEntity>();
     }
 

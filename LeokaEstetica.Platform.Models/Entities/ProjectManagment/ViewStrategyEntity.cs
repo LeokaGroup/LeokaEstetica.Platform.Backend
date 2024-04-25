@@ -5,6 +5,11 @@
 /// </summary>
 public class ViewStrategyEntity
 {
+    public ViewStrategyEntity(string viewStrategyName, string viewStrategySysName)
+    {
+        ViewStrategyName = viewStrategyName;
+        ViewStrategySysName = viewStrategySysName;
+    }
     /// <summary>
     /// PK.
     /// </summary>

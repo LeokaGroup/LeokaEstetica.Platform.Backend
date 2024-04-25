@@ -20,9 +20,8 @@ internal static class CreateProjectTaskFactory
     public static ProjectTaskEntity CreateQuickProjectTask(CreateProjectManagementTaskInput projectManagementTaskInput,
         long userId, long maxProjectTaskId)
     {
-        var result = new ProjectTaskEntity
+        var result = new ProjectTaskEntity(projectManagementTaskInput.Name)
         {
-            Name = projectManagementTaskInput.Name,
             AuthorId = userId,
             ProjectId = projectManagementTaskInput.ProjectId,
             TaskStatusId = (int)ProjectTaskStatusEnum.New,
@@ -57,9 +56,8 @@ internal static class CreateProjectTaskFactory
     public static ProjectTaskEntity CreateProjectTask(CreateProjectManagementTaskInput projectManagementTaskInput,
         long userId, long maxProjectTaskId)
     {
-        var result = new ProjectTaskEntity
+        var result = new ProjectTaskEntity(projectManagementTaskInput.Name)
         {
-            Name = projectManagementTaskInput.Name,
             AuthorId = userId,
             ProjectId = projectManagementTaskInput.ProjectId,
             TaskStatusId = projectManagementTaskInput.TaskStatusId,
@@ -166,9 +164,8 @@ internal static class CreateProjectTaskFactory
     public static UserStoryEntity CreateProjectUserStory(CreateProjectManagementTaskInput projectManagementTaskInput,
         long userId, long maxProjectTaskId)
     {
-        var result = new UserStoryEntity
+        var result = new UserStoryEntity(projectManagementTaskInput.Name)
         {
-            StoryName = projectManagementTaskInput.Name,
             StoryDescription = projectManagementTaskInput.Details,
             CreatedBy = userId,
             ProjectId = projectManagementTaskInput.ProjectId,

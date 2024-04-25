@@ -5,8 +5,9 @@ namespace LeokaEstetica.Platform.Models.Entities.ProjectManagment;
 /// </summary>
 public class ProjectTaskEntity
 {
-    public ProjectTaskEntity()
+    public ProjectTaskEntity(string name)
     {
+        Name = name;
         TaskRelations = new HashSet<TaskRelationEntity>();
         TaskComments = new HashSet<TaskCommentEntity>();
         TaskHistories = new HashSet<TaskHistoryEntity>();
@@ -30,7 +31,7 @@ public class ProjectTaskEntity
     /// <summary>
     /// Id пользователей, которые являются наблюдателями задачи.
     /// </summary>
-    public long[] WatcherIds { get; set; }
+    public long[]? WatcherIds { get; set; }
 
     /// <summary>
     /// Название задачи.
@@ -40,7 +41,7 @@ public class ProjectTaskEntity
     /// <summary>
     /// Описание задачи.
     /// </summary>
-    public string Details { get; set; }
+    public string? Details { get; set; }
 
     /// <summary>
     /// Дата создания задачи.
@@ -70,7 +71,7 @@ public class ProjectTaskEntity
     /// <summary>
     /// Список Id тегов задачи.
     /// </summary>
-    public int[] TagIds { get; set; }
+    public int[]? TagIds { get; set; }
 
     /// <summary>
     /// Id типа задачи.

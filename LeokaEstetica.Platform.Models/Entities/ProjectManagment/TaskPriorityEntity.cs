@@ -3,6 +3,11 @@ namespace LeokaEstetica.Platform.Models.Entities.ProjectManagment;
 // Класс сопоставляется с таблицей приоритетов задач.
 public class TaskPriorityEntity
 {
+    public TaskPriorityEntity(string priorityName, string prioritySysName)
+    {
+        PriorityName = priorityName;
+        PrioritySysName = prioritySysName;
+    }
     /// <summary>
     /// PK.
     /// </summary>

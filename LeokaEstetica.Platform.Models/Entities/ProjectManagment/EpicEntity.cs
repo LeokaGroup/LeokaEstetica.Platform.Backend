@@ -20,7 +20,7 @@ public class EpicEntity
     /// <summary>
     /// Описание эпика.
     /// </summary>
-    public string EpicDescription { get; set; }
+    public string? EpicDescription { get; set; }
 
     /// <summary>
     /// Пользователь, который создал эпик.
@@ -70,7 +70,7 @@ public class EpicEntity
     /// <summary>
     /// Список Id тегов задачи.
     /// </summary>
-    public int[] TagIds { get; set; }
+    public int[]? TagIds { get; set; }
     
     /// <summary>
     /// Id статуса задачи.

@@ -7,4 +7,7 @@ namespace LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 /// </summary>
 public class UserStoryStatusOutput : UserStoryStatusEntity
 {
+	public UserStoryStatusOutput(string statusName, string statusSysName) : base(statusName, statusSysName)
+	{
+	}
 }

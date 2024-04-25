@@ -5,6 +5,11 @@ namespace LeokaEstetica.Platform.Models.Entities.ProjectManagment;
 /// </summary>
 public class TaskTypeEntity
 {
+    public TaskTypeEntity(string typeName, string typeSysName)
+    {
+        TypeName = typeName;
+        TypeSysName = typeSysName;
+    }
     /// <summary>
     /// PK.
     /// </summary>

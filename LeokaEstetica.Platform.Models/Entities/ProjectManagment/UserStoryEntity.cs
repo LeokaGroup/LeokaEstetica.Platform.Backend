@@ -5,6 +5,10 @@ namespace LeokaEstetica.Platform.Models.Entities.ProjectManagment;
 /// </summary>
 public class UserStoryEntity
 {
+    public UserStoryEntity(string storyName)
+    {
+        StoryName = storyName;
+    }
     /// <summary>
     /// PK.
     /// </summary>
@@ -18,7 +22,7 @@ public class UserStoryEntity
     /// <summary>
     /// Описание истории.
     /// </summary>
-    public string StoryDescription { get; set; }
+    public string? StoryDescription { get; set; }
     
     /// <summary>
     /// Пользователь, который создал эпик.
@@ -53,12 +57,12 @@ public class UserStoryEntity
     /// <summary>
     /// Id наблюдателей.
     /// </summary>
-    public long[] WatcherIds { get; set; }
+    public long[]? WatcherIds { get; set; }
     
     /// <summary>
     /// Список Id тегов задачи.
     /// </summary>
-    public int[] TagIds { get; set; }
+    public int[]? TagIds { get; set; }
 
     /// <summary>
     /// Id эпика, в который входит история, если назначался.

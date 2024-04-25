@@ -5,6 +5,10 @@ namespace LeokaEstetica.Platform.Models.Entities.ProjectManagment;
 /// </summary>
 public class TaskRelationEntity
 {
+    public TaskRelationEntity(string relationType)
+    {
+        RelationType = relationType;
+    }
     /// <summary>
     /// PK.
     /// </summary>

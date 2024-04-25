@@ -5,6 +5,12 @@ namespace LeokaEstetica.Platform.Models.Entities.ProjectManagment;
 /// </summary>
 public class PanelEntity
 {
+    public PanelEntity(string itemName, string panelType, string items)
+	{
+        ItemName = itemName;
+        PanelType = panelType;
+        Items = items;
+    }
     /// <summary>
     /// PK.
     /// </summary>
@@ -18,7 +24,7 @@ public class PanelEntity
     /// <summary>
     /// Путь (ссылка).
     /// </summary>
-    public string ItemUrl { get; set; }
+    public string? ItemUrl { get; set; }
 
     /// <summary>
     /// Порядковый номер элемента меню.

@@ -5,6 +5,10 @@ namespace LeokaEstetica.Platform.Models.Entities.ProjectManagment;
 /// </summary>
 public class TaskCommentEntity
 {
+    public TaskCommentEntity(string comment)
+    {
+        Comment = comment;
+    }
     /// <summary>
     /// PK.
     /// </summary>

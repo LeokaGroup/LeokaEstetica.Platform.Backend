@@ -5,6 +5,11 @@ namespace LeokaEstetica.Platform.Models.Entities.ProjectManagment;
 /// </summary>
 public class UserStoryStatusEntity
 {
+    public UserStoryStatusEntity(string statusName, string statusSysName)
+    {
+        StatusName = statusName;
+        StatusSysName = statusSysName;
+    }
     /// <summary>
     /// Id статуса.
     /// </summary>

@@ -5,8 +5,12 @@ namespace LeokaEstetica.Platform.Models.Entities.ProjectManagment;
 /// </summary>
 public class ProjectTaskExtendedEntity : ProjectTaskEntity
 {
-    /// <summary>
-    /// Префикс номера задачи.
-    /// </summary>
-    public string TaskIdPrefix { get; set; }
+	public ProjectTaskExtendedEntity(string name) : base(name)
+	{
+	}
+
+	/// <summary>
+	/// Префикс номера задачи.
+	/// </summary>
+	public string TaskIdPrefix { get; set; }
 }

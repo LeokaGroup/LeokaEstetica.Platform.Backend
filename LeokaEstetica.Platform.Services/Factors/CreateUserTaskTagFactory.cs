@@ -24,10 +24,8 @@ public static class CreateUserTaskTagFactory
             tagDescription = null;
         }
         
-        var result = new ProjectTagEntity
+        var result = new ProjectTagEntity(tagName,tagSysName)
         {
-            TagName = tagName,
-            TagSysName = tagSysName,
             TagDescription = tagDescription,
             Position = maxPosition,
             ProjectId = projectId

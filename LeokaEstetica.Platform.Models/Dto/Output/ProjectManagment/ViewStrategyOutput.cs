@@ -7,4 +7,7 @@ namespace LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 /// </summary>
 public class ViewStrategyOutput : ViewStrategyEntity
 {
+	public ViewStrategyOutput(string viewStrategyName, string viewStrategySysName) : base(viewStrategyName, viewStrategySysName)
+	{
+	}
 }
