@@ -1,3 +1,5 @@
+DROP TABLE IF EXISTS project_management.task_links;
+
 CREATE TABLE project_management.task_links
 (
     link_id         BIGSERIAL
