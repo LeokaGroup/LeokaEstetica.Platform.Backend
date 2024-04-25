@@ -1,3 +1,5 @@
+DROP TABLE IF EXISTS project_management.user_stories;
+
 CREATE TABLE project_management.user_stories
 (
     story_id           BIGSERIAL
