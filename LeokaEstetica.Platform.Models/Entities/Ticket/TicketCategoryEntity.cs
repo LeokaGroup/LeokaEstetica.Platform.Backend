@@ -5,6 +5,11 @@ namespace LeokaEstetica.Platform.Models.Entities.Ticket;
 /// </summary>
 public class TicketCategoryEntity
 {
+    public TicketCategoryEntity(string categoryName, string categorySysName)
+    {
+        CategoryName = categoryName;
+        CategorySysName = categorySysName;
+    }
     /// <summary>
     /// PK.
     /// </summary>

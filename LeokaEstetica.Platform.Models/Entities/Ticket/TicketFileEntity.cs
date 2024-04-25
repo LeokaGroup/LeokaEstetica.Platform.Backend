@@ -7,6 +7,10 @@ namespace LeokaEstetica.Platform.Models.Entities.Ticket;
 /// </summary>
 public class TicketFileEntity
 {
+    public TicketFileEntity(string url)
+    {
+        Url = url;
+    }
     /// <summary>
     /// PK.
     /// </summary>
@@ -20,12 +24,12 @@ public class TicketFileEntity
     /// <summary>
     /// Название тикета.
     /// </summary>
-    public string Title { get; set; }
+    public string? Title { get; set; }
 
     /// <summary>
     /// Описание тикета.
     /// </summary>
-    public string Description { get; set; }
+    public string? Description { get; set; }
 
     /// <summary>
     /// Позиция.

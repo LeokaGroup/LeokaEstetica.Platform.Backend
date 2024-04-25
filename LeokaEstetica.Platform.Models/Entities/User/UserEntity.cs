@@ -11,8 +11,10 @@ namespace LeokaEstetica.Platform.Models.Entities.User;
 /// </summary>
 public class UserEntity
 {
-    public UserEntity()
+    public UserEntity(string email, string passwordHash)
     {
+        Email = email;
+        PasswordHash = passwordHash;
         DialogMessages = new HashSet<DialogMessageEntity>();
         DialogMembers = new HashSet<DialogMemberEntity>();
         ModerationUserRoles = new HashSet<ModerationUserRoleEntity>();
@@ -35,27 +37,27 @@ public class UserEntity
     /// <summary>
     /// Фамилия.
     /// </summary>
-    public string LastName { get; set; }
+    public string? LastName { get; set; }
 
     /// <summary>
     /// Имя.
     /// </summary>
-    public string FirstName { get; set; }
+    public string? FirstName { get; set; }
 
     /// <summary>
     /// Отчество.
     /// </summary>
-    public string SecondName { get; set; }
+    public string? SecondName { get; set; }
 
     /// <summary>
     /// Логин.
     /// </summary>
-    public string Login { get; set; }
+    public string? Login { get; set; }
 
     /// <summary>
     /// Иконка профиля пользователя.
     /// </summary>
-    public string UserIcon { get; set; }
+    public string? UserIcon { get; set; }
 
     /// <summary>
     /// Дата регистрации.
@@ -80,7 +82,7 @@ public class UserEntity
     /// <summary>
     /// Номер телефона.
     /// </summary>
-    public string PhoneNumber { get; set; }
+    public string? PhoneNumber { get; set; }
 
     /// <summary>
     /// Подтвержден ли номер телефона.
@@ -105,7 +107,7 @@ public class UserEntity
     /// <summary>
     /// PK.
     /// </summary>
-    public Guid UserCode { get; set; }
+    public Guid? UserCode { get; set; }
 
     /// <summary>
     /// Guid для подтверждения почты.

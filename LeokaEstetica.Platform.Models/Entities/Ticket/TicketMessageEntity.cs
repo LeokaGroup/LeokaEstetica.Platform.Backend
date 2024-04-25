@@ -7,6 +7,10 @@ namespace LeokaEstetica.Platform.Models.Entities.Ticket;
 /// </summary>
 public class TicketMessageEntity
 {
+    public TicketMessageEntity(string message)
+    {
+        Message = message;
+    }
     /// <summary>
     /// PK.
     /// </summary>

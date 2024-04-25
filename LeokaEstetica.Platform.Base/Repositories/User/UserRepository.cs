@@ -196,7 +196,7 @@ internal sealed class UserRepository : IUserRepository
             .Select(u => u.UserCode)
             .FirstOrDefaultAsync();
 
-        return result;
+        return (Guid)result;
     }
 
     /// <summary>
@@ -211,7 +211,7 @@ internal sealed class UserRepository : IUserRepository
             .Select(u => u.UserCode)
             .FirstOrDefaultAsync();
 
-        return result;
+        return (Guid)result;
     }
 
     /// <summary>
@@ -264,9 +264,8 @@ internal sealed class UserRepository : IUserRepository
         var result = await _pgContext.Users
             .Where(u => u.Email.Contains(searchText) 
                         || u.Login.Contains(searchText))
-            .Select(u => new UserEntity
+            .Select(u => new UserEntity(u.Email, string.Empty)
             {
-                Email = u.Email,
                 Login = u.Login,
                 UserId = u.UserId
             })
@@ -297,7 +296,7 @@ internal sealed class UserRepository : IUserRepository
     /// <returns>Словарь кодов пользователей.</returns>
     public async Task<Dictionary<long, Guid>> GetUsersCodesAsync()
     {
-        var result = await _pgContext.Users.ToDictionaryAsync(k => k.UserId, v => v.UserCode);
+        var result = await _pgContext.Users.ToDictionaryAsync(k => k.UserId, v => (Guid)v.UserCode);
 
         return result;
     }
@@ -310,7 +309,7 @@ internal sealed class UserRepository : IUserRepository
     {
         var result = await _pgContext.Users
             .Where(u => userIds.Contains(u.UserId))
-            .ToDictionaryAsync(k => k.UserId, v => v.UserCode);
+            .ToDictionaryAsync(k => k.UserId, v => (Guid)v.UserCode);
 
         return result;
     }

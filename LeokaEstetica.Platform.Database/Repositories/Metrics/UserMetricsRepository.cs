@@ -29,9 +29,8 @@ internal sealed class UserMetricsRepository : IUserMetricsRepository
     {
         var result = await _pgContext.Users
             .Where(u => u.DateRegister.Month == DateTime.UtcNow.Month)
-            .Select(u => new UserEntity
+            .Select(u => new UserEntity(u.Email, string.Empty)
             {
-                Email = u.Email,
                 Login = u.Login,
                 DateRegister = u.DateRegister
             })

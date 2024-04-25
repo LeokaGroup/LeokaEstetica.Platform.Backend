@@ -922,10 +922,9 @@ internal sealed class UserService : IUserService
     /// <returns>Модель с данными.</returns>
     private UserEntity CreateSignUpUserModel(string password, string email)
     {
-        var model = new UserEntity
+        var model = new UserEntity(email, HashHelper.HashPassword(password))
         {
             PasswordHash = HashHelper.HashPassword(password),
-            Email = email,
             DateRegister = DateTime.UtcNow,
             UserCode = Guid.NewGuid()
         };
@@ -942,10 +941,8 @@ internal sealed class UserService : IUserService
     /// <returns>Модель с данными.</returns>
     private UserEntity CreateSignUpVkUserModel(long vkUserId, string firstName, string lastName)
     {
-        var model = new UserEntity
+        var model = new UserEntity(string.Empty, string.Empty)
         {
-            PasswordHash = string.Empty,
-            Email = string.Empty,
             DateRegister = DateTime.UtcNow,
             UserCode = Guid.NewGuid(),
             VkUserId = vkUserId,

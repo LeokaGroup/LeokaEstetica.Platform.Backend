@@ -5,8 +5,10 @@ namespace LeokaEstetica.Platform.Models.Entities.Ticket;
 /// </summary>
 public class TicketRoleEntity
 {
-    public TicketRoleEntity()
+    public TicketRoleEntity(string roleName, string roleSysName)
     {
+        RoleName = roleName;
+        RoleSysName = roleSysName;
         UserTicketRoles = new HashSet<UserTicketRoleEntity>();
     }
 

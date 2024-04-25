@@ -60,10 +60,9 @@ internal sealed class TicketRepository : ITicketRepository
         try
         {
             // Добавляем основную информацию о тикете, тем самым создаем новый тикет.
-            var ticket = new MainInfoTicketEntity
+            var ticket = new MainInfoTicketEntity(title)
             {
                 DateCreated = DateTime.UtcNow,
-                TicketName = title,
                 TicketStatusId = (short)TicketStatusEnum.Opened,
                 TicketFileId = null // TODO: Позже доработаем это.
             };
@@ -107,10 +106,9 @@ internal sealed class TicketRepository : ITicketRepository
             await _pgContext.TicketMembers.AddRangeAsync(ticketMembers);
             
             // Создаем сообщение тикета.
-            await _pgContext.TicketMessages.AddAsync(new TicketMessageEntity
+            await _pgContext.TicketMessages.AddAsync(new TicketMessageEntity(message)
             {
                 DateCreated = DateTime.UtcNow,
-                Message = message,
                 UserId = userId,
                 TicketId = ticketId
             });
@@ -143,10 +141,9 @@ internal sealed class TicketRepository : ITicketRepository
                     on it.TicketId
                     equals tm.TicketId
                 where tm.UserId == userId
-                select new MainInfoTicketEntity
+                select new MainInfoTicketEntity(it.TicketName)
                 {
                     TicketStatusId = it.TicketStatusId,
-                    TicketName = it.TicketName,
                     TicketId = it.TicketId,
                     DateCreated = it.DateCreated
                 })
@@ -189,10 +186,9 @@ internal sealed class TicketRepository : ITicketRepository
                 join tm in _pgContext.TicketMembers
                     on it.TicketId
                     equals tm.TicketId
-                select new MainInfoTicketEntity
+                select new MainInfoTicketEntity(it.TicketName)
                 {
                     TicketStatusId = it.TicketStatusId,
-                    TicketName = it.TicketName,
                     TicketId = it.TicketId,
                     DateCreated = it.DateCreated
                 })
@@ -255,10 +251,9 @@ internal sealed class TicketRepository : ITicketRepository
     public async Task<IEnumerable<TicketMessageEntity>> CreateTicketMessageAsync(long ticketId, string message,
         long userId)
     {
-        await _pgContext.TicketMessages.AddAsync(new TicketMessageEntity
+        await _pgContext.TicketMessages.AddAsync(new TicketMessageEntity(message)
         {
             DateCreated = DateTime.UtcNow,
-            Message = message,
             UserId = userId,
             TicketId = ticketId
         });

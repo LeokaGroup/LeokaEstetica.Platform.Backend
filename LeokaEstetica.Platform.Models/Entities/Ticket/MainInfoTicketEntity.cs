@@ -5,8 +5,9 @@ namespace LeokaEstetica.Platform.Models.Entities.Ticket;
 /// </summary>
 public class MainInfoTicketEntity
 {
-    public MainInfoTicketEntity()
+    public MainInfoTicketEntity(string ticketName)
     {
+        TicketName = ticketName;
         TicketMembers = new HashSet<TicketMemberEntity>();
         TicketMessages = new HashSet<TicketMessageEntity>();
     }
