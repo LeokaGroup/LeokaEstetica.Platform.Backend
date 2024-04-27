@@ -30,7 +30,8 @@ internal sealed class TicketRepository : ITicketRepository
     {
         _pgContext = pgContext;
         _logger = logger;
-    }
+		AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+	}
 
     #region Публичные методы.
 
