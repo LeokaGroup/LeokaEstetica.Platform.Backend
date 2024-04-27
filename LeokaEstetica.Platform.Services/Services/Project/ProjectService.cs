@@ -360,16 +360,7 @@ internal sealed class ProjectService : IProjectService
 
             var result = await _projectRepository.UserProjectsAsync(userId, isCreateVacancy);
 
-            foreach (var prj in result.UserProjects)
-            {
-                prj.ProjectDetails = ClearHtmlBuilder.Clear(prj.ProjectDetails);
-
-                // Если описание слишком большое, то урезаем для умещения в таблице проектов пользователя на UI.
-                if (prj.ProjectDetails.Length > 40)
-                {
-                    prj.ProjectDetails = string.Concat(prj.ProjectDetails.Substring(0, 40), "...");
-                }
-            }
+          
 
             return result;
         }
@@ -513,20 +504,7 @@ internal sealed class ProjectService : IProjectService
             result.ProjectRemarks = _mapper.Map<IEnumerable<ProjectRemarkOutput>>(remarks);
             result.IsAccess = true;
 
-            if (!string.IsNullOrEmpty(result.ProjectDetails))
-            {
-                result.ProjectDetails = ClearHtmlBuilder.Clear(result.ProjectDetails);
-            }
-            
-            if (!string.IsNullOrEmpty(result.Conditions))
-            {
-                result.Conditions = ClearHtmlBuilder.Clear(result.Conditions);
-            }
-            
-            if (!string.IsNullOrEmpty(result.Demands))
-            {
-                result.Demands = ClearHtmlBuilder.Clear(result.Demands);
-            }
+           
 
             return result;
         }
@@ -1704,11 +1682,7 @@ internal sealed class ProjectService : IProjectService
     /// <returns>Список вакансий после очистки.</returns>
     private IEnumerable<ProjectVacancyOutput> ClearHtmlTags(List<ProjectVacancyOutput> projectVacancies)
     {
-        // Чистим описание вакансии от html-тегов.
-        foreach (var vac in projectVacancies)
-        {
-            vac.UserVacancy.VacancyText = ClearHtmlBuilder.Clear(vac.UserVacancy.VacancyText);
-        }
+        
 
         return projectVacancies;
     }
@@ -1942,7 +1916,7 @@ internal sealed class ProjectService : IProjectService
         // Чистим описание проекта от html-тегов.
         foreach (var prj in projects)
         {
-            prj.ProjectDetails = ClearHtmlBuilder.Clear(prj.ProjectDetails);
+            
         }
 
         return projects;

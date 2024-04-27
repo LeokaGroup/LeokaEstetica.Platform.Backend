@@ -108,7 +108,7 @@ internal sealed class ProjectModerationService : IProjectModerationService
         {
             var prj = await _projectRepository.GetProjectAsync(projectId);
             var result = await CreateProjectResultAsync(prj);
-            result.ProjectDetails = ClearHtmlBuilder.Clear(prj.UserProject.ProjectDetails);
+          
 
             return result;
         }
@@ -163,7 +163,7 @@ internal sealed class ProjectModerationService : IProjectModerationService
 
             await _discordService.SendNotificationCreatedObjectAsync(ObjectTypeEnum.Project, projectName);
             
-            var projectDetails = ClearHtmlBuilder.Clear(project.UserProject.ProjectDetails);
+            var projectDetails = (project.UserProject.ProjectDetails);
             await _telegramBotService.SendNotificationCreatedObjectAsync(ObjectTypeEnum.Project, projectName,
                 projectDetails, projectId);
 
