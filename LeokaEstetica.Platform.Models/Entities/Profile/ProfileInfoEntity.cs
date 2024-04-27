@@ -30,7 +30,7 @@ public class ProfileInfoEntity
     /// <summary>
     /// Отчество.
     /// </summary>
-    public string Patronymic { get; set; }
+    public string? Patronymic { get; set; }
 
     /// <summary>
     /// Отображать ли первую букву фамилии.
@@ -40,22 +40,22 @@ public class ProfileInfoEntity
     /// <summary>
     /// Ссылка на телегу либо ник.
     /// </summary>
-    public string Telegram { get; set; }
+    public string? Telegram { get; set; }
 
     /// <summary>
     /// Ватсап номер телефона.
     /// </summary>
-    public string WhatsApp { get; set; }
+    public string? WhatsApp { get; set; }
 
     /// <summary>
     /// Ссылка на ВК либо ник.
     /// </summary>
-    public string Vkontakte { get; set; }
+    public string? Vkontakte { get; set; }
 
     /// <summary>
     /// Ссылка на другую соц.сеть.
     /// </summary>
-    public string OtherLink { get; set; }
+    public string? OtherLink { get; set; }
 
     /// <summary>
     /// Обо мне.
@@ -65,7 +65,7 @@ public class ProfileInfoEntity
     /// <summary>
     /// Должность.
     /// </summary>
-    public string Job { get; set; }
+    public string? Job { get; set; }
 
     /// <summary>
     /// Id пользователя.
@@ -80,7 +80,7 @@ public class ProfileInfoEntity
     /// <summary>
     /// Опыт работы.
     /// </summary>
-    public string WorkExperience { get; set; }
+    public string? WorkExperience { get; set; }
 
     /// <summary>
     /// Список замечаний анкет.

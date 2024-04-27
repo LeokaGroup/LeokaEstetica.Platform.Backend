@@ -41,7 +41,7 @@ public class UserProjectEntity
     /// <summary>
     /// Изображение проекта.
     /// </summary>
-    public string ProjectIcon { get; set; }
+    public string? ProjectIcon { get; set; }
 
     /// <summary>
     /// Код проекта.
@@ -61,12 +61,12 @@ public class UserProjectEntity
     /// <summary>
     /// Условия проекта.
     /// </summary>
-    public string Conditions { get; set; }
+    public string? Conditions { get; set; }
 
     /// <summary>
     /// Требования проекта.
     /// </summary>
-    public string Demands { get; set; }
+    public string? Demands { get; set; }
 
     /// <summary>
     /// FK каталога проектов.
@@ -111,10 +111,10 @@ public class UserProjectEntity
     /// <summary>
     /// Название проекта для модуля УП (управление проектами).
     /// </summary>
-    public string ProjectManagementName { get; set; }
+    public string? ProjectManagementName { get; set; }
 
     /// <summary>
     /// Префикс названия проекта для модуля УП (управление проектами).
     /// </summary>
-    public string ProjectManagementNamePrefix { get; set; }
+    public string? ProjectManagementNamePrefix { get; set; }
 }

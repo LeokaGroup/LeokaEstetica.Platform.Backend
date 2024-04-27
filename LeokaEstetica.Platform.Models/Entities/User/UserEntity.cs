@@ -35,27 +35,27 @@ public class UserEntity
     /// <summary>
     /// Фамилия.
     /// </summary>
-    public string LastName { get; set; }
+    public string? LastName { get; set; }
 
     /// <summary>
     /// Имя.
     /// </summary>
-    public string FirstName { get; set; }
+    public string? FirstName { get; set; }
 
     /// <summary>
     /// Отчество.
     /// </summary>
-    public string SecondName { get; set; }
+    public string? SecondName { get; set; }
 
     /// <summary>
     /// Логин.
     /// </summary>
-    public string Login { get; set; }
+    public string? Login { get; set; }
 
     /// <summary>
     /// Иконка профиля пользователя.
     /// </summary>
-    public string UserIcon { get; set; }
+    public string? UserIcon { get; set; }
 
     /// <summary>
     /// Дата регистрации.
@@ -80,7 +80,7 @@ public class UserEntity
     /// <summary>
     /// Номер телефона.
     /// </summary>
-    public string PhoneNumber { get; set; }
+    public string? PhoneNumber { get; set; }
 
     /// <summary>
     /// Подтвержден ли номер телефона.

@@ -318,7 +318,7 @@ internal sealed class FileManagerService : IFileManagerService
             // Если нужно подгрузить дефолтное изображение аватара.
             if (isNoPhoto || !userId.HasValue)
             {
-                userProjectAvatarPath = userProjectPath + "/";
+                userProjectAvatarPath = sftpAvatarPath;
             }
 
             else
