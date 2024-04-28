@@ -75,7 +75,7 @@ public class PgContext : DbContext
     /// <summary>
     /// Таблица обо мне.
     /// </summary>
-    public DbSet<ProfileInfoEntity> ProfilesInfo { get; set; } 
+    public DbSet<ProfileInfoEntity> ProfilesInfo { get; set; }
 
     /// <summary>
     /// Таблица навыков пользователя.
