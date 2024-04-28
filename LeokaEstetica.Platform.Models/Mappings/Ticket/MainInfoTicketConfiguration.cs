@@ -23,7 +23,7 @@ public partial class MainInfoTicketConfiguration : IEntityTypeConfiguration<Main
         
         entity.Property(e => e.DateCreated)
             .HasColumnName("DateCreated")
-            .HasColumnType("timestamp")
+            .HasColumnType("timestamp with time zone")
             .HasDefaultValue(DateTime.UtcNow);
         
         entity.Property(e => e.TicketStatusId)
