@@ -92,7 +92,7 @@ internal sealed class SubscriptionRepository : ISubscriptionRepository
         // TODO: Да, не оптимально, но тут проблема с добавлением записи, ругается на PK.
         // TODO: Вариантов как вылечить не было, сделано так.
         // TODO: В рамках рефача можно и этим заняться попробовать, чтоб оптимизнуть как то.
-        // TODO: Переписывать на Dapper бесполезно, это пробовал, как и играться с ValueGenerated в маппинге EF. Все это не помогло.
+        // TODO: Пробовал играться с ValueGenerated в маппинге EF. Все это не помогло. Как варик, переписать на даппер.
         var lastUserId = (await _pgContext.Users.OrderBy(o => o.UserId).LastOrDefaultAsync())?.UserId;
 
         if (lastUserId is null)
@@ -108,7 +108,7 @@ internal sealed class SubscriptionRepository : ISubscriptionRepository
             UserId = userId,
             IsActive = true,
             SubscriptionId = freeSubscriptionId,
-            UserSubscriptionId = ++id
+            UserSubscriptionId = ++id // TODO: Костыль.
         });
         await _pgContext.SaveChangesAsync();
     }
