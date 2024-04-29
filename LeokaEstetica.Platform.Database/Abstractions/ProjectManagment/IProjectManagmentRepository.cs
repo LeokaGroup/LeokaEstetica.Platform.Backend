@@ -625,4 +625,13 @@ public interface IProjectManagmentRepository
     /// </summary>
     /// <returns>Статусы эпиков.</returns>
     Task<IEnumerable<EpicStatusOutput>> GetEpicStatusesAsync();
+
+    /// <summary>
+    /// Метод проверяет существование задачи по ее названию, типу и Id проекта.
+    /// </summary>
+    /// <param name="taskName">Название задачи.</param>
+    /// <param name="taskType">Тип задачи.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Признак результата проверки.</returns>
+    Task<bool> IfExistsProjectTaskAsync(string taskName, int taskType, long projectId);
 }
