@@ -439,7 +439,7 @@ public interface IProjectManagmentRepository
     /// <param name="strategySysName">Системное название стратегии.</param>
     /// <param name="projectId">Id проекта.</param>
     /// <param name="userId">Id пользователя.</param>
-    Task FixationProjectViewStrategyAsync(string strategySysName, long projectId, long userId);
+    Task FixationProjectViewStrategyAsync(ProjectStrategyEnum strategySysName, long projectId, long userId);
 
     /// <summary>
     /// Метод создает комментарий задачи.

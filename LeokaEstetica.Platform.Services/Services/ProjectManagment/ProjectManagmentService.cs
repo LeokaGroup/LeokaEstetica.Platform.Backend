@@ -2367,22 +2367,23 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 throw ex;
             }
 
-            string shortSysName;
+            ProjectStrategyEnum shortSysName;
 
             switch (strategySysName)
             {
                 case "Kanban":
-                    shortSysName = "kn";
+                    shortSysName = ProjectStrategyEnum.Kn;
                     break;
 
                 case "Scrum":
-                    shortSysName = "sm";
+                    shortSysName = ProjectStrategyEnum.Sm;
                     break;
 
                 default:
                     throw new InvalidOperationException($"Неизвестный тип стратегии: {strategySysName}.");
             }
 
+            // Фиксируем выбранную пользователем стратегию представления в БД.
             await _projectManagmentRepository.FixationProjectViewStrategyAsync(shortSysName, projectId, userId);
         }
         
