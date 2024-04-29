@@ -13,12 +13,12 @@ public class PlatformOfferItemsEntity
     /// <summary>
     /// Текст элемента.
     /// </summary>
-    public string ItemText { get; set; }
+    public string? ItemText { get; set; }
 
     /// <summary>
     /// Иконка элемента.
     /// </summary>
-    public string ItemIcon { get; set; }
+    public string? ItemIcon { get; set; }
 
     /// <summary>
     /// Позиция элемента в списке.

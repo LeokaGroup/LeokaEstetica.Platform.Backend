@@ -13,10 +13,10 @@ public class PlatformOfferEntity
     /// <summary>
     /// Заголовок.
     /// </summary>
-    public string OffeTitle { get; set; }
+    public string? OffeTitle { get; set; }
 
     /// <summary>
     /// Подзаголовок.
     /// </summary>
-    public string OfferSubTitle { get; set; }
+    public string? OfferSubTitle { get; set; }
 }

@@ -1,0 +1,1 @@
+CREATE TYPE settings.project_strategy_enum AS ENUM ('sm', 'kn');

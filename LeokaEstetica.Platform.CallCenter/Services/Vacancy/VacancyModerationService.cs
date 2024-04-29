@@ -167,7 +167,7 @@ public class VacancyModerationService : IVacancyModerationService
             
             await _discordService.SendNotificationCreatedObjectAsync(ObjectTypeEnum.Vacancy, vacancyName);
             
-            var vacancyText = ClearHtmlBuilder.Clear(vacancy.VacancyText);
+            var vacancyText = (vacancy.VacancyText);
             await _telegramBotService.SendNotificationCreatedObjectAsync(ObjectTypeEnum.Vacancy, vacancyName,
                 vacancyText, vacancyId);
 

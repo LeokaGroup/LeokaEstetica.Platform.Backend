@@ -999,9 +999,6 @@ internal sealed class VacancyService : IVacancyService
         }
 
         result.VacancyRemarks = new List<VacancyRemarkOutput>();
-        result.VacancyText = ClearHtmlBuilder.Clear(result.VacancyText);
-        result.Conditions = ClearHtmlBuilder.Clear(result.Conditions);
-        result.Demands = ClearHtmlBuilder.Clear(result.Demands);
         result.Payment = result.Payment.CreatePriceWithDelimiterFromString();
 
         return result;
@@ -1016,7 +1013,7 @@ internal sealed class VacancyService : IVacancyService
         foreach (var vac in vacancies)
         {
             // Чистим описание вакансии от html-тегов.
-            vac.VacancyText = ClearHtmlBuilder.Clear(vac.VacancyText);
+            vac.VacancyText = (vac.VacancyText);
             
             // Форматируем цену к виду 1 000.
             vac.Payment = vac.Payment.CreatePriceWithDelimiterFromString();
@@ -1033,7 +1030,7 @@ internal sealed class VacancyService : IVacancyService
         // Чистим описание вакансии от html-тегов.
         foreach (var vac in vacancies)
         {
-            vac.VacancyText = ClearHtmlBuilder.Clear(vac.VacancyText);
+            vac.VacancyText = (vac.VacancyText);
         }
 
         return vacancies;

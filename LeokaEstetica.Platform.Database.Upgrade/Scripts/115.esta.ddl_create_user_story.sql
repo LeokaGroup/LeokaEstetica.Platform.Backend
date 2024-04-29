@@ -19,7 +19,7 @@ CREATE TABLE project_management.user_stories
     CONSTRAINT fk_users_created_by FOREIGN KEY (created_by) REFERENCES dbo."Users" ("UserId"),
     CONSTRAINT fk_users_updated_by FOREIGN KEY (updated_by) REFERENCES dbo."Users" ("UserId"),
     CONSTRAINT fk_user_projects_project_id FOREIGN KEY (project_id) REFERENCES "Projects"."UserProjects" ("ProjectId"),
-    CONSTRAINT fk_user_stories_statuses_status_id FOREIGN KEY (story_status_id) REFERENCES project_management.user_stories_statuses (status_id)
+    CONSTRAINT fk_user_stories_statuses_status_id FOREIGN KEY (story_status_id) REFERENCES project_management.user_story_statuses (status_id)
 );
 
 COMMENT ON COLUMN project_management.user_stories.story_id IS 'PK.';

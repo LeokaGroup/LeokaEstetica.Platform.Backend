@@ -31,6 +31,7 @@ bld/
 .vs/
 **/appsettings.json
 **/projectmanagment_appsettings.json
+/LeokaEstetica.Platform.ProjectManagement/obj/
 # Uncomment if you have tasks that create the project's static files in wwwroot
 #wwwroot/
 
@@ -302,6 +303,17 @@ paket-files/
 # JetBrains Rider
 .idea/
 *.sln.iml
+bin
+obj
+packages
+LeokaEstetica.Platform.ProjectManagement/obj/LeokaEstetica.Platform.ProjectManagement.csproj.nuget.g.props
+LeokaEstetica.Platform.ProjectManagement/obj/project.assets.json
+LeokaEstetica.Platform.ProjectManagement/obj/project.nuget.cache
+LeokaEstetica.Platform.ProjectManagement/obj/rider.project.restore.info
+**/LeokaEstetica.Platform.ProjectManagement/obj/LeokaEstetica.Platform.ProjectManagement.csproj.nuget.g.props
+**/LeokaEstetica.Platform.ProjectManagement/obj/project.assets.json
+**/LeokaEstetica.Platform.ProjectManagement/obj/project.nuget.cache
+**/LeokaEstetica.Platform.ProjectManagement/obj/rider.project.restore.info
 
 # CodeRush personal settings
 .cr/personal

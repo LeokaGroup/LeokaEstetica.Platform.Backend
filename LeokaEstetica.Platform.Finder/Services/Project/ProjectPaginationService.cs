@@ -37,6 +37,12 @@ public class ProjectPaginationService : BaseIndexRamDirectory, IProjectPaginatio
         try
         {
             var projects = await _projectRepository.GetFiltersProjectsAsync();
+
+            if (!projects.Any())
+            {
+                return new PaginationProjectOutput();
+            }
+            
             var result = new PaginationProjectOutput
             {
                 IsVisiblePagination = true,

@@ -13,22 +13,22 @@ public class TimelineEntity
     /// <summary>
     /// Название таймлайна.
     /// </summary>
-    public string TimelineTitle { get; set; }
+    public string? TimelineTitle { get; set; }
 
     /// <summary>
     /// Описание.
     /// </summary>
-    public string TimelineText { get; set; }
+    public string? TimelineText { get; set; }
 
     /// <summary>
     /// Системное название типа таймлайна.
     /// </summary>
-    public string TimelineSysType { get; set; }
+    public string? TimelineSysType { get; set; }
     
     /// <summary>
     /// Название типа таймлайна.
     /// </summary>
-    public string TimelineTypeName { get; set; }
+    public string? TimelineTypeName { get; set; }
 
     /// <summary>
     /// Позиция в списке.

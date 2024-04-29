@@ -6,6 +6,15 @@
 public class FonEntity
 {
     /// <summary>
+    /// Конструктор.
+    /// </summary>
+    /// <param name="text">Описание фона.</param>
+    public FonEntity(string text)
+    {
+        Text = text;
+    }
+
+    /// <summary>
     /// PK.
     /// </summary>
     public int FonId { get; set; }
@@ -13,7 +22,7 @@ public class FonEntity
     /// <summary>
     /// Заголовок фона.
     /// </summary>
-    public string Title { get; set; }
+    public string? Title { get; set; }
 
     /// <summary>
     /// Описание фона.
