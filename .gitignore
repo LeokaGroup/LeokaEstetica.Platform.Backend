@@ -306,6 +306,14 @@ paket-files/
 bin
 obj
 packages
+LeokaEstetica.Platform.ProjectManagement/obj/LeokaEstetica.Platform.ProjectManagement.csproj.nuget.g.props
+LeokaEstetica.Platform.ProjectManagement/obj/project.assets.json
+LeokaEstetica.Platform.ProjectManagement/obj/project.nuget.cache
+LeokaEstetica.Platform.ProjectManagement/obj/rider.project.restore.info
+**/LeokaEstetica.Platform.ProjectManagement/obj/LeokaEstetica.Platform.ProjectManagement.csproj.nuget.g.props
+**/LeokaEstetica.Platform.ProjectManagement/obj/project.assets.json
+**/LeokaEstetica.Platform.ProjectManagement/obj/project.nuget.cache
+**/LeokaEstetica.Platform.ProjectManagement/obj/rider.project.restore.info
 
 # CodeRush personal settings
 .cr/personal
