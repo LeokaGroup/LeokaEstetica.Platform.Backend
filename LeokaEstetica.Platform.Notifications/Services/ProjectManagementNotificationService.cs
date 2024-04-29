@@ -73,4 +73,20 @@ internal sealed class ProjectManagementNotificationService : IProjectManagementN
                 NotificationLevel = notificationLevel
             });
     }
+
+    /// <inheritdoc />
+    public async Task SendNotifyWarningDublicateProjectTaskAsync(string title, string notifyText,
+        string notificationLevel, string token)
+    {
+        var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
+
+        await _hubContext.Clients
+            .Client(connectionId)
+            .SendAsync("SendNotifyWarningDublicateProjectTask", new NotificationOutput
+            {
+                Title = title,
+                Message = notifyText,
+                NotificationLevel = notificationLevel
+            });
+    }
 }

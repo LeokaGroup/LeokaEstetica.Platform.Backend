@@ -280,7 +280,8 @@ public class ProjectManagmentController : BaseController
             return new CreateProjectManagementTaskOutput { Errors = validator.Errors };
         }
 
-        var result = await _projectManagmentService.CreateProjectTaskAsync(projectManagementTaskInput, GetUserName());
+        var result = await _projectManagmentService.CreateProjectTaskAsync(projectManagementTaskInput, GetUserName(),
+            CreateTokenFromHeader());
 
         return result;
     }

@@ -2,6 +2,7 @@
 using System.Runtime.CompilerServices;
 using AutoMapper;
 using Dapper;
+using FluentValidation.Results;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.Base.Extensions.StringExtensions;
 using LeokaEstetica.Platform.Base.Factors;
@@ -40,6 +41,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Enum = System.Enum;
+using SearchAgileObjectTypeEnum = LeokaEstetica.Platform.Models.Enums.SearchAgileObjectTypeEnum;
 
 [assembly: InternalsVisibleTo("LeokaEstetica.Platform.Tests")]
 
@@ -750,7 +752,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     
     /// <inheritdoc />
     public async Task<CreateProjectManagementTaskOutput> CreateProjectTaskAsync(
-        CreateProjectManagementTaskInput projectManagementTaskInput, string account)
+        CreateProjectManagementTaskInput projectManagementTaskInput, string account, string? token)
     {
         try
         {
@@ -763,14 +765,38 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             }
 
             var projectId = projectManagementTaskInput.ProjectId;
+
+            // Проверяем, есть ли уже такая задача у такого проекта.
+            // Проверка на дубли идет по совпадению типа задачи и названия задачи.
+            var ifExists = await _projectManagmentRepository.IfExistsProjectTaskAsync(projectManagementTaskInput.Name,
+                projectManagementTaskInput.TaskTypeId, projectId);
+
+            if (ifExists)
+            {
+                if (!string.IsNullOrEmpty(token))
+                {
+                    await _projectManagementNotificationService.Value.SendNotifyWarningDublicateProjectTaskAsync(
+                        "Внимание",
+                        $"Такая задача уже заведена в проекте {projectId}.",
+                        NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
+                }
+                
+                return new CreateProjectManagementTaskOutput
+                {
+                    Errors = new List<ValidationFailure>
+                    {
+                        new("name", "Дубликат задачи в системе.")
+                    }
+                };
+            }
             
             // TODO: Этот код дублируется в этом сервисе. Вынести в приватный метод и кортежем вернуть нужные данные.
             // Получаем настройки проекта.
             var projectSettings = await _projectSettingsConfigRepository.GetProjectSpaceSettingsByProjectIdAsync(
                 projectId, userId);
-            var projectSettingsItems = projectSettings?.AsList();
+            var projectSettingsItems = projectSettings.AsList();
 
-            if (projectSettingsItems is null || !projectSettingsItems.Any())
+            if (projectSettingsItems is null || projectSettingsItems.Count == 0)
             {
                 throw new InvalidOperationException("Ошибка получения настроек проекта. " +
                                                     $"ProjectId: {projectId}. " +
@@ -784,9 +810,6 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 RedirectUrl = string.Concat(redirectUrl!.ParamValue, $"?projectId={projectId}")
             };
 
-            var parseTaskType = Enum.GetName((ProjectTaskTypeEnum)projectManagementTaskInput.TaskTypeId);
-            var taskType = Enum.Parse<ProjectTaskTypeEnum>(parseTaskType!);
-
             // Находим наибольший Id задачи в рамках проекта и увеличиваем его.
             /*
             Описание алгоритма:
@@ -797,9 +820,12 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             в рамках проекта).
             */
             var maxProjectTaskId = await _projectManagmentRepository.GetLastProjectTaskIdAsync(projectId);
+            
+            var parseTaskType = Enum.GetName((SearchAgileObjectTypeEnum)projectManagementTaskInput.TaskTypeId);
+            var taskType = Enum.Parse<SearchAgileObjectTypeEnum>(parseTaskType!);
 
             // Если идет создание задачи или ошибки.
-            if (new[] { ProjectTaskTypeEnum.Task, ProjectTaskTypeEnum.Error }.Contains(taskType))
+            if (new[] { SearchAgileObjectTypeEnum.Task, SearchAgileObjectTypeEnum.Error }.Contains(taskType))
             {
                 if (maxProjectTaskId < 0)
                 {
@@ -852,7 +878,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             }
             
             // Если идет создание эпика.
-            if (taskType == ProjectTaskTypeEnum.Epic)
+            if (taskType == SearchAgileObjectTypeEnum.Epic)
             {
                 using var transactionScope = _transactionScopeFactory.CreateTransactionScope();
                 
@@ -871,7 +897,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             }
             
             // Если идет создание истории/требования.
-            if (taskType == ProjectTaskTypeEnum.History)
+            if (taskType == SearchAgileObjectTypeEnum.Story)
             {
                 using var transactionScope = _transactionScopeFactory.CreateTransactionScope();
                 

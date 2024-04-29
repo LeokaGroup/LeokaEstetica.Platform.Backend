@@ -2276,6 +2276,27 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
     }
 
     /// <inheritdoc/>
+    public async Task<bool> IfExistsProjectTaskAsync(string taskName, int taskType, long projectId)
+    {
+        var parameters = new DynamicParameters();
+        parameters.Add("@taskName", taskName);
+        parameters.Add("@taskType", taskType);
+        parameters.Add("@projectId", projectId);
+
+        var query = "SELECT EXISTS (SELECT task_id " +
+                    "FROM project_management.project_tasks " +
+                    "WHERE task_type_id = @taskType " +
+                    "AND project_id = @projectId " +
+                    "AND name = @taskName)";
+        
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+        
+        var result = await connection.QueryFirstOrDefaultAsync<bool>(query, parameters);
+
+        return result;
+    }
+
+    /// <inheritdoc/>
     public async Task<TaskSprintOutput> GetSprintTaskAsync(long projectId, long projectTaskId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
