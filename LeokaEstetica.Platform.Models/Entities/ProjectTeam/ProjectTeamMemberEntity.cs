@@ -47,4 +47,9 @@ public class ProjectTeamMemberEntity
     /// FK.
     /// </summary>
     public UserVacancyEntity UserVacancy { get; set; }
+
+    /// <summary>
+    /// Роль участника команды проекта. Заполняется в произвольном виде владельцем проекта.
+    /// </summary>
+    public string? Role { get; set; }
 }

@@ -555,7 +555,7 @@ internal sealed class ProjectRepository : IProjectRepository
             .Select(t => new ProjectTeamEntity
             {
                 ProjectId = t.ProjectId,
-                TeamId = t.TeamId
+                TeamId = t.TeamId,
             })
             .FirstOrDefaultAsync();
 
@@ -580,7 +580,8 @@ internal sealed class ProjectRepository : IProjectRepository
                     UserVacancy = new UserVacancyEntity
                     {
                         VacancyId = ptm.VacancyId ?? 0
-                    }
+                    },
+                    Role = ptm.Role
                 })
             .ToListAsync();
 
