@@ -29,6 +29,16 @@ public static class ValidationConst
         /// Если передали некорректный режим.
         /// </summary>
         public const string EMPTY_MODE = "Передан некорректный режим. Mode был ";
+
+        /// <summary>
+        /// Если не заполнили роль.
+        /// </summary>
+        public const string EMPTY_ROLE = "Роль не заполнена.";
+
+        /// <summary>
+        /// Если не передали Id пользователя.
+        /// </summary>
+        public const string NOT_VALID_USER_ID = "Id пользователя не передан";
     }
 
     /// <summary>
