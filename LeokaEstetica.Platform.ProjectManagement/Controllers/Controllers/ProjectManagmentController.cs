@@ -23,6 +23,8 @@ using Newtonsoft.Json;
 namespace LeokaEstetica.Platform.ProjectManagement.Controllers.Controllers;
 
 /// <summary>
+/// TODO: Разнести на разные контроллеры ендпоинты, которые точно нужно разделить по предметной области.
+/// TODO: Фронт аналогично потребуется разделять.
 /// Контроллер управления проектами.
 /// </summary>
 [ApiController]
