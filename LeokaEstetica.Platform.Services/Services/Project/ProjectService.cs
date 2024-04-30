@@ -1443,6 +1443,25 @@ internal sealed class ProjectService : IProjectService
         }
     }
 
+    /// <inheritdoc />
+    public async Task SetProjectTeamMemberRoleAsync(long userId, string? role, long projectId)
+    {
+        try
+        {
+            // Находим Id команды проекта.
+            var teamId = await _projectRepository.GetProjectTeamIdAsync(projectId);
+       
+            // Назначаем участнику команды проекта роль.
+            await _projectRepository.SetProjectTeamMemberRoleAsync(userId, role, teamId);
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
     /// <summary>
     /// Метод запускает првоерки на разные условия прежде чем вывести проекты в каталог.
     /// Проекты могут быть отсеяны, если не проходят по условиям.

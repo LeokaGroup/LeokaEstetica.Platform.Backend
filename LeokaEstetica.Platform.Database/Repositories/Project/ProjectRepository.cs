@@ -1,4 +1,7 @@
 using System.Data;
+using Dapper;
+using LeokaEstetica.Platform.Base.Abstractions.Connection;
+using LeokaEstetica.Platform.Base.Abstractions.Repositories.Base;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.Chat;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Enums;
@@ -21,7 +24,7 @@ namespace LeokaEstetica.Platform.Database.Repositories.Project;
 /// <summary>
 /// Класс реализует метод репозитория проектов.
 /// </summary>
-internal sealed class ProjectRepository : IProjectRepository
+internal sealed class ProjectRepository : BaseRepository, IProjectRepository
 {
     private readonly PgContext _pgContext;
     private readonly IChatRepository _chatRepository;
@@ -41,7 +44,8 @@ internal sealed class ProjectRepository : IProjectRepository
     /// <param name="pgContext">Датаконтекст.</param>
     /// <param name="chatRepository">Репозиторий чата.</param>
     public ProjectRepository(PgContext pgContext,
-        IChatRepository chatRepository)
+        IChatRepository chatRepository,
+        IConnectionProvider connectionProvider) : base(connectionProvider)
     {
         _pgContext = pgContext;
         _chatRepository = chatRepository;
@@ -1255,6 +1259,24 @@ internal sealed class ProjectRepository : IProjectRepository
         prj!.ProjectManagementName = projectManagementName;
         
         await _pgContext.SaveChangesAsync();
+    }
+
+    /// <inheritdoc />
+    public async Task SetProjectTeamMemberRoleAsync(long userId, string? role, long teamId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@userId", userId);
+        parameters.Add("@role", role);
+        parameters.Add("@teamId", teamId);
+
+        var query = "UPDATE \"Teams\".\"ProjectsTeamsMembers\" " +
+                    "SET \"Role\" = @role " +
+                    "WHERE \"UserId\" = @userId " +
+                    "AND \"TeamId\" = @teamId";
+        
+        await connection.ExecuteAsync(query, parameters);
     }
 
     #region Приватные методы.

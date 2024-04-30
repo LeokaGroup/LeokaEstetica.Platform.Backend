@@ -177,7 +177,7 @@ internal class BaseServiceTest
         ProfileService = new ProfileService(null, profileRepository, userRepository, mapper, null, null,
             accessUserService, resumeModerationRepository, discordService);
 
-        var projectRepository = new ProjectRepository(pgContext, ChatRepository);
+        var projectRepository = new ProjectRepository(pgContext, ChatRepository, connectionProvider);
         var projectNotificationsRepository = new ProjectNotificationsRepository(pgContext);
         var vacancyRepository = new VacancyRepository(pgContext);
         var projectNotificationsService = new ProjectNotificationsService(null, null, userRepository, mapper,
