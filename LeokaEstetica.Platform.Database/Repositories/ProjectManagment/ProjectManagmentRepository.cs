@@ -1531,8 +1531,7 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         var existsQuery = "SELECT EXISTS (SELECT strategy_id " +
                           "FROM settings.project_user_strategy " +
                           "WHERE project_id = @projectId " +
-                          "AND user_id = @userId " +
-                          "AND strategy = @strategy)";
+                          "AND user_id = @userId) ";
         var existsSetting = await connection.QueryFirstOrDefaultAsync<bool>(existsQuery, parameters);
 
         // Такой настройки нет, добавляем.
@@ -2273,6 +2272,25 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         using var connection = await ConnectionProvider.GetConnectionAsync();
         
         var result = await connection.QueryFirstOrDefaultAsync<bool>(query, parameters);
+
+        return result;
+    }
+
+    /// <inheritdoc/>
+    public async Task<string?> GetProjectUserStrategyAsync(long projectId, long userId)
+    {
+        var parameters = new DynamicParameters();
+        parameters.Add("@projectId", projectId);
+        parameters.Add("@userId", userId);
+
+        var query = "SELECT strategy " +
+                    "FROM settings.project_user_strategy " +
+                    "WHERE project_id = @projectId " +
+                    "AND user_id = @userId";
+        
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+        
+        var result = await connection.QueryFirstOrDefaultAsync<string?>(query, parameters);
 
         return result;
     }

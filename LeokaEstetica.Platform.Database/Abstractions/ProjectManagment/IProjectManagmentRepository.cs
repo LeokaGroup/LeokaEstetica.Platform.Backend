@@ -634,4 +634,12 @@ public interface IProjectManagmentRepository
     /// <param name="projectId">Id проекта.</param>
     /// <returns>Признак результата проверки.</returns>
     Task<bool> IfExistsProjectTaskAsync(string taskName, int taskType, long projectId);
+
+    /// <summary>
+    /// Метод получает выбранную пользователем стратегию представления.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Стратегия представления.</returns>
+    Task<string?> GetProjectUserStrategyAsync(long projectId, long userId);
 }
