@@ -1,1 +1,1 @@
-CREATE SCHEMA settings;
+CREATE SCHEMA IF NOT EXISTS settings;

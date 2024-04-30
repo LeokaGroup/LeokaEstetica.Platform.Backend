@@ -1,4 +1,4 @@
-CREATE TABLE settings.project_user_strategy
+CREATE TABLE IF NOT EXISTS settings.project_user_strategy
 (
     strategy_id SERIAL,
     project_id  BIGINT                NOT NULL,

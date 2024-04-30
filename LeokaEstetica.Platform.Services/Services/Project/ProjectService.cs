@@ -1810,7 +1810,8 @@ internal sealed class ProjectService : IProjectService
             VacancyName = vacancyName,
             Member = FillProjectTeamMemberAsync(user), // Заполняем участника команды проекта.
             Joined = CreateDateResult(member.Joined), // Форматируем даты.
-            UserId = member.UserId
+            UserId = member.UserId,
+            Role = member.Role
         };
 
         return team;
