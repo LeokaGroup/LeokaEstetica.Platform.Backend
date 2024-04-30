@@ -619,18 +619,10 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 
             // Проставляем Id шаблона статусам.
             await SetProjectManagmentTemplateIdsAsync(statuses);
-            
-            // TODO: Получать сохраненную стратегию пользователя, а не всего проекта.
-            var strategy = projectSettingsItems.Find(x =>
-                x.ParamKey.Equals(GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_STRATEGY));
 
-            var result = new ProjectManagmentWorkspaceResult
-            {
-                ProjectManagmentTaskStatuses = statuses.First().ProjectManagmentTaskStatusTemplates
-                    .Where(x => x.TemplateId == templateId),
-                Strategy = strategy!.ParamValue
-            };
-            
+            // Получаем выбранную пользователем стратегию представления.
+            var strategy = await _projectManagmentRepository.GetProjectUserStrategyAsync(projectId, userId);
+
             var modifyStatusesTimer = new Stopwatch();
                 
             _logger?.LogInformation(
@@ -639,7 +631,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             modifyStatusesTimer.Start();
 
             // Получаем задачи пользователя, которые принадлежат проекту в рабочем пространстве.
-            var projectTasks = await _projectManagmentRepository.GetProjectTasksAsync(projectId, strategy!.ParamValue);
+            var projectTasks = await _projectManagmentRepository.GetProjectTasksAsync(projectId, strategy!);
             
             modifyStatusesTimer.Stop();
                 
@@ -648,6 +640,13 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 $"за: {modifyStatusesTimer.ElapsedMilliseconds} мсек.");
             
             var tasks = projectTasks?.AsList();
+            
+            var result = new ProjectManagmentWorkspaceResult
+            {
+                ProjectManagmentTaskStatuses = statuses.First().ProjectManagmentTaskStatusTemplates
+                    .Where(x => x.TemplateId == templateId),
+                Strategy = strategy!
+            };
 
             // Если задачи есть, то модифицируем выходные данные.
             if (tasks is not null && tasks.Any())
@@ -2367,22 +2366,23 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 throw ex;
             }
 
-            string shortSysName;
+            ProjectStrategyEnum shortSysName;
 
             switch (strategySysName)
             {
                 case "Kanban":
-                    shortSysName = "kn";
+                    shortSysName = ProjectStrategyEnum.Kn;
                     break;
 
                 case "Scrum":
-                    shortSysName = "sm";
+                    shortSysName = ProjectStrategyEnum.Sm;
                     break;
 
                 default:
                     throw new InvalidOperationException($"Неизвестный тип стратегии: {strategySysName}.");
             }
 
+            // Фиксируем выбранную пользователем стратегию представления в БД.
             await _projectManagmentRepository.FixationProjectViewStrategyAsync(shortSysName, projectId, userId);
         }
         

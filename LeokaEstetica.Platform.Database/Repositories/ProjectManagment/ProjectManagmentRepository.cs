@@ -1518,60 +1518,40 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
     }
 
     /// <inheritdoc />
-    public async Task FixationProjectViewStrategyAsync(string strategySysName, long projectId, long userId)
+    public async Task FixationProjectViewStrategyAsync(ProjectStrategyEnum strategySysName, long projectId,
+        long userId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
 
         var parameters = new DynamicParameters();
-        parameters.Add("@strategySysName", strategySysName);
         parameters.Add("@projectId", projectId);
         parameters.Add("@userId", userId);
-        parameters.Add("@key", GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_STRATEGY);
-        parameters.Add("@paramType", "String");
-        parameters.Add("@description", "Выбранная пользователем стратегия представления.");
-        parameters.Add("@tag", "Project management settings");
-        parameters.Add("@lastUserDate", DateTime.UtcNow);
+        parameters.Add("@strategy", new Enum(strategySysName));
 
-        var existsParameters = new DynamicParameters();
-        existsParameters.Add("@userId", userId);
-        existsParameters.Add("@key", GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_STRATEGY);
-
-        var existsQuery = "SELECT EXISTS (SELECT \"ConfigId\" " +
-                          "FROM \"Configs\".\"ProjectManagmentProjectSettings\" " +
-                          "WHERE \"UserId\" = @userId " +
-                          "AND \"ParamKey\" = @key)";
-        var existsSetting = await connection.QueryFirstOrDefaultAsync<bool>(existsQuery, existsParameters);
+        var existsQuery = "SELECT EXISTS (SELECT strategy_id " +
+                          "FROM settings.project_user_strategy " +
+                          "WHERE project_id = @projectId " +
+                          "AND user_id = @userId) ";
+        var existsSetting = await connection.QueryFirstOrDefaultAsync<bool>(existsQuery, parameters);
 
         // Такой настройки нет, добавляем.
         if (!existsSetting)
         {
-            var queryInsertSetting = "INSERT INTO \"Configs\".\"ProjectManagmentProjectSettings\" " +
-                        "(\"ProjectId\", \"UserId\", \"ParamKey\", \"ParamValue\", \"ParamType\", \"ParamDescription\"," +
-                        " \"ParamTag\", \"LastUserDate\") " +
-                        "VALUES (@projectId, @userId, @key, @strategySysName, @paramType, @description, @tag," +
-                        " @lastUserDate)";
-            
-            await connection.ExecuteAsync(queryInsertSetting, parameters);
+            var queryInsert = "INSERT INTO settings.project_user_strategy (project_id, user_id, strategy) " +
+                              "VALUES (@projectId, @userId, @strategy)";
+
+            await connection.ExecuteAsync(queryInsert, parameters);
+
+            return;
         }
-        
+
         // Такая настройка есть, обновляем.
-        else
-        {
-            var queryUpdateSetting = "UPDATE \"Configs\".\"ProjectManagmentProjectSettings\" " +
-                                     "SET \"ProjectId\" = @projectId" +
-                                     ", \"UserId\" = @userId" +
-                                     ", \"ParamKey\" = @key" +
-                                     ", \"ParamValue\" = @strategySysName" +
-                                     ", \"ParamType\" = @paramType" +
-                                     ", \"ParamDescription\" = @description" +
-                                     ", \"ParamTag\" = @tag" +
-                                     ", \"LastUserDate\" = @lastUserDate " +
-                                     "WHERE \"UserId\" = @userId " +
-                                     "AND \"ProjectId\" = @projectId " +
-                                     "AND \"ParamKey\" = @key";
+        var queryUpdate = "UPDATE settings.project_user_strategy " +
+                                 "SET project_id = @projectId, " +
+                                 "user_id = @userId, " +
+                                 "strategy = @strategy";
                                      
-            await connection.ExecuteAsync(queryUpdateSetting, parameters);
-        }
+        await connection.ExecuteAsync(queryUpdate, parameters);
     }
 
     /// <inheritdoc />
@@ -2292,6 +2272,25 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         using var connection = await ConnectionProvider.GetConnectionAsync();
         
         var result = await connection.QueryFirstOrDefaultAsync<bool>(query, parameters);
+
+        return result;
+    }
+
+    /// <inheritdoc/>
+    public async Task<string?> GetProjectUserStrategyAsync(long projectId, long userId)
+    {
+        var parameters = new DynamicParameters();
+        parameters.Add("@projectId", projectId);
+        parameters.Add("@userId", userId);
+
+        var query = "SELECT strategy " +
+                    "FROM settings.project_user_strategy " +
+                    "WHERE project_id = @projectId " +
+                    "AND user_id = @userId";
+        
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+        
+        var result = await connection.QueryFirstOrDefaultAsync<string?>(query, parameters);
 
         return result;
     }

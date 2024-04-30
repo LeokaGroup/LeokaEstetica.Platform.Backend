@@ -12,7 +12,7 @@ using LeokaEstetica.Platform.Services.Abstractions.ProjectManagment;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 
-namespace LeokaEstetica.Platform.ProjectManagment.Controllers;
+namespace LeokaEstetica.Platform.ProjectManagement.Controllers.Controllers;
 
 /// <summary>
 /// Контроллер настроек управления проектами.
