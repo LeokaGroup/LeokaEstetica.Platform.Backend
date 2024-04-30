@@ -13,5 +13,5 @@ public class TaskSprintOutput
     /// <summary>
     /// Название спринта.
     /// </summary>
-    public string SprintName { get; set; }
+    public string? SprintName { get; set; }
 }

@@ -1,11 +1,11 @@
 ﻿using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 
-namespace LeokaEstetica.Platform.Services.Abstractions.ProjectManagment;
+namespace LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 
 /// <summary>
-/// Абстракция сервиса спринтов.
+/// Абстракция репозитория спринтов.
 /// </summary>
-public interface ISprintService
+public interface ISprintRepository
 {
     /// <summary>
     /// Метод получает список спринтов для бэклога проекта.
