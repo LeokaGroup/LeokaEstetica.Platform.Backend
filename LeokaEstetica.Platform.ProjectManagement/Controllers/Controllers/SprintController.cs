@@ -11,7 +11,7 @@ namespace LeokaEstetica.Platform.ProjectManagement.Controllers.Controllers;
 /// Контроллер работы со спринтами.
 /// </summary>
 [ApiController]
-[Route("sprint")]
+[Route("sprints")]
 [AuthFilter]
 public class SprintController : BaseController
 {
@@ -40,7 +40,7 @@ public class SprintController : BaseController
     /// <param name="projectId"></param>
     /// <returns>Список спринтов бэклога проекта.</returns>
     [HttpGet]
-    [Route("backlog-sprints")]
+    [Route("sprint-list")]
     [ProducesResponseType(200)]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]
