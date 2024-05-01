@@ -27,7 +27,12 @@ internal sealed class SprintRepository : BaseRepository, ISprintRepository
         var parameters = new DynamicParameters();
         parameters.Add("@projectId", projectId);
 
-        var query = "SELECT s.sprint_id, s.date_start, s.date_end, s.sprint_goal, s.sprint_status_id, s.project_id," +
+        var query = "SELECT s.sprint_id," +
+                    " s.date_start, s.date_end," +
+                    " s.sprint_goal," +
+                    " s.sprint_status_id," +
+                    " s.project_id," +
+                    " s.project_sprint_id," +
                     " s.sprint_name " +
                     "FROM project_management.sprints AS s " +
                     "INNER JOIN project_management.sprint_statuses AS ss " +

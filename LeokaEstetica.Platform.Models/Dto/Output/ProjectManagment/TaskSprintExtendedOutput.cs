@@ -34,4 +34,9 @@ public class TaskSprintExtendedOutput : TaskSprintOutput
     /// Id проекта.
     /// </summary>
     public long ProjectId { get; set; }
+
+    /// <summary>
+    /// Id спринта в рамках проекта.
+    /// </summary>
+    public long ProjectSprintId { get; set; }
 }
