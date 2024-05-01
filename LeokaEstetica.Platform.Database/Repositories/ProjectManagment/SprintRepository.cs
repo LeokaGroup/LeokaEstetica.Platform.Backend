@@ -20,7 +20,7 @@ internal sealed class SprintRepository : BaseRepository, ISprintRepository
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<TaskSprintExtendedOutput>> GetSprintsAsync(long projectId)
+    public async Task<IEnumerable<TaskSprintExtendedOutput>?> GetSprintsAsync(long projectId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
 
@@ -33,13 +33,42 @@ internal sealed class SprintRepository : BaseRepository, ISprintRepository
                     " s.sprint_status_id," +
                     " s.project_id," +
                     " s.project_sprint_id," +
-                    " s.sprint_name " +
+                    " s.sprint_name" +
+                    " ss.status_name AS SprintStatusName " +
                     "FROM project_management.sprints AS s " +
                     "INNER JOIN project_management.sprint_statuses AS ss " +
                     "ON s.sprint_status_id = ss.status_id " +
                     "WHERE s.project_id = @projectId";
 
         var result = await connection.QueryAsync<TaskSprintExtendedOutput>(query, parameters);
+
+        return result;
+    }
+
+    /// <inheritdoc/>
+    public async Task<TaskSprintExtendedOutput?> GetSprintAsync(long projectSprintId, long projectId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@projectSprintId", projectSprintId);
+        parameters.Add("@projectId", projectId);
+        
+        var query = "SELECT s.sprint_id," +
+                    " s.date_start, s.date_end," +
+                    " s.sprint_goal," +
+                    " s.sprint_status_id," +
+                    " s.project_id," +
+                    " s.project_sprint_id," +
+                    " s.sprint_name," +
+                    " ss.status_name AS SprintStatusName " +
+                    "FROM project_management.sprints AS s " +
+                    "INNER JOIN project_management.sprint_statuses AS ss " +
+                    "ON s.sprint_status_id = ss.status_id " +
+                    "WHERE s.project_id = @projectId " +
+                    "AND s.project_sprint_id = @projectSprintId";
+
+        var result = await connection.QueryFirstOrDefaultAsync<TaskSprintExtendedOutput>(query, parameters);
 
         return result;
     }

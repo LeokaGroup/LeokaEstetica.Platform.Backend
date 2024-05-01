@@ -32,6 +32,30 @@ internal sealed class SprintService : ISprintService
         {
             var result = await _sprintRepository.GetSprintsAsync(projectId);
 
+            return result ?? Enumerable.Empty<TaskSprintExtendedOutput>();
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task<TaskSprintExtendedOutput> GetSprintAsync(long projectSprintId, long projectId)
+    {
+        try
+        {
+            var result = await _sprintRepository.GetSprintAsync(projectSprintId, projectId);
+
+            if (result is null)
+            {
+                throw new InvalidOperationException("Не удалось получить детали спринта. " +
+                                                    $"ProjectSprintId: {projectSprintId}. " +
+                                                    $"ProjectId: {projectId}.");
+            }
+
             return result;
         }
         

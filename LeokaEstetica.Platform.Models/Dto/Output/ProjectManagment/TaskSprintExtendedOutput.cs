@@ -28,7 +28,7 @@ public class TaskSprintExtendedOutput : TaskSprintOutput
     /// <summary>
     /// Название статуса спринта.
     /// </summary>
-    public int SprintStatusName { get; set; }
+    public string? SprintStatusName { get; set; }
 
     /// <summary>
     /// Id проекта.
