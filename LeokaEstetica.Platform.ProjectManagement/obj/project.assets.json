@@ -12186,11 +12186,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\mrtab\\Documents\\GitHub\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.ProjectManagement\\LeokaEstetica.Platform.ProjectManagement.csproj",
+      "projectUniqueName": "C:\\Users\\mrtab\\Source\\Repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.ProjectManagement\\LeokaEstetica.Platform.ProjectManagement.csproj",
       "projectName": "LeokaEstetica.Platform.ProjectManagement",
-      "projectPath": "C:\\Users\\mrtab\\Documents\\GitHub\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.ProjectManagement\\LeokaEstetica.Platform.ProjectManagement.csproj",
+      "projectPath": "C:\\Users\\mrtab\\Source\\Repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.ProjectManagement\\LeokaEstetica.Platform.ProjectManagement.csproj",
       "packagesPath": "C:\\Users\\mrtab\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\mrtab\\Documents\\GitHub\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.ProjectManagement\\obj\\",
+      "outputPath": "C:\\Users\\mrtab\\Source\\Repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.ProjectManagement\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -12212,17 +12212,17 @@
         "net8.0": {
           "targetAlias": "net8.0",
           "projectReferences": {
-            "C:\\Users\\mrtab\\Documents\\GitHub\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Core\\LeokaEstetica.Platform.Core.csproj": {
-              "projectPath": "C:\\Users\\mrtab\\Documents\\GitHub\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Core\\LeokaEstetica.Platform.Core.csproj"
+            "C:\\Users\\mrtab\\Source\\Repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Core\\LeokaEstetica.Platform.Core.csproj": {
+              "projectPath": "C:\\Users\\mrtab\\Source\\Repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Core\\LeokaEstetica.Platform.Core.csproj"
             },
-            "C:\\Users\\mrtab\\Documents\\GitHub\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Notifications\\LeokaEstetica.Platform.Notifications.csproj": {
-              "projectPath": "C:\\Users\\mrtab\\Documents\\GitHub\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Notifications\\LeokaEstetica.Platform.Notifications.csproj"
+            "C:\\Users\\mrtab\\Source\\Repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Notifications\\LeokaEstetica.Platform.Notifications.csproj": {
+              "projectPath": "C:\\Users\\mrtab\\Source\\Repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Notifications\\LeokaEstetica.Platform.Notifications.csproj"
             },
-            "C:\\Users\\mrtab\\Documents\\GitHub\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Redis\\LeokaEstetica.Platform.Redis.csproj": {
-              "projectPath": "C:\\Users\\mrtab\\Documents\\GitHub\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Redis\\LeokaEstetica.Platform.Redis.csproj"
+            "C:\\Users\\mrtab\\Source\\Repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Redis\\LeokaEstetica.Platform.Redis.csproj": {
+              "projectPath": "C:\\Users\\mrtab\\Source\\Repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Redis\\LeokaEstetica.Platform.Redis.csproj"
             },
-            "C:\\Users\\mrtab\\Documents\\GitHub\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Services\\LeokaEstetica.Platform.Services.csproj": {
-              "projectPath": "C:\\Users\\mrtab\\Documents\\GitHub\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Services\\LeokaEstetica.Platform.Services.csproj"
+            "C:\\Users\\mrtab\\Source\\Repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Services\\LeokaEstetica.Platform.Services.csproj": {
+              "projectPath": "C:\\Users\\mrtab\\Source\\Repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.Services\\LeokaEstetica.Platform.Services.csproj"
             }
           }
         }

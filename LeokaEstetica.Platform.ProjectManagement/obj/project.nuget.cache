@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "tjciQMsV5vbTHx614KGhFNSz58GAWuA0shU6myH2+VUKNGZid6LtjAJETuLpYq2utGmaLsTCvkm5znEoZdH9Gg==",
+  "dgSpecHash": "KEmFKp0Ini0BCjZ1Jwi4r+xbxxzrYkm+Lci+DPDCVgiBHWZMZ5wwLZEGVqrPIFrj+zWMDCdFUoILxBHUantZow==",
   "success": true,
-  "projectFilePath": "C:\\Users\\mrtab\\Documents\\GitHub\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.ProjectManagement\\LeokaEstetica.Platform.ProjectManagement.csproj",
+  "projectFilePath": "C:\\Users\\mrtab\\Source\\Repos\\LeokaEstetica.Platform.Backend\\LeokaEstetica.Platform.ProjectManagement\\LeokaEstetica.Platform.ProjectManagement.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\mrtab\\.nuget\\packages\\autofac\\6.4.0\\autofac.6.4.0.nupkg.sha512",
     "C:\\Users\\mrtab\\.nuget\\packages\\autofac.extensions.dependencyinjection\\8.0.0\\autofac.extensions.dependencyinjection.8.0.0.nupkg.sha512",
