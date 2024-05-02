@@ -40,3 +40,11 @@ public class TaskSprintExtendedOutput : TaskSprintOutput
     /// </summary>
     public long ProjectSprintId { get; set; }
 }
+
+/// <summary>
+/// Класс выходной модели задачи спринта.
+/// </summary>
+public class SprintTaskOutput
+{
+    
+}

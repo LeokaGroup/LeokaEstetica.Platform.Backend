@@ -61,9 +61,13 @@ internal sealed class SprintRepository : BaseRepository, ISprintRepository
                     " s.project_id," +
                     " s.project_sprint_id," +
                     " s.sprint_name," +
+                    " st.sprint_id," +
+                    " st.project_task_id" +
                     " ss.status_name AS SprintStatusName " +
                     "FROM project_management.sprints AS s " +
                     "INNER JOIN project_management.sprint_statuses AS ss " +
+                    "LEFT JOIN project_management.sprint_tasks AS st " +
+                    "ON s.sprint_id = st.sprint_id" +
                     "ON s.sprint_status_id = ss.status_id " +
                     "WHERE s.project_id = @projectId " +
                     "AND s.project_sprint_id = @projectSprintId";
