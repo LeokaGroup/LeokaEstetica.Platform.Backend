@@ -292,17 +292,17 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
             stage.StageId = (int)updateProjectInput.ProjectStageEnum;
             
             // Если проект уже был на модерации, то обновим статус.
-            var isModerationExists = await IsModerationExistsProjectAsync(projectId);
+            var isModerationExists = await IsModerationExistsProjectAsync(projectId.Value);
             
             if (!isModerationExists)
             {
                 // Отправляем проект на модерацию.
-                await SendModerationProjectAsync(projectId);
+                await SendModerationProjectAsync(projectId.Value);
             }
             
             else
             {
-                await UpdateModerationProjectStatusAsync(projectId, ProjectModerationStatusEnum.ModerationProject);
+                await UpdateModerationProjectStatusAsync(projectId.Value, ProjectModerationStatusEnum.ModerationProject);
             }
 
             var result = new UpdateProjectOutput
@@ -311,7 +311,7 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
                 ProjectName = project.ProjectName,
                 ProjectDetails = project.ProjectDetails,
                 ProjectIcon = project.ProjectIcon,
-                ProjectId = projectId
+                ProjectId = projectId.Value
             };
 
             await _pgContext.SaveChangesAsync();
