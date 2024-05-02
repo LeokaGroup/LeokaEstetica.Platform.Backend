@@ -28,7 +28,7 @@ public partial class WisheOfferConfiguration : IEntityTypeConfiguration<WisheOff
         
         entity.Property(e => e.DateCreated)
             .HasColumnName("DateCreated")
-            .HasColumnType("timestamp")
+            .HasColumnType("timestamp with time zone")
             .IsRequired();
         
         entity.HasIndex(u => u.WisheOfferId)
