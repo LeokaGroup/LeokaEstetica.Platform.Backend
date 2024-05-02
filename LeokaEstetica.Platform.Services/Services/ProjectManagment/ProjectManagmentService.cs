@@ -2962,7 +2962,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             throw new InvalidOperationException("Не удалось получить исполнителей задач.");
         }
 
-        IDictionary<int, ProjectTagOutput> tags = null;
+        IDictionary<int, ProjectTagOutput>? tags = null;
 
         // Если есть теги, то пойдем получать.
         if (tasks.Any(x => x.TagIds is not null))
@@ -2976,14 +2976,14 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 
         var statusIds = tasks.Select(x => x.TaskStatusId);
         var statuseNames = (await _projectManagmentTemplateRepository.GetTaskTemplateStatusesAsync(statusIds))
-            .ToList();
+            .AsList();
 
         var resolutionIds = tasks
             .Where(x => x.ResolutionId is not null)
             .Select(x => (int)x.ResolutionId)
-            .ToList();
+            .AsList();
 
-        IDictionary<int, TaskResolutionOutput> resolutions = null;
+        IDictionary<int, TaskResolutionOutput>? resolutions = null;
 
         // Если есть резолюции задач, пойдем получать их.
         // Если каких то нет, не страшно, значит они не заполнены у задач.
@@ -2996,9 +2996,9 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         var priorityIds = tasks
             .Where(x => x.PriorityId is not null)
             .Select(x => (int)x.PriorityId)
-            .ToList();
+            .AsList();
         
-        IDictionary<int, TaskPriorityOutput> priorities = null;
+        IDictionary<int, TaskPriorityOutput>? priorities = null;
         
         // Если есть приоритеты задач, пойдем получать их.
         // Если каких то нет, не страшно, значит они не заполнены у задач.
@@ -3011,9 +3011,9 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         var watcherIds = tasks
             .Where(x => x.WatcherIds is not null)
             .SelectMany(x => x.WatcherIds)
-            .ToList();
+            .AsList();
 
-        IDictionary<long, UserInfoOutput> watchers = null;
+        IDictionary<long, UserInfoOutput>? watchers = null;
 
         // Если есть наблюдатели, пойдем получать их.
         // Если каких то нет, не страшно, значит они не заполнены у задач.
