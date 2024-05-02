@@ -289,7 +289,7 @@ internal class BaseServiceTest
         ReversoService = new ReversoService(null);
         ProjectManagmentService = new ProjectManagmentService(null, ProjectManagmentRepository, mapper, userRepository,
             projectRepository, discordService, projectManagmentTemplateRepository, transactionScopeFactory,
-            projectSettingsConfigRepository, new Lazy<IReversoService>(ReversoService), null, null, UserService);
+            projectSettingsConfigRepository, new Lazy<IReversoService>(ReversoService), null, null, UserService, null);
 
         var searchProjectManagementRepository = new SearchProjectManagementRepository(connectionProvider);
         SearchProjectManagementService = new SearchProjectManagementService(null,

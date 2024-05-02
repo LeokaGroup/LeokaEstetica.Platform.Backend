@@ -306,5 +306,13 @@ public class ServicesModule : Module
         builder.RegisterType<SprintService>()
             .As<ISprintService>()
             .InstancePerLifetimeScope();
+            
+        // Сервис распределения задач по статусам шаблона проекта.
+        builder.RegisterType<DistributionStatusTaskService>()
+            .Named<IDistributionStatusTaskService>("DistributionStatusTaskService")
+            .InstancePerLifetimeScope();
+        builder.RegisterType<DistributionStatusTaskService>()
+            .As<IDistributionStatusTaskService>()
+            .InstancePerLifetimeScope();
     }
 }
