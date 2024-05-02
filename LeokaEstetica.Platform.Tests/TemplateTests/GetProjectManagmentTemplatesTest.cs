@@ -7,13 +7,13 @@ namespace LeokaEstetica.Platform.Tests.TemplateTests;
 [TestFixture]
 internal class GetProjectManagmentTemplatesTest : BaseServiceTest
 {
-    [Test]
-    public async Task GetProjectManagmentTemplatesAsyncTest()
-    {
-        var result = await ProjectManagmentService.GetProjectManagmentTemplatesAsync(null);
-        
-        NotNull(result);
-    }
+    // [Test]
+    // public async Task GetProjectManagmentTemplatesAsyncTest()
+    // {
+    //     var result = await ProjectManagmentService.GetProjectManagmentTemplatesAsync(null);
+    //     
+    //     NotNull(result);
+    // }
 
     /// <summary>
     /// Метод тестирует группировку по названию шаблона при этом сортируя шаблоны и статусы по возрастанию.

@@ -50,7 +50,7 @@ public interface IProjectManagmentRepository
     /// <param name="projectId">Id проекта.</param>
     /// <param name="strategy">Стратегия пользователя.</param>
     /// <returns>Задачи проекта.</returns>
-    Task<IEnumerable<ProjectTaskExtendedEntity>> GetProjectTasksAsync(long projectId, string strategy);
+    Task<IEnumerable<ProjectTaskExtendedEntity>?> GetProjectTasksAsync(long projectId, string strategy);
 
     /// <summary>
     /// Метод получает названия тегов (меток) задач по их Id.

@@ -40,25 +40,6 @@ public interface IProjectManagmentService
     Task<GetPanelResult> ModifyPanelItemsAsync(IEnumerable<PanelOutput> items);
 
     /// <summary>
-    /// Метод получает список шаблонов задач, которые пользователь может выбрать перед переходом в рабочее пространство.
-    /// </summary>
-    /// <param name="templateId">Id шаблона.</param>
-    /// <returns>Список шаблонов задач.</returns>
-    Task<IEnumerable<ProjectManagmentTaskTemplateResult>> GetProjectManagmentTemplatesAsync(long? templateId);
-
-    /// <summary>
-    /// Метод проставляет Id шаблонов статусам для результата.
-    /// </summary>
-    /// <param name="templateStatuses">Список статусов.</param>
-    Task SetProjectManagmentTemplateIdsAsync(List<ProjectManagmentTaskTemplateResult> templateStatuses);
-    
-    /// <summary>
-    /// Метод проставляет Id шаблонов статусам для результата.
-    /// </summary>
-    /// <param name="templateStatuses">Список статусов.</param>
-    Task SetProjectManagmentTemplateIdsAsync(List<TaskStatusOutput> templateStatuses);
-
-    /// <summary>
     /// Метод получает конфигурацию рабочего пространства по выбранному шаблону.
     /// Под конфигурацией понимаются основные элементы рабочего пространства (набор задач, статусов, фильтров, колонок и тд)
     /// если выбранный шаблон это предполагает.

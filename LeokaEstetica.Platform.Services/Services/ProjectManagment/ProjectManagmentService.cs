@@ -63,6 +63,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     private readonly Lazy<IProjectManagementNotificationService> _projectManagementNotificationService;
     private readonly IUserService _userService;
     private readonly Lazy<IDistributionStatusTaskService> _distributionStatusTaskService;
+    private readonly IProjectManagementTemplateService _projectManagementTemplateService;
 
     /// <summary>
     /// Статусы задач, которые являются самыми базовыми и никогда не меняются независимо от шаблона проекта.
@@ -89,6 +90,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     /// <param name="sprintNotificationsService">Сервис уведомлений спринтов.</param>
     /// <param name="userService">Сервис пользователей.</param>
     /// <param name="distributionStatusTaskService">Сервис распределение задач по статусам.</param>
+    /// <param name="projectManagementTemplateService">Сервис шаблонов проекта.</param>
     /// </summary>
     public ProjectManagmentService(ILogger<ProjectManagmentService> logger,
         IProjectManagmentRepository projectManagmentRepository,
@@ -103,7 +105,8 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         Lazy<IFileManagerService> fileManagerService,
         Lazy<IProjectManagementNotificationService> projectManagementNotificationService,
         IUserService userService,
-        Lazy<IDistributionStatusTaskService> distributionStatusTaskService)
+        Lazy<IDistributionStatusTaskService> distributionStatusTaskService,
+        IProjectManagementTemplateService projectManagementTemplateService)
     {
         _logger = logger;
         _projectManagmentRepository = projectManagmentRepository;
@@ -119,6 +122,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         _projectManagementNotificationService = projectManagementNotificationService;
         _userService = userService;
         _distributionStatusTaskService = distributionStatusTaskService;
+        _projectManagementTemplateService = projectManagementTemplateService;
     }
 
     #region Публичные методы.
@@ -438,95 +442,6 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         }
     }
 
-    /// <summary>
-    /// Метод получает список шаблонов задач, которые пользователь может выбрать перед переходом в рабочее пространство.
-    /// </summary>
-    /// <param name="templateId">Id шаблона.</param>
-    /// <returns>Список шаблонов задач.</returns>
-    public async Task<IEnumerable<ProjectManagmentTaskTemplateResult>> GetProjectManagmentTemplatesAsync(
-        long? templateId)
-    {
-        try
-        {
-            var items = (await _projectManagmentRepository.GetProjectManagmentTemplatesAsync(templateId))
-                .ToList();
-            
-            // Разбиваем статусы на группы (кажда группа это отдельный шаблон со статусами).
-            var templateIds = items.Select(x => x.TemplateId).Distinct().ToList();
-            var result = new List<ProjectManagmentTaskTemplateResult>();
-
-            foreach (var tid in templateIds)
-            {
-                // Выбираем все статусы определенного шаблона и добавляем в результат. 
-                var templateStatuses = items.Where(x => x.TemplateId == tid);
-                var resultItem = new ProjectManagmentTaskTemplateResult
-                {
-                    TemplateName = templateStatuses.First().TemplateName,
-                    ProjectManagmentTaskStatusTemplates =
-                        _mapper.Map<IEnumerable<ProjectManagmentTaskStatusTemplateOutput>>(templateStatuses)
-                };
-                result.Add(resultItem);
-            }
-
-            return result;
-        }
-
-        catch (Exception ex)
-        {
-            _logger?.LogError(ex, ex.Message);
-            throw;
-        }
-    }
-
-    /// <summary>
-    /// Метод проставляет Id шаблонов статусам для результата.
-    /// </summary>
-    /// <param name="templateStatuses">Список статусов.</param>
-    public async Task SetProjectManagmentTemplateIdsAsync(List<ProjectManagmentTaskTemplateResult> templateStatuses)
-    {
-        try
-        {
-            if (templateStatuses is null || !templateStatuses.Any())
-            {
-                throw new InvalidOperationException(
-                    "Невозможно проставить Id щаблонов статусам задач." +
-                    $" TemplateStatuses: {JsonConvert.SerializeObject(templateStatuses)}");
-            }
-
-            // Находим в БД все статусы по их Id.
-            var templateStatusIds = templateStatuses
-                .SelectMany(x => x.ProjectManagmentTaskStatusTemplates
-                    .Select(y => y.StatusId));
-            var items = templateStatuses
-                .SelectMany(x => x.ProjectManagmentTaskStatusTemplates
-                    .Select(y => y));
-
-            var statuses = (await _projectManagmentRepository.GetTemplateStatusIdsByStatusIdsAsync(templateStatusIds))
-                .ToList();
-
-            foreach (var ts in items)
-            {
-                var statusId = ts.StatusId;
-                var templateData = statuses.Find(x => x.StatusId == statusId);
-
-                // Если не нашли такого статуса в таблице маппинга многие-ко-многим.
-                if (templateData is null || templateData.StatusId <= 0 || templateData.TemplateId <= 0)
-                {
-                    throw new InvalidOperationException(
-                        $"Не удалось получить шаблон, к которому принадлежит статус. Id статуса был: {statusId}");
-                }
-
-                ts.TemplateId = templateData.TemplateId;
-            }
-        }
-
-        catch (Exception ex)
-        {
-            _logger?.LogError(ex, ex.Message);
-            throw;
-        }
-    }
-
     /// <inheritdoc />
     public async Task SetProjectManagmentTemplateIdsAsync(List<TaskStatusOutput> templateStatuses)
     {
@@ -602,7 +517,8 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             var templateId = Convert.ToInt32(template!.ParamValue);
 
             // Получаем набор статусов, которые входят в выбранный шаблон.
-            var items = await GetProjectManagmentTemplatesAsync(templateId);
+            // Получаем список шаблонов задач, которые пользователь может выбрать перед переходом в рабочее пространство.
+            var items = await _projectManagementTemplateService.GetProjectManagmentTemplatesAsync(templateId);
             var templateStatusesItems = _mapper.Map<IEnumerable<ProjectManagmentTaskTemplateResult>>(items);
             var statuses = templateStatusesItems?.AsList();
 
@@ -614,7 +530,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             }
 
             // Проставляем Id шаблона статусам.
-            await SetProjectManagmentTemplateIdsAsync(statuses);
+            await _projectManagementTemplateService.SetProjectManagmentTemplateIdsAsync(statuses);
 
             // Получаем выбранную пользователем стратегию представления.
             var strategy = await _projectManagmentRepository.GetProjectUserStrategyAsync(projectId, userId);

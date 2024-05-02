@@ -314,5 +314,13 @@ public class ServicesModule : Module
         builder.RegisterType<DistributionStatusTaskService>()
             .As<IDistributionStatusTaskService>()
             .InstancePerLifetimeScope();
+            
+        // Сервис шаблонов проекта.
+        builder.RegisterType<ProjectManagementTemplateService>()
+            .Named<IProjectManagementTemplateService>("ProjectManagementTemplateService")
+            .InstancePerLifetimeScope();
+        builder.RegisterType<ProjectManagementTemplateService>()
+            .As<IProjectManagementTemplateService>()
+            .InstancePerLifetimeScope();
     }
 }

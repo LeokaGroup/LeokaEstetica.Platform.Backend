@@ -104,7 +104,7 @@ public class SprintController : BaseController
             throw ex;
         }
 
-        var result = await _sprintService.GetSprintAsync(projectSprintId, projectId);
+        var result = await _sprintService.GetSprintAsync(projectSprintId, projectId, GetUserName());
 
         return result;
     }
