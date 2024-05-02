@@ -62,7 +62,7 @@ internal sealed class VacancyRepository : IVacancyRepository
                 WorkExperience = vacancyInput.WorkExperience,
                 Employment = vacancyInput.Employment,
                 Payment = vacancyInput.Payment,
-                UserId = vacancyInput.UserId,
+                UserId = vacancyInput.UserId!.Value,
                 Demands = vacancyInput.Demands,
                 Conditions = vacancyInput.Conditions
             };
