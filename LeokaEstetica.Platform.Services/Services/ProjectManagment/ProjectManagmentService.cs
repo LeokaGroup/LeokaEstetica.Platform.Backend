@@ -2693,7 +2693,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 throw ex;
             }
 
-            List<long> projectTaskIds = null;
+            List<long>? projectTaskIds = null;
             if (planingSprintInput.ProjectTaskIds is not null && planingSprintInput.ProjectTaskIds.Any())
             {
                 projectTaskIds = GetProjectTaskIdsWithoutPrefix(planingSprintInput.ProjectTaskIds.AsList());
