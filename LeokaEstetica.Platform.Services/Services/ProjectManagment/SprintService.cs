@@ -131,26 +131,25 @@ internal sealed class SprintService : ISprintService
             // Получаем выбранную пользователем стратегию представления.
             var strategy = await _projectManagmentRepository.GetProjectUserStrategyAsync(projectId, userId);
             
-            if (result.SprintTasks is null)
-            {
-                result.SprintTasks = new ProjectManagementSprint();
-            }
-
             // Добавляем в результат статусы.
-            result.SprintTasks.ProjectManagmentTaskStatuses = statuses.First().ProjectManagmentTaskStatusTemplates;
-            result.SprintTasks.Strategy = strategy;
-            
+            var projectManagmentTaskStatuses = statuses.First().ProjectManagmentTaskStatusTemplates.AsList();
+
             // Получаем задачи спринта, если они есть.
             // Это могут быть задачи, ошибки, истории, эпики - все, что может входить в спринт.
             var sprintTasks = (await _sprintRepository.GetProjectSprintTasksAsync(projectId, projectSprintId,
                 strategy!))?.AsList();
 
-            if (sprintTasks is not null && sprintTasks.Any())
+            if (sprintTasks is not null && sprintTasks.Any() && projectManagmentTaskStatuses.Any())
             {
                 // Заполняем статусы задачами.
-                await _distributionStatusTaskService.Value.DistributionStatusTaskAsync(
-                    result.SprintTasks.ProjectManagmentTaskStatuses, sprintTasks, ModifyTaskStatuseTypeEnum.Sprint,
-                    projectId, null, strategy!);
+                await _distributionStatusTaskService.Value.DistributionStatusTaskAsync(projectManagmentTaskStatuses,
+                    sprintTasks, ModifyTaskStatuseTypeEnum.Sprint, projectId, null, strategy!);
+
+                // Делаем плоский вид, чтобы отобразить в обычной таблице на фронте.
+                result.SprintTasks = projectManagmentTaskStatuses
+                    .SelectMany(x => (x.ProjectManagmentTasks ?? new List<ProjectManagmentTaskOutput>())
+                        .Select(y => y)
+                        .OrderBy(o => o.Created));
             }
 
             return result;
