@@ -314,6 +314,9 @@ LeokaEstetica.Platform.ProjectManagement/obj/rider.project.restore.info
 **/LeokaEstetica.Platform.ProjectManagement/obj/project.assets.json
 **/LeokaEstetica.Platform.ProjectManagement/obj/project.nuget.cache
 **/LeokaEstetica.Platform.ProjectManagement/obj/rider.project.restore.info
+/.idea/
+/LeokaEstetica.Platform.ProjectManagement/obj/
+/LeokaEstetica.Platform.ProjectManagement/bin/
 
 # CodeRush personal settings
 .cr/personal
