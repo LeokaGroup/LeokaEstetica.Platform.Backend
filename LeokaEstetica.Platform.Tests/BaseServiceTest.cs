@@ -129,6 +129,7 @@ internal class BaseServiceTest
     protected readonly SearchProjectManagementService SearchProjectManagementService;
     protected readonly BaseSearchAgileObjectAlgorithm BaseSearchSprintTaskAlgorithm;
     protected readonly IProjectManagmentRepository ProjectManagmentRepository;
+    protected readonly SprintService SprintService;
 
     protected BaseServiceTest()
     {
@@ -296,5 +297,8 @@ internal class BaseServiceTest
             userRepository, new Lazy<IDiscordService>(discordService));
 
         BaseSearchSprintTaskAlgorithm = new BaseSearchAgileObjectAlgorithm();
+
+        var sprintRepository = new SprintRepository(connectionProvider);
+        SprintService = new SprintService(null, sprintRepository);
     }
 }

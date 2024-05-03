@@ -298,5 +298,13 @@ public class ServicesModule : Module
         builder.RegisterType<SearchAgileObjectByObjectDescriptionStrategy>()
             .As<BaseSearchAgileObjectStrategy>()
             .InstancePerLifetimeScope();
+        
+        // Сервис спринтов.
+        builder.RegisterType<SprintService>()
+            .Named<ISprintService>("SprintService")
+            .InstancePerLifetimeScope();
+        builder.RegisterType<SprintService>()
+            .As<ISprintService>()
+            .InstancePerLifetimeScope();
     }
 }
