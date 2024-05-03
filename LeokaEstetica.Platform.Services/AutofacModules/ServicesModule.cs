@@ -1,4 +1,5 @@
 ﻿using Autofac;
+using LazyProxy.Autofac;
 using LeokaEstetica.Platform.Core.Attributes;
 using LeokaEstetica.Platform.Services.Abstractions.Config;
 using LeokaEstetica.Platform.Services.Abstractions.FareRule;
@@ -308,13 +309,8 @@ public class ServicesModule : Module
             .InstancePerLifetimeScope();
             
         // Сервис распределения задач по статусам шаблона проекта.
-        builder.RegisterType<DistributionStatusTaskService>()
-            .Named<IDistributionStatusTaskService>("DistributionStatusTaskService")
-            .InstancePerLifetimeScope();
-        builder.RegisterType<DistributionStatusTaskService>()
-            .As<IDistributionStatusTaskService>()
-            .InstancePerLifetimeScope();
-            
+        builder.RegisterLazy<IDistributionStatusTaskService, DistributionStatusTaskService>();
+
         // Сервис шаблонов проекта.
         builder.RegisterType<ProjectManagementTemplateService>()
             .Named<IProjectManagementTemplateService>("ProjectManagementTemplateService")

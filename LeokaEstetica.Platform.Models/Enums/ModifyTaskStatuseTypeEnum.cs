@@ -13,5 +13,10 @@ public enum ModifyTaskStatuseTypeEnum
     /// <summary>
     /// Бэклог.
     /// </summary>
-    Backlog = 2
+    Backlog = 2,
+    
+    /// <summary>
+    /// Спринт.
+    /// </summary>
+    Sprint = 3
 }

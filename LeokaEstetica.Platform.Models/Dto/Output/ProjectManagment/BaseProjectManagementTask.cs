@@ -10,10 +10,10 @@ public class BaseProjectManagementTask
     /// <summary>
     /// Список статусов.
     /// </summary>
-    public IEnumerable<ProjectManagmentTaskStatusTemplateOutput> ProjectManagmentTaskStatuses { get; set; }
+    public IEnumerable<ProjectManagmentTaskStatusTemplateOutput>? ProjectManagmentTaskStatuses { get; set; }
 
     /// <summary>
     /// Стратегия представления.
     /// </summary>
-    public string Strategy { get; set; }
+    public string? Strategy { get; set; }
 }

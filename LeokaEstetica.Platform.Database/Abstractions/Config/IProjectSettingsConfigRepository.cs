@@ -37,7 +37,7 @@ public interface IProjectSettingsConfigRepository
     /// <param name="projectId">Id проекта.</param>
     /// <param name="userId">Id пользователя.</param>
     /// <returns>Данные конфигурации.</returns>
-    Task<IEnumerable<ConfigSpaceSettingEntity>> GetProjectSpaceSettingsByProjectIdAsync(long projectId, long userId);
+    Task<IEnumerable<ConfigSpaceSettingEntity>?> GetProjectSpaceSettingsByProjectIdAsync(long projectId, long userId);
     
     /// <summary>
     /// TODO: Отрефаить этот метод, смотреть тудушку к методу GetProjectSpaceSettingsByProjectIdAsync с UserId.

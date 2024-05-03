@@ -7,6 +7,7 @@ using LeokaEstetica.Platform.Database.Abstractions.Config;
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.Template;
+using LeokaEstetica.Platform.Models.Enums;
 using LeokaEstetica.Platform.Services.Abstractions.ProjectManagment;
 using Microsoft.Extensions.Logging;
 
@@ -24,7 +25,8 @@ internal sealed class SprintService : ISprintService
     private readonly IProjectSettingsConfigRepository _projectSettingsConfigRepository;
     private readonly IMapper _mapper;
     private readonly IProjectManagmentRepository _projectManagmentRepository;
-    
+    private readonly Lazy<IDistributionStatusTaskService> _distributionStatusTaskService;
+
     /// <summary>
     /// Конструктор.
     /// <param name="Логгер"></param>
@@ -33,14 +35,16 @@ internal sealed class SprintService : ISprintService
     /// <param name="userRepository">Репозиторий пользователей.</param>
     /// <param name="mapper">Автомаппер.</param>
     /// <param name="projectManagmentRepository">Репозиторий модуля УП.</param>
+    /// <param name="distributionStatusTaskService">Сервис распределения по статусам.</param>
     /// </summary>
     public SprintService(ILogger<SprintService> logger,
         ISprintRepository sprintRepository,
         IProjectManagementTemplateService projectManagementTemplateService,
-         IUserRepository userRepository,
+        IUserRepository userRepository,
         IProjectSettingsConfigRepository projectSettingsConfigRepository,
         IMapper mapper,
-         IProjectManagmentRepository projectManagmentRepository)
+        IProjectManagmentRepository projectManagmentRepository,
+        Lazy<IDistributionStatusTaskService> distributionStatusTaskService)
     {
         _logger = logger;
         _sprintRepository = sprintRepository;
@@ -49,6 +53,7 @@ internal sealed class SprintService : ISprintService
         _projectSettingsConfigRepository = projectSettingsConfigRepository;
         _mapper = mapper;
         _projectManagmentRepository = projectManagmentRepository;
+        _distributionStatusTaskService = distributionStatusTaskService;
     }
 
     /// <inheritdoc />
@@ -73,6 +78,7 @@ internal sealed class SprintService : ISprintService
     {
         try
         {
+            // Получаем данные спринта.
             var result = await _sprintRepository.GetSprintAsync(projectSprintId, projectId);
 
             if (result is null)
@@ -96,9 +102,7 @@ internal sealed class SprintService : ISprintService
                 projectId, userId);
             var projectSettingsItems = projectSettings?.AsList();
 
-            if (projectSettingsItems is null
-                || !projectSettingsItems.Any()
-                || projectSettingsItems.Any(x => x is null))
+            if (projectSettingsItems is null || !projectSettingsItems.Any())
             {
                 throw new InvalidOperationException("Ошибка получения настроек проекта. " +
                                                     $"ProjectId: {projectId}. " +
@@ -127,9 +131,27 @@ internal sealed class SprintService : ISprintService
             // Получаем выбранную пользователем стратегию представления.
             var strategy = await _projectManagmentRepository.GetProjectUserStrategyAsync(projectId, userId);
             
+            if (result.SprintTasks is null)
+            {
+                result.SprintTasks = new ProjectManagementSprint();
+            }
+
+            // Добавляем в результат статусы.
+            result.SprintTasks.ProjectManagmentTaskStatuses = statuses.First().ProjectManagmentTaskStatusTemplates;
+            result.SprintTasks.Strategy = strategy;
+            
             // Получаем задачи спринта, если они есть.
             // Это могут быть задачи, ошибки, истории, эпики - все, что может входить в спринт.
-            var sprintTasks = await _sprintRepository.GetProjectSprintTasksAsync(projectId, projectSprintId, strategy);
+            var sprintTasks = (await _sprintRepository.GetProjectSprintTasksAsync(projectId, projectSprintId,
+                strategy!))?.AsList();
+
+            if (sprintTasks is not null && sprintTasks.Any())
+            {
+                // Заполняем статусы задачами.
+                await _distributionStatusTaskService.Value.DistributionStatusTaskAsync(
+                    result.SprintTasks.ProjectManagmentTaskStatuses, sprintTasks, ModifyTaskStatuseTypeEnum.Sprint,
+                    projectId, null, strategy!);
+            }
 
             return result;
         }

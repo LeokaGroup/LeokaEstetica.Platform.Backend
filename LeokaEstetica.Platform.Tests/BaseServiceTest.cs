@@ -302,6 +302,6 @@ internal class BaseServiceTest
 
         var sprintRepository = new SprintRepository(connectionProvider);
         SprintService = new SprintService(null, sprintRepository, null, userRepository, projectSettingsConfigRepository,
-            mapper, null);
+            mapper, null, null);
     }
 }

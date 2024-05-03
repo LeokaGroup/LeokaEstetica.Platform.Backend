@@ -12,7 +12,7 @@ namespace LeokaEstetica.Platform.ProjectManagement.Controllers.Controllers;
 /// Контроллер работы со спринтами.
 /// </summary>
 [ApiController]
-[Route("sprints")]
+[Route("project-management/sprints")]
 [AuthFilter]
 public class SprintController : BaseController
 {
