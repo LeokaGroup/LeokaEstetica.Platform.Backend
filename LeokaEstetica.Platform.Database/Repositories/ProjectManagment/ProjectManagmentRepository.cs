@@ -146,7 +146,7 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
     /// <returns>Задачи проекта.</returns>
-    public async Task<IEnumerable<ProjectTaskExtendedEntity>> GetProjectTasksAsync(long projectId, string strategy)
+    public async Task<IEnumerable<ProjectTaskExtendedEntity>?> GetProjectTasksAsync(long projectId, string strategy)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
         
@@ -1809,6 +1809,17 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
     public async Task<long> PlaningSprintAsync(PlaningSprintInput planingSprintInput)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
+        
+        // Получаем последний Id спринта в рамках проекта, перед созданим нового.
+        var lastProjectSprintIdParameters = new DynamicParameters();
+        lastProjectSprintIdParameters.Add("@projectId", planingSprintInput.ProjectId);
+
+        var lastProjectSprintIdQuery = "SELECT MAX (project_sprint_id) " +
+                                       "FROM project_management.sprints " +
+                                       "WHERE project_id = @projectId";
+        
+        var lastProjectSprintId = await connection.ExecuteScalarAsync<long>(lastProjectSprintIdQuery,
+            lastProjectSprintIdParameters);
 
         var parameters = new DynamicParameters();
         parameters.Add("@dateStart", planingSprintInput.DateStart);
@@ -1817,11 +1828,13 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         parameters.Add("@sprintStatusId", planingSprintInput.SprintStatus!.Value);
         parameters.Add("@projectId", planingSprintInput.ProjectId);
         parameters.Add("@sprintName", planingSprintInput.SprintName);
+        parameters.Add("@projectSprintId", lastProjectSprintId);
 
         var query = @"INSERT INTO project_management.sprints (date_start, date_end, sprint_goal, sprint_status_id,
-                                        project_id, sprint_name) 
-                      VALUES (@dateStart, @dateEnd, @sprintGoal, @sprintStatusId, @projectId, @sprintName) 
-                      RETURNING sprint_id";
+                                        project_id, sprint_name, project_sprint_id) 
+                      VALUES (@dateStart, @dateEnd, @sprintGoal, @sprintStatusId, @projectId, @sprintName,
+                              @projectSprintId) 
+                      RETURNING project_sprint_id";
 
         var result = await connection.ExecuteScalarAsync<long>(query, parameters);
 
@@ -2120,14 +2133,14 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         foreach (var id in projectTaskIdsItems)
         {
             var tempParameters = new DynamicParameters();
-            tempParameters.Add("@sprintId", sprintId);
+            tempParameters.Add("@projectSprintId", sprintId);
             tempParameters.Add("@projectTaskIds", id);
             
             parameters.Add(tempParameters);
         }
 
-        var query = @"INSERT INTO project_management.sprint_tasks (sprint_id, project_task_id) 
-                      VALUES (@sprintId, @projectTaskIds)";
+        var query = @"INSERT INTO project_management.sprint_tasks (project_sprint_id, project_task_id) 
+                      VALUES (@projectSprintId, @projectTaskIds)";
 
         await connection.ExecuteAsync(query, parameters);
     }

@@ -130,6 +130,7 @@ internal class BaseServiceTest
     protected readonly BaseSearchAgileObjectAlgorithm BaseSearchSprintTaskAlgorithm;
     protected readonly IProjectManagmentRepository ProjectManagmentRepository;
     protected readonly SprintService SprintService;
+    protected readonly ProjectManagementTemplateService ProjectManagementTemplateService;
 
     protected BaseServiceTest()
     {
@@ -287,9 +288,10 @@ internal class BaseServiceTest
         var projectManagmentTemplateRepository = new ProjectManagmentTemplateRepository(connectionProvider);
         var projectSettingsConfigRepository = new ProjectSettingsConfigRepository(pgContext);
         ReversoService = new ReversoService(null);
+        ProjectManagementTemplateService = new ProjectManagementTemplateService(ProjectManagmentRepository, mapper, null);
         ProjectManagmentService = new ProjectManagmentService(null, ProjectManagmentRepository, mapper, userRepository,
             projectRepository, discordService, projectManagmentTemplateRepository, transactionScopeFactory,
-            projectSettingsConfigRepository, new Lazy<IReversoService>(ReversoService), null, null, UserService);
+            projectSettingsConfigRepository, new Lazy<IReversoService>(ReversoService), null, null, UserService, null, ProjectManagementTemplateService);
 
         var searchProjectManagementRepository = new SearchProjectManagementRepository(connectionProvider);
         SearchProjectManagementService = new SearchProjectManagementService(null,
@@ -299,6 +301,7 @@ internal class BaseServiceTest
         BaseSearchSprintTaskAlgorithm = new BaseSearchAgileObjectAlgorithm();
 
         var sprintRepository = new SprintRepository(connectionProvider);
-        SprintService = new SprintService(null, sprintRepository);
+        SprintService = new SprintService(null, sprintRepository, null, userRepository, projectSettingsConfigRepository,
+            mapper, null, null);
     }
 }

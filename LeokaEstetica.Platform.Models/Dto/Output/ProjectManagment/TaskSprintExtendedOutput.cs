@@ -1,4 +1,6 @@
-﻿namespace LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
+﻿using LeokaEstetica.Platform.Models.Dto.Output.Template;
+
+namespace LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 
 /// <summary>
 /// Выходная модель спринта - расширенная.
@@ -28,7 +30,7 @@ public class TaskSprintExtendedOutput : TaskSprintOutput
     /// <summary>
     /// Название статуса спринта.
     /// </summary>
-    public int SprintStatusName { get; set; }
+    public string? SprintStatusName { get; set; }
 
     /// <summary>
     /// Id проекта.
@@ -39,4 +41,9 @@ public class TaskSprintExtendedOutput : TaskSprintOutput
     /// Id спринта в рамках проекта.
     /// </summary>
     public long ProjectSprintId { get; set; }
+
+    /// <summary>
+    /// Задачи спринта, если они есть.
+    /// </summary>
+    public IEnumerable<ProjectManagmentTaskOutput>? SprintTasks { get; set; }
 }

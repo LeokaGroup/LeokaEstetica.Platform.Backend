@@ -13,4 +13,13 @@ public interface ISprintService
     /// <param name="projectId"></param>
     /// <returns>Список спринтов бэклога проекта.</returns>
     Task<IEnumerable<TaskSprintExtendedOutput>> GetSprintsAsync(long projectId);
+
+    /// <summary>
+    /// Метод получает детали спринта.
+    /// </summary>
+    /// <param name="projectSprintId">Id спринта в рамках проекта.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="account">Аккаунт.</param>
+    /// <returns>Детали спринта.</returns>
+    Task<TaskSprintExtendedOutput> GetSprintAsync(long projectSprintId, long projectId, string account);
 }

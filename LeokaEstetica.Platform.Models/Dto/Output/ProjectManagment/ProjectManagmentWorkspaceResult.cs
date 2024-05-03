@@ -1,19 +1,8 @@
-using LeokaEstetica.Platform.Models.Dto.Output.Template;
-
 namespace LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 
 /// <summary>
 /// Класс результата рабочего пространства.
 /// </summary>
-public class ProjectManagmentWorkspaceResult
+public class ProjectManagmentWorkspaceResult : BaseProjectManagementTask
 {
-    /// <summary>
-    /// Список статусов.
-    /// </summary>
-    public IEnumerable<ProjectManagmentTaskStatusTemplateOutput> ProjectManagmentTaskStatuses { get; set; }
-
-    /// <summary>
-    /// Стратегия представления.
-    /// </summary>
-    public string Strategy { get; set; }
 }

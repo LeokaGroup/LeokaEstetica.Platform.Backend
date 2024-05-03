@@ -303,5 +303,10 @@ public static class ValidationConst
         /// Если передали невалидный название.
         /// </summary>
         public const string NOT_VALID_NAME = "Название не передано.";
+
+        /// <summary>
+        /// Если не передали Id спринта в рамках проекта.
+        /// </summary>
+        public const string NOT_VALID_PROJECT_SPRINT_ID = "Id спринта в рамках проекта не передан.";
     }
 }

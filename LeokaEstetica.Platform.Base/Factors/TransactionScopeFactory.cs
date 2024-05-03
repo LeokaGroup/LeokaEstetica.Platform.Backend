@@ -1,7 +1,7 @@
 using System.Runtime.CompilerServices;
 using System.Transactions;
 
-[assembly: InternalsVisibleTo("LeokaEstetica.Platform.ProjectManagment.Documents")]
+[assembly: InternalsVisibleTo("LeokaEstetica.Platform.ProjectManagement.Documents")]
 
 namespace LeokaEstetica.Platform.Base.Factors;
 
