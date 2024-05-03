@@ -55,7 +55,7 @@ public class PgContext : DbContext
     /// <summary>
     /// Таблица хидера.
     /// </summary>
-    public DbSet<HeaderEntity> Header { get; set; } 
+    public DbSet<HeaderEntity> Header { get; set; }
 
     /// <summary>
     /// Таблица предложений платформы.
