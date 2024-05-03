@@ -2,7 +2,7 @@ using FluentValidation;
 using LeokaEstetica.Platform.Core.Constants;
 using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
 
-namespace LeokaEstetica.Platform.ProjectManagment.Validators;
+namespace LeokaEstetica.Platform.ProjectManagement.Validators;
 
 /// <summary>
 /// Класс валидатора планирования спринта.
@@ -23,5 +23,9 @@ public class PlaningSprintValidator : AbstractValidator<PlaningSprintInput>
         RuleFor(p => p.ProjectId)
             .Must(p => p > 0)
             .WithMessage(ValidationConst.ProjectManagmentValidation.NOT_VALID_PROJECT_ID);
+            
+        RuleFor(p => p.CreatedBy)
+            .Must(p => p > 0)
+            .WithMessage(ValidationConst.ProjectManagmentValidation.NOT_VALID_CREATED_BY);
     }
 }

@@ -308,5 +308,10 @@ public static class ValidationConst
         /// Если не передали Id спринта в рамках проекта.
         /// </summary>
         public const string NOT_VALID_PROJECT_SPRINT_ID = "Id спринта в рамках проекта не передан.";
+
+        /// <summary>
+        /// Если не передали Id автора.
+        /// </summary>
+        public const string NOT_VALID_CREATED_BY = "Id автора не передан.";
     }
 }

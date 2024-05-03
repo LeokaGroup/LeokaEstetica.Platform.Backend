@@ -14,7 +14,7 @@ public class PlaningSprintInput
     /// <summary>
     /// Описание спринта.
     /// </summary>
-    public string SprintDescription { get; set; }
+    public string? SprintDescription { get; set; }
 
     /// <summary>
     /// Дата начала спринта.
@@ -37,7 +37,7 @@ public class PlaningSprintInput
     /// Список Id задач в рамках проекта для добавления их в спринт.
     /// Это может быть задача, эпик, история, ошибка.
     /// </summary>
-    public IEnumerable<string> ProjectTaskIds { get; set; }
+    public IEnumerable<string>? ProjectTaskIds { get; set; }
 
     /// <summary>
     /// Признак автоматического начала спринта после его планирования.
@@ -51,4 +51,34 @@ public class PlaningSprintInput
     [System.Text.Json.Serialization.JsonIgnore]
     [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
     public int? SprintStatus { get; set; }
+
+    /// <summary>
+    /// Id исполнителя, который создал спринт.
+    /// </summary>
+    public long CreatedBy { get; set; }
+
+    /// <summary>
+    /// Дата создания спринта (заполняется при самом планировании спринта).
+    /// </summary>
+    public DateTime? CreatedAt { get; set; }
+    
+    /// <summary>
+    /// Id исполнителя, который обновил спринт.
+    /// </summary>
+    public long? UpdatedBy { get; set; }
+
+    /// <summary>
+    /// Дата обновления спринта.
+    /// </summary>
+    public DateTime? UpdatedAt { get; set; }
+
+    /// <summary>
+    /// Id исполнителя спринта (кто ответственный за спринт).
+    /// </summary>
+    public long? ExecutorId { get; set; }
+
+    /// <summary>
+    /// Id наблюдателей спринта.
+    /// </summary>
+    public IEnumerable<long>? WatcherIds { get; set; }
 }
