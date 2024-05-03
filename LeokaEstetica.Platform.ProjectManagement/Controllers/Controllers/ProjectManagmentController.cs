@@ -182,7 +182,7 @@ public class ProjectManagmentController : BaseController
         var validator = await new GetConfigurationValidator().ValidateAsync(
             new GetConfigurationValidationModel(projectId));
 
-        if (validator.Errors.Any())
+        if (validator.Errors.Any()) 
         {
             var exceptions = new List<InvalidOperationException>(); 
 
