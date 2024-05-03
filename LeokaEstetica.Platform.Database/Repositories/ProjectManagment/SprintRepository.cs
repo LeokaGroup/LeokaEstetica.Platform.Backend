@@ -64,13 +64,13 @@ internal sealed class SprintRepository : BaseRepository, ISprintRepository
                     " s.project_sprint_id," +
                     " s.sprint_name," +
                     " st.sprint_id," +
-                    " st.project_task_id" +
+                    " st.project_task_id," +
                     " ss.status_name AS SprintStatusName " +
                     "FROM project_management.sprints AS s " +
                     "INNER JOIN project_management.sprint_statuses AS ss " +
-                    "LEFT JOIN project_management.sprint_tasks AS st " +
-                    "ON s.sprint_id = st.sprint_id" +
                     "ON s.sprint_status_id = ss.status_id " +
+                    "LEFT JOIN project_management.sprint_tasks AS st " +
+                    "ON s.sprint_id = st.sprint_id " +
                     "WHERE s.project_id = @projectId " +
                     "AND s.project_sprint_id = @projectSprintId";
 
@@ -117,6 +117,7 @@ internal sealed class SprintRepository : BaseRepository, ISprintRepository
                     "INNER JOIN project_management.sprint_tasks AS st " +
                     "ON st.project_task_id = t.project_task_id " +
                     "WHERE t.project_id = @projectId " +
+                    "AND st.sprint_id = @projectSprintId " +
                     "UNION " +
                     "SELECT e.epic_id," +
                     "es.status_id," +
@@ -146,6 +147,7 @@ internal sealed class SprintRepository : BaseRepository, ISprintRepository
                     "INNER JOIN project_management.sprint_tasks AS st " +
                     "ON e.project_epic_id = st.project_task_id " +
                     "WHERE e.project_id = @projectId " +
+                    "AND st.sprint_id = @projectSprintId " +
                     "UNION " +
                     "SELECT us.story_id," +
                     "us.status_id," +
@@ -174,7 +176,8 @@ internal sealed class SprintRepository : BaseRepository, ISprintRepository
                     "ON us.status_id = uss.status_id " +
                     "INNER JOIN project_management.sprint_tasks AS st " +
                     "ON us.user_story_task_id = st.project_task_id " +
-                    "WHERE us.project_id = @projectId ;";
+                    "WHERE us.project_id = @projectId " +
+                    "AND st.sprint_id = @projectSprintId;";
 
         var result = await connection.QueryAsync<ProjectTaskExtendedEntity>(query, parameters);
 
