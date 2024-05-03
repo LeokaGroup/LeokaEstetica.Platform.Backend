@@ -184,7 +184,7 @@ public class ProjectManagmentController : BaseController
 
         if (validator.Errors.Any())
         {
-            var exceptions = new List<InvalidOperationException>();
+            var exceptions = new List<InvalidOperationException>(); 
 
             foreach (var err in validator.Errors)
             {
