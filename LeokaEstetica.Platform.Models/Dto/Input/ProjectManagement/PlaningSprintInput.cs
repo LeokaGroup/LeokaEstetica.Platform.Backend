@@ -53,11 +53,6 @@ public class PlaningSprintInput
     public int? SprintStatus { get; set; }
 
     /// <summary>
-    /// Id исполнителя, который создал спринт.
-    /// </summary>
-    public long CreatedBy { get; set; }
-
-    /// <summary>
     /// Дата создания спринта (заполняется при самом планировании спринта).
     /// </summary>
     public DateTime? CreatedAt { get; set; }

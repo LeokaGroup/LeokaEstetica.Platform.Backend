@@ -1806,7 +1806,7 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
     }
 
     /// <inheritdoc/>
-    public async Task<long> PlaningSprintAsync(PlaningSprintInput planingSprintInput)
+    public async Task<long> PlaningSprintAsync(PlaningSprintInput planingSprintInput, long userId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
         
@@ -1829,13 +1829,13 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         parameters.Add("@projectId", planingSprintInput.ProjectId);
         parameters.Add("@sprintName", planingSprintInput.SprintName);
         parameters.Add("@projectSprintId", lastProjectSprintId);
-        parameters.Add("@createdBy", planingSprintInput.CreatedBy);
+        parameters.Add("@createdBy", userId);
         parameters.Add("@createdAt", DateTime.UtcNow);
         parameters.Add("@updatedAt", DateTime.UtcNow);
 
         if (!planingSprintInput.ExecutorId.HasValue)
         {
-            parameters.Add("@executorId", planingSprintInput.CreatedBy);
+            parameters.Add("@executorId", userId);
         }
         
         else

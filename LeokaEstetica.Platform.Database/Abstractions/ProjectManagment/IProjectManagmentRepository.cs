@@ -532,8 +532,9 @@ public interface IProjectManagmentRepository
     /// Добавляет задачи в спринт, если их указали при планировании спринта.
     /// </summary>
     /// <param name="planingSprintInput">Входная модель.</param>
+    /// <param name="userId">Id пользователя.</param>
     /// <returns>Id нового спринта.</returns>
-    Task<long> PlaningSprintAsync(PlaningSprintInput planingSprintInput);
+    Task<long> PlaningSprintAsync(PlaningSprintInput planingSprintInput, long userId);
     
     /// <summary>
     /// Метод ищет задачи, истории, эпики, ошибки по Id задачи в рамках проекта.
