@@ -1806,7 +1806,7 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
     }
 
     /// <inheritdoc/>
-    public async Task<long> PlaningSprintAsync(PlaningSprintInput planingSprintInput)
+    public async Task<long> PlaningSprintAsync(PlaningSprintInput planingSprintInput, long userId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
         
@@ -1828,13 +1828,45 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         parameters.Add("@sprintStatusId", planingSprintInput.SprintStatus!.Value);
         parameters.Add("@projectId", planingSprintInput.ProjectId);
         parameters.Add("@sprintName", planingSprintInput.SprintName);
-        parameters.Add("@projectSprintId", lastProjectSprintId);
+        parameters.Add("@projectSprintId", ++lastProjectSprintId);
+        parameters.Add("@createdBy", userId);
+        parameters.Add("@createdAt", DateTime.UtcNow);
+        parameters.Add("@updatedAt", DateTime.UtcNow);
 
-        var query = @"INSERT INTO project_management.sprints (date_start, date_end, sprint_goal, sprint_status_id,
-                                        project_id, sprint_name, project_sprint_id) 
+        if (!planingSprintInput.ExecutorId.HasValue)
+        {
+            parameters.Add("@executorId", userId);
+        }
+        
+        else
+        {
+            parameters.Add("@executorId", planingSprintInput.ExecutorId.Value);
+        }
+
+        string query;
+
+        // Если передали наблюдателей, то учитываем это в запросе.
+        if (planingSprintInput.WatcherIds is not null && planingSprintInput.WatcherIds.Any())
+        {
+            parameters.Add("@watcherIds", planingSprintInput.WatcherIds.AsList());
+            
+            query = @"INSERT INTO project_management.sprints (date_start, date_end, sprint_goal, sprint_status_id,
+                                        project_id, sprint_name, project_sprint_id, created_by, executor_id,
+                                        created_at, updated_at, watcher_ids) 
                       VALUES (@dateStart, @dateEnd, @sprintGoal, @sprintStatusId, @projectId, @sprintName,
-                              @projectSprintId) 
+                              @projectSprintId, @createdBy, @executorId, @createdAt, @updatedAt, @watcherIds) 
                       RETURNING project_sprint_id";
+        }
+
+        else
+        {
+            query = @"INSERT INTO project_management.sprints (date_start, date_end, sprint_goal, sprint_status_id,
+                                        project_id, sprint_name, project_sprint_id, created_by, executor_id,
+                                        created_at, updated_at) 
+                      VALUES (@dateStart, @dateEnd, @sprintGoal, @sprintStatusId, @projectId, @sprintName,
+                              @projectSprintId, @createdBy, @executorId, @createdAt, @updatedAt) 
+                      RETURNING project_sprint_id";
+        }
 
         var result = await connection.ExecuteScalarAsync<long>(query, parameters);
 

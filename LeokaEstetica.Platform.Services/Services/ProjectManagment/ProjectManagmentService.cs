@@ -2684,7 +2684,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 planingSprintInput.SprintStatus = (int)SprintStatusEnum.Backlog;
                 
                 using var transactionScope = _transactionScopeFactory.CreateTransactionScope();
-                var addedSprintId = await _projectManagmentRepository.PlaningSprintAsync(planingSprintInput);
+                var addedSprintId = await _projectManagmentRepository.PlaningSprintAsync(planingSprintInput, userId);
                 
                 // Добавляем задачи в спринт, если их включили в спринт.
                 if (projectTaskIds is not null && projectTaskIds.Any())
