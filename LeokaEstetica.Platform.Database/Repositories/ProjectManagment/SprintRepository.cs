@@ -65,7 +65,13 @@ internal sealed class SprintRepository : BaseRepository, ISprintRepository
                     " s.sprint_name," +
                     " st.sprint_id," +
                     " st.project_task_id," +
-                    " ss.status_name AS SprintStatusName " +
+                    " ss.status_name AS SprintStatusName," +
+                    " s.executor_id," +
+                    " s.watcher_ids," +
+                    " s.created_by," +
+                    " s.created_at," +
+                    " s.updated_at," +
+                    " s.updated_by " +
                     "FROM project_management.sprints AS s " +
                     "INNER JOIN project_management.sprint_statuses AS ss " +
                     "ON s.sprint_status_id = ss.status_id " +
