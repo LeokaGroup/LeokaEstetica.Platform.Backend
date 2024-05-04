@@ -19,6 +19,16 @@ internal sealed class FileManagerService : IFileManagerService
 {
     private readonly ILogger<FileManagerService> _logger;
     private readonly Lazy<IGlobalConfigRepository> _globalConfigRepository;
+    
+    /// <summary>
+    /// Кол-во уже сделанных попыток подключения к SFTP-серверу.
+    /// </summary>
+    private readonly int _retryConnections = 0;
+    
+    /// <summary>
+    /// Кол-в овозможных повторных подключений к SFTP-серверу до 10 попыток.
+    /// </summary>
+    private readonly int _availableRetryConnections = 10;
 
     /// <summary>
     /// Конструктор.
@@ -298,50 +308,62 @@ internal sealed class FileManagerService : IFileManagerService
         var settings = await _globalConfigRepository.Value.GetFileManagerSettingsAsync();
         
         using var sftpClient = new SftpClient(settings.Host, settings.Port, settings.Login, settings.Password);
-        
+
         try
         {
-            sftpClient.Connect();
+            FileContentResult result;
             
-            if (!sftpClient.IsConnected)
+            // Помещено в do, while для повторных попыток подключений к серверу.
+            // Иногда от SFTP-сервера не приходят заголовки, и тогда бахает ошибка подключения.
+            // Повторные попытки подключения решают эту проблему.
+            // Подключение с SFTP-сервером работает на основе сокетов.
+            do
             {
-                throw new InvalidOperationException(
-                    "Sftp клиент не подключен. Невозможно скачать файл изображения аватара пользователя с сервера.");
+                sftpClient.Connect();
+            
+                if (!sftpClient.IsConnected)
+                {
+                    throw new InvalidOperationException(
+                        "Sftp клиент не подключен. Невозможно скачать файл изображения аватара пользователя с сервера.");
+                }
+            
+                var sftpAvatarPath = string.Concat(settings.SftpUserAvatarPath, "/");
+
+                // Путь к изображениям аватара пользователей проекта.
+                var userProjectPath = string.Concat(sftpAvatarPath, projectId);
+                string userProjectAvatarPath;
+
+                // Если нужно подгрузить дефолтное изображение аватара.
+                if (isNoPhoto || !userId.HasValue)
+                {
+                    userProjectAvatarPath = sftpAvatarPath;
+                }
+
+                else
+                {
+                    userProjectAvatarPath = userProjectPath + "/" + userId + "/";
+                }
+            
+                _logger.LogInformation($"Скачивается файл {0} ({1:N0} байт)", fileName);
+
+                var path = userProjectAvatarPath + Path.GetFileName(fileName);
+                using var stream = new MemoryStream();
+
+                sftpClient.DownloadFile(path, stream);
+            
+                // Сбрасываем позицию на 0, иначе у файла будет размер 0 байтов,
+                // если не сбросить указатель позиции в начало.
+                stream.Seek(0, SeekOrigin.Begin);
+            
+                _logger.LogInformation($"Файл {0} ({1:N0} байт) успешно скачан.", fileName);
+
+                var byteData = await GetByteArrayAsync(stream);
+                result = new FileContentResult(byteData, "application/octet-stream");
             }
             
-            var sftpAvatarPath = string.Concat(settings.SftpUserAvatarPath, "/");
-
-            // Путь к изображениям аватара пользователей проекта.
-            var userProjectPath = string.Concat(sftpAvatarPath, projectId);
-            string userProjectAvatarPath;
-
-            // Если нужно подгрузить дефолтное изображение аватара.
-            if (isNoPhoto || !userId.HasValue)
-            {
-                userProjectAvatarPath = sftpAvatarPath;
-            }
-
-            else
-            {
-                userProjectAvatarPath = userProjectPath + "/" + userId + "/";
-            }
+            // Подключаться повторно, пока не исчерпаем доступные подключения.
+            while (_retryConnections < _availableRetryConnections && !sftpClient.IsConnected);
             
-            _logger.LogInformation($"Скачивается файл {0} ({1:N0} байт)", fileName);
-
-            var path = userProjectAvatarPath + Path.GetFileName(fileName);
-            using var stream = new MemoryStream();
-
-            sftpClient.DownloadFile(path, stream);
-            
-            // Сбрасываем позицию на 0, иначе у файла будет размер 0 байтов,
-            // если не сбросить указатель позиции в начало.
-            stream.Seek(0, SeekOrigin.Begin);
-            
-            _logger.LogInformation($"Файл {0} ({1:N0} байт) успешно скачан.", fileName);
-
-            var byteData = await GetByteArrayAsync(stream);
-            var result = new FileContentResult(byteData, "application/octet-stream");
-
             return result;
         }
        

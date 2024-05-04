@@ -76,4 +76,20 @@ public class TaskSprintExtendedOutput : TaskSprintOutput
     /// Кто обновил спринт.
     /// </summary>
     public long? UpdatedBy { get; set; }
+    
+    /// <summary>
+    /// TODO: В будущем будет изменен на объект, содержащий фото и тд.
+    /// ФИО наблюдателей задачи.
+    /// </summary>
+    public List<string>? WatcherNames { get; set; }
+
+    /// <summary>
+    /// Название исполнителя (email или логин).
+    /// </summary>
+    public string? ExecutorName { get; set; }
+
+    /// <summary>
+    /// Название автора задачи (email или логин).
+    /// </summary>
+    public string? AuthorName { get; set; }
 }

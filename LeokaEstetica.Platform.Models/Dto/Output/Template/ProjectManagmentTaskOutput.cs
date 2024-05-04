@@ -32,13 +32,13 @@ public class ProjectManagmentTaskOutput
     /// TODO: В будущем будет изменен на объект, содержащий фото и тд.
     /// ФИО автора задачи.
     /// </summary>
-    public string AuthorName { get; set; }
+    public string? AuthorName { get; set; }
 
     /// <summary>
     /// TODO: В будущем будет изменен на объект, содержащий фото и тд.
     /// ФИО наблюдателей задачи.
     /// </summary>
-    public List<string> WatcherNames { get; set; }
+    public List<string>? WatcherNames { get; set; }
 
     /// <summary>
     /// Id наблюдателей задачи.
