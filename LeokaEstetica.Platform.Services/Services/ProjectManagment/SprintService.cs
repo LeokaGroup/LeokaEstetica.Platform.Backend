@@ -3,8 +3,10 @@ using Dapper;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.Core.Constants;
 using LeokaEstetica.Platform.Core.Exceptions;
+using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.Config;
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
+using LeokaEstetica.Platform.Integrations.Abstractions.Discord;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.Template;
 using LeokaEstetica.Platform.Models.Enums;
@@ -26,6 +28,7 @@ internal sealed class SprintService : ISprintService
     private readonly IMapper _mapper;
     private readonly IProjectManagmentRepository _projectManagmentRepository;
     private readonly Lazy<IDistributionStatusTaskService> _distributionStatusTaskService;
+    private readonly IDiscordService _discordService;
 
     /// <summary>
     /// Конструктор.
@@ -36,6 +39,7 @@ internal sealed class SprintService : ISprintService
     /// <param name="mapper">Автомаппер.</param>
     /// <param name="projectManagmentRepository">Репозиторий модуля УП.</param>
     /// <param name="distributionStatusTaskService">Сервис распределения по статусам.</param>
+    /// <param name="discordService">Сервис уведомлений дискорда.</param>
     /// </summary>
     public SprintService(ILogger<SprintService> logger,
         ISprintRepository sprintRepository,
@@ -44,7 +48,8 @@ internal sealed class SprintService : ISprintService
         IProjectSettingsConfigRepository projectSettingsConfigRepository,
         IMapper mapper,
         IProjectManagmentRepository projectManagmentRepository,
-        Lazy<IDistributionStatusTaskService> distributionStatusTaskService)
+        Lazy<IDistributionStatusTaskService> distributionStatusTaskService,
+        IDiscordService discordService)
     {
         _logger = logger;
         _sprintRepository = sprintRepository;
@@ -54,7 +59,10 @@ internal sealed class SprintService : ISprintService
         _mapper = mapper;
         _projectManagmentRepository = projectManagmentRepository;
         _distributionStatusTaskService = distributionStatusTaskService;
+        _discordService = discordService;
     }
+
+    #region Публичные методы
 
     /// <inheritdoc />
     public async Task<IEnumerable<TaskSprintExtendedOutput>> GetSprintsAsync(long projectId)
@@ -151,6 +159,9 @@ internal sealed class SprintService : ISprintService
                         .Select(y => y)
                         .OrderBy(o => o.Created));
             }
+            
+            // Заполняем доп.поля деталей спринта.
+            await ModificateSprintDetailsAsync(result);
 
             return result;
         }
@@ -161,4 +172,73 @@ internal sealed class SprintService : ISprintService
             throw;
         }
     }
+
+    #endregion
+
+    #region Приватные методы.
+
+    /// <summary>
+    /// Метод заполняет доп.поля деталей спринта.
+    /// </summary>
+    /// <param name="sprintData">Данные спринта до модификации.</param>
+    private async Task ModificateSprintDetailsAsync(TaskSprintExtendedOutput sprintData)
+    {
+        // Заполняем название исполнителя, если он задан у спринта.
+        if (sprintData.ExecutorId.HasValue)
+        {
+            var executors = await _userRepository.GetExecutorNamesByExecutorIdsAsync(
+                new[] { sprintData.ExecutorId.Value });
+
+            if (executors.TryGet(sprintData.ExecutorId.Value) is not null)
+            {
+                sprintData.ExecutorName = executors.TryGet(sprintData.ExecutorId.Value)?.FullName.Trim();
+            }
+        }
+        
+        // Заполняем наблюдателей, если они заданы у спринта.
+        if (sprintData.WatcherIds is not null && sprintData.WatcherIds.Any())
+        {
+            var watchers = await _userRepository.GetWatcherNamesByWatcherIdsAsync(sprintData.WatcherIds);
+            
+            // Названия наблюдателей задачи.
+            if (watchers is not null && watchers.Count > 0)
+            {
+                foreach (var w in sprintData.WatcherIds)
+                {
+                    var watcher = watchers.TryGet(w)?.FullName;
+                            
+                    // Если такое бахнуло, то не добавляем в список, но и не ломаем приложение.
+                    // Просто логируем такое.
+                    if (watcher is null)
+                    {
+                        var ex = new InvalidOperationException("Обнаружен наблюдатель с NULL. " +
+                                                               $"WatcherId: {w}");
+                        await _discordService.SendNotificationErrorAsync(ex);
+                        _logger.LogError(ex, ex.Message);
+                                
+                        continue;
+                    }
+
+                    if (sprintData.WatcherNames is null)
+                    {
+                        sprintData.WatcherNames = new List<string>();   
+                    }
+
+                    sprintData.WatcherNames.Add(watcher);
+                }
+            }
+        }
+        
+        // Заполняем автора (кто создал спринт).
+        var authors = await _userRepository.GetAuthorNamesByAuthorIdsAsync(new [] { sprintData.CreatedBy });
+        
+        if (authors.Count == 0)
+        {
+            throw new InvalidOperationException("Не удалось получить авторов задач.");
+        }
+        
+        sprintData.AuthorName = authors.TryGet(sprintData.CreatedBy)?.FullName;
+    }
+
+    #endregion
 }
