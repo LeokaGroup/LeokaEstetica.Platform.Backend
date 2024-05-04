@@ -161,4 +161,29 @@ internal sealed class SprintService : ISprintService
             throw;
         }
     }
+
+    /// <inheritdoc />
+    public async Task UpdateSprintNameAsync(long projectSprintId, long projectId, string sprintName, string account)
+    {
+        try
+        {
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+
+            await _sprintRepository.UpdateSprintNameAsync(projectSprintId, projectId, sprintName);
+
+            // TODO: Добавить запись активности (кто изменил название спринта).
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            throw;
+        }
+    }
 }

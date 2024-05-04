@@ -32,4 +32,12 @@ public interface ISprintRepository
     /// <returns>Задачи проекта.</returns>
     Task<IEnumerable<ProjectTaskExtendedEntity>?> GetProjectSprintTasksAsync(long projectId, long projectSprintId,
         string strategy);
+    
+    /// <summary>
+    /// Метод обновляет название спринта.
+    /// </summary>
+    /// <param name="projectSprintId">Id спринта в рамках проекта.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="sprintName">Новое название спринта.</param>
+    Task UpdateSprintNameAsync(long projectSprintId, long projectId, string sprintName);
 }

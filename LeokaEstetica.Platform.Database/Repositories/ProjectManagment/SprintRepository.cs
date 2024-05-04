@@ -183,4 +183,22 @@ internal sealed class SprintRepository : BaseRepository, ISprintRepository
 
         return result;
     }
+
+    /// <inheritdoc/>
+    public async Task UpdateSprintNameAsync(long projectSprintId, long projectId, string sprintName)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@projectSprintId", projectSprintId);
+        parameters.Add("@projectId", projectId);
+        parameters.Add("@sprintName", sprintName);
+
+        var query = "UPDATE project_management.sprints " +
+                    "SET sprint_name = @sprintName " +
+                    "WHERE project_sprint_id = @projectSprintId " +
+                    "AND project_id = @projectId";
+        
+        await connection.ExecuteAsync(query, parameters);
+    }
 }
