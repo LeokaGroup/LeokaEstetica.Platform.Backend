@@ -219,4 +219,22 @@ internal sealed class SprintRepository : BaseRepository, ISprintRepository
         
         await connection.ExecuteAsync(query, parameters);
     }
+
+    /// <inheritdoc/>
+    public async Task InsertOrUpdateSprintExecutorAsync(long projectSprintId, long projectId, long executorId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@projectSprintId", projectSprintId);
+        parameters.Add("@projectId", projectId);
+        parameters.Add("@executorId", executorId);
+        
+        var query = "UPDATE project_management.sprints " +
+                    "SET executor_id = @executorId " +
+                    "WHERE project_sprint_id = @projectSprintId " +
+                    "AND project_id = @projectId";
+        
+        await connection.ExecuteAsync(query, parameters);
+    }
 }

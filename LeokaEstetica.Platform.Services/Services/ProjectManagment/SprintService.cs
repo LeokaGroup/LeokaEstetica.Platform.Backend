@@ -212,4 +212,30 @@ internal sealed class SprintService : ISprintService
             throw;
         }
     }
+
+    /// <inheritdoc />
+    public async Task InsertOrUpdateSprintExecutorAsync(long projectSprintId, long projectId, long executorId,
+        string account)
+    {
+        try
+        {
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+            
+            await _sprintRepository.InsertOrUpdateSprintExecutorAsync(projectSprintId, projectId, executorId);
+            
+            // TODO: Добавить запись активности (кто назначил/обновил исполнителя спринта).
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            throw;
+        }
+    }
 }

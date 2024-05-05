@@ -48,4 +48,12 @@ public interface ISprintRepository
     /// <param name="projectId">Id проекта.</param>
     /// <param name="sprintDetails">Новое описание спринта.</param>
     Task UpdateSprintDetailsAsync(long projectSprintId, long projectId, string sprintDetails);
+    
+    /// <summary>
+    /// Метод обновляет описание спринта.
+    /// </summary>
+    /// <param name="projectSprintId">Id спринта в рамках проекта.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="executorId">Id исполнителя спринта.</param>
+    Task InsertOrUpdateSprintExecutorAsync(long projectSprintId, long projectId, long executorId);
 }

@@ -185,4 +185,46 @@ public class SprintController : BaseController
         await _sprintService.UpdateSprintDetailsAsync(updateSprintInput.ProjectSprintId, updateSprintInput.ProjectId,
             updateSprintInput.SprintDetails, GetUserName());
     }
+    
+    /// <summary>
+    /// Метод проставляет/обновляет исполнителя спринта (ответственный за выполнение спринта).
+    /// </summary>
+    /// <param name="insertOrUpdateSprintExecutorInput">Входная модель.</param>
+    [HttpPatch]
+    [Route("sprint-executor")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task InsertOrUpdateSprintExecutorAsync(
+        [FromBody] InsertOrUpdateSprintExecutorInput insertOrUpdateSprintExecutorInput)
+    {
+        var validator = await new InsertOrUpdateSprintExecutorValidator()
+            .ValidateAsync(insertOrUpdateSprintExecutorInput);
+
+        if (validator.Errors.Any())
+        {
+            var exceptions = new List<InvalidOperationException>();
+
+            foreach (var err in validator.Errors)
+            {
+                exceptions.Add(new InvalidOperationException(err.ErrorMessage));
+            }
+
+            var ex = new AggregateException("Ошибка при проставлении/обновлении исполнителя спринта. " +
+                                            $"ProjectSprintId: {insertOrUpdateSprintExecutorInput.ProjectSprintId}. " +
+                                            $"ProjectId: {insertOrUpdateSprintExecutorInput.ProjectId}. " +
+                                            $"ExecutorId: {insertOrUpdateSprintExecutorInput.ExecutorId}.",
+                exceptions);
+            _logger.LogError(ex, ex.Message);
+            
+            await _discordService.Value.SendNotificationErrorAsync(ex);
+            
+            throw ex;
+        }
+
+        await _sprintService.InsertOrUpdateSprintExecutorAsync(insertOrUpdateSprintExecutorInput.ProjectSprintId,
+            insertOrUpdateSprintExecutorInput.ProjectId, insertOrUpdateSprintExecutorInput.ExecutorId, GetUserName());
+    }
 }
