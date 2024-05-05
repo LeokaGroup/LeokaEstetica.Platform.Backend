@@ -227,4 +227,46 @@ public class SprintController : BaseController
         await _sprintService.InsertOrUpdateSprintExecutorAsync(insertOrUpdateSprintExecutorInput.ProjectSprintId,
             insertOrUpdateSprintExecutorInput.ProjectId, insertOrUpdateSprintExecutorInput.ExecutorId, GetUserName());
     }
+    
+    /// <summary>
+    /// Метод проставляет/обновляет наблюдателей спринта.
+    /// </summary>
+    /// <param name="insertOrUpdateSprintWatchersInput">Входная модель.</param>
+    [HttpPatch]
+    [Route("sprint-watcher")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task InsertOrUpdateSprintWatchersAsync(
+        [FromBody] InsertOrUpdateSprintWatchersInput insertOrUpdateSprintWatchersInput)
+    {
+        var validator = await new InsertOrUpdateSprintWatchersValidator()
+            .ValidateAsync(insertOrUpdateSprintWatchersInput);
+
+        if (validator.Errors.Any())
+        {
+            var exceptions = new List<InvalidOperationException>();
+
+            foreach (var err in validator.Errors)
+            {
+                exceptions.Add(new InvalidOperationException(err.ErrorMessage));
+            }
+
+            var ex = new AggregateException("Ошибка при проставлении/обновлении наблюдателей спринта. " +
+                                            $"ProjectSprintId: {insertOrUpdateSprintWatchersInput.ProjectSprintId}. " +
+                                            $"ProjectId: {insertOrUpdateSprintWatchersInput.ProjectId}. " +
+                                            $"WatcherIds: {insertOrUpdateSprintWatchersInput.WatcherIds}.",
+                exceptions);
+            _logger.LogError(ex, ex.Message);
+            
+            await _discordService.Value.SendNotificationErrorAsync(ex);
+            
+            throw ex;
+        }
+
+        await _sprintService.InsertOrUpdateSprintWatchersAsync(insertOrUpdateSprintWatchersInput.ProjectSprintId,
+            insertOrUpdateSprintWatchersInput.ProjectId, insertOrUpdateSprintWatchersInput.WatcherIds, GetUserName());
+    }
 }
