@@ -313,5 +313,10 @@ public static class ValidationConst
         /// Если название спринта не передано или невалидно.
         /// </summary>
         public const string EMPTY_SPRINT_NAME = "Название спринта не передано или невалидно.";
+        
+        /// <summary>
+        /// Если описание спринта не передано или невалидно.
+        /// </summary>
+        public const string EMPTY_SPRINT_DETAILS = "Описание спринта не передано или невалидно.";
     }
 }

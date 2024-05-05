@@ -134,7 +134,7 @@ public class SprintController : BaseController
                 exceptions.Add(new InvalidOperationException(err.ErrorMessage));
             }
 
-            var ex = new AggregateException("Ошибка при обновлении название спринта. " +
+            var ex = new AggregateException("Ошибка при обновлении описания спринта. " +
                                             $"ProjectSprintId: {updateSprintInput.ProjectSprintId}. " +
                                             $"ProjectId: {updateSprintInput.ProjectId}.", exceptions);
             _logger.LogError(ex, ex.Message);
@@ -146,5 +146,43 @@ public class SprintController : BaseController
 
         await _sprintService.UpdateSprintNameAsync(updateSprintInput.ProjectSprintId, updateSprintInput.ProjectId,
             updateSprintInput.SprintName, GetUserName());
+    }
+    
+    /// <summary>
+    /// Метод обновляет описание спринта.
+    /// </summary>
+    /// <param name="updateSprintInput">Входная модель.</param>
+    [HttpPatch]
+    [Route("sprint-details")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task UpdateSprintDetailsAsync([FromBody] UpdateSprintDetailsInput updateSprintInput)
+    {
+        var validator = await new UpdateSprintDetailsValidator().ValidateAsync(updateSprintInput);
+
+        if (validator.Errors.Any())
+        {
+            var exceptions = new List<InvalidOperationException>();
+
+            foreach (var err in validator.Errors)
+            {
+                exceptions.Add(new InvalidOperationException(err.ErrorMessage));
+            }
+
+            var ex = new AggregateException("Ошибка при обновлении описания спринта. " +
+                                            $"ProjectSprintId: {updateSprintInput.ProjectSprintId}. " +
+                                            $"ProjectId: {updateSprintInput.ProjectId}.", exceptions);
+            _logger.LogError(ex, ex.Message);
+            
+            await _discordService.Value.SendNotificationErrorAsync(ex);
+            
+            throw ex;
+        }
+
+        await _sprintService.UpdateSprintDetailsAsync(updateSprintInput.ProjectSprintId, updateSprintInput.ProjectId,
+            updateSprintInput.SprintDetails, GetUserName());
     }
 }

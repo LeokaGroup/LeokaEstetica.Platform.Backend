@@ -31,4 +31,13 @@ public interface ISprintService
     /// <param name="sprintName">Новое название спринта.</param>
     /// <param name="account">Аккаунт.</param>
     Task UpdateSprintNameAsync(long projectSprintId, long projectId, string sprintName, string account);
+    
+    /// <summary>
+    /// Метод обновляет описание спринта.
+    /// </summary>
+    /// <param name="projectSprintId">Id спринта в рамках проекта.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="sprintDetails">Новое описание спринта.</param>
+    /// <param name="account">Аккаунт.</param>
+    Task UpdateSprintDetailsAsync(long projectSprintId, long projectId, string sprintDetails, string account);
 }
