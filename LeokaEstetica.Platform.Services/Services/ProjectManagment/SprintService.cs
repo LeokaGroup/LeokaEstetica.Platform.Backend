@@ -3,8 +3,10 @@ using Dapper;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.Core.Constants;
 using LeokaEstetica.Platform.Core.Exceptions;
+using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.Config;
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
+using LeokaEstetica.Platform.Integrations.Abstractions.Discord;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.Template;
 using LeokaEstetica.Platform.Models.Enums;
@@ -26,6 +28,7 @@ internal sealed class SprintService : ISprintService
     private readonly IMapper _mapper;
     private readonly IProjectManagmentRepository _projectManagmentRepository;
     private readonly Lazy<IDistributionStatusTaskService> _distributionStatusTaskService;
+    private readonly IDiscordService _discordService;
 
     /// <summary>
     /// Конструктор.
@@ -36,6 +39,7 @@ internal sealed class SprintService : ISprintService
     /// <param name="mapper">Автомаппер.</param>
     /// <param name="projectManagmentRepository">Репозиторий модуля УП.</param>
     /// <param name="distributionStatusTaskService">Сервис распределения по статусам.</param>
+    /// <param name="discordService">Сервис уведомлений дискорда.</param>
     /// </summary>
     public SprintService(ILogger<SprintService> logger,
         ISprintRepository sprintRepository,
@@ -44,7 +48,8 @@ internal sealed class SprintService : ISprintService
         IProjectSettingsConfigRepository projectSettingsConfigRepository,
         IMapper mapper,
         IProjectManagmentRepository projectManagmentRepository,
-        Lazy<IDistributionStatusTaskService> distributionStatusTaskService)
+        Lazy<IDistributionStatusTaskService> distributionStatusTaskService,
+        IDiscordService discordService)
     {
         _logger = logger;
         _sprintRepository = sprintRepository;
@@ -54,6 +59,7 @@ internal sealed class SprintService : ISprintService
         _mapper = mapper;
         _projectManagmentRepository = projectManagmentRepository;
         _distributionStatusTaskService = distributionStatusTaskService;
+        _discordService = discordService;
     }
 
     /// <inheritdoc />
@@ -150,6 +156,44 @@ internal sealed class SprintService : ISprintService
                     .SelectMany(x => (x.ProjectManagmentTasks ?? new List<ProjectManagmentTaskOutput>())
                         .Select(y => y)
                         .OrderBy(o => o.Created));
+            }
+
+            // Чтобы отобразить на фронте пустой массив.
+            result.SprintTasks ??= new List<ProjectManagmentTaskOutput>();
+            result.WatcherIds ??= new List<long>();
+
+            if (result.WatcherIds.Any())
+            {
+                var watchers = await _userRepository.GetWatcherNamesByWatcherIdsAsync(result.WatcherIds);
+                
+                // Названия наблюдателей задачи.
+                if (watchers.Count > 0)
+                {
+                    foreach (var w in result.WatcherIds)
+                    {
+                        if (watchers.TryGet(w) is null)
+                        {
+                            var ex = new InvalidOperationException("Не удалось получить наблюдателя.");
+                            await _discordService.SendNotificationErrorAsync(ex);
+                            _logger.LogError(ex, ex.Message);
+                                
+                            continue;
+                        }
+
+                        var watcher = watchers.TryGet(w)?.FullName;
+
+                        if (watcher is null)
+                        {
+                            var ex = new InvalidOperationException("Не удалось получить FullName наблюдателя.");
+                            await _discordService.SendNotificationErrorAsync(ex);
+                            _logger.LogError(ex, ex.Message);
+                                
+                            continue;
+                        }
+                            
+                        result.WatcherNames = new List<string> { watcher };
+                    }
+                }
             }
 
             return result;

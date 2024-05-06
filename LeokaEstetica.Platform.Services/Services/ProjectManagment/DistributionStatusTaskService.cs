@@ -272,7 +272,27 @@ internal class DistributionStatusTaskService : IDistributionStatusTaskService
                     {
                         foreach (var w in ts.WatcherIds)
                         {
-                            ts.WatcherNames = new List<string> { watchers.TryGet(w)?.FullName };
+                            if (watchers.TryGet(w) is null)
+                            {
+                                var ex = new InvalidOperationException("Не удалось получить наблюдателя.");
+                                await _discordService.SendNotificationErrorAsync(ex);
+                                _logger.LogError(ex, ex.Message);
+                                
+                                continue;
+                            }
+
+                            var watcher = watchers.TryGet(w)?.FullName;
+
+                            if (watcher is null)
+                            {
+                                var ex = new InvalidOperationException("Не удалось получить FullName наблюдателя.");
+                                await _discordService.SendNotificationErrorAsync(ex);
+                                _logger.LogError(ex, ex.Message);
+                                
+                                continue;
+                            }
+                            
+                            ts.WatcherNames = new List<string> { watcher };
                         }
                     }
                     
