@@ -48,19 +48,14 @@ public class TaskSprintExtendedOutput : TaskSprintOutput
     public IEnumerable<ProjectManagmentTaskOutput>? SprintTasks { get; set; }
     
     /// <summary>
-    /// Id исполнителя спринта, если они были заданы.
-    /// </summary>
-    public IEnumerable<long>? WatcherIds { get; set; }
-
-    /// <summary>
-    /// Id исполнителя спринта, если он был задан.
+    /// Id исполнителя спринта (кто ответственный за спринт).
     /// </summary>
     public long? ExecutorId { get; set; }
 
     /// <summary>
-    /// Id автора спринта.
+    /// Id наблюдателей спринта.
     /// </summary>
-    public long CreatedBy { get; set; }
+    public IEnumerable<long>? WatcherIds { get; set; }
 
     /// <summary>
     /// Дата создания спринта.
@@ -68,17 +63,33 @@ public class TaskSprintExtendedOutput : TaskSprintOutput
     public DateTime CreatedAt { get; set; }
 
     /// <summary>
+    /// Кто создал спринт.
+    /// </summary>
+    public long CreatedBy { get; set; }
+
+    /// <summary>
     /// Дата обновления спринта.
     /// </summary>
     public DateTime? UpdatedAt { get; set; }
-
+    
     /// <summary>
-    /// Id пользователя, который обновил спринт.
+    /// Кто обновил спринт.
     /// </summary>
     public long? UpdatedBy { get; set; }
-
+    
     /// <summary>
-    /// Список названий наблюдателей.
+    /// TODO: В будущем будет изменен на объект, содержащий фото и тд.
+    /// ФИО наблюдателей задачи.
     /// </summary>
     public List<string>? WatcherNames { get; set; }
+
+    /// <summary>
+    /// Название исполнителя (email или логин).
+    /// </summary>
+    public string? ExecutorName { get; set; }
+
+    /// <summary>
+    /// Название автора задачи (email или логин).
+    /// </summary>
+    public string? AuthorName { get; set; }
 }

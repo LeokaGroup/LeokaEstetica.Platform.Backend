@@ -20,20 +20,24 @@ public class SprintController : BaseController
     private readonly ISprintService _sprintService;
     private readonly Lazy<IDiscordService> _discordService;
     private readonly ILogger<SprintController> _logger;
+    private readonly IProjectManagmentService _projectManagmentService;
 
     /// <summary>
     /// Конструктор.
     /// <param name="sprintService">Сервис спринтов.</param>
     /// <param name="discordService">Сервис уведомлений дискорда.</param>
     /// <param name="logger">Логгер.</param>
+    /// <param name="projectManagmentService">Сервис управления проектами.</param>
     /// </summary>
     public SprintController(ISprintService sprintService,
         Lazy<IDiscordService> discordService,
-        ILogger<SprintController> logger)
+        ILogger<SprintController> logger,
+        IProjectManagmentService projectManagmentService)
     {
         _sprintService = sprintService;
         _discordService = discordService;
         _logger = logger;
+        _projectManagmentService = projectManagmentService;
     }
 
     /// <summary>
@@ -108,6 +112,44 @@ public class SprintController : BaseController
         var result = await _sprintService.GetSprintAsync(projectSprintId, projectId, GetUserName());
 
         return result;
+    }
+    
+    /// <summary>
+    /// Метод планирует спринт.
+    /// Добавляет задачи в спринт, если их указали при планировании спринта.
+    /// </summary>
+    /// <param name="planingSprintInput">Входная модель.</param>
+    [HttpPost]
+    [Route("sprint/planing")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task PlaningSprintAsync([FromBody] PlaningSprintInput planingSprintInput)
+    {
+        var validator = await new PlaningSprintValidator().ValidateAsync(planingSprintInput);
+
+        if (validator.Errors.Any())
+        {
+            var exceptions = new List<InvalidOperationException>();
+
+            foreach (var err in validator.Errors)
+            {
+                exceptions.Add(new InvalidOperationException(err.ErrorMessage));
+            }
+
+            var ex = new AggregateException("Ошибка планирования спринта. " +
+                                            $"ProjectId: {planingSprintInput.ProjectId}. " +
+                                            $"SprintName: {planingSprintInput.SprintName}", exceptions);
+            _logger.LogError(ex, ex.Message);
+            
+            await _discordService.Value.SendNotificationErrorAsync(ex);
+            
+            throw ex;
+        }
+
+        await _projectManagmentService.PlaningSprintAsync(planingSprintInput, GetUserName(), CreateTokenFromHeader());
     }
 
     /// <summary>
