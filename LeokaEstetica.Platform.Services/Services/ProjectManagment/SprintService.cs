@@ -276,6 +276,29 @@ internal sealed class SprintService : ISprintService
         }
     }
 
+    /// <inheritdoc />
+    public async Task StartSprintAsync(long projectSprintId, long projectId, string account)
+    {
+        try
+        {
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+            
+            // TODO: Добавить запись активности (кто назначил/обновил наблюдателей спринта).
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
     #endregion
 
     #region Приватные методы.
