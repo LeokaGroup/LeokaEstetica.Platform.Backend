@@ -131,6 +131,7 @@ internal class BaseServiceTest
     protected readonly IProjectManagmentRepository ProjectManagmentRepository;
     protected readonly SprintService SprintService;
     protected readonly ProjectManagementTemplateService ProjectManagementTemplateService;
+    protected readonly SprintRepository SprintRepository;
 
     protected BaseServiceTest()
     {
@@ -300,8 +301,8 @@ internal class BaseServiceTest
 
         BaseSearchSprintTaskAlgorithm = new BaseSearchAgileObjectAlgorithm();
 
-        var sprintRepository = new SprintRepository(connectionProvider);
-        SprintService = new SprintService(null, sprintRepository, null, userRepository, projectSettingsConfigRepository,
-            mapper, null, null, discordService);
+        SprintRepository = new SprintRepository(connectionProvider);
+        SprintService = new SprintService(null, SprintRepository, null, userRepository, projectSettingsConfigRepository,
+            mapper, null, null, discordService, null);
     }
 }

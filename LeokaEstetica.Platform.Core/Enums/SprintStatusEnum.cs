@@ -6,9 +6,9 @@ namespace LeokaEstetica.Platform.Core.Enums;
 public enum SprintStatusEnum
 {
     /// <summary>
-    /// В бэклоге.
+    /// Новый.
     /// </summary>
-    Backlog = 1,
+    New = 1,
     
     /// <summary>
     /// В работе.
@@ -23,10 +23,5 @@ public enum SprintStatusEnum
     /// <summary>
     /// Закрыт.
     /// </summary>
-    Closed = 4,
-    
-    /// <summary>
-    /// В архиве.
-    /// </summary>
-    Archive = 5
+    Closed = 4
 }

@@ -67,5 +67,6 @@ public interface ISprintService
     /// <param name="projectSprintId">Id спринта в рамках проекта.</param>
     /// <param name="projectId">Id проекта.</param>
     /// <param name="account">Аккаунт.</param>
-    Task StartSprintAsync(long projectSprintId, long projectId, string account);
+    /// <param name="token">Токен.</param>
+    Task StartSprintAsync(long projectSprintId, long projectId, string account, string token);
 }

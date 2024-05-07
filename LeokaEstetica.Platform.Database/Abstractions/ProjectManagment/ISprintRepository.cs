@@ -64,4 +64,26 @@ public interface ISprintRepository
     /// <param name="projectId">Id проекта.</param>
     /// <param name="watcherIds">Id наблюдателей спринта.</param>
     Task InsertOrUpdateSprintWatchersAsync(long projectSprintId, long projectId, IEnumerable<long> watcherIds);
+    
+    /// <summary>
+    /// Метод проверяет, есть ли уже активный спринт у проекта.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Признак результата проверки.</returns>
+    Task<bool> CheckActiveSprintAsync(long projectId);
+
+    /// <summary>
+    /// Метод получает кол-во задач у спринта.
+    /// </summary>
+    /// <param name="projectSprintId">Id спринта в рамках проекта.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Кол-во задач у спринта.</returns>
+    Task<int> GetCountSprintTasksAsync(long projectSprintId, long projectId);
+    
+    /// <summary>
+    /// Метод запускает спринт проекта.
+    /// </summary>
+    /// <param name="projectSprintId">Id спринта в рамках проекта.</param>
+    /// <param name="projectId">Id проекта.</param>
+    Task RunSprintAsync(long projectSprintId, long projectId);
 }

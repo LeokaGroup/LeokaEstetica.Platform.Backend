@@ -347,5 +347,8 @@ public class SprintController : BaseController
             
             throw ex;
         }
+
+        await _sprintService.StartSprintAsync(sprintInput.ProjectSprintId, sprintInput.ProjectId, GetUserName(),
+            CreateTokenFromHeader());
     }
 }
