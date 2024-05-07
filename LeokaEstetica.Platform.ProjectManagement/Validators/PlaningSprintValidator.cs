@@ -2,7 +2,7 @@ using FluentValidation;
 using LeokaEstetica.Platform.Core.Constants;
 using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
 
-namespace LeokaEstetica.Platform.ProjectManagment.Validators;
+namespace LeokaEstetica.Platform.ProjectManagement.Validators;
 
 /// <summary>
 /// Класс валидатора планирования спринта.

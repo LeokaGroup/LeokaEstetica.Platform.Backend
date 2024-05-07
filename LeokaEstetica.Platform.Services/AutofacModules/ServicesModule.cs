@@ -1,4 +1,5 @@
 ﻿using Autofac;
+using LazyProxy.Autofac;
 using LeokaEstetica.Platform.Core.Attributes;
 using LeokaEstetica.Platform.Services.Abstractions.Config;
 using LeokaEstetica.Platform.Services.Abstractions.FareRule;
@@ -297,6 +298,25 @@ public class ServicesModule : Module
             .InstancePerLifetimeScope();
         builder.RegisterType<SearchAgileObjectByObjectDescriptionStrategy>()
             .As<BaseSearchAgileObjectStrategy>()
+            .InstancePerLifetimeScope();
+        
+        // Сервис спринтов.
+        builder.RegisterType<SprintService>()
+            .Named<ISprintService>("SprintService")
+            .InstancePerLifetimeScope();
+        builder.RegisterType<SprintService>()
+            .As<ISprintService>()
+            .InstancePerLifetimeScope();
+            
+        // Сервис распределения задач по статусам шаблона проекта.
+        builder.RegisterLazy<IDistributionStatusTaskService, DistributionStatusTaskService>();
+
+        // Сервис шаблонов проекта.
+        builder.RegisterType<ProjectManagementTemplateService>()
+            .Named<IProjectManagementTemplateService>("ProjectManagementTemplateService")
+            .InstancePerLifetimeScope();
+        builder.RegisterType<ProjectManagementTemplateService>()
+            .As<IProjectManagementTemplateService>()
             .InstancePerLifetimeScope();
     }
 }

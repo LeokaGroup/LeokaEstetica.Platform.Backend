@@ -277,7 +277,7 @@ public interface IUserRepository
     /// </summary>
     /// <param name="watcherIds">Id наблюдателей задач.</param>
     /// <returns>Словарь с наблюдателями задач.</returns>
-    Task<IDictionary<long, UserInfoOutput>> GetWatcherNamesByWatcherIdsAsync(IEnumerable<long> watcherIds);
+    Task<IDictionary<long, UserInfoOutput>?> GetWatcherNamesByWatcherIdsAsync(IEnumerable<long> watcherIds);
 
     /// <summary>
     /// Метод получает данные профиля пользователей по их Id.

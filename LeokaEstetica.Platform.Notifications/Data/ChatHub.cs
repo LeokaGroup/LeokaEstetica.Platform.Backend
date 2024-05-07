@@ -4,6 +4,7 @@ using LeokaEstetica.Platform.Base.Abstractions.Messaging.Chat;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.Chat;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.Base.Builders;
+using LeokaEstetica.Platform.Integrations.Abstractions.Discord;
 using LeokaEstetica.Platform.Models.Dto.Chat.Input;
 using LeokaEstetica.Platform.Models.Dto.Chat.Output;
 using LeokaEstetica.Platform.Models.Enums;
@@ -30,6 +31,7 @@ internal sealed class ChatHub : Hub
     private readonly ILogger<ChatHub> _logger;
     private readonly IConnectionService _connectionService;
     private readonly IChatService _chatService;
+    private readonly IDiscordService _discordService;
 
     /// <summary>
     /// Конструктор.
@@ -40,12 +42,14 @@ internal sealed class ChatHub : Hub
     /// <param name="logger">Логгер.</param>
     /// <param name="connectionService">Сервис подключений Redis.</param>
     /// <param name="chatService">Сервис чата.</param>
+    /// <param name="discordService">Сервис уведомлений дискорда.</param>
     public ChatHub(IChatRepository chatRepository,
         IMapper mapper,
         IUserRepository userRepository,
         ILogger<ChatHub> logger,
         IConnectionService connectionService,
-        IChatService chatService)
+        IChatService chatService,
+        IDiscordService discordService)
     {
         _chatRepository = chatRepository;
         _mapper = mapper;
@@ -53,6 +57,7 @@ internal sealed class ChatHub : Hub
         _logger = logger;
         _connectionService = connectionService;
         _chatService = chatService;
+        _discordService = discordService;
     }
 
     #region Публичные методы
@@ -95,6 +100,8 @@ internal sealed class ChatHub : Hub
 
         catch (Exception ex)
         {
+            await _discordService.SendNotificationErrorAsync(ex);
+            
             _logger.LogError(ex, ex.Message);
             throw;
         }
@@ -135,6 +142,8 @@ internal sealed class ChatHub : Hub
 
         catch (Exception ex)
         {
+            await _discordService.SendNotificationErrorAsync(ex);
+            
             _logger.LogError(ex, ex.Message);
             throw;
         }
@@ -178,6 +187,8 @@ internal sealed class ChatHub : Hub
 
         catch (Exception ex)
         {
+            await _discordService.SendNotificationErrorAsync(ex);
+            
             _logger.LogError(ex, ex.Message);
             throw;
         }
@@ -206,6 +217,8 @@ internal sealed class ChatHub : Hub
 
         catch (Exception ex)
         {
+            await _discordService.SendNotificationErrorAsync(ex);
+            
             _logger.LogError(ex, ex.Message);
             throw;
         }

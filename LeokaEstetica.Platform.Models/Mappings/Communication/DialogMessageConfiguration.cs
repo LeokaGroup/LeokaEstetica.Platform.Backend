@@ -23,7 +23,7 @@ public partial class DialogMessageConfiguration : IEntityTypeConfiguration<Dialo
         
         entity.Property(e => e.Created)
             .HasColumnName("Created")
-            .HasColumnType("timestamp")
+            .HasColumnType("timestamp with time zone")
             .IsRequired();
         
         entity.Property(e => e.IsMyMessage)

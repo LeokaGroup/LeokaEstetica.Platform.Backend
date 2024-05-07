@@ -437,7 +437,7 @@ internal sealed class VacancyService : IVacancyService
             var vacancyId = vacancyInput.VacancyId;
 
             // Отправляем вакансию на модерацию.
-            await _vacancyModerationService.AddVacancyModerationAsync(vacancyId);
+            await _vacancyModerationService.AddVacancyModerationAsync(vacancyId.GetValueOrDefault());
 
             // Отправляем уведомление об успешном изменении вакансии и отправки ее на модерацию.
             await _vacancyNotificationsService.SendNotificationSuccessCreatedUserVacancyAsync("Все хорошо",
@@ -445,7 +445,7 @@ internal sealed class VacancyService : IVacancyService
                 NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, vacancyInput.Token);
 
             // Проверяем наличие неисправленных замечаний.
-            await CheckAwaitingCorrectionRemarksAsync(vacancyId);
+            await CheckAwaitingCorrectionRemarksAsync(vacancyId.GetValueOrDefault());
 
             return createdVacancy;
         }

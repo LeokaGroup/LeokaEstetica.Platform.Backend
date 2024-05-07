@@ -89,26 +89,12 @@ internal sealed class SubscriptionRepository : ISubscriptionRepository
             .Select(s => s.SubscriptionId)
             .FirstOrDefaultAsync();
 
-        // TODO: Да, не оптимально, но тут проблема с добавлением записи, ругается на PK.
-        // TODO: Вариантов как вылечить не было, сделано так.
-        // TODO: В рамках рефача можно и этим заняться попробовать, чтоб оптимизнуть как то.
-        // TODO: Пробовал играться с ValueGenerated в маппинге EF. Все это не помогло. Как варик, переписать на даппер.
-        var lastUserId = (await _pgContext.Users.OrderBy(o => o.UserId).LastOrDefaultAsync())?.UserId;
-
-        if (lastUserId is null)
-        {
-            throw new InvalidOperationException("Не удалось получить последнего пользователя.");
-        }
-
-        var id = lastUserId.GetValueOrDefault();
-        
         // Присваиваем пользователю подписку.
         await _pgContext.UserSubscriptions.AddAsync(new UserSubscriptionEntity
         {
             UserId = userId,
             IsActive = true,
-            SubscriptionId = freeSubscriptionId,
-            UserSubscriptionId = ++id // TODO: Костыль.
+            SubscriptionId = freeSubscriptionId
         });
         await _pgContext.SaveChangesAsync();
     }

@@ -221,4 +221,12 @@ public interface IProjectService
     /// <param name="account">Аккаунт пользователя.</param>
     /// <param name="token">Токен.</param>
     Task DeleteProjectArchiveAsync(long projectId, string account, string token);
+
+    /// <summary>
+    /// Метод назначает участнику команды проекта роль.
+    /// <param name="userId">Id пользователя.</param>
+    /// <param name="role">Роль.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// </summary>
+    Task SetProjectTeamMemberRoleAsync(long userId, string? role, long projectId);
 }

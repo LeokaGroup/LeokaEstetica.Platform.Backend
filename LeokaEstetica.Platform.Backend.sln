@@ -50,9 +50,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LeokaEstetica.Platform.Inte
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LeokaEstetica.Platform.Database.Upgrade", "LeokaEstetica.Platform.Database.Upgrade\LeokaEstetica.Platform.Database.Upgrade.csproj", "{D54C9826-E94C-41D6-8B7B-90844FF3AC92}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ProjectManagment", "ProjectManagment", "{4026D274-26B5-48D1-827C-FAFFE8E92E7D}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ProjectManagement", "ProjectManagement", "{4026D274-26B5-48D1-827C-FAFFE8E92E7D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LeokaEstetica.Platform.ProjectManagment.Documents", "LeokaEstetica.Platform.ProjectManagment.Documents\LeokaEstetica.Platform.ProjectManagment.Documents.csproj", "{60F40B54-E16D-4CC4-B0A2-1B8B6F58375C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LeokaEstetica.Platform.ProjectManagement.Documents", "LeokaEstetica.Platform.ProjectManagement.Documents\LeokaEstetica.Platform.ProjectManagement.Documents.csproj", "{60F40B54-E16D-4CC4-B0A2-1B8B6F58375C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LeokaEstetica.Platform.ProjectManagement", "LeokaEstetica.Platform.ProjectManagement\LeokaEstetica.Platform.ProjectManagement.csproj", "{CDFD4EA2-AAC4-44CC-8701-EDA7F1C99096}"
 EndProject

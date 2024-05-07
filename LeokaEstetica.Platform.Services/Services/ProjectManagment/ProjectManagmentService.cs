@@ -2,6 +2,7 @@
 using System.Runtime.CompilerServices;
 using AutoMapper;
 using Dapper;
+using FluentValidation.Results;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.Base.Extensions.StringExtensions;
 using LeokaEstetica.Platform.Base.Factors;
@@ -15,12 +16,9 @@ using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Database.Abstractions.Template;
 using LeokaEstetica.Platform.Integrations.Abstractions.Discord;
 using LeokaEstetica.Platform.Integrations.Abstractions.Reverso;
-using LeokaEstetica.Platform.Models.Dto.Base.ProjectManagement.Paginator;
 using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.Template;
-using LeokaEstetica.Platform.Models.Dto.Output.User;
-using LeokaEstetica.Platform.Models.Dto.ProjectManagement.Output;
 using LeokaEstetica.Platform.Models.Entities.Document;
 using LeokaEstetica.Platform.Models.Entities.Profile;
 using LeokaEstetica.Platform.Models.Entities.ProjectManagment;
@@ -40,6 +38,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Enum = System.Enum;
+using SearchAgileObjectTypeEnum = LeokaEstetica.Platform.Models.Enums.SearchAgileObjectTypeEnum;
 
 [assembly: InternalsVisibleTo("LeokaEstetica.Platform.Tests")]
 
@@ -63,6 +62,8 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     private readonly Lazy<IFileManagerService> _fileManagerService;
     private readonly Lazy<IProjectManagementNotificationService> _projectManagementNotificationService;
     private readonly IUserService _userService;
+    private readonly Lazy<IDistributionStatusTaskService> _distributionStatusTaskService;
+    private readonly IProjectManagementTemplateService _projectManagementTemplateService;
 
     /// <summary>
     /// Статусы задач, которые являются самыми базовыми и никогда не меняются независимо от шаблона проекта.
@@ -72,11 +73,6 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     {
         "New", "InWork", "InDevelopment", "Completed"
     };
-
-    /// <summary>
-    /// Кол-во задач у статуса. Если применяется Scrum.
-    /// </summary>
-    private const int _scrumPageSize = 10;
 
     /// <summary>
     /// Конструктор.
@@ -93,6 +89,8 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     /// <param name="fileManagerService">Сервис менеджера файлов.</param>
     /// <param name="sprintNotificationsService">Сервис уведомлений спринтов.</param>
     /// <param name="userService">Сервис пользователей.</param>
+    /// <param name="distributionStatusTaskService">Сервис распределение задач по статусам.</param>
+    /// <param name="projectManagementTemplateService">Сервис шаблонов проекта.</param>
     /// </summary>
     public ProjectManagmentService(ILogger<ProjectManagmentService> logger,
         IProjectManagmentRepository projectManagmentRepository,
@@ -106,7 +104,9 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         Lazy<IReversoService> reversoService,
         Lazy<IFileManagerService> fileManagerService,
         Lazy<IProjectManagementNotificationService> projectManagementNotificationService,
-        IUserService userService)
+        IUserService userService,
+        Lazy<IDistributionStatusTaskService> distributionStatusTaskService,
+        IProjectManagementTemplateService projectManagementTemplateService)
     {
         _logger = logger;
         _projectManagmentRepository = projectManagmentRepository;
@@ -121,6 +121,8 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         _fileManagerService = fileManagerService;
         _projectManagementNotificationService = projectManagementNotificationService;
         _userService = userService;
+        _distributionStatusTaskService = distributionStatusTaskService;
+        _projectManagementTemplateService = projectManagementTemplateService;
     }
 
     #region Публичные методы.
@@ -440,95 +442,6 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         }
     }
 
-    /// <summary>
-    /// Метод получает список шаблонов задач, которые пользователь может выбрать перед переходом в рабочее пространство.
-    /// </summary>
-    /// <param name="templateId">Id шаблона.</param>
-    /// <returns>Список шаблонов задач.</returns>
-    public async Task<IEnumerable<ProjectManagmentTaskTemplateResult>> GetProjectManagmentTemplatesAsync(
-        long? templateId)
-    {
-        try
-        {
-            var items = (await _projectManagmentRepository.GetProjectManagmentTemplatesAsync(templateId))
-                .ToList();
-            
-            // Разбиваем статусы на группы (кажда группа это отдельный шаблон со статусами).
-            var templateIds = items.Select(x => x.TemplateId).Distinct().ToList();
-            var result = new List<ProjectManagmentTaskTemplateResult>();
-
-            foreach (var tid in templateIds)
-            {
-                // Выбираем все статусы определенного шаблона и добавляем в результат. 
-                var templateStatuses = items.Where(x => x.TemplateId == tid);
-                var resultItem = new ProjectManagmentTaskTemplateResult
-                {
-                    TemplateName = templateStatuses.First().TemplateName,
-                    ProjectManagmentTaskStatusTemplates =
-                        _mapper.Map<IEnumerable<ProjectManagmentTaskStatusTemplateOutput>>(templateStatuses)
-                };
-                result.Add(resultItem);
-            }
-
-            return result;
-        }
-
-        catch (Exception ex)
-        {
-            _logger?.LogError(ex, ex.Message);
-            throw;
-        }
-    }
-
-    /// <summary>
-    /// Метод проставляет Id шаблонов статусам для результата.
-    /// </summary>
-    /// <param name="templateStatuses">Список статусов.</param>
-    public async Task SetProjectManagmentTemplateIdsAsync(List<ProjectManagmentTaskTemplateResult> templateStatuses)
-    {
-        try
-        {
-            if (templateStatuses is null || !templateStatuses.Any())
-            {
-                throw new InvalidOperationException(
-                    "Невозможно проставить Id щаблонов статусам задач." +
-                    $" TemplateStatuses: {JsonConvert.SerializeObject(templateStatuses)}");
-            }
-
-            // Находим в БД все статусы по их Id.
-            var templateStatusIds = templateStatuses
-                .SelectMany(x => x.ProjectManagmentTaskStatusTemplates
-                    .Select(y => y.StatusId));
-            var items = templateStatuses
-                .SelectMany(x => x.ProjectManagmentTaskStatusTemplates
-                    .Select(y => y));
-
-            var statuses = (await _projectManagmentRepository.GetTemplateStatusIdsByStatusIdsAsync(templateStatusIds))
-                .ToList();
-
-            foreach (var ts in items)
-            {
-                var statusId = ts.StatusId;
-                var templateData = statuses.Find(x => x.StatusId == statusId);
-
-                // Если не нашли такого статуса в таблице маппинга многие-ко-многим.
-                if (templateData is null || templateData.StatusId <= 0 || templateData.TemplateId <= 0)
-                {
-                    throw new InvalidOperationException(
-                        $"Не удалось получить шаблон, к которому принадлежит статус. Id статуса был: {statusId}");
-                }
-
-                ts.TemplateId = templateData.TemplateId;
-            }
-        }
-
-        catch (Exception ex)
-        {
-            _logger?.LogError(ex, ex.Message);
-            throw;
-        }
-    }
-
     /// <inheritdoc />
     public async Task SetProjectManagmentTemplateIdsAsync(List<TaskStatusOutput> templateStatuses)
     {
@@ -604,7 +517,8 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             var templateId = Convert.ToInt32(template!.ParamValue);
 
             // Получаем набор статусов, которые входят в выбранный шаблон.
-            var items = await GetProjectManagmentTemplatesAsync(templateId);
+            // Получаем список шаблонов задач, которые пользователь может выбрать перед переходом в рабочее пространство.
+            var items = await _projectManagementTemplateService.GetProjectManagmentTemplatesAsync(templateId);
             var templateStatusesItems = _mapper.Map<IEnumerable<ProjectManagmentTaskTemplateResult>>(items);
             var statuses = templateStatusesItems?.AsList();
 
@@ -616,19 +530,11 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             }
 
             // Проставляем Id шаблона статусам.
-            await SetProjectManagmentTemplateIdsAsync(statuses);
-            
-            // TODO: Получать сохраненную стратегию пользователя, а не всего проекта.
-            var strategy = projectSettingsItems.Find(x =>
-                x.ParamKey.Equals(GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_STRATEGY));
+            await _projectManagementTemplateService.SetProjectManagmentTemplateIdsAsync(statuses);
 
-            var result = new ProjectManagmentWorkspaceResult
-            {
-                ProjectManagmentTaskStatuses = statuses.First().ProjectManagmentTaskStatusTemplates
-                    .Where(x => x.TemplateId == templateId),
-                Strategy = strategy!.ParamValue
-            };
-            
+            // Получаем выбранную пользователем стратегию представления.
+            var strategy = await _projectManagmentRepository.GetProjectUserStrategyAsync(projectId, userId);
+
             var modifyStatusesTimer = new Stopwatch();
                 
             _logger?.LogInformation(
@@ -637,7 +543,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             modifyStatusesTimer.Start();
 
             // Получаем задачи пользователя, которые принадлежат проекту в рабочем пространстве.
-            var projectTasks = await _projectManagmentRepository.GetProjectTasksAsync(projectId, strategy!.ParamValue);
+            var projectTasks = await _projectManagmentRepository.GetProjectTasksAsync(projectId, strategy!);
             
             modifyStatusesTimer.Stop();
                 
@@ -646,28 +552,21 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 $"за: {modifyStatusesTimer.ElapsedMilliseconds} мсек.");
             
             var tasks = projectTasks?.AsList();
+            
+            var result = new ProjectManagmentWorkspaceResult
+            {
+                ProjectManagmentTaskStatuses = statuses.First().ProjectManagmentTaskStatusTemplates
+                    .Where(x => x.TemplateId == templateId),
+                Strategy = strategy!
+            };
 
             // Если задачи есть, то модифицируем выходные данные.
             if (tasks is not null && tasks.Any())
             {
-                // Исключаем некоторые статусы из бэклога, так как из них нельзя спланировать спринт.
-                if (modifyTaskStatuseType == ModifyTaskStatuseTypeEnum.Backlog)
-                {
-                    var excludedStatuses = new[]
-                    {
-                        (long)ProjectTaskStatusEnum.Completed,
-                        (long)ProjectTaskStatusEnum.Archive,
-                        (long)ProjectTaskStatusEnum.Closed
-                    };
-                
-                    result.ProjectManagmentTaskStatuses = result.ProjectManagmentTaskStatuses
-                        .Where(x => !excludedStatuses.Contains(x.TaskStatusId));
-                    
-                    tasks = tasks.Where(x => !excludedStatuses.Contains(x.TaskStatusId)).AsList();
-                }
-                
-                await ModifyProjectManagmentTaskStatusesResultAsync(result.ProjectManagmentTaskStatuses, tasks,
-                    projectId, result.Strategy, paginatorStatusId, page);
+                // Распределяем задачи по статусам и модифицируем выходные результаты.
+                await _distributionStatusTaskService.Value.DistributionStatusTaskAsync(
+                    result.ProjectManagmentTaskStatuses, tasks, modifyTaskStatuseType, projectId, paginatorStatusId,
+                    result.Strategy, page);
             }
 
             return result;
@@ -750,7 +649,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     
     /// <inheritdoc />
     public async Task<CreateProjectManagementTaskOutput> CreateProjectTaskAsync(
-        CreateProjectManagementTaskInput projectManagementTaskInput, string account)
+        CreateProjectManagementTaskInput projectManagementTaskInput, string account, string? token)
     {
         try
         {
@@ -763,14 +662,38 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             }
 
             var projectId = projectManagementTaskInput.ProjectId;
+
+            // Проверяем, есть ли уже такая задача у такого проекта.
+            // Проверка на дубли идет по совпадению типа задачи и названия задачи.
+            var ifExists = await _projectManagmentRepository.IfExistsProjectTaskAsync(projectManagementTaskInput.Name,
+                projectManagementTaskInput.TaskTypeId, projectId);
+
+            if (ifExists)
+            {
+                if (!string.IsNullOrEmpty(token))
+                {
+                    await _projectManagementNotificationService.Value.SendNotifyWarningDublicateProjectTaskAsync(
+                        "Внимание",
+                        $"Такая задача уже заведена в проекте {projectId}.",
+                        NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
+                }
+                
+                return new CreateProjectManagementTaskOutput
+                {
+                    Errors = new List<ValidationFailure>
+                    {
+                        new("name", "Дубликат задачи в системе.")
+                    }
+                };
+            }
             
             // TODO: Этот код дублируется в этом сервисе. Вынести в приватный метод и кортежем вернуть нужные данные.
             // Получаем настройки проекта.
             var projectSettings = await _projectSettingsConfigRepository.GetProjectSpaceSettingsByProjectIdAsync(
                 projectId, userId);
-            var projectSettingsItems = projectSettings?.AsList();
+            var projectSettingsItems = projectSettings.AsList();
 
-            if (projectSettingsItems is null || !projectSettingsItems.Any())
+            if (projectSettingsItems is null || projectSettingsItems.Count == 0)
             {
                 throw new InvalidOperationException("Ошибка получения настроек проекта. " +
                                                     $"ProjectId: {projectId}. " +
@@ -784,9 +707,6 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 RedirectUrl = string.Concat(redirectUrl!.ParamValue, $"?projectId={projectId}")
             };
 
-            var parseTaskType = Enum.GetName((ProjectTaskTypeEnum)projectManagementTaskInput.TaskTypeId);
-            var taskType = Enum.Parse<ProjectTaskTypeEnum>(parseTaskType!);
-
             // Находим наибольший Id задачи в рамках проекта и увеличиваем его.
             /*
             Описание алгоритма:
@@ -797,9 +717,12 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             в рамках проекта).
             */
             var maxProjectTaskId = await _projectManagmentRepository.GetLastProjectTaskIdAsync(projectId);
+            
+            var parseTaskType = Enum.GetName((SearchAgileObjectTypeEnum)projectManagementTaskInput.TaskTypeId);
+            var taskType = Enum.Parse<SearchAgileObjectTypeEnum>(parseTaskType!);
 
             // Если идет создание задачи или ошибки.
-            if (new[] { ProjectTaskTypeEnum.Task, ProjectTaskTypeEnum.Error }.Contains(taskType))
+            if (new[] { SearchAgileObjectTypeEnum.Task, SearchAgileObjectTypeEnum.Error }.Contains(taskType))
             {
                 if (maxProjectTaskId < 0)
                 {
@@ -852,7 +775,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             }
             
             // Если идет создание эпика.
-            if (taskType == ProjectTaskTypeEnum.Epic)
+            if (taskType == SearchAgileObjectTypeEnum.Epic)
             {
                 using var transactionScope = _transactionScopeFactory.CreateTransactionScope();
                 
@@ -871,7 +794,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             }
             
             // Если идет создание истории/требования.
-            if (taskType == ProjectTaskTypeEnum.History)
+            if (taskType == SearchAgileObjectTypeEnum.Story)
             {
                 using var transactionScope = _transactionScopeFactory.CreateTransactionScope();
                 
@@ -2341,22 +2264,23 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 throw ex;
             }
 
-            string shortSysName;
+            ProjectStrategyEnum shortSysName;
 
             switch (strategySysName)
             {
                 case "Kanban":
-                    shortSysName = "kn";
+                    shortSysName = ProjectStrategyEnum.Kn;
                     break;
 
                 case "Scrum":
-                    shortSysName = "sm";
+                    shortSysName = ProjectStrategyEnum.Sm;
                     break;
 
                 default:
                     throw new InvalidOperationException($"Неизвестный тип стратегии: {strategySysName}.");
             }
 
+            // Фиксируем выбранную пользователем стратегию представления в БД.
             await _projectManagmentRepository.FixationProjectViewStrategyAsync(shortSysName, projectId, userId);
         }
         
@@ -2667,7 +2591,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 throw ex;
             }
 
-            List<long> projectTaskIds = null;
+            List<long>? projectTaskIds = null;
             if (planingSprintInput.ProjectTaskIds is not null && planingSprintInput.ProjectTaskIds.Any())
             {
                 projectTaskIds = GetProjectTaskIdsWithoutPrefix(planingSprintInput.ProjectTaskIds.AsList());
@@ -2760,7 +2684,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 planingSprintInput.SprintStatus = (int)SprintStatusEnum.Backlog;
                 
                 using var transactionScope = _transactionScopeFactory.CreateTransactionScope();
-                var addedSprintId = await _projectManagmentRepository.PlaningSprintAsync(planingSprintInput);
+                var addedSprintId = await _projectManagmentRepository.PlaningSprintAsync(planingSprintInput, userId);
                 
                 // Добавляем задачи в спринт, если их включили в спринт.
                 if (projectTaskIds is not null && projectTaskIds.Any())
@@ -2885,294 +2809,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     #endregion
 
     #region Приватные методы.
-
-    /// <summary>
-    /// Метод модифицирует выходной результат.
-    /// </summary>
-    /// <param name="projectManagmentTaskStatusTemplates">Список статусов, каждый статус может включать
-    /// или не включать в себя задачи.</param>
-    /// <param name="tasks">Список задач рабочего пространства проекта.</param>
-    /// <param name="projectId">Id проекта</param>
-    /// <param name="strategy">Выбранная пользователем стратегия представления.</param>
-    /// <param name="paginatorStatusId">Id статуса, для которого нужно применить пагинатор.</param>
-    /// <param name="page">Номер страницы.</param>
-    /// <exception cref="InvalidOperationException">Может бахнуть, если какое-то условие не прошли.</exception>
-    private async Task ModifyProjectManagmentTaskStatusesResultAsync(
-        IEnumerable<ProjectManagmentTaskStatusTemplateOutput> projectManagmentTaskStatusTemplates,
-        List<ProjectTaskExtendedEntity> tasks, long projectId, string strategy, int? paginatorStatusId = null,
-        int page = 1)
-    {
-        // Получаем имена авторов задач.
-        var authorIds = tasks.Select(x => x.AuthorId);
-        var authors = await _userRepository.GetAuthorNamesByAuthorIdsAsync(authorIds);
-
-        if (authors.Count == 0)
-        {
-            throw new InvalidOperationException("Не удалось получить авторов задач.");
-        }
-
-        var notValidExecutors = tasks.Where(x => x.ExecutorId <= 0);
-
-        // Обязательно логируем такое если обнаружили, но не стопаем выполнение логики.
-        if (notValidExecutors.Any())
-        {
-            var ex = new InvalidOperationException(
-                "Найдены невалидные исполнители задач." +
-                $" ExecutorIds: {JsonConvert.SerializeObject(notValidExecutors)}." +
-                $" ProjectId: {projectId}");
-
-            _logger.LogError(ex, ex.Message);
-
-            // Отправляем ивент в пачку.
-            await _discordService.SendNotificationErrorAsync(ex);
-        }
-
-        // Получаем имена исполнителей задач.
-        var executorIds = tasks.Where(x => x.ExecutorId > 0).Select(x => x.ExecutorId);
-        var executors = await _userRepository.GetExecutorNamesByExecutorIdsAsync(executorIds);
-
-        if (executors.Count == 0)
-        {
-            throw new InvalidOperationException("Не удалось получить исполнителей задач.");
-        }
-
-        IDictionary<int, ProjectTagOutput> tags = null;
-
-        // Если есть теги, то пойдем получать.
-        if (tasks.Any(x => x.TagIds is not null))
-        {
-            var tagIds = tasks.Where(x => x.TagIds is not null).SelectMany(x => x.TagIds).Distinct();
-            tags = await _projectManagmentRepository.GetTagNamesByTagIdsAsync(tagIds);
-        }
-
-        var typeIds = tasks.Select(x => x.TaskTypeId);
-        var types = await _projectManagmentRepository.GetTypeNamesByTypeIdsAsync(typeIds);
-
-        var statusIds = tasks.Select(x => x.TaskStatusId);
-        var statuseNames = (await _projectManagmentTemplateRepository.GetTaskTemplateStatusesAsync(statusIds))
-            .ToList();
-
-        var resolutionIds = tasks
-            .Where(x => x.ResolutionId is not null)
-            .Select(x => (int)x.ResolutionId)
-            .ToList();
-
-        IDictionary<int, TaskResolutionOutput> resolutions = null;
-
-        // Если есть резолюции задач, пойдем получать их.
-        // Если каких то нет, не страшно, значит они не заполнены у задач.
-        if (resolutionIds.Any())
-        {
-            resolutions = await _projectManagmentRepository.GetResolutionNamesByResolutionIdsAsync(
-                resolutionIds);
-        }
-        
-        var priorityIds = tasks
-            .Where(x => x.PriorityId is not null)
-            .Select(x => (int)x.PriorityId)
-            .ToList();
-        
-        IDictionary<int, TaskPriorityOutput> priorities = null;
-        
-        // Если есть приоритеты задач, пойдем получать их.
-        // Если каких то нет, не страшно, значит они не заполнены у задач.
-        if (priorityIds.Any())
-        {
-            priorities = await _projectManagmentRepository.GetPriorityNamesByPriorityIdsAsync(
-                priorityIds);
-        }
-        
-        var watcherIds = tasks
-            .Where(x => x.WatcherIds is not null)
-            .SelectMany(x => x.WatcherIds)
-            .ToList();
-
-        IDictionary<long, UserInfoOutput> watchers = null;
-
-        // Если есть наблюдатели, пойдем получать их.
-        // Если каких то нет, не страшно, значит они не заполнены у задач.
-        if (watcherIds.Any())
-        {
-            watchers = await _userRepository.GetWatcherNamesByWatcherIdsAsync(watcherIds);
-        }
-
-        // Распределяем задачи по статусам.
-        foreach (var ps in projectManagmentTaskStatusTemplates)
-        {
-            var tasksByStatus = tasks
-                .Where(s => s.TaskStatusId == ps.TaskStatusId)
-                .OrderByDescending(o => o.Created); // Новые задачи статуса будут выше.
-
-            // Для этого статуса нет задач, пропускаем.
-            if (!tasksByStatus.Any())
-            {
-                continue;
-            }
-
-            var mapTasks = _mapper.Map<List<ProjectManagmentTaskOutput>>(tasksByStatus);
-
-            // Добавляем задачи статуса, если есть что добавлять.
-            if (mapTasks.Any())
-            {
-                var userEmails = await _userRepository.GetUserEmailByUserIdsAsync(mapTasks.Select(x => x.ExecutorId));
-                var avatarFiles = await _userService.GetUserAvatarFilesAsync(projectId, userEmails);
-                
-                // Записываем названия исходя от Id полей.
-                foreach (var ts in mapTasks)
-                {
-                    // ФИО автора задачи.
-                    ts.AuthorName = authors.TryGet(ts.AuthorId)?.FullName;
-
-                    var executorId = ts.ExecutorId;
-
-                    if (executorId <= 0)
-                    {
-                        throw new InvalidOperationException("Невалидный исполнитель задачи." +
-                                                            $" ExecutorId: {executorId}");
-                    }
-
-                    // Заполняем данные исполнителя задачи (если назначен).
-                    var executorName = executors.TryGet(ts.ExecutorId)?.FullName;
-                    ts.Executor = new Executor
-                    {
-                        ExecutorName = executorName
-                    };
-
-                    if (!avatarFiles.ContainsKey(ts.ExecutorId))
-                    {
-                        // Получаем дефолтное изображение.
-                        ts.Executor.Avatar = avatarFiles.TryGet(0);
-                    }
-
-                    else
-                    {
-                        ts.Executor.Avatar = avatarFiles.TryGet(ts.ExecutorId);
-                    }
-
-                    var taskStatusName = statuseNames.Find(x => x.StatusId == ts.TaskStatusId)?.StatusName;
-
-                    if (string.IsNullOrEmpty(taskStatusName))
-                    {
-                        throw new InvalidOperationException($"Не удалось получить TaskStatusName: {ts.TaskStatusId}.");
-                    }
-
-                    // Название статуса.
-                    ts.TaskStatusName = taskStatusName;
-
-                    // Название типа задачи.
-                    ts.TaskTypeName = types.TryGet(ts.TaskTypeId)?.TypeName;
-
-                    // Название тегов (меток) задачи.
-                    if (tags is not null && tags.Count > 0)
-                    {
-                        foreach (var tg in ts.TagIds)
-                        {
-                            ts.TagNames = new List<string> { tags.TryGet(tg)?.TagName };
-                        }
-                    }
-
-                    // Название резолюции задачи.
-                    if (resolutions is not null && resolutions.Count > 0)
-                    {
-                        var resolutionName = resolutions.TryGet(ts.ResolutionId);
-
-                        // Если резолюции нет, не страшно. Значит не указана у задачи.
-                        if (resolutionName is not null)
-                        {
-                            ts.ResolutionName = resolutions.TryGet(ts.ResolutionId)?.ResolutionName;
-                        }
-                    }
-
-                    // Названия наблюдателей задачи.
-                    if (watchers is not null && watchers.Count > 0)
-                    {
-                        foreach (var w in ts.WatcherIds)
-                        {
-                            ts.WatcherNames = new List<string> { watchers.TryGet(w)?.FullName };
-                        }
-                    }
-                    
-                    // Название приорита задачи.
-                    if (priorities is not null && priorities.Count > 0)
-                    {
-                        var priorityName = priorities.TryGet(ts.PriorityId);
-
-                        // Если приоритета нет, не страшно. Значит не указана у задачи.
-                        if (priorityName is not null)
-                        {
-                            ts.PriorityName = priorities.TryGet(ts.PriorityId)?.PriorityName;
-                        }
-                    }
-                }
-                
-                var statusTasksCount = mapTasks.Count; // Всего задач у статуса.
-                var isAppended = false;
-
-                // Действия с задачами, если стратегия представления Scrum.
-                if (strategy.Equals("sm"))
-                {
-                    if (mapTasks.Count > 10)
-                    {
-                        // При нажатии на кнопку "Показать больше", докидываем в список задач определенного
-                        // статуса следующие 10.
-                        if (paginatorStatusId.HasValue && paginatorStatusId == ps.TaskStatusId)
-                        {
-                            ps.ProjectManagmentTasks = new List<ProjectManagmentTaskOutput>(statusTasksCount);
-                            
-                            // TODO: Надо переделать на IQueryable, чтобы не работать со всем массивом данных.
-                            // Разбиваем пагинатором следующие 10 задач, которые будем докидывать в список.
-                            var appendedTasks = mapTasks
-                                .Skip((page - 1) * _scrumPageSize)
-                                .Take(_scrumPageSize)
-                                .AsList();
-                            var appendedTaskIds = appendedTasks.Select(x => x.TaskId).AsList();
-
-                            foreach (var t in mapTasks)
-                            {
-                                // Наполняем уже существующий список определенного статуса.
-                                if (!appendedTaskIds.Contains(t.TaskId))
-                                {
-                                    ps.ProjectManagmentTasks.Add(t);
-                                }
-                            }
-
-                            // Добавляем новые 10 задач к тем, что уже выведены на фронте.
-                            ps.ProjectManagmentTasks.AddRange(appendedTasks);
-                            isAppended = true;
-                        }
-
-                        // Иначе применить пагинатор для всех статусов шаблона.
-                        else if (!paginatorStatusId.HasValue)
-                        {
-                            // TODO: Надо переделать на IQueryable, чтобы не работать со всем массивом данных.
-                            mapTasks = mapTasks
-                                .Skip((page - 1) * _scrumPageSize)
-                                .Take(_scrumPageSize)
-                                .AsList();
-                        }
-                    }
-                }
-                
-                // Заполняем модель пагинатора для фронта, чтобы он кидал последующие запросы с параметрами страниц.
-                ps.Paginator = new Paginator(statusTasksCount, page, _scrumPageSize);
-
-                // Если задачи уже докидывались, не добавляем снова.
-                if (!isAppended)
-                {
-                    // Добавляем задачи статуса.
-                    ps.ProjectManagmentTasks = new List<ProjectManagmentTaskOutput>(statusTasksCount);
-                    ps.ProjectManagmentTasks.AddRange(mapTasks);
-                }
-                
-                // Сортируем задачи статуса по убываниию даты создания. Новые задачи будут выше.
-                ps.ProjectManagmentTasks = ps.ProjectManagmentTasks.OrderByDescending(o => o.Created).AsList();
-
-                // Кол-во задач в статусе.
-                ps.Total = statusTasksCount;
-            }
-        }
-    }
-
+    
     /// <summary>
     /// Метод модифицирует результаты связей задачи.
     /// </summary>

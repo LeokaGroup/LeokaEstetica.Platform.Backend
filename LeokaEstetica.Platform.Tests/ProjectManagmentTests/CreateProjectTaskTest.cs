@@ -17,7 +17,7 @@ internal class CreateProjectTaskTest : BaseServiceTest
 
         Assert.DoesNotThrowAsync(async () =>
         {
-            await ProjectManagmentService.CreateProjectTaskAsync(request, "sierra_93@mail.ru");
+            await ProjectManagmentService.CreateProjectTaskAsync(request, "sierra_93@mail.ru", null);
         });
         
         return Task.CompletedTask;
@@ -33,7 +33,7 @@ internal class CreateProjectTaskTest : BaseServiceTest
 
         Assert.DoesNotThrowAsync(async () =>
         {
-            await ProjectManagmentService.CreateProjectTaskAsync(request, "sierra_93@mail.ru");
+            await ProjectManagmentService.CreateProjectTaskAsync(request, "sierra_93@mail.ru", null);
         });
         
         return Task.CompletedTask;

@@ -16,7 +16,7 @@
       <ProjectReference Include="..\LeokaEstetica.Platform.CallCenter\LeokaEstetica.Platform.CallCenter.csproj" />
       <ProjectReference Include="..\LeokaEstetica.Platform.Notifications\LeokaEstetica.Platform.Notifications.csproj" />
       <ProjectReference Include="..\LeokaEstetica.Platform.Processing\LeokaEstetica.Platform.Processing.csproj" />
-      <ProjectReference Include="..\LeokaEstetica.Platform.ProjectManagment.Documents\LeokaEstetica.Platform.ProjectManagment.Documents.csproj" />
+      <ProjectReference Include="..\LeokaEstetica.Platform.ProjectManagement.Documents\LeokaEstetica.Platform.ProjectManagement.Documents.csproj" />
     </ItemGroup>
 
     <ItemGroup>

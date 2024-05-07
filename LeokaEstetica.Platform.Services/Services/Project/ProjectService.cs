@@ -424,7 +424,7 @@ internal sealed class ProjectService : IProjectService
 
             if (projectId <= 0)
             {
-                await ValidateProjectIdAsync(projectId, token);
+                await ValidateProjectIdAsync(projectId.Value, token);
             }
             
             updateProjectInput.UserId = userId;
@@ -437,7 +437,7 @@ internal sealed class ProjectService : IProjectService
                 NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);
             
             // Проверяем наличие неисправленных замечаний.
-            await CheckAwaitingCorrectionRemarksAsync(projectId);
+            await CheckAwaitingCorrectionRemarksAsync(projectId.Value);
 
             result.ProjectRemarks ??= new List<ProjectRemarkOutput>();
 
@@ -623,17 +623,16 @@ internal sealed class ProjectService : IProjectService
             }
 
             // Создаем вакансию.
-            var createdVacancy = await _vacancyService.CreateVacancyAsync(new VacancyInput
-            {
-                VacancyName = createProjectVacancyInput.VacancyName,
-                VacancyText = createProjectVacancyInput.VacancyText,
-                WorkExperience = createProjectVacancyInput.WorkExperience,
-                Employment = createProjectVacancyInput.Employment,
-                Payment = createProjectVacancyInput.Payment,
-                Account = createProjectVacancyInput.Account,
-                ProjectId = createProjectVacancyInput.ProjectId,
-                Token = token
-            });
+            var createdVacancy = await _vacancyService.CreateVacancyAsync(
+                new VacancyInput(createProjectVacancyInput.VacancyName, createProjectVacancyInput.VacancyText, null,
+                    createProjectVacancyInput.ProjectId, null)
+                {
+                    WorkExperience = createProjectVacancyInput.WorkExperience,
+                    Employment = createProjectVacancyInput.Employment,
+                    Payment = createProjectVacancyInput.Payment,
+                    Account = createProjectVacancyInput.Account,
+                    Token = token
+                });
 
             // Автоматически привязываем вакансию к проекту.
             await AttachProjectVacancyAsync(createProjectVacancyInput.ProjectId, createdVacancy.VacancyId,
@@ -1443,6 +1442,25 @@ internal sealed class ProjectService : IProjectService
         }
     }
 
+    /// <inheritdoc />
+    public async Task SetProjectTeamMemberRoleAsync(long userId, string? role, long projectId)
+    {
+        try
+        {
+            // Находим Id команды проекта.
+            var teamId = await _projectRepository.GetProjectTeamIdAsync(projectId);
+       
+            // Назначаем участнику команды проекта роль.
+            await _projectRepository.SetProjectTeamMemberRoleAsync(userId, role, teamId);
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
     /// <summary>
     /// Метод запускает првоерки на разные условия прежде чем вывести проекты в каталог.
     /// Проекты могут быть отсеяны, если не проходят по условиям.
@@ -1810,7 +1828,8 @@ internal sealed class ProjectService : IProjectService
             VacancyName = vacancyName,
             Member = FillProjectTeamMemberAsync(user), // Заполняем участника команды проекта.
             Joined = CreateDateResult(member.Joined), // Форматируем даты.
-            UserId = member.UserId
+            UserId = member.UserId,
+            Role = member.Role
         };
 
         return team;

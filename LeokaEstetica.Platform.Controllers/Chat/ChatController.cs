@@ -56,6 +56,7 @@ public class ChatController : BaseController
         }
 
         Enum.TryParse(dialogInput.DiscussionType, out DiscussionTypeEnum discussionType);
+        
         result = await _chatService.WriteProjectDialogOwnerAsync(discussionType, GetUserName(),
             dialogInput.DiscussionTypeId, GetTokenFromHeader());
 

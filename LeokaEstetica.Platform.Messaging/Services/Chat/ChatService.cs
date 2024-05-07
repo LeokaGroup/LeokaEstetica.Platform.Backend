@@ -107,7 +107,7 @@ internal sealed class ChatService : IChatService
             var currentDialogId = await _chatRepository.GetDialogByUserIdAsync(userId);
 
             // Найдем диалог, в котором есть оба участника, отталкиваемся от текущего пользователя.
-            var findDialogId = await _chatRepository.GetDialogMembersByUserIdAsync(userId);
+            var findDialogId = await _chatRepository.GetDialogMembersAsync(userId, discussionTypeId);
 
             if (findDialogId == 0)
             {
@@ -242,15 +242,7 @@ internal sealed class ChatService : IChatService
         }
     }
 
-    /// <summary>
-    /// Метод создает диалог для написания владельцу проекта.
-    /// Если такой диалог уже создан с текущим юзером и владельцем проекта,
-    /// то ничего не происходит и диалог считается пустым для начала общения.
-    /// <param name="discussionType">Тип объекта обсуждения.</param>
-    /// <param name="account">Аккаунт.</param>
-    /// <param name="discussionTypeId">Id предмета обсуждения (Id проекта или вакансии).</param>
-    /// <param name="token">Токен пользователя.</param>
-    /// <returns>Данные диалога.</returns>
+    /// <inheritdoc />
     public async Task<DialogResultOutput> WriteProjectDialogOwnerAsync(DiscussionTypeEnum discussionType,
         string account, long discussionTypeId, string token)
     {
@@ -269,8 +261,8 @@ internal sealed class ChatService : IChatService
                 throw new InvalidOperationException("Не передали Id предмета обсуждения.");
             }
 
-            // Найдем диалог, в котором есть оба участника, отталкиваемся от текущего пользователя.
-            var findDialogId = await _chatRepository.GetDialogMembersByUserIdAsync(userId);
+            // Найдем диалог, в котором есть оба участника.
+            var findDialogId = await _chatRepository.GetDialogMembersAsync(userId, discussionTypeId);
             
             var result = new DialogResultOutput { Messages = new List<DialogMessageOutput>() };
 

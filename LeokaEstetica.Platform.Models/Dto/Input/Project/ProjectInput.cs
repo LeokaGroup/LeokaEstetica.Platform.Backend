@@ -9,6 +9,31 @@ namespace LeokaEstetica.Platform.Models.Dto.Input.Project;
 public class ProjectInput
 {
     /// <summary>
+    /// Конструктор.
+    /// </summary>
+    /// <param name="projectName">Название проекта.</param>
+    /// <param name="projectDetails">Описание проекта.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="projectStage">Стадия проекта.</param>
+    /// <param name="userId">Id пользователя.</param>
+    public ProjectInput(string projectName, string projectDetails, long? projectId, string projectStage, long? userId)
+    {
+        if (projectId.HasValue)
+        {
+            ProjectId = projectId.Value;
+        }
+
+        if (userId.HasValue)
+        {
+            UserId = userId.Value;
+        }
+        
+        ProjectName = projectName;
+        ProjectDetails = projectDetails;
+        ProjectStage = projectStage;
+    }
+
+    /// <summary>
     /// Название проекта.
     /// </summary>
     public string ProjectName { get; set; }
@@ -21,12 +46,12 @@ public class ProjectInput
     /// <summary>
     /// Изображение проекта.
     /// </summary>
-    public string ProjectIcon { get; set; }
+    public string? ProjectIcon { get; set; }
 
     /// <summary>
     /// Id проекта.
     /// </summary>
-    public long ProjectId { get; set; }
+    public long? ProjectId { get; set; }
 
     /// <summary>
     /// Стадия проекта.
@@ -36,22 +61,22 @@ public class ProjectInput
     /// <summary>
     /// Условия.
     /// </summary>
-    public string Conditions { get; set; }
+    public string? Conditions { get; set; }
 
     /// <summary>
     /// Требования.
     /// </summary>
-    public string Demands { get; set; }
+    public string? Demands { get; set; }
     
     /// <summary>
     /// Аккаунт.
     /// </summary>
-    public string Account { get; set; }
+    public string? Account { get; set; }
 
     /// <summary>
     /// Токен.
     /// </summary>
-    public string Token { get; set; }
+    public string? Token { get; set; }
 
     /// <summary>
     /// Стадия проекта в виде перечисления.
