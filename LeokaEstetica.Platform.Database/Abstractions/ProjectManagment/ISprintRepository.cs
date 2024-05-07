@@ -32,4 +32,36 @@ public interface ISprintRepository
     /// <returns>Задачи проекта.</returns>
     Task<IEnumerable<ProjectTaskExtendedEntity>?> GetProjectSprintTasksAsync(long projectId, long projectSprintId,
         string strategy);
+    
+    /// <summary>
+    /// Метод обновляет название спринта.
+    /// </summary>
+    /// <param name="projectSprintId">Id спринта в рамках проекта.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="sprintName">Новое название спринта.</param>
+    Task UpdateSprintNameAsync(long projectSprintId, long projectId, string sprintName);
+    
+    /// <summary>
+    /// Метод обновляет описание спринта.
+    /// </summary>
+    /// <param name="projectSprintId">Id спринта в рамках проекта.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="sprintDetails">Новое описание спринта.</param>
+    Task UpdateSprintDetailsAsync(long projectSprintId, long projectId, string sprintDetails);
+    
+    /// <summary>
+    /// Метод обновляет описание спринта.
+    /// </summary>
+    /// <param name="projectSprintId">Id спринта в рамках проекта.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="executorId">Id исполнителя спринта.</param>
+    Task InsertOrUpdateSprintExecutorAsync(long projectSprintId, long projectId, long executorId);
+    
+    /// <summary>
+    /// Метод обновляет описание спринта.
+    /// </summary>
+    /// <param name="projectSprintId">Id спринта в рамках проекта.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="watcherIds">Id наблюдателей спринта.</param>
+    Task InsertOrUpdateSprintWatchersAsync(long projectSprintId, long projectId, IEnumerable<long> watcherIds);
 }

@@ -173,6 +173,109 @@ internal sealed class SprintService : ISprintService
         }
     }
 
+    /// <inheritdoc />
+    public async Task UpdateSprintNameAsync(long projectSprintId, long projectId, string sprintName, string account)
+    {
+        try
+        {
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+
+            await _sprintRepository.UpdateSprintNameAsync(projectSprintId, projectId, sprintName);
+
+            // TODO: Добавить запись активности (кто изменил название спринта).
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task UpdateSprintDetailsAsync(long projectSprintId, long projectId, string sprintDetails,
+        string account)
+    {
+        try
+        {
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+
+            await _sprintRepository.UpdateSprintDetailsAsync(projectSprintId, projectId, sprintDetails);
+
+            // TODO: Добавить запись активности (кто изменил описание спринта).
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task InsertOrUpdateSprintExecutorAsync(long projectSprintId, long projectId, long executorId,
+        string account)
+    {
+        try
+        {
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+            
+            await _sprintRepository.InsertOrUpdateSprintExecutorAsync(projectSprintId, projectId, executorId);
+            
+            // TODO: Добавить запись активности (кто назначил/обновил исполнителя спринта).
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task InsertOrUpdateSprintWatchersAsync(long projectSprintId, long projectId,
+        IEnumerable<long> watcherIds, string account)
+    {
+        try
+        {
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+            
+            await _sprintRepository.InsertOrUpdateSprintWatchersAsync(projectSprintId, projectId, watcherIds);
+            
+            // TODO: Добавить запись активности (кто назначил/обновил наблюдателей спринта).
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
     #endregion
 
     #region Приватные методы.

@@ -151,4 +151,164 @@ public class SprintController : BaseController
 
         await _projectManagmentService.PlaningSprintAsync(planingSprintInput, GetUserName(), CreateTokenFromHeader());
     }
+
+    /// <summary>
+    /// Метод обновляет название спринта.
+    /// </summary>
+    /// <param name="updateSprintInput">Входная модель.</param>
+    [HttpPatch]
+    [Route("sprint-name")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task UpdateSprintNameAsync([FromBody] UpdateSprintNameInput updateSprintInput)
+    {
+        var validator = await new UpdateSprintNameValidator().ValidateAsync(updateSprintInput);
+
+        if (validator.Errors.Any())
+        {
+            var exceptions = new List<InvalidOperationException>();
+
+            foreach (var err in validator.Errors)
+            {
+                exceptions.Add(new InvalidOperationException(err.ErrorMessage));
+            }
+
+            var ex = new AggregateException("Ошибка при обновлении описания спринта. " +
+                                            $"ProjectSprintId: {updateSprintInput.ProjectSprintId}. " +
+                                            $"ProjectId: {updateSprintInput.ProjectId}.", exceptions);
+            _logger.LogError(ex, ex.Message);
+            
+            await _discordService.Value.SendNotificationErrorAsync(ex);
+            
+            throw ex;
+        }
+
+        await _sprintService.UpdateSprintNameAsync(updateSprintInput.ProjectSprintId, updateSprintInput.ProjectId,
+            updateSprintInput.SprintName, GetUserName());
+    }
+    
+    /// <summary>
+    /// Метод обновляет описание спринта.
+    /// </summary>
+    /// <param name="updateSprintInput">Входная модель.</param>
+    [HttpPatch]
+    [Route("sprint-details")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task UpdateSprintDetailsAsync([FromBody] UpdateSprintDetailsInput updateSprintInput)
+    {
+        var validator = await new UpdateSprintDetailsValidator().ValidateAsync(updateSprintInput);
+
+        if (validator.Errors.Any())
+        {
+            var exceptions = new List<InvalidOperationException>();
+
+            foreach (var err in validator.Errors)
+            {
+                exceptions.Add(new InvalidOperationException(err.ErrorMessage));
+            }
+
+            var ex = new AggregateException("Ошибка при обновлении описания спринта. " +
+                                            $"ProjectSprintId: {updateSprintInput.ProjectSprintId}. " +
+                                            $"ProjectId: {updateSprintInput.ProjectId}.", exceptions);
+            _logger.LogError(ex, ex.Message);
+            
+            await _discordService.Value.SendNotificationErrorAsync(ex);
+            
+            throw ex;
+        }
+
+        await _sprintService.UpdateSprintDetailsAsync(updateSprintInput.ProjectSprintId, updateSprintInput.ProjectId,
+            updateSprintInput.SprintDetails, GetUserName());
+    }
+    
+    /// <summary>
+    /// Метод проставляет/обновляет исполнителя спринта (ответственный за выполнение спринта).
+    /// </summary>
+    /// <param name="insertOrUpdateSprintExecutorInput">Входная модель.</param>
+    [HttpPatch]
+    [Route("sprint-executor")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task InsertOrUpdateSprintExecutorAsync(
+        [FromBody] InsertOrUpdateSprintExecutorInput insertOrUpdateSprintExecutorInput)
+    {
+        var validator = await new InsertOrUpdateSprintExecutorValidator()
+            .ValidateAsync(insertOrUpdateSprintExecutorInput);
+
+        if (validator.Errors.Any())
+        {
+            var exceptions = new List<InvalidOperationException>();
+
+            foreach (var err in validator.Errors)
+            {
+                exceptions.Add(new InvalidOperationException(err.ErrorMessage));
+            }
+
+            var ex = new AggregateException("Ошибка при проставлении/обновлении исполнителя спринта. " +
+                                            $"ProjectSprintId: {insertOrUpdateSprintExecutorInput.ProjectSprintId}. " +
+                                            $"ProjectId: {insertOrUpdateSprintExecutorInput.ProjectId}. " +
+                                            $"ExecutorId: {insertOrUpdateSprintExecutorInput.ExecutorId}.",
+                exceptions);
+            _logger.LogError(ex, ex.Message);
+            
+            await _discordService.Value.SendNotificationErrorAsync(ex);
+            
+            throw ex;
+        }
+
+        await _sprintService.InsertOrUpdateSprintExecutorAsync(insertOrUpdateSprintExecutorInput.ProjectSprintId,
+            insertOrUpdateSprintExecutorInput.ProjectId, insertOrUpdateSprintExecutorInput.ExecutorId, GetUserName());
+    }
+    
+    /// <summary>
+    /// Метод проставляет/обновляет наблюдателей спринта.
+    /// </summary>
+    /// <param name="insertOrUpdateSprintWatchersInput">Входная модель.</param>
+    [HttpPatch]
+    [Route("sprint-watcher")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task InsertOrUpdateSprintWatchersAsync(
+        [FromBody] InsertOrUpdateSprintWatchersInput insertOrUpdateSprintWatchersInput)
+    {
+        var validator = await new InsertOrUpdateSprintWatchersValidator()
+            .ValidateAsync(insertOrUpdateSprintWatchersInput);
+
+        if (validator.Errors.Any())
+        {
+            var exceptions = new List<InvalidOperationException>();
+
+            foreach (var err in validator.Errors)
+            {
+                exceptions.Add(new InvalidOperationException(err.ErrorMessage));
+            }
+
+            var ex = new AggregateException("Ошибка при проставлении/обновлении наблюдателей спринта. " +
+                                            $"ProjectSprintId: {insertOrUpdateSprintWatchersInput.ProjectSprintId}. " +
+                                            $"ProjectId: {insertOrUpdateSprintWatchersInput.ProjectId}. " +
+                                            $"WatcherIds: {insertOrUpdateSprintWatchersInput.WatcherIds}.",
+                exceptions);
+            _logger.LogError(ex, ex.Message);
+            
+            await _discordService.Value.SendNotificationErrorAsync(ex);
+            
+            throw ex;
+        }
+
+        await _sprintService.InsertOrUpdateSprintWatchersAsync(insertOrUpdateSprintWatchersInput.ProjectSprintId,
+            insertOrUpdateSprintWatchersInput.ProjectId, insertOrUpdateSprintWatchersInput.WatcherIds, GetUserName());
+    }
 }

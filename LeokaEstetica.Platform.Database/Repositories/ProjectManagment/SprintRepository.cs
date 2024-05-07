@@ -40,7 +40,8 @@ internal sealed class SprintRepository : BaseRepository, ISprintRepository
                     "FROM project_management.sprints AS s " +
                     "INNER JOIN project_management.sprint_statuses AS ss " +
                     "ON s.sprint_status_id = ss.status_id " +
-                    "WHERE s.project_id = @projectId";
+                    "WHERE s.project_id = @projectId " +
+                    "ORDER BY s.created_at DESC";
 
         var result = await connection.QueryAsync<TaskSprintExtendedOutput>(query, parameters);
 
@@ -188,5 +189,78 @@ internal sealed class SprintRepository : BaseRepository, ISprintRepository
         var result = await connection.QueryAsync<ProjectTaskExtendedEntity>(query, parameters);
 
         return result;
+    }
+
+    /// <inheritdoc/>
+    public async Task UpdateSprintNameAsync(long projectSprintId, long projectId, string sprintName)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@projectSprintId", projectSprintId);
+        parameters.Add("@projectId", projectId);
+        parameters.Add("@sprintName", sprintName);
+
+        var query = "UPDATE project_management.sprints " +
+                    "SET sprint_name = @sprintName " +
+                    "WHERE project_sprint_id = @projectSprintId " +
+                    "AND project_id = @projectId";
+        
+        await connection.ExecuteAsync(query, parameters);
+    }
+
+    /// <inheritdoc/>
+    public async Task UpdateSprintDetailsAsync(long projectSprintId, long projectId, string sprintDetails)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@projectSprintId", projectSprintId);
+        parameters.Add("@projectId", projectId);
+        parameters.Add("@sprintDetails", sprintDetails);
+
+        var query = "UPDATE project_management.sprints " +
+                    "SET sprint_goal = @sprintDetails " +
+                    "WHERE project_sprint_id = @projectSprintId " +
+                    "AND project_id = @projectId";
+        
+        await connection.ExecuteAsync(query, parameters);
+    }
+
+    /// <inheritdoc/>
+    public async Task InsertOrUpdateSprintExecutorAsync(long projectSprintId, long projectId, long executorId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@projectSprintId", projectSprintId);
+        parameters.Add("@projectId", projectId);
+        parameters.Add("@executorId", executorId);
+        
+        var query = "UPDATE project_management.sprints " +
+                    "SET executor_id = @executorId " +
+                    "WHERE project_sprint_id = @projectSprintId " +
+                    "AND project_id = @projectId";
+        
+        await connection.ExecuteAsync(query, parameters);
+    }
+
+    /// <inheritdoc/>
+    public async Task InsertOrUpdateSprintWatchersAsync(long projectSprintId, long projectId,
+        IEnumerable<long> watcherIds)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@projectSprintId", projectSprintId);
+        parameters.Add("@projectId", projectId);
+        parameters.Add("@watcherIds", watcherIds.AsList());
+        
+        var query = "UPDATE project_management.sprints " +
+                    "SET watcher_ids = @watcherIds " +
+                    "WHERE project_sprint_id = @projectSprintId " +
+                    "AND project_id = @projectId";
+        
+        await connection.ExecuteAsync(query, parameters);
     }
 }
