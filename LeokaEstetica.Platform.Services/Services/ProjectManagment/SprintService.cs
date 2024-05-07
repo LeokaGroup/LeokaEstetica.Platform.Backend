@@ -442,7 +442,7 @@ internal sealed class SprintService : ISprintService
             if (!string.IsNullOrWhiteSpace(token))
             {
                 await _sprintNotificationsService.SendNotificationSuccessStartSprintAsync("Все хорошо",
-                    $"Спринт {sprint.SprintName} успешно начат.", NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS,
+                    $"Спринт \"{sprint.SprintName}\" успешно начат.", NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS,
                     token);
             }
 
