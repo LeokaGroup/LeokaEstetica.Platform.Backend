@@ -195,7 +195,6 @@ internal sealed class VacancyService : IVacancyService
     public async Task<VacancyOutput> CreateVacancyAsync(VacancyInput vacancyInput)
     {
         var token = vacancyInput.Token;
-        var projectId = vacancyInput.ProjectId;
         
         try
         {
@@ -210,18 +209,8 @@ internal sealed class VacancyService : IVacancyService
 
             vacancyInput.UserId = userId;
 
-            // Проверяем проект, связанный с вакансией на валидность и наличие его у пользователя
-			if (projectId <= 0 || !await _projectRepository.CheckProjectOwnerAsync(projectId, userId))
-            {
-				var ex = new InvalidOperationException("Проект, связанный с вакансией не валидный. " +
-													    $"ProjectId: {projectId}. " +
-													    $"UserId: {userId}. " +
-													    "ProjectId был равен нулю либо связанный проект отсутствует у пользователя.");
-                throw ex;
-			}
-
-			// Получаем подписку пользователя.
-			var userSubscription = await _subscriptionRepository.GetUserSubscriptionAsync(userId);
+            // Получаем подписку пользователя.
+            var userSubscription = await _subscriptionRepository.GetUserSubscriptionAsync(userId);
             
             if (userSubscription is null)
             {
