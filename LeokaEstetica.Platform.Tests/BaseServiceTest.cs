@@ -159,7 +159,7 @@ internal class BaseServiceTest
         var userRepository = new UserRepository(pgContext, null, AppConfiguration);
         var profileRepository = new ProfileRepository(pgContext);
         var subscriptionRepository = new SubscriptionRepository(pgContext);
-        ChatRepository = new ChatRepository(pgContext);
+        ChatRepository = new ChatRepository(pgContext, connectionProvider);
         var resumeModerationRepository = new ResumeModerationRepository(pgContext);
         var accessUserRepository = new AccessUserRepository(pgContext);
         var accessUserService = new AccessUserService(accessUserRepository);

@@ -23,7 +23,7 @@ public partial class MainInfoDialogConfiguration : IEntityTypeConfiguration<Main
         
         entity.Property(e => e.Created)
             .HasColumnName("Created")
-            .HasColumnType("timestamp")
+            .HasColumnType("timestamp with time zone")
             .IsRequired();
 
         entity.HasIndex(u => u.DialogId)
