@@ -16,11 +16,12 @@ public interface IChatRepository
     Task<long> GetDialogByUserIdAsync(long userId);
 
     /// <summary>
-    /// Метод получает диалог по Id пользователя.
+    /// Метод получает диалог по участнику и проекту.
     /// </summary>
     /// <param name="userId">Id пользователя.</param>
+    /// <param name="projectId">Id проекта.</param>
     /// <returns>Id диалога.</returns>
-    Task<long> GetDialogMembersByUserIdAsync(long userId);
+    Task<long> GetDialogMembersAsync(long userId, long projectId);
 
     /// <summary>
     /// Метод создаст новый диалог.
