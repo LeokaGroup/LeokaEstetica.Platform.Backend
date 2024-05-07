@@ -12,8 +12,8 @@ public static class DictionaryExtensions
     /// <param name="key">Ключ, по которому будет поиск.</param>
     /// <typeparam name="TKey">Ключ.</typeparam>
     /// <typeparam name="TValue">Значение</typeparam>
-    /// <returns>Найденное значение по ключу.</returns>
-    public static TValue TryGet<TKey, TValue>(this IDictionary<TKey, TValue> source, TKey key)
+    /// <returns>Найденное значение по ключу. Может вернуть NULL!</returns>
+    public static TValue? TryGet<TKey, TValue>(this IDictionary<TKey, TValue> source, TKey key)
     {
         source.TryGetValue(key, out var value);
         

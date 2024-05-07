@@ -6,6 +6,7 @@ using LeokaEstetica.Platform.Controllers.ModelsValidation.Project;
 using LeokaEstetica.Platform.Controllers.Validators.Project;
 using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Finder.Abstractions.Project;
+using LeokaEstetica.Platform.Integrations.Abstractions.Discord;
 using LeokaEstetica.Platform.Messaging.Abstractions.Project;
 using LeokaEstetica.Platform.Messaging.Builders;
 using LeokaEstetica.Platform.Models.Dto.Input.Project;
@@ -34,6 +35,7 @@ public class ProjectController : BaseController
     private readonly IProjectFinderService _projectFinderService;
     private readonly IProjectPaginationService _projectPaginationService;
     private readonly ILogger<ProjectController> _logger;
+    private readonly Lazy<IDiscordService> _discordService;
 
     /// <summary>
     /// Конструктор.
@@ -45,13 +47,15 @@ public class ProjectController : BaseController
     /// <param name="projectFinderService">Поисковый сервис проектов.</param>
     /// <param name="projectPaginationService">Сервис пагинации проектов.</param>
     /// <param name="logger">Сервис логера.</param>
+    /// <param name="discordService">Сервис уведомлений дискорда.</param>
     public ProjectController(IProjectService projectService,
         IMapper mapper,
         IValidationExcludeErrorsService validationExcludeErrorsService,
         IProjectCommentsService projectCommentsService, 
         IProjectFinderService projectFinderService, 
         IProjectPaginationService projectPaginationService, 
-        ILogger<ProjectController> logger)
+        ILogger<ProjectController> logger,
+        Lazy<IDiscordService> discordService)
     {
         _projectService = projectService;
         _mapper = mapper;
@@ -60,6 +64,7 @@ public class ProjectController : BaseController
         _projectFinderService = projectFinderService;
         _projectPaginationService = projectPaginationService;
         _logger = logger;
+        _discordService = discordService;
     }
 
     /// <summary>
@@ -713,5 +718,46 @@ public class ProjectController : BaseController
         result.ProjectVacancies = _mapper.Map<IEnumerable<ProjectVacancyOutput>>(items);
 
         return result;
+    }
+
+    /// <summary>
+    /// Метод назначает участнику команды проекта роль.
+    /// <param name="teamMemberRoleInput">Входная модель.</param>
+    /// </summary>
+    [HttpPatch]
+    [Route("team-member-role")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task SetProjectTeamMemberRoleAsync([FromQuery] TeamMemberRoleInput teamMemberRoleInput)
+    {
+        var validator = await new TeamMemberRoleValidator().ValidateAsync(teamMemberRoleInput);
+
+        if (validator.Errors.Any())
+        {
+            var exceptions = new List<InvalidOperationException>();
+
+            foreach (var err in validator.Errors)
+            {
+                exceptions.Add(new InvalidOperationException(err.ErrorMessage));
+            }
+            
+            var ex = new AggregateException("Ошибка назначение роли участнику команды проекта. " +
+                                            $"ProjectId: {teamMemberRoleInput.ProjectId}. " +
+                                            $"UserId: {teamMemberRoleInput.UserId}. " +
+                                            $"Role: {teamMemberRoleInput.Role}", exceptions);
+            _logger.LogError(ex, ex.Message);
+            
+            await _discordService.Value.SendNotificationErrorAsync(ex);
+            
+            // TODO: Тут добавить уведомление через хаб для отображения на фронте.
+
+            return;
+        }
+
+        await _projectService.SetProjectTeamMemberRoleAsync(teamMemberRoleInput.UserId, teamMemberRoleInput.Role,
+            teamMemberRoleInput.ProjectId);
     }
 }

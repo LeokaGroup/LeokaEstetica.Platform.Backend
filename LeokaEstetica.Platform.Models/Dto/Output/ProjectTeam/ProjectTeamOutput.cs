@@ -29,4 +29,9 @@ public class ProjectTeamOutput
     /// Признак видимости кнопки исключения участника из проекта.
     /// </summary>
     public bool IsVisibleActionDeleteProjectTeamMember { get; set; }
+    
+    /// <summary>
+    /// Роль участника команды проекта. Заполняется в произвольном виде владельцем проекта.
+    /// </summary>
+    public string? Role { get; set; }
 }

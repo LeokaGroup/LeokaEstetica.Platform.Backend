@@ -146,7 +146,7 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
     /// <returns>Задачи проекта.</returns>
-    public async Task<IEnumerable<ProjectTaskExtendedEntity>> GetProjectTasksAsync(long projectId, string strategy)
+    public async Task<IEnumerable<ProjectTaskExtendedEntity>?> GetProjectTasksAsync(long projectId, string strategy)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
         
@@ -1518,60 +1518,40 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
     }
 
     /// <inheritdoc />
-    public async Task FixationProjectViewStrategyAsync(string strategySysName, long projectId, long userId)
+    public async Task FixationProjectViewStrategyAsync(ProjectStrategyEnum strategySysName, long projectId,
+        long userId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
 
         var parameters = new DynamicParameters();
-        parameters.Add("@strategySysName", strategySysName);
         parameters.Add("@projectId", projectId);
         parameters.Add("@userId", userId);
-        parameters.Add("@key", GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_STRATEGY);
-        parameters.Add("@paramType", "String");
-        parameters.Add("@description", "Выбранная пользователем стратегия представления.");
-        parameters.Add("@tag", "Project management settings");
-        parameters.Add("@lastUserDate", DateTime.UtcNow);
+        parameters.Add("@strategy", new Enum(strategySysName));
 
-        var existsParameters = new DynamicParameters();
-        existsParameters.Add("@userId", userId);
-        existsParameters.Add("@key", GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_STRATEGY);
-
-        var existsQuery = "SELECT EXISTS (SELECT \"ConfigId\" " +
-                          "FROM \"Configs\".\"ProjectManagmentProjectSettings\" " +
-                          "WHERE \"UserId\" = @userId " +
-                          "AND \"ParamKey\" = @key)";
-        var existsSetting = await connection.QueryFirstOrDefaultAsync<bool>(existsQuery, existsParameters);
+        var existsQuery = "SELECT EXISTS (SELECT strategy_id " +
+                          "FROM settings.project_user_strategy " +
+                          "WHERE project_id = @projectId " +
+                          "AND user_id = @userId) ";
+        var existsSetting = await connection.QueryFirstOrDefaultAsync<bool>(existsQuery, parameters);
 
         // Такой настройки нет, добавляем.
         if (!existsSetting)
         {
-            var queryInsertSetting = "INSERT INTO \"Configs\".\"ProjectManagmentProjectSettings\" " +
-                        "(\"ProjectId\", \"UserId\", \"ParamKey\", \"ParamValue\", \"ParamType\", \"ParamDescription\"," +
-                        " \"ParamTag\", \"LastUserDate\") " +
-                        "VALUES (@projectId, @userId, @key, @strategySysName, @paramType, @description, @tag," +
-                        " @lastUserDate)";
-            
-            await connection.ExecuteAsync(queryInsertSetting, parameters);
+            var queryInsert = "INSERT INTO settings.project_user_strategy (project_id, user_id, strategy) " +
+                              "VALUES (@projectId, @userId, @strategy)";
+
+            await connection.ExecuteAsync(queryInsert, parameters);
+
+            return;
         }
-        
+
         // Такая настройка есть, обновляем.
-        else
-        {
-            var queryUpdateSetting = "UPDATE \"Configs\".\"ProjectManagmentProjectSettings\" " +
-                                     "SET \"ProjectId\" = @projectId" +
-                                     ", \"UserId\" = @userId" +
-                                     ", \"ParamKey\" = @key" +
-                                     ", \"ParamValue\" = @strategySysName" +
-                                     ", \"ParamType\" = @paramType" +
-                                     ", \"ParamDescription\" = @description" +
-                                     ", \"ParamTag\" = @tag" +
-                                     ", \"LastUserDate\" = @lastUserDate " +
-                                     "WHERE \"UserId\" = @userId " +
-                                     "AND \"ProjectId\" = @projectId " +
-                                     "AND \"ParamKey\" = @key";
+        var queryUpdate = "UPDATE settings.project_user_strategy " +
+                                 "SET project_id = @projectId, " +
+                                 "user_id = @userId, " +
+                                 "strategy = @strategy";
                                      
-            await connection.ExecuteAsync(queryUpdateSetting, parameters);
-        }
+        await connection.ExecuteAsync(queryUpdate, parameters);
     }
 
     /// <inheritdoc />
@@ -1826,9 +1806,20 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
     }
 
     /// <inheritdoc/>
-    public async Task<long> PlaningSprintAsync(PlaningSprintInput planingSprintInput)
+    public async Task<long> PlaningSprintAsync(PlaningSprintInput planingSprintInput, long userId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
+        
+        // Получаем последний Id спринта в рамках проекта, перед созданим нового.
+        var lastProjectSprintIdParameters = new DynamicParameters();
+        lastProjectSprintIdParameters.Add("@projectId", planingSprintInput.ProjectId);
+
+        var lastProjectSprintIdQuery = "SELECT MAX (project_sprint_id) " +
+                                       "FROM project_management.sprints " +
+                                       "WHERE project_id = @projectId";
+        
+        var lastProjectSprintId = await connection.ExecuteScalarAsync<long>(lastProjectSprintIdQuery,
+            lastProjectSprintIdParameters);
 
         var parameters = new DynamicParameters();
         parameters.Add("@dateStart", planingSprintInput.DateStart);
@@ -1837,11 +1828,45 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         parameters.Add("@sprintStatusId", planingSprintInput.SprintStatus!.Value);
         parameters.Add("@projectId", planingSprintInput.ProjectId);
         parameters.Add("@sprintName", planingSprintInput.SprintName);
+        parameters.Add("@projectSprintId", ++lastProjectSprintId);
+        parameters.Add("@createdBy", userId);
+        parameters.Add("@createdAt", DateTime.UtcNow);
+        parameters.Add("@updatedAt", DateTime.UtcNow);
 
-        var query = @"INSERT INTO project_management.sprints (date_start, date_end, sprint_goal, sprint_status_id,
-                                        project_id, sprint_name) 
-                      VALUES (@dateStart, @dateEnd, @sprintGoal, @sprintStatusId, @projectId, @sprintName) 
-                      RETURNING sprint_id";
+        if (!planingSprintInput.ExecutorId.HasValue)
+        {
+            parameters.Add("@executorId", userId);
+        }
+        
+        else
+        {
+            parameters.Add("@executorId", planingSprintInput.ExecutorId.Value);
+        }
+
+        string query;
+
+        // Если передали наблюдателей, то учитываем это в запросе.
+        if (planingSprintInput.WatcherIds is not null && planingSprintInput.WatcherIds.Any())
+        {
+            parameters.Add("@watcherIds", planingSprintInput.WatcherIds.AsList());
+            
+            query = @"INSERT INTO project_management.sprints (date_start, date_end, sprint_goal, sprint_status_id,
+                                        project_id, sprint_name, project_sprint_id, created_by, executor_id,
+                                        created_at, updated_at, watcher_ids) 
+                      VALUES (@dateStart, @dateEnd, @sprintGoal, @sprintStatusId, @projectId, @sprintName,
+                              @projectSprintId, @createdBy, @executorId, @createdAt, @updatedAt, @watcherIds) 
+                      RETURNING project_sprint_id";
+        }
+
+        else
+        {
+            query = @"INSERT INTO project_management.sprints (date_start, date_end, sprint_goal, sprint_status_id,
+                                        project_id, sprint_name, project_sprint_id, created_by, executor_id,
+                                        created_at, updated_at) 
+                      VALUES (@dateStart, @dateEnd, @sprintGoal, @sprintStatusId, @projectId, @sprintName,
+                              @projectSprintId, @createdBy, @executorId, @createdAt, @updatedAt) 
+                      RETURNING project_sprint_id";
+        }
 
         var result = await connection.ExecuteScalarAsync<long>(query, parameters);
 
@@ -2140,14 +2165,14 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         foreach (var id in projectTaskIdsItems)
         {
             var tempParameters = new DynamicParameters();
-            tempParameters.Add("@sprintId", sprintId);
+            tempParameters.Add("@projectSprintId", sprintId);
             tempParameters.Add("@projectTaskIds", id);
             
             parameters.Add(tempParameters);
         }
 
-        var query = @"INSERT INTO project_management.sprint_tasks (sprint_id, project_task_id) 
-                      VALUES (@sprintId, @projectTaskIds)";
+        var query = @"INSERT INTO project_management.sprint_tasks (project_sprint_id, project_task_id) 
+                      VALUES (@projectSprintId, @projectTaskIds)";
 
         await connection.ExecuteAsync(query, parameters);
     }
@@ -2271,6 +2296,46 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
                       FROM project_management.epic_statuses";
 
         var result = await connection.QueryAsync<EpicStatusOutput>(query);
+
+        return result;
+    }
+
+    /// <inheritdoc/>
+    public async Task<bool> IfExistsProjectTaskAsync(string taskName, int taskType, long projectId)
+    {
+        var parameters = new DynamicParameters();
+        parameters.Add("@taskName", taskName);
+        parameters.Add("@taskType", taskType);
+        parameters.Add("@projectId", projectId);
+
+        var query = "SELECT EXISTS (SELECT task_id " +
+                    "FROM project_management.project_tasks " +
+                    "WHERE task_type_id = @taskType " +
+                    "AND project_id = @projectId " +
+                    "AND name = @taskName)";
+        
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+        
+        var result = await connection.QueryFirstOrDefaultAsync<bool>(query, parameters);
+
+        return result;
+    }
+
+    /// <inheritdoc/>
+    public async Task<string?> GetProjectUserStrategyAsync(long projectId, long userId)
+    {
+        var parameters = new DynamicParameters();
+        parameters.Add("@projectId", projectId);
+        parameters.Add("@userId", userId);
+
+        var query = "SELECT strategy " +
+                    "FROM settings.project_user_strategy " +
+                    "WHERE project_id = @projectId " +
+                    "AND user_id = @userId";
+        
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+        
+        var result = await connection.QueryFirstOrDefaultAsync<string?>(query, parameters);
 
         return result;
     }

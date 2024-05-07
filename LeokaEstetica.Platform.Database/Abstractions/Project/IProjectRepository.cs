@@ -315,4 +315,12 @@ public interface IProjectRepository
     /// <param name="projectId">Id проекта.</param>
     /// <param name="projectManagementName">Название проекта в управлении проектами.</param>
     Task SetProjectManagementNameAsync(long projectId, string projectManagementName);
+    
+    /// <summary>
+    /// Метод назначает участнику команды проекта роль.
+    /// <param name="userId">Id пользователя.</param>
+    /// <param name="role">Роль.</param>
+    /// <param name="teamId">Id команды проекта.</param>
+    /// </summary>
+    Task SetProjectTeamMemberRoleAsync(long userId, string? role, long teamId);
 }

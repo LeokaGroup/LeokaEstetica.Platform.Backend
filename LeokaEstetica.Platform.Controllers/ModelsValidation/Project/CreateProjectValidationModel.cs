@@ -8,7 +8,16 @@ namespace LeokaEstetica.Platform.Controllers.ModelsValidation.Project;
 public class CreateProjectValidationModel : CreateProjectInput
 {
     /// <summary>
-    /// Аккаунт пользователя.
+    /// Конструктор.
     /// </summary>
-    public string Account { get; set; }
+    /// <param name="projectName">Название проекта.</param>
+    /// <param name="projectDetails">Описание проекта.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="projectStage">Стадия проекта.</param>
+    /// <param name="userId">Id пользователя.</param>
+    public CreateProjectValidationModel(string projectName, string projectDetails, long projectId, string projectStage,
+        long userId)
+        : base(projectName, projectDetails, projectId, projectStage, userId)
+    {
+    }
 }

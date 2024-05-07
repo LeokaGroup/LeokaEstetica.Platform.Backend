@@ -35,7 +35,7 @@ public class ProjectManagmentTaskStatusTemplateOutput
     /// <summary>
     /// Список задач определенного статуса.
     /// </summary>
-    public List<ProjectManagmentTaskOutput> ProjectManagmentTasks { get; set; }
+    public List<ProjectManagmentTaskOutput>? ProjectManagmentTasks { get; set; }
 
     /// <summary>
     /// Кол-во всего задач у статуса.
@@ -45,5 +45,5 @@ public class ProjectManagmentTaskStatusTemplateOutput
     /// <summary>
     /// Класс пагинатора.
     /// </summary>
-    public Paginator Paginator { get; set; }
+    public Paginator? Paginator { get; set; }
 }

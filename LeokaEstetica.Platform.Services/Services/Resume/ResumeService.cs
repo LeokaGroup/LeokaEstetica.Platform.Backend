@@ -233,7 +233,7 @@ internal sealed class ResumeService : IResumeService
 
             if (userSubscription is null)
             {
-                var ex = new InvalidOperationException("Найденf невалидная подписка пользователя. " +
+                var ex = new InvalidOperationException("Найдена невалидная подписка пользователя. " +
                                                     $"UserId: {userId}. " +
                                                     "Подписка была NULL или невалидная.");
                 // Отправляем ивент в пачку.

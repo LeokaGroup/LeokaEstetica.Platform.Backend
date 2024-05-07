@@ -307,5 +307,19 @@ public class RepositoriesModule : Module
         builder.RegisterType<SearchProjectManagementRepository>()
             .As<ISearchProjectManagementRepository>()
             .InstancePerLifetimeScope();
+        
+        builder.RegisterType<SearchProjectManagementRepository>()
+            .Named<ISearchProjectManagementRepository>("SearchProjectManagementRepository")
+            .InstancePerLifetimeScope();
+        builder.RegisterType<SearchProjectManagementRepository>()
+            .As<ISearchProjectManagementRepository>()
+            .InstancePerLifetimeScope();
+        
+        builder.RegisterType<SprintRepository>()
+            .Named<ISprintRepository>("SprintRepository")
+            .InstancePerLifetimeScope();
+        builder.RegisterType<SprintRepository>()
+            .As<ISprintRepository>()
+            .InstancePerLifetimeScope();
     }
 }

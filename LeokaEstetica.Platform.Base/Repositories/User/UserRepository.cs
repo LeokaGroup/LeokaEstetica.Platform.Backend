@@ -722,7 +722,7 @@ internal sealed class UserRepository : IUserRepository
     /// </summary>
     /// <param name="watcherIds">Id наблюдателей задач.</param>
     /// <returns>Словарь с наблюдателями задач.</returns>
-    public async Task<IDictionary<long, UserInfoOutput>> GetWatcherNamesByWatcherIdsAsync(IEnumerable<long> watcherIds)
+    public async Task<IDictionary<long, UserInfoOutput>?> GetWatcherNamesByWatcherIdsAsync(IEnumerable<long> watcherIds)
     {
         var result = await _pgContext.Users
             .Where(u => watcherIds.Contains(u.UserId))

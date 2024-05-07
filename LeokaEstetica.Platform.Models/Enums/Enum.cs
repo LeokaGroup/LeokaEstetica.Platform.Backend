@@ -31,6 +31,11 @@ public class Enum : IEnum
     /// Тип Enum для типа заадчи.
     /// </summary>
     public const string TaskType = "task_type_enum";
+    
+    /// <summary>
+    /// Тип Enum для типа стратегии пользователя.
+    /// </summary>
+    public const string ProjectStrategy = "project_strategy_enum";
 
     /// <summary>
     /// Конструктор по дефолту.
@@ -88,6 +93,16 @@ public class Enum : IEnum
     public Enum(SearchAgileObjectTypeEnum value)
     {
         Type = TaskType;
+        Value = value.ToString().ToSnakeCase();
+    }
+
+    /// <summary>
+    /// Конструктор.
+    /// </summary>
+    /// <param name="value">Значение типа стратегии.</param>
+    public Enum(ProjectStrategyEnum value)
+    {
+        Type = ProjectStrategy;
         Value = value.ToString().ToSnakeCase();
     }
 

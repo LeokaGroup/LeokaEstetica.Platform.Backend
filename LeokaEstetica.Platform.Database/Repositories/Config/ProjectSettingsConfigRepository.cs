@@ -130,7 +130,7 @@ internal sealed class ProjectSettingsConfigRepository : IProjectSettingsConfigRe
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<ConfigSpaceSettingEntity>> GetProjectSpaceSettingsByProjectIdAsync(long projectId,
+    public async Task<IEnumerable<ConfigSpaceSettingEntity>?> GetProjectSpaceSettingsByProjectIdAsync(long projectId,
         long userId)
     {
         var result = new List<ConfigSpaceSettingEntity>();

@@ -29,6 +29,16 @@ public static class ValidationConst
         /// Если передали некорректный режим.
         /// </summary>
         public const string EMPTY_MODE = "Передан некорректный режим. Mode был ";
+
+        /// <summary>
+        /// Если не заполнили роль.
+        /// </summary>
+        public const string EMPTY_ROLE = "Роль не заполнена.";
+
+        /// <summary>
+        /// Если не передали Id пользователя.
+        /// </summary>
+        public const string NOT_VALID_USER_ID = "Id пользователя не передан";
     }
 
     /// <summary>
@@ -293,5 +303,20 @@ public static class ValidationConst
         /// Если передали невалидный название.
         /// </summary>
         public const string NOT_VALID_NAME = "Название не передано.";
+
+        /// <summary>
+        /// Если не передали Id спринта в рамках проекта.
+        /// </summary>
+        public const string NOT_VALID_PROJECT_SPRINT_ID = "Id спринта в рамках проекта не передан.";
+
+        /// <summary>
+        /// Если название спринта не передано или невалидно.
+        /// </summary>
+        public const string EMPTY_SPRINT_NAME = "Название спринта не передано или невалидно.";
+        
+        /// <summary>
+        /// Если описание спринта не передано или невалидно.
+        /// </summary>
+        public const string EMPTY_SPRINT_DETAILS = "Описание спринта не передано или невалидно.";
     }
 }

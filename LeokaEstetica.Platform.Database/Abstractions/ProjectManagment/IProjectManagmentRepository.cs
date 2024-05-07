@@ -50,7 +50,7 @@ public interface IProjectManagmentRepository
     /// <param name="projectId">Id проекта.</param>
     /// <param name="strategy">Стратегия пользователя.</param>
     /// <returns>Задачи проекта.</returns>
-    Task<IEnumerable<ProjectTaskExtendedEntity>> GetProjectTasksAsync(long projectId, string strategy);
+    Task<IEnumerable<ProjectTaskExtendedEntity>?> GetProjectTasksAsync(long projectId, string strategy);
 
     /// <summary>
     /// Метод получает названия тегов (меток) задач по их Id.
@@ -439,7 +439,7 @@ public interface IProjectManagmentRepository
     /// <param name="strategySysName">Системное название стратегии.</param>
     /// <param name="projectId">Id проекта.</param>
     /// <param name="userId">Id пользователя.</param>
-    Task FixationProjectViewStrategyAsync(string strategySysName, long projectId, long userId);
+    Task FixationProjectViewStrategyAsync(ProjectStrategyEnum strategySysName, long projectId, long userId);
 
     /// <summary>
     /// Метод создает комментарий задачи.
@@ -532,8 +532,9 @@ public interface IProjectManagmentRepository
     /// Добавляет задачи в спринт, если их указали при планировании спринта.
     /// </summary>
     /// <param name="planingSprintInput">Входная модель.</param>
+    /// <param name="userId">Id пользователя.</param>
     /// <returns>Id нового спринта.</returns>
-    Task<long> PlaningSprintAsync(PlaningSprintInput planingSprintInput);
+    Task<long> PlaningSprintAsync(PlaningSprintInput planingSprintInput, long userId);
     
     /// <summary>
     /// Метод ищет задачи, истории, эпики, ошибки по Id задачи в рамках проекта.
@@ -625,4 +626,21 @@ public interface IProjectManagmentRepository
     /// </summary>
     /// <returns>Статусы эпиков.</returns>
     Task<IEnumerable<EpicStatusOutput>> GetEpicStatusesAsync();
+
+    /// <summary>
+    /// Метод проверяет существование задачи по ее названию, типу и Id проекта.
+    /// </summary>
+    /// <param name="taskName">Название задачи.</param>
+    /// <param name="taskType">Тип задачи.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Признак результата проверки.</returns>
+    Task<bool> IfExistsProjectTaskAsync(string taskName, int taskType, long projectId);
+
+    /// <summary>
+    /// Метод получает выбранную пользователем стратегию представления.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Стратегия представления.</returns>
+    Task<string?> GetProjectUserStrategyAsync(long projectId, long userId);
 }

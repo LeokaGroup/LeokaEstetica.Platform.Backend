@@ -1,5 +1,8 @@
 using System.Globalization;
 using System.Runtime.CompilerServices;
+using Dapper;
+using LeokaEstetica.Platform.Base.Abstractions.Connection;
+using LeokaEstetica.Platform.Base.Abstractions.Repositories.Base;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.Chat;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Models.Dto.Chat.Output;
@@ -13,7 +16,7 @@ namespace LeokaEstetica.Platform.Base.Repositories.Chat;
 /// <summary>
 /// Класс реализует методы репозитория чата.
 /// </summary>
-internal sealed class ChatRepository : IChatRepository
+internal sealed class ChatRepository : BaseRepository, IChatRepository
 {
     private readonly PgContext _pgContext;
 
@@ -21,7 +24,8 @@ internal sealed class ChatRepository : IChatRepository
     /// Конструктор.
     /// </summary>
     /// <param name="pgContext">Датаконтекст.</param>
-    public ChatRepository(PgContext pgContext)
+    public ChatRepository(PgContext pgContext, IConnectionProvider connectionProvider) 
+        : base(connectionProvider)
     {
         _pgContext = pgContext;
     }
@@ -43,17 +47,23 @@ internal sealed class ChatRepository : IChatRepository
         return result;
     }
 
-    /// <summary>
-    /// Метод получает диалог по Id пользователя.
-    /// </summary>
-    /// <param name="userId">Id пользователя.</param>
-    /// <returns>Id диалога.</returns>
-    public async Task<long> GetDialogMembersByUserIdAsync(long userId)
+    /// <inheritdoc />
+    public async Task<long> GetDialogMembersAsync(long userId, long projectId)
     {
-        var result = await _pgContext.DialogMembers
-            .Where(dm => dm.UserId == userId)
-            .Select(dm => dm.DialogId)
-            .FirstOrDefaultAsync();
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@userId", userId);
+        parameters.Add("@projectId", projectId);
+
+        var query = "SELECT dm.\"DialogId\" " +
+                    "FROM \"Communications\".\"MainInfoDialogs\" AS d " +
+                    "INNER JOIN \"Communications\".\"DialogMembers\" AS dm " +
+                    "ON d.\"DialogId\" = dm.\"DialogId\" " +
+                    "WHERE d.\"ProjectId\" = @projectId " +
+                    "AND dm.\"UserId\" = @userId";
+
+        var result = await connection.QueryFirstOrDefaultAsync<long>(query, parameters);
 
         return result;
     }
@@ -195,35 +205,89 @@ internal sealed class ChatRepository : IChatRepository
     /// <returns>Список диалогов.</returns>
     public async Task<List<DialogOutput>> GetDialogsAsync(long userId, long? projectId = null)
     {
-        var query = (from dm in _pgContext.DialogMembers
-                join d in _pgContext.Dialogs
-                    on dm.DialogId
-                    equals d.DialogId
-                where dm.UserId == userId
-                      && d.DialogMessages.Any()
-                select new DialogOutput
-                {
-                    DialogId = dm.DialogId,
-                    DialogName = d.DialogName,
-                    UserId = dm.UserId,
-                    Created = d.Created.ToString(CultureInfo.CurrentCulture),
-                    ProjectId = _pgContext.UserProjects
-                        .Where(p => p.ProjectId == d.ProjectId
-                                    && d.ProjectId != null)
-                        .Select(p => p.ProjectId)
-                        .FirstOrDefault()
-                });
+        List<DialogOutput>? result = null;
+        using var connection = await ConnectionProvider.GetConnectionAsync();
 
-        // Если передали Id проекта, то фильтруем диалоги по проекту.
         if (projectId.HasValue)
         {
-            query = query.Where(p => p.ProjectId == projectId.Value);
+            // Тут используем Limit 1, так как иначе были дубли из-за участников. Нам только диалоги нужны.
+            var query = "DO " +
+                        "$$ " +
+                        "DECLARE " +
+                        "_project_owner_id BIGINT; " +
+                        "_project_id       BIGINT; " +
+                        "_cnt_dialog_messages BIGINT; " +
+                        "BEGIN " +
+                        $"_project_id = {projectId}; " +
+                        "_project_owner_id = (SELECT \"UserId\" " +
+                        "FROM \"Projects\".\"UserProjects\" " +
+                        "WHERE \"ProjectId\" = _project_id); " +
+                        "IF (_project_owner_id IS NULL) THEN " +
+                        "RAISE EXCEPTION 'Владелец проекта не определен. ProjectId: --> %', _project_id; " +
+                        "END IF; " +
+                        "_cnt_dialog_messages = (SELECT COUNT(m.\"MessageId\") " +
+                        "FROM \"Communications\".\"MainInfoDialogs\" AS d " +
+                        "INNER JOIN \"Communications\".\"DialogMembers\" AS dm " +
+                        "ON d.\"DialogId\" = dm.\"DialogId\" " +
+                        "INNER JOIN \"Communications\".\"DialogMessages\" AS m " +
+                        "ON dm.\"DialogId\" = m.\"DialogId\" " +
+                        $"WHERE dm.\"UserId\" = ANY (ARRAY [{userId}, _project_owner_id]) " +
+                        $"AND d.\"ProjectId\" = {projectId}); " +
+                        "DROP TABLE IF EXISTS temp_dialogs; " +
+                        "CREATE TEMP TABLE temp_dialogs " +
+                        "( " +
+                        "\"DialogId\"   BIGINT                   NOT NULL, " +
+                        "\"DialogName\" VARCHAR(150)             NOT NULL, " +
+                        "\"UserId\"     BIGINT                   NOT NULL, " +
+                        "\"Created\"    TIMESTAMP WITH TIME ZONE NOT NULL, " +
+                        "\"ProjectId\"  BIGINT                   NOT NULL " +
+                        "); " +
+                        "INSERT INTO temp_dialogs " +
+                        "SELECT DISTINCT(dm.\"DialogId\"), mid.\"DialogName\", dm.\"UserId\", mid.\"Created\", " +
+                        "mid.\"ProjectId\" " +
+                        "FROM \"Communications\".\"MainInfoDialogs\" AS mid " +
+                        "INNER JOIN \"Communications\".\"DialogMembers\" AS dm " +
+                        "ON mid.\"DialogId\" = dm.\"DialogId\" " +
+                        "WHERE mid.\"ProjectId\" = _project_id " +
+                        $"AND dm.\"UserId\" = ANY (ARRAY [{userId}, _project_owner_id]) " +
+                        "AND _cnt_dialog_messages > 0 " +
+                        "LIMIT 1;" +
+                        "END " +
+                        "$$; " +
+                        "SELECT * FROM temp_dialogs;";
+
+            result = (await connection.QueryAsync<DialogOutput>(query)).AsList();
         }
 
-        query = query.GroupBy(g => g.DialogId)
-            .Select(x => x.First());
-
-        var result = await query.ToListAsync();
+        // TODO: Пока не используется. Доработать надо будет, когда допилим сообщения из профиля
+        // TODO: (общения по разным проектам из одного места). Отложили, так как не было времени на это.
+        // else
+        // {
+        //     var query = "DO " +
+        //                 "$$ " +
+        //                 "BEGIN " +
+        //                 "DROP TABLE IF EXISTS temp_dialogs; " +
+        //                 "CREATE TEMP TABLE temp_dialogs " +
+        //                 "( " +
+        //                 "\"DialogId\"   BIGINT                   NOT NULL, " +
+        //                 "\"DialogName\" VARCHAR(150)             NOT NULL, " +
+        //                 "\"UserId\"     BIGINT                   NOT NULL, " +
+        //                 "\"Created\"    TIMESTAMP WITH TIME ZONE NOT NULL, " +
+        //                 "\"ProjectId\"  BIGINT                   NOT NULL " +
+        //                 "); " +
+        //                 "INSERT INTO temp_dialogs " +
+        //                 "SELECT dm.\"DialogId\", mid.\"DialogName\", dm.\"UserId\", mid.\"Created\", " +
+        //                 "mid.\"ProjectId\" " +
+        //                 "FROM \"Communications\".\"MainInfoDialogs\" AS mid " +
+        //                 "INNER JOIN \"Communications\".\"DialogMembers\" AS dm " +
+        //                 "ON mid.\"DialogId\" = dm.\"DialogId\" " +
+        //                 $"WHERE dm.\"UserId\" = {userId}; " +
+        //                 "END " +
+        //                 "$$; " +
+        //                 "SELECT * FROM temp_dialogs;";
+        //
+        //     result = (await connection.QueryAsync<DialogOutput>(query)).AsList();
+        // }
 
         return result;
     }

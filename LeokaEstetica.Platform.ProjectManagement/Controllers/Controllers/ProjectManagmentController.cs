@@ -10,6 +10,7 @@ using LeokaEstetica.Platform.Models.Dto.Output.Project;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.Template;
 using LeokaEstetica.Platform.Models.Enums;
+using LeokaEstetica.Platform.ProjectManagement.Validators;
 using LeokaEstetica.Platform.ProjectManagment.ValidationModels;
 using LeokaEstetica.Platform.ProjectManagment.Validators;
 using LeokaEstetica.Platform.Services.Abstractions.Project;
@@ -20,9 +21,11 @@ using LeokaEstetica.Platform.Services.Helpers;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 
-namespace LeokaEstetica.Platform.ProjectManagment.Controllers;
+namespace LeokaEstetica.Platform.ProjectManagement.Controllers.Controllers;
 
 /// <summary>
+/// TODO: Разнести на разные контроллеры ендпоинты, которые точно нужно разделить по предметной области.
+/// TODO: Фронт аналогично потребуется разделять.
 /// Контроллер управления проектами.
 /// </summary>
 [ApiController]
@@ -37,6 +40,7 @@ public class ProjectManagmentController : BaseController
     private readonly IUserService _userService;
     private readonly Lazy<IDiscordService> _discordService;
     private readonly Lazy<IProjectManagmentTemplateRepository> _projectManagmentTemplateRepository;
+    private readonly IProjectManagementTemplateService _projectManagementTemplateService;
 
     /// <summary>
     /// Конструктор.
@@ -48,13 +52,15 @@ public class ProjectManagmentController : BaseController
     /// <param name="userService">Сервис пользователей.</param>
     /// <param name="discordService">Сервис дискорда.</param>
     /// <param name="projectManagmentTemplateRepository">Репозиторий шаблонов проектов.</param>
+    /// <param name="projectManagementTemplateService">Сервис шаблонов проекта.</param>
     public ProjectManagmentController(IProjectService projectService,
         IProjectManagmentService projectManagmentService,
         IMapper mapper,
         ILogger<ProjectManagmentController> logger,
         IUserService userService,
         Lazy<IDiscordService> discordService,
-        Lazy<IProjectManagmentTemplateRepository> projectManagmentTemplateRepository)
+        Lazy<IProjectManagmentTemplateRepository> projectManagmentTemplateRepository,
+        IProjectManagementTemplateService projectManagementTemplateService)
     {
         _projectService = projectService;
         _projectManagmentService = projectManagmentService;
@@ -63,6 +69,7 @@ public class ProjectManagmentController : BaseController
         _userService = userService;
         _discordService = discordService;
         _projectManagmentTemplateRepository = projectManagmentTemplateRepository;
+        _projectManagementTemplateService = projectManagementTemplateService;
     }
 
     /// <summary>
@@ -140,12 +147,12 @@ public class ProjectManagmentController : BaseController
     [ProducesResponseType(404)]
     public async Task<IEnumerable<ProjectManagmentTaskTemplateResult>> GetProjectManagmentTemplatesAsync()
     {
-        var items = await _projectManagmentService.GetProjectManagmentTemplatesAsync(null);
+        var items = await _projectManagementTemplateService.GetProjectManagmentTemplatesAsync(null);
         var result = _mapper.Map<IEnumerable<ProjectManagmentTaskTemplateResult>>(items);
         var resultItems = result.ToList();
         
         // Проставляем Id шаблона статусам.
-        await _projectManagmentService.SetProjectManagmentTemplateIdsAsync(resultItems);
+        await _projectManagementTemplateService.SetProjectManagmentTemplateIdsAsync(resultItems);
 
         return resultItems;
     }
@@ -175,9 +182,9 @@ public class ProjectManagmentController : BaseController
         var validator = await new GetConfigurationValidator().ValidateAsync(
             new GetConfigurationValidationModel(projectId));
 
-        if (validator.Errors.Any())
+        if (validator.Errors.Any()) 
         {
-            var exceptions = new List<InvalidOperationException>();
+            var exceptions = new List<InvalidOperationException>(); 
 
             foreach (var err in validator.Errors)
             {
@@ -280,7 +287,8 @@ public class ProjectManagmentController : BaseController
             return new CreateProjectManagementTaskOutput { Errors = validator.Errors };
         }
 
-        var result = await _projectManagmentService.CreateProjectTaskAsync(projectManagementTaskInput, GetUserName());
+        var result = await _projectManagmentService.CreateProjectTaskAsync(projectManagementTaskInput, GetUserName(),
+            CreateTokenFromHeader());
 
         return result;
     }
@@ -1697,44 +1705,6 @@ public class ProjectManagmentController : BaseController
         var result = _mapper.Map<IEnumerable<UserStoryStatusOutput>>(items);
 
         return result;
-    }
-
-    /// <summary>
-    /// Метод планирует спринт.
-    /// Добавляет задачи в спринт, если их указали при планировании спринта.
-    /// </summary>
-    /// <param name="planingSprintInput">Входная модель.</param>
-    [HttpPost]
-    [Route("sprint/planing")]
-    [ProducesResponseType(200)]
-    [ProducesResponseType(400)]
-    [ProducesResponseType(403)]
-    [ProducesResponseType(500)]
-    [ProducesResponseType(404)]
-    public async Task PlaningSprintAsync([FromBody] PlaningSprintInput planingSprintInput)
-    {
-        var validator = await new PlaningSprintValidator().ValidateAsync(planingSprintInput);
-
-        if (validator.Errors.Any())
-        {
-            var exceptions = new List<InvalidOperationException>();
-
-            foreach (var err in validator.Errors)
-            {
-                exceptions.Add(new InvalidOperationException(err.ErrorMessage));
-            }
-
-            var ex = new AggregateException("Ошибка планирования спринта. " +
-                                            $"ProjectId: {planingSprintInput.ProjectId}. " +
-                                            $"SprintName: {planingSprintInput.SprintName}", exceptions);
-            _logger.LogError(ex, ex.Message);
-            
-            await _discordService.Value.SendNotificationErrorAsync(ex);
-            
-            throw ex;
-        }
-
-        await _projectManagmentService.PlaningSprintAsync(planingSprintInput, GetUserName(), CreateTokenFromHeader());
     }
 
     /// <summary>
