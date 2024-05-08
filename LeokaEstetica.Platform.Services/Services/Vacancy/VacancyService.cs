@@ -212,8 +212,8 @@ internal sealed class VacancyService : IVacancyService
             //Проверяем есть ли хотя бы один проект у пользователя
 			if (!await _projectRepository.CheckExistsUserProjectAsync(userId))
             {
-				await _vacancyNotificationsService.SendNotificationErrorCreatedUserVacancyAsync("Что то пошло не так",
-					"Не выбран проект для включения в него вакансии.",
+				await _vacancyNotificationsService.SendNotificationErrorCreatedUserVacancyAsync("Внимание",
+					"Нет проектов для привязки к нему вакансии. Вакансия создается для конкретного проекта.",
 					NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
 				return new VacancyOutput();
             }
