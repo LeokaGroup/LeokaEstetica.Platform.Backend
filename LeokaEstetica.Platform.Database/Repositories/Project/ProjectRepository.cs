@@ -200,11 +200,24 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
         return result;
     }
 
-    /// <summary>
-    /// Метод получает список проектов для каталога.
-    /// </summary>
-    /// <returns>Список проектов.</returns>
-    public async Task<IEnumerable<CatalogProjectOutput>> CatalogProjectsAsync()
+	/// <summary>
+	/// Метод проверяет есть ли хотя бы один проект у пользователя.
+	/// </summary>
+	/// <param name="userId">Id пользователя.</param>
+	/// <returns>Признак есть ли хотя бы один проект у пользователя.</returns>
+	public async Task<bool> CheckExistsUserProjectAsync(long userId)
+	{
+		var result = await _pgContext.UserProjects
+	        .AnyAsync(m => m.UserId == userId);
+
+		return result;
+	}
+
+	/// <summary>
+	/// Метод получает список проектов для каталога.
+	/// </summary>
+	/// <returns>Список проектов.</returns>
+	public async Task<IEnumerable<CatalogProjectOutput>> CatalogProjectsAsync()
     {
         var archivedProjects = _pgContext.ArchivedProjects.Select(x => x.ProjectId).AsQueryable();
         

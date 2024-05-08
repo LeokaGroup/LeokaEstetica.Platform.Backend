@@ -42,11 +42,18 @@ public interface IProjectRepository
     Task<UserProjectResultOutput> UserProjectsAsync(long userId, bool isCreateVacancy);
 
     /// <summary>
-    /// TODO: Подумать, давать ли всем пользователям возможность просматривать каталог проектов или только тем, у кого есть подписка.
-    /// Метод получает список проектов для каталога.
+    /// Метод проверяет есть ли хотя бы один проект у пользователя.
     /// </summary>
-    /// <returns>Список проектов.</returns>
-    Task<IEnumerable<CatalogProjectOutput>> CatalogProjectsAsync();
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Признак есть ли хотя бы один проект у пользователя.</returns>
+    Task<bool> CheckExistsUserProjectAsync(long userId);
+
+	/// <summary>
+	/// TODO: Подумать, давать ли всем пользователям возможность просматривать каталог проектов или только тем, у кого есть подписка.
+	/// Метод получает список проектов для каталога.
+	/// </summary>
+	/// <returns>Список проектов.</returns>
+	Task<IEnumerable<CatalogProjectOutput>> CatalogProjectsAsync();
 
     /// <summary>
     /// Метод обновляет проект пользователя.
