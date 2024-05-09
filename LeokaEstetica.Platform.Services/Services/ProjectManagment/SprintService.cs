@@ -474,7 +474,9 @@ internal sealed class SprintService : ISprintService
             
             var result = new ManualCompleteSprintOutput
             {
-                NotCompletedSprintTaskIds = new List<long>()
+                NotCompletedSprintTaskIds = new List<long>(),
+                ProjectId = sprintInput.ProjectId,
+                ProjectSprintId = sprintInput.ProjectSprintId
             };
 
             // К этому моменту мы уже показали пользователю уведомление об этом, не ломаем приложение.
