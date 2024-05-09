@@ -634,6 +634,29 @@ internal sealed class SprintService : ISprintService
         }
     }
 
+    /// <summary>
+    /// Метод получает список спринтов доступных для переноса незавершенных задач в один из них.
+    /// </summary>
+    /// <param name="projectSprintId">Id спринта в рамках проекта.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Список спринтов.</returns>
+    public async Task<IEnumerable<TaskSprintExtendedOutput>> GetAvailableNextSprintsAsync(long projectSprintId,
+        long projectId)
+    {
+        try
+        {
+            var result = await _sprintRepository.GetAvailableNextSprintsAsync(projectSprintId, projectId);
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+             _logger?.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
     #endregion
 
     #region Приватные методы.

@@ -117,4 +117,12 @@ public interface ISprintRepository
     /// <param name="moveSprintName">Название нового спринта.</param>
     Task PlaningNewSprintAndMoveNotCompletedSprintTasksAsync(long projectId, IEnumerable<long> projectTaskIds,
         string? moveSprintName);
+    
+    /// <summary>
+    /// Метод получает список спринтов доступных для переноса незавершенных задач в один из них.
+    /// </summary>
+    /// <param name="projectSprintId">Id спринта в рамках проекта.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Список спринтов.</returns>
+    Task<IEnumerable<TaskSprintExtendedOutput>> GetAvailableNextSprintsAsync(long projectSprintId, long projectId);
 }

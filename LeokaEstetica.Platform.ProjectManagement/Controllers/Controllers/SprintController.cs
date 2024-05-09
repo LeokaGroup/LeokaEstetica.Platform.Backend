@@ -393,4 +393,46 @@ public class SprintController : BaseController
 
         return result;
     }
+
+    /// <summary>
+    /// Метод получает список спринтов доступных для переноса незавершенных задач в один из них.
+    /// </summary>
+    /// <param name="projectSprintId">Id спринта в рамках проекта.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Список спринтов.</returns>
+    [HttpGet]
+    [Route("available-next-sprints")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<TaskSprintExtendedOutput>))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<IEnumerable<TaskSprintExtendedOutput>> GetAvailableNextSprintsAsync(
+        [FromQuery] long projectSprintId, [FromQuery] long projectId)
+    {
+        var validator = await new SprintValidator().ValidateAsync((projectSprintId, projectId));
+
+        if (validator.Errors.Any())
+        {
+            var exceptions = new List<InvalidOperationException>();
+
+            foreach (var err in validator.Errors)
+            {
+                exceptions.Add(new InvalidOperationException(err.ErrorMessage));
+            }
+
+            var ex = new AggregateException("Ошибка получения будущих спринтов. " +
+                                            $"ProjectSprintId: {projectSprintId}. " +
+                                            $"ProjectId: {projectId}.", exceptions);
+            _logger.LogError(ex, ex.Message);
+            
+            await _discordService.Value.SendNotificationErrorAsync(ex);
+            
+            throw ex;
+        }
+
+        var result = await _sprintService.GetAvailableNextSprintsAsync(projectSprintId, projectId);
+
+        return result;
+    }
 }
