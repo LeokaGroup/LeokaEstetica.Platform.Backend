@@ -1,4 +1,5 @@
-﻿using Dapper;
+﻿using System.Data;
+using Dapper;
 using LeokaEstetica.Platform.Base.Abstractions.Connection;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.Base;
 using LeokaEstetica.Platform.Core.Constants;
@@ -363,6 +364,80 @@ internal sealed class SprintRepository : BaseRepository, ISprintRepository
          var result = await connection.QueryAsync<long>(query, parameters);
 
          return result;
+     }
+
+     /// <inheritdoc/>
+     public async Task MoveSprintTasksAsync(long projectSprintId, IEnumerable<long> projectTaskIds)
+     {
+         using var connection = await ConnectionProvider.GetConnectionAsync();
+
+         var parameters = new DynamicParameters();
+         parameters.Add("@projectSprintId", projectSprintId);
+         parameters.Add("@projectTaskIds", projectTaskIds.AsList());
+
+         var query = "UPDATE project_management.sprint_tasks " +
+                     "SET sprint_id = @projectSprintId " +
+                     "WHERE project_task_id = ANY (@projectTaskIds)";
+
+         await connection.ExecuteAsync(query, parameters);
+     }
+
+     /// <inheritdoc/>
+     public async Task PlaningNewSprintAndMoveNotCompletedSprintTasksAsync(long projectId,
+         IEnumerable<long> projectTaskIds, string? moveSprintName)
+     {
+         using var connection = await ConnectionProvider.GetConnectionAsync();
+         var transaction = await ConnectionProvider.CreateTransactionAsync(IsolationLevel.ReadCommitted);
+
+         try
+         {
+             // Получаем последний Id спринта в рамках проекта, перед созданим нового.
+             var lastProjectSprintIdParameters = new DynamicParameters();
+             lastProjectSprintIdParameters.Add("@projectId", projectId);
+
+             var lastProjectSprintIdQuery = "SELECT MAX (project_sprint_id) " +
+                                            "FROM project_management.sprints " +
+                                            "WHERE project_id = @projectId";
+        
+             var lastProjectSprintId = await connection.ExecuteScalarAsync<long>(lastProjectSprintIdQuery,
+                 lastProjectSprintIdParameters);
+             var newSprintId = ++lastProjectSprintId;
+             
+             var parametersCreateSprint = new DynamicParameters();
+             parametersCreateSprint.Add("@moveSprintName", moveSprintName);
+             parametersCreateSprint.Add("@projectSprintId", newSprintId);
+
+             var queryCreateSprint = "INSERT INTO project_management.sprints (sprint_name, project_sprint_id) " +
+                                     "VALUES (@moveSprintName, @lastProjectSprintId)";
+             
+             // Планируем новый спринт.
+             await connection.ExecuteAsync(queryCreateSprint, parametersCreateSprint);
+             
+             var parametersSprintTasks = new DynamicParameters();
+             parametersSprintTasks.Add("@projectTaskIds", projectTaskIds.AsList());
+             parametersSprintTasks.Add("@projectSprintId", newSprintId);
+
+             var querySprintTasks = "UPDATE project_management.sprint_tasks " +
+                                    "SET sprint_id = @projectSprintId " +
+                                    "WHERE project_task_id = ANY (@projectTaskIds)";
+             
+             // Переносим новые задачи в новый спринт.
+             await connection.ExecuteAsync(querySprintTasks, parametersSprintTasks);
+
+             transaction.Commit();
+         }
+
+         catch
+         {
+             transaction.Rollback();
+             throw;
+         }
+
+         finally
+         {
+             connection.Dispose();
+             transaction.Dispose();
+         }
      }
 
      #endregion

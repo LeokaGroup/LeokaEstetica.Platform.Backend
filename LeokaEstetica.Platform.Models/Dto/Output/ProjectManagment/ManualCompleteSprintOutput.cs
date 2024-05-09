@@ -7,8 +7,4 @@ namespace LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 /// </summary>
 public class ManualCompleteSprintOutput : ManualCompleteSprintInput
 {
-    /// <summary>
-    /// Список незавершенных задач спринта.
-    /// </summary>
-    public IEnumerable<long>? NotCompletedSprintTaskIds { get; set; }
 }

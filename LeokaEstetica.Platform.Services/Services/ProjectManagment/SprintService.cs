@@ -17,6 +17,7 @@ using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Notifications.Consts;
 using LeokaEstetica.Platform.Services.Abstractions.ProjectManagment;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 
 namespace LeokaEstetica.Platform.Services.Services.ProjectManagment;
 
@@ -460,6 +461,12 @@ internal sealed class SprintService : ISprintService
     {
         try
         {
+            var result = new ManualCompleteSprintOutput
+            {
+                ProjectId = sprintInput.ProjectId,
+                ProjectSprintId = sprintInput.ProjectSprintId
+            };
+            
             var userId = await _userRepository.GetUserByEmailAsync(account);
 
             if (userId <= 0)
@@ -471,14 +478,7 @@ internal sealed class SprintService : ISprintService
             // Получаем данные спринта.
             var sprint = await GetSprintByProjectSprintIdByProjectIdAsync(sprintInput.ProjectSprintId,
                 sprintInput.ProjectId, token);
-            
-            var result = new ManualCompleteSprintOutput
-            {
-                NotCompletedSprintTaskIds = new List<long>(),
-                ProjectId = sprintInput.ProjectId,
-                ProjectSprintId = sprintInput.ProjectSprintId
-            };
-
+                
             // К этому моменту мы уже показали пользователю уведомление об этом, не ломаем приложение.
             if (sprint is null)
             {
@@ -494,9 +494,9 @@ internal sealed class SprintService : ISprintService
                     $"ProjectId: {sprintInput.ProjectId}. " +
                     $"SprintStatus: {((SprintStatusEnum)sprint.SprintStatusId).ToString()}");
                 await _discordService.SendNotificationErrorAsync(ex);
-                
+
                 _logger?.LogError(ex, ex.Message);
-                
+
                 if (!string.IsNullOrWhiteSpace(token))
                 {
                     await _sprintNotificationsService.SendNotificationWarningStartSprintAsync("Внимание",
@@ -507,33 +507,116 @@ internal sealed class SprintService : ISprintService
                 return result;
             }
             
-            // TODO: Когда будет реализовано создание кастомных статусов, то сопосатвялть еще таблицу кастомных
-            // TODO: статусов пользователей из таблицы в задаче #31632122 (Kaiten).
-            // Проверяем, есть ли незавершенные задачи спринта.
-            // Ищем по статусу (через сопоставление с системными статусами).
-            var notCompletedSprintTasks = (await _sprintRepository.GetNotCompletedSprintTasksAsync(
-                sprintInput.ProjectSprintId, sprintInput.ProjectId))?.AsList();
-            
-            // Если у спринта есть незавершенные задачи, то не завершаем спринт, а требуем от пользователя действия.
-            if (notCompletedSprintTasks is not null && notCompletedSprintTasks.Count > 0)
+            // Если действие еще не обрабатывалось.
+            if (!sprintInput.IsProcessedAction)
             {
-                result.NotCompletedSprintTaskIds = notCompletedSprintTasks;
-                result.NeedSprintAction = new BaseNeedSprintAction(NeedSprintActionTypeEnum.NotCompletedTask)
-                {
-                    IsNeedUserAction = true
-                };
+                // TODO: Когда будет реализовано создание кастомных статусов, то сопосатвялть еще таблицу кастомных
+                // TODO: статусов пользователей из таблицы в задаче #31632122 (Kaiten).
+                // Проверяем, есть ли незавершенные задачи спринта.
+                // Ищем по статусу (через сопоставление с системными статусами).
+                var notCompletedSprintTasks = (await _sprintRepository.GetNotCompletedSprintTasksAsync(
+                    sprintInput.ProjectSprintId, sprintInput.ProjectId))?.AsList();
 
-                return result;
+                // Если у спринта есть незавершенные задачи, то не завершаем спринт, а требуем от пользователя действия.
+                if (notCompletedSprintTasks is not null && notCompletedSprintTasks.Count > 0)
+                {
+                    result.NotCompletedSprintTaskIds = notCompletedSprintTasks;
+                    result.NeedSprintAction = new BaseNeedSprintAction(NeedSprintActionTypeEnum.NotCompletedTask)
+                    {
+                        IsNeedUserAction = true
+                    };
+                    result.IsProcessedAction = false;
+
+                    return result;
+                }
+                
+                // Если нет незавершенных заадч у спринта, то можем сразу его завершить.
+                if (notCompletedSprintTasks is null || notCompletedSprintTasks.Count == 0)
+                {
+                    // Завершаем спринт.
+                    await _sprintRepository.ManualCompleteSprintAsync(sprintInput.ProjectSprintId,
+                        sprintInput.ProjectId);
+                
+                    return result;
+                }
             }
 
-            // Завершаем спринт.
-            await _sprintRepository.ManualCompleteSprintAsync(sprintInput.ProjectSprintId, sprintInput.ProjectId);
+            // Если действие уже было выбрано пользователем, то обрабатываем его и завершаем спринт.
+            if (sprintInput.IsProcessedAction)
+            {
+                if (sprintInput.NotCompletedSprintTaskIds is null)
+                {
+                    throw new InvalidOperationException(
+                        $"Нет незавершенных задач. {JsonConvert.SerializeObject(sprintInput)}.");
+                }
+                
+                result.NotCompletedSprintTaskIds = sprintInput.NotCompletedSprintTaskIds;
+
+                // Находим вариант, который выбрал пользователь.
+                var selectedVariant = sprintInput.NeedSprintAction!.ActionVariants?.FirstOrDefault(x => x.IsSelected);
+
+                if (selectedVariant is null)
+                {
+                    throw new InvalidOperationException(
+                        "Не удалось получить выбранный вариант при завершении спринта. " +
+                        $"SprintData: {JsonConvert.SerializeObject(sprintInput)}");
+                }
+
+                switch (selectedVariant.VariantSysName)
+                {
+                    // Если бэклог, то помечаем задачи тегом, чтобы выделить их в раб.пространстве.
+                    case "Backlog":
+                        break;
+
+                    // Если в один из будущих спринтов.
+                    case "Prospective":
+                        if (!sprintInput.MoveSprintId.HasValue)
+                        {
+                            // Один из спринтов должен был быть выбран пользователем.
+                            if (!string.IsNullOrWhiteSpace(token))
+                            {
+                                await _sprintNotificationsService.SendNotificationSuccessStartSprintAsync("Внимание",
+                                    "Не выбран спринт для переноса незавершенных задач.",
+                                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
+                            }
+
+                            return result;
+                        }
+                        
+                        // Переносим незавершенные задачи в указанный спринт.
+                        await _sprintRepository.MoveSprintTasksAsync(sprintInput.ProjectSprintId,
+                            sprintInput.NotCompletedSprintTaskIds);
+
+                        break;
+                    
+                    // Если в новый спринт.
+                    case "NewSprint":
+                        if (string.IsNullOrWhiteSpace(sprintInput.MoveSprintName))
+                        {
+                            // Название нового спринта должно быть заполнено.
+                            if (!string.IsNullOrWhiteSpace(token))
+                            {
+                                await _sprintNotificationsService.SendNotificationSuccessStartSprintAsync("Внимание",
+                                    "Не выбран спринт для переноса незавершенных задач.",
+                                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
+                            }
+
+                            return result;
+                        }
+                        
+                        // Планируем новый спринт и перемещаем в него незавершенные задачи.
+                        await _sprintRepository.PlaningNewSprintAndMoveNotCompletedSprintTasksAsync(
+                            sprintInput.ProjectId, sprintInput.NotCompletedSprintTaskIds, sprintInput.MoveSprintName);
+                        
+                        break;
+                }
+                
+                // Завершаем спринт.
+                await _sprintRepository.ManualCompleteSprintAsync(sprintInput.ProjectSprintId, sprintInput.ProjectId);
+            }
 
             // TODO: Добавить запись активности (кто вручную завершил спринт).
             
-            // TODO: Если у спринта все задачи были завершены, то покажем такое.
-            // TODO: В зависимости от того, куда пользователь выбрал перемещение незавершенных задач, уведомление будет
-            // TODO: дополненно тем, куда перемещены были задачи.
             if (!string.IsNullOrWhiteSpace(token))
             {
                 await _sprintNotificationsService.SendNotificationSuccessStartSprintAsync("Все хорошо",

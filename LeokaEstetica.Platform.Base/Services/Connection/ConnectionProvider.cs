@@ -36,6 +36,12 @@ internal class ConnectionProvider : IConnectionProvider
     }
 
     /// <inheritdoc />
+    public async Task<IDbTransaction> CreateTransactionAsync(IsolationLevel isolationLevel)
+    {
+        return await Task.FromResult(_connection.BeginTransaction(isolationLevel));
+    }
+
+    /// <inheritdoc />
     public async Task<IDbConnection> GetConnectionAsync(string connectionString)
     {
         var connection = await _connectionFactory.CreateConnectionAsync(connectionString);

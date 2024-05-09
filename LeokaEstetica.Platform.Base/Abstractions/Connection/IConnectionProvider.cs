@@ -10,13 +10,20 @@ public interface IConnectionProvider
     /// <summary>
     /// Метод возвращает контекст подключения к БД.
     /// </summary>
-    /// <returns> Асинхронная задача с контекстом подключения. </returns>
+    /// <returns>Подключение к БД.</returns>
     Task<IDbConnection> GetConnectionAsync();
+    
+    /// <summary>
+    /// Метод создает транзакцию.
+    /// </summary>
+    /// <param name="isolationLevel">Уровень изоляции</param>
+    /// <returns> Асинхронная задача с контекстом подключения. </returns>
+    Task<IDbTransaction> CreateTransactionAsync(IsolationLevel isolationLevel);
 
     /// <summary>
     /// Метод возвращает контекст подключения к БД.
     /// </summary>
     /// <param name="connectionString">Строка подключения.</param>
-    /// <returns> Асинхронная задача с контекстом подключения. </returns>
+    /// <returns>Подключение к БД.</returns>
     Task<IDbConnection> GetConnectionAsync(string connectionString);
 }
