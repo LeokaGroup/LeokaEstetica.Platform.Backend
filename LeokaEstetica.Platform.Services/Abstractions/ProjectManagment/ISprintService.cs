@@ -1,4 +1,5 @@
-﻿using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
+﻿using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
+using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 
 namespace LeokaEstetica.Platform.Services.Abstractions.ProjectManagment;
 
@@ -69,4 +70,14 @@ public interface ISprintService
     /// <param name="account">Аккаунт.</param>
     /// <param name="token">Токен.</param>
     Task StartSprintAsync(long projectSprintId, long projectId, string account, string token);
+
+    /// <summary>
+    /// Метод завершает спринт (ручное завершение).
+    /// </summary>
+    /// <param name="sprintInput">Входная модель.</param>
+    /// <param name="account">Аккаунт.</param>
+    /// <param name="token">Токен.</param>
+    /// <returns>Выходная модель после завершения спринта.</returns>
+    Task<ManualCompleteSprintOutput> ManualCompleteSprintAsync(ManualCompleteSprintInput sprintInput, string account,
+        string? token);
 }

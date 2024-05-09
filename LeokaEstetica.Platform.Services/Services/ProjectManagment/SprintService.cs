@@ -8,6 +8,8 @@ using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.Config;
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Integrations.Abstractions.Discord;
+using LeokaEstetica.Platform.Models.Dto.Base.ProjectManagement;
+using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.Template;
 using LeokaEstetica.Platform.Models.Enums;
@@ -323,30 +325,19 @@ internal sealed class SprintService : ISprintService
                 if (!string.IsNullOrWhiteSpace(token))
                 {
                     await _sprintNotificationsService.SendNotificationWarningStartSprintAsync("Внимание",
-                        ex.Message, NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
+                        "У проекта уже имеется запущенный спринт.", NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING,
+                        token);
                 }
 
                 return;
             }
 
             // Получаем данные спринта.
-            var sprint = await _sprintRepository.GetSprintAsync(projectSprintId, projectId);
+            var sprint = await GetSprintByProjectSprintIdByProjectIdAsync(projectSprintId, projectId, token);
 
+            // К этому моменту мы уже показали пользователю уведомление об этом, не ломаем приложение.
             if (sprint is null)
             {
-                var ex = new InvalidOperationException("Не удалось получить данные спринта. " +
-                                                       $"ProjectSprintId: {projectSprintId}. " +
-                                                       $"ProjectId: {projectId}.");
-                await _discordService.SendNotificationErrorAsync(ex);
-                
-                _logger?.LogError(ex, ex.Message);
-                
-                if (!string.IsNullOrWhiteSpace(token))
-                {
-                    await _sprintNotificationsService.SendNotificationWarningStartSprintAsync("Внимание",
-                        ex.Message, NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
-                }
-
                 return;
             }
             
@@ -365,17 +356,21 @@ internal sealed class SprintService : ISprintService
                 if (!string.IsNullOrWhiteSpace(token))
                 {
                     await _sprintNotificationsService.SendNotificationWarningStartSprintAsync("Внимание",
-                        ex.Message, NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
+                        "Нельзя начать спринт - даты (начала и окончания) не заполнены.",
+                        NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
                 }
 
                 return;
             }
             
+            // TODO: Этот кейс изменим позже. Когда будет реализована настройка длительности спринта в настройках проекта.
+            // TODO: То здесь при таком кейсе, будет DateEnd = DateStart + кол-во дней от суммы длительности
+            // TODO: из настроек (+7 дней либо + 14 дней) и спринт будет автоматически запущен после этой корректировки дат.
             if (sprint.DateEnd!.Value < DateTime.UtcNow)
             {
                 // Нельзя начать спринт - какая-то из дат либо обе находятся в прошлом.
                 var ex = new InvalidOperationException(
-                    "Нельзя начать спринт - какая-то из дат либо обе находятся в прошлом. " +
+                    "Нельзя начать спринт - дата окончания находится в прошлом. " +
                     $"ProjectSprintId: {projectSprintId}. " +
                     $"ProjectId: {projectId}.");
                 await _discordService.SendNotificationErrorAsync(ex);
@@ -385,7 +380,8 @@ internal sealed class SprintService : ISprintService
                 if (!string.IsNullOrWhiteSpace(token))
                 {
                     await _sprintNotificationsService.SendNotificationWarningStartSprintAsync("Внимание",
-                        ex.Message, NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
+                        "Нельзя начать спринт - дата окончания находится в прошлом.",
+                        NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
                 }
 
                 return;
@@ -402,11 +398,13 @@ internal sealed class SprintService : ISprintService
                 await _discordService.SendNotificationErrorAsync(ex);
                 
                 _logger?.LogError(ex, ex.Message);
-                
+
                 if (!string.IsNullOrWhiteSpace(token))
                 {
                     await _sprintNotificationsService.SendNotificationWarningStartSprintAsync("Внимание",
-                        ex.Message, NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
+                        $"Невозможно начать спринт в статусе: {((SprintStatusEnum)sprint.SprintStatusId).GetEnumDescription()}. " +
+                        $"Спринт должен находится в статусе: {SprintStatusEnum.New.GetEnumDescription()}",
+                        NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
                 }
 
                 return;
@@ -430,7 +428,7 @@ internal sealed class SprintService : ISprintService
                 if (!string.IsNullOrWhiteSpace(token))
                 {
                     await _sprintNotificationsService.SendNotificationWarningStartSprintAsync("Внимание",
-                        ex.Message, NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
+                        "Нельзя начать пустой спринт.", NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
                 }
 
                 return;
@@ -447,6 +445,101 @@ internal sealed class SprintService : ISprintService
             }
 
             // TODO: Добавить запись активности (кто начал спринт).
+        }
+        
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task<ManualCompleteSprintOutput> ManualCompleteSprintAsync(ManualCompleteSprintInput sprintInput,
+        string account, string? token)
+    {
+        try
+        {
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+            
+            // Получаем данные спринта.
+            var sprint = await GetSprintByProjectSprintIdByProjectIdAsync(sprintInput.ProjectSprintId,
+                sprintInput.ProjectId, token);
+            
+            var result = new ManualCompleteSprintOutput
+            {
+                NotCompletedSprintTaskIds = new List<long>()
+            };
+
+            // К этому моменту мы уже показали пользователю уведомление об этом, не ломаем приложение.
+            if (sprint is null)
+            {
+                return result;
+            }
+
+            // Если спринт не был запущен.
+            if (sprint.SprintStatusId != (int)SprintStatusEnum.InWork)
+            {
+                var ex = new InvalidOperationException(
+                    "Нельзя остановить спринт, который не был запущен. " +
+                    $"ProjectSprintId: {sprintInput.ProjectSprintId}. " +
+                    $"ProjectId: {sprintInput.ProjectId}. " +
+                    $"SprintStatus: {((SprintStatusEnum)sprint.SprintStatusId).ToString()}");
+                await _discordService.SendNotificationErrorAsync(ex);
+                
+                _logger?.LogError(ex, ex.Message);
+                
+                if (!string.IsNullOrWhiteSpace(token))
+                {
+                    await _sprintNotificationsService.SendNotificationWarningStartSprintAsync("Внимание",
+                        "Нельзя остановить спринт, который не был запущен.",
+                        NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
+                }
+
+                return result;
+            }
+            
+            // TODO: Когда будет реализовано создание кастомных статусов, то сопосатвялть еще таблицу кастомных
+            // TODO: статусов пользователей из таблицы в задаче #31632122 (Kaiten).
+            // Проверяем, есть ли незавершенные задачи спринта.
+            // Ищем по статусу (через сопоставление с системными статусами).
+            var notCompletedSprintTasks = (await _sprintRepository.GetNotCompletedSprintTasksAsync(
+                sprintInput.ProjectSprintId, sprintInput.ProjectId))?.AsList();
+            
+            // Если у спринта есть незавершенные задачи, то не завершаем спринт, а требуем от пользователя действия.
+            if (notCompletedSprintTasks is not null && notCompletedSprintTasks.Count > 0)
+            {
+                result.NotCompletedSprintTaskIds = notCompletedSprintTasks;
+                result.NeedSprintAction = new BaseNeedSprintAction(NeedSprintActionTypeEnum.NotCompletedTask)
+                {
+                    IsNeedUserAction = true
+                };
+
+                return result;
+            }
+
+            // Завершаем спринт.
+            await _sprintRepository.ManualCompleteSprintAsync(sprintInput.ProjectSprintId, sprintInput.ProjectId);
+
+            // TODO: Добавить запись активности (кто вручную завершил спринт).
+            
+            // TODO: Если у спринта все задачи были завершены, то покажем такое.
+            // TODO: В зависимости от того, куда пользователь выбрал перемещение незавершенных задач, уведомление будет
+            // TODO: дополненно тем, куда перемещены были задачи.
+            if (!string.IsNullOrWhiteSpace(token))
+            {
+                await _sprintNotificationsService.SendNotificationSuccessStartSprintAsync("Все хорошо",
+                    $"Спринт \"{sprint.SprintName}\" успешно завершен.",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
+            }
+
+            return result;
         }
         
         catch (Exception ex)
@@ -521,6 +614,42 @@ internal sealed class SprintService : ISprintService
         }
         
         sprintData.AuthorName = authors.TryGet(sprintData.CreatedBy)?.FullName;
+    }
+
+    /// <summary>
+    /// Метод получает данные спринта.
+    /// </summary>
+    /// <param name="projectSprintId">Id спринта в рамках проекта.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="token">Токен.</param>
+    /// <returns>Данные спринта.</returns>
+    private async Task<TaskSprintExtendedOutput?> GetSprintByProjectSprintIdByProjectIdAsync(long projectSprintId,
+        long projectId, string? token)
+    {
+        // Получаем данные спринта.
+        var sprint = await _sprintRepository.GetSprintAsync(projectSprintId, projectId);
+
+        if (sprint is null)
+        {
+            var ex = new InvalidOperationException("Не удалось получить данные спринта. " +
+                                                   $"ProjectSprintId: {projectSprintId}. " +
+                                                   $"ProjectId: {projectId}.");
+            await _discordService.SendNotificationErrorAsync(ex);
+                
+            _logger?.LogError(ex, ex.Message);
+                
+            if (!string.IsNullOrWhiteSpace(token))
+            {
+                // TODO: Заменить на уведомление Error и на фронте добавить для Error, пока переиспользуем готовый метод хаба.
+                await _sprintNotificationsService.SendNotificationWarningStartSprintAsync("Что то пошло не так",
+                    "Ошибка при получении данных спринта. Мы уже знаем о проблеме и уже занимаемся ей.",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, token);
+            }
+
+            return null;
+        }
+
+        return sprint;
     }
 
     #endregion

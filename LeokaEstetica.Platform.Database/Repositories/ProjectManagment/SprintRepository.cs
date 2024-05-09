@@ -322,7 +322,50 @@ internal sealed class SprintRepository : BaseRepository, ISprintRepository
         await connection.ExecuteAsync(query, parameters);
     }
 
-    #endregion
+     /// <inheritdoc/>
+    public async Task ManualCompleteSprintAsync(long projectSprintId, long projectId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@projectSprintId", projectSprintId);
+        parameters.Add("@projectId", projectId);
+
+        var query = "UPDATE project_management.sprints " +
+                    "SET sprint_status_id = 3 " +
+                    "WHERE project_sprint_id = @projectSprintId " +
+                    "AND project_id = @projectId";
+
+        await connection.ExecuteAsync(query, parameters);
+    }
+
+     /// <inheritdoc/>
+     public async Task<IEnumerable<long>?> GetNotCompletedSprintTasksAsync(long projectSprintId, long projectId)
+     {
+         using var connection = await ConnectionProvider.GetConnectionAsync();
+
+         var parameters = new DynamicParameters();
+         parameters.Add("@projectSprintId", projectSprintId);
+         parameters.Add("@projectId", projectId);
+
+         // TODO: В будущем, возможно надо будет дорабатывать под кастомные статусы системные имена.
+         var query = "SELECT DISTINCT (st.project_task_id) " +
+                     "FROM project_management.sprint_tasks AS st " +
+                     "INNER JOIN project_management.project_tasks AS pt " +
+                     "ON st.project_task_id = pt.project_task_id " +
+                     "LEFT JOIN templates.project_management_task_status_templates AS pmtst " +
+                     "ON pt.task_status_id = pmtst.task_status_id " +
+                     "WHERE pt.project_id = @projectId " +
+                     "AND st.sprint_id = @projectSprintId " +
+                     "AND pmtst.task_status_id <> 6 " +
+                     "AND pmtst.status_sys_name NOT IN ('Completed', 'InArchive', 'Closed')";
+
+         var result = await connection.QueryAsync<long>(query, parameters);
+
+         return result;
+     }
+
+     #endregion
 
     #region Приватные методы.
 

@@ -351,4 +351,46 @@ public class SprintController : BaseController
         await _sprintService.StartSprintAsync(sprintInput.ProjectSprintId, sprintInput.ProjectId, GetUserName(),
             CreateTokenFromHeader());
     }
+
+    /// <summary>
+    /// Метод завершает спринт (ручное завершение).
+    /// </summary>
+    /// <param name="sprintInput">Входная модель.</param>
+    [HttpPatch]
+    [Route("sprint/manual-complete")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<ManualCompleteSprintOutput> ManualCompleteSprintAsync(
+        [FromBody] ManualCompleteSprintInput sprintInput)
+    {
+        var validator = await new SprintValidator()
+            .ValidateAsync((sprintInput.ProjectSprintId, sprintInput.ProjectId));
+
+        if (validator.Errors.Any())
+        {
+            var exceptions = new List<InvalidOperationException>();
+
+            foreach (var err in validator.Errors)
+            {
+                exceptions.Add(new InvalidOperationException(err.ErrorMessage));
+            }
+
+            var ex = new AggregateException("Ошибка завершения спринта (вручную). " +
+                                            $"ProjectSprintId: {sprintInput.ProjectSprintId}. " +
+                                            $"ProjectId: {sprintInput.ProjectId}.", exceptions);
+            _logger.LogError(ex, ex.Message);
+            
+            await _discordService.Value.SendNotificationErrorAsync(ex);
+            
+            throw ex;
+        }
+
+        var result = await _sprintService.ManualCompleteSprintAsync(sprintInput, GetUserName(),
+            CreateTokenFromHeader());
+
+        return result;
+    }
 }

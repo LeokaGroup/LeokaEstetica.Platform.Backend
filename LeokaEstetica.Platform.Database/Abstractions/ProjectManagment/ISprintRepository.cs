@@ -86,4 +86,19 @@ public interface ISprintRepository
     /// <param name="projectSprintId">Id спринта в рамках проекта.</param>
     /// <param name="projectId">Id проекта.</param>
     Task RunSprintAsync(long projectSprintId, long projectId);
+    
+    /// <summary>
+    /// Метод завершает спринт проекта (ручное завершение).
+    /// </summary>
+    /// <param name="projectSprintId">Id спринта в рамках проекта.</param>
+    /// <param name="projectId">Id проекта.</param>
+    Task ManualCompleteSprintAsync(long projectSprintId, long projectId);
+
+    /// <summary>
+    /// Метод получает незавершенные задачи спринта.
+    /// </summary>
+    /// <param name="projectSprintId">Id спринта в рамках проекта.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Незавершенные задачи спринта.</returns>
+    Task<IEnumerable<long>?> GetNotCompletedSprintTasksAsync(long projectSprintId, long projectId);
 }
