@@ -544,7 +544,7 @@ internal sealed class SprintService : ISprintService
             // Если действие уже было выбрано пользователем, то обрабатываем его и завершаем спринт.
             if (sprintInput.IsProcessedAction)
             {
-                if (sprintInput.NotCompletedSprintTaskIds is null)
+                if (sprintInput.NotCompletedSprintTaskIds is null || !sprintInput.NotCompletedSprintTaskIds.Any())
                 {
                     throw new InvalidOperationException(
                         $"Нет незавершенных задач. {JsonConvert.SerializeObject(sprintInput)}.");
@@ -584,7 +584,7 @@ internal sealed class SprintService : ISprintService
                         }
                         
                         // Переносим незавершенные задачи в указанный спринт.
-                        await _sprintRepository.MoveSprintTasksAsync(sprintInput.ProjectSprintId,
+                        await _sprintRepository.MoveSprintTasksAsync(sprintInput.MoveSprintId.Value,
                             sprintInput.NotCompletedSprintTaskIds);
 
                         break;
@@ -621,7 +621,7 @@ internal sealed class SprintService : ISprintService
             {
                 await _sprintNotificationsService.SendNotificationSuccessStartSprintAsync("Все хорошо",
                     $"Спринт \"{sprint.SprintName}\" успешно завершен.",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);
             }
 
             return result;
