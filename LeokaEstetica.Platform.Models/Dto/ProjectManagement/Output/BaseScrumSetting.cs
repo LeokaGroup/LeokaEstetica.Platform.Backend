@@ -10,6 +10,13 @@ public class BaseScrumSetting
     /// <summary>
     /// Конструктор.
     /// </summary>
+    public BaseScrumSetting()
+    {
+    }
+    
+    /// <summary>
+    /// Конструктор.
+    /// </summary>
     /// <param name="name">Название настройки.</param>
     public BaseScrumSetting(string name)
     {

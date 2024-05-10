@@ -8,7 +8,10 @@ public class SprintDurationSetting : BaseScrumSetting
     /// <summary>
     /// Конструктор.
     /// </summary>
-    /// <param name="name">Название настройки.</param>
+    public SprintDurationSetting()
+    {
+    }
+
     public SprintDurationSetting(string name) : base(name)
     {
     }
