@@ -21,6 +21,8 @@ internal sealed class SprintRepository : BaseRepository, ISprintRepository
     {
     }
 
+    #region Публичные методы.
+
     /// <inheritdoc/>
     public async Task<IEnumerable<TaskSprintExtendedOutput>?> GetSprintsAsync(long projectId)
     {
@@ -263,4 +265,68 @@ internal sealed class SprintRepository : BaseRepository, ISprintRepository
         
         await connection.ExecuteAsync(query, parameters);
     }
+
+    /// <inheritdoc/>
+    public async Task<bool> CheckActiveSprintAsync(long projectId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@projectId", projectId);
+        
+        var query = "SELECT EXISTS (SELECT sprint_id " +
+                    "FROM project_management.sprints " +
+                    "WHERE project_id = @projectId " +
+                    "AND sprint_status_id  = 2)";
+
+        var result = await connection.ExecuteScalarAsync<bool>(query, parameters);
+
+        return result;
+    }
+
+    /// <inheritdoc/>
+    public async Task<int> GetCountSprintTasksAsync(long projectSprintId, long projectId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@projectSprintId", projectSprintId);
+        parameters.Add("@projectId", projectId);
+
+        var query = "SELECT COUNT (st.project_task_id) " +
+                    "FROM project_management.sprints AS s " +
+                    "LEFT JOIN project_management.sprint_tasks AS st " +
+                    "ON s.project_sprint_id = st.sprint_id " +
+                    "WHERE s.project_sprint_id = @projectSprintId " +
+                    "AND s.project_id = @projectId";
+
+        var result = await connection.ExecuteScalarAsync<int>(query, parameters);
+
+        return result;
+    }
+    
+    /// <inheritdoc/>
+    public async Task RunSprintAsync(long projectSprintId, long projectId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@projectSprintId", projectSprintId);
+        parameters.Add("@projectId", projectId);
+
+        var query = "UPDATE project_management.sprints " +
+                    "SET sprint_status_id = 2 " +
+                    "WHERE project_sprint_id = @projectSprintId " +
+                    "AND project_id = @projectId";
+
+        await connection.ExecuteAsync(query, parameters);
+    }
+
+    #endregion
+
+    #region Приватные методы.
+
+    
+
+    #endregion
 }

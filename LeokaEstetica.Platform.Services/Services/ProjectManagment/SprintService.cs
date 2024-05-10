@@ -2,6 +2,7 @@
 using Dapper;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.Core.Constants;
+using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.Config;
@@ -10,6 +11,8 @@ using LeokaEstetica.Platform.Integrations.Abstractions.Discord;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.Template;
 using LeokaEstetica.Platform.Models.Enums;
+using LeokaEstetica.Platform.Notifications.Abstractions;
+using LeokaEstetica.Platform.Notifications.Consts;
 using LeokaEstetica.Platform.Services.Abstractions.ProjectManagment;
 using Microsoft.Extensions.Logging;
 
@@ -20,7 +23,7 @@ namespace LeokaEstetica.Platform.Services.Services.ProjectManagment;
 /// </summary>
 internal sealed class SprintService : ISprintService
 {
-    private readonly ILogger<SprintService> _logger;
+    private readonly ILogger<SprintService>? _logger;
     private readonly ISprintRepository _sprintRepository;
     private readonly IProjectManagementTemplateService _projectManagementTemplateService;
     private readonly IUserRepository _userRepository;
@@ -29,6 +32,17 @@ internal sealed class SprintService : ISprintService
     private readonly IProjectManagmentRepository _projectManagmentRepository;
     private readonly Lazy<IDistributionStatusTaskService> _distributionStatusTaskService;
     private readonly IDiscordService _discordService;
+    private readonly ISprintNotificationsService _sprintNotificationsService;
+
+    /// <summary>
+    /// Список недопустимых для начала спринта статусов.
+    /// </summary>
+    private readonly List<SprintStatusEnum> _notAvailableStartSprintStatuses = new()
+    {
+        SprintStatusEnum.InWork,
+        SprintStatusEnum.Completed,
+        SprintStatusEnum.Closed
+    };
 
     /// <summary>
     /// Конструктор.
@@ -40,8 +54,9 @@ internal sealed class SprintService : ISprintService
     /// <param name="projectManagmentRepository">Репозиторий модуля УП.</param>
     /// <param name="distributionStatusTaskService">Сервис распределения по статусам.</param>
     /// <param name="discordService">Сервис уведомлений дискорда.</param>
+    /// <param name="sprintNotificationsService">Сервис уведомлений спринтов.</param>
     /// </summary>
-    public SprintService(ILogger<SprintService> logger,
+    public SprintService(ILogger<SprintService>? logger,
         ISprintRepository sprintRepository,
         IProjectManagementTemplateService projectManagementTemplateService,
         IUserRepository userRepository,
@@ -49,7 +64,8 @@ internal sealed class SprintService : ISprintService
         IMapper mapper,
         IProjectManagmentRepository projectManagmentRepository,
         Lazy<IDistributionStatusTaskService> distributionStatusTaskService,
-        IDiscordService discordService)
+        IDiscordService discordService,
+        ISprintNotificationsService sprintNotificationsService)
     {
         _logger = logger;
         _sprintRepository = sprintRepository;
@@ -60,6 +76,7 @@ internal sealed class SprintService : ISprintService
         _projectManagmentRepository = projectManagmentRepository;
         _distributionStatusTaskService = distributionStatusTaskService;
         _discordService = discordService;
+        _sprintNotificationsService = sprintNotificationsService;
     }
 
     #region Публичные методы
@@ -76,7 +93,7 @@ internal sealed class SprintService : ISprintService
         
         catch (Exception ex)
         {
-            _logger.LogError(ex, ex.Message);
+            _logger?.LogError(ex, ex.Message);
             throw;
         }
     }
@@ -168,7 +185,7 @@ internal sealed class SprintService : ISprintService
         
         catch (Exception ex)
         {
-            _logger.LogError(ex, ex.Message);
+            _logger?.LogError(ex, ex.Message);
             throw;
         }
     }
@@ -193,7 +210,7 @@ internal sealed class SprintService : ISprintService
         
         catch (Exception ex)
         {
-            _logger.LogError(ex, ex.Message);
+            _logger?.LogError(ex, ex.Message);
             throw;
         }
     }
@@ -219,7 +236,7 @@ internal sealed class SprintService : ISprintService
         
         catch (Exception ex)
         {
-            _logger.LogError(ex, ex.Message);
+            _logger?.LogError(ex, ex.Message);
             throw;
         }
     }
@@ -245,7 +262,7 @@ internal sealed class SprintService : ISprintService
         
         catch (Exception ex)
         {
-            _logger.LogError(ex, ex.Message);
+            _logger?.LogError(ex, ex.Message);
             throw;
         }
     }
@@ -271,7 +288,170 @@ internal sealed class SprintService : ISprintService
         
         catch (Exception ex)
         {
-            _logger.LogError(ex, ex.Message);
+            _logger?.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task StartSprintAsync(long projectSprintId, long projectId, string account, string token)
+    {
+        try
+        {
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+            
+            // Ищем уже активный спринт проекта.
+            var activeSprint = await _sprintRepository.CheckActiveSprintAsync(projectId);
+
+            // Нельзя начать спринт проекта, если уже есть активный спринт у проекта. 
+            if (activeSprint)
+            {
+                var ex = new InvalidOperationException("У проекта уже имеется запущенный спринт. " +
+                                                       "Начать новый невозможно. " +
+                                                       $"ProjectSprintId: {projectSprintId}. " +
+                                                       $"ProjectId: {projectId}.");
+                await _discordService.SendNotificationErrorAsync(ex);
+                
+                _logger?.LogError(ex, ex.Message);
+
+                if (!string.IsNullOrWhiteSpace(token))
+                {
+                    await _sprintNotificationsService.SendNotificationWarningStartSprintAsync("Внимание",
+                        ex.Message, NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
+                }
+
+                return;
+            }
+
+            // Получаем данные спринта.
+            var sprint = await _sprintRepository.GetSprintAsync(projectSprintId, projectId);
+
+            if (sprint is null)
+            {
+                var ex = new InvalidOperationException("Не удалось получить данные спринта. " +
+                                                       $"ProjectSprintId: {projectSprintId}. " +
+                                                       $"ProjectId: {projectId}.");
+                await _discordService.SendNotificationErrorAsync(ex);
+                
+                _logger?.LogError(ex, ex.Message);
+                
+                if (!string.IsNullOrWhiteSpace(token))
+                {
+                    await _sprintNotificationsService.SendNotificationWarningStartSprintAsync("Внимание",
+                        ex.Message, NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
+                }
+
+                return;
+            }
+            
+            // Проверяем даты на корректность.
+            if (!sprint.DateStart.HasValue || !sprint.DateEnd.HasValue)
+            {
+                // Нельзя начать спринт - даты не заполнены.
+                var ex = new InvalidOperationException(
+                    "Нельзя начать спринт - даты (начала и окончания) не заполнены. " +
+                    $"ProjectSprintId: {projectSprintId}. " +
+                    $"ProjectId: {projectId}.");
+                await _discordService.SendNotificationErrorAsync(ex);
+                
+                _logger?.LogError(ex, ex.Message);
+                
+                if (!string.IsNullOrWhiteSpace(token))
+                {
+                    await _sprintNotificationsService.SendNotificationWarningStartSprintAsync("Внимание",
+                        ex.Message, NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
+                }
+
+                return;
+            }
+            
+            if (sprint.DateEnd!.Value < DateTime.UtcNow)
+            {
+                // Нельзя начать спринт - какая-то из дат либо обе находятся в прошлом.
+                var ex = new InvalidOperationException(
+                    "Нельзя начать спринт - какая-то из дат либо обе находятся в прошлом. " +
+                    $"ProjectSprintId: {projectSprintId}. " +
+                    $"ProjectId: {projectId}.");
+                await _discordService.SendNotificationErrorAsync(ex);
+                
+                _logger?.LogError(ex, ex.Message);
+                
+                if (!string.IsNullOrWhiteSpace(token))
+                {
+                    await _sprintNotificationsService.SendNotificationWarningStartSprintAsync("Внимание",
+                        ex.Message, NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
+                }
+
+                return;
+            }
+
+            if (_notAvailableStartSprintStatuses.Contains((SprintStatusEnum)sprint.SprintStatusId))
+            {
+                // Обнаружен недопустимый для старта спринта статус.
+                var ex = new InvalidOperationException(
+                    "Обнаружен недопустимый для старта спринта статус. " +
+                    $"ProjectSprintId: {projectSprintId}. " +
+                    $"ProjectId: {projectId}. " +
+                    $"SprintStatus: {((SprintStatusEnum)sprint.SprintStatusId).ToString()}.");
+                await _discordService.SendNotificationErrorAsync(ex);
+                
+                _logger?.LogError(ex, ex.Message);
+                
+                if (!string.IsNullOrWhiteSpace(token))
+                {
+                    await _sprintNotificationsService.SendNotificationWarningStartSprintAsync("Внимание",
+                        ex.Message, NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
+                }
+
+                return;
+            }
+            
+            // Проверяем, имеет ли спринт задачи.
+            var sprintTaskCount = await _sprintRepository.GetCountSprintTasksAsync(projectSprintId, projectId);
+            
+            if (sprintTaskCount == 0)
+            {
+                // Нельзя начать пустой спринт.
+                var ex = new InvalidOperationException(
+                    "Нельзя начать пустой спринт. " +
+                    $"ProjectSprintId: {projectSprintId}. " +
+                    $"ProjectId: {projectId}. " +
+                    $"SprintStatus: {((SprintStatusEnum)sprint.SprintStatusId).ToString()}.");
+                await _discordService.SendNotificationErrorAsync(ex);
+                
+                _logger?.LogError(ex, ex.Message);
+                
+                if (!string.IsNullOrWhiteSpace(token))
+                {
+                    await _sprintNotificationsService.SendNotificationWarningStartSprintAsync("Внимание",
+                        ex.Message, NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
+                }
+
+                return;
+            }
+            
+            // Запускаем спринт проекта.
+            await _sprintRepository.RunSprintAsync(projectSprintId, projectId);
+            
+            if (!string.IsNullOrWhiteSpace(token))
+            {
+                await _sprintNotificationsService.SendNotificationSuccessStartSprintAsync("Все хорошо",
+                    $"Спринт \"{sprint.SprintName}\" успешно начат.", NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS,
+                    token);
+            }
+
+            // TODO: Добавить запись активности (кто начал спринт).
+        }
+        
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, ex.Message);
             throw;
         }
     }
@@ -317,7 +497,7 @@ internal sealed class SprintService : ISprintService
                         var ex = new InvalidOperationException("Обнаружен наблюдатель с NULL. " +
                                                                $"WatcherId: {w}");
                         await _discordService.SendNotificationErrorAsync(ex);
-                        _logger.LogError(ex, ex.Message);
+                        _logger?.LogError(ex, ex.Message);
                                 
                         continue;
                     }

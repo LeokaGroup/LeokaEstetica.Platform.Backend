@@ -93,5 +93,13 @@ public class NotificationsModule : Module
 
         // Сервис уведомлений модуля УП.
         builder.RegisterLazy<IProjectManagementNotificationService, ProjectManagementNotificationService>();
+        
+        // Сервис уведомлений спринтов.
+        builder.RegisterType<SprintNotificationsService>()
+            .Named<ISprintNotificationsService>("SprintNotificationsService")
+            .InstancePerLifetimeScope();
+        builder.RegisterType<SprintNotificationsService>()
+            .As<ISprintNotificationsService>()
+            .InstancePerLifetimeScope();
     }
 }
