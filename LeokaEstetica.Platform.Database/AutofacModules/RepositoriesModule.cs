@@ -321,5 +321,12 @@ public class RepositoriesModule : Module
         builder.RegisterType<SprintRepository>()
             .As<ISprintRepository>()
             .InstancePerLifetimeScope();
+            
+        builder.RegisterType<ProjectManagementSettingsRepository>()
+            .Named<IProjectManagementSettingsRepository>("ProjectManagementSettingsRepository")
+            .InstancePerLifetimeScope();
+        builder.RegisterType<ProjectManagementSettingsRepository>()
+            .As<IProjectManagementSettingsRepository>()
+            .InstancePerLifetimeScope();
     }
 }

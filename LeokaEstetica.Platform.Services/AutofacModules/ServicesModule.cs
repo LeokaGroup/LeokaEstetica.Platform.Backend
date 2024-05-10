@@ -318,5 +318,13 @@ public class ServicesModule : Module
         builder.RegisterType<ProjectManagementTemplateService>()
             .As<IProjectManagementTemplateService>()
             .InstancePerLifetimeScope();
+            
+        // Сервис настроек проекта.
+        builder.RegisterType<ProjectManagementSettingsService>()
+            .Named<IProjectManagementSettingsService>("ProjectManagementSettingsService")
+            .InstancePerLifetimeScope();
+        builder.RegisterType<ProjectManagementSettingsService>()
+            .As<IProjectManagementSettingsService>()
+            .InstancePerLifetimeScope();
     }
 }
