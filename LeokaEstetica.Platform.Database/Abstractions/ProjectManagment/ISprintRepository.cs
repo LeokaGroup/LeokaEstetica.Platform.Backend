@@ -64,4 +64,65 @@ public interface ISprintRepository
     /// <param name="projectId">Id проекта.</param>
     /// <param name="watcherIds">Id наблюдателей спринта.</param>
     Task InsertOrUpdateSprintWatchersAsync(long projectSprintId, long projectId, IEnumerable<long> watcherIds);
+    
+    /// <summary>
+    /// Метод проверяет, есть ли уже активный спринт у проекта.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Признак результата проверки.</returns>
+    Task<bool> CheckActiveSprintAsync(long projectId);
+
+    /// <summary>
+    /// Метод получает кол-во задач у спринта.
+    /// </summary>
+    /// <param name="projectSprintId">Id спринта в рамках проекта.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Кол-во задач у спринта.</returns>
+    Task<int> GetCountSprintTasksAsync(long projectSprintId, long projectId);
+    
+    /// <summary>
+    /// Метод запускает спринт проекта.
+    /// </summary>
+    /// <param name="projectSprintId">Id спринта в рамках проекта.</param>
+    /// <param name="projectId">Id проекта.</param>
+    Task RunSprintAsync(long projectSprintId, long projectId);
+    
+    /// <summary>
+    /// Метод завершает спринт проекта (ручное завершение).
+    /// </summary>
+    /// <param name="projectSprintId">Id спринта в рамках проекта.</param>
+    /// <param name="projectId">Id проекта.</param>
+    Task ManualCompleteSprintAsync(long projectSprintId, long projectId);
+
+    /// <summary>
+    /// Метод получает незавершенные задачи спринта.
+    /// </summary>
+    /// <param name="projectSprintId">Id спринта в рамках проекта.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Незавершенные задачи спринта.</returns>
+    Task<IEnumerable<long>?> GetNotCompletedSprintTasksAsync(long projectSprintId, long projectId);
+
+    /// <summary>
+    /// Метод переносит незавершенные задачи в выбранный спринт.
+    /// </summary>
+    /// <param name="projectSprintId">Id спринта в рамках проекта.</param>
+    /// <param name="projectTaskIds">Список Id задач.</param>
+    Task MoveSprintTasksAsync(long projectSprintId, IEnumerable<long> projectTaskIds);
+
+    /// <summary>
+    /// Метод планирует новый спринт и перемещает в него незавершенные задачи из другого спринта.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="projectTaskIds">Список Id задач.</param>
+    /// <param name="moveSprintName">Название нового спринта.</param>
+    Task PlaningNewSprintAndMoveNotCompletedSprintTasksAsync(long projectId, IEnumerable<long> projectTaskIds,
+        string? moveSprintName);
+    
+    /// <summary>
+    /// Метод получает список спринтов доступных для переноса незавершенных задач в один из них.
+    /// </summary>
+    /// <param name="projectSprintId">Id спринта в рамках проекта.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Список спринтов.</returns>
+    Task<IEnumerable<TaskSprintExtendedOutput>> GetAvailableNextSprintsAsync(long projectSprintId, long projectId);
 }

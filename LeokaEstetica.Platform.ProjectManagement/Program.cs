@@ -1,11 +1,11 @@
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using FluentValidation.AspNetCore;
-using Hellang.Middleware.ProblemDetails;
 using LeokaEstetica.Platform.Base.Factors;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Utils;
 using LeokaEstetica.Platform.Integrations.Filters;
+using LeokaEstetica.Platform.Notifications.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -172,7 +172,7 @@ if (builder.Environment.IsDevelopment() || builder.Environment.IsStaging())
 }
 
 // Добавляем хаб приложения для работы через сокеты.
-// app.MapHub<ProjectManagementHub>("/project-management-notify");
+app.MapHub<ProjectManagementHub>("/project-management-notify");
 
 // app.UseProblemDetails();
 

@@ -1,7 +1,7 @@
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.SignalR;
 
-[assembly: InternalsVisibleTo("LeokaEstetica.Platform.ProjectManagment")]
+[assembly: InternalsVisibleTo("LeokaEstetica.Platform.ProjectManagement")]
 
 namespace LeokaEstetica.Platform.Notifications.Data;
 

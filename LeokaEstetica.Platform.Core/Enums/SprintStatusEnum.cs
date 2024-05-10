@@ -1,3 +1,5 @@
+using System.ComponentModel;
+
 namespace LeokaEstetica.Platform.Core.Enums;
 
 /// <summary>
@@ -6,27 +8,26 @@ namespace LeokaEstetica.Platform.Core.Enums;
 public enum SprintStatusEnum
 {
     /// <summary>
-    /// В бэклоге.
+    /// Новый.
     /// </summary>
-    Backlog = 1,
+    [Description("Новый")]
+    New = 1,
     
     /// <summary>
     /// В работе.
     /// </summary>
+    [Description("В работе")]
     InWork = 2,
     
     /// <summary>
     /// Завершен.
     /// </summary>
+    [Description("Завершен")]
     Completed = 3,
     
     /// <summary>
     /// Закрыт.
     /// </summary>
-    Closed = 4,
-    
-    /// <summary>
-    /// В архиве.
-    /// </summary>
-    Archive = 5
+    [Description("Закрыт")]
+    Closed = 4
 }

@@ -2681,7 +2681,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             // Обычное создание спринта (без его автоматического начала).
             else
             {
-                planingSprintInput.SprintStatus = (int)SprintStatusEnum.Backlog;
+                planingSprintInput.SprintStatus = (int)SprintStatusEnum.New;
                 
                 using var transactionScope = _transactionScopeFactory.CreateTransactionScope();
                 var addedSprintId = await _projectManagmentRepository.PlaningSprintAsync(planingSprintInput, userId);
