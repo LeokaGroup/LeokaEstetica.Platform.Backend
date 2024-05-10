@@ -86,4 +86,43 @@ public interface ISprintRepository
     /// <param name="projectSprintId">Id спринта в рамках проекта.</param>
     /// <param name="projectId">Id проекта.</param>
     Task RunSprintAsync(long projectSprintId, long projectId);
+    
+    /// <summary>
+    /// Метод завершает спринт проекта (ручное завершение).
+    /// </summary>
+    /// <param name="projectSprintId">Id спринта в рамках проекта.</param>
+    /// <param name="projectId">Id проекта.</param>
+    Task ManualCompleteSprintAsync(long projectSprintId, long projectId);
+
+    /// <summary>
+    /// Метод получает незавершенные задачи спринта.
+    /// </summary>
+    /// <param name="projectSprintId">Id спринта в рамках проекта.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Незавершенные задачи спринта.</returns>
+    Task<IEnumerable<long>?> GetNotCompletedSprintTasksAsync(long projectSprintId, long projectId);
+
+    /// <summary>
+    /// Метод переносит незавершенные задачи в выбранный спринт.
+    /// </summary>
+    /// <param name="projectSprintId">Id спринта в рамках проекта.</param>
+    /// <param name="projectTaskIds">Список Id задач.</param>
+    Task MoveSprintTasksAsync(long projectSprintId, IEnumerable<long> projectTaskIds);
+
+    /// <summary>
+    /// Метод планирует новый спринт и перемещает в него незавершенные задачи из другого спринта.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="projectTaskIds">Список Id задач.</param>
+    /// <param name="moveSprintName">Название нового спринта.</param>
+    Task PlaningNewSprintAndMoveNotCompletedSprintTasksAsync(long projectId, IEnumerable<long> projectTaskIds,
+        string? moveSprintName);
+    
+    /// <summary>
+    /// Метод получает список спринтов доступных для переноса незавершенных задач в один из них.
+    /// </summary>
+    /// <param name="projectSprintId">Id спринта в рамках проекта.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Список спринтов.</returns>
+    Task<IEnumerable<TaskSprintExtendedOutput>> GetAvailableNextSprintsAsync(long projectSprintId, long projectId);
 }
