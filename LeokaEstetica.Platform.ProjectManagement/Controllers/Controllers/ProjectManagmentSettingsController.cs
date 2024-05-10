@@ -328,4 +328,25 @@ public class ProjectManagmentSettingsController : BaseController
 
         return result;
     }
+    
+    /// <summary>
+    /// Метод получает настройки автоматического перемещения нерешенных задач спринта.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Список настройки автоматического перемещения нерешенных задач спринта.</returns>
+    [HttpGet]
+    [Route("sprint-move-not-completed-tasks-settings")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<SprintMoveNotCompletedTaskSetting>))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<IEnumerable<SprintMoveNotCompletedTaskSetting>>
+        GetProjectSprintsMoveNotCompletedTasksSettingsAsync([FromQuery] long projectId)
+    {
+        var result = await _projectManagementSettingsService.GetProjectSprintsMoveNotCompletedTasksSettingsAsync(
+            projectId, GetUserName());
+
+        return result;
+    }
 }

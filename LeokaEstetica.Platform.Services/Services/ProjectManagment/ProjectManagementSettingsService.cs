@@ -61,9 +61,52 @@ internal sealed class ProjectManagementSettingsService : IProjectManagementSetti
             var result = (await _projectManagementSettingsRepository.GetProjectSprintsDurationSettingsAsync(projectId))
                 .AsList();
 
-            var iwProjectOwner = await _projectRepository.CheckProjectOwnerAsync(projectId, userId);
+            var isProjectOwner = await _projectRepository.CheckProjectOwnerAsync(projectId, userId);
 
-            ManageAvailableSettings(result, iwProjectOwner);
+            if (!isProjectOwner)
+            {
+                foreach (var s in result)
+                {
+                    s.Disabled = true;
+                }
+            }
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task<IEnumerable<SprintMoveNotCompletedTaskSetting>>
+        GetProjectSprintsMoveNotCompletedTasksSettingsAsync(long projectId, string account)
+    {
+        try
+        {
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+
+            var result = (await _projectManagementSettingsRepository
+                .GetProjectSprintsMoveNotCompletedTasksSettingsAsync(projectId)).AsList();
+
+            var isProjectOwner = await _projectRepository.CheckProjectOwnerAsync(projectId, userId);
+
+            if (!isProjectOwner)
+            {
+                foreach (var s in result)
+                {
+                    s.Disabled = true;
+                }
+            }
 
             return result;
         }
@@ -78,22 +121,6 @@ internal sealed class ProjectManagementSettingsService : IProjectManagementSetti
     #endregion
 
     #region Приватные методы.
-
-    /// <summary>
-    /// Метод блокирует все настройки, если не владелец.
-    /// </summary>
-    /// <param name="settings">Настройки.</param>
-    /// <param name="isOwner">Признак владельца.</param>
-    private void ManageAvailableSettings(IEnumerable<SprintDurationSetting> settings, bool isOwner)
-    {
-        if (!isOwner)
-        {
-            foreach (var s in settings)
-            {
-                s.Disabled = true;
-            }
-        }
-    }
 
     #endregion
 }

@@ -36,4 +36,22 @@ internal sealed class ProjectManagementSettingsRepository : BaseRepository, IPro
 
         return result;
     }
+
+    /// <inheritdoc/>
+    public async Task<IEnumerable<SprintMoveNotCompletedTaskSetting>>
+        GetProjectSprintsMoveNotCompletedTasksSettingsAsync(long projectId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@projectId", projectId);
+
+        var query = "SELECT setting_id, name, sys_name, tooltip, selected, disabled, project_id " +
+                    "FROM settings.move_not_completed_tasks_settings " +
+                    "WHERE project_id = @projectId";
+
+        var result = await connection.QueryAsync<SprintMoveNotCompletedTaskSetting>(query, parameters);
+
+        return result;
+    }
 }
