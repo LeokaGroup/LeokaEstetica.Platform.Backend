@@ -303,6 +303,6 @@ internal class BaseServiceTest
 
         SprintRepository = new SprintRepository(connectionProvider);
         SprintService = new SprintService(null, SprintRepository, null, userRepository, projectSettingsConfigRepository,
-            mapper, null, null, discordService, null);
+            mapper, null, null, discordService, null, null);
     }
 }
