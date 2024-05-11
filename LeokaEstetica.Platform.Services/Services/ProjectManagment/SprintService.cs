@@ -36,6 +36,7 @@ internal sealed class SprintService : ISprintService
     private readonly Lazy<IDistributionStatusTaskService> _distributionStatusTaskService;
     private readonly IDiscordService _discordService;
     private readonly ISprintNotificationsService _sprintNotificationsService;
+    private readonly IProjectManagementSettingsRepository _projectManagementSettingsRepository;
 
     /// <summary>
     /// Список недопустимых для начала спринта статусов.
@@ -58,6 +59,7 @@ internal sealed class SprintService : ISprintService
     /// <param name="distributionStatusTaskService">Сервис распределения по статусам.</param>
     /// <param name="discordService">Сервис уведомлений дискорда.</param>
     /// <param name="sprintNotificationsService">Сервис уведомлений спринтов.</param>
+    /// <param name="projectManagementSettingsRepository">Репозиторий настроек проекта.</param>
     /// </summary>
     public SprintService(ILogger<SprintService>? logger,
         ISprintRepository sprintRepository,
@@ -68,7 +70,8 @@ internal sealed class SprintService : ISprintService
         IProjectManagmentRepository projectManagmentRepository,
         Lazy<IDistributionStatusTaskService> distributionStatusTaskService,
         IDiscordService discordService,
-        ISprintNotificationsService sprintNotificationsService)
+        ISprintNotificationsService sprintNotificationsService,
+        IProjectManagementSettingsRepository projectManagementSettingsRepository)
     {
         _logger = logger;
         _sprintRepository = sprintRepository;
@@ -80,6 +83,7 @@ internal sealed class SprintService : ISprintService
         _distributionStatusTaskService = distributionStatusTaskService;
         _discordService = discordService;
         _sprintNotificationsService = sprintNotificationsService;
+        _projectManagementSettingsRepository = projectManagementSettingsRepository;
     }
 
     #region Публичные методы
@@ -364,28 +368,37 @@ internal sealed class SprintService : ISprintService
                 return;
             }
             
-            // TODO: Этот кейс изменим позже. Когда будет реализована настройка длительности спринта в настройках проекта.
-            // TODO: То здесь при таком кейсе, будет DateEnd = DateStart + кол-во дней от суммы длительности
-            // TODO: из настроек (+7 дней либо + 14 дней) и спринт будет автоматически запущен после этой корректировки дат.
-            if (sprint.DateEnd!.Value < DateTime.UtcNow)
+            // Если дата начала в прошлом, то скорректируем от сегодня.
+            if (sprint.DateStart!.Value < DateTime.UtcNow)
             {
-                // Нельзя начать спринт - какая-то из дат либо обе находятся в прошлом.
-                var ex = new InvalidOperationException(
-                    "Нельзя начать спринт - дата окончания находится в прошлом. " +
-                    $"ProjectSprintId: {projectSprintId}. " +
-                    $"ProjectId: {projectId}.");
-                await _discordService.SendNotificationErrorAsync(ex);
-                
-                _logger?.LogError(ex, ex.Message);
-                
-                if (!string.IsNullOrWhiteSpace(token))
-                {
-                    await _sprintNotificationsService.SendNotificationWarningStartSprintAsync("Внимание",
-                        "Нельзя начать спринт - дата окончания находится в прошлом.",
-                        NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
-                }
+                var setting = await _projectManagementSettingsRepository.GetProjectSprintDurationSettingsAsync(
+                    projectId);
 
-                return;
+                if (setting is null)
+                {
+                    var ex = new InvalidOperationException(
+                        $"Ошибка получения длительности спринтов проекта {projectId}");
+                    await _discordService.SendNotificationErrorAsync(ex);
+                
+                    throw ex;
+                }
+                
+                // Корректируем длительность спринта в соответствии с настройками.
+                if (setting.SysName!.Equals("OneWeek"))
+                {
+                    sprint.DateStart = DateTime.UtcNow;
+                    
+                    // Длительность спринта 1 неделя.
+                    sprint.DateEnd = sprint.DateStart.Value.AddDays(7);
+                }
+                
+                if (setting.SysName!.Equals("TwoWeek"))
+                {
+                    sprint.DateStart = DateTime.UtcNow;
+                    
+                    // Длительность спринта 2 недели.
+                    sprint.DateEnd = sprint.DateStart.Value.AddDays(14);
+                }
             }
 
             if (_notAvailableStartSprintStatuses.Contains((SprintStatusEnum)sprint.SprintStatusId))

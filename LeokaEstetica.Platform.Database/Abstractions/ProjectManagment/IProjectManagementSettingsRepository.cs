@@ -38,4 +38,11 @@ public interface IProjectManagementSettingsRepository
     /// <param name="sysName">Системное название настройки.</param>
     Task UpdateProjectSprintsMoveNotCompletedTasksSettingsAsync(long projectId, bool isSettingSelected,
         string sysName);
+
+    /// <summary>
+    /// Метод получает выбранную настройку длительности спринтов проекта.
+    /// </summary>
+    /// <param name="projectId">Признак выбранной настройки.</param>
+    /// <returns>Данные настройки.</returns>
+    Task<SprintDurationSetting?> GetProjectSprintDurationSettingsAsync(long projectId);
 }

@@ -470,6 +470,25 @@ internal sealed class SprintRepository : BaseRepository, ISprintRepository
          return result;
      }
 
+     /// <inheritdoc/>
+     public async Task<(DateTime? DateStart, DateTime? DateEnd)> GetActiveSprintDatesAsync(long projectId)
+     {
+         using var connection = await ConnectionProvider.GetConnectionAsync();
+
+         var parameters = new DynamicParameters();
+         parameters.Add("@projectId", projectId);
+
+         var query = "SELECT date_start, date_end " +
+                     "FROM project_management.sprints " +
+                     "WHERE project_id = @projectId " +
+                     "AND sprint_status_id  = 2";
+
+         var result = await connection.QueryFirstOrDefaultAsync<(DateTime? DateStart, DateTime? DateEnd)>(
+             query, parameters);
+
+         return result;
+     }
+
      #endregion
 
     #region Приватные методы.
