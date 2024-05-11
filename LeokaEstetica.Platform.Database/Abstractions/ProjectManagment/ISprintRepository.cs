@@ -125,4 +125,11 @@ public interface ISprintRepository
     /// <param name="projectId">Id проекта.</param>
     /// <returns>Список спринтов.</returns>
     Task<IEnumerable<TaskSprintExtendedOutput>> GetAvailableNextSprintsAsync(long projectSprintId, long projectId);
+    
+    /// <summary>
+    /// Метод получает даты начала и окончания активного спринта.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Даты.</returns>
+    Task<(DateTime? DateStart, DateTime? DateEnd)> GetActiveSprintDatesAsync(long projectId);
 }

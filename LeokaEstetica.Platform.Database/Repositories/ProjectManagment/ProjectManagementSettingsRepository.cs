@@ -119,4 +119,22 @@ internal sealed class ProjectManagementSettingsRepository : BaseRepository, IPro
 
         await connection.ExecuteAsync(reverseQuery, reverseParameters);
     }
+
+    /// <inheritdoc/>
+    public async Task<SprintDurationSetting?> GetProjectSprintDurationSettingsAsync(long projectId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+        
+        var parameters = new DynamicParameters();
+        parameters.Add("@projectId", projectId);
+
+        var query = "SELECT sys_name " +
+                    "FROM settings.sprint_duration_settings " +
+                    "WHERE selected IS TRUE " +
+                    "AND project_id = @projectId";
+
+        var result = await connection.QueryFirstOrDefaultAsync<SprintDurationSetting>(query, parameters);
+
+        return result;
+    }
 }
