@@ -6,6 +6,7 @@ using LeokaEstetica.Platform.Integrations.Abstractions.Discord;
 using LeokaEstetica.Platform.Models.Dto.Input.Config;
 using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
+using LeokaEstetica.Platform.Models.Dto.ProjectManagement.Output;
 using LeokaEstetica.Platform.ProjectManagment.ValidationModels;
 using LeokaEstetica.Platform.ProjectManagment.Validators;
 using LeokaEstetica.Platform.Services.Abstractions.ProjectManagment;
@@ -27,6 +28,7 @@ public class ProjectManagmentSettingsController : BaseController
     private readonly Lazy<IDiscordService> _discordService;
     private readonly IProjectManagmentService _projectManagmentService;
     private readonly IMapper _mapper;
+    private readonly IProjectManagementSettingsService _projectManagementSettingsService;
 
     /// <summary>
     /// Конструктор.
@@ -36,17 +38,20 @@ public class ProjectManagmentSettingsController : BaseController
     /// <param name="discordService">Сервис дискорда.</param>
     /// <param name="projectManagmentService"></param>
     /// <param name="mapper"></param>
+    /// <param name="projectManagementSettingsService">Сервис настроек проекта.</param>
     public ProjectManagmentSettingsController(ILogger<ProjectManagmentController> logger,
         Lazy<IProjectManagmentTemplateRepository> projectManagmentTemplateRepository,
         Lazy<IDiscordService> discordService,
         IProjectManagmentService projectManagmentService,
-         IMapper mapper)
+         IMapper mapper,
+          IProjectManagementSettingsService projectManagementSettingsService)
     {
         _logger = logger;
         _projectManagmentTemplateRepository = projectManagmentTemplateRepository;
         _discordService = discordService;
         _projectManagmentService = projectManagmentService;
         _mapper = mapper;
+        _projectManagementSettingsService = projectManagementSettingsService;
     }
     
     /// <summary>
@@ -301,5 +306,47 @@ public class ProjectManagmentSettingsController : BaseController
 
         await _projectManagmentService.UploadUserAvatarFileAsync(formCollection.Files, GetUserName(),
             uploadUserAvatarInput!.ProjectId);
+    }
+
+    /// <summary>
+    /// Метод получает настройки длительности спринтов проекта.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Список настроек длительности спринтов проекта.</returns>
+    [HttpGet]
+    [Route("sprint-duration-settings")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<SprintDurationSetting>))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<IEnumerable<SprintDurationSetting>> GetProjectSprintsDurationSettingsAsync(
+        [FromQuery] long projectId)
+    {
+        var result = await _projectManagementSettingsService.GetProjectSprintsDurationSettingsAsync(projectId,
+            GetUserName());
+
+        return result;
+    }
+    
+    /// <summary>
+    /// Метод получает настройки автоматического перемещения нерешенных задач спринта.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Список настройки автоматического перемещения нерешенных задач спринта.</returns>
+    [HttpGet]
+    [Route("sprint-move-not-completed-tasks-settings")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<SprintMoveNotCompletedTaskSetting>))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<IEnumerable<SprintMoveNotCompletedTaskSetting>>
+        GetProjectSprintsMoveNotCompletedTasksSettingsAsync([FromQuery] long projectId)
+    {
+        var result = await _projectManagementSettingsService.GetProjectSprintsMoveNotCompletedTasksSettingsAsync(
+            projectId, GetUserName());
+
+        return result;
     }
 }
