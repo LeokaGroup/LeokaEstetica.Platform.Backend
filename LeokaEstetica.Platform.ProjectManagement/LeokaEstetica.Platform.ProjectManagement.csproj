@@ -48,4 +48,8 @@
       <Content Remove="obj\**" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Jobs" />
+    </ItemGroup>
+
 </Project>
