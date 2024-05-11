@@ -42,7 +42,13 @@ public interface IProjectManagementSettingsRepository
     /// <summary>
     /// Метод получает выбранную настройку длительности спринтов проекта.
     /// </summary>
-    /// <param name="projectId">Признак выбранной настройки.</param>
+    /// <param name="projectId">Id проекта.</param>
     /// <returns>Данные настройки.</returns>
     Task<SprintDurationSetting?> GetProjectSprintDurationSettingsAsync(long projectId);
+
+    /// <summary>
+    /// Метод заводит Scrum настройки для проекта.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    Task ConfigureProjectScrumSettingsAsync(long projectId);
 }
