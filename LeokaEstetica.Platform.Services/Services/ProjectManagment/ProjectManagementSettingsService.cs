@@ -31,7 +31,7 @@ internal sealed class ProjectManagementSettingsService : IProjectManagementSetti
     /// <param name="projectRepository">Репозиторий проектов.</param>
     public ProjectManagementSettingsService(ILogger<ProjectManagementSettingsService>? logger,
         IUserRepository userRepository,
-         IDiscordService discordService,
+        IDiscordService discordService,
         IProjectManagementSettingsRepository projectManagementSettingsRepository,
         IProjectRepository projectRepository)
     {
@@ -73,7 +73,7 @@ internal sealed class ProjectManagementSettingsService : IProjectManagementSetti
 
             return result;
         }
-        
+
         catch (Exception ex)
         {
             _logger?.LogError(ex, ex.Message);
@@ -110,7 +110,40 @@ internal sealed class ProjectManagementSettingsService : IProjectManagementSetti
 
             return result;
         }
-        
+
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task UpdateProjectSprintsDurationSettingsAsync(long projectId, bool isSettingSelected, string sysName)
+    {
+        try
+        {
+            await _projectManagementSettingsRepository.UpdateProjectSprintsDurationSettingsAsync(projectId,
+                isSettingSelected, sysName);
+        }
+
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task UpdateProjectSprintsMoveNotCompletedTasksSettingsAsync(long projectId, bool isSettingSelected,
+        string sysName)
+    {
+        try
+        {
+            await _projectManagementSettingsRepository.UpdateProjectSprintsMoveNotCompletedTasksSettingsAsync(
+                projectId, isSettingSelected, sysName);
+        }
+
         catch (Exception ex)
         {
             _logger?.LogError(ex, ex.Message);

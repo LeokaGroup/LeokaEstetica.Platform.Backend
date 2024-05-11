@@ -349,4 +349,42 @@ public class ProjectManagmentSettingsController : BaseController
 
         return result;
     }
+    
+    /// <summary>
+    /// Метод обновляет настройки длительности спринтов проекта.
+    /// </summary>
+    /// <param name="sprintDurationSettingInput">Входная модель.</param>
+    [HttpPatch]
+    [Route("sprint-duration-settings")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task UpdateProjectSprintsDurationSettingsAsync(
+        [FromBody] SprintDurationSettingInput sprintDurationSettingInput)
+    {
+        await _projectManagementSettingsService.UpdateProjectSprintsDurationSettingsAsync(
+            sprintDurationSettingInput.ProjectId, sprintDurationSettingInput.IsSettingSelected, sprintDurationSettingInput.SysName);
+    }
+    
+    /// <summary>
+    /// Метод обновляет настройки перемещения нерешенных задач спринтов проекта.
+    /// </summary>
+    /// <param name="sprintMoveNotCompletedTaskSettingInput">Входная модель.</param>
+    [HttpPatch]
+    [Route("sprint-move-not-completed-tasks-settings")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task UpdateProjectSprintsMoveNotCompletedTasksSettingsAsync(
+        [FromBody] SprintMoveNotCompletedTaskSettingInput sprintMoveNotCompletedTaskSettingInput)
+    {
+        await _projectManagementSettingsService.UpdateProjectSprintsMoveNotCompletedTasksSettingsAsync(
+            sprintMoveNotCompletedTaskSettingInput.ProjectId,
+            sprintMoveNotCompletedTaskSettingInput.IsSettingSelected,
+            sprintMoveNotCompletedTaskSettingInput.SysName);
+    }
 }
