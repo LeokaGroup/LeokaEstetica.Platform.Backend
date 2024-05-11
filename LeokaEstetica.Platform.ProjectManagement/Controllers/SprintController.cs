@@ -7,7 +7,7 @@ using LeokaEstetica.Platform.ProjectManagement.Validators;
 using LeokaEstetica.Platform.Services.Abstractions.ProjectManagment;
 using Microsoft.AspNetCore.Mvc;
 
-namespace LeokaEstetica.Platform.ProjectManagement.Controllers.Controllers;
+namespace LeokaEstetica.Platform.ProjectManagement.Controllers;
 
 /// <summary>
 /// Контроллер работы со спринтами.

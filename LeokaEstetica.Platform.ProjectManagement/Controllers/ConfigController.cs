@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 
-namespace LeokaEstetica.Platform.ProjectManagment.Controllers;
+namespace LeokaEstetica.Platform.ProjectManagement.Controllers;
 
 /// <summary>
 /// Контроллер конфигураций модуля управления проектами.
