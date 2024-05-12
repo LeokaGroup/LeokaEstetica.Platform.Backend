@@ -7,7 +7,7 @@ using LeokaEstetica.Platform.ProjectManagment.Validators;
 using LeokaEstetica.Platform.Services.Abstractions.Search.ProjectManagment;
 using Microsoft.AspNetCore.Mvc;
 
-namespace LeokaEstetica.Platform.ProjectManagment.Controllers;
+namespace LeokaEstetica.Platform.ProjectManagement.Controllers;
 
 /// <summary>
 /// Контроллер поиска в модуле управления проектами.

@@ -4,6 +4,7 @@ using LeokaEstetica.Platform.Base.Abstractions.Connection;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.Base;
 using LeokaEstetica.Platform.Core.Constants;
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
+using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagement.Output;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 using LeokaEstetica.Platform.Models.Entities.ProjectManagment;
 
@@ -367,16 +368,16 @@ internal sealed class SprintRepository : BaseRepository, ISprintRepository
      }
 
      /// <inheritdoc/>
-     public async Task MoveSprintTasksAsync(long projectSprintId, IEnumerable<long> projectTaskIds)
+     public async Task MoveSprintTasksAsync(long sprintId, IEnumerable<long> projectTaskIds)
      {
          using var connection = await ConnectionProvider.GetConnectionAsync();
 
          var parameters = new DynamicParameters();
-         parameters.Add("@projectSprintId", projectSprintId);
+         parameters.Add("@sprintId", sprintId);
          parameters.Add("@projectTaskIds", projectTaskIds.AsList());
 
          var query = "UPDATE project_management.sprint_tasks " +
-                     "SET sprint_id = @projectSprintId " +
+                     "SET sprint_id = @sprintId " +
                      "WHERE project_task_id = ANY (@projectTaskIds)";
 
          await connection.ExecuteAsync(query, parameters);
@@ -387,7 +388,7 @@ internal sealed class SprintRepository : BaseRepository, ISprintRepository
          IEnumerable<long> projectTaskIds, string? moveSprintName)
      {
          using var connection = await ConnectionProvider.GetConnectionAsync();
-         var transaction = await ConnectionProvider.CreateTransactionAsync(IsolationLevel.ReadCommitted);
+         using var transaction = await ConnectionProvider.CreateTransactionAsync(IsolationLevel.ReadCommitted);
 
          try
          {
@@ -432,12 +433,6 @@ internal sealed class SprintRepository : BaseRepository, ISprintRepository
              transaction.Rollback();
              throw;
          }
-
-         finally
-         {
-             connection.Dispose();
-             transaction.Dispose();
-         }
      }
 
      /// <inheritdoc/>
@@ -471,22 +466,69 @@ internal sealed class SprintRepository : BaseRepository, ISprintRepository
      }
 
      /// <inheritdoc/>
-     public async Task<(DateTime? DateStart, DateTime? DateEnd)> GetActiveSprintDatesAsync(long projectId)
+     public async Task<IEnumerable<SprintEndDateOutput>?> GetSprintEndDatesAsync()
+     {
+         using var connection = await ConnectionProvider.GetConnectionAsync();
+
+         var query = "SELECT sprint_id, project_sprint_id, project_id " +
+                     "FROM project_management.sprints " +
+                     "WHERE date_end <= NOW()";
+
+         var result = await connection.QueryAsync<SprintEndDateOutput>(query);
+
+         return result;
+     }
+
+     /// <inheritdoc/>
+     public async Task AutoCompleteSprintAsync(long projectSprintId, long projectId)
      {
          using var connection = await ConnectionProvider.GetConnectionAsync();
 
          var parameters = new DynamicParameters();
+         parameters.Add("@projectSprintId", projectSprintId);
          parameters.Add("@projectId", projectId);
 
-         var query = "SELECT date_start, date_end " +
-                     "FROM project_management.sprints " +
-                     "WHERE project_id = @projectId " +
-                     "AND sprint_status_id  = 2";
+         var query = "UPDATE project_management.sprints " +
+                     "SET sprint_status_id = 3 " +
+                     "WHERE project_sprint_id = @projectSprintId " +
+                     "AND project_id = @projectId";
 
-         var result = await connection.QueryFirstOrDefaultAsync<(DateTime? DateStart, DateTime? DateEnd)>(
-             query, parameters);
+         await connection.ExecuteAsync(query, parameters);
+     }
+
+     /// <inheritdoc/>
+     public async Task<long?> GetNextSprintAsync(long projectSprintId, long projectId)
+     {
+         using var connection = await ConnectionProvider.GetConnectionAsync();
+
+         var parameters = new DynamicParameters();
+         parameters.Add("@nextProjectSprintId", +projectSprintId);
+         parameters.Add("@projectId", projectId);
+
+         var query = "SELECT project_sprint_id " +
+                     "FROM project_management.sprints " +
+                     "WHERE project_sprint_id = @nextProjectSprintId";
+
+         var result = await connection.QueryFirstOrDefaultAsync<long?>(query, parameters);
 
          return result;
+     }
+     
+     /// <inheritdoc/>
+     public async Task MoveNotCompletedSprintTasksToNextSprintAsync(IEnumerable<long> projectTaskIds,
+         long nextProjectSprintId)
+     {
+         using var connection = await ConnectionProvider.GetConnectionAsync();
+
+         var parameters = new DynamicParameters();
+         parameters.Add("@sprintId", nextProjectSprintId);
+         parameters.Add("@projectTaskIds", projectTaskIds.AsList());
+
+         var query = "UPDATE project_management.sprint_tasks " +
+                     "SET sprint_id = @sprintId " +
+                     "WHERE project_task_id = ANY (@projectTaskIds)";
+
+         await connection.ExecuteAsync(query, parameters);
      }
 
      #endregion

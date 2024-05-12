@@ -21,7 +21,7 @@ using LeokaEstetica.Platform.Services.Helpers;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 
-namespace LeokaEstetica.Platform.ProjectManagement.Controllers.Controllers;
+namespace LeokaEstetica.Platform.ProjectManagement.Controllers;
 
 /// <summary>
 /// TODO: Разнести на разные контроллеры ендпоинты, которые точно нужно разделить по предметной области.
