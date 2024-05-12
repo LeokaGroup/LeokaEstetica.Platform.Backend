@@ -1,4 +1,5 @@
-﻿using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
+﻿using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagement.Output;
+using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 using LeokaEstetica.Platform.Models.Entities.ProjectManagment;
 
 namespace LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
@@ -105,9 +106,9 @@ public interface ISprintRepository
     /// <summary>
     /// Метод переносит незавершенные задачи в выбранный спринт.
     /// </summary>
-    /// <param name="projectSprintId">Id спринта в рамках проекта.</param>
+    /// <param name="sprintId">Id спринта.</param>
     /// <param name="projectTaskIds">Список Id задач.</param>
-    Task MoveSprintTasksAsync(long projectSprintId, IEnumerable<long> projectTaskIds);
+    Task MoveSprintTasksAsync(long sprintId, IEnumerable<long> projectTaskIds);
 
     /// <summary>
     /// Метод планирует новый спринт и перемещает в него незавершенные задачи из другого спринта.
@@ -119,6 +120,13 @@ public interface ISprintRepository
         string? moveSprintName);
     
     /// <summary>
+    /// Метод переносит нерешенные задачи спринта в след.спринт.
+    /// </summary>
+    /// <param name="projectTaskIds">Список Id задач.</param>
+    /// <param name="nextProjectSprintId">Id следующего спринта проекта.</param>
+    Task MoveNotCompletedSprintTasksToNextSprintAsync(IEnumerable<long> projectTaskIds, long nextProjectSprintId);
+    
+    /// <summary>
     /// Метод получает список спринтов доступных для переноса незавершенных задач в один из них.
     /// </summary>
     /// <param name="projectSprintId">Id спринта в рамках проекта.</param>
@@ -127,9 +135,22 @@ public interface ISprintRepository
     Task<IEnumerable<TaskSprintExtendedOutput>> GetAvailableNextSprintsAsync(long projectSprintId, long projectId);
     
     /// <summary>
-    /// Метод получает даты начала и окончания активного спринта.
+    /// Метод получает список активных спринтов у всех проектов, у которых закончился срок и завершает их.
+    /// <returns>Список спринтов.</returns>
+    Task<IEnumerable<SprintEndDateOutput>?> GetSprintEndDatesAsync();
+    
+    /// <summary>
+    /// Метод завершает спринт (автоматическое завершение).
     /// </summary>
+    /// <param name="projectSprintId">Id спринта в рамках проекта.</param>
     /// <param name="projectId">Id проекта.</param>
-    /// <returns>Даты.</returns>
-    Task<(DateTime? DateStart, DateTime? DateEnd)> GetActiveSprintDatesAsync(long projectId);
+    Task AutoCompleteSprintAsync(long projectSprintId, long projectId);
+    
+    /// <summary>
+    /// Метод проверяет, есть ли уже активный спринт у проекта.
+    /// </summary>
+    /// <param name="projectSprintId">Id спринта в рамках проекта.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Id спринта проекта следующего за активным.</returns>
+    Task<long?> GetNextSprintAsync(long projectSprintId, long projectId);
 }

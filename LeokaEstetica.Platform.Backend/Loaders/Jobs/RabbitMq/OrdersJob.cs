@@ -82,7 +82,7 @@ internal sealed class OrdersJob : IJob
             UserName = configuration["RabbitMq:UserName"],
             DispatchConsumersAsync = true,
             Port = AmqpTcpEndpoint.UseDefaultPort,
-            VirtualHost = "/",
+            VirtualHost = configuration["RabbitMq:VirtualHost"],
             ContinuationTimeout = new TimeSpan(0, 0, 10, 0)
         };
         

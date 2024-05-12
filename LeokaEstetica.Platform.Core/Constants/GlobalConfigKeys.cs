@@ -120,6 +120,11 @@ public static class GlobalConfigKeys
         /// Ключ вкл/откл режим работы джобы возвратов.
         /// </summary>
         public const string REFUNDS_JOB_MODE_ENABLED = "Refunds.Job.Mode.Enabled";
+
+        /// <summary>
+        /// Ключ вкл/выкл контроля длительности спринтов проекта.
+        /// </summary>
+        public const string PROJECT_SPRINT_DURATION_JOB_MODE_ENABLED = "ProjectSprintDuration.Mode.Enabled";
     }
 
     /// <summary>

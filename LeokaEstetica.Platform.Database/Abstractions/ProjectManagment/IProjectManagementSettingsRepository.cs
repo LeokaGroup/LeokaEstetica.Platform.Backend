@@ -19,9 +19,9 @@ public interface IProjectManagementSettingsRepository
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
     /// <returns>Список настроек автоматического перемещения нерешенных задач спринта.</returns>
-    Task<IEnumerable<SprintMoveNotCompletedTaskSetting>> GetProjectSprintsMoveNotCompletedTasksSettingsAsync(
+    Task<IEnumerable<SprintMoveNotCompletedTaskSetting>?> GetProjectSprintsMoveNotCompletedTasksSettingsAsync(
         long projectId);
-    
+
     /// <summary>
     /// Метод обновляет настройки длительности спринтов проекта.
     /// </summary>

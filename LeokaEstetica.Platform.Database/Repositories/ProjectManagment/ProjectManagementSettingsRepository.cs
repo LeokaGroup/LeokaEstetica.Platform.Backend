@@ -39,7 +39,7 @@ internal sealed class ProjectManagementSettingsRepository : BaseRepository, IPro
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<SprintMoveNotCompletedTaskSetting>>
+    public async Task<IEnumerable<SprintMoveNotCompletedTaskSetting>?>
         GetProjectSprintsMoveNotCompletedTasksSettingsAsync(long projectId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
