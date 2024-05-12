@@ -7,6 +7,7 @@ using LeokaEstetica.Platform.Integrations.Abstractions.Discord;
 using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
 using LeokaEstetica.Platform.Models.Dto.Output.Document;
 using LeokaEstetica.Platform.Models.Dto.Output.Project;
+using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagement.Output;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.Template;
 using LeokaEstetica.Platform.Models.Enums;
@@ -1869,5 +1870,23 @@ public class ProjectManagmentController : BaseController
 
         await _projectManagmentService.InsertOrUpdateTaskSprintAsync(updateTaskSprintInput.SprintId,
             updateTaskSprintInput.ProjectTaskId);
+    }
+
+    /// <summary>
+    /// Метод получает все раб.пространства, в которых есть текущий пользователь.
+    /// </summary>
+    /// <returns>Список раб.пространств.</returns>
+    [HttpGet]
+    [Route("workspaces")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<WorkSpaceOutput>))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<IEnumerable<WorkSpaceOutput>> GetWorkSpacesAsync()
+    {
+        var result = await _projectManagmentService.GetWorkSpacesAsync(GetUserName());
+
+        return result;
     }
 }
