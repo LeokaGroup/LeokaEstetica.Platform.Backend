@@ -137,4 +137,40 @@ internal sealed class ProjectManagementSettingsRepository : BaseRepository, IPro
 
         return result;
     }
+
+    /// <inheritdoc/>
+    public async Task ConfigureProjectScrumSettingsAsync(long projectId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+        
+        // Заводим настройки длительности спринтов проекта.
+        var parametersSprintDuration = new DynamicParameters();
+        parametersSprintDuration.Add("@name", "2 недели");
+        parametersSprintDuration.Add("@sysName", "TwoWeek");
+        parametersSprintDuration.Add("@tooltip", "(длительность по умолчанию)");
+        parametersSprintDuration.Add("@selected", true);
+        parametersSprintDuration.Add("@disabled", false);
+        parametersSprintDuration.Add("@projectId", projectId);
+
+        var querySprintDuration = "INSERT INTO settings.sprint_duration_settings (name, sys_name, tooltip, selected," +
+                                  " disabled, project_id) " +
+                                  "VALUES (@name, @sysName, @tooltip, @selected, @disabled, @projectId)";
+        
+        await connection.ExecuteAsync(querySprintDuration, parametersSprintDuration);
+        
+        // Заводим настройки перемещения нерешенных задач спринтов проекта.
+        var parametersSprintNotCompletedTasks = new DynamicParameters();
+        parametersSprintNotCompletedTasks.Add("@name", "Бэклог проекта");
+        parametersSprintNotCompletedTasks.Add("@sysName", "Backlog");
+        parametersSprintNotCompletedTasks.Add("@tooltip", "(выбрано по умолчанию)");
+        parametersSprintNotCompletedTasks.Add("@selected", true);
+        parametersSprintNotCompletedTasks.Add("@disabled", false);
+        parametersSprintNotCompletedTasks.Add("@projectId", projectId);
+
+        var querySprinsNotCompletedTasks = "INSERT INTO settings.move_not_completed_tasks_settings (name, sys_name," +
+                                           " tooltip, selected, disabled, project_id) " +
+                                           "VALUES (@name, @sysName, @tooltip, @selected, @disabled, @projectId)";
+
+        await connection.ExecuteAsync(querySprinsNotCompletedTasks, parametersSprintNotCompletedTasks);
+    }
 }
