@@ -2,7 +2,6 @@ using AutoMapper;
 using FluentValidation.Results;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.Base.Enums;
-using LeokaEstetica.Platform.Base.Extensions.HtmlExtensions;
 using LeokaEstetica.Platform.CallCenter.Abstractions.Messaging.Mail;
 using LeokaEstetica.Platform.CallCenter.Abstractions.Project;
 using LeokaEstetica.Platform.CallCenter.Builders;

@@ -1,60 +1,61 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LeokaEstetica.Platform.Backend", "LeokaEstetica.Platform.Backend\LeokaEstetica.Platform.Backend.csproj", "{585B7062-D95A-4635-A7AE-FF6639B9AEC2}"
+# Visual Studio Version 17
+VisualStudioVersion = 17.8.34511.84
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LeokaEstetica.Platform.Backend", "LeokaEstetica.Platform.Backend\LeokaEstetica.Platform.Backend.csproj", "{585B7062-D95A-4635-A7AE-FF6639B9AEC2}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Platform", "Platform", "{0FF89A95-839B-4178-9376-7B136864B810}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Infrastructure", "Infrastructure", "{4A8BBD25-977E-42E4-9B6C-0C2DAB374BE7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LeokaEstetica.Platform.Core", "LeokaEstetica.Platform.Core\LeokaEstetica.Platform.Core.csproj", "{3C760B6B-74D2-4573-B640-3231008FA622}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LeokaEstetica.Platform.Core", "LeokaEstetica.Platform.Core\LeokaEstetica.Platform.Core.csproj", "{3C760B6B-74D2-4573-B640-3231008FA622}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LeokaEstetica.Platform.Models", "LeokaEstetica.Platform.Models\LeokaEstetica.Platform.Models.csproj", "{EB9DADE2-E61F-4F5F-A0BB-40ED4C4CF52F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LeokaEstetica.Platform.Models", "LeokaEstetica.Platform.Models\LeokaEstetica.Platform.Models.csproj", "{EB9DADE2-E61F-4F5F-A0BB-40ED4C4CF52F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LeokaEstetica.Platform.Controllers", "LeokaEstetica.Platform.Controllers\LeokaEstetica.Platform.Controllers.csproj", "{4ABF6439-7BD0-4E33-B81A-DDE4DAFBEDDC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LeokaEstetica.Platform.Controllers", "LeokaEstetica.Platform.Controllers\LeokaEstetica.Platform.Controllers.csproj", "{4ABF6439-7BD0-4E33-B81A-DDE4DAFBEDDC}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Domain", "Domain", "{E031311D-C027-42FE-92C0-ECF47FD73A16}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Database", "Database", "{A5562D6C-E507-42BF-BD25-139B227BCD8A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LeokaEstetica.Platform.Tests", "LeokaEstetica.Platform.Tests\LeokaEstetica.Platform.Tests.csproj", "{E9FE64DE-E8D5-4C14-8152-E9BED18BF824}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LeokaEstetica.Platform.Tests", "LeokaEstetica.Platform.Tests\LeokaEstetica.Platform.Tests.csproj", "{E9FE64DE-E8D5-4C14-8152-E9BED18BF824}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LeokaEstetica.Platform.Database", "LeokaEstetica.Platform.Database\LeokaEstetica.Platform.Database.csproj", "{075DDFC6-1C7E-4C1B-91CF-1DAFCC661A42}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LeokaEstetica.Platform.Database", "LeokaEstetica.Platform.Database\LeokaEstetica.Platform.Database.csproj", "{075DDFC6-1C7E-4C1B-91CF-1DAFCC661A42}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LeokaEstetica.Platform.Services", "LeokaEstetica.Platform.Services\LeokaEstetica.Platform.Services.csproj", "{7F8B547F-6A90-45C0-9800-5AD0B1FAFCF1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LeokaEstetica.Platform.Services", "LeokaEstetica.Platform.Services\LeokaEstetica.Platform.Services.csproj", "{7F8B547F-6A90-45C0-9800-5AD0B1FAFCF1}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{18BE9243-057B-4E3F-89C1-5BB224979B13}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LeokaEstetica.Platform.Base", "LeokaEstetica.Platform.Base\LeokaEstetica.Platform.Base.csproj", "{32A84CA5-C0FC-47E3-AB1B-C5AF10413EFE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LeokaEstetica.Platform.Base", "LeokaEstetica.Platform.Base\LeokaEstetica.Platform.Base.csproj", "{32A84CA5-C0FC-47E3-AB1B-C5AF10413EFE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LeokaEstetica.Platform.Access", "LeokaEstetica.Platform.Access\LeokaEstetica.Platform.Access.csproj", "{3AE3279F-161A-4690-90BD-B816E275BC27}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LeokaEstetica.Platform.Access", "LeokaEstetica.Platform.Access\LeokaEstetica.Platform.Access.csproj", "{3AE3279F-161A-4690-90BD-B816E275BC27}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LeokaEstetica.Platform.Messaging", "LeokaEstetica.Platform.Messaging\LeokaEstetica.Platform.Messaging.csproj", "{4BA13624-C877-4A6B-95E9-0106D79A1FE5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LeokaEstetica.Platform.Messaging", "LeokaEstetica.Platform.Messaging\LeokaEstetica.Platform.Messaging.csproj", "{4BA13624-C877-4A6B-95E9-0106D79A1FE5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LeokaEstetica.Platform.Notifications", "LeokaEstetica.Platform.Notifications\LeokaEstetica.Platform.Notifications.csproj", "{AC940340-13CF-49D9-B8E4-BDA8D2C33E38}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LeokaEstetica.Platform.Notifications", "LeokaEstetica.Platform.Notifications\LeokaEstetica.Platform.Notifications.csproj", "{AC940340-13CF-49D9-B8E4-BDA8D2C33E38}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LeokaEstetica.Platform.Redis", "LeokaEstetica.Platform.Redis\LeokaEstetica.Platform.Redis.csproj", "{3A019A5C-2688-4D2F-BCB2-FC23326B5026}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LeokaEstetica.Platform.Redis", "LeokaEstetica.Platform.Redis\LeokaEstetica.Platform.Redis.csproj", "{3A019A5C-2688-4D2F-BCB2-FC23326B5026}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CallCenter", "CallCenter", "{F3870F02-8BFA-4F9D-8CE2-520E5371B44C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LeokaEstetica.Platform.CallCenter", "LeokaEstetica.Platform.CallCenter\LeokaEstetica.Platform.CallCenter.csproj", "{F7F0A173-7414-467C-AE03-2C818071BC05}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LeokaEstetica.Platform.CallCenter", "LeokaEstetica.Platform.CallCenter\LeokaEstetica.Platform.CallCenter.csproj", "{F7F0A173-7414-467C-AE03-2C818071BC05}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LeokaEstetica.Platform.Finder", "LeokaEstetica.Platform.Finder\LeokaEstetica.Platform.Finder.csproj", "{A1721B16-3838-4DAF-B9B6-0A8758025202}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LeokaEstetica.Platform.Finder", "LeokaEstetica.Platform.Finder\LeokaEstetica.Platform.Finder.csproj", "{A1721B16-3838-4DAF-B9B6-0A8758025202}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Commerce", "Commerce", "{F15A1314-6F7A-49FE-939A-B2B7C538A599}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LeokaEstetica.Platform.Processing", "LeokaEstetica.Platform.Processing\LeokaEstetica.Platform.Processing.csproj", "{09F89426-9999-4D57-A3C8-922698CB81E6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LeokaEstetica.Platform.Processing", "LeokaEstetica.Platform.Processing\LeokaEstetica.Platform.Processing.csproj", "{09F89426-9999-4D57-A3C8-922698CB81E6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LeokaEstetica.Platform.Diagnostics", "LeokaEstetica.Platform.Diagnostics\LeokaEstetica.Platform.Diagnostics.csproj", "{D4341A72-F128-45B7-B32C-0E7BA9C72362}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LeokaEstetica.Platform.Diagnostics", "LeokaEstetica.Platform.Diagnostics\LeokaEstetica.Platform.Diagnostics.csproj", "{D4341A72-F128-45B7-B32C-0E7BA9C72362}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LeokaEstetica.Platform.Integrations", "LeokaEstetica.Platform.Integrations\LeokaEstetica.Platform.Integrations.csproj", "{2B2A181F-BC56-4313-AFD1-A4617845B6BB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LeokaEstetica.Platform.Integrations", "LeokaEstetica.Platform.Integrations\LeokaEstetica.Platform.Integrations.csproj", "{2B2A181F-BC56-4313-AFD1-A4617845B6BB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LeokaEstetica.Platform.Database.Upgrade", "LeokaEstetica.Platform.Database.Upgrade\LeokaEstetica.Platform.Database.Upgrade.csproj", "{D54C9826-E94C-41D6-8B7B-90844FF3AC92}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LeokaEstetica.Platform.Database.Upgrade", "LeokaEstetica.Platform.Database.Upgrade\LeokaEstetica.Platform.Database.Upgrade.csproj", "{D54C9826-E94C-41D6-8B7B-90844FF3AC92}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ProjectManagement", "ProjectManagement", "{4026D274-26B5-48D1-827C-FAFFE8E92E7D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LeokaEstetica.Platform.ProjectManagement.Documents", "LeokaEstetica.Platform.ProjectManagement.Documents\LeokaEstetica.Platform.ProjectManagement.Documents.csproj", "{60F40B54-E16D-4CC4-B0A2-1B8B6F58375C}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LeokaEstetica.Platform.ProjectManagement", "LeokaEstetica.Platform.ProjectManagement\LeokaEstetica.Platform.ProjectManagement.csproj", "{CDFD4EA2-AAC4-44CC-8701-EDA7F1C99096}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -138,10 +139,9 @@ Global
 		{60F40B54-E16D-4CC4-B0A2-1B8B6F58375C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{60F40B54-E16D-4CC4-B0A2-1B8B6F58375C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{60F40B54-E16D-4CC4-B0A2-1B8B6F58375C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{CDFD4EA2-AAC4-44CC-8701-EDA7F1C99096}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{CDFD4EA2-AAC4-44CC-8701-EDA7F1C99096}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{CDFD4EA2-AAC4-44CC-8701-EDA7F1C99096}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{CDFD4EA2-AAC4-44CC-8701-EDA7F1C99096}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{585B7062-D95A-4635-A7AE-FF6639B9AEC2} = {0FF89A95-839B-4178-9376-7B136864B810}
@@ -162,7 +162,5 @@ Global
 		{D4341A72-F128-45B7-B32C-0E7BA9C72362} = {4A8BBD25-977E-42E4-9B6C-0C2DAB374BE7}
 		{2B2A181F-BC56-4313-AFD1-A4617845B6BB} = {4A8BBD25-977E-42E4-9B6C-0C2DAB374BE7}
 		{D54C9826-E94C-41D6-8B7B-90844FF3AC92} = {A5562D6C-E507-42BF-BD25-139B227BCD8A}
-		{60F40B54-E16D-4CC4-B0A2-1B8B6F58375C} = {4026D274-26B5-48D1-827C-FAFFE8E92E7D}
-		{CDFD4EA2-AAC4-44CC-8701-EDA7F1C99096} = {4026D274-26B5-48D1-827C-FAFFE8E92E7D}
 	EndGlobalSection
 EndGlobal
