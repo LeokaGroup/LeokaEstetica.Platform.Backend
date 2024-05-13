@@ -2353,7 +2353,11 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
                     "FROM \"Projects\".\"UserProjects\" AS up " +
                     "INNER JOIN project_management.workspaces AS pw " +
                     "ON up.\"ProjectId\" = pw.project_id " +
-                    "WHERE up.\"UserId\" = @userId";
+                    "INNER JOIN \"Teams\".\"ProjectsTeams\" AS pt " +
+                    "ON up.\"ProjectId\" = pt.\"ProjectId\" " +
+                    "INNER JOIN \"Teams\".\"ProjectsTeamsMembers\" AS ptm " +
+                    "ON pt.\"TeamId\" = ptm.\"TeamId\" " +
+                    "WHERE ptm.\"UserId\" = @userId";
 
         var result = await connection.QueryAsync<WorkSpaceOutput>(query, parameters);
 
