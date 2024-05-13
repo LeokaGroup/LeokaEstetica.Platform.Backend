@@ -1,5 +1,6 @@
 ﻿using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
+using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagement.Output;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.Template;
 using LeokaEstetica.Platform.Models.Entities.Document;
@@ -479,4 +480,11 @@ public interface IProjectManagmentService
     /// <param name="sprintId">Id спринта.</param>
     /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
     Task InsertOrUpdateTaskSprintAsync(long sprintId, string projectTaskId);
+
+    /// <summary>
+    /// Метод получает все раб.пространства, в которых есть текущий пользователь.
+    /// </summary>
+    /// <param name="account">Аккаунт.</param>
+    /// <returns>Список раб.пространств.</returns>
+    Task<IEnumerable<WorkSpaceOutput>> GetWorkSpacesAsync(string account);
 }

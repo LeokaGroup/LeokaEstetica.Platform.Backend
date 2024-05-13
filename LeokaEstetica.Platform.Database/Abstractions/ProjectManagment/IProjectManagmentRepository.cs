@@ -1,4 +1,5 @@
 ﻿using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
+using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagement.Output;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.Search.ProjectManagement;
 using LeokaEstetica.Platform.Models.Dto.Output.Template;
@@ -643,4 +644,11 @@ public interface IProjectManagmentRepository
     /// <param name="userId">Id пользователя.</param>
     /// <returns>Стратегия представления.</returns>
     Task<string?> GetProjectUserStrategyAsync(long projectId, long userId);
+    
+    /// <summary>
+    /// Метод получает все раб.пространства, в которых есть текущий пользователь.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Список раб.пространств.</returns>
+    Task<IEnumerable<WorkSpaceOutput>> GetWorkSpacesAsync(long userId);
 }

@@ -17,6 +17,7 @@ using LeokaEstetica.Platform.Database.Abstractions.Template;
 using LeokaEstetica.Platform.Integrations.Abstractions.Discord;
 using LeokaEstetica.Platform.Integrations.Abstractions.Reverso;
 using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
+using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagement.Output;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.Template;
 using LeokaEstetica.Platform.Models.Entities.Document;
@@ -2804,6 +2805,31 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             projectTaskId.GetProjectTaskIdFromPrefixLink());
             
         // TODO: Тут добавить запись активности пользователя по userId (кто обновил спринт задачи).
+    }
+
+    /// <inheritdoc />
+    public async Task<IEnumerable<WorkSpaceOutput>> GetWorkSpacesAsync(string account)
+    {
+        try
+        {
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+            
+            var result = await _projectManagmentRepository.GetWorkSpacesAsync(userId);
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, ex.Message);
+            throw;
+        }
     }
 
     #endregion
