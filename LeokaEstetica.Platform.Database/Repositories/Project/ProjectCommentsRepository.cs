@@ -124,8 +124,8 @@ internal sealed class ProjectCommentsRepository : IProjectCommentsRepository
         {
             result = result.Where(pcm => !new[]
                 {
-                    (long)ProjectModerationStatusEnum.ModerationProject, // На модерации.
-                    (long)ProjectModerationStatusEnum.RejectedProject // Отклонен.
+                    (long)ProjectCommentModerationEnum.ModerationComment, // На модерации.
+                    (long)ProjectCommentModerationEnum.RejectedComment // Отклонен.
                 }
                 .Contains(pcm.ModerationStatusId));
         }
