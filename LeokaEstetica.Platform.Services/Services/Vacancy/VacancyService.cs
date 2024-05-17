@@ -201,6 +201,19 @@ internal sealed class VacancyService : IVacancyService
             var account = vacancyInput.Account;
             var userId = await _userRepository.GetUserByEmailAsync(account);
 
+            var isProjectOwner = await _projectRepository.CheckProjectOwnerAsync(vacancyInput.ProjectId, userId);
+
+			if (!isProjectOwner)
+            {
+				var ex = new Exception("Попытка создать вакансию для проекта который не принадлежит пользователю. " +
+									$"UserId: {userId}. " +
+									$"ProjectId: {vacancyInput.ProjectId}. ");
+
+				await _discordService.SendNotificationErrorAsync(ex);
+
+                throw ex;
+			}
+
             if (userId <= 0)
             {
                 var ex = new NotFoundUserIdByAccountException(account);
