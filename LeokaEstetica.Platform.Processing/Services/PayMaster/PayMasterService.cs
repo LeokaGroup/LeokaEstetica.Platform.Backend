@@ -279,8 +279,9 @@ internal sealed class PayMasterService : IPayMasterService
         // Отправляем возврат в очередь для отслеживания его статуса.
         var refundEvent = RefundEventFactory.CreateRefundEvent(createdRefund.RefundId, createdRefund.PaymentId,
             createdRefund.Status, createdRefund.RefundOrderId);
-        
-        var queueType = string.Empty.CreateQueueDeclareNameFactory(_configuration, QueueTypeEnum.RefundsQueue);
+
+        var queueType = string.Empty.CreateQueueDeclareNameFactory(_configuration["Environment"],
+            QueueTypeEnum.RefundsQueue);
         await _rabbitMqService.PublishAsync(refundEvent, queueType);
 
         _logger?.LogInformation("Конец создания возврата платежа.");
@@ -379,8 +380,9 @@ internal sealed class PayMasterService : IPayMasterService
         // Отправляем чек возврата в очередь для отслеживания его статуса.
         var receiptRefundEvent = ReceiptRefundEventFactory.CreateReceiptRefundEvent(refund.ReceiptId,
             refund.PaymentId, refund.Status);
-            
-        var queueType = string.Empty.CreateQueueDeclareNameFactory(_configuration, QueueTypeEnum.ReceiptRefundQueue);
+
+        var queueType = string.Empty.CreateQueueDeclareNameFactory(_configuration["Environment"],
+            QueueTypeEnum.ReceiptRefundQueue);
         await _rabbitMqService.PublishAsync(receiptRefundEvent, queueType);
 
         _logger?.LogInformation("Конец создания чека возврата платежа.");

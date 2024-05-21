@@ -27,6 +27,7 @@ internal sealed class GlobalConfigRepository : BaseRepository, IGlobalConfigRepo
     private readonly PgContext _pgContext;
     private readonly ILogger<GlobalConfigRepository> _logger;
     private readonly IConfiguration _configuration;
+    private object _locker = new();
 
     /// <summary>
     /// Конструктор.
@@ -53,9 +54,13 @@ internal sealed class GlobalConfigRepository : BaseRepository, IGlobalConfigRepo
 
         try
         {
-            config = await _pgContext.GlobalConfig
-                .Where(gc => gc.ParamKey.Equals(key))
-                .FirstOrDefaultAsync();
+            // TODO: Уберем lock, когда переведем логику на Dapper.
+            lock (_locker)
+            {
+                config = _pgContext.GlobalConfig
+                    .Where(gc => gc.ParamKey.Equals(key))
+                    .FirstOrDefault();
+            }
         }
         
         // TODO: При dispose PgContext пересоздаем датаконтекст и пробуем снова.
