@@ -653,6 +653,76 @@ internal sealed class FileManagerService : IFileManagerService
         }
     }
 
+    /// <inheritdoc />
+    public async Task<MemoryStream> DownloadNetworkModelAsync(string version, string modelName)
+    {
+        var settings = await _globalConfigRepository.Value.GetFileManagerSettingsAsync();
+        
+        using var sftpClient = new SftpClient(settings.Host, settings.Port, settings.Login, settings.Password);
+        
+        try
+        {
+            sftpClient.Connect();
+            
+            if (!sftpClient.IsConnected)
+            {
+                throw new InvalidOperationException(
+                    "Sftp клиент не подключен. Невозможно скачать модель нейросети с сервера.");
+            }
+            
+            var loadModelPath = settings.SftpNetworkModelPath + "/" + version + "." + modelName;
+            
+            _logger.LogInformation($"Скачивается файл {0} ({1:N0} байт)", modelName);
+            
+            using var stream = new MemoryStream();
+
+            sftpClient.DownloadFile(loadModelPath, stream);
+
+            _logger.LogInformation($"Файл {0} ({1:N0} байт) успешно скачан.", modelName);
+            
+            // Сбрасываем позицию на 0, иначе у файла будет размер 0 байтов,
+            // если не сбросить указатель позиции в начало.
+            stream.Seek(0, SeekOrigin.Begin);
+
+            return stream;
+        }
+        
+        catch (Exception ex) when (ex is SshConnectionException or SocketException or ProxyException)
+        {
+            _logger.LogError(ex, "Ошибка подключения к серверу по Sftp.");
+            throw;
+        }
+
+        catch (SshAuthenticationException ex)
+        {
+            _logger.LogError(ex, "Ошибка аутентификации к серверу по Sftp.");
+            throw;
+        }
+
+        catch (SftpPermissionDeniedException ex)
+        {
+            _logger.LogError(ex, "Ошибка доступа к серверу по Sftp.");
+            throw;
+        }
+
+        catch (SshException ex)
+        {
+            _logger.LogError(ex, "Ошибка Sftp.");
+            throw;
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Ошибка при загрузке файла изображения аватара пользователя на сервер.");;
+            throw;
+        }
+        
+        finally
+        {
+            sftpClient.Disconnect();
+        }
+    }
+
     /// <summary>
     /// Метод получит массив байт из потока.
     /// </summary>

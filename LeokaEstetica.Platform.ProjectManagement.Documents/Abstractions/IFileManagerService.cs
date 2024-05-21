@@ -70,4 +70,12 @@ public interface IFileManagerService
     /// <param name="version">Версия модели нейросети.</param>
     /// <param name="modelName">Название модели нейросети.</param>
     Task UploadNetworkModelAsync(ITransformer model, string version, string modelName);
+    
+    /// <summary>
+    /// Метод скачивает модель нейросети.
+    /// </summary>
+    /// <param name="version">Версия модели нейросети.</param>
+    /// <param name="modelName">Название модели нейросети.</param>
+    /// <returns>Модель нейросети.</returns>
+    Task<MemoryStream> DownloadNetworkModelAsync(string version, string modelName);
 }

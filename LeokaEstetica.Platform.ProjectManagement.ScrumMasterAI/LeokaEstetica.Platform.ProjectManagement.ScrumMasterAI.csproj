@@ -35,6 +35,7 @@
       <ProjectReference Include="..\LeokaEstetica.Platform.Database\LeokaEstetica.Platform.Database.csproj" />
       <ProjectReference Include="..\LeokaEstetica.Platform.Integrations\LeokaEstetica.Platform.Integrations.csproj" />
       <ProjectReference Include="..\LeokaEstetica.Platform.Notifications\LeokaEstetica.Platform.Notifications.csproj" />
+      <ProjectReference Include="..\LeokaEstetica.Platform.ProjectManagement.Documents\LeokaEstetica.Platform.ProjectManagement.Documents.csproj" />
     </ItemGroup>
 
 </Project>
