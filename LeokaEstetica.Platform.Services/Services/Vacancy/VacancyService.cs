@@ -1010,14 +1010,19 @@ internal sealed class VacancyService : IVacancyService
     /// <returns>Список вакансий.</returns>
     private void FormatCatalogVacancies(List<CatalogVacancyOutput> vacancies)
     {
-        foreach (var vac in vacancies)
-        {
-            // Чистим описание вакансии от html-тегов.
-            vac.VacancyText = (vac.VacancyText);
-            
-            // Форматируем цену к виду 1 000.
-            vac.Payment = vac.Payment.CreatePriceWithDelimiterFromString();
-        }
+	    foreach (var vac in vacancies)
+	    {
+		    // Чистим описание вакансии от html-тегов.
+		    vac.VacancyText = (vac.VacancyText);
+
+		    if (vac.Payment == "0")
+		    {
+			    vac.Payment = "Без оплаты";
+			    continue;
+		    }
+		    // Форматируем цену к виду 1 000.
+		    vac.Payment = vac.Payment.CreatePriceWithDelimiterFromString();
+	    }
     }
     
     /// <summary>
