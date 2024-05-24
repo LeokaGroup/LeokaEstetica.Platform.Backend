@@ -29,6 +29,26 @@ public static class CreateDialogMessagesBuilder
 
         return result.Dialogs;
     }
+    
+    /// <summary>
+    /// Метод создает результат для диалогов.
+    /// </summary>
+    /// <param name="dialogs">Список диалогов.</param>
+    /// <param name="chatRepository">Репозиторий чата.</param>
+    /// <param name="userRepository">Репозиторий пользователя.</param>
+    /// <param name="userId">Id пользователя.</param>
+    /// <param name="mapper">Маппер.</param>
+    /// <param name="account">Аккаунт текущего пользователя.</param>
+    /// <returns>Список диалогов.</returns>
+    public static async Task<List<ScrumMasterAiNetworkDialogOutput>> CreateDialogAsync(
+        List<ScrumMasterAiNetworkDialogOutput> dialogs, IChatRepository chatRepository, IUserRepository userRepository,
+        long userId, string account)
+    {
+        var result = await CreateDialogsScrumMasterAiNetworkResultAsync(dialogs, chatRepository, userRepository,
+            userId, account);
+
+        return result;
+    }
 
     /// <summary>
     /// Метод создает результат для диалогов ЛК.
@@ -184,10 +204,122 @@ public static class CreateDialogMessagesBuilder
         dialogs.Dialogs.RemoveAll(d => d.LastMessage is null);
         profileDialogs.RemoveAll(d => d.LastMessage is null);
         
-        // даляем диалог с самим собой.
+        // Удаляем диалог с самим собой.
         dialogs.Dialogs.RemoveAll(d => d.FullName.Equals(account));
         profileDialogs.RemoveAll(d => d.FullName.Equals(account));
 
         return (dialogs.Dialogs, profileDialogs);
+    }
+    
+     /// <summary>
+    /// Метод создает результат для разных моделей диалогов нейросети Scrum Master AI.
+    /// </summary>
+    /// <param name="dialogs">Кортеж со списком диалогов.</param>
+    /// <param name="chatRepository">Репозиторий чата.</param>
+    /// <param name="userRepository">Репозиторий пользователя.</param>
+    /// <param name="userId">Id пользователя.</param>
+     /// <param name="account">Аккаунт текущего пользователя.</param>
+    /// <returns>Кортеж со списком диалогов.</returns>
+     private static async Task<List<ScrumMasterAiNetworkDialogOutput>> CreateDialogsScrumMasterAiNetworkResultAsync(
+         List<ScrumMasterAiNetworkDialogOutput> dialogs, IChatRepository chatRepository, IUserRepository userRepository,
+         long userId, string account)
+    {
+        foreach (var dialog in dialogs)
+        {
+            var dialogId = dialog.DialogId;
+
+            if (dialogId <= 0)
+            {
+                throw new InvalidOperationException($"Некорректный Id диалога с нейросетью. DialogId: {dialogId}");
+            }
+            
+            // Пропускаем диалог с самим собой.
+            if (dialog.FullName is not null && dialog.FullName.Equals(account))
+            {
+                continue;
+            }
+
+            var lastMessage = await chatRepository.GetLastMessageAsync(dialogId);
+
+            // Подтягиваем последнее сообщение для каждого диалога и проставляет после 40 символов ...
+            if (!string.IsNullOrEmpty(lastMessage))
+            {
+                var lastMsg = lastMessage.Length > 40
+                    ? string.Concat(lastMessage.Substring(0, 40), "...")
+                    : lastMessage;
+                
+                dialog.LastMessage = lastMsg;
+            }
+
+            // Найдет Id участников диалога по DialogId.
+            var membersIds = await chatRepository.GetDialogMembersAsync(dialogId);
+
+            if (!membersIds.Any())
+            {
+                throw new InvalidOperationException("Не найдено участников для диалога с нейросетью. " +
+                                                    $"DialogId: {dialogId}");
+            }
+
+            // Записываем имя и фамилию участника диалога, с которым идет общение.
+            var otherUserId = membersIds.FirstOrDefault(m => !m.Equals(userId));
+            var otherData = await userRepository.GetUserByUserIdAsync(otherUserId);
+            var fullName = otherData?.FirstName + " " + otherData?.LastName;
+            
+            dialog.FullName = fullName;
+
+            // Если дата диалога совпадает с сегодняшней, то заполнит часы и минуты, иначе оставит их null.
+            if (DateTime.UtcNow.ToString("d").Equals(Convert.ToDateTime(dialog.Created).ToString("d")))
+            {
+                // Запишет только часы и минуты.
+                var calcTime = Convert.ToDateTime(dialog.Created).ToString("t");
+                
+                dialog.CalcTime = calcTime;
+            }
+
+            // Если дата диалога не совпадает с сегодняшней.
+            else
+            {
+                // Записываем только дату.
+                var calcShortDate = Convert.ToDateTime(dialog.Created).ToString("d");
+                
+                dialog.CalcShortDate = calcShortDate;
+            }
+
+            // Форматируем дату убрав секунды.
+            var created = Convert.ToDateTime(dialog.Created).ToString("g");
+            
+            dialog.Created = created;
+
+            var id = membersIds.Except(new[] { userId }).FirstOrDefault();
+            
+            // Если в участниках был дубль одного и того же пользователя, то берем просто его Id.
+            var user = await userRepository.GetUserByUserIdAsync(id > 0 ? id : userId);
+
+            // Если имя и фамилия заполнены, то берем их.
+            if (user is not null 
+                && !string.IsNullOrEmpty(user.FirstName) 
+                && !string.IsNullOrEmpty(user.LastName))
+            {
+                var fName = user.FirstName + " " + user.LastName;
+                
+                dialog.FullName = fName;
+            }
+
+            // Иначе берем почту.
+            else
+            {
+                var otherFullName = user?.Email;
+                
+                dialog.FullName = otherFullName;
+            }
+        }
+
+        // Удаляем все диалоги, где нет последнего сообщения.
+        dialogs.RemoveAll(d => d.LastMessage is null);
+
+        // Удаляем диалог с самим собой.
+        dialogs.RemoveAll(d => d.FullName.Equals(account));
+
+        return dialogs;
     }
 }

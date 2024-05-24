@@ -250,33 +250,6 @@ internal sealed class ScrumMasterAIJob : IJob
                     
                     else if (@event.ScrumMasterAiEventType == ScrumMasterAiEventTypeEnum.Message)
                     {
-                        var mlContext = new MLContext();
-
-                        var version = await _scrumMasterAiRepository.GetLastNetworkVersionAsync();
-
-                        if (string.IsNullOrWhiteSpace(version))
-                        {
-                            throw new InvalidOperationException(
-                                "Не удалось получить актуальную версию модели нейросети: scrum_master_ai_message");
-                        }
-                        
-                        var trainedModelStream = await _fileManagerService.Value.DownloadNetworkModelAsync(version,
-                                ".scrum_master_ai_message.zip");
-
-                        // Загружаем нейросети ее опыт предыдущих эпох.
-                        var дщфвЕrainedModel = mlContext.Model.Load(trainedModelStream, out var _);
-
-                        // Нейросеть проводит прогнозирование.
-                        var predEngine = mlContext.Model
-                            .CreatePredictionEngine<MessageClassification, MessageClassificationPrediction>(
-                                дщфвЕrainedModel);
-                        
-                        // Результат ответа нейросети после прогнозирования.
-                        var prediction = predEngine.Predict(new MessageClassification
-                        {
-                            Message = @event.Message
-                        });
-
                         // TODO: Добавить отображение уведомления фронту о том, что знаем и разбираемся в таком кейсе.
                         // Если токена не было - критичная ситуация, логируем такое, но не ломаем приложение.
                         if (string.IsNullOrWhiteSpace(@event.Token))
@@ -291,6 +264,33 @@ internal sealed class ScrumMasterAIJob : IJob
                             return;
                         }
                         
+                        var mlContext = new MLContext();
+
+                        var version = await _scrumMasterAiRepository.GetLastNetworkVersionAsync();
+
+                        if (string.IsNullOrWhiteSpace(version))
+                        {
+                            throw new InvalidOperationException(
+                                "Не удалось получить актуальную версию модели нейросети: scrum_master_ai_message");
+                        }
+                        
+                        var trainedModelStream = await _fileManagerService.Value.DownloadNetworkModelAsync(version,
+                                ".scrum_master_ai_message.zip");
+
+                        // Загружаем нейросети ее опыт предыдущих эпох.
+                        var loadЕrainedModel = mlContext.Model.Load(trainedModelStream, out var _);
+
+                        // Нейросеть проводит прогнозирование.
+                        var predEngine = mlContext.Model
+                            .CreatePredictionEngine<MessageClassification, MessageClassificationPrediction>(
+                                loadЕrainedModel);
+                        
+                        // Результат ответа нейросети после прогнозирования.
+                        var prediction = predEngine.Predict(new MessageClassification
+                        {
+                            Message = @event.Message
+                        });
+
                         // TODO: Добавить отображение уведомления фронту о том, что знаем и разбираемся в таком кейсе.
                         // Если нейросеть не дала ответа - критичная ситуация, логируем такое, но не ломаем приложение.
                         if (string.IsNullOrWhiteSpace(prediction.Message))

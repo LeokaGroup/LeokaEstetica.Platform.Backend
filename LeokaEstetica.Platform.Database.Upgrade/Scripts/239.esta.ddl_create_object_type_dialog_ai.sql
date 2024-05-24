@@ -1,0 +1,1 @@
+﻿CREATE TYPE object_type_dialog_ai AS ENUM ('project', 'vacancy', 'none');

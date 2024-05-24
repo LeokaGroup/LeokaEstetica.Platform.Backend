@@ -8,6 +8,7 @@ using LeokaEstetica.Platform.Integrations.Abstractions.Discord;
 using LeokaEstetica.Platform.Models.Dto.Chat.Input;
 using LeokaEstetica.Platform.Models.Dto.Chat.Output;
 using LeokaEstetica.Platform.Models.Enums;
+using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Redis.Abstractions.Connection;
 using LeokaEstetica.Platform.Redis.Models.Chat;
 using Microsoft.AspNetCore.SignalR;
@@ -23,7 +24,7 @@ namespace LeokaEstetica.Platform.Notifications.Data;
 /// Класс логики хаба для чатов.
 /// Также используется для уведомлений у основного модуля системы.
 /// </summary>
-internal sealed class ChatHub : Hub
+internal sealed class ChatHub : Hub, IHubService
 {
     private readonly IChatRepository _chatRepository;
     private readonly IMapper _mapper;
@@ -62,12 +63,7 @@ internal sealed class ChatHub : Hub
 
     #region Публичные методы
 
-    /// <summary>
-    /// Метод получает список диалогов.
-    /// <param name="account">Аккаунт.</param>
-    /// <param name="token">Токен.</param>    
-    /// <param name="projectId">Id проекта. Если не передан, то получает все диалоги пользователя.</param>
-    /// <returns>Список диалогов.</returns>
+    /// <inheritdoc />
     public async Task GetDialogsAsync(string account, string token, long? projectId = null)
     {
         try
@@ -107,13 +103,7 @@ internal sealed class ChatHub : Hub
         }
     }
 
-    /// <summary>
-    /// Метод получает диалог или создает новый и возвращает его.
-    /// </summary>
-    /// <param name="account">Аккаунт.</param>
-    /// <param name="token">Токен.</param>    
-    /// <param name="dialogInput">Входная модель.</param>
-    /// <returns>Данные диалога.</returns>
+    /// <inheritdoc />
     public async Task GetDialogAsync(string account, string token, string dialogInput)
     {
         try
@@ -149,11 +139,7 @@ internal sealed class ChatHub : Hub
         }
     }
 
-    /// <summary>
-    /// Метод отправляет сообщение.
-    /// </summary>
-    /// <param name="messageInput">Входная модель.</param>
-    /// <returns>Данные диалога с сообщениями. Обновляет диалог и сообщения диалога у всех участников диалога</returns>
+    /// <inheritdoc />
     public async Task SendMessageAsync(string message, long dialogId, string account, string token)
     {
         try
@@ -194,10 +180,7 @@ internal sealed class ChatHub : Hub
         }
     }
 
-    /// <summary>
-    /// Метод получает список диалогов для ЛК.
-    /// </summary>
-    /// <returns>Список диалогов.</returns>
+    /// <inheritdoc />
     public async Task GetProfileDialogsAsync(string account, string token)
     {
         try

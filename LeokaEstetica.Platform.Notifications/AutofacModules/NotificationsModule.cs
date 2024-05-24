@@ -2,6 +2,7 @@ using Autofac;
 using LazyProxy.Autofac;
 using LeokaEstetica.Platform.Core.Attributes;
 using LeokaEstetica.Platform.Notifications.Abstractions;
+using LeokaEstetica.Platform.Notifications.Data;
 using LeokaEstetica.Platform.Notifications.Services;
 
 namespace LeokaEstetica.Platform.Notifications.AutofacModules;
@@ -100,6 +101,20 @@ public class NotificationsModule : Module
             .InstancePerLifetimeScope();
         builder.RegisterType<SprintNotificationsService>()
             .As<ISprintNotificationsService>()
+            .InstancePerLifetimeScope();
+            
+        builder.RegisterType<ChatHub>()
+            .Named<IHubService>("ChatHub")
+            .InstancePerLifetimeScope();
+        builder.RegisterType<ChatHub>()
+            .As<IHubService>()
+            .InstancePerLifetimeScope();
+            
+        builder.RegisterType<ProjectManagementHub>()
+            .Named<IHubService>("ProjectManagementHub")
+            .InstancePerLifetimeScope();
+        builder.RegisterType<ProjectManagementHub>()
+            .As<IHubService>()
             .InstancePerLifetimeScope();
     }
 }

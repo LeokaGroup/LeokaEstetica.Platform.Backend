@@ -82,6 +82,14 @@ public interface IChatRepository
     /// <param name="projectId">Id проекта. Если не передан, то получает все диалоги пользователя.</param>
     /// <returns>Список диалогов.</returns>
     Task<List<DialogOutput>> GetDialogsAsync(long userId, long? projectId = null);
+    
+    /// <summary>
+    /// Метод получит все диалоги.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <param name="objectId">Id проекта или вакансии. Может не указываться.</param>
+    /// <returns>Список диалогов.</returns>
+    Task<List<ScrumMasterAiNetworkDialogOutput>> GetDialogsScrumMasterAiAsync(long userId, long? objectId);
 
     /// <summary>
     /// Метод находит последнее сообщение диалога.

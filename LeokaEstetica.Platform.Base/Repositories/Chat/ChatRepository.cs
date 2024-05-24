@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Runtime.CompilerServices;
+using System.Text;
 using Dapper;
 using LeokaEstetica.Platform.Base.Abstractions.Connection;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.Base;
@@ -288,6 +289,62 @@ internal sealed class ChatRepository : BaseRepository, IChatRepository
         //
         //     result = (await connection.QueryAsync<DialogOutput>(query)).AsList();
         // }
+
+        return result;
+    }
+
+    /// <inheritdoc/>
+    public async Task<List<ScrumMasterAiNetworkDialogOutput>> GetDialogsScrumMasterAiAsync(long userId, long? objectId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var builderObjectCondition = new StringBuilder();
+
+        if (objectId.HasValue)
+        {
+            builderObjectCondition.Append(@"WHERE mid.object_id = {objectId} ");
+        }
+
+        else
+        {
+            builderObjectCondition.Append("WHERE mid.object_id IS NULL ");
+        }
+
+         // Тут используем Limit 1, так как иначе были дубли из-за участников. Нам только диалоги нужны.
+            var query = "DO " +
+                        "$$ " +
+                        "DECLARE " +
+                        "_cnt_dialog_messages BIGINT; " +
+                        "BEGIN " +
+                        "_cnt_dialog_messages = (SELECT COUNT(m.message_id) " +
+                        "FROM ai.scrum_master_ai_main_info_dialogs AS d " +
+                        "INNER JOIN ai.scrum_master_ai_dialog_members AS dm ON d.dialog_id = dm.dialog_id " +
+                        "INNER JOIN ai.scrum_master_ai_dialog_messages AS m ON dm.dialog_id = m.dialog_id " +
+                        $"WHERE dm.user_id = ANY (ARRAY [{userId}, -1])); " +
+                        "DROP TABLE IF EXISTS temp_dialogs; " +
+                        "CREATE TEMP TABLE temp_dialogs " +
+                        "( " +
+                        "dialog_id   BIGINT                   NOT NULL, " +
+                        "dialog_name VARCHAR(150)             NOT NULL, " +
+                        "user_id     BIGINT                   NOT NULL, " +
+                        "created     TIMESTAMP WITH TIME ZONE NOT NULL, " +
+                        "object_id   BIGINT                   NOT NULL, " +
+                        "object_type OBJECT_TYPE_DIALOG_AI    NOT NULL " +
+                        "); " +
+                        "INSERT INTO temp_dialogs " +
+                        "SELECT DISTINCT(mid.dialog_id), mid.dialog_name, dm.user_id, mid.created, mid.object_id, " +
+                        "mid.object_type " +
+                        "FROM ai.scrum_master_ai_main_info_dialogs AS mid " +
+                        "INNER JOIN ai.scrum_master_ai_dialog_members AS dm ON mid.dialog_id = dm.dialog_id " +
+                        builderObjectCondition +
+                        $"AND dm.user_id = ANY (ARRAY [{userId}, -1]) " +
+                        "AND _cnt_dialog_messages > 0 " +
+                        "LIMIT 1; " +
+                        "END " +
+                        "$$; " +
+                        "SELECT * FROM temp_dialogs;";
+
+            var result = (await connection.QueryAsync<ScrumMasterAiNetworkDialogOutput>(query)).AsList();
 
         return result;
     }
