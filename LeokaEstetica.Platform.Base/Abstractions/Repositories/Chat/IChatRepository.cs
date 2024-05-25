@@ -28,8 +28,9 @@ public interface IChatRepository
     /// </summary>
     /// <param name="dialogName">Название диалога.</param>
     /// <param name="dateCreated">Дата создания диалога.</param>
+    /// <param name="isScrumMasterAi">Признак создания диалога для нейросети.</param>
     /// <returns>Id добавленного диалога.</returns>
-    Task<long> CreateDialogAsync(string dialogName, DateTime dateCreated);
+    Task<long> CreateDialogAsync(string dialogName, DateTime dateCreated, bool isScrumMasterAi);
 
     /// <summary>
     /// Метод добавит текущего пользователя и представителя/владельца к диалогу.

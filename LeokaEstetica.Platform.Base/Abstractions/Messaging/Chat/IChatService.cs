@@ -9,15 +9,18 @@ namespace LeokaEstetica.Platform.Base.Abstractions.Messaging.Chat;
 public interface IChatService
 {
     /// <summary>
+    /// TODO: Возможно разделим на часть с нейросетями и часть обычных чатов.
     /// Метод получает диалог или создает новый и возвращает его.
+    /// Метод используется и в обычных чатах и в чатах с нейросетями.
     /// </summary>
     /// <param name="dialogId">Id диалога.</param>
     /// <param name="discussionType">Тип объекта обсуждения.</param>
     /// <param name="account">Аккаунт.</param>
     /// <param name="discussionTypeId">Id предмета обсуждения (Id проекта или вакансии).</param>
+    /// <param name="isManualNewDialog">Признак ручного создания диалога (по кнопке и тд).</param>
     /// <returns>Данные диалога.</returns>
     Task<DialogResultOutput> GetDialogAsync(long? dialogId, DiscussionTypeEnum discussionType, string account,
-        long discussionTypeId);
+        long discussionTypeId, bool isManualNewDialog);
 
     /// <summary>
     /// Метод создает диалог для написания владельцу проекта.

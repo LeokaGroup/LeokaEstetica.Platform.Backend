@@ -8,7 +8,9 @@ using LeokaEstetica.Platform.Base.Abstractions.Repositories.Chat;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Models.Dto.Chat.Output;
 using LeokaEstetica.Platform.Models.Entities.Communication;
+using LeokaEstetica.Platform.Models.Enums;
 using Microsoft.EntityFrameworkCore;
+using Enum = LeokaEstetica.Platform.Models.Enums.Enum;
 
 [assembly: InternalsVisibleTo("LeokaEstetica.Platform.Tests")]
 
@@ -69,23 +71,41 @@ internal sealed class ChatRepository : BaseRepository, IChatRepository
         return result;
     }
 
-    /// <summary>
-    /// Метод создаст новый диалог.
-    /// </summary>
-    /// <param name="dialogName">Название диалога.</param>
-    /// <param name="dateCreated">Дата создания диалога.</param>
-    /// <returns>Id добавленного диалога.</returns>
-    public async Task<long> CreateDialogAsync(string dialogName, DateTime dateCreated)
+    /// <inheritdoc />
+    public async Task<long> CreateDialogAsync(string dialogName, DateTime dateCreated, bool isScrumMasterAi)
     {
-        var dialog = new MainInfoDialogEntity
+        long dialogId = 0;
+        
+        if (!isScrumMasterAi)
         {
-            DialogName = dialogName,
-            Created = dateCreated
-        };
-        await _pgContext.Dialogs.AddAsync(dialog);
-        await _pgContext.SaveChangesAsync();
+            // TODO: Переписать на Dapper.
+            var dialog = new MainInfoDialogEntity
+            {
+                DialogName = dialogName,
+                Created = dateCreated
+            };
+            await _pgContext.Dialogs.AddAsync(dialog);
+            await _pgContext.SaveChangesAsync();
 
-        return dialog.DialogId;
+            dialogId = dialog.DialogId;
+        }
+
+        if (isScrumMasterAi)
+        {
+            using var connection = await ConnectionProvider.GetConnectionAsync();
+            
+            var parameters = new DynamicParameters();
+            parameters.Add("@dialogName", dialogName);
+            parameters.Add("@created", dateCreated);
+            parameters.Add("@objectType", new Enum(DiscussionTypeEnum.ObjectTypeDialogAi));
+
+            var query = "INSERT INTO ai.scrum_master_ai_main_info_dialogs (dialog_name, created, object_type) " +
+                        "VALUES (@dialogName, @created, @objectType)";
+
+            dialogId = await connection.ExecuteScalarAsync<long>(query, parameters);
+        }
+
+        return dialogId;
     }
 
     /// <summary>

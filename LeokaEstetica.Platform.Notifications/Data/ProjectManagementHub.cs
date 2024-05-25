@@ -1,16 +1,21 @@
 using System.Runtime.CompilerServices;
 using AutoMapper;
+using Dapper;
 using LeokaEstetica.Platform.Base.Abstractions.Messaging.Chat;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.Chat;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.Base.Builders;
 using LeokaEstetica.Platform.Integrations.Abstractions.Discord;
+using LeokaEstetica.Platform.Models.Dto.Chat.Input;
 using LeokaEstetica.Platform.Models.Dto.Chat.Output;
 using LeokaEstetica.Platform.Models.Enums;
 using LeokaEstetica.Platform.Notifications.Abstractions;
+using LeokaEstetica.Platform.Redis.Abstractions.Client;
 using LeokaEstetica.Platform.Redis.Abstractions.Connection;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using Enum = System.Enum;
 
 [assembly: InternalsVisibleTo("LeokaEstetica.Platform.ProjectManagement")]
 
@@ -26,8 +31,9 @@ internal sealed class ProjectManagementHub : Hub, IHubService
     private readonly IUserRepository _userRepository;
     private readonly ILogger<ProjectManagementHub> _logger;
     private readonly IConnectionService _connectionService;
-    private readonly IChatService _chatService;
     private readonly IDiscordService _discordService;
+    private readonly IChatService _chatService;
+    private readonly IClientConnectionService _clientConnectionService;
     
     /// <summary>
     /// Конструктор.
@@ -37,23 +43,26 @@ internal sealed class ProjectManagementHub : Hub, IHubService
     /// <param name="userRepository">Репозиторий пользователей.</param>
     /// <param name="logger">Логгер.</param>
     /// <param name="connectionService">Сервис подключений Redis.</param>
-    /// <param name="chatService">Сервис чата.</param>
     /// <param name="discordService">Сервис уведомлений дискорда.</param>
+    /// <param name="chatService">Сервис чатов.</param>
+    /// <param name="clientConnectionService">Сервис подключений клиентов кэша.</param>
     public ProjectManagementHub(IChatRepository chatRepository,
         IMapper mapper,
         IUserRepository userRepository,
         ILogger<ProjectManagementHub> logger,
         IConnectionService connectionService,
+        IDiscordService discordService,
         IChatService chatService,
-        IDiscordService discordService)
+        IClientConnectionService clientConnectionService)
     {
         _chatRepository = chatRepository;
         _mapper = mapper;
         _userRepository = userRepository;
         _logger = logger;
         _connectionService = connectionService;
-        _chatService = chatService;
         _discordService = discordService;
+        _chatService = chatService;
+        _clientConnectionService = clientConnectionService;
     }
     
     /// <inheritdoc />
@@ -83,12 +92,13 @@ internal sealed class ProjectManagementHub : Hub, IHubService
             
             await Clients
                 .Client(connectionId)
-                .SendAsync("listenGetDialogs", result);
+                .SendAsync("listenGetDialogs", result)
+                .ConfigureAwait(false);
         }
 
         catch (Exception ex)
         {
-            await _discordService.SendNotificationErrorAsync(ex);
+            await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
             
             _logger.LogError(ex, ex.Message);
             throw;
@@ -96,9 +106,44 @@ internal sealed class ProjectManagementHub : Hub, IHubService
     }
 
     /// <inheritdoc />
-    public Task GetDialogAsync(string account, string token, string dialogInput)
+    public async Task GetDialogAsync(string account, string token, string dialogInput)
     {
-        throw new NotImplementedException();
+        try
+        {
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId == 0)
+            {
+                throw new InvalidOperationException($"Id пользователя с аккаунтом {account} не найден.");
+            }
+
+            var json = JsonConvert.DeserializeObject<DialogInput>(dialogInput);
+
+            if (json is null)
+            {
+                throw new InvalidOperationException("Не удалось распарсить входную модель диалога.");
+            }
+
+            var result = await _chatService.GetDialogAsync(json.DialogId,
+                Enum.Parse<DiscussionTypeEnum>(json!.DiscussionType), account, json.DiscussionTypeId,
+                json.isManualNewDialog);
+            result.ActionType = DialogActionType.Concrete.ToString();
+
+            var clients = await _clientConnectionService.CreateClientsResultAsync(json.DialogId, userId, token);
+
+            await Clients
+                .Clients(clients.AsList())
+                .SendAsync("listenGetDialog", result)
+                .ConfigureAwait(false);
+        }
+
+        catch (Exception ex)
+        {
+            await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
+            
+            _logger.LogError(ex, ex.Message);
+            throw;
+        }
     }
 
     /// <inheritdoc />

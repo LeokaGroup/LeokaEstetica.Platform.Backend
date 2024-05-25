@@ -21,11 +21,7 @@ internal sealed class ConnectionService : IConnectionService
         _redisCache = redisCache;
     }
     
-    /// <summary>
-    /// Метод сохраняет ConnectionId подключения SignalR в кэш.
-    /// </summary>
-    /// <param name="connectionId">Id подключения, который создает SignalR.</param>
-    /// <param name="token">Токен пользователя.</param>
+    /// <inheritdoc/>
     public async Task AddConnectionIdCacheAsync(string connectionId, string token)
     {
         await _redisCache.SetStringAsync(token, ProtoBufExtensions.Serialize(connectionId),
@@ -35,11 +31,7 @@ internal sealed class ConnectionService : IConnectionService
             });
     }
 
-    /// <summary>
-    /// Метод получает ConnectionId подключения для SignalR.
-    /// </summary>
-    /// <param name="key">Ключ поиска.</param>
-    /// <returns>ConnectionId.</returns>
+    /// <inheritdoc/>
     public async Task<string> GetConnectionIdCacheAsync(string key)
     {
         var connectionId = await _redisCache.GetStringAsync(key);
@@ -67,11 +59,7 @@ internal sealed class ConnectionService : IConnectionService
         return connectionId;
     }
 
-    /// <summary>
-    /// Метод сохраняет список ConnectionId подключений SignalR в кэш.
-    /// </summary>
-    /// <param name="dialogId">Id диалога.</param>
-    /// <param name="dialogRedis">Данные SignalR для хранения в кэше.</param>
+    /// <inheritdoc/>
     public async Task AddDialogMembersConnectionIdsCacheAsync(long dialogId, List<DialogRedis> dialogRedis)
     {
         await _redisCache.SetStringAsync(string.Concat("Dialog_", dialogId.ToString()),
@@ -82,12 +70,8 @@ internal sealed class ConnectionService : IConnectionService
             });
     }
 
-    /// <summary>
-    /// Метод получает список ConnectionId подключений SignalR из кэша.
-    /// </summary>
-    /// <param name="key">Ключ поиска.</param>
-    /// <returns>Список ConnectionId.</returns>
-    public async Task<List<DialogRedis>> GetDialogMembersConnectionIdsCacheAsync(string key)
+    /// <inheritdoc/>
+    public async Task<List<DialogRedis>?> GetDialogMembersConnectionIdsCacheAsync(string key)
     {
         var connectionId = await _redisCache.GetStringAsync(string.Concat("Dialog_", key));
 

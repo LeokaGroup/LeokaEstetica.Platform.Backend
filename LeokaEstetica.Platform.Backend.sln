@@ -58,8 +58,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LeokaEstetica.Platform.Proj
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LeokaEstetica.Platform.ProjectManagement.ScrumMasterAI", "LeokaEstetica.Platform.ProjectManagement.ScrumMasterAI\LeokaEstetica.Platform.ProjectManagement.ScrumMasterAI.csproj", "{F60C94EC-9C5E-46B2-AF48-437668AB2B8F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LeokaEstetica.Platform.Database.ClickHouse.Upgrade", "LeokaEstetica.Platform.Database.ClickHouse.Upgrade\LeokaEstetica.Platform.Database.ClickHouse.Upgrade.csproj", "{0BE4CA0F-B0F5-415F-AA17-7EBD55F704FB}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -150,10 +148,6 @@ Global
 		{F60C94EC-9C5E-46B2-AF48-437668AB2B8F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F60C94EC-9C5E-46B2-AF48-437668AB2B8F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F60C94EC-9C5E-46B2-AF48-437668AB2B8F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{0BE4CA0F-B0F5-415F-AA17-7EBD55F704FB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0BE4CA0F-B0F5-415F-AA17-7EBD55F704FB}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0BE4CA0F-B0F5-415F-AA17-7EBD55F704FB}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0BE4CA0F-B0F5-415F-AA17-7EBD55F704FB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{585B7062-D95A-4635-A7AE-FF6639B9AEC2} = {0FF89A95-839B-4178-9376-7B136864B810}
@@ -177,6 +171,5 @@ Global
 		{60F40B54-E16D-4CC4-B0A2-1B8B6F58375C} = {4026D274-26B5-48D1-827C-FAFFE8E92E7D}
 		{CDFD4EA2-AAC4-44CC-8701-EDA7F1C99096} = {4026D274-26B5-48D1-827C-FAFFE8E92E7D}
 		{F60C94EC-9C5E-46B2-AF48-437668AB2B8F} = {4026D274-26B5-48D1-827C-FAFFE8E92E7D}
-		{0BE4CA0F-B0F5-415F-AA17-7EBD55F704FB} = {A5562D6C-E507-42BF-BD25-139B227BCD8A}
 	EndGlobalSection
 EndGlobal

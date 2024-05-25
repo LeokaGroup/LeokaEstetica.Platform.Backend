@@ -59,22 +59,12 @@ internal sealed class ChatService : IChatService
 
     #region Публичные методы.
 
-    /// <summary>
-    /// Метод получает диалог или создает новый и возвращает его.
-    /// </summary>
-    /// <param name="dialogId">Id диалога.</param>
-    /// <param name="discussionType">Тип объекта обсуждения.</param>
-    /// <param name="account">Аккаунт.</param>
-    /// <param name="discussionTypeId">Id предмета обсуждения (Id проекта или вакансии).</param>
-    /// <returns>Данные диалога.</returns>
+    /// <inheritdoc />
     public async Task<DialogResultOutput> GetDialogAsync(long? dialogId, DiscussionTypeEnum discussionType,
-        string account, long discussionTypeId)
+        string account, long discussionTypeId, bool isManualNewDialog)
     {
         try
         {
-            var result = new DialogResultOutput { Messages = new List<DialogMessageOutput>() };
-            var isFindDialog = false;
-
             // Находим Id текущего пользователя, который просматривает страницу проекта или вакансии.
             var userId = await _userRepository.GetUserByEmailAsync(account);
 
@@ -82,9 +72,32 @@ internal sealed class ChatService : IChatService
             {
                 throw new InvalidOperationException($"Id пользователя с аккаунтом {account} не найден.");
             }
+            
+            var result = new DialogResultOutput { Messages = new List<DialogMessageOutput>() };
+
+            // Этот диалог создается вручную - по кнопке и тд, принудительно создаем диалог и возвраащем его.
+            // TODO: Добавить удаление пустого диалога с шаблонным текстом нейросети, если пользователь
+            // TODO: не писал в него сутки. Чтобы не плодить пустые диалоги.
+            if (isManualNewDialog && discussionType == DiscussionTypeEnum.ObjectTypeDialogAi)
+            {
+                // Создаем новый диалог.
+                dialogId = await _chatRepository.CreateDialogAsync(string.Empty, DateTime.UtcNow, true);
+
+                // Добавляем участников нового диалога.
+                // -1 - это Id нейросети, добавляется автоматически в участники диалога.
+                // TODO: Если в будущем будет несколько нейросетей, то у них будут разные Id, но отрицательные.
+                // TODO: Тогда получать такие Id будем уже с БД, а пока хардкодим -1.
+                await _chatRepository.AddDialogMembersAsync(userId, -1, (long)dialogId);
+                
+                result.DialogState = DialogStateEnum.Open.ToString();
+                result.DialogId = (long)dialogId;
+
+                return result;
+            }
 
             // Если не передали Id предмета обсуждения, то если проект,
             // то пойдем искать Id проекта у диалога, так как они связаны.
+            // TODO: В будущем возможно тут надо проверять еще на != DiscussionTypeEnum.ScrumMasterAi.
             if (discussionTypeId <= 0 
                 && discussionType == DiscussionTypeEnum.Project 
                 && dialogId.HasValue)
@@ -111,8 +124,11 @@ internal sealed class ChatService : IChatService
 
             if (findDialogId == 0)
             {
+                // TODO: Добавить удаление пустого диалога с шаблонным текстом в чат проекта, если пользователь
+                // TODO: не писал в него сутки. Чтобы не плодить пустые диалоги.
                 // Создаем новый диалог.
-                dialogId = await _chatRepository.CreateDialogAsync(string.Empty, DateTime.UtcNow);
+                dialogId = await _chatRepository.CreateDialogAsync(string.Empty, DateTime.UtcNow,
+                    isManualNewDialog && discussionType == DiscussionTypeEnum.ObjectTypeDialogAi);
 
                 // Добавляем участников нового диалога.
                 await _chatRepository.AddDialogMembersAsync(userId, ownerId, (long)dialogId);
@@ -121,6 +137,8 @@ internal sealed class ChatService : IChatService
 
                 return result;
             }
+            
+            var isFindDialog = false;
 
             if (findDialogId > 0)
             {
@@ -135,8 +153,11 @@ internal sealed class ChatService : IChatService
                 && ownerDialogId > 0
                 && !isFindDialog)
             {
+                // TODO: Добавить удаление пустого диалога с шаблонным текстом в чат проекта, если пользователь
+                // TODO: не писал в него сутки. Чтобы не плодить пустые диалоги.
                 // Создаем новый диалог.
-                dialogId = await _chatRepository.CreateDialogAsync(string.Empty, DateTime.UtcNow);
+                dialogId = await _chatRepository.CreateDialogAsync(string.Empty, DateTime.UtcNow,
+                    isManualNewDialog && discussionType == DiscussionTypeEnum.ObjectTypeDialogAi);
 
                 // Добавляем участников нового диалога.
                 await _chatRepository.AddDialogMembersAsync(userId, ownerId, (long)dialogId);
@@ -176,9 +197,7 @@ internal sealed class ChatService : IChatService
             {
                 throw new InvalidOperationException($"Не найдено участников для диалога с DialogId {convertDialogId}");
             }
-
-            // Получаем список сообщений диалога.
-            var getMessages = await _chatRepository.GetDialogMessagesAsync(convertDialogId);
+            
             var user = await _userRepository.GetUserByUserIdAsync(userId);
 
             // Записываем полное ФИО пользователя, с которым идет общение в чате.
@@ -210,16 +229,20 @@ internal sealed class ChatService : IChatService
             // Получаем дату начала диалога.
             result.DateStartDialog = await _chatRepository.GetDialogStartDateAsync(convertDialogId);
             result.DialogState = DialogStateEnum.Open.ToString();
+            
+            // Получаем список сообщений диалога.
+            var dialogMessages = await _chatRepository.GetDialogMessagesAsync(convertDialogId);
 
             // Если у диалога нет сообщений, значит вернуть пустой диалог, который будет открыт.
-            if (!getMessages.Any())
+            if (dialogMessages.Count == 0)
             {
                 result.DialogState = DialogStateEnum.Empty.ToString();
 
                 return result;
             }
 
-            foreach (var item in getMessages)
+            // Работаем с сообщениями диалога.
+            foreach (var item in dialogMessages)
             {
                 var msg = _mapper.Map<DialogMessageOutput>(item);
 
@@ -293,7 +316,7 @@ internal sealed class ChatService : IChatService
             if (getDialogId is null)
             {
                 // Создаем новый диалог.
-                var lastDialogId = await _chatRepository.CreateDialogAsync(string.Empty, DateTime.UtcNow);
+                var lastDialogId = await _chatRepository.CreateDialogAsync(string.Empty, DateTime.UtcNow, false);
 
                 // Добавляем участников нового диалога.
                 await _chatRepository.AddDialogMembersAsync(userId, ownerId, lastDialogId);
@@ -380,7 +403,7 @@ internal sealed class ChatService : IChatService
             var userIds = result.Messages.Select(u => u.UserId).Distinct();
             var userCodes = await _userRepository.GetUsersCodesByUserIdsAsync(userIds);
             
-            // Проставляем флаг принадлежности сообщений.
+            // Дополнительная обработка сообщений.
             foreach (var msg in result.Messages)
             {
                 msg.IsMyMessage = msg.UserId == userId;
