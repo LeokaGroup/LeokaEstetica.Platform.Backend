@@ -66,7 +66,7 @@ internal sealed class ChatService : IChatService
 
     /// <inheritdoc />
     public async Task<DialogResultOutput> GetDialogAsync(long? dialogId, DiscussionTypeEnum discussionType,
-        string account, long discussionTypeId, bool isManualNewDialog, string? token)
+        string account, long? discussionTypeId, bool isManualNewDialog, string? token)
     {
         try
         {
@@ -83,7 +83,7 @@ internal sealed class ChatService : IChatService
             // Этот диалог создается вручную - по кнопке и тд, принудительно создаем диалог и возвраащем его.
             // TODO: Добавить удаление пустого диалога с шаблонным текстом нейросети, если пользователь
             // TODO: не писал в него сутки. Чтобы не плодить пустые диалоги.
-            if (isManualNewDialog && discussionType == DiscussionTypeEnum.ObjectTypeDialogAi)
+            if (isManualNewDialog && discussionType == DiscussionTypeEnum.ScrumMasterAi)
             {
                 // Создаем новый диалог.
                 dialogId = await _chatRepository.CreateDialogAsync(string.Empty, DateTime.UtcNow, true);
@@ -119,8 +119,8 @@ internal sealed class ChatService : IChatService
             // Если не передали Id предмета обсуждения, то если проект,
             // то пойдем искать Id проекта у диалога, так как они связаны.
             // TODO: В будущем возможно тут надо проверять еще на != DiscussionTypeEnum.ScrumMasterAi.
-            if (discussionTypeId <= 0 
-                && discussionType == DiscussionTypeEnum.Project 
+            if (discussionTypeId is null or <= 0
+                && discussionType == DiscussionTypeEnum.Project
                 && dialogId.HasValue)
             {
                 discussionTypeId = await _chatRepository.GetDialogProjectIdByDialogIdAsync(dialogId.Value);
@@ -138,27 +138,27 @@ internal sealed class ChatService : IChatService
 
             // TODO: Вторую проверку убрать, когда научим нейросеть учитывать предмет обсуждения (логика выше).
             // Если снова не нашли, то это уже ошибка.
-            if (discussionTypeId <= 0 && discussionType != DiscussionTypeEnum.ObjectTypeDialogAi)
+            if (discussionTypeId is null or <= 0 && discussionType != DiscussionTypeEnum.ScrumMasterAi)
             {
                 throw new InvalidOperationException("Не передали Id предмета обсуждения.");
             }
 
             // TODO: -1 это Id нейросети. Если станет больше нейросетей, то из БД получать будем такие Id.
-            var ownerId = discussionType != DiscussionTypeEnum.ObjectTypeDialogAi
+            var ownerId = discussionType != DiscussionTypeEnum.ScrumMasterAi
                 ? await GetOwnerIdAsync(discussionType, discussionTypeId)
                 : SCRUM_MASTER_AI_ID;
 
             // Выбираем Id диалога с владельцем.
             var ownerDialogId = await _chatRepository.GetDialogByUserIdAsync(ownerId,
-                    discussionType == DiscussionTypeEnum.ObjectTypeDialogAi);
+                    discussionType == DiscussionTypeEnum.ScrumMasterAi);
 
             // Выбираем Id диалога с текущем пользователем.
             var currentDialogId = await _chatRepository.GetDialogByUserIdAsync(userId,
-                    discussionType == DiscussionTypeEnum.ObjectTypeDialogAi);
+                    discussionType == DiscussionTypeEnum.ScrumMasterAi);
 
             // Найдем диалог, в котором есть оба участника, отталкиваемся от текущего пользователя.
             var findDialogId = await _chatRepository.GetDialogMembersAsync(userId, discussionTypeId,
-                discussionType == DiscussionTypeEnum.ObjectTypeDialogAi);
+                discussionType == DiscussionTypeEnum.ScrumMasterAi);
 
             if (findDialogId == 0)
             {
@@ -166,7 +166,7 @@ internal sealed class ChatService : IChatService
                 // TODO: не писал в него сутки. Чтобы не плодить пустые диалоги.
                 // Создаем новый диалог.
                 dialogId = await _chatRepository.CreateDialogAsync(string.Empty, DateTime.UtcNow,
-                    isManualNewDialog && discussionType == DiscussionTypeEnum.ObjectTypeDialogAi);
+                    discussionType == DiscussionTypeEnum.ScrumMasterAi);
                     
                 if (!dialogId.HasValue)
                 {
@@ -175,8 +175,8 @@ internal sealed class ChatService : IChatService
 
                 // Добавляем участников нового диалога.
                 await _chatRepository.AddDialogMembersAsync(userId,
-                    discussionType == DiscussionTypeEnum.ObjectTypeDialogAi ? ownerDialogId : ownerId, dialogId.Value,
-                    discussionType == DiscussionTypeEnum.ObjectTypeDialogAi);
+                    discussionType == DiscussionTypeEnum.ScrumMasterAi ? ownerDialogId : ownerId, dialogId.Value,
+                    discussionType == DiscussionTypeEnum.ScrumMasterAi);
                 
                 result.DialogState = DialogStateEnum.Open.ToString();
                 result.DialogId = dialogId.Value;
@@ -203,7 +203,7 @@ internal sealed class ChatService : IChatService
                 // TODO: не писал в него сутки. Чтобы не плодить пустые диалоги.
                 // Создаем новый диалог.
                 dialogId = await _chatRepository.CreateDialogAsync(string.Empty, DateTime.UtcNow,
-                    isManualNewDialog && discussionType == DiscussionTypeEnum.ObjectTypeDialogAi);
+                    discussionType == DiscussionTypeEnum.ScrumMasterAi);
                 
                 if (!dialogId.HasValue)
                 {
@@ -212,7 +212,7 @@ internal sealed class ChatService : IChatService
 
                 // Добавляем участников нового диалога.
                 await _chatRepository.AddDialogMembersAsync(userId, ownerId, dialogId.Value,
-                    discussionType == DiscussionTypeEnum.ObjectTypeDialogAi);
+                    discussionType == DiscussionTypeEnum.ScrumMasterAi);
                 
                 result.DialogState = DialogStateEnum.Open.ToString();
 
@@ -226,7 +226,7 @@ internal sealed class ChatService : IChatService
                 && !isFindDialog)
             {
                 result.DialogState = DialogStateEnum.Empty.ToString();
-                result.FullName = discussionType == DiscussionTypeEnum.ObjectTypeDialogAi
+                result.FullName = discussionType == DiscussionTypeEnum.ScrumMasterAi
                     ? "Scrum Master AI"
                     : await CreateDialogOwnerFioAsync(userId);
 
@@ -237,7 +237,7 @@ internal sealed class ChatService : IChatService
 
             // Проверяем существование диалога.
             var checkDialog = await _chatRepository.CheckDialogAsync(dialogId.Value,
-                discussionType == DiscussionTypeEnum.ObjectTypeDialogAi);
+                discussionType == DiscussionTypeEnum.ScrumMasterAi);
 
             if (!checkDialog)
             {
@@ -246,7 +246,7 @@ internal sealed class ChatService : IChatService
 
             // Получаем список Id участников диалога.
             var memberIds = await _chatRepository.GetDialogMembersAsync(dialogId.Value,
-                discussionType == DiscussionTypeEnum.ObjectTypeDialogAi);
+                discussionType == DiscussionTypeEnum.ScrumMasterAi);
 
             if (memberIds.Count == 0)
             {
@@ -274,13 +274,13 @@ internal sealed class ChatService : IChatService
             
             // Получаем дату начала диалога.
             result.DateStartDialog = await _chatRepository.GetDialogStartDateAsync(dialogId.Value,
-                discussionType == DiscussionTypeEnum.ObjectTypeDialogAi);
+                discussionType == DiscussionTypeEnum.ScrumMasterAi);
             
             result.DialogState = DialogStateEnum.Open.ToString();
             
             // Получаем список сообщений диалога.
             var dialogMessages = await _chatRepository.GetDialogMessagesAsync(dialogId.Value,
-                discussionType == DiscussionTypeEnum.ObjectTypeDialogAi);
+                discussionType == DiscussionTypeEnum.ScrumMasterAi);
 
             // Если у диалога нет сообщений, значит вернуть пустой диалог, который будет открыт.
             if (dialogMessages.Count == 0)
@@ -316,7 +316,7 @@ internal sealed class ChatService : IChatService
 
     /// <inheritdoc />
     public async Task<DialogResultOutput> WriteProjectDialogOwnerAsync(DiscussionTypeEnum discussionType,
-        string account, long discussionTypeId, string token)
+        string account, long? discussionTypeId, string token)
     {
         try
         {
@@ -328,7 +328,7 @@ internal sealed class ChatService : IChatService
                 throw new InvalidOperationException($"Id пользователя с аккаунтом {account} не найден.");
             }
 
-            if (discussionTypeId <= 0)
+            if (!discussionTypeId.HasValue)
             {
                 throw new InvalidOperationException("Не передали Id предмета обсуждения.");
             }
@@ -349,14 +349,14 @@ internal sealed class ChatService : IChatService
                 if (discussionType == DiscussionTypeEnum.Project)
                 {
                     // Связываем диалог с проектом.
-                    await _chatRepository.SetReferenceProjectDialogAsync(result.DialogId, discussionTypeId);
+                    await _chatRepository.SetReferenceProjectDialogAsync(result.DialogId, discussionTypeId.Value);
                     result.ProjectId = discussionTypeId;
                 }
 
                 return result;
             }
             
-            var ownerId = await GetOwnerIdAsync(discussionType, discussionTypeId);
+            var ownerId = await GetOwnerIdAsync(discussionType, discussionTypeId.Value);
 
             // Проверяем существование диалога перед его созданием.
             var getDialogId = await _chatRepository.CheckDialogAsync(userId, ownerId);
@@ -386,11 +386,11 @@ internal sealed class ChatService : IChatService
                 if (discussionType == DiscussionTypeEnum.Project)
                 {
                     // Связываем диалог с проектом.
-                    await _chatRepository.SetReferenceProjectDialogAsync(dialogId, discussionTypeId);
+                    await _chatRepository.SetReferenceProjectDialogAsync(dialogId, discussionTypeId.Value);
                     result.ProjectId = discussionTypeId;
                     
                     // Связываем диалог с вакансией (если при отклике на проект, отклик был с указанием вакансии).
-                    await _projectResponseRepository.SetReferenceVacancyDialogAsync(discussionTypeId, userId);
+                    await _projectResponseRepository.SetReferenceVacancyDialogAsync(discussionTypeId.Value, userId);
                     
                     // Генерим автоматическое сообщение от системы, потому что для отображения диалога на фронте,
                     // нужно минимум 1 сообщение.
@@ -516,7 +516,7 @@ internal sealed class ChatService : IChatService
     /// <param name="discussionType">Тип предмета обсуждения.</param>
     /// <param name="discussionTypeId">Id предмета обсуждения (вакансии, проекта и тд).</param>
     /// <returns></returns>
-    private async Task<long> GetOwnerIdAsync(DiscussionTypeEnum discussionType, long discussionTypeId)
+    private async Task<long> GetOwnerIdAsync(DiscussionTypeEnum discussionType, long? discussionTypeId)
     {
         long ownerId = 0;
 
@@ -524,14 +524,14 @@ internal sealed class ChatService : IChatService
         if (discussionType == DiscussionTypeEnum.Project)
         {
             // Выбираем Id владельца проекта.
-            ownerId = await _projectRepository.GetProjectOwnerIdAsync(discussionTypeId);
+            ownerId = await _projectRepository.GetProjectOwnerIdAsync(discussionTypeId!.Value);
         }
 
         // Если предмет обсуждения это вакансия.
         if (discussionType == DiscussionTypeEnum.Vacancy)
         {
             // Выбираем Id владельца вакансии.
-            ownerId = await _vacancyRepository.GetVacancyOwnerIdAsync(discussionTypeId);
+            ownerId = await _vacancyRepository.GetVacancyOwnerIdAsync(discussionTypeId!.Value);
         }
 
         return ownerId;

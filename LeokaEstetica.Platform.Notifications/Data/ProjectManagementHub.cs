@@ -125,7 +125,7 @@ internal sealed class ProjectManagementHub : Hub, IHubService
             }
 
             var result = await _chatService.GetDialogAsync(json.DialogId,
-                Enum.Parse<DiscussionTypeEnum>(json!.DiscussionType), account, json.DiscussionTypeId,
+                Enum.Parse<DiscussionTypeEnum>(json.DiscussionType), account, json.DiscussionTypeId,
                 json.isManualNewDialog, token);
             
             result.ActionType = DialogActionType.Concrete.ToString();

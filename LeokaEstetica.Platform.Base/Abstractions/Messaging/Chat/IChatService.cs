@@ -21,7 +21,7 @@ public interface IChatService
     /// <param name="token">Токен пользователя.</param>
     /// <returns>Данные диалога.</returns>
     Task<DialogResultOutput> GetDialogAsync(long? dialogId, DiscussionTypeEnum discussionType, string account,
-        long discussionTypeId, bool isManualNewDialog, string? token);
+        long? discussionTypeId, bool isManualNewDialog, string? token);
 
     /// <summary>
     /// Метод создает диалог для написания владельцу проекта.
@@ -33,7 +33,7 @@ public interface IChatService
     /// <param name="token">Токен пользователя.</param>
     /// <returns>Данные диалога.</returns>
     Task<DialogResultOutput> WriteProjectDialogOwnerAsync(DiscussionTypeEnum discussionType, string account,
-        long discussionTypeId, string token);
+        long? discussionTypeId, string token);
 
     /// <summary>
     /// Метод отправляет сообщение.

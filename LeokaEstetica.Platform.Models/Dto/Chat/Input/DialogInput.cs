@@ -27,7 +27,7 @@ public class DialogInput
     /// <summary>
     /// Id предмета обсуждения (Id проекта или вакансии).
     /// </summary>
-    public long DiscussionTypeId { get; set; }
+    public long? DiscussionTypeId { get; set; }
 
     /// <summary>
     /// Признак ручного создания диалога (по кнопке и тд).

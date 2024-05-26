@@ -109,7 +109,7 @@ public static class CreateDialogMessagesBuilder
                 throw new InvalidOperationException($"Не удалось получить диалог для ЛК. DialogId: {dialogId}");
             }
             
-            var lastMessage = await chatRepository.GetLastMessageAsync(dialogId);
+            var lastMessage = await chatRepository.GetLastMessageAsync(dialogId, false);
 
             // Подтягиваем последнее сообщение для каждого диалога и проставляет после 40 символов ...
             if (!string.IsNullOrEmpty(lastMessage))
@@ -159,10 +159,10 @@ public static class CreateDialogMessagesBuilder
             }
 
             // Форматируем дату убрав секунды.
-            var created = Convert.ToDateTime(dialog.Created).ToString("g");
+            // var created = Convert.ToDateTime(dialog.Created).ToString("g");
             
-            dialog.Created = created;
-            profileDialog.Created = created;
+            // dialog.Created = created;
+            // profileDialog.Created = created;
 
             var id = membersIds.Except(new[] { userId }).FirstOrDefault();
             
@@ -239,7 +239,7 @@ public static class CreateDialogMessagesBuilder
                 continue;
             }
 
-            var lastMessage = await chatRepository.GetLastMessageAsync(dialogId);
+            var lastMessage = await chatRepository.GetLastMessageAsync(dialogId, true);
 
             // Подтягиваем последнее сообщение для каждого диалога и проставляет после 40 символов ...
             if (!string.IsNullOrEmpty(lastMessage))
@@ -286,9 +286,7 @@ public static class CreateDialogMessagesBuilder
             }
 
             // Форматируем дату убрав секунды.
-            var created = Convert.ToDateTime(dialog.Created).ToString("g");
-            
-            dialog.Created = created;
+            // var created = Convert.ToDateTime(dialog.Created).ToString("g");
 
             var id = membersIds.Except(new[] { userId }).FirstOrDefault();
             

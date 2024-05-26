@@ -109,8 +109,9 @@ public interface IChatRepository
     /// Метод находит последнее сообщение диалога.
     /// </summary>
     /// <param name="dialogId">Id диалога.</param>
+    /// <param name="isScrumMasterAi">Признак диалога для нейросети.</param>
     /// <returns>Последнее сообщение.</returns>
-    Task<string> GetLastMessageAsync(long dialogId);
+    Task<string> GetLastMessageAsync(long dialogId, bool isScrumMasterAi);
 
     /// <summary>
     /// Метод сохраняет сообщение.

@@ -93,7 +93,7 @@ internal sealed class ChatRepository : BaseRepository, IChatRepository
                     "FROM ai.scrum_master_ai_main_info_dialogs AS d " +
                     "INNER JOIN ai.scrum_master_ai_dialog_members AS dm " +
                     "ON dm.dialog_id = d.dialog_id " +
-                    "WHERE dm.user_id = dm.user_id = @userId ";
+                    "WHERE dm.user_id = @userId ";
             
             if (objectId.HasValue)
             {
@@ -133,10 +133,11 @@ internal sealed class ChatRepository : BaseRepository, IChatRepository
             var parameters = new DynamicParameters();
             parameters.Add("@dialogName", dialogName);
             parameters.Add("@created", dateCreated);
-            parameters.Add("@objectType", new Enum(DiscussionTypeEnum.ObjectTypeDialogAi));
+            parameters.Add("@objectType", new Enum(DiscussionTypeEnum.ScrumMasterAi));
 
             var query = "INSERT INTO ai.scrum_master_ai_main_info_dialogs (dialog_name, created, object_type) " +
-                        "VALUES (@dialogName, @created, @objectType)";
+                        "VALUES (@dialogName, @created, @objectType) " +
+                        "RETURNING dialog_id";
 
             dialogId = await connection.ExecuteScalarAsync<long?>(query, parameters);
         }
@@ -466,8 +467,8 @@ internal sealed class ChatRepository : BaseRepository, IChatRepository
                         "dialog_name VARCHAR(150)             NOT NULL, " +
                         "user_id     BIGINT                   NOT NULL, " +
                         "created     TIMESTAMP WITH TIME ZONE NOT NULL, " +
-                        "object_id   BIGINT                   NOT NULL, " +
-                        "object_type OBJECT_TYPE_DIALOG_AI    NOT NULL " +
+                        "object_id   BIGINT                   NULL, " +
+                        "object_type ai.object_type_dialog_ai    NOT NULL " +
                         "); " +
                         "INSERT INTO temp_dialogs " +
                         "SELECT DISTINCT(mid.dialog_id), mid.dialog_name, dm.user_id, mid.created, mid.object_id, " +
@@ -487,18 +488,34 @@ internal sealed class ChatRepository : BaseRepository, IChatRepository
         return result;
     }
 
-    /// <summary>
-    /// Метод находит последнее сообщение диалога.
-    /// </summary>
-    /// <param name="dialogId">Id диалога.</param>
-    /// <returns>Последнее сообщение.</returns>
-    public async Task<string> GetLastMessageAsync(long dialogId)
+    /// <inheritdoc/>
+    public async Task<string> GetLastMessageAsync(long dialogId, bool isScrumMasterAi)
     {
-        var lastMessage = await _pgContext.DialogMessages
-            .Where(d => d.DialogId == dialogId)
-            .OrderBy(o => o.Created)
-            .Select(m => m.Message)
-            .LastOrDefaultAsync();
+        string? lastMessage = null;
+        
+        if (!isScrumMasterAi)
+        {
+            lastMessage = await _pgContext.DialogMessages
+                .Where(d => d.DialogId == dialogId)
+                .OrderBy(o => o.Created)
+                .Select(m => m.Message)
+                .LastOrDefaultAsync();
+        }
+
+        if (isScrumMasterAi)
+        {
+            using var connection = await ConnectionProvider.GetConnectionAsync();
+            
+            var parameters = new DynamicParameters();
+            parameters.Add("@dialogId", dialogId);
+
+            var query = "SELECT message " +
+                        "FROM ai.scrum_master_ai_dialog_messages " +
+                        "WHERE dialog_id = @dialogId " +
+                        "ORDER BY message_id DESC";
+
+            lastMessage = await connection.QueryFirstOrDefaultAsync<string?>(query, parameters);
+        }
 
         return lastMessage;
     }
@@ -598,7 +615,7 @@ internal sealed class ChatRepository : BaseRepository, IChatRepository
                     DialogId = dm.DialogId,
                     DialogName = d.DialogName,
                     UserId = dm.UserId,
-                    Created = d.Created.ToString(CultureInfo.CurrentCulture),
+                    Created = d.Created,
                     ProjectName = _pgContext.UserProjects
                         .Where(p => p.ProjectId == d.ProjectId)
                         .Select(p => p.ProjectName)
@@ -608,6 +625,7 @@ internal sealed class ChatRepository : BaseRepository, IChatRepository
                                     && d.ProjectId != null)
                         .Select(p => p.ProjectId)
                         .FirstOrDefault(),
+                    CalcShortDate = d.Created.ToString(CultureInfo.CurrentCulture)
                 })
             .ToListAsync();
 

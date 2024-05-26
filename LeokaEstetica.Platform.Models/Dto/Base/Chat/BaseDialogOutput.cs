@@ -26,7 +26,7 @@ public class BaseDialogOutput
     /// <summary>
     /// Полная дата.
     /// </summary>
-    public string Created { get; set; }
+    public DateTime Created { get; set; }
 
     /// <summary>
     /// Id пользователя, который есть в диалоге.

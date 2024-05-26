@@ -23,5 +23,5 @@ public enum DiscussionTypeEnum
     /// Если вопрос к нейросети.
     /// </summary>
     [Description("Вопрос к нейросети.")]
-    ObjectTypeDialogAi = 3
+    ScrumMasterAi = 3
 }
