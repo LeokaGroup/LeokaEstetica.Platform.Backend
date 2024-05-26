@@ -123,7 +123,7 @@ public static class CreateDialogMessagesBuilder
             }
 
             // Найдет Id участников диалога по DialogId.
-            var membersIds = await chatRepository.GetDialogMembersAsync(dialogId);
+            var membersIds = await chatRepository.GetDialogMembersAsync(dialogId, false);
 
             if (!membersIds.Any())
             {
@@ -252,7 +252,7 @@ public static class CreateDialogMessagesBuilder
             }
 
             // Найдет Id участников диалога по DialogId.
-            var membersIds = await chatRepository.GetDialogMembersAsync(dialogId);
+            var membersIds = await chatRepository.GetDialogMembersAsync(dialogId, true);
 
             if (!membersIds.Any())
             {

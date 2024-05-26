@@ -141,7 +141,7 @@ internal sealed class ChatHub : Hub, IHubService
 
             // Тут isManualNewDialog всегда false, так как тут обычные чаты.
             var result = await _chatService.GetDialogAsync(json.DialogId,
-                Enum.Parse<DiscussionTypeEnum>(json!.DiscussionType), account, json.DiscussionTypeId, false);
+                Enum.Parse<DiscussionTypeEnum>(json!.DiscussionType), account, json.DiscussionTypeId, false, token);
             result.ActionType = DialogActionType.Concrete.ToString();
 
             var clients = await _clientConnectionService.CreateClientsResultAsync(json.DialogId, userId, token);
@@ -183,7 +183,7 @@ internal sealed class ChatHub : Hub, IHubService
                 throw new InvalidOperationException($"Id пользователя с аккаунтом {account} не найден.");
             }
 
-            var result = await _chatService.SendMessageAsync(message, dialogId, userId, token, true);
+            var result = await _chatService.SendMessageAsync(message, dialogId, userId, token, true, false);
             result.ActionType = DialogActionType.Message.ToString();
 
             var clients = await _clientConnectionService.CreateClientsResultAsync(dialogId, userId, token);

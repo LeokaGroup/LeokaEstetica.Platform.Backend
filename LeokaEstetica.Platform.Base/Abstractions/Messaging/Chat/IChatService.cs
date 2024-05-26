@@ -18,9 +18,10 @@ public interface IChatService
     /// <param name="account">Аккаунт.</param>
     /// <param name="discussionTypeId">Id предмета обсуждения (Id проекта или вакансии).</param>
     /// <param name="isManualNewDialog">Признак ручного создания диалога (по кнопке и тд).</param>
+    /// <param name="token">Токен пользователя.</param>
     /// <returns>Данные диалога.</returns>
     Task<DialogResultOutput> GetDialogAsync(long? dialogId, DiscussionTypeEnum discussionType, string account,
-        long discussionTypeId, bool isManualNewDialog);
+        long discussionTypeId, bool isManualNewDialog, string? token);
 
     /// <summary>
     /// Метод создает диалог для написания владельцу проекта.
@@ -42,9 +43,10 @@ public interface IChatService
     /// <param name="userId">Id пользователя.</param>
     /// <param name="token">Токен пользователя.</param>
     /// <param name="isMyMessage">Флаг принадлежности сообщения пользователю, который пишет сообщение.</param>
+    /// <param name="isScrumMasterAi">Признак диалога для нейросети.</param>
     /// <returns>Выходная модель.</returns>
     Task<DialogResultOutput> SendMessageAsync(string message, long dialogId, long userId, string token,
-        bool isMyMessage);
+        bool isMyMessage, bool isScrumMasterAi);
     
     /// <summary>
     /// Метод получит все диалоги для профиля пользователя.

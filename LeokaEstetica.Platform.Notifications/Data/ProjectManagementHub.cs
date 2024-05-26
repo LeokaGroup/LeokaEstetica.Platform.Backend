@@ -126,7 +126,8 @@ internal sealed class ProjectManagementHub : Hub, IHubService
 
             var result = await _chatService.GetDialogAsync(json.DialogId,
                 Enum.Parse<DiscussionTypeEnum>(json!.DiscussionType), account, json.DiscussionTypeId,
-                json.isManualNewDialog);
+                json.isManualNewDialog, token);
+            
             result.ActionType = DialogActionType.Concrete.ToString();
 
             var clients = await _clientConnectionService.CreateClientsResultAsync(json.DialogId, userId, token);
@@ -147,9 +148,45 @@ internal sealed class ProjectManagementHub : Hub, IHubService
     }
 
     /// <inheritdoc />
-    public Task SendMessageAsync(string message, long dialogId, string account, string token)
+    public async Task SendMessageAsync(string message, long dialogId, string account, string token)
     {
-        throw new NotImplementedException();
+        try
+        {
+            if (string.IsNullOrWhiteSpace(message))
+            {
+                return;
+            }
+
+            if (dialogId == 0)
+            {
+                throw new InvalidOperationException($"Id диалога не может быть пустым. Account: {account}");
+            }
+
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId == 0)
+            {
+                throw new InvalidOperationException($"Id пользователя с аккаунтом {account} не найден.");
+            }
+
+            var result = await _chatService.SendMessageAsync(message, dialogId, userId, token, true, true);
+            result.ActionType = DialogActionType.Message.ToString();
+
+            var clients = await _clientConnectionService.CreateClientsResultAsync(dialogId, userId, token);
+            
+            await Clients
+                .Clients(clients.AsList())
+                .SendAsync("listenSendMessage", result)
+                .ConfigureAwait(false);
+        }
+
+        catch (Exception ex)
+        {
+            await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
+            
+            _logger.LogError(ex, ex.Message);
+            throw;
+        }
     }
 
     /// <inheritdoc />

@@ -35,46 +35,82 @@ internal sealed class ChatRepository : BaseRepository, IChatRepository
 
     #region Публичные методы.
 
-    /// <summary>
-    /// Метод находит Id диалога в участниках диалога.
-    /// </summary>
-    /// <param name="userId">Id пользователя.</param>
-    /// <returns>Id диалога.</returns>
-    public async Task<long> GetDialogByUserIdAsync(long userId)
-    {
-        var result = await _pgContext.DialogMembers
-            .Where(dm => dm.UserId == userId)
-            .Select(dm => dm.DialogId)
-            .FirstOrDefaultAsync();
-
-        return result;
-    }
-
     /// <inheritdoc />
-    public async Task<long> GetDialogMembersAsync(long userId, long projectId)
+    public async Task<long> GetDialogByUserIdAsync(long userId, bool isObjectTypeDialogAi)
     {
+        long dialogId;
+        
+        if (!isObjectTypeDialogAi)
+        {
+            // TODO: Переписать на Dapper.
+            dialogId = await _pgContext.DialogMembers
+                .Where(dm => dm.UserId == userId)
+                .Select(dm => dm.DialogId)
+                .FirstOrDefaultAsync();
+            
+            return dialogId;
+        }
+
         using var connection = await ConnectionProvider.GetConnectionAsync();
 
         var parameters = new DynamicParameters();
         parameters.Add("@userId", userId);
-        parameters.Add("@projectId", projectId);
 
-        var query = "SELECT dm.\"DialogId\" " +
-                    "FROM \"Communications\".\"MainInfoDialogs\" AS d " +
-                    "INNER JOIN \"Communications\".\"DialogMembers\" AS dm " +
-                    "ON d.\"DialogId\" = dm.\"DialogId\" " +
-                    "WHERE d.\"ProjectId\" = @projectId " +
-                    "AND dm.\"UserId\" = @userId";
+        var query = "SELECT dialog_id " +
+                    "FROM ai.scrum_master_ai_dialog_members " +
+                    "WHERE user_id = @userId";
 
-        var result = await connection.QueryFirstOrDefaultAsync<long>(query, parameters);
+        dialogId = await connection.QueryFirstOrDefaultAsync<long>(query, parameters);
+
+        return dialogId;
+    }
+
+    /// <inheritdoc />
+    public async Task<long> GetDialogMembersAsync(long userId, long? objectId, bool isObjectTypeDialogAi)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+        string? query = null;
+        var parameters = new DynamicParameters();
+
+        if (!isObjectTypeDialogAi)
+        {
+            parameters.Add("@userId", userId);
+            parameters.Add("@projectId", objectId!.Value);
+
+            query = "SELECT dm.\"DialogId\" " +
+                        "FROM \"Communications\".\"MainInfoDialogs\" AS d " +
+                        "INNER JOIN \"Communications\".\"DialogMembers\" AS dm " +
+                        "ON d.\"DialogId\" = dm.\"DialogId\" " +
+                        "WHERE d.\"ProjectId\" = @projectId " +
+                        "AND dm.\"UserId\" = @userId";
+        }
+
+        if (isObjectTypeDialogAi)
+        {
+            parameters.Add("@userId", userId);
+
+            query = "SELECT dm.dialog_id " +
+                    "FROM ai.scrum_master_ai_main_info_dialogs AS d " +
+                    "INNER JOIN ai.scrum_master_ai_dialog_members AS dm " +
+                    "ON dm.dialog_id = d.dialog_id " +
+                    "WHERE dm.user_id = dm.user_id = @userId ";
+            
+            if (objectId.HasValue)
+            {
+                parameters.Add("@objectId", objectId.Value);
+                query += "AND d.objectId = @objectId";
+            }
+        }
+
+        var result = await connection.QueryFirstOrDefaultAsync<long>(query!, parameters);
 
         return result;
     }
 
     /// <inheritdoc />
-    public async Task<long> CreateDialogAsync(string dialogName, DateTime dateCreated, bool isScrumMasterAi)
+    public async Task<long?> CreateDialogAsync(string dialogName, DateTime dateCreated, bool isScrumMasterAi)
     {
-        long dialogId = 0;
+        long? dialogId = null;
         
         if (!isScrumMasterAi)
         {
@@ -102,55 +138,88 @@ internal sealed class ChatRepository : BaseRepository, IChatRepository
             var query = "INSERT INTO ai.scrum_master_ai_main_info_dialogs (dialog_name, created, object_type) " +
                         "VALUES (@dialogName, @created, @objectType)";
 
-            dialogId = await connection.ExecuteScalarAsync<long>(query, parameters);
+            dialogId = await connection.ExecuteScalarAsync<long?>(query, parameters);
         }
 
         return dialogId;
     }
 
-    /// <summary>
-    /// Метод добавит текущего пользователя и представителя/владельца к диалогу.
-    /// </summary>
-    /// <param name="userId">Id текущего пользователя.</param>
-    /// <param name="ownerId">Id владельца.</param>
-    /// <param name="newDialogId">Id нового диалога.</param>
-    public async Task AddDialogMembersAsync(long userId, long ownerId, long newDialogId)
+    /// <inheritdoc />
+    public async Task AddDialogMembersAsync(long userId, long ownerId, long newDialogId, bool isScrumMasterAi)
     {
-        await _pgContext.DialogMembers.AddRangeAsync(
-            new DialogMemberEntity
-            {
-                DialogId = newDialogId,
-                UserId = userId,
-                Joined = DateTime.UtcNow
-            },
-            new DialogMemberEntity
-            {
-                DialogId = newDialogId,
-                UserId = ownerId,
-                Joined = DateTime.UtcNow
-            });
-        await _pgContext.SaveChangesAsync();
+        if (!isScrumMasterAi)
+        {
+            await _pgContext.DialogMembers.AddRangeAsync(
+                new DialogMemberEntity
+                {
+                    DialogId = newDialogId,
+                    UserId = userId,
+                    Joined = DateTime.UtcNow
+                },
+                new DialogMemberEntity
+                {
+                    DialogId = newDialogId,
+                    UserId = ownerId,
+                    Joined = DateTime.UtcNow
+                });
+            await _pgContext.SaveChangesAsync();
+        }
+
+        if (isScrumMasterAi)
+        {
+            using var connection = await ConnectionProvider.GetConnectionAsync();
+
+            var tempParams1 = new DynamicParameters();
+            tempParams1.Add("@dialogId", newDialogId);
+            tempParams1.Add("@userId", userId);
+            tempParams1.Add("@joined", DateTime.UtcNow);
+            
+            var tempParams2 = new DynamicParameters();
+            tempParams2.Add("@dialogId", newDialogId);
+            tempParams2.Add("@userId", -1);
+            tempParams2.Add("@joined", DateTime.UtcNow);
+            
+            var parameters = new List<DynamicParameters> { tempParams1, tempParams2 };
+
+            var query = "INSERT INTO ai.scrum_master_ai_dialog_members (joined, dialog_id, user_id) " +
+                        "VALUES (@joined, @dialogId, @userId)";
+
+            await connection.ExecuteAsync(query, parameters);
+        }
     }
 
-    /// <summary>
-    /// Метод проверит существование диалога.
-    /// </summary>
-    /// <param name="dialogId">Id диалога.</param>
-    /// <returns>Флаг проверки.</returns>
-    public async Task<bool> CheckDialogAsync(long dialogId)
+    /// <inheritdoc />
+    public async Task<bool> CheckDialogAsync(long dialogId, bool isScrumMasterAi)
     {
-        var isDialog = await _pgContext.Dialogs
-            .FirstOrDefaultAsync(d => d.DialogId == dialogId);
+        if (!isScrumMasterAi)
+        {
+            var isDialog = await _pgContext.Dialogs
+                .FirstOrDefaultAsync(d => d.DialogId == dialogId);
+                
+            return isDialog != null;
+        }
 
-        return isDialog != null;
+        if (isScrumMasterAi)
+        {
+            using var connection = await ConnectionProvider.GetConnectionAsync();
+            
+            var parameters = new DynamicParameters();
+            parameters.Add("@dialogId", dialogId);
+
+            var query = "SELECT EXISTS (" +
+                        "SELECT dialog_id " +
+                        "FROM ai.scrum_master_ai_main_info_dialogs " +
+                        "WHERE dialog_id = @dialogId)";
+
+            var result = await connection.ExecuteScalarAsync<bool>(query, parameters);
+
+            return result;
+        }
+
+        return false;
     }
 
-    /// <summary>
-    /// Метод проверит существование диалога по участникам диалога.
-    /// </summary>
-    /// <param name="userId">Id пользователя (не владелец).</param>
-    /// <param name="ownerId">Id владельца проекта.</param>
-    /// <returns>Флаг проверки.</returns>
+    /// <inheritdoc />
     public async Task<long?> CheckDialogAsync(long userId, long ownerId)
     {
         var dialogId = await _pgContext.DialogMembers
@@ -164,41 +233,71 @@ internal sealed class ChatRepository : BaseRepository, IChatRepository
         return isDialog?.DialogId;
     }
 
-    /// <summary>
-    /// Метод получает список сообщений диалога.
-    /// </summary>
-    /// <param name="dialogId">Id диалога.</param>
-    /// <returns>Список сообщений.</returns>
-    public async Task<List<DialogMessageEntity>> GetDialogMessagesAsync(long dialogId)
+    /// <inheritdoc />
+    public async Task<List<DialogMessageEntity>> GetDialogMessagesAsync(long dialogId, bool isScrumMasterAi)
     {
-        var result = await _pgContext.DialogMessages
-            .Where(d => d.DialogId == dialogId)
-            .OrderBy(m => m.Created)
-            .Select(m => new DialogMessageEntity
-            {
-                DialogId = m.DialogId,
-                Message = m.Message,
-                Created = m.Created,
-                UserId = m.UserId,
-                IsMyMessage = m.IsMyMessage,
-                MessageId = m.MessageId
-            })
-            .ToListAsync();
+        List<DialogMessageEntity>? result = null;
+
+        if (!isScrumMasterAi)
+        {
+            result = await _pgContext.DialogMessages
+                .Where(d => d.DialogId == dialogId)
+                .OrderBy(m => m.Created)
+                .Select(m => new DialogMessageEntity
+                {
+                    DialogId = m.DialogId,
+                    Message = m.Message,
+                    Created = m.Created,
+                    UserId = m.UserId,
+                    IsMyMessage = m.IsMyMessage,
+                    MessageId = m.MessageId
+                })
+                .ToListAsync();
+        }
+
+        if (isScrumMasterAi)
+        {
+            using var connection = await ConnectionProvider.GetConnectionAsync();
+
+            var parameters = new DynamicParameters();
+            parameters.Add("@dialogId", dialogId);
+
+            var query = "SELECT message_id, message, created, dialog_id, user_id, is_my_message " +
+                        "FROM ai.scrum_master_ai_dialog_messages " +
+                        "WHERE dialog_id = @dialogId";
+
+            result = (await connection.QueryAsync<DialogMessageEntity>(query, parameters)).AsList();
+        }
 
         return result;
     }
 
-    /// <summary>
-    /// Метод получает диалог, где есть и текущий пользователь и владелец предмета обсуждения.
-    /// </summary>
-    /// <param name="dialogId">Id диалога.</param>
-    /// <returns>Список Id участников диалога.</returns>
-    public async Task<List<long>> GetDialogMembersAsync(long dialogId)
+    /// <inheritdoc />
+    public async Task<List<long>> GetDialogMembersAsync(long dialogId, bool isScrumMasterAi)
     {
-        var result = await _pgContext.DialogMembers
-            .Where(d => d.DialogId == dialogId)
-            .Select(d => d.UserId)
-            .ToListAsync();
+        List<long>? result = null;
+        
+        if (!isScrumMasterAi)
+        {
+            result = await _pgContext.DialogMembers
+                .Where(d => d.DialogId == dialogId)
+                .Select(d => d.UserId)
+                .ToListAsync();
+        }
+
+        if (isScrumMasterAi)
+        {
+            using var connection = await ConnectionProvider.GetConnectionAsync();
+
+            var parameters = new DynamicParameters();
+            parameters.Add("@dialogId", dialogId);
+
+            var query = "SELECT user_id " +
+                        "FROM ai.scrum_master_ai_dialog_members " +
+                        "WHERE dialog_id = @dialogId";
+
+            result = (await connection.QueryAsync<long>(query, parameters)).AsList();
+        }
 
         return result;
     }
@@ -208,12 +307,31 @@ internal sealed class ChatRepository : BaseRepository, IChatRepository
     /// </summary>
     /// <param name="dialogId">Id диалога.</param>
     /// <returns>Дата начала диалога.</returns>
-    public async Task<string> GetDialogStartDateAsync(long dialogId)
+    public async Task<string> GetDialogStartDateAsync(long dialogId, bool isScrumMasterAi)
     {
-        var result = await _pgContext.Dialogs
-            .Where(d => d.DialogId == dialogId)
-            .Select(d => d.Created.ToString("dd.MM.yyyy HH:mm"))
-            .FirstOrDefaultAsync();
+        string? result = null;
+        
+        if (!isScrumMasterAi)
+        {
+            result = await _pgContext.Dialogs
+                .Where(d => d.DialogId == dialogId)
+                .Select(d => d.Created.ToString("dd.MM.yyyy HH:mm"))
+                .FirstOrDefaultAsync();
+        }
+
+        if (isScrumMasterAi)
+        {
+            using var connection = await ConnectionProvider.GetConnectionAsync();
+
+            var parameters = new DynamicParameters();
+            parameters.Add("@dialogId", dialogId);
+
+            var query = "SELECT TO_CHAR(TO_TIMESTAMP(1444646136079 / 1000), 'dd-mm-yyyy HH24:MI') " +
+                        "FROM ai.scrum_master_ai_main_info_dialogs " +
+                        "WHERE dialog_id = @dialogId";
+
+            result = await connection.QueryFirstOrDefaultAsync<string?>(query, parameters);
+        }
 
         return result;
     }
@@ -385,27 +503,41 @@ internal sealed class ChatRepository : BaseRepository, IChatRepository
         return lastMessage;
     }
 
-    /// <summary>
-    /// Метод сохраняет сообщение.
-    /// </summary>
-    /// <param name="message">Сообщение.</param>
-    /// <param name="dialogId">Id диалога.</param>
-    /// <param name="dateCreated">Дата записи сообщения.</param>
-    /// <param name="userId">Id пользователя.</param>
-    /// <param name="isMyMessage">Флаг принадлежности сообщения пользователю, который пишет сообщение.</param>
+    /// <inheritdoc/>
     public async Task SaveMessageAsync(string message, long dialogId, DateTime dateCreated, long userId,
-        bool isMyMessage)
+        bool isMyMessage, bool isScrumMasterAi)
     {
-        await _pgContext.DialogMessages.AddAsync(new DialogMessageEntity
+        if (!isScrumMasterAi)
         {
-            Message = message,
-            DialogId = dialogId,
-            Created = dateCreated,
-            UserId = userId,
-            IsMyMessage = isMyMessage
-        });
+            await _pgContext.DialogMessages.AddAsync(new DialogMessageEntity
+            {
+                Message = message,
+                DialogId = dialogId,
+                Created = dateCreated,
+                UserId = userId,
+                IsMyMessage = isMyMessage
+            });
 
-        await _pgContext.SaveChangesAsync();
+            await _pgContext.SaveChangesAsync();
+        }
+
+        if (isScrumMasterAi)
+        {
+            using var connection = await ConnectionProvider.GetConnectionAsync();
+
+            var parameters = new DynamicParameters();
+            parameters.Add("@message", message);
+            parameters.Add("@dialogId", dialogId);
+            parameters.Add("@userId", userId);
+            parameters.Add("@isMyMessage", isMyMessage);
+            parameters.Add("@dateCreated", dateCreated);
+
+            var query = "INSERT INTO ai.scrum_master_ai_dialog_messages (message, dialog_id, user_id, is_my_message," +
+                        " created) " +
+                        "VALUES (@message, @dialogId, @userId, @isMyMessage, @dateCreated)";
+
+            await connection.ExecuteAsync(query, parameters);
+        }
     }
 
     /// <summary>

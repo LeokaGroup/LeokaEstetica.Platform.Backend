@@ -170,6 +170,7 @@ public interface IProjectRepository
     Task<bool> DeleteProjectVacancyByIdAsync(long vacancyId, long projectId);
 
     /// <summary>
+    // TODO: Если при удалении проекта надо будет также чистить сообщения нейросети, то надо доработать будет метод.
     /// Метод удаляет вакансии проекта.
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
