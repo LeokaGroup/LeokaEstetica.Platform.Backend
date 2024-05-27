@@ -8,7 +8,7 @@ public interface IHubService
     /// <summary>
     /// Метод получает список диалогов.
     /// <param name="account">Аккаунт.</param>
-    /// <param name="token">Токен.</param>    
+    /// <param name="token">Токен.</param>
     /// <param name="projectId">Id проекта. Если не передан, то получает все диалоги пользователя.</param>
     /// <returns>Список диалогов.</returns>
     Task GetDialogsAsync(string account, string token, long? projectId = null);
@@ -25,9 +25,13 @@ public interface IHubService
     /// <summary>
     /// Метод отправляет сообщение.
     /// </summary>
-    /// <param name="messageInput">Входная модель.</param>
+    /// <param name="message">Сообщение.</param>
+    /// <param name="dialogId">Id диалога.</param>
+    /// <param name="account">Аккаунт.</param>
+    /// <param name="token">Токен.</param>    
+    /// <param name="apiUrl">Api-url с фронта (текущий домен).</param>    
     /// <returns>Данные диалога с сообщениями. Обновляет диалог и сообщения диалога у всех участников диалога</returns>
-    Task SendMessageAsync(string message, long dialogId, string account, string token);
+    Task SendMessageAsync(string message, long dialogId, string account, string token, string apiUrl);
 
     /// <summary>
     /// Метод получает список диалогов для ЛК.

@@ -30,10 +30,12 @@ public class MessagingModule : Module
         builder.RegisterType<ProjectCommentsService>()
             .Named<IProjectCommentsService>("ProjectCommentsService")
             .InstancePerLifetimeScope();
-        
-        // Сервис RabbitMQ.
+            
         builder.RegisterType<RabbitMqService>()
             .Named<IRabbitMqService>("RabbitMqService")
             .SingleInstance();
+        builder.RegisterType<RabbitMqService>()
+            .As<IRabbitMqService>()
+            .InstancePerLifetimeScope();
     }
 }

@@ -1,10 +1,14 @@
+using System.Runtime.CompilerServices;
 using System.Text;
 using LeokaEstetica.Platform.Base.Abstractions.Messaging.EventBus;
+using LeokaEstetica.Platform.Base.Enums;
+using LeokaEstetica.Platform.Base.Extensions.StringExtensions;
 using LeokaEstetica.Platform.Messaging.Abstractions.RabbitMq;
-using LeokaEstetica.Platform.Messaging.Factors;
-using Microsoft.Extensions.Configuration;
+using LeokaEstetica.Platform.Models.Dto.Proxy.ProjectManagement;
 using Newtonsoft.Json;
 using RabbitMQ.Client;
+
+[assembly: InternalsVisibleTo("LeokaEstetica.Platform.Notifications")]
 
 namespace LeokaEstetica.Platform.Messaging.Services.RabbitMq;
 
@@ -13,36 +17,61 @@ namespace LeokaEstetica.Platform.Messaging.Services.RabbitMq;
 /// </summary>
 internal sealed class RabbitMqService : IRabbitMqService
 {
-    private readonly IConfiguration _configuration;
+    private IModel? _channel;
 
     /// <summary>
-    /// Конструктор.
+    /// Счетчик кол-ва подключений во избежание дублей подключений.
     /// </summary>
-    /// <param name="configuration">Зависимость конфигурации приложения.</param>
-    public RabbitMqService(IConfiguration configuration)
+    private static uint _counter;
+
+    public RabbitMqService(IModel? channelMessages)
     {
-        _configuration = configuration;
+        _channel = channelMessages;
     }
 
-    /// <summary>
-    /// Метод отправляет сообщение в очередь.
-    /// </summary>
-    /// <param name="event">Событие.</param>
-    /// <param name="queueType">Тип очереди.</param>
-    public Task PublishAsync(IIntegrationEvent @event, string queueType)
+    /// <inheritdoc />
+    public async Task PublishAsync(IIntegrationEvent @event, string queueType,
+        ProxyConfigRabbitMqOutput rabbitMqConfig,
+        ProxyConfigEnvironmentOutput configEnv)
     {
-        var factory = CreateRabbitMqConnectionFactory.CreateRabbitMqConnection(_configuration);
-        using var connection = factory.CreateConnection();
-        using var channel = connection.CreateModel();
+        var connection = new ConnectionFactory
+        {
+            HostName = rabbitMqConfig.HostName,
+            Password = rabbitMqConfig.Password,
+            UserName = rabbitMqConfig.UserName,
+            DispatchConsumersAsync = true,
+            Port = AmqpTcpEndpoint.UseDefaultPort,
+            VirtualHost = rabbitMqConfig.VirtualHost,
+            ContinuationTimeout = new TimeSpan(0, 0, 10, 0)
+        };
 
-        channel.QueueDeclare(queue: queueType, durable: false, exclusive: false, autoDelete: false, arguments: null);
+        // Если кол-во подключений уже больше 1, то не будем плодить их,
+        // а в рамках одного подключения будем работать с очередью.
+        if (_counter < 1)
+        {
+            var flags = QueueTypeEnum.ScrumMasterAiMessage | QueueTypeEnum.ScrumMasterAiMessage;
+
+            var connection1 = connection.CreateConnection();
+            _channel = connection1.CreateModel();
+
+            _channel.QueueDeclare(queue: string.Empty.CreateQueueDeclareNameFactory(configEnv.Environment, flags),
+                durable: false, exclusive: false, autoDelete: true, arguments: null);
+
+            _counter++;
+        }
+
+        // var factory = CreateRabbitMqConnectionFactory.CreateRabbitMqConnection(_configuration);
+        // using var connection1 = factory.CreateConnection();
+        // using var channel = connection.CreateModel();
+        //
+        // channel.QueueDeclare(queue: queueType, durable: false, exclusive: false, autoDelete: false, arguments: null);
 
         var message = JsonConvert.SerializeObject(@event);
         var body = Encoding.UTF8.GetBytes(message);
 
-        channel.BasicPublish(exchange: string.Empty, routingKey: queueType, basicProperties: null,
+        _channel.BasicPublish(exchange: string.Empty, routingKey: queueType, basicProperties: null,
             body: body);
-        
-        return Task.CompletedTask;
+
+        await Task.CompletedTask;
     }
 }

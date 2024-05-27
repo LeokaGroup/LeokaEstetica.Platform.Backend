@@ -234,7 +234,7 @@ internal class BaseServiceTest
         var ordersRepository = new OrdersRepository(pgContext);
         var commerceRepository = new CommerceRepository(pgContext, AppConfiguration);
         var commerceRedisService = new CommerceRedisService(distributedCache);
-        var rabbitMqService = new RabbitMqService(AppConfiguration);
+        var rabbitMqService = new RabbitMqService(null);
         
         PayMasterService = new PayMasterService(null, AppConfiguration, userRepository,
             commerceRepository, accessUserService, null, commerceRedisService, rabbitMqService, mapper, null, null);

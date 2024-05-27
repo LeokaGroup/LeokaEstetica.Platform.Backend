@@ -1,6 +1,6 @@
 using LeokaEstetica.Platform.Base.Models.IntegrationEvents.Refunds;
 
-namespace LeokaEstetica.Platform.Base.Helpers;
+namespace LeokaEstetica.Platform.Base.Factors;
 
 /// <summary>
 /// Класс наполнения данных события возвратов.

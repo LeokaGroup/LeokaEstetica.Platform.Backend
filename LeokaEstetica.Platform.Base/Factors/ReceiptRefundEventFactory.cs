@@ -1,6 +1,6 @@
 using LeokaEstetica.Platform.Base.Models.IntegrationEvents.Receipts;
 
-namespace LeokaEstetica.Platform.Base.Helpers;
+namespace LeokaEstetica.Platform.Base.Factors;
 
 /// <summary>
 /// Класс наполнения данных события чека возврата.

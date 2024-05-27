@@ -189,4 +189,21 @@ public static class GlobalConfigKeys
         /// </summary>
         public const string PROJECT_MANAGEMENT_FILE_MANAGER_SETTINGS = "ProjectManagement.FileManagerSettings";
     }
+
+    /// <summary>
+    /// Класс ендпоинтов прокси модуля УП.
+    /// </summary>
+    public static class ProjectManagementProxyApi
+    {
+        /// <summary>
+        /// Ендпоинт получения среды окружения из конфига модуля УП.
+        /// </summary>
+        public static string PROJECT_MANAGEMENT_CONFIG_ENVIRONMENT_PROXY_API =
+            "/project-management/proxy/config-environment";
+        
+        /// <summary>
+        /// Ендпоинт получения конфига настроек RabbitMQ из конфига модуля УП.
+        /// </summary>
+        public static string PROJECT_MANAGEMENT_CONFIG_RABBITMQ_PROXY_API = "/project-management/proxy/config-rabbitmq";
+    }
 }

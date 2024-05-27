@@ -6,7 +6,7 @@ using LeokaEstetica.Platform.Access.Abstractions.User;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.Base.Enums;
 using LeokaEstetica.Platform.Base.Extensions.StringExtensions;
-using LeokaEstetica.Platform.Base.Helpers;
+using LeokaEstetica.Platform.Base.Factors;
 using LeokaEstetica.Platform.Core.Constants;
 using LeokaEstetica.Platform.Database.Abstractions.Commerce;
 using LeokaEstetica.Platform.Database.Abstractions.Config;
@@ -36,6 +36,7 @@ using Newtonsoft.Json;
 namespace LeokaEstetica.Platform.Processing.Services.PayMaster;
 
 /// <summary>
+/// TODO: Не используем пока что PayMaster.
 /// Класс реализует методы сервиса работы с платежной системой PayMaster.
 /// </summary>
 internal sealed class PayMasterService : IPayMasterService
@@ -282,7 +283,7 @@ internal sealed class PayMasterService : IPayMasterService
 
         var queueType = string.Empty.CreateQueueDeclareNameFactory(_configuration["Environment"],
             QueueTypeEnum.RefundsQueue);
-        await _rabbitMqService.PublishAsync(refundEvent, queueType);
+        // await _rabbitMqService.PublishAsync(refundEvent, queueType);
 
         _logger?.LogInformation("Конец создания возврата платежа.");
 
@@ -383,7 +384,7 @@ internal sealed class PayMasterService : IPayMasterService
 
         var queueType = string.Empty.CreateQueueDeclareNameFactory(_configuration["Environment"],
             QueueTypeEnum.ReceiptRefundQueue);
-        await _rabbitMqService.PublishAsync(receiptRefundEvent, queueType);
+        // await _rabbitMqService.PublishAsync(receiptRefundEvent, queueType);
 
         _logger?.LogInformation("Конец создания чека возврата платежа.");
 

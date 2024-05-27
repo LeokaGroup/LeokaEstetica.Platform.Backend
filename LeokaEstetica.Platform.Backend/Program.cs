@@ -138,7 +138,11 @@ builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory())
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 // Подключаем SignalR.
-builder.Services.AddSignalR();
+builder.Services.AddSignalR(opt =>
+{
+    // Максимальный размер сообщения 64 КБ. Раньше бэк закрывал соединение принудительно, по дефолту 32 КБ.
+    opt.MaximumReceiveMessageSize = 64 * 1024;
+});
 
 // Подключаем кэш Redis.
 builder.Services.AddStackExchangeRedisCache(options =>
@@ -165,6 +169,9 @@ builder.Services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
 
 builder.Logging.ClearProviders();
 builder.Host.UseNLog();
+
+// Регистрируем IHttpClientFactory.
+builder.Services.AddHttpClient();
 
 // builder.Services.AddProblemDetails();
 

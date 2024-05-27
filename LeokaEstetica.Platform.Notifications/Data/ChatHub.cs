@@ -162,7 +162,7 @@ internal sealed class ChatHub : Hub, IHubService
     }
 
     /// <inheritdoc />
-    public async Task SendMessageAsync(string message, long dialogId, string account, string token)
+    public async Task SendMessageAsync(string message, long dialogId, string account, string token, string apiUrl)
     {
         try
         {

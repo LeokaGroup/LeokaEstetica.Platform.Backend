@@ -1,13 +1,19 @@
+using System.Net.Http.Json;
 using System.Runtime.CompilerServices;
-using AutoMapper;
 using Dapper;
 using LeokaEstetica.Platform.Base.Abstractions.Messaging.Chat;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.Chat;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.Base.Builders;
+using LeokaEstetica.Platform.Base.Enums;
+using LeokaEstetica.Platform.Base.Extensions;
+using LeokaEstetica.Platform.Base.Extensions.StringExtensions;
+using LeokaEstetica.Platform.Base.Factors;
+using LeokaEstetica.Platform.Core.Constants;
 using LeokaEstetica.Platform.Integrations.Abstractions.Discord;
 using LeokaEstetica.Platform.Models.Dto.Chat.Input;
 using LeokaEstetica.Platform.Models.Dto.Chat.Output;
+using LeokaEstetica.Platform.Models.Dto.Proxy.ProjectManagement;
 using LeokaEstetica.Platform.Models.Enums;
 using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Redis.Abstractions.Client;
@@ -27,44 +33,48 @@ namespace LeokaEstetica.Platform.Notifications.Data;
 internal sealed class ProjectManagementHub : Hub, IHubService
 {
     private readonly IChatRepository _chatRepository;
-    private readonly IMapper _mapper;
     private readonly IUserRepository _userRepository;
     private readonly ILogger<ProjectManagementHub> _logger;
     private readonly IConnectionService _connectionService;
     private readonly IDiscordService _discordService;
     private readonly IChatService _chatService;
     private readonly IClientConnectionService _clientConnectionService;
-    
+    // private readonly IRabbitMqService _rabbitMqService;
+    private readonly IHttpClientFactory _httpClientFactory;
+
     /// <summary>
     /// Конструктор.
     /// </summary>
     /// <param name="chatRepository">Репозиторий чата.</param>
-    /// <param name="mapper">Автомаппер.</param>
     /// <param name="userRepository">Репозиторий пользователей.</param>
     /// <param name="logger">Логгер.</param>
     /// <param name="connectionService">Сервис подключений Redis.</param>
     /// <param name="discordService">Сервис уведомлений дискорда.</param>
     /// <param name="chatService">Сервис чатов.</param>
     /// <param name="clientConnectionService">Сервис подключений клиентов кэша.</param>
+    /// <param name="clientConnectionService">Сервис брокера сообщений.</param>
+    /// <param name="httpClientFactory">Факторка Http-клиентов.</param>
     public ProjectManagementHub(IChatRepository chatRepository,
-        IMapper mapper,
         IUserRepository userRepository,
         ILogger<ProjectManagementHub> logger,
         IConnectionService connectionService,
         IDiscordService discordService,
         IChatService chatService,
-        IClientConnectionService clientConnectionService)
+        IClientConnectionService clientConnectionService,
+        // IRabbitMqService rabbitMqService,
+        IHttpClientFactory httpClientFactory)
     {
         _chatRepository = chatRepository;
-        _mapper = mapper;
         _userRepository = userRepository;
         _logger = logger;
         _connectionService = connectionService;
         _discordService = discordService;
         _chatService = chatService;
         _clientConnectionService = clientConnectionService;
+        // _rabbitMqService = rabbitMqService;
+        _httpClientFactory = httpClientFactory;
     }
-    
+
     /// <inheritdoc />
     public async Task GetDialogsAsync(string account, string token, long? objectId = null)
     {
@@ -148,7 +158,7 @@ internal sealed class ProjectManagementHub : Hub, IHubService
     }
 
     /// <inheritdoc />
-    public async Task SendMessageAsync(string message, long dialogId, string account, string token)
+    public async Task SendMessageAsync(string message, long dialogId, string account, string token, string apiUrl)
     {
         try
         {
@@ -169,15 +179,45 @@ internal sealed class ProjectManagementHub : Hub, IHubService
                 throw new InvalidOperationException($"Id пользователя с аккаунтом {account} не найден.");
             }
 
-            var result = await _chatService.SendMessageAsync(message, dialogId, userId, token, true, true);
-            result.ActionType = DialogActionType.Message.ToString();
+            using var httpClient = _httpClientFactory.CreateClient();
+            httpClient.SetHttpClientRequestAuthorizationHeader(token);
 
-            var clients = await _clientConnectionService.CreateClientsResultAsync(dialogId, userId, token);
+            var configEnv = await httpClient.GetFromJsonAsync<ProxyConfigEnvironmentOutput>(string.Concat(apiUrl,
+                GlobalConfigKeys.ProjectManagementProxyApi.PROJECT_MANAGEMENT_CONFIG_ENVIRONMENT_PROXY_API));
+
+            if (configEnv is null)
+            {
+                throw new InvalidOperationException("Не удалось получить среду окружения из конфига модуля УП.");
+            }
+
+            var rabbitMqConfig = await httpClient.GetFromJsonAsync<ProxyConfigRabbitMqOutput>(string.Concat(apiUrl,
+                GlobalConfigKeys.ProjectManagementProxyApi.PROJECT_MANAGEMENT_CONFIG_RABBITMQ_PROXY_API));
+                
+            if (rabbitMqConfig is null)
+            {
+                throw new InvalidOperationException("Не удалось получить настройки RabbitMQ из конфига модуля УП.");
+            }
             
-            await Clients
-                .Clients(clients.AsList())
-                .SendAsync("listenSendMessage", result)
-                .ConfigureAwait(false);
+            var queueType = string.Empty.CreateQueueDeclareNameFactory(configEnv.Environment,
+                QueueTypeEnum.ScrumMasterAiMessage);
+
+            var scrumMasterAiMessageEvent = ScrumMasterAiMessageEventFactory.CreateScrumMasterAiMessageEvent(message,
+                token, userId);
+            
+            // Отправляем событие в кролика. Он сам же и отвечает на сообщение в джобе нейросети.
+            // await _rabbitMqService.PublishAsync(scrumMasterAiMessageEvent, queueType, rabbitMqConfig, configEnv);
+
+            // Пишем сообщение в БД.
+            await _chatService.SendMessageAsync(message, dialogId, userId, token, true, true).ConfigureAwait(false);
+            
+            // result.ActionType = DialogActionType.Message.ToString();
+
+            // var clients = await _clientConnectionService.CreateClientsResultAsync(dialogId, userId, token);
+            
+            // await Clients
+            //     .Clients(clients.AsList())
+            //     .SendAsync("listenSendMessage", result)
+            //     .ConfigureAwait(false);
         }
 
         catch (Exception ex)

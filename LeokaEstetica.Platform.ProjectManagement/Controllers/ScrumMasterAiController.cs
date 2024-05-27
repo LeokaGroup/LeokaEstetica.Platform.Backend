@@ -1,4 +1,5 @@
 ﻿using LeokaEstetica.Platform.Base;
+using LeokaEstetica.Platform.Base.Filters;
 using LeokaEstetica.Platform.Integrations.Abstractions.Discord;
 using LeokaEstetica.Platform.ProjectManagement.ScrumMasterAI.Abstractions;
 using Microsoft.AspNetCore.Mvc;
@@ -10,7 +11,7 @@ namespace LeokaEstetica.Platform.ProjectManagement.Controllers;
 /// </summary>
 [ApiController]
 [Route("project-management/scrum-master-ai")]
-// [AuthFilter]
+[AuthFilter]
 public class ScrumMasterAiController : BaseController
 {
     private readonly ILogger<ScrumMasterAiController> _logger;
