@@ -12,7 +12,7 @@ public class RabbitMqModule : Module
     {
         builder.RegisterType<RabbitMqService>()
             .Named<IRabbitMqService>("RabbitMqService")
-            .SingleInstance();
+            .InstancePerLifetimeScope();
         builder.RegisterType<RabbitMqService>()
             .As<IRabbitMqService>()
             .InstancePerLifetimeScope();

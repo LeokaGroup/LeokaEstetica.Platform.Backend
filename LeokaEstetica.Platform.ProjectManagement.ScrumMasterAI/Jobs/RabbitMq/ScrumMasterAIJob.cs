@@ -34,7 +34,7 @@ internal sealed class ScrumMasterAIJob : IJob
     private readonly IGlobalConfigRepository _globalConfigRepository;
     private readonly IDiscordService _discordService;
     private readonly Lazy<IProjectManagementNotificationService> _projectManagementNotificationService;
-    private readonly Lazy<IFileManagerService> _fileManagerService;
+    private readonly IFileManagerService _fileManagerService;
     private readonly IScrumMasterAiRepository _scrumMasterAiRepository;
 
     /// <summary>
@@ -70,7 +70,7 @@ internal sealed class ScrumMasterAIJob : IJob
         IGlobalConfigRepository globalConfigRepository,
         IDiscordService discordService,
         Lazy<IProjectManagementNotificationService> projectManagementNotificationService,
-        Lazy<IFileManagerService> fileManagerService,
+        IFileManagerService fileManagerService,
         IScrumMasterAiRepository scrumMasterAiRepository)
     {
         _logger = logger;
@@ -266,8 +266,6 @@ internal sealed class ScrumMasterAIJob : IJob
                                 return;
                             }
 
-                            var mlContext = new MLContext();
-
                             var version = await _scrumMasterAiRepository.GetLastNetworkVersionAsync();
 
                             if (string.IsNullOrWhiteSpace(version))
@@ -275,9 +273,11 @@ internal sealed class ScrumMasterAIJob : IJob
                                 throw new InvalidOperationException(
                                     "Не удалось получить актуальную версию модели нейросети: scrum_master_ai_message");
                             }
-
-                            var trainedModelStream = await _fileManagerService.Value.DownloadNetworkModelAsync(version,
+                            
+                            var trainedModelStream = await _fileManagerService.DownloadNetworkModelAsync(version,
                                 ".scrum_master_ai_message.zip");
+                                
+                            var mlContext = new MLContext();
 
                             // Загружаем нейросети ее опыт предыдущих эпох.
                             var loadЕrainedModel = mlContext.Model.Load(trainedModelStream, out var _);
@@ -357,7 +357,7 @@ internal sealed class ScrumMasterAIJob : IJob
 
         catch (Exception ex)
         {
-            await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
+            // await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
 
             _logger.LogError(ex, ex.Message);
             throw;

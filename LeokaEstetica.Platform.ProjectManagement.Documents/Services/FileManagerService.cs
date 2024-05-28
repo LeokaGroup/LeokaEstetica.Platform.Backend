@@ -1,6 +1,7 @@
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Net.Sockets;
+using System.Runtime.CompilerServices;
 using LeokaEstetica.Platform.Database.Abstractions.Config;
 using LeokaEstetica.Platform.Models.Enums;
 using LeokaEstetica.Platform.ProjectManagment.Documents.Abstractions;
@@ -11,6 +12,8 @@ using Microsoft.ML;
 using Renci.SshNet;
 using Renci.SshNet.Common;
 
+[assembly: InternalsVisibleTo("LeokaEstetica.Platform.ProjectManagement.ScrumMasterAI")]
+
 namespace LeokaEstetica.Platform.ProjectManagment.Documents.Services;
 
 /// <summary>
@@ -19,7 +22,7 @@ namespace LeokaEstetica.Platform.ProjectManagment.Documents.Services;
 internal sealed class FileManagerService : IFileManagerService
 {
     private readonly ILogger<FileManagerService> _logger;
-    private readonly Lazy<IGlobalConfigRepository> _globalConfigRepository;
+    private readonly IGlobalConfigRepository _globalConfigRepository;
     
     /// <summary>
     /// Кол-во уже сделанных попыток подключения к SFTP-серверу.
@@ -37,7 +40,7 @@ internal sealed class FileManagerService : IFileManagerService
     /// <param name="logger">Логгер.</param>
     /// <param name="globalConfigRepository">Репозиторий глобал конфига.</param>
     public FileManagerService(ILogger<FileManagerService> logger,
-        Lazy<IGlobalConfigRepository> globalConfigRepository)
+        IGlobalConfigRepository globalConfigRepository)
     {
         _logger = logger;
         _globalConfigRepository = globalConfigRepository;
@@ -51,7 +54,7 @@ internal sealed class FileManagerService : IFileManagerService
             return;
         }
 
-        var settings = await _globalConfigRepository.Value.GetFileManagerSettingsAsync();
+        var settings = await _globalConfigRepository.GetFileManagerSettingsAsync();
         
         using var sftpClient = new SftpClient(settings.Host, settings.Port, settings.Login, settings.Password);
 
@@ -149,7 +152,7 @@ internal sealed class FileManagerService : IFileManagerService
     /// <inheritdoc />
     public async Task<FileContentResult> DownloadFileAsync(string fileName, long projectId, long taskId)
     {
-        var settings = await _globalConfigRepository.Value.GetFileManagerSettingsAsync();
+        var settings = await _globalConfigRepository.GetFileManagerSettingsAsync();
         
         using var sftpClient = new SftpClient(settings.Host, settings.Port, settings.Login, settings.Password);
 
@@ -226,7 +229,7 @@ internal sealed class FileManagerService : IFileManagerService
     /// <inheritdoc />
     public async Task RemoveFileAsync(string fileName, long projectId, long taskId)
     {
-        var settings = await _globalConfigRepository.Value.GetFileManagerSettingsAsync();
+        var settings = await _globalConfigRepository.GetFileManagerSettingsAsync();
         
         using var sftpClient = new SftpClient(settings.Host, settings.Port, settings.Login, settings.Password);
         
@@ -306,7 +309,7 @@ internal sealed class FileManagerService : IFileManagerService
     public async Task<FileContentResult> GetUserAvatarFileAsync(string fileName, long projectId, long? userId,
         bool isNoPhoto)
     {
-        var settings = await _globalConfigRepository.Value.GetFileManagerSettingsAsync();
+        var settings = await _globalConfigRepository.GetFileManagerSettingsAsync();
         
         using var sftpClient = new SftpClient(settings.Host, settings.Port, settings.Login, settings.Password);
 
@@ -408,7 +411,7 @@ internal sealed class FileManagerService : IFileManagerService
     public async Task<IDictionary<long, FileContentResult>> GetUserAvatarFilesAsync(
         IEnumerable<(long? UserId, string DocumentName, DocumentTypeEnum DocumentType)> documents, long projectId)
     {
-        var settings = await _globalConfigRepository.Value.GetFileManagerSettingsAsync();
+        var settings = await _globalConfigRepository.GetFileManagerSettingsAsync();
         
         using var sftpClient = new SftpClient(settings.Host, settings.Port, settings.Login, settings.Password);
         
@@ -495,7 +498,7 @@ internal sealed class FileManagerService : IFileManagerService
     /// <inheritdoc />
     public async Task UploadUserAvatarFileAsync(IFormFileCollection files, long projectId, long userId)
     {
-        var settings = await _globalConfigRepository.Value.GetFileManagerSettingsAsync();
+        var settings = await _globalConfigRepository.GetFileManagerSettingsAsync();
         
         using var sftpClient = new SftpClient(settings.Host, settings.Port, settings.Login, settings.Password);
         
@@ -583,7 +586,7 @@ internal sealed class FileManagerService : IFileManagerService
     /// <inheritdoc />
     public async Task UploadNetworkModelAsync(ITransformer model, string version, string modelName)
     {
-        var settings = await _globalConfigRepository.Value.GetFileManagerSettingsAsync();
+        var settings = await _globalConfigRepository.GetFileManagerSettingsAsync();
         
         using var sftpClient = new SftpClient(settings.Host, settings.Port, settings.Login, settings.Password);
         
@@ -656,7 +659,7 @@ internal sealed class FileManagerService : IFileManagerService
     /// <inheritdoc />
     public async Task<MemoryStream> DownloadNetworkModelAsync(string version, string modelName)
     {
-        var settings = await _globalConfigRepository.Value.GetFileManagerSettingsAsync();
+        var settings = await _globalConfigRepository.GetFileManagerSettingsAsync();
         
         using var sftpClient = new SftpClient(settings.Host, settings.Port, settings.Login, settings.Password);
         
