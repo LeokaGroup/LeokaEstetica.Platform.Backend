@@ -1,7 +1,7 @@
 using LeokaEstetica.Platform.Base.Abstractions.Messaging.EventBus;
 using LeokaEstetica.Platform.Models.Dto.Proxy.ProjectManagement;
 
-namespace LeokaEstetica.Platform.Messaging.Abstractions.RabbitMq;
+namespace LeokaEstetica.Platform.RabbitMq.Abstractions;
 
 /// <summary>
 /// Абстракция работы с кроликом.

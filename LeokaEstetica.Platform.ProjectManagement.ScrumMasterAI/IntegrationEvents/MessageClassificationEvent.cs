@@ -1,4 +1,4 @@
-﻿using LeokaEstetica.Platform.ProjectManagement.ScrumMasterAI.Enums;
+﻿using LeokaEstetica.Platform.Core.Enums;
 
 namespace LeokaEstetica.Platform.ProjectManagement.ScrumMasterAI.IntegrationEvents;
 

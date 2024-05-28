@@ -10,12 +10,14 @@ using LeokaEstetica.Platform.Base.Extensions;
 using LeokaEstetica.Platform.Base.Extensions.StringExtensions;
 using LeokaEstetica.Platform.Base.Factors;
 using LeokaEstetica.Platform.Core.Constants;
+using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Integrations.Abstractions.Discord;
 using LeokaEstetica.Platform.Models.Dto.Chat.Input;
 using LeokaEstetica.Platform.Models.Dto.Chat.Output;
 using LeokaEstetica.Platform.Models.Dto.Proxy.ProjectManagement;
 using LeokaEstetica.Platform.Models.Enums;
 using LeokaEstetica.Platform.Notifications.Abstractions;
+using LeokaEstetica.Platform.RabbitMq.Abstractions;
 using LeokaEstetica.Platform.Redis.Abstractions.Client;
 using LeokaEstetica.Platform.Redis.Abstractions.Connection;
 using Microsoft.AspNetCore.SignalR;
@@ -39,7 +41,7 @@ internal sealed class ProjectManagementHub : Hub, IHubService
     private readonly IDiscordService _discordService;
     private readonly IChatService _chatService;
     private readonly IClientConnectionService _clientConnectionService;
-    // private readonly IRabbitMqService _rabbitMqService;
+    private readonly IRabbitMqService _rabbitMqService;
     private readonly IHttpClientFactory _httpClientFactory;
 
     /// <summary>
@@ -61,7 +63,7 @@ internal sealed class ProjectManagementHub : Hub, IHubService
         IDiscordService discordService,
         IChatService chatService,
         IClientConnectionService clientConnectionService,
-        // IRabbitMqService rabbitMqService,
+        IRabbitMqService rabbitMqService,
         IHttpClientFactory httpClientFactory)
     {
         _chatRepository = chatRepository;
@@ -71,7 +73,7 @@ internal sealed class ProjectManagementHub : Hub, IHubService
         _discordService = discordService;
         _chatService = chatService;
         _clientConnectionService = clientConnectionService;
-        // _rabbitMqService = rabbitMqService;
+        _rabbitMqService = rabbitMqService;
         _httpClientFactory = httpClientFactory;
     }
 
@@ -202,10 +204,10 @@ internal sealed class ProjectManagementHub : Hub, IHubService
                 QueueTypeEnum.ScrumMasterAiMessage);
 
             var scrumMasterAiMessageEvent = ScrumMasterAiMessageEventFactory.CreateScrumMasterAiMessageEvent(message,
-                token, userId);
+                token, userId, ScrumMasterAiEventTypeEnum.Message);
             
             // Отправляем событие в кролика. Он сам же и отвечает на сообщение в джобе нейросети.
-            // await _rabbitMqService.PublishAsync(scrumMasterAiMessageEvent, queueType, rabbitMqConfig, configEnv);
+            await _rabbitMqService.PublishAsync(scrumMasterAiMessageEvent, queueType, rabbitMqConfig, configEnv);
 
             // Пишем сообщение в БД.
             await _chatService.SendMessageAsync(message, dialogId, userId, token, true, true).ConfigureAwait(false);

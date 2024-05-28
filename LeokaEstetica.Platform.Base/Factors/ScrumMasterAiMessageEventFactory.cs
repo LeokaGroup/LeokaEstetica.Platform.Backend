@@ -1,4 +1,5 @@
 ﻿using LeokaEstetica.Platform.Base.Models.IntegrationEvents.ScrumMasterAi;
+using LeokaEstetica.Platform.Core.Enums;
 
 namespace LeokaEstetica.Platform.Base.Factors;
 
@@ -13,10 +14,11 @@ public static class ScrumMasterAiMessageEventFactory
     /// <param name="message">Сообщение.</param>
     /// <param name="token">Токен пользователя.</param>
     /// <param name="userId">Id пользователя.</param>
+    /// <param name="scrumMasterAiEventType">Тип ивента нейросети.</param>
     /// <returns>Событие с данными.</returns>
     public static ScrumMasterAiMessageEvent CreateScrumMasterAiMessageEvent(string? message, string? token,
-        long userId)
+        long userId, ScrumMasterAiEventTypeEnum scrumMasterAiEventType)
     {
-        return new ScrumMasterAiMessageEvent(message, token, userId);
+        return new ScrumMasterAiMessageEvent(message, token, userId, scrumMasterAiEventType);
     }
 }

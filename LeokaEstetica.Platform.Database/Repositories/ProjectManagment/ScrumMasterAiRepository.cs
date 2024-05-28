@@ -27,10 +27,10 @@ internal sealed class ScrumMasterAiRepository : BaseRepository, IScrumMasterAiRe
 
         var query = "SELECT version_number " +
                     "FROM ai.scrum_master_ai_message_versions " +
-                    "ORDER BY DESC version_id " +
+                    "ORDER BY version_id DESC " +
                     "LIMIT 1";
 
-        var result = await connection.QueryFirstOrDefaultAsync(query);
+        var result = await connection.QueryFirstOrDefaultAsync<string?>(query);
 
         return result;
     }

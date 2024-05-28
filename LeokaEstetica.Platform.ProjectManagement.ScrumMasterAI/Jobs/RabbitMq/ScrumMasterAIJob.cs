@@ -3,11 +3,11 @@ using System.Text;
 using LeokaEstetica.Platform.Base.Enums;
 using LeokaEstetica.Platform.Base.Extensions.StringExtensions;
 using LeokaEstetica.Platform.Core.Constants;
+using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Database.Abstractions.Config;
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Integrations.Abstractions.Discord;
 using LeokaEstetica.Platform.Notifications.Abstractions;
-using LeokaEstetica.Platform.ProjectManagement.ScrumMasterAI.Enums;
 using LeokaEstetica.Platform.ProjectManagement.ScrumMasterAI.IntegrationEvents;
 using LeokaEstetica.Platform.ProjectManagement.ScrumMasterAI.Models;
 using LeokaEstetica.Platform.ProjectManagment.Documents.Abstractions;
@@ -69,7 +69,7 @@ internal sealed class ScrumMasterAIJob : IJob
     public ScrumMasterAIJob(ILogger<ScrumMasterAIJob> logger,
         IGlobalConfigRepository globalConfigRepository,
         IDiscordService discordService,
-         Lazy<IProjectManagementNotificationService> projectManagementNotificationService,
+        Lazy<IProjectManagementNotificationService> projectManagementNotificationService,
         Lazy<IFileManagerService> fileManagerService,
         IScrumMasterAiRepository scrumMasterAiRepository)
     {
@@ -117,11 +117,11 @@ internal sealed class ScrumMasterAIJob : IJob
                     queue: _messageQueueName.CreateQueueDeclareNameFactory(dataMap.GetString("Environment")!, flags),
                     durable: false, exclusive: false, autoDelete: true, arguments: null);
             }
-            
+
             catch (Exception ex)
             {
                 await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
-                
+
                 _logger.LogError(ex, ex.Message);
                 throw;
             }
@@ -144,18 +144,18 @@ internal sealed class ScrumMasterAIJob : IJob
                     queue: _analysisQueueName.CreateQueueDeclareNameFactory(dataMap.GetString("Environment")!, flags),
                     durable: false, exclusive: false, autoDelete: true, arguments: null);
             }
-            
+
             catch (Exception ex)
             {
                 await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
-                
+
                 _logger.LogError(ex, ex.Message);
                 throw;
             }
 
             _counterAnalysisQueue++;
         }
-        
+
         // Если канал не был создан, то не будем дергать память.
         if (_channelMessages is not null || _channelAnalysis is not null)
         {
@@ -217,126 +217,137 @@ internal sealed class ScrumMasterAIJob : IJob
                 var logger = _logger;
                 logger.LogInformation("Начали обработку сообщения из очереди сообщений для нейросети...");
 
-                // Если очередь не пуста, то будем парсить результат для проверки сообщений для нейросети.
-                if (!ea.Body.IsEmpty)
+                try
                 {
-                    var message = Encoding.UTF8.GetString(ea.Body.ToArray());
-                    var @event = JsonConvert.DeserializeObject<MessageClassificationEvent>(message);
-
-                    if (@event is null)
+                    // Если очередь не пуста, то будем парсить результат для проверки сообщений для нейросети.
+                    if (!ea.Body.IsEmpty)
                     {
-                        throw new InvalidOperationException(
-                            "Событие не содержит нужных данных." +
-                            $" Получили сообщение из очереди сообщений для нейросети: {message}");
-                    }
+                        var message = Encoding.UTF8.GetString(ea.Body.ToArray());
+                        var @event = JsonConvert.DeserializeObject<MessageClassificationEvent>(message);
 
-                    // Странный кейс, не ломаем приложением, но логируем такое.
-                    if (@event.ScrumMasterAiEventType == ScrumMasterAiEventTypeEnum.None)
-                    {
-                        var ex = new InvalidOperationException(
-                            "Неизвестный тип события из очереди сообщений нейросети. " +
-                            "Оставили сообщение в очереди сообщений для нейросети. " +
-                            "Событие должно было быть обработано из очереди сообщений нейросети," +
-                            " но осталось в очереди. " +
-                            $"Требуется исправление этого. Данные события: {JsonConvert.SerializeObject(@event)}");
-                            
-                        await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
-
-                        logger.LogError(ex, ex.Message);
-
-                        // TODO: Если бахнет кейс с null, то обработаем его тут.
-                        _channelMessages.BasicRecoverAsync(false);
-                    }
-                    
-                    else if (@event.ScrumMasterAiEventType == ScrumMasterAiEventTypeEnum.Message)
-                    {
-                        // TODO: Добавить отображение уведомления фронту о том, что знаем и разбираемся в таком кейсе.
-                        // Если токена не было - критичная ситуация, логируем такое, но не ломаем приложение.
-                        if (string.IsNullOrWhiteSpace(@event.Token))
-                        {
-                            var ex = new InvalidOperationException(
-                                "Токен был невалиден (null или пустой) при парсинге из очереди сообщений нейросети." +
-                                $" Данные события: {JsonConvert.SerializeObject(@event)}");
-                            _logger.LogError(ex, ex.Message);
-
-                            await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
-
-                            return;
-                        }
-                        
-                        var mlContext = new MLContext();
-
-                        var version = await _scrumMasterAiRepository.GetLastNetworkVersionAsync();
-
-                        if (string.IsNullOrWhiteSpace(version))
+                        if (@event is null)
                         {
                             throw new InvalidOperationException(
-                                "Не удалось получить актуальную версию модели нейросети: scrum_master_ai_message");
+                                "Событие не содержит нужных данных." +
+                                $" Получили сообщение из очереди сообщений для нейросети: {message}");
                         }
-                        
-                        var trainedModelStream = await _fileManagerService.Value.DownloadNetworkModelAsync(version,
-                                ".scrum_master_ai_message.zip");
 
-                        // Загружаем нейросети ее опыт предыдущих эпох.
-                        var loadЕrainedModel = mlContext.Model.Load(trainedModelStream, out var _);
-
-                        // Нейросеть проводит прогнозирование.
-                        var predEngine = mlContext.Model
-                            .CreatePredictionEngine<MessageClassification, MessageClassificationPrediction>(
-                                loadЕrainedModel);
-                        
-                        // Результат ответа нейросети после прогнозирования.
-                        var prediction = predEngine.Predict(new MessageClassification
-                        {
-                            Message = @event.Message
-                        });
-
-                        // TODO: Добавить отображение уведомления фронту о том, что знаем и разбираемся в таком кейсе.
-                        // Если нейросеть не дала ответа - критичная ситуация, логируем такое, но не ломаем приложение.
-                        if (string.IsNullOrWhiteSpace(prediction.Message))
+                        // Странный кейс, не ломаем приложением, но логируем такое.
+                        if (@event.ScrumMasterAiEventType == ScrumMasterAiEventTypeEnum.None)
                         {
                             var ex = new InvalidOperationException(
-                                "От нейросети не было получено ответа. " +
-                                "Требуется дообучение нейросети (она глупая либо не правильно провела классификацию.)." +
-                                $" Данные события: {JsonConvert.SerializeObject(@event)}. " +
-                                $"Данные ответа нейросети: {JsonConvert.SerializeObject(prediction)}.");
-                            _logger.LogError(ex, ex.Message);
+                                "Неизвестный тип события из очереди сообщений нейросети. " +
+                                "Оставили сообщение в очереди сообщений для нейросети. " +
+                                "Событие должно было быть обработано из очереди сообщений нейросети," +
+                                " но осталось в очереди. " +
+                                $"Требуется исправление этого. Данные события: {JsonConvert.SerializeObject(@event)}");
 
                             await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
 
-                            return;
+                            logger.LogError(ex, ex.Message);
+
+                            // TODO: Если бахнет кейс с null, то обработаем его тут.
+                            _channelMessages.BasicRecoverAsync(false);
                         }
-                        
-                        // Отправляем результат классификации ответа нейросети на фронт.
-                        await _projectManagementNotificationService.Value
-                            .SendClassificationNetworkMessageResultAsync(prediction.Message, @event.Token)
-                            .ConfigureAwait(false);
 
-                        // TODO: Если бахнет кейс с null, то обработаем его тут.
-                        // Подтверждаем сообщение, чтобы дропнуть его из очереди.
-                        _channelMessages.BasicAck(ea.DeliveryTag, false);
+                        else if (@event.ScrumMasterAiEventType == ScrumMasterAiEventTypeEnum.Message)
+                        {
+                            // TODO: Добавить отображение уведомления фронту о том, что знаем и разбираемся в таком кейсе.
+                            // Если токена не было - критичная ситуация, логируем такое, но не ломаем приложение.
+                            if (string.IsNullOrWhiteSpace(@event.Token))
+                            {
+                                var ex = new InvalidOperationException(
+                                    "Токен был невалиден (null или пустой) при парсинге из очереди сообщений нейросети." +
+                                    $" Данные события: {JsonConvert.SerializeObject(@event)}");
+                                _logger.LogError(ex, ex.Message);
+
+                                await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
+
+                                return;
+                            }
+
+                            var mlContext = new MLContext();
+
+                            var version = await _scrumMasterAiRepository.GetLastNetworkVersionAsync();
+
+                            if (string.IsNullOrWhiteSpace(version))
+                            {
+                                throw new InvalidOperationException(
+                                    "Не удалось получить актуальную версию модели нейросети: scrum_master_ai_message");
+                            }
+
+                            var trainedModelStream = await _fileManagerService.Value.DownloadNetworkModelAsync(version,
+                                ".scrum_master_ai_message.zip");
+
+                            // Загружаем нейросети ее опыт предыдущих эпох.
+                            var loadЕrainedModel = mlContext.Model.Load(trainedModelStream, out var _);
+
+                            // Нейросеть проводит прогнозирование.
+                            var predEngine = mlContext.Model
+                                .CreatePredictionEngine<MessageClassification, MessageClassificationPrediction>(
+                                    loadЕrainedModel);
+
+                            // Результат ответа нейросети после прогнозирования.
+                            var prediction = predEngine.Predict(new MessageClassification
+                            {
+                                Message = @event.Message
+                            });
+
+                            // TODO: Добавить отображение уведомления фронту о том, что знаем и разбираемся в таком кейсе.
+                            // Если нейросеть не дала ответа - критичная ситуация, логируем такое, но не ломаем приложение.
+                            if (string.IsNullOrWhiteSpace(prediction.Message))
+                            {
+                                var ex = new InvalidOperationException(
+                                    "От нейросети не было получено ответа. " +
+                                    "Требуется дообучение нейросети (она глупая либо не правильно провела классификацию.)." +
+                                    $" Данные события: {JsonConvert.SerializeObject(@event)}. " +
+                                    $"Данные ответа нейросети: {JsonConvert.SerializeObject(prediction)}.");
+                                _logger.LogError(ex, ex.Message);
+
+                                await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
+
+                                return;
+                            }
+
+                            // Отправляем результат классификации ответа нейросети на фронт.
+                            await _projectManagementNotificationService.Value
+                                .SendClassificationNetworkMessageResultAsync(prediction.Message, @event.Token)
+                                .ConfigureAwait(false);
+
+                            // TODO: Если бахнет кейс с null, то обработаем его тут.
+                            // Подтверждаем сообщение, чтобы дропнуть его из очереди.
+                            _channelMessages.BasicAck(ea.DeliveryTag, false);
+                        }
+
+                        // Недопустимая ситуация, но не ломаем приложением, а просто логируем кейс.
+                        else
+                        {
+                            var ex = new InvalidOperationException(
+                                "Оставили сообщение в очереди сообщений для нейросети. " +
+                                "Событие должно было быть обработано из очереди сообщений нейросети," +
+                                " но осталось в очереди. " +
+                                $"Требуется исправление этого. Данные события: {JsonConvert.SerializeObject(@event)}");
+                            await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
+
+                            logger.LogError(ex, ex.Message);
+
+                            // TODO: Если бахнет кейс с null, то обработаем его тут.
+                            _channelMessages.BasicRecoverAsync(false);
+                        }
                     }
 
-                    // Недопустимая ситуация, но не ломаем приложением, а просто логируем кейс.
-                    else
-                    {
-                        var ex = new InvalidOperationException(
-                            "Оставили сообщение в очереди сообщений для нейросети. " +
-                            "Событие должно было быть обработано из очереди сообщений нейросети," +
-                            " но осталось в очереди. " +
-                            $"Требуется исправление этого. Данные события: {JsonConvert.SerializeObject(@event)}");
-                        await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
+                    logger.LogInformation("Закончили обработку сообщения из очереди сообщений для нейросети...");
 
-                        logger.LogError(ex, ex.Message);
-
-                        // TODO: Если бахнет кейс с null, то обработаем его тут.
-                        _channelMessages.BasicRecoverAsync(false);
-                    }
+                    await Task.Yield();
                 }
 
-                logger.LogInformation("Закончили обработку сообщения из очереди сообщений для нейросети...");
+                catch (Exception ex)
+                {
+                    await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
 
-                await Task.Yield();
+                    logger.LogError(ex, ex.Message);
+                    throw;
+                }
             };
 
             _channelMessages.BasicConsume(_messageQueueName, false, consumer);
@@ -347,7 +358,7 @@ internal sealed class ScrumMasterAIJob : IJob
         catch (Exception ex)
         {
             await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
-            
+
             _logger.LogError(ex, ex.Message);
             throw;
         }
@@ -366,7 +377,7 @@ internal sealed class ScrumMasterAIJob : IJob
         catch (Exception ex)
         {
             await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
-            
+
             _logger.LogError(ex, ex.Message);
             throw;
         }

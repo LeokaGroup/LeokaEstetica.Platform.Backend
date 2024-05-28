@@ -17,6 +17,7 @@ public class ProxyConfigRabbitMqOutput
         HostName = hostName;
         UserName = userName;
         Password = password;
+        VirtualHost = virtualHost;
     }
 
     /// <summary>

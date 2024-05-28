@@ -1,4 +1,3 @@
-using System.Net.Http.Json;
 using LeokaEstetica.Platform.Base.Enums;
 using LeokaEstetica.Platform.Base.Extensions;
 using LeokaEstetica.Platform.Base.Extensions.StringExtensions;
@@ -9,7 +8,6 @@ using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.Commerce;
 using LeokaEstetica.Platform.Database.Abstractions.Config;
 using LeokaEstetica.Platform.Messaging.Abstractions.Mail;
-using LeokaEstetica.Platform.Messaging.Abstractions.RabbitMq;
 using LeokaEstetica.Platform.Models.Dto.Common.Cache;
 using LeokaEstetica.Platform.Models.Dto.Input.Base;
 using LeokaEstetica.Platform.Models.Dto.Input.Commerce.PayMaster;
@@ -17,11 +15,11 @@ using LeokaEstetica.Platform.Models.Dto.Input.Commerce.YandexKassa;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce.Base.Output;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce.PayMaster;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce.YandexKassa;
-using LeokaEstetica.Platform.Models.Dto.Proxy.ProjectManagement;
 using LeokaEstetica.Platform.Processing.Consts;
 using LeokaEstetica.Platform.Processing.Enums;
 using LeokaEstetica.Platform.Processing.Models.Input;
 using LeokaEstetica.Platform.Processing.Models.Output;
+using LeokaEstetica.Platform.RabbitMq.Abstractions;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 
