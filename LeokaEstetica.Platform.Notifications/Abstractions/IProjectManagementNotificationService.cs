@@ -48,6 +48,6 @@ public interface IProjectManagementNotificationService
     /// Метод отправляет результат классификации на фронт в чат.
     /// </summary>
     /// <param name="message">Сообщение для чата на фронт.</param>
-    /// <param name="token">Токен пользователя.</param>
-    Task SendClassificationNetworkMessageResultAsync(string message, string token);
+    /// <param name="connectionId">Id подключения сокетов.</param>
+    Task SendClassificationNetworkMessageResultAsync(string message, string connectionId);
 }

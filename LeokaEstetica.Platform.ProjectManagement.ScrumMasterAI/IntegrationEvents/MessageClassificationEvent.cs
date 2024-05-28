@@ -28,10 +28,10 @@ public class MessageClassificationEvent
     public ScrumMasterAiEventTypeEnum ScrumMasterAiEventType { get; set; }
 
     /// <summary>
-    /// TODO: Если токен успеет измениться (пользователь уйдет со страницы), то пользователь не получит ответ.
+    /// TODO: Если Id подключения успеет измениться (пользователь уйдет со страницы), то пользователь не получит ответ.
     /// TODO: Кривое место, важно будет рефачить это, чтоб всегда получал ответ
     /// TODO: (Гуид не подойдет уже, так как гуид создается каждый раз при входе на страницы разные на фронте).
-    /// Токен пользователя. Нужно для отправки ему ответа нейросетью.
+    /// <param name="connectionId">Id подключения сокетов.</param>
     /// </summary>
-    public string? Token { get; set; }
+    public string? ConnectionId { get; set; }
 }

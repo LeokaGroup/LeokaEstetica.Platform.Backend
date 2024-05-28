@@ -12,14 +12,14 @@ public class ScrumMasterAiMessageEvent : BaseEventMessage
     /// Конструктор.
     /// </summary>
     /// <param name="message">Сообщение.</param>
-    /// <param name="token">Токен пользователя.</param>
+    /// <param name="connectionId">Id подключения сокетов.</param>
     /// <param name="userId">Id пользователя.</param>
     /// <param name="scrumMasterAiEventType">Тип ивента нейросети.</param>
-    public ScrumMasterAiMessageEvent(string? message, string? token, long userId,
+    public ScrumMasterAiMessageEvent(string? message, string? connectionId, long userId,
         ScrumMasterAiEventTypeEnum scrumMasterAiEventType)
     {
         Message = message;
-        Token = token;
+        ConnectionId = connectionId;
         UserId = userId;
         ScrumMasterAiEventType = scrumMasterAiEventType;
     }
@@ -30,9 +30,9 @@ public class ScrumMasterAiMessageEvent : BaseEventMessage
     public string? Message { get; }
 
     /// <summary>
-    /// Токен пользователя.
+    /// <param name="connectionId">Id подключения сокетов.</param>
     /// </summary>
-    public string? Token { get; }
+    public string? ConnectionId { get; }
 
     /// <summary>
     /// Id пользователя.

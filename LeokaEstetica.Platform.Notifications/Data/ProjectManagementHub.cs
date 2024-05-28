@@ -202,9 +202,11 @@ internal sealed class ProjectManagementHub : Hub, IHubService
             
             var queueType = string.Empty.CreateQueueDeclareNameFactory(configEnv.Environment,
                 QueueTypeEnum.ScrumMasterAiMessage);
+            
+            var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
 
             var scrumMasterAiMessageEvent = ScrumMasterAiMessageEventFactory.CreateScrumMasterAiMessageEvent(message,
-                token, userId, ScrumMasterAiEventTypeEnum.Message);
+                connectionId, userId, ScrumMasterAiEventTypeEnum.Message);
             
             // Отправляем событие в кролика. Он сам же и отвечает на сообщение в джобе нейросети.
             await _rabbitMqService.PublishAsync(scrumMasterAiMessageEvent, queueType, rabbitMqConfig, configEnv);

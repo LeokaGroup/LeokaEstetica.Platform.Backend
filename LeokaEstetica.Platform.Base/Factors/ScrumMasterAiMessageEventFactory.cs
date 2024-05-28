@@ -12,13 +12,13 @@ public static class ScrumMasterAiMessageEventFactory
     /// Метод наполняет данными событие сообщений нейросети.
     /// </summary>
     /// <param name="message">Сообщение.</param>
-    /// <param name="token">Токен пользователя.</param>
+    /// <param name="connectionId">Id подключения сокетов.</param>
     /// <param name="userId">Id пользователя.</param>
     /// <param name="scrumMasterAiEventType">Тип ивента нейросети.</param>
     /// <returns>Событие с данными.</returns>
-    public static ScrumMasterAiMessageEvent CreateScrumMasterAiMessageEvent(string? message, string? token,
+    public static ScrumMasterAiMessageEvent CreateScrumMasterAiMessageEvent(string? message, string? connectionId,
         long userId, ScrumMasterAiEventTypeEnum scrumMasterAiEventType)
     {
-        return new ScrumMasterAiMessageEvent(message, token, userId, scrumMasterAiEventType);
+        return new ScrumMasterAiMessageEvent(message, connectionId, userId, scrumMasterAiEventType);
     }
 }

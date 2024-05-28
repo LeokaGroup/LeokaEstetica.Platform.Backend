@@ -91,10 +91,8 @@ internal sealed class ProjectManagementNotificationService : IProjectManagementN
     }
 
     /// <inheritdoc />
-    public async Task SendClassificationNetworkMessageResultAsync(string message, string token)
+    public async Task SendClassificationNetworkMessageResultAsync(string message, string connectionId)
     {
-        var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
-
         await _hubContext.Clients
             .Client(connectionId)
             .SendAsync("SendClassificationNetworkMessageResult", message);

@@ -254,7 +254,7 @@ internal sealed class ScrumMasterAIJob : IJob
                         {
                             // TODO: Добавить отображение уведомления фронту о том, что знаем и разбираемся в таком кейсе.
                             // Если токена не было - критичная ситуация, логируем такое, но не ломаем приложение.
-                            if (string.IsNullOrWhiteSpace(@event.Token))
+                            if (string.IsNullOrWhiteSpace(@event.ConnectionId))
                             {
                                 var ex = new InvalidOperationException(
                                     "Токен был невалиден (null или пустой) при парсинге из очереди сообщений нейросети." +
@@ -311,7 +311,7 @@ internal sealed class ScrumMasterAIJob : IJob
 
                             // Отправляем результат классификации ответа нейросети на фронт.
                             await _projectManagementNotificationService
-                                .SendClassificationNetworkMessageResultAsync(prediction.Message, @event.Token)
+                                .SendClassificationNetworkMessageResultAsync(prediction.Message, @event.ConnectionId)
                                 .ConfigureAwait(false);
 
                             // TODO: Если бахнет кейс с null, то обработаем его тут.
