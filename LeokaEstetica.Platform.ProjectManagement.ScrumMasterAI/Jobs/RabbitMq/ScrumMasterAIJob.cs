@@ -33,7 +33,7 @@ internal sealed class ScrumMasterAIJob : IJob
     private readonly ILogger<ScrumMasterAIJob> _logger;
     private readonly IGlobalConfigRepository _globalConfigRepository;
     private readonly IDiscordService _discordService;
-    private readonly Lazy<IProjectManagementNotificationService> _projectManagementNotificationService;
+    private readonly IProjectManagementNotificationService _projectManagementNotificationService;
     private readonly IFileManagerService _fileManagerService;
     private readonly IScrumMasterAiRepository _scrumMasterAiRepository;
 
@@ -69,7 +69,7 @@ internal sealed class ScrumMasterAIJob : IJob
     public ScrumMasterAIJob(ILogger<ScrumMasterAIJob> logger,
         IGlobalConfigRepository globalConfigRepository,
         IDiscordService discordService,
-        Lazy<IProjectManagementNotificationService> projectManagementNotificationService,
+        IProjectManagementNotificationService projectManagementNotificationService,
         IFileManagerService fileManagerService,
         IScrumMasterAiRepository scrumMasterAiRepository)
     {
@@ -275,7 +275,7 @@ internal sealed class ScrumMasterAIJob : IJob
                             }
                             
                             var trainedModelStream = await _fileManagerService.DownloadNetworkModelAsync(version,
-                                ".scrum_master_ai_message.zip");
+                                "scrum_master_ai_message.zip");
                                 
                             var mlContext = new MLContext();
 
@@ -310,7 +310,7 @@ internal sealed class ScrumMasterAIJob : IJob
                             }
 
                             // Отправляем результат классификации ответа нейросети на фронт.
-                            await _projectManagementNotificationService.Value
+                            await _projectManagementNotificationService
                                 .SendClassificationNetworkMessageResultAsync(prediction.Message, @event.Token)
                                 .ConfigureAwait(false);
 
@@ -357,7 +357,7 @@ internal sealed class ScrumMasterAIJob : IJob
 
         catch (Exception ex)
         {
-            // await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
+            await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
 
             _logger.LogError(ex, ex.Message);
             throw;

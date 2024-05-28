@@ -677,7 +677,7 @@ internal sealed class FileManagerService : IFileManagerService
             
             _logger.LogInformation($"Скачивается файл {0} ({1:N0} байт)", modelName);
             
-            using var stream = new MemoryStream();
+            var stream = new MemoryStream();
 
             sftpClient.DownloadFile(loadModelPath, stream);
 
