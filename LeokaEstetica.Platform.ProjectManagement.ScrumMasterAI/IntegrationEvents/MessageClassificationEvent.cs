@@ -13,14 +13,11 @@ public class MessageClassificationEvent
     public string? Message { get; set; }
 
     /// <summary>
+    /// TODO: Пока что всегда -1, так как это Id нейросети.
+    /// TODO: Если нейросетей станет несколько, то будем получать из БД.
     /// Id пользователя, которое написал сообщение нейросети.
     /// </summary>
-    public long CreatedBy { get; set; }
-
-    /// <summary>
-    /// Дата создания сообщения (момент, когда нейросети написали сообщение).
-    /// </summary>
-    public DateTime CreatedAt { get; set; }
+    public long UserId { get; set; }
 
     /// <summary>
     /// Тип события. Его использует нейросеть.
@@ -34,4 +31,9 @@ public class MessageClassificationEvent
     /// <param name="connectionId">Id подключения сокетов.</param>
     /// </summary>
     public string? ConnectionId { get; set; }
+
+    /// <summary>
+    /// Id диалога.
+    /// </summary>
+    public long DialogId { get; set; }
 }

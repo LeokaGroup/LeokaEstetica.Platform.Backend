@@ -1,5 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 using System.Text;
+using LeokaEstetica.Platform.Base.Abstractions.Messaging.Chat;
 using LeokaEstetica.Platform.Base.Enums;
 using LeokaEstetica.Platform.Base.Extensions.StringExtensions;
 using LeokaEstetica.Platform.Core.Constants;
@@ -36,6 +37,7 @@ internal sealed class ScrumMasterAIJob : IJob
     private readonly IProjectManagementNotificationService _projectManagementNotificationService;
     private readonly IFileManagerService _fileManagerService;
     private readonly IScrumMasterAiRepository _scrumMasterAiRepository;
+    private readonly IChatService _chatService;
 
     /// <summary>
     /// Название очереди для сообщений.
@@ -66,12 +68,14 @@ internal sealed class ScrumMasterAIJob : IJob
     /// <param name="projectManagementNotificationService">Сервис уведомлений модуля УП.</param>
     /// <param name="fileManagerService">Сервис работы с файлами.</param>
     /// <param name="scrumMasterAiRepository">Репозиторий нейросети Scrum Master AI.</param>
+    /// <param name="chatService">Сервис чата.</param>
     public ScrumMasterAIJob(ILogger<ScrumMasterAIJob> logger,
         IGlobalConfigRepository globalConfigRepository,
         IDiscordService discordService,
         IProjectManagementNotificationService projectManagementNotificationService,
         IFileManagerService fileManagerService,
-        IScrumMasterAiRepository scrumMasterAiRepository)
+        IScrumMasterAiRepository scrumMasterAiRepository,
+         IChatService chatService)
     {
         _logger = logger;
         _globalConfigRepository = globalConfigRepository;
@@ -79,6 +83,7 @@ internal sealed class ScrumMasterAIJob : IJob
         _projectManagementNotificationService = projectManagementNotificationService;
         _fileManagerService = fileManagerService;
         _scrumMasterAiRepository = scrumMasterAiRepository;
+        _chatService = chatService;
     }
 
     #region Публичные методы.
@@ -232,6 +237,13 @@ internal sealed class ScrumMasterAIJob : IJob
                                 $" Получили сообщение из очереди сообщений для нейросети: {message}");
                         }
 
+                        if (string.IsNullOrWhiteSpace(@event.Message))
+                        {
+                            throw new InvalidOperationException(
+                                "Не передано сообщение для анализа нейросетью. " +
+                                $"Данные события: {JsonConvert.SerializeObject(@event)}");
+                        }
+
                         // Странный кейс, не ломаем приложением, но логируем такое.
                         if (@event.ScrumMasterAiEventType == ScrumMasterAiEventTypeEnum.None)
                         {
@@ -309,9 +321,33 @@ internal sealed class ScrumMasterAIJob : IJob
                                 return;
                             }
 
+                            // Если они равны, значит нейросеть не смогла ответить на вопрос - она отвечает вопросом
+                            // на вопрос в таком кейсе.
+                            if (@event.Message.Equals(prediction.Message))
+                            {
+                                prediction.Message = "Прошу прощения, я не знаю ответа на этот вопрос. " +
+                                                     "Попрошу создателя научить меня понимать этот вопрос, " +
+                                                     "а пока, Вы можете спросить меня о чем-нибудь другом.";
+                            }
+
+                            if (@event.DialogId <= 0)
+                            {
+                                throw new InvalidOperationException(
+                                    "Обнаружен невалидный Id диалога. Нейросеть не знает в какой диалог отвечать. " +
+                                    $"Данные ответа нейросети: {JsonConvert.SerializeObject(prediction)}. " +
+                                    $"Нейросеть хотела ответить: {prediction.Message}.");
+                            }
+                            
+                            // Пишем ответ нейросети в БД.
+                            // - 1 это Id нейросети. Пока хардкодим, если нейросетей станет несколько,
+                            // то будем получать из БД.
+                            await _chatService.SendMessageAsync(prediction.Message, @event.DialogId, -1,
+                                @event.ConnectionId, true, true).ConfigureAwait(false);
+
                             // Отправляем результат классификации ответа нейросети на фронт.
                             await _projectManagementNotificationService
-                                .SendClassificationNetworkMessageResultAsync(prediction.Message, @event.ConnectionId)
+                                .SendClassificationNetworkMessageResultAsync(prediction.Message, @event.ConnectionId,
+                                    @event.DialogId)
                                 .ConfigureAwait(false);
 
                             // TODO: Если бахнет кейс с null, то обработаем его тут.

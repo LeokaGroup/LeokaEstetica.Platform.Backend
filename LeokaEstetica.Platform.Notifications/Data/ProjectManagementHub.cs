@@ -204,24 +204,17 @@ internal sealed class ProjectManagementHub : Hub, IHubService
                 QueueTypeEnum.ScrumMasterAiMessage);
             
             var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
-
-            var scrumMasterAiMessageEvent = ScrumMasterAiMessageEventFactory.CreateScrumMasterAiMessageEvent(message,
-                connectionId, userId, ScrumMasterAiEventTypeEnum.Message);
             
-            // Отправляем событие в кролика. Он сам же и отвечает на сообщение в джобе нейросети.
+            // TODO: - 1 это Id нейросети. Пока хардкодим, если нейросетей станет несколько,
+            // TODO: то будем получать из БД.
+            var scrumMasterAiMessageEvent = ScrumMasterAiMessageEventFactory.CreateScrumMasterAiMessageEvent(message,
+                connectionId, -1, ScrumMasterAiEventTypeEnum.Message, dialogId);
+            
+            // Отправляем событие в кролика для ответа нейросети в джобе.
             await _rabbitMqService.PublishAsync(scrumMasterAiMessageEvent, queueType, rabbitMqConfig, configEnv);
 
             // Пишем сообщение в БД.
             await _chatService.SendMessageAsync(message, dialogId, userId, token, true, true).ConfigureAwait(false);
-            
-            // result.ActionType = DialogActionType.Message.ToString();
-
-            // var clients = await _clientConnectionService.CreateClientsResultAsync(dialogId, userId, token);
-            
-            // await Clients
-            //     .Clients(clients.AsList())
-            //     .SendAsync("listenSendMessage", result)
-            //     .ConfigureAwait(false);
         }
 
         catch (Exception ex)

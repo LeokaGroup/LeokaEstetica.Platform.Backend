@@ -15,13 +15,15 @@ public class ScrumMasterAiMessageEvent : BaseEventMessage
     /// <param name="connectionId">Id подключения сокетов.</param>
     /// <param name="userId">Id пользователя.</param>
     /// <param name="scrumMasterAiEventType">Тип ивента нейросети.</param>
+    /// <param name="dialogId">Id диалога.</param>
     public ScrumMasterAiMessageEvent(string? message, string? connectionId, long userId,
-        ScrumMasterAiEventTypeEnum scrumMasterAiEventType)
+        ScrumMasterAiEventTypeEnum scrumMasterAiEventType, long dialogId)
     {
         Message = message;
         ConnectionId = connectionId;
         UserId = userId;
         ScrumMasterAiEventType = scrumMasterAiEventType;
+        DialogId = dialogId;
     }
 
     /// <summary>
@@ -43,4 +45,9 @@ public class ScrumMasterAiMessageEvent : BaseEventMessage
     /// Тип ивента нейросети.
     /// </summary>
     public ScrumMasterAiEventTypeEnum ScrumMasterAiEventType { get; }
+
+    /// <summary>
+    /// Id диалога.
+    /// </summary>
+    public long DialogId { get; }
 }

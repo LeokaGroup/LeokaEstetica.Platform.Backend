@@ -49,5 +49,6 @@ public interface IProjectManagementNotificationService
     /// </summary>
     /// <param name="message">Сообщение для чата на фронт.</param>
     /// <param name="connectionId">Id подключения сокетов.</param>
-    Task SendClassificationNetworkMessageResultAsync(string message, string connectionId);
+    /// <param name="dialogId">Id диалога.</param>
+    Task SendClassificationNetworkMessageResultAsync(string message, string connectionId, long dialogId);
 }

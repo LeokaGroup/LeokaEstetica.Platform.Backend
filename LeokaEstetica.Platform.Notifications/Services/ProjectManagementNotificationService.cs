@@ -1,3 +1,4 @@
+using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Notifications.Data;
 using LeokaEstetica.Platform.Notifications.Models.Output;
@@ -91,10 +92,17 @@ internal sealed class ProjectManagementNotificationService : IProjectManagementN
     }
 
     /// <inheritdoc />
-    public async Task SendClassificationNetworkMessageResultAsync(string message, string connectionId)
+    public async Task SendClassificationNetworkMessageResultAsync(string message, string connectionId, long dialogId)
     {
         await _hubContext.Clients
             .Client(connectionId)
-            .SendAsync("SendClassificationNetworkMessageResult", message);
+            .SendAsync("SendClassificationNetworkMessageResult", new ClassificationNetworkMessageOutput
+            {
+                Response = message,
+                ConnectionId = connectionId,
+                IsMyMessage = true,
+                ScrumMasterAiEventType = ScrumMasterAiEventTypeEnum.Message.ToString(),
+                DialogId = dialogId
+            });
     }
 }

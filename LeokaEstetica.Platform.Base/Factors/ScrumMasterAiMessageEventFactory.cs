@@ -15,10 +15,11 @@ public static class ScrumMasterAiMessageEventFactory
     /// <param name="connectionId">Id подключения сокетов.</param>
     /// <param name="userId">Id пользователя.</param>
     /// <param name="scrumMasterAiEventType">Тип ивента нейросети.</param>
+    /// <param name="dialogId">Id диалога.</param>
     /// <returns>Событие с данными.</returns>
     public static ScrumMasterAiMessageEvent CreateScrumMasterAiMessageEvent(string? message, string? connectionId,
-        long userId, ScrumMasterAiEventTypeEnum scrumMasterAiEventType)
+        long userId, ScrumMasterAiEventTypeEnum scrumMasterAiEventType, long dialogId)
     {
-        return new ScrumMasterAiMessageEvent(message, connectionId, userId, scrumMasterAiEventType);
+        return new ScrumMasterAiMessageEvent(message, connectionId, userId, scrumMasterAiEventType, dialogId);
     }
 }
