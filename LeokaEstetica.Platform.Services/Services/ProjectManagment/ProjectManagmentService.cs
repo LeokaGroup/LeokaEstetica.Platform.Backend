@@ -17,6 +17,7 @@ using LeokaEstetica.Platform.Database.Abstractions.Template;
 using LeokaEstetica.Platform.Integrations.Abstractions.Discord;
 using LeokaEstetica.Platform.Integrations.Abstractions.Reverso;
 using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
+using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagement.Output;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.Template;
 using LeokaEstetica.Platform.Models.Entities.Document;
@@ -87,7 +88,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     /// <param name="projectSettingsConfigRepository">Репозиторий настроек проектов.</param>
     /// <param name="projectSettingsConfigRepository">Сервис транслитера.</param>
     /// <param name="fileManagerService">Сервис менеджера файлов.</param>
-    /// <param name="sprintNotificationsService">Сервис уведомлений спринтов.</param>
+    /// <param name="projectManagementNotificationService">Сервис уведомлений модуля УП.</param>
     /// <param name="userService">Сервис пользователей.</param>
     /// <param name="distributionStatusTaskService">Сервис распределение задач по статусам.</param>
     /// <param name="projectManagementTemplateService">Сервис шаблонов проекта.</param>
@@ -2681,7 +2682,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             // Обычное создание спринта (без его автоматического начала).
             else
             {
-                planingSprintInput.SprintStatus = (int)SprintStatusEnum.Backlog;
+                planingSprintInput.SprintStatus = (int)SprintStatusEnum.New;
                 
                 using var transactionScope = _transactionScopeFactory.CreateTransactionScope();
                 var addedSprintId = await _projectManagmentRepository.PlaningSprintAsync(planingSprintInput, userId);
@@ -2804,6 +2805,31 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             projectTaskId.GetProjectTaskIdFromPrefixLink());
             
         // TODO: Тут добавить запись активности пользователя по userId (кто обновил спринт задачи).
+    }
+
+    /// <inheritdoc />
+    public async Task<IEnumerable<WorkSpaceOutput>> GetWorkSpacesAsync(string account)
+    {
+        try
+        {
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+            
+            var result = await _projectManagmentRepository.GetWorkSpacesAsync(userId);
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, ex.Message);
+            throw;
+        }
     }
 
     #endregion

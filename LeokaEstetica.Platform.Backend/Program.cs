@@ -1,7 +1,8 @@
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using FluentValidation.AspNetCore;
-using Hellang.Middleware.ProblemDetails;
+using LeokaEstetica.Platform.Backend.Loaders.Bots;
+using LeokaEstetica.Platform.Backend.Loaders.Jobs;
 using LeokaEstetica.Platform.Base.Factors;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Utils;
@@ -12,6 +13,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using NLog.Web;
+using Quartz;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
@@ -136,7 +138,11 @@ builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory())
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 // Подключаем SignalR.
-builder.Services.AddSignalR();
+builder.Services.AddSignalR(opt =>
+{
+    // Максимальный размер сообщения 64 КБ. Раньше бэк закрывал соединение принудительно, по дефолту 32 КБ.
+    opt.MaximumReceiveMessageSize = 64 * 1024;
+});
 
 // Подключаем кэш Redis.
 builder.Services.AddStackExchangeRedisCache(options =>
@@ -151,23 +157,26 @@ builder.Services.AddFluentValidation(conf =>
     conf.AutomaticValidationEnabled = false;
 });
 
-// builder.Services.AddQuartz(q =>
-// {
-//     q.UseMicrosoftDependencyInjectionJobFactory();
-//
-//     // Запуск джоб при старте ядра системы.
-//     StartJobs.Start(q, builder.Services);
-// });
+builder.Services.AddQuartz(q =>
+{
+    q.UseMicrosoftDependencyInjectionJobFactory();
 
-// builder.Services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
+    // Запуск джоб при старте ядра системы.
+    StartJobs.Start(q, builder.Services, configuration);
+});
+
+builder.Services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
 
 builder.Logging.ClearProviders();
 builder.Host.UseNLog();
 
+// Регистрируем IHttpClientFactory.
+builder.Services.AddHttpClient();
+
 // builder.Services.AddProblemDetails();
 
 // Запускаем ботов.
-// await LogNotifyBot.RunAsync(configuration);
+await LogNotifyBot.RunAsync(configuration);
 
 var app = builder.Build();
 

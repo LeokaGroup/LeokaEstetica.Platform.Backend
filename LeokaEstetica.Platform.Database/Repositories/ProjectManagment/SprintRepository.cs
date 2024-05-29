@@ -1,8 +1,10 @@
-﻿using Dapper;
+﻿using System.Data;
+using Dapper;
 using LeokaEstetica.Platform.Base.Abstractions.Connection;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.Base;
 using LeokaEstetica.Platform.Core.Constants;
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
+using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagement.Output;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 using LeokaEstetica.Platform.Models.Entities.ProjectManagment;
 
@@ -20,6 +22,8 @@ internal sealed class SprintRepository : BaseRepository, ISprintRepository
     public SprintRepository(IConnectionProvider connectionProvider) : base(connectionProvider)
     {
     }
+
+    #region Публичные методы.
 
     /// <inheritdoc/>
     public async Task<IEnumerable<TaskSprintExtendedOutput>?> GetSprintsAsync(long projectId)
@@ -263,4 +267,275 @@ internal sealed class SprintRepository : BaseRepository, ISprintRepository
         
         await connection.ExecuteAsync(query, parameters);
     }
+
+    /// <inheritdoc/>
+    public async Task<bool> CheckActiveSprintAsync(long projectId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@projectId", projectId);
+        
+        var query = "SELECT EXISTS (SELECT sprint_id " +
+                    "FROM project_management.sprints " +
+                    "WHERE project_id = @projectId " +
+                    "AND sprint_status_id  = 2)";
+
+        var result = await connection.ExecuteScalarAsync<bool>(query, parameters);
+
+        return result;
+    }
+
+    /// <inheritdoc/>
+    public async Task<int> GetCountSprintTasksAsync(long projectSprintId, long projectId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@projectSprintId", projectSprintId);
+        parameters.Add("@projectId", projectId);
+
+        var query = "SELECT COUNT (st.project_task_id) " +
+                    "FROM project_management.sprints AS s " +
+                    "LEFT JOIN project_management.sprint_tasks AS st " +
+                    "ON s.project_sprint_id = st.sprint_id " +
+                    "WHERE s.project_sprint_id = @projectSprintId " +
+                    "AND s.project_id = @projectId";
+
+        var result = await connection.ExecuteScalarAsync<int>(query, parameters);
+
+        return result;
+    }
+    
+    /// <inheritdoc/>
+    public async Task RunSprintAsync(long projectSprintId, long projectId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@projectSprintId", projectSprintId);
+        parameters.Add("@projectId", projectId);
+
+        var query = "UPDATE project_management.sprints " +
+                    "SET sprint_status_id = 2 " +
+                    "WHERE project_sprint_id = @projectSprintId " +
+                    "AND project_id = @projectId";
+
+        await connection.ExecuteAsync(query, parameters);
+    }
+
+     /// <inheritdoc/>
+    public async Task ManualCompleteSprintAsync(long projectSprintId, long projectId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@projectSprintId", projectSprintId);
+        parameters.Add("@projectId", projectId);
+
+        var query = "UPDATE project_management.sprints " +
+                    "SET sprint_status_id = 3 " +
+                    "WHERE project_sprint_id = @projectSprintId " +
+                    "AND project_id = @projectId";
+
+        await connection.ExecuteAsync(query, parameters);
+    }
+
+     /// <inheritdoc/>
+     public async Task<IEnumerable<long>?> GetNotCompletedSprintTasksAsync(long projectSprintId, long projectId)
+     {
+         using var connection = await ConnectionProvider.GetConnectionAsync();
+
+         var parameters = new DynamicParameters();
+         parameters.Add("@projectSprintId", projectSprintId);
+         parameters.Add("@projectId", projectId);
+
+         // TODO: В будущем, возможно надо будет дорабатывать под кастомные статусы системные имена.
+         var query = "SELECT DISTINCT (st.project_task_id) " +
+                     "FROM project_management.sprint_tasks AS st " +
+                     "INNER JOIN project_management.project_tasks AS pt " +
+                     "ON st.project_task_id = pt.project_task_id " +
+                     "LEFT JOIN templates.project_management_task_status_templates AS pmtst " +
+                     "ON pt.task_status_id = pmtst.task_status_id " +
+                     "WHERE pt.project_id = @projectId " +
+                     "AND st.sprint_id = @projectSprintId " +
+                     "AND pmtst.task_status_id <> 6 " +
+                     "AND pmtst.status_sys_name NOT IN ('Completed', 'InArchive', 'Closed')";
+
+         var result = await connection.QueryAsync<long>(query, parameters);
+
+         return result;
+     }
+
+     /// <inheritdoc/>
+     public async Task MoveSprintTasksAsync(long sprintId, IEnumerable<long> projectTaskIds)
+     {
+         using var connection = await ConnectionProvider.GetConnectionAsync();
+
+         var parameters = new DynamicParameters();
+         parameters.Add("@sprintId", sprintId);
+         parameters.Add("@projectTaskIds", projectTaskIds.AsList());
+
+         var query = "UPDATE project_management.sprint_tasks " +
+                     "SET sprint_id = @sprintId " +
+                     "WHERE project_task_id = ANY (@projectTaskIds)";
+
+         await connection.ExecuteAsync(query, parameters);
+     }
+
+     /// <inheritdoc/>
+     public async Task PlaningNewSprintAndMoveNotCompletedSprintTasksAsync(long projectId,
+         IEnumerable<long> projectTaskIds, string? moveSprintName)
+     {
+         using var connection = await ConnectionProvider.GetConnectionAsync();
+         using var transaction = await ConnectionProvider.CreateTransactionAsync(IsolationLevel.ReadCommitted);
+
+         try
+         {
+             // Получаем последний Id спринта в рамках проекта, перед созданим нового.
+             var lastProjectSprintIdParameters = new DynamicParameters();
+             lastProjectSprintIdParameters.Add("@projectId", projectId);
+
+             var lastProjectSprintIdQuery = "SELECT MAX (project_sprint_id) " +
+                                            "FROM project_management.sprints " +
+                                            "WHERE project_id = @projectId";
+        
+             var lastProjectSprintId = await connection.ExecuteScalarAsync<long>(lastProjectSprintIdQuery,
+                 lastProjectSprintIdParameters);
+             var newSprintId = ++lastProjectSprintId;
+             
+             var parametersCreateSprint = new DynamicParameters();
+             parametersCreateSprint.Add("@moveSprintName", moveSprintName);
+             parametersCreateSprint.Add("@projectSprintId", newSprintId);
+
+             var queryCreateSprint = "INSERT INTO project_management.sprints (sprint_name, project_sprint_id) " +
+                                     "VALUES (@moveSprintName, @lastProjectSprintId)";
+             
+             // Планируем новый спринт.
+             await connection.ExecuteAsync(queryCreateSprint, parametersCreateSprint);
+             
+             var parametersSprintTasks = new DynamicParameters();
+             parametersSprintTasks.Add("@projectTaskIds", projectTaskIds.AsList());
+             parametersSprintTasks.Add("@projectSprintId", newSprintId);
+
+             var querySprintTasks = "UPDATE project_management.sprint_tasks " +
+                                    "SET sprint_id = @projectSprintId " +
+                                    "WHERE project_task_id = ANY (@projectTaskIds)";
+             
+             // Переносим новые задачи в новый спринт.
+             await connection.ExecuteAsync(querySprintTasks, parametersSprintTasks);
+
+             transaction.Commit();
+         }
+
+         catch
+         {
+             transaction.Rollback();
+             throw;
+         }
+     }
+
+     /// <inheritdoc/>
+     public async Task<IEnumerable<TaskSprintExtendedOutput>> GetAvailableNextSprintsAsync(long projectSprintId,
+         long projectId)
+     {
+         using var connection = await ConnectionProvider.GetConnectionAsync();
+
+         var parameters = new DynamicParameters();
+         parameters.Add("@projectSprintId", projectSprintId);
+         parameters.Add("@projectId", projectId);
+
+         var query = "SELECT s.sprint_id," +
+                     " s.date_start, s.date_end," +
+                     " s.sprint_goal," +
+                     " s.sprint_status_id," +
+                     " s.project_id," +
+                     " s.project_sprint_id," +
+                     " s.sprint_name, " +
+                     " ss.status_name AS SprintStatusName " +
+                     "FROM project_management.sprints AS s " +
+                     "INNER JOIN project_management.sprint_statuses AS ss " +
+                     "ON s.sprint_status_id = ss.status_id " +
+                     "WHERE s.project_id = @projectId " +
+                     "AND s.project_sprint_id > @projectSprintId " +
+                     "ORDER BY s.created_at DESC";
+
+         var result = await connection.QueryAsync<TaskSprintExtendedOutput>(query, parameters);
+
+         return result;
+     }
+
+     /// <inheritdoc/>
+     public async Task<IEnumerable<SprintEndDateOutput>?> GetSprintEndDatesAsync()
+     {
+         using var connection = await ConnectionProvider.GetConnectionAsync();
+
+         var query = "SELECT sprint_id, project_sprint_id, project_id " +
+                     "FROM project_management.sprints " +
+                     "WHERE date_end <= NOW()";
+
+         var result = await connection.QueryAsync<SprintEndDateOutput>(query);
+
+         return result;
+     }
+
+     /// <inheritdoc/>
+     public async Task AutoCompleteSprintAsync(long projectSprintId, long projectId)
+     {
+         using var connection = await ConnectionProvider.GetConnectionAsync();
+
+         var parameters = new DynamicParameters();
+         parameters.Add("@projectSprintId", projectSprintId);
+         parameters.Add("@projectId", projectId);
+
+         var query = "UPDATE project_management.sprints " +
+                     "SET sprint_status_id = 3 " +
+                     "WHERE project_sprint_id = @projectSprintId " +
+                     "AND project_id = @projectId";
+
+         await connection.ExecuteAsync(query, parameters);
+     }
+
+     /// <inheritdoc/>
+     public async Task<long?> GetNextSprintAsync(long projectSprintId, long projectId)
+     {
+         using var connection = await ConnectionProvider.GetConnectionAsync();
+
+         var parameters = new DynamicParameters();
+         parameters.Add("@nextProjectSprintId", +projectSprintId);
+         parameters.Add("@projectId", projectId);
+
+         var query = "SELECT project_sprint_id " +
+                     "FROM project_management.sprints " +
+                     "WHERE project_sprint_id = @nextProjectSprintId";
+
+         var result = await connection.QueryFirstOrDefaultAsync<long?>(query, parameters);
+
+         return result;
+     }
+     
+     /// <inheritdoc/>
+     public async Task MoveNotCompletedSprintTasksToNextSprintAsync(IEnumerable<long> projectTaskIds,
+         long nextProjectSprintId)
+     {
+         using var connection = await ConnectionProvider.GetConnectionAsync();
+
+         var parameters = new DynamicParameters();
+         parameters.Add("@sprintId", nextProjectSprintId);
+         parameters.Add("@projectTaskIds", projectTaskIds.AsList());
+
+         var query = "UPDATE project_management.sprint_tasks " +
+                     "SET sprint_id = @sprintId " +
+                     "WHERE project_task_id = ANY (@projectTaskIds)";
+
+         await connection.ExecuteAsync(query, parameters);
+     }
+
+     #endregion
+
+    #region Приватные методы.
+
+    
+
+    #endregion
 }

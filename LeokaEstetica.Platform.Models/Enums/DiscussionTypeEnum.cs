@@ -17,5 +17,11 @@ public enum DiscussionTypeEnum
     /// Тип обсуждения = вакансия.
     /// </summary>
     [Description("Вакансия")]
-    Vacancy = 2
+    Vacancy = 2,
+    
+    /// <summary>
+    /// Если вопрос к нейросети.
+    /// </summary>
+    [Description("Вопрос к нейросети.")]
+    ScrumMasterAi = 3
 }

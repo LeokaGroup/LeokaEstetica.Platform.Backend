@@ -6,6 +6,7 @@ using LeokaEstetica.Platform.Base.Extensions.StringExtensions;
 using LeokaEstetica.Platform.Core.Constants;
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
+using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagement.Output;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.Search.ProjectManagement;
 using LeokaEstetica.Platform.Models.Dto.Output.Template;
@@ -2341,6 +2342,29 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
     }
 
     /// <inheritdoc/>
+    public async Task<IEnumerable<WorkSpaceOutput>> GetWorkSpacesAsync(long userId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+        
+        var parameters = new DynamicParameters();
+        parameters.Add("@userId", userId);
+
+        var query = "SELECT up.\"ProjectId\", up.\"ProjectManagementName\", pw.workspace_id " +
+                    "FROM \"Projects\".\"UserProjects\" AS up " +
+                    "INNER JOIN project_management.workspaces AS pw " +
+                    "ON up.\"ProjectId\" = pw.project_id " +
+                    "INNER JOIN \"Teams\".\"ProjectsTeams\" AS pt " +
+                    "ON up.\"ProjectId\" = pt.\"ProjectId\" " +
+                    "INNER JOIN \"Teams\".\"ProjectsTeamsMembers\" AS ptm " +
+                    "ON pt.\"TeamId\" = ptm.\"TeamId\" " +
+                    "WHERE ptm.\"UserId\" = @userId";
+
+        var result = await connection.QueryAsync<WorkSpaceOutput>(query, parameters);
+
+        return result;
+    }
+
+    /// <inheritdoc/>
     public async Task<TaskSprintOutput> GetSprintTaskAsync(long projectId, long projectTaskId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
@@ -2432,7 +2456,7 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         long projectId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
-        var transaction = connection.BeginTransaction();
+        using var transaction = connection.BeginTransaction();
         
         try
         {
@@ -2468,11 +2492,6 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
 
             throw;
         }
-
-        finally
-        {
-            transaction.Dispose();
-        }
     }
     
     /// <summary>
@@ -2486,7 +2505,7 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         long projectId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
-        var transaction = connection.BeginTransaction();
+        using var transaction = connection.BeginTransaction();
         
         try
         {
@@ -2534,11 +2553,6 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
 
             throw;
         }
-
-        finally
-        {
-            transaction.Dispose();
-        }
     }
     
     /// <summary>
@@ -2552,7 +2566,7 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         long projectId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
-        var transaction = connection.BeginTransaction();
+        using var transaction = connection.BeginTransaction();
         
         try
         {
@@ -2600,11 +2614,6 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
 
             throw;
         }
-
-        finally
-        {
-            transaction.Dispose();
-        }
     }
     
     /// <summary>
@@ -2618,7 +2627,7 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         long projectId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
-        var transaction = connection.BeginTransaction();
+        using var transaction = connection.BeginTransaction();
         
         try
         {
@@ -2663,11 +2672,6 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
             transaction.Rollback();
 
             throw;
-        }
-
-        finally
-        {
-            transaction.Dispose();
         }
     }
 
