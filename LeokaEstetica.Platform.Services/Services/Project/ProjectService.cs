@@ -967,8 +967,10 @@ internal sealed class ProjectService : IProjectService
                 throw ex;
             }
 
+            // TODO: Когда будет сделан выбор роли при приглашении, то тут конкретная роль будет передаваться.
             // Добавляем пользователя в команду проекта.
-            var result = await _projectRepository.AddProjectTeamMemberAsync(inviteUserId, vacancyId, teamId);
+            var result = await _projectRepository.AddProjectTeamMemberAsync(inviteUserId, vacancyId, teamId,
+                "Участник");
             
             // Находим название проекта.
             var projectName = await _projectRepository.GetProjectNameByProjectIdAsync(projectId);
@@ -1930,7 +1932,7 @@ internal sealed class ProjectService : IProjectService
             throw ex;
         }
         
-        _ = await _projectRepository.AddProjectTeamMemberAsync(userId, null, team.TeamId);
+        _ = await _projectRepository.AddProjectTeamMemberAsync(userId, null, team.TeamId, "Владелец");
     }
     
     /// <summary>
