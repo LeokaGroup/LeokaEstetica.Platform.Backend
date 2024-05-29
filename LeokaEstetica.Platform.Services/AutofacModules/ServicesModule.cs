@@ -90,11 +90,11 @@ public class ServicesModule : Module
         builder
             .RegisterType<ProjectService>()
             .Named<IProjectService>("ProjectService")
-            .SingleInstance();
+            .InstancePerLifetimeScope();
         builder
             .RegisterType<ProjectService>()
             .As<IProjectService>()
-            .SingleInstance();
+            .InstancePerLifetimeScope();
 
         // Сервис выделение цветом пользователей, у которых подписка выше уровня бизнес.
         builder
@@ -317,6 +317,14 @@ public class ServicesModule : Module
             .InstancePerLifetimeScope();
         builder.RegisterType<ProjectManagementTemplateService>()
             .As<IProjectManagementTemplateService>()
+            .InstancePerLifetimeScope();
+            
+        // Сервис настроек проекта.
+        builder.RegisterType<ProjectManagementSettingsService>()
+            .Named<IProjectManagementSettingsService>("ProjectManagementSettingsService")
+            .InstancePerLifetimeScope();
+        builder.RegisterType<ProjectManagementSettingsService>()
+            .As<IProjectManagementSettingsService>()
             .InstancePerLifetimeScope();
     }
 }

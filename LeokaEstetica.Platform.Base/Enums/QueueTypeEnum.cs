@@ -24,5 +24,17 @@ public enum QueueTypeEnum
     /// Очередь чеков возвратов.
     /// </summary>
     [Description("ReceiptRefund.Queue")]
-    ReceiptRefundQueue = 1 << 4
+    ReceiptRefundQueue = 1 << 4,
+    
+    /// <summary>
+    /// Очередь сообщений чата нейросети.
+    /// </summary>
+    [Description("ScrumMasterAiMessage.Queue")]
+    ScrumMasterAiMessage = 1 << 6,
+    
+    /// <summary>
+    /// Очередь анализа чата нейросети.
+    /// </summary>
+    [Description("ScrumMasterAiAnalysis.Queue")]
+    ScrumMasterAiAnalysis = 1 << 8
 }

@@ -1,16 +1,18 @@
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using FluentValidation.AspNetCore;
-using Hellang.Middleware.ProblemDetails;
 using LeokaEstetica.Platform.Base.Factors;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Utils;
 using LeokaEstetica.Platform.Integrations.Filters;
+using LeokaEstetica.Platform.Notifications.Data;
+using LeokaEstetica.Platform.ProjectManagement.Loaders;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using NLog.Web;
+using Quartz;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
@@ -135,7 +137,10 @@ builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory())
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 // Подключаем SignalR.
-builder.Services.AddSignalR();
+builder.Services.AddSignalR(opt =>
+{
+    opt.EnableDetailedErrors = true;
+});
 
 // Подключаем кэш Redis.
 builder.Services.AddStackExchangeRedisCache(options =>
@@ -150,8 +155,21 @@ builder.Services.AddFluentValidation(conf =>
     conf.AutomaticValidationEnabled = false;
 });
 
+builder.Services.AddQuartz(q =>
+{
+    q.UseMicrosoftDependencyInjectionJobFactory();
+
+    // Запуск джоб при старте модуля УП.
+    StartJobs.Start(q, configuration);
+});
+
+builder.Services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
+
 builder.Logging.ClearProviders();
 builder.Host.UseNLog();
+
+// Регистрируем IHttpClientFactory.
+builder.Services.AddHttpClient();
 
 // builder.Services.AddProblemDetails();
 
@@ -172,7 +190,7 @@ if (builder.Environment.IsDevelopment() || builder.Environment.IsStaging())
 }
 
 // Добавляем хаб приложения для работы через сокеты.
-// app.MapHub<ProjectManagementHub>("/project-management-notify");
+app.MapHub<ProjectManagementHub>("/project-management-notify");
 
 // app.UseProblemDetails();
 

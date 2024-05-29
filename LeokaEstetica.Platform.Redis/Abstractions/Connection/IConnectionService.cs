@@ -33,5 +33,5 @@ public interface IConnectionService
     /// </summary>
     /// <param name="key">Ключ поиска.</param>
     /// <returns>Список ConnectionId.</returns>
-    Task<List<DialogRedis>> GetDialogMembersConnectionIdsCacheAsync(string key);
+    Task<List<DialogRedis>?> GetDialogMembersConnectionIdsCacheAsync(string key);
 }

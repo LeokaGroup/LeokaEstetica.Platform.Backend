@@ -1,0 +1,41 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Autofac" Version="6.4.0" />
+      <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="8.0.0" />
+      <PackageReference Include="LG.Microsoft.ML.OnnxConverter" Version="0.18.0.4" />
+      <PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.1" />
+      <PackageReference Include="Microsoft.ML" Version="3.0.1" />
+      <PackageReference Include="Microsoft.ML.FastTree" Version="3.0.1" />
+      <PackageReference Include="Microsoft.ML.OnnxRuntime" Version="1.18.0" />
+      <PackageReference Include="Microsoft.ML.OnnxTransformer" Version="3.0.1" />
+      <PackageReference Include="Microsoft.ML.Recommender" Version="0.21.1" />
+      <PackageReference Include="Microsoft.ML.TorchSharp" Version="0.21.1" />
+      <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+      <PackageReference Include="NLog" Version="5.1.5" />
+      <PackageReference Include="NLog.Database" Version="5.1.5" />
+      <PackageReference Include="NLog.Web.AspNetCore" Version="5.2.3" />
+      <PackageReference Include="NPOI" Version="2.7.0" />
+      <PackageReference Include="Quartz" Version="3.7.0" />
+      <PackageReference Include="Quartz.Extensions.DependencyInjection" Version="3.6.2" />
+      <PackageReference Include="Quartz.Extensions.Hosting" Version="3.6.2" />
+      <PackageReference Include="RabbitMQ.Client" Version="6.5.0" />
+      <PackageReference Include="SSH.NET" Version="2023.0.1" />
+      <PackageReference Include="TorchSharp" Version="0.102.4" />
+      <PackageReference Include="TorchSharp-cpu" Version="0.102.4" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\LeokaEstetica.Platform.Database\LeokaEstetica.Platform.Database.csproj" />
+      <ProjectReference Include="..\LeokaEstetica.Platform.Integrations\LeokaEstetica.Platform.Integrations.csproj" />
+      <ProjectReference Include="..\LeokaEstetica.Platform.Notifications\LeokaEstetica.Platform.Notifications.csproj" />
+      <ProjectReference Include="..\LeokaEstetica.Platform.ProjectManagement.Documents\LeokaEstetica.Platform.ProjectManagement.Documents.csproj" />
+    </ItemGroup>
+
+</Project>

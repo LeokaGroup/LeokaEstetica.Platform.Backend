@@ -43,4 +43,12 @@ public interface IProjectManagementNotificationService
     /// <param name="token">Токен пользователя.</param>
     Task SendNotifyWarningDublicateProjectTaskAsync(string title, string notifyText, string notificationLevel,
         string token);
+
+    /// <summary>
+    /// Метод отправляет результат классификации на фронт в чат.
+    /// </summary>
+    /// <param name="message">Сообщение для чата на фронт.</param>
+    /// <param name="connectionId">Id подключения сокетов.</param>
+    /// <param name="dialogId">Id диалога.</param>
+    Task SendClassificationNetworkMessageResultAsync(string message, string connectionId, long dialogId);
 }

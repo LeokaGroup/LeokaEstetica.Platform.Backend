@@ -1,5 +1,6 @@
 using System.Runtime.CompilerServices;
 using AutoMapper;
+using Dapper;
 using LeokaEstetica.Platform.Base.Abstractions.Messaging.Chat;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.Chat;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
@@ -8,8 +9,9 @@ using LeokaEstetica.Platform.Integrations.Abstractions.Discord;
 using LeokaEstetica.Platform.Models.Dto.Chat.Input;
 using LeokaEstetica.Platform.Models.Dto.Chat.Output;
 using LeokaEstetica.Platform.Models.Enums;
+using LeokaEstetica.Platform.Notifications.Abstractions;
+using LeokaEstetica.Platform.Redis.Abstractions.Client;
 using LeokaEstetica.Platform.Redis.Abstractions.Connection;
-using LeokaEstetica.Platform.Redis.Models.Chat;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -23,7 +25,7 @@ namespace LeokaEstetica.Platform.Notifications.Data;
 /// Класс логики хаба для чатов.
 /// Также используется для уведомлений у основного модуля системы.
 /// </summary>
-internal sealed class ChatHub : Hub
+internal sealed class ChatHub : Hub, IHubService
 {
     private readonly IChatRepository _chatRepository;
     private readonly IMapper _mapper;
@@ -32,6 +34,7 @@ internal sealed class ChatHub : Hub
     private readonly IConnectionService _connectionService;
     private readonly IChatService _chatService;
     private readonly IDiscordService _discordService;
+    private readonly IClientConnectionService _clientConnectionService;
 
     /// <summary>
     /// Конструктор.
@@ -43,13 +46,15 @@ internal sealed class ChatHub : Hub
     /// <param name="connectionService">Сервис подключений Redis.</param>
     /// <param name="chatService">Сервис чата.</param>
     /// <param name="discordService">Сервис уведомлений дискорда.</param>
+    /// <param name="clientConnectionService">Сервис подключений клиентов кэша.</param>
     public ChatHub(IChatRepository chatRepository,
         IMapper mapper,
         IUserRepository userRepository,
         ILogger<ChatHub> logger,
         IConnectionService connectionService,
         IChatService chatService,
-        IDiscordService discordService)
+        IDiscordService discordService,
+        IClientConnectionService clientConnectionService)
     {
         _chatRepository = chatRepository;
         _mapper = mapper;
@@ -58,16 +63,12 @@ internal sealed class ChatHub : Hub
         _connectionService = connectionService;
         _chatService = chatService;
         _discordService = discordService;
+        _clientConnectionService = clientConnectionService;
     }
 
     #region Публичные методы
 
-    /// <summary>
-    /// Метод получает список диалогов.
-    /// <param name="account">Аккаунт.</param>
-    /// <param name="token">Токен.</param>    
-    /// <param name="projectId">Id проекта. Если не передан, то получает все диалоги пользователя.</param>
-    /// <returns>Список диалогов.</returns>
+    /// <inheritdoc />
     public async Task GetDialogsAsync(string account, string token, long? projectId = null)
     {
         try
@@ -95,29 +96,42 @@ internal sealed class ChatHub : Hub
 
             await Clients
                 .Client(connectionId)
-                .SendAsync("listenGetProjectDialogs", result);
+                .SendAsync("listenGetProjectDialogs", result)
+                .ConfigureAwait(false);
         }
 
         catch (Exception ex)
         {
-            await _discordService.SendNotificationErrorAsync(ex);
+            await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
             
             _logger.LogError(ex, ex.Message);
             throw;
         }
     }
 
-    /// <summary>
-    /// Метод получает диалог или создает новый и возвращает его.
-    /// </summary>
-    /// <param name="account">Аккаунт.</param>
-    /// <param name="token">Токен.</param>    
-    /// <param name="dialogInput">Входная модель.</param>
-    /// <returns>Данные диалога.</returns>
+    /// <inheritdoc />
     public async Task GetDialogAsync(string account, string token, string dialogInput)
     {
         try
         {
+            var json = JsonConvert.DeserializeObject<DialogInput>(dialogInput);
+
+            if (json is null)
+            {
+                throw new InvalidOperationException("Не удалось распарсить входную модель диалога.");
+            }
+
+            // Просто логируем такой кейс, его не должно быть в этой логике.
+            if (json.isManualNewDialog)
+            {
+                var ex = new InvalidOperationException("Передали признак принудительного создания диалога. " +
+                                                       "В этом кейсе (обычные чаты) этого не должно было быть. " +
+                                                       $"Входные данные: {dialogInput}");
+                await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
+            
+                _logger.LogInformation(ex, ex.Message);
+            }
+            
             var userId = await _userRepository.GetUserByEmailAsync(account);
 
             if (userId == 0)
@@ -125,36 +139,30 @@ internal sealed class ChatHub : Hub
                 throw new InvalidOperationException($"Id пользователя с аккаунтом {account} не найден.");
             }
 
-            var json = JsonConvert.DeserializeObject<DialogInput>(dialogInput);
-
-            var dialogId = json?.DialogId;
-
-            var result = await _chatService.GetDialogAsync(dialogId,
-                Enum.Parse<DiscussionTypeEnum>(json!.DiscussionType), account, json.DiscussionTypeId);
+            // Тут isManualNewDialog всегда false, так как тут обычные чаты.
+            var result = await _chatService.GetDialogAsync(json.DialogId,
+                Enum.Parse<DiscussionTypeEnum>(json!.DiscussionType), account, json.DiscussionTypeId, false, token);
             result.ActionType = DialogActionType.Concrete.ToString();
 
-            var clients = await CreateClientsResultAsync(dialogId, userId, token);
+            var clients = await _clientConnectionService.CreateClientsResultAsync(json.DialogId, userId, token);
 
             await Clients
-                .Clients(clients)
-                .SendAsync("listenGetDialog", result);
+                .Clients(clients.AsList())
+                .SendAsync("listenGetDialog", result)
+                .ConfigureAwait(false);
         }
 
         catch (Exception ex)
         {
-            await _discordService.SendNotificationErrorAsync(ex);
+            await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
             
             _logger.LogError(ex, ex.Message);
             throw;
         }
     }
 
-    /// <summary>
-    /// Метод отправляет сообщение.
-    /// </summary>
-    /// <param name="messageInput">Входная модель.</param>
-    /// <returns>Данные диалога с сообщениями. Обновляет диалог и сообщения диалога у всех участников диалога</returns>
-    public async Task SendMessageAsync(string message, long dialogId, string account, string token)
+    /// <inheritdoc />
+    public async Task SendMessageAsync(string message, long dialogId, string account, string token, string apiUrl)
     {
         try
         {
@@ -175,29 +183,27 @@ internal sealed class ChatHub : Hub
                 throw new InvalidOperationException($"Id пользователя с аккаунтом {account} не найден.");
             }
 
-            var result = await _chatService.SendMessageAsync(message, dialogId, userId, token, true);
+            var result = await _chatService.SendMessageAsync(message, dialogId, userId, token, true, false);
             result.ActionType = DialogActionType.Message.ToString();
 
-            var clients = await CreateClientsResultAsync(dialogId, userId, token);
+            var clients = await _clientConnectionService.CreateClientsResultAsync(dialogId, userId, token);
             
             await Clients
-                .Clients(clients)
-                .SendAsync("listenSendMessage", result);
+                .Clients(clients.AsList())
+                .SendAsync("listenSendMessage", result)
+                .ConfigureAwait(false);
         }
 
         catch (Exception ex)
         {
-            await _discordService.SendNotificationErrorAsync(ex);
+            await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
             
             _logger.LogError(ex, ex.Message);
             throw;
         }
     }
 
-    /// <summary>
-    /// Метод получает список диалогов для ЛК.
-    /// </summary>
-    /// <returns>Список диалогов.</returns>
+    /// <inheritdoc />
     public async Task GetProfileDialogsAsync(string account, string token)
     {
         try
@@ -212,12 +218,13 @@ internal sealed class ChatHub : Hub
 
             await Clients
                 .Client(connectionId)
-                .SendAsync("listenProfileDialogs", result);
+                .SendAsync("listenProfileDialogs", result)
+                .ConfigureAwait(false);
         }
 
         catch (Exception ex)
         {
-            await _discordService.SendNotificationErrorAsync(ex);
+            await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
             
             _logger.LogError(ex, ex.Message);
             throw;
@@ -227,93 +234,6 @@ internal sealed class ChatHub : Hub
     #endregion
 
     #region Приватные методы.
-
-    /// <summary>
-    /// Метод создает результат с клиентами, которым будут отправляться сообщения через сокеты.
-    /// </summary>
-    /// <param name="dialogId">Id диалога.</param>
-    /// <param name="userId">Id пользователя.</param>
-    /// <param name="token">Токен пользователя.</param>
-    /// <returns>Список клиентов с ConnectionId.</returns>
-    private async Task<List<string>> CreateClientsResultAsync(long? dialogId, long userId, string token)
-    {
-        var getDialogId = dialogId.GetValueOrDefault();
-        var dialogRedis = await _connectionService.GetDialogMembersConnectionIdsCacheAsync(getDialogId.ToString());
-        var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
-
-        // В кэше нет данных, будем добавлять текущего пользователя как первого.
-        if (dialogRedis is null || !dialogRedis.Any())
-        {
-            // Добавляем текущего пользователя.
-            dialogRedis = new List<DialogRedis>
-            {
-                new()
-                {
-                    Token = token,
-                    ConnectionId = connectionId,
-                    UserId = userId
-                }
-            };
-
-            await _connectionService.AddDialogMembersConnectionIdsCacheAsync(getDialogId, dialogRedis);
-        }
-
-        // Нашли в кэше, будем проверять актуальность ConnectionId.
-        else
-        {
-            var isActual = dialogRedis.Any(x => x.ConnectionId.Equals(connectionId));
-
-            // Не актуален, обновим ConnectionId текущего пользователя.
-            if (!isActual)
-            {
-                var client = dialogRedis.Find(x => x.UserId == userId);
-
-                if (client is null)
-                {
-                    if (dialogRedis.Any())
-                    {
-                        dialogRedis.Add(new DialogRedis
-                        {
-                            Token = token,
-                            ConnectionId = connectionId,
-                            UserId = userId
-                        });
-                    }
-
-                    else
-                    {
-                        // Добавляем текущего пользователя.
-                        dialogRedis = new List<DialogRedis>
-                        {
-                            new()
-                            {
-                                Token = token,
-                                ConnectionId = connectionId,
-                                UserId = userId
-                            }
-                        };
-                    }
-
-                    await _connectionService.AddDialogMembersConnectionIdsCacheAsync(getDialogId, dialogRedis);
-                }
-
-                else
-                {
-                    // Если не актуален ConnectionId, то обновим на актуальный.
-                    if (!client.ConnectionId.Equals(connectionId))
-                    {
-                        client.ConnectionId = connectionId;
-                    }
-
-                    await _connectionService.AddDialogMembersConnectionIdsCacheAsync(getDialogId, dialogRedis);
-                }
-            }
-        }
-
-        var clients = dialogRedis.Select(x => x.ConnectionId).ToList();
-
-        return clients;
-    }
 
     #endregion
 }

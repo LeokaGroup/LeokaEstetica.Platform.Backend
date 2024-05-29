@@ -9,7 +9,7 @@ internal class SendMessageTest : BaseServiceTest
     [Test]
     public async Task SendMessageAsyncTest()
     {
-        var result = await ChatService.SendMessageAsync("Тестовое сообщение", 4, 32, null, true);
+        var result = await ChatService.SendMessageAsync("Тестовое сообщение", 4, 32, null, true, false);
 
         IsNotNull(result);
         IsTrue(result.Messages.Count > 0);

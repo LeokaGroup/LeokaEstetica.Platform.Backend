@@ -769,7 +769,8 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
                 // Перед удалением диалога, сначала смотрим сообщения диалога.
                 foreach (var d in projectDialogs)
                 {
-                    var projectDialogMessages = await _chatRepository.GetDialogMessagesAsync(d.DialogId);
+                    // TODO: Если при удалении проекта надо будет также чистить сообщения нейросети, то тут доработать.
+                    var projectDialogMessages = await _chatRepository.GetDialogMessagesAsync(d.DialogId, false);
 
                     // Если есть сообщения, дропаем их.
                     if (projectDialogMessages.Any())
@@ -797,7 +798,8 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
                 // Перед удалением диалога, сначала смотрим сообщения диалога.
                 foreach (var d in prjDialogs)
                 {
-                    var projectDialogMessages = await _chatRepository.GetDialogMessagesAsync(d.DialogId);
+                    // TODO: Если при удалении проекта надо будет также чистить сообщения нейросети, то тут доработать.
+                    var projectDialogMessages = await _chatRepository.GetDialogMessagesAsync(d.DialogId, false);
 
                     // Если есть сообщения, дропаем их.
                     if (projectDialogMessages.Any())
