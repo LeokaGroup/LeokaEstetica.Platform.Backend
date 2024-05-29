@@ -605,20 +605,17 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
         return result;
     }
 
-    /// <summary>
-    /// Метод добавляет пользователя в команду проекта.
-    /// </summary>
-    /// <param name="userId">Id пользователя, который будет добавлен в команду проекта.</param>
-    /// <param name="vacancyId">Id вакансии.</param>
-    /// <returns>Данные добавленного пользователя.</returns>
-    public async Task<ProjectTeamMemberEntity> AddProjectTeamMemberAsync(long userId, long? vacancyId, long teamId)
+    /// <inheritdoc />
+    public async Task<ProjectTeamMemberEntity> AddProjectTeamMemberAsync(long userId, long? vacancyId, long teamId,
+        string? role)
     {
         var result = new ProjectTeamMemberEntity
         {
             Joined = DateTime.UtcNow,
             UserId = userId,
             VacancyId = vacancyId,
-            TeamId = teamId
+            TeamId = teamId,
+            Role = role
         };
         
         await _pgContext.ProjectTeamMembers.AddAsync(result);
