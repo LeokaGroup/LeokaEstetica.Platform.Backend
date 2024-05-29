@@ -31,7 +31,7 @@ internal sealed class ScrumMasterAiService : IScrumMasterAiService
         {
             var mlContext = new MLContext();
             var data = mlContext.Data.LoadFromTextFile<MessageClassification>(@"C:\temp\dataset.csv",
-                separatorChar: ',', hasHeader: true);
+                separatorChar: ';', hasHeader: true, allowQuoting: true);
                 
             Console.WriteLine("Начали обучение модели...");
             _logger.LogInformation("Начали обучение модели...");
@@ -50,20 +50,20 @@ internal sealed class ScrumMasterAiService : IScrumMasterAiService
             // TODO: Пока сохраняем вручную на сервер - не забывать в БД проставлять новую версию
             // TODO: при обучении в таблице ai.scrum_master_ai_message_versions.
             // Сохраняем обученную модель в формате .zip на сервере.
-            var modelPath = @"C:\temp\v.1.0.0.scrum_master_ai_message.zip";
-            
-            // TODO: Уберем, когда сделаем сохранение модели на сервер.
-            if(!Directory.Exists(modelPath))
-            {
-                throw new InvalidOperationException(
-                    $"Путь {modelPath} не существует либо идет попытка сохранения модели нейросети вне" +
-                    " локальной среды.");
-            }
-            
+            var modelPath = @"C:\temp\v.1.1.0.scrum_master_ai_message.zip";
+            //
+            // // TODO: Уберем, когда сделаем сохранение модели на сервер.
+            // if(!Directory.Exists(modelPath))
+            // {
+            //     throw new InvalidOperationException(
+            //         $"Путь {modelPath} не существует либо идет попытка сохранения модели нейросети вне" +
+            //         " локальной среды.");
+            // }
+
             mlContext.Model.Save(model, data.Schema, modelPath);
 
-            Console.WriteLine($"Модель успешно обучена и сохранена по пути: {modelPath}");
-            _logger.LogInformation($"Модель успешно обучена и сохранена по пути: {modelPath}");
+            // Console.WriteLine($"Модель успешно обучена и сохранена по пути: {modelPath}");
+            _logger.LogInformation("Модель успешно обучена...");
 
             await Task.CompletedTask;
         }

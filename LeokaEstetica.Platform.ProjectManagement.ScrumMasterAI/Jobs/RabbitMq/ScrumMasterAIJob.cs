@@ -321,15 +321,6 @@ internal sealed class ScrumMasterAIJob : IJob
                                 return;
                             }
 
-                            // Если они равны, значит нейросеть не смогла ответить на вопрос - она отвечает вопросом
-                            // на вопрос в таком кейсе.
-                            if (@event.Message.Equals(prediction.Message))
-                            {
-                                prediction.Message = "Прошу прощения, я не знаю ответа на этот вопрос. " +
-                                                     "Попрошу создателя научить меня понимать этот вопрос, " +
-                                                     "а пока, Вы можете спросить меня о чем-нибудь другом.";
-                            }
-
                             if (@event.DialogId <= 0)
                             {
                                 throw new InvalidOperationException(
