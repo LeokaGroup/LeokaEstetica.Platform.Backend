@@ -7,6 +7,7 @@ using LeokaEstetica.Platform.ProjectManagment.Documents.Abstractions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Microsoft.ML;
 using Renci.SshNet;
 using Renci.SshNet.Common;
 
@@ -541,6 +542,79 @@ internal sealed class FileManagerService : IFileManagerService
             sftpClient.UploadFile(stream, path);
                 
             _logger.LogInformation($"Файл {0} ({1:N0} байт) успешно загружен.", fileName, fileStreamLength);
+        }
+        
+        catch (Exception ex) when (ex is SshConnectionException or SocketException or ProxyException)
+        {
+            _logger.LogError(ex, "Ошибка подключения к серверу по Sftp.");
+            throw;
+        }
+
+        catch (SshAuthenticationException ex)
+        {
+            _logger.LogError(ex, "Ошибка аутентификации к серверу по Sftp.");
+            throw;
+        }
+
+        catch (SftpPermissionDeniedException ex)
+        {
+            _logger.LogError(ex, "Ошибка доступа к серверу по Sftp.");
+            throw;
+        }
+
+        catch (SshException ex)
+        {
+            _logger.LogError(ex, "Ошибка Sftp.");
+            throw;
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Ошибка при загрузке файла изображения аватара пользователя на сервер.");;
+            throw;
+        }
+        
+        finally
+        {
+            sftpClient.Disconnect();
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task UploadNetworkModelAsync(ITransformer model, string version, string modelName)
+    {
+        var settings = await _globalConfigRepository.Value.GetFileManagerSettingsAsync();
+        
+        using var sftpClient = new SftpClient(settings.Host, settings.Port, settings.Login, settings.Password);
+        
+        try
+        {
+            sftpClient.Connect();
+            
+            if (!sftpClient.IsConnected)
+            {
+                throw new InvalidOperationException(
+                    "Sftp клиент не подключен. Невозможно загрузить модель нейросети на сервер.");
+            }
+            
+            // Если папка моделей нейросети не существует, то создаем ее.
+            if (!sftpClient.Exists(settings.SftpNetworkModelPath))
+            {
+                sftpClient.CreateDirectory(settings.SftpNetworkModelPath);
+            }
+
+            // var loadModelPath = settings.SftpNetworkModelPath + "/" + version + "." + modelName;
+            //
+            // var stream = model.OpenReadStream();
+            // var fileName = f.FileName;
+            // var fileStreamLength = stream.Length;
+            //     
+            // _logger.LogInformation($"Загружается файл {0} ({1:N0} байт)", fileName, fileStreamLength);
+            //     
+            // sftpClient.BufferSize = 4 * 1024;
+            // sftpClient.UploadFile(stream, string.Concat(userProjectTaskPath, Path.GetFileName(fileName)));
+            //     
+            // _logger.LogInformation($"Файл {0} ({1:N0} байт) успешно загружен.", fileName, fileStreamLength);
         }
         
         catch (Exception ex) when (ex is SshConnectionException or SocketException or ProxyException)

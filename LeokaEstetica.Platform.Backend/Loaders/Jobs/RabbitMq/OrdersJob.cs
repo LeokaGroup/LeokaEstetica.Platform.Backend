@@ -25,7 +25,7 @@ namespace LeokaEstetica.Platform.Backend.Loaders.Jobs.RabbitMq;
 [DisallowConcurrentExecution]
 internal sealed class OrdersJob : IJob
 {
-    private readonly IModel? _channel;
+    private IModel? _channel;
     private readonly ICommerceRepository _commerceRepository;
     private readonly ILogger<OrdersJob> _logger;
     private readonly ISubscriptionService _subscriptionService;
@@ -47,7 +47,6 @@ internal sealed class OrdersJob : IJob
     /// <summary>
     /// Конструктор.
     /// </summary>
-    /// <param name="configuration">Зависимость конфигурации приложения.</param>
     /// <param name="commerceRepository">Репозиторий коммерции.</param>
     /// <param name="logger">Сервис логов.</param>
     /// <param name="subscriptionService">Сервис подписок.</param>
@@ -55,8 +54,7 @@ internal sealed class OrdersJob : IJob
     /// <param name="globalConfigRepository">Репозиторий глобал конфигов.</param>
     /// <param name="discordService">Сервис дискорд.</param>
     /// <param name="commerceService">Сервис коммерции.</param>
-    public OrdersJob(IConfiguration configuration,
-        ICommerceRepository commerceRepository, 
+    public OrdersJob(ICommerceRepository commerceRepository, 
         ILogger<OrdersJob> logger, 
         ISubscriptionService subscriptionService, 
         IFareRuleRepository fareRuleRepository,
@@ -71,29 +69,6 @@ internal sealed class OrdersJob : IJob
         _globalConfigRepository = globalConfigRepository;
         _discordService = discordService;
         _commerceService = commerceService;
-        
-        var connection = new ConnectionFactory
-        {
-            HostName = configuration["RabbitMq:HostName"],
-            Password = configuration["RabbitMq:Password"],
-            UserName = configuration["RabbitMq:UserName"],
-            DispatchConsumersAsync = true,
-            Port = AmqpTcpEndpoint.UseDefaultPort,
-            VirtualHost = configuration["RabbitMq:VirtualHost"],
-            ContinuationTimeout = new TimeSpan(0, 0, 10, 0)
-        };
-
-        // Если кол-во подключений уже больше 1, то не будем плодить их,
-        // а в рамках одного подключения будем работать с очередью.
-        if (_counter < 1)
-        {
-            var connection1 = connection.CreateConnection();
-            _channel = connection1.CreateModel();
-            _channel.QueueDeclare(
-                queue: _queueName.CreateQueueDeclareNameFactory(configuration, QueueTypeEnum.OrdersQueue),
-                durable: false, exclusive: false, autoDelete: true, arguments: null);   
-            _counter++;
-        }
     }
     
     /// <summary>
@@ -109,11 +84,50 @@ internal sealed class OrdersJob : IJob
         {
             return;
         }
+        
+        var dataMap = context.JobDetail.JobDataMap;
+        
+        var connection = new ConnectionFactory
+        {
+            HostName = dataMap.GetString("RabbitMq:HostName"),
+            Password = dataMap.GetString("RabbitMq:Password"),
+            UserName = dataMap.GetString("RabbitMq:UserName"),
+            DispatchConsumersAsync = true,
+            Port = AmqpTcpEndpoint.UseDefaultPort,
+            VirtualHost = dataMap.GetString("RabbitMq:VirtualHost"),
+            ContinuationTimeout = new TimeSpan(0, 0, 10, 0)
+        };
+        
+        var flags = QueueTypeEnum.OrdersQueue | QueueTypeEnum.OrdersQueue;
+
+        // Если кол-во подключений уже больше 1, то не будем плодить их,
+        // а в рамках одного подключения будем работать с очередью.
+        if (_counter < 1)
+        {
+            try
+            {
+                var connection1 = connection.CreateConnection();
+                _channel = connection1.CreateModel();
+                _channel.QueueDeclare(
+                    queue: _queueName.CreateQueueDeclareNameFactory(dataMap.GetString("Environment")!, flags),
+                    durable: false, exclusive: false, autoDelete: false, arguments: null);
+            }
+            
+            catch (Exception ex)
+            {
+                await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
+                
+                _logger.LogError(ex, ex.Message);
+                throw;
+            }
+            
+            _counter++;
+        }
 
         // Если канал не был создан, то не будем дергать память.
         if (_channel is not null)
         {
-            await CheckOrderStatusAsync().ConfigureAwait(false);
+            await CheckOrderStatusAsync();
         }
 
         await Task.CompletedTask;

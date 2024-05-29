@@ -1,6 +1,7 @@
 using LeokaEstetica.Platform.Models.Enums;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.ML;
 
 namespace LeokaEstetica.Platform.ProjectManagment.Documents.Abstractions;
 
@@ -60,4 +61,13 @@ public interface IFileManagerService
     /// <param name="projectId">Id проекта.</param>
     /// <param name="userId">Id пользователя.</param>
     Task UploadUserAvatarFileAsync(IFormFileCollection files, long projectId, long userId);
+
+    /// <summary>
+    /// TODO: Доделаем в будущем, пока что загоняем обученные модели вручную на сервер.
+    /// Метод загружает на сервер модель нейросети.
+    /// </summary>
+    /// <param name="model">Модель нейросети (хранит опыт всех эпох нейросети).</param>
+    /// <param name="version">Версия модели нейросети.</param>
+    /// <param name="modelName">Название модели нейросети.</param>
+    Task UploadNetworkModelAsync(ITransformer model, string version, string modelName);
 }

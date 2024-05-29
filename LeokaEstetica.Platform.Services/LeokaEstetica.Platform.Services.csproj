@@ -20,6 +20,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <PackageReference Include="NPOI" Version="2.7.0" />
       <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.24.0" />
     </ItemGroup>
 

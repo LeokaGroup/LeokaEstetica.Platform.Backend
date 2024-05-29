@@ -10,7 +10,6 @@ using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.ProjectManagement.ScrumMasterAI.Enums;
 using LeokaEstetica.Platform.ProjectManagement.ScrumMasterAI.IntegrationEvents;
 using LeokaEstetica.Platform.ProjectManagement.ScrumMasterAI.Models;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.ML;
 using Newtonsoft.Json;
@@ -30,8 +29,8 @@ namespace LeokaEstetica.Platform.ProjectManagement.ScrumMasterAI.Jobs.RabbitMq;
 [DisallowConcurrentExecution]
 internal sealed class ScrumMasterAIJob : IJob
 {
-    private readonly IModel? _channelMessages;
-    private readonly IModel? _channelAnalysis;
+    private IModel? _channelMessages;
+    private IModel? _channelAnalysis;
     private readonly ILogger<ScrumMasterAIJob> _logger;
     private readonly IGlobalConfigRepository _globalConfigRepository;
     private readonly IDiscordService _discordService;
@@ -60,13 +59,11 @@ internal sealed class ScrumMasterAIJob : IJob
     /// <summary>
     /// Конструктор.
     /// </summary>
-    /// <param name="configuration">Зависимость конфигурации приложения.</param>
     /// <param name="logger">Сервис логов.</param>
     /// <param name="globalConfigRepository">Репозиторий глобал конфигов.</param>
     /// <param name="discordService">Сервис дискорд.</param>
     /// <param name="projectManagementNotificationService">Сервис уведомлений модуля УП.</param>
-    public ScrumMasterAIJob(IConfiguration configuration,
-        ILogger<ScrumMasterAIJob> logger,
+    public ScrumMasterAIJob(ILogger<ScrumMasterAIJob> logger,
         IGlobalConfigRepository globalConfigRepository,
         IDiscordService discordService,
          Lazy<IProjectManagementNotificationService> projectManagementNotificationService)
@@ -75,47 +72,6 @@ internal sealed class ScrumMasterAIJob : IJob
         _globalConfigRepository = globalConfigRepository;
         _discordService = discordService;
         _projectManagementNotificationService = projectManagementNotificationService;
-
-        var connection = new ConnectionFactory
-        {
-            HostName = configuration["RabbitMq:HostName"],
-            Password = configuration["RabbitMq:Password"],
-            UserName = configuration["RabbitMq:UserName"],
-            DispatchConsumersAsync = true,
-            Port = AmqpTcpEndpoint.UseDefaultPort,
-            VirtualHost = configuration["RabbitMq:VirtualHost"],
-            ContinuationTimeout = new TimeSpan(0, 0, 10, 0)
-        };
-
-        // Если кол-во подключений уже больше 1, то не будем плодить их,
-        // а в рамках одного подключения будем работать с очередью.
-        if (_counterMessageQueue < 1)
-        {
-            var connection1 = connection.CreateConnection();
-            _channelMessages = connection1.CreateModel();
-
-            _channelMessages.QueueDeclare(
-                queue: _messageQueueName.CreateQueueDeclareNameFactory(configuration,
-                    QueueTypeEnum.ScrumMasterAiMessage),
-                durable: false, exclusive: false, autoDelete: true, arguments: null);
-
-            _counterMessageQueue++;
-        }
-
-        // Если кол-во подключений уже больше 1, то не будем плодить их,
-        // а в рамках одного подключения будем работать с очередью.
-        if (_counterAnalysisQueue < 1)
-        {
-            var connection1 = connection.CreateConnection();
-            _channelAnalysis = connection1.CreateModel();
-
-            _channelAnalysis.QueueDeclare(
-                queue: _analysisQueueName.CreateQueueDeclareNameFactory(configuration,
-                    QueueTypeEnum.ScrumMasterAiAnalysis),
-                durable: false, exclusive: false, autoDelete: true, arguments: null);
-
-            _counterAnalysisQueue++;
-        }
     }
 
     #region Публичные методы.
@@ -126,6 +82,77 @@ internal sealed class ScrumMasterAIJob : IJob
     /// <param name="context">Контекст выполнения джобы.</param>
     public async Task Execute(IJobExecutionContext context)
     {
+        var dataMap = context.JobDetail.JobDataMap;
+
+        var connection = new ConnectionFactory
+        {
+            HostName = dataMap.GetString("RabbitMq:HostName"),
+            Password = dataMap.GetString("RabbitMq:Password"),
+            UserName = dataMap.GetString("RabbitMq:UserName"),
+            DispatchConsumersAsync = true,
+            Port = AmqpTcpEndpoint.UseDefaultPort,
+            VirtualHost = dataMap.GetString("RabbitMq:VirtualHost"),
+            ContinuationTimeout = new TimeSpan(0, 0, 10, 0)
+        };
+
+        // Если кол-во подключений уже больше 1, то не будем плодить их,
+        // а в рамках одного подключения будем работать с очередью.
+        if (_counterMessageQueue < 1)
+        {
+            var flags = QueueTypeEnum.ScrumMasterAiMessage | QueueTypeEnum.ScrumMasterAiMessage;
+
+            try
+            {
+                var connection1 = connection.CreateConnection();
+                _channelMessages = connection1.CreateModel();
+
+                _channelMessages.QueueDeclare(
+                    queue: _messageQueueName.CreateQueueDeclareNameFactory(dataMap.GetString("Environment")!, flags),
+                    durable: false, exclusive: false, autoDelete: true, arguments: null);
+            }
+            
+            catch (Exception ex)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine(ex);
+                // await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
+                
+                // _logger.LogError(ex, ex.Message);
+                // throw;
+            }
+
+            _counterMessageQueue++;
+        }
+
+        // Если кол-во подключений уже больше 1, то не будем плодить их,
+        // а в рамках одного подключения будем работать с очередью.
+        if (_counterAnalysisQueue < 1)
+        {
+            var flags = QueueTypeEnum.ScrumMasterAiAnalysis | QueueTypeEnum.ScrumMasterAiAnalysis;
+
+            try
+            {
+                var connection1 = connection.CreateConnection();
+                _channelAnalysis = connection1.CreateModel();
+
+                _channelAnalysis.QueueDeclare(
+                    queue: _analysisQueueName.CreateQueueDeclareNameFactory(dataMap.GetString("Environment")!, flags),
+                    durable: false, exclusive: false, autoDelete: true, arguments: null);
+            }
+            
+            catch (Exception ex)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine(ex);
+                // await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
+                
+                // _logger.LogError(ex, ex.Message);
+                // throw;
+            }
+
+            _counterAnalysisQueue++;
+        }
+        
         // Если канал не был создан, то не будем дергать память.
         if (_channelMessages is not null || _channelAnalysis is not null)
         {

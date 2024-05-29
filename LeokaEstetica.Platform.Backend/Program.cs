@@ -1,7 +1,6 @@
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using FluentValidation.AspNetCore;
-using Hellang.Middleware.ProblemDetails;
 using LeokaEstetica.Platform.Backend.Loaders.Bots;
 using LeokaEstetica.Platform.Backend.Loaders.Jobs;
 using LeokaEstetica.Platform.Base.Factors;
@@ -159,7 +158,7 @@ builder.Services.AddQuartz(q =>
     q.UseMicrosoftDependencyInjectionJobFactory();
 
     // Запуск джоб при старте ядра системы.
-    StartJobs.Start(q, builder.Services);
+    StartJobs.Start(q, builder.Services, configuration);
 });
 
 builder.Services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);

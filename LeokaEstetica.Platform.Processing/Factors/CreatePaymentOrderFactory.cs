@@ -89,8 +89,9 @@ public static class CreatePaymentOrderFactory
             createdOrderResult.StatusSysName, paymentId, createPaymentOrderAggregateInput.UserId,
             createPaymentOrderAggregateInput.PublicId, createPaymentOrderAggregateInput.OrderCache.Month,
             createdOrderResult.Price, createdOrderResult.Currency);
-        
-        var queueType = string.Empty.CreateQueueDeclareNameFactory(configuration, QueueTypeEnum.OrdersQueue);
+
+        var queueType = string.Empty.CreateQueueDeclareNameFactory(configuration["Environment"],
+            QueueTypeEnum.OrdersQueue);
         await rabbitMqService.PublishAsync(orderEvent, queueType);
         
         var isEnabledEmailNotifications = await globalConfigRepository.GetValueByKeyAsync<bool>(

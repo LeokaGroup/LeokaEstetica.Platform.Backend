@@ -69,8 +69,8 @@ internal sealed class RefundsJob : IJob
         
         var flags = QueueTypeEnum.RefundsQueue | QueueTypeEnum.RefundsQueue;
 
-        _channel.QueueDeclare(queue: _queueName.CreateQueueDeclareNameFactory(configuration, flags), durable: false,
-            exclusive: false, autoDelete: false, arguments: null);
+        _channel.QueueDeclare(queue: _queueName.CreateQueueDeclareNameFactory(configuration["Environment"]!, flags),
+            durable: false, exclusive: false, autoDelete: false, arguments: null);
     }
 
     /// <summary>
