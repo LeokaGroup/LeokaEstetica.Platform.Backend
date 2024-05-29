@@ -31,7 +31,7 @@ internal sealed class ScrumMasterAiService : IScrumMasterAiService
         {
             var mlContext = new MLContext();
             var data = mlContext.Data.LoadFromTextFile<MessageClassification>(@"C:\temp\dataset.csv",
-                separatorChar: ',', hasHeader: true);
+                separatorChar: ';', hasHeader: true, allowQuoting: true);
                 
             Console.WriteLine("Начали обучение модели...");
             _logger.LogInformation("Начали обучение модели...");
@@ -51,19 +51,36 @@ internal sealed class ScrumMasterAiService : IScrumMasterAiService
             // TODO: при обучении в таблице ai.scrum_master_ai_message_versions.
             // Сохраняем обученную модель в формате .zip на сервере.
             var modelPath = @"C:\temp\v.1.0.0.scrum_master_ai_message.zip";
-            
-            // TODO: Уберем, когда сделаем сохранение модели на сервер.
-            if(!Directory.Exists(modelPath))
-            {
-                throw new InvalidOperationException(
-                    $"Путь {modelPath} не существует либо идет попытка сохранения модели нейросети вне" +
-                    " локальной среды.");
-            }
+            //
+            // // TODO: Уберем, когда сделаем сохранение модели на сервер.
+            // if(!Directory.Exists(modelPath))
+            // {
+            //     throw new InvalidOperationException(
+            //         $"Путь {modelPath} не существует либо идет попытка сохранения модели нейросети вне" +
+            //         " локальной среды.");
+            // }
+
+            #region Для проверки обучения (раскоментить).
+
+            // // Нейросеть проводит прогнозирование.
+            // var predEngine = mlContext.Model
+            //     .CreatePredictionEngine<MessageClassification, MessageClassificationPrediction>(
+            //         model);
+            //
+            // // Результат ответа нейросети после прогнозирования.
+            // var prediction = predEngine.Predict(new MessageClassification
+            // {
+            //     Message = "test"
+            // });
+            //
+            // Console.WriteLine(prediction.Message);
+
+            #endregion
             
             mlContext.Model.Save(model, data.Schema, modelPath);
 
-            Console.WriteLine($"Модель успешно обучена и сохранена по пути: {modelPath}");
-            _logger.LogInformation($"Модель успешно обучена и сохранена по пути: {modelPath}");
+            Console.WriteLine("Модель успешно обучена...");
+            _logger.LogInformation("Модель успешно обучена...");
 
             await Task.CompletedTask;
         }

@@ -7,6 +7,7 @@ using LeokaEstetica.Platform.Processing.Enums;
 namespace LeokaEstetica.Platform.Processing.Abstractions.PayMaster;
 
 /// <summary>
+/// TODO: Не используем пока что PayMaster.
 /// Абстракция сервиса работы с платежной системой PayMaster.
 /// </summary>
 public interface IPayMasterService

@@ -1,23 +1,23 @@
-﻿using System.Net.Sockets;
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 using System.Text;
+using LeokaEstetica.Platform.Base.Abstractions.Messaging.Chat;
 using LeokaEstetica.Platform.Base.Enums;
 using LeokaEstetica.Platform.Base.Extensions.StringExtensions;
 using LeokaEstetica.Platform.Core.Constants;
+using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Database.Abstractions.Config;
+using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Integrations.Abstractions.Discord;
 using LeokaEstetica.Platform.Notifications.Abstractions;
-using LeokaEstetica.Platform.ProjectManagement.ScrumMasterAI.Enums;
 using LeokaEstetica.Platform.ProjectManagement.ScrumMasterAI.IntegrationEvents;
 using LeokaEstetica.Platform.ProjectManagement.ScrumMasterAI.Models;
+using LeokaEstetica.Platform.ProjectManagment.Documents.Abstractions;
 using Microsoft.Extensions.Logging;
 using Microsoft.ML;
 using Newtonsoft.Json;
 using Quartz;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
-using Renci.SshNet;
-using Renci.SshNet.Common;
 
 [assembly: InternalsVisibleTo("LeokaEstetica.Platform.ProjectManagement")]
 
@@ -34,7 +34,10 @@ internal sealed class ScrumMasterAIJob : IJob
     private readonly ILogger<ScrumMasterAIJob> _logger;
     private readonly IGlobalConfigRepository _globalConfigRepository;
     private readonly IDiscordService _discordService;
-    private readonly Lazy<IProjectManagementNotificationService> _projectManagementNotificationService;
+    private readonly IProjectManagementNotificationService _projectManagementNotificationService;
+    private readonly IFileManagerService _fileManagerService;
+    private readonly IScrumMasterAiRepository _scrumMasterAiRepository;
+    private readonly IChatService _chatService;
 
     /// <summary>
     /// Название очереди для сообщений.
@@ -63,15 +66,24 @@ internal sealed class ScrumMasterAIJob : IJob
     /// <param name="globalConfigRepository">Репозиторий глобал конфигов.</param>
     /// <param name="discordService">Сервис дискорд.</param>
     /// <param name="projectManagementNotificationService">Сервис уведомлений модуля УП.</param>
+    /// <param name="fileManagerService">Сервис работы с файлами.</param>
+    /// <param name="scrumMasterAiRepository">Репозиторий нейросети Scrum Master AI.</param>
+    /// <param name="chatService">Сервис чата.</param>
     public ScrumMasterAIJob(ILogger<ScrumMasterAIJob> logger,
         IGlobalConfigRepository globalConfigRepository,
         IDiscordService discordService,
-         Lazy<IProjectManagementNotificationService> projectManagementNotificationService)
+        IProjectManagementNotificationService projectManagementNotificationService,
+        IFileManagerService fileManagerService,
+        IScrumMasterAiRepository scrumMasterAiRepository,
+         IChatService chatService)
     {
         _logger = logger;
         _globalConfigRepository = globalConfigRepository;
         _discordService = discordService;
         _projectManagementNotificationService = projectManagementNotificationService;
+        _fileManagerService = fileManagerService;
+        _scrumMasterAiRepository = scrumMasterAiRepository;
+        _chatService = chatService;
     }
 
     #region Публичные методы.
@@ -110,15 +122,13 @@ internal sealed class ScrumMasterAIJob : IJob
                     queue: _messageQueueName.CreateQueueDeclareNameFactory(dataMap.GetString("Environment")!, flags),
                     durable: false, exclusive: false, autoDelete: true, arguments: null);
             }
-            
+
             catch (Exception ex)
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine(ex);
-                // await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
-                
-                // _logger.LogError(ex, ex.Message);
-                // throw;
+                await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
+
+                _logger.LogError(ex, ex.Message);
+                throw;
             }
 
             _counterMessageQueue++;
@@ -139,20 +149,18 @@ internal sealed class ScrumMasterAIJob : IJob
                     queue: _analysisQueueName.CreateQueueDeclareNameFactory(dataMap.GetString("Environment")!, flags),
                     durable: false, exclusive: false, autoDelete: true, arguments: null);
             }
-            
+
             catch (Exception ex)
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine(ex);
-                // await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
-                
-                // _logger.LogError(ex, ex.Message);
-                // throw;
+                await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
+
+                _logger.LogError(ex, ex.Message);
+                throw;
             }
 
             _counterAnalysisQueue++;
         }
-        
+
         // Если канал не был создан, то не будем дергать память.
         if (_channelMessages is not null || _channelAnalysis is not null)
         {
@@ -214,192 +222,159 @@ internal sealed class ScrumMasterAIJob : IJob
                 var logger = _logger;
                 logger.LogInformation("Начали обработку сообщения из очереди сообщений для нейросети...");
 
-                // Если очередь не пуста, то будем парсить результат для проверки сообщений для нейросети.
-                if (!ea.Body.IsEmpty)
+                try
                 {
-                    var message = Encoding.UTF8.GetString(ea.Body.ToArray());
-                    var @event = JsonConvert.DeserializeObject<MessageClassificationEvent>(message);
-
-                    if (@event is null)
+                    // Если очередь не пуста, то будем парсить результат для проверки сообщений для нейросети.
+                    if (!ea.Body.IsEmpty)
                     {
-                        throw new InvalidOperationException(
-                            "Событие не содержит нужных данных." +
-                            $" Получили сообщение из очереди сообщений для нейросети: {message}");
-                    }
+                        var message = Encoding.UTF8.GetString(ea.Body.ToArray());
+                        var @event = JsonConvert.DeserializeObject<MessageClassificationEvent>(message);
 
-                    // Странный кейс, не ломаем приложением, но логируем такое.
-                    if (@event.ScrumMasterAiEventType == ScrumMasterAiEventTypeEnum.None)
-                    {
-                        var ex = new InvalidOperationException(
-                            "Неизвестный тип события из очереди сообщений нейросети. " +
-                            "Оставили сообщение в очереди сообщений для нейросети. " +
-                            "Событие должно было быть обработано из очереди сообщений нейросети," +
-                            " но осталось в очереди. " +
-                            $"Требуется исправление этого. Данные события: {JsonConvert.SerializeObject(@event)}");
-                        await _discordService.SendNotificationErrorAsync(ex);
-
-                        logger.LogError(ex, ex.Message);
-
-                        // TODO: Если бахнет кейс с null, то обработаем его тут.
-                        _channelMessages.BasicRecoverAsync(false);
-                    }
-                    
-                    else if (@event.ScrumMasterAiEventType == ScrumMasterAiEventTypeEnum.Message)
-                    {
-                        // Создаем контекст нейросети.
-                        var mlContext = new MLContext(seed: 0);
-
-                        var settings = await _globalConfigRepository.GetFileManagerSettingsAsync();
-
-                        using var sftpClient = new SftpClient(settings.Host, settings.Port, settings.Login,
-                            settings.Password);
-                            
-                        using var stream = new MemoryStream();
-
-                        try
+                        if (@event is null)
                         {
-                            sftpClient.Connect();
+                            throw new InvalidOperationException(
+                                "Событие не содержит нужных данных." +
+                                $" Получили сообщение из очереди сообщений для нейросети: {message}");
+                        }
 
-                            if (!sftpClient.IsConnected)
+                        if (string.IsNullOrWhiteSpace(@event.Message))
+                        {
+                            throw new InvalidOperationException(
+                                "Не передано сообщение для анализа нейросетью. " +
+                                $"Данные события: {JsonConvert.SerializeObject(@event)}");
+                        }
+
+                        // Странный кейс, не ломаем приложением, но логируем такое.
+                        if (@event.ScrumMasterAiEventType == ScrumMasterAiEventTypeEnum.None)
+                        {
+                            var ex = new InvalidOperationException(
+                                "Неизвестный тип события из очереди сообщений нейросети. " +
+                                "Оставили сообщение в очереди сообщений для нейросети. " +
+                                "Событие должно было быть обработано из очереди сообщений нейросети," +
+                                " но осталось в очереди. " +
+                                $"Требуется исправление этого. Данные события: {JsonConvert.SerializeObject(@event)}");
+
+                            await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
+
+                            logger.LogError(ex, ex.Message);
+
+                            // TODO: Если бахнет кейс с null, то обработаем его тут.
+                            _channelMessages.BasicRecoverAsync(false);
+                        }
+
+                        else if (@event.ScrumMasterAiEventType == ScrumMasterAiEventTypeEnum.Message)
+                        {
+                            // TODO: Добавить отображение уведомления фронту о том, что знаем и разбираемся в таком кейсе.
+                            // Если токена не было - критичная ситуация, логируем такое, но не ломаем приложение.
+                            if (string.IsNullOrWhiteSpace(@event.ConnectionId))
                             {
-                                throw new InvalidOperationException(
-                                    "Sftp клиент не подключен. " +
-                                    "Невозможно скачать опыт предыдущих эпох нейросети с сервера.");
+                                var ex = new InvalidOperationException(
+                                    "Токен был невалиден (null или пустой) при парсинге из очереди сообщений нейросети." +
+                                    $" Данные события: {JsonConvert.SerializeObject(@event)}");
+                                _logger.LogError(ex, ex.Message);
+
+                                await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
+
+                                return;
                             }
 
-                            // Скачиваем обученную модель с сервера, чтобы нейросеть получила весь свой опыт предыдущих эпох.
-                            sftpClient.DownloadFile(settings.SftpTaskPath, stream);
-                        }
-                        
-                        catch (Exception ex) when (ex is SshConnectionException or SocketException or ProxyException)
-                        {
-                            _logger.LogError(ex, "Ошибка подключения к серверу по Sftp.");
-                            throw;
-                        }
+                            var version = await _scrumMasterAiRepository.GetLastNetworkVersionAsync();
 
-                        catch (SshAuthenticationException ex)
-                        {
-                            _logger.LogError(ex, "Ошибка аутентификации к серверу по Sftp.");
-                            throw;
-                        }
-
-                        catch (SftpPermissionDeniedException ex)
-                        {
-                            _logger.LogError(ex, "Ошибка доступа к серверу по Sftp.");
-                            throw;
-                        }
-
-                        catch (SshException ex)
-                        {
-                            _logger.LogError(ex, "Ошибка Sftp.");
-                            throw;
-                        }
-
-                        catch (Exception ex)
-                        {
-                            _logger.LogError(ex, "Ошибка при скачивании опыта предыдущих эпох нейросети с сервера.");
-                            throw;
-                        }
-
-                        finally
-                        {
-                            sftpClient.Disconnect();
-                        }
-            
-                        // Сбрасываем позицию на 0, иначе у файла будет размер 0 байтов,
-                        // если не сбросить указатель позиции в начало.
-                        stream.Seek(0, SeekOrigin.Begin);
-
-                        // Загружаем нейросети ее опыт предыдущих эпох.
-                        var trainedModel = mlContext.Model.Load(stream, out var _);
-                        
-                        // TODO: Microsoft советует не использовать AppendCacheCheckpoint на больших данных!
-                        // TODO: На малых и средних разрешается. Ускоряет при повторных итерациях обучения.
-                        // TODO: P.S: Цитата Microsoft: Удалите AppendCacheCheckpoint при обработке очень больших наборов данных.
-                        // var pipeline = mlContext.Transforms.Conversion.MapValueToKey(inputColumnName: "Message",
-                        //         outputColumnName: "Label")
-                        //     .Append(mlContext.Transforms.Concatenate("Features"))
-                        //     .AppendCacheCheckpoint(mlContext);
-                        
-                        // По дефолту у SdcaMaximumEntropy значения "Label", "Features".
-                        // var trainingPipeline = pipeline
-                        //     .Append(mlContext.MulticlassClassification.Trainers.SdcaMaximumEntropy())
-                        //     .Append(mlContext.Transforms.Conversion.MapKeyToValue("PredictedLabel"));
-
-                        // Нейросеть проводит прогнозирование.
-                        var predEngine = mlContext.Model
-                            .CreatePredictionEngine<MessageClassification, MessageClassificationPrediction>(
-                                trainedModel);
+                            if (string.IsNullOrWhiteSpace(version))
+                            {
+                                throw new InvalidOperationException(
+                                    "Не удалось получить актуальную версию модели нейросети: scrum_master_ai_message");
+                            }
                             
-                        // TODO: Если будет много полей, то вынести в приватный метод факторки.
-                        // Результат ответа нейросети после прогнозирования.
-                        var prediction = predEngine.Predict(new MessageClassification
-                        {
-                            Message = @event.Message
-                        });
-                        
-                        // Обучаем модель.
-                        // trainedModel = trainingPipeline.Fit(trainingDataView);
+                            var trainedModelStream = await _fileManagerService.DownloadNetworkModelAsync(version,
+                                "scrum_master_ai_message.zip");
+                                
+                            var mlContext = new MLContext();
 
-                        // TODO: Добавить отображение уведомления фронту о том, что знаем и разбираемся в таком кейсе.
-                        // Если токена не было - критичная ситуация, логируем такое, но не ломаем приложение.
-                        if (string.IsNullOrWhiteSpace(@event.Token))
+                            // Загружаем нейросети ее опыт предыдущих эпох.
+                            var loadЕrainedModel = mlContext.Model.Load(trainedModelStream, out var _);
+
+                            // Нейросеть проводит прогнозирование.
+                            var predEngine = mlContext.Model
+                                .CreatePredictionEngine<MessageClassification, MessageClassificationPrediction>(
+                                    loadЕrainedModel);
+
+                            // Результат ответа нейросети после прогнозирования.
+                            var prediction = predEngine.Predict(new MessageClassification
+                            {
+                                Message = @event.Message
+                            });
+
+                            // TODO: Добавить отображение уведомления фронту о том, что знаем и разбираемся в таком кейсе.
+                            // Если нейросеть не дала ответа - критичная ситуация, логируем такое, но не ломаем приложение.
+                            if (string.IsNullOrWhiteSpace(prediction.Message))
+                            {
+                                var ex = new InvalidOperationException(
+                                    "От нейросети не было получено ответа. " +
+                                    "Требуется дообучение нейросети (она глупая либо не правильно провела классификацию.)." +
+                                    $" Данные события: {JsonConvert.SerializeObject(@event)}. " +
+                                    $"Данные ответа нейросети: {JsonConvert.SerializeObject(prediction)}.");
+                                _logger.LogError(ex, ex.Message);
+
+                                await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
+
+                                return;
+                            }
+
+                            if (@event.DialogId <= 0)
+                            {
+                                throw new InvalidOperationException(
+                                    "Обнаружен невалидный Id диалога. Нейросеть не знает в какой диалог отвечать. " +
+                                    $"Данные ответа нейросети: {JsonConvert.SerializeObject(prediction)}. " +
+                                    $"Нейросеть хотела ответить: {prediction.Message}.");
+                            }
+                            
+                            // Пишем ответ нейросети в БД.
+                            // - 1 это Id нейросети. Пока хардкодим, если нейросетей станет несколько,
+                            // то будем получать из БД.
+                            await _chatService.SendMessageAsync(prediction.Message, @event.DialogId, -1,
+                                @event.ConnectionId, true, true).ConfigureAwait(false);
+
+                            // Отправляем результат классификации ответа нейросети на фронт.
+                            await _projectManagementNotificationService
+                                .SendClassificationNetworkMessageResultAsync(prediction.Message, @event.ConnectionId,
+                                    @event.DialogId)
+                                .ConfigureAwait(false);
+
+                            // TODO: Если бахнет кейс с null, то обработаем его тут.
+                            // Подтверждаем сообщение, чтобы дропнуть его из очереди.
+                            _channelMessages.BasicAck(ea.DeliveryTag, false);
+                        }
+
+                        // Недопустимая ситуация, но не ломаем приложением, а просто логируем кейс.
+                        else
                         {
                             var ex = new InvalidOperationException(
-                                "Токен был невалиден (null или пустой) при парсинге из очереди сообщений нейросети." +
-                                $" Данные события: {JsonConvert.SerializeObject(@event)}");
-                            _logger.LogError(ex, ex.Message);
+                                "Оставили сообщение в очереди сообщений для нейросети. " +
+                                "Событие должно было быть обработано из очереди сообщений нейросети," +
+                                " но осталось в очереди. " +
+                                $"Требуется исправление этого. Данные события: {JsonConvert.SerializeObject(@event)}");
+                            await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
 
-                            await _discordService.SendNotificationErrorAsync(ex);
+                            logger.LogError(ex, ex.Message);
 
-                            return;
+                            // TODO: Если бахнет кейс с null, то обработаем его тут.
+                            _channelMessages.BasicRecoverAsync(false);
                         }
-                        
-                        // TODO: Добавить отображение уведомления фронту о том, что знаем и разбираемся в таком кейсе.
-                        // Если нейросеть не дала ответа - критичная ситуация, логируем такое, но не ломаем приложение.
-                        if (string.IsNullOrWhiteSpace(prediction.Message))
-                        {
-                            var ex = new InvalidOperationException(
-                                "От нейросети не было получено ответа. " +
-                                "Требуется дообучение нейросети (она глупая либо не правильно провела классификацию.)." +
-                                $" Данные события: {JsonConvert.SerializeObject(@event)}. " +
-                                $"Данные ответа нейросети: {JsonConvert.SerializeObject(prediction)}.");
-                            _logger.LogError(ex, ex.Message);
-
-                            await _discordService.SendNotificationErrorAsync(ex);
-
-                            return;
-                        }
-                        
-                        // Отправляем результат классификации ответа нейросети на фронт.
-                        await _projectManagementNotificationService.Value
-                            .SendClassificationNetworkMessageResultAsync(prediction.Message, @event.Token);
-
-                        // TODO: Если бахнет кейс с null, то обработаем его тут.
-                        // Подтверждаем сообщение, чтобы дропнуть его из очереди.
-                        _channelMessages.BasicAck(ea.DeliveryTag, false);
                     }
 
-                    // Недопустимая ситуация, но не ломаем приложением, а просто логируем кейс.
-                    else
-                    {
-                        var ex = new InvalidOperationException(
-                            "Оставили сообщение в очереди сообщений для нейросети. " +
-                            "Событие должно было быть обработано из очереди сообщений нейросети," +
-                            " но осталось в очереди. " +
-                            $"Требуется исправление этого. Данные события: {JsonConvert.SerializeObject(@event)}");
-                        await _discordService.SendNotificationErrorAsync(ex);
+                    logger.LogInformation("Закончили обработку сообщения из очереди сообщений для нейросети...");
 
-                        logger.LogError(ex, ex.Message);
-
-                        // TODO: Если бахнет кейс с null, то обработаем его тут.
-                        _channelMessages.BasicRecoverAsync(false);
-                    }
+                    await Task.Yield();
                 }
 
-                logger.LogInformation("Закончили обработку сообщения из очереди сообщений для нейросети...");
+                catch (Exception ex)
+                {
+                    await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
 
-                await Task.Yield();
+                    logger.LogError(ex, ex.Message);
+                    throw;
+                }
             };
 
             _channelMessages.BasicConsume(_messageQueueName, false, consumer);
@@ -409,6 +384,8 @@ internal sealed class ScrumMasterAIJob : IJob
 
         catch (Exception ex)
         {
+            await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
+
             _logger.LogError(ex, ex.Message);
             throw;
         }
@@ -426,6 +403,8 @@ internal sealed class ScrumMasterAIJob : IJob
 
         catch (Exception ex)
         {
+            await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
+
             _logger.LogError(ex, ex.Message);
             throw;
         }

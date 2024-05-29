@@ -12,7 +12,8 @@ internal class ProjectDialogTest : BaseServiceTest
     [Test]
     public async Task CreateProjectDialogAsync()
     {
-        var result = await ChatService.GetDialogAsync(null, DiscussionTypeEnum.Project, "sierra_93@mail.ru", 21);
+        var result = await ChatService.GetDialogAsync(null, DiscussionTypeEnum.Project, "sierra_93@mail.ru", 21,
+            false, null);
 
         Assert.IsNotNull(result);
     }

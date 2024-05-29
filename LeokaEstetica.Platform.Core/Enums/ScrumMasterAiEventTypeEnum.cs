@@ -1,4 +1,4 @@
-﻿namespace LeokaEstetica.Platform.ProjectManagement.ScrumMasterAI.Enums;
+﻿namespace LeokaEstetica.Platform.Core.Enums;
 
 /// <summary>
 /// Перечисление типа ивента нейросети.

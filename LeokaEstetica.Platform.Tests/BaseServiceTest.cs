@@ -50,10 +50,10 @@ using LeokaEstetica.Platform.Integrations.Services.Reverso;
 using LeokaEstetica.Platform.Integrations.Services.Telegram;
 using LeokaEstetica.Platform.Messaging.Services.Chat;
 using LeokaEstetica.Platform.Messaging.Services.Project;
-using LeokaEstetica.Platform.Messaging.Services.RabbitMq;
 using LeokaEstetica.Platform.Notifications.Services;
 using LeokaEstetica.Platform.Processing.Services.Commerce;
 using LeokaEstetica.Platform.Processing.Services.PayMaster;
+using LeokaEstetica.Platform.RabbitMq.Services;
 using LeokaEstetica.Platform.Redis.Services.Commerce;
 using LeokaEstetica.Platform.Redis.Services.User;
 using LeokaEstetica.Platform.Services.Services.FareRule;
@@ -234,7 +234,7 @@ internal class BaseServiceTest
         var ordersRepository = new OrdersRepository(pgContext);
         var commerceRepository = new CommerceRepository(pgContext, AppConfiguration);
         var commerceRedisService = new CommerceRedisService(distributedCache);
-        var rabbitMqService = new RabbitMqService(AppConfiguration);
+        var rabbitMqService = new RabbitMqService();
         
         PayMasterService = new PayMasterService(null, AppConfiguration, userRepository,
             commerceRepository, accessUserService, null, commerceRedisService, rabbitMqService, mapper, null, null);

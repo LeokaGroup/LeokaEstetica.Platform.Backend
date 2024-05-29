@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Configuration;
 using RabbitMQ.Client;
 
-namespace LeokaEstetica.Platform.Messaging.Factors;
+namespace LeokaEstetica.Platform.Base.Factors;
 
 /// <summary>
 /// Класс факторки для создания подключения к кролику.

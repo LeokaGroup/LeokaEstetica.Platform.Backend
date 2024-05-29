@@ -1,0 +1,1 @@
+﻿CREATE TYPE ai.object_type_dialog_ai AS ENUM ('project', 'vacancy', 'scrum_master_ai');

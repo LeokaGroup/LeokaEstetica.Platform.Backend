@@ -1,4 +1,4 @@
-﻿using LeokaEstetica.Platform.ProjectManagement.ScrumMasterAI.Enums;
+﻿using LeokaEstetica.Platform.Core.Enums;
 
 namespace LeokaEstetica.Platform.ProjectManagement.ScrumMasterAI.IntegrationEvents;
 
@@ -13,14 +13,11 @@ public class MessageClassificationEvent
     public string? Message { get; set; }
 
     /// <summary>
+    /// TODO: Пока что всегда -1, так как это Id нейросети.
+    /// TODO: Если нейросетей станет несколько, то будем получать из БД.
     /// Id пользователя, которое написал сообщение нейросети.
     /// </summary>
-    public long CreatedBy { get; set; }
-
-    /// <summary>
-    /// Дата создания сообщения (момент, когда нейросети написали сообщение).
-    /// </summary>
-    public DateTime CreatedAt { get; set; }
+    public long UserId { get; set; }
 
     /// <summary>
     /// Тип события. Его использует нейросеть.
@@ -28,10 +25,15 @@ public class MessageClassificationEvent
     public ScrumMasterAiEventTypeEnum ScrumMasterAiEventType { get; set; }
 
     /// <summary>
-    /// TODO: Если токен успеет измениться (пользователь уйдет со страницы), то пользователь не получит ответ.
+    /// TODO: Если Id подключения успеет измениться (пользователь уйдет со страницы), то пользователь не получит ответ.
     /// TODO: Кривое место, важно будет рефачить это, чтоб всегда получал ответ
     /// TODO: (Гуид не подойдет уже, так как гуид создается каждый раз при входе на страницы разные на фронте).
-    /// Токен пользователя. Нужно для отправки ему ответа нейросетью.
+    /// <param name="connectionId">Id подключения сокетов.</param>
     /// </summary>
-    public string? Token { get; set; }
+    public string? ConnectionId { get; set; }
+
+    /// <summary>
+    /// Id диалога.
+    /// </summary>
+    public long DialogId { get; set; }
 }

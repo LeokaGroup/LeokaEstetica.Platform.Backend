@@ -137,7 +137,10 @@ builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory())
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 // Подключаем SignalR.
-builder.Services.AddSignalR();
+builder.Services.AddSignalR(opt =>
+{
+    opt.EnableDetailedErrors = true;
+});
 
 // Подключаем кэш Redis.
 builder.Services.AddStackExchangeRedisCache(options =>
@@ -164,6 +167,9 @@ builder.Services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
 
 builder.Logging.ClearProviders();
 builder.Host.UseNLog();
+
+// Регистрируем IHttpClientFactory.
+builder.Services.AddHttpClient();
 
 // builder.Services.AddProblemDetails();
 

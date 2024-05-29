@@ -75,6 +75,26 @@ public static class QueueExtensions
                 queue = QueueTypeEnum.RefundsQueue.GetEnumDescription();
             }
         }
+        
+        // Если тип очереди сообщения для нейросети Scrum Master AI.
+        else if (queueType.HasFlag(QueueTypeEnum.ScrumMasterAiMessage))
+        {
+            if (environment.Equals("Development"))
+            {
+                queue = string.Concat("Develop_", QueueTypeEnum.ScrumMasterAiMessage.GetEnumDescription());
+            }
+        
+            else if (environment.Equals("Staging"))
+            {
+                queue = string.Concat("Test_", QueueTypeEnum.ScrumMasterAiMessage.GetEnumDescription());
+            }
+
+            else
+            {
+                // Обычное название, как на проде.
+                queue = QueueTypeEnum.ScrumMasterAiMessage.GetEnumDescription();
+            }
+        }
 
         return queue;
     }
