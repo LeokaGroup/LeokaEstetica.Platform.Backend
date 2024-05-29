@@ -50,7 +50,7 @@ internal sealed class ScrumMasterAiService : IScrumMasterAiService
             // TODO: Пока сохраняем вручную на сервер - не забывать в БД проставлять новую версию
             // TODO: при обучении в таблице ai.scrum_master_ai_message_versions.
             // Сохраняем обученную модель в формате .zip на сервере.
-            var modelPath = @"C:\temp\v.1.1.0.scrum_master_ai_message.zip";
+            var modelPath = @"C:\temp\v.1.0.0.scrum_master_ai_message.zip";
             //
             // // TODO: Уберем, когда сделаем сохранение модели на сервер.
             // if(!Directory.Exists(modelPath))
@@ -60,9 +60,26 @@ internal sealed class ScrumMasterAiService : IScrumMasterAiService
             //         " локальной среды.");
             // }
 
+            #region Для проверки обучения (раскоментить).
+
+            // // Нейросеть проводит прогнозирование.
+            // var predEngine = mlContext.Model
+            //     .CreatePredictionEngine<MessageClassification, MessageClassificationPrediction>(
+            //         model);
+            //
+            // // Результат ответа нейросети после прогнозирования.
+            // var prediction = predEngine.Predict(new MessageClassification
+            // {
+            //     Message = "test"
+            // });
+            //
+            // Console.WriteLine(prediction.Message);
+
+            #endregion
+            
             mlContext.Model.Save(model, data.Schema, modelPath);
 
-            // Console.WriteLine($"Модель успешно обучена и сохранена по пути: {modelPath}");
+            Console.WriteLine("Модель успешно обучена...");
             _logger.LogInformation("Модель успешно обучена...");
 
             await Task.CompletedTask;
