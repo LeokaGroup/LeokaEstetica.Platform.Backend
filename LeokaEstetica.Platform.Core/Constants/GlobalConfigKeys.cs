@@ -125,6 +125,16 @@ public static class GlobalConfigKeys
         /// Ключ вкл/выкл контроля длительности спринтов проекта.
         /// </summary>
         public const string PROJECT_SPRINT_DURATION_JOB_MODE_ENABLED = "ProjectSprintDuration.Mode.Enabled";
+
+        /// <summary>
+        /// Вкл/выкл работу сообщения нейросети.
+        /// </summary>
+        public const string SCRUM_MASTER_AI_MESSAGES = "ScrumMasterAi.Message.Mode.Enabled";
+        
+        /// <summary>
+        /// Вкл/выкл работу анализа нейросети.
+        /// </summary>
+        public const string SCRUM_MASTER_AI_ANALYSiS = "ScrumMasterAi.Analysis.Mode.Enabled";
     }
 
     /// <summary>

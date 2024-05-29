@@ -88,7 +88,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     /// <param name="projectSettingsConfigRepository">Репозиторий настроек проектов.</param>
     /// <param name="projectSettingsConfigRepository">Сервис транслитера.</param>
     /// <param name="fileManagerService">Сервис менеджера файлов.</param>
-    /// <param name="sprintNotificationsService">Сервис уведомлений спринтов.</param>
+    /// <param name="projectManagementNotificationService">Сервис уведомлений модуля УП.</param>
     /// <param name="userService">Сервис пользователей.</param>
     /// <param name="distributionStatusTaskService">Сервис распределение задач по статусам.</param>
     /// <param name="projectManagementTemplateService">Сервис шаблонов проекта.</param>

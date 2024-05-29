@@ -89,4 +89,14 @@ internal sealed class ProjectManagementNotificationService : IProjectManagementN
                 NotificationLevel = notificationLevel
             });
     }
+
+    /// <inheritdoc />
+    public async Task SendClassificationNetworkMessageResultAsync(string message, string token)
+    {
+        var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
+
+        await _hubContext.Clients
+            .Client(connectionId)
+            .SendAsync("SendClassificationNetworkMessageResult", message);
+    }
 }

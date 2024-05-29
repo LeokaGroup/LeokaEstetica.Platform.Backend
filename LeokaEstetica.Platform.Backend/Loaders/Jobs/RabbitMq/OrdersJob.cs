@@ -1,5 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-using System.Text;
+﻿using System.Text;
 using LeokaEstetica.Platform.Base.Enums;
 using LeokaEstetica.Platform.Base.Extensions.StringExtensions;
 using LeokaEstetica.Platform.Base.Models.IntegrationEvents.Orders;
@@ -18,8 +17,6 @@ using Quartz;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 
-[assembly: InternalsVisibleTo("LeokaEstetica.Platform.Backend")]
-
 namespace LeokaEstetica.Platform.Backend.Loaders.Jobs.RabbitMq;
 
 /// <summary>
@@ -28,7 +25,7 @@ namespace LeokaEstetica.Platform.Backend.Loaders.Jobs.RabbitMq;
 [DisallowConcurrentExecution]
 internal sealed class OrdersJob : IJob
 {
-    private readonly IModel _channel;
+    private readonly IModel? _channel;
     private readonly ICommerceRepository _commerceRepository;
     private readonly ILogger<OrdersJob> _logger;
     private readonly ISubscriptionService _subscriptionService;
@@ -85,8 +82,6 @@ internal sealed class OrdersJob : IJob
             VirtualHost = configuration["RabbitMq:VirtualHost"],
             ContinuationTimeout = new TimeSpan(0, 0, 10, 0)
         };
-        
-        var flags = QueueTypeEnum.OrdersQueue | QueueTypeEnum.OrdersQueue;
 
         // Если кол-во подключений уже больше 1, то не будем плодить их,
         // а в рамках одного подключения будем работать с очередью.
@@ -94,8 +89,9 @@ internal sealed class OrdersJob : IJob
         {
             var connection1 = connection.CreateConnection();
             _channel = connection1.CreateModel();
-            _channel.QueueDeclare(queue: _queueName.CreateQueueDeclareNameFactory(configuration, flags),
-                durable: false, exclusive: false, autoDelete: false, arguments: null);   
+            _channel.QueueDeclare(
+                queue: _queueName.CreateQueueDeclareNameFactory(configuration, QueueTypeEnum.OrdersQueue),
+                durable: false, exclusive: false, autoDelete: true, arguments: null);   
             _counter++;
         }
     }
@@ -117,7 +113,7 @@ internal sealed class OrdersJob : IJob
         // Если канал не был создан, то не будем дергать память.
         if (_channel is not null)
         {
-            await CheckOrderStatusAsync();
+            await CheckOrderStatusAsync().ConfigureAwait(false);
         }
 
         await Task.CompletedTask;
