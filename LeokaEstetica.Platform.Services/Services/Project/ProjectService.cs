@@ -295,8 +295,9 @@ internal sealed class ProjectService : IProjectService
             // Добавляем владельца в участники проекта по дефолту.
             await AddProjectOwnerToTeamMembersAsync(userId, projectId);
             
+            // TODO: Были ошибки при создании проекта - плохо протестировали, раскоментить когда протестим.
             // Заводим Scrum настройки для проекта.
-            await _projectManagementSettingsRepository.ConfigureProjectScrumSettingsAsync(projectId);
+            // await _projectManagementSettingsRepository.ConfigureProjectScrumSettingsAsync(projectId);
 
             // Отправляем уведомление об успешном создании проекта.
             await _projectNotificationsService.SendNotificationSuccessCreatedUserProjectAsync("Все хорошо",
