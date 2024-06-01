@@ -237,6 +237,11 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
 
         var result = await connection.QueryAsync<ProjectTaskExtendedEntity>(query, parameters);
 
+        if (result is null)
+        {
+            result = new List<ProjectTaskExtendedEntity>();   
+        }
+
         return result;
     }
 
@@ -2337,6 +2342,8 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         using var connection = await ConnectionProvider.GetConnectionAsync();
         
         var result = await connection.QueryFirstOrDefaultAsync<string?>(query, parameters);
+
+        result ??= "kn";
 
         return result;
     }

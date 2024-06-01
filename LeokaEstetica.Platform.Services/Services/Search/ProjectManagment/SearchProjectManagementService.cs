@@ -101,19 +101,16 @@ internal sealed class SearchProjectManagementService : ISearchProjectManagementS
             }
             
             // Получаем настройки проекта.
-            var projectSettings = await _projectSettingsConfigRepository.GetBuildProjectSpaceSettingsAsync(userId);
-            var projectSettingsItems = projectSettings.Settings?.AsList();
+            var settings = (await _projectSettingsConfigRepository.GetBuildProjectSpaceSettingsAsync(userId))
+                ?.AsList();
 
-            if (projectSettingsItems is null
-                || !projectSettingsItems.Any()
-                || projectSettingsItems.Any(x => x is null))
+            if (settings is null || !settings.Any())
             {
                 throw new InvalidOperationException("Ошибка получения настроек проекта. " +
                                                     $"ProjectId: {projectId}. " +
                                                     $"UserId: {userId}");
             }
-
-            List<SearchAgileObjectOutput> result = null;
+            
             var strategy = new BaseSearchAgileObjectAlgorithm();
             var searchConditions = new List<bool>
             {
@@ -127,7 +124,7 @@ internal sealed class SearchProjectManagementService : ISearchProjectManagementS
             // Если комбинированный режим поиска (т.е. поиск идет по нескольким или всем критериям).
             if (searchConditions.Count(x => x) > 1)
             {
-                var projectTaskPrefix = projectSettingsItems.Find(x =>
+                var projectTaskPrefix = settings.Find(x =>
                         x.ParamKey.Equals(GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_PROJECT_NAME_PREFIX))!
                     .ParamValue;
 
@@ -161,9 +158,11 @@ internal sealed class SearchProjectManagementService : ISearchProjectManagementS
                 }
             }
             
-            var template = projectSettingsItems.Find(x =>
+            var template = settings.Find(x =>
                 x.ParamKey.Equals(GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_TEMPLATE_ID))!.ParamValue;
             var templateId = Convert.ToInt32(template);
+            
+            var result = new List<SearchAgileObjectOutput>();
             
             // Если нужно искать по Id задачи в рамках проекта.
             // Если успешно распарсили Id задачи с префиксом.
