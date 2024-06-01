@@ -1,21 +1,26 @@
+using Dapper;
+using LeokaEstetica.Platform.Base.Abstractions.Connection;
+using LeokaEstetica.Platform.Base.Abstractions.Repositories.Base;
 using LeokaEstetica.Platform.Core.Constants;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Database.Abstractions.Config;
+using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagement.Output;
 using LeokaEstetica.Platform.Models.Entities.Configs;
 using Microsoft.EntityFrameworkCore;
 
 namespace LeokaEstetica.Platform.Database.Repositories.Config;
 
 /// <inheritdoc />
-internal sealed class ProjectSettingsConfigRepository : IProjectSettingsConfigRepository
+internal sealed class ProjectSettingsConfigRepository : BaseRepository, IProjectSettingsConfigRepository
 {
     private readonly PgContext _pgContext;
-    
+
     /// <summary>
     /// Конструктор.
     /// </summary>
     /// <param name="pgContext">Датаконтекст.</param>
-    public ProjectSettingsConfigRepository(PgContext pgContext)
+    public ProjectSettingsConfigRepository(PgContext pgContext, IConnectionProvider connectionProvider)
+        : base(connectionProvider)
     {
         _pgContext = pgContext;
     }
@@ -46,7 +51,7 @@ internal sealed class ProjectSettingsConfigRepository : IProjectSettingsConfigRe
 
         settings.AddRange(new List<ConfigSpaceSettingEntity>
         {
-            new ()
+            new()
             {
                 ParamKey = GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_STRATEGY,
                 ParamValue = strategy,
@@ -57,7 +62,7 @@ internal sealed class ProjectSettingsConfigRepository : IProjectSettingsConfigRe
                 ParamTag = "Project management settings",
                 LastUserDate = DateTime.UtcNow
             },
-            new ()
+            new()
             {
                 ParamKey = GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_SPACE_URL,
                 ParamValue = redirectUrl,
@@ -70,7 +75,7 @@ internal sealed class ProjectSettingsConfigRepository : IProjectSettingsConfigRe
                 LastUserDate = DateTime.UtcNow
             }
         });
-        
+
         settings.Add(new ConfigSpaceSettingEntity
         {
             ParamKey = GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_PROJECT_NAME,
@@ -82,7 +87,7 @@ internal sealed class ProjectSettingsConfigRepository : IProjectSettingsConfigRe
             ParamTag = "Project management settings",
             LastUserDate = DateTime.UtcNow
         });
-        
+
         settings.Add(new ConfigSpaceSettingEntity
         {
             ParamKey = GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_PROJECT_NAME_PREFIX,
@@ -100,31 +105,101 @@ internal sealed class ProjectSettingsConfigRepository : IProjectSettingsConfigRe
     }
 
     /// <inheritdoc />
-    public async Task<(IEnumerable<ConfigSpaceSettingEntity> Settings, long ProjectId)>
-        GetBuildProjectSpaceSettingsAsync(long userId)
+    public async Task<IEnumerable<ConfigSpaceSettingEntity>> GetBuildProjectSpaceSettingsAsync(long userId)
     {
-        (IEnumerable<ConfigSpaceSettingEntity> Settings, long ProjectId) result =
-            (new List<ConfigSpaceSettingEntity>(), 0);
-        
-        result.Settings = await _pgContext.ConfigSpaceSettings
-            .Where(c => c.UserId == userId
-                        && new[]
-                        {
-                            GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_SPACE_URL,
-                            GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_STRATEGY,
-                            GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_TEMPLATE_ID,
-                            GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_PROJECT_NAME,
-                            GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_PROJECT_NAME_PREFIX
-                        }.Contains(c.ParamKey))
-            .Select(c => new ConfigSpaceSettingEntity
-            {
-                ProjectId = c.ProjectId,
-                ParamValue = c.ParamValue,
-                ParamKey = c.ParamKey
-            })
-            .ToListAsync();
+        using var connection = await ConnectionProvider.GetConnectionAsync();
 
-        result.ProjectId = result.Settings.FirstOrDefault()?.ProjectId ?? 0;
+        var parameters = new DynamicParameters();
+        parameters.Add("@userId", userId);
+
+        var query = "SELECT \"ProjectId\", \"ParamValue\", \"ParamKey\" " +
+                    "FROM \"Configs\".\"ProjectManagmentProjectSettings\" " +
+                    "WHERE \"UserId\" = @userId";
+
+        // Получаем настройки пользователя.
+        var result = (await connection.QueryAsync<ConfigSpaceSettingEntity>(query, parameters))?.AsList();
+
+        // Дополнительно роверим, есть ли пользователь в участниках проектов не своих.
+        var checkMemberProjects = "SELECT pt.\"ProjectId\", ptm.\"UserId\" " +
+                                  "FROM \"Teams\".\"ProjectsTeamsMembers\" AS ptm " +
+                                  "INNER JOIN \"Teams\".\"ProjectsTeams\" AS pt " +
+                                  "ON ptm.\"TeamId\" = pt.\"TeamId\" " +
+                                  "WHERE ptm.\"UserId\" = @userId";
+
+        var projectMembers = (await connection.QueryAsync<ProjectTeamMemberOutput>(
+                checkMemberProjects, parameters))
+            ?.AsList();
+
+        // Промежуточный список для наполнения настроек в результате.
+        projectMembers ??= new List<ProjectTeamMemberOutput>();
+
+        // Наполняем настройками, если текущий пользователь есть в участниках других проектов.
+        var otherSettingsParameters = new DynamicParameters();
+        otherSettingsParameters.Add("@userId", userId);
+        otherSettingsParameters.Add("@projectMemberIds", projectMembers.Select(x => x.UserId).AsList());
+
+        // Находим настройки проектов, в которых в участниках текущий пользователь.
+        var otherSettings = "SELECT \"ProjectId\", \"ParamValue\", \"ParamKey\", \"UserId\", \"ParamType\"," +
+                            " \"ParamTag\", \"ParamDescription\" " +
+                            "FROM \"Configs\".\"ProjectManagmentProjectSettings\" " +
+                            "WHERE \"UserId\" = ANY(@projectMemberIds)";
+
+        var otherSettingsResult = (await connection.QueryAsync<ConfigSpaceSettingEntity>(
+            otherSettings, otherSettingsParameters))?.AsList();
+        
+        otherSettingsResult ??= new List<ConfigSpaceSettingEntity>();
+        
+        // Добавляем в настройки проектов.
+        var insertSettings = "INSERT INTO \"Configs\".\"ProjectManagmentProjectSettings\" (" +
+                             "\"ProjectId\", \"ParamValue\", \"ParamKey\", \"UserId\", \"ParamType\"," +
+                             " \"ParamTag\", \"ParamDescription\") " +
+                             "VALUES (@projectId, @value, @key, @userId, @type, @tag, @description)";
+
+        foreach (var p in otherSettingsResult)
+        {
+            var insertSettingsParameters = new DynamicParameters();
+            insertSettingsParameters.Add("@projectId", p.ProjectId);
+            insertSettingsParameters.Add("@key", p.ParamKey);
+            insertSettingsParameters.Add("@value", p.ParamValue);
+            insertSettingsParameters.Add("@userId", userId);
+            insertSettingsParameters.Add("@type", p.ParamType);
+            insertSettingsParameters.Add("@tag", p.ParamTag);
+            insertSettingsParameters.Add("@description", p.ParamDescription);
+            
+            // Проверяем, заведены ли настройки.
+            var checkSettingsParameters = new DynamicParameters();
+            checkSettingsParameters.Add("@userId", userId);
+            checkSettingsParameters.Add("@projectId", p.ProjectId);
+
+            var checkSettings = "SELECT EXISTS (SELECT \"ProjectId\", \"UserId\" " +
+                                "FROM \"Configs\".\"ProjectManagmentProjectSettings\" " +
+                                "WHERE \"ProjectId\" = @projectId " +
+                                "AND \"UserId\" = @userId)";
+
+            var isExists = await connection.ExecuteScalarAsync<bool>(checkSettings, checkSettingsParameters);
+
+            if (!isExists)
+            {
+                await connection.ExecuteAsync(insertSettings, insertSettingsParameters);   
+            }
+        }
+
+        result ??= new List<ConfigSpaceSettingEntity>();
+
+        // Наполняем результат настройками.
+        foreach (var s in otherSettingsResult)
+        {
+            result.Add(new ConfigSpaceSettingEntity
+            {
+                UserId = s.UserId,
+                ProjectId = s.ProjectId,
+                ParamKey = s.ParamKey,
+                ParamValue = s.ParamValue,
+                ParamTag = s.ParamTag,
+                ParamDescription = s.ParamDescription,
+                ParamType = s.ParamType
+            });
+        }
 
         return result;
     }
@@ -146,8 +221,11 @@ internal sealed class ProjectSettingsConfigRepository : IProjectSettingsConfigRe
             })
             .FirstOrDefaultAsync();
 
-        result.Add(projectTemplate);
-        
+        if (projectTemplate is not null)
+        {
+            result.Add(projectTemplate);
+        }
+
         // Получаем стратегию пользователя в этом проекте.
         var userStrategy = await _pgContext.ConfigSpaceSettings
             .Where(s => s.ProjectId == projectId
@@ -159,9 +237,12 @@ internal sealed class ProjectSettingsConfigRepository : IProjectSettingsConfigRe
                 ParamValue = s.ParamValue
             })
             .FirstOrDefaultAsync();
-        
-        result.Add(userStrategy);
-        
+            
+        if (userStrategy is not null)
+        {
+            result.Add(userStrategy);
+        }
+
         // Получаем роут представления с задачами.
         var url = await _pgContext.ConfigSpaceSettings
             .Where(s => s.ProjectId == projectId
@@ -172,8 +253,11 @@ internal sealed class ProjectSettingsConfigRepository : IProjectSettingsConfigRe
                 ParamValue = s.ParamValue
             })
             .FirstOrDefaultAsync();
-        
-        result.Add(url);
+            
+        if (url is not null)
+        {
+            result.Add(url);
+        }
 
         return result;
     }
@@ -195,7 +279,7 @@ internal sealed class ProjectSettingsConfigRepository : IProjectSettingsConfigRe
             .FirstOrDefaultAsync();
 
         result.Add(projectTemplate);
-        
+
         // Получаем стратегию пользователя в этом проекте.
         var userStrategy = await _pgContext.ConfigSpaceSettings
             .Where(s => s.ProjectId == projectId
@@ -206,9 +290,9 @@ internal sealed class ProjectSettingsConfigRepository : IProjectSettingsConfigRe
                 ParamValue = s.ParamValue
             })
             .FirstOrDefaultAsync();
-        
+
         result.Add(userStrategy);
-        
+
         // Получаем роута представления с задачами.
         var url = await _pgContext.ConfigSpaceSettings
             .Where(s => s.ProjectId == projectId
@@ -219,7 +303,7 @@ internal sealed class ProjectSettingsConfigRepository : IProjectSettingsConfigRe
                 ParamValue = s.ParamValue
             })
             .FirstOrDefaultAsync();
-        
+
         result.Add(url);
 
         return result;
