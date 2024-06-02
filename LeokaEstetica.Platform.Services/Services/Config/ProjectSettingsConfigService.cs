@@ -83,7 +83,7 @@ internal sealed class ProjectSettingsConfigService : IProjectSettingsConfigServi
     }
 
     /// <inheritdoc />
-    public async Task<ConfigSpaceSettingOutput> GetBuildProjectSpaceSettingsAsync(string account)
+    public async Task<ConfigSpaceSettingOutput> GetBuildProjectSpaceSettingsAsync(string account, long? projectId)
     {
         try
         {
@@ -100,7 +100,7 @@ internal sealed class ProjectSettingsConfigService : IProjectSettingsConfigServi
             var result = new ConfigSpaceSettingOutput();
             
             // Если нет настроек, то это будет переход в общее пространство.
-            if (settings is null || !settings.Any())
+            if (!projectId.HasValue || settings is null || settings.Count == 0)
             {
                 result.IsCommitProjectSettings = false;
                 

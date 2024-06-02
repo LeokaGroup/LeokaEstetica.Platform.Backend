@@ -119,7 +119,7 @@ internal sealed class ProjectSettingsConfigRepository : BaseRepository, IProject
         // Получаем настройки пользователя.
         var result = (await connection.QueryAsync<ConfigSpaceSettingEntity>(query, parameters))?.AsList();
 
-        // Дополнительно роверим, есть ли пользователь в участниках проектов не своих.
+        // Дополнительно проверим, есть ли пользователь в участниках проектов не своих.
         var checkMemberProjects = "SELECT pt.\"ProjectId\", ptm.\"UserId\" " +
                                   "FROM \"Teams\".\"ProjectsTeamsMembers\" AS ptm " +
                                   "INNER JOIN \"Teams\".\"ProjectsTeams\" AS pt " +
