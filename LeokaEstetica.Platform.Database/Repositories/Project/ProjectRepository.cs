@@ -552,7 +552,7 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
     /// <returns>Данные команды проекта.</returns>
-    public async Task<ProjectTeamEntity> GetProjectTeamAsync(long projectId)
+    public async Task<ProjectTeamEntity?> GetProjectTeamAsync(long projectId)
     {
         var result = await _pgContext.ProjectsTeams
             .Where(t => t.ProjectId == projectId)
@@ -761,23 +761,22 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
             var projectDialogs = await _chatRepository.GetDialogsAsync(userId);
 
             // Если у проекта есть диалоги.
-            if (projectDialogs.Any())
+            if (projectDialogs is not null && projectDialogs.Count > 0)
             {
                 // Перед удалением диалога, сначала смотрим сообщения диалога.
                 foreach (var d in projectDialogs)
                 {
-                    // TODO: Если при удалении проекта надо будет также чистить сообщения нейросети, то тут доработать.
                     var projectDialogMessages = await _chatRepository.GetDialogMessagesAsync(d.DialogId, false);
 
                     // Если есть сообщения, дропаем их.
-                    if (projectDialogMessages.Any())
+                    if (projectDialogMessages is not null && projectDialogMessages.Count > 0)
                     {
                         _pgContext.DialogMessages.RemoveRange(projectDialogMessages);
 
                         // Дропаем участников диалога.
                         var dialogMembers = await _chatRepository.GetDialogMembersByDialogIdAsync(d.DialogId);
 
-                        if (dialogMembers.Any())
+                        if (dialogMembers is not null && dialogMembers.Count > 0)
                         {
                             _pgContext.DialogMembers.RemoveRange(dialogMembers);
                         }
@@ -799,7 +798,7 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
                     var projectDialogMessages = await _chatRepository.GetDialogMessagesAsync(d.DialogId, false);
 
                     // Если есть сообщения, дропаем их.
-                    if (projectDialogMessages.Any())
+                    if (projectDialogMessages is not null && projectDialogMessages.Count > 0)
                     {
                         _pgContext.DialogMessages.RemoveRange(projectDialogMessages);
                     }
@@ -807,7 +806,7 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
                     // Дропаем участников диалога.
                     var dialogMembers = await _chatRepository.GetDialogMembersByDialogIdAsync(d.DialogId);
 
-                    if (dialogMembers.Any())
+                    if (dialogMembers is not null && dialogMembers.Count > 0)
                     {
                         _pgContext.DialogMembers.RemoveRange(dialogMembers);
                             
@@ -828,7 +827,7 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
             // Получаем комментарии проекта.
             var projectComments = await GetProjectCommentsAsync(projectId);
 
-            if (projectComments.Any())
+            if (projectComments is not null && projectComments.Count > 0)
             {
                 // Дропаем комментарии проекта из модерации.
                 var moderationProjectComments = _pgContext.ProjectCommentsModeration
@@ -889,6 +888,38 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
             {
                 _pgContext.UserProjectsStages.Remove(projectStage);
             }
+            
+            using var connection = await ConnectionProvider.GetConnectionAsync();
+
+            // Удаляем настройки проекта, так как проект имеет ссылки.
+            var deleteMoveNotCompletedTasksSettingsParameters = new DynamicParameters();
+            deleteMoveNotCompletedTasksSettingsParameters.Add("@projectId", projectId);
+
+            var deleteMoveNotCompletedTasksSettingsQuery = "DELETE FROM settings.move_not_completed_tasks_settings " +
+                                                           "WHERE project_id = @projectId";
+
+            await connection.ExecuteAsync(deleteMoveNotCompletedTasksSettingsQuery,
+                deleteMoveNotCompletedTasksSettingsParameters);
+            
+            // Удаляем стратегию проекта, так как проект имеет ссылки.
+            var deleteProjectUserStrategyParameters = new DynamicParameters();
+            deleteProjectUserStrategyParameters.Add("@projectId", projectId);
+            deleteProjectUserStrategyParameters.Add("@userId", userId);
+
+            var deleteProjectUserStrategyQuery = "DELETE FROM settings.project_user_strategy " +
+                                                 "WHERE project_id = @projectId " +
+                                                 "AND user_id = @userId";
+
+            await connection.ExecuteAsync(deleteProjectUserStrategyQuery, deleteProjectUserStrategyParameters);
+            
+            // Удаляем настройки длительности спринтов, так как проект имеет ссылки.
+            var deleteSprintDurationSettingsParameters = new DynamicParameters();
+            deleteSprintDurationSettingsParameters.Add("@projectId", projectId);
+
+            var deleteSprintDurationSettingsQuery = "DELETE FROM settings.sprint_duration_settings " +
+                                                    "WHERE project_id = @projectId";
+                                                    
+            await connection.ExecuteAsync(deleteSprintDurationSettingsQuery, deleteSprintDurationSettingsParameters);
 
             // Удаляем проект пользователя.
             var userProject = await _pgContext.UserProjects
@@ -923,7 +954,7 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
     /// <returns>Список комментариев проекта.</returns>
-    private async Task<ICollection<ProjectCommentEntity>> GetProjectCommentsAsync(long projectId)
+    private async Task<ICollection<ProjectCommentEntity>?> GetProjectCommentsAsync(long projectId)
     {
         var result = await _pgContext.ProjectComments
             .Where(c => c.ProjectId == projectId)
