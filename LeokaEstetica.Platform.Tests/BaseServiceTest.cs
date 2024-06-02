@@ -226,10 +226,12 @@ internal class BaseServiceTest
 
         var fillColorProjectsService = new FillColorProjectsService();
 
+        var projectManagementRepository = new ProjectManagmentRepository(connectionProvider);
         ProjectService = new ProjectService(projectRepository, null, userRepository, mapper,
             projectNotificationsService, VacancyService, vacancyRepository, availableLimitsService,
             subscriptionRepository, FareRuleRepository, VacancyModerationService, projectNotificationsRepository, null,
-            accessUserService, fillColorProjectsService, null, ProjectModerationRepository, discordService, null);
+            accessUserService, fillColorProjectsService, null, ProjectModerationRepository, discordService, null,
+            globalConfigRepository, projectManagementRepository);
         
         var ordersRepository = new OrdersRepository(pgContext);
         var commerceRepository = new CommerceRepository(pgContext, AppConfiguration);
@@ -287,7 +289,7 @@ internal class BaseServiceTest
         var transactionScopeFactory = new TransactionScopeFactory();
         
         var projectManagmentTemplateRepository = new ProjectManagmentTemplateRepository(connectionProvider);
-        var projectSettingsConfigRepository = new ProjectSettingsConfigRepository(pgContext);
+        var projectSettingsConfigRepository = new ProjectSettingsConfigRepository(pgContext, connectionProvider);
         ReversoService = new ReversoService(null);
         ProjectManagementTemplateService = new ProjectManagementTemplateService(ProjectManagmentRepository, mapper, null);
         ProjectManagmentService = new ProjectManagmentService(null, ProjectManagmentRepository, mapper, userRepository,

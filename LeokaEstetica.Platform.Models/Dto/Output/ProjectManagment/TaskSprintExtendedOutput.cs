@@ -60,7 +60,7 @@ public class TaskSprintExtendedOutput : TaskSprintOutput
     /// <summary>
     /// Дата создания спринта.
     /// </summary>
-    public DateTime CreatedAt { get; set; }
+    public string CreatedAt { get; set; }
 
     /// <summary>
     /// Кто создал спринт.
@@ -70,7 +70,7 @@ public class TaskSprintExtendedOutput : TaskSprintOutput
     /// <summary>
     /// Дата обновления спринта.
     /// </summary>
-    public DateTime? UpdatedAt { get; set; }
+    public string? UpdatedAt { get; set; }
     
     /// <summary>
     /// Кто обновил спринт.

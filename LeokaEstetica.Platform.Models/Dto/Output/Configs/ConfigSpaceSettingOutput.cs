@@ -18,5 +18,10 @@ public class ConfigSpaceSettingOutput
     /// <summary>
     /// Путь для редиректа к управлению проектом.
     /// </summary>
-    public string ProjectManagmentSpaceUrl { get; set; }
+    public string? ProjectManagmentSpaceUrl { get; set; }
+
+    /// <summary>
+    /// Признак необходимости редиректа в общее пространство.
+    /// </summary>
+    public bool IsDefaultSpaceUrl { get; set; }
 }

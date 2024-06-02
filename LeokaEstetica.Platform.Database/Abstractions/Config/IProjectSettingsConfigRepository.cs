@@ -25,8 +25,7 @@ public interface IProjectSettingsConfigRepository
     /// Метод получает настройки и Id проекта.
     /// </summary>
     /// <returns>Данные конфигурации.</returns>
-    Task<(IEnumerable<ConfigSpaceSettingEntity> Settings, long ProjectId)>
-        GetBuildProjectSpaceSettingsAsync(long userId);
+    Task<IEnumerable<ConfigSpaceSettingEntity>> GetBuildProjectSpaceSettingsAsync(long userId);
 
     /// <summary>
     /// TODO: Отрефаить этот метод с/без UserId.

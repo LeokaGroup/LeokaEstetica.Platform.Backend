@@ -146,6 +146,12 @@ public static class GlobalConfigKeys
         /// Ключ вкл/откл модуль управления проектами.
         /// </summary>
         public const string PROJECT_MANAGEMENT_MODE_ENABLED = "ProjectManagement.Mode.Enabled";
+
+        /// <summary>
+        /// Ключ вкл/откл настройку Scrum в проектах.
+        /// </summary>
+        public const string PROJECT_MANAGEMENT_CONFIGURE_PROJECT_SCRUM_SETTINGS =
+            "ProjectManagement.ConfigureProjectScrumSettings.Mode.Enabled";
     }
 
     /// <summary>

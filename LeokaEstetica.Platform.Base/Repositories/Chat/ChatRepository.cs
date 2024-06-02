@@ -235,7 +235,7 @@ internal sealed class ChatRepository : BaseRepository, IChatRepository
     }
 
     /// <inheritdoc />
-    public async Task<List<DialogMessageEntity>> GetDialogMessagesAsync(long dialogId, bool isScrumMasterAi)
+    public async Task<List<DialogMessageEntity>?> GetDialogMessagesAsync(long dialogId, bool isScrumMasterAi)
     {
         List<DialogMessageEntity>? result = null;
 
@@ -343,7 +343,7 @@ internal sealed class ChatRepository : BaseRepository, IChatRepository
     /// <param name="userId">Id пользователя.</param>
     /// <param name="projectId">Id проекта. Если не передан, то получает все диалоги пользователя.</param>
     /// <returns>Список диалогов.</returns>
-    public async Task<List<DialogOutput>> GetDialogsAsync(long userId, long? projectId = null)
+    public async Task<List<DialogOutput>?> GetDialogsAsync(long userId, long? projectId = null)
     {
         List<DialogOutput>? result = null;
         using var connection = await ConnectionProvider.GetConnectionAsync();
@@ -562,7 +562,7 @@ internal sealed class ChatRepository : BaseRepository, IChatRepository
     /// </summary>
     /// <param name="dialogId">Id диалога.</param>
     /// <returns>Список участников диалога.</returns>
-    public async Task<ICollection<DialogMemberEntity>> GetDialogMembersByDialogIdAsync(long dialogId)
+    public async Task<ICollection<DialogMemberEntity>?> GetDialogMembersByDialogIdAsync(long dialogId)
     {
         var result = await _pgContext.DialogMembers
             .Where(d => d.DialogId == dialogId)

@@ -69,7 +69,7 @@ public interface IChatRepository
     /// <param name="dialogId">Id диалога.</param>
     /// <param name="isScrumMasterAi">Признак диалога для нейросети.</param>
     /// <returns>Список сообщений.</returns>
-    Task<List<DialogMessageEntity>> GetDialogMessagesAsync(long dialogId, bool isScrumMasterAi);
+    Task<List<DialogMessageEntity>?> GetDialogMessagesAsync(long dialogId, bool isScrumMasterAi);
 
     /// <summary>
     /// Метод получает диалог, где есть и текущий пользователь и владелец предмета обсуждения.
@@ -95,7 +95,7 @@ public interface IChatRepository
     /// <param name="userId">Id пользователя.</param>
     /// <param name="projectId">Id проекта. Если не передан, то получает все диалоги пользователя.</param>
     /// <returns>Список диалогов.</returns>
-    Task<List<DialogOutput>> GetDialogsAsync(long userId, long? projectId = null);
+    Task<List<DialogOutput>?> GetDialogsAsync(long userId, long? projectId = null);
     
     /// <summary>
     /// Метод получит все диалоги.
@@ -131,7 +131,7 @@ public interface IChatRepository
     /// </summary>
     /// <param name="dialogId">Id диалога.</param>
     /// <returns>Список участников диалога.</returns>
-    Task<ICollection<DialogMemberEntity>> GetDialogMembersByDialogIdAsync(long dialogId);
+    Task<ICollection<DialogMemberEntity>?> GetDialogMembersByDialogIdAsync(long dialogId);
     
     /// <summary>
     /// Метод получит все диалоги для профиля пользователя.

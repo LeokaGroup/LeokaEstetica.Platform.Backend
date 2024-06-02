@@ -198,16 +198,27 @@ internal sealed class VacancyService : IVacancyService
         
         try
         {
-            var account = vacancyInput.Account;
-            var userId = await _userRepository.GetUserByEmailAsync(account);
+            var userId = await _userRepository.GetUserByEmailAsync(vacancyInput.Account!);
 
             if (userId <= 0)
             {
-                var ex = new NotFoundUserIdByAccountException(account);
+                var ex = new NotFoundUserIdByAccountException(vacancyInput.Account!);
                 throw ex;
             }
+            
+            var isProjectOwner = await _projectRepository.CheckProjectOwnerAsync(vacancyInput.ProjectId, userId);
 
-            vacancyInput.UserId = userId;
+            if (!isProjectOwner)
+            {
+                var ex = new InvalidOperationException(
+                    "Попытка создать вакансию для проекта который не принадлежит пользователю. " +
+                    $"UserId: {userId}. " +
+                    $"ProjectId: {vacancyInput.ProjectId}. ");
+
+                await _discordService.SendNotificationErrorAsync(ex);
+
+                throw ex;
+            }
 
             // Получаем подписку пользователя.
             var userSubscription = await _subscriptionRepository.GetUserSubscriptionAsync(userId);
@@ -233,11 +244,14 @@ internal sealed class VacancyService : IVacancyService
             {
                 var ex = new Exception($"Превышен лимит вакансий по тарифу. UserId: {userId}. Тариф: {fareRuleName}");
 
-                await _vacancyNotificationsService.SendNotificationWarningLimitFareRuleVacanciesAsync(
-                    "Что то пошло не так",
-                    "Превышен лимит вакансий по тарифу.",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
-                
+                if (!string.IsNullOrWhiteSpace(token))
+                {
+                    await _vacancyNotificationsService.SendNotificationWarningLimitFareRuleVacanciesAsync(
+                        "Что то пошло не так",
+                        "Превышен лимит вакансий по тарифу.",
+                        NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
+                }
+
                 throw ex;
             }
 
@@ -251,11 +265,14 @@ internal sealed class VacancyService : IVacancyService
             // Отправляем вакансию на модерацию.
             await _vacancyModerationService.AddVacancyModerationAsync(vacancyId);
 
-            // Отправляем уведомление об успешном создании вакансии и отправки ее на модерацию.
-            await _vacancyNotificationsService.SendNotificationSuccessCreatedUserVacancyAsync("Все хорошо",
-                "Данные успешно сохранены. Вакансия отправлена на модерацию.",
-                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);
-            
+            if (!string.IsNullOrWhiteSpace(token))
+            {
+                // Отправляем уведомление об успешном создании вакансии и отправки ее на модерацию.
+                await _vacancyNotificationsService.SendNotificationSuccessCreatedUserVacancyAsync("Все хорошо",
+                    "Данные успешно сохранены. Вакансия отправлена на модерацию.",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);
+            }
+
             var user = await _userRepository.GetUserPhoneEmailByUserIdAsync(userId);
             
             // Отправляем уведомление о созданной вакансии владельцу.
@@ -272,11 +289,14 @@ internal sealed class VacancyService : IVacancyService
 
         catch (Exception ex)
         {
-            await _vacancyNotificationsService.SendNotificationErrorCreatedUserVacancyAsync("Ошибка",
-                "Ошибка при создании вакансии. Мы уже знаем о ней и разбираемся. " +
-                "А пока, попробуйте еще раз.",
-                NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, token);
-            
+            if (!string.IsNullOrWhiteSpace(token))
+            {
+                await _vacancyNotificationsService.SendNotificationErrorCreatedUserVacancyAsync("Ошибка",
+                    "Ошибка при создании вакансии. Мы уже знаем о ней и разбираемся. " +
+                    "А пока, попробуйте еще раз.",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, token);
+            }
+
             _logger.LogError(ex, ex.Message);
             throw;
         }

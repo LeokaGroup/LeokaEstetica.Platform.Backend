@@ -35,8 +35,8 @@ using LeokaEstetica.Platform.Services.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Services.Builders;
 using LeokaEstetica.Platform.Services.Consts;
 using LeokaEstetica.Platform.Services.Strategies.Project.Team;
-using LeokaEstetica.Platform.Base.Extensions.HtmlExtensions;
 using LeokaEstetica.Platform.Core.Extensions;
+using LeokaEstetica.Platform.Database.Abstractions.Config;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Project;
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Integrations.Abstractions.Discord;
@@ -92,6 +92,8 @@ internal sealed class ProjectService : IProjectService
     private readonly IFareRuleRepository _fareRuleRepository;
     private readonly IMailingsService _mailingsService;
     private static readonly string _archiveVacancy = "В архиве";
+    private readonly IGlobalConfigRepository _globalConfigRepository;
+    private readonly IProjectManagmentRepository _projectManagmentRepository;
 
     /// <summary>
     /// Список типов приглашений в проект.
@@ -135,6 +137,8 @@ internal sealed class ProjectService : IProjectService
     /// <param name="projectModerationRepository">Репозиторий модерации проектов.</param>
     /// <param name="discordService">Сервис уведомлений дискорда.</param>
     /// <param name="projectManagementSettingsRepository">Репозиторий настроек проекта.</param>
+    /// <param name="globalConfigRepository">Репозиторий глобал конфига.</param>
+    /// <param name="projectManagmentRepository">Репозиторий модуля УП.</param>
     public ProjectService(IProjectRepository projectRepository,
         ILogger<ProjectService> logger,
         IUserRepository userRepository,
@@ -153,7 +157,9 @@ internal sealed class ProjectService : IProjectService
         IMailingsService mailingsService, 
         IProjectModerationRepository projectModerationRepository,
         IDiscordService discordService,
-        IProjectManagementSettingsRepository projectManagementSettingsRepository)
+        IProjectManagementSettingsRepository projectManagementSettingsRepository,
+        IGlobalConfigRepository globalConfigRepository,
+        IProjectManagmentRepository projectManagmentRepository)
     {
         _projectRepository = projectRepository;
         _logger = logger;
@@ -174,6 +180,8 @@ internal sealed class ProjectService : IProjectService
         _projectModerationRepository = projectModerationRepository;
         _discordService = discordService;
         _projectManagementSettingsRepository = projectManagementSettingsRepository;
+        _globalConfigRepository = globalConfigRepository;
+        _projectManagmentRepository = projectManagmentRepository;
 
         // Определяем обработчики цепочки фильтров.
         _dateProjectsFilterChain.Successor = _projectsVacanciesFilterChain;
@@ -294,9 +302,49 @@ internal sealed class ProjectService : IProjectService
             
             // Добавляем владельца в участники проекта по дефолту.
             await AddProjectOwnerToTeamMembersAsync(userId, projectId);
+
+            var isEnabledConfigureProjectScrumSettings = await _globalConfigRepository.GetValueByKeyAsync<bool>(
+                GlobalConfigKeys.ProjectManagment.PROJECT_MANAGEMENT_CONFIGURE_PROJECT_SCRUM_SETTINGS);
+
+            if (isEnabledConfigureProjectScrumSettings)
+            {
+                // Заводим Scrum настройки для проекта.
+                await _projectManagementSettingsRepository.ConfigureProjectScrumSettingsAsync(projectId);
+            }
+
+            var ifExistsCompany = await _projectManagmentRepository.IfExistsCompanyByOwnerIdAsync(userId);
+
+            long companyId = 0;
             
-            // Заводим Scrum настройки для проекта.
-            await _projectManagementSettingsRepository.ConfigureProjectScrumSettingsAsync(projectId);
+            // Сначала создаем компанию, затем добавляем в нее проект.
+            if (!ifExistsCompany)
+            {
+                // Заводим компанию, если она не существует.
+                companyId = await _projectManagmentRepository.CreateCompanyAsync(userId);   
+                
+                // Заводим общее пространство для компании.
+                await _projectManagmentRepository.CreateCompanyWorkSpaceAsync(projectId, companyId);
+                
+                // Добавляем текущего пользователи в участники компании с ролью владельца.
+                await _projectManagmentRepository.AddCompanyMemberAsync(companyId, userId, "Владелец");
+            }
+
+            // Если компания существует, то добавляем этот проект в компанию.
+            else
+            {
+                var isCompanyOwner = await _projectManagmentRepository.CheckCompanyOwnerByUserIdAsync(userId);
+
+                if (!isCompanyOwner)
+                {
+                    throw new InvalidOperationException("Пользователь не является владельцем никакой компании. " +
+                                                        $"UserId: {userId}.");
+                }
+
+                companyId = await _projectManagmentRepository.GetCompanyIdByOwnerIdAsync(userId);
+            }
+
+            // Добавляем новый проект в общее пространство компании.
+            await _projectManagmentRepository.AddProjectWorkSpaceAsync(projectId, companyId);
 
             // Отправляем уведомление об успешном создании проекта.
             await _projectNotificationsService.SendNotificationSuccessCreatedUserProjectAsync("Все хорошо",
@@ -967,8 +1015,10 @@ internal sealed class ProjectService : IProjectService
                 throw ex;
             }
 
+            // TODO: Когда будет сделан выбор роли при приглашении, то тут конкретная роль будет передаваться.
             // Добавляем пользователя в команду проекта.
-            var result = await _projectRepository.AddProjectTeamMemberAsync(inviteUserId, vacancyId, teamId);
+            var result = await _projectRepository.AddProjectTeamMemberAsync(inviteUserId, vacancyId, teamId,
+                "Участник");
             
             // Находим название проекта.
             var projectName = await _projectRepository.GetProjectNameByProjectIdAsync(projectId);
@@ -1930,7 +1980,7 @@ internal sealed class ProjectService : IProjectService
             throw ex;
         }
         
-        _ = await _projectRepository.AddProjectTeamMemberAsync(userId, null, team.TeamId);
+        _ = await _projectRepository.AddProjectTeamMemberAsync(userId, null, team.TeamId, "Владелец");
     }
     
     /// <summary>

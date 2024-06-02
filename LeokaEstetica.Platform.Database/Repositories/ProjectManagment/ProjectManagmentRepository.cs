@@ -237,6 +237,11 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
 
         var result = await connection.QueryAsync<ProjectTaskExtendedEntity>(query, parameters);
 
+        if (result is null)
+        {
+            result = new List<ProjectTaskExtendedEntity>();   
+        }
+
         return result;
     }
 
@@ -2338,6 +2343,8 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         
         var result = await connection.QueryFirstOrDefaultAsync<string?>(query, parameters);
 
+        result ??= "kn";
+
         return result;
     }
 
@@ -2349,13 +2356,15 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         var parameters = new DynamicParameters();
         parameters.Add("@userId", userId);
 
-        var query = "SELECT up.\"ProjectId\", up.\"ProjectManagementName\", pw.workspace_id " +
+        var query = "SELECT up.\"ProjectId\", " +
+                    "COALESCE(up.\"ProjectManagementName\", 'Без названия') AS ProjectManagementName, " +
+                    "pw.workspace_id " +
                     "FROM \"Projects\".\"UserProjects\" AS up " +
-                    "INNER JOIN project_management.workspaces AS pw " +
+                    "LEFT JOIN project_management.workspaces AS pw " +
                     "ON up.\"ProjectId\" = pw.project_id " +
-                    "INNER JOIN \"Teams\".\"ProjectsTeams\" AS pt " +
+                    "LEFT JOIN \"Teams\".\"ProjectsTeams\" AS pt " +
                     "ON up.\"ProjectId\" = pt.\"ProjectId\" " +
-                    "INNER JOIN \"Teams\".\"ProjectsTeamsMembers\" AS ptm " +
+                    "LEFT JOIN \"Teams\".\"ProjectsTeamsMembers\" AS ptm " +
                     "ON pt.\"TeamId\" = ptm.\"TeamId\" " +
                     "WHERE ptm.\"UserId\" = @userId";
 
@@ -2439,6 +2448,144 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
                               "VALUES (@sprintId, @projectTaskId)";
             await connection.ExecuteAsync(insertQuery, parameters);
         }
+    }
+    
+    /// <inheritdoc/>
+    public async Task<long> CreateCompanyAsync(long userId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+        
+        var parameters = new DynamicParameters();
+        parameters.Add("@userId", userId);
+
+        var query = "INSERT INTO project_management.organizations (created_by) " +
+                    "VALUES (@userId) " +
+                    "RETURNING organization_id";
+
+        var result = await connection.ExecuteScalarAsync<long>(query, parameters);
+
+        return result;
+    }
+
+    /// <inheritdoc/>
+    public async Task<bool> IfExistsCompanyByOwnerIdAsync(long userId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+        
+        var parameters = new DynamicParameters();
+        parameters.Add("@userId", userId);
+
+        var query = "SELECT EXISTS (SELECT organization_id " +
+                    "FROM project_management.organizations " +
+                    "WHERE created_by = @userId)";
+
+        var result = await connection.ExecuteScalarAsync<bool>(query, parameters);
+
+        return result;
+    }
+
+    /// <inheritdoc/>
+    public async Task<long> CreateCompanyWorkSpaceAsync(long projectId, long companyId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var lastWorkSpaceIdQuery = "SELECT workspace_id " +
+                                   "FROM project_management.workspaces " +
+                                   "ORDER BY workspace_id DESC " +
+                                   "LIMIT 1";
+                                   
+        var lastWorkSpaceId = await connection.ExecuteScalarAsync<long>(lastWorkSpaceIdQuery);
+        
+        var parameters = new DynamicParameters();
+        parameters.Add("@projectId", projectId);
+        parameters.Add("@companyId", companyId);
+        parameters.Add("@workspaceId", ++lastWorkSpaceId);
+
+        var query = "INSERT INTO project_management.workspaces (workspace_id, project_id, organization_id) " +
+                    "VALUES (@workspaceId, @projectId, @companyId) " +
+                    "RETURNING workspace_id";
+
+        var result = await connection.ExecuteScalarAsync<long>(query, parameters);
+
+        return result;
+    }
+
+    /// <inheritdoc/>
+    public async Task AddProjectWorkSpaceAsync(long projectId, long companyId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+        
+        var parameters = new DynamicParameters();
+        parameters.Add("@projectId", projectId);
+        parameters.Add("@companyId", companyId);
+        parameters.Add("@isActive", true);
+
+        var query = "INSERT INTO project_management.organization_projects (organization_id, project_id, is_active) " +
+                    "VALUES (@companyId, @projectId, @isActive)";
+
+        await connection.ExecuteAsync(query, parameters);
+    }
+
+    /// <inheritdoc/>
+    public async Task AddCompanyMemberAsync(long companyId, long userId, string? memberRole)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+        
+        var parameters = new DynamicParameters();
+        parameters.Add("@userId", userId);
+        parameters.Add("@companyId", companyId);
+        parameters.Add("@memberRole", memberRole);
+
+        string query;
+
+        if (!string.IsNullOrWhiteSpace(memberRole))
+        {
+            query = "INSERT INTO project_management.organization_members (organization_id, member_role, member_id) " +
+                    "VALUES (@companyId, @memberRole, @userId)";
+        }
+
+        else
+        {
+            query = "INSERT INTO project_management.organization_members (organization_id, member_id) " +
+                    "VALUES (@companyId, @userId)";
+        }
+
+        await connection.ExecuteAsync(query, parameters);
+    }
+
+    /// <inheritdoc/>
+    public async Task<long> GetCompanyIdByOwnerIdAsync(long userId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+        
+        var parameters = new DynamicParameters();
+        parameters.Add("@userId", userId);
+        
+        var query = "SELECT organization_id " +
+                    "FROM project_management.organizations " +
+                    "WHERE created_by = @userId";
+
+        var result = await connection.ExecuteScalarAsync<long>(query, parameters);
+
+        return result;
+    }
+
+    /// <inheritdoc/>
+    public async Task<bool> CheckCompanyOwnerByUserIdAsync(long userId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+        
+        var parameters = new DynamicParameters();
+        parameters.Add("@userId", userId);
+
+        var query = "SELECT EXISTS (SELECT organization_id " +
+                    "FROM project_management.organizations " +
+                    "WHERE created_by = @userId " +
+                    "LIMIT 1)";
+
+        var result = await connection.ExecuteScalarAsync<bool>(query, parameters);
+
+        return result;
     }
 
     #endregion
