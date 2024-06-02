@@ -689,4 +689,18 @@ public interface IProjectManagmentRepository
     /// <param name="userId">Id пользователя.</param>
     /// <param name="memberRole">Роль. Может быть не заполнена.</param>
     Task AddCompanyMemberAsync(long companyId, long userId, string? memberRole);
+
+    /// <summary>
+    /// Метод получает Id компании по Id владельца.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Id компании.</returns>
+    Task<long> GetCompanyIdByOwnerIdAsync(long userId);
+    
+    /// <summary>
+    /// Метод проверяет, является ли текущий пользователем владельцем компании.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Признак владельца.</returns>
+    Task<bool> CheckCompanyOwnerByUserIdAsync(long userId);
 }

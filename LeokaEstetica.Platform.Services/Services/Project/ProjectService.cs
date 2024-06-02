@@ -313,26 +313,38 @@ internal sealed class ProjectService : IProjectService
             }
 
             var ifExistsCompany = await _projectManagmentRepository.IfExistsCompanyByOwnerIdAsync(userId);
-            
-            if (ifExistsCompany)
-            {
-                throw new InvalidOperationException(
-                    "Компания уже существует. Невозможно завести компанию для проекта." +
-                    $"ProjectId: {projectId}. " +
-                    $"UserId: {userId}.");
-            }
-            
-            // Заводим компанию, она не существует.
-            var companyId = await _projectManagmentRepository.CreateCompanyAsync(userId);
-            
-            // Заводим общее пространство для компании.
-            await _projectManagmentRepository.CreateCompanyWorkSpaceAsync(projectId, companyId);
 
-            // Добавляем новый проект в компанию и в общее пространство.
-            await _projectManagmentRepository.AddProjectWorkSpaceAsync(projectId, companyId);
+            long companyId = 0;
             
-            // Добавляем текущего пользователи в участники компании с ролью владельца.
-            await _projectManagmentRepository.AddCompanyMemberAsync(companyId, userId, "Владелец");
+            // Сначала создаем компанию, затем добавляем в нее проект.
+            if (!ifExistsCompany)
+            {
+                // Заводим компанию, если она не существует.
+                companyId = await _projectManagmentRepository.CreateCompanyAsync(userId);   
+                
+                // Заводим общее пространство для компании.
+                await _projectManagmentRepository.CreateCompanyWorkSpaceAsync(projectId, companyId);
+                
+                // Добавляем текущего пользователи в участники компании с ролью владельца.
+                await _projectManagmentRepository.AddCompanyMemberAsync(companyId, userId, "Владелец");
+            }
+
+            // Если компания существует, то добавляем этот проект в компанию.
+            else
+            {
+                var isCompanyOwner = await _projectManagmentRepository.CheckCompanyOwnerByUserIdAsync(userId);
+
+                if (!isCompanyOwner)
+                {
+                    throw new InvalidOperationException("Пользователь не является владельцем никакой компании. " +
+                                                        $"UserId: {userId}.");
+                }
+
+                companyId = await _projectManagmentRepository.GetCompanyIdByOwnerIdAsync(userId);
+            }
+
+            // Добавляем новый проект в общее пространство компании.
+            await _projectManagmentRepository.AddProjectWorkSpaceAsync(projectId, companyId);
 
             // Отправляем уведомление об успешном создании проекта.
             await _projectNotificationsService.SendNotificationSuccessCreatedUserProjectAsync("Все хорошо",

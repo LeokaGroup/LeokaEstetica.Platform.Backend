@@ -2551,6 +2551,41 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         await connection.ExecuteAsync(query, parameters);
     }
 
+    /// <inheritdoc/>
+    public async Task<long> GetCompanyIdByOwnerIdAsync(long userId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+        
+        var parameters = new DynamicParameters();
+        parameters.Add("@userId", userId);
+        
+        var query = "SELECT organization_id " +
+                    "FROM project_management.organizations " +
+                    "WHERE created_by = @userId";
+
+        var result = await connection.ExecuteScalarAsync<long>(query, parameters);
+
+        return result;
+    }
+
+    /// <inheritdoc/>
+    public async Task<bool> CheckCompanyOwnerByUserIdAsync(long userId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+        
+        var parameters = new DynamicParameters();
+        parameters.Add("@userId", userId);
+
+        var query = "SELECT EXISTS (SELECT organization_id " +
+                    "FROM project_management.organizations " +
+                    "WHERE created_by = @userId " +
+                    "LIMIT 1)";
+
+        var result = await connection.ExecuteScalarAsync<bool>(query, parameters);
+
+        return result;
+    }
+
     #endregion
 
     #region Приватные методы.
