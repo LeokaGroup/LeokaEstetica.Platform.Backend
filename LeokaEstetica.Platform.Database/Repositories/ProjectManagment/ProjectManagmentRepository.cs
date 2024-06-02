@@ -2360,11 +2360,11 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
                     "COALESCE(up.\"ProjectManagementName\", 'Без названия') AS ProjectManagementName, " +
                     "pw.workspace_id " +
                     "FROM \"Projects\".\"UserProjects\" AS up " +
-                    "INNER JOIN project_management.workspaces AS pw " +
+                    "LEFT JOIN project_management.workspaces AS pw " +
                     "ON up.\"ProjectId\" = pw.project_id " +
-                    "INNER JOIN \"Teams\".\"ProjectsTeams\" AS pt " +
+                    "LEFT JOIN \"Teams\".\"ProjectsTeams\" AS pt " +
                     "ON up.\"ProjectId\" = pt.\"ProjectId\" " +
-                    "INNER JOIN \"Teams\".\"ProjectsTeamsMembers\" AS ptm " +
+                    "LEFT JOIN \"Teams\".\"ProjectsTeamsMembers\" AS ptm " +
                     "ON pt.\"TeamId\" = ptm.\"TeamId\" " +
                     "WHERE ptm.\"UserId\" = @userId";
 
