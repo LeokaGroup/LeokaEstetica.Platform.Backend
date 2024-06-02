@@ -136,7 +136,7 @@ internal sealed class ProjectSettingsConfigRepository : BaseRepository, IProject
         // Наполняем настройками, если текущий пользователь есть в участниках других проектов.
         var otherSettingsParameters = new DynamicParameters();
         otherSettingsParameters.Add("@userId", userId);
-        otherSettingsParameters.Add("@projectMemberIds", projectMembers.Select(x => x.UserId).AsList());
+        otherSettingsParameters.Add("@projectMemberIds", projectMembers.Select(x => x.UserId).Distinct().AsList());
 
         // Находим настройки проектов, в которых в участниках текущий пользователь.
         var otherSettings = "SELECT \"ProjectId\", \"ParamValue\", \"ParamKey\", \"UserId\", \"ParamType\"," +
@@ -200,6 +200,13 @@ internal sealed class ProjectSettingsConfigRepository : BaseRepository, IProject
                 ParamType = s.ParamType
             });
         }
+        
+        // TODO: Может породить какие то баги, но пока нормально. Пометил для внимания.
+        result.AddRange(projectMembers.Select(x => new ConfigSpaceSettingEntity
+        {
+            UserId = x.UserId,
+            ProjectId = x.ProjectId
+        }));
 
         return result;
     }

@@ -98,9 +98,9 @@ internal sealed class ProjectSettingsConfigService : IProjectSettingsConfigServi
             var settings = (await _projectSettingsConfigRepository.GetBuildProjectSpaceSettingsAsync(userId))
                 ?.AsList();
             var result = new ConfigSpaceSettingOutput();
-            
+
             // Если нет настроек, то это будет переход в общее пространство.
-            if (!projectId.HasValue || settings is null || settings.Count == 0)
+            if (settings is null || settings.Count == 0)
             {
                 result.IsCommitProjectSettings = false;
                 
@@ -115,6 +115,30 @@ internal sealed class ProjectSettingsConfigService : IProjectSettingsConfigServi
                     : new List<long>())
                 .Distinct()
                 .AsList();
+                
+            if (projectId.HasValue && projectIds.Contains(projectId.Value))
+            {
+                var findSetting = settings.Find(x => x.ProjectId == projectId.Value);
+
+                if (findSetting is not null && string.IsNullOrWhiteSpace(findSetting.ParamKey))
+                {
+                    result.IsCommitProjectSettings = false;
+                
+                    // Редиректим в общее пространство.
+                    result.IsDefaultSpaceUrl = true;
+                
+                    return result;
+                }
+
+                var spaceUrl = settings.Find(x =>
+                        x.ParamKey.Equals(GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_SPACE_URL)
+                        && x.ProjectId == projectId.Value)
+                    ?.ParamValue;
+
+                result.IsCommitProjectSettings = true;
+                result.ProjectManagmentSpaceUrl = string.Concat(spaceUrl, $"?projectId={projectId.Value}");
+                result.ProjectId = projectId.Value;
+            }
 
             // Если нашли невалидный Id проекта.
             if (!projectIds.All(x => x > 0))
@@ -122,7 +146,7 @@ internal sealed class ProjectSettingsConfigService : IProjectSettingsConfigServi
                 throw new InvalidOperationException("Найдены невалидные Id проекта при получении настроек проекта. " +
                                                     $"ProjectIds: {JsonConvert.SerializeObject(projectIds)}");
             }
-            
+
             // Если все настройки были заполнены пользователем, то разрешаем генерацию ссылки в раб.пространство.
             if (projectIds.Count is > 0 and 1 && projectIds.First() > 0)
             {
