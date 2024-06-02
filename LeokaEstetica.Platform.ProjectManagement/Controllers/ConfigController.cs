@@ -108,6 +108,7 @@ public class ConfigController : BaseController
     /// Метод получает Id проекта, который был ранее выбран пользователем для перехода к управлению проектом.
     /// Необходимо для построения ссылки в рабочее пространство проекта.
     /// </summary>
+    /// <param name="projectId">Id проекта. Если не передан, то будет перход в общее пространство.</param>
     /// <returns>Выходная модель.</returns>
     [HttpGet]
     [Route("build-project-space")]
@@ -116,9 +117,9 @@ public class ConfigController : BaseController
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<ConfigSpaceSettingOutput> GetBuildProjectSpaceSettingsAsync()
+    public async Task<ConfigSpaceSettingOutput> GetBuildProjectSpaceSettingsAsync([FromQuery] long? projectId)
     {
-        var result = await _projectSettingsConfigService.GetBuildProjectSpaceSettingsAsync(GetUserName());
+        var result = await _projectSettingsConfigService.GetBuildProjectSpaceSettingsAsync(GetUserName(), projectId);
 
         return result;
     }
