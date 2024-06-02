@@ -2449,7 +2449,7 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
     }
     
     /// <inheritdoc/>
-    public async Task CreateCompanyAsync(long userId)
+    public async Task<long> CreateCompanyAsync(long userId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
         
@@ -2457,9 +2457,12 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         parameters.Add("@userId", userId);
 
         var query = "INSERT INTO project_management.organizations (created_by) " +
-                    "VALUES (@userId)";
+                    "VALUES (@userId) " +
+                    "RETURNING organization_id";
 
-        await connection.ExecuteAsync(query, parameters);
+        var result = await connection.ExecuteScalarAsync<long>(query, parameters);
+
+        return result;
     }
 
     /// <inheritdoc/>
@@ -2477,6 +2480,75 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         var result = await connection.ExecuteScalarAsync<bool>(query, parameters);
 
         return result;
+    }
+
+    /// <inheritdoc/>
+    public async Task<long> CreateCompanyWorkSpaceAsync(long projectId, long companyId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var lastWorkSpaceIdQuery = "SELECT workspace_id " +
+                                   "FROM project_management.workspaces " +
+                                   "ORDER BY workspace_id DESC " +
+                                   "LIMIT 1";
+                                   
+        var lastWorkSpaceId = await connection.ExecuteScalarAsync<long>(lastWorkSpaceIdQuery);
+        
+        var parameters = new DynamicParameters();
+        parameters.Add("@projectId", projectId);
+        parameters.Add("@companyId", companyId);
+        parameters.Add("@workspaceId", ++lastWorkSpaceId);
+
+        var query = "INSERT INTO project_management.workspaces (workspace_id, project_id, organization_id) " +
+                    "VALUES (@workspaceId, @projectId, @companyId) " +
+                    "RETURNING workspace_id";
+
+        var result = await connection.ExecuteScalarAsync<long>(query, parameters);
+
+        return result;
+    }
+
+    /// <inheritdoc/>
+    public async Task AddProjectWorkSpaceAsync(long projectId, long companyId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+        
+        var parameters = new DynamicParameters();
+        parameters.Add("@projectId", projectId);
+        parameters.Add("@companyId", companyId);
+        parameters.Add("@isActive", true);
+
+        var query = "INSERT INTO project_management.organization_projects (organization_id, project_id, is_active) " +
+                    "VALUES (@companyId, @projectId, @isActive)";
+
+        await connection.ExecuteAsync(query, parameters);
+    }
+
+    /// <inheritdoc/>
+    public async Task AddCompanyMemberAsync(long companyId, long userId, string? memberRole)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+        
+        var parameters = new DynamicParameters();
+        parameters.Add("@userId", userId);
+        parameters.Add("@companyId", companyId);
+        parameters.Add("@memberRole", memberRole);
+
+        string query;
+
+        if (!string.IsNullOrWhiteSpace(memberRole))
+        {
+            query = "INSERT INTO project_management.organization_members (organization_id, member_role, member_id) " +
+                    "VALUES (@companyId, @memberRole, @userId)";
+        }
+
+        else
+        {
+            query = "INSERT INTO project_management.organization_members (organization_id, member_id) " +
+                    "VALUES (@companyId, @userId)";
+        }
+
+        await connection.ExecuteAsync(query, parameters);
     }
 
     #endregion

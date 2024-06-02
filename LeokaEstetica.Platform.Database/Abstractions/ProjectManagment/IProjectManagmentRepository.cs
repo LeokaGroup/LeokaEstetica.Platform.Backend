@@ -657,7 +657,8 @@ public interface IProjectManagmentRepository
     /// Владельцем становится текущий пользователь, так как он заводит компанию.
     /// </summary>
     /// <param name="userId">Id пользователя.</param>
-    Task CreateCompanyAsync(long userId);
+    /// <returns>Id компании.</returns>
+    Task<long> CreateCompanyAsync(long userId);
 
     /// <summary>
     /// Метод проверяет существование компании по Id владельца компании.
@@ -669,8 +670,23 @@ public interface IProjectManagmentRepository
     /// <summary>
     /// Метод создает общее пространство компании.
     /// </summary>
-    /// <param name="userId">Id пользователя.</param>
     /// <param name="projectId">Id проекта.</param>
     /// <param name="companyId">Id компании.</param>
-    Task CreateCompanyWorkSpaceAsync(long userId, long projectId, long companyId);
+    /// <returns>Id общего пространства компании.</returns>
+    Task<long> CreateCompanyWorkSpaceAsync(long projectId, long companyId);
+
+    /// <summary>
+    /// Метод добавляет проект в пространство компании.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="companyId">Id компании.</param>
+    Task AddProjectWorkSpaceAsync(long projectId, long companyId);
+
+    /// <summary>
+    /// Метод добавляет текущего пользователя в участники компании с заданной ролью.
+    /// </summary>
+    /// <param name="companyId">Id компании.</param>
+    /// <param name="userId">Id пользователя.</param>
+    /// <param name="memberRole">Роль. Может быть не заполнена.</param>
+    Task AddCompanyMemberAsync(long companyId, long userId, string? memberRole);
 }
