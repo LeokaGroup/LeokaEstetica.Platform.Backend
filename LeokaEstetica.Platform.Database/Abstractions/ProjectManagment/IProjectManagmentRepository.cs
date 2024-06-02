@@ -651,4 +651,26 @@ public interface IProjectManagmentRepository
     /// <param name="userId">Id пользователя.</param>
     /// <returns>Список раб.пространств.</returns>
     Task<IEnumerable<WorkSpaceOutput>> GetWorkSpacesAsync(long userId);
+
+    /// <summary>
+    /// Метод создает компанию.
+    /// Владельцем становится текущий пользователь, так как он заводит компанию.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    Task CreateCompanyAsync(long userId);
+
+    /// <summary>
+    /// Метод проверяет существование компании по Id владельца компании.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Признак существования компании.</returns>
+    Task<bool> IfExistsCompanyByOwnerIdAsync(long userId);
+    
+    /// <summary>
+    /// Метод создает общее пространство компании.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="companyId">Id компании.</param>
+    Task CreateCompanyWorkSpaceAsync(long userId, long projectId, long companyId);
 }

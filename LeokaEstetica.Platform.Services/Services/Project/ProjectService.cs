@@ -35,8 +35,8 @@ using LeokaEstetica.Platform.Services.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Services.Builders;
 using LeokaEstetica.Platform.Services.Consts;
 using LeokaEstetica.Platform.Services.Strategies.Project.Team;
-using LeokaEstetica.Platform.Base.Extensions.HtmlExtensions;
 using LeokaEstetica.Platform.Core.Extensions;
+using LeokaEstetica.Platform.Database.Abstractions.Config;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Project;
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Integrations.Abstractions.Discord;
@@ -92,6 +92,8 @@ internal sealed class ProjectService : IProjectService
     private readonly IFareRuleRepository _fareRuleRepository;
     private readonly IMailingsService _mailingsService;
     private static readonly string _archiveVacancy = "В архиве";
+    private readonly IGlobalConfigRepository _globalConfigRepository;
+    private readonly IProjectManagmentRepository _projectManagmentRepository;
 
     /// <summary>
     /// Список типов приглашений в проект.
@@ -135,6 +137,8 @@ internal sealed class ProjectService : IProjectService
     /// <param name="projectModerationRepository">Репозиторий модерации проектов.</param>
     /// <param name="discordService">Сервис уведомлений дискорда.</param>
     /// <param name="projectManagementSettingsRepository">Репозиторий настроек проекта.</param>
+    /// <param name="globalConfigRepository">Репозиторий глобал конфига.</param>
+    /// <param name="projectManagmentRepository">Репозиторий модуля УП.</param>
     public ProjectService(IProjectRepository projectRepository,
         ILogger<ProjectService> logger,
         IUserRepository userRepository,
@@ -153,7 +157,9 @@ internal sealed class ProjectService : IProjectService
         IMailingsService mailingsService, 
         IProjectModerationRepository projectModerationRepository,
         IDiscordService discordService,
-        IProjectManagementSettingsRepository projectManagementSettingsRepository)
+        IProjectManagementSettingsRepository projectManagementSettingsRepository,
+        IGlobalConfigRepository globalConfigRepository,
+        IProjectManagmentRepository projectManagmentRepository)
     {
         _projectRepository = projectRepository;
         _logger = logger;
@@ -174,6 +180,8 @@ internal sealed class ProjectService : IProjectService
         _projectModerationRepository = projectModerationRepository;
         _discordService = discordService;
         _projectManagementSettingsRepository = projectManagementSettingsRepository;
+        _globalConfigRepository = globalConfigRepository;
+        _projectManagmentRepository = projectManagmentRepository;
 
         // Определяем обработчики цепочки фильтров.
         _dateProjectsFilterChain.Successor = _projectsVacanciesFilterChain;
@@ -294,9 +302,25 @@ internal sealed class ProjectService : IProjectService
             
             // Добавляем владельца в участники проекта по дефолту.
             await AddProjectOwnerToTeamMembersAsync(userId, projectId);
-            
-            // Заводим Scrum настройки для проекта.
-            await _projectManagementSettingsRepository.ConfigureProjectScrumSettingsAsync(projectId);
+
+            var isEnabledConfigureProjectScrumSettings = await _globalConfigRepository.GetValueByKeyAsync<bool>(
+                GlobalConfigKeys.ProjectManagment.PROJECT_MANAGEMENT_CONFIGURE_PROJECT_SCRUM_SETTINGS);
+
+            if (isEnabledConfigureProjectScrumSettings)
+            {
+                // Заводим Scrum настройки для проекта.
+                await _projectManagementSettingsRepository.ConfigureProjectScrumSettingsAsync(projectId);
+            }
+
+            var ifExistsCompany = await _projectManagmentRepository.IfExistsCompanyByOwnerIdAsync(userId);
+
+            // Заводим компанию, она не существует.
+            if (!ifExistsCompany)
+            {
+                await _projectManagmentRepository.CreateCompanyAsync(userId);
+            }
+
+            // Добавляем новый проект в компанию и в общее пространство.
 
             // Отправляем уведомление об успешном создании проекта.
             await _projectNotificationsService.SendNotificationSuccessCreatedUserProjectAsync("Все хорошо",
