@@ -132,6 +132,7 @@ internal class BaseServiceTest
     protected readonly SprintService SprintService;
     protected readonly ProjectManagementTemplateService ProjectManagementTemplateService;
     protected readonly SprintRepository SprintRepository;
+    protected readonly ProjectManagementSettingsService ProjectManagementSettingsService;
 
     protected BaseServiceTest()
     {
@@ -306,5 +307,9 @@ internal class BaseServiceTest
         SprintRepository = new SprintRepository(connectionProvider);
         SprintService = new SprintService(null, SprintRepository, null, userRepository, projectSettingsConfigRepository,
             mapper, null, null, discordService, null, null);
+
+        var projectManagementSettingsRepository = new ProjectManagementSettingsRepository(connectionProvider);
+        ProjectManagementSettingsService = new ProjectManagementSettingsService(null, userRepository,
+            projectManagementSettingsRepository, projectRepository);
     }
 }

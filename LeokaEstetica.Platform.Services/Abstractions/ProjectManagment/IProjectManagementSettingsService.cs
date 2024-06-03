@@ -1,4 +1,5 @@
-﻿using LeokaEstetica.Platform.Models.Dto.ProjectManagement.Output;
+﻿using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagement.Output;
+using LeokaEstetica.Platform.Models.Dto.ProjectManagement.Output;
 
 namespace LeokaEstetica.Platform.Services.Abstractions.ProjectManagment;
 
@@ -40,4 +41,12 @@ public interface IProjectManagementSettingsService
     /// <param name="sysName">Системное название настройки.</param>
     Task UpdateProjectSprintsMoveNotCompletedTasksSettingsAsync(long projectId, bool isSettingSelected,
         string sysName);
+
+    /// <summary>
+    /// Метод получает список пользователей, которые состоят в проекте.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="account">Аккаунт.</param>
+    /// <returns>Список пользователей.</returns>
+    Task<IEnumerable<ProjectSettingUserOutput>> GetCompanyProjectUsersAsync(long projectId, string account);
 }

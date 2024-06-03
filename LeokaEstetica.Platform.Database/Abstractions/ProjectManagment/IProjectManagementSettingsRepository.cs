@@ -1,4 +1,5 @@
-﻿using LeokaEstetica.Platform.Models.Dto.ProjectManagement.Output;
+﻿using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagement.Output;
+using LeokaEstetica.Platform.Models.Dto.ProjectManagement.Output;
 
 namespace LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 
@@ -51,4 +52,11 @@ public interface IProjectManagementSettingsRepository
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
     Task ConfigureProjectScrumSettingsAsync(long projectId);
+    
+    /// <summary>
+    /// Метод получает список пользователей, которые состоят в проекте.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Список пользователей.</returns>
+    Task<IEnumerable<ProjectSettingUserOutput>> GetCompanyProjectUsersAsync(long projectId);
 }
