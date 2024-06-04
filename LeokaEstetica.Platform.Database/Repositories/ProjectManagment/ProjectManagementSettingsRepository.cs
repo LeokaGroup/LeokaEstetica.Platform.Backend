@@ -196,7 +196,7 @@ internal sealed class ProjectManagementSettingsRepository : BaseRepository, IPro
                     "WHERE up.\"ProjectId\" = @projectId " +
                     "LIMIT 1) THEN TRUE " +
                     "ELSE FALSE END) AS IsOwner, " +
-                    "COALESCE(om.member_role, 'Участник') " +
+                    "COALESCE(om.member_role, 'Участник') AS Role " +
                     "FROM project_management.organization_projects AS op " +
                     "INNER JOIN project_management.organization_members AS om " +
                     "ON op.organization_id = om.organization_id " +
