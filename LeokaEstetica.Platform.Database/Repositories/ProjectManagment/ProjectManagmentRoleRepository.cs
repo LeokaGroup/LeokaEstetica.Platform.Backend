@@ -26,31 +26,54 @@ internal sealed class ProjectManagmentRoleRepository : BaseRepository, IProjectM
     #region Публичные методы.
 
     /// <inheritdoc />
-    public async Task<IEnumerable<ProjectManagementRoleOutput>?> GetUserRolesAsync(long userId, long? projectId = null)
+    public async Task<IEnumerable<ProjectManagementRoleOutput>?> GetUserRolesAsync(long? userId, long? projectId = null)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
 
         var parameters = new DynamicParameters();
-        parameters.Add("@userId", userId);
+        IEnumerable<ProjectManagementRoleOutput>? result;
 
-        var query = "SELECT role_id, " +
-                    "organization_id," +
-                    "organization_member_id," +
-                    "role_name," +
-                    "role_sys_name," +
-                    "is_active," +
-                    "is_enabled," +
-                    "project_id " +
-                    "FROM roles.organization_project_member_roles " +
-                    "WHERE organization_member_id = @userId ";
-
-        if (projectId.HasValue)
+        if (!userId.HasValue && projectId.HasValue)
         {
             parameters.Add("@projectId", projectId);
-            query += "AND project_id = @projectId";
+            
+            var queryWithParameterProjectId = "SELECT role_id, " +
+                                              "organization_id," +
+                                              "organization_member_id," +
+                                              "role_name," +
+                                              "role_sys_name," +
+                                              "is_active," +
+                                              "is_enabled," +
+                                              "project_id " +
+                                              "FROM roles.organization_project_member_roles " +
+                                              "WHERE project_id = @projectId";
+                                              
+            result = await connection.QueryAsync<ProjectManagementRoleOutput>(queryWithParameterProjectId, parameters);
         }
 
-        var result = await connection.QueryAsync<ProjectManagementRoleOutput>(query, parameters);
+        else
+        {
+            parameters.Add("@userId", userId);
+
+            var queryWithParameterUser = "SELECT role_id, " +
+                                         "organization_id," +
+                                         "organization_member_id," +
+                                         "role_name," +
+                                         "role_sys_name," +
+                                         "is_active," +
+                                         "is_enabled," +
+                                         "project_id " +
+                                         "FROM roles.organization_project_member_roles " +
+                                         "WHERE organization_member_id = @userId ";
+
+            if (projectId.HasValue)
+            {
+                parameters.Add("@projectId", projectId);
+                queryWithParameterUser += "AND project_id = @projectId";
+            }
+
+            result = await connection.QueryAsync<ProjectManagementRoleOutput>(queryWithParameterUser, parameters);
+        }
 
         return result;
     }

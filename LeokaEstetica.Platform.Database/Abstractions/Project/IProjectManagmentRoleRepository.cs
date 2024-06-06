@@ -13,5 +13,5 @@ public interface IProjectManagmentRoleRepository
     /// <param name="userId">Id пользователя.</param>
     /// <param name="projectId">Id проекта, если передали.</param>
     /// <returns>Список ролей.</returns>
-    Task<IEnumerable<ProjectManagementRoleOutput>?> GetUserRolesAsync(long userId, long? projectId = null);
+    Task<IEnumerable<ProjectManagementRoleOutput>?> GetUserRolesAsync(long? userId, long? projectId = null);
 }
