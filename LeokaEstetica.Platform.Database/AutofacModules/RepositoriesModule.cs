@@ -335,5 +335,14 @@ public class RepositoriesModule : Module
         builder.RegisterType<ScrumMasterAiRepository>()
             .As<IScrumMasterAiRepository>()
             .InstancePerLifetimeScope();
+            
+        builder.RegisterType<ProjectManagmentRoleRepository>()
+            .Named<IProjectManagmentRoleRepository>("ProjectManagmentRoleRepository")
+            .InstancePerLifetimeScope();
+        builder.RegisterType<ProjectManagmentRoleRepository>()
+            .As<IProjectManagmentRoleRepository>()
+            .InstancePerLifetimeScope();
+            
+        builder.RegisterLazy<IProjectManagmentRoleRepository, ProjectManagmentRoleRepository>();
     }
 }

@@ -326,5 +326,12 @@ public class ServicesModule : Module
         builder.RegisterType<ProjectManagementSettingsService>()
             .As<IProjectManagementSettingsService>()
             .InstancePerLifetimeScope();
+            
+        builder.RegisterType<ProjectManagmentRoleService>()
+            .Named<IProjectManagmentRoleService>("ProjectManagmentRoleService")
+            .InstancePerLifetimeScope();
+        builder.RegisterType<ProjectManagmentRoleService>()
+            .As<IProjectManagmentRoleService>()
+            .InstancePerLifetimeScope();
     }
 }

@@ -13,6 +13,7 @@ using LeokaEstetica.Platform.CallCenter.Services.Ticket;
 using LeokaEstetica.Platform.CallCenter.Services.Vacancy;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Utils;
+using LeokaEstetica.Platform.Database.Abstractions.Project;
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Database.Repositories.Access.Ticket;
 using LeokaEstetica.Platform.Database.Repositories.Access.User;
@@ -55,6 +56,7 @@ using LeokaEstetica.Platform.Processing.Services.Commerce;
 using LeokaEstetica.Platform.Processing.Services.PayMaster;
 using LeokaEstetica.Platform.RabbitMq.Services;
 using LeokaEstetica.Platform.Redis.Services.Commerce;
+using LeokaEstetica.Platform.Redis.Services.ProjectManagement;
 using LeokaEstetica.Platform.Redis.Services.User;
 using LeokaEstetica.Platform.Services.Services.FareRule;
 using LeokaEstetica.Platform.Services.Services.Knowledge;
@@ -132,6 +134,7 @@ internal class BaseServiceTest
     protected readonly SprintService SprintService;
     protected readonly ProjectManagementTemplateService ProjectManagementTemplateService;
     protected readonly SprintRepository SprintRepository;
+    protected readonly ProjectManagmentRoleService ProjectManagmentRoleService;
     protected readonly ProjectManagementSettingsService ProjectManagementSettingsService;
 
     protected BaseServiceTest()
@@ -307,6 +310,12 @@ internal class BaseServiceTest
         SprintRepository = new SprintRepository(connectionProvider);
         SprintService = new SprintService(null, SprintRepository, null, userRepository, projectSettingsConfigRepository,
             mapper, null, null, discordService, null, null);
+
+        var projectManagmentRoleRepository = new ProjectManagmentRoleRepository(connectionProvider);
+        var projectManagmentRoleRedisService = new ProjectManagmentRoleRedisService(distributedCache);
+        ProjectManagmentRoleService = new ProjectManagmentRoleService(null,
+            new Lazy<IProjectManagmentRoleRepository>(projectManagmentRoleRepository), userRepository,
+            projectManagmentRoleRedisService, mapper);
 
         var projectManagementSettingsRepository = new ProjectManagementSettingsRepository(connectionProvider);
         ProjectManagementSettingsService = new ProjectManagementSettingsService(null, userRepository,
