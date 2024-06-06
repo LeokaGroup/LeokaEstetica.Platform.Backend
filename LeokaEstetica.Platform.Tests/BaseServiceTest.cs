@@ -135,6 +135,7 @@ internal class BaseServiceTest
     protected readonly ProjectManagementTemplateService ProjectManagementTemplateService;
     protected readonly SprintRepository SprintRepository;
     protected readonly ProjectManagmentRoleService ProjectManagmentRoleService;
+    protected readonly ProjectManagementSettingsService ProjectManagementSettingsService;
 
     protected BaseServiceTest()
     {
@@ -315,5 +316,9 @@ internal class BaseServiceTest
         ProjectManagmentRoleService = new ProjectManagmentRoleService(null,
             new Lazy<IProjectManagmentRoleRepository>(projectManagmentRoleRepository), userRepository,
             projectManagmentRoleRedisService, mapper);
+
+        var projectManagementSettingsRepository = new ProjectManagementSettingsRepository(connectionProvider);
+        ProjectManagementSettingsService = new ProjectManagementSettingsService(null, userRepository,
+            projectManagementSettingsRepository, projectRepository);
     }
 }
