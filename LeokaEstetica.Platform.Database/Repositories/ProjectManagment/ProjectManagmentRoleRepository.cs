@@ -26,17 +26,19 @@ internal sealed class ProjectManagmentRoleRepository : BaseRepository, IProjectM
     #region Публичные методы.
 
     /// <inheritdoc />
-    public async Task<IEnumerable<ProjectManagementRoleOutput>?> GetUserRolesAsync(long? userId, long? projectId = null)
+    public async Task<IEnumerable<ProjectManagementRoleOutput>?> GetUserRolesAsync(long? userId,
+        long? projectId = null)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
 
         var parameters = new DynamicParameters();
         IEnumerable<ProjectManagementRoleOutput>? result;
 
+        // Получаем роли всех пользователей проекта компании.
         if (!userId.HasValue && projectId.HasValue)
         {
             parameters.Add("@projectId", projectId);
-            
+
             var queryWithParameterProjectId = "SELECT role_id, " +
                                               "organization_id," +
                                               "organization_member_id," +
@@ -46,11 +48,15 @@ internal sealed class ProjectManagmentRoleRepository : BaseRepository, IProjectM
                                               "is_enabled," +
                                               "project_id " +
                                               "FROM roles.organization_project_member_roles " +
-                                              "WHERE project_id = @projectId";
+                                              "WHERE project_id = @projectId " +
+                                              "GROUP BY organization_id, organization_member_id, role_name," +
+                                              " role_sys_name, project_id, role_id " +
+                                              "ORDER BY role_id ";
                                               
             result = await connection.QueryAsync<ProjectManagementRoleOutput>(queryWithParameterProjectId, parameters);
         }
 
+        // Получаем роли пользователя.
         else
         {
             parameters.Add("@userId", userId);
