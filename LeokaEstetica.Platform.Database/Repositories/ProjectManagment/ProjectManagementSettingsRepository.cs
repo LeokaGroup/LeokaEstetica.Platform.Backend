@@ -2,6 +2,7 @@
 using LeokaEstetica.Platform.Base.Abstractions.Connection;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.Base;
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
+using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagement.Output;
 using LeokaEstetica.Platform.Models.Dto.ProjectManagement.Output;
 
 namespace LeokaEstetica.Platform.Database.Repositories.ProjectManagment;
@@ -19,6 +20,8 @@ internal sealed class ProjectManagementSettingsRepository : BaseRepository, IPro
         : base(connectionProvider)
     {
     }
+
+    #region Публичные методы.
 
     /// <inheritdoc/>
     public async Task<IEnumerable<SprintDurationSetting>> GetProjectSprintsDurationSettingsAsync(long projectId)
@@ -81,9 +84,9 @@ internal sealed class ProjectManagementSettingsRepository : BaseRepository, IPro
         reverseParameters.Add("@sysName", sysName);
 
         var reverseQuery = "UPDATE settings.sprint_duration_settings " +
-                         "SET selected = @isSettingSelected " +
-                         "WHERE project_id = @projectId " +
-                         "AND sys_name <> @sysName";
+                           "SET selected = @isSettingSelected " +
+                           "WHERE project_id = @projectId " +
+                           "AND sys_name <> @sysName";
 
         await connection.ExecuteAsync(reverseQuery, reverseParameters);
     }
@@ -113,9 +116,9 @@ internal sealed class ProjectManagementSettingsRepository : BaseRepository, IPro
         reverseParameters.Add("@sysName", sysName);
 
         var reverseQuery = "UPDATE settings.move_not_completed_tasks_settings " +
-                    "SET selected = @isSettingSelected " +
-                    "WHERE project_id = @projectId " +
-                    "AND sys_name <> @sysName";
+                           "SET selected = @isSettingSelected " +
+                           "WHERE project_id = @projectId " +
+                           "AND sys_name <> @sysName";
 
         await connection.ExecuteAsync(reverseQuery, reverseParameters);
     }
@@ -173,4 +176,47 @@ internal sealed class ProjectManagementSettingsRepository : BaseRepository, IPro
 
         await connection.ExecuteAsync(querySprinsNotCompletedTasks, parametersSprintNotCompletedTasks);
     }
+
+    /// <inheritdoc/>
+    public async Task<IEnumerable<ProjectSettingUserOutput>> GetCompanyProjectUsersAsync(long projectId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@projectId", projectId);
+
+        var query = "SELECT pi.\"UserId\", " +
+                    "pi.\"LastName\", " +
+                    "pi.\"FirstName\", " +
+                    "pi.\"Patronymic\" AS \"SecondName\", " +
+                    "u.\"Email\", " +
+                    "u.\"LastAutorization\", " +
+                    "(CASE WHEN u.\"UserId\" = (SELECT up.\"UserId\" " +
+                    "FROM \"Projects\".\"UserProjects\" AS up " +
+                    "WHERE up.\"ProjectId\" = @projectId " +
+                    "LIMIT 1) THEN TRUE " +
+                    "ELSE FALSE END) AS IsOwner, " +
+                    "COALESCE(om.member_role, 'Участник') AS Role " +
+                    "FROM project_management.organization_projects AS op " +
+                    "INNER JOIN project_management.organization_members AS om " +
+                    "ON op.organization_id = om.organization_id " +
+                    "INNER JOIN \"Profile\".\"ProfilesInfo\" AS pi " +
+                    "ON om.member_id = \"UserId\" " +
+                    "INNER JOIN dbo.\"Users\" AS u " +
+                    "ON pi.\"UserId\" = u.\"UserId\" " +
+                    "WHERE op.project_id = @projectId " +
+                    "AND op.is_active";
+
+        var result = await connection.QueryAsync<ProjectSettingUserOutput>(query, parameters);
+
+        return result;
+    }
+
+    #endregion
+
+    #region Приватные методы.
+
+    
+
+    #endregion
 }
