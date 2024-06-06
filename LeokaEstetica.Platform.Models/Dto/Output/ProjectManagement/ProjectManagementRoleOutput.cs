@@ -38,5 +38,5 @@ public class ProjectManagementRoleOutput
     /// <summary>
     /// Id проекта компании.
     /// </summary>
-    public long ProjectId { get; set; }
+    public long? ProjectId { get; set; }
 }

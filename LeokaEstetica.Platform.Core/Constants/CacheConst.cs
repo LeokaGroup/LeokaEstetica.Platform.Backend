@@ -28,6 +28,6 @@ public static class CacheConst
         /// <summary>
         /// Ключ ролей пользователя в модуле УП.
         /// </summary>
-        public const string PROJECT_MANAGEMENT_USER_ROLES = "ProjectManagementRoles";
+        public const string PROJECT_MANAGEMENT_USER_ROLES = "ProjectManagementRoles:";
     }
 }

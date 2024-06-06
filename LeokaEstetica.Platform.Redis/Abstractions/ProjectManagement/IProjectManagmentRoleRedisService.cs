@@ -1,4 +1,4 @@
-﻿using LeokaEstetica.Platform.Redis.Models.ProjectManagement;
+﻿using LeokaEstetica.Platform.Models.Dto.Common.Cache;
 
 namespace LeokaEstetica.Platform.Redis.Abstractions.ProjectManagement;
 
@@ -12,7 +12,7 @@ public interface IProjectManagmentRoleRedisService
     /// </summary>
     /// <param name="userId">Id пользователя.</param>
     /// <returns>Список ролей.</returns>
-    Task<IEnumerable<ProjectManagementRoleRedis>> GetUserRolesAsync(long userId);
+    Task<IEnumerable<ProjectManagementRoleRedis>?> GetUserRolesAsync(long userId);
     
     /// <summary>
     /// Метод записывает в кэш список ролей пользователя.

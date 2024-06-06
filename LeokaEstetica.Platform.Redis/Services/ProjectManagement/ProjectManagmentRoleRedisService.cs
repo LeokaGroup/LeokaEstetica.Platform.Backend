@@ -1,8 +1,11 @@
-﻿using LeokaEstetica.Platform.Core.Constants;
+﻿using System.Runtime.CompilerServices;
+using LeokaEstetica.Platform.Core.Constants;
+using LeokaEstetica.Platform.Models.Dto.Common.Cache;
 using LeokaEstetica.Platform.Redis.Abstractions.ProjectManagement;
 using LeokaEstetica.Platform.Redis.Extensions;
-using LeokaEstetica.Platform.Redis.Models.ProjectManagement;
 using Microsoft.Extensions.Caching.Distributed;
+
+[assembly: InternalsVisibleTo("LeokaEstetica.Platform.Tests")]
 
 namespace LeokaEstetica.Platform.Redis.Services.ProjectManagement;
 
@@ -22,10 +25,12 @@ internal sealed class ProjectManagmentRoleRedisService : IProjectManagmentRoleRe
         _redis = redis;
     }
 
+    #region Публичные методы.
+
     /// <inheritdoc />
-    public async Task<IEnumerable<ProjectManagementRoleRedis>> GetUserRolesAsync(long userId)
+    public async Task<IEnumerable<ProjectManagementRoleRedis>?> GetUserRolesAsync(long userId)
     {
-        var key = string.Concat(userId, CacheConst.Cache.PROJECT_MANAGEMENT_USER_ROLES);
+        var key = CacheConst.Cache.PROJECT_MANAGEMENT_USER_ROLES + userId + "_ProjectManagementRoles";
         var items = await _redis.GetStringAsync(key);
 
         if (string.IsNullOrEmpty(items))
@@ -41,10 +46,19 @@ internal sealed class ProjectManagmentRoleRedisService : IProjectManagmentRoleRe
     /// <inheritdoc />
     public async Task SetUserRolesAsync(long userId, IEnumerable<ProjectManagementRoleRedis> roles)
     {
-        var key = string.Concat(userId, CacheConst.Cache.PROJECT_MANAGEMENT_USER_ROLES);
-        await _redis.SetStringAsync(key, ProtoBufExtensions.Serialize(roles), new DistributedCacheEntryOptions
-        {
-            AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(24)
-        });
+        var key = CacheConst.Cache.PROJECT_MANAGEMENT_USER_ROLES + userId + "_ProjectManagementRoles";
+        await _redis.SetStringAsync(key,
+            ProtoBufExtensions.Serialize(roles), new DistributedCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(24)
+            });
     }
+
+    #endregion
+
+    #region Приватные методы.
+
+    
+
+    #endregion
 }

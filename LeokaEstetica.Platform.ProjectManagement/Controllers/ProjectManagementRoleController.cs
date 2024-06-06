@@ -39,6 +39,8 @@ public class ProjectManagementRoleController : BaseController
     [ProducesResponseType(404)]
     public async Task<IEnumerable<ProjectManagementRoleOutput>> GetUserRolesAsync([FromQuery] long? projectId = null)
     {
-        
+        var result = await _projectManagmentRoleService.GetUserRolesAsync(GetUserName(), projectId);
+
+        return result;
     }
 }

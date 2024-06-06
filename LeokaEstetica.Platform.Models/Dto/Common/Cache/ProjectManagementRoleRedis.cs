@@ -1,6 +1,6 @@
 ﻿using ProtoBuf;
 
-namespace LeokaEstetica.Platform.Redis.Models.ProjectManagement;
+namespace LeokaEstetica.Platform.Models.Dto.Common.Cache;
 
 /// <summary>
 /// Класс модели ролей модуля УП для хранения в кэше Redis.

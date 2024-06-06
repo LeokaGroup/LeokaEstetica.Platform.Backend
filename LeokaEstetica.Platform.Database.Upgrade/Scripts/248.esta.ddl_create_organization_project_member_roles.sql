@@ -9,7 +9,7 @@ CREATE TABLE roles.organization_project_member_roles
     role_sys_name          VARCHAR(200) NOT NULL,
     is_active              BOOLEAN      NOT NULL DEFAULT TRUE,
     is_enabled             BOOLEAN      NOT NULL DEFAULT FALSE,
-    project_id             BIGINT       NOT NULL,
+    project_id             BIGINT       NULL,
     CONSTRAINT pk_organization_project_member_roles_role_id PRIMARY KEY (role_id)
 );
 
