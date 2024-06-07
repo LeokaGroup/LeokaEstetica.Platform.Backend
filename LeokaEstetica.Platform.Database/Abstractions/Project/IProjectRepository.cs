@@ -195,6 +195,13 @@ public interface IProjectRepository
     Task<bool> CheckProjectModerationAsync(long projectId);
     
     /// <summary>
+    /// Метод првоеряет, находится ли проект в архиве.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Признак нахождения в архиве.</returns>
+    Task<bool> CheckProjectArchivedAsync(long projectId);
+    
+    /// <summary>
     /// Метод получает список вакансий доступных к отклику.
     /// Для владельца проекта будет возвращаться пустой список.
     /// </summary>

@@ -993,6 +993,24 @@ internal sealed class ProjectService : IProjectService
                 
                 throw ex;
             }
+            
+            // Проверяем нахождение проекта в архиве.
+            var isProjectArchived = await _projectRepository.CheckProjectArchivedAsync(projectId);
+
+            // Если он там есть, то не даем пригласить в него.
+            if (isProjectArchived)
+            {
+                var ex = new InvalidOperationException(
+                    "Проект в архиве. Нельзя пригласить пользователей, если проект в архиве.");
+                
+                await _projectNotificationsService.SendNotificationWarningProjectInviteTeamAsync(
+                    "Внимание",
+                    "Проект в архиве. Нельзя пригласить пользователей, если проект в архиве.",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
+                
+                throw ex;
+            }
+
 
             // Получаем Id команды проекта.
             var teamId = await _projectRepository.GetProjectTeamIdAsync(projectId);
