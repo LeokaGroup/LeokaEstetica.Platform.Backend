@@ -109,6 +109,6 @@ public class ProjectManagementRoleController : BaseController
             throw ex;
         }
 
-        await _projectManagmentRoleService.UpdateRolesAsync(updatedRoles);
+        await _projectManagmentRoleService.UpdateRolesAsync(updatedRoles, CreateTokenFromHeader());
     }
 }

@@ -124,7 +124,7 @@ internal sealed class ProjectManagmentRoleService : IProjectManagmentRoleService
     }
 
     /// <inheritdoc />
-    public async Task UpdateRolesAsync(IEnumerable<ProjectManagementRoleInput> roles)
+    public async Task UpdateRolesAsync(IEnumerable<ProjectManagementRoleInput> roles, string? token)
     {
         try
         {

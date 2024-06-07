@@ -20,5 +20,6 @@ public interface IProjectManagmentRoleService
     /// Метод обновляет роли пользователей.
     /// </summary>
     /// <param name="roles">Список ролей к обновлению.</param>
-    Task UpdateRolesAsync(IEnumerable<ProjectManagementRoleInput> roles);
+    /// <param name="token">Токен.</param>
+    Task UpdateRolesAsync(IEnumerable<ProjectManagementRoleInput> roles, string? token);
 }
