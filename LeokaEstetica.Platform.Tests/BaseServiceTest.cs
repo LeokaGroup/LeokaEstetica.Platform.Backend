@@ -315,7 +315,7 @@ internal class BaseServiceTest
         var projectManagmentRoleRedisService = new ProjectManagmentRoleRedisService(distributedCache);
         ProjectManagmentRoleService = new ProjectManagmentRoleService(null,
             new Lazy<IProjectManagmentRoleRepository>(projectManagmentRoleRepository), userRepository,
-            projectManagmentRoleRedisService, mapper, new Lazy<IDiscordService>(discordService));
+            projectManagmentRoleRedisService, mapper, new Lazy<IDiscordService>(discordService), null);
 
         var projectManagementSettingsRepository = new ProjectManagementSettingsRepository(connectionProvider);
         ProjectManagementSettingsService = new ProjectManagementSettingsService(null, userRepository,
