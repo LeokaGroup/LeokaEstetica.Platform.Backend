@@ -39,4 +39,14 @@ public class ProjectManagementRoleOutput
     /// Id проекта компании.
     /// </summary>
     public long? ProjectId { get; set; }
+
+    /// <summary>
+    /// Email пользователя.
+    /// </summary>
+    public string? Email { get; set; }
+    
+    /// <summary>
+    /// Id роли.
+    /// </summary>
+    public long RoleId { get; set; }
 }

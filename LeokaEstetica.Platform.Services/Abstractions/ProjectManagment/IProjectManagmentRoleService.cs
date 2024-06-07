@@ -1,4 +1,5 @@
-﻿using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagement;
+﻿using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
+using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagement;
 
 namespace LeokaEstetica.Platform.Services.Abstractions.ProjectManagment;
 
@@ -14,4 +15,11 @@ public interface IProjectManagmentRoleService
     /// <param name="projectId">Id проекта, если передали.</param>
     /// <returns>Список ролей.</returns>
     Task<IEnumerable<ProjectManagementRoleOutput>> GetUserRolesAsync(string account, long? projectId = null);
+
+    /// <summary>
+    /// Метод обновляет роли пользователей.
+    /// </summary>
+    /// <param name="roles">Список ролей к обновлению.</param>
+    /// <param name="token">Токен.</param>
+    Task UpdateRolesAsync(IEnumerable<ProjectManagementRoleInput> roles, string? token);
 }

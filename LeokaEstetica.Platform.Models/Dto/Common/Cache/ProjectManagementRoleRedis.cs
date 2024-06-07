@@ -49,4 +49,16 @@ public class ProjectManagementRoleRedis
     /// </summary>
     [ProtoMember(7)]
     public long ProjectId { get; set; }
+    
+    /// <summary>
+    /// Email пользователя.
+    /// </summary>
+    [ProtoMember(8)]
+    public string? Email { get; set; }
+    
+    /// <summary>
+    /// Id роли.
+    /// </summary>
+    [ProtoMember(9)]
+    public long RoleId { get; set; }
 }

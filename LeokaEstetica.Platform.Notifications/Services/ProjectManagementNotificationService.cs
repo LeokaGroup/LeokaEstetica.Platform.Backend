@@ -105,4 +105,20 @@ internal sealed class ProjectManagementNotificationService : IProjectManagementN
                 DialogId = dialogId
             });
     }
+
+    /// <inheritdoc />
+    public async Task SendNotifySuccessUpdateRolesAsync(string title, string notifyText, string notificationLevel,
+        string token)
+    {
+        var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
+
+        await _hubContext.Clients
+            .Client(connectionId)
+            .SendAsync("SendNotifySuccessUpdateRoles", new NotificationOutput
+            {
+                Title = title,
+                Message = notifyText,
+                NotificationLevel = notificationLevel
+            });
+    }
 }

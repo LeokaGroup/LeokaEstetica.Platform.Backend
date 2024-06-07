@@ -37,8 +37,11 @@ internal sealed class ProjectManagmentRoleRedisService : IProjectManagmentRoleRe
         {
             return Enumerable.Empty<ProjectManagementRoleRedis>();
         }
-        
+
         var result = ProtoBufExtensions.Deserialize<IEnumerable<ProjectManagementRoleRedis>>(items);
+        
+        // Обновляем время жизни - раз нашли в кэше.
+        await _redis.RefreshAsync(key);
 
         return result;
     }
