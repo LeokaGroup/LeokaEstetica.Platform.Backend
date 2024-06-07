@@ -3,6 +3,7 @@ using Dapper;
 using LeokaEstetica.Platform.Base.Abstractions.Connection;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.Base;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
+using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagement;
 
 [assembly: InternalsVisibleTo("LeokaEstetica.Platform.Tests")]
@@ -85,6 +86,31 @@ internal sealed class ProjectManagmentRoleRepository : BaseRepository, IProjectM
         }
 
         return result;
+    }
+
+    /// <inheritdoc />
+    public async Task UpdateRolesAsync(IEnumerable<ProjectManagementRoleInput> roles)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new List<DynamicParameters>();
+
+        foreach (var r in roles)
+        {
+            var tempParameters = new DynamicParameters();
+            tempParameters.Add("@roleId", r.RoleId);
+            tempParameters.Add("@enabled", r.IsEnabled);
+            tempParameters.Add("@userId", r.UserId);
+
+            parameters.Add(tempParameters);
+        }
+
+        var query = "UPDATE roles.organization_project_member_roles " +
+                    "SET is_enabled = @enabled " +
+                    "WHERE role_id = @roleId " +
+                    "AND organization_member_id = @userId";
+
+        await connection.ExecuteAsync(query, parameters);
     }
 
     #endregion

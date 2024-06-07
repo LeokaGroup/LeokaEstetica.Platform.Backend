@@ -1,7 +1,10 @@
-﻿using LeokaEstetica.Platform.Base;
+﻿using Dapper;
+using LeokaEstetica.Platform.Base;
 using LeokaEstetica.Platform.Base.Filters;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
+using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagement;
+using LeokaEstetica.Platform.ProjectManagement.Validators;
 using LeokaEstetica.Platform.Services.Abstractions.ProjectManagment;
 using Microsoft.AspNetCore.Mvc;
 
@@ -17,16 +20,20 @@ public class ProjectManagementRoleController : BaseController
 {
     private readonly IProjectManagmentRoleService _projectManagmentRoleService;
     private readonly Lazy<IProjectManagmentRoleRepository> _projectManagmentRoleRepository;
+    private readonly ILogger<ProjectManagementRoleController> _logger;
 
     /// <summary>
     /// Конструктор.
     /// </summary>
     /// <param name="projectManagmentRoleService">Сервис ролей модуля УП.</param>
     /// <param name="projectManagmentRoleRepository">Репозиторий ролей пользователей.</param>
-    public ProjectManagementRoleController(IProjectManagmentRoleService projectManagmentRoleService, Lazy<IProjectManagmentRoleRepository> projectManagmentRoleRepository)
+    /// <param name="logger">Логгер.</param>
+    public ProjectManagementRoleController(IProjectManagmentRoleService projectManagmentRoleService, Lazy<IProjectManagmentRoleRepository> projectManagmentRoleRepository,
+     ILogger<ProjectManagementRoleController> logger)
     {
         _projectManagmentRoleService = projectManagmentRoleService;
         _projectManagmentRoleRepository = projectManagmentRoleRepository;
+        _logger = logger;
     }
 
     /// <summary>
@@ -70,5 +77,38 @@ public class ProjectManagementRoleController : BaseController
         }
 
         return result;
+    }
+
+    /// <summary>
+    /// Метод обновляет роли пользователей.
+    /// </summary>
+    /// <param name="roles">Список ролей к обновлению.</param>
+    [HttpPut]
+    [Route("roles")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task UpdateRolesAsync([FromBody] IEnumerable<ProjectManagementRoleInput> roles)
+    {
+        var updatedRoles = roles.AsList();
+        var validator = await new ProjectManagementRoleValidator().ValidateAsync(updatedRoles);
+
+        if (validator.Errors.Any())
+        {
+            var exceptions = new List<InvalidOperationException>();
+            foreach (var err in validator.Errors)
+            {
+                exceptions.Add(new InvalidOperationException(err.ErrorMessage));
+            }
+            
+            var ex = new AggregateException(exceptions);
+            _logger.LogError(ex, "Ошибки при обновлении ролей.");
+
+            throw ex;
+        }
+
+        await _projectManagmentRoleService.UpdateRolesAsync(updatedRoles);
     }
 }

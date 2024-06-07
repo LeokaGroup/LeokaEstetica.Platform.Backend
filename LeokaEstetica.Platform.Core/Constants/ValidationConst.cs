@@ -318,5 +318,15 @@ public static class ValidationConst
         /// Если описание спринта не передано или невалидно.
         /// </summary>
         public const string EMPTY_SPRINT_DETAILS = "Описание спринта не передано или невалидно.";
+        
+        /// <summary>
+        /// Если передали невалидный Id роли.
+        /// </summary>
+        public const string NOT_VALID_ROLE_ID = "Id роли не передан.";
+        
+        /// <summary>
+        /// Если передали невалидный Id пользователя.
+        /// </summary>
+        public const string NOT_VALID_USER_ID = "Id пользователя не передан.";
     }
 }
