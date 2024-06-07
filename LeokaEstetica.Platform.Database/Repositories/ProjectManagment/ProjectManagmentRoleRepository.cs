@@ -46,7 +46,10 @@ internal sealed class ProjectManagmentRoleRepository : BaseRepository, IProjectM
                                               "role_sys_name," +
                                               "is_active," +
                                               "is_enabled," +
-                                              "project_id " +
+                                              "project_id," +
+                                              "(SELECT \"Email\" " +
+                                              "FROM dbo.\"Users\" " +
+                                              "WHERE \"UserId\" = organization_member_id) AS Email " +
                                               "FROM roles.organization_project_member_roles " +
                                               "WHERE project_id = @projectId " +
                                               "GROUP BY organization_id, organization_member_id, role_name," +
