@@ -9,6 +9,8 @@ using LeokaEstetica.Platform.Integrations.Abstractions.Discord;
 using LeokaEstetica.Platform.Models.Dto.Common.Cache;
 using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagement;
+using LeokaEstetica.Platform.Notifications.Abstractions;
+using LeokaEstetica.Platform.Notifications.Consts;
 using LeokaEstetica.Platform.Redis.Abstractions.ProjectManagement;
 using LeokaEstetica.Platform.Services.Abstractions.ProjectManagment;
 using Microsoft.Extensions.Logging;
@@ -29,6 +31,7 @@ internal sealed class ProjectManagmentRoleService : IProjectManagmentRoleService
     private readonly IProjectManagmentRoleRedisService _projectManagmentRoleRedisService;
     private readonly IMapper _mapper;
     private readonly Lazy<IDiscordService> _discordService;
+    private readonly Lazy<IProjectManagementNotificationService> _projectManagementNotificationService;
 
     /// <summary>
     /// Конструктор.
@@ -39,12 +42,14 @@ internal sealed class ProjectManagmentRoleService : IProjectManagmentRoleService
     /// <param name="projectManagmentRoleRedisService">Сервис ролей кэша.</param>
     /// <param name="mapper">Маппер.</param>
     /// <param name="discordService">Сервис уведомлений дискорда.</param>
+    /// <param name="projectManagementNotificationService">Сервис уведомлений модуля УП.</param>
     public ProjectManagmentRoleService(ILogger<ProjectManagmentRoleService>? logger,
         Lazy<IProjectManagmentRoleRepository> projectManagmentRoleRepository,
         IUserRepository userRepository,
         IProjectManagmentRoleRedisService projectManagmentRoleRedisService,
-         IMapper mapper,
-          Lazy<IDiscordService> discordService)
+        IMapper mapper,
+        Lazy<IDiscordService> discordService,
+        Lazy<IProjectManagementNotificationService> projectManagementNotificationService)
     {
         _logger = logger;
         _projectManagmentRoleRepository = projectManagmentRoleRepository;
@@ -52,6 +57,7 @@ internal sealed class ProjectManagmentRoleService : IProjectManagmentRoleService
         _projectManagmentRoleRedisService = projectManagmentRoleRedisService;
         _mapper = mapper;
         _discordService = discordService;
+        _projectManagementNotificationService = projectManagementNotificationService;
     }
 
     #region Публичные методы.
@@ -171,6 +177,13 @@ internal sealed class ProjectManagmentRoleService : IProjectManagmentRoleService
                     var mapRedisRoles = _mapper.Map<IEnumerable<ProjectManagementRoleRedis>>(userRoles);
                     await _projectManagmentRoleRedisService.SetUserRolesAsync(r.UserId, mapRedisRoles);
                 }
+            }
+            
+            if (!string.IsNullOrEmpty(token))
+            {
+                // Отправляем уведомление об изменении ролей фронту.
+                await _projectManagementNotificationService.Value.SendNotifySuccessUpdateRolesAsync("Все хорошо",
+                    "Роли успешно сохранены.", NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);   
             }
         }
         
