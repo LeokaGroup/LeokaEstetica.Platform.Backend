@@ -2588,6 +2588,62 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         return result;
     }
 
+    /// <inheritdoc/>
+    public async Task AddProjectWorkSpaceMemberAsync(long projectId, long userId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var memberCompanyParameters = new DynamicParameters();
+        memberCompanyParameters.Add("@userId", userId);
+        memberCompanyParameters.Add("@projectId", projectId);
+
+        var companyMemberQuery = "SELECT om.organization_id " +
+                           "FROM project_management.organization_members AS om " +
+                           "INNER JOIN project_management.organization_projects AS op " +
+                           "ON om.organization_id = op.organization_id " +
+                           "WHERE om.member_id = @userId " +
+                           "AND op.project_id = @projectId";
+        
+        var organizationId = await connection.QueryFirstOrDefaultAsync<long?>(companyMemberQuery,
+            memberCompanyParameters);
+
+        // Если пользователя нет в компании, значит сначала добавляем пользователя в компанию.
+        if (organizationId is null)
+        {
+            // Находим Id организации по проекту.
+            var projectCompanyParameters = new DynamicParameters();
+            projectCompanyParameters.Add("@projectId", projectId);
+
+            var projectCompanyQuery = "SELECT organization_id " +
+                                      "FROM project_management.organization_projects " +
+                                      "WHERE project_id = @projectId";
+
+            organizationId = await connection.QueryFirstOrDefaultAsync<long?>(projectCompanyQuery,
+                projectCompanyParameters);
+
+            if (!organizationId.HasValue)
+            {
+                throw new InvalidOperationException("Не удалось получить Id компании по проекту. " +
+                                                    $"ProjectId: {projectId}. " +
+                                                    $"UserId: {userId}.");
+            }
+        }
+        
+        // Добавляем сотрудника в компанию.
+        var memberParameters = new DynamicParameters();
+        memberParameters.Add("@organizationId", organizationId);
+            
+        // TODO: Когда роль будет передавать с фронта, то записывать ее тут.
+        memberParameters.Add("@memberRole", "Участник");
+        memberParameters.Add("@userId", userId);
+
+        var memberQuery = "INSERT INTO project_management.organization_members (organization_id, member_role," +
+                          " member_id) " +
+                          "VALUES (@organizationId, @memberRole, @userId)";
+
+        await connection.ExecuteAsync(memberQuery, memberParameters);
+    }
+
     #endregion
 
     #region Приватные методы.
