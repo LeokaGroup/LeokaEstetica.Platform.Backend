@@ -703,4 +703,13 @@ public interface IProjectManagmentRepository
     /// <param name="userId">Id пользователя.</param>
     /// <returns>Признак владельца.</returns>
     Task<bool> CheckCompanyOwnerByUserIdAsync(long userId);
+
+    /// <summary>
+    /// Метод добавляет пользователя в участники раб.пространства проекта.
+    /// Перед этим идет проверка, есть ли пользователь в участниках компании, если нет,
+    /// то сначала добавляет в участники компании.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="userId">Id пользователя.</param>
+    Task AddProjectWorkSpaceMemberAsync(long projectId, long userId);
 }

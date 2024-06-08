@@ -1038,6 +1038,9 @@ internal sealed class ProjectService : IProjectService
             var result = await _projectRepository.AddProjectTeamMemberAsync(inviteUserId, vacancyId, teamId,
                 "Участник");
             
+            // Добавляем участника в раб.пространство проекта.
+            await _projectManagmentRepository.AddProjectWorkSpaceMemberAsync(projectId, result.MemberId);
+            
             // Находим название проекта.
             var projectName = await _projectRepository.GetProjectNameByProjectIdAsync(projectId);
 
