@@ -993,6 +993,16 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
         return result;
     }
 
+    /// <inheritdoc />
+    public async Task<bool> CheckProjectArchivedAsync(long projectId)
+    {
+        var result = await _pgContext.ModerationProjects
+            .AnyAsync(p => p.ProjectId == projectId
+                           && p.ModerationStatusId == (int)ProjectModerationStatusEnum.ArchivedProject);
+
+        return result;
+    }
+
     /// <summary>
     /// Метод получает список вакансий доступных к отклику.
     /// Для владельца проекта будет возвращаться пустой список.
