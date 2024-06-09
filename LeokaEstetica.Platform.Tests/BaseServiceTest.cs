@@ -136,6 +136,7 @@ internal class BaseServiceTest
     protected readonly SprintRepository SprintRepository;
     protected readonly ProjectManagmentRoleService ProjectManagmentRoleService;
     protected readonly ProjectManagementSettingsService ProjectManagementSettingsService;
+    protected readonly WikiTreeService WikiTreeService;
 
     protected BaseServiceTest()
     {
@@ -320,5 +321,8 @@ internal class BaseServiceTest
         var projectManagementSettingsRepository = new ProjectManagementSettingsRepository(connectionProvider);
         ProjectManagementSettingsService = new ProjectManagementSettingsService(null, userRepository,
             projectManagementSettingsRepository, projectRepository);
+
+        var wikiTreeRepository = new WikiTreeRepository(connectionProvider);
+        WikiTreeService = new WikiTreeService(null, wikiTreeRepository);
     }
 }

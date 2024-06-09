@@ -3,7 +3,7 @@
     page_id          BIGSERIAL                NOT NULL,
     folder_id        BIGINT                   NULL,
     page_name        VARCHAR(200)             NOT NULL,
-    page_description TEXT                     NOT NULL,
+    page_description TEXT                     NULL,
     wiki_tree_id     BIGINT                   NOT NULL,
     created_by       BIGINT                   NOT NULL,
     created_at       TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),

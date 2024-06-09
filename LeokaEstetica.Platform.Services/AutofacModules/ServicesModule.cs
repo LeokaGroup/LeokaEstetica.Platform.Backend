@@ -333,5 +333,12 @@ public class ServicesModule : Module
         builder.RegisterType<ProjectManagmentRoleService>()
             .As<IProjectManagmentRoleService>()
             .InstancePerLifetimeScope();
+            
+        builder.RegisterType<WikiTreeService>()
+            .Named<IWikiTreeService>("WikiTreeService")
+            .InstancePerLifetimeScope();
+        builder.RegisterType<WikiTreeService>()
+            .As<IWikiTreeService>()
+            .InstancePerLifetimeScope();
     }
 }
