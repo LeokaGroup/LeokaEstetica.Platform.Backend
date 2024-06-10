@@ -344,5 +344,12 @@ public class RepositoriesModule : Module
             .InstancePerLifetimeScope();
             
         builder.RegisterLazy<IProjectManagmentRoleRepository, ProjectManagmentRoleRepository>();
+        
+        builder.RegisterType<WikiTreeRepository>()
+            .Named<IWikiTreeRepository>("WikiTreeRepository")
+            .InstancePerLifetimeScope();
+        builder.RegisterType<WikiTreeRepository>()
+            .As<IWikiTreeRepository>()
+            .InstancePerLifetimeScope();
     }
 }
