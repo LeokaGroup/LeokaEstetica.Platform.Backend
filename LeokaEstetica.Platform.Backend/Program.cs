@@ -9,6 +9,7 @@ using LeokaEstetica.Platform.Core.Utils;
 using LeokaEstetica.Platform.Integrations.Filters;
 using LeokaEstetica.Platform.Notifications.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -173,12 +174,26 @@ builder.Host.UseNLog();
 // Регистрируем IHttpClientFactory.
 builder.Services.AddHttpClient();
 
-// builder.Services.AddProblemDetails();
+builder.Services.AddProblemDetails(options =>
+{
+    options.CustomizeProblemDetails = context =>
+    {
+        var exception = context.HttpContext.Features.Get<IExceptionHandlerPathFeature>()?.Error;
+        if (exception != null)
+        {
+            context.ProblemDetails.Title = exception.Message;
+            if (builder.Environment.IsProduction()) return;
+            context.ProblemDetails.Extensions.Add("exception", exception);
+        }
+    };
+});
 
 // Запускаем ботов.
 await LogNotifyBot.RunAsync(configuration);
 
 var app = builder.Build();
+app.UseExceptionHandler();
+app.UseStatusCodePages();
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
@@ -196,7 +211,5 @@ if (builder.Environment.IsDevelopment() || builder.Environment.IsStaging())
 
 // Добавляем хаб приложения для работы через сокеты.
 app.MapHub<ChatHub>("/notify");
-
-// app.UseProblemDetails();
 
 app.Run();
