@@ -42,4 +42,9 @@ public class WikiTreePageItem
     /// Id папки дерева.
     /// </summary>
     public long FolderId { get; set; }
+    
+    /// <summary>
+    /// Иконка (папка, страница).
+    /// </summary>
+    public string? Icon { get; set; }
 }
