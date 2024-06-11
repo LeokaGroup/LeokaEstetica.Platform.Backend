@@ -94,6 +94,7 @@ internal sealed class ProjectService : IProjectService
     private static readonly string _archiveVacancy = "В архиве";
     private readonly IGlobalConfigRepository _globalConfigRepository;
     private readonly IProjectManagmentRepository _projectManagmentRepository;
+    private readonly IWikiTreeRepository _wikiTreeRepository;
 
     /// <summary>
     /// Список типов приглашений в проект.
@@ -139,6 +140,7 @@ internal sealed class ProjectService : IProjectService
     /// <param name="projectManagementSettingsRepository">Репозиторий настроек проекта.</param>
     /// <param name="globalConfigRepository">Репозиторий глобал конфига.</param>
     /// <param name="projectManagmentRepository">Репозиторий модуля УП.</param>
+    /// <param name="wikiTreeRepository">Репозиторий Wiki модуля УП.</param>
     public ProjectService(IProjectRepository projectRepository,
         ILogger<ProjectService> logger,
         IUserRepository userRepository,
@@ -159,7 +161,8 @@ internal sealed class ProjectService : IProjectService
         IDiscordService discordService,
         IProjectManagementSettingsRepository projectManagementSettingsRepository,
         IGlobalConfigRepository globalConfigRepository,
-        IProjectManagmentRepository projectManagmentRepository)
+        IProjectManagmentRepository projectManagmentRepository,
+        IWikiTreeRepository wikiTreeRepository)
     {
         _projectRepository = projectRepository;
         _logger = logger;
@@ -182,6 +185,7 @@ internal sealed class ProjectService : IProjectService
         _projectManagementSettingsRepository = projectManagementSettingsRepository;
         _globalConfigRepository = globalConfigRepository;
         _projectManagmentRepository = projectManagmentRepository;
+        _wikiTreeRepository = wikiTreeRepository;
 
         // Определяем обработчики цепочки фильтров.
         _dateProjectsFilterChain.Successor = _projectsVacanciesFilterChain;
@@ -314,7 +318,7 @@ internal sealed class ProjectService : IProjectService
 
             var ifExistsCompany = await _projectManagmentRepository.IfExistsCompanyByOwnerIdAsync(userId);
 
-            long companyId = 0;
+            long companyId;
             
             // Сначала создаем компанию, затем добавляем в нее проект.
             if (!ifExistsCompany)
@@ -345,6 +349,9 @@ internal sealed class ProjectService : IProjectService
 
             // Добавляем новый проект в общее пространство компании.
             await _projectManagmentRepository.AddProjectWorkSpaceAsync(projectId, companyId);
+            
+            // Заводим для проекта wiki и ознакомительную страницу.
+            await _wikiTreeRepository.CreateProjectWikiAsync(projectId, userId, projectName);
 
             // Отправляем уведомление об успешном создании проекта.
             await _projectNotificationsService.SendNotificationSuccessCreatedUserProjectAsync("Все хорошо",

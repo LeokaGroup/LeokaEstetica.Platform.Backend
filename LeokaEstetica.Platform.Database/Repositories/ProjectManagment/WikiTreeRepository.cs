@@ -1,4 +1,6 @@
-﻿using Dapper;
+﻿using System.Data;
+using System.Text;
+using Dapper;
 using LeokaEstetica.Platform.Base.Abstractions.Connection;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.Base;
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
@@ -77,11 +79,91 @@ internal sealed class WikiTreeRepository : BaseRepository, IWikiTreeRepository
         return result;
     }
 
+    /// <inheritdoc />
+    public async Task CreateProjectWikiAsync(long projectId, long userId, string? projectName)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+        using var transaction = connection.BeginTransaction(IsolationLevel.ReadCommitted);
+
+        try
+        {
+            var lastWikiTreeQuery = "SELECT wiki_tree_id " +
+                                    "FROM project_management.wiki_tree " +
+                                    "ORDER BY wiki_id DESC " +
+                                    "LIMIT 1";
+            
+            // Получаем последний Id дерева.
+            var lastWikiTreeId = await connection.ExecuteScalarAsync<long>(lastWikiTreeQuery);
+            var wikiTreeId = ++lastWikiTreeId;
+            
+            var insertWikiParameters = new DynamicParameters();
+            insertWikiParameters.Add("@projectId", projectId);
+            insertWikiParameters.Add("@wikiTreeId", wikiTreeId);
+            
+            // Добавляем Wiki проекта.
+            var insertWikiQuery = "INSERT INTO project_management.wiki_tree (wiki_tree_id, project_id) " +
+                                  "VALUES (@wikiTreeId, @projectId)";
+            
+            await connection.ExecuteAsync(insertWikiQuery, insertWikiParameters);
+            
+            // Заводим ознакомительную папку для wiki проекта.
+            var insertWikiFolderParameters = new DynamicParameters();
+            insertWikiFolderParameters.Add("@wikiTreeId", wikiTreeId);
+            insertWikiFolderParameters.Add("@folderName", "Перед началом работы");
+            insertWikiFolderParameters.Add("@createdBy", userId);
+
+            var insertWikiFolderQuery = "INSERT INTO project_management.wiki_tree_folders (" +
+                                        "wiki_tree_id, folder_name, created_by) " +
+                                        "VALUES (@wikiTreeId, @folderName, @createdBy) " +
+                                        "RETURNING folder_id";
+
+            var folderId = await connection.ExecuteScalarAsync<long>(insertWikiFolderQuery,
+                insertWikiFolderParameters);
+
+            // Заводим ознакомительную страницу для ознакомительной папки.
+            var insertWikiFolderPageParameters = new DynamicParameters();
+            insertWikiFolderPageParameters.Add("@wikiTreeId", wikiTreeId);
+            insertWikiFolderPageParameters.Add("@folderId", folderId);
+            insertWikiFolderPageParameters.Add("@pageName", "Начало работы");
+            insertWikiFolderPageParameters.Add("@pageDescription",
+                $"Это начальная страница проекта “{projectName}”. " +
+                "Добавьте содержимое ознакомительной странице Вашего проекта.");
+            insertWikiFolderPageParameters.Add("@wikiTreeId", wikiTreeId);
+            insertWikiFolderPageParameters.Add("@createdBy", userId);
+
+            var insertWikiFolderPageQuery = "INSERT INTO project_management.wiki_tree_pages (" +
+                                            "folder_id, page_name, page_description, wiki_tree_id, created_by) " +
+                                            "VALUES (@folderId, @pageName, @pageDescription, @wikiTreeId," +
+                                            " @createdBy) " +
+                                            "RETURNING page_id";
+
+            var pageId = await connection.ExecuteScalarAsync(insertWikiFolderPageQuery,
+                insertWikiFolderPageParameters);
+            
+            // Назначаем добавленную страницу папке.
+            var updateChildFolderPageParameters = new DynamicParameters();
+            updateChildFolderPageParameters.Add("@pageId", pageId);
+            updateChildFolderPageParameters.Add("@folderId", folderId);
+
+            var updateChildFolderPageQuery = "UPDATE project_management.wiki_tree_folders " +
+                                             "SET child_id = @pageId " +
+                                             "WHERE folder_id = @folderId";
+                                             
+            await connection.ExecuteAsync(updateChildFolderPageQuery, updateChildFolderPageParameters);
+
+            transaction.Commit();
+        }
+
+        catch
+        {
+            transaction.Rollback();
+            throw;
+        }
+    }
+
     #endregion
 
     #region Приватные методы.
-
-    
 
     #endregion
 }
