@@ -195,9 +195,13 @@ internal sealed class WikiTreeRepository : BaseRepository, IWikiTreeRepository
                                                 $"ProjectId: {projectId}.");
         }
         
-        // Детей нет, вернем просто эту папку.
+        // Детей нет, но проверим, есть ли дочерние страницы у папки.
+        // Если есть - заполним папку страницами, иначе просто вернем папку.
         if (!folder.ChildId.HasValue)
         {
+            // Заполняем папки вложенными страницами.
+            await GetFolderPagesAsync(new List<WikiTreeFolderItem> { folder }, connection);
+
             _folders.AsList().Add(folder);
             
             return _folders;
@@ -259,51 +263,8 @@ internal sealed class WikiTreeRepository : BaseRepository, IWikiTreeRepository
 
         if (childFolders is not null && childFolders.Count > 0)
         {
-            // Заполняем папки дочерними страницами.
-            var childFolderPagesParameters = new DynamicParameters();
-            childFolderPagesParameters.Add("@folderIds", childFolders.Select(x => x.FolderId).AsList());
-            childFolderPagesParameters.Add("@wikiTreeIds", childFolders.Select(x => x.WikiTreeId).Distinct().AsList());
-
-            var childFolderPagesQuery = "SELECT p.page_id," +
-                                        "p.folder_id," +
-                                        "p.page_name," +
-                                        "p.page_description," +
-                                        "p.wiki_tree_id," +
-                                        "p.created_by," +
-                                        "p.created_at " +
-                                        "FROM project_management.wiki_tree_pages AS p " +
-                                        "INNER JOIN project_management.wiki_tree_folders AS tf " +
-                                        "ON p.folder_id = tf.folder_id " +
-                                        "WHERE p.folder_id = ANY(@folderIds) " +
-                                        "AND p.wiki_tree_id = ANY(@wikiTreeIds)";
-
-            var pages = (await connection.QueryAsync<WikiTreePageItem>(childFolderPagesQuery,
-                childFolderPagesParameters))?.AsList();
-
-            if (pages is not null && pages.Count > 0)
-            {
-                // Заполняем папки вложенными страницами.
-                foreach (var f in childFolders)
-                {
-                    // Страницы папки.
-                    var folderPages = pages.Where(x => x.FolderId == f.FolderId
-                                                       && x.WikiTreeId == f.WikiTreeId)
-                        .AsList();
-
-                    if (folderPages.Count > 0)
-                    {
-                        if (f.Children is null)
-                        {
-                            f.Children = new List<WikiTreePageItem>();
-                        }
-                        
-                        folderPages.ForEach(x => x.Icon = "pi pi-file");
-                        
-                        // Наполняем папку вложенными в нее страницами.
-                        f.Children.AddRange(folderPages);
-                    }
-                }
-            }
+            // Заполняем папки вложенными страницами.
+            await GetFolderPagesAsync(childFolders, connection);
             
             childFolders.ForEach(x => x.Icon = "pi pi-folder");
             
@@ -327,6 +288,60 @@ internal sealed class WikiTreeRepository : BaseRepository, IWikiTreeRepository
         }
 
         await RecursiveBuildChildFolderStructureAsync(projectId, connection, tempChildFolders);
+    }
+
+    /// <summary>
+    /// Метод заполняет папки дочерними страницами.
+    /// </summary>
+    /// <param name="childFolders">Список папок.</param>
+    /// <param name="connection">Подключение к БД.</param>
+    private async Task GetFolderPagesAsync(List<WikiTreeFolderItem> childFolders, IDbConnection connection)
+    {
+        // Заполняем папки дочерними страницами.
+        var childFolderPagesParameters = new DynamicParameters();
+        childFolderPagesParameters.Add("@folderIds", childFolders.Select(x => x.FolderId).AsList());
+        childFolderPagesParameters.Add("@wikiTreeIds", childFolders.Select(x => x.WikiTreeId).Distinct().AsList());
+
+        var childFolderPagesQuery = "SELECT p.page_id," +
+                                    "p.folder_id," +
+                                    "p.page_name," +
+                                    "p.page_description," +
+                                    "p.wiki_tree_id," +
+                                    "p.created_by," +
+                                    "p.created_at " +
+                                    "FROM project_management.wiki_tree_pages AS p " +
+                                    "INNER JOIN project_management.wiki_tree_folders AS tf " +
+                                    "ON p.folder_id = tf.folder_id " +
+                                    "WHERE p.folder_id = ANY(@folderIds) " +
+                                    "AND p.wiki_tree_id = ANY(@wikiTreeIds)";
+
+        var pages = (await connection.QueryAsync<WikiTreePageItem>(childFolderPagesQuery,
+            childFolderPagesParameters))?.AsList();
+
+        if (pages is not null && pages.Count > 0)
+        {
+            // Заполняем папки вложенными страницами.
+            foreach (var f in childFolders)
+            {
+                // Страницы папки.
+                var folderPages = pages.Where(x => x.FolderId == f.FolderId
+                                                   && x.WikiTreeId == f.WikiTreeId)
+                    .AsList();
+
+                if (folderPages.Count > 0)
+                {
+                    if (f.Children is null)
+                    {
+                        f.Children = new List<WikiTreePageItem>();
+                    }
+                        
+                    folderPages.ForEach(x => x.Icon = "pi pi-file");
+                        
+                    // Наполняем папку вложенными в нее страницами.
+                    f.Children.AddRange(folderPages);
+                }
+            }
+        }
     }
 
     #endregion
