@@ -133,4 +133,44 @@ public class WikiController : BaseController
 
       return result;
    }
+   
+   /// <summary>
+   /// Метод изменяет название папки.
+   /// </summary>
+   /// <param name="folderName">Новое название папки.</param>
+   /// <param name="folderId">Id папки.</param>
+   /// <returns>Структура папки.</returns>
+   [HttpPatch]
+   [Route("tree-item-folder")]
+   [ProducesResponseType(200, Type = typeof(WikiTreeFolderItem))]
+   [ProducesResponseType(400)]
+   [ProducesResponseType(403)]
+   [ProducesResponseType(500)]
+   [ProducesResponseType(404)]
+   public async Task<WikiTreeFolderItem> UpdateFolderNameAsync([FromQuery] string? folderName,
+      [FromQuery] long folderId)
+   {
+      var validator = await new ChangeFolderNameValidator().ValidateAsync((folderName, folderId));
+
+      if (validator.Errors.Any())
+      {
+         var exceptions = new List<InvalidOperationException>();
+
+         foreach (var err in validator.Errors)
+         {
+            exceptions.Add(new InvalidOperationException(err.ErrorMessage));
+         }
+            
+         var ex = new AggregateException("Ошибка изменения названия папки Wiki проекта.", exceptions);
+         _logger.LogError(ex, ex.Message);
+            
+         await _discordService.Value.SendNotificationErrorAsync(ex);
+            
+         throw ex;
+      }
+      
+      var result = await _wikiTreeService.UpdateFolderNameAsync(folderName, folderId);
+
+      return result;
+   }
 }

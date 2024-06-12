@@ -239,6 +239,25 @@ internal sealed class WikiTreeRepository : BaseRepository, IWikiTreeRepository
         return result;
     }
 
+    /// <inheritdoc />
+    public async Task<WikiTreeFolderItem> UpdateFolderNameAsync(string? folderName, long folderId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+        
+        var parameters = new DynamicParameters();
+        parameters.Add("@folderName", folderName);
+        parameters.Add("@folderId", folderId);
+
+        var query = "UPDATE project_management.wiki_tree_folders " +
+                    "SET folder_name = @folderName " +
+                    "WHERE folder_id = @folderId " +
+                    "RETURNING folder_id, wiki_tree_id, folder_name, parent_id, child_id, created_by, created_at";
+
+        var result = await connection.ExecuteScalarAsync<WikiTreeFolderItem>(query, parameters);
+
+        return result!;
+    }
+
     #endregion
 
     #region Приватные методы.

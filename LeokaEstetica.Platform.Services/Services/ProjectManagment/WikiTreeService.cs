@@ -173,6 +173,23 @@ internal sealed class WikiTreeService : IWikiTreeService
         }
     }
 
+    /// <inheritdoc />
+    public async Task<WikiTreeFolderItem> UpdateFolderNameAsync(string? folderName, long folderId)
+    {
+        try
+        {
+            var result = await _wikiTreeRepository.UpdateFolderNameAsync(folderName, folderId);
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
     #endregion
 
     #region Приватные методы.
