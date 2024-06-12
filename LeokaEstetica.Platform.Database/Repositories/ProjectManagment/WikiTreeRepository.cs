@@ -216,6 +216,29 @@ internal sealed class WikiTreeRepository : BaseRepository, IWikiTreeRepository
         return _folders;
     }
 
+    /// <inheritdoc />
+    public async Task<WikiTreePageItem?> GetTreeItemPageAsync(long pageId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+        
+        var parameters = new DynamicParameters();
+        parameters.Add("@pageId", pageId);
+
+        var query = "SELECT page_id," +
+                    "folder_id," +
+                    "page_name," +
+                    "page_description," +
+                    "wiki_tree_id," +
+                    "created_by," +
+                    "created_at " +
+                    "FROM project_management.wiki_tree_pages " +
+                    "WHERE page_id = @pageId";
+
+        var result = await connection.QueryFirstOrDefaultAsync<WikiTreePageItem>(query, parameters);
+
+        return result;
+    }
+
     #endregion
 
     #region Приватные методы.

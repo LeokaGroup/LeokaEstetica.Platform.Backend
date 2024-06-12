@@ -103,4 +103,34 @@ public class WikiController : BaseController
 
       return result;
    }
+   
+   /// <summary>
+   /// Метод получает содержимое страницы.
+   /// </summary>
+   /// <param name="pageId">Id страницы.</param>
+   /// <returns>Содержимое страницы.</returns>
+   [HttpGet]
+   [Route("tree-item-page")]
+   [ProducesResponseType(200, Type = typeof(WikiTreePageItem))]
+   [ProducesResponseType(400)]
+   [ProducesResponseType(403)]
+   [ProducesResponseType(500)]
+   [ProducesResponseType(404)]
+   public async Task<WikiTreePageItem> GetTreeItemPageAsync([FromQuery] long pageId)
+   {
+      if (pageId <= 0)
+      {
+         var ex = new InvalidOperationException("Id страницы Wiki проекта не передан или невалиден. " +
+                                                $"PageId: {pageId}");
+         _logger.LogError(ex, ex.Message);
+            
+         await _discordService.Value.SendNotificationErrorAsync(ex);
+            
+         throw ex;
+      }
+
+      var result = await _wikiTreeService.GetTreeItemPageAsync(pageId);
+
+      return result;
+   }
 }

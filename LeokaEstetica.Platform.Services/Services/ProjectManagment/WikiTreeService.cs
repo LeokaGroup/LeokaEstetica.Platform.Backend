@@ -151,6 +151,28 @@ internal sealed class WikiTreeService : IWikiTreeService
         }
     }
 
+    /// <inheritdoc />
+    public async Task<WikiTreePageItem> GetTreeItemPageAsync(long pageId)
+    {
+        try
+        {
+            var result = await _wikiTreeRepository.GetTreeItemPageAsync(pageId);
+
+            if (result is null)
+            {
+                throw new InvalidOperationException($"Ошибка получения страницы дерева. PageId: {pageId}");
+            }
+
+            return result!;
+        }
+        
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
     #endregion
 
     #region Приватные методы.

@@ -21,4 +21,11 @@ public interface IWikiTreeService
     /// <param name="folderId">Id папки.</param>
     /// <returns>Структура папки.</returns>
     Task<IEnumerable<WikiTreeFolderItem>> GetTreeItemFolderAsync(long projectId, long folderId);
+
+    /// <summary>
+    /// Метод получает содержимое страницы.
+    /// </summary>
+    /// <param name="pageId">Id страницы.</param>
+    /// <returns>Содержимое страницы.</returns>
+    Task<WikiTreePageItem> GetTreeItemPageAsync(long pageId);
 }
