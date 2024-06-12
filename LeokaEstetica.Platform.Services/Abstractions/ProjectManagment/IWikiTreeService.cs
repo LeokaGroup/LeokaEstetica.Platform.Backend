@@ -13,4 +13,12 @@ public interface IWikiTreeService
     /// <param name="projectId">Id проекта.</param>
     /// <returns>Дерево с вложенными элементами.</returns>
     Task<IEnumerable<WikiTreeFolderItem>> GetTreeAsync(long projectId);
+
+    /// <summary>
+    /// Метод получает папку (и ее структуру - вложенные папки и страницы).
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="folderId">Id папки.</param>
+    /// <returns>Структура папки.</returns>
+    Task<IEnumerable<WikiTreeFolderItem>> GetTreeItemFolderAsync(long projectId, long folderId);
 }

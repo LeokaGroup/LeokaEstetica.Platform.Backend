@@ -29,4 +29,13 @@ public interface IWikiTreeRepository
     /// <param name="userId">Id пользователя.</param>
     /// <param name="projectName">Название проекта.</param>
     Task CreateProjectWikiAsync(long projectId, long userId, string? projectName);
+
+    /// <summary>
+    /// Метод получает структуру папки.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="folderId">Id папки.</param>
+    /// <returns>Структура папки. Вложенные папки и страницы (без распределения по дочерним папкам).</returns>
+    Task<(IEnumerable<WikiTreeFolderItem>? Folders, IEnumerable<WikiTreePageItem>? Pages)> GetFolderStructureAsync(
+        long projectId, long folderId);
 }

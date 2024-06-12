@@ -328,5 +328,10 @@ public static class ValidationConst
         /// Если передали невалидный Id пользователя.
         /// </summary>
         public const string NOT_VALID_USER_ID = "Id пользователя не передан.";
+
+        /// <summary>
+        /// Если передали невалидный Id папки.
+        /// </summary>
+        public const string NOT_VALID_FOLDER_ID = "Id папки не передан.";
     }
 }

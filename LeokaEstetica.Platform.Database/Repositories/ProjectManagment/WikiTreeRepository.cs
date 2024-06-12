@@ -1,5 +1,4 @@
 ﻿using System.Data;
-using System.Text;
 using Dapper;
 using LeokaEstetica.Platform.Base.Abstractions.Connection;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.Base;
@@ -13,6 +12,12 @@ namespace LeokaEstetica.Platform.Database.Repositories.ProjectManagment;
 /// </summary>
 internal sealed class WikiTreeRepository : BaseRepository, IWikiTreeRepository
 {
+    /// <summary>
+    /// Структура папки (со вложенными папками и страницами - дочерними).
+    /// </summary>
+    private readonly (IEnumerable<WikiTreeFolderItem>? Folders, IEnumerable<WikiTreePageItem>? Pages)
+        _folderStructures = (new List<WikiTreeFolderItem>(), new List<WikiTreePageItem>());
+
     /// <summary>
     /// Конструктор.
     /// </summary>
@@ -161,9 +166,112 @@ internal sealed class WikiTreeRepository : BaseRepository, IWikiTreeRepository
         }
     }
 
+    /// <inheritdoc />
+    public async Task<(IEnumerable<WikiTreeFolderItem>? Folders, IEnumerable<WikiTreePageItem>? Pages)>
+        GetFolderStructureAsync(long projectId, long folderId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@projectId", projectId);
+        parameters.Add("@folderId", folderId);
+
+        var query = "SELECT tf.folder_id," +
+                    "tf.wiki_tree_id," +
+                    "tf.folder_name," +
+                    "tf.parent_id," +
+                    "tf.child_id," +
+                    "tf.created_by," +
+                    "tf.created_at " +
+                    "FROM project_management.wiki_tree AS wt " +
+                    "INNER JOIN project_management.wiki_tree_folders AS tf " +
+                    "ON wt.wiki_tree_id = tf.wiki_tree_id ";
+        
+        // Получаем структуру папки. Эта папка будет являться верхним уровнем, так как ее выбрали.
+        var folder = await connection.QueryFirstOrDefaultAsync<WikiTreeFolderItem>(query, parameters);
+
+        if (folder is null)
+        {
+            throw new InvalidOperationException("Не удалось найти папку. " +
+                                                $"FolderId: {folderId}. " +
+                                                $"ProjectId: {projectId}.");
+        }
+        
+        // Детей нет, вернем просто эту папку.
+        if (!folder.ChildId.HasValue)
+        {
+            _folderStructures.Folders.AsList().Add(folder);
+            
+            return _folderStructures;
+        }
+        
+        // Временный список - нужен для рекурсии.
+        var tempChildFolders = new List<WikiTreeFolderItem>(1) { folder };
+
+        await RecursiveBuildFoldersAsync(projectId, connection, tempChildFolders);
+
+        return _folderStructures;
+    }
+
     #endregion
 
     #region Приватные методы.
+
+    /// <summary>
+    /// Метод ресурсивно наполняет структуру папки (наполняя дочерними папками).
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="connection">Подключение к БД.</param>
+    /// <param name="tempChildFolders">Временный список (нужен только внутри рекурсии).</param>
+    private async Task RecursiveBuildFoldersAsync(long projectId, IDbConnection connection,
+        List<WikiTreeFolderItem> tempChildFolders)
+    {
+        // Рекурсивно наполняем детей родительской папки, если они есть.
+        while (tempChildFolders.Count > 0)
+        {
+            // Дети есть - получаем все вложенные папки, если они есть.
+            var childFoldersParameters = new DynamicParameters();
+            childFoldersParameters.Add("@parentIdIds", tempChildFolders.Select(x => x.ParentId).AsList());
+            childFoldersParameters.Add("@projectId", projectId);
+
+            var childFoldersQuery = "SELECT tf.folder_id," +
+                                    "tf.wiki_tree_id," +
+                                    "tf.folder_name," +
+                                    "tf.parent_id," +
+                                    "tf.child_id," +
+                                    "tf.created_by," +
+                                    "tf.created_at " +
+                                    "FROM project_management.wiki_tree AS wt " +
+                                    "INNER JOIN project_management.wiki_tree_folders AS tf " +
+                                    "ON wt.wiki_tree_id = tf.wiki_tree_id " +
+                                    "WHERE tf.parent_id = ANY(@parentIdIds) " +
+                                    "AND wt.project_id = @projectId";
+
+            var childFolders = (await connection.QueryAsync<WikiTreeFolderItem>(childFoldersQuery,
+                childFoldersParameters))?.AsList();
+
+            if (childFolders is not null && childFolders.Count > 0)
+            {
+                _folderStructures.Folders.AsList().AddRange(childFolders);
+                
+                // Во избежание утечек памяти.
+                tempChildFolders.Clear();
+                tempChildFolders.AddRange(childFolders);
+                
+                // Ресайзим размер списка до фактического.
+                tempChildFolders.TrimExcess();
+            }
+
+            else
+            {
+                // Во избежание утечек памяти.
+                tempChildFolders.Clear();
+                
+                // Ресайзим размер списка до фактического, к нулю.
+                tempChildFolders.TrimExcess();
+            }
+        }
+    }
 
     #endregion
 }
