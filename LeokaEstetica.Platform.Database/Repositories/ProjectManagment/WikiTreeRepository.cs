@@ -226,51 +226,55 @@ internal sealed class WikiTreeRepository : BaseRepository, IWikiTreeRepository
     private async Task RecursiveBuildFoldersAsync(long projectId, IDbConnection connection,
         List<WikiTreeFolderItem> tempChildFolders)
     {
-        // Рекурсивно наполняем детей родительской папки, если они есть.
-        while (tempChildFolders.Count > 0)
+        if (tempChildFolders.Count == 0)
         {
-            // Дети есть - получаем все вложенные папки, если они есть.
-            var childFoldersParameters = new DynamicParameters();
-            childFoldersParameters.Add("@parentIdIds", tempChildFolders.Select(x => x.ParentId).AsList());
-            childFoldersParameters.Add("@projectId", projectId);
-
-            var childFoldersQuery = "SELECT tf.folder_id," +
-                                    "tf.wiki_tree_id," +
-                                    "tf.folder_name," +
-                                    "tf.parent_id," +
-                                    "tf.child_id," +
-                                    "tf.created_by," +
-                                    "tf.created_at " +
-                                    "FROM project_management.wiki_tree AS wt " +
-                                    "INNER JOIN project_management.wiki_tree_folders AS tf " +
-                                    "ON wt.wiki_tree_id = tf.wiki_tree_id " +
-                                    "WHERE tf.parent_id = ANY(@parentIdIds) " +
-                                    "AND wt.project_id = @projectId";
-
-            var childFolders = (await connection.QueryAsync<WikiTreeFolderItem>(childFoldersQuery,
-                childFoldersParameters))?.AsList();
-
-            if (childFolders is not null && childFolders.Count > 0)
-            {
-                _folderStructures.Folders.AsList().AddRange(childFolders);
-                
-                // Во избежание утечек памяти.
-                tempChildFolders.Clear();
-                tempChildFolders.AddRange(childFolders);
-                
-                // Ресайзим размер списка до фактического.
-                tempChildFolders.TrimExcess();
-            }
-
-            else
-            {
-                // Во избежание утечек памяти.
-                tempChildFolders.Clear();
-                
-                // Ресайзим размер списка до фактического, к нулю.
-                tempChildFolders.TrimExcess();
-            }
+            return;
         }
+        
+        // Рекурсивно наполняем детей родительской папки, если они есть.
+        // Дети есть - получаем все вложенные папки, если они есть.
+        var childFoldersParameters = new DynamicParameters();
+        childFoldersParameters.Add("@parentIdIds", tempChildFolders.Select(x => x.ParentId).AsList());
+        childFoldersParameters.Add("@projectId", projectId);
+
+        var childFoldersQuery = "SELECT tf.folder_id," +
+                                "tf.wiki_tree_id," +
+                                "tf.folder_name," +
+                                "tf.parent_id," +
+                                "tf.child_id," +
+                                "tf.created_by," +
+                                "tf.created_at " +
+                                "FROM project_management.wiki_tree AS wt " +
+                                "INNER JOIN project_management.wiki_tree_folders AS tf " +
+                                "ON wt.wiki_tree_id = tf.wiki_tree_id " +
+                                "WHERE tf.parent_id = ANY(@parentIdIds) " +
+                                "AND wt.project_id = @projectId";
+
+        var childFolders = (await connection.QueryAsync<WikiTreeFolderItem>(childFoldersQuery,
+            childFoldersParameters))?.AsList();
+
+        if (childFolders is not null && childFolders.Count > 0)
+        {
+            _folderStructures.Folders.AsList().AddRange(childFolders);
+                
+            // Во избежание утечек памяти.
+            tempChildFolders.Clear();
+            tempChildFolders.AddRange(childFolders);
+                
+            // Ресайзим размер списка до фактического.
+            tempChildFolders.TrimExcess();
+        }
+
+        else
+        {
+            // Во избежание утечек памяти.
+            tempChildFolders.Clear();
+                
+            // Ресайзим размер списка до фактического, к нулю.
+            tempChildFolders.TrimExcess();
+        }
+
+        await RecursiveBuildFoldersAsync(projectId, connection, tempChildFolders);
     }
 
     #endregion
