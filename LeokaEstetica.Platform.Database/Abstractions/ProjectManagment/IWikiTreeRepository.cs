@@ -35,7 +35,6 @@ public interface IWikiTreeRepository
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
     /// <param name="folderId">Id папки.</param>
-    /// <returns>Структура папки. Вложенные папки и страницы (без распределения по дочерним папкам).</returns>
-    Task<(IEnumerable<WikiTreeFolderItem>? Folders, IEnumerable<WikiTreePageItem>? Pages)> GetFolderStructureAsync(
-        long projectId, long folderId);
+    /// <returns>Структура папки. Вложенные папки и страницы.</returns>
+    Task<IEnumerable<WikiTreeFolderItem>?> GetFolderStructureAsync(long projectId, long folderId);
 }

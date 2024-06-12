@@ -139,7 +139,9 @@ internal sealed class WikiTreeService : IWikiTreeService
     {
         try
         {
-            // Получаем папку, чтобы проверять, есть ли у нее структура и какая она (вложенные папки, страницы).
+            var result = await _wikiTreeRepository.GetFolderStructureAsync(projectId, folderId);
+
+            return result!;
         }
         
         catch (Exception ex)

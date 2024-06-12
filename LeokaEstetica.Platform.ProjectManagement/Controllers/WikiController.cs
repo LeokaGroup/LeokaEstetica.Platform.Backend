@@ -98,5 +98,9 @@ public class WikiController : BaseController
             
          throw ex;
       }
+      
+      var result = await _wikiTreeService.GetTreeItemFolderAsync(projectId, folderId);
+
+      return result;
    }
 }

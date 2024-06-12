@@ -15,8 +15,7 @@ internal sealed class WikiTreeRepository : BaseRepository, IWikiTreeRepository
     /// <summary>
     /// Структура папки (со вложенными папками и страницами - дочерними).
     /// </summary>
-    private readonly (IEnumerable<WikiTreeFolderItem>? Folders, IEnumerable<WikiTreePageItem>? Pages)
-        _folderStructures = (new List<WikiTreeFolderItem>(), new List<WikiTreePageItem>());
+    private readonly IEnumerable<WikiTreeFolderItem>? _folders = new List<WikiTreeFolderItem>();
 
     /// <summary>
     /// Конструктор.
@@ -167,8 +166,7 @@ internal sealed class WikiTreeRepository : BaseRepository, IWikiTreeRepository
     }
 
     /// <inheritdoc />
-    public async Task<(IEnumerable<WikiTreeFolderItem>? Folders, IEnumerable<WikiTreePageItem>? Pages)>
-        GetFolderStructureAsync(long projectId, long folderId)
+    public async Task<IEnumerable<WikiTreeFolderItem>?> GetFolderStructureAsync(long projectId, long folderId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
 
@@ -200,17 +198,18 @@ internal sealed class WikiTreeRepository : BaseRepository, IWikiTreeRepository
         // Детей нет, вернем просто эту папку.
         if (!folder.ChildId.HasValue)
         {
-            _folderStructures.Folders.AsList().Add(folder);
+            _folders.AsList().Add(folder);
             
-            return _folderStructures;
+            return _folders;
         }
         
         // Временный список - нужен для рекурсии.
+        // Чтобы начать с выбранной папки.
         var tempChildFolders = new List<WikiTreeFolderItem>(1) { folder };
 
-        await RecursiveBuildFoldersAsync(projectId, connection, tempChildFolders);
+        await RecursiveBuildChildFolderStructureAsync(projectId, connection, tempChildFolders);
 
-        return _folderStructures;
+        return _folders;
     }
 
     #endregion
@@ -218,23 +217,28 @@ internal sealed class WikiTreeRepository : BaseRepository, IWikiTreeRepository
     #region Приватные методы.
 
     /// <summary>
-    /// Метод ресурсивно наполняет структуру папки (наполняя дочерними папками).
+    /// Метод рекурсивно наполняет структуру папки (наполняя дочерними папками и страницами).
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
     /// <param name="connection">Подключение к БД.</param>
     /// <param name="tempChildFolders">Временный список (нужен только внутри рекурсии).</param>
-    private async Task RecursiveBuildFoldersAsync(long projectId, IDbConnection connection,
+    private async Task RecursiveBuildChildFolderStructureAsync(long projectId, IDbConnection connection,
         List<WikiTreeFolderItem> tempChildFolders)
     {
         if (tempChildFolders.Count == 0)
         {
             return;
         }
+
+        var childIds = tempChildFolders
+            .Where(x => x.ChildId is not null)
+            .Select(x => x.ChildId)
+            .AsList();
         
         // Рекурсивно наполняем детей родительской папки, если они есть.
         // Дети есть - получаем все вложенные папки, если они есть.
         var childFoldersParameters = new DynamicParameters();
-        childFoldersParameters.Add("@parentIdIds", tempChildFolders.Select(x => x.ParentId).AsList());
+        childFoldersParameters.Add("@childIds", childIds);
         childFoldersParameters.Add("@projectId", projectId);
 
         var childFoldersQuery = "SELECT tf.folder_id," +
@@ -247,7 +251,7 @@ internal sealed class WikiTreeRepository : BaseRepository, IWikiTreeRepository
                                 "FROM project_management.wiki_tree AS wt " +
                                 "INNER JOIN project_management.wiki_tree_folders AS tf " +
                                 "ON wt.wiki_tree_id = tf.wiki_tree_id " +
-                                "WHERE tf.parent_id = ANY(@parentIdIds) " +
+                                "WHERE tf.folder_id = ANY(@childIds) " +
                                 "AND wt.project_id = @projectId";
 
         var childFolders = (await connection.QueryAsync<WikiTreeFolderItem>(childFoldersQuery,
@@ -255,8 +259,56 @@ internal sealed class WikiTreeRepository : BaseRepository, IWikiTreeRepository
 
         if (childFolders is not null && childFolders.Count > 0)
         {
-            _folderStructures.Folders.AsList().AddRange(childFolders);
-                
+            // Заполняем папки дочерними страницами.
+            var childFolderPagesParameters = new DynamicParameters();
+            childFolderPagesParameters.Add("@folderIds", childFolders.Select(x => x.FolderId).AsList());
+            childFolderPagesParameters.Add("@wikiTreeIds", childFolders.Select(x => x.WikiTreeId).Distinct().AsList());
+
+            var childFolderPagesQuery = "SELECT p.page_id," +
+                                        "p.folder_id," +
+                                        "p.page_name," +
+                                        "p.page_description," +
+                                        "p.wiki_tree_id," +
+                                        "p.created_by," +
+                                        "p.created_at " +
+                                        "FROM project_management.wiki_tree_pages AS p " +
+                                        "INNER JOIN project_management.wiki_tree_folders AS tf " +
+                                        "ON p.folder_id = tf.folder_id " +
+                                        "WHERE p.folder_id = ANY(@folderIds) " +
+                                        "AND p.wiki_tree_id = ANY(@wikiTreeIds)";
+
+            var pages = (await connection.QueryAsync<WikiTreePageItem>(childFolderPagesQuery,
+                childFolderPagesParameters))?.AsList();
+
+            if (pages is not null && pages.Count > 0)
+            {
+                // Заполняем папки вложенными страницами.
+                foreach (var f in childFolders)
+                {
+                    // Страницы папки.
+                    var folderPages = pages.Where(x => x.FolderId == f.FolderId
+                                                       && x.WikiTreeId == f.WikiTreeId)
+                        .AsList();
+
+                    if (folderPages.Count > 0)
+                    {
+                        if (f.Children is null)
+                        {
+                            f.Children = new List<WikiTreePageItem>();
+                        }
+                        
+                        folderPages.ForEach(x => x.Icon = "pi pi-file");
+                        
+                        // Наполняем папку вложенными в нее страницами.
+                        f.Children.AddRange(folderPages);
+                    }
+                }
+            }
+            
+            childFolders.ForEach(x => x.Icon = "pi pi-folder");
+            
+            _folders.AsList().AddRange(childFolders);
+
             // Во избежание утечек памяти.
             tempChildFolders.Clear();
             tempChildFolders.AddRange(childFolders);
@@ -274,7 +326,7 @@ internal sealed class WikiTreeRepository : BaseRepository, IWikiTreeRepository
             tempChildFolders.TrimExcess();
         }
 
-        await RecursiveBuildFoldersAsync(projectId, connection, tempChildFolders);
+        await RecursiveBuildChildFolderStructureAsync(projectId, connection, tempChildFolders);
     }
 
     #endregion
