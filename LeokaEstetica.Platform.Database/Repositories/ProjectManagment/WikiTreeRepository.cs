@@ -340,6 +340,8 @@ internal sealed class WikiTreeRepository : BaseRepository, IWikiTreeRepository
                     // Наполняем папку вложенными в нее страницами.
                     f.Children.AddRange(folderPages);
                 }
+
+                f.Icon = "pi pi-folder";
             }
         }
     }
