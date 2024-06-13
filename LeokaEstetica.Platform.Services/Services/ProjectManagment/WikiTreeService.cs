@@ -174,13 +174,11 @@ internal sealed class WikiTreeService : IWikiTreeService
     }
 
     /// <inheritdoc />
-    public async Task<WikiTreeFolderItem> UpdateFolderNameAsync(string? folderName, long folderId)
+    public async Task UpdateFolderNameAsync(string? folderName, long folderId)
     {
         try
         {
-            var result = await _wikiTreeRepository.UpdateFolderNameAsync(folderName, folderId);
-
-            return result;
+            await _wikiTreeRepository.UpdateFolderNameAsync(folderName, folderId);
         }
         
         catch (Exception ex)

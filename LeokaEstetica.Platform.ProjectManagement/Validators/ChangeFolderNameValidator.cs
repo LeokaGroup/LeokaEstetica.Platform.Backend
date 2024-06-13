@@ -1,12 +1,13 @@
 ﻿using FluentValidation;
 using LeokaEstetica.Platform.Core.Constants;
+using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
 
 namespace LeokaEstetica.Platform.ProjectManagement.Validators;
 
 /// <summary>
 /// Класс валидатора изменения названия папки.
 /// </summary>
-public class ChangeFolderNameValidator : AbstractValidator<(string? FolderName, long FolderId)>
+public class ChangeFolderNameValidator : AbstractValidator<UpdateFolderNameInput>
 {
     /// <summary>
     /// Конструктор.

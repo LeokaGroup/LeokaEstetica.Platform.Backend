@@ -50,6 +50,5 @@ public interface IWikiTreeRepository
     /// </summary>
     /// <param name="folderName">Новое название папки.</param>
     /// <param name="folderId">Id папки.</param>
-    /// <returns>Структура папки.</returns>
-    Task<WikiTreeFolderItem> UpdateFolderNameAsync(string? folderName, long folderId);
+    Task UpdateFolderNameAsync(string? folderName, long folderId);
 }

@@ -1,6 +1,7 @@
 ﻿using LeokaEstetica.Platform.Base;
 using LeokaEstetica.Platform.Base.Filters;
 using LeokaEstetica.Platform.Integrations.Abstractions.Discord;
+using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagement;
 using LeokaEstetica.Platform.ProjectManagement.Validators;
 using LeokaEstetica.Platform.Services.Abstractions.ProjectManagment;
@@ -137,9 +138,7 @@ public class WikiController : BaseController
    /// <summary>
    /// Метод изменяет название папки.
    /// </summary>
-   /// <param name="folderName">Новое название папки.</param>
-   /// <param name="folderId">Id папки.</param>
-   /// <returns>Структура папки.</returns>
+   /// <param name="updateFolderNameInput">Входная модель.</param>
    [HttpPatch]
    [Route("tree-item-folder")]
    [ProducesResponseType(200, Type = typeof(WikiTreeFolderItem))]
@@ -147,10 +146,9 @@ public class WikiController : BaseController
    [ProducesResponseType(403)]
    [ProducesResponseType(500)]
    [ProducesResponseType(404)]
-   public async Task<WikiTreeFolderItem> UpdateFolderNameAsync([FromQuery] string? folderName,
-      [FromQuery] long folderId)
+   public async Task UpdateFolderNameAsync([FromBody] UpdateFolderNameInput updateFolderNameInput)
    {
-      var validator = await new ChangeFolderNameValidator().ValidateAsync((folderName, folderId));
+      var validator = await new ChangeFolderNameValidator().ValidateAsync(updateFolderNameInput);
 
       if (validator.Errors.Any())
       {
@@ -168,9 +166,7 @@ public class WikiController : BaseController
             
          throw ex;
       }
-      
-      var result = await _wikiTreeService.UpdateFolderNameAsync(folderName, folderId);
 
-      return result;
+      await _wikiTreeService.UpdateFolderNameAsync(updateFolderNameInput.FolderName, updateFolderNameInput.FolderId);
    }
 }

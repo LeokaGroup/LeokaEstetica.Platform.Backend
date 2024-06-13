@@ -240,7 +240,7 @@ internal sealed class WikiTreeRepository : BaseRepository, IWikiTreeRepository
     }
 
     /// <inheritdoc />
-    public async Task<WikiTreeFolderItem> UpdateFolderNameAsync(string? folderName, long folderId)
+    public async Task UpdateFolderNameAsync(string? folderName, long folderId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
         
@@ -250,12 +250,9 @@ internal sealed class WikiTreeRepository : BaseRepository, IWikiTreeRepository
 
         var query = "UPDATE project_management.wiki_tree_folders " +
                     "SET folder_name = @folderName " +
-                    "WHERE folder_id = @folderId " +
-                    "RETURNING folder_id, wiki_tree_id, folder_name, parent_id, child_id, created_by, created_at";
+                    "WHERE folder_id = @folderId";
 
-        var result = await connection.ExecuteScalarAsync<WikiTreeFolderItem>(query, parameters);
-
-        return result!;
+        await connection.ExecuteAsync(query, parameters);
     }
 
     #endregion
