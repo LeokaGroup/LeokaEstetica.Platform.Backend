@@ -21,4 +21,12 @@ public interface IWikiTreeRepository
     /// <param name="treeIds">Список Id деревьев.</param>
     /// <returns>Список элементов страниц.</returns>
     Task<IEnumerable<WikiTreePageItem>?> GetPageItemsAsync(IEnumerable<long> folderIds, IEnumerable<long> treeIds);
+
+    /// <summary>
+    /// Метод создает Wiki для проекта.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="userId">Id пользователя.</param>
+    /// <param name="projectName">Название проекта.</param>
+    Task CreateProjectWikiAsync(long projectId, long userId, string? projectName);
 }
