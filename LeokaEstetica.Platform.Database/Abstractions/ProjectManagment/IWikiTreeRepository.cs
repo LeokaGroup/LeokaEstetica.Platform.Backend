@@ -29,4 +29,19 @@ public interface IWikiTreeRepository
     /// <param name="userId">Id пользователя.</param>
     /// <param name="projectName">Название проекта.</param>
     Task CreateProjectWikiAsync(long projectId, long userId, string? projectName);
+
+    /// <summary>
+    /// Метод получает структуру папки.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="folderId">Id папки.</param>
+    /// <returns>Структура папки. Вложенные папки и страницы.</returns>
+    Task<IEnumerable<WikiTreeFolderItem>?> GetFolderStructureAsync(long projectId, long folderId);
+    
+    /// <summary>
+    /// Метод получает содержимое страницы.
+    /// </summary>
+    /// <param name="pageId">Id страницы.</param>
+    /// <returns>Содержимое страницы.</returns>
+    Task<WikiTreePageItem?> GetTreeItemPageAsync(long pageId);
 }

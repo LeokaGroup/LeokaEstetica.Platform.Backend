@@ -21,7 +21,7 @@ public class WikiTreePageItem
     /// <summary>
     /// Описание.
     /// </summary>
-    public string? Description { get; set; }
+    public string? PageDescription { get; set; }
     
     /// <summary>
     /// Id дерева, с которым связана папка.
