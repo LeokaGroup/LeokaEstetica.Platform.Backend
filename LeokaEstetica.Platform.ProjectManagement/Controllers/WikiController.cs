@@ -141,7 +141,7 @@ public class WikiController : BaseController
    /// <param name="updateFolderNameInput">Входная модель.</param>
    [HttpPatch]
    [Route("tree-item-folder")]
-   [ProducesResponseType(200, Type = typeof(WikiTreeFolderItem))]
+   [ProducesResponseType(200)]
    [ProducesResponseType(400)]
    [ProducesResponseType(403)]
    [ProducesResponseType(500)]
@@ -168,5 +168,79 @@ public class WikiController : BaseController
       }
 
       await _wikiTreeService.UpdateFolderNameAsync(updateFolderNameInput.FolderName, updateFolderNameInput.FolderId);
+   }
+   
+   /// <summary>
+   /// Метод изменяет название страницы папки.
+   /// </summary>
+   /// <param name="updateFolderPageNameInput">Входная модель.</param>
+   [HttpPatch]
+   [Route("tree-item-folder-page-name")]
+   [ProducesResponseType(200)]
+   [ProducesResponseType(400)]
+   [ProducesResponseType(403)]
+   [ProducesResponseType(500)]
+   [ProducesResponseType(404)]
+   public async Task UpdateFolderPageNameAsync(
+      [FromBody] UpdateFolderPageNameInput updateFolderPageNameInput)
+   {
+      var validator = await new ChangePageFolderNameValidator().ValidateAsync(updateFolderPageNameInput);
+
+      if (validator.Errors.Any())
+      {
+         var exceptions = new List<InvalidOperationException>();
+
+         foreach (var err in validator.Errors)
+         {
+            exceptions.Add(new InvalidOperationException(err.ErrorMessage));
+         }
+            
+         var ex = new AggregateException("Ошибка изменения названия страницы папки Wiki проекта.", exceptions);
+         _logger.LogError(ex, ex.Message);
+            
+         await _discordService.Value.SendNotificationErrorAsync(ex);
+            
+         throw ex;
+      }
+
+      await _wikiTreeService.UpdateFolderPageNameAsync(updateFolderPageNameInput.PageName,
+         updateFolderPageNameInput.PageId);
+   }
+   
+   /// <summary>
+   /// Метод изменяет описание страницы страницы.
+   /// </summary>
+   /// <param name="updateFolderPageDescriptionInput">Входная модель.</param>
+   [HttpPatch]
+   [Route("tree-item-folder-page-description")]
+   [ProducesResponseType(200)]
+   [ProducesResponseType(400)]
+   [ProducesResponseType(403)]
+   [ProducesResponseType(500)]
+   [ProducesResponseType(404)]
+   public async Task UpdateFolderPageDescriptionAsync(
+      [FromBody] UpdateFolderPageDescriptionInput updateFolderPageDescriptionInput)
+   {
+      var validator = await new ChangePageFolderDescriptionValidator().ValidateAsync(updateFolderPageDescriptionInput);
+
+      if (validator.Errors.Any())
+      {
+         var exceptions = new List<InvalidOperationException>();
+
+         foreach (var err in validator.Errors)
+         {
+            exceptions.Add(new InvalidOperationException(err.ErrorMessage));
+         }
+            
+         var ex = new AggregateException("Ошибка изменения описания страницы папки Wiki проекта.", exceptions);
+         _logger.LogError(ex, ex.Message);
+            
+         await _discordService.Value.SendNotificationErrorAsync(ex);
+            
+         throw ex;
+      }
+
+      await _wikiTreeService.UpdateFolderPageDescriptionAsync(updateFolderPageDescriptionInput.PageDescription,
+         updateFolderPageDescriptionInput.PageId);
    }
 }

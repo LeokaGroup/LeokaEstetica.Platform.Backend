@@ -338,5 +338,20 @@ public static class ValidationConst
         /// Если не передано название папки либо оно невалидно.
         /// </summary>
         public const string NOT_VALID_CURRENT_FOLDER_NAME = "Не передано название папки либо оно невалидно.";
+
+        /// <summary>
+        /// Если не передан Id страницы.
+        /// </summary>
+        public const string NOT_VALID_PAGE_ID = "Не передан Id страницы.";
+        
+        /// <summary>
+        /// Если не передано название страницы.
+        /// </summary>
+        public const string NOT_VALID_PAGE_NAME = "Не передан название страницы.";
+        
+        /// <summary>
+        /// Если не передано описание страницы.
+        /// </summary>
+        public const string NOT_VALID_PAGE_DESCRIPTION = "Не передан описание страницы.";
     }
 }

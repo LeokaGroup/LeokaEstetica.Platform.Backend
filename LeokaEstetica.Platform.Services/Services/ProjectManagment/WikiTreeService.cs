@@ -188,6 +188,36 @@ internal sealed class WikiTreeService : IWikiTreeService
         }
     }
 
+    /// <inheritdoc />
+    public async Task UpdateFolderPageNameAsync(string? pageName, long pageId)
+    {
+        try
+        {
+            await _wikiTreeRepository.UpdateFolderPageNameAsync(pageName, pageId);
+        }
+        
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task UpdateFolderPageDescriptionAsync(string? pageDescription, long pageId)
+    {
+        try
+        {
+            await _wikiTreeRepository.UpdateFolderPageDescriptionAsync(pageDescription, pageId);
+        }
+
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
     #endregion
 
     #region Приватные методы.
