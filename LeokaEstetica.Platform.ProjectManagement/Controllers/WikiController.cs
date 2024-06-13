@@ -1,6 +1,7 @@
 ﻿using LeokaEstetica.Platform.Base;
 using LeokaEstetica.Platform.Base.Filters;
 using LeokaEstetica.Platform.Integrations.Abstractions.Discord;
+using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagement;
 using LeokaEstetica.Platform.ProjectManagement.Validators;
 using LeokaEstetica.Platform.Services.Abstractions.ProjectManagment;
@@ -132,5 +133,40 @@ public class WikiController : BaseController
       var result = await _wikiTreeService.GetTreeItemPageAsync(pageId);
 
       return result;
+   }
+   
+   /// <summary>
+   /// Метод изменяет название папки.
+   /// </summary>
+   /// <param name="updateFolderNameInput">Входная модель.</param>
+   [HttpPatch]
+   [Route("tree-item-folder")]
+   [ProducesResponseType(200, Type = typeof(WikiTreeFolderItem))]
+   [ProducesResponseType(400)]
+   [ProducesResponseType(403)]
+   [ProducesResponseType(500)]
+   [ProducesResponseType(404)]
+   public async Task UpdateFolderNameAsync([FromBody] UpdateFolderNameInput updateFolderNameInput)
+   {
+      var validator = await new ChangeFolderNameValidator().ValidateAsync(updateFolderNameInput);
+
+      if (validator.Errors.Any())
+      {
+         var exceptions = new List<InvalidOperationException>();
+
+         foreach (var err in validator.Errors)
+         {
+            exceptions.Add(new InvalidOperationException(err.ErrorMessage));
+         }
+            
+         var ex = new AggregateException("Ошибка изменения названия папки Wiki проекта.", exceptions);
+         _logger.LogError(ex, ex.Message);
+            
+         await _discordService.Value.SendNotificationErrorAsync(ex);
+            
+         throw ex;
+      }
+
+      await _wikiTreeService.UpdateFolderNameAsync(updateFolderNameInput.FolderName, updateFolderNameInput.FolderId);
    }
 }

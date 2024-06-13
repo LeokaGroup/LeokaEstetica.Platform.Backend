@@ -333,5 +333,10 @@ public static class ValidationConst
         /// Если передали невалидный Id папки.
         /// </summary>
         public const string NOT_VALID_FOLDER_ID = "Id папки не передан.";
+
+        /// <summary>
+        /// Если не передано название папки либо оно невалидно.
+        /// </summary>
+        public const string NOT_VALID_CURRENT_FOLDER_NAME = "Не передано название папки либо оно невалидно.";
     }
 }

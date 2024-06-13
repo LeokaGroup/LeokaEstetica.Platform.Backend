@@ -28,4 +28,11 @@ public interface IWikiTreeService
     /// <param name="pageId">Id страницы.</param>
     /// <returns>Содержимое страницы.</returns>
     Task<WikiTreePageItem> GetTreeItemPageAsync(long pageId);
+
+    /// <summary>
+    /// Метод изменяет название папки.
+    /// </summary>
+    /// <param name="folderName">Название папки.</param>
+    /// <param name="folderId">Id папки.</param>
+    Task UpdateFolderNameAsync(string? folderName, long folderId);
 }

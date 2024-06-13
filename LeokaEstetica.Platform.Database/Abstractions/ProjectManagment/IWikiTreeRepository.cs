@@ -44,4 +44,11 @@ public interface IWikiTreeRepository
     /// <param name="pageId">Id страницы.</param>
     /// <returns>Содержимое страницы.</returns>
     Task<WikiTreePageItem?> GetTreeItemPageAsync(long pageId);
+    
+    /// <summary>
+    /// Метод изменяет название папки.
+    /// </summary>
+    /// <param name="folderName">Новое название папки.</param>
+    /// <param name="folderId">Id папки.</param>
+    Task UpdateFolderNameAsync(string? folderName, long folderId);
 }
