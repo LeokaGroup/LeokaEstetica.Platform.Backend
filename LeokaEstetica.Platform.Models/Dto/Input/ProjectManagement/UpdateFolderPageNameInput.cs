@@ -1,9 +1,9 @@
 ﻿namespace LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
 
 /// <summary>
-/// Класс входной модели изменения названия названия/описания страницы папки Wiki проекта.
+/// Класс входной модели изменения названия страницы папки Wiki проекта.
 /// </summary>
-public class UpdateFolderPageNameDescriptionInput
+public class UpdateFolderPageNameInput
 {
     /// <summary>
     /// Id страницы.

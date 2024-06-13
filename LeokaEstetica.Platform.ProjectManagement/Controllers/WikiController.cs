@@ -173,7 +173,7 @@ public class WikiController : BaseController
    /// <summary>
    /// Метод изменяет название страницы папки.
    /// </summary>
-   /// <param name="updateFolderPageNameDescriptionInput">Входная модель.</param>
+   /// <param name="updateFolderPageNameInput">Входная модель.</param>
    [HttpPatch]
    [Route("tree-item-folder-page-name")]
    [ProducesResponseType(200)]
@@ -182,9 +182,9 @@ public class WikiController : BaseController
    [ProducesResponseType(500)]
    [ProducesResponseType(404)]
    public async Task UpdateFolderPageNameAsync(
-      [FromBody] UpdateFolderPageNameDescriptionInput updateFolderPageNameDescriptionInput)
+      [FromBody] UpdateFolderPageNameInput updateFolderPageNameInput)
    {
-      var validator = await new ChangePageFolderNameValidator().ValidateAsync(updateFolderPageNameDescriptionInput);
+      var validator = await new ChangePageFolderNameValidator().ValidateAsync(updateFolderPageNameInput);
 
       if (validator.Errors.Any())
       {
@@ -203,7 +203,44 @@ public class WikiController : BaseController
          throw ex;
       }
 
-      await _wikiTreeService.UpdateFolderPageNameAsync(updateFolderPageNameDescriptionInput.PageName,
-         updateFolderPageNameDescriptionInput.PageId);
+      await _wikiTreeService.UpdateFolderPageNameAsync(updateFolderPageNameInput.PageName,
+         updateFolderPageNameInput.PageId);
+   }
+   
+   /// <summary>
+   /// Метод изменяет описание страницы страницы.
+   /// </summary>
+   /// <param name="updateFolderPageDescriptionInput">Входная модель.</param>
+   [HttpPatch]
+   [Route("tree-item-folder-page-description")]
+   [ProducesResponseType(200)]
+   [ProducesResponseType(400)]
+   [ProducesResponseType(403)]
+   [ProducesResponseType(500)]
+   [ProducesResponseType(404)]
+   public async Task UpdateFolderPageDescriptionAsync(
+      [FromBody] UpdateFolderPageDescriptionInput updateFolderPageDescriptionInput)
+   {
+      var validator = await new ChangePageFolderDescriptionValidator().ValidateAsync(updateFolderPageDescriptionInput);
+
+      if (validator.Errors.Any())
+      {
+         var exceptions = new List<InvalidOperationException>();
+
+         foreach (var err in validator.Errors)
+         {
+            exceptions.Add(new InvalidOperationException(err.ErrorMessage));
+         }
+            
+         var ex = new AggregateException("Ошибка изменения описания страницы папки Wiki проекта.", exceptions);
+         _logger.LogError(ex, ex.Message);
+            
+         await _discordService.Value.SendNotificationErrorAsync(ex);
+            
+         throw ex;
+      }
+
+      await _wikiTreeService.UpdateFolderPageDescriptionAsync(updateFolderPageDescriptionInput.PageDescription,
+         updateFolderPageDescriptionInput.PageId);
    }
 }

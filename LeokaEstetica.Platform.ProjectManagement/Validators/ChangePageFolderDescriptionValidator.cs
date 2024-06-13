@@ -5,20 +5,20 @@ using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
 namespace LeokaEstetica.Platform.ProjectManagement.Validators;
 
 /// <summary>
-/// Класс валидатора изменения названия страницы папки.
+/// Класс валидатора изменения описания страницы папки.
 /// </summary>
-public class ChangePageFolderNameValidator : AbstractValidator<UpdateFolderPageNameInput>
+public class ChangePageFolderDescriptionValidator : AbstractValidator<UpdateFolderPageDescriptionInput>
 {
     /// <summary>
     /// Конструктор.
     /// </summary>
-    public ChangePageFolderNameValidator()
+    public ChangePageFolderDescriptionValidator()
     {
-        RuleFor(p => p.PageName)
+        RuleFor(p => p.PageDescription)
             .NotNull()
-            .WithMessage(ValidationConst.ProjectManagmentValidation.NOT_VALID_PAGE_NAME)
+            .WithMessage(ValidationConst.ProjectManagmentValidation.NOT_VALID_PAGE_DESCRIPTION)
             .NotEmpty()
-            .WithMessage(ValidationConst.ProjectManagmentValidation.NOT_VALID_PAGE_NAME);
+            .WithMessage(ValidationConst.ProjectManagmentValidation.NOT_VALID_PAGE_DESCRIPTION);
 
         RuleFor(p => p.PageId)
             .Must(p => p > 0)

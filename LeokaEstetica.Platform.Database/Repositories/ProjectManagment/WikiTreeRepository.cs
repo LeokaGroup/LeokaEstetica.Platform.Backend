@@ -271,6 +271,22 @@ internal sealed class WikiTreeRepository : BaseRepository, IWikiTreeRepository
         await connection.ExecuteAsync(query, parameters);
     }
 
+    /// <inheritdoc />
+    public async Task UpdateFolderPageDescriptionAsync(string? pageDescription, long pageId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+        
+        var parameters = new DynamicParameters();
+        parameters.Add("@pageDescription", pageDescription);
+        parameters.Add("@pageId", pageId);
+
+        var query = "UPDATE project_management.wiki_tree_pages " +
+                    "SET page_description = @pageDescription " +
+                    "WHERE page_id = @pageId";
+
+        await connection.ExecuteAsync(query, parameters);
+    }
+
     #endregion
 
     #region Приватные методы.

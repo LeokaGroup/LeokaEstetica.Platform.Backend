@@ -58,4 +58,11 @@ public interface IWikiTreeRepository
     /// <param name="pageName">Название страницы папки.</param>
     /// <param name="pageId">Id страницы.</param>
     Task UpdateFolderPageNameAsync(string? pageName, long pageId);
+    
+    /// <summary>
+    /// Метод изменяет название страницы папки.
+    /// </summary>
+    /// <param name="pageDescription">Описание страницы папки.</param>
+    /// <param name="pageId">Id страницы.</param>
+    Task UpdateFolderPageDescriptionAsync(string? pageDescription, long pageId);
 }
