@@ -351,5 +351,7 @@ public class RepositoriesModule : Module
         builder.RegisterType<WikiTreeRepository>()
             .As<IWikiTreeRepository>()
             .InstancePerLifetimeScope();
+            
+        builder.RegisterLazy<IWikiTreeRepository, WikiTreeRepository>();
     }
 }

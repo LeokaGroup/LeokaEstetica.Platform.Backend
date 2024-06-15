@@ -1,4 +1,5 @@
 ﻿using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagement;
+using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagement.Output;
 
 namespace LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 
@@ -65,4 +66,12 @@ public interface IWikiTreeRepository
     /// <param name="pageDescription">Описание страницы папки.</param>
     /// <param name="pageId">Id страницы.</param>
     Task UpdateFolderPageDescriptionAsync(string? pageDescription, long pageId);
+
+    /// <summary>
+    /// Метод получает элементы контекстного меню.
+    /// </summary>
+    /// <param name="projectId">Id проекта, если передан.</param>
+    /// <param name="pageId">Id страницы, если передан.</param>
+    /// <returns>Элементы контекстного меню.</returns>
+    Task<IEnumerable<WikiContextMenuOutput>> GetContextMenuAsync(long? projectId = null, long? pageId = null);
 }

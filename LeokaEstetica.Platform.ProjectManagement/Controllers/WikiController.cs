@@ -1,8 +1,10 @@
 ﻿using LeokaEstetica.Platform.Base;
 using LeokaEstetica.Platform.Base.Filters;
+using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Integrations.Abstractions.Discord;
 using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagement;
+using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagement.Output;
 using LeokaEstetica.Platform.ProjectManagement.Validators;
 using LeokaEstetica.Platform.Services.Abstractions.ProjectManagment;
 using Microsoft.AspNetCore.Mvc;
@@ -20,20 +22,24 @@ public class WikiController : BaseController
    private readonly ILogger<WikiController> _logger;
    private readonly IWikiTreeService _wikiTreeService;
    private readonly Lazy<IDiscordService> _discordService;
+   private readonly Lazy<IWikiTreeRepository> _wikiTreeRepository;
 
    /// <summary>
    /// Конструктор.
    /// <param name="logger">Логгер.</param>
    /// <param name="wikiTreeService">Сервис дерева.</param>
    /// <param name="wikiTreeService">Сервис уведомлений дискорда.</param>
+   /// <param name="wikiTreeRepository">Репозиторий Wiki.</param>
    /// </summary>
    public WikiController(ILogger<WikiController> logger,
       IWikiTreeService wikiTreeService,
-      Lazy<IDiscordService> discordService)
+      Lazy<IDiscordService> discordService,
+       Lazy<IWikiTreeRepository> wikiTreeRepository)
    {
       _logger = logger;
       _wikiTreeService = wikiTreeService;
       _discordService = discordService;
+      _wikiTreeRepository = wikiTreeRepository;
    }
 
    /// <summary>
@@ -242,5 +248,37 @@ public class WikiController : BaseController
 
       await _wikiTreeService.UpdateFolderPageDescriptionAsync(updateFolderPageDescriptionInput.PageDescription,
          updateFolderPageDescriptionInput.PageId);
+   }
+
+   /// <summary>
+   /// Метод получает элементы контекстного меню.
+   /// </summary>
+   /// <param name="projectId">Id проекта, если передан.</param>
+   /// <param name="pageId">Id страницы, если передан.</param>
+   /// <returns>Элементы контекстного меню.</returns>
+   [HttpGet]
+   [Route("context-menu")]
+   [ProducesResponseType(200, Type = typeof(IEnumerable<WikiContextMenuOutput>))]
+   [ProducesResponseType(400)]
+   [ProducesResponseType(403)]
+   [ProducesResponseType(500)]
+   [ProducesResponseType(404)]
+   public async Task<IEnumerable<WikiContextMenuOutput>> GetContextMenuAsync([FromQuery] long? projectId,
+      [FromQuery] long? pageId)
+   {
+      if (!projectId.HasValue && !pageId.HasValue)
+      {
+         var ex = new InvalidOperationException("Ошибка получения контекстного меню Wiki проекта. " +
+                                                "ProjectId и PageId не были переданы.");
+         _logger.LogError(ex, ex.Message);
+            
+         await _discordService.Value.SendNotificationErrorAsync(ex);
+            
+         throw ex;
+      }
+      
+      var result = await _wikiTreeRepository.Value.GetContextMenuAsync(projectId, pageId);
+
+      return result;
    }
 }

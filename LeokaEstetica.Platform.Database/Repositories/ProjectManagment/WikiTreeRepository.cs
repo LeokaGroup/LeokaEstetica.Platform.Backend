@@ -4,6 +4,7 @@ using LeokaEstetica.Platform.Base.Abstractions.Connection;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.Base;
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagement;
+using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagement.Output;
 
 namespace LeokaEstetica.Platform.Database.Repositories.ProjectManagment;
 
@@ -285,6 +286,34 @@ internal sealed class WikiTreeRepository : BaseRepository, IWikiTreeRepository
                     "WHERE page_id = @pageId";
 
         await connection.ExecuteAsync(query, parameters);
+    }
+
+    /// <inheritdoc />
+    public async Task<IEnumerable<WikiContextMenuOutput>> GetContextMenuAsync(long? projectId = null,
+        long? pageId = null)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+        
+        var parameters = new DynamicParameters();
+
+        var query = "SELECT menu_id, item_name, icon, item_sys_name " +
+                    "FROM project_management.wiki_context_menu";
+
+        if (projectId.HasValue)
+        {
+            parameters.Add("@key", "CreateFolder");
+        }
+
+        if (pageId.HasValue)
+        {
+            parameters.Add("@key", "CreateFolderPage");
+        }
+        
+        query += " WHERE item_sys_name = @key";
+
+        var result = await connection.QueryAsync<WikiContextMenuOutput>(query, parameters);
+
+        return result;
     }
 
     #endregion
