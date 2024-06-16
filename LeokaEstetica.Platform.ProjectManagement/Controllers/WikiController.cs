@@ -281,4 +281,40 @@ public class WikiController : BaseController
 
       return result;
    }
+
+   /// <summary>
+   /// Метод создает папку.
+   /// </summary>
+   /// <param name="createWikiFolderInput">Входная модель.</param>
+   [HttpPost]
+   [Route("tree-item-folder-page")]
+   [ProducesResponseType(200)]
+   [ProducesResponseType(400)]
+   [ProducesResponseType(403)]
+   [ProducesResponseType(500)]
+   [ProducesResponseType(404)]
+   public async Task CreateFolderAsync([FromBody] CreateWikiFolderInput createWikiFolderInput)
+   {
+      var validator = await new CreateFolderValidator().ValidateAsync(createWikiFolderInput);
+
+      if (validator.Errors.Any())
+      {
+         var exceptions = new List<InvalidOperationException>();
+
+         foreach (var err in validator.Errors)
+         {
+            exceptions.Add(new InvalidOperationException(err.ErrorMessage));
+         }
+            
+         var ex = new AggregateException("Ошибка создания папки Wiki проекта.", exceptions);
+         _logger.LogError(ex, ex.Message);
+            
+         await _discordService.Value.SendNotificationErrorAsync(ex);
+            
+         throw ex;
+      }
+
+      await _wikiTreeService.CreateFolderAsync(createWikiFolderInput.ParentId, createWikiFolderInput.FolderName,
+         GetUserName(), createWikiFolderInput.WikiTreeId);
+   }
 }

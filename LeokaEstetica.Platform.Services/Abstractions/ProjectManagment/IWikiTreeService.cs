@@ -49,4 +49,13 @@ public interface IWikiTreeService
     /// <param name="pageDescription">Описание страницы папки.</param>
     /// <param name="pageId">Id страницы.</param>
     Task UpdateFolderPageDescriptionAsync(string? pageDescription, long pageId);
+
+    /// <summary>
+    /// Метод создает папку.
+    /// </summary>
+    /// <param name="parentId">Id родителя, если передали (родительская папка).</param>
+    /// <param name="folderName">Название папки.</param>
+    /// <param name="account">Аккаунт.</param>
+    /// <param name="treeId">Id дерева.</param>
+    Task CreateFolderAsync(long? parentId, string? folderName, string account, long treeId);
 }

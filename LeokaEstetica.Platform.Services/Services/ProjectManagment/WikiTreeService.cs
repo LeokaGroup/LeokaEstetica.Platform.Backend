@@ -1,5 +1,7 @@
 ﻿using System.Runtime.CompilerServices;
 using Dapper;
+using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
+using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagement;
 using LeokaEstetica.Platform.Services.Abstractions.ProjectManagment;
@@ -16,6 +18,7 @@ internal sealed class WikiTreeService : IWikiTreeService
 {
     private readonly ILogger<WikiTreeService>? _logger;
     private readonly IWikiTreeRepository _wikiTreeRepository;
+    private readonly IUserRepository _userRepository;
 
     #region Публичные методы.
 
@@ -24,11 +27,14 @@ internal sealed class WikiTreeService : IWikiTreeService
     /// </summary>
     /// <param name="logger">Логгер.</param>
     /// <param name="wikiTreeRepository">Репозиторий дерева.</param>
+    /// <param name="userRepository">Репозиторий пользователей.</param>
     public WikiTreeService(ILogger<WikiTreeService>? logger,
-     IWikiTreeRepository wikiTreeRepository)
+     IWikiTreeRepository wikiTreeRepository,
+      IUserRepository userRepository)
     {
         _logger = logger;
         _wikiTreeRepository = wikiTreeRepository;
+        _userRepository = userRepository;
     }
 
     /// <inheritdoc />
@@ -211,6 +217,29 @@ internal sealed class WikiTreeService : IWikiTreeService
             await _wikiTreeRepository.UpdateFolderPageDescriptionAsync(pageDescription, pageId);
         }
 
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task CreateFolderAsync(long? parentId, string? folderName, string account, long treeId)
+    {
+        try
+        {
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+
+            await _wikiTreeRepository.CreateFolderAsync(parentId, folderName, userId, treeId);
+        }
+        
         catch (Exception ex)
         {
             _logger?.LogError(ex, ex.Message);

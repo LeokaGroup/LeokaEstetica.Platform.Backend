@@ -316,6 +316,24 @@ internal sealed class WikiTreeRepository : BaseRepository, IWikiTreeRepository
         return result;
     }
 
+    /// <inheritdoc />
+    public async Task CreateFolderAsync(long? parentId, string? folderName, long userId, long treeId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@folderName", folderName);
+        parameters.Add("@treeId", treeId);
+        parameters.Add("@parentId", parentId.HasValue ? parentId : DBNull.Value);
+        parameters.Add("@userId", userId);
+
+        var query = "INSERT INTO project_management.wiki_tree_folders (wiki_tree_id, folder_name, parent_id," +
+                    " created_by) " +
+                    "VALUES (@treeId, @folderName, @parentId, @userId)";
+
+        await connection.ExecuteAsync(query, parameters);
+    }
+
     #endregion
 
     #region Приватные методы.

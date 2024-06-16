@@ -324,6 +324,6 @@ internal class BaseServiceTest
             projectManagementSettingsRepository, projectRepository);
 
         var wikiTreeRepository = new WikiTreeRepository(connectionProvider);
-        WikiTreeService = new WikiTreeService(null, wikiTreeRepository);
+        WikiTreeService = new WikiTreeService(null, wikiTreeRepository, userRepository);
     }
 }

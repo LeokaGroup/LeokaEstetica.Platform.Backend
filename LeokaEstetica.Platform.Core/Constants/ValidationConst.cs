@@ -353,5 +353,10 @@ public static class ValidationConst
         /// Если не передано описание страницы.
         /// </summary>
         public const string NOT_VALID_PAGE_DESCRIPTION = "Не передан описание страницы.";
+
+        /// <summary>
+        /// Если не передан Id дерева.
+        /// </summary>
+        public const string NOT_VALID_WIKI_TREE_ID = "Не передан Id дерева.";
     }
 }
