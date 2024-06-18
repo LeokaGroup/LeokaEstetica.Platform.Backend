@@ -1268,10 +1268,27 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 
                 transitionType = TransitionTypeEnum.History;
             }
+            
+            // TODO: Этот код дублируется в этом сервисе. Вынести в приватный метод и кортежем вернуть нужные данные.
+            // Получаем настройки проекта.
+            var projectSettings = await _projectSettingsConfigRepository.GetProjectSpaceSettingsByProjectIdAsync(
+                projectId);
+            var projectSettingsItems = projectSettings?.AsList();
 
-            // Получаем все переходы из промежуточной таблицы отталкиваясь от текущего статуса истории.
+            if (projectSettingsItems is null || !projectSettingsItems.Any())
+            {
+                throw new InvalidOperationException("Ошибка получения настроек проекта. " +
+                                                    $"ProjectId: {projectId}.");
+            }
+
+            var template = projectSettingsItems.Find(x =>
+                x.ParamKey.Equals(GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_TEMPLATE_ID));
+            var templateId = Convert.ToInt32(template!.ParamValue);
+
+            // Получаем все переходы из промежуточной таблицы отталкиваясь от текущего статуса задачи (конкретного типа).
             var statusIds = (await _projectManagmentRepository
-                    .GetProjectManagementTransitionIntermediateTemplatesAsync(currentTaskStatusId, transitionType))
+                    .GetProjectManagementTransitionIntermediateTemplatesAsync(currentTaskStatusId, transitionType,
+                        templateId))
                 ?.AsList();
 
             if (statusIds is null || !statusIds.Any())
@@ -1321,22 +1338,6 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                     " хотя был минимум 1 кастомный статус среди: " +
                     $"{JsonConvert.SerializeObject(transitionStatuses)}.");
             }
-            
-            // TODO: Этот код дублируется в этом сервисе. Вынести в приватный метод и кортежем вернуть нужные данные.
-            // Получаем настройки проекта.
-            var projectSettings = await _projectSettingsConfigRepository.GetProjectSpaceSettingsByProjectIdAsync(
-                projectId);
-            var projectSettingsItems = projectSettings?.AsList();
-
-            if (projectSettingsItems is null || !projectSettingsItems.Any())
-            {
-                throw new InvalidOperationException("Ошибка получения настроек проекта. " +
-                                                    $"ProjectId: {projectId}.");
-            }
-
-            var template = projectSettingsItems.Find(x =>
-                x.ParamKey.Equals(GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_TEMPLATE_ID));
-            var templateId = Convert.ToInt32(template!.ParamValue);
 
             // Получаем все Id статусов, которые входят в шаблон текущего проекта.
             // Получаем все статусы, которые входят в шаблон текущего проекта.
@@ -1444,39 +1445,45 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 });
             }
 
+            // TODO: Пока убрал, так как в запросе в GetProjectManagementTransitionIntermediateTemplatesAsync
+            // TODO: получаем только нужные переходы отталкиваясь
+            // TODO: от текущего статуса задачи (конкретного типа).
             // Дополняем статусами, в зависимости от типа задачи.
             // Если нужно получить доступные статусы (переходы) для эпика.
-            if (transitionType == TransitionTypeEnum.Epic)
-            {
-                // TODO: Если в будущем будет функционал для создания кастомных статусов эпика пользователем,
-                // TODO: то придется заводить поле TaskStatusId в таблице статусов эпиков и тогда его тут получать уже.
-                // Сейчас StatusId и TaskStatusId у эпиков одинаковые будут, так как нет отдельного поля под TaskStatusId у них,
-                // потому что создание кастомных статусов для эпика пока не предполагается в системе.
-                var epicStatuses = await _projectManagmentRepository.GetEpicStatusesAsync();
-                result.AddRange(epicStatuses.Select(x => new AvailableTaskStatusTransitionOutput
-                {
-                    StatusName = x.StatusName,
-                    StatusId = x.StatusId,
-                    TaskStatusId = x.StatusId
-                }));
-            }
+            // if (transitionType == TransitionTypeEnum.Epic)
+            // {
+            //     // TODO: Если в будущем будет функционал для создания кастомных статусов эпика пользователем,
+            //     // TODO: то придется заводить поле TaskStatusId в таблице статусов эпиков и тогда его тут получать уже.
+            //     // Сейчас StatusId и TaskStatusId у эпиков одинаковые будут, так как нет отдельного поля под TaskStatusId у них,
+            //     // потому что создание кастомных статусов для эпика пока не предполагается в системе.
+            //     var epicStatuses = await _projectManagmentRepository.GetEpicStatusesAsync();
+            //     result.AddRange(epicStatuses.Select(x => new AvailableTaskStatusTransitionOutput
+            //     {
+            //         StatusName = x.StatusName,
+            //         StatusId = x.StatusId,
+            //         TaskStatusId = x.StatusId
+            //     }));
+            // }
             
+            // TODO: Пока убрал, так как в запросе в GetProjectManagementTransitionIntermediateTemplatesAsync
+            // TODO: получаем только нужные переходы отталкиваясь
+            // TODO: от текущего статуса задачи (конкретного типа).
             // Дополняем статусами, в зависимости от типа задачи.
             // Если нужно получить доступные статусы (переходы) для истории.
-            if (transitionType == TransitionTypeEnum.History)
-            {
-                // TODO: Если в будущем будет функционал для создания кастомных статусов эпика пользователем,
-                // TODO: то придется заводить поле TaskStatusId в таблице статусов эпиков и тогда его тут получать уже.
-                // Сейчас StatusId и TaskStatusId у историй одинаковые будут, так как нет отдельного поля под TaskStatusId у них,
-                // потому что создание кастомных статусов для историй пока не предполагается в системе.
-                var storyStatuses = await _projectManagmentRepository.GetUserStoryStatusesAsync();
-                result.AddRange(storyStatuses.Select(x => new AvailableTaskStatusTransitionOutput
-                {
-                    StatusName = x.StatusName,
-                    StatusId = x.StatusId,
-                    TaskStatusId = x.StatusId
-                }));
-            }
+            // if (transitionType == TransitionTypeEnum.History)
+            // {
+            //     // TODO: Если в будущем будет функционал для создания кастомных статусов эпика пользователем,
+            //     // TODO: то придется заводить поле TaskStatusId в таблице статусов эпиков и тогда его тут получать уже.
+            //     // Сейчас StatusId и TaskStatusId у историй одинаковые будут, так как нет отдельного поля под TaskStatusId у них,
+            //     // потому что создание кастомных статусов для историй пока не предполагается в системе.
+            //     var storyStatuses = await _projectManagmentRepository.GetUserStoryStatusesAsync();
+            //     result.AddRange(storyStatuses.Select(x => new AvailableTaskStatusTransitionOutput
+            //     {
+            //         StatusName = x.StatusName,
+            //         StatusId = x.StatusId,
+            //         TaskStatusId = x.StatusId
+            //     }));
+            // }
 
             return result;
         }
