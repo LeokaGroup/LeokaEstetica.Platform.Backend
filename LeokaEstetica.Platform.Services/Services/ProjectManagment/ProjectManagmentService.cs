@@ -1080,7 +1080,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             // Если несколько системных названий Completed, то оставим одно.
             if (result.Count(x => x.StatusSysName.Equals("Completed")) > 1)
             {
-                result = result.DistinctBy(d => d.StatusSysName).ToList();
+                result = result.DistinctBy(d => d.StatusSysName).AsList();
             }
 
             return result;
@@ -1404,7 +1404,8 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                     {
                         StatusName = userStatus.StatusName,
                         StatusId = statusId,
-                        TaskStatusId = ts.TaskStatusId
+                        TaskStatusId = ts.TaskStatusId,
+                        AvailableStatusSysName = userStatus.StatusSysName
                     });
                 }
 
@@ -1425,7 +1426,8 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 {
                     StatusName = commonStatuse.StatusName,
                     StatusId = statusId,
-                    TaskStatusId = ts.TaskStatusId
+                    TaskStatusId = ts.TaskStatusId,
+                    AvailableStatusSysName = commonStatuse.StatusSysName
                 });
             }
 
@@ -1441,51 +1443,52 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 {
                     StatusName = currentTaskStatus.StatusName,
                     StatusId = currentTaskStatus.StatusId,
-                    TaskStatusId = currentTaskStatus.TaskStatusId
+                    TaskStatusId = currentTaskStatus.TaskStatusId,
+                    AvailableStatusSysName = currentTaskStatus.StatusSysName
                 });
             }
-
-            // TODO: Пока убрал, так как в запросе в GetProjectManagementTransitionIntermediateTemplatesAsync
-            // TODO: получаем только нужные переходы отталкиваясь
-            // TODO: от текущего статуса задачи (конкретного типа).
+            
             // Дополняем статусами, в зависимости от типа задачи.
             // Если нужно получить доступные статусы (переходы) для эпика.
-            // if (transitionType == TransitionTypeEnum.Epic)
-            // {
-            //     // TODO: Если в будущем будет функционал для создания кастомных статусов эпика пользователем,
-            //     // TODO: то придется заводить поле TaskStatusId в таблице статусов эпиков и тогда его тут получать уже.
-            //     // Сейчас StatusId и TaskStatusId у эпиков одинаковые будут, так как нет отдельного поля под TaskStatusId у них,
-            //     // потому что создание кастомных статусов для эпика пока не предполагается в системе.
-            //     var epicStatuses = await _projectManagmentRepository.GetEpicStatusesAsync();
-            //     result.AddRange(epicStatuses.Select(x => new AvailableTaskStatusTransitionOutput
-            //     {
-            //         StatusName = x.StatusName,
-            //         StatusId = x.StatusId,
-            //         TaskStatusId = x.StatusId
-            //     }));
-            // }
+            if (transitionType == TransitionTypeEnum.Epic)
+            {
+                // TODO: Если в будущем будет функционал для создания кастомных статусов эпика пользователем,
+                // TODO: то придется заводить поле TaskStatusId в таблице статусов эпиков и тогда его тут получать уже.
+                // Сейчас StatusId и TaskStatusId у эпиков одинаковые будут, так как нет отдельного поля под TaskStatusId у них,
+                // потому что создание кастомных статусов для эпика пока не предполагается в системе.
+                var epicStatuses = await _projectManagmentRepository.GetEpicStatusesAsync();
+                result.AddRange(epicStatuses.Select(x => new AvailableTaskStatusTransitionOutput
+                {
+                    StatusName = x.StatusName,
+                    StatusId = x.StatusId,
+                    TaskStatusId = x.StatusId,
+                    AvailableStatusSysName = currentTaskStatus.StatusSysName
+                }));
+                
+                result = await RemoveTransitionStatusesAsync(result);
+            }
             
-            // TODO: Пока убрал, так как в запросе в GetProjectManagementTransitionIntermediateTemplatesAsync
-            // TODO: получаем только нужные переходы отталкиваясь
-            // TODO: от текущего статуса задачи (конкретного типа).
             // Дополняем статусами, в зависимости от типа задачи.
             // Если нужно получить доступные статусы (переходы) для истории.
-            // if (transitionType == TransitionTypeEnum.History)
-            // {
-            //     // TODO: Если в будущем будет функционал для создания кастомных статусов эпика пользователем,
-            //     // TODO: то придется заводить поле TaskStatusId в таблице статусов эпиков и тогда его тут получать уже.
-            //     // Сейчас StatusId и TaskStatusId у историй одинаковые будут, так как нет отдельного поля под TaskStatusId у них,
-            //     // потому что создание кастомных статусов для историй пока не предполагается в системе.
-            //     var storyStatuses = await _projectManagmentRepository.GetUserStoryStatusesAsync();
-            //     result.AddRange(storyStatuses.Select(x => new AvailableTaskStatusTransitionOutput
-            //     {
-            //         StatusName = x.StatusName,
-            //         StatusId = x.StatusId,
-            //         TaskStatusId = x.StatusId
-            //     }));
-            // }
+            if (transitionType == TransitionTypeEnum.History)
+            {
+                // TODO: Если в будущем будет функционал для создания кастомных статусов истории пользователем,
+                // TODO: то придется заводить поле TaskStatusId в таблице статусов историй и тогда его тут получать уже.
+                // Сейчас StatusId и TaskStatusId у историй одинаковые будут, так как нет отдельного поля под TaskStatusId у них,
+                // потому что создание кастомных статусов для историй пока не предполагается в системе.
+                var storyStatuses = await _projectManagmentRepository.GetUserStoryStatusesAsync();
+                result.AddRange(storyStatuses.Select(x => new AvailableTaskStatusTransitionOutput
+                {
+                    StatusName = x.StatusName,
+                    StatusId = x.StatusId,
+                    TaskStatusId = x.StatusId,
+                    AvailableStatusSysName = currentTaskStatus.StatusSysName
+                }));
 
-            return result;
+                result = await RemoveTransitionStatusesAsync(result);
+            }
+
+            return result.OrderBy(x => x.StatusId);
         }
         
         catch (Exception ex)
@@ -2898,6 +2901,51 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         result.AddRange(projectTaskIds.Select(pti => pti.GetProjectTaskIdFromPrefixLink()));
 
         return result;
+    }
+
+    /// <summary>
+    /// Метод удаляет лишние статусы переходов.
+    /// </summary>
+    /// <param name="result">Результаты до чистки.</param>
+    /// <returns>Измененный список.</returns>
+    /// <exception cref="InvalidOperationException">Может бахнуть, если что то пойдет не так.</exception>
+    private async Task<List<AvailableTaskStatusTransitionOutput>> RemoveTransitionStatusesAsync(
+        List<AvailableTaskStatusTransitionOutput> result)
+    {
+        // Если есть оба системных названия, то оставим одно. InWork имеет приоритет.
+        if (result.Find(x => x.AvailableStatusSysName.Equals("InWork")) is not null)
+        {
+            var removedDevelopment = result.Find(x => x.AvailableStatusSysName.Equals("InWork"));
+
+            if (removedDevelopment is null)
+            {
+                throw new InvalidOperationException(
+                    "Статус InWork не найден среди статусов переходов результата.");
+            }
+                    
+            result.Remove(removedDevelopment);
+        }
+                
+        if (result.Find(x => x.AvailableStatusSysName.Equals("InDevelopment")) is not null)
+        {
+            var removedDevelopment = result.Find(x => x.AvailableStatusSysName.Equals("InDevelopment"));
+                    
+            if (removedDevelopment is null)
+            {
+                throw new InvalidOperationException(
+                    "Статус InDevelopment не найден среди статусов переходов результата.");
+            }
+                    
+            result.Remove(removedDevelopment);
+        }
+
+        // Если несколько системных названий Completed, то оставим одно.
+        if (result.Count(x => x.AvailableStatusSysName.Equals("Completed")) > 1)
+        {
+            result = result.DistinctBy(d => d.AvailableStatusSysName).AsList();
+        }
+
+        return await Task.FromResult(result);
     }
 
     #endregion
