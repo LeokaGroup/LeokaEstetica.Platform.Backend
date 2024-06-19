@@ -1465,7 +1465,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                     AvailableStatusSysName = currentTaskStatus.StatusSysName
                 }));
                 
-                result = await RemoveTransitionStatusesAsync(result);
+                result = await RemoveTransitionStatusesAsync(result, transitionType);
             }
             
             // Дополняем статусами, в зависимости от типа задачи.
@@ -1485,7 +1485,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                     AvailableStatusSysName = currentTaskStatus.StatusSysName
                 }));
 
-                result = await RemoveTransitionStatusesAsync(result);
+                result = await RemoveTransitionStatusesAsync(result, transitionType);
             }
 
             return result.OrderBy(x => x.StatusId);
@@ -1502,30 +1502,39 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     public async Task ChangeTaskStatusAsync(long projectId, string changeStatusId, string taskId,
         string taskDetailType)
     {
-        var detailType = Enum.Parse<TaskDetailTypeEnum>(taskDetailType);
-        var onlyTaskId = taskId.GetProjectTaskIdFromPrefixLink();
-        
-        switch (detailType)
+        try
         {
-            case TaskDetailTypeEnum.Task or TaskDetailTypeEnum.Error:
-                await _projectManagmentRepository.ChangeTaskStatusAsync(projectId,
-                    changeStatusId.GetProjectTaskIdFromPrefixLink(), onlyTaskId);
-                break;
+            var detailType = Enum.Parse<TaskDetailTypeEnum>(taskDetailType);
+            var onlyTaskId = taskId.GetProjectTaskIdFromPrefixLink();
+        
+            switch (detailType)
+            {
+                case TaskDetailTypeEnum.Task or TaskDetailTypeEnum.Error:
+                    await _projectManagmentRepository.ChangeTaskStatusAsync(projectId,
+                        changeStatusId.GetProjectTaskIdFromPrefixLink(), onlyTaskId);
+                    break;
 
-            case TaskDetailTypeEnum.Epic:
-                await _projectManagmentRepository.ChangeEpicStatusAsync(projectId,
-                    changeStatusId.GetProjectTaskIdFromPrefixLink(), onlyTaskId);
-                break;
+                case TaskDetailTypeEnum.Epic:
+                    await _projectManagmentRepository.ChangeEpicStatusAsync(projectId,
+                        changeStatusId.GetProjectTaskIdFromPrefixLink(), onlyTaskId);
+                    break;
             
-            case TaskDetailTypeEnum.History:
-                await _projectManagmentRepository.ChangeStoryStatusAsync(projectId,
-                    changeStatusId.GetProjectTaskIdFromPrefixLink(), onlyTaskId);
-                break;
+                case TaskDetailTypeEnum.History:
+                    await _projectManagmentRepository.ChangeStoryStatusAsync(projectId,
+                        changeStatusId.GetProjectTaskIdFromPrefixLink(), onlyTaskId);
+                    break;
                 
-            case TaskDetailTypeEnum.Sprint:
-                await _projectManagmentRepository.ChangeSprintStatusAsync(projectId,
-                    changeStatusId.GetProjectTaskIdFromPrefixLink(), onlyTaskId);
-                break;
+                case TaskDetailTypeEnum.Sprint:
+                    await _projectManagmentRepository.ChangeSprintStatusAsync(projectId,
+                        changeStatusId.GetProjectTaskIdFromPrefixLink(), onlyTaskId);
+                    break;
+            }
+        }
+        
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, ex.Message);
+            throw;
         }
     }
 
@@ -2907,42 +2916,63 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     /// Метод удаляет лишние статусы переходов.
     /// </summary>
     /// <param name="result">Результаты до чистки.</param>
+    /// <param name="transitionType">Тип перехода.</param>
     /// <returns>Измененный список.</returns>
     /// <exception cref="InvalidOperationException">Может бахнуть, если что то пойдет не так.</exception>
     private async Task<List<AvailableTaskStatusTransitionOutput>> RemoveTransitionStatusesAsync(
-        List<AvailableTaskStatusTransitionOutput> result)
+        List<AvailableTaskStatusTransitionOutput> result, TransitionTypeEnum transitionType)
     {
         // Если есть оба системных названия, то оставим одно. InWork имеет приоритет.
-        if (result.Find(x => x.AvailableStatusSysName.Equals("InWork")) is not null)
+        if (result.Find(x => x.StatusName.Equals("В работе")) is not null)
         {
-            var removedDevelopment = result.Find(x => x.AvailableStatusSysName.Equals("InWork"));
+            var removedDevelopment = result.Find(x => x.StatusName.Equals("В разработке"));
 
-            if (removedDevelopment is null)
+            if (removedDevelopment is not null)
             {
-                throw new InvalidOperationException(
-                    "Статус InWork не найден среди статусов переходов результата.");
+                result.Remove(removedDevelopment);
             }
-                    
-            result.Remove(removedDevelopment);
         }
                 
-        if (result.Find(x => x.AvailableStatusSysName.Equals("InDevelopment")) is not null)
+        if (result.Find(x => x.StatusName.Equals("В разработке")) is not null)
         {
-            var removedDevelopment = result.Find(x => x.AvailableStatusSysName.Equals("InDevelopment"));
+            var removedDevelopment = result.Find(x => x.StatusName.Equals("В работе"));
                     
-            if (removedDevelopment is null)
+            if (removedDevelopment is not null)
             {
-                throw new InvalidOperationException(
-                    "Статус InDevelopment не найден среди статусов переходов результата.");
+                result.Remove(removedDevelopment);
             }
-                    
-            result.Remove(removedDevelopment);
+        }
+        
+        // Статус "Новый" в приоритете.
+        if (result.Find(x => x.StatusName.Equals("Новая")) is not null 
+            && result.Find(x => x.StatusName.Equals("Новый")) is not null
+            && transitionType == TransitionTypeEnum.Epic)
+        {
+            var removedDevelopment = result.Find(x => x.StatusName.Equals("Новая"));
+
+            if (removedDevelopment is not null)
+            {
+                result.Remove(removedDevelopment);
+            }
+        }
+        
+        // Статус "Новая" в приоритете.
+        if (result.Find(x => x.StatusName.Equals("Новая")) is not null 
+            && result.Find(x => x.StatusName.Equals("Новый")) is not null
+            && transitionType == TransitionTypeEnum.History)
+        {
+            var removedDevelopment = result.Find(x => x.StatusName.Equals("Новый"));
+
+            if (removedDevelopment is not null)
+            {
+                result.Remove(removedDevelopment);
+            }
         }
 
         // Если несколько системных названий Completed, то оставим одно.
-        if (result.Count(x => x.AvailableStatusSysName.Equals("Completed")) > 1)
+        if (result.Count(x => x.StatusName.Equals("Completed")) > 1)
         {
-            result = result.DistinctBy(d => d.AvailableStatusSysName).AsList();
+            result = result.DistinctBy(d => d.StatusName).AsList();
         }
 
         return await Task.FromResult(result);
