@@ -1080,7 +1080,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             // Если несколько системных названий Completed, то оставим одно.
             if (result.Count(x => x.StatusSysName.Equals("Completed")) > 1)
             {
-                result = result.DistinctBy(d => d.StatusSysName).ToList();
+                result = result.DistinctBy(d => d.StatusSysName).AsList();
             }
 
             return result;
@@ -1268,10 +1268,27 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 
                 transitionType = TransitionTypeEnum.History;
             }
+            
+            // TODO: Этот код дублируется в этом сервисе. Вынести в приватный метод и кортежем вернуть нужные данные.
+            // Получаем настройки проекта.
+            var projectSettings = await _projectSettingsConfigRepository.GetProjectSpaceSettingsByProjectIdAsync(
+                projectId);
+            var projectSettingsItems = projectSettings?.AsList();
 
-            // Получаем все переходы из промежуточной таблицы отталкиваясь от текущего статуса истории.
+            if (projectSettingsItems is null || !projectSettingsItems.Any())
+            {
+                throw new InvalidOperationException("Ошибка получения настроек проекта. " +
+                                                    $"ProjectId: {projectId}.");
+            }
+
+            var template = projectSettingsItems.Find(x =>
+                x.ParamKey.Equals(GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_TEMPLATE_ID));
+            var templateId = Convert.ToInt32(template!.ParamValue);
+
+            // Получаем все переходы из промежуточной таблицы отталкиваясь от текущего статуса задачи (конкретного типа).
             var statusIds = (await _projectManagmentRepository
-                    .GetProjectManagementTransitionIntermediateTemplatesAsync(currentTaskStatusId, transitionType))
+                    .GetProjectManagementTransitionIntermediateTemplatesAsync(currentTaskStatusId, transitionType,
+                        templateId))
                 ?.AsList();
 
             if (statusIds is null || !statusIds.Any())
@@ -1321,22 +1338,6 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                     " хотя был минимум 1 кастомный статус среди: " +
                     $"{JsonConvert.SerializeObject(transitionStatuses)}.");
             }
-            
-            // TODO: Этот код дублируется в этом сервисе. Вынести в приватный метод и кортежем вернуть нужные данные.
-            // Получаем настройки проекта.
-            var projectSettings = await _projectSettingsConfigRepository.GetProjectSpaceSettingsByProjectIdAsync(
-                projectId);
-            var projectSettingsItems = projectSettings?.AsList();
-
-            if (projectSettingsItems is null || !projectSettingsItems.Any())
-            {
-                throw new InvalidOperationException("Ошибка получения настроек проекта. " +
-                                                    $"ProjectId: {projectId}.");
-            }
-
-            var template = projectSettingsItems.Find(x =>
-                x.ParamKey.Equals(GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_TEMPLATE_ID));
-            var templateId = Convert.ToInt32(template!.ParamValue);
 
             // Получаем все Id статусов, которые входят в шаблон текущего проекта.
             // Получаем все статусы, которые входят в шаблон текущего проекта.
@@ -1403,7 +1404,8 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                     {
                         StatusName = userStatus.StatusName,
                         StatusId = statusId,
-                        TaskStatusId = ts.TaskStatusId
+                        TaskStatusId = ts.TaskStatusId,
+                        AvailableStatusSysName = userStatus.StatusSysName
                     });
                 }
 
@@ -1424,7 +1426,8 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 {
                     StatusName = commonStatuse.StatusName,
                     StatusId = statusId,
-                    TaskStatusId = ts.TaskStatusId
+                    TaskStatusId = ts.TaskStatusId,
+                    AvailableStatusSysName = commonStatuse.StatusSysName
                 });
             }
 
@@ -1440,10 +1443,11 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 {
                     StatusName = currentTaskStatus.StatusName,
                     StatusId = currentTaskStatus.StatusId,
-                    TaskStatusId = currentTaskStatus.TaskStatusId
+                    TaskStatusId = currentTaskStatus.TaskStatusId,
+                    AvailableStatusSysName = currentTaskStatus.StatusSysName
                 });
             }
-
+            
             // Дополняем статусами, в зависимости от типа задачи.
             // Если нужно получить доступные статусы (переходы) для эпика.
             if (transitionType == TransitionTypeEnum.Epic)
@@ -1457,16 +1461,19 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 {
                     StatusName = x.StatusName,
                     StatusId = x.StatusId,
-                    TaskStatusId = x.StatusId
+                    TaskStatusId = x.StatusId,
+                    AvailableStatusSysName = currentTaskStatus.StatusSysName
                 }));
+                
+                result = await RemoveTransitionStatusesAsync(result);
             }
             
             // Дополняем статусами, в зависимости от типа задачи.
             // Если нужно получить доступные статусы (переходы) для истории.
             if (transitionType == TransitionTypeEnum.History)
             {
-                // TODO: Если в будущем будет функционал для создания кастомных статусов эпика пользователем,
-                // TODO: то придется заводить поле TaskStatusId в таблице статусов эпиков и тогда его тут получать уже.
+                // TODO: Если в будущем будет функционал для создания кастомных статусов истории пользователем,
+                // TODO: то придется заводить поле TaskStatusId в таблице статусов историй и тогда его тут получать уже.
                 // Сейчас StatusId и TaskStatusId у историй одинаковые будут, так как нет отдельного поля под TaskStatusId у них,
                 // потому что создание кастомных статусов для историй пока не предполагается в системе.
                 var storyStatuses = await _projectManagmentRepository.GetUserStoryStatusesAsync();
@@ -1474,11 +1481,14 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 {
                     StatusName = x.StatusName,
                     StatusId = x.StatusId,
-                    TaskStatusId = x.StatusId
+                    TaskStatusId = x.StatusId,
+                    AvailableStatusSysName = currentTaskStatus.StatusSysName
                 }));
+
+                result = await RemoveTransitionStatusesAsync(result);
             }
 
-            return result;
+            return result.OrderBy(x => x.StatusId);
         }
         
         catch (Exception ex)
@@ -2891,6 +2901,51 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         result.AddRange(projectTaskIds.Select(pti => pti.GetProjectTaskIdFromPrefixLink()));
 
         return result;
+    }
+
+    /// <summary>
+    /// Метод удаляет лишние статусы переходов.
+    /// </summary>
+    /// <param name="result">Результаты до чистки.</param>
+    /// <returns>Измененный список.</returns>
+    /// <exception cref="InvalidOperationException">Может бахнуть, если что то пойдет не так.</exception>
+    private async Task<List<AvailableTaskStatusTransitionOutput>> RemoveTransitionStatusesAsync(
+        List<AvailableTaskStatusTransitionOutput> result)
+    {
+        // Если есть оба системных названия, то оставим одно. InWork имеет приоритет.
+        if (result.Find(x => x.AvailableStatusSysName.Equals("InWork")) is not null)
+        {
+            var removedDevelopment = result.Find(x => x.AvailableStatusSysName.Equals("InWork"));
+
+            if (removedDevelopment is null)
+            {
+                throw new InvalidOperationException(
+                    "Статус InWork не найден среди статусов переходов результата.");
+            }
+                    
+            result.Remove(removedDevelopment);
+        }
+                
+        if (result.Find(x => x.AvailableStatusSysName.Equals("InDevelopment")) is not null)
+        {
+            var removedDevelopment = result.Find(x => x.AvailableStatusSysName.Equals("InDevelopment"));
+                    
+            if (removedDevelopment is null)
+            {
+                throw new InvalidOperationException(
+                    "Статус InDevelopment не найден среди статусов переходов результата.");
+            }
+                    
+            result.Remove(removedDevelopment);
+        }
+
+        // Если несколько системных названий Completed, то оставим одно.
+        if (result.Count(x => x.AvailableStatusSysName.Equals("Completed")) > 1)
+        {
+            result = result.DistinctBy(d => d.AvailableStatusSysName).AsList();
+        }
+
+        return await Task.FromResult(result);
     }
 
     #endregion
