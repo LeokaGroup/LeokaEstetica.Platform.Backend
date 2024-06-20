@@ -1500,7 +1500,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 
     /// <inheritdoc />
     public async Task ChangeTaskStatusAsync(long projectId, string changeStatusId, string taskId,
-        string taskDetailType)
+        string taskDetailType, string token)
     {
         try
         {
@@ -1515,11 +1515,47 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                     break;
 
                 case TaskDetailTypeEnum.Epic:
+                    // Проверяем, допустимо ли менять на такой статус.
+                    var ifExistsEpicStatus = await _projectManagmentRepository.IfEpicAvailableStatusAsync(
+                            changeStatusId.GetProjectTaskIdFromPrefixLink());
+
+                    // Недопустимо, стопаем выполнение логики и уведомляем фронт.
+                    if (!ifExistsEpicStatus)
+                    {
+                        if (!string.IsNullOrEmpty(token))
+                        {
+                            await _projectManagementNotificationService.Value.SendNotifyWarningChangeEpicStatusAsync(
+                                "Внимание",
+                                "Нельзя перевести эпик в указанный статус.",
+                                NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);   
+                        }
+                        
+                        break;
+                    }
+                    
                     await _projectManagmentRepository.ChangeEpicStatusAsync(projectId,
                         changeStatusId.GetProjectTaskIdFromPrefixLink(), onlyTaskId);
                     break;
             
                 case TaskDetailTypeEnum.History:
+                    // Проверяем, допустимо ли менять на такой статус.
+                    var ifExistsStoryStatus = await _projectManagmentRepository.IfStoryAvailableStatusAsync(
+                        changeStatusId.GetProjectTaskIdFromPrefixLink());
+
+                    // Недопустимо, стопаем выполнение логики и уведомляем фронт.
+                    if (!ifExistsStoryStatus)
+                    {
+                        if (!string.IsNullOrEmpty(token))
+                        {
+                            await _projectManagementNotificationService.Value.SendNotifyWarningChangeStoryStatusAsync(
+                                "Внимание",
+                                "Нельзя перевести историю в указанный статус.",
+                                NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);   
+                        }
+                        
+                        break;
+                    }
+                    
                     await _projectManagmentRepository.ChangeStoryStatusAsync(projectId,
                         changeStatusId.GetProjectTaskIdFromPrefixLink(), onlyTaskId);
                     break;
