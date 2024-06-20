@@ -55,9 +55,9 @@ internal sealed class ProjectMetricsService : IProjectMetricsService
             }
 
             var filterResult = await comments
-                .Take(5)
                 .GroupBy(g => g.ProjectId)
                 .Select(x => x.OrderByDescending(o => o.Created).First())
+                .Take(5)
                 .ToListAsync();
 
             var result = _mapper.Map<List<LastProjectCommentsOutput>>(filterResult);
