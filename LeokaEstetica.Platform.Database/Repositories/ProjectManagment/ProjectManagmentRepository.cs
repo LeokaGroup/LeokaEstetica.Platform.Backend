@@ -2653,6 +2653,42 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         await connection.ExecuteAsync(memberQuery, memberParameters);
     }
 
+    /// <inheritdoc/>
+    public async Task<bool> IfEpicAvailableStatusAsync(long changeStatus)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@changeStatus", changeStatus);
+
+        var query = "SELECT EXISTS (" +
+                    "SELECT status_id " +
+                    "FROM project_management.epic_statuses " +
+                    "WHERE status_id = @changeStatus)";
+
+        var result = await connection.ExecuteScalarAsync<bool>(query, parameters);
+
+        return result;
+    }
+    
+    /// <inheritdoc/>
+    public async Task<bool> IfStoryAvailableStatusAsync(long changeStatus)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@changeStatus", changeStatus);
+
+        var query = "SELECT EXISTS (" +
+                    "SELECT status_id " +
+                    "FROM project_management.user_story_statuses " +
+                    "WHERE status_id = @changeStatus)";
+
+        var result = await connection.ExecuteScalarAsync<bool>(query, parameters);
+
+        return result;
+    }
+
     #endregion
 
     #region Приватные методы.

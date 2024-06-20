@@ -713,4 +713,18 @@ public interface IProjectManagmentRepository
     /// <param name="projectId">Id проекта.</param>
     /// <param name="userId">Id пользователя.</param>
     Task AddProjectWorkSpaceMemberAsync(long projectId, long userId);
+
+    /// <summary>
+    /// Метод проверяет, можно ли менять эпику на указанный статус.
+    /// </summary>
+    /// <param name="changeStatus">Id статуса, на который пробуют изменить.</param>
+    /// <returns>Признак результата проверки.</returns>
+    Task<bool> IfEpicAvailableStatusAsync(long changeStatus);
+    
+    /// <summary>
+    /// Метод проверяет, можно ли менять истории на указанный статус.
+    /// </summary>
+    /// <param name="changeStatus">Id статуса, на который пробуют изменить.</param>
+    /// <returns>Признак результата проверки.</returns>
+    Task<bool> IfStoryAvailableStatusAsync(long changeStatus);
 }
