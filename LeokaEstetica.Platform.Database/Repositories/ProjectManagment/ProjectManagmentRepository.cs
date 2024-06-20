@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Data;
+using System.Text;
 using Dapper;
 using LeokaEstetica.Platform.Base.Abstractions.Connection;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.Base;
@@ -633,12 +634,12 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
     }
 
     /// <inheritdoc />
-    public async Task<int> GetLastPositionUserTaskTagAsync(long userId)
+    public async Task<int> GetLastPositionProjectTagAsync(long projectId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
         var compiler = new PostgresCompiler();
         var query = new Query("project_management.project_tags")
-            .Where("user_id", userId)
+            .Where("project_id", projectId)
             .Select("position")
             .AsMax("position");
         var sql = compiler.Compile(query).ToString();
@@ -657,17 +658,19 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
     /// <inheritdoc />
     public async Task CreateProjectTaskTagAsync(ProjectTagEntity tag)
     {
+        tag.ObjectTagTypeValue = ObjectTagTypeEnum.Project;
         using var connection = await ConnectionProvider.GetConnectionAsync();
         
-        // TODO: Добавить новые поля при создании.
         var parameters = new DynamicParameters();
         parameters.Add("@tag_name", tag.TagName);
         parameters.Add("@tag_sys_name", tag.TagSysName);
+        parameters.Add("@position", tag.Position, DbType.Int32);
         parameters.Add("@tag_description", tag.TagDescription);
-        parameters.Add("@position", tag.Position);
+        parameters.Add("@project_id", tag.ProjectId);
+        parameters.Add("@object_tag_type", tag.ObjectTagType);
 
-        var query = @"INSERT INTO project_management.project_tags (tag_name, tag_sys_name, position, tag_description) 
-                      VALUES (@tag_name, @tag_sys_name, @tag_description, @position)";
+        var query = @"INSERT INTO project_management.project_tags (tag_name, tag_sys_name, position, tag_description, project_id, object_tag_type) 
+                      VALUES (@tag_name, @tag_sys_name, @position, @tag_description, @project_id, @object_tag_type)";
 
         await connection.ExecuteAsync(query, parameters);
     }
