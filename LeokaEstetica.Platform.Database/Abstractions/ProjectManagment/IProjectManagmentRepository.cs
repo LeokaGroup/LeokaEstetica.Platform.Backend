@@ -150,11 +150,11 @@ public interface IProjectManagmentRepository
     Task CreateProjectUserStoryAsync(UserStoryEntity story);
 
     /// <summary>
-    /// Метод получает максимальный Position у тегов задач пользователя.
+    /// Метод получает максимальный Position у тегов проекта.
     /// </summary>
-    /// <param name="userId">Id пользователя.</param>
+    /// <param name="projectId"></param>
     /// <returns>Позиция последнего тега.</returns>
-    Task<int> GetLastPositionUserTaskTagAsync(long userId);
+    Task<int> GetLastPositionProjectTagAsync(long projectId);
 
     /// <summary>
     /// Метод создает тег проекта.

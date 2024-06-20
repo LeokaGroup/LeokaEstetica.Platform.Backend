@@ -1027,14 +1027,14 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             // Разбиваем строку на пробелы и приводим каждое слово к PascalCase и соединяем снова в строку.
             tagSysName = string.Join("", tagSysName.Split(" ").Select(x => x.ToPascalCase()));
 
-            var maxUserTagPosition = await _projectManagmentRepository.GetLastPositionUserTaskTagAsync(userId);
+            var maxUserTagPosition = await _projectManagmentRepository.GetLastPositionProjectTagAsync(projectId);
             
             // TODO: Для чего вообще использовать класс сущности?
             // TODO: С Dapper не нужно все это.
             // TODO: Использовать просто классы DTO для этого, и факторки эти не нужны будут.
-            var userTag = CreateUserTaskTagFactory.CreateProjectTag(tagName, tagDescription, tagSysName,
+            var projectTag = CreateUserTaskTagFactory.CreateProjectTag(tagName, tagDescription, tagSysName,
                     ++maxUserTagPosition, projectId);
-            await _projectManagmentRepository.CreateProjectTaskTagAsync(userTag);
+            await _projectManagmentRepository.CreateProjectTaskTagAsync(projectTag);
         }
         
         catch (Exception ex)
