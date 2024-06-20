@@ -6,6 +6,8 @@ namespace LeokaEstetica.Platform.Models.Entities.Communication;
 
 /// <summary>
 /// Класс сопоставляется с таблицей комментариев к проектам Communications.ProjectComments.
+/// TODO: колонку ModerationStatusId в базе можно в принципе удалить, но потом протестировать все
+/// TODO: таблица ссылается на "Moderation"."ProjectCommentsModeration" в которой уже есть ModerationStatusId
 /// </summary>
 public class ProjectCommentEntity
 {
