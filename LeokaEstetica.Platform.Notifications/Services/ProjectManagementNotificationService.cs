@@ -146,7 +146,7 @@ internal sealed class ProjectManagementNotificationService : IProjectManagementN
 
         await _hubContext.Clients
             .Client(connectionId)
-            .SendAsync("SendNotifyWarningChangeEpicStatus", new NotificationOutput
+            .SendAsync("SendNotifyWarningChangeStoryStatus", new NotificationOutput
             {
                 Title = title,
                 Message = notifyText,
