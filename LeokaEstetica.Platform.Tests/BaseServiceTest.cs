@@ -285,7 +285,7 @@ internal class BaseServiceTest
         TicketService = new TicketService(ticketRepository, null, userRepository, mapper, accessTicketRepository,
             null);
 
-        ProjectMetricsService = new ProjectMetricsService(projectCommentsRepository, mapper, projectRepository);
+        ProjectMetricsService = new ProjectMetricsService(projectCommentsRepository, mapper, projectRepository, null);
         
         TelegramService = new TelegramService(globalConfigRepository, null);
 
