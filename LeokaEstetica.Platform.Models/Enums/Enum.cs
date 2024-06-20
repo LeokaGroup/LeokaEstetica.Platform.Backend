@@ -38,6 +38,11 @@ public class Enum : IEnum
     public const string ProjectStrategy = "project_strategy_enum";
 
     /// <summary>
+    /// Тип Enum для типа диалога нейросети.
+    /// </summary>
+    public const string ObjectTypeDialogAi = "object_type_dialog_ai";
+
+    /// <summary>
     /// Конструктор по дефолту.
     /// </summary>
     /// <param name="type">Тип Enum в базе данных.</param>
@@ -103,6 +108,16 @@ public class Enum : IEnum
     public Enum(ProjectStrategyEnum value)
     {
         Type = ProjectStrategy;
+        Value = value.ToString().ToSnakeCase();
+    }
+    
+    /// <summary>
+    /// Конструктор.
+    /// </summary>
+    /// <param name="value">Значение типа диалога.</param>
+    public Enum(DiscussionTypeEnum value)
+    {
+        Type = ObjectTypeDialogAi;
         Value = value.ToString().ToSnakeCase();
     }
 

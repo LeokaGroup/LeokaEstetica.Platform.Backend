@@ -308,9 +308,24 @@ internal sealed class UserRepository : IUserRepository
     /// <returns>Словарь кодов пользователей.</returns>
     public async Task<Dictionary<long, Guid>> GetUsersCodesByUserIdsAsync(IEnumerable<long> userIds)
     {
-        var result = await _pgContext.Users
-            .Where(u => userIds.Contains(u.UserId))
-            .ToDictionaryAsync(k => k.UserId, v => v.UserCode);
+        Dictionary<long, Guid>? result;
+
+        try
+        {
+            result = await _pgContext.Users
+                .Where(u => userIds.Contains(u.UserId))
+                .ToDictionaryAsync(k => k.UserId, v => v.UserCode);
+        }
+       
+        // TODO: При dispose PgContext пересоздаем датаконтекст и пробуем снова.
+        catch (ObjectDisposedException _)
+        {
+            var pgContext = CreateNewPgContextFactory.CreateNewPgContext(_configuration);
+
+            result = await pgContext.Users
+                .Where(u => userIds.Contains(u.UserId))
+                .ToDictionaryAsync(k => k.UserId, v => v.UserCode);
+        }
 
         return result;
     }

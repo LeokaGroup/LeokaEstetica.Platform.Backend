@@ -328,5 +328,28 @@ public class RepositoriesModule : Module
         builder.RegisterType<ProjectManagementSettingsRepository>()
             .As<IProjectManagementSettingsRepository>()
             .InstancePerLifetimeScope();
+            
+        builder.RegisterType<ScrumMasterAiRepository>()
+            .Named<IScrumMasterAiRepository>("ScrumMasterAiRepository")
+            .InstancePerLifetimeScope();
+        builder.RegisterType<ScrumMasterAiRepository>()
+            .As<IScrumMasterAiRepository>()
+            .InstancePerLifetimeScope();
+            
+        builder.RegisterType<ProjectManagmentRoleRepository>()
+            .Named<IProjectManagmentRoleRepository>("ProjectManagmentRoleRepository")
+            .InstancePerLifetimeScope();
+        builder.RegisterType<ProjectManagmentRoleRepository>()
+            .As<IProjectManagmentRoleRepository>()
+            .InstancePerLifetimeScope();
+            
+        builder.RegisterLazy<IProjectManagmentRoleRepository, ProjectManagmentRoleRepository>();
+        
+        builder.RegisterType<WikiTreeRepository>()
+            .Named<IWikiTreeRepository>("WikiTreeRepository")
+            .InstancePerLifetimeScope();
+        builder.RegisterType<WikiTreeRepository>()
+            .As<IWikiTreeRepository>()
+            .InstancePerLifetimeScope();
     }
 }

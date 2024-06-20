@@ -1,7 +1,6 @@
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using FluentValidation.AspNetCore;
-using Hellang.Middleware.ProblemDetails;
 using LeokaEstetica.Platform.Backend.Loaders.Bots;
 using LeokaEstetica.Platform.Backend.Loaders.Jobs;
 using LeokaEstetica.Platform.Base.Factors;
@@ -139,7 +138,11 @@ builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory())
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 // Подключаем SignalR.
-builder.Services.AddSignalR();
+builder.Services.AddSignalR(opt =>
+{
+    // Максимальный размер сообщения 64 КБ. Раньше бэк закрывал соединение принудительно, по дефолту 32 КБ.
+    opt.MaximumReceiveMessageSize = 64 * 1024;
+});
 
 // Подключаем кэш Redis.
 builder.Services.AddStackExchangeRedisCache(options =>
@@ -159,13 +162,16 @@ builder.Services.AddQuartz(q =>
     q.UseMicrosoftDependencyInjectionJobFactory();
 
     // Запуск джоб при старте ядра системы.
-    StartJobs.Start(q, builder.Services);
+    StartJobs.Start(q, builder.Services, configuration);
 });
 
 builder.Services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
 
 builder.Logging.ClearProviders();
 builder.Host.UseNLog();
+
+// Регистрируем IHttpClientFactory.
+builder.Services.AddHttpClient();
 
 // builder.Services.AddProblemDetails();
 

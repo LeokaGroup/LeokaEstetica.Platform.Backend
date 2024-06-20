@@ -1,14 +1,13 @@
 using LeokaEstetica.Platform.Base.Enums;
 using LeokaEstetica.Platform.Base.Extensions;
 using LeokaEstetica.Platform.Base.Extensions.StringExtensions;
-using LeokaEstetica.Platform.Base.Helpers;
+using LeokaEstetica.Platform.Base.Factors;
 using LeokaEstetica.Platform.Base.Models.Input.Processing;
 using LeokaEstetica.Platform.Core.Constants;
 using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.Commerce;
 using LeokaEstetica.Platform.Database.Abstractions.Config;
 using LeokaEstetica.Platform.Messaging.Abstractions.Mail;
-using LeokaEstetica.Platform.Messaging.Abstractions.RabbitMq;
 using LeokaEstetica.Platform.Models.Dto.Common.Cache;
 using LeokaEstetica.Platform.Models.Dto.Input.Base;
 using LeokaEstetica.Platform.Models.Dto.Input.Commerce.PayMaster;
@@ -20,6 +19,7 @@ using LeokaEstetica.Platform.Processing.Consts;
 using LeokaEstetica.Platform.Processing.Enums;
 using LeokaEstetica.Platform.Processing.Models.Input;
 using LeokaEstetica.Platform.Processing.Models.Output;
+using LeokaEstetica.Platform.RabbitMq.Abstractions;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 
@@ -31,6 +31,9 @@ namespace LeokaEstetica.Platform.Processing.Factors;
 public static class CreatePaymentOrderFactory
 {
     /// <summary>
+    /// TODO: Требуется серьезная доработка! Тут нужно передавать настройки кролика по аналогии как сделано в хабе модуля УП.
+    /// TODO: Но только тут иначе нужно сделать такое (из конфигов получать по цепочке выше в самом верху, а строку урл получать в базовом контроллере попробовать, это тоже в самом верху цепочки).
+    /// TODO: Передавать зависимости в объекте, их уже много тут.
     /// Метод создает результат созданного заказа. Также создает заказ в БД.
     /// </summary>
     /// <param name="createPaymentOrderAggregateInput">Агрегирующая модель заказа.</param>
@@ -48,6 +51,10 @@ public static class CreatePaymentOrderFactory
     {
         var paymentId = string.Empty;
         ICreateOrderOutput result = null;
+        
+        // using var httpClient = _httpClientFactory.CreateClient();
+        // httpClient.SetHttpClientRequestAuthorizationHeader(token);
+
         using var httpClient = new HttpClient();
 
         if (createPaymentOrderAggregateInput.CreateOrderOutput is CreateOrderPayMasterOutput payMasterOrder)
@@ -89,9 +96,33 @@ public static class CreatePaymentOrderFactory
             createdOrderResult.StatusSysName, paymentId, createPaymentOrderAggregateInput.UserId,
             createPaymentOrderAggregateInput.PublicId, createPaymentOrderAggregateInput.OrderCache.Month,
             createdOrderResult.Price, createdOrderResult.Currency);
+
+        // var configEnv = await httpClient.GetFromJsonAsync<ProxyConfigEnvironmentOutput>(string.Concat(apiUrl,
+        //     GlobalConfigKeys.ProjectManagementProxyApi.PROJECT_MANAGEMENT_CONFIG_ENVIRONMENT_PROXY_API));
+        //
+        // if (configEnv is null)
+        // {
+        //     throw new InvalidOperationException("Не удалось получить среду окружения из конфига модуля УП.");
+        // }
+        //
+        // var rabbitMqConfig = await httpClient.GetFromJsonAsync<ProxyConfigRabbitMqOutput>(string.Concat(apiUrl,
+        //     GlobalConfigKeys.ProjectManagementProxyApi.PROJECT_MANAGEMENT_CONFIG_RABBITMQ_PROXY_API));
+        //         
+        // if (rabbitMqConfig is null)
+        // {
+        //     throw new InvalidOperationException("Не удалось получить настройки RabbitMQ из конфига модуля УП.");
+        // }
+            
+        // var queueType = string.Empty.CreateQueueDeclareNameFactory(configEnv.Environment,
+        //     QueueTypeEnum.ScrumMasterAiMessage);
         
-        var queueType = string.Empty.CreateQueueDeclareNameFactory(configuration, QueueTypeEnum.OrdersQueue);
-        await rabbitMqService.PublishAsync(orderEvent, queueType);
+        var queueType = string.Empty.CreateQueueDeclareNameFactory(configuration["Environment"],
+            QueueTypeEnum.OrdersQueue);
+
+        // var scrumMasterAiMessageEvent = ScrumMasterAiMessageEventFactory.CreateScrumMasterAiMessageEvent(message,
+        //     token, userId);
+        
+        // await rabbitMqService.PublishAsync(orderEvent, queueType, rabbitMqConfig, configEnv);
         
         var isEnabledEmailNotifications = await globalConfigRepository.GetValueByKeyAsync<bool>(
             GlobalConfigKeys.EmailNotifications.EMAIL_NOTIFICATIONS_DISABLE_MODE_ENABLED);

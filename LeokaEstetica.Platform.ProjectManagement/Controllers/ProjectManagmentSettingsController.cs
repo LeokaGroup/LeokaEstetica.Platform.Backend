@@ -5,6 +5,7 @@ using LeokaEstetica.Platform.Database.Abstractions.Template;
 using LeokaEstetica.Platform.Integrations.Abstractions.Discord;
 using LeokaEstetica.Platform.Models.Dto.Input.Config;
 using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
+using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagement.Output;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.ProjectManagement.Output;
 using LeokaEstetica.Platform.ProjectManagment.ValidationModels;
@@ -386,5 +387,35 @@ public class ProjectManagmentSettingsController : BaseController
             sprintMoveNotCompletedTaskSettingInput.ProjectId,
             sprintMoveNotCompletedTaskSettingInput.IsSettingSelected,
             sprintMoveNotCompletedTaskSettingInput.SysName);
+    }
+
+    /// <summary>
+    /// Метод получает список пользователей, которые состоят в проекте.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Список пользователей.</returns>
+    [HttpGet]
+    [Route("company-project-users")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<ProjectSettingUserOutput>))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<IEnumerable<ProjectSettingUserOutput>> GetCompanyProjectUsersAsync([FromQuery] long projectId)
+    {
+        if (projectId <= 0)
+        {
+            var ex = new AggregateException("Ошибка при получении пользователей проекта компании. " +
+                                            $"ProjectId: {projectId}.");
+            _logger.LogError(ex, ex.Message);
+            
+            await _discordService.Value.SendNotificationErrorAsync(ex);
+            
+            throw ex;
+        }
+
+        var result = await _projectManagementSettingsService.GetCompanyProjectUsersAsync(projectId, GetUserName());
+
+        return result;
     }
 }

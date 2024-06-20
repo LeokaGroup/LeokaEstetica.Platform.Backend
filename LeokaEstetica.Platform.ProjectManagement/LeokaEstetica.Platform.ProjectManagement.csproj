@@ -25,12 +25,14 @@
         <PackageReference Include="Quartz" Version="3.7.0" />
         <PackageReference Include="Quartz.Extensions.DependencyInjection" Version="3.6.2" />
         <PackageReference Include="Quartz.Extensions.Hosting" Version="3.6.2" />
+        <PackageReference Include="Quartz.Jobs" Version="3.7.0" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
     </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\LeokaEstetica.Platform.Core\LeokaEstetica.Platform.Core.csproj" />
         <ProjectReference Include="..\LeokaEstetica.Platform.Notifications\LeokaEstetica.Platform.Notifications.csproj" />
+        <ProjectReference Include="..\LeokaEstetica.Platform.ProjectManagement.ScrumMasterAI\LeokaEstetica.Platform.ProjectManagement.ScrumMasterAI.csproj" />
         <ProjectReference Include="..\LeokaEstetica.Platform.Redis\LeokaEstetica.Platform.Redis.csproj" />
         <ProjectReference Include="..\LeokaEstetica.Platform.Services\LeokaEstetica.Platform.Services.csproj" />
     </ItemGroup>

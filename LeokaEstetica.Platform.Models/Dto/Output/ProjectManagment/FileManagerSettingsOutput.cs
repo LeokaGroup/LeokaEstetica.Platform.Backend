@@ -39,4 +39,9 @@ public class FileManagerSettingsOutput
     /// Путь к файлам изображений аватара пользователей на сервере.
     /// </summary>
     public string SftpUserAvatarPath { get; set; }
+
+    /// <summary>
+    /// Путь к моделям нейросети.
+    /// </summary>
+    public string SftpNetworkModelPath { get; set; }
 }

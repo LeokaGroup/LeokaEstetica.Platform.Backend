@@ -1,0 +1,1 @@
+﻿CREATE UNIQUE INDEX workspaces_organization_id_project_id_idx ON project_management.workspaces (organization_id, project_id);

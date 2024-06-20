@@ -10,14 +10,26 @@
       <ProjectReference Include="..\LeokaEstetica.Platform.Core\LeokaEstetica.Platform.Core.csproj" />
       <ProjectReference Include="..\LeokaEstetica.Platform.Database\LeokaEstetica.Platform.Database.csproj" />
       <ProjectReference Include="..\LeokaEstetica.Platform.Integrations\LeokaEstetica.Platform.Integrations.csproj" />
+      <ProjectReference Include="..\LeokaEstetica.Platform.RabbitMq\LeokaEstetica.Platform.RabbitMq.csproj" />
       <ProjectReference Include="..\LeokaEstetica.Platform.Redis\LeokaEstetica.Platform.Redis.csproj" />
     </ItemGroup>
 
     <ItemGroup>
       <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.1.0" />
       <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="6.0.10" />
+      <PackageReference Include="Microsoft.Extensions.Http" Version="6.0.0" />
       <PackageReference Include="protobuf-net" Version="3.1.22" />
       <PackageReference Include="StackExchange.Redis" Version="2.6.70" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Reference Include="Microsoft.Extensions.Http">
+        <HintPath>..\..\..\..\..\Program Files\dotnet\shared\Microsoft.AspNetCore.App\8.0.5\Microsoft.Extensions.Http.dll</HintPath>
+      </Reference>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Data" />
     </ItemGroup>
 
 </Project>

@@ -1,14 +1,18 @@
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Net.Sockets;
+using System.Runtime.CompilerServices;
 using LeokaEstetica.Platform.Database.Abstractions.Config;
 using LeokaEstetica.Platform.Models.Enums;
 using LeokaEstetica.Platform.ProjectManagment.Documents.Abstractions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Microsoft.ML;
 using Renci.SshNet;
 using Renci.SshNet.Common;
+
+[assembly: InternalsVisibleTo("LeokaEstetica.Platform.ProjectManagement.ScrumMasterAI")]
 
 namespace LeokaEstetica.Platform.ProjectManagment.Documents.Services;
 
@@ -18,7 +22,7 @@ namespace LeokaEstetica.Platform.ProjectManagment.Documents.Services;
 internal sealed class FileManagerService : IFileManagerService
 {
     private readonly ILogger<FileManagerService> _logger;
-    private readonly Lazy<IGlobalConfigRepository> _globalConfigRepository;
+    private readonly IGlobalConfigRepository _globalConfigRepository;
     
     /// <summary>
     /// Кол-во уже сделанных попыток подключения к SFTP-серверу.
@@ -36,7 +40,7 @@ internal sealed class FileManagerService : IFileManagerService
     /// <param name="logger">Логгер.</param>
     /// <param name="globalConfigRepository">Репозиторий глобал конфига.</param>
     public FileManagerService(ILogger<FileManagerService> logger,
-        Lazy<IGlobalConfigRepository> globalConfigRepository)
+        IGlobalConfigRepository globalConfigRepository)
     {
         _logger = logger;
         _globalConfigRepository = globalConfigRepository;
@@ -50,7 +54,7 @@ internal sealed class FileManagerService : IFileManagerService
             return;
         }
 
-        var settings = await _globalConfigRepository.Value.GetFileManagerSettingsAsync();
+        var settings = await _globalConfigRepository.GetFileManagerSettingsAsync();
         
         using var sftpClient = new SftpClient(settings.Host, settings.Port, settings.Login, settings.Password);
 
@@ -148,7 +152,7 @@ internal sealed class FileManagerService : IFileManagerService
     /// <inheritdoc />
     public async Task<FileContentResult> DownloadFileAsync(string fileName, long projectId, long taskId)
     {
-        var settings = await _globalConfigRepository.Value.GetFileManagerSettingsAsync();
+        var settings = await _globalConfigRepository.GetFileManagerSettingsAsync();
         
         using var sftpClient = new SftpClient(settings.Host, settings.Port, settings.Login, settings.Password);
 
@@ -225,7 +229,7 @@ internal sealed class FileManagerService : IFileManagerService
     /// <inheritdoc />
     public async Task RemoveFileAsync(string fileName, long projectId, long taskId)
     {
-        var settings = await _globalConfigRepository.Value.GetFileManagerSettingsAsync();
+        var settings = await _globalConfigRepository.GetFileManagerSettingsAsync();
         
         using var sftpClient = new SftpClient(settings.Host, settings.Port, settings.Login, settings.Password);
         
@@ -305,7 +309,7 @@ internal sealed class FileManagerService : IFileManagerService
     public async Task<FileContentResult> GetUserAvatarFileAsync(string fileName, long projectId, long? userId,
         bool isNoPhoto)
     {
-        var settings = await _globalConfigRepository.Value.GetFileManagerSettingsAsync();
+        var settings = await _globalConfigRepository.GetFileManagerSettingsAsync();
         
         using var sftpClient = new SftpClient(settings.Host, settings.Port, settings.Login, settings.Password);
 
@@ -407,7 +411,7 @@ internal sealed class FileManagerService : IFileManagerService
     public async Task<IDictionary<long, FileContentResult>> GetUserAvatarFilesAsync(
         IEnumerable<(long? UserId, string DocumentName, DocumentTypeEnum DocumentType)> documents, long projectId)
     {
-        var settings = await _globalConfigRepository.Value.GetFileManagerSettingsAsync();
+        var settings = await _globalConfigRepository.GetFileManagerSettingsAsync();
         
         using var sftpClient = new SftpClient(settings.Host, settings.Port, settings.Login, settings.Password);
         
@@ -494,7 +498,7 @@ internal sealed class FileManagerService : IFileManagerService
     /// <inheritdoc />
     public async Task UploadUserAvatarFileAsync(IFormFileCollection files, long projectId, long userId)
     {
-        var settings = await _globalConfigRepository.Value.GetFileManagerSettingsAsync();
+        var settings = await _globalConfigRepository.GetFileManagerSettingsAsync();
         
         using var sftpClient = new SftpClient(settings.Host, settings.Port, settings.Login, settings.Password);
         
@@ -541,6 +545,149 @@ internal sealed class FileManagerService : IFileManagerService
             sftpClient.UploadFile(stream, path);
                 
             _logger.LogInformation($"Файл {0} ({1:N0} байт) успешно загружен.", fileName, fileStreamLength);
+        }
+        
+        catch (Exception ex) when (ex is SshConnectionException or SocketException or ProxyException)
+        {
+            _logger.LogError(ex, "Ошибка подключения к серверу по Sftp.");
+            throw;
+        }
+
+        catch (SshAuthenticationException ex)
+        {
+            _logger.LogError(ex, "Ошибка аутентификации к серверу по Sftp.");
+            throw;
+        }
+
+        catch (SftpPermissionDeniedException ex)
+        {
+            _logger.LogError(ex, "Ошибка доступа к серверу по Sftp.");
+            throw;
+        }
+
+        catch (SshException ex)
+        {
+            _logger.LogError(ex, "Ошибка Sftp.");
+            throw;
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Ошибка при загрузке файла изображения аватара пользователя на сервер.");;
+            throw;
+        }
+        
+        finally
+        {
+            sftpClient.Disconnect();
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task UploadNetworkModelAsync(ITransformer model, string version, string modelName)
+    {
+        var settings = await _globalConfigRepository.GetFileManagerSettingsAsync();
+        
+        using var sftpClient = new SftpClient(settings.Host, settings.Port, settings.Login, settings.Password);
+        
+        try
+        {
+            sftpClient.Connect();
+            
+            if (!sftpClient.IsConnected)
+            {
+                throw new InvalidOperationException(
+                    "Sftp клиент не подключен. Невозможно загрузить модель нейросети на сервер.");
+            }
+            
+            // Если папка моделей нейросети не существует, то создаем ее.
+            if (!sftpClient.Exists(settings.SftpNetworkModelPath))
+            {
+                sftpClient.CreateDirectory(settings.SftpNetworkModelPath);
+            }
+
+            // var loadModelPath = settings.SftpNetworkModelPath + "/" + version + "." + modelName;
+            //
+            // var stream = model.OpenReadStream();
+            // var fileName = f.FileName;
+            // var fileStreamLength = stream.Length;
+            //     
+            // _logger.LogInformation($"Загружается файл {0} ({1:N0} байт)", fileName, fileStreamLength);
+            //     
+            // sftpClient.BufferSize = 4 * 1024;
+            // sftpClient.UploadFile(stream, string.Concat(userProjectTaskPath, Path.GetFileName(fileName)));
+            //     
+            // _logger.LogInformation($"Файл {0} ({1:N0} байт) успешно загружен.", fileName, fileStreamLength);
+        }
+        
+        catch (Exception ex) when (ex is SshConnectionException or SocketException or ProxyException)
+        {
+            _logger.LogError(ex, "Ошибка подключения к серверу по Sftp.");
+            throw;
+        }
+
+        catch (SshAuthenticationException ex)
+        {
+            _logger.LogError(ex, "Ошибка аутентификации к серверу по Sftp.");
+            throw;
+        }
+
+        catch (SftpPermissionDeniedException ex)
+        {
+            _logger.LogError(ex, "Ошибка доступа к серверу по Sftp.");
+            throw;
+        }
+
+        catch (SshException ex)
+        {
+            _logger.LogError(ex, "Ошибка Sftp.");
+            throw;
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Ошибка при загрузке файла изображения аватара пользователя на сервер.");;
+            throw;
+        }
+        
+        finally
+        {
+            sftpClient.Disconnect();
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task<MemoryStream> DownloadNetworkModelAsync(string version, string modelName)
+    {
+        var settings = await _globalConfigRepository.GetFileManagerSettingsAsync();
+        
+        using var sftpClient = new SftpClient(settings.Host, settings.Port, settings.Login, settings.Password);
+        
+        try
+        {
+            sftpClient.Connect();
+            
+            if (!sftpClient.IsConnected)
+            {
+                throw new InvalidOperationException(
+                    "Sftp клиент не подключен. Невозможно скачать модель нейросети с сервера.");
+            }
+            
+            var loadModelPath = settings.SftpNetworkModelPath + "/" + version + "." + modelName;
+            
+            _logger.LogInformation($"Скачивается файл {0} ({1:N0} байт)", modelName);
+            
+            var stream = new MemoryStream();
+
+            sftpClient.DownloadFile(loadModelPath, stream);
+
+            _logger.LogInformation($"Файл {0} ({1:N0} байт) успешно скачан.", modelName);
+            
+            // Сбрасываем позицию на 0, иначе у файла будет размер 0 байтов,
+            // если не сбросить указатель позиции в начало.
+            stream.Seek(0, SeekOrigin.Begin);
+
+            return stream;
         }
         
         catch (Exception ex) when (ex is SshConnectionException or SocketException or ProxyException)

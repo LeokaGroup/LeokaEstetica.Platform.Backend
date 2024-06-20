@@ -5,7 +5,7 @@ using LeokaEstetica.Platform.Base.Factors;
 using LeokaEstetica.Platform.ProjectManagment.Documents.Abstractions;
 using LeokaEstetica.Platform.ProjectManagment.Documents.Services;
 
-namespace LeokaEstetica.Platform.ProjectManagment.Documents.AutofacModules;
+namespace LeokaEstetica.Platform.ProjectManagement.Documents.AutofacModules;
 
 [CommonModule]
 public class DocumentModule : Module
@@ -14,5 +14,12 @@ public class DocumentModule : Module
     {
         builder.RegisterLazy<IFileManagerService, FileManagerService>();
         builder.RegisterLazy<ITransactionScopeFactory, TransactionScopeFactory>();
+
+        builder.RegisterType<FileManagerService>()
+            .Named<IFileManagerService>("FileManagerService")
+            .InstancePerLifetimeScope();
+        builder.RegisterType<FileManagerService>()
+            .As<IFileManagerService>()
+            .InstancePerLifetimeScope();
     }
 }

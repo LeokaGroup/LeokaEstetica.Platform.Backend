@@ -18,58 +18,58 @@ public class FinderModule : Module
         builder
             .RegisterType<VacancyFinderService>()
             .Named<IVacancyFinderService>("VacancyFinderService")
-            .SingleInstance();
+            .InstancePerLifetimeScope();
         builder
             .RegisterType<VacancyFinderService>()
             .As<IVacancyFinderService>()
-            .SingleInstance();
+            .InstancePerLifetimeScope();
         
         // Поисковый сервис проектов.
         builder
             .RegisterType<ProjectFinderService>()
             .Named<IProjectFinderService>("ProjectFinderService")
-            .SingleInstance();
+            .InstancePerLifetimeScope();
         builder
             .RegisterType<ProjectFinderService>()
             .As<IProjectFinderService>()
-            .SingleInstance();
+            .InstancePerLifetimeScope();
         
         // Поисковый сервис резюме.
         builder
             .RegisterType<ResumeFinderService>()
             .Named<IResumeFinderService>("ResumeFinderService")
-            .SingleInstance();
+            .InstancePerLifetimeScope();
         builder
             .RegisterType<ResumeFinderService>()
             .As<IResumeFinderService>()
-            .SingleInstance();
+            .InstancePerLifetimeScope();
         
         // Сервис пагинации вакансий.
         builder
             .RegisterType<VacancyPaginationService>()
             .Named<IVacancyPaginationService>("VacancyPaginationService")
-            .SingleInstance();
+            .InstancePerLifetimeScope();
         builder
             .RegisterType<VacancyPaginationService>()
             .As<IVacancyPaginationService>()
-            .SingleInstance();
+            .InstancePerLifetimeScope();
         
         builder
             .RegisterType<ProjectPaginationService>()
             .Named<IProjectPaginationService>("ProjectPaginationService")
-            .SingleInstance();
+            .InstancePerLifetimeScope();
         builder
             .RegisterType<ProjectPaginationService>()
             .As<IProjectPaginationService>()
-            .SingleInstance();
+            .InstancePerLifetimeScope();
         
         builder
             .RegisterType<ResumePaginationService>()
             .Named<IResumePaginationService>("ResumePaginationService")
-            .SingleInstance();
+            .InstancePerLifetimeScope();
         builder
             .RegisterType<ResumePaginationService>()
             .As<IResumePaginationService>()
-            .SingleInstance();
+            .InstancePerLifetimeScope();
     }
 }

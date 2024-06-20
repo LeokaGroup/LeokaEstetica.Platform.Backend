@@ -1,5 +1,4 @@
 ﻿using LeokaEstetica.Platform.Backend.Loaders.Jobs.RabbitMq;
-using LeokaEstetica.Platform.Backend.Loaders.Jobs.User;
 using Quartz;
 
 namespace LeokaEstetica.Platform.Backend.Loaders.Jobs;
@@ -11,8 +10,12 @@ public static class StartJobs
 {
     /// <summary>
     /// Метод запускает все джобы.
+    /// <param name="q">Конфигуратор Quartz.</param>
+    /// <param name="services">Зарегистрированные сервисы DI.</param>
+    /// <param name="configuration">Конфигурация приложения.</param>
     /// </summary>
-    public static void Start(IServiceCollectionQuartzConfigurator q, IServiceCollection services)
+    public static void Start(IServiceCollectionQuartzConfigurator q, IServiceCollection services,
+        IConfiguration configuration)
     {
         // Запускаем планировщик активностей аккаунтов пользователей.
         //services.AddHostedService<UserActivityMarkDeactivateJob>();
@@ -29,11 +32,20 @@ public static class StartJobs
         //     .WithSimpleSchedule(x => x
         //         .WithIntervalInMinutes(3)
         //         .RepeatForever()));
-        
+
         var ordersJobJobKey = new JobKey("OrdersJob");
-        q.AddJob<OrdersJob>(opts => opts.WithIdentity(ordersJobJobKey));
+        q.AddJob<OrdersJob>(opts =>
+        {
+            opts.WithIdentity(ordersJobJobKey);
+            opts.UsingJobData("RabbitMq:HostName", configuration["RabbitMq:HostName"]!)
+                .UsingJobData("RabbitMq:VirtualHost", configuration["RabbitMq:VirtualHost"]!)
+                .UsingJobData("RabbitMq:UserName", configuration["RabbitMq:UserName"]!)
+                .UsingJobData("RabbitMq:Password", configuration["RabbitMq:Password"]!)
+                .UsingJobData("Environment", configuration["Environment"]!);
+        });
         q.AddTrigger(opts => opts
             .ForJob(ordersJobJobKey)
+            .WithIdentity("ScrumMasterAiJobKeyTrigger")
             .WithIdentity("OrdersJobTrigger")
             .WithSimpleSchedule(x => x
                 .WithIntervalInMinutes(3)

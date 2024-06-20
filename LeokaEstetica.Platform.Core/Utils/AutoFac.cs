@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using Autofac;
+using Autofac.Core;
 using AutoMapper;
 using LeokaEstetica.Platform.Core.Attributes;
 using LeokaEstetica.Platform.Core.Data;
@@ -36,7 +37,10 @@ public static class AutoFac
         "LeokaEstetica.Platform.Processing",
         "LeokaEstetica.Platform.Diagnostics",
         "LeokaEstetica.Platform.Integrations",
-        "LeokaEstetica.Platform.ProjectManagement.Documents"
+        "LeokaEstetica.Platform.ProjectManagement.Documents",
+        "LeokaEstetica.Platform.ProjectManagment.Documents",
+        "LeokaEstetica.Platform.RabbitMq",
+        "LeokaEstetica.Platform.ProjectManagement.ScrumMasterAI"
     };
 
     private static readonly List<Assembly> _assemblies = new();
@@ -165,6 +169,18 @@ public static class AutoFac
         var service = _container.ResolveNamed<TService>(serviceName);
 
         return service;
+    }
+    
+    public static T[] ResolveAllWithParameters<T>(this IContainer Container, IDictionary<string, object> parameters)
+    {
+        var _parameters = new List<Parameter>();
+        
+        foreach (var parameter in parameters)
+        {
+            _parameters.Add(new NamedParameter(parameter.Key, parameter.Value));
+        }
+        
+        return Container.Resolve<IEnumerable<T>>(_parameters).ToArray();
     }
 
     /// <summary>

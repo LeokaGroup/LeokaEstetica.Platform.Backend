@@ -1,4 +1,5 @@
 ﻿using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
+using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagement.Output;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.Search.ProjectManagement;
 using LeokaEstetica.Platform.Models.Dto.Output.Template;
@@ -214,9 +215,10 @@ public interface IProjectManagmentRepository
     /// </summary>
     /// <param name="currentTaskStatusId">Id текущего статуса задачи.</param>
     /// <param name="transitionType">Тип перехода.</param>
+    /// <param name="templateId">Id шаблона проекта.</param>
     /// <returns>Список переходов.</returns>
     Task<IEnumerable<long>> GetProjectManagementTransitionIntermediateTemplatesAsync(long currentTaskStatusId,
-        TransitionTypeEnum transitionType);
+        TransitionTypeEnum transitionType, int templateId);
 
     /// <summary>
     /// Метод получает статусы из таблицы связей многие-многие, чтобы дальше работать с
@@ -643,4 +645,72 @@ public interface IProjectManagmentRepository
     /// <param name="userId">Id пользователя.</param>
     /// <returns>Стратегия представления.</returns>
     Task<string?> GetProjectUserStrategyAsync(long projectId, long userId);
+    
+    /// <summary>
+    /// Метод получает все раб.пространства, в которых есть текущий пользователь.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Список раб.пространств.</returns>
+    Task<IEnumerable<WorkSpaceOutput>> GetWorkSpacesAsync(long userId);
+
+    /// <summary>
+    /// Метод создает компанию.
+    /// Владельцем становится текущий пользователь, так как он заводит компанию.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Id компании.</returns>
+    Task<long> CreateCompanyAsync(long userId);
+
+    /// <summary>
+    /// Метод проверяет существование компании по Id владельца компании.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Признак существования компании.</returns>
+    Task<bool> IfExistsCompanyByOwnerIdAsync(long userId);
+    
+    /// <summary>
+    /// Метод создает общее пространство компании.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="companyId">Id компании.</param>
+    /// <returns>Id общего пространства компании.</returns>
+    Task<long> CreateCompanyWorkSpaceAsync(long projectId, long companyId);
+
+    /// <summary>
+    /// Метод добавляет проект в пространство компании.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="companyId">Id компании.</param>
+    Task AddProjectWorkSpaceAsync(long projectId, long companyId);
+
+    /// <summary>
+    /// Метод добавляет текущего пользователя в участники компании с заданной ролью.
+    /// </summary>
+    /// <param name="companyId">Id компании.</param>
+    /// <param name="userId">Id пользователя.</param>
+    /// <param name="memberRole">Роль. Может быть не заполнена.</param>
+    Task AddCompanyMemberAsync(long companyId, long userId, string? memberRole);
+
+    /// <summary>
+    /// Метод получает Id компании по Id владельца.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Id компании.</returns>
+    Task<long> GetCompanyIdByOwnerIdAsync(long userId);
+    
+    /// <summary>
+    /// Метод проверяет, является ли текущий пользователем владельцем компании.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Признак владельца.</returns>
+    Task<bool> CheckCompanyOwnerByUserIdAsync(long userId);
+
+    /// <summary>
+    /// Метод добавляет пользователя в участники раб.пространства проекта.
+    /// Перед этим идет проверка, есть ли пользователь в участниках компании, если нет,
+    /// то сначала добавляет в участники компании.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="userId">Id пользователя.</param>
+    Task AddProjectWorkSpaceMemberAsync(long projectId, long userId);
 }

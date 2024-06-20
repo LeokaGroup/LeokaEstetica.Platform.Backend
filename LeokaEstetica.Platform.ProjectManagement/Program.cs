@@ -137,7 +137,10 @@ builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory())
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 // Подключаем SignalR.
-builder.Services.AddSignalR();
+builder.Services.AddSignalR(opt =>
+{
+    opt.EnableDetailedErrors = true;
+});
 
 // Подключаем кэш Redis.
 builder.Services.AddStackExchangeRedisCache(options =>
@@ -156,14 +159,17 @@ builder.Services.AddQuartz(q =>
 {
     q.UseMicrosoftDependencyInjectionJobFactory();
 
-    // Запуск джоб при старте ядра системы.
-    StartJobs.Start(q, builder.Services);
+    // Запуск джоб при старте модуля УП.
+    StartJobs.Start(q, configuration);
 });
 
 builder.Services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
 
 builder.Logging.ClearProviders();
 builder.Host.UseNLog();
+
+// Регистрируем IHttpClientFactory.
+builder.Services.AddHttpClient();
 
 // builder.Services.AddProblemDetails();
 

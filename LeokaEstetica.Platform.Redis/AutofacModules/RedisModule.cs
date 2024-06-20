@@ -1,14 +1,18 @@
 using Autofac;
 using LeokaEstetica.Platform.Core.Attributes;
+using LeokaEstetica.Platform.Redis.Abstractions.Client;
 using LeokaEstetica.Platform.Redis.Abstractions.Commerce;
 using LeokaEstetica.Platform.Redis.Abstractions.Connection;
 using LeokaEstetica.Platform.Redis.Abstractions.Profile;
+using LeokaEstetica.Platform.Redis.Abstractions.ProjectManagement;
 using LeokaEstetica.Platform.Redis.Abstractions.User;
 using LeokaEstetica.Platform.Redis.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Redis.Abstractions.Validation;
+using LeokaEstetica.Platform.Redis.Services.Client;
 using LeokaEstetica.Platform.Redis.Services.Commerce;
 using LeokaEstetica.Platform.Redis.Services.Connection;
 using LeokaEstetica.Platform.Redis.Services.Profile;
+using LeokaEstetica.Platform.Redis.Services.ProjectManagement;
 using LeokaEstetica.Platform.Redis.Services.User;
 using LeokaEstetica.Platform.Redis.Services.Vacancy;
 using LeokaEstetica.Platform.Redis.Services.Validation;
@@ -78,6 +82,22 @@ public class RedisModule : Module
         builder
             .RegisterType<CommerceRedisService>()
             .As<ICommerceRedisService>()
+            .InstancePerLifetimeScope();
+        
+        builder
+            .RegisterType<ClientConnectionService>()
+            .Named<IClientConnectionService>("ClientConnectionService")
+            .InstancePerLifetimeScope();
+        builder
+            .RegisterType<ClientConnectionService>()
+            .As<IClientConnectionService>()
+            .InstancePerLifetimeScope();
+        
+        builder.RegisterType<ProjectManagmentRoleRedisService>()
+            .Named<IProjectManagmentRoleRedisService>("ProjectManagmentRoleRedisService")
+            .InstancePerLifetimeScope();
+        builder.RegisterType<ProjectManagmentRoleRedisService>()
+            .As<IProjectManagmentRoleRedisService>()
             .InstancePerLifetimeScope();
     }
 }

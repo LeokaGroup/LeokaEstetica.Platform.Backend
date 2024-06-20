@@ -137,8 +137,9 @@ public interface IProjectRepository
     /// <param name="userId">Id пользователя, который будет добавлен в команду проекта.</param>
     /// <param name="vacancyId">Id вакансии.</param>
     /// <param name="teamId">Id команды проекта.</param>
+    /// <param name="role">Роль пользователя в проекте..</param>
     /// <returns>Данные добавленного пользователя.</returns>
-    Task<ProjectTeamMemberEntity> AddProjectTeamMemberAsync(long userId, long? vacancyId, long teamId);
+    Task<ProjectTeamMemberEntity> AddProjectTeamMemberAsync(long userId, long? vacancyId, long teamId, string? role);
 
     /// <summary>
     /// Метод находит Id команды проекта.
@@ -170,6 +171,7 @@ public interface IProjectRepository
     Task<bool> DeleteProjectVacancyByIdAsync(long vacancyId, long projectId);
 
     /// <summary>
+    // TODO: Если при удалении проекта надо будет также чистить сообщения нейросети, то надо доработать будет метод.
     /// Метод удаляет вакансии проекта.
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
@@ -191,6 +193,13 @@ public interface IProjectRepository
     /// <param name="projectId">Id проекта.</param>
     /// <returns>Признак модерации.</returns>
     Task<bool> CheckProjectModerationAsync(long projectId);
+    
+    /// <summary>
+    /// Метод првоеряет, находится ли проект в архиве.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Признак нахождения в архиве.</returns>
+    Task<bool> CheckProjectArchivedAsync(long projectId);
     
     /// <summary>
     /// Метод получает список вакансий доступных к отклику.

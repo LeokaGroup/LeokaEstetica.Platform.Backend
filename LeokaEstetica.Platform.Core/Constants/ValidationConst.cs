@@ -318,5 +318,40 @@ public static class ValidationConst
         /// Если описание спринта не передано или невалидно.
         /// </summary>
         public const string EMPTY_SPRINT_DETAILS = "Описание спринта не передано или невалидно.";
+        
+        /// <summary>
+        /// Если передали невалидный Id роли.
+        /// </summary>
+        public const string NOT_VALID_ROLE_ID = "Id роли не передан.";
+        
+        /// <summary>
+        /// Если передали невалидный Id пользователя.
+        /// </summary>
+        public const string NOT_VALID_USER_ID = "Id пользователя не передан.";
+
+        /// <summary>
+        /// Если передали невалидный Id папки.
+        /// </summary>
+        public const string NOT_VALID_FOLDER_ID = "Id папки не передан.";
+
+        /// <summary>
+        /// Если не передано название папки либо оно невалидно.
+        /// </summary>
+        public const string NOT_VALID_CURRENT_FOLDER_NAME = "Не передано название папки либо оно невалидно.";
+
+        /// <summary>
+        /// Если не передан Id страницы.
+        /// </summary>
+        public const string NOT_VALID_PAGE_ID = "Не передан Id страницы.";
+        
+        /// <summary>
+        /// Если не передано название страницы.
+        /// </summary>
+        public const string NOT_VALID_PAGE_NAME = "Не передан название страницы.";
+        
+        /// <summary>
+        /// Если не передано описание страницы.
+        /// </summary>
+        public const string NOT_VALID_PAGE_DESCRIPTION = "Не передан описание страницы.";
     }
 }

@@ -2,13 +2,13 @@
 using System.Text;
 using LeokaEstetica.Platform.Base.Enums;
 using LeokaEstetica.Platform.Base.Extensions.StringExtensions;
+using LeokaEstetica.Platform.Base.Factors;
 using LeokaEstetica.Platform.Base.Models.IntegrationEvents.Refunds;
 using LeokaEstetica.Platform.Core.Constants;
 using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.Commerce;
 using LeokaEstetica.Platform.Database.Abstractions.Config;
 using LeokaEstetica.Platform.Integrations.Abstractions.Discord;
-using LeokaEstetica.Platform.Messaging.Factors;
 using LeokaEstetica.Platform.Processing.Abstractions.PayMaster;
 using LeokaEstetica.Platform.Processing.Enums;
 using Newtonsoft.Json;
@@ -69,8 +69,8 @@ internal sealed class RefundsJob : IJob
         
         var flags = QueueTypeEnum.RefundsQueue | QueueTypeEnum.RefundsQueue;
 
-        _channel.QueueDeclare(queue: _queueName.CreateQueueDeclareNameFactory(configuration, flags), durable: false,
-            exclusive: false, autoDelete: false, arguments: null);
+        _channel.QueueDeclare(queue: _queueName.CreateQueueDeclareNameFactory(configuration["Environment"]!, flags),
+            durable: false, exclusive: false, autoDelete: false, arguments: null);
     }
 
     /// <summary>

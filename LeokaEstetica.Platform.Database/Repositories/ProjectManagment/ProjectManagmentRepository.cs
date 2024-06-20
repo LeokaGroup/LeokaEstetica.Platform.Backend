@@ -6,6 +6,7 @@ using LeokaEstetica.Platform.Base.Extensions.StringExtensions;
 using LeokaEstetica.Platform.Core.Constants;
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
+using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagement.Output;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.Search.ProjectManagement;
 using LeokaEstetica.Platform.Models.Dto.Output.Template;
@@ -235,6 +236,11 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
                     "WHERE us.project_id = @projectId;";
 
         var result = await connection.QueryAsync<ProjectTaskExtendedEntity>(query, parameters);
+
+        if (result is null)
+        {
+            result = new List<ProjectTaskExtendedEntity>();   
+        }
 
         return result;
     }
@@ -764,17 +770,26 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
 
     /// <inheritdoc />
     public async Task<IEnumerable<long>> GetProjectManagementTransitionIntermediateTemplatesAsync(
-        long currentTaskStatusId, TransitionTypeEnum transitionType)
+        long currentTaskStatusId, TransitionTypeEnum transitionType, int templateId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
-        var compiler = new PostgresCompiler();
-        var query = new Query("templates.project_management_transition_intermediate_templates")
-            .Where("from_status_id", currentTaskStatusId)
-            .Where("transition_type", new Enum(transitionType).Value)
-            .Select("to_status_id");
-        var sql = compiler.Compile(query).ToString();
-        
-        var result = await connection.QueryAsync<long>(sql);
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@currentTaskStatusId", currentTaskStatusId);
+        parameters.Add("@transitionType", new Enum(transitionType));
+        parameters.Add("@templateId", templateId);
+
+        var query = "SELECT tit.to_status_id " +
+                    "FROM templates.project_management_transition_intermediate_templates AS tit " +
+                    "INNER JOIN templates.project_management_task_status_intermediate_templates AS pmtsit " +
+                    "ON tit.to_status_id = pmtsit.status_id " +
+                    "INNER JOIN templates.project_management_task_status_templates AS pmtst " +
+                    "ON pmtsit.status_id = pmtst.status_id " +
+                    "WHERE tit.from_status_id = @currentTaskStatusId " +
+                    "AND tit.transition_type = @transitionType " +
+                    "AND pmtsit.template_id = @templateId";
+
+        var result = await connection.QueryAsync<long>(query, parameters);
 
         return result;
     }
@@ -2337,6 +2352,33 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         
         var result = await connection.QueryFirstOrDefaultAsync<string?>(query, parameters);
 
+        result ??= "kn";
+
+        return result;
+    }
+
+    /// <inheritdoc/>
+    public async Task<IEnumerable<WorkSpaceOutput>> GetWorkSpacesAsync(long userId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+        
+        var parameters = new DynamicParameters();
+        parameters.Add("@userId", userId);
+
+        var query = "SELECT up.\"ProjectId\", " +
+                    "COALESCE(up.\"ProjectManagementName\", 'Без названия') AS ProjectManagementName, " +
+                    "pw.workspace_id " +
+                    "FROM \"Projects\".\"UserProjects\" AS up " +
+                    "LEFT JOIN project_management.workspaces AS pw " +
+                    "ON up.\"ProjectId\" = pw.project_id " +
+                    "LEFT JOIN \"Teams\".\"ProjectsTeams\" AS pt " +
+                    "ON up.\"ProjectId\" = pt.\"ProjectId\" " +
+                    "LEFT JOIN \"Teams\".\"ProjectsTeamsMembers\" AS ptm " +
+                    "ON pt.\"TeamId\" = ptm.\"TeamId\" " +
+                    "WHERE ptm.\"UserId\" = @userId";
+
+        var result = await connection.QueryAsync<WorkSpaceOutput>(query, parameters);
+
         return result;
     }
 
@@ -2416,6 +2458,200 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
             await connection.ExecuteAsync(insertQuery, parameters);
         }
     }
+    
+    /// <inheritdoc/>
+    public async Task<long> CreateCompanyAsync(long userId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+        
+        var parameters = new DynamicParameters();
+        parameters.Add("@userId", userId);
+
+        var query = "INSERT INTO project_management.organizations (created_by) " +
+                    "VALUES (@userId) " +
+                    "RETURNING organization_id";
+
+        var result = await connection.ExecuteScalarAsync<long>(query, parameters);
+
+        return result;
+    }
+
+    /// <inheritdoc/>
+    public async Task<bool> IfExistsCompanyByOwnerIdAsync(long userId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+        
+        var parameters = new DynamicParameters();
+        parameters.Add("@userId", userId);
+
+        var query = "SELECT EXISTS (SELECT organization_id " +
+                    "FROM project_management.organizations " +
+                    "WHERE created_by = @userId)";
+
+        var result = await connection.ExecuteScalarAsync<bool>(query, parameters);
+
+        return result;
+    }
+
+    /// <inheritdoc/>
+    public async Task<long> CreateCompanyWorkSpaceAsync(long projectId, long companyId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var lastWorkSpaceIdQuery = "SELECT workspace_id " +
+                                   "FROM project_management.workspaces " +
+                                   "ORDER BY workspace_id DESC " +
+                                   "LIMIT 1";
+                                   
+        var lastWorkSpaceId = await connection.ExecuteScalarAsync<long>(lastWorkSpaceIdQuery);
+        
+        var parameters = new DynamicParameters();
+        parameters.Add("@projectId", projectId);
+        parameters.Add("@companyId", companyId);
+        parameters.Add("@workspaceId", ++lastWorkSpaceId);
+
+        var query = "INSERT INTO project_management.workspaces (workspace_id, project_id, organization_id) " +
+                    "VALUES (@workspaceId, @projectId, @companyId) " +
+                    "RETURNING workspace_id";
+
+        var result = await connection.ExecuteScalarAsync<long>(query, parameters);
+
+        return result;
+    }
+
+    /// <inheritdoc/>
+    public async Task AddProjectWorkSpaceAsync(long projectId, long companyId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+        
+        var parameters = new DynamicParameters();
+        parameters.Add("@projectId", projectId);
+        parameters.Add("@companyId", companyId);
+        parameters.Add("@isActive", true);
+
+        var query = "INSERT INTO project_management.organization_projects (organization_id, project_id, is_active) " +
+                    "VALUES (@companyId, @projectId, @isActive)";
+
+        await connection.ExecuteAsync(query, parameters);
+    }
+
+    /// <inheritdoc/>
+    public async Task AddCompanyMemberAsync(long companyId, long userId, string? memberRole)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+        
+        var parameters = new DynamicParameters();
+        parameters.Add("@userId", userId);
+        parameters.Add("@companyId", companyId);
+        parameters.Add("@memberRole", memberRole);
+
+        string query;
+
+        if (!string.IsNullOrWhiteSpace(memberRole))
+        {
+            query = "INSERT INTO project_management.organization_members (organization_id, member_role, member_id) " +
+                    "VALUES (@companyId, @memberRole, @userId)";
+        }
+
+        else
+        {
+            query = "INSERT INTO project_management.organization_members (organization_id, member_id) " +
+                    "VALUES (@companyId, @userId)";
+        }
+
+        await connection.ExecuteAsync(query, parameters);
+    }
+
+    /// <inheritdoc/>
+    public async Task<long> GetCompanyIdByOwnerIdAsync(long userId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+        
+        var parameters = new DynamicParameters();
+        parameters.Add("@userId", userId);
+        
+        var query = "SELECT organization_id " +
+                    "FROM project_management.organizations " +
+                    "WHERE created_by = @userId";
+
+        var result = await connection.ExecuteScalarAsync<long>(query, parameters);
+
+        return result;
+    }
+
+    /// <inheritdoc/>
+    public async Task<bool> CheckCompanyOwnerByUserIdAsync(long userId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+        
+        var parameters = new DynamicParameters();
+        parameters.Add("@userId", userId);
+
+        var query = "SELECT EXISTS (SELECT organization_id " +
+                    "FROM project_management.organizations " +
+                    "WHERE created_by = @userId " +
+                    "LIMIT 1)";
+
+        var result = await connection.ExecuteScalarAsync<bool>(query, parameters);
+
+        return result;
+    }
+
+    /// <inheritdoc/>
+    public async Task AddProjectWorkSpaceMemberAsync(long projectId, long userId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var memberCompanyParameters = new DynamicParameters();
+        memberCompanyParameters.Add("@userId", userId);
+        memberCompanyParameters.Add("@projectId", projectId);
+
+        var companyMemberQuery = "SELECT om.organization_id " +
+                           "FROM project_management.organization_members AS om " +
+                           "INNER JOIN project_management.organization_projects AS op " +
+                           "ON om.organization_id = op.organization_id " +
+                           "WHERE om.member_id = @userId " +
+                           "AND op.project_id = @projectId";
+        
+        var organizationId = await connection.QueryFirstOrDefaultAsync<long?>(companyMemberQuery,
+            memberCompanyParameters);
+
+        // Если пользователя нет в компании, значит сначала добавляем пользователя в компанию.
+        if (organizationId is null)
+        {
+            // Находим Id организации по проекту.
+            var projectCompanyParameters = new DynamicParameters();
+            projectCompanyParameters.Add("@projectId", projectId);
+
+            var projectCompanyQuery = "SELECT organization_id " +
+                                      "FROM project_management.organization_projects " +
+                                      "WHERE project_id = @projectId";
+
+            organizationId = await connection.QueryFirstOrDefaultAsync<long?>(projectCompanyQuery,
+                projectCompanyParameters);
+
+            if (!organizationId.HasValue)
+            {
+                throw new InvalidOperationException("Не удалось получить Id компании по проекту. " +
+                                                    $"ProjectId: {projectId}. " +
+                                                    $"UserId: {userId}.");
+            }
+        }
+        
+        // Добавляем сотрудника в компанию.
+        var memberParameters = new DynamicParameters();
+        memberParameters.Add("@organizationId", organizationId);
+            
+        // TODO: Когда роль будет передавать с фронта, то записывать ее тут.
+        memberParameters.Add("@memberRole", "Участник");
+        memberParameters.Add("@userId", userId);
+
+        var memberQuery = "INSERT INTO project_management.organization_members (organization_id, member_role," +
+                          " member_id) " +
+                          "VALUES (@organizationId, @memberRole, @userId)";
+
+        await connection.ExecuteAsync(memberQuery, memberParameters);
+    }
 
     #endregion
 
@@ -2432,7 +2668,7 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         long projectId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
-        var transaction = connection.BeginTransaction();
+        using var transaction = connection.BeginTransaction();
         
         try
         {
@@ -2468,11 +2704,6 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
 
             throw;
         }
-
-        finally
-        {
-            transaction.Dispose();
-        }
     }
     
     /// <summary>
@@ -2486,7 +2717,7 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         long projectId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
-        var transaction = connection.BeginTransaction();
+        using var transaction = connection.BeginTransaction();
         
         try
         {
@@ -2534,11 +2765,6 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
 
             throw;
         }
-
-        finally
-        {
-            transaction.Dispose();
-        }
     }
     
     /// <summary>
@@ -2552,7 +2778,7 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         long projectId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
-        var transaction = connection.BeginTransaction();
+        using var transaction = connection.BeginTransaction();
         
         try
         {
@@ -2600,11 +2826,6 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
 
             throw;
         }
-
-        finally
-        {
-            transaction.Dispose();
-        }
     }
     
     /// <summary>
@@ -2618,7 +2839,7 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         long projectId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
-        var transaction = connection.BeginTransaction();
+        using var transaction = connection.BeginTransaction();
         
         try
         {
@@ -2663,11 +2884,6 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
             transaction.Rollback();
 
             throw;
-        }
-
-        finally
-        {
-            transaction.Dispose();
         }
     }
 

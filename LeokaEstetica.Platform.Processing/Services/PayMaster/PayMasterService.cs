@@ -6,12 +6,11 @@ using LeokaEstetica.Platform.Access.Abstractions.User;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.Base.Enums;
 using LeokaEstetica.Platform.Base.Extensions.StringExtensions;
-using LeokaEstetica.Platform.Base.Helpers;
+using LeokaEstetica.Platform.Base.Factors;
 using LeokaEstetica.Platform.Core.Constants;
 using LeokaEstetica.Platform.Database.Abstractions.Commerce;
 using LeokaEstetica.Platform.Database.Abstractions.Config;
 using LeokaEstetica.Platform.Messaging.Abstractions.Mail;
-using LeokaEstetica.Platform.Messaging.Abstractions.RabbitMq;
 using LeokaEstetica.Platform.Models.Dto.Base.Commerce;
 using LeokaEstetica.Platform.Models.Dto.Base.Commerce.PayMaster;
 using LeokaEstetica.Platform.Models.Dto.Common.Cache;
@@ -26,6 +25,7 @@ using LeokaEstetica.Platform.Processing.Consts;
 using LeokaEstetica.Platform.Processing.Enums;
 using LeokaEstetica.Platform.Processing.Factors;
 using LeokaEstetica.Platform.Processing.Models.Input;
+using LeokaEstetica.Platform.RabbitMq.Abstractions;
 using LeokaEstetica.Platform.Redis.Abstractions.Commerce;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -36,6 +36,7 @@ using Newtonsoft.Json;
 namespace LeokaEstetica.Platform.Processing.Services.PayMaster;
 
 /// <summary>
+/// TODO: Не используем пока что PayMaster.
 /// Класс реализует методы сервиса работы с платежной системой PayMaster.
 /// </summary>
 internal sealed class PayMasterService : IPayMasterService
@@ -279,9 +280,10 @@ internal sealed class PayMasterService : IPayMasterService
         // Отправляем возврат в очередь для отслеживания его статуса.
         var refundEvent = RefundEventFactory.CreateRefundEvent(createdRefund.RefundId, createdRefund.PaymentId,
             createdRefund.Status, createdRefund.RefundOrderId);
-        
-        var queueType = string.Empty.CreateQueueDeclareNameFactory(_configuration, QueueTypeEnum.RefundsQueue);
-        await _rabbitMqService.PublishAsync(refundEvent, queueType);
+
+        var queueType = string.Empty.CreateQueueDeclareNameFactory(_configuration["Environment"],
+            QueueTypeEnum.RefundsQueue);
+        // await _rabbitMqService.PublishAsync(refundEvent, queueType);
 
         _logger?.LogInformation("Конец создания возврата платежа.");
 
@@ -379,9 +381,10 @@ internal sealed class PayMasterService : IPayMasterService
         // Отправляем чек возврата в очередь для отслеживания его статуса.
         var receiptRefundEvent = ReceiptRefundEventFactory.CreateReceiptRefundEvent(refund.ReceiptId,
             refund.PaymentId, refund.Status);
-            
-        var queueType = string.Empty.CreateQueueDeclareNameFactory(_configuration, QueueTypeEnum.ReceiptRefundQueue);
-        await _rabbitMqService.PublishAsync(receiptRefundEvent, queueType);
+
+        var queueType = string.Empty.CreateQueueDeclareNameFactory(_configuration["Environment"],
+            QueueTypeEnum.ReceiptRefundQueue);
+        // await _rabbitMqService.PublishAsync(receiptRefundEvent, queueType);
 
         _logger?.LogInformation("Конец создания чека возврата платежа.");
 
