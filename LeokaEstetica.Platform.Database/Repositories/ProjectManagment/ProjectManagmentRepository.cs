@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Data;
+using System.Text;
 using Dapper;
 using LeokaEstetica.Platform.Base.Abstractions.Connection;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.Base;
@@ -633,12 +634,12 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
     }
 
     /// <inheritdoc />
-    public async Task<int> GetLastPositionUserTaskTagAsync(long userId)
+    public async Task<int> GetLastPositionProjectTagAsync(long projectId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
         var compiler = new PostgresCompiler();
         var query = new Query("project_management.project_tags")
-            .Where("user_id", userId)
+            .Where("project_id", projectId)
             .Select("position")
             .AsMax("position");
         var sql = compiler.Compile(query).ToString();
@@ -657,17 +658,19 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
     /// <inheritdoc />
     public async Task CreateProjectTaskTagAsync(ProjectTagEntity tag)
     {
+        tag.ObjectTagTypeValue = ObjectTagTypeEnum.Project;
         using var connection = await ConnectionProvider.GetConnectionAsync();
         
-        // TODO: Добавить новые поля при создании.
         var parameters = new DynamicParameters();
         parameters.Add("@tag_name", tag.TagName);
         parameters.Add("@tag_sys_name", tag.TagSysName);
+        parameters.Add("@position", tag.Position, DbType.Int32);
         parameters.Add("@tag_description", tag.TagDescription);
-        parameters.Add("@position", tag.Position);
+        parameters.Add("@project_id", tag.ProjectId);
+        parameters.Add("@object_tag_type", tag.ObjectTagType);
 
-        var query = @"INSERT INTO project_management.project_tags (tag_name, tag_sys_name, position, tag_description) 
-                      VALUES (@tag_name, @tag_sys_name, @tag_description, @position)";
+        var query = @"INSERT INTO project_management.project_tags (tag_name, tag_sys_name, position, tag_description, project_id, object_tag_type) 
+                      VALUES (@tag_name, @tag_sys_name, @position, @tag_description, @project_id, @object_tag_type)";
 
         await connection.ExecuteAsync(query, parameters);
     }
@@ -770,17 +773,26 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
 
     /// <inheritdoc />
     public async Task<IEnumerable<long>> GetProjectManagementTransitionIntermediateTemplatesAsync(
-        long currentTaskStatusId, TransitionTypeEnum transitionType)
+        long currentTaskStatusId, TransitionTypeEnum transitionType, int templateId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
-        var compiler = new PostgresCompiler();
-        var query = new Query("templates.project_management_transition_intermediate_templates")
-            .Where("from_status_id", currentTaskStatusId)
-            .Where("transition_type", new Enum(transitionType).Value)
-            .Select("to_status_id");
-        var sql = compiler.Compile(query).ToString();
-        
-        var result = await connection.QueryAsync<long>(sql);
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@currentTaskStatusId", currentTaskStatusId);
+        parameters.Add("@transitionType", new Enum(transitionType));
+        parameters.Add("@templateId", templateId);
+
+        var query = "SELECT tit.to_status_id " +
+                    "FROM templates.project_management_transition_intermediate_templates AS tit " +
+                    "INNER JOIN templates.project_management_task_status_intermediate_templates AS pmtsit " +
+                    "ON tit.to_status_id = pmtsit.status_id " +
+                    "INNER JOIN templates.project_management_task_status_templates AS pmtst " +
+                    "ON pmtsit.status_id = pmtst.status_id " +
+                    "WHERE tit.from_status_id = @currentTaskStatusId " +
+                    "AND tit.transition_type = @transitionType " +
+                    "AND pmtsit.template_id = @templateId";
+
+        var result = await connection.QueryAsync<long>(query, parameters);
 
         return result;
     }
@@ -2642,6 +2654,42 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
                           "VALUES (@organizationId, @memberRole, @userId)";
 
         await connection.ExecuteAsync(memberQuery, memberParameters);
+    }
+
+    /// <inheritdoc/>
+    public async Task<bool> IfEpicAvailableStatusAsync(long changeStatus)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@changeStatus", changeStatus);
+
+        var query = "SELECT EXISTS (" +
+                    "SELECT status_id " +
+                    "FROM project_management.epic_statuses " +
+                    "WHERE status_id = @changeStatus)";
+
+        var result = await connection.ExecuteScalarAsync<bool>(query, parameters);
+
+        return result;
+    }
+    
+    /// <inheritdoc/>
+    public async Task<bool> IfStoryAvailableStatusAsync(long changeStatus)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@changeStatus", changeStatus);
+
+        var query = "SELECT EXISTS (" +
+                    "SELECT status_id " +
+                    "FROM project_management.user_story_statuses " +
+                    "WHERE status_id = @changeStatus)";
+
+        var result = await connection.ExecuteScalarAsync<bool>(query, parameters);
+
+        return result;
     }
 
     #endregion

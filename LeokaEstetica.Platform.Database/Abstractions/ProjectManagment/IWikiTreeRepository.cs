@@ -13,7 +13,7 @@ public interface IWikiTreeRepository
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
     /// <returns>Список элементов папок дерева.</returns>
-    Task<IEnumerable<WikiTreeFolderItem>?> GetFolderItemsAsync(long projectId);
+    Task<IEnumerable<WikiTreeItem>?> GetFolderItemsAsync(long projectId);
 
     /// <summary>
     /// Метод получает элементы страниц дерева.
@@ -21,7 +21,7 @@ public interface IWikiTreeRepository
     /// <param name="folderIds">Список Id папок.</param>
     /// <param name="treeIds">Список Id деревьев.</param>
     /// <returns>Список элементов страниц.</returns>
-    Task<IEnumerable<WikiTreePageItem>?> GetPageItemsAsync(IEnumerable<long> folderIds, IEnumerable<long> treeIds);
+    Task<IEnumerable<WikiTreeItem>?> GetPageItemsAsync(IEnumerable<long> folderIds, IEnumerable<long> treeIds);
 
     /// <summary>
     /// Метод создает Wiki для проекта.
@@ -37,14 +37,14 @@ public interface IWikiTreeRepository
     /// <param name="projectId">Id проекта.</param>
     /// <param name="folderId">Id папки.</param>
     /// <returns>Структура папки. Вложенные папки и страницы.</returns>
-    Task<IEnumerable<WikiTreeFolderItem>?> GetFolderStructureAsync(long projectId, long folderId);
+    Task<IEnumerable<WikiTreeItem>?> GetFolderStructureAsync(long projectId, long folderId);
     
     /// <summary>
     /// Метод получает содержимое страницы.
     /// </summary>
     /// <param name="pageId">Id страницы.</param>
     /// <returns>Содержимое страницы.</returns>
-    Task<WikiTreePageItem?> GetTreeItemPageAsync(long pageId);
+    Task<WikiTreeItem?> GetTreeItemPageAsync(long pageId);
     
     /// <summary>
     /// Метод изменяет название папки.
@@ -66,6 +66,13 @@ public interface IWikiTreeRepository
     /// <param name="pageDescription">Описание страницы папки.</param>
     /// <param name="pageId">Id страницы.</param>
     Task UpdateFolderPageDescriptionAsync(string? pageDescription, long pageId);
+
+    /// <summary>
+    /// Метод получает данные папки по ее Id.
+    /// </summary>
+    /// <param name="folderId">Id папки.</param>
+    /// <returns>Данные папки.</returns>
+    Task<WikiTreeItem?> GetFolderByFolderIdAsync(long folderId);
 
     /// <summary>
     /// Метод получает элементы контекстного меню.

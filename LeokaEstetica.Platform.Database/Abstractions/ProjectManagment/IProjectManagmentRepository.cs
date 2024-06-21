@@ -150,11 +150,11 @@ public interface IProjectManagmentRepository
     Task CreateProjectUserStoryAsync(UserStoryEntity story);
 
     /// <summary>
-    /// Метод получает максимальный Position у тегов задач пользователя.
+    /// Метод получает максимальный Position у тегов проекта.
     /// </summary>
-    /// <param name="userId">Id пользователя.</param>
+    /// <param name="projectId"></param>
     /// <returns>Позиция последнего тега.</returns>
-    Task<int> GetLastPositionUserTaskTagAsync(long userId);
+    Task<int> GetLastPositionProjectTagAsync(long projectId);
 
     /// <summary>
     /// Метод создает тег проекта.
@@ -215,9 +215,10 @@ public interface IProjectManagmentRepository
     /// </summary>
     /// <param name="currentTaskStatusId">Id текущего статуса задачи.</param>
     /// <param name="transitionType">Тип перехода.</param>
+    /// <param name="templateId">Id шаблона проекта.</param>
     /// <returns>Список переходов.</returns>
     Task<IEnumerable<long>> GetProjectManagementTransitionIntermediateTemplatesAsync(long currentTaskStatusId,
-        TransitionTypeEnum transitionType);
+        TransitionTypeEnum transitionType, int templateId);
 
     /// <summary>
     /// Метод получает статусы из таблицы связей многие-многие, чтобы дальше работать с
@@ -712,4 +713,18 @@ public interface IProjectManagmentRepository
     /// <param name="projectId">Id проекта.</param>
     /// <param name="userId">Id пользователя.</param>
     Task AddProjectWorkSpaceMemberAsync(long projectId, long userId);
+
+    /// <summary>
+    /// Метод проверяет, можно ли менять эпику на указанный статус.
+    /// </summary>
+    /// <param name="changeStatus">Id статуса, на который пробуют изменить.</param>
+    /// <returns>Признак результата проверки.</returns>
+    Task<bool> IfEpicAvailableStatusAsync(long changeStatus);
+    
+    /// <summary>
+    /// Метод проверяет, можно ли менять истории на указанный статус.
+    /// </summary>
+    /// <param name="changeStatus">Id статуса, на который пробуют изменить.</param>
+    /// <returns>Признак результата проверки.</returns>
+    Task<bool> IfStoryAvailableStatusAsync(long changeStatus);
 }

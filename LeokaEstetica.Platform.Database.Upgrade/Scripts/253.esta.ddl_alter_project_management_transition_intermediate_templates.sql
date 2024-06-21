@@ -1,0 +1,4 @@
+﻿ALTER TABLE templates.project_management_transition_intermediate_templates
+DROP CONSTRAINT IF EXISTS pk_transition_intermediate_templates_transition_id;
+    
+CREATE UNIQUE INDEX ON templates.project_management_transition_intermediate_templates (from_status_id, to_status_id, transition_type);

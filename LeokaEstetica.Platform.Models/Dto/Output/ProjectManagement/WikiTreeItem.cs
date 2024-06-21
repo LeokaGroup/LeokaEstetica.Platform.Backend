@@ -3,9 +3,9 @@
 namespace LeokaEstetica.Platform.Models.Dto.Output.ProjectManagement;
 
 /// <summary>
-/// Класс элемента папки дерева Wiki модуля УП.
+/// Класс элемента дерева Wiki модуля УП.
 /// </summary>
-public class WikiTreeFolderItem
+public class WikiTreeItem
 {
     /// <summary>
     /// Id папки дерева.
@@ -13,10 +13,10 @@ public class WikiTreeFolderItem
     public long FolderId { get; set; }
     
     /// <summary>
-    /// Название.
+    /// Название папки/страницы.
     /// </summary>
     [JsonProperty("label")]
-    public string? FolderName { get; set; }
+    public string? Name { get; set; }
 
     /// <summary>
     /// Id родителя.
@@ -61,5 +61,20 @@ public class WikiTreeFolderItem
     /// <summary>
     /// Дочерние элементы.
     /// </summary>
-    public List<WikiTreePageItem>? Children { get; set; }
+    public List<WikiTreeItem>? Children { get; set; }
+    
+    /// <summary>
+    /// Id страницы.
+    /// </summary>
+    public long PageId { get; set; }
+
+    /// <summary>
+    /// Признак страницы.
+    /// </summary>
+    public bool IsPage => PageId > 0;
+    
+    /// <summary>
+    /// Описание.
+    /// </summary>
+    public string? PageDescription { get; set; }
 }

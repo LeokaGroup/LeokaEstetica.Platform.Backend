@@ -23,7 +23,7 @@ public partial class ProjectCommentConfiguration : IEntityTypeConfiguration<Proj
         
         entity.Property(e => e.Created)
             .HasColumnName("Created")
-            .HasColumnType("timestamp")
+            .HasColumnType("timestamp with time zone")
             .IsRequired();
         
         entity.Property(e => e.Comment)

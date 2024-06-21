@@ -49,12 +49,12 @@ public class WikiController : BaseController
    /// <returns>Дерево с вложенными элементами.</returns>
    [HttpGet]
    [Route("tree")]
-   [ProducesResponseType(200, Type = typeof(IEnumerable<WikiTreeFolderItem>))]
+   [ProducesResponseType(200, Type = typeof(IEnumerable<WikiTreeItem>))]
    [ProducesResponseType(400)]
    [ProducesResponseType(403)]
    [ProducesResponseType(500)]
    [ProducesResponseType(404)]
-   public async Task<IEnumerable<WikiTreeFolderItem>> GetTreeAsync([FromQuery] long projectId)
+   public async Task<IEnumerable<WikiTreeItem>> GetTreeAsync([FromQuery] long projectId)
    {
       if (projectId <= 0)
       {
@@ -79,12 +79,12 @@ public class WikiController : BaseController
    /// <returns>Структура папки.</returns>
    [HttpGet]
    [Route("tree-item-folder")]
-   [ProducesResponseType(200, Type = typeof(IEnumerable<WikiTreeFolderItem>))]
+   [ProducesResponseType(200, Type = typeof(IEnumerable<WikiTreeItem>))]
    [ProducesResponseType(400)]
    [ProducesResponseType(403)]
    [ProducesResponseType(500)]
    [ProducesResponseType(404)]
-   public async Task<IEnumerable<WikiTreeFolderItem>> GetTreeItemFolderAsync([FromQuery] long projectId,
+   public async Task<IEnumerable<WikiTreeItem>> GetTreeItemFolderAsync([FromQuery] long projectId,
       [FromQuery] long folderId)
    {
       var validator = await new GetTreeItemFolderValidator().ValidateAsync((projectId, folderId));
@@ -118,12 +118,12 @@ public class WikiController : BaseController
    /// <returns>Содержимое страницы.</returns>
    [HttpGet]
    [Route("tree-item-page")]
-   [ProducesResponseType(200, Type = typeof(WikiTreePageItem))]
+   [ProducesResponseType(200, Type = typeof(WikiTreeItem))]
    [ProducesResponseType(400)]
    [ProducesResponseType(403)]
    [ProducesResponseType(500)]
    [ProducesResponseType(404)]
-   public async Task<WikiTreePageItem> GetTreeItemPageAsync([FromQuery] long pageId)
+   public async Task<WikiTreeItem> GetTreeItemPageAsync([FromQuery] long pageId)
    {
       if (pageId <= 0)
       {
