@@ -15,7 +15,7 @@ internal sealed class WikiTreeRepository : BaseRepository, IWikiTreeRepository
     /// <summary>
     /// Структура папки (со вложенными папками и страницами - дочерними).
     /// </summary>
-    private readonly IEnumerable<WikiTreeFolderItem>? _folders = new List<WikiTreeFolderItem>();
+    private readonly IEnumerable<WikiTreeItem>? _folders = new List<WikiTreeItem>();
 
     /// <summary>
     /// Конструктор.
@@ -29,7 +29,7 @@ internal sealed class WikiTreeRepository : BaseRepository, IWikiTreeRepository
     #region Публичные методы.
 
     /// <inheritdoc />
-    public async Task<IEnumerable<WikiTreeFolderItem>?> GetFolderItemsAsync(long projectId)
+    public async Task<IEnumerable<WikiTreeItem>?> GetFolderItemsAsync(long projectId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
         
@@ -38,7 +38,7 @@ internal sealed class WikiTreeRepository : BaseRepository, IWikiTreeRepository
 
         var query = "SELECT tf.folder_id," +
                     "tf.wiki_tree_id," +
-                    "tf.folder_name," +
+                    "tf.folder_name AS Name," +
                     "tf.parent_id," +
                     "tf.child_id," +
                     "tf.created_by," +
@@ -50,13 +50,13 @@ internal sealed class WikiTreeRepository : BaseRepository, IWikiTreeRepository
                     "WHERE t.project_id = @projectId " +
                     "ORDER BY tf.folder_id";
 
-        var result = await connection.QueryAsync<WikiTreeFolderItem>(query, parameters);
+        var result = await connection.QueryAsync<WikiTreeItem>(query, parameters);
 
         return result;
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<WikiTreePageItem>?> GetPageItemsAsync(IEnumerable<long> folderIds,
+    public async Task<IEnumerable<WikiTreeItem>?> GetPageItemsAsync(IEnumerable<long> folderIds,
         IEnumerable<long> treeIds)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
@@ -67,7 +67,7 @@ internal sealed class WikiTreeRepository : BaseRepository, IWikiTreeRepository
 
         var query = "SELECT p.page_id," +
                     "p.folder_id," +
-                    "p.page_name," +
+                    "p.page_name AS Name," +
                     "p.page_description," +
                     "p.wiki_tree_id," +
                     "p.created_by," +
@@ -78,7 +78,7 @@ internal sealed class WikiTreeRepository : BaseRepository, IWikiTreeRepository
                     "WHERE p.folder_id = ANY(@folderIds) " +
                     "AND p.wiki_tree_id = ANY(@treeIds)";
 
-        var result = await connection.QueryAsync<WikiTreePageItem>(query, parameters);
+        var result = await connection.QueryAsync<WikiTreeItem>(query, parameters);
 
         return result;
     }
@@ -166,7 +166,7 @@ internal sealed class WikiTreeRepository : BaseRepository, IWikiTreeRepository
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<WikiTreeFolderItem>?> GetFolderStructureAsync(long projectId, long folderId)
+    public async Task<IEnumerable<WikiTreeItem>?> GetFolderStructureAsync(long projectId, long folderId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
 
@@ -186,7 +186,7 @@ internal sealed class WikiTreeRepository : BaseRepository, IWikiTreeRepository
                     "ON wt.wiki_tree_id = tf.wiki_tree_id ";
         
         // Получаем структуру папки. Эта папка будет являться верхним уровнем, так как ее выбрали.
-        var folder = await connection.QueryFirstOrDefaultAsync<WikiTreeFolderItem>(query, parameters);
+        var folder = await connection.QueryFirstOrDefaultAsync<WikiTreeItem>(query, parameters);
 
         if (folder is null)
         {
@@ -200,7 +200,7 @@ internal sealed class WikiTreeRepository : BaseRepository, IWikiTreeRepository
         if (!folder.ChildId.HasValue)
         {
             // Заполняем папки вложенными страницами.
-            await GetFolderPagesAsync(new List<WikiTreeFolderItem> { folder }, connection);
+            await GetFolderPagesAsync(new List<WikiTreeItem> { folder }, connection);
 
             _folders.AsList().Add(folder);
             
@@ -209,7 +209,7 @@ internal sealed class WikiTreeRepository : BaseRepository, IWikiTreeRepository
         
         // Временный список - нужен для рекурсии.
         // Чтобы начать с выбранной папки.
-        var tempChildFolders = new List<WikiTreeFolderItem>(1) { folder };
+        var tempChildFolders = new List<WikiTreeItem>(1) { folder };
 
         await RecursiveBuildChildFolderStructureAsync(projectId, connection, tempChildFolders);
 
@@ -217,7 +217,7 @@ internal sealed class WikiTreeRepository : BaseRepository, IWikiTreeRepository
     }
 
     /// <inheritdoc />
-    public async Task<WikiTreePageItem?> GetTreeItemPageAsync(long pageId)
+    public async Task<WikiTreeItem?> GetTreeItemPageAsync(long pageId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
         
@@ -226,7 +226,7 @@ internal sealed class WikiTreeRepository : BaseRepository, IWikiTreeRepository
 
         var query = "SELECT page_id," +
                     "folder_id," +
-                    "page_name," +
+                    "page_name AS Name," +
                     "page_description," +
                     "wiki_tree_id," +
                     "created_by," +
@@ -234,7 +234,7 @@ internal sealed class WikiTreeRepository : BaseRepository, IWikiTreeRepository
                     "FROM project_management.wiki_tree_pages " +
                     "WHERE page_id = @pageId";
 
-        var result = await connection.QueryFirstOrDefaultAsync<WikiTreePageItem>(query, parameters);
+        var result = await connection.QueryFirstOrDefaultAsync<WikiTreeItem>(query, parameters);
 
         return result;
     }
@@ -287,6 +287,29 @@ internal sealed class WikiTreeRepository : BaseRepository, IWikiTreeRepository
         await connection.ExecuteAsync(query, parameters);
     }
 
+    /// <inheritdoc />
+    public async Task<WikiTreeItem?> GetFolderByFolderIdAsync(long folderId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@folderId", folderId);
+
+        var query = "SELECT folder_id, " +
+                    "wiki_tree_id, " +
+                    "folder_name AS Name, " +
+                    "parent_id, " +
+                    "child_id, " +
+                    "created_by, " +
+                    "created_at " +
+                    "FROM project_management.wiki_tree_folders " +
+                    "WHERE folder_id = @folderId ";
+        
+        var folder = await connection.QueryFirstOrDefaultAsync<WikiTreeItem>(query, parameters);
+
+        return folder;
+    }
+
     #endregion
 
     #region Приватные методы.
@@ -298,7 +321,7 @@ internal sealed class WikiTreeRepository : BaseRepository, IWikiTreeRepository
     /// <param name="connection">Подключение к БД.</param>
     /// <param name="tempChildFolders">Временный список (нужен только внутри рекурсии).</param>
     private async Task RecursiveBuildChildFolderStructureAsync(long projectId, IDbConnection connection,
-        List<WikiTreeFolderItem> tempChildFolders)
+        List<WikiTreeItem> tempChildFolders)
     {
         if (tempChildFolders.Count == 0)
         {
@@ -329,7 +352,7 @@ internal sealed class WikiTreeRepository : BaseRepository, IWikiTreeRepository
                                 "WHERE tf.folder_id = ANY(@childIds) " +
                                 "AND wt.project_id = @projectId";
 
-        var childFolders = (await connection.QueryAsync<WikiTreeFolderItem>(childFoldersQuery,
+        var childFolders = (await connection.QueryAsync<WikiTreeItem>(childFoldersQuery,
             childFoldersParameters))?.AsList();
 
         if (childFolders is not null && childFolders.Count > 0)
@@ -366,7 +389,7 @@ internal sealed class WikiTreeRepository : BaseRepository, IWikiTreeRepository
     /// </summary>
     /// <param name="childFolders">Список папок.</param>
     /// <param name="connection">Подключение к БД.</param>
-    private async Task GetFolderPagesAsync(List<WikiTreeFolderItem> childFolders, IDbConnection connection)
+    private async Task GetFolderPagesAsync(List<WikiTreeItem> childFolders, IDbConnection connection)
     {
         // Заполняем папки дочерними страницами.
         var childFolderPagesParameters = new DynamicParameters();
@@ -386,7 +409,7 @@ internal sealed class WikiTreeRepository : BaseRepository, IWikiTreeRepository
                                     "WHERE p.folder_id = ANY(@folderIds) " +
                                     "AND p.wiki_tree_id = ANY(@wikiTreeIds)";
 
-        var pages = (await connection.QueryAsync<WikiTreePageItem>(childFolderPagesQuery,
+        var pages = (await connection.QueryAsync<WikiTreeItem>(childFolderPagesQuery,
             childFolderPagesParameters))?.AsList();
 
         if (pages is not null && pages.Count > 0)
@@ -403,7 +426,7 @@ internal sealed class WikiTreeRepository : BaseRepository, IWikiTreeRepository
                 {
                     if (f.Children is null)
                     {
-                        f.Children = new List<WikiTreePageItem>();
+                        f.Children = new List<WikiTreeItem>();
                     }
                         
                     folderPages.ForEach(x => x.Icon = "pi pi-file");
