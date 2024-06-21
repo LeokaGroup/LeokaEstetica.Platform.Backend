@@ -8,6 +8,7 @@ using LeokaEstetica.Platform.Integrations.Filters;
 using LeokaEstetica.Platform.Notifications.Data;
 using LeokaEstetica.Platform.ProjectManagement.Loaders;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -171,9 +172,23 @@ builder.Host.UseNLog();
 // Регистрируем IHttpClientFactory.
 builder.Services.AddHttpClient();
 
-// builder.Services.AddProblemDetails();
+builder.Services.AddProblemDetails(options =>
+{
+    options.CustomizeProblemDetails = context =>
+    {
+        var exception = context.HttpContext.Features.Get<IExceptionHandlerPathFeature>()?.Error;
+        if (exception != null)
+        {
+            context.ProblemDetails.Title = exception.Message;
+            if (builder.Environment.IsProduction()) return;
+            context.ProblemDetails.Extensions.Add("exception", exception);
+        }
+    };
+});
 
 var app = builder.Build();
+app.UseExceptionHandler();
+app.UseStatusCodePages();
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
