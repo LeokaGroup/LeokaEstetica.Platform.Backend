@@ -168,7 +168,14 @@ internal sealed class WikiTreeService : IWikiTreeService
 
     #region Приватные методы.
 
-    private async Task RecursiveBuildTreeAsync(LinkedListNode<WikiTreeItem> folder, List<WikiTreeItem> folders, List<WikiTreeItem>? pages)
+    /// <summary>
+    /// Метод рекурсивно заполняет папки дерева вложенными элементами.
+    /// </summary>
+    /// <param name="folder">Папка текущего узла.</param>
+    /// <param name="folders">Все папки проекта.</param>
+    /// <param name="pages">Все страницы папок проекта.</param>
+    private async Task RecursiveBuildTreeAsync(LinkedListNode<WikiTreeItem> folder, List<WikiTreeItem> folders,
+        List<WikiTreeItem>? pages)
     {
         if (folder.Next?.Value is not null)
         {
@@ -208,7 +215,7 @@ internal sealed class WikiTreeService : IWikiTreeService
                         // Если есть страницы.
                         if (pages is not null && pages.Count > 0)
                         {
-                            await BuildFolderPagesAsync(cf, pages, _treeItems);
+                            await BuildFolderPagesAsync(cf, pages);
                         }
                     }
                 }
@@ -219,7 +226,7 @@ internal sealed class WikiTreeService : IWikiTreeService
                     // Если есть страницы.
                     if (pages is not null && pages.Count > 0)
                     {
-                        await BuildFolderPagesAsync(f, pages, _treeItems);
+                        await BuildFolderPagesAsync(f, pages);
                     }
                 }
             }
@@ -234,9 +241,7 @@ internal sealed class WikiTreeService : IWikiTreeService
     /// </summary>
     /// <param name="treeItem">Папка.</param>
     /// <param name="pages">Все страницы из всех папок в памяти.</param>
-    /// <param name="result">Результат, который наполняется.</param>
-    private async Task BuildFolderPagesAsync(WikiTreeItem treeItem, List<WikiTreeItem> pages,
-        List<WikiTreeItem> result)
+    private async Task BuildFolderPagesAsync(WikiTreeItem treeItem, List<WikiTreeItem> pages)
     {
         // Перебираем страницы, которыми будем наполнять папки.
         var childFolderPages = pages.Where(x => x.FolderId == (treeItem.ChildId ?? 0) && x.IsPage)?.AsList();
@@ -248,7 +253,7 @@ internal sealed class WikiTreeService : IWikiTreeService
         if (childFolderPages is null || childFolderPages.Count == 0)
         {
             // Добавляем папку в результат.
-            result.Add(treeItem);
+            _treeItems.Add(treeItem);
 
             return;
         }
@@ -262,7 +267,7 @@ internal sealed class WikiTreeService : IWikiTreeService
         treeItem.Children.AddRange(childFolderPages);
 
         // Добавляем папку с вложенными в нее страницами в результат.
-        result.Add(treeItem);
+        _treeItems.Add(treeItem);
 
         await Task.CompletedTask;
     }
