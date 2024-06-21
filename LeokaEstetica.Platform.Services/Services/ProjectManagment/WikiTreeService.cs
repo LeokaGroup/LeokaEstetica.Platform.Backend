@@ -87,9 +87,10 @@ internal sealed class WikiTreeService : IWikiTreeService
     {
         try
         {
-            // var folder = await _wikiTreeRepository.GetFolderByFolderIdAsync(folderId);
             // Получаем иерархию дерева папок.
-            var folders = (await _wikiTreeRepository.GetFolderItemsAsync(projectId))?.AsList();
+            var folders = (await _wikiTreeRepository.GetFolderItemsAsync(projectId))
+                ?.Where(x => x.FolderId == folderId)
+                .AsList();
             
             if (folders is null || folders.Count == 0)
             {
@@ -111,7 +112,7 @@ internal sealed class WikiTreeService : IWikiTreeService
             // Иначе будут дубли на 1 уровне дерева.
             _treeItems.RemoveAll(x => _removedFolderIds.Contains(x.FolderId));
 
-            return _treeItems;
+            return _treeItems.DistinctBy(x => new { x.FolderId, x.PageId });
         }
         
         catch (Exception ex)
