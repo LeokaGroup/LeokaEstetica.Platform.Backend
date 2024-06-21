@@ -65,4 +65,11 @@ public interface IWikiTreeRepository
     /// <param name="pageDescription">Описание страницы папки.</param>
     /// <param name="pageId">Id страницы.</param>
     Task UpdateFolderPageDescriptionAsync(string? pageDescription, long pageId);
+
+    /// <summary>
+    /// Метод получает данные папки по ее Id.
+    /// </summary>
+    /// <param name="folderId">Id папки.</param>
+    /// <returns>Данные папки.</returns>
+    Task<WikiTreeItem?> GetFolderByFolderIdAsync(long folderId);
 }

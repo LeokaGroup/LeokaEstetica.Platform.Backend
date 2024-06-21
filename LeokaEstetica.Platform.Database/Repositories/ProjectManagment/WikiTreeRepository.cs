@@ -226,7 +226,7 @@ internal sealed class WikiTreeRepository : BaseRepository, IWikiTreeRepository
 
         var query = "SELECT page_id," +
                     "folder_id," +
-                    "page_name," +
+                    "page_name AS Name," +
                     "page_description," +
                     "wiki_tree_id," +
                     "created_by," +
@@ -285,6 +285,29 @@ internal sealed class WikiTreeRepository : BaseRepository, IWikiTreeRepository
                     "WHERE page_id = @pageId";
 
         await connection.ExecuteAsync(query, parameters);
+    }
+
+    /// <inheritdoc />
+    public async Task<WikiTreeItem?> GetFolderByFolderIdAsync(long folderId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@folderId", folderId);
+
+        var query = "SELECT folder_id, " +
+                    "wiki_tree_id, " +
+                    "folder_name AS Name, " +
+                    "parent_id, " +
+                    "child_id, " +
+                    "created_by, " +
+                    "created_at " +
+                    "FROM project_management.wiki_tree_folders " +
+                    "WHERE folder_id = @folderId ";
+        
+        var folder = await connection.QueryFirstOrDefaultAsync<WikiTreeItem>(query, parameters);
+
+        return folder;
     }
 
     #endregion
