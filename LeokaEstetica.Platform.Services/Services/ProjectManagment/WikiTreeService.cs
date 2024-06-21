@@ -32,12 +32,12 @@ internal sealed class WikiTreeService : IWikiTreeService
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<WikiTreeFolderItem>> GetTreeAsync(long projectId)
+    public async Task<IEnumerable<WikiTreeItem>> GetTreeAsync(long projectId)
     {
         try
         {
-            var result = new List<WikiTreeFolderItem>();
-            
+            var result = new List<WikiTreeItem>();
+
             // Получаем иерархию дерева папок.
             var folders = (await _wikiTreeRepository.GetFolderItemsAsync(projectId))?.AsList();
 
@@ -49,80 +49,67 @@ internal sealed class WikiTreeService : IWikiTreeService
             // Наполняем папки вложенными элементами (страницами или другими папками).
             var pages = (await _wikiTreeRepository.GetPageItemsAsync(folders.Select(x => x.FolderId),
                 folders.Select(x => x.WikiTreeId)))?.AsList();
-                
-            if (pages is null || pages.Count == 0)
-            {
-                return result;
-            }
 
+            // Список папок, которые удалим из 1 уровня, так как они уже будут на 2 и ниже уровнях.
+            // Во избежание дублей папок на 1 уровне.
+            var removedFolderIds = new List<long>(0);
+
+            // TODO: Переделать на рекурсивный обход.
             // Перебираем папки.
             foreach (var f in folders)
             {
-                // Если у ппки есть вложенная папка.
+                // Если у папки есть вложенные папки.
                 if (f.ChildId.HasValue)
-                {
-                    var childFolder = folders.FirstOrDefault(x => x.FolderId == f.ChildId.Value);
+                { 
+                    // Работаем с дочерними папки в рамках родительской папки.
+                    var childFolders = folders.Where(x => x.FolderId == f.ChildId.Value && !x.IsPage)?.AsList();
 
-                    if (childFolder is null)
+                    // Дочерние папки родительской.
+                    if (childFolders is not null && childFolders.Count > 0)
                     {
-                        throw new InvalidOperationException("Дочерняя папка в дереве не найдена, но был Id потомка. " +
-                                                            $"ChildId: {f.ChildId.Value}.");
+                        removedFolderIds.AddRange(childFolders.Select(x => x.FolderId));
+                        
+                        // Перебираем дочерние папки родителя.
+                        foreach (var cf in childFolders)
+                        {
+                            cf.Children ??= new List<WikiTreeItem>();
+
+                            var parentFolder = folders.FirstOrDefault(x => x.FolderId == cf.ParentId && !x.IsPage);
+
+                            if (parentFolder is not null)
+                            {
+                                parentFolder.Children ??= new List<WikiTreeItem>();
+
+                                if (!parentFolder.IsPage)
+                                {
+                                    parentFolder.Icon = "pi pi-folder";
+                            
+                                    parentFolder.Children.Add(cf);
+                                    result.Add(parentFolder);
+                                }
+                            }
+                            
+                            // Если есть страницы.
+                            if (pages is not null && pages.Count > 0)
+                            {
+                                await BuildFolderPagesAsync(cf, pages, result);
+                            }
+                        }
                     }
-                    
-                    // Перебираем страницы, которыми будем наполнять папки.
-                    var childFolderPages = pages.Where(x => x.FolderId == f.ChildId.Value).AsList();
-                    
-                    // Страниц нет, но папку добавим - будет пустой.
-                    if (childFolderPages.Count == 0)
+
+                    // Если нету у родителя дочерних папок, обрабатываем только родительскую папку.
+                    else
                     {
-                        childFolder.Icon = "pi pi-folder";
-                        
-                        // Добавляем папку в результат.
-                        result.Add(childFolder);
-                        
-                        continue;
+                        // Если есть страницы.
+                        if (pages is not null && pages.Count > 0)
+                        {
+                            await BuildFolderPagesAsync(f, pages, result);
+                        }
                     }
-                    
-                    childFolder.Children ??= new List<WikiTreePageItem>();
-                    
-                    childFolderPages.ForEach(x => x.Icon = "pi pi-file");
-                    
-                    // Заполняем дочернюю папку ее страницами.
-                    childFolder.Children.AddRange(childFolderPages);
-                    
-                    childFolder.Icon = "pi pi-folder";
-                    
-                    // Добавляем папку с вложенными в нее страницами в результат.
-                    result.Add(childFolder);
                 }
-                
-                // Перебираем страницы, которыми будем наполнять папки.
-                var folderPages = pages.Where(x => x.FolderId == f.FolderId).AsList();
-                folderPages.ForEach(x => x.Icon = "pi pi-file");
-
-                // Страниц нет, но папку добавим - будет пустой.
-                if (folderPages.Count == 0)
-                {
-                    f.Icon = "pi pi-folder";
-                
-                    // Добавляем папку в результат.
-                    result.Add(f);
-                    
-                    continue;
-                }
-                
-                f.Children ??= new List<WikiTreePageItem>();
-                
-                folderPages.ForEach(x => x.Icon = "pi pi-file");
-
-                // Заполняем папку ее страницами.
-                f.Children.AddRange(folderPages);
-                
-                f.Icon = "pi pi-folder";
-                
-                // Добавляем папку с вложенными в нее страницами в результат.
-                result.Add(f);
             }
+
+            result.RemoveAll(x => removedFolderIds.Contains(x.FolderId));
 
             return result;
         }
@@ -135,7 +122,7 @@ internal sealed class WikiTreeService : IWikiTreeService
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<WikiTreeFolderItem>> GetTreeItemFolderAsync(long projectId, long folderId)
+    public async Task<IEnumerable<WikiTreeItem>> GetTreeItemFolderAsync(long projectId, long folderId)
     {
         try
         {
@@ -152,7 +139,7 @@ internal sealed class WikiTreeService : IWikiTreeService
     }
 
     /// <inheritdoc />
-    public async Task<WikiTreePageItem> GetTreeItemPageAsync(long pageId)
+    public async Task<WikiTreeItem> GetTreeItemPageAsync(long pageId)
     {
         try
         {
@@ -221,6 +208,44 @@ internal sealed class WikiTreeService : IWikiTreeService
     #endregion
 
     #region Приватные методы.
+
+    /// <summary>
+    /// Метод наполняет папку вложенными страницами.
+    /// </summary>
+    /// <param name="treeItem">Папка.</param>
+    /// <param name="pages">Все страницы из всех папок в памяти.</param>
+    /// <param name="result">Результат, который наполняется.</param>
+    private async Task BuildFolderPagesAsync(WikiTreeItem treeItem, List<WikiTreeItem> pages,
+        List<WikiTreeItem> result)
+    {
+        // Перебираем страницы, которыми будем наполнять папки.
+        var childFolderPages = pages.Where(x => x.FolderId == (treeItem.ChildId ?? 0) && x.IsPage)?.AsList();
+        
+        treeItem.Icon = "pi pi-folder";
+        treeItem.Children ??= new List<WikiTreeItem>();
+                    
+        // Страниц нет, но папку добавим - будет пустой.
+        if (childFolderPages is null || childFolderPages.Count == 0)
+        {
+            // Добавляем папку в результат.
+            result.Add(treeItem);
+
+            return;
+        }
+
+        foreach (var p in childFolderPages)
+        {
+            p.Icon = "pi pi-file";
+        }
+
+        // Заполняем дочернюю папку ее страницами.
+        treeItem.Children.AddRange(childFolderPages);
+
+        // Добавляем папку с вложенными в нее страницами в результат.
+        result.Add(treeItem);
+
+        await Task.CompletedTask;
+    }
 
     #endregion
 }
