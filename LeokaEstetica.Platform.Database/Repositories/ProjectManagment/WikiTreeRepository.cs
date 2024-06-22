@@ -4,6 +4,7 @@ using LeokaEstetica.Platform.Base.Abstractions.Connection;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.Base;
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagement;
+using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagement.Output;
 
 namespace LeokaEstetica.Platform.Database.Repositories.ProjectManagment;
 
@@ -288,26 +289,49 @@ internal sealed class WikiTreeRepository : BaseRepository, IWikiTreeRepository
     }
 
     /// <inheritdoc />
-    public async Task<WikiTreeItem?> GetFolderByFolderIdAsync(long folderId)
+    public async Task<IEnumerable<WikiContextMenuOutput>> GetContextMenuAsync(long? projectId = null,
+        long? pageId = null)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+        
+        var parameters = new DynamicParameters();
+
+        var query = "SELECT menu_id, item_name, icon, item_sys_name " +
+                    "FROM project_management.wiki_context_menu";
+
+        if (projectId.HasValue)
+        {
+            parameters.Add("@key", "CreateFolder");
+        }
+
+        if (pageId.HasValue)
+        {
+            parameters.Add("@key", "CreateFolderPage");
+        }
+        
+        query += " WHERE item_sys_name = @key";
+
+        var result = await connection.QueryAsync<WikiContextMenuOutput>(query, parameters);
+
+        return result;
+    }
+
+    /// <inheritdoc />
+    public async Task CreateFolderAsync(long? parentId, string? folderName, long userId, long treeId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
 
         var parameters = new DynamicParameters();
-        parameters.Add("@folderId", folderId);
+        parameters.Add("@folderName", folderName);
+        parameters.Add("@treeId", treeId);
+        parameters.Add("@parentId", parentId.HasValue ? parentId : DBNull.Value);
+        parameters.Add("@userId", userId);
 
-        var query = "SELECT folder_id, " +
-                    "wiki_tree_id, " +
-                    "folder_name AS Name, " +
-                    "parent_id, " +
-                    "child_id, " +
-                    "created_by, " +
-                    "created_at " +
-                    "FROM project_management.wiki_tree_folders " +
-                    "WHERE folder_id = @folderId ";
-        
-        var folder = await connection.QueryFirstOrDefaultAsync<WikiTreeItem>(query, parameters);
+        var query = "INSERT INTO project_management.wiki_tree_folders (wiki_tree_id, folder_name, parent_id," +
+                    " created_by) " +
+                    "VALUES (@treeId, @folderName, @parentId, @userId)";
 
-        return folder;
+        await connection.ExecuteAsync(query, parameters);
     }
 
     #endregion

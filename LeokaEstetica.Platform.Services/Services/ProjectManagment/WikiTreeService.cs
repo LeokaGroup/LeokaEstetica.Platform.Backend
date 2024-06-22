@@ -1,5 +1,7 @@
 ﻿using System.Runtime.CompilerServices;
 using Dapper;
+using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
+using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagement;
 using LeokaEstetica.Platform.Services.Abstractions.ProjectManagment;
@@ -16,6 +18,7 @@ internal sealed class WikiTreeService : IWikiTreeService
 {
     private readonly ILogger<WikiTreeService>? _logger;
     private readonly IWikiTreeRepository _wikiTreeRepository;
+    private readonly IUserRepository _userRepository;
 
     /// <summary>
     /// Элементы дерева.
@@ -35,11 +38,14 @@ internal sealed class WikiTreeService : IWikiTreeService
     /// </summary>
     /// <param name="logger">Логгер.</param>
     /// <param name="wikiTreeRepository">Репозиторий дерева.</param>
+    /// <param name="userRepository">Репозиторий пользователей.</param>
     public WikiTreeService(ILogger<WikiTreeService>? logger,
-     IWikiTreeRepository wikiTreeRepository)
+     IWikiTreeRepository wikiTreeRepository,
+      IUserRepository userRepository)
     {
         _logger = logger;
         _wikiTreeRepository = wikiTreeRepository;
+        _userRepository = userRepository;
     }
 
     /// <inheritdoc />
@@ -65,10 +71,6 @@ internal sealed class WikiTreeService : IWikiTreeService
 
             // Рекурсивно обходим дерево и заполняем папки.
             await RecursiveBuildTreeAsync(foldersLinkedList.First!, folders, pages, false);
-
-            // Удаляем папки 1 уровня дерева, так как они уже вложены на 2 уровне и ниже.
-            // Иначе будут дубли на 1 уровне дерева.
-            _treeItems.RemoveAll(x => _removedFolderIds.Contains(x.FolderId));
 
             // TODO: По хорошему убрать этот костыль и разобраться с дублями по FolderId во всем дереве,
             // TODO: но это жестко будет ибо не так просто)
@@ -189,6 +191,29 @@ internal sealed class WikiTreeService : IWikiTreeService
         }
     }
 
+    /// <inheritdoc />
+    public async Task CreateFolderAsync(long? parentId, string? folderName, string account, long treeId)
+    {
+        try
+        {
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+
+            await _wikiTreeRepository.CreateFolderAsync(parentId, folderName, userId, treeId);
+        }
+        
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
     #endregion
 
     #region Приватные методы.
@@ -211,17 +236,16 @@ internal sealed class WikiTreeService : IWikiTreeService
             if (f.ChildId.HasValue)
             {
                 // Работаем с дочерними папки в рамках родительской папки.
-                var childFolders = folders.Where(x => x.FolderId == f.ChildId.Value && !x.IsPage)?.AsList();
+                var childFolders = folders.Where(x => x.ParentId == f.FolderId && !x.IsPage)?.AsList();
 
                 // Дочерние папки родительской.
                 if (childFolders is not null && childFolders.Count > 0)
                 {
-                    _removedFolderIds.AddRange(childFolders.Select(x => x.FolderId));
-
                     // Перебираем дочерние папки родителя.
                     foreach (var cf in childFolders)
                     {
                         cf.Children ??= new List<WikiTreeItem>();
+                        cf.Icon = "pi pi-folder";
 
                         var parentFolder = folders.FirstOrDefault(x => x.FolderId == cf.ParentId && !x.IsPage);
 
@@ -233,12 +257,15 @@ internal sealed class WikiTreeService : IWikiTreeService
                             {
                                 parentFolder.Icon = "pi pi-folder";
 
+                                // Добавляем в родительскую папку ее дочернюю папку.
                                 parentFolder.Children.Add(cf);
                             }
                         }
+
+                        var childFolderPages = pages?.Where(x => x.FolderId == cf.FolderId)?.AsList();
                         
                         // Если есть страницы.
-                        if (pages is not null && pages.Count > 0)
+                        if (childFolderPages is not null && childFolderPages.Count > 0)
                         {
                             // Заполняем страницы дочерней папки.
                             await BuildFolderPagesAsync(cf, pages, isSingleIteration);
@@ -249,8 +276,10 @@ internal sealed class WikiTreeService : IWikiTreeService
                 // Если нету у родителя дочерних папок, обрабатываем только родительскую папку.
                 else
                 {
+                    var childFolderPages = pages?.Where(x => x.FolderId == f.FolderId)?.AsList();
+                    
                     // Если есть страницы.
-                    if (pages is not null && pages.Count > 0)
+                    if (childFolderPages is not null && childFolderPages.Count > 0)
                     {
                         // Заполняем страницы родительской папки.
                         await BuildFolderPagesAsync(f, pages, isSingleIteration);
@@ -258,8 +287,10 @@ internal sealed class WikiTreeService : IWikiTreeService
                 }
             }
             
-            // Если есть страницы.
-            if (pages is not null && pages.Count > 0)
+            var parentFolderPages = pages?.Where(x => x.FolderId == f.FolderId)?.AsList();
+            
+            // Если есть страницы у род.папки.
+            if (parentFolderPages is not null && parentFolderPages.Count > 0)
             {
                 await BuildFolderPagesAsync(f, pages, isSingleIteration);   
             }

@@ -1,4 +1,5 @@
 ﻿using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagement;
+using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagement.Output;
 
 namespace LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 
@@ -67,9 +68,19 @@ public interface IWikiTreeRepository
     Task UpdateFolderPageDescriptionAsync(string? pageDescription, long pageId);
 
     /// <summary>
-    /// Метод получает данные папки по ее Id.
+    /// Метод получает элементы контекстного меню.
     /// </summary>
-    /// <param name="folderId">Id папки.</param>
-    /// <returns>Данные папки.</returns>
-    Task<WikiTreeItem?> GetFolderByFolderIdAsync(long folderId);
+    /// <param name="projectId">Id проекта, если передан.</param>
+    /// <param name="pageId">Id страницы, если передан.</param>
+    /// <returns>Элементы контекстного меню.</returns>
+    Task<IEnumerable<WikiContextMenuOutput>> GetContextMenuAsync(long? projectId = null, long? pageId = null);
+    
+    /// <summary>
+    /// Метод создает папку.
+    /// </summary>
+    /// <param name="parentId">Id родителя, если передали (родительская папка).</param>
+    /// <param name="folderName">Название папки.</param>
+    /// <param name="userId">Id пользователя.</param>
+    /// <param name="treeId">Id дерева.</param>
+    Task CreateFolderAsync(long? parentId, string? folderName, long userId, long treeId);
 }
