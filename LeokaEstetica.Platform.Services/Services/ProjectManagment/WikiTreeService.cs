@@ -34,8 +34,8 @@ internal sealed class WikiTreeService : IWikiTreeService
     /// <param name="wikiTreeRepository">Репозиторий дерева.</param>
     /// <param name="userRepository">Репозиторий пользователей.</param>
     public WikiTreeService(ILogger<WikiTreeService>? logger,
-     IWikiTreeRepository wikiTreeRepository,
-      IUserRepository userRepository)
+        IWikiTreeRepository wikiTreeRepository,
+        IUserRepository userRepository)
     {
         _logger = logger;
         _wikiTreeRepository = wikiTreeRepository;
@@ -56,19 +56,19 @@ internal sealed class WikiTreeService : IWikiTreeService
                                                     "Должны быть минимум системные папки." +
                                                     $"ProjectId: {projectId}.");
             }
-            
+
             var foldersLinkedList = new LinkedList<WikiTreeItem>(folders);
-            
+
             // Наполняем папки вложенными элементами (страницами или другими папками).
             var pages = (await _wikiTreeRepository.GetPageItemsAsync(folders.Select(x => x.FolderId),
                 folders.Select(x => x.WikiTreeId)))?.AsList();
 
             // Рекурсивно обходим дерево и заполняем папки.
-            await RecursiveBuildTreeAsync(foldersLinkedList.First!, folders, pages, false);
-            
-            return _treeItems;
+            await RecursiveBuildTreeAsync(foldersLinkedList.First!, folders, pages);
+
+            return _treeItems.DistinctBy(x => x.FolderId);
         }
-        
+
         catch (Exception ex)
         {
             _logger?.LogError(ex, ex.Message);
@@ -81,30 +81,28 @@ internal sealed class WikiTreeService : IWikiTreeService
     {
         try
         {
-            // Получаем иерархию дерева папок.
-            var folders = (await _wikiTreeRepository.GetFolderItemsAsync(projectId))
-                ?.Where(x => x.FolderId == folderId)
-                .AsList();
+            var childFolderIds = (await _wikiTreeRepository.GetChildFolderAsync(folderId))?.AsList();
             
-            if (folders is null || folders.Count == 0)
+            if (childFolderIds is null || childFolderIds.Count == 0)
             {
-                throw new InvalidOperationException("У проекта нет ни одной папки. " +
-                                                    "Должны быть минимум системные папки." +
-                                                    $"ProjectId: {projectId}.");
+                return Enumerable.Empty<WikiTreeItem>();
             }
 
-            var foldersLinkedList = new LinkedList<WikiTreeItem>(folders);
+            childFolderIds.Add(folderId);
             
-            // Наполняем папки вложенными элементами (страницами или другими папками).
-            var pages = (await _wikiTreeRepository.GetPageItemsAsync(folders.Select(x => x.FolderId),
-                folders.Select(x => x.WikiTreeId)))?.AsList();
+            var childFolders = (await _wikiTreeRepository.GetFoldersByFolderIdsAsync(childFolderIds))?.AsList();
 
-            // Рекурсивно обходим дерево и заполняем папки.
-            await RecursiveBuildTreeAsync(foldersLinkedList.First!, folders, pages, true);
+            // Наполняем папки вложенными элементами (страницами или другими папками).
+            var pages = (await _wikiTreeRepository.GetPageItemsAsync(childFolders.Select(x => x.FolderId),
+                childFolders.Select(x => x.WikiTreeId)))?.AsList();
+
+            // Обходим дерево и заполняем папки.
+            await BuildTreeAsync(childFolders.First(x => x.FolderId == folderId),
+                childFolders.Where(x => x.FolderId != folderId).AsList(), pages);
 
             return _treeItems;
         }
-        
+
         catch (Exception ex)
         {
             _logger?.LogError(ex, ex.Message);
@@ -126,7 +124,7 @@ internal sealed class WikiTreeService : IWikiTreeService
 
             return result!;
         }
-        
+
         catch (Exception ex)
         {
             _logger?.LogError(ex, ex.Message);
@@ -141,7 +139,7 @@ internal sealed class WikiTreeService : IWikiTreeService
         {
             await _wikiTreeRepository.UpdateFolderNameAsync(folderName, folderId);
         }
-        
+
         catch (Exception ex)
         {
             _logger?.LogError(ex, ex.Message);
@@ -156,7 +154,7 @@ internal sealed class WikiTreeService : IWikiTreeService
         {
             await _wikiTreeRepository.UpdateFolderPageNameAsync(pageName, pageId);
         }
-        
+
         catch (Exception ex)
         {
             _logger?.LogError(ex, ex.Message);
@@ -194,7 +192,7 @@ internal sealed class WikiTreeService : IWikiTreeService
 
             await _wikiTreeRepository.CreateFolderAsync(parentId, folderName, userId, treeId);
         }
-        
+
         catch (Exception ex)
         {
             _logger?.LogError(ex, ex.Message);
@@ -212,70 +210,111 @@ internal sealed class WikiTreeService : IWikiTreeService
     /// <param name="folder">Папка текущего узла.</param>
     /// <param name="folders">Все папки проекта.</param>
     /// <param name="pages">Все страницы папок проекта.</param>
-    /// <param name="isSingleIteration">Если нужна лишь 1 итерация, например, при получении структуры папки.</param>
     private async Task RecursiveBuildTreeAsync(LinkedListNode<WikiTreeItem> folder,
-        IReadOnlyCollection<WikiTreeItem> folders, IReadOnlyCollection<WikiTreeItem>? pages, bool isSingleIteration)
+        IReadOnlyCollection<WikiTreeItem> folders, IReadOnlyCollection<WikiTreeItem>? pages)
     {
-        if (folder.Next?.Value is not null || isSingleIteration)
+        if (folder.Next?.Value is not null)
         {
             // Родительская папка.
             folder.Value.Children ??= new List<WikiTreeItem>();
             folder.Value.Icon = "pi pi-folder";
 
-            // Если у папки есть вложенные папки.
-            if (folder.Value.ChildId.HasValue)
+            // Работаем с дочерними папки в рамках родительской папки.
+            var childFolders = folders.Where(x => x.ParentId == folder.Value.FolderId && !x.IsPage)?.AsList();
+
+            if (childFolders is not null && childFolders.Count > 0)
             {
-                // Работаем с дочерними папки в рамках родительской папки.
-                var childFolders = folders.Where(x => x.ParentId == folder.Value.FolderId && !x.IsPage)?.AsList();
-
-                if (childFolders is not null && childFolders.Count > 0)
+                // Перебираем дочерние папки родителя.
+                foreach (var cf in childFolders)
                 {
-                    // Перебираем дочерние папки родителя.
-                    foreach (var cf in childFolders)
+                    cf.Children ??= new List<WikiTreeItem>();
+                    cf.Icon = "pi pi-folder";
+
+                    // Есть ли у дочерней папки тоже дети.
+                    var childChildFolders = folders.Where(x => x.ParentId == cf.FolderId && !x.IsPage)?.AsList();
+
+                    if (childChildFolders is not null && childChildFolders.Count > 0)
                     {
-                        cf.Children ??= new List<WikiTreeItem>();
-                        cf.Icon = "pi pi-folder";
+                        childChildFolders.ForEach(x => x.Icon = "pi pi-folder");
 
-                        // Есть ли у дочерней папки тоже дети.
-                        var childChildFolders = folders.Where(x => x.ParentId == cf.FolderId && !x.IsPage)?.AsList();
+                        // TODO: А если еще есть дети ниже? То рекурсивно обходить, пока есть дети.
+                        cf.Children.AddRange(childChildFolders);
 
-                        if (childChildFolders is not null && childChildFolders.Count > 0)
+                        if (pages is not null && pages.Count > 0)
                         {
-                            childChildFolders.ForEach(x => x.Icon = "pi pi-folder");
-
-                            // TODO: А если еще есть дети ниже? То рекурсивно обходить, пока есть дети.
-                            cf.Children.AddRange(childChildFolders);
-
-                            if (pages is not null && pages.Count > 0)
-                            {
-                                // Заполняем страницы дочерней папки.
-                                await BuildFolderPagesAsync(cf, pages);
-                            }
+                            // Заполняем страницы дочерней папки.
+                            await BuildFolderPagesAsync(cf, pages);
                         }
                     }
+                }
 
-                    folder.Value.Children.AddRange(childFolders);
+                folder.Value.Children.AddRange(childFolders);
 
-                    if (pages is not null && pages.Count > 0)
-                    {
-                        // Заполняем страницы дочерней папки.
-                        await BuildFolderPagesAsync(folder.Value, pages);
-                    }
+                if (pages is not null && pages.Count > 0)
+                {
+                    // Заполняем страницы дочерней папки.
+                    await BuildFolderPagesAsync(folder.Value, pages);
+                }
 
-                    // Добавляем родительскую папку в результат.
-                    _treeItems.Add(folder.Value);
+                // Добавляем родительскую папку в результат.
+                _treeItems.Add(folder.Value);
+            }
+            
+            // Переходим к следующему узлу, если его нет, то прекратим рекурсивный обход дерева.
+            await RecursiveBuildTreeAsync(folder.Next!, folders, pages);
+        }
+    }
+
+    /// <summary>
+    /// Метод получает структуру папки.
+    /// </summary>
+    /// <param name="folder">Папка.</param>
+    /// <param name="folders">Дочерние папки.</param>
+    /// <param name="pages">Страницы.</param>
+    private async Task BuildTreeAsync(WikiTreeItem folder,
+        IReadOnlyCollection<WikiTreeItem> folders, IReadOnlyCollection<WikiTreeItem>? pages)
+    {
+        // Родительская папка.
+        folder.Children ??= new List<WikiTreeItem>();
+        folder.Icon = "pi pi-folder";
+
+        // Перебираем дочерние папки родителя.
+        foreach (var cf in folders)
+        {
+            cf.Children ??= new List<WikiTreeItem>();
+            cf.Icon = "pi pi-folder";
+
+            // Есть ли у дочерней папки тоже дети.
+            var childFolders = folders.Where(x => x.ParentId == cf.FolderId && !x.IsPage)?.AsList();
+
+            if (childFolders is not null && childFolders.Count > 0)
+            {
+                foreach (var chf in childFolders)
+                {
+                    chf.Icon = "pi pi-folder";
+                }
+
+                // TODO: А если еще есть дети ниже? То рекурсивно обходить, пока есть дети.
+                cf.Children.AddRange(childFolders);
+
+                if (pages is not null && pages.Count > 0)
+                {
+                    // Заполняем страницы дочерней папки.
+                    await BuildFolderPagesAsync(cf, pages);
                 }
             }
-
-            // Прошли 1 итерацию, больше не нужно.
-            if (isSingleIteration)
-            {
-                return;
-            }
-
-            // Переходим к следующему узлу, если его нет, то прекратим рекурсивный обход дерева.
-            await RecursiveBuildTreeAsync(folder.Next!, folders, pages, isSingleIteration);
         }
+
+        folder.Children.AddRange(folders);
+
+        if (pages is not null && pages.Count > 0)
+        {
+            // Заполняем страницы дочерней папки.
+            await BuildFolderPagesAsync(folder, pages);
+        }
+
+        // Добавляем родительскую папку в результат.
+        _treeItems.Add(folder);
     }
 
     /// <summary>
@@ -293,7 +332,7 @@ internal sealed class WikiTreeService : IWikiTreeService
         {
             return;
         }
-        
+
         foreach (var p in folderPages)
         {
             p.Icon = "pi pi-file";

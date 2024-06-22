@@ -40,18 +40,39 @@ internal sealed class WikiTreeRepository : BaseRepository, IWikiTreeRepository
         var query = "SELECT tf.folder_id," +
                     "tf.wiki_tree_id," +
                     "tf.folder_name AS Name," +
-                    "tf.parent_id," +
-                    "tf.child_id," +
                     "tf.created_by," +
                     "tf.created_at," +
-                    "t.project_id " +
+                    "t.project_id ," +
+                    "fl.child_id, " +
+                    "fl.parent_id " +
                     "FROM project_management.wiki_tree_folders AS tf " +
                     "INNER JOIN project_management.wiki_tree AS t " +
                     "ON tf.wiki_tree_id = t.wiki_tree_id " +
+                    "INNER JOIN project_management.wiki_tree_folder_relations AS fl " +
+                    "ON tf.folder_id = fl.folder_id " +
                     "WHERE t.project_id = @projectId " +
                     "ORDER BY tf.folder_id";
 
         var result = await connection.QueryAsync<WikiTreeItem>(query, parameters);
+
+        return result;
+    }
+
+    /// <inheritdoc />
+    public async Task<IEnumerable<long>?> GetChildFolderAsync(long folderId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+        
+        var parameters = new DynamicParameters();
+        parameters.Add("@folderId", folderId);
+
+        var query = "SELECT fr.folder_id " +
+                    "FROM project_management.wiki_tree_folders AS f " +
+                    "INNER JOIN project_management.wiki_tree_folder_relations AS fr " +
+                    "ON f.folder_id = fr.folder_id " +
+                    "WHERE fr.parent_id = @folderId";
+
+        var result = await connection.QueryAsync<long>(query, parameters);
 
         return result;
     }
@@ -332,6 +353,32 @@ internal sealed class WikiTreeRepository : BaseRepository, IWikiTreeRepository
                     "VALUES (@treeId, @folderName, @parentId, @userId)";
 
         await connection.ExecuteAsync(query, parameters);
+    }
+
+    /// <inheritdoc />
+    public async Task<IEnumerable<WikiTreeItem>?> GetFoldersByFolderIdsAsync(IEnumerable<long> folderIds)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+        
+        var parameters = new DynamicParameters();
+        parameters.Add("@folderIds", folderIds);
+
+        var query = "SELECT f.wiki_tree_folder_id, " +
+                    "f.folder_id, " +
+                    "f.wiki_tree_id, " +
+                    "f.folder_name AS Name, " +
+                    "f.created_by, " +
+                    "f.created_at," +
+                    "fr.child_id, " +
+                    "fr.parent_id " +
+                    "FROM project_management.wiki_tree_folders AS f " +
+                    "INNER JOIN project_management.wiki_tree_folder_relations AS fr " +
+                    "ON f.folder_id = fr.folder_id " +
+                    "WHERE f.folder_id = ANY(@folderIds)";
+
+        var result = await connection.QueryAsync<WikiTreeItem>(query, parameters);
+
+        return result;
     }
 
     #endregion
