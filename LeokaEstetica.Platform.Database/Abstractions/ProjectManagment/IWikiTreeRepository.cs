@@ -68,13 +68,6 @@ public interface IWikiTreeRepository
     Task UpdateFolderPageDescriptionAsync(string? pageDescription, long pageId);
 
     /// <summary>
-    /// Метод получает данные папки по ее Id.
-    /// </summary>
-    /// <param name="folderId">Id папки.</param>
-    /// <returns>Данные папки.</returns>
-    Task<WikiTreeItem?> GetFolderByFolderIdAsync(long folderId);
-
-    /// <summary>
     /// Метод получает элементы контекстного меню.
     /// </summary>
     /// <param name="projectId">Id проекта, если передан.</param>
