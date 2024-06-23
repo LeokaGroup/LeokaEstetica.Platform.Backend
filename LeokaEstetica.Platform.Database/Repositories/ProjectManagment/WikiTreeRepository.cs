@@ -88,7 +88,7 @@ internal sealed class WikiTreeRepository : BaseRepository, IWikiTreeRepository
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<WikiTreeItem>?> GetPageItemsAsync(IEnumerable<long> folderIds,
+    public async Task<IEnumerable<WikiTreeItem>?> GetPageItemsAsync(IEnumerable<long?> folderIds,
         IEnumerable<long> treeIds)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
@@ -108,7 +108,17 @@ internal sealed class WikiTreeRepository : BaseRepository, IWikiTreeRepository
                     "LEFT JOIN project_management.wiki_tree_pages AS p " +
                     "ON tf.folder_id = p.folder_id " +
                     "WHERE p.folder_id = ANY(@folderIds) " +
-                    "AND p.wiki_tree_id = ANY(@treeIds)";
+                    "AND p.wiki_tree_id = ANY(@treeIds) " +
+                    "UNION " +
+                    "SELECT p.page_id," +
+                    "p.folder_id," +
+                    "p.page_name AS Name," +
+                    "p.page_description," +
+                    "p.wiki_tree_id," +
+                    "p.created_by," +
+                    "p.created_at " +
+                    "FROM project_management.wiki_tree_pages AS p " +
+                    "WHERE p.folder_id IS NULL;";
 
         var result = await connection.QueryAsync<WikiTreeItem>(query, parameters);
 

@@ -74,7 +74,7 @@ internal sealed class WikiTreeService : IWikiTreeService
 
             // TODO: Относительный костыль, иначе были дубли на 1 уровне дерева из папок,
             // TODO: которые есть в дочерних у какой то папки.
-            _treeItems.RemoveAll(x => _removedFolderIds.Contains(x.FolderId));
+            _treeItems.RemoveAll(x => _removedFolderIds.Contains(x.FolderId ?? 0));
 
             // TODO: Дубли на 1 уровне дерева.
             return _treeItems.DistinctBy(x => x.FolderId);
@@ -93,14 +93,14 @@ internal sealed class WikiTreeService : IWikiTreeService
         try
         {
             var childFolderIds = (await _wikiTreeRepository.GetChildFolderAsync(folderId))?.AsList();
-            
+
             if (childFolderIds is null || childFolderIds.Count == 0)
             {
                 return Enumerable.Empty<WikiTreeItem>();
             }
 
             childFolderIds.Add(folderId);
-            
+
             var childFolders = (await _wikiTreeRepository.GetFoldersByFolderIdsAsync(childFolderIds))?.AsList();
 
             // Наполняем папки вложенными элементами (страницами или другими папками).
@@ -269,40 +269,27 @@ internal sealed class WikiTreeService : IWikiTreeService
 
                     if (childChildFolders is not null && childChildFolders.Count > 0)
                     {
-                        foreach (var childFolder in childChildFolders)
+                        foreach (var c in cf.Children)
                         {
-                            childFolder.Children ??= new List<WikiTreeItem>();
-                            childFolder.Icon = "pi pi-folder";
-
-                            if (childFolder.HasChildren)
+                            foreach (var c1 in childChildFolders)
                             {
-                                var findDublicateIdx = childFolder.Children.FindIndex(x => x.FolderId == cf.FolderId);
-
-                                if (findDublicateIdx == -1)
+                                if (c.FolderId != c1.FolderId)
                                 {
-                                    if (cf.HasChildren)
-                                    {
-                                        var findDublicateCfIdx = childFolder.Children
-                                            .FindIndex(x => x.FolderId == cf.FolderId);
-
-                                        if (findDublicateCfIdx == -1)
-                                        {
-                                            cf.Children.Add(childFolder);
-                                        }
-                                    }
+                                    c.Children ??= new List<WikiTreeItem>();
+                                    c.Children.Add(c1);
                                 }
                             }
-                        }
 
-                        if (pages is not null && pages.Count > 0)
-                        {
-                            // Заполняем страницы дочерней папки.
-                            await BuildFolderPagesAsync(cf, pages);
+                            if (pages is not null && pages.Count > 0)
+                            {
+                                // Заполняем страницы дочерней папки.
+                                await BuildFolderPagesAsync(cf, pages);
+                            }
                         }
                     }
                 }
 
-                _removedFolderIds.AddRange(childFolders.Select(x => x.FolderId));
+                _removedFolderIds.AddRange(childFolders.Select(x => x.FolderId!.Value));
 
                 folder.Value.Children.AddRange(childFolders);
 
@@ -316,45 +303,23 @@ internal sealed class WikiTreeService : IWikiTreeService
                 _treeItems.Add(folder.Value);
             }
 
+            // Нет детей, значит добавляем на 1 уровень дерева.
             else
             {
-                folder.Value.Icon = "pi pi-folder";
-
-                // Детей нет, но есть родитель, значит это дочерняя папка.
-                if ((folder.Value.Children is null || folder.Value.Children.Count == 0)
-                    && folder.Value.ParentId.HasValue)
-                {
-                    // Есть ли уже родительская папка для такой папки.
-                    var findResultIdx = _treeItems.FindIndex(x => x.FolderId == folder.Value.ParentId.Value);
-
-                    if (findResultIdx >= 0)
-                    {
-                        (_treeItems[findResultIdx].Children ?? new List<WikiTreeItem>()).Add(folder.Value);
-                    }
-
-                    else
-                    {
-                        // Ищем среди папок и добавляем дочку родителю.
-                        var findFoldersIdx = folders.FindIndex(x => x.FolderId == folder.Value.ParentId.Value);
-                        
-                        if (findFoldersIdx >= 0)
-                        {
-                            (folders[findFoldersIdx].Children ?? new List<WikiTreeItem>()).Add(folder.Value);
-                        }
-                    }
-                }
-
-                // Детей нет и родителя нет, значит эта папка сама родитель.
-                else if ((folder.Value.Children is null || folder.Value.Children.Count == 0)
-                         && !folder.Value.ParentId.HasValue)
-                {
-                    _treeItems.Add(folder.Value);
-                }
+                _treeItems.Add(folder.Value);
             }
 
             // Переходим к следующему узлу, если его нет, то прекратим рекурсивный обход дерева.
             await RecursiveBuildTreeAsync(folder.Next!, folders, pages);
         }
+
+        _treeItems.AddRange(pages!.Where(b => b.FolderId is null).Select(c => new WikiTreeItem
+        {
+            Name = c.Name,
+            WikiTreeId = c.WikiTreeId,
+            PageId = c.PageId,
+            Icon = "pi pi-file"
+        }));
     }
 
     /// <summary>
