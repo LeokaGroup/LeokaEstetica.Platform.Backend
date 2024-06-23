@@ -19,6 +19,15 @@ internal sealed class WikiTreeRepository : BaseRepository, IWikiTreeRepository
     private readonly IEnumerable<WikiTreeItem>? _folders = new List<WikiTreeItem>();
 
     /// <summary>
+    /// Список ключей для выпадающего контекстного меню дерева wiki.
+    /// </summary>
+    private readonly List<string> _contextMenuKeys = new()
+    {
+        "CreateFolder",
+        "CreateFolderPage"
+    };
+
+    /// <summary>
     /// Конструктор.
     /// </summary>
     /// <param name="connectionProvider">Провайдер БД.</param>
@@ -312,7 +321,7 @@ internal sealed class WikiTreeRepository : BaseRepository, IWikiTreeRepository
 
     /// <inheritdoc />
     public async Task<IEnumerable<WikiContextMenuOutput>> GetContextMenuAsync(long? projectId = null,
-        long? pageId = null)
+        long? pageId = null, bool isParentFolder = false)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
         
@@ -321,17 +330,26 @@ internal sealed class WikiTreeRepository : BaseRepository, IWikiTreeRepository
         var query = "SELECT menu_id, item_name, icon, item_sys_name " +
                     "FROM project_management.wiki_context_menu";
 
-        if (projectId.HasValue)
+        if (projectId.HasValue && !isParentFolder)
         {
-            parameters.Add("@key", "CreateFolder");
+            parameters.Add("@key", _contextMenuKeys[0]);
         }
 
-        if (pageId.HasValue)
+        if (pageId.HasValue && !isParentFolder)
         {
-            parameters.Add("@key", "CreateFolderPage");
+            parameters.Add("@key", _contextMenuKeys[1]);
         }
-        
-        query += " WHERE item_sys_name = @key";
+
+        if (isParentFolder)
+        {
+            parameters.Add("@keys", _contextMenuKeys);
+            query += " WHERE item_sys_name = ANY(@keys)";
+        }
+
+        else
+        {
+            query += " WHERE item_sys_name = @key";
+        }
 
         var result = await connection.QueryAsync<WikiContextMenuOutput>(query, parameters);
 
@@ -380,7 +398,34 @@ internal sealed class WikiTreeRepository : BaseRepository, IWikiTreeRepository
                 await connection.ExecuteAsync(parentQuery, parentParameters);
             }
 
+            else
+            {
+                var withoutParentParameters = new DynamicParameters();
+                withoutParentParameters.Add("@folderId", folderId);
+
+                var withoutParentQuery = "INSERT INTO project_management.wiki_tree_folder_relations (folder_id) " +
+                                         "VALUES (@folderId)";
+
+                await connection.ExecuteAsync(withoutParentQuery, withoutParentParameters);
+            }
+            
             transaction.Commit();
+            
+            // // Создаем папку вне родителя в дереве.
+            // var withoutParentParameters = new DynamicParameters();
+            // withoutParentParameters.Add("@lastFolderId", ++lastFolderId);
+            // withoutParentParameters.Add("@folderName", folderName);
+            // withoutParentParameters.Add("@treeId", treeId);
+            // withoutParentParameters.Add("@userId", userId);
+            //
+            //   // Создаем папку в дереве.
+            //   var withoutParentQuery = "INSERT INTO project_management.wiki_tree_folders (folder_id, wiki_tree_id," +
+            //                            " folder_name, created_by) " +
+            //                            "VALUES (@lastFolderId, @treeId, @folderName, @userId)";
+            //
+            //   await connection.ExecuteAsync(withoutParentQuery, withoutParentParameters);
+            //
+            // transaction.Commit();
         }
         
         catch
