@@ -5,20 +5,20 @@ using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
 namespace LeokaEstetica.Platform.ProjectManagement.Validators;
 
 /// <summary>
-/// Класс валидатора создания папки Wiki проекта.
+/// Класс валидатора создания страницы Wiki проекта.
 /// </summary>
-public class CreateFolderValidator : AbstractValidator<CreateWikiFolderInput>
+public class CreatePageValidator : AbstractValidator<CreateWikiPageInput>
 {
     /// <summary>
     /// Конструктор.
     /// </summary>
-    public CreateFolderValidator()
+    public CreatePageValidator()
     {
-        RuleFor(p => p.FolderName)
+        RuleFor(p => p.PageName)
             .NotNull()
-            .WithMessage(ValidationConst.ProjectManagmentValidation.NOT_VALID_CURRENT_FOLDER_NAME)
+            .WithMessage(ValidationConst.ProjectManagmentValidation.NOT_VALID_PAGE_NAME)
             .NotEmpty()
-            .WithMessage(ValidationConst.ProjectManagmentValidation.NOT_VALID_CURRENT_FOLDER_NAME);
+            .WithMessage(ValidationConst.ProjectManagmentValidation.NOT_VALID_PAGE_NAME);
 
         RuleFor(p => p.WikiTreeId)
             .Must(p => p > 0)

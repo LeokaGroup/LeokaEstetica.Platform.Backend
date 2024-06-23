@@ -10,7 +10,7 @@ public class WikiTreeItem
     /// <summary>
     /// Id папки дерева.
     /// </summary>
-    public long FolderId { get; set; }
+    public long? FolderId { get; set; }
     
     /// <summary>
     /// Название папки/страницы.
