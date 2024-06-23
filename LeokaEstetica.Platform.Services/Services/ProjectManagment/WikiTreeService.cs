@@ -182,6 +182,12 @@ internal sealed class WikiTreeService : IWikiTreeService
     {
         try
         {
+            // TODO: Пока не предусмотрено создание папки вне другой папки.
+            if (!parentId.HasValue)
+            {
+                throw new NotImplementedException("Создание папки вне родителя пока не реализовано.");
+            }
+
             var userId = await _userRepository.GetUserByEmailAsync(account);
 
             if (userId <= 0)

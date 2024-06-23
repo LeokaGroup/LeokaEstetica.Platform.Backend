@@ -341,18 +341,52 @@ internal sealed class WikiTreeRepository : BaseRepository, IWikiTreeRepository
     public async Task CreateFolderAsync(long? parentId, string? folderName, long userId, long treeId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
+        using var transaction = connection.BeginTransaction(IsolationLevel.ReadCommitted);
 
-        var parameters = new DynamicParameters();
-        parameters.Add("@folderName", folderName);
-        parameters.Add("@treeId", treeId);
-        parameters.Add("@parentId", parentId.HasValue ? parentId : DBNull.Value);
-        parameters.Add("@userId", userId);
+        try
+        {
+            // Получаем последнюю папку.
+            var lastFolderIdQuery = "SELECT folder_id " +
+                                    "FROM project_management.wiki_tree_folders " +
+                                    "ORDER BY folder_id DESC " +
+                                    "LIMIT 1";
+            
+            var lastFolderId = await connection.QueryFirstOrDefaultAsync<long>(lastFolderIdQuery);
+            
+            var insertFolderParameters = new DynamicParameters();
+            insertFolderParameters.Add("@lastFolderId", ++lastFolderId);
+            insertFolderParameters.Add("@folderName", folderName);
+            insertFolderParameters.Add("@treeId", treeId);
+            insertFolderParameters.Add("@userId", userId);
 
-        var query = "INSERT INTO project_management.wiki_tree_folders (wiki_tree_id, folder_name, parent_id," +
-                    " created_by) " +
-                    "VALUES (@treeId, @folderName, @parentId, @userId)";
+            // Создаем папку в дереве.
+            var insertFolderQuery = "INSERT INTO project_management.wiki_tree_folders (folder_id, wiki_tree_id," +
+                                    " folder_name, created_by) " +
+                                    "VALUES (@lastFolderId, @treeId, @folderName, @userId) " +
+                                    "RETURNING folder_id";
 
-        await connection.ExecuteAsync(query, parameters);
+            var folderId = await connection.ExecuteScalarAsync<long>(insertFolderQuery, insertFolderParameters);
+
+            if (parentId.HasValue)
+            {
+                var parentParameters = new DynamicParameters();
+                parentParameters.Add("@folderId", folderId);
+                parentParameters.Add("@parentId", parentId);
+
+                var parentQuery = "INSERT INTO project_management.wiki_tree_folder_relations (folder_id, parent_id) " +
+                                  "VALUES (@folderId, @parentId)";
+
+                await connection.ExecuteAsync(parentQuery, parentParameters);
+            }
+
+            transaction.Commit();
+        }
+        
+        catch
+        {
+            transaction.Rollback();
+            throw;
+        }
     }
 
     /// <inheritdoc />
