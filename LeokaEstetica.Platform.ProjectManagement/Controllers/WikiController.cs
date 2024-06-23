@@ -318,4 +318,40 @@ public class WikiController : BaseController
       await _wikiTreeService.CreateFolderAsync(createWikiFolderInput.ParentId, createWikiFolderInput.FolderName,
          GetUserName(), createWikiFolderInput.WikiTreeId);
    }
+   
+   /// <summary>
+   /// Метод создает страницу.
+   /// </summary>
+   /// <param name="createWikiPageInput">Входная модель.</param>
+   [HttpPost]
+   [Route("tree-item-page")]
+   [ProducesResponseType(200)]
+   [ProducesResponseType(400)]
+   [ProducesResponseType(403)]
+   [ProducesResponseType(500)]
+   [ProducesResponseType(404)]
+   public async Task CreatePageAsync([FromBody] CreateWikiPageInput createWikiPageInput)
+   {
+      var validator = await new CreatePageValidator().ValidateAsync(createWikiPageInput);
+
+      if (validator.Errors.Any())
+      {
+         var exceptions = new List<InvalidOperationException>();
+
+         foreach (var err in validator.Errors)
+         {
+            exceptions.Add(new InvalidOperationException(err.ErrorMessage));
+         }
+            
+         var ex = new AggregateException("Ошибка создания страницы Wiki проекта.", exceptions);
+         _logger.LogError(ex, ex.Message);
+            
+         await _discordService.Value.SendNotificationErrorAsync(ex);
+            
+         throw ex;
+      }
+
+      await _wikiTreeService.CreatePageAsync(createWikiPageInput.ParentId, createWikiPageInput.PageName,
+         GetUserName(), createWikiPageInput.WikiTreeId);
+   }
 }

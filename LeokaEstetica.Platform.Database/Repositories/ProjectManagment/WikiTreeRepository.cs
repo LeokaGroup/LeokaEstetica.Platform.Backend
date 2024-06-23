@@ -330,25 +330,15 @@ internal sealed class WikiTreeRepository : BaseRepository, IWikiTreeRepository
         var query = "SELECT menu_id, item_name, icon, item_sys_name " +
                     "FROM project_management.wiki_context_menu";
 
-        if (projectId.HasValue && !isParentFolder)
-        {
-            parameters.Add("@key", _contextMenuKeys[0]);
-        }
-
-        if (pageId.HasValue && !isParentFolder)
-        {
-            parameters.Add("@key", _contextMenuKeys[1]);
-        }
-
-        if (isParentFolder)
+        if (projectId.HasValue && !isParentFolder || isParentFolder)
         {
             parameters.Add("@keys", _contextMenuKeys);
             query += " WHERE item_sys_name = ANY(@keys)";
         }
 
-        else
+        if (pageId.HasValue && !isParentFolder)
         {
-            query += " WHERE item_sys_name = @key";
+            parameters.Add("@key", _contextMenuKeys[1]);
         }
 
         var result = await connection.QueryAsync<WikiContextMenuOutput>(query, parameters);
@@ -410,22 +400,6 @@ internal sealed class WikiTreeRepository : BaseRepository, IWikiTreeRepository
             }
             
             transaction.Commit();
-            
-            // // Создаем папку вне родителя в дереве.
-            // var withoutParentParameters = new DynamicParameters();
-            // withoutParentParameters.Add("@lastFolderId", ++lastFolderId);
-            // withoutParentParameters.Add("@folderName", folderName);
-            // withoutParentParameters.Add("@treeId", treeId);
-            // withoutParentParameters.Add("@userId", userId);
-            //
-            //   // Создаем папку в дереве.
-            //   var withoutParentQuery = "INSERT INTO project_management.wiki_tree_folders (folder_id, wiki_tree_id," +
-            //                            " folder_name, created_by) " +
-            //                            "VALUES (@lastFolderId, @treeId, @folderName, @userId)";
-            //
-            //   await connection.ExecuteAsync(withoutParentQuery, withoutParentParameters);
-            //
-            // transaction.Commit();
         }
         
         catch
@@ -459,6 +433,35 @@ internal sealed class WikiTreeRepository : BaseRepository, IWikiTreeRepository
         var result = await connection.QueryAsync<WikiTreeItem>(query, parameters);
 
         return result;
+    }
+
+    /// <inheritdoc />
+    public async Task CreatePageAsync(long? parentId, string? pageName, long userId, long treeId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@pageName", pageName);
+        parameters.Add("@treeId", treeId);
+        parameters.Add("@userId", userId);
+
+        string query;
+
+        if (!parentId.HasValue)
+        {
+            query = "INSERT INTO project_management.wiki_tree_pages (page_name, wiki_tree_id, created_by) " +
+                    "VALUES (@pageName, @treeId, @userId)";
+        }
+
+        else
+        {
+            parameters.Add("@folderId", parentId.Value);
+            query = "INSERT INTO project_management.wiki_tree_pages (folder_id, page_name," +
+                    " wiki_tree_id, created_by) " +
+                    "VALUES (@folderId, @pageName, @treeId, @userId)";
+        }
+
+        await connection.ExecuteAsync(query, parameters);
     }
 
     #endregion

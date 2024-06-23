@@ -99,4 +99,13 @@ public interface IWikiTreeRepository
     /// <param name="folderIds">Id папок.</param>
     /// <returns>Список папок.</returns>
     Task<IEnumerable<WikiTreeItem>?> GetFoldersByFolderIdsAsync(IEnumerable<long> folderIds);
+    
+    /// <summary>
+    /// Метод создает страницу.
+    /// </summary>
+    /// <param name="parentId">Id родителя, если передали (родительская папка).</param>
+    /// <param name="pageName">Название страницы.</param>
+    /// <param name="userId">Id пользователя.</param>
+    /// <param name="treeId">Id дерева.</param>
+    Task CreatePageAsync(long? parentId, string? pageName, long userId, long treeId);
 }
