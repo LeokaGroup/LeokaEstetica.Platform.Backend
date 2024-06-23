@@ -77,4 +77,9 @@ public class WikiTreeItem
     /// Описание.
     /// </summary>
     public string? PageDescription { get; set; }
+
+    /// <summary>
+    /// Признак системной папки (создается не пользователем, а системой).
+    /// </summary>
+    public bool IsSystem { get; set; }
 }

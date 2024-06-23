@@ -44,7 +44,8 @@ internal sealed class WikiTreeRepository : BaseRepository, IWikiTreeRepository
                     "tf.created_at," +
                     "t.project_id ," +
                     "fl.child_id, " +
-                    "fl.parent_id " +
+                    "fl.parent_id," +
+                    "tf.is_system " +
                     "FROM project_management.wiki_tree_folders AS tf " +
                     "INNER JOIN project_management.wiki_tree AS t " +
                     "ON tf.wiki_tree_id = t.wiki_tree_id " +

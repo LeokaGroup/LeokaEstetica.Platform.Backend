@@ -25,6 +25,12 @@ internal sealed class WikiTreeService : IWikiTreeService
     /// </summary>
     private readonly List<WikiTreeItem> _treeItems = new();
 
+    /// <summary>
+    /// Список папок, которые удаляем из дерева на 1 уровне, так как они есть на 2 уровне и ниже.
+    /// Во избежание дублей на 1 уровне дерева.
+    /// </summary>
+    private readonly List<long> _removedFolderIds = new();
+
     #region Публичные методы.
 
     /// <summary>
@@ -66,6 +72,11 @@ internal sealed class WikiTreeService : IWikiTreeService
             // Рекурсивно обходим дерево и заполняем папки.
             await RecursiveBuildTreeAsync(foldersLinkedList.First!, folders, pages);
 
+            // TODO: Относительный костыль, иначе были дубли на 1 уровне дерева из папок,
+            // TODO: которые есть в дочерних у какой то папки.
+            _treeItems.RemoveAll(x => _removedFolderIds.Contains(x.FolderId));
+
+            // TODO: Дубли на 1 уровне дерева.
             return _treeItems.DistinctBy(x => x.FolderId);
         }
 
@@ -241,10 +252,30 @@ internal sealed class WikiTreeService : IWikiTreeService
 
                     if (childChildFolders is not null && childChildFolders.Count > 0)
                     {
-                        childChildFolders.ForEach(x => x.Icon = "pi pi-folder");
+                        foreach (var childFolder in childChildFolders)
+                        {
+                            childFolder.Children ??= new List<WikiTreeItem>();
+                            childFolder.Icon = "pi pi-folder";
 
-                        // TODO: А если еще есть дети ниже? То рекурсивно обходить, пока есть дети.
-                        cf.Children.AddRange(childChildFolders);
+                            if (childFolder.HasChildren)
+                            {
+                                var findDublicateIdx = childFolder.Children.FindIndex(x => x.FolderId == cf.FolderId);
+
+                                if (findDublicateIdx == -1)
+                                {
+                                    if (cf.HasChildren)
+                                    {
+                                        var findDublicateCfIdx = childFolder.Children
+                                            .FindIndex(x => x.FolderId == cf.FolderId);
+
+                                        if (findDublicateCfIdx == -1)
+                                        {
+                                            cf.Children.Add(childFolder);
+                                        }
+                                    }
+                                }
+                            }
+                        }
 
                         if (pages is not null && pages.Count > 0)
                         {
@@ -253,6 +284,8 @@ internal sealed class WikiTreeService : IWikiTreeService
                         }
                     }
                 }
+
+                _removedFolderIds.AddRange(childFolders.Select(x => x.FolderId));
 
                 folder.Value.Children.AddRange(childFolders);
 
