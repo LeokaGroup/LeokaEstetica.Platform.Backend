@@ -193,12 +193,6 @@ internal sealed class WikiTreeService : IWikiTreeService
     {
         try
         {
-            // TODO: Пока не предусмотрено создание папки вне другой папки.
-            if (!parentId.HasValue)
-            {
-                throw new NotImplementedException("Создание папки вне родителя пока не реализовано.");
-            }
-
             var userId = await _userRepository.GetUserByEmailAsync(account);
 
             if (userId <= 0)
@@ -298,9 +292,17 @@ internal sealed class WikiTreeService : IWikiTreeService
                 // Добавляем родительскую папку в результат.
                 _treeItems.Add(folder.Value);
             }
-            
+
             // Переходим к следующему узлу, если его нет, то прекратим рекурсивный обход дерева.
             await RecursiveBuildTreeAsync(folder.Next!, folders, pages);
+        }
+
+        // След.элемента нету, значит без родителя, просто добавляем в дерево.
+        else
+        {
+            folder.Value.Icon = "pi pi-folder";
+            
+            _treeItems.Add(folder.Value);
         }
     }
 

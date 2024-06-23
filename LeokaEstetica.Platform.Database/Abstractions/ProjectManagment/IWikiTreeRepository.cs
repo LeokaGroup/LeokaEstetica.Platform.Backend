@@ -79,8 +79,10 @@ public interface IWikiTreeRepository
     /// </summary>
     /// <param name="projectId">Id проекта, если передан.</param>
     /// <param name="pageId">Id страницы, если передан.</param>
+    /// <param name="isParentFolder">Признак создания вне родителя.</param>
     /// <returns>Элементы контекстного меню.</returns>
-    Task<IEnumerable<WikiContextMenuOutput>> GetContextMenuAsync(long? projectId = null, long? pageId = null);
+    Task<IEnumerable<WikiContextMenuOutput>> GetContextMenuAsync(long? projectId = null, long? pageId = null,
+        bool isParentFolder = false);
     
     /// <summary>
     /// Метод создает папку.
