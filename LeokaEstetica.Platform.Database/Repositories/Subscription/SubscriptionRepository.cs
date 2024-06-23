@@ -150,13 +150,12 @@ internal sealed class SubscriptionRepository : ISubscriptionRepository
     {
         // Получаем неактивную подписку пользователя.
         var userSubscription = await _pgContext.UserSubscriptions
-            .FirstOrDefaultAsync(s => s.UserId == userId 
-                                      && !s.IsActive);
+            .FirstOrDefaultAsync(s => s.UserId == userId);
 
         if (userSubscription is null)
         {
             throw new InvalidOperationException(
-                "Не удалось получить неактивную подписку пользователя для сброса аккаунта до бесплатного тарифа." +
+                "Не удалось получить подписку пользователя для сброса аккаунта до бесплатного тарифа." +
                 $" UserId: {userId}");
         }
         
