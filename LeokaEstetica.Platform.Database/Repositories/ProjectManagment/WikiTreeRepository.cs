@@ -474,6 +474,95 @@ internal sealed class WikiTreeRepository : BaseRepository, IWikiTreeRepository
         await connection.ExecuteAsync(query, parameters);
     }
 
+    /// <inheritdoc />
+    public async Task RemoveFolderAsync(long folderId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+        using var transaction = connection.BeginTransaction(IsolationLevel.ReadCommitted);
+        
+        try
+        {
+            var parameters = new DynamicParameters();
+            parameters.Add("@folderId", folderId);
+
+            // Сначала удаляем дочерние папки и страницы родительской папки.
+            // Получаем дочерние папки родительской папки.
+            var childFoldersQuery = "SELECT folder_id " +
+                                    "FROM project_management.wiki_tree_folder_relations " +
+                                    "WHERE folder_id = @folderId";
+
+            var childFolders = (await connection.QueryAsync<long>(childFoldersQuery, parameters))?.AsList();
+
+            // Рекурсивно удаляем детей родителя.
+            if (childFolders is not null && childFolders.Count > 0)
+            {
+                var removeChildFolders = "WITH RECURSIVE cte_recursive_folder_children AS (SELECT f.folder_id " +
+                                         "FROM project_management.wiki_tree_folders AS f " +
+                                         "INNER JOIN project_management.wiki_tree_folder_relations AS fl " +
+                                         "ON f.folder_id = fl.folder_id " +
+                                         "WHERE fl.parent_id = @folderId " +
+                                         "UNION " +
+                                         "SELECT f.folder_id " +
+                                         "FROM project_management.wiki_tree_folders AS f " +
+                                         "INNER JOIN cte_recursive_folder_children AS cte " +
+                                         "ON cte.folder_id = f.folder_id) " +
+                                         "DELETE FROM cte_recursive_folder_children;";
+
+                await connection.ExecuteAsync(removeChildFolders, parameters);
+                
+                // Подчищаем отношения.
+                var removeFolderRelations = "DELETE project_management.wiki_tree_folder_relations " +
+                                            "WHERE parent_id = @folderId";
+                
+                 await connection.ExecuteAsync(removeFolderRelations, parameters);
+            }
+            
+            // Получаем дочерние страницы родительской папки.
+            var childPagesQuery = "SELECT folder_id " +
+                                    "FROM project_management.wiki_tree_pages " +
+                                    "WHERE folder_id = @folderId";
+
+            var childPages = (await connection.QueryAsync<long>(childPagesQuery, parameters))?.AsList();
+
+            if (childPages is not null && childPages.Count > 0)
+            {
+                var removechildPagesQuery = "DELETE project_management.wiki_tree_pages " +
+                                            "WHERE folder_id = @folderId";
+                                            
+                await connection.ExecuteAsync(removechildPagesQuery, parameters);
+            }
+
+            transaction.Commit();
+        }
+        
+        catch
+        {
+            transaction.Rollback();
+            throw;
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task<bool> IfExistsFolderChildrenItemsAsync(long folderId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@folderId", folderId);
+
+        var query = "SELECT EXISTS (" +
+                    "SELECT folder_id " +
+                    "FROM project_management.wiki_tree_folders AS f " +
+                    "LEFT JOIN project_management.wiki_tree_pages AS p " +
+                    "ON f.folder_id = p.folder_id " +
+                    "WHERE f.folder_id = @folderId " +
+                    "OR p.folder_id = @folderId)";
+
+        var result = await connection.ExecuteScalarAsync<bool>(query, parameters);
+
+        return result;
+    }
+
     #endregion
 
     #region Приватные методы.

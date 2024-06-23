@@ -108,4 +108,19 @@ public interface IWikiTreeRepository
     /// <param name="userId">Id пользователя.</param>
     /// <param name="treeId">Id дерева.</param>
     Task CreatePageAsync(long? parentId, string? pageName, long userId, long treeId);
+    
+    /// <summary>
+    /// Метод удаляет папку.
+    /// Удаляет все дочерние папки и страницы у этой папки.
+    /// </summary>
+    /// <param name="folderId">Id папки.</param>
+    /// <returns>Выходная модель.</returns>
+    Task RemoveFolderAsync(long folderId);
+
+    /// <summary>
+    /// Метод получает список Id дочерних элементов папки, если они есть.
+    /// </summary>
+    /// <param name="folderId">Id папки.</param>
+    /// <returns>Признак наличия дочерних элементов папки, если они есть.</returns>
+    Task<bool> IfExistsFolderChildrenItemsAsync(long folderId);
 }

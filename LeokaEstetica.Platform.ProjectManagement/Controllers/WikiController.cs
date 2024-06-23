@@ -354,4 +354,26 @@ public class WikiController : BaseController
       await _wikiTreeService.CreatePageAsync(createWikiPageInput.ParentId, createWikiPageInput.PageName,
          GetUserName(), createWikiPageInput.WikiTreeId);
    }
+
+   /// <summary>
+   /// Метод удаляет папку.
+   /// Удаляет все дочерние папки и страницы у этой папки.
+   /// </summary>
+   /// <param name="folderId">Id папки.</param>
+   /// <param name="isApprove">Признак согласия пользователя на удаление дочерних элементов.</param>
+   /// <returns>Выходная модель.</returns>
+   [HttpDelete]
+   [Route("tree-item-folder")]
+   [ProducesResponseType(200)]
+   [ProducesResponseType(400)]
+   [ProducesResponseType(403)]
+   [ProducesResponseType(500)]
+   [ProducesResponseType(404)]
+   public async Task<RemoveFolderResponseOutput> RemoveFolderAsync([FromQuery] long folderId,
+      [FromQuery] bool isApprove)
+   {
+      var result = await _wikiTreeService.RemoveFolderAsync(folderId, isApprove);
+
+      return result;
+   }
 }

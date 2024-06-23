@@ -4,6 +4,7 @@ using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagement;
+using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagement.Output;
 using LeokaEstetica.Platform.Services.Abstractions.ProjectManagment;
 using Microsoft.Extensions.Logging;
 
@@ -234,6 +235,40 @@ internal sealed class WikiTreeService : IWikiTreeService
         }
     }
 
+    /// <inheritdoc />
+    public async Task<RemoveFolderResponseOutput> RemoveFolderAsync(long folderId, bool isApprove)
+    {
+        try
+        {
+            if (!isApprove)
+            {
+                var isNeedUserAction = await _wikiTreeRepository.IfExistsFolderChildrenItemsAsync(folderId);
+
+                if (isNeedUserAction)
+                {
+                    return new RemoveFolderResponseOutput
+                    {
+                        IsNeedUserAction = true,
+                        ResponseText = "При удаление папки, будут удалены все дочерние элементы."
+                    };
+                }
+            }
+
+            await _wikiTreeRepository.RemoveFolderAsync(folderId);
+            
+            return new RemoveFolderResponseOutput
+            {
+                IsNeedUserAction = false
+            };
+        }
+        
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
     #endregion
 
     #region Приватные методы.
@@ -313,6 +348,7 @@ internal sealed class WikiTreeService : IWikiTreeService
             await RecursiveBuildTreeAsync(folder.Next!, folders, pages);
         }
 
+        // Добавляем на 1 уровень дерева страницы, которые без родителя.
         _treeItems.AddRange(pages!.Where(b => b.FolderId is null).Select(c => new WikiTreeItem
         {
             Name = c.Name,
