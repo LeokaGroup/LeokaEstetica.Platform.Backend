@@ -14,6 +14,13 @@ public interface IWikiTreeRepository
     /// <param name="projectId">Id проекта.</param>
     /// <returns>Список элементов папок дерева.</returns>
     Task<IEnumerable<WikiTreeItem>?> GetFolderItemsAsync(long projectId);
+    
+    /// <summary>
+    /// Метод получает дочерние папки родительской папки.
+    /// </summary>
+    /// <param name="projectId">Id папки.</param>
+    /// <returns>Список папок.</returns>
+    Task<IEnumerable<long>?> GetChildFolderAsync(long folderId);
 
     /// <summary>
     /// Метод получает элементы страниц дерева.
@@ -83,4 +90,11 @@ public interface IWikiTreeRepository
     /// <param name="userId">Id пользователя.</param>
     /// <param name="treeId">Id дерева.</param>
     Task CreateFolderAsync(long? parentId, string? folderName, long userId, long treeId);
+
+    /// <summary>
+    /// Метод получает список папок по их Id.
+    /// </summary>
+    /// <param name="folderIds">Id папок.</param>
+    /// <returns>Список папок.</returns>
+    Task<IEnumerable<WikiTreeItem>?> GetFoldersByFolderIdsAsync(IEnumerable<long> folderIds);
 }
