@@ -219,6 +219,8 @@ internal sealed class VacancyService : IVacancyService
 
                 throw ex;
             }
+            
+            vacancyInput.UserId = userId;
 
             // Получаем подписку пользователя.
             var userSubscription = await _subscriptionRepository.GetUserSubscriptionAsync(userId);

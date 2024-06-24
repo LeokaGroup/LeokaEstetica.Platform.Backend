@@ -22,5 +22,10 @@ public class CreateVacancyValidator : AbstractValidator<VacancyInput>
             .WithMessage(ValidationConst.Vacancy.EMPTY_VACANCY_TEXT)
             .NotNull()
             .WithMessage(ValidationConst.Vacancy.EMPTY_VACANCY_TEXT);
+
+        RuleFor(p => p.Payment)
+            .NotNull()
+            .Matches("^[0-9]+$")
+            .WithMessage(ValidationConst.Vacancy.NOT_VALID_PAYMENT);
     }
 }

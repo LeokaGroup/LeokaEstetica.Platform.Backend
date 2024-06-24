@@ -71,6 +71,11 @@ public static class ValidationConst
         /// Если не заполнили описание вакансии.
         /// </summary>
         public const string EMPTY_VACANCY_TEXT = "Описание вакансии не может быть пустым.";
+        
+        /// <summary>
+        /// Если не заполнили описание вакансии.
+        /// </summary>
+        public const string NOT_VALID_PAYMENT = "Поле оплаты содержит неверное значение.";
     }
     
     /// <summary>
