@@ -24,7 +24,9 @@ internal sealed class WikiTreeRepository : BaseRepository, IWikiTreeRepository
     private readonly List<string> _contextMenuKeys = new()
     {
         "CreateFolder",
-        "CreateFolderPage"
+        "CreateFolderPage",
+        "RemoveFolder",
+        "RemoveFolderPage"
     };
 
     /// <summary>
@@ -340,16 +342,19 @@ internal sealed class WikiTreeRepository : BaseRepository, IWikiTreeRepository
         var query = "SELECT menu_id, item_name, icon, item_sys_name " +
                     "FROM project_management.wiki_context_menu";
 
-        if (projectId.HasValue && !isParentFolder || isParentFolder)
+        if (projectId.HasValue && !pageId.HasValue)
         {
+            _contextMenuKeys.RemoveAll(x => new[] { "RemoveFolderPage" }.Contains(x));
             parameters.Add("@keys", _contextMenuKeys);
-            query += " WHERE item_sys_name = ANY(@keys)";
         }
 
-        if (pageId.HasValue && !isParentFolder)
+        if (pageId.HasValue)
         {
-            parameters.Add("@key", _contextMenuKeys[1]);
+            _contextMenuKeys.RemoveAll(x => new[] { "CreateFolder", "RemoveFolder" }.Contains(x));
+            parameters.Add("@keys", _contextMenuKeys);
         }
+        
+        query += " WHERE item_sys_name = ANY(@keys)";
 
         var result = await connection.QueryAsync<WikiContextMenuOutput>(query, parameters);
 
@@ -484,6 +489,12 @@ internal sealed class WikiTreeRepository : BaseRepository, IWikiTreeRepository
         {
             var parameters = new DynamicParameters();
             parameters.Add("@folderId", folderId);
+            
+            // Подчищаем отношения.
+            // var removeFolderRelations = "DELETE FROM project_management.wiki_tree_folder_relations " +
+            //                             "WHERE parent_id = @folderId";
+            //     
+            // await connection.ExecuteAsync(removeFolderRelations, parameters);
 
             // Сначала удаляем дочерние папки и страницы родительской папки.
             // Получаем дочерние папки родительской папки.
@@ -496,25 +507,38 @@ internal sealed class WikiTreeRepository : BaseRepository, IWikiTreeRepository
             // Рекурсивно удаляем детей родителя.
             if (childFolders is not null && childFolders.Count > 0)
             {
-                var removeChildFolders = "WITH RECURSIVE cte_recursive_folder_children AS (SELECT f.folder_id " +
+                var removeChildFolders = "DROP TABLE IF EXISTS temp_recursive_folder_children; " +
+                                         "WITH RECURSIVE cte_recursive_folder_children AS (SELECT f.folder_id " +
                                          "FROM project_management.wiki_tree_folders AS f " +
                                          "INNER JOIN project_management.wiki_tree_folder_relations AS fl " +
                                          "ON f.folder_id = fl.folder_id " +
-                                         "WHERE fl.parent_id = @folderId " +
+                                         "WHERE fl.folder_id >= @folderId " +
                                          "UNION " +
                                          "SELECT f.folder_id " +
                                          "FROM project_management.wiki_tree_folders AS f " +
+                                         "INNER JOIN project_management.wiki_tree_folder_relations AS fl " +
+                                         "ON f.folder_id = fl.folder_id " +
                                          "INNER JOIN cte_recursive_folder_children AS cte " +
-                                         "ON cte.folder_id = f.folder_id) " +
-                                         "DELETE FROM cte_recursive_folder_children;";
+                                         "ON fl.parent_id = cte.folder_id " +
+                                         "WHERE fl.folder_id >= @folderId)" +
+                                         "SELECT * " +
+                                         "INTO temp_recursive_folder_children " +
+                                         "FROM cte_recursive_folder_children; " +
+                                         "DELETE FROM project_management.wiki_tree_folder_relations " +
+                                         "WHERE folder_id IN (SELECT * FROM temp_recursive_folder_children); " +
+                                         "DELETE FROM project_management.wiki_tree_folders " +
+                                         "WHERE folder_id IN (SELECT * FROM temp_recursive_folder_children);";
 
                 await connection.ExecuteAsync(removeChildFolders, parameters);
+            }
+
+            // Детей нет, удаляем только папку.
+            else
+            {
+                var removeFolderQuery = "DELETE FROM project_management.wiki_tree_folders " +
+                                        "WHERE folder_id = @folderId";
                 
-                // Подчищаем отношения.
-                var removeFolderRelations = "DELETE project_management.wiki_tree_folder_relations " +
-                                            "WHERE parent_id = @folderId";
-                
-                 await connection.ExecuteAsync(removeFolderRelations, parameters);
+                await connection.ExecuteAsync(removeFolderQuery, parameters);
             }
             
             // Получаем дочерние страницы родительской папки.
@@ -551,7 +575,7 @@ internal sealed class WikiTreeRepository : BaseRepository, IWikiTreeRepository
         parameters.Add("@folderId", folderId);
 
         var query = "SELECT EXISTS (" +
-                    "SELECT folder_id " +
+                    "SELECT f.folder_id " +
                     "FROM project_management.wiki_tree_folders AS f " +
                     "LEFT JOIN project_management.wiki_tree_pages AS p " +
                     "ON f.folder_id = p.folder_id " +
