@@ -489,12 +489,6 @@ internal sealed class WikiTreeRepository : BaseRepository, IWikiTreeRepository
         {
             var parameters = new DynamicParameters();
             parameters.Add("@folderId", folderId);
-            
-            // Подчищаем отношения.
-            // var removeFolderRelations = "DELETE FROM project_management.wiki_tree_folder_relations " +
-            //                             "WHERE parent_id = @folderId";
-            //     
-            // await connection.ExecuteAsync(removeFolderRelations, parameters);
 
             // Сначала удаляем дочерние папки и страницы родительской папки.
             // Получаем дочерние папки родительской папки.
@@ -550,7 +544,7 @@ internal sealed class WikiTreeRepository : BaseRepository, IWikiTreeRepository
 
             if (childPages is not null && childPages.Count > 0)
             {
-                var removechildPagesQuery = "DELETE project_management.wiki_tree_pages " +
+                var removechildPagesQuery = "DELETE FROM project_management.wiki_tree_pages " +
                                             "WHERE folder_id = @folderId";
                                             
                 await connection.ExecuteAsync(removechildPagesQuery, parameters);
