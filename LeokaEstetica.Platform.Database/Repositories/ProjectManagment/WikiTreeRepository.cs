@@ -581,6 +581,20 @@ internal sealed class WikiTreeRepository : BaseRepository, IWikiTreeRepository
         return result;
     }
 
+    /// <inheritdoc />
+    public async Task RemovePageAsync(long pageId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@pageId", pageId);
+
+        var query = "DELETE FROM project_management.wiki_tree_pages " +
+                    "WHERE page_id = @pageId";
+
+        await connection.ExecuteAsync(query, parameters);
+    }
+
     #endregion
 
     #region Приватные методы.

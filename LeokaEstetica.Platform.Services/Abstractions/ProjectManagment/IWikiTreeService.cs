@@ -77,4 +77,10 @@ public interface IWikiTreeService
     /// <param name="isApprove">Признак согласия пользователя на удаление дочерних элементов.</param>
     /// <returns>Выходная модель.</returns>
     Task<RemoveFolderResponseOutput> RemoveFolderAsync(long folderId, bool isApprove);
+
+    /// <summary>
+    /// Метод удаляет страницу.
+    /// </summary>
+    /// <param name="pageId">Id страницы.</param>
+    Task RemovePageAsync(long pageId);
 }

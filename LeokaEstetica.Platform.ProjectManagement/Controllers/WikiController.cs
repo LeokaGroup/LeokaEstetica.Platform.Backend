@@ -364,7 +364,7 @@ public class WikiController : BaseController
    /// <returns>Выходная модель.</returns>
    [HttpDelete]
    [Route("tree-item-folder")]
-   [ProducesResponseType(200)]
+   [ProducesResponseType(200, Type = typeof(RemoveFolderResponseOutput))]
    [ProducesResponseType(400)]
    [ProducesResponseType(403)]
    [ProducesResponseType(500)]
@@ -375,5 +375,21 @@ public class WikiController : BaseController
       var result = await _wikiTreeService.RemoveFolderAsync(folderId, isApprove);
 
       return result;
+   }
+   
+   /// <summary>
+   /// Метод удаляет страницу.
+   /// </summary>
+   /// <param name="pageId">Id страницы.</param>
+   [HttpDelete]
+   [Route("tree-item-page")]
+   [ProducesResponseType(200)]
+   [ProducesResponseType(400)]
+   [ProducesResponseType(403)]
+   [ProducesResponseType(500)]
+   [ProducesResponseType(404)]
+   public async Task RemovePageAsync([FromQuery] long pageId)
+   {
+      await _wikiTreeService.RemovePageAsync(pageId);
    }
 }

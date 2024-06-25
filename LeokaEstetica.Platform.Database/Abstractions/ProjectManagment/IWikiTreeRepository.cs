@@ -123,4 +123,10 @@ public interface IWikiTreeRepository
     /// <param name="folderId">Id папки.</param>
     /// <returns>Признак наличия дочерних элементов папки, если они есть.</returns>
     Task<bool> IfExistsFolderChildrenItemsAsync(long folderId);
+    
+    /// <summary>
+    /// Метод удаляет страницу.
+    /// </summary>
+    /// <param name="pageId">Id страницы.</param>
+    Task RemovePageAsync(long pageId);
 }
