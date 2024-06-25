@@ -53,6 +53,7 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
 
     /// <summary>
     /// Метод создает новый проект пользователя.
+    /// Если не указано, то выводится текст  в бд "не указано".
     /// </summary>
     /// <param name="createProjectInput">Входная модель.</param>
     /// <returns>Данные нового проекта.</returns>
@@ -70,8 +71,8 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
                 UserId = createProjectInput.UserId,
                 ProjectCode = Guid.NewGuid(),
                 DateCreated = DateTime.UtcNow,
-                Conditions = createProjectInput.Conditions,
-                Demands = createProjectInput.Demands
+                Conditions = createProjectInput.Conditions?? "не указано",
+                Demands = createProjectInput.Demands?? "не указано"
             };
             await _pgContext.UserProjects.AddAsync(project);
 
