@@ -565,9 +565,6 @@ internal sealed class ProjectService : IProjectService
 
             var remarks = await _projectModerationRepository.GetProjectRemarksAsync(projectId);
             result.ProjectRemarks = _mapper.Map<IEnumerable<ProjectRemarkOutput>>(remarks);
-            result.IsAccess = true;
-
-           
 
             return result;
         }
@@ -1839,6 +1836,7 @@ internal sealed class ProjectService : IProjectService
         }
 
         result.IsSuccess = true;
+        result.IsAccess = true;
 
         return result;
     }
