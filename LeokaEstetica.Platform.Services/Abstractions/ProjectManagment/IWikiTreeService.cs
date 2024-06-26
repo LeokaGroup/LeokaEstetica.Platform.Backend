@@ -1,4 +1,5 @@
 ﻿using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagement;
+using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagement.Output;
 
 namespace LeokaEstetica.Platform.Services.Abstractions.ProjectManagment;
 
@@ -67,4 +68,19 @@ public interface IWikiTreeService
     /// <param name="account">Аккаунт.</param>
     /// <param name="treeId">Id дерева.</param>
     Task CreatePageAsync(long? parentId, string? pageName, string account, long treeId);
+
+    /// <summary>
+    /// Метод удаляет папку.
+    /// Удаляет все дочерние папки и страницы у этой папки.
+    /// </summary>
+    /// <param name="folderId">Id папки.</param>
+    /// <param name="isApprove">Признак согласия пользователя на удаление дочерних элементов.</param>
+    /// <returns>Выходная модель.</returns>
+    Task<RemoveFolderResponseOutput> RemoveFolderAsync(long folderId, bool isApprove);
+
+    /// <summary>
+    /// Метод удаляет страницу.
+    /// </summary>
+    /// <param name="pageId">Id страницы.</param>
+    Task RemovePageAsync(long pageId);
 }
