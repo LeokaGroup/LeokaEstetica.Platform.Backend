@@ -298,19 +298,19 @@ internal sealed class ProjectNotificationsRepository : BaseRepository, IProjectN
         var parameters = new DynamicParameters();
         parameters.Add("@projectId", projectId);
         
-        var query = "SELECT \"NotificationId\", " +
-                    "(SELECT \"Email\" " +
-                    "FROM dbo.\"Users\" " +
-                    "WHERE \"UserId\" = \"UserId\") AS Email," +
-                    "\"UserId\", " +
-                    "\"CreatedAt\" " +
-                    "FROM \"Notifications\".\"Notifications\" " +
-                    "WHERE \"ProjectId\" = @projectId " +
-                    "AND \"IsNeedAccepted\" " +
-                    "AND NOT \"Approved\" " +
-                    "AND NOT \"Rejected\"";
+        var query = "SELECT n.\"NotificationId\", " +
+                    "u.\"Email\", " +
+                    "n.\"UserId\", " +
+                    "n.\"Created\" AS CreatedAt " +
+                    "FROM \"Notifications\".\"Notifications\" AS n " +
+                    "INNER JOIN dbo.\"Users\" AS u " +
+                    "ON n.\"UserId\" = u.\"UserId\" " +
+                    "WHERE n.\"ProjectId\" = @projectId " +
+                    "AND n.\"IsNeedAccepted\" " +
+                    "AND NOT n.\"Approved\" " +
+                    "AND NOT n.\"Rejected\"";
 
-        var result = await connection.QueryAsync<ProjectInviteOutput>(query);
+        var result = await connection.QueryAsync<ProjectInviteOutput>(query, parameters);
 
         return result;
     }
