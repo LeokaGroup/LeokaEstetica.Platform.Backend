@@ -996,6 +996,23 @@ internal sealed class ProjectNotificationsService : IProjectNotificationsService
                 });
     }
 
+    /// <inheritdoc />
+    public async Task<IEnumerable<ProjectInviteOutput>> GetProjectInvitesAsync(long projectId)
+    {
+        try
+        {
+            var result = await _projectNotificationsRepository.GetProjectInvitesAsync(projectId);
+
+            return result;
+        }
+
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
     #endregion
 
     #region Приватные методы.

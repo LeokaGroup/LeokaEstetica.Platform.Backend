@@ -1,10 +1,12 @@
 using LeokaEstetica.Platform.Base;
 using LeokaEstetica.Platform.Base.Filters;
+using LeokaEstetica.Platform.Integrations.Abstractions.Discord;
 using LeokaEstetica.Platform.Models.Dto.Input.Notification;
 using LeokaEstetica.Platform.Models.Dto.Output.Notification;
 using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Redis.Abstractions.Connection;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
 namespace LeokaEstetica.Platform.Controllers.Notifications;
 
@@ -18,17 +20,25 @@ public class NotificationsController : BaseController
 {
     private readonly IProjectNotificationsService _projectNotificationsService;
     private readonly IConnectionService _connectionService;
+    private readonly ILogger<NotificationsController> _logger;
+    private readonly Lazy<IDiscordService> _discordService;
 
     /// <summary>
     /// Конструктор.
     /// </summary>
     /// <param name="projectNotificationsService">Сервис уведомлений проектов.</param>
     /// <param name="connectionService">Сервис уведомлений Redis.</param>
+    /// <param name="logger">Логгер.</param>
+    /// <param name="discordService">Сервис уведомлений дискорда.</param>
     public NotificationsController(IProjectNotificationsService projectNotificationsService, 
-        IConnectionService connectionService)
+        IConnectionService connectionService,
+         ILogger<NotificationsController> logger,
+          Lazy<IDiscordService> discordService)
     {
         _projectNotificationsService = projectNotificationsService;
         _connectionService = connectionService;
+        _logger = logger;
+        _discordService = discordService;
     }
 
     /// <summary>
@@ -98,5 +108,35 @@ public class NotificationsController : BaseController
     {
         await _connectionService.AddConnectionIdCacheAsync(commitConnectionInput.ConnectionId,
             GetTokenFromHeader());
+    }
+
+    /// <summary>
+    /// Метод получает список приглашений в проект.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Список приглашений в проект.</returns>
+    [HttpGet]
+    [Route("project-invites")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<ProjectInviteOutput>))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<IEnumerable<ProjectInviteOutput>> GetProjectInvitesAsync([FromQuery] long projectId)
+    {
+        if (projectId <= 0)
+        {
+            var ex = new AggregateException("Ошибка при получении приглашений проекта. " +
+                                            $"ProjectId: {projectId}.");
+            _logger.LogError(ex, ex.Message);
+            
+            await _discordService.Value.SendNotificationErrorAsync(ex);
+            
+            throw ex;
+        }
+
+        var result = await _projectNotificationsService.GetProjectInvitesAsync(projectId);
+
+        return result;
     }
 }
