@@ -340,11 +340,4 @@ public interface IProjectNotificationsService
     /// <param name="token">Токен пользователя.</param>
     Task SendNotificationWarningDeleteProjectArchiveAsync(string title, string notifyText, string notificationLevel,
         string token);
-
-    /// <summary>
-    /// Метод получает список приглашений в проект.
-    /// </summary>
-    /// <param name="projectId">Id проекта.</param>
-    /// <returns>Список приглашений в проект.</returns>
-    Task<IEnumerable<ProjectInviteOutput>> GetProjectInvitesAsync(long projectId);
 }

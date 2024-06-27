@@ -5,6 +5,7 @@ using LeokaEstetica.Platform.Database.Abstractions.Template;
 using LeokaEstetica.Platform.Integrations.Abstractions.Discord;
 using LeokaEstetica.Platform.Models.Dto.Input.Config;
 using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
+using LeokaEstetica.Platform.Models.Dto.Output.Notification;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagement.Output;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.ProjectManagement.Output;
@@ -415,6 +416,36 @@ public class ProjectManagmentSettingsController : BaseController
         }
 
         var result = await _projectManagementSettingsService.GetCompanyProjectUsersAsync(projectId, GetUserName());
+
+        return result;
+    }
+    
+    /// <summary>
+    /// Метод получает список приглашений в проект.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Список приглашений в проект.</returns>
+    [HttpGet]
+    [Route("project-invites")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<ProjectInviteOutput>))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<IEnumerable<ProjectInviteOutput>> GetProjectInvitesAsync([FromQuery] long projectId)
+    {
+        if (projectId <= 0)
+        {
+            var ex = new AggregateException("Ошибка при получении приглашений проекта. " +
+                                            $"ProjectId: {projectId}.");
+            _logger.LogError(ex, ex.Message);
+            
+            await _discordService.Value.SendNotificationErrorAsync(ex);
+            
+            throw ex;
+        }
+
+        var result = await _projectManagementSettingsService.GetProjectInvitesAsync(projectId);
 
         return result;
     }

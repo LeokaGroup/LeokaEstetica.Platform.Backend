@@ -1,4 +1,5 @@
-﻿using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagement.Output;
+﻿using LeokaEstetica.Platform.Models.Dto.Output.Notification;
+using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagement.Output;
 using LeokaEstetica.Platform.Models.Dto.ProjectManagement.Output;
 
 namespace LeokaEstetica.Platform.Services.Abstractions.ProjectManagment;
@@ -49,4 +50,11 @@ public interface IProjectManagementSettingsService
     /// <param name="account">Аккаунт.</param>
     /// <returns>Список пользователей.</returns>
     Task<IEnumerable<ProjectSettingUserOutput>> GetCompanyProjectUsersAsync(long projectId, string account);
+    
+    /// <summary>
+    /// Метод получает список приглашений в проект.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Список приглашений в проект.</returns>
+    Task<IEnumerable<ProjectInviteOutput>> GetProjectInvitesAsync(long projectId);
 }

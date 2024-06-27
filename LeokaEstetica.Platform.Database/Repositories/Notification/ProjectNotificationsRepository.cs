@@ -1,11 +1,9 @@
-using Dapper;
 using LeokaEstetica.Platform.Base.Abstractions.Connection;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.Base;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.Notification;
-using LeokaEstetica.Platform.Models.Dto.Output.Notification;
 using LeokaEstetica.Platform.Models.Entities.Notification;
 using Microsoft.EntityFrameworkCore;
 
@@ -288,31 +286,6 @@ internal sealed class ProjectNotificationsRepository : BaseRepository, IProjectN
         });
         
         await _pgContext.SaveChangesAsync();
-    }
-
-    /// <inheritdoc />
-    public async Task<IEnumerable<ProjectInviteOutput>> GetProjectInvitesAsync(long projectId)
-    {
-        using var connection = await ConnectionProvider.GetConnectionAsync();
-
-        var parameters = new DynamicParameters();
-        parameters.Add("@projectId", projectId);
-        
-        var query = "SELECT n.\"NotificationId\", " +
-                    "u.\"Email\", " +
-                    "n.\"UserId\", " +
-                    "n.\"Created\" AS CreatedAt " +
-                    "FROM \"Notifications\".\"Notifications\" AS n " +
-                    "INNER JOIN dbo.\"Users\" AS u " +
-                    "ON n.\"UserId\" = u.\"UserId\" " +
-                    "WHERE n.\"ProjectId\" = @projectId " +
-                    "AND n.\"IsNeedAccepted\" " +
-                    "AND NOT n.\"Approved\" " +
-                    "AND NOT n.\"Rejected\"";
-
-        var result = await connection.QueryAsync<ProjectInviteOutput>(query, parameters);
-
-        return result;
     }
 
     #endregion

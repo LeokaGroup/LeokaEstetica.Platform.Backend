@@ -3,6 +3,7 @@ using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
+using LeokaEstetica.Platform.Models.Dto.Output.Notification;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagement.Output;
 using LeokaEstetica.Platform.Models.Dto.ProjectManagement.Output;
 using LeokaEstetica.Platform.Services.Abstractions.ProjectManagment;
@@ -165,6 +166,23 @@ internal sealed class ProjectManagementSettingsService : IProjectManagementSetti
             return result;
         }
         
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+    
+    /// <inheritdoc />
+    public async Task<IEnumerable<ProjectInviteOutput>> GetProjectInvitesAsync(long projectId)
+    {
+        try
+        {
+            var result = await _projectManagementSettingsRepository.GetProjectInvitesAsync(projectId);
+
+            return result;
+        }
+
         catch (Exception ex)
         {
             _logger?.LogError(ex, ex.Message);
