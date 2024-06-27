@@ -25,16 +25,11 @@ public static class CreateScoreDocsBuilder
         var searchResults = searcher.Search(new MatchAllDocsQuery(), skipRows + rowsCount)
             .ScoreDocs;
 
-        for (var i = skipRows; i < searchResults.Length; i++)
-        {
-            if (i > skipRows + rowsCount - 1)
-            {
-                break;
-            }
-
-            _scoreDocs.Add(searchResults[i]);
-        }
-
-        return _scoreDocs.ToArray();
+        var result = searchResults
+            .Skip(skipRows)
+            .Take(PaginationConst.TAKE_COUNT)
+            .ToArray();
+        
+        return result;
     }
 }

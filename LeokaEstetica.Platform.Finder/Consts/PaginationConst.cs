@@ -8,5 +8,5 @@ public static class PaginationConst
     /// <summary>
     /// Сколько записей брать.
     /// </summary>
-    public const int TAKE_COUNT = 20;
+    public const int TAKE_COUNT = 10;
 }

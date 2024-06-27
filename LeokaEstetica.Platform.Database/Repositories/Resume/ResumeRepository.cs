@@ -93,6 +93,33 @@ internal sealed class ResumeRepository : IResumeRepository
 
         return await Task.FromResult(result);
     }
+    
+    /// <summary>
+    /// Метод получает заполненные резюме для фильтрации без выгрузки в память.
+    /// </summary>
+    /// <returns>Резюме без выгрузки в память.</returns>
+    public async Task<IOrderedQueryable<ProfileInfoEntity>> GetFilledResumesAsync()
+    {
+        var result = (IOrderedQueryable<ProfileInfoEntity>)_pgContext.ProfilesInfo
+            .Select(pi => new ProfileInfoEntity
+            {
+                LastName = pi.LastName,
+                FirstName = pi.FirstName,
+                Patronymic = pi.Patronymic,
+                Job = pi.Job,
+                Aboutme = pi.Aboutme,
+                IsShortFirstName = pi.IsShortFirstName,
+                UserId = pi.UserId,
+                ProfileInfoId = pi.ProfileInfoId
+            }).Where(p =>
+                p.FirstName != ""
+                || p.LastName != ""
+                || p.Job != ""
+                || p.Aboutme != "")
+            .AsQueryable();
+
+        return await Task.FromResult(result);
+    }
 
     /// <summary>
     /// Метод получает анкету пользователя по ее Id.

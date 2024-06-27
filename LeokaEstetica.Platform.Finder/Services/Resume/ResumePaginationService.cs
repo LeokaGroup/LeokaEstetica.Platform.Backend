@@ -48,8 +48,8 @@ public class ResumePaginationService : BaseIndexRamDirectory, IResumePaginationS
     {
         try
         {
-            var resumes = await _resumeRepository.GetFilterResumesAsync();
-
+            var resumes = await _resumeRepository.GetFilledResumesAsync();
+            
             if (!resumes.Any())
             {
                 return new PaginationResumeOutput();
@@ -57,19 +57,20 @@ public class ResumePaginationService : BaseIndexRamDirectory, IResumePaginationS
             
             var result = new PaginationResumeOutput
             {
+                Total = resumes.Count(),
                 IsVisiblePagination = true,
                 PaginationInfo = new PaginationInfoOutput(resumes.Count(), page, PaginationConst.TAKE_COUNT)
             };
             
             // Получаем все анкеты из БД без выгрузки в память.
             ResumesDocumentLoader.Load(resumes, _index, _analyzer);
-
+            
             using var reader = IndexReader.Open(_index.Value, true);
             using var searcher = new IndexSearcher(reader);
             var scoreDocs = CreateScoreDocsBuilder.CreateScoreDocsResult(page, searcher, resumes.Count());
 
             result.Resumes = CreateResumesSearchResultBuilder.CreateResumesSearchResult(scoreDocs, searcher).ToList();
-
+            
             // Если первая страница и записей менее максимального на странице,
             // то надо скрыть пагинацию, так как смысл в пагинации теряется в этом кейсе.
             // Применяем именно к 1 странице, к последней нет (там это надо показывать).
@@ -77,31 +78,7 @@ public class ResumePaginationService : BaseIndexRamDirectory, IResumePaginationS
             {
                 result.IsVisiblePagination = false;
             }
-
-            if (result.Resumes.Any())
-            {
-                var removedUsers = new List<ResumeOutput>();
-                
-                foreach (var res in result.Resumes)
-                {
-                    var userId = res.UserId;
-                    
-                    // Проверяем заполнение анкеты.
-                    var isEmptyProfile = await _accessUserService.IsProfileEmptyAsync(userId);
-
-                    // Удаляем анкеты из выборки, которые не заполнены.
-                    if (isEmptyProfile)
-                    {
-                        removedUsers.Add(res);
-                    }
-                }
-
-                if (removedUsers.Any())
-                {
-                    result.Resumes.RemoveAll(r => removedUsers.Contains(r));   
-                }
-            }
-
+        
             return result;
         }
 

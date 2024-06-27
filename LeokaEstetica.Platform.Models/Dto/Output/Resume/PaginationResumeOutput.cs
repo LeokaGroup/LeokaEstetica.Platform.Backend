@@ -15,5 +15,5 @@ public class PaginationResumeOutput : BasePaginationInfo
     /// <summary>
     /// Кол-во всего.
     /// </summary>
-    public int Total => Resumes.Count;
+    public int Total { get; set; }
 }
