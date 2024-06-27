@@ -243,7 +243,8 @@ internal sealed class ProjectService : IProjectService
             {
                 throw new InvalidOperationException("Найдена невалидная подписка пользователя. " +
                                                     $"UserId: {userId}. " +
-                                                    "Подписка была NULL или невалидная.");
+                                                    "Подписка была NULL или невалидная." +
+                                                    $"#1 Ошибка в {nameof(ProjectService)}");
             }
             
             // Получаем тариф, на который оформлена подписка у пользователя.
@@ -1415,7 +1416,8 @@ internal sealed class ProjectService : IProjectService
             {
                 throw new InvalidOperationException("Найдена невалидная подписка пользователя. " +
                                                     $"UserId: {userId}. " +
-                                                    "Подписка была NULL или невалидная.");
+                                                    "Подписка была NULL или невалидная." +
+                                                    $"#2 Ошибка в {nameof(ProjectService)}");
             }
             
             // Получаем тариф, на который оформлена подписка у пользователя.
@@ -2264,7 +2266,8 @@ internal sealed class ProjectService : IProjectService
             {
                 var ex = new InvalidOperationException("Найдена невалидная подписка пользователя. " +
                                                     $"UserId: {userId}. " +
-                                                    "Подписка была NULL или невалидная.");
+                                                    "Подписка была NULL или невалидная." +
+                                                    $"#3 Ошибка в {nameof(ProjectService)}");
                 // Отправляем ивент в пачку.
                 await _discordService.SendNotificationErrorAsync(ex);
                 
