@@ -178,7 +178,20 @@ internal sealed class ProjectManagementSettingsService : IProjectManagementSetti
     {
         try
         {
-            var result = await _projectManagementSettingsRepository.GetProjectInvitesAsync(projectId);
+            var result = (await _projectManagementSettingsRepository.GetProjectInvitesAsync(projectId))?.AsList();
+
+            if (result is null || result.Count == 0)
+            {
+                return Enumerable.Empty<ProjectInviteOutput>();
+            }
+            
+            var projectOwnerId = await _projectRepository.GetProjectOwnerIdAsync(projectId);
+            var findOwner = result.Find(x => x.UserId == projectOwnerId);
+
+            if (findOwner is not null)
+            {
+                result.Remove(findOwner);
+            }
 
             return result;
         }
