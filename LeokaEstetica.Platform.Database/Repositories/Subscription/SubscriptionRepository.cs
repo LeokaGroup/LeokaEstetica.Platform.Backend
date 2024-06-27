@@ -58,9 +58,17 @@ internal sealed class SubscriptionRepository : ISubscriptionRepository
     public async Task<SubscriptionEntity> GetUserSubscriptionAsync(long userId)
     {
         // Получаем активную подписку пользователя.
-        var userSubscription = await _pgContext.UserSubscriptions
-            .FirstOrDefaultAsync(s => s.UserId == userId 
-                                      && s.IsActive);
+        var userSubscription = await _pgContext.UserSubscriptions.FirstOrDefaultAsync(s => s.UserId == userId
+            && s.IsActive);
+
+        // Повторно пробуем добавить подписку пользователю.
+        if (userSubscription is null)
+        {
+            await AddUserSubscriptionAsync(userId, SubscriptionTypeEnum.FareRule, 1);
+
+            userSubscription = await _pgContext.UserSubscriptions.FirstOrDefaultAsync(s => s.UserId == userId
+                && s.IsActive);
+        }
 
         // Доступа нет.
         if (userSubscription is null)
