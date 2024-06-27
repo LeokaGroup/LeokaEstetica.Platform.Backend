@@ -1,3 +1,5 @@
+using LeokaEstetica.Platform.Base.Abstractions.Connection;
+using LeokaEstetica.Platform.Base.Abstractions.Repositories.Base;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Core.Extensions;
@@ -10,7 +12,7 @@ namespace LeokaEstetica.Platform.Database.Repositories.Notification;
 /// <summary>
 /// Класс реализует методы репозитория уведомлений проектов.
 /// </summary>
-internal sealed class ProjectNotificationsRepository : IProjectNotificationsRepository
+internal sealed class ProjectNotificationsRepository : BaseRepository, IProjectNotificationsRepository
 {
     private readonly PgContext _pgContext;
     
@@ -18,7 +20,8 @@ internal sealed class ProjectNotificationsRepository : IProjectNotificationsRepo
     /// Конструктор.
     /// </summary>
     /// <param name="pgContext"></param>
-    public ProjectNotificationsRepository(PgContext pgContext)
+    public ProjectNotificationsRepository(PgContext pgContext, IConnectionProvider connectionProvider)
+        : base(connectionProvider)
     {
         _pgContext = pgContext;
     }
@@ -86,7 +89,7 @@ internal sealed class ProjectNotificationsRepository : IProjectNotificationsRepo
         var userProjectsIds = userProjects.Select(p => p.ProjectId);
 
         var userNotifications = _pgContext.Notifications
-            .Where(n => userProjectsIds.Contains((long)n.ProjectId)
+            .Where(n => userProjectsIds.Contains(n.ProjectId ?? 0)
                         && n.NotificationSysName == NotificationTypeEnum.ProjectInvite.ToString()
                         && n.NotificationType == NotificationTypeEnum.ProjectInvite.ToString()
                         && n.IsShow
@@ -204,7 +207,7 @@ internal sealed class ProjectNotificationsRepository : IProjectNotificationsRepo
     {
         var result = await _pgContext.Notifications
             .Where(n => n.NotificationId == notificationId)
-            .Select(n => (long)n.ProjectId)
+            .Select(n => n.ProjectId ?? 0)
             .FirstOrDefaultAsync();
 
         return result;

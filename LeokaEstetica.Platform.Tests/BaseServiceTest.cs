@@ -137,6 +137,7 @@ internal class BaseServiceTest
     protected readonly ProjectManagmentRoleService ProjectManagmentRoleService;
     protected readonly ProjectManagementSettingsService ProjectManagementSettingsService;
     protected readonly WikiTreeService WikiTreeService;
+    protected readonly ProjectNotificationsService ProjectNotificationsService;
 
     protected BaseServiceTest()
     {
@@ -186,7 +187,7 @@ internal class BaseServiceTest
             accessUserService, resumeModerationRepository, discordService);
 
         var projectRepository = new ProjectRepository(pgContext, ChatRepository, connectionProvider);
-        var projectNotificationsRepository = new ProjectNotificationsRepository(pgContext);
+        var projectNotificationsRepository = new ProjectNotificationsRepository(pgContext, connectionProvider);
         var vacancyRepository = new VacancyRepository(pgContext);
         var projectNotificationsService = new ProjectNotificationsService(null, null, userRepository, mapper,
             projectNotificationsRepository, null, projectRepository, null, null, vacancyRepository);
@@ -325,5 +326,10 @@ internal class BaseServiceTest
 
         var wikiTreeRepository = new WikiTreeRepository(connectionProvider);
         WikiTreeService = new WikiTreeService(null, wikiTreeRepository, userRepository);
+
+        var projectManagementNotificationsRepository = new ProjectNotificationsRepository(pgContext, connectionProvider);
+        ProjectNotificationsService = new ProjectNotificationsService(null, null, userRepository, mapper,
+            projectManagementNotificationsRepository, null, projectRepository, null, globalConfigRepository,
+            vacancyRepository);
     }
 }

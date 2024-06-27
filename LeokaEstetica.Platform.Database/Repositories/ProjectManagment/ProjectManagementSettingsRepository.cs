@@ -2,6 +2,7 @@
 using LeokaEstetica.Platform.Base.Abstractions.Connection;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.Base;
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
+using LeokaEstetica.Platform.Models.Dto.Output.Notification;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagement.Output;
 using LeokaEstetica.Platform.Models.Dto.ProjectManagement.Output;
 
@@ -208,6 +209,31 @@ internal sealed class ProjectManagementSettingsRepository : BaseRepository, IPro
                     "AND op.is_active";
 
         var result = await connection.QueryAsync<ProjectSettingUserOutput>(query, parameters);
+
+        return result;
+    }
+    
+    /// <inheritdoc />
+    public async Task<IEnumerable<ProjectInviteOutput>> GetProjectInvitesAsync(long projectId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@projectId", projectId);
+        
+        var query = "SELECT n.\"NotificationId\", " +
+                    "u.\"Email\", " +
+                    "n.\"UserId\", " +
+                    "n.\"Created\" AS CreatedAt " +
+                    "FROM \"Notifications\".\"Notifications\" AS n " +
+                    "INNER JOIN dbo.\"Users\" AS u " +
+                    "ON n.\"UserId\" = u.\"UserId\" " +
+                    "WHERE n.\"ProjectId\" = @projectId " +
+                    "AND n.\"IsNeedAccepted\" " +
+                    "AND NOT n.\"Approved\" " +
+                    "AND NOT n.\"Rejected\"";
+
+        var result = await connection.QueryAsync<ProjectInviteOutput>(query, parameters);
 
         return result;
     }
