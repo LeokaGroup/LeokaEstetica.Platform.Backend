@@ -67,4 +67,10 @@ public interface IProjectManagementSettingsRepository
     /// <param name="projectId">Id проекта.</param>
     /// <returns>Список приглашений в проект.</returns>
     Task<IEnumerable<ProjectInviteOutput>> GetProjectInvitesAsync(long projectId);
+
+    /// <summary>
+    /// Метод отменяет приглашение в проект.
+    /// </summary>
+    /// <param name="notificationId">Id уведомления.</param>
+    Task CancelProjectInviteAsync(long notificationId);
 }
