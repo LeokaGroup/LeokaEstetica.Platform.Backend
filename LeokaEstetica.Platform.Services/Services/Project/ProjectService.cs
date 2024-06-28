@@ -947,8 +947,7 @@ internal sealed class ProjectService : IProjectService
     /// <param name="vacancyId">Id вакансии.</param>
     /// <param name="account">Аккаунт пользователя.</param>
     /// <param name="token">Токен пользователя.</param>
-    /// <returns>Добавленный пользователь.</returns>
-    public async Task<ProjectTeamMemberEntity> InviteProjectTeamAsync(string inviteText,
+    public async Task InviteProjectTeamAsync(string inviteText,
         ProjectInviteTypeEnum inviteType, long projectId, long? vacancyId, string account, string token)
     {
         try
@@ -1038,14 +1037,6 @@ internal sealed class ProjectService : IProjectService
                 throw ex;
             }
 
-            // TODO: Когда будет сделан выбор роли при приглашении, то тут конкретная роль будет передаваться.
-            // Добавляем пользователя в команду проекта.
-            var result = await _projectRepository.AddProjectTeamMemberAsync(inviteUserId, vacancyId, teamId,
-                "Участник");
-            
-            // Добавляем участника в раб.пространство проекта.
-            await _projectManagmentRepository.AddProjectWorkSpaceMemberAsync(projectId, result.MemberId);
-            
             // Находим название проекта.
             var projectName = await _projectRepository.GetProjectNameByProjectIdAsync(projectId);
 
@@ -1054,8 +1045,6 @@ internal sealed class ProjectService : IProjectService
             // Записываем уведомления о приглашении в проект.
             await _projectNotificationsRepository.AddNotificationInviteProjectAsync(projectId, vacancyId, inviteUserId,
                 projectName);
-
-            return result;
         }
 
         catch (Exception ex)

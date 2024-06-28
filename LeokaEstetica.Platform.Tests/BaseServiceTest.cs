@@ -189,8 +189,7 @@ internal class BaseServiceTest
         var projectRepository = new ProjectRepository(pgContext, ChatRepository, connectionProvider);
         var projectNotificationsRepository = new ProjectNotificationsRepository(pgContext, connectionProvider);
         var vacancyRepository = new VacancyRepository(pgContext);
-        var projectNotificationsService = new ProjectNotificationsService(null, null, userRepository, mapper,
-            projectNotificationsRepository, null, projectRepository, null, null, vacancyRepository);
+        var projectManagementRepository = new ProjectManagmentRepository(connectionProvider);
         var vacancyModerationRepository = new VacancyModerationRepository(pgContext);
         var vacancyNotificationsService = new VacancyNotificationsService(null, null);
         var availableLimitsService = new AvailableLimitsService(null, availableLimitsRepository);
@@ -226,16 +225,19 @@ internal class BaseServiceTest
             null);
         ResumeModerationService = new ResumeModerationService(null, resumeModerationRepository, mapper,
             userRepository, null);
-        ProjectFinderService = new ProjectFinderService(null, userRepository, projectNotificationsService, ResumeModerationService);
+        var projectManagementNotificationsRepository = new ProjectNotificationsRepository(pgContext, connectionProvider);
+        ProjectNotificationsService = new ProjectNotificationsService(null, null, userRepository, mapper,
+            projectManagementNotificationsRepository, null, projectRepository, null, globalConfigRepository,
+            vacancyRepository, projectManagementRepository);
+        ProjectFinderService = new ProjectFinderService(null, userRepository, ProjectNotificationsService, ResumeModerationService);
 
         var resumeRepository = new ResumeRepository(pgContext);
 
         var fillColorProjectsService = new FillColorProjectsService();
-
-        var projectManagementRepository = new ProjectManagmentRepository(connectionProvider);
+        
         var wikiRepository = new WikiTreeRepository(connectionProvider);
         ProjectService = new ProjectService(projectRepository, null, userRepository, mapper,
-            projectNotificationsService, VacancyService, vacancyRepository, availableLimitsService,
+            ProjectNotificationsService, VacancyService, vacancyRepository, availableLimitsService,
             subscriptionRepository, FareRuleRepository, VacancyModerationService, projectNotificationsRepository, null,
             accessUserService, fillColorProjectsService, null, ProjectModerationRepository, discordService, null,
             globalConfigRepository, projectManagementRepository, wikiRepository);
@@ -326,10 +328,5 @@ internal class BaseServiceTest
 
         var wikiTreeRepository = new WikiTreeRepository(connectionProvider);
         WikiTreeService = new WikiTreeService(null, wikiTreeRepository, userRepository);
-
-        var projectManagementNotificationsRepository = new ProjectNotificationsRepository(pgContext, connectionProvider);
-        ProjectNotificationsService = new ProjectNotificationsService(null, null, userRepository, mapper,
-            projectManagementNotificationsRepository, null, projectRepository, null, globalConfigRepository,
-            vacancyRepository);
     }
 }

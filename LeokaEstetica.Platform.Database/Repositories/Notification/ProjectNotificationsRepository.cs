@@ -1,9 +1,11 @@
+using Dapper;
 using LeokaEstetica.Platform.Base.Abstractions.Connection;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.Base;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.Notification;
+using LeokaEstetica.Platform.Models.Dto.Output.Notification;
 using LeokaEstetica.Platform.Models.Entities.Notification;
 using Microsoft.EntityFrameworkCore;
 
@@ -286,6 +288,26 @@ internal sealed class ProjectNotificationsRepository : BaseRepository, IProjectN
         });
         
         await _pgContext.SaveChangesAsync();
+    }
+
+    /// <inheritdoc />
+    public async Task<ProjectInviteNotificationOutput?> GetProjectInviteNotificationAsync(long notificationId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@notificationId", notificationId);
+
+        var query = "SELECT \"NotificationId\", " +
+                    "\"UserId\", " +
+                    "\"VacancyId\", " +
+                    "\"ProjectId\" " +
+                    "FROM \"Notifications\".\"Notifications\" " +
+                    "WHERE \"NotificationId\" = @notificationId";
+
+        var result = await connection.QueryFirstOrDefaultAsync<ProjectInviteNotificationOutput>(query, parameters);
+
+        return result;
     }
 
     #endregion
