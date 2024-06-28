@@ -1320,6 +1320,22 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
         await connection.ExecuteAsync(query, parameters);
     }
 
+    /// <inheritdoc />
+    public async Task RemoveUserProjectTeamAsync(long userId, long teamId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@userId", userId);
+        parameters.Add("@teamId", teamId);
+
+        var query = "DELETE FROM \"Teams\".\"ProjectsTeamsMembers\" " +
+                    "WHERE \"UserId\" = @userId " +
+                    "AND \"TeamId\" = @teamId";
+                    
+        await connection.ExecuteAsync(query, parameters);
+    }
+
     #region Приватные методы.
 
     /// Метод првоеряет, был ли уже такой проект на модерации. 

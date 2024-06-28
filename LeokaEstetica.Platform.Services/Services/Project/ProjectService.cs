@@ -1535,6 +1535,24 @@ internal sealed class ProjectService : IProjectService
         }
     }
 
+    /// <inheritdoc />
+    public async Task RemoveUserProjectTeamAsync(long userId, long projectId)
+    {
+        try
+        {
+            // Находим Id команды проекта.
+            var teamId = await _projectRepository.GetProjectTeamIdAsync(projectId);
+
+            await _projectRepository.RemoveUserProjectTeamAsync(userId, teamId);
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
     /// <summary>
     /// Метод запускает првоерки на разные условия прежде чем вывести проекты в каталог.
     /// Проекты могут быть отсеяны, если не проходят по условиям.
