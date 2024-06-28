@@ -238,6 +238,20 @@ internal sealed class ProjectManagementSettingsRepository : BaseRepository, IPro
         return result;
     }
 
+    /// <inheritdoc />
+    public async Task CancelProjectInviteAsync(long notificationId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@notificationId", notificationId);
+        
+        var query = "DELETE FROM FROM \"Notifications\".\"Notifications\" " +
+                    "WHERE \"NotificationId\" = @notificationId";
+
+        await connection.ExecuteAsync(query, parameters);
+    }
+
     #endregion
 
     #region Приватные методы.
