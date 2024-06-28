@@ -2372,13 +2372,14 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
                     "COALESCE(up.\"ProjectManagementName\", 'Без названия') AS ProjectManagementName, " +
                     "pw.workspace_id " +
                     "FROM \"Projects\".\"UserProjects\" AS up " +
-                    "LEFT JOIN project_management.workspaces AS pw " +
+                    "INNER JOIN project_management.workspaces AS pw " +
                     "ON up.\"ProjectId\" = pw.project_id " +
-                    "LEFT JOIN \"Teams\".\"ProjectsTeams\" AS pt " +
+                    "INNER JOIN \"Teams\".\"ProjectsTeams\" AS pt " +
                     "ON up.\"ProjectId\" = pt.\"ProjectId\" " +
-                    "LEFT JOIN \"Teams\".\"ProjectsTeamsMembers\" AS ptm " +
+                    "INNER JOIN \"Teams\".\"ProjectsTeamsMembers\" AS ptm " +
                     "ON pt.\"TeamId\" = ptm.\"TeamId\" " +
-                    "WHERE ptm.\"UserId\" = @userId";
+                    "WHERE ptm.\"UserId\" = @userId " +
+                    "ORDER BY pw.workspace_id";
 
         var result = await connection.QueryAsync<WorkSpaceOutput>(query, parameters);
 
