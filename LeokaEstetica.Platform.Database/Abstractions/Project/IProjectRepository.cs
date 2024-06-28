@@ -332,4 +332,11 @@ public interface IProjectRepository
     /// <param name="teamId">Id команды проекта.</param>
     /// </summary>
     Task SetProjectTeamMemberRoleAsync(long userId, string? role, long teamId);
+    
+    /// <summary>
+    /// Метод исключает пользователя из команды проекта.
+    /// <param name="userId">Id пользователя.</param>
+    /// <param name="teamId">Id команды проекта.</param>
+    /// </summary>
+    Task RemoveUserProjectTeamAsync(long userId, long teamId);
 }

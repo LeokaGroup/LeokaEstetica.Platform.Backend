@@ -8,7 +8,6 @@ using LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
 using LeokaEstetica.Platform.Models.Entities.Configs;
 using LeokaEstetica.Platform.Models.Entities.Moderation;
 using LeokaEstetica.Platform.Models.Entities.Project;
-using LeokaEstetica.Platform.Models.Entities.ProjectTeam;
 
 namespace LeokaEstetica.Platform.Services.Abstractions.Project;
 
@@ -228,4 +227,11 @@ public interface IProjectService
     /// <param name="projectId">Id проекта.</param>
     /// </summary>
     Task SetProjectTeamMemberRoleAsync(long userId, string? role, long projectId);
+    
+    /// <summary>
+    /// Метод исключает пользователя из команды проекта.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <param name="projectId">Id проекта.</param>
+    Task RemoveUserProjectTeamAsync(long userId, long projectId);
 }

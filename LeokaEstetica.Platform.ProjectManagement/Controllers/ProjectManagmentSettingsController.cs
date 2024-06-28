@@ -12,6 +12,7 @@ using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.ProjectManagement.Output;
 using LeokaEstetica.Platform.ProjectManagment.ValidationModels;
 using LeokaEstetica.Platform.ProjectManagment.Validators;
+using LeokaEstetica.Platform.Services.Abstractions.Project;
 using LeokaEstetica.Platform.Services.Abstractions.ProjectManagment;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
@@ -33,6 +34,7 @@ public class ProjectManagmentSettingsController : BaseController
     private readonly IMapper _mapper;
     private readonly IProjectManagementSettingsService _projectManagementSettingsService;
     private readonly IProjectManagementSettingsRepository _projectManagementSettingsRepository;
+    private readonly IProjectService _projectService;
 
     /// <summary>
     /// Конструктор.
@@ -44,13 +46,15 @@ public class ProjectManagmentSettingsController : BaseController
     /// <param name="mapper">Маппер.</param>
     /// <param name="projectManagementSettingsService">Сервис настроек проекта.</param>
     /// <param name="projectManagementSettingsRepository">Репозиторий настроек проекта.</param>
+    /// <param name="projectService">Сервис проектов.</param>
     public ProjectManagmentSettingsController(ILogger<ProjectManagmentController> logger,
         Lazy<IProjectManagmentTemplateRepository> projectManagmentTemplateRepository,
         Lazy<IDiscordService> discordService,
         IProjectManagmentService projectManagmentService,
         IMapper mapper,
         IProjectManagementSettingsService projectManagementSettingsService,
-        IProjectManagementSettingsRepository projectManagementSettingsRepository)
+        IProjectManagementSettingsRepository projectManagementSettingsRepository,
+         IProjectService projectService)
     {
         _logger = logger;
         _projectManagmentTemplateRepository = projectManagmentTemplateRepository;
@@ -59,6 +63,7 @@ public class ProjectManagmentSettingsController : BaseController
         _mapper = mapper;
         _projectManagementSettingsService = projectManagementSettingsService;
         _projectManagementSettingsRepository = projectManagementSettingsRepository;
+        _projectService = projectService;
     }
     
     /// <summary>
@@ -471,7 +476,7 @@ public class ProjectManagmentSettingsController : BaseController
     {
         if (notificationId <= 0)
         {
-            var ex = new InvalidOperationException("Ошибка при получении приглашений проекта. " +
+            var ex = new InvalidOperationException("Ошибка при отмене приглашения проекта. " +
                                             $"NotificationId: {notificationId}.");
             _logger.LogError(ex, ex.Message);
             
@@ -481,5 +486,22 @@ public class ProjectManagmentSettingsController : BaseController
         }
 
         await _projectManagementSettingsRepository.CancelProjectInviteAsync(notificationId);
+    }
+
+    /// <summary>
+    /// Метод исключает пользователя из команды проекта.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <param name="projectId">Id проекта.</param>
+    [HttpDelete]
+    [Route("remove-project-team")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task RemoveUserProjectTeamAsync([FromQuery] long userId, [FromQuery] long projectId)
+    {
+        await _projectService.RemoveUserProjectTeamAsync(userId, projectId);
     }
 }
