@@ -138,9 +138,8 @@ public interface IProjectService
     /// <param name="vacancyId">Id вакансии.</param>
     /// <param name="account">Аккаунт пользователя.</param>
     /// <param name="token">Токен пользователя.</param>
-    /// <returns>Добавленный пользователь.</returns>
-    Task<ProjectTeamMemberEntity> InviteProjectTeamAsync(string inviteText, ProjectInviteTypeEnum inviteType,
-        long projectId, long? vacancyId, string account, string token);
+    Task InviteProjectTeamAsync(string inviteText, ProjectInviteTypeEnum inviteType, long projectId, long? vacancyId,
+        string account, string token);
 
     /// <summary>
     /// Метод фильтрации проектов в зависимости от параметров фильтров.
