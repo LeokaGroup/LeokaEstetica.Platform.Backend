@@ -246,7 +246,7 @@ internal sealed class ProjectManagementSettingsRepository : BaseRepository, IPro
         var parameters = new DynamicParameters();
         parameters.Add("@notificationId", notificationId);
         
-        var query = "DELETE FROM FROM \"Notifications\".\"Notifications\" " +
+        var query = "DELETE FROM \"Notifications\".\"Notifications\" " +
                     "WHERE \"NotificationId\" = @notificationId";
 
         await connection.ExecuteAsync(query, parameters);
