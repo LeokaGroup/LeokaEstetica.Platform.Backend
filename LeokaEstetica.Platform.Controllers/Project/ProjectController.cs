@@ -448,8 +448,22 @@ public class ProjectController : BaseController
     public async Task<ProjectTeamMemberOutput> InviteProjectTeamAsync(
         [FromBody] InviteProjectMemberInput inviteProjectMemberInput)
     {
-        var invitedUser = await _projectService.InviteProjectTeamAsync(inviteProjectMemberInput.InviteText,
-            Enum.Parse<ProjectInviteTypeEnum>(inviteProjectMemberInput.InviteType), inviteProjectMemberInput.ProjectId,
+        var validator = await new InviteProjectMemberValidator().ValidateAsync(inviteProjectMemberInput);
+        
+        if (validator.Errors.Any())
+        {
+            var nonValidResult = new ProjectTeamMemberOutput()
+            {
+                Errors = await _validationExcludeErrorsService.ExcludeAsync(validator.Errors)
+            };
+            
+            return nonValidResult;
+        }
+        
+        var invitedUser = await _projectService.InviteProjectTeamAsync(
+            inviteProjectMemberInput.InviteText,
+            Enum.Parse<ProjectInviteTypeEnum>(inviteProjectMemberInput.InviteType), 
+            inviteProjectMemberInput.ProjectId,
             inviteProjectMemberInput.VacancyId, GetUserName(), CreateTokenFromHeader());
         
         var result = _mapper.Map<ProjectTeamMemberOutput>(invitedUser);

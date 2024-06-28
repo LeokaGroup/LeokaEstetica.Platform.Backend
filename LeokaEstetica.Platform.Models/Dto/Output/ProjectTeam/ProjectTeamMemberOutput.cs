@@ -1,3 +1,4 @@
+using FluentValidation.Results;
 using LeokaEstetica.Platform.Models.Dto.Common;
 
 namespace LeokaEstetica.Platform.Models.Dto.Output.ProjectTeam;
@@ -5,7 +6,7 @@ namespace LeokaEstetica.Platform.Models.Dto.Output.ProjectTeam;
 /// <summary>
 /// Класс выходной модели участника команды проекта.
 /// </summary>
-public class ProjectTeamMemberOutput : IFrontSuccess
+public class ProjectTeamMemberOutput : IFrontSuccess, IFrontError
 {
     /// <summary>
     /// PK.
@@ -36,4 +37,9 @@ public class ProjectTeamMemberOutput : IFrontSuccess
     /// Текст успеха, который будем выводить на фронт.
     /// </summary>
     public string SuccessMessage { get; set; }
+    
+    /// <summary>
+    /// Список ошибок.
+    /// </summary>
+    public List<ValidationFailure> Errors { get; set; }
 }

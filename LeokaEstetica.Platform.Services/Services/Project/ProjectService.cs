@@ -95,18 +95,6 @@ internal sealed class ProjectService : IProjectService
     private readonly IGlobalConfigRepository _globalConfigRepository;
     private readonly IProjectManagmentRepository _projectManagmentRepository;
     private readonly IWikiTreeRepository _wikiTreeRepository;
-
-    /// <summary>
-    /// Список типов приглашений в проект.
-    /// </summary>
-    private static readonly List<ProjectInviteTypeEnum> _projectInviteTypes = new()
-    {
-        ProjectInviteTypeEnum.Email,
-        ProjectInviteTypeEnum.Login,
-        ProjectInviteTypeEnum.PhoneNumber,
-        ProjectInviteTypeEnum.Link
-    };
-
     private readonly IVacancyModerationService _vacancyModerationService;
     private static readonly string _approveVacancy = "Опубликована";
 
@@ -953,8 +941,6 @@ internal sealed class ProjectService : IProjectService
     {
         try
         {
-            await ValidateInviteProjectTeamParams(inviteText, inviteType, projectId, vacancyId, account, token);
-            
             var currentUserId = await _userRepository.GetUserIdByEmailAsync(account);
             
             if (currentUserId <= 0)
@@ -1645,66 +1631,6 @@ internal sealed class ProjectService : IProjectService
         }
 
         return result;
-    }
-    
-    /// <summary>
-    /// Метод валидирует входные параметры перед добавлением пользователя в команду проекта.
-    /// </summary>
-    /// <param name="inviteText">Текст, который будет использоваться для поиска пользователя для приглашения.</param>
-    /// <param name="inviteType">Способ приглашения.</param>
-    /// <param name="projectId">Id проекта.</param>
-    /// <param name="vacancyId">Id вакансии.</param>
-    /// <param name="account">Аккаунт пользователя.</param>
-    /// <param name="token">Токен пользователя.</param>
-    private async Task ValidateInviteProjectTeamParams(string inviteText, ProjectInviteTypeEnum inviteType,
-        long projectId, long? vacancyId, string account, string token)
-    {
-        var isError = false;
-
-        if (string.IsNullOrEmpty(inviteText))
-        {
-            var ex = new ArgumentException(ValidationConsts.NOT_VALID_INVITE_PROJECT_TEAM_USER);
-            _logger.LogError(ex, ex.Message);
-            isError = true;
-        }
-        
-        if (!_projectInviteTypes.Contains(inviteType))
-        {
-            var ex = new ArgumentException(ValidationConsts.NOT_VALID_INVITE_TYPE);
-            _logger.LogError(ex, ex.Message);
-            isError = true;
-        }
-
-        if (projectId <= 0)
-        {
-            var ex = new ArgumentException(ValidationConsts.NOT_VALID_INVITE_PROJECT_TEAM_PROJECT_ID);
-            _logger.LogError(ex, ex.Message);
-            isError = true;
-        }
-
-        if (vacancyId <= 0)
-        {
-            var ex = new ArgumentException(ValidationConsts.NOT_VALID_INVITE_PROJECT_TEAM_VACANCY_ID);
-            _logger.LogError(ex, ex.Message);
-            isError = true;
-        }
-        
-        var userId = await _userRepository.GetUserIdByEmailOrLoginAsync(account);
-
-        if (userId <= 0)
-        {
-            var ex = new NotFoundUserIdByAccountException(account);
-            throw ex;
-        }
-
-        // Если была ошибка, то покажем уведомление юзеру и генерим исключение.
-        if (isError)
-        {
-            await _projectNotificationsService.SendNotificationErrorInviteProjectTeamMembersAsync("Ошибка",
-                "Ошибка при добавлении пользователя в команду проекта. Мы уже знаем о ней и разбираемся. " +
-                "А пока, попробуйте еще раз.",
-                NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, token);
-        }
     }
     
     /// <summary>
