@@ -748,7 +748,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                     // TODO: С Dapper не нужно все это.
                     // TODO: Использовать просто классы DTO для этого, и факторки эти не нужны будут.
                     addedProjectTask = CreateProjectTaskFactory.CreateQuickProjectTask(projectManagementTaskInput,
-                        userId, ++maxProjectTaskId);
+                        userId, maxProjectTaskId != 1 ? ++maxProjectTaskId : maxProjectTaskId);
                 }
 
                 // Обычное создание задачи.
@@ -764,7 +764,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                     // TODO: С Dapper не нужно все это.
                     // TODO: Использовать просто классы DTO для этого, и факторки эти не нужны будут.
                     addedProjectTask = CreateProjectTaskFactory.CreateProjectTask(projectManagementTaskInput, userId,
-                        ++maxProjectTaskId);
+                        maxProjectTaskId != 1 ? ++maxProjectTaskId : maxProjectTaskId);
                 }
 
                 // Создаем задачу в БД.
