@@ -50,24 +50,16 @@ internal sealed class ProjectFinderService : IProjectFinderService
         try
         {
             var users = await _userRepository.GetUserByEmailOrLoginAsync(searchText);
-
-            // Если не удалось найти таких пользователей.
-            if (!users.Any())
+            
+            if (users is null || users.Count == 0)
             {
-                var ex = new InvalidOperationException($"Пользователя по поисковому запросу {searchText} не найдено.");
-                _logger.LogError(ex, "Ошибка поиска пользователей для приглашения в команду проекта. " +
-                                     $"Поисковая строка была {searchText}");
-                
-                await _projectNotificationsService.SendNotificationWarningSearchProjectTeamMemberAsync(
-                    "Внимание",
-                    $"По запросу \"{searchText}\" не удалось найти пользователей. Попробуйте изменить запрос.",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
-                throw ex;
+                return Enumerable.Empty<UserEntity>();
             }
 
             // Получаем анкеты на модерации.
             var resumesModeration = await _resumeModerationService.ResumesModerationAsync();
             
+            // TODO: Делать все это в запросе выше, который переписан уже на Dapper.
             // Отбираем пользователей, которые на модерации и удалим их из выборки.
             var removedUsers = resumesModeration.Resumes
                 .IntersectBy(users.Select(x => x.UserId), u => u.UserId)
@@ -75,6 +67,7 @@ internal sealed class ProjectFinderService : IProjectFinderService
             
             if (removedUsers.Any())
             {
+                // TODO: Делать все это в запросе выше, который переписан уже на Dapper.
                 users.RemoveAll(u => removedUsers.Select(x => x.UserId).Contains(u.UserId));
             }
 

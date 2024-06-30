@@ -13,5 +13,5 @@ public class SearchProjectMemberOutput
     /// <summary>
     /// Отображаемое имя (почта или логин, смотря что заполнено).
     /// </summary>
-    public string DisplayName { get; set; }
+    public string? DisplayName { get; set; }
 }
