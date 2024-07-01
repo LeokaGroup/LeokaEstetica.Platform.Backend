@@ -639,7 +639,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 
             // Если просматриваем задачу.
             if (taskDetailType is TaskDetailTypeEnum.Task or TaskDetailTypeEnum.Error)
-            {
+            { 
                 // Настраиваем билдер для построения задачи.
                 builder = new TaskBuilder { BuilderData = builderData };
             }
