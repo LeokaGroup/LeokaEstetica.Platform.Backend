@@ -489,4 +489,12 @@ public interface IProjectManagmentService
     /// <param name="account">Аккаунт.</param>
     /// <returns>Список раб.пространств.</returns>
     Task<IEnumerable<WorkSpaceOutput>> GetWorkSpacesAsync(string account);
+
+    /// <summary>
+    /// Метод удаляет задачу проекта.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
+    /// <param name="account">Аккаунт.</param>
+    Task RemoveProjectTaskAsync(long projectId, string projectTaskId, string account);
 }
