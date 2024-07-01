@@ -497,6 +497,21 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 var ex = new NotFoundUserIdByAccountException(account);
                 throw ex;
             }
+            
+            var ifProjectMember = await _projectRepository.CheckExistsProjectTeamMemberAsync(projectId, userId);
+
+            if (!ifProjectMember)
+            {
+                var ex = new InvalidOperationException(
+                    "Была попытка просмотра раб.пространства проекта без наличия доступа. " +
+                    "Сработала система запрета доступа. " +
+                    $"UserId: {userId} не имеет доступа. " +
+                    $"ProjectId: {projectId}");
+                
+                await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
+                
+                return new ProjectManagmentWorkspaceResult { IsAccess = false };
+            }
 
             // TODO: Этот код дублируется в этом сервисе. Вынести в приватный метод и кортежем вернуть нужные данные.
             // Получаем настройки проекта.
