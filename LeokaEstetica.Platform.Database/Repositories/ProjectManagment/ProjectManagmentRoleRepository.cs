@@ -121,10 +121,10 @@ internal sealed class ProjectManagmentRoleRepository : BaseRepository, IProjectM
             parameters.Add(tempParameters);
         }
 
-        var query = "UPDATE roles.organization_project_member_roles " +
+        var query = "UPDATE roles.project_member_roles " +
                     "SET is_enabled = @enabled " +
                     "WHERE role_id = @roleId " +
-                    "AND organization_member_id = @userId";
+                    "AND project_member_id = @userId";
 
         await connection.ExecuteAsync(query, parameters);
     }
