@@ -129,6 +129,27 @@ internal sealed class ProjectManagmentRoleRepository : BaseRepository, IProjectM
         await connection.ExecuteAsync(query, parameters);
     }
 
+    /// <inheritdoc />
+    public async Task<bool> GetProjectRoleByRoleSysNameAsync(string? roleSysName, long userId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@roleSysName", roleSysName);
+        parameters.Add("@userId", userId);
+
+        var query = "SELECT pmr.is_enabled " +
+                    "FROM roles.project_member_roles AS pmr " +
+                    "INNER JOIN roles.project_roles AS pr " +
+                    "ON pmr.role_id = pr.role_id " +
+                    "WHERE pmr.project_member_id = @userId " +
+                    "AND pr.role_sys_name = @roleSysName";
+
+        var result = await connection.QueryFirstOrDefaultAsync<bool>(query, parameters);
+
+        return result;
+    }
+
     #endregion
 
     #region Приватные методы.

@@ -65,6 +65,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     private readonly IUserService _userService;
     private readonly Lazy<IDistributionStatusTaskService> _distributionStatusTaskService;
     private readonly IProjectManagementTemplateService _projectManagementTemplateService;
+    private readonly Lazy<IProjectManagmentRoleRepository> _projectManagmentRoleRepository;
 
     /// <summary>
     /// Статусы задач, которые являются самыми базовыми и никогда не меняются независимо от шаблона проекта.
@@ -92,6 +93,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     /// <param name="userService">Сервис пользователей.</param>
     /// <param name="distributionStatusTaskService">Сервис распределение задач по статусам.</param>
     /// <param name="projectManagementTemplateService">Сервис шаблонов проекта.</param>
+    /// <param name="projectManagmentRoleRepository">Репозиторий ролей проекта.</param>
     /// </summary>
     public ProjectManagmentService(ILogger<ProjectManagmentService> logger,
         IProjectManagmentRepository projectManagmentRepository,
@@ -107,7 +109,8 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         Lazy<IProjectManagementNotificationService> projectManagementNotificationService,
         IUserService userService,
         Lazy<IDistributionStatusTaskService> distributionStatusTaskService,
-        IProjectManagementTemplateService projectManagementTemplateService)
+        IProjectManagementTemplateService projectManagementTemplateService,
+        Lazy<IProjectManagmentRoleRepository> projectManagmentRoleRepository)
     {
         _logger = logger;
         _projectManagmentRepository = projectManagmentRepository;
@@ -124,6 +127,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         _userService = userService;
         _distributionStatusTaskService = distributionStatusTaskService;
         _projectManagementTemplateService = projectManagementTemplateService;
+        _projectManagmentRoleRepository = projectManagmentRoleRepository;
     }
 
     #region Публичные методы.
@@ -2930,6 +2934,23 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             if (userId <= 0)
             {
                 var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+            
+            // Проверяем, есть ли у пользователя роль на удаление задачи.
+            var ifExistRoleRemoveTask = await _projectManagmentRoleRepository.Value
+                .GetProjectRoleByRoleSysNameAsync("ProjectRemoveTask", userId);
+            
+            if (!ifExistRoleRemoveTask)
+            {
+                var ex = new InvalidOperationException(
+                    "Нет прав на удаление задачи. " +
+                    $"UserId: {userId}. " +
+                    $"ProjectId: {projectId}. " +
+                    "Исключительная ситуация - пользователь не должен тогда был видеть кнопку удаления.");
+                                                    
+                await _discordService.SendNotificationErrorAsync(ex);
+
                 throw ex;
             }
         }
