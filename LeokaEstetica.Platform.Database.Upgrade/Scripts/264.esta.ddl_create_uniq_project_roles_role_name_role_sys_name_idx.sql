@@ -1,0 +1,1 @@
+﻿CREATE UNIQUE INDEX uniq_project_roles_role_name_role_sys_name_idx ON roles.project_roles (role_name, role_sys_name);
