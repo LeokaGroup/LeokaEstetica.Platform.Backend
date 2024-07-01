@@ -676,7 +676,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 
         catch (Exception ex)
         {
-            _logger.LogError(ex.Message, ex);
+            _logger.LogError(ex.Message, ex); 
             throw;
         }
     }
