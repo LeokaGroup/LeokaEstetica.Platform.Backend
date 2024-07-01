@@ -600,11 +600,25 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 throw ex;
             }
 
-            // TODO: Добавить проверку. Является ли пользователь участником проекта. Если нет, то не давать доступ к задаче.
+            var ifProjectMember = await _projectRepository.CheckExistsProjectTeamMemberAsync(projectId, userId);
+
+            if (!ifProjectMember)
+            {
+                var ex = new InvalidOperationException("Была попытка просмотра задачи без наличия доступа. " +
+                                                       "Сработала система запрета доступа. " +
+                                                       $"UserId: {userId} не имеет доступа. " +
+                                                       $"ProjectId: {projectId}");
+                
+                await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
+                
+                return new ProjectManagmentTaskOutput { IsAccess = false };
+            }
+            
             var builderData = new AgileObjectBuilderData(_projectManagmentRepository, _userRepository,
                 _discordService, _userService, _projectManagmentTemplateRepository, _mapper,
                 projectTaskId.GetProjectTaskIdFromPrefixLink(), projectId);
-            AgileObjectBuilder builder = null;
+                
+            AgileObjectBuilder? builder = null;
 
             // Если просматриваем задачу.
             if (taskDetailType is TaskDetailTypeEnum.Task or TaskDetailTypeEnum.Error)
