@@ -636,7 +636,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 projectTaskId.GetProjectTaskIdFromPrefixLink(), projectId);
                 
             AgileObjectBuilder? builder = null;
-
+ 
             // Если просматриваем задачу.
             if (taskDetailType is TaskDetailTypeEnum.Task or TaskDetailTypeEnum.Error)
             { 
