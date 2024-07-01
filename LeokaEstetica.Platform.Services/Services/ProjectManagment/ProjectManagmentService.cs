@@ -585,6 +585,8 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                     result.Strategy, page);
             }
 
+            result.IsAccess = true;
+
             return result;
         }
 
@@ -666,6 +668,8 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 
             // Запускаем построение нужного Agile-объекта.
             await agileObject.BuildAsync(builder, taskDetailType);
+            
+            builder.ProjectManagmentTask.IsAccess = true;
                 
             return builder.ProjectManagmentTask;
         }
