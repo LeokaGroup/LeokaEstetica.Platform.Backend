@@ -18,7 +18,7 @@ public partial class ProjectCommentModerationConfiguration : IEntityTypeConfigur
         
         entity.Property(e => e.DateModeration)
             .HasColumnName("DateModeration")
-            .HasColumnType("timestamp")
+            .HasColumnType("timestamp with time zone")
             .IsRequired();
         
         entity.Property(e => e.CommentId)

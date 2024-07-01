@@ -105,31 +105,34 @@ internal sealed class ProjectCommentsRepository : IProjectCommentsRepository
     public async Task<IQueryable<ProjectCommentEntity>> GetAllProjectCommentsAsync()
     {
         var result = (from pc in _pgContext.ProjectComments
-                join pcm in _pgContext.ProjectCommentsModeration
-                    on pc.CommentId
-                    equals pcm.CommentId
-                select new ProjectCommentEntity
-                {
-                    CommentId = pc.CommentId,
-                    Comment = pc.Comment,
-                    Created = pc.Created,
-                    UserId = pc.UserId,
-                    IsMyComment = pc.IsMyComment,
-                    ProjectId = pc.ProjectId,
-                    ModerationStatusId = pc.ModerationStatusId
-                })
+            join pcm in _pgContext.ProjectCommentsModeration
+                on pc.CommentId equals pcm.CommentId
+            join p in _pgContext.ModerationProjects
+                on pc.ProjectId equals p.ProjectId
+            where p.ModerationStatusId == (int)ProjectModerationStatusEnum.ApproveProject
+                    
+            select new ProjectCommentEntity
+            {
+                CommentId = pc.CommentId,
+                Comment = pc.Comment,
+                Created = pc.Created,
+                UserId = pc.UserId,
+                IsMyComment = pc.IsMyComment,
+                ProjectId = pc.ProjectId,
+                ModerationStatusId = pcm.ModerationStatusId
+            })
             .AsQueryable();
 
         if (_pgContext.ProjectCommentsModeration.AsQueryable().Any())
         {
-            result = result.Where(pcm => !new[]
+            result = result.Where(pce => !new[]
                 {
-                    (long)ProjectModerationStatusEnum.ModerationProject, // На модерации.
-                    (long)ProjectModerationStatusEnum.RejectedProject // Отклонен.
+                    (int)ProjectCommentModerationEnum.ModerationComment, // На модерации.
+                    (int)ProjectCommentModerationEnum.RejectedComment // Отклонен.
                 }
-                .Contains(pcm.ModerationStatusId));
+                .Contains(pce.ModerationStatusId));
         }
-
+            
         return await Task.FromResult(result);
     }
 }

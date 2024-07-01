@@ -8,12 +8,12 @@ public class InviteProjectMemberInput
     /// <summary>
     /// Текст, который будет использоваться для поиска пользователя для приглашения.
     /// </summary>
-    public string InviteText { get; set; }
+    public string? InviteText { get; set; }
 
     /// <summary>
     /// Способ приглашения.
     /// </summary>
-    public string InviteType { get; set; }
+    public string? InviteType { get; set; }
 
     /// <summary>
     /// Id проекта.

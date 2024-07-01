@@ -108,7 +108,7 @@ public interface IUserRepository
     /// </summary>
     /// <param name="searchText">Текст, по которому надо искать.</param>
     /// <returns>Список пользователей.</returns>
-    Task<List<UserEntity>> GetUserByEmailOrLoginAsync(string searchText);
+    Task<List<UserEntity>?> GetUserByEmailOrLoginAsync(string searchText);
     
     /// <summary>
     /// Метод находит Id пользователя по почте или логину пользователя.

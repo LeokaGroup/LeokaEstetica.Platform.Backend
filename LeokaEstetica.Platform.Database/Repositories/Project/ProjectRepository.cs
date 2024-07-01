@@ -53,6 +53,7 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
 
     /// <summary>
     /// Метод создает новый проект пользователя.
+    /// Если не указано, то выводится текст  в бд "не указано".
     /// </summary>
     /// <param name="createProjectInput">Входная модель.</param>
     /// <returns>Данные нового проекта.</returns>
@@ -70,8 +71,8 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
                 UserId = createProjectInput.UserId,
                 ProjectCode = Guid.NewGuid(),
                 DateCreated = DateTime.UtcNow,
-                Conditions = createProjectInput.Conditions,
-                Demands = createProjectInput.Demands
+                Conditions = createProjectInput.Conditions?? "Не указано",
+                Demands = createProjectInput.Demands?? "Не указано"
             };
             await _pgContext.UserProjects.AddAsync(project);
 
@@ -993,6 +994,16 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
         return result;
     }
 
+    /// <inheritdoc />
+    public async Task<bool> CheckProjectArchivedAsync(long projectId)
+    {
+        var result = await _pgContext.ModerationProjects
+            .AnyAsync(p => p.ProjectId == projectId
+                           && p.ModerationStatusId == (int)ProjectModerationStatusEnum.ArchivedProject);
+
+        return result;
+    }
+
     /// <summary>
     /// Метод получает список вакансий доступных к отклику.
     /// Для владельца проекта будет возвращаться пустой список.
@@ -1306,6 +1317,22 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
                     "WHERE \"UserId\" = @userId " +
                     "AND \"TeamId\" = @teamId";
         
+        await connection.ExecuteAsync(query, parameters);
+    }
+
+    /// <inheritdoc />
+    public async Task RemoveUserProjectTeamAsync(long userId, long teamId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@userId", userId);
+        parameters.Add("@teamId", teamId);
+
+        var query = "DELETE FROM \"Teams\".\"ProjectsTeamsMembers\" " +
+                    "WHERE \"UserId\" = @userId " +
+                    "AND \"TeamId\" = @teamId";
+                    
         await connection.ExecuteAsync(query, parameters);
     }
 

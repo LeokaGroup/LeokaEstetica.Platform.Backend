@@ -195,6 +195,13 @@ public interface IProjectRepository
     Task<bool> CheckProjectModerationAsync(long projectId);
     
     /// <summary>
+    /// Метод првоеряет, находится ли проект в архиве.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Признак нахождения в архиве.</returns>
+    Task<bool> CheckProjectArchivedAsync(long projectId);
+    
+    /// <summary>
     /// Метод получает список вакансий доступных к отклику.
     /// Для владельца проекта будет возвращаться пустой список.
     /// </summary>
@@ -325,4 +332,11 @@ public interface IProjectRepository
     /// <param name="teamId">Id команды проекта.</param>
     /// </summary>
     Task SetProjectTeamMemberRoleAsync(long userId, string? role, long teamId);
+    
+    /// <summary>
+    /// Метод исключает пользователя из команды проекта.
+    /// <param name="userId">Id пользователя.</param>
+    /// <param name="teamId">Id команды проекта.</param>
+    /// </summary>
+    Task RemoveUserProjectTeamAsync(long userId, long teamId);
 }

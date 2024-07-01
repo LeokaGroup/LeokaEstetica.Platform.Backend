@@ -7,6 +7,7 @@ using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.Config;
 using LeokaEstetica.Platform.Database.Abstractions.Notification;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
+using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Database.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Models.Dto.Output.Notification;
 using LeokaEstetica.Platform.Notifications.Abstractions;
@@ -37,6 +38,7 @@ internal sealed class ProjectNotificationsService : IProjectNotificationsService
     private readonly IMailingsService _mailingsService;
     private readonly IGlobalConfigRepository _globalConfigRepository;
     private readonly IVacancyRepository _vacancyRepository;
+    private readonly IProjectManagmentRepository _projectManagmentRepository;
 
     /// <summary>
     /// Конструктор.
@@ -47,6 +49,7 @@ internal sealed class ProjectNotificationsService : IProjectNotificationsService
     /// <param name="projectNotificationsRepository">Репозиторий уведомлений проектов.</param>
     /// <param name="mapper">Автомаппер.</param>
     /// <param name="connectionService">Сервис подключений Redis.</param>
+    /// <param name="projectManagmentRepository">Репозиторий модуля УП.</param>
     public ProjectNotificationsService(IHubContext<ChatHub> hubContext, 
         ILogger<ProjectNotificationsService> logger, 
         IUserRepository userRepository,
@@ -56,7 +59,8 @@ internal sealed class ProjectNotificationsService : IProjectNotificationsService
         IProjectRepository projectRepository, 
         IMailingsService mailingsService, 
         IGlobalConfigRepository globalConfigRepository, 
-        IVacancyRepository vacancyRepository)
+        IVacancyRepository vacancyRepository,
+        IProjectManagmentRepository projectManagmentRepository)
     {
         _hubContext = hubContext;
         _logger = logger;
@@ -68,6 +72,7 @@ internal sealed class ProjectNotificationsService : IProjectNotificationsService
         _mailingsService = mailingsService;
         _globalConfigRepository = globalConfigRepository;
         _vacancyRepository = vacancyRepository;
+        _projectManagmentRepository = projectManagmentRepository;
     }
 
     #region Публичные методы.
@@ -621,15 +626,37 @@ internal sealed class ProjectNotificationsService : IProjectNotificationsService
             
             var projectId = await _projectNotificationsRepository.GetProjectIdByNotificationIdAsync(notificationId);
             var projectName = await _projectRepository.GetProjectNameByProjectIdAsync(projectId);
+            
+            // Получаем Id команды проекта.
+            var teamId = await _projectRepository.GetProjectTeamIdAsync(projectId);
 
+            // Получаем данные уведомления.
+            var notification = await _projectNotificationsRepository.GetProjectInviteNotificationAsync(notificationId);
+
+            if (notification is null)
+            {
+                throw new InvalidOperationException("Не удалось получить данные уведомления. " +
+                                                    $"NotificationId: {notificationId}.");
+            }
+            
+            // TODO: Когда будет сделан выбор роли при приглашении, то тут конкретная роль будет передаваться.
+            // Добавляем пользователя в команду проекта.
+            var result = await _projectRepository.AddProjectTeamMemberAsync(notification.UserId,
+                notification.VacancyId, teamId, "Участник");
+            
+            // Добавляем участника в раб.пространство проекта.
+            await _projectManagmentRepository.AddProjectWorkSpaceMemberAsync(projectId, result.MemberId);
+
+            // Отправляем уведомление в приложении о принятом приглашении в проект.
             await AddNotificationApproveInviteProjectAsync(userId, projectId, projectName);
             
+            // Отправляем уведомление на почту о принятом приглашении в проект.
             await SendNotificationApproveInviteProjectAsync(notificationId, userId, projectId, projectName, account);
         }
         
         catch (Exception ex)
         {
-            _logger.LogError(ex, ex.Message);
+            _logger?.LogError(ex, ex.Message);
             throw;
         }
     }

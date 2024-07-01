@@ -21,6 +21,7 @@ using LeokaEstetica.Platform.Models.Dto.Output.Notification;
 using LeokaEstetica.Platform.Models.Dto.Output.Orders;
 using LeokaEstetica.Platform.Models.Dto.Output.Profile;
 using LeokaEstetica.Platform.Models.Dto.Output.Project;
+using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagement;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectTeam;
 using LeokaEstetica.Platform.Models.Dto.Output.Refunds;
@@ -260,6 +261,9 @@ public class MappingProfile : Profile
         
         CreateMap<UserStoryEntity, UserStoryOutput>();
         CreateMap<UserStoryStatusEntity, UserStoryStatusOutput>();
+        
+        CreateMap<ProjectManagementRoleRedis, ProjectManagementRoleOutput>();
+        CreateMap<ProjectManagementRoleOutput, ProjectManagementRoleRedis>();
     }
     
     /// <summary>

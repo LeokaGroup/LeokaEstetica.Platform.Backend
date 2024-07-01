@@ -1,3 +1,4 @@
+using LeokaEstetica.Platform.Models.Dto.Output.Notification;
 using LeokaEstetica.Platform.Models.Entities.Notification;
 
 namespace LeokaEstetica.Platform.Database.Abstractions.Notification;
@@ -96,4 +97,11 @@ public interface IProjectNotificationsRepository
     /// <param name="userId">Id пользователя.</param>
     /// <param name="projectName">Название проекта.</param>
     Task AddNotificationLeaveProjectTeamMemberAsync(long projectId, long? vacancyId, long userId, string projectName);
+
+    /// <summary>
+    /// Метод получает приглашения в проект на основе данных уведомления о приглашении.
+    /// </summary>
+    /// <param name="notificationId">Id уведомления.</param>
+    /// <returns>Данные приглашения.</returns>
+    Task<ProjectInviteNotificationOutput?> GetProjectInviteNotificationAsync(long notificationId);
 }

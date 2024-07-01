@@ -1,4 +1,7 @@
 using System.Data;
+using Dapper;
+using LeokaEstetica.Platform.Base.Abstractions.Connection;
+using LeokaEstetica.Platform.Base.Abstractions.Repositories.Base;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.Base.Factors;
 using LeokaEstetica.Platform.Core.Data;
@@ -19,7 +22,7 @@ namespace LeokaEstetica.Platform.Base.Repositories.User;
 /// <summary>
 /// Класс реализует методы репозитория пользователей.
 /// </summary>
-internal sealed class UserRepository : IUserRepository
+internal sealed class UserRepository : BaseRepository, IUserRepository
 {
     private readonly PgContext _pgContext;
     private readonly ILogger<UserRepository> _logger;
@@ -31,9 +34,10 @@ internal sealed class UserRepository : IUserRepository
     /// </summary>
     /// <param name="pgContext">Датаконтекст.</param>
     /// <param name="logger">Сервис логгера.</param>
-    public UserRepository(PgContext pgContext, 
+    public UserRepository(PgContext pgContext,
         ILogger<UserRepository> logger,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        IConnectionProvider connectionProvider) : base(connectionProvider)
     {
         _pgContext = pgContext;
         _logger = logger;
@@ -259,18 +263,27 @@ internal sealed class UserRepository : IUserRepository
     /// </summary>
     /// <param name="searchText">Текст, по которому надо искать.</param>
     /// <returns>Список пользователей.</returns>
-    public async Task<List<UserEntity>> GetUserByEmailOrLoginAsync(string searchText)
+    public async Task<List<UserEntity>?> GetUserByEmailOrLoginAsync(string searchText)
     {
-        var result = await _pgContext.Users
-            .Where(u => u.Email.Contains(searchText) 
-                        || u.Login.Contains(searchText))
-            .Select(u => new UserEntity
-            {
-                Email = u.Email,
-                Login = u.Login,
-                UserId = u.UserId
-            })
-            .ToListAsync();
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@searchText", searchText);
+
+        var query = "SELECT u.\"UserId\", " +
+                    "u.\"Email\", " +
+                    "u.\"Login\" " +
+                    "FROM dbo.\"Users\" AS u " +
+                    "WHERE (u.\"Email\" ILIKE @searchText ||'%' " +
+                    "OR u.\"Login\" ILIKE @searchText || '%') " +
+                    "AND \"UserId\" NOT IN (SELECT ptm.\"UserId\" " +
+                    "FROM \"Projects\".\"UserProjects\" AS up " +
+                    "INNER JOIN project_management.workspaces AS pw ON up.\"ProjectId\" = pw.project_id " +
+                    "INNER JOIN \"Teams\".\"ProjectsTeams\" AS pt ON up.\"ProjectId\" = pt.\"ProjectId\" " +
+                    "INNER JOIN \"Teams\".\"ProjectsTeamsMembers\" AS ptm ON pt.\"TeamId\" = ptm.\"TeamId\" " +
+                    "WHERE ptm.\"UserId\" = u.\"UserId\")";
+
+        var result = (await connection.QueryAsync<UserEntity>(query, parameters))?.AsList();
 
         return result;
     }

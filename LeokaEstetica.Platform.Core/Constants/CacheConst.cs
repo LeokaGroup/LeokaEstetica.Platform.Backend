@@ -24,5 +24,10 @@ public static class CacheConst
         /// Ключ для исключения полей при валидации.
         /// </summary>
         public const string VALIDATION_EXCLUDE_KEY = "ValidationExclude";
+
+        /// <summary>
+        /// Ключ ролей пользователя в модуле УП.
+        /// </summary>
+        public const string PROJECT_MANAGEMENT_USER_ROLES = "ProjectManagementRoles:";
     }
 }

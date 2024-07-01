@@ -11,28 +11,28 @@ public class FilterVacancyInput
     /// Тип фильтра по соответствиям.
     /// <seealso cref="FilterSalaryTypeEnum"/>.
     /// </summary>
-    public string Salary { get; set; }
+    public string? Salary { get; set; }
 
     /// <summary>
     /// Фильтр оплаты.
     /// <seealso cref="FilterPayTypeEnum"/>.
     /// </summary>
-    public string Pay { get; set; }
+    public string? Pay { get; set; }
 
     /// <summary>
     /// Фильтр опыта работы.
     /// <seealso cref="FilterExperienceTypeEnum"/>.
     /// </summary>
-    public string Experience { get; set; }
+    public string? Experience { get; set; }
 
     /// <summary>
     /// Фильтр занятости (список значений).
     /// <seealso cref="FilterEmploymentTypeEnum"/>.
     /// </summary>
-    public string EmploymentsValues { get; set; }
+    public string? EmploymentsValues { get; set; }
 
     /// <summary>
     /// Список значений после парсинга списка знчений.
     /// </summary>
-    public List<FilterEmploymentTypeEnum> Employments { get; set; }
+    public List<FilterEmploymentTypeEnum>? Employments { get; set; }
 }

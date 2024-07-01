@@ -34,6 +34,7 @@ internal sealed class ResumeModerationRepository : IResumeModerationRepository
         var result = await _pgContext.ModerationResumes
             .Include(r => r.ProfileInfo)
             .Where(p => p.ModerationStatus.StatusId == (int)ResumeModerationStatusEnum.ModerationResume)
+            .OrderByDescending(p => p.DateModeration)
             .Select(p => new ModerationResumeEntity
             {
                 ModerationId = p.ModerationId,

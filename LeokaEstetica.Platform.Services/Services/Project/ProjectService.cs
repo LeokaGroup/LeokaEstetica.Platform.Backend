@@ -94,6 +94,7 @@ internal sealed class ProjectService : IProjectService
     private static readonly string _archiveVacancy = "В архиве";
     private readonly IGlobalConfigRepository _globalConfigRepository;
     private readonly IProjectManagmentRepository _projectManagmentRepository;
+    private readonly IWikiTreeRepository _wikiTreeRepository;
 
     /// <summary>
     /// Список типов приглашений в проект.
@@ -139,6 +140,7 @@ internal sealed class ProjectService : IProjectService
     /// <param name="projectManagementSettingsRepository">Репозиторий настроек проекта.</param>
     /// <param name="globalConfigRepository">Репозиторий глобал конфига.</param>
     /// <param name="projectManagmentRepository">Репозиторий модуля УП.</param>
+    /// <param name="wikiTreeRepository">Репозиторий Wiki модуля УП.</param>
     public ProjectService(IProjectRepository projectRepository,
         ILogger<ProjectService> logger,
         IUserRepository userRepository,
@@ -159,7 +161,8 @@ internal sealed class ProjectService : IProjectService
         IDiscordService discordService,
         IProjectManagementSettingsRepository projectManagementSettingsRepository,
         IGlobalConfigRepository globalConfigRepository,
-        IProjectManagmentRepository projectManagmentRepository)
+        IProjectManagmentRepository projectManagmentRepository,
+        IWikiTreeRepository wikiTreeRepository)
     {
         _projectRepository = projectRepository;
         _logger = logger;
@@ -182,6 +185,7 @@ internal sealed class ProjectService : IProjectService
         _projectManagementSettingsRepository = projectManagementSettingsRepository;
         _globalConfigRepository = globalConfigRepository;
         _projectManagmentRepository = projectManagmentRepository;
+        _wikiTreeRepository = wikiTreeRepository;
 
         // Определяем обработчики цепочки фильтров.
         _dateProjectsFilterChain.Successor = _projectsVacanciesFilterChain;
@@ -239,7 +243,8 @@ internal sealed class ProjectService : IProjectService
             {
                 throw new InvalidOperationException("Найдена невалидная подписка пользователя. " +
                                                     $"UserId: {userId}. " +
-                                                    "Подписка была NULL или невалидная.");
+                                                    "Подписка была NULL или невалидная." +
+                                                    $"#1 Ошибка в {nameof(ProjectService)}");
             }
             
             // Получаем тариф, на который оформлена подписка у пользователя.
@@ -314,7 +319,7 @@ internal sealed class ProjectService : IProjectService
 
             var ifExistsCompany = await _projectManagmentRepository.IfExistsCompanyByOwnerIdAsync(userId);
 
-            long companyId = 0;
+            long companyId;
             
             // Сначала создаем компанию, затем добавляем в нее проект.
             if (!ifExistsCompany)
@@ -345,6 +350,9 @@ internal sealed class ProjectService : IProjectService
 
             // Добавляем новый проект в общее пространство компании.
             await _projectManagmentRepository.AddProjectWorkSpaceAsync(projectId, companyId);
+            
+            // Заводим для проекта wiki и ознакомительную страницу.
+            await _wikiTreeRepository.CreateProjectWikiAsync(projectId, userId, projectName);
 
             // Отправляем уведомление об успешном создании проекта.
             await _projectNotificationsService.SendNotificationSuccessCreatedUserProjectAsync("Все хорошо",
@@ -558,9 +566,6 @@ internal sealed class ProjectService : IProjectService
 
             var remarks = await _projectModerationRepository.GetProjectRemarksAsync(projectId);
             result.ProjectRemarks = _mapper.Map<IEnumerable<ProjectRemarkOutput>>(remarks);
-            result.IsAccess = true;
-
-           
 
             return result;
         }
@@ -942,8 +947,7 @@ internal sealed class ProjectService : IProjectService
     /// <param name="vacancyId">Id вакансии.</param>
     /// <param name="account">Аккаунт пользователя.</param>
     /// <param name="token">Токен пользователя.</param>
-    /// <returns>Добавленный пользователь.</returns>
-    public async Task<ProjectTeamMemberEntity> InviteProjectTeamAsync(string inviteText,
+    public async Task InviteProjectTeamAsync(string inviteText,
         ProjectInviteTypeEnum inviteType, long projectId, long? vacancyId, string account, string token)
     {
         try
@@ -993,6 +997,24 @@ internal sealed class ProjectService : IProjectService
                 
                 throw ex;
             }
+            
+            // Проверяем нахождение проекта в архиве.
+            var isProjectArchived = await _projectRepository.CheckProjectArchivedAsync(projectId);
+
+            // Если он там есть, то не даем пригласить в него.
+            if (isProjectArchived)
+            {
+                var ex = new InvalidOperationException(
+                    "Проект в архиве. Нельзя пригласить пользователей, если проект в архиве.");
+                
+                await _projectNotificationsService.SendNotificationWarningProjectInviteTeamAsync(
+                    "Внимание",
+                    "Проект в архиве. Нельзя пригласить пользователей, если проект в архиве.",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
+                
+                throw ex;
+            }
+
 
             // Получаем Id команды проекта.
             var teamId = await _projectRepository.GetProjectTeamIdAsync(projectId);
@@ -1015,11 +1037,6 @@ internal sealed class ProjectService : IProjectService
                 throw ex;
             }
 
-            // TODO: Когда будет сделан выбор роли при приглашении, то тут конкретная роль будет передаваться.
-            // Добавляем пользователя в команду проекта.
-            var result = await _projectRepository.AddProjectTeamMemberAsync(inviteUserId, vacancyId, teamId,
-                "Участник");
-            
             // Находим название проекта.
             var projectName = await _projectRepository.GetProjectNameByProjectIdAsync(projectId);
 
@@ -1028,8 +1045,6 @@ internal sealed class ProjectService : IProjectService
             // Записываем уведомления о приглашении в проект.
             await _projectNotificationsRepository.AddNotificationInviteProjectAsync(projectId, vacancyId, inviteUserId,
                 projectName);
-
-            return result;
         }
 
         catch (Exception ex)
@@ -1390,7 +1405,8 @@ internal sealed class ProjectService : IProjectService
             {
                 throw new InvalidOperationException("Найдена невалидная подписка пользователя. " +
                                                     $"UserId: {userId}. " +
-                                                    "Подписка была NULL или невалидная.");
+                                                    "Подписка была NULL или невалидная." +
+                                                    $"#2 Ошибка в {nameof(ProjectService)}");
             }
             
             // Получаем тариф, на который оформлена подписка у пользователя.
@@ -1510,6 +1526,24 @@ internal sealed class ProjectService : IProjectService
        
             // Назначаем участнику команды проекта роль.
             await _projectRepository.SetProjectTeamMemberRoleAsync(userId, role, teamId);
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task RemoveUserProjectTeamAsync(long userId, long projectId)
+    {
+        try
+        {
+            // Находим Id команды проекта.
+            var teamId = await _projectRepository.GetProjectTeamIdAsync(projectId);
+
+            await _projectRepository.RemoveUserProjectTeamAsync(userId, teamId);
         }
         
         catch (Exception ex)
@@ -1811,6 +1845,7 @@ internal sealed class ProjectService : IProjectService
         }
 
         result.IsSuccess = true;
+        result.IsAccess = true;
 
         return result;
     }
@@ -2238,7 +2273,8 @@ internal sealed class ProjectService : IProjectService
             {
                 var ex = new InvalidOperationException("Найдена невалидная подписка пользователя. " +
                                                     $"UserId: {userId}. " +
-                                                    "Подписка была NULL или невалидная.");
+                                                    "Подписка была NULL или невалидная." +
+                                                    $"#3 Ошибка в {nameof(ProjectService)}");
                 // Отправляем ивент в пачку.
                 await _discordService.SendNotificationErrorAsync(ex);
                 

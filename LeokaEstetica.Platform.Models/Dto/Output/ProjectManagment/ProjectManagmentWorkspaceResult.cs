@@ -5,4 +5,8 @@ namespace LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 /// </summary>
 public class ProjectManagmentWorkspaceResult : BaseProjectManagementTask
 {
+    /// <summary>
+    /// Признак доступа.
+    /// </summary>
+    public bool IsAccess { get; set; }
 }

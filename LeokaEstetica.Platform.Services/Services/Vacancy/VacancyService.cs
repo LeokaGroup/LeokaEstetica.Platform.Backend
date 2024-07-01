@@ -227,7 +227,8 @@ internal sealed class VacancyService : IVacancyService
             {
                 throw new InvalidOperationException("Найдена невалидная подписка пользователя. " +
                                                     $"UserId: {userId}. " +
-                                                    "Подписка была NULL или невалидная.");
+                                                    "Подписка была NULL или невалидная." +
+                                                    $"#1 Ошибка в {nameof(VacancyService)}");
             }
 
             // Получаем тариф, на который оформлена подписка у пользователя.
@@ -805,7 +806,8 @@ internal sealed class VacancyService : IVacancyService
             {
                 throw new InvalidOperationException("Найдена невалидная подписка пользователя. " +
                                                     $"UserId: {userId}. " +
-                                                    "Подписка была NULL или невалидная.");
+                                                    "Подписка была NULL или невалидная." +
+                                                    $"Ошибка в {nameof(VacancyService)}");
             }
             
             // Получаем тариф, на который оформлена подписка у пользователя.
@@ -1129,7 +1131,8 @@ internal sealed class VacancyService : IVacancyService
             {
                 var ex = new InvalidOperationException("Найдена невалидная подписка пользователя. " +
                                                     $"UserId: {userId}. " +
-                                                    "Подписка была NULL или невалидная.");
+                                                    "Подписка была NULL или невалидная." +
+                                                    $"#2 Ошибка в {nameof(VacancyService)}");
                 
                 // Отправляем ивент в пачку.
                 await _discordService.SendNotificationErrorAsync(ex);

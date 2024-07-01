@@ -13,12 +13,12 @@ public class NotificationOutput
     /// <summary>
     /// Название уведомления.
     /// </summary>
-    public string NotificationName { get; set; }
+    public string? NotificationName { get; set; }
 
     /// <summary>
     /// Текст уведомления.
     /// </summary>
-    public string NotificationText { get; set; }
+    public string? NotificationText { get; set; }
 
     /// <summary>
     /// Признак, надо ли показывать уведомление в местах повышенных индикаторов (повышенные индикаторы -

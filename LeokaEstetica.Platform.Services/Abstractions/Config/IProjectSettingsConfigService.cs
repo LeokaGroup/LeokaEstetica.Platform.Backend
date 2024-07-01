@@ -21,9 +21,9 @@ public interface IProjectSettingsConfigService
         string account, string projectManagementName, string projectManagementNamePrefix);
 
     /// <summary>
-    /// Метод получает Id проекта, который был ранее выбран пользователем для перехода к управлению проектом.
+    /// <param name="projectId">Id проекта. Если не передан, то будет перход в общее пространство.</param>
     /// Необходимо для построения ссылки в рабочее пространство проекта.
     /// </summary>
     /// <returns>Выходная модель.</returns>
-    Task<ConfigSpaceSettingOutput> GetBuildProjectSpaceSettingsAsync(string account);
+    Task<ConfigSpaceSettingOutput> GetBuildProjectSpaceSettingsAsync(string account, long? projectId);
 }

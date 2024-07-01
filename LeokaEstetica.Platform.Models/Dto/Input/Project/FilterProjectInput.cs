@@ -10,7 +10,7 @@ public class FilterProjectInput
     /// <summary>
     /// Фильтр по дате.
     /// </summary>
-    public string Date { get; set; }
+    public string? Date { get; set; }
 
     /// <summary>
     /// Признак проектов с наличием вакансий.
@@ -20,10 +20,10 @@ public class FilterProjectInput
     /// <summary>
     /// Фильтр стадий проекта (может содержать несколько значений).
     /// </summary>
-    public string StageValues { get; set; }
+    public string? StageValues { get; set; }
 
     /// <summary>
     /// Список стадий проекта.
     /// </summary>
-    public List<FilterProjectStageTypeEnum> ProjectStages { get; set; }
+    public List<FilterProjectStageTypeEnum>? ProjectStages { get; set; }
 }

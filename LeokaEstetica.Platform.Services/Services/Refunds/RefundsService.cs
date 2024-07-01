@@ -108,7 +108,8 @@ internal sealed class RefundsService : IRefundsService
             {
                 throw new InvalidOperationException("Найдена невалидная подписка пользователя. " +
                                                     $"UserId: {userId}. " +
-                                                    "Подписка была NULL или невалидная.");
+                                                    "Подписка была NULL или невалидная." +
+                                                    $"Ошибка в {nameof(RefundsService)}");
             }
 
             // Получаем подписку пользователя.
