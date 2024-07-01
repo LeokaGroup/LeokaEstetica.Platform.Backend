@@ -40,22 +40,27 @@ internal sealed class ProjectManagmentRoleRepository : BaseRepository, IProjectM
         {
             parameters.Add("@projectId", projectId);
 
-            var queryWithParameterProjectId = "SELECT role_id, " +
-                                              "organization_id," +
-                                              "organization_member_id," +
-                                              "role_name," +
-                                              "role_sys_name," +
-                                              "is_active," +
-                                              "is_enabled," +
-                                              "project_id," +
+            var queryWithParameterProjectId = "SELECT pmr.role_id, " +
+                                              "pmr.organization_id," +
+                                              "pmr.project_member_id," +
+                                              "pr.role_name," +
+                                              "pr.role_sys_name," +
+                                              "pmr.is_enabled," +
+                                              "op.project_id," +
                                               "(SELECT \"Email\" " +
                                               "FROM dbo.\"Users\" " +
-                                              "WHERE \"UserId\" = organization_member_id) AS Email " +
-                                              "FROM roles.organization_project_member_roles " +
-                                              "WHERE project_id = @projectId " +
-                                              "GROUP BY organization_id, organization_member_id, role_name," +
-                                              " role_sys_name, project_id, role_id " +
-                                              "ORDER BY role_id ";
+                                              "WHERE \"UserId\" = project_member_id) AS Email " +
+                                              "FROM roles.project_roles AS pr " +
+                                              "INNER JOIN roles.project_member_roles AS pmr " +
+                                              "ON pr.role_id = pmr.role_id " +
+                                              "INNER JOIN project_management.organizations AS po " +
+                                              "ON pmr.organization_id = po.organization_id " +
+                                              "INNER JOIN project_management.organization_projects AS op " +
+                                              "ON po.organization_id = op.organization_id " +
+                                              "WHERE op.project_id = @projectId " +
+                                              "GROUP BY pmr.organization_id, pmr.project_member_id, pr.role_name," +
+                                              " pr.role_sys_name, op.project_id, pmr.role_id, pmr.is_enabled " +
+                                              "ORDER BY pmr.role_id ";
                                               
             result = await connection.QueryAsync<ProjectManagementRoleOutput>(queryWithParameterProjectId, parameters);
         }
@@ -65,21 +70,32 @@ internal sealed class ProjectManagmentRoleRepository : BaseRepository, IProjectM
         {
             parameters.Add("@userId", userId);
 
-            var queryWithParameterUser = "SELECT role_id, " +
-                                         "organization_id," +
-                                         "organization_member_id," +
-                                         "role_name," +
-                                         "role_sys_name," +
-                                         "is_active," +
-                                         "is_enabled," +
-                                         "project_id " +
-                                         "FROM roles.organization_project_member_roles " +
-                                         "WHERE organization_member_id = @userId ";
+            var queryWithParameterUser = "SELECT pmr.role_id, " +
+                                         "pmr.organization_id," +
+                                         "pmr.project_member_id," +
+                                         "pr.role_name," +
+                                         "pr.role_sys_name," +
+                                         "pmr.is_enabled," +
+                                         "op.project_id," +
+                                         "(SELECT \"Email\" " +
+                                         "FROM dbo.\"Users\" " +
+                                         "WHERE \"UserId\" = project_member_id) AS Email " +
+                                         "FROM roles.project_roles AS pr " +
+                                         "INNER JOIN roles.project_member_roles AS pmr " +
+                                         "ON pr.role_id = pmr.role_id " +
+                                         "INNER JOIN project_management.organizations AS po " +
+                                         "ON pmr.organization_id = po.organization_id " +
+                                         "INNER JOIN project_management.organization_projects AS op " +
+                                         "ON po.organization_id = op.organization_id " +
+                                         "WHERE op.userId = @userId " +
+                                         "GROUP BY pmr.organization_id, pmr.project_member_id, pr.role_name," +
+                                         " pr.role_sys_name, op.project_id, pmr.role_id, pmr.is_enabled " +
+                                         "ORDER BY pmr.role_id ";
 
             if (projectId.HasValue)
             {
                 parameters.Add("@projectId", projectId);
-                queryWithParameterUser += "AND project_id = @projectId";
+                queryWithParameterUser += "AND op.project_id = @projectId";
             }
 
             result = await connection.QueryAsync<ProjectManagementRoleOutput>(queryWithParameterUser, parameters);
