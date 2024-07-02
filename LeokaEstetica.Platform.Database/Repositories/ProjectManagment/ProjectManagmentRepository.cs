@@ -2695,15 +2695,56 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
     }
 
     /// <inheritdoc/>
-    public async Task RemoveProjectTasksAsync(long projectId, IEnumerable<long> taskIds)
+    public async Task RemoveProjectTasksAsync(long projectId, IEnumerable<long> taskIds,
+        List<ProjectManagementDocumentFile>? documents)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
         using var transaction = connection.BeginTransaction(IsolationLevel.ReadCommitted);
         
         try
         {
-            // Проверяем, есть ли у задач
+            // Удаляем связи, в которых участвуют удаляемые задачи.
+            var removeParameters = new DynamicParameters();
+            removeParameters.Add("@taskIds", taskIds);
+            removeParameters.Add("@projectId", projectId);
+
+            var taskLinksQuery = "DELETE FROM project_management.task_links " +
+                                 "WHERE project_id = @projectId " +
+                                 "AND (parent_id = ANY(@taskIds) " +
+                                 "OR child_id = ANY(@taskIds) " +
+                                 "OR blocked_task_id = ANY(@taskIds) " +
+                                 "OR from_task_id = ANY(@taskIds) " +
+                                 "OR to_task_id = ANY(@taskIds))";
+
+            await connection.ExecuteAsync(taskLinksQuery, removeParameters);
             
+            // Удаляем все комментарии удаляемых задач.
+            var removeTaskCommentsQuery = "DELETE FROM project_management.task_comments " +
+                                          "WHERE project_id = @projectId " +
+                                          "AND project_task_id = ANY(@taskIds)";
+            
+            await connection.ExecuteAsync(removeTaskCommentsQuery, removeParameters);
+
+            // Удаляем файлы задачи.
+            // Файлы комментариев удалятся автоматически, так как там есть каскад на удаление.
+            if (documents is not null && documents.Count > 0)
+            {
+                var documentIds = documents.Where(x => x.DocumentId.HasValue).Select(x => x.DocumentId!.Value)
+                    .AsList();
+                
+                var removeTaskFilesParameters = new DynamicParameters();
+                removeTaskFilesParameters.Add("@taskIds", taskIds);
+                removeTaskFilesParameters.Add("@projectId", projectId);
+                removeTaskFilesParameters.Add("@documentIds", documentIds);
+                
+                var removeTaskFilesQuery = "DELETE FROM documents.project_documents " +
+                                           "WHERE project_id = @projectId " +
+                                           "AND task_id = ANY(@taskIds) " +
+                                           "AND document_id = ANY(@documentIds)";
+                
+                await connection.ExecuteAsync(removeTaskFilesQuery, removeTaskFilesParameters);
+            }
+
             transaction.Commit();
         }
         

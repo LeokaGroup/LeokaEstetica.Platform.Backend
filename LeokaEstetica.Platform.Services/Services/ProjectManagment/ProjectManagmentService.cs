@@ -2953,8 +2953,18 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             }
 
             // Получаем файлы задачи.
-            var documentIds = await _projectManagmentRepository.IfProjectTaskExistFileAsync(projectId,
-                new[] { projectTaskId.GetProjectTaskIdFromPrefixLink() });
+            var documents = (await _projectManagmentRepository.IfProjectTaskExistFileAsync(projectId,
+                new[] { projectTaskId.GetProjectTaskIdFromPrefixLink() }))?.AsList();
+
+            // Удаляем задачи и все связанные с ними данные.
+            await _projectManagmentRepository.RemoveProjectTasksAsync(projectId,
+                new[] { projectTaskId.GetProjectTaskIdFromPrefixLink() }, documents);
+            
+            // Удаляем файлы задач на сервере, если они были.
+            if (documents is not null && documents.Count > 0)
+            {
+                await _fileManagerService.Value.RemoveFilesAsync(documents);
+            }
         }
         
         catch (Exception ex)

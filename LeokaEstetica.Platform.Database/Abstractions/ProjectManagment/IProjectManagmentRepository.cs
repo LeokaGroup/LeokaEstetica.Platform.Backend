@@ -734,7 +734,9 @@ public interface IProjectManagmentRepository
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
     /// <param name="taskIds">Id задач.</param>
-    Task RemoveProjectTasksAsync(long projectId, IEnumerable<long> taskIds);
+    /// <param name="documentIds">Документы к удалению.</param>
+    Task RemoveProjectTasksAsync(long projectId, IEnumerable<long> taskIds,
+        List<ProjectManagementDocumentFile>? documents);
     
     /// <summary>
     /// Метод получает булевые признаки того, есть ли у задачи файлы.
