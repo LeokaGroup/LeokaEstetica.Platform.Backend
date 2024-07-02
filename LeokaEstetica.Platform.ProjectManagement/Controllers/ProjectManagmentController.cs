@@ -1905,6 +1905,6 @@ public class ProjectManagmentController : BaseController
     [ProducesResponseType(404)]
     public async Task RemoveProjectTaskAsync([FromQuery] long projectId, [FromQuery] string projectTaskId)
     {
-        
+        await _projectManagmentService.RemoveProjectTaskAsync(projectId, projectTaskId, GetUserName());
     }
 }
