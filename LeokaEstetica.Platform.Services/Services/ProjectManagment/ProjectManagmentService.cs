@@ -1860,11 +1860,9 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             }
 
             // Создаем связь в БД.
-            // TaskFromLink - Id задачи в рамках проекта становится Id задачи.
+            // TaskFromLink - Id задачи в рамках проекта (без префикса).
             await _projectManagmentRepository.CreateTaskLinkAsync(currentTask.TaskId,
-                taskLinkInput.TaskToLink.GetProjectTaskIdFromPrefixLink(),
-                taskLinkInput.LinkType,
-                projectId,
+                taskLinkInput.TaskToLink.GetProjectTaskIdFromPrefixLink(), taskLinkInput.LinkType, projectId,
                 !string.IsNullOrWhiteSpace(taskLinkInput.ChildId)
                     ? taskLinkInput.ChildId.GetProjectTaskIdFromPrefixLink()
                     : null,
@@ -2953,6 +2951,10 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 
                 throw ex;
             }
+
+            // Получаем файлы задачи.
+            var documentIds = await _projectManagmentRepository.IfProjectTaskExistFileAsync(projectId,
+                new[] { projectTaskId.GetProjectTaskIdFromPrefixLink() });
         }
         
         catch (Exception ex)

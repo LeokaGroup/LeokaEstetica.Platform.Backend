@@ -11,6 +11,7 @@ using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagement.Output;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.Search.ProjectManagement;
 using LeokaEstetica.Platform.Models.Dto.Output.Template;
+using LeokaEstetica.Platform.Models.Dto.ProjectManagement.Document;
 using LeokaEstetica.Platform.Models.Dto.ProjectManagement.Output;
 using LeokaEstetica.Platform.Models.Entities.Document;
 using LeokaEstetica.Platform.Models.Entities.ProjectManagment;
@@ -2689,6 +2690,45 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
                     "WHERE status_id = @changeStatus)";
 
         var result = await connection.ExecuteScalarAsync<bool>(query, parameters);
+
+        return result;
+    }
+
+    /// <inheritdoc/>
+    public async Task RemoveProjectTasksAsync(long projectId, IEnumerable<long> taskIds)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+        using var transaction = connection.BeginTransaction(IsolationLevel.ReadCommitted);
+        
+        try
+        {
+            // Проверяем, есть ли у задач
+            
+            transaction.Commit();
+        }
+        
+        catch
+        {
+            transaction.Rollback();
+        }
+    }
+
+    /// <inheritdoc/>
+    public async Task<IEnumerable<ProjectManagementDocumentFile>> IfProjectTaskExistFileAsync(long projectId,
+        IEnumerable<long> taskIds)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@projectId", projectId);
+        parameters.Add("@taskIds", taskIds.AsList());
+
+        var query = "SELECT document_id, project_id, task_id, user_id " +
+                    "FROM documents.project_documents " +
+                    "WHERE project_id = @projectId " +
+                    "AND task_id = ANY(@taskIds)";
+
+        var result = await connection.QueryAsync<ProjectManagementDocumentFile>(query, parameters);
 
         return result;
     }

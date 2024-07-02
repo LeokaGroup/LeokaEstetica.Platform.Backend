@@ -3,6 +3,7 @@ using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagement.Output;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.Search.ProjectManagement;
 using LeokaEstetica.Platform.Models.Dto.Output.Template;
+using LeokaEstetica.Platform.Models.Dto.ProjectManagement.Document;
 using LeokaEstetica.Platform.Models.Dto.ProjectManagement.Output;
 using LeokaEstetica.Platform.Models.Entities.Document;
 using LeokaEstetica.Platform.Models.Entities.ProjectManagment;
@@ -727,4 +728,20 @@ public interface IProjectManagmentRepository
     /// <param name="changeStatus">Id статуса, на который пробуют изменить.</param>
     /// <returns>Признак результата проверки.</returns>
     Task<bool> IfStoryAvailableStatusAsync(long changeStatus);
+    
+    /// <summary>
+    /// Метод удаляет задачи проекта.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="taskIds">Id задач.</param>
+    Task RemoveProjectTasksAsync(long projectId, IEnumerable<long> taskIds);
+    
+    /// <summary>
+    /// Метод получает булевые признаки того, есть ли у задачи файлы.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="taskIds">Id задач.</param>
+    /// <returns>Список файлов задач.</returns>
+    Task<IEnumerable<ProjectManagementDocumentFile>> IfProjectTaskExistFileAsync(long projectId,
+        IEnumerable<long> taskIds);
 }
