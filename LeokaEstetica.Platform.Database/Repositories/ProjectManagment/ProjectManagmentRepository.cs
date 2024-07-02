@@ -2744,6 +2744,17 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
                 
                 await connection.ExecuteAsync(removeTaskFilesQuery, removeTaskFilesParameters);
             }
+            
+            // Удаляем саму задачу.
+            var removeTaskParameters = new DynamicParameters();
+            removeTaskParameters.Add("@taskIds", taskIds);
+            removeTaskParameters.Add("@projectId", projectId);
+
+            var removeTaskQuery = "DELETE FROM project_management.project_tasks " +
+                                  "WHERE project_id = @projectId " +
+                                  "AND project_task_id = ANY(@taskIds)";
+            
+            await connection.ExecuteAsync(removeTaskQuery, removeTaskParameters);
 
             transaction.Commit();
         }

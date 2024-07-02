@@ -2942,7 +2942,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             if (!ifExistRoleRemoveTask)
             {
                 var ex = new InvalidOperationException(
-                    "Нет прав на удаление задачи. " +
+                    "У пользователя нет роли \"ProjectRemoveTask\" на удаление задачи. " +
                     $"UserId: {userId}. " +
                     $"ProjectId: {projectId}. " +
                     "Исключительная ситуация - пользователь не должен тогда был видеть кнопку удаления.");
