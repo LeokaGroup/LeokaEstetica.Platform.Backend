@@ -11,11 +11,13 @@ using LeokaEstetica.Platform.Redis.Abstractions.Validation;
 using LeokaEstetica.Platform.Redis.Services.Client;
 using LeokaEstetica.Platform.Redis.Services.Commerce;
 using LeokaEstetica.Platform.Redis.Services.Connection;
+using LeokaEstetica.Platform.Redis.Services.Header;
 using LeokaEstetica.Platform.Redis.Services.Profile;
 using LeokaEstetica.Platform.Redis.Services.ProjectManagement;
 using LeokaEstetica.Platform.Redis.Services.User;
 using LeokaEstetica.Platform.Redis.Services.Vacancy;
 using LeokaEstetica.Platform.Redis.Services.Validation;
+using LeokaEstetica.Platform.Services.Abstractions.Header;
 
 namespace LeokaEstetica.Platform.Redis.AutofacModules;
 
@@ -24,6 +26,16 @@ public class RedisModule : Module
 {
     public static void InitModules(ContainerBuilder builder)
     {
+        // Сервис работы с кэшем меню хидера Redis.
+        builder
+            .RegisterType<HeaderRedisService>()
+            .Named<IHeaderRedisService>("HeaderRedisService")
+            .InstancePerLifetimeScope();
+        builder
+            .RegisterType<HeaderRedisService>()
+            .As<IHeaderRedisService>()
+            .InstancePerLifetimeScope();
+        
         // Сервис работы с кэшем профиля Redis.
         builder
             .RegisterType<ProfileRedisService>()

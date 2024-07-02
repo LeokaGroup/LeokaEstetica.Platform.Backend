@@ -4,6 +4,7 @@ using LeokaEstetica.Platform.Core.Constants;
 using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.Config;
 using LeokaEstetica.Platform.Database.Abstractions.Header;
+using LeokaEstetica.Platform.Models.Dto.Common.Cache;
 using LeokaEstetica.Platform.Models.Dto.Output.Header;
 using LeokaEstetica.Platform.Models.Enums;
 using LeokaEstetica.Platform.Services.Abstractions.Header;
@@ -20,6 +21,7 @@ internal sealed class HeaderService : IHeaderService
     private readonly IHeaderRepository _headerRepository;
     private readonly IMapper _mapper;
     private readonly IGlobalConfigRepository _globalConfigRepository;
+    private readonly IHeaderRedisService _headerRedisService;
 
     /// <summary>
     /// Конструктор.
@@ -27,13 +29,16 @@ internal sealed class HeaderService : IHeaderService
     /// <param name="headerRepository">Репозиторий хидера.</param>
     /// <param name="mapper">Маппер.</param>
     /// <param name="globalConfigRepository">Репозиторий глобал конфига.</param>
+    /// <param name="headerRedisService">Сервис работы с кэшем</param>
     public HeaderService(IHeaderRepository headerRepository,
         IMapper mapper,
-        IGlobalConfigRepository globalConfigRepository)
+        IGlobalConfigRepository globalConfigRepository,
+        IHeaderRedisService headerRedisService)
     {
         _headerRepository = headerRepository;
         _mapper = mapper;
         _globalConfigRepository = globalConfigRepository;
+        _headerRedisService = headerRedisService;
     }
 
     /// <summary>
@@ -48,8 +53,18 @@ internal sealed class HeaderService : IHeaderService
         {
             throw new EmptyHeaderTypeException(headerType);
         }
+        
+        // Получаем список полей из кэша редиса, если они там есть.
+        var items = await _headerRedisService.GetHeaderMenuCacheAsync();
+        //var items = headerMenu.HeaderMenuItems;
 
-        var items = (await _headerRepository.HeaderItemsAsync(headerType)).ToList();
+        // Если не нашли в кэше идем в базу и сохраняем в кэш 
+        if (items is null || !items.Any())
+        {
+            var headerEntity = (await _headerRepository.HeaderItemsAsync(headerType)).ToList();
+            items =_mapper.Map<List<HeaderMenuRedis>>(headerEntity);
+            await _headerRedisService.SaveHeaderMenuCacheAsync(items);
+        }
         
         var isAvailableProjectManagment = await _globalConfigRepository.GetValueByKeyAsync<bool>(
             GlobalConfigKeys.ProjectManagment.PROJECT_MANAGEMENT_MODE_ENABLED);
