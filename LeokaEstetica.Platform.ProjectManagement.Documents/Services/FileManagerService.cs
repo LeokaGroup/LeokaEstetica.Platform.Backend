@@ -3,6 +3,7 @@ using System.Drawing.Imaging;
 using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using LeokaEstetica.Platform.Database.Abstractions.Config;
+using LeokaEstetica.Platform.Models.Dto.ProjectManagement.Document;
 using LeokaEstetica.Platform.Models.Enums;
 using LeokaEstetica.Platform.ProjectManagment.Documents.Abstractions;
 using Microsoft.AspNetCore.Http;
@@ -296,6 +297,103 @@ internal sealed class FileManagerService : IFileManagerService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Ошибка при удалении файла с сервера.");
+            throw;
+        }
+
+        finally
+        {
+            sftpClient.Disconnect();
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task RemoveFilesAsync(List<ProjectManagementDocumentFile>? documents)
+    {
+        if (documents is null || documents.Count == 0)
+        {
+            return;
+        }
+        
+        var settings = await _globalConfigRepository.GetFileManagerSettingsAsync();
+        
+        using var sftpClient = new SftpClient(settings.Host, settings.Port, settings.Login, settings.Password);
+        
+        try
+        {
+            sftpClient.Connect();
+            
+            var sftpTaskPath = settings.SftpTaskPath;
+
+            foreach (var d in documents)
+            {
+                // Путь к файлам задач проекта.
+                var userProjectPath = string.Concat(sftpTaskPath, d.ProjectId);
+                var userProjectTaskPath = userProjectPath + "/" + d.TaskId + "/";
+
+                _logger?.LogInformation("Начали удаление файла: " +
+                                        $"DocumentId: {d.DocumentId}. " +
+                                        $"FileName: {d.FileName}." +
+                                        $"ProjectId: {d.ProjectId}");
+            
+                // Удаляем файл с сервера.
+                await sftpClient.DeleteFileAsync(userProjectTaskPath + d.FileName, default);
+                
+                _logger?.LogInformation("Закончили удаление файла: " +
+                                        $"DocumentId: {d.DocumentId}. " +
+                                        $"FileName: {d.FileName}." +
+                                        $"ProjectId: {d.ProjectId}");
+            
+                // Проверяем, сколько файлов осталось у задачи на сервере.
+                // IsRegularFile - определяет только наши нужные файлы.
+                // Также бывают файлы системные, у них названия "." или ".." Такие исключаем через этот признак.
+                var taskFiles = sftpClient.ListDirectory(userProjectTaskPath).Where(f => f.IsRegularFile);
+
+                // Если файлов не осталось, то удаляем папку задачи проекта.
+                if (!taskFiles.Any())
+                {
+                    sftpClient.DeleteDirectory(userProjectTaskPath);
+                }
+            
+                // Проверяем, есть ли у проекта папки задач.
+                // IsRegularFile - определяет только наши нужные файлы.
+                // Также бывают файлы системные, у них названия "." или ".." Такие исключаем через этот признак.
+                var projectTaskFolders = sftpClient.ListDirectory(userProjectPath).Where(f => f.IsRegularFile);
+
+                // Если папок не осталось, то удаляем папку файлов проекта.
+                if (!projectTaskFolders.Any())
+                {
+                    sftpClient.DeleteDirectory(userProjectPath);
+                }   
+            }
+        }
+        
+        catch (Exception ex) when (ex is SshConnectionException or SocketException or ProxyException)
+        {
+            _logger?.LogError(ex, "Ошибка подключения к серверу по Sftp.");
+            throw;
+        }
+
+        catch (SshAuthenticationException ex)
+        {
+            _logger?.LogError(ex, "Ошибка аутентификации к серверу по Sftp.");
+            throw;
+        }
+
+        catch (SftpPermissionDeniedException ex)
+        {
+            _logger?.LogError(ex, "Ошибка доступа к серверу по Sftp.");
+            throw;
+        }
+
+        catch (SshException ex)
+        {
+            _logger?.LogError(ex, "Ошибка Sftp.");
+            throw;
+        }
+
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, "Ошибка при удалении файлов с сервера.");
             throw;
         }
 
