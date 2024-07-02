@@ -60,6 +60,10 @@ public class MappingProfile : Profile
 {
     public MappingProfile()
     {
+        CreateMap<HeaderEntity, HeaderMenuRedis>();
+
+        CreateMap<HeaderMenuRedis, HeaderOutput>();
+        
         CreateMap<HeaderEntity, HeaderOutput>();
 
         CreateMap<FonEntity, LandingStartFonOutput>();
