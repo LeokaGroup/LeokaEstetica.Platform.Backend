@@ -226,9 +226,12 @@ internal class BaseServiceTest
         ResumeModerationService = new ResumeModerationService(null, resumeModerationRepository, mapper,
             userRepository, null);
         var projectManagementNotificationsRepository = new ProjectNotificationsRepository(pgContext, connectionProvider);
+        var projectManagementSettingsRepository = new ProjectManagementSettingsRepository(connectionProvider);
+
         ProjectNotificationsService = new ProjectNotificationsService(null, null, userRepository, mapper,
             projectManagementNotificationsRepository, null, projectRepository, null, globalConfigRepository,
-            vacancyRepository, projectManagementRepository);
+            vacancyRepository, projectManagementRepository,
+            new Lazy<IProjectManagementSettingsRepository>(projectManagementSettingsRepository));
         ProjectFinderService = new ProjectFinderService(null, userRepository, ProjectNotificationsService, ResumeModerationService);
 
         var resumeRepository = new ResumeRepository(pgContext);
@@ -323,8 +326,7 @@ internal class BaseServiceTest
         ProjectManagmentRoleService = new ProjectManagmentRoleService(null,
             new Lazy<IProjectManagmentRoleRepository>(projectManagmentRoleRepository), userRepository,
             projectManagmentRoleRedisService, mapper, new Lazy<IDiscordService>(discordService), null);
-
-        var projectManagementSettingsRepository = new ProjectManagementSettingsRepository(connectionProvider);
+        
         ProjectManagementSettingsService = new ProjectManagementSettingsService(null, userRepository,
             projectManagementSettingsRepository, projectRepository);
 

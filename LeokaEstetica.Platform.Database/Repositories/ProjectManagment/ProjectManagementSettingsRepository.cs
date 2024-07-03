@@ -252,6 +252,54 @@ internal sealed class ProjectManagementSettingsRepository : BaseRepository, IPro
         await connection.ExecuteAsync(query, parameters);
     }
 
+    /// <inheritdoc/>
+    public async Task AddProjectMemberRolesAsync(long organizationId, long memberId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+        
+        var parameters = new DynamicParameters();
+        parameters.Add("@organizationId", organizationId);
+        parameters.Add("@memberId", memberId);
+
+        // По дефолту проставляем все роли участнику.
+        var query = @"INSERT INTO roles.project_member_roles (role_id, project_member_id, organization_id, is_enabled)
+                        VALUES (1, @memberId, @organizationId, TRUE),
+                               (2, @memberId, @organizationId, TRUE),
+                               (3, @memberId, @organizationId, TRUE),
+                               (4, @memberId, @organizationId, TRUE),
+                               (5, @memberId, @organizationId, TRUE),
+                               (6, @memberId, @organizationId, TRUE),
+                               (7, @memberId, @organizationId, TRUE),
+                               (8, @memberId, @organizationId, TRUE),
+                               (9, @memberId, @organizationId, TRUE),
+                               (10, @memberId, @organizationId, TRUE),
+                               (11, @memberId, @organizationId, TRUE),
+                               (12, @memberId, @organizationId, TRUE),
+                               (13, @memberId, @organizationId, TRUE),
+                               (14, @memberId, @organizationId, TRUE),
+                               (15, @memberId, @organizationId, TRUE),
+                               (16, @memberId, @organizationId, TRUE),
+                               (17, @memberId, @organizationId, TRUE),
+                               (18, @memberId, @organizationId, TRUE),
+                               (19, @memberId, @organizationId, TRUE),
+                               (20, @memberId, @organizationId, TRUE),
+                               (21, @memberId, @organizationId, TRUE),
+                               (22, @memberId, @organizationId, TRUE),
+                               (23, @memberId, @organizationId, TRUE),
+                               (24, @memberId, @organizationId, TRUE),
+                               (25, @memberId, @organizationId, TRUE),
+                               (26, @memberId, @organizationId, TRUE),
+                               (27, @memberId, @organizationId, TRUE),
+                               (28, @memberId, @organizationId, TRUE),
+                               (29, @memberId, @organizationId, TRUE),
+                               (30, @memberId, @organizationId, TRUE),
+                               (31, @memberId, @organizationId, TRUE),
+                               (32, @memberId, @organizationId, TRUE),
+                               (33, @memberId, @organizationId, TRUE)";
+                               
+        await connection.ExecuteAsync(query, parameters);
+    }
+
     #endregion
 
     #region Приватные методы.

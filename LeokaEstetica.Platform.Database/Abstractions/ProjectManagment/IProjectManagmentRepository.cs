@@ -752,4 +752,11 @@ public interface IProjectManagmentRepository
     /// <returns>Список файлов задач.</returns>
     Task<IEnumerable<ProjectManagementDocumentFile>> IfProjectTaskExistFileAsync(long projectId,
         IEnumerable<long> taskIds);
+
+    /// <summary>
+    /// Метод получает Id компании по Id проекта.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Id компании.</returns>
+    Task<long> GetCompanyIdByProjectIdAsync(long projectId);
 }

@@ -2862,6 +2862,23 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         return result;
     }
 
+    /// <inheritdoc />
+    public async Task<long> GetCompanyIdByProjectIdAsync(long projectId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@projectId", projectId);
+        
+        var query = "SELECT organization_id " +
+                    "FROM project_management.organization_projects " +
+                    "WHERE project_id = @projectId";
+
+        var result = await connection.QueryFirstOrDefaultAsync<long>(query, parameters);
+
+        return result;
+    }
+
     #endregion
 
     #region Приватные методы.
