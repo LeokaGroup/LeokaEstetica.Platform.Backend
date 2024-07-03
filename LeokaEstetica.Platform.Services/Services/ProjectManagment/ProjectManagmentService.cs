@@ -2958,8 +2958,8 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 new[] { projectTaskId.GetProjectTaskIdFromPrefixLink() }))?.AsList();
 
             // Удаляем задачи и все связанные с ними данные.
-            await _projectManagmentRepository.RemoveProjectTasksAsync(projectId,
-                new[] { projectTaskId.GetProjectTaskIdFromPrefixLink() }, documents);
+            await _projectManagmentRepository.RemoveProjectTasksAsync(projectId, taskType,
+                taskIds: new List<long> { projectTaskId.GetProjectTaskIdFromPrefixLink() }, documents);
             
             // Удаляем файлы задач на сервере, если они были.
             if (documents is not null && documents.Count > 0)
