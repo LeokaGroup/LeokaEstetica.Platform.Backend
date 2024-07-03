@@ -1896,6 +1896,7 @@ public class ProjectManagmentController : BaseController
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
     /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
+    /// <param name="taskType">Тип задачи.</param>
     [HttpDelete]
     [Route("task")]
     [ProducesResponseType(200)]
@@ -1903,8 +1904,10 @@ public class ProjectManagmentController : BaseController
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task RemoveProjectTaskAsync([FromQuery] long projectId, [FromQuery] string projectTaskId)
+    public async Task RemoveProjectTaskAsync([FromQuery] long projectId, [FromQuery] string projectTaskId,
+        [FromQuery] string taskType)
     {
-        await _projectManagmentService.RemoveProjectTaskAsync(projectId, projectTaskId, GetUserName());
+        await _projectManagmentService.RemoveProjectTaskAsync(projectId, projectTaskId, GetUserName(),
+            System.Enum.Parse<TaskDetailTypeEnum>(taskType));
     }
 }

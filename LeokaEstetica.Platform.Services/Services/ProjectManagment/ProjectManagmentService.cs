@@ -2923,7 +2923,8 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     }
 
     /// <inheritdoc />
-    public async Task RemoveProjectTaskAsync(long projectId, string projectTaskId, string account)
+    public async Task RemoveProjectTaskAsync(long projectId, string projectTaskId, string account,
+        TaskDetailTypeEnum taskType)
     {
         try
         {
