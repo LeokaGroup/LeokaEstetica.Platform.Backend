@@ -353,6 +353,9 @@ internal sealed class ProjectService : IProjectService
             
             // Заводим для проекта wiki и ознакомительную страницу.
             await _wikiTreeRepository.CreateProjectWikiAsync(projectId, userId, projectName);
+            
+            // Заводим роли проекту.
+            await _projectManagementSettingsRepository.AddProjectRolesAsync(projectId);
 
             // Отправляем уведомление об успешном создании проекта.
             await _projectNotificationsService.SendNotificationSuccessCreatedUserProjectAsync("Все хорошо",

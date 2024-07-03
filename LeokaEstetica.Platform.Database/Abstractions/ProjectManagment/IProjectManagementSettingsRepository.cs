@@ -73,4 +73,10 @@ public interface IProjectManagementSettingsRepository
     /// </summary>
     /// <param name="notificationId">Id уведомления.</param>
     Task CancelProjectInviteAsync(long notificationId);
+    
+    /// <summary>
+    /// Метод заводит роли проекту.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    Task AddProjectRolesAsync(long projectId);
 }

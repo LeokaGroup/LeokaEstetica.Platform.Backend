@@ -252,6 +252,21 @@ internal sealed class ProjectManagementSettingsRepository : BaseRepository, IPro
         await connection.ExecuteAsync(query, parameters);
     }
 
+    /// <inheritdoc />
+    public async Task AddProjectRolesAsync(long projectId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+        
+        var parameters = new DynamicParameters();
+        parameters.Add("@projectId", projectId);
+
+        var query = "INSERT INTO roles.project_roles (role_name, role_sys_name) " +
+                    "SELECT role_name, role_sys_name " +
+                    "FROM roles.project_roles";
+                    
+        await connection.ExecuteAsync(query, parameters);
+    }
+
     #endregion
 
     #region Приватные методы.
