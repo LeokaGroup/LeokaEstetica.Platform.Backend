@@ -223,7 +223,7 @@ public class ProjectManagmentController : BaseController
     public async Task<ProjectManagmentTaskOutput> GetTaskDetailsByTaskIdAsync([FromQuery] string projectTaskId,
         [FromQuery] long projectId, [FromQuery] TaskDetailTypeEnum taskDetailType)
     {
-        var validator = await new TaskDetailValidator().ValidateAsync((projectTaskId, projectId, taskDetailType));
+        var validator = await new TaskDetailValidator().ValidateAsync((projectTaskId, projectId));
 
         if (validator.Errors.Any())
         {

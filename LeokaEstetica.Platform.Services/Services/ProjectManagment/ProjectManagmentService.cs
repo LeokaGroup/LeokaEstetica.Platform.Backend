@@ -608,10 +608,21 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     {
         try
         {
-            if (taskDetailType == TaskDetailTypeEnum.None)
+            // Если переданный тип неизвестен ,например, если вставили просто ссылку в url - то найдем в БД тип задачи.
+            if (taskDetailType == TaskDetailTypeEnum.Undefined)
             {
-                throw new InvalidOperationException("Неизвестный тип детализации. " +
-                                                    " Заполнение Agile-объекта не будет происходить.");
+                var taskType = await _projectManagmentRepository.GetTaskTypeByProjectIdProjectTaskIdAsync(projectId,
+                        projectTaskId.GetProjectTaskIdFromPrefixLink());
+                
+                // Если все же не удалось определить тип задачи.
+                if (taskType == TaskDetailTypeEnum.Undefined)
+                {
+                    throw new InvalidOperationException("Неизвестный тип детализации. " +
+                                                        " Заполнение Agile-объекта не будет происходить. " +
+                                                        $"TaskType: {taskType}.");
+                }
+
+                taskDetailType = taskType;
             }
             
             var userId = await _userRepository.GetUserByEmailAsync(account);
