@@ -295,14 +295,15 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 
                     if (mapItems is not null)
                     {
-                        var filters = mapItems.Items.OrderBy(o => o.Position);
+                        var filters = mapItems.Items.Where(x => x.Visible).OrderBy(o => o.Position);
 
                         var selectedFilters = filters.Select(x => new Panel
                         {
                             Label = x.ItemName,
                             Id = x.Id,
                             Disabled = x.Disabled,
-                            IsFooterItem = x.IsFooterItem
+                            IsFooterItem = x.IsFooterItem,
+                            Visible = x.Visible
                         });
 
                         result.HeaderItems.Add(new PanelResult
