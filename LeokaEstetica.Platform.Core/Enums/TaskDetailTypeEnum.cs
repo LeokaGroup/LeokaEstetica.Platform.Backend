@@ -8,7 +8,7 @@ public enum TaskDetailTypeEnum
     /// <summary>
     /// Неизвестный тип.
     /// </summary>
-    None = 0,
+    Undefined = 0,
     
     /// <summary>
     /// Ошибка.
