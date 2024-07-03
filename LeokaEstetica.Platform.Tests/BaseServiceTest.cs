@@ -301,9 +301,12 @@ internal class BaseServiceTest
         var projectSettingsConfigRepository = new ProjectSettingsConfigRepository(pgContext, connectionProvider);
         ReversoService = new ReversoService(null);
         ProjectManagementTemplateService = new ProjectManagementTemplateService(ProjectManagmentRepository, mapper, null);
+        var projectManagmentRoleRepository = new ProjectManagmentRoleRepository(connectionProvider);
         ProjectManagmentService = new ProjectManagmentService(null, ProjectManagmentRepository, mapper, userRepository,
             projectRepository, discordService, projectManagmentTemplateRepository, transactionScopeFactory,
-            projectSettingsConfigRepository, new Lazy<IReversoService>(ReversoService), null, null, UserService, null, ProjectManagementTemplateService);
+            projectSettingsConfigRepository, new Lazy<IReversoService>(ReversoService), null, null, UserService, null,
+            ProjectManagementTemplateService,
+            new Lazy<IProjectManagmentRoleRepository>(projectManagmentRoleRepository));
 
         var searchProjectManagementRepository = new SearchProjectManagementRepository(connectionProvider);
         SearchProjectManagementService = new SearchProjectManagementService(null,
@@ -315,8 +318,7 @@ internal class BaseServiceTest
         SprintRepository = new SprintRepository(connectionProvider);
         SprintService = new SprintService(null, SprintRepository, null, userRepository, projectSettingsConfigRepository,
             mapper, null, null, discordService, null, null);
-
-        var projectManagmentRoleRepository = new ProjectManagmentRoleRepository(connectionProvider);
+        
         var projectManagmentRoleRedisService = new ProjectManagmentRoleRedisService(distributedCache);
         ProjectManagmentRoleService = new ProjectManagmentRoleService(null,
             new Lazy<IProjectManagmentRoleRepository>(projectManagmentRoleRepository), userRepository,

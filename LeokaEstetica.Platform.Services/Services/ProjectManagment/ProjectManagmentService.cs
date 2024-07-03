@@ -65,6 +65,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     private readonly IUserService _userService;
     private readonly Lazy<IDistributionStatusTaskService> _distributionStatusTaskService;
     private readonly IProjectManagementTemplateService _projectManagementTemplateService;
+    private readonly Lazy<IProjectManagmentRoleRepository> _projectManagmentRoleRepository;
 
     /// <summary>
     /// Статусы задач, которые являются самыми базовыми и никогда не меняются независимо от шаблона проекта.
@@ -92,6 +93,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     /// <param name="userService">Сервис пользователей.</param>
     /// <param name="distributionStatusTaskService">Сервис распределение задач по статусам.</param>
     /// <param name="projectManagementTemplateService">Сервис шаблонов проекта.</param>
+    /// <param name="projectManagmentRoleRepository">Репозиторий ролей проекта.</param>
     /// </summary>
     public ProjectManagmentService(ILogger<ProjectManagmentService> logger,
         IProjectManagmentRepository projectManagmentRepository,
@@ -107,7 +109,8 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         Lazy<IProjectManagementNotificationService> projectManagementNotificationService,
         IUserService userService,
         Lazy<IDistributionStatusTaskService> distributionStatusTaskService,
-        IProjectManagementTemplateService projectManagementTemplateService)
+        IProjectManagementTemplateService projectManagementTemplateService,
+        Lazy<IProjectManagmentRoleRepository> projectManagmentRoleRepository)
     {
         _logger = logger;
         _projectManagmentRepository = projectManagmentRepository;
@@ -124,6 +127,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         _userService = userService;
         _distributionStatusTaskService = distributionStatusTaskService;
         _projectManagementTemplateService = projectManagementTemplateService;
+        _projectManagmentRoleRepository = projectManagmentRoleRepository;
     }
 
     #region Публичные методы.
@@ -1856,11 +1860,9 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             }
 
             // Создаем связь в БД.
-            // TaskFromLink - Id задачи в рамках проекта становится Id задачи.
+            // TaskFromLink - Id задачи в рамках проекта (без префикса).
             await _projectManagmentRepository.CreateTaskLinkAsync(currentTask.TaskId,
-                taskLinkInput.TaskToLink.GetProjectTaskIdFromPrefixLink(),
-                taskLinkInput.LinkType,
-                projectId,
+                taskLinkInput.TaskToLink.GetProjectTaskIdFromPrefixLink(), taskLinkInput.LinkType, projectId,
                 !string.IsNullOrWhiteSpace(taskLinkInput.ChildId)
                     ? taskLinkInput.ChildId.GetProjectTaskIdFromPrefixLink()
                     : null,
@@ -2916,6 +2918,58 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         catch (Exception ex)
         {
             _logger?.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task RemoveProjectTaskAsync(long projectId, string projectTaskId, string account)
+    {
+        try
+        {
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+            
+            // Проверяем, есть ли у пользователя роль на удаление задачи.
+            var ifExistRoleRemoveTask = await _projectManagmentRoleRepository.Value
+                .GetProjectRoleByRoleSysNameAsync("ProjectRemoveTask", userId);
+            
+            if (!ifExistRoleRemoveTask)
+            {
+                var ex = new InvalidOperationException(
+                    "У пользователя нет роли \"ProjectRemoveTask\" на удаление задачи. " +
+                    $"UserId: {userId}. " +
+                    $"ProjectId: {projectId}. " +
+                    "Исключительная ситуация - пользователь не должен тогда был видеть кнопку удаления.");
+                                                    
+                await _discordService.SendNotificationErrorAsync(ex);
+
+                throw ex;
+            }
+
+            // Получаем файлы задачи.
+            var documents = (await _projectManagmentRepository.IfProjectTaskExistFileAsync(projectId,
+                new[] { projectTaskId.GetProjectTaskIdFromPrefixLink() }))?.AsList();
+
+            // Удаляем задачи и все связанные с ними данные.
+            await _projectManagmentRepository.RemoveProjectTasksAsync(projectId,
+                new[] { projectTaskId.GetProjectTaskIdFromPrefixLink() }, documents);
+            
+            // Удаляем файлы задач на сервере, если они были.
+            if (documents is not null && documents.Count > 0)
+            {
+                await _fileManagerService.Value.RemoveFilesAsync(documents);
+            }
+        }
+        
+        catch (Exception ex)
+        {
+             _logger?.LogError(ex, ex.Message);
             throw;
         }
     }
