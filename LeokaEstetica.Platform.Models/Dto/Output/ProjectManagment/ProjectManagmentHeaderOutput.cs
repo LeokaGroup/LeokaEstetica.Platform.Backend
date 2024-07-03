@@ -55,4 +55,9 @@ public class PanelOutput
     /// Признак элемента футера меню.
     /// </summary>
     public bool IsFooterItem { get; set; }
+    
+    /// <summary>
+    /// Признак отображения элемента.
+    /// </summary>
+    public bool Visible { get; set; }
 }

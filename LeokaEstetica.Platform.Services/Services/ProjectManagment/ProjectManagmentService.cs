@@ -222,7 +222,8 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                             Label = x.ItemName,
                             Id = x.Id,
                             Disabled = x.Disabled,
-                            IsFooterItem = x.IsFooterItem
+                            IsFooterItem = x.IsFooterItem,
+                            Visible = x.Visible
                         });
 
                         result.HeaderItems.Add(new PanelResult
@@ -262,7 +263,8 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                             Label = x.ItemName,
                             Id = x.Id,
                             Disabled = x.Disabled,
-                            IsFooterItem = x.IsFooterItem
+                            IsFooterItem = x.IsFooterItem,
+                            Visible = x.Visible
                         });
 
                         result.HeaderItems.Add(new PanelResult
@@ -343,7 +345,8 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                             Label = x.ItemName,
                             Id = x.Id,
                             Disabled = x.Disabled,
-                            IsFooterItem = x.IsFooterItem
+                            IsFooterItem = x.IsFooterItem,
+                            Visible = x.Visible
                         });
 
                         result.HeaderItems.Add(new PanelResult
@@ -383,7 +386,8 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                             Label = x.ItemName,
                             Id = x.Id,
                             Disabled = x.Disabled,
-                            IsFooterItem = x.IsFooterItem
+                            IsFooterItem = x.IsFooterItem,
+                            Visible = x.Visible
                         });
 
                         result.PanelItems.Add(new PanelResult
@@ -423,7 +427,8 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                             Label = x.ItemName,
                             Id = x.Id,
                             Disabled = x.Disabled,
-                            IsFooterItem = x.IsFooterItem
+                            IsFooterItem = x.IsFooterItem,
+                            Visible = x.Visible
                         });
 
                         result.HeaderItems.Add(new PanelResult
