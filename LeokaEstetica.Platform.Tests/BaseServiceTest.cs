@@ -163,7 +163,7 @@ internal class BaseServiceTest
         
         var optionsForCache = new OptionsWrapper<MemoryDistributedCacheOptions>(new MemoryDistributedCacheOptions());
         var distributedCache = new MemoryDistributedCache(optionsForCache);
-        var userRepository = new UserRepository(pgContext, null, AppConfiguration);
+        var userRepository = new UserRepository(pgContext, null, AppConfiguration, connectionProvider);
         var profileRepository = new ProfileRepository(pgContext);
         var subscriptionRepository = new SubscriptionRepository(pgContext);
         ChatRepository = new ChatRepository(pgContext, connectionProvider);
