@@ -5,6 +5,7 @@ using LeokaEstetica.Platform.Base.Abstractions.Connection;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.Base;
 using LeokaEstetica.Platform.Base.Extensions.StringExtensions;
 using LeokaEstetica.Platform.Core.Constants;
+using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagement.Output;
@@ -2695,8 +2696,8 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
     }
 
     /// <inheritdoc/>
-    public async Task RemoveProjectTasksAsync(long projectId, IEnumerable<long> taskIds,
-        List<ProjectManagementDocumentFile>? documents)
+    public async Task RemoveProjectTasksAsync(long projectId, TaskDetailTypeEnum taskType, List<long>? taskIds = null,
+        List<ProjectManagementDocumentFile>? documents = null, List<long>? epicIds = null, List<long>? storyIds = null)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
         using var transaction = connection.BeginTransaction(IsolationLevel.ReadCommitted);
@@ -2704,9 +2705,52 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         try
         {
             // Удаляем связи, в которых участвуют удаляемые задачи.
-            var removeParameters = new DynamicParameters();
-            removeParameters.Add("@taskIds", taskIds);
-            removeParameters.Add("@projectId", projectId);
+            var removeParameters = new List<DynamicParameters>();
+
+            // Заполняем параметры Id задач и ошибок.
+            if (taskIds is not null
+                && taskIds.Count > 0
+                && taskType is TaskDetailTypeEnum.Task or TaskDetailTypeEnum.Error)
+            {
+                foreach (var x in taskIds)
+                {
+                    var tempParameters = new DynamicParameters();
+                    tempParameters.Add("@taskIds", x);
+                    tempParameters.Add("@projectId", projectId);
+                    
+                    removeParameters.Add(tempParameters);
+                }
+            }
+            
+            // Заполняем параметры Id эпиков.
+            if (epicIds is not null
+                && epicIds.Count > 0
+                && taskType is TaskDetailTypeEnum.Epic)
+            {
+                foreach (var x in epicIds)
+                {
+                    var tempParameters = new DynamicParameters();
+                    tempParameters.Add("@taskIds", x);
+                    tempParameters.Add("@projectId", projectId);
+                    
+                    removeParameters.Add(tempParameters);
+                }
+            }
+            
+            // Заполняем параметры Id историй.
+            if (storyIds is not null
+                && storyIds.Count > 0
+                && taskType is TaskDetailTypeEnum.History)
+            {
+                foreach (var x in storyIds)
+                {
+                    var tempParameters = new DynamicParameters();
+                    tempParameters.Add("@taskIds", x);
+                    tempParameters.Add("@projectId", projectId);
+                    
+                    removeParameters.Add(tempParameters);
+                }
+            }
 
             var taskLinksQuery = "DELETE FROM project_management.task_links " +
                                  "WHERE project_id = @projectId " +
@@ -2744,17 +2788,50 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
                 
                 await connection.ExecuteAsync(removeTaskFilesQuery, removeTaskFilesParameters);
             }
-            
-            // Удаляем саму задачу.
-            var removeTaskParameters = new DynamicParameters();
-            removeTaskParameters.Add("@taskIds", taskIds);
-            removeTaskParameters.Add("@projectId", projectId);
 
-            var removeTaskQuery = "DELETE FROM project_management.project_tasks " +
-                                  "WHERE project_id = @projectId " +
-                                  "AND project_task_id = ANY(@taskIds)";
+            // Удаляем задачу - для типов задачи "Задача", "Ошибка".
+            if (taskType is TaskDetailTypeEnum.Task or TaskDetailTypeEnum.Error)
+            {
+                var removeTaskParameters = new DynamicParameters();
+                removeTaskParameters.Add("@taskIds", taskIds);
+                removeTaskParameters.Add("@projectId", projectId);
+
+                var removeTaskQuery = "DELETE FROM project_management.project_tasks " +
+                                      "WHERE project_id = @projectId " +
+                                      "AND project_task_id = ANY(@taskIds)";
             
-            await connection.ExecuteAsync(removeTaskQuery, removeTaskParameters);
+                await connection.ExecuteAsync(removeTaskQuery, removeTaskParameters);
+            }
+            
+            // Удаляем эпик.
+            // Задачи из эпика удалятся автоматически, так как там есть каскад на удаление.
+            if (taskType is TaskDetailTypeEnum.Epic)
+            {
+                var removeEpicParameters = new DynamicParameters();
+                removeEpicParameters.Add("@taskIds", epicIds);
+                removeEpicParameters.Add("@projectId", projectId);
+
+                var removeEpicQuery = "DELETE FROM project_management.epics " +
+                                      "WHERE project_id = @projectId " +
+                                      "AND project_epic_id = ANY(@taskIds)";
+            
+                await connection.ExecuteAsync(removeEpicQuery, removeEpicParameters);
+            }
+            
+            // Удаляем историю.
+            // Эпики истории удалятся автоматически, так как там есть каскад на удаление.
+            if (taskType is TaskDetailTypeEnum.History)
+            {
+                var removeStoryParameters = new DynamicParameters();
+                removeStoryParameters.Add("@taskIds", storyIds);
+                removeStoryParameters.Add("@projectId", projectId);
+
+                var removeStoryQuery = "DELETE FROM project_management.user_stories " +
+                                       "WHERE project_id = @projectId " +
+                                       "AND user_story_task_id = ANY(@taskIds)";
+            
+                await connection.ExecuteAsync(removeStoryQuery, removeStoryParameters);
+            }
 
             transaction.Commit();
         }

@@ -1,4 +1,5 @@
-﻿using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
+﻿using LeokaEstetica.Platform.Core.Enums;
+using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagement.Output;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.Search.ProjectManagement;
@@ -731,12 +732,17 @@ public interface IProjectManagmentRepository
     
     /// <summary>
     /// Метод удаляет задачи проекта.
+    /// Этот метод может удалять задачи, ошибки, эпики, истории.
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
+    /// <param name="taskType">Тип задачи.</param>
     /// <param name="taskIds">Id задач.</param>
     /// <param name="documentIds">Документы к удалению.</param>
-    Task RemoveProjectTasksAsync(long projectId, IEnumerable<long> taskIds,
-        List<ProjectManagementDocumentFile>? documents);
+    /// <param name="epicIds">Id эпиков.</param>
+    /// <param name="storyIds">Id историй.</param>
+    Task RemoveProjectTasksAsync(long projectId, TaskDetailTypeEnum taskType, List<long>? taskIds = null,
+        List<ProjectManagementDocumentFile>? documents = null, List<long>? epicIds = null,
+        List<long>? storyIds = null);
     
     /// <summary>
     /// Метод получает булевые признаки того, есть ли у задачи файлы.

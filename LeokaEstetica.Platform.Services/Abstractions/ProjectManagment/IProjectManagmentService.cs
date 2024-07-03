@@ -496,5 +496,6 @@ public interface IProjectManagmentService
     /// <param name="projectId">Id проекта.</param>
     /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
     /// <param name="account">Аккаунт.</param>
-    Task RemoveProjectTaskAsync(long projectId, string projectTaskId, string account);
+    /// <param name="taskType">Тип задачи.</param>
+    Task RemoveProjectTaskAsync(long projectId, string projectTaskId, string account, TaskDetailTypeEnum taskType);
 }
