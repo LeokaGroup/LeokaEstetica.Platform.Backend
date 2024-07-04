@@ -2897,7 +2897,7 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         }
         
         // Ищем в эпиках.
-        var searchEpicQuery = "SELECT status_id " +
+        var searchEpicQuery = "SELECT epic_id " +
                               "FROM project_management.epics " +
                               "WHERE project_id = @projectId " +
                               "AND project_epic_id = @projectTaskId";
@@ -2906,13 +2906,7 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         
         if (searchEpicResult.HasValue)
         {
-            if (searchEpicResult == 4)
-            {
-                return TaskDetailTypeEnum.Epic;
-            }
-
-            throw new InvalidOperationException("Поиск типа задачи по эпику сработал, но что то пошло не так. " +
-                                                $"SearchEpicResult: {searchEpicResult}.");
+            return TaskDetailTypeEnum.Epic;
         }
         
         // Ищем в историях.
@@ -2925,13 +2919,7 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         
         if (searchStoryResult.HasValue)
         {
-            if (searchStoryResult == 5)
-            {
-                return TaskDetailTypeEnum.History;
-            }
-
-            throw new InvalidOperationException("Поиск типа задачи по истории сработал, но что то пошло не так. " +
-                                                $"SearchStoryResult: {searchStoryResult}.");
+            return TaskDetailTypeEnum.History;
         }
         
         // Ищем в спринтах.
@@ -2944,13 +2932,7 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         
         if (searchSprintResult.HasValue)
         {
-            if ((TaskDetailTypeEnum)searchSprintResult == TaskDetailTypeEnum.Sprint)
-            {
-                return TaskDetailTypeEnum.Sprint;
-            }
-
-            throw new InvalidOperationException("Поиск типа задачи по спринту сработал, но что то пошло не так. " +
-                                                $"SearchSprintResult: {searchSprintResult}.");
+            return TaskDetailTypeEnum.Sprint;
         }
 
         return TaskDetailTypeEnum.Undefined;
