@@ -2185,14 +2185,14 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         foreach (var id in projectTaskIdsItems)
         {
             var tempParameters = new DynamicParameters();
-            tempParameters.Add("@projectSprintId", sprintId);
+            tempParameters.Add("@sprintId", sprintId);
             tempParameters.Add("@projectTaskIds", id);
             
             parameters.Add(tempParameters);
         }
 
-        var query = @"INSERT INTO project_management.sprint_tasks (project_sprint_id, project_task_id) 
-                      VALUES (@projectSprintId, @projectTaskIds)";
+        var query = @"INSERT INTO project_management.sprint_tasks (sprint_id, project_task_id) 
+                      VALUES (@sprintId, @projectTaskIds)";
 
         await connection.ExecuteAsync(query, parameters);
     }
