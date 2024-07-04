@@ -153,7 +153,10 @@ internal class UserStory : AgileObjectBuilder
     public override async Task FillTaskTypeNameAsync()
     {
         var types = await BuilderData.ProjectManagmentRepository.GetTypeNamesByTypeIdsAsync(new[] { STORY_TYPE_ID });
-        ProjectManagmentTask.TaskTypeName = types.TryGet(STORY_TYPE_ID).TypeName;
+        var type = types.TryGet(STORY_TYPE_ID);
+        
+        ProjectManagmentTask.TaskTypeName = type.TypeName;
+        ProjectManagmentTask.TaskTypeId = type.TypeId;
     }
 
     /// <inheritdoc />

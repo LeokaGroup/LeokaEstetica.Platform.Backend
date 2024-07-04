@@ -296,7 +296,8 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
             .ToDictionary(k => k.TypeId, v => new TaskTypeOutput
             {
                 TypeName = v.TypeName,
-                TypeSysName = v.TypeSysName
+                TypeSysName = v.TypeSysName,
+                TypeId = v.TypeId
             });
 
         return result;
