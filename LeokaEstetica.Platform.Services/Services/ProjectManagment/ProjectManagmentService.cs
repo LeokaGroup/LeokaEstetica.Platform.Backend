@@ -1236,13 +1236,31 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     {
         try
         {
-            var detailType = Enum.Parse<TaskDetailTypeEnum>(taskDetailType);
+            var taskType = TaskDetailTypeEnum.Undefined;
+            
+            // Если переданный тип неизвестен ,например, если вставили просто ссылку в url - то найдем в БД тип задачи.
+            if (Enum.Parse<TaskDetailTypeEnum>(taskDetailType.ToPascalCase()) == TaskDetailTypeEnum.Undefined)
+            {
+                var findTaskType = await _projectManagmentRepository.GetTaskTypeByProjectIdProjectTaskIdAsync(
+                    projectId, projectTaskId.GetProjectTaskIdFromPrefixLink());
+                
+                // Если все же не удалось определить тип задачи.
+                if (findTaskType == TaskDetailTypeEnum.Undefined)
+                {
+                    throw new InvalidOperationException("Неизвестный тип детализации. " +
+                                                        " Заполнение Agile-объекта не будет происходить. " +
+                                                        $"TaskType: {findTaskType}.");
+                }
+
+                taskType = findTaskType;
+            }
+            
             var onlyProjectTaskId = projectTaskId.GetProjectTaskIdFromPrefixLink();
             bool ifProjectHavingTask;
             long currentTaskStatusId = 0;
             var transitionType = TransitionTypeEnum.None;
 
-            if (detailType is TaskDetailTypeEnum.Task or TaskDetailTypeEnum.Error)
+            if (taskType is TaskDetailTypeEnum.Task or TaskDetailTypeEnum.Error)
             {
                 ifProjectHavingTask = await _projectManagmentRepository.IfProjectHavingProjectTaskIdAsync(projectId,
                     onlyProjectTaskId);
@@ -1269,7 +1287,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 transitionType = TransitionTypeEnum.Task;
             }
 
-            if (detailType == TaskDetailTypeEnum.Epic)
+            if (taskType == TaskDetailTypeEnum.Epic)
             {
                 ifProjectHavingTask = await _projectManagmentRepository.IfProjectHavingEpicIdAsync(projectId,
                     onlyProjectTaskId);
@@ -1296,7 +1314,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 transitionType = TransitionTypeEnum.Epic;
             }
             
-            if (detailType == TaskDetailTypeEnum.History)
+            if (taskType == TaskDetailTypeEnum.History)
             {
                 ifProjectHavingTask = await _projectManagmentRepository.IfProjectHavingProjectUserStoryIdAsync(
                     projectId, onlyProjectTaskId);
