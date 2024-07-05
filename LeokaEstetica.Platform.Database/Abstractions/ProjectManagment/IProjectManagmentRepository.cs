@@ -761,4 +761,11 @@ public interface IProjectManagmentRepository
     /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
     /// <returns>Тип задачи.</returns>
     Task<TaskDetailTypeEnum> GetTaskTypeByProjectIdProjectTaskIdAsync(long projectId, long projectTaskId);
+
+    /// <summary>
+    /// Метод получает Id компании по Id проекта.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Id компании.</returns>
+    Task<long> GetCompanyIdByProjectIdAsync(long projectId);
 }
