@@ -296,7 +296,8 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
             .ToDictionary(k => k.TypeId, v => new TaskTypeOutput
             {
                 TypeName = v.TypeName,
-                TypeSysName = v.TypeSysName
+                TypeSysName = v.TypeSysName,
+                TypeId = v.TypeId
             });
 
         return result;
@@ -2185,14 +2186,14 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         foreach (var id in projectTaskIdsItems)
         {
             var tempParameters = new DynamicParameters();
-            tempParameters.Add("@projectSprintId", sprintId);
+            tempParameters.Add("@sprintId", sprintId);
             tempParameters.Add("@projectTaskIds", id);
             
             parameters.Add(tempParameters);
         }
 
-        var query = @"INSERT INTO project_management.sprint_tasks (project_sprint_id, project_task_id) 
-                      VALUES (@projectSprintId, @projectTaskIds)";
+        var query = @"INSERT INTO project_management.sprint_tasks (sprint_id, project_task_id) 
+                      VALUES (@sprintId, @projectTaskIds)";
 
         await connection.ExecuteAsync(query, parameters);
     }
@@ -2877,6 +2878,82 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         var result = await connection.QueryFirstOrDefaultAsync<long>(query, parameters);
 
         return result;
+    }
+
+    /// <inheritdoc />
+    public async Task<TaskDetailTypeEnum> GetTaskTypeByProjectIdProjectTaskIdAsync(long projectId, long projectTaskId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@projectId", projectId);
+        parameters.Add("@projectTaskId", projectTaskId);
+
+        // Ищем среди задач и ошибок.
+        var searchTaskQuery = "SELECT task_type_id " +
+                              "FROM project_management.project_tasks " +
+                              "WHERE project_id = @projectId " +
+                              "AND project_task_id = @projectTaskId";
+
+        var searchTaskResult = await connection.QueryFirstOrDefaultAsync<long?>(searchTaskQuery, parameters);
+
+        if (searchTaskResult.HasValue)
+        {
+            if (searchTaskResult == 1)
+            {
+                return TaskDetailTypeEnum.Error;
+            }
+            
+            if (searchTaskResult == 3)
+            {
+                return TaskDetailTypeEnum.Task;
+            }
+
+            throw new InvalidOperationException(
+                "Поиск типа задачи по типу задачи или ошибке сработал, но что то пошло не так. " +
+                $"SearchTaskResult: {searchTaskResult}.");
+        }
+        
+        // Ищем в эпиках.
+        var searchEpicQuery = "SELECT epic_id " +
+                              "FROM project_management.epics " +
+                              "WHERE project_id = @projectId " +
+                              "AND project_epic_id = @projectTaskId";
+
+        var searchEpicResult = await connection.QueryFirstOrDefaultAsync<long?>(searchEpicQuery, parameters);
+        
+        if (searchEpicResult.HasValue)
+        {
+            return TaskDetailTypeEnum.Epic;
+        }
+        
+        // Ищем в историях.
+        var searchStoryQuery = "SELECT story_status_id " +
+                              "FROM project_management.user_stories " +
+                              "WHERE project_id = @projectId " +
+                              "AND user_story_task_id = @projectTaskId";
+
+        var searchStoryResult = await connection.QueryFirstOrDefaultAsync<long?>(searchStoryQuery, parameters);
+        
+        if (searchStoryResult.HasValue)
+        {
+            return TaskDetailTypeEnum.History;
+        }
+        
+        // Ищем в спринтах.
+        var searchSprintQuery = "SELECT sprint_status_id " +
+                               "FROM project_management.sprints " +
+                               "WHERE project_id = @projectId " +
+                               "AND project_sprint_id = @projectTaskId";
+
+        var searchSprintResult = await connection.QueryFirstOrDefaultAsync<long?>(searchSprintQuery, parameters);
+        
+        if (searchSprintResult.HasValue)
+        {
+            return TaskDetailTypeEnum.Sprint;
+        }
+
+        return TaskDetailTypeEnum.Undefined;
     }
 
     #endregion

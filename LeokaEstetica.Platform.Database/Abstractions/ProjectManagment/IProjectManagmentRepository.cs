@@ -754,6 +754,15 @@ public interface IProjectManagmentRepository
         IEnumerable<long> taskIds);
 
     /// <summary>
+    /// Метод получает тип задачи по Id проекта и по Id задачи в рамках проекта.
+    /// Ищем задачу во всех таблицах задач (разных типов) поочередно.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
+    /// <returns>Тип задачи.</returns>
+    Task<TaskDetailTypeEnum> GetTaskTypeByProjectIdProjectTaskIdAsync(long projectId, long projectTaskId);
+
+    /// <summary>
     /// Метод получает Id компании по Id проекта.
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
