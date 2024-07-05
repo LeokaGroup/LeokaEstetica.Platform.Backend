@@ -10,6 +10,7 @@ using LeokaEstetica.Platform.Core.Helpers;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
 using LeokaEstetica.Platform.Models.Dto.Input.Project;
 using LeokaEstetica.Platform.Models.Dto.Output.Project;
+using LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
 using LeokaEstetica.Platform.Models.Entities.Communication;
 using LeokaEstetica.Platform.Models.Entities.Configs;
 using LeokaEstetica.Platform.Models.Entities.Moderation;
@@ -394,13 +395,27 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
     /// </summary>
     /// <param name="projectId">Id проекта, вакансии которого нужно получить.</param>
     /// <returns>Список вакансий.</returns>
-    public async Task<IEnumerable<ProjectVacancyEntity>> ProjectVacanciesAsync(long projectId)
+    public async Task<IEnumerable<ProjectVacancyOutput>> ProjectVacanciesAsync(long projectId)
     {
-        var result = await _pgContext.ProjectVacancies
-            .Include(uv => uv.UserVacancy)
-            .Where(pv => pv.ProjectId == projectId)
-            .OrderBy(o => o.ProjectVacancyId)
-            .ToListAsync();
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@projectId", projectId);
+
+        var query = "SELECT uv.\"VacancyId\", " +
+                    "uv.\"VacancyName\", " +
+                    "uv.\"VacancyText\", " +
+                    "mv.\"ModerationStatusId\", " +
+                    "pv.\"ProjectVacancyId\", " +
+                    "pv.\"ProjectId\" " +
+                    "FROM \"Projects\".\"ProjectVacancies\" AS pv " +
+                    "INNER JOIN \"Moderation\".\"Vacancies\" AS mv " +
+                    "ON pv.\"VacancyId\" = mv.\"VacancyId\" " +
+                    "INNER JOIN \"Vacancies\".\"UserVacancies\" AS uv " +
+                    "ON pv.\"VacancyId\" = uv.\"VacancyId\" " +
+                    "WHERE pv.\"ProjectId\" = @projectId";
+
+        var result = await connection.QueryAsync<ProjectVacancyOutput>(query, parameters);
 
         return result;
     }

@@ -630,21 +630,18 @@ internal sealed class ProjectService : IProjectService
             // Проставляем признаки видимости кнопок вакансий проекта.
             result = await FillVisibleControlsProjectVacanciesAsync(result, projectId, userId);
             
-            var items = await _projectRepository.ProjectVacanciesAsync(projectId);
+            result.ProjectVacancies = await _projectRepository.ProjectVacanciesAsync(projectId);
 
-            if (items is null || !items.Any())
+            if (result.ProjectVacancies is null || !result.ProjectVacancies.Any())
             {
                 return result;
             }
 
-            result.ProjectVacancies = _mapper.Map<IEnumerable<ProjectVacancyOutput>>(items);
-            var projectVacancies = result.ProjectVacancies.ToList();
-
             // Проставляем вакансиям статусы.
-            result.ProjectVacancies = await FillVacanciesStatusesAsync(projectVacancies, userId);
+            result.ProjectVacancies = await FillVacanciesStatusesAsync(result.ProjectVacancies.AsList(), userId);
 
             // Чистим описания от html-тегов.
-            result.ProjectVacancies = ClearHtmlTags(projectVacancies);
+            result.ProjectVacancies = ClearHtmlTags(result.ProjectVacancies.AsList());
 
             return result;
         }
@@ -1756,7 +1753,7 @@ internal sealed class ProjectService : IProjectService
 
             if (isVacancy)
             {
-                pv.UserVacancy.VacancyStatusName = moderationVacancies.Vacancies
+                pv.VacancyStatusName = moderationVacancies.Vacancies
                     .Where(v => v.VacancyId == pv.VacancyId)
                     .Select(v => v.ModerationStatusName)
                     .FirstOrDefault();
@@ -1769,7 +1766,7 @@ internal sealed class ProjectService : IProjectService
 
                 if (isCatalogVacancy)
                 {
-                    pv.UserVacancy.VacancyStatusName = _approveVacancy;
+                    pv.VacancyStatusName = _approveVacancy;
                 }
             }
             
@@ -1778,7 +1775,7 @@ internal sealed class ProjectService : IProjectService
             
             if (isArchiveVacancy)
             {
-                pv.UserVacancy.VacancyStatusName = _archiveVacancy;
+                pv.VacancyStatusName = _archiveVacancy;
             }
         }
 

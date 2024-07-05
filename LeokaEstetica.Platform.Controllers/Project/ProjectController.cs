@@ -14,6 +14,7 @@ using LeokaEstetica.Platform.Models.Dto.Input.ProjectTeam;
 using LeokaEstetica.Platform.Models.Dto.Output.Configs;
 using LeokaEstetica.Platform.Models.Dto.Output.Project;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectTeam;
+using LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
 using LeokaEstetica.Platform.Services.Abstractions.Project;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
