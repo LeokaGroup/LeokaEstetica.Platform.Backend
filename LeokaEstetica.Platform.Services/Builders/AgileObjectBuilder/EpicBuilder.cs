@@ -153,7 +153,10 @@ internal class EpicBuilder : AgileObjectBuilder
     public override async Task FillTaskTypeNameAsync()
     {
         var types = await BuilderData.ProjectManagmentRepository.GetTypeNamesByTypeIdsAsync(new[] { EPIC_TYPE_ID });
-        ProjectManagmentTask.TaskTypeName = types.TryGet(EPIC_TYPE_ID).TypeName;
+        var type = types.TryGet(EPIC_TYPE_ID);
+        
+        ProjectManagmentTask.TaskTypeName = type.TypeName;
+        ProjectManagmentTask.TaskTypeId = type.TypeId;
     }
 
     /// <inheritdoc />

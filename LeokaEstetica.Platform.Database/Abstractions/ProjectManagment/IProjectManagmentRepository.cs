@@ -1,8 +1,10 @@
-﻿using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
+﻿using LeokaEstetica.Platform.Core.Enums;
+using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagement.Output;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.Search.ProjectManagement;
 using LeokaEstetica.Platform.Models.Dto.Output.Template;
+using LeokaEstetica.Platform.Models.Dto.ProjectManagement.Document;
 using LeokaEstetica.Platform.Models.Dto.ProjectManagement.Output;
 using LeokaEstetica.Platform.Models.Entities.Document;
 using LeokaEstetica.Platform.Models.Entities.ProjectManagment;
@@ -150,11 +152,11 @@ public interface IProjectManagmentRepository
     Task CreateProjectUserStoryAsync(UserStoryEntity story);
 
     /// <summary>
-    /// Метод получает максимальный Position у тегов задач пользователя.
+    /// Метод получает максимальный Position у тегов проекта.
     /// </summary>
-    /// <param name="userId">Id пользователя.</param>
+    /// <param name="projectId"></param>
     /// <returns>Позиция последнего тега.</returns>
-    Task<int> GetLastPositionUserTaskTagAsync(long userId);
+    Task<int> GetLastPositionProjectTagAsync(long projectId);
 
     /// <summary>
     /// Метод создает тег проекта.
@@ -215,9 +217,10 @@ public interface IProjectManagmentRepository
     /// </summary>
     /// <param name="currentTaskStatusId">Id текущего статуса задачи.</param>
     /// <param name="transitionType">Тип перехода.</param>
+    /// <param name="templateId">Id шаблона проекта.</param>
     /// <returns>Список переходов.</returns>
     Task<IEnumerable<long>> GetProjectManagementTransitionIntermediateTemplatesAsync(long currentTaskStatusId,
-        TransitionTypeEnum transitionType);
+        TransitionTypeEnum transitionType, int templateId);
 
     /// <summary>
     /// Метод получает статусы из таблицы связей многие-многие, чтобы дальше работать с
@@ -703,4 +706,66 @@ public interface IProjectManagmentRepository
     /// <param name="userId">Id пользователя.</param>
     /// <returns>Признак владельца.</returns>
     Task<bool> CheckCompanyOwnerByUserIdAsync(long userId);
+
+    /// <summary>
+    /// Метод добавляет пользователя в участники раб.пространства проекта.
+    /// Перед этим идет проверка, есть ли пользователь в участниках компании, если нет,
+    /// то сначала добавляет в участники компании.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="userId">Id пользователя.</param>
+    Task AddProjectWorkSpaceMemberAsync(long projectId, long userId);
+
+    /// <summary>
+    /// Метод проверяет, можно ли менять эпику на указанный статус.
+    /// </summary>
+    /// <param name="changeStatus">Id статуса, на который пробуют изменить.</param>
+    /// <returns>Признак результата проверки.</returns>
+    Task<bool> IfEpicAvailableStatusAsync(long changeStatus);
+    
+    /// <summary>
+    /// Метод проверяет, можно ли менять истории на указанный статус.
+    /// </summary>
+    /// <param name="changeStatus">Id статуса, на который пробуют изменить.</param>
+    /// <returns>Признак результата проверки.</returns>
+    Task<bool> IfStoryAvailableStatusAsync(long changeStatus);
+    
+    /// <summary>
+    /// Метод удаляет задачи проекта.
+    /// Этот метод может удалять задачи, ошибки, эпики, истории.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="taskType">Тип задачи.</param>
+    /// <param name="taskIds">Id задач.</param>
+    /// <param name="documentIds">Документы к удалению.</param>
+    /// <param name="epicIds">Id эпиков.</param>
+    /// <param name="storyIds">Id историй.</param>
+    Task RemoveProjectTasksAsync(long projectId, TaskDetailTypeEnum taskType, List<long>? taskIds = null,
+        List<ProjectManagementDocumentFile>? documents = null, List<long>? epicIds = null,
+        List<long>? storyIds = null);
+    
+    /// <summary>
+    /// Метод получает булевые признаки того, есть ли у задачи файлы.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="taskIds">Id задач.</param>
+    /// <returns>Список файлов задач.</returns>
+    Task<IEnumerable<ProjectManagementDocumentFile>> IfProjectTaskExistFileAsync(long projectId,
+        IEnumerable<long> taskIds);
+
+    /// <summary>
+    /// Метод получает тип задачи по Id проекта и по Id задачи в рамках проекта.
+    /// Ищем задачу во всех таблицах задач (разных типов) поочередно.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
+    /// <returns>Тип задачи.</returns>
+    Task<TaskDetailTypeEnum> GetTaskTypeByProjectIdProjectTaskIdAsync(long projectId, long projectTaskId);
+
+    /// <summary>
+    /// Метод получает Id компании по Id проекта.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Id компании.</returns>
+    Task<long> GetCompanyIdByProjectIdAsync(long projectId);
 }

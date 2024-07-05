@@ -7,27 +7,22 @@ namespace LeokaEstetica.Platform.Models.Enums;
 public enum SearchAgileObjectTypeEnum
 {
     /// <summary>
-    /// Задача.
-    /// </summary>
-    Task = 1,
-    
-    /// <summary>
     /// Ошибка.
     /// </summary>
-    Error = 2,
+    Error = 1,
     
+    /// <summary>
+    /// Задача.
+    /// </summary>
+    Task = 3,
+
     /// <summary>
     /// Эпик.
     /// </summary>
-    Epic = 3,
+    Epic = 4,
     
     /// <summary>
     /// История.
     /// </summary>
-    Story = 4,
-    
-    /// <summary>
-    /// Спринт.
-    /// </summary>
-    Sprint = 5
+    Story = 5
 }

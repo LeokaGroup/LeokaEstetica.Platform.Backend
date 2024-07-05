@@ -105,4 +105,52 @@ internal sealed class ProjectManagementNotificationService : IProjectManagementN
                 DialogId = dialogId
             });
     }
+
+    /// <inheritdoc />
+    public async Task SendNotifySuccessUpdateRolesAsync(string title, string notifyText, string notificationLevel,
+        string token)
+    {
+        var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
+
+        await _hubContext.Clients
+            .Client(connectionId)
+            .SendAsync("SendNotifySuccessUpdateRoles", new NotificationOutput
+            {
+                Title = title,
+                Message = notifyText,
+                NotificationLevel = notificationLevel
+            });
+    }
+
+    /// <inheritdoc />
+    public async Task SendNotifyWarningChangeEpicStatusAsync(string title, string notifyText, string notificationLevel,
+        string token)
+    {
+        var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
+
+        await _hubContext.Clients
+            .Client(connectionId)
+            .SendAsync("SendNotifyWarningChangeEpicStatus", new NotificationOutput
+            {
+                Title = title,
+                Message = notifyText,
+                NotificationLevel = notificationLevel
+            });
+    }
+    
+    /// <inheritdoc />
+    public async Task SendNotifyWarningChangeStoryStatusAsync(string title, string notifyText, string notificationLevel,
+        string token)
+    {
+        var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
+
+        await _hubContext.Clients
+            .Client(connectionId)
+            .SendAsync("SendNotifyWarningChangeStoryStatus", new NotificationOutput
+            {
+                Title = title,
+                Message = notifyText,
+                NotificationLevel = notificationLevel
+            });
+    }
 }

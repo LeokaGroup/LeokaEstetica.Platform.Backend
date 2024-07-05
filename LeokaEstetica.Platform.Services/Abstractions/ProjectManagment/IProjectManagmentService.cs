@@ -156,7 +156,9 @@ public interface IProjectManagmentService
     /// <param name="changeStatusId">Id статуса задачи, на который нужно изменить.</param>
     /// <param name="taskId">Id задачи (здесь имеется в виду Id задачи в рамках проекта).</param>
     /// <param name="taskDetailType">Тип детализации.</param>
-    Task ChangeTaskStatusAsync(long projectId, string changeStatusId, string taskId, string taskDetailType);
+    /// <param name="token">Токен.</param>
+    Task ChangeTaskStatusAsync(long projectId, string changeStatusId, string taskId, string taskDetailType,
+        string token);
     
     /// <summary>
     /// Метод обновления описание задачи.
@@ -487,4 +489,13 @@ public interface IProjectManagmentService
     /// <param name="account">Аккаунт.</param>
     /// <returns>Список раб.пространств.</returns>
     Task<IEnumerable<WorkSpaceOutput>> GetWorkSpacesAsync(string account);
+
+    /// <summary>
+    /// Метод удаляет задачу проекта.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
+    /// <param name="account">Аккаунт.</param>
+    /// <param name="taskType">Тип задачи.</param>
+    Task RemoveProjectTaskAsync(long projectId, string projectTaskId, string account, TaskDetailTypeEnum taskType);
 }

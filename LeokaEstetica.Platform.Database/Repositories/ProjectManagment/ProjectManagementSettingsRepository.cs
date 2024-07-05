@@ -2,6 +2,8 @@
 using LeokaEstetica.Platform.Base.Abstractions.Connection;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.Base;
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
+using LeokaEstetica.Platform.Models.Dto.Output.Notification;
+using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagement.Output;
 using LeokaEstetica.Platform.Models.Dto.ProjectManagement.Output;
 
 namespace LeokaEstetica.Platform.Database.Repositories.ProjectManagment;
@@ -19,6 +21,8 @@ internal sealed class ProjectManagementSettingsRepository : BaseRepository, IPro
         : base(connectionProvider)
     {
     }
+
+    #region Публичные методы.
 
     /// <inheritdoc/>
     public async Task<IEnumerable<SprintDurationSetting>> GetProjectSprintsDurationSettingsAsync(long projectId)
@@ -81,9 +85,9 @@ internal sealed class ProjectManagementSettingsRepository : BaseRepository, IPro
         reverseParameters.Add("@sysName", sysName);
 
         var reverseQuery = "UPDATE settings.sprint_duration_settings " +
-                         "SET selected = @isSettingSelected " +
-                         "WHERE project_id = @projectId " +
-                         "AND sys_name <> @sysName";
+                           "SET selected = @isSettingSelected " +
+                           "WHERE project_id = @projectId " +
+                           "AND sys_name <> @sysName";
 
         await connection.ExecuteAsync(reverseQuery, reverseParameters);
     }
@@ -113,9 +117,9 @@ internal sealed class ProjectManagementSettingsRepository : BaseRepository, IPro
         reverseParameters.Add("@sysName", sysName);
 
         var reverseQuery = "UPDATE settings.move_not_completed_tasks_settings " +
-                    "SET selected = @isSettingSelected " +
-                    "WHERE project_id = @projectId " +
-                    "AND sys_name <> @sysName";
+                           "SET selected = @isSettingSelected " +
+                           "WHERE project_id = @projectId " +
+                           "AND sys_name <> @sysName";
 
         await connection.ExecuteAsync(reverseQuery, reverseParameters);
     }
@@ -173,4 +177,134 @@ internal sealed class ProjectManagementSettingsRepository : BaseRepository, IPro
 
         await connection.ExecuteAsync(querySprinsNotCompletedTasks, parametersSprintNotCompletedTasks);
     }
+
+    /// <inheritdoc/>
+    public async Task<IEnumerable<ProjectSettingUserOutput>> GetCompanyProjectUsersAsync(long projectId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@projectId", projectId);
+
+        var query = "SELECT pi.\"UserId\", " +
+                    "pi.\"LastName\", " +
+                    "pi.\"FirstName\", " +
+                    "pi.\"Patronymic\" AS \"SecondName\", " +
+                    "u.\"Email\", " +
+                    "u.\"LastAutorization\", " +
+                    "(CASE WHEN u.\"UserId\" = (SELECT up.\"UserId\" " +
+                    "FROM \"Projects\".\"UserProjects\" AS up " +
+                    "WHERE up.\"ProjectId\" = @projectId " +
+                    "LIMIT 1) THEN TRUE " +
+                    "ELSE FALSE END) AS IsOwner, " +
+                    "COALESCE(om.member_role, 'Участник') AS Role " +
+                    "FROM project_management.organization_projects AS op " +
+                    "INNER JOIN project_management.organization_members AS om " +
+                    "ON op.organization_id = om.organization_id " +
+                    "INNER JOIN \"Profile\".\"ProfilesInfo\" AS pi " +
+                    "ON om.member_id = \"UserId\" " +
+                    "INNER JOIN dbo.\"Users\" AS u " +
+                    "ON pi.\"UserId\" = u.\"UserId\" " +
+                    "WHERE op.project_id = @projectId " +
+                    "AND op.is_active";
+
+        var result = await connection.QueryAsync<ProjectSettingUserOutput>(query, parameters);
+
+        return result;
+    }
+    
+    /// <inheritdoc />
+    public async Task<IEnumerable<ProjectInviteOutput>> GetProjectInvitesAsync(long projectId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@projectId", projectId);
+        
+        var query = "SELECT n.\"NotificationId\", " +
+                    "u.\"Email\", " +
+                    "n.\"UserId\", " +
+                    "n.\"Created\" AS CreatedAt " +
+                    "FROM \"Notifications\".\"Notifications\" AS n " +
+                    "INNER JOIN dbo.\"Users\" AS u " +
+                    "ON n.\"UserId\" = u.\"UserId\" " +
+                    "WHERE n.\"ProjectId\" = @projectId " +
+                    "AND n.\"IsNeedAccepted\" " +
+                    "AND NOT n.\"Approved\" " +
+                    "AND NOT n.\"Rejected\"";
+
+        var result = await connection.QueryAsync<ProjectInviteOutput>(query, parameters);
+
+        return result;
+    }
+
+    /// <inheritdoc />
+    public async Task CancelProjectInviteAsync(long notificationId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@notificationId", notificationId);
+        
+        var query = "DELETE FROM \"Notifications\".\"Notifications\" " +
+                    "WHERE \"NotificationId\" = @notificationId";
+
+        await connection.ExecuteAsync(query, parameters);
+    }
+
+    /// <inheritdoc/>
+    public async Task AddProjectMemberRolesAsync(long organizationId, long memberId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+        
+        var parameters = new DynamicParameters();
+        parameters.Add("@organizationId", organizationId);
+        parameters.Add("@memberId", memberId);
+
+        // По дефолту проставляем все роли участнику.
+        var query = @"INSERT INTO roles.project_member_roles (role_id, project_member_id, organization_id, is_enabled)
+                        VALUES (1, @memberId, @organizationId, TRUE),
+                               (2, @memberId, @organizationId, TRUE),
+                               (3, @memberId, @organizationId, TRUE),
+                               (4, @memberId, @organizationId, TRUE),
+                               (5, @memberId, @organizationId, TRUE),
+                               (6, @memberId, @organizationId, TRUE),
+                               (7, @memberId, @organizationId, TRUE),
+                               (8, @memberId, @organizationId, TRUE),
+                               (9, @memberId, @organizationId, TRUE),
+                               (10, @memberId, @organizationId, TRUE),
+                               (11, @memberId, @organizationId, TRUE),
+                               (12, @memberId, @organizationId, TRUE),
+                               (13, @memberId, @organizationId, TRUE),
+                               (14, @memberId, @organizationId, TRUE),
+                               (15, @memberId, @organizationId, TRUE),
+                               (16, @memberId, @organizationId, TRUE),
+                               (17, @memberId, @organizationId, TRUE),
+                               (18, @memberId, @organizationId, TRUE),
+                               (19, @memberId, @organizationId, TRUE),
+                               (20, @memberId, @organizationId, TRUE),
+                               (21, @memberId, @organizationId, TRUE),
+                               (22, @memberId, @organizationId, TRUE),
+                               (23, @memberId, @organizationId, TRUE),
+                               (24, @memberId, @organizationId, TRUE),
+                               (25, @memberId, @organizationId, TRUE),
+                               (26, @memberId, @organizationId, TRUE),
+                               (27, @memberId, @organizationId, TRUE),
+                               (28, @memberId, @organizationId, TRUE),
+                               (29, @memberId, @organizationId, TRUE),
+                               (30, @memberId, @organizationId, TRUE),
+                               (31, @memberId, @organizationId, TRUE),
+                               (32, @memberId, @organizationId, TRUE),
+                               (33, @memberId, @organizationId, TRUE)";
+                               
+        await connection.ExecuteAsync(query, parameters);
+    }
+
+    #endregion
+
+    #region Приватные методы.
+
+    
+
+    #endregion
 }

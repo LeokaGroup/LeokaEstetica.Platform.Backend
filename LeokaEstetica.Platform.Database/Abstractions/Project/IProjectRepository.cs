@@ -1,5 +1,6 @@
 using LeokaEstetica.Platform.Models.Dto.Input.Project;
 using LeokaEstetica.Platform.Models.Dto.Output.Project;
+using LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
 using LeokaEstetica.Platform.Models.Entities.Configs;
 using LeokaEstetica.Platform.Models.Entities.Project;
 using LeokaEstetica.Platform.Models.Entities.ProjectTeam;
@@ -73,7 +74,7 @@ public interface IProjectRepository
     /// </summary>
     /// <param name="projectId">Id проекта, вакансии которого нужно получить.</param>
     /// <returns>Список вакансий.</returns>
-    Task<IEnumerable<ProjectVacancyEntity>> ProjectVacanciesAsync(long projectId);
+    Task<IEnumerable<ProjectVacancyOutput>> ProjectVacanciesAsync(long projectId);
 
     /// <summary>
     /// Метод прикрепляет вакансию к проекту.
@@ -193,6 +194,13 @@ public interface IProjectRepository
     /// <param name="projectId">Id проекта.</param>
     /// <returns>Признак модерации.</returns>
     Task<bool> CheckProjectModerationAsync(long projectId);
+    
+    /// <summary>
+    /// Метод првоеряет, находится ли проект в архиве.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Признак нахождения в архиве.</returns>
+    Task<bool> CheckProjectArchivedAsync(long projectId);
     
     /// <summary>
     /// Метод получает список вакансий доступных к отклику.
@@ -325,4 +333,11 @@ public interface IProjectRepository
     /// <param name="teamId">Id команды проекта.</param>
     /// </summary>
     Task SetProjectTeamMemberRoleAsync(long userId, string? role, long teamId);
+    
+    /// <summary>
+    /// Метод исключает пользователя из команды проекта.
+    /// <param name="userId">Id пользователя.</param>
+    /// <param name="teamId">Id команды проекта.</param>
+    /// </summary>
+    Task RemoveUserProjectTeamAsync(long userId, long teamId);
 }

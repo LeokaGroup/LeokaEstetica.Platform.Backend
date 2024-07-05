@@ -16,7 +16,7 @@ public class ProjectManagmentTaskOutput
     /// <summary>
     /// Название статуса задачи.
     /// </summary>
-    public string TaskStatusName { get; set; }
+    public string? TaskStatusName { get; set; }
 
     /// <summary>
     /// Id статуса задачи.
@@ -48,22 +48,22 @@ public class ProjectManagmentTaskOutput
     /// <summary>
     /// Название задачи.
     /// </summary>
-    public string Name { get; set; }
+    public string? Name { get; set; }
 
     /// <summary>
     /// Описание задачи.
     /// </summary>
-    public string Details { get; set; }
+    public string? Details { get; set; }
 
     /// <summary>
     /// Дата создания задачи.
     /// </summary>
-    public string Created { get; set; }
+    public string? Created { get; set; }
     
     /// <summary>
     /// Дата обновление задачи.
     /// </summary>
-    public string Updated { get; set; }
+    public string? Updated { get; set; }
 
     /// <summary>
     /// Id задачи в рамках проекта.
@@ -73,7 +73,7 @@ public class ProjectManagmentTaskOutput
     /// <summary>
     /// Название резолюции (если указана).
     /// </summary>
-    public string ResolutionName { get; set; }
+    public string? ResolutionName { get; set; }
 
     /// <summary>
     /// Id резолюции (если указана).
@@ -94,7 +94,7 @@ public class ProjectManagmentTaskOutput
     /// <summary>
     /// Название типа задачи.
     /// </summary>
-    public string TaskTypeName { get; set; }
+    public string? TaskTypeName { get; set; }
 
     /// <summary>
     /// Id типа задачи.
@@ -104,7 +104,7 @@ public class ProjectManagmentTaskOutput
     /// <summary>
     /// Данные исполнителя задачи.
     /// </summary>
-    public Executor Executor { get; set; }
+    public Executor? Executor { get; set; }
 
     /// <summary>
     /// Id исполнителя задачи.
@@ -119,12 +119,12 @@ public class ProjectManagmentTaskOutput
     /// <summary>
     /// Название приоритета задачи.
     /// </summary>
-    public string PriorityName { get; set; }
+    public string? PriorityName { get; set; }
 
     /// <summary>
     /// Префикс номера задачи.
     /// </summary>
-    public string TaskIdPrefix { get; set; }
+    public string? TaskIdPrefix { get; set; }
 
     /// <summary>
     /// Id задачи в рамках проекта вместе с префиксом.
@@ -139,7 +139,7 @@ public class ProjectManagmentTaskOutput
     /// <summary>
     /// Название эпика, в который добавлена задача.
     /// </summary>
-    public string EpicName { get; set; }
+    public string? EpicName { get; set; }
 
     /// <summary>
     /// Id эпика, в который добавлена задача.
@@ -154,7 +154,7 @@ public class ProjectManagmentTaskOutput
     /// <summary>
     /// Название спринта, в который добавлена задача.
     /// </summary>
-    public string SprintName { get; set; }
+    public string? SprintName { get; set; }
 
     /// <summary>
     /// Список задач эпика.
@@ -165,6 +165,11 @@ public class ProjectManagmentTaskOutput
     /// Список задач спринта.
     /// </summary>
     public IEnumerable<ProjectManagmentTaskOutput> SprintTasks { get; set; }
+
+    /// <summary>
+    /// Признак наличия доступа.
+    /// </summary>
+    public bool IsAccess { get; set; }
 }
 
 /// <summary>
@@ -175,10 +180,10 @@ public class Executor
     /// <summary>
     /// ФИО исполнителя задачи.
     /// </summary>
-    public string ExecutorName { get; set; }
+    public string? ExecutorName { get; set; }
 
     /// <summary>
     /// Файл аватара исполнителя.
     /// </summary>
-    public FileContentResult Avatar { get; set; }
+    public FileContentResult? Avatar { get; set; }
 }

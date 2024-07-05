@@ -14,6 +14,7 @@ using LeokaEstetica.Platform.Models.Dto.Input.ProjectTeam;
 using LeokaEstetica.Platform.Models.Dto.Output.Configs;
 using LeokaEstetica.Platform.Models.Dto.Output.Project;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectTeam;
+using LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
 using LeokaEstetica.Platform.Services.Abstractions.Project;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -448,14 +449,14 @@ public class ProjectController : BaseController
     public async Task<ProjectTeamMemberOutput> InviteProjectTeamAsync(
         [FromBody] InviteProjectMemberInput inviteProjectMemberInput)
     {
-        var invitedUser = await _projectService.InviteProjectTeamAsync(inviteProjectMemberInput.InviteText,
+        await _projectService.InviteProjectTeamAsync(inviteProjectMemberInput.InviteText,
             Enum.Parse<ProjectInviteTypeEnum>(inviteProjectMemberInput.InviteType), inviteProjectMemberInput.ProjectId,
             inviteProjectMemberInput.VacancyId, GetUserName(), CreateTokenFromHeader());
-        
-        var result = _mapper.Map<ProjectTeamMemberOutput>(invitedUser);
-        result.SuccessMessage = "Пользователь успешно приглашен в команду проекта.";
 
-        return result;
+        return new ProjectTeamMemberOutput
+        {
+            SuccessMessage = "Пользователь успешно приглашен в команду проекта."
+        };
     }
 
     /// <summary>

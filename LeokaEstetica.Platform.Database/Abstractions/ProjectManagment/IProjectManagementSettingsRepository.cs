@@ -1,4 +1,6 @@
-﻿using LeokaEstetica.Platform.Models.Dto.ProjectManagement.Output;
+﻿using LeokaEstetica.Platform.Models.Dto.Output.Notification;
+using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagement.Output;
+using LeokaEstetica.Platform.Models.Dto.ProjectManagement.Output;
 
 namespace LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 
@@ -51,4 +53,31 @@ public interface IProjectManagementSettingsRepository
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
     Task ConfigureProjectScrumSettingsAsync(long projectId);
+    
+    /// <summary>
+    /// Метод получает список пользователей, которые состоят в проекте.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Список пользователей.</returns>
+    Task<IEnumerable<ProjectSettingUserOutput>> GetCompanyProjectUsersAsync(long projectId);
+    
+    /// <summary>
+    /// Метод получает список приглашений в проект.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Список приглашений в проект.</returns>
+    Task<IEnumerable<ProjectInviteOutput>> GetProjectInvitesAsync(long projectId);
+
+    /// <summary>
+    /// Метод отменяет приглашение в проект.
+    /// </summary>
+    /// <param name="notificationId">Id уведомления.</param>
+    Task CancelProjectInviteAsync(long notificationId);
+
+    /// <summary>
+    /// Метод впервые добавляет роли участнику проекта.
+    /// </summary>
+    /// <param name="organizationId">Id организации.</param>
+    /// <param name="memberId">Id участника проекта.</param>
+    Task AddProjectMemberRolesAsync(long organizationId, long memberId);
 }

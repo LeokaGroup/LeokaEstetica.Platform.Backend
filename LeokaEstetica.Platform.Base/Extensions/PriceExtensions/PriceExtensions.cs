@@ -15,11 +15,17 @@ public static class PriceExtensions
     /// <returns>Форматированная по разрядам цена в строке.</returns>
     public static string CreatePriceWithDelimiterFromString(this string price)
     {
+        // Если пришла не сумма, например "Без оплаты", то просто отображаем как есть.
+        if (!decimal.TryParse(price, out var formatPrice))
+        {
+            return price;
+        }
+        
         var nfi = (NumberFormatInfo)CultureInfo.InvariantCulture.NumberFormat.Clone();
         nfi.NumberGroupSeparator = " ";
 
         // Цена в виде 1 000.
-        var result = Convert.ToDecimal(price).ToString("#,0", nfi);
+        var result = Convert.ToDecimal(formatPrice).ToString("#,0", nfi);
 
         return result;
     }

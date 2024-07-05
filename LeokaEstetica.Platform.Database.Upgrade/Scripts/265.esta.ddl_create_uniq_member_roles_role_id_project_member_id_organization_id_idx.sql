@@ -1,0 +1,1 @@
+﻿CREATE UNIQUE INDEX uniq_member_roles_role_id_project_member_id_organization_id_idx ON roles.project_member_roles (role_id, project_member_id, organization_id);

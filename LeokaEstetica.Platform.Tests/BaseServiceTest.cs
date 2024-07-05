@@ -13,6 +13,7 @@ using LeokaEstetica.Platform.CallCenter.Services.Ticket;
 using LeokaEstetica.Platform.CallCenter.Services.Vacancy;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Utils;
+using LeokaEstetica.Platform.Database.Abstractions.Project;
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Database.Repositories.Access.Ticket;
 using LeokaEstetica.Platform.Database.Repositories.Access.User;
@@ -55,6 +56,7 @@ using LeokaEstetica.Platform.Processing.Services.Commerce;
 using LeokaEstetica.Platform.Processing.Services.PayMaster;
 using LeokaEstetica.Platform.RabbitMq.Services;
 using LeokaEstetica.Platform.Redis.Services.Commerce;
+using LeokaEstetica.Platform.Redis.Services.ProjectManagement;
 using LeokaEstetica.Platform.Redis.Services.User;
 using LeokaEstetica.Platform.Services.Services.FareRule;
 using LeokaEstetica.Platform.Services.Services.Knowledge;
@@ -132,6 +134,10 @@ internal class BaseServiceTest
     protected readonly SprintService SprintService;
     protected readonly ProjectManagementTemplateService ProjectManagementTemplateService;
     protected readonly SprintRepository SprintRepository;
+    protected readonly ProjectManagmentRoleService ProjectManagmentRoleService;
+    protected readonly ProjectManagementSettingsService ProjectManagementSettingsService;
+    protected readonly WikiTreeService WikiTreeService;
+    protected readonly ProjectNotificationsService ProjectNotificationsService;
 
     protected BaseServiceTest()
     {
@@ -157,7 +163,7 @@ internal class BaseServiceTest
         
         var optionsForCache = new OptionsWrapper<MemoryDistributedCacheOptions>(new MemoryDistributedCacheOptions());
         var distributedCache = new MemoryDistributedCache(optionsForCache);
-        var userRepository = new UserRepository(pgContext, null, AppConfiguration);
+        var userRepository = new UserRepository(pgContext, null, AppConfiguration, connectionProvider);
         var profileRepository = new ProfileRepository(pgContext);
         var subscriptionRepository = new SubscriptionRepository(pgContext);
         ChatRepository = new ChatRepository(pgContext, connectionProvider);
@@ -181,10 +187,9 @@ internal class BaseServiceTest
             accessUserService, resumeModerationRepository, discordService);
 
         var projectRepository = new ProjectRepository(pgContext, ChatRepository, connectionProvider);
-        var projectNotificationsRepository = new ProjectNotificationsRepository(pgContext);
+        var projectNotificationsRepository = new ProjectNotificationsRepository(pgContext, connectionProvider);
         var vacancyRepository = new VacancyRepository(pgContext);
-        var projectNotificationsService = new ProjectNotificationsService(null, null, userRepository, mapper,
-            projectNotificationsRepository, null, projectRepository, null, null, vacancyRepository);
+        var projectManagementRepository = new ProjectManagmentRepository(connectionProvider);
         var vacancyModerationRepository = new VacancyModerationRepository(pgContext);
         var vacancyNotificationsService = new VacancyNotificationsService(null, null);
         var availableLimitsService = new AvailableLimitsService(null, availableLimitsRepository);
@@ -220,18 +225,25 @@ internal class BaseServiceTest
             null);
         ResumeModerationService = new ResumeModerationService(null, resumeModerationRepository, mapper,
             userRepository, null);
-        ProjectFinderService = new ProjectFinderService(null, userRepository, projectNotificationsService, ResumeModerationService);
+        var projectManagementNotificationsRepository = new ProjectNotificationsRepository(pgContext, connectionProvider);
+        var projectManagementSettingsRepository = new ProjectManagementSettingsRepository(connectionProvider);
+
+        ProjectNotificationsService = new ProjectNotificationsService(null, null, userRepository, mapper,
+            projectManagementNotificationsRepository, null, projectRepository, null, globalConfigRepository,
+            vacancyRepository, projectManagementRepository,
+            new Lazy<IProjectManagementSettingsRepository>(projectManagementSettingsRepository));
+        ProjectFinderService = new ProjectFinderService(null, userRepository, ProjectNotificationsService, ResumeModerationService);
 
         var resumeRepository = new ResumeRepository(pgContext);
 
         var fillColorProjectsService = new FillColorProjectsService();
-
-        var projectManagementRepository = new ProjectManagmentRepository(connectionProvider);
+        
+        var wikiRepository = new WikiTreeRepository(connectionProvider);
         ProjectService = new ProjectService(projectRepository, null, userRepository, mapper,
-            projectNotificationsService, VacancyService, vacancyRepository, availableLimitsService,
+            ProjectNotificationsService, VacancyService, vacancyRepository, availableLimitsService,
             subscriptionRepository, FareRuleRepository, VacancyModerationService, projectNotificationsRepository, null,
             accessUserService, fillColorProjectsService, null, ProjectModerationRepository, discordService, null,
-            globalConfigRepository, projectManagementRepository);
+            globalConfigRepository, projectManagementRepository, wikiRepository);
         
         var ordersRepository = new OrdersRepository(pgContext);
         var commerceRepository = new CommerceRepository(pgContext, AppConfiguration);
@@ -279,7 +291,7 @@ internal class BaseServiceTest
         TicketService = new TicketService(ticketRepository, null, userRepository, mapper, accessTicketRepository,
             null);
 
-        ProjectMetricsService = new ProjectMetricsService(projectCommentsRepository, mapper, projectRepository);
+        ProjectMetricsService = new ProjectMetricsService(projectCommentsRepository, mapper, projectRepository, null);
         
         TelegramService = new TelegramService(globalConfigRepository, null);
 
@@ -292,9 +304,12 @@ internal class BaseServiceTest
         var projectSettingsConfigRepository = new ProjectSettingsConfigRepository(pgContext, connectionProvider);
         ReversoService = new ReversoService(null);
         ProjectManagementTemplateService = new ProjectManagementTemplateService(ProjectManagmentRepository, mapper, null);
+        var projectManagmentRoleRepository = new ProjectManagmentRoleRepository(connectionProvider);
         ProjectManagmentService = new ProjectManagmentService(null, ProjectManagmentRepository, mapper, userRepository,
             projectRepository, discordService, projectManagmentTemplateRepository, transactionScopeFactory,
-            projectSettingsConfigRepository, new Lazy<IReversoService>(ReversoService), null, null, UserService, null, ProjectManagementTemplateService);
+            projectSettingsConfigRepository, new Lazy<IReversoService>(ReversoService), null, null, UserService, null,
+            ProjectManagementTemplateService,
+            new Lazy<IProjectManagmentRoleRepository>(projectManagmentRoleRepository));
 
         var searchProjectManagementRepository = new SearchProjectManagementRepository(connectionProvider);
         SearchProjectManagementService = new SearchProjectManagementService(null,
@@ -306,5 +321,16 @@ internal class BaseServiceTest
         SprintRepository = new SprintRepository(connectionProvider);
         SprintService = new SprintService(null, SprintRepository, null, userRepository, projectSettingsConfigRepository,
             mapper, null, null, discordService, null, null);
+        
+        var projectManagmentRoleRedisService = new ProjectManagmentRoleRedisService(distributedCache);
+        ProjectManagmentRoleService = new ProjectManagmentRoleService(null,
+            new Lazy<IProjectManagmentRoleRepository>(projectManagmentRoleRepository), userRepository,
+            projectManagmentRoleRedisService, mapper, new Lazy<IDiscordService>(discordService), null);
+        
+        ProjectManagementSettingsService = new ProjectManagementSettingsService(null, userRepository,
+            projectManagementSettingsRepository, projectRepository);
+
+        var wikiTreeRepository = new WikiTreeRepository(connectionProvider);
+        WikiTreeService = new WikiTreeService(null, wikiTreeRepository, userRepository);
     }
 }

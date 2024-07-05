@@ -51,4 +51,33 @@ public interface IProjectManagementNotificationService
     /// <param name="connectionId">Id подключения сокетов.</param>
     /// <param name="dialogId">Id диалога.</param>
     Task SendClassificationNetworkMessageResultAsync(string message, string connectionId, long dialogId);
+    
+    /// <summary>
+    /// Метод отправляет уведомление об успешном обновлении ролей.
+    /// </summary>
+    /// <param name="title">Заголовок уведомления.</param>
+    /// <param name="notifyText">Текст уведомления.</param>
+    /// <param name="notificationLevel">Уровень уведомления.</param>
+    /// <param name="token">Токен пользователя.</param>
+    Task SendNotifySuccessUpdateRolesAsync(string title, string notifyText, string notificationLevel, string token);
+    
+    /// <summary>
+    /// Метод отправляет уведомление о предупреждении невозможности изменения статуса эпика на недопустимый статус.
+    /// </summary>
+    /// <param name="title">Заголовок уведомления.</param>
+    /// <param name="notifyText">Текст уведомления.</param>
+    /// <param name="notificationLevel">Уровень уведомления.</param>
+    /// <param name="token">Токен пользователя.</param>
+    Task SendNotifyWarningChangeEpicStatusAsync(string title, string notifyText, string notificationLevel,
+        string token);
+    
+    /// <summary>
+    /// Метод отправляет уведомление о предупреждении невозможности изменения статуса истории на недопустимый статус.
+    /// </summary>
+    /// <param name="title">Заголовок уведомления.</param>
+    /// <param name="notifyText">Текст уведомления.</param>
+    /// <param name="notificationLevel">Уровень уведомления.</param>
+    /// <param name="token">Токен пользователя.</param>
+    Task SendNotifyWarningChangeStoryStatusAsync(string title, string notifyText, string notificationLevel,
+        string token);
 }

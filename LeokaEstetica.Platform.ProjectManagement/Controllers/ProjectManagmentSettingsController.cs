@@ -1,14 +1,18 @@
 using AutoMapper;
 using LeokaEstetica.Platform.Base;
 using LeokaEstetica.Platform.Base.Filters;
+using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Database.Abstractions.Template;
 using LeokaEstetica.Platform.Integrations.Abstractions.Discord;
 using LeokaEstetica.Platform.Models.Dto.Input.Config;
 using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
+using LeokaEstetica.Platform.Models.Dto.Output.Notification;
+using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagement.Output;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.ProjectManagement.Output;
 using LeokaEstetica.Platform.ProjectManagment.ValidationModels;
 using LeokaEstetica.Platform.ProjectManagment.Validators;
+using LeokaEstetica.Platform.Services.Abstractions.Project;
 using LeokaEstetica.Platform.Services.Abstractions.ProjectManagment;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
@@ -29,22 +33,28 @@ public class ProjectManagmentSettingsController : BaseController
     private readonly IProjectManagmentService _projectManagmentService;
     private readonly IMapper _mapper;
     private readonly IProjectManagementSettingsService _projectManagementSettingsService;
+    private readonly IProjectManagementSettingsRepository _projectManagementSettingsRepository;
+    private readonly IProjectService _projectService;
 
     /// <summary>
     /// Конструктор.
     /// </summary>
-    /// <param name="logger"></param>
-    /// <param name="projectManagmentTemplateRepository"></param>
+    /// <param name="logger">Логгер.</param>
+    /// <param name="projectManagmentTemplateRepository">Репозиторий шаблонов модуля УП.</param>
     /// <param name="discordService">Сервис дискорда.</param>
-    /// <param name="projectManagmentService"></param>
-    /// <param name="mapper"></param>
+    /// <param name="projectManagmentService">Сервис модуля УП.</param>
+    /// <param name="mapper">Маппер.</param>
     /// <param name="projectManagementSettingsService">Сервис настроек проекта.</param>
+    /// <param name="projectManagementSettingsRepository">Репозиторий настроек проекта.</param>
+    /// <param name="projectService">Сервис проектов.</param>
     public ProjectManagmentSettingsController(ILogger<ProjectManagmentController> logger,
         Lazy<IProjectManagmentTemplateRepository> projectManagmentTemplateRepository,
         Lazy<IDiscordService> discordService,
         IProjectManagmentService projectManagmentService,
-         IMapper mapper,
-          IProjectManagementSettingsService projectManagementSettingsService)
+        IMapper mapper,
+        IProjectManagementSettingsService projectManagementSettingsService,
+        IProjectManagementSettingsRepository projectManagementSettingsRepository,
+         IProjectService projectService)
     {
         _logger = logger;
         _projectManagmentTemplateRepository = projectManagmentTemplateRepository;
@@ -52,6 +62,8 @@ public class ProjectManagmentSettingsController : BaseController
         _projectManagmentService = projectManagmentService;
         _mapper = mapper;
         _projectManagementSettingsService = projectManagementSettingsService;
+        _projectManagementSettingsRepository = projectManagementSettingsRepository;
+        _projectService = projectService;
     }
     
     /// <summary>
@@ -269,8 +281,9 @@ public class ProjectManagmentSettingsController : BaseController
     {
         if (projectId <= 0)
         {
-            var ex = new AggregateException("Ошибка валидации при скачивании файла изображения аватара пользователя. " +
-                                            $"ProjectId: {projectId}.");
+            var ex = new InvalidOperationException(
+                "Ошибка валидации при скачивании файла изображения аватара пользователя. " +
+                $"ProjectId: {projectId}.");
             _logger.LogError(ex, ex.Message);
             
             await _discordService.Value.SendNotificationErrorAsync(ex);
@@ -386,5 +399,109 @@ public class ProjectManagmentSettingsController : BaseController
             sprintMoveNotCompletedTaskSettingInput.ProjectId,
             sprintMoveNotCompletedTaskSettingInput.IsSettingSelected,
             sprintMoveNotCompletedTaskSettingInput.SysName);
+    }
+
+    /// <summary>
+    /// Метод получает список пользователей, которые состоят в проекте.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Список пользователей.</returns>
+    [HttpGet]
+    [Route("company-project-users")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<ProjectSettingUserOutput>))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<IEnumerable<ProjectSettingUserOutput>> GetCompanyProjectUsersAsync([FromQuery] long projectId)
+    {
+        if (projectId <= 0)
+        {
+            var ex = new InvalidOperationException("Ошибка при получении пользователей проекта компании. " +
+                                                   $"ProjectId: {projectId}.");
+            _logger.LogError(ex, ex.Message);
+            
+            await _discordService.Value.SendNotificationErrorAsync(ex);
+            
+            throw ex;
+        }
+
+        var result = await _projectManagementSettingsService.GetCompanyProjectUsersAsync(projectId, GetUserName());
+
+        return result;
+    }
+    
+    /// <summary>
+    /// Метод получает список приглашений в проект.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Список приглашений в проект.</returns>
+    [HttpGet]
+    [Route("project-invites")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<ProjectInviteOutput>))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<IEnumerable<ProjectInviteOutput>> GetProjectInvitesAsync([FromQuery] long projectId)
+    {
+        if (projectId <= 0)
+        {
+            var ex = new InvalidOperationException("Ошибка при получении приглашений проекта. " +
+                                                   $"ProjectId: {projectId}.");
+            _logger.LogError(ex, ex.Message);
+            
+            await _discordService.Value.SendNotificationErrorAsync(ex);
+            
+            throw ex;
+        }
+
+        var result = await _projectManagementSettingsService.GetProjectInvitesAsync(projectId);
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод отменяет приглашение в проект.
+    /// </summary>
+    /// <param name="notificationId">Id уведомления.</param>
+    [HttpDelete]
+    [Route("cancel-project-invite")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task CancelProjectInviteAsync([FromQuery] long notificationId)
+    {
+        if (notificationId <= 0)
+        {
+            var ex = new InvalidOperationException("Ошибка при отмене приглашения проекта. " +
+                                            $"NotificationId: {notificationId}.");
+            _logger.LogError(ex, ex.Message);
+            
+            await _discordService.Value.SendNotificationErrorAsync(ex);
+            
+            throw ex;
+        }
+
+        await _projectManagementSettingsRepository.CancelProjectInviteAsync(notificationId);
+    }
+
+    /// <summary>
+    /// Метод исключает пользователя из команды проекта.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <param name="projectId">Id проекта.</param>
+    [HttpDelete]
+    [Route("remove-project-team")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task RemoveUserProjectTeamAsync([FromQuery] long userId, [FromQuery] long projectId)
+    {
+        await _projectService.RemoveUserProjectTeamAsync(userId, projectId);
     }
 }

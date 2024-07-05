@@ -1,5 +1,6 @@
 using FluentValidation.Results;
 using LeokaEstetica.Platform.Models.Dto.Common;
+using LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
 
 namespace LeokaEstetica.Platform.Models.Dto.Output.Project;
 
@@ -11,12 +12,12 @@ public class ProjectVacancyResultOutput : IFrontError
     /// <summary>
     /// Список вакансий проекта.
     /// </summary>
-    public IEnumerable<ProjectVacancyOutput> ProjectVacancies { get; set; }
+    public IEnumerable<ProjectVacancyOutput>? ProjectVacancies { get; set; }
 
     /// <summary>
     /// Кол-во вакансий проекта.
     /// </summary>
-    public int Total => ProjectVacancies.Count();
+    public int Total => ProjectVacancies?.Count() ?? 0;
     
     /// <summary>
     /// Список ошибок.

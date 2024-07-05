@@ -8,22 +8,22 @@ public enum TaskDetailTypeEnum
     /// <summary>
     /// Неизвестный тип.
     /// </summary>
-    None = 0,
-    
-    /// <summary>
-    /// Задача.
-    /// </summary>
-    Task = 1,
+    Undefined = 0,
     
     /// <summary>
     /// Ошибка.
     /// </summary>
-    Error = 2,
+    Error = 1,
     
+    /// <summary>
+    /// Задача.
+    /// </summary>
+    Task = 3,
+
     /// <summary>
     /// История/требование.
     /// </summary>
-    History = 3,
+    History = 5,
     
     /// <summary>
     /// Эпик.
@@ -33,5 +33,5 @@ public enum TaskDetailTypeEnum
     /// <summary>
     /// Спринт.
     /// </summary>
-    Sprint = 5
+    Sprint = 6
 }

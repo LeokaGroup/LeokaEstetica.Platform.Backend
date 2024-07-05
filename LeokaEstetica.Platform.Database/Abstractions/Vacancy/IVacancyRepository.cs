@@ -20,8 +20,9 @@ public interface IVacancyRepository
     /// Метод создает вакансию.
     /// </summary>
     /// <param name="vacancyInput">Входная модель.</param>
+    /// <param name="userId">Id пользователя.</param>
     /// <returns>Данные вакансии.</returns>
-    Task<UserVacancyEntity> CreateVacancyAsync(VacancyInput vacancyInput);
+    Task<UserVacancyEntity> CreateVacancyAsync(VacancyInput vacancyInput, long userId);
 
     /// <summary>
     /// Метод обновляет вакансию.

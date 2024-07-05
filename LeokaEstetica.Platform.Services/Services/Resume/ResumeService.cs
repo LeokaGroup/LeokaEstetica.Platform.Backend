@@ -235,7 +235,8 @@ internal sealed class ResumeService : IResumeService
             {
                 var ex = new InvalidOperationException("Найдена невалидная подписка пользователя. " +
                                                     $"UserId: {userId}. " +
-                                                    "Подписка была NULL или невалидная.");
+                                                    "Подписка была NULL или невалидная." +
+                                                    $"Ошибка в {nameof(ResumeService)}");
                 // Отправляем ивент в пачку.
                 await _discordService.SendNotificationErrorAsync(ex);
                 
