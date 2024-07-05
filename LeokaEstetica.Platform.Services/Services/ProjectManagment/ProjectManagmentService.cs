@@ -1236,10 +1236,11 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     {
         try
         {
-            var taskType = TaskDetailTypeEnum.Undefined;
+            TaskDetailTypeEnum taskType;
             
             // Если переданный тип неизвестен ,например, если вставили просто ссылку в url - то найдем в БД тип задачи.
-            if (Enum.Parse<TaskDetailTypeEnum>(taskDetailType.ToPascalCase()) == TaskDetailTypeEnum.Undefined)
+            if (Enum.Parse<TaskDetailTypeEnum>(taskDetailType.ToPascalCase()) == TaskDetailTypeEnum.Undefined
+                || Enum.Parse<TaskDetailTypeEnum>(taskDetailType) == TaskDetailTypeEnum.Undefined)
             {
                 var findTaskType = await _projectManagmentRepository.GetTaskTypeByProjectIdProjectTaskIdAsync(
                     projectId, projectTaskId.GetProjectTaskIdFromPrefixLink());
@@ -1253,6 +1254,12 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 }
 
                 taskType = findTaskType;
+            }
+
+            // Иначе просто парсим.
+            else
+            {
+                taskType = Enum.Parse<TaskDetailTypeEnum>(taskDetailType);
             }
             
             var onlyProjectTaskId = projectTaskId.GetProjectTaskIdFromPrefixLink();
