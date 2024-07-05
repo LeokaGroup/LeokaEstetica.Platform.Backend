@@ -640,7 +640,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 
             var ifProjectMember = await _projectRepository.CheckExistsProjectTeamMemberAsync(projectId, userId);
 
-            if (!ifProjectMember)
+            if (!ifProjectMember) 
             {
                 var ex = new InvalidOperationException("Была попытка просмотра задачи без наличия доступа. " +
                                                        "Сработала система запрета доступа. " +
