@@ -7,6 +7,7 @@ using LeokaEstetica.Platform.Access.Abstractions.User;
 using LeokaEstetica.Platform.Access.Consts;
 using LeokaEstetica.Platform.Access.Enums;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
+using LeokaEstetica.Platform.Base.Extensions.HtmlExtensions;
 using LeokaEstetica.Platform.Core.Constants;
 using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Core.Exceptions;
@@ -119,6 +120,11 @@ internal sealed class ProjectService : IProjectService
 
     private readonly IDiscordService _discordService;
     private readonly IProjectManagementSettingsRepository _projectManagementSettingsRepository;
+
+    /// <summary>
+    /// Id вакансий, которые будут удалены из результата.
+    /// </summary>
+    private readonly List<long> _removedVacancyIds = new();
 
     /// <summary>
     /// Конструктор.
@@ -626,25 +632,25 @@ internal sealed class ProjectService : IProjectService
             {
                 ProjectVacancies = new List<ProjectVacancyOutput>()
             };
-            
+
             // Проставляем признаки видимости кнопок вакансий проекта.
             result = await FillVisibleControlsProjectVacanciesAsync(result, projectId, userId);
-            
-            var items = await _projectRepository.ProjectVacanciesAsync(projectId);
 
-            if (items is null || !items.Any())
+            var vacancies = (await _projectRepository.ProjectVacanciesAsync(projectId))?.AsList();
+
+            if (vacancies is null || vacancies.Count == 0)
             {
                 return result;
             }
 
-            result.ProjectVacancies = _mapper.Map<IEnumerable<ProjectVacancyOutput>>(items);
-            var projectVacancies = result.ProjectVacancies.ToList();
-
             // Проставляем вакансиям статусы.
-            result.ProjectVacancies = await FillVacanciesStatusesAsync(projectVacancies, userId);
+            result.ProjectVacancies = await FillVacanciesStatusesAsync(vacancies, userId,
+                projectId);
 
-            // Чистим описания от html-тегов.
-            result.ProjectVacancies = ClearHtmlTags(projectVacancies);
+            // Удаляем вакансии, которые пользователю не нужно видеть в результате.
+            vacancies.RemoveAll(x => _removedVacancyIds.Contains(x.VacancyId));
+
+            result.ProjectVacancies = vacancies;
 
             return result;
         }
@@ -1735,9 +1741,10 @@ internal sealed class ProjectService : IProjectService
     /// </summary>
     /// <param name="projectVacancies">Список вакансий.</param>
     /// <param name="userId">Id пользователя.</param>
+    /// <param name="projectId">Id проекта.</param>
     /// <returns>Список вакансий.</returns>
     private async Task<IEnumerable<ProjectVacancyOutput>> FillVacanciesStatusesAsync(
-        List<ProjectVacancyOutput> projectVacancies, long userId)
+        List<ProjectVacancyOutput> projectVacancies, long userId, long projectId)
     {
         // Получаем список вакансий на модерации.
         var moderationVacancies = await _vacancyModerationService.VacanciesModerationAsync();
@@ -1746,7 +1753,7 @@ internal sealed class ProjectService : IProjectService
         var catalogVacancies = await _vacancyRepository.CatalogVacanciesAsync();
         
         // Находим вакансии в архиве.
-        var archivedVacancies = (await _vacancyRepository.GetUserVacanciesArchiveAsync(userId)).ToList();
+        var archivedVacancies = (await _vacancyRepository.GetUserVacanciesArchiveAsync(userId)).AsList();
 
         // Проставляем статусы вакансий.
         foreach (var pv in projectVacancies)
@@ -1756,7 +1763,7 @@ internal sealed class ProjectService : IProjectService
 
             if (isVacancy)
             {
-                pv.UserVacancy.VacancyStatusName = moderationVacancies.Vacancies
+                pv.VacancyStatusName = moderationVacancies.Vacancies
                     .Where(v => v.VacancyId == pv.VacancyId)
                     .Select(v => v.ModerationStatusName)
                     .FirstOrDefault();
@@ -1769,7 +1776,7 @@ internal sealed class ProjectService : IProjectService
 
                 if (isCatalogVacancy)
                 {
-                    pv.UserVacancy.VacancyStatusName = _approveVacancy;
+                    pv.VacancyStatusName = _approveVacancy;
                 }
             }
             
@@ -1778,25 +1785,27 @@ internal sealed class ProjectService : IProjectService
             
             if (isArchiveVacancy)
             {
-                pv.UserVacancy.VacancyStatusName = _archiveVacancy;
+                pv.VacancyStatusName = _archiveVacancy;
+            }
+            
+            // Только владелец проекта может удалять вакансии проекта.
+            var isOwner = await _projectRepository.CheckProjectOwnerAsync(projectId, userId);
+
+            // Если не владелец, то удаляем из результата вакансии кроме опубликованных.
+            if (!isOwner)
+            {
+                _removedVacancyIds.Add(pv.VacancyId);
+            }
+
+            if (!string.IsNullOrWhiteSpace(pv.VacancyText))
+            {
+                pv.VacancyText = ClearHtmlBuilder.Clear(pv.VacancyText);   
             }
         }
 
         return projectVacancies;
     }
 
-    /// <summary>
-    /// Метод чистит описание от тегов.
-    /// </summary>
-    /// <param name="projectVacancies">Список вакансий.</param>
-    /// <returns>Список вакансий после очистки.</returns>
-    private IEnumerable<ProjectVacancyOutput> ClearHtmlTags(List<ProjectVacancyOutput> projectVacancies)
-    {
-        
-
-        return projectVacancies;
-    }
-    
     /// <summary>
     /// Метод создает результаты проекта. 
     /// </summary>
