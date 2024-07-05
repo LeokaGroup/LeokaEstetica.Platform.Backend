@@ -257,7 +257,7 @@ internal sealed class VacancyService : IVacancyService
             }
 
             // Добавляем вакансию в таблицу вакансий пользователя.
-            var createdVacancy = await _vacancyRepository.CreateVacancyAsync(vacancyInput);
+            var createdVacancy = await _vacancyRepository.CreateVacancyAsync(vacancyInput, userId);
             var vacancyId = createdVacancy.VacancyId;
             
             // Привязываем вакансию к проекту.

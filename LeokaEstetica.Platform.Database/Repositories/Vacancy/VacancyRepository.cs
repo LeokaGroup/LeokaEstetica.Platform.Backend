@@ -42,12 +42,8 @@ internal sealed class VacancyRepository : IVacancyRepository
         return result;
     }
 
-    /// <summary>
-    /// Метод создает вакансию.
-    /// </summary>
-    /// <param name="vacancyInput">Входная модель.</param>
-    /// <returns>Данные созданной вакансии.</returns>
-    public async Task<UserVacancyEntity> CreateVacancyAsync(VacancyInput vacancyInput)
+    /// <inheritdoc />
+    public async Task<UserVacancyEntity> CreateVacancyAsync(VacancyInput vacancyInput, long userId)
     {
         var transaction = await _pgContext.Database
             .BeginTransactionAsync(IsolationLevel.ReadCommitted);
@@ -62,7 +58,7 @@ internal sealed class VacancyRepository : IVacancyRepository
                 WorkExperience = vacancyInput.WorkExperience,
                 Employment = vacancyInput.Employment,
                 Payment = vacancyInput.Payment,
-                UserId = vacancyInput.UserId!.Value,
+                UserId = userId,
                 Demands = vacancyInput.Demands,
                 Conditions = vacancyInput.Conditions
             };
