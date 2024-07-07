@@ -320,7 +320,7 @@ public interface IProjectManagmentService
     Task UploadFilesAsync(IFormFileCollection files, string account, long projectId, string taskId);
 
     /// <summary>
-    /// Метод скачивает файл с сервера по SFTP.
+    /// Метод скачивает файл из MongoDB.
     /// </summary>
     /// <param name="documentId">Id документа.</param>
     /// <param name="projectId">Id проекта.</param>
