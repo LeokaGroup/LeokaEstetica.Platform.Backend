@@ -405,7 +405,9 @@ public interface IProjectManagmentRepository
     /// </summary>
     /// <param name="documents">Список документов к созданию.</param>
     /// <param name="documentType">Тип документа.</param>
-    Task CreateProjectTaskDocumentsAsync(IEnumerable<ProjectDocumentEntity> documents, DocumentTypeEnum documentType);
+    /// <param name="mongoDocumentIds">Id документов в БД MongoDB.</param>
+    Task CreateProjectTaskDocumentsAsync(IEnumerable<ProjectDocumentEntity> documents, DocumentTypeEnum documentType,
+        List<string?> mongoDocumentIds);
 
     /// <summary>
     /// Метод получает файлы задачи.
@@ -436,6 +438,12 @@ public interface IProjectManagmentRepository
     /// </summary>
     /// <param name="documentId">Id документа.</param>
     Task RemoveDocumentAsync(long documentId);
+    
+    /// <summary>
+    /// Метод удаляет документ по его Id из MongoDB.
+    /// </summary>
+    /// <param name="mongoDocumentId">Id документа в MongoDB.</param>
+    Task RemoveDocumentAsync(string? mongoDocumentId);
 
     /// <summary>
     /// Метод фиксирует выбранную пользователем стратегию представления.

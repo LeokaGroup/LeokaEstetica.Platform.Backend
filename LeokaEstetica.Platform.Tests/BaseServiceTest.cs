@@ -309,7 +309,7 @@ internal class BaseServiceTest
             projectRepository, discordService, projectManagmentTemplateRepository, transactionScopeFactory,
             projectSettingsConfigRepository, new Lazy<IReversoService>(ReversoService), null, null, UserService, null,
             ProjectManagementTemplateService,
-            new Lazy<IProjectManagmentRoleRepository>(projectManagmentRoleRepository));
+            new Lazy<IProjectManagmentRoleRepository>(projectManagmentRoleRepository), null);
 
         var searchProjectManagementRepository = new SearchProjectManagementRepository(connectionProvider);
         SearchProjectManagementService = new SearchProjectManagementService(null,

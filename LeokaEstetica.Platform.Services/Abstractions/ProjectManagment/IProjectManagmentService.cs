@@ -320,7 +320,7 @@ public interface IProjectManagmentService
     Task UploadFilesAsync(IFormFileCollection files, string account, long projectId, string taskId);
 
     /// <summary>
-    /// Метод скачивает файл с сервера по SFTP.
+    /// Метод скачивает файл из MongoDB.
     /// </summary>
     /// <param name="documentId">Id документа.</param>
     /// <param name="projectId">Id проекта.</param>
@@ -340,10 +340,8 @@ public interface IProjectManagmentService
     /// <summary>
     /// Метод удаляет файл задачи.
     /// </summary>
-    /// <param name="documentId">Id документа.</param>
-    /// <param name="projectId">Id проекта.</param>
-    /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
-    Task RemoveTaskFileAsync(long documentId, long projectId, string projectTaskId);
+    /// <param name="mongoDocumentId">Id документа в MongoDB.</param>
+    Task RemoveTaskFileAsync(string? mongoDocumentId);
 
     /// <summary>
     /// Метод фиксирует выбранную пользователем стратегию представления.
