@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Mvc;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Driver.GridFS;
+using System.Drawing;
+using System.Drawing.Imaging;
 
 namespace LeokaEstetica.Platform.Database.MongoDb.Repositories;
 
@@ -24,6 +26,11 @@ internal sealed class MongoDbRepository : IMongoDbRepository
     /// Коллекция документов проекта пользователя.
     /// </summary>
     private const string _projectFiles = "project_files";
+    
+    /// <summary>
+    /// Коллекция документов аватара пользователя.
+    /// </summary>
+    private const string _defaultProjectAvatar = "default_project_avatar";
 
     /// <summary>
     /// Билдер для дерева документов проекта.
@@ -102,6 +109,26 @@ internal sealed class MongoDbRepository : IMongoDbRepository
         return result;
     }
 
+    /// <inheritdoc />
+    public async Task UploadUserAvatarFileAsync(IFormFileCollection files)
+    {
+        var stream = await ResizeImageFromFormFileAsync(files.First());
+
+        if (stream is null)
+        {
+            throw new InvalidOperationException(
+                $"Не удалось изменить размер изображения {files.First().FileName} для сохранения в MongoDB. " +
+                "Stream был null.");
+        }
+        
+        var gridFS = new GridFSBucket(_mongoDb, new GridFSBucketOptions
+        {
+            BucketName = _defaultProjectAvatar
+        });
+        
+        await gridFS.UploadFromStreamAsync(files.First().FileName, stream);
+    }
+
     #endregion
 
     #region Приватные методы.
@@ -140,6 +167,25 @@ internal sealed class MongoDbRepository : IMongoDbRepository
         }
                 
         return ms.ToArray();
+    }
+    
+    private async Task<MemoryStream> ResizeImageFromFormFileAsync(IFormFile file)
+    {
+        if (file == null || file.Length == 0)
+        {
+            return null;
+        }
+
+        using var memoryStream = new MemoryStream();
+        await file.CopyToAsync(memoryStream);
+        
+        using var image = Image.FromStream(memoryStream);
+        var thumbnail = image.GetThumbnailImage(50, 50, null, IntPtr.Zero);
+
+        using var thumbnailStream = new MemoryStream();
+        thumbnail.Save(thumbnailStream, ImageFormat.Jpeg);
+        
+        return thumbnailStream;
     }
 
     #endregion

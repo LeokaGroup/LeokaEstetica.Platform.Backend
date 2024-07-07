@@ -2603,7 +2603,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 throw ex;
             }
             
-            await _fileManagerService.Value.UploadUserAvatarFileAsync(files, projectId, userId);
+            await _mongoDbRepository.UploadUserAvatarFileAsync(files);
 
             // TODO: Для чего вообще использовать класс сущности?
             // TODO: С Dapper не нужно все это.
