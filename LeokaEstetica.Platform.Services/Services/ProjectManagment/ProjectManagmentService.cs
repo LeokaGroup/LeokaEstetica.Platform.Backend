@@ -14,6 +14,7 @@ using LeokaEstetica.Platform.Database.Abstractions.Config;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Database.Abstractions.Template;
+using LeokaEstetica.Platform.Database.MongoDb.Abstractions;
 using LeokaEstetica.Platform.Integrations.Abstractions.Discord;
 using LeokaEstetica.Platform.Integrations.Abstractions.Reverso;
 using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
@@ -66,6 +67,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     private readonly Lazy<IDistributionStatusTaskService> _distributionStatusTaskService;
     private readonly IProjectManagementTemplateService _projectManagementTemplateService;
     private readonly Lazy<IProjectManagmentRoleRepository> _projectManagmentRoleRepository;
+    private readonly IMongoDbRepository _mongoDbRepository;
 
     /// <summary>
     /// Статусы задач, которые являются самыми базовыми и никогда не меняются независимо от шаблона проекта.
@@ -94,6 +96,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     /// <param name="distributionStatusTaskService">Сервис распределение задач по статусам.</param>
     /// <param name="projectManagementTemplateService">Сервис шаблонов проекта.</param>
     /// <param name="projectManagmentRoleRepository">Репозиторий ролей проекта.</param>
+    /// <param name="mongoDbRepository">Репозиторий MongoDB.</param>
     /// </summary>
     public ProjectManagmentService(ILogger<ProjectManagmentService> logger,
         IProjectManagmentRepository projectManagmentRepository,
@@ -110,7 +113,8 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         IUserService userService,
         Lazy<IDistributionStatusTaskService> distributionStatusTaskService,
         IProjectManagementTemplateService projectManagementTemplateService,
-        Lazy<IProjectManagmentRoleRepository> projectManagmentRoleRepository)
+        Lazy<IProjectManagmentRoleRepository> projectManagmentRoleRepository,
+        IMongoDbRepository mongoDbRepository)
     {
         _logger = logger;
         _projectManagmentRepository = projectManagmentRepository;
@@ -128,6 +132,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         _distributionStatusTaskService = distributionStatusTaskService;
         _projectManagementTemplateService = projectManagementTemplateService;
         _projectManagmentRoleRepository = projectManagmentRoleRepository;
+        _mongoDbRepository = mongoDbRepository;
     }
 
     #region Публичные методы.
@@ -2248,8 +2253,9 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 var ex = new NotFoundUserIdByAccountException(account);
                 throw ex;
             }
-
-            await _fileManagerService.Value.UploadFilesAsync(files, projectId, taskId.GetProjectTaskIdFromPrefixLink());
+            
+            // TODO: Юзать как Lazy, когда зарегаем в автофаке.
+            await _mongoDbRepository.UploadFilesAsync(files, projectId, taskId.GetProjectTaskIdFromPrefixLink());
 
             // TODO: Для чего вообще использовать класс сущности?
             // TODO: С Dapper не нужно все это.
@@ -2266,6 +2272,8 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         
         catch (Exception ex)
         {
+            await _discordService.SendNotificationErrorAsync(ex);
+            
              _logger.LogError(ex, ex.Message);
             throw;
         }

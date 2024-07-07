@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using MongoDB.Driver;
 using NLog.Web;
 using Quartz;
 
@@ -172,6 +173,21 @@ builder.Host.UseNLog();
 builder.Services.AddHttpClient();
 
 // builder.Services.AddProblemDetails();
+
+// Регистрация IMongoDatabase как синглтон.
+// TODO: Падало по таймауту, видимо коннекшна не происходило, надо изменить бы на получение из настроек
+// TODO: MongoClientSettings, а не напрямую из строки.
+// var settings = new MongoClientSettings
+// {
+//     Scheme = ConnectionStringScheme.MongoDB,
+//     // Server = new MongoServerAddress(configuration["MongoDb:Host"], 27017),
+//     Credential = MongoCredential.CreateMongoCRCredential(configuration["MongoDb:DatabaseName"],
+//         configuration["MongoDb:Host"], configuration["MongoDb:Password"])
+// };
+// TODO: Надо регать (с параметром) через Autofac и передать ему через параметр настройки подключения к БД.
+// TODO: Это надо, чтоб как Lazy мы могли юзать монгу в сервисах. 
+builder.Services.AddSingleton(new MongoClient(configuration["MongoDb:FullHost"])
+    .GetDatabase(configuration["MongoDb:DatabaseName"]));
 
 var app = builder.Build();
 
