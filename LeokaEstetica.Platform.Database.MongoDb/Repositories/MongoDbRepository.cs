@@ -23,7 +23,12 @@ internal sealed class MongoDbRepository : IMongoDbRepository
     /// <summary>
     /// Коллекция документов проекта пользователя.
     /// </summary>
-    private const string _projectTaskFiles = "project_task_files_";
+    private const string _projectFiles = "project_files";
+
+    /// <summary>
+    /// Билдер для дерева документов проекта.
+    /// </summary>
+    private readonly StringBuilder _bucketNameBuilder = new();
 
     /// <summary>
     /// Конструктор.
@@ -33,6 +38,8 @@ internal sealed class MongoDbRepository : IMongoDbRepository
     {
         _mongoDb = mongoDb;
     }
+
+    #region Публичные методы.
 
     /// <inheritdoc />
     public async Task CreateDefaultProjectManagementFilesAsync()
@@ -53,23 +60,24 @@ internal sealed class MongoDbRepository : IMongoDbRepository
         {
             return;
         }
-        
-        // TODO: Не очень удобно так формировать название файлов, но отрефачим, когда разберемся,
-        // TODO: как удобнее в монге хранить в коллекции список документов, тогда станет понятнее как лучше называть.
-        // Путь к файлам задач проекта.
-        var userProjectPathBuilder = new StringBuilder(string.Concat(_projectTaskFiles, projectId));
-        userProjectPathBuilder.Append('_');
-        userProjectPathBuilder.Append(taskId);
-        userProjectPathBuilder.Append('_');
 
-        var gridFS = new GridFSBucket(_mongoDb);
+        // Создаем коллекцию для документов проектов. Если она уже есть, то просто работаем с ней.
+        var gridFS = new GridFSBucket(_mongoDb, new GridFSBucketOptions
+        {
+            BucketName = _projectFiles
+        });
 
+        // Заполняем коллекцию документов файлами задачи.
         foreach (var f in files)
         {
             await using var stream = f.OpenReadStream();
-            var fileName = string.Concat(userProjectPathBuilder, Path.GetFileName(f.FileName));
-            
-            await gridFS.UploadFromStreamAsync(fileName, stream);
+
+            await BuildBucketNameBuilderAsync(projectId, taskId);
+
+            _bucketNameBuilder.Append('_');
+            _bucketNameBuilder.Append(Path.GetFileName(f.FileName));
+
+            await gridFS.UploadFromStreamAsync(_bucketNameBuilder.ToString(), stream);
         }
     }
 
@@ -78,4 +86,27 @@ internal sealed class MongoDbRepository : IMongoDbRepository
     {
         throw new NotImplementedException();
     }
+
+    #endregion
+
+    #region Приватные методы.
+
+    /// <summary>
+    /// Метод чистит, чтобы перестроить билдер для итераций документов.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="taskId">Id задачи.</param>
+    private async Task BuildBucketNameBuilderAsync(long projectId, long taskId)
+    {
+        _bucketNameBuilder.Clear();
+        _bucketNameBuilder.Append(_projectFiles);
+        _bucketNameBuilder.Append('_');
+        _bucketNameBuilder.Append(projectId);
+        _bucketNameBuilder.Append('_');
+        _bucketNameBuilder.Append(taskId);
+
+        await Task.CompletedTask;
+    }
+
+    #endregion
 }
