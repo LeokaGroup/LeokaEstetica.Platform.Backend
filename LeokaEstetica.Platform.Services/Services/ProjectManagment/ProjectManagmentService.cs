@@ -2296,7 +2296,9 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 
             var documentName = await _projectManagmentRepository.GetDocumentNameByDocumentIdAsync(documentId);
             
-            var result = await _fileManagerService.Value.DownloadFileAsync(documentName, projectId, task.TaskId);
+            // TODO: Юзать как Lazy, когда зарегаем в автофаке.
+            // Скачиваем документ из MongoDB.
+            var result = await _mongoDbRepository.DownloadFileAsync(documentName, projectId, task.ProjectTaskId);
 
             return result;
         }
@@ -2314,6 +2316,23 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     {
         try
         {
+            // Если переданный тип неизвестен ,например, если вставили просто ссылку в url - то найдем в БД тип задачи.
+            if (taskDetailType == TaskDetailTypeEnum.Undefined)
+            {
+                var taskType = await _projectManagmentRepository.GetTaskTypeByProjectIdProjectTaskIdAsync(projectId,
+                    projectTaskId.GetProjectTaskIdFromPrefixLink());
+                
+                // Если все же не удалось определить тип задачи.
+                if (taskType == TaskDetailTypeEnum.Undefined)
+                {
+                    throw new InvalidOperationException("Неизвестный тип детализации. " +
+                                                        " Заполнение Agile-объекта не будет происходить. " +
+                                                        $"TaskType: {taskType}.");
+                }
+
+                taskDetailType = taskType;
+            }
+            
             long taskId = 0;
             long projectTaskIdNumber = projectTaskId.GetProjectTaskIdFromPrefixLink();
             
@@ -2329,7 +2348,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                                                         $"ProjectTaskId: {projectTaskId}.");
                 }
 
-                taskId = task.TaskId;
+                taskId = task.ProjectTaskId;
             }
 
             if (taskDetailType == TaskDetailTypeEnum.Epic)
@@ -2344,7 +2363,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                                                         $"ProjectTaskId: {projectTaskId}.");
                 }
                 
-                taskId = task.EpicId;
+                taskId = task.ProjectEpicId;
             }
 
             var result = await _projectManagmentRepository.GetProjectTaskFilesAsync(projectId, taskId);

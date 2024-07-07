@@ -82,9 +82,24 @@ internal sealed class MongoDbRepository : IMongoDbRepository
     }
 
     /// <inheritdoc />
-    public Task<FileContentResult> DownloadFileAsync(string fileName, long projectId, long taskId)
+    public async Task<FileContentResult> DownloadFileAsync(string fileName, long projectId, long taskId)
     {
-        throw new NotImplementedException();
+        await BuildBucketNameBuilderAsync(projectId, taskId);
+
+        _bucketNameBuilder.Append('_');
+        _bucketNameBuilder.Append(Path.GetFileName(fileName));
+        
+        var gridFS = new GridFSBucket(_mongoDb, new GridFSBucketOptions
+        {
+            BucketName = _projectFiles
+        });
+
+        var stream = await gridFS.OpenDownloadStreamByNameAsync(_bucketNameBuilder.ToString());
+
+        var byteData = await GetByteArrayAsync(stream);
+        var result = new FileContentResult(byteData, "application/octet-stream");
+
+        return result;
     }
 
     #endregion
@@ -106,6 +121,25 @@ internal sealed class MongoDbRepository : IMongoDbRepository
         _bucketNameBuilder.Append(taskId);
 
         await Task.CompletedTask;
+    }
+    
+    /// <summary>
+    /// Метод получит массив байт из потока.
+    /// </summary>
+    /// <param name="input">Поток.</param>
+    /// <returns>Масив байт.</returns>
+    private async Task<byte[]> GetByteArrayAsync(Stream input)
+    {
+        var buffer = new byte[16*1024];
+        await using var ms = new MemoryStream();
+        var read = 0;
+
+        while ((read = await input.ReadAsync(buffer, 0, buffer.Length)) > 0)
+        {
+            ms.Write(buffer, 0, read);
+        }
+                
+        return ms.ToArray();
     }
 
     #endregion
