@@ -13,10 +13,15 @@ public class ProjectTaskFileOutput
     /// <summary>
     /// Название документа.
     /// </summary>
-    public string DocumentName { get; set; }
+    public string? DocumentName { get; set; }
 
     /// <summary>
     /// Расширение файла.
     /// </summary>
-    public string DocumentExtension { get; set; }
+    public string? DocumentExtension { get; set; }
+
+    /// <summary>
+    /// Id документа в MongoDB.
+    /// </summary>
+    public string? MongoDocumentId { get; set; }
 }

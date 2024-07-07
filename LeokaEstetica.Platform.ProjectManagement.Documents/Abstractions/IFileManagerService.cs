@@ -71,6 +71,7 @@ public interface IFileManagerService
 
     /// <summary>
     /// TODO: Доделаем в будущем, пока что загоняем обученные модели вручную на сервер.
+    /// TODO: Переделать на хранение в MongoDB - заведена задачка на рефач.
     /// Метод загружает на сервер модель нейросети.
     /// </summary>
     /// <param name="model">Модель нейросети (хранит опыт всех эпох нейросети).</param>
@@ -79,6 +80,7 @@ public interface IFileManagerService
     Task UploadNetworkModelAsync(ITransformer model, string version, string modelName);
     
     /// <summary>
+    /// TODO: Переделать на хранение в MongoDB - заведена задачка на рефач.
     /// Метод скачивает модель нейросети.
     /// </summary>
     /// <param name="version">Версия модели нейросети.</param>

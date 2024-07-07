@@ -2255,7 +2255,8 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             }
             
             // TODO: Юзать как Lazy, когда зарегаем в автофаке.
-            await _mongoDbRepository.UploadFilesAsync(files, projectId, taskId.GetProjectTaskIdFromPrefixLink());
+            var documentIds = await _mongoDbRepository.UploadFilesAsync(files, projectId,
+                taskId.GetProjectTaskIdFromPrefixLink());
 
             // TODO: Для чего вообще использовать класс сущности?
             // TODO: С Dapper не нужно все это.
@@ -2265,7 +2266,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             
             // Сохраняем файлы задачи проекта.
             await _projectManagmentRepository.CreateProjectTaskDocumentsAsync(projectTaskFiles,
-                DocumentTypeEnum.ProjectTask);
+                DocumentTypeEnum.ProjectTask, documentIds.AsList());
 
             // TODO: Тут добавить запись активности пользователя по userId (писать кто добавил файл).
         }
@@ -2379,27 +2380,15 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     }
 
     /// <inheritdoc />
-    public async Task RemoveTaskFileAsync(long documentId, long projectId, string projectTaskId)
+    public async Task RemoveTaskFileAsync(string? mongoDocumentId)
     {
         try
         {
-            var task = await _projectManagmentRepository.GetTaskDetailsByTaskIdAsync(
-                projectTaskId.GetProjectTaskIdFromPrefixLink(), projectId);
+            await _projectManagmentRepository.RemoveDocumentAsync(mongoDocumentId);
             
-            if (task is null)
-            {
-                throw new InvalidOperationException("Не удалось получить задачу. " +
-                                                    $"ProjectId: {projectId}. " +
-                                                    $"ProjectTaskId: {projectTaskId}.");
-            }
-
-            var documentName = await _projectManagmentRepository.GetDocumentNameByDocumentIdAsync(documentId);
-            
-            // Удаляем файл на сервере.
-            await _fileManagerService.Value.RemoveFileAsync(documentName, projectId, task.TaskId);
-            
+            // TODO: Юзать как Lazy, когда зарегаем в автофаке.
             // Удаляем файл в БД.
-            await _projectManagmentRepository.RemoveDocumentAsync(documentId);
+            await _mongoDbRepository.RemoveFileAsync(mongoDocumentId);
             
             // TODO: Тут добавить запись активности пользователя по userId (писать кто удалил файл).
         }
@@ -2603,7 +2592,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 throw ex;
             }
             
-            await _mongoDbRepository.UploadUserAvatarFileAsync(files);
+            var documentId = await _mongoDbRepository.UploadUserAvatarFileAsync(files);
 
             // TODO: Для чего вообще использовать класс сущности?
             // TODO: С Dapper не нужно все это.
@@ -2613,7 +2602,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             
             // Сохраняем файлы проекта.
             await _projectManagmentRepository.CreateProjectTaskDocumentsAsync(userAvatarFile,
-                DocumentTypeEnum.ProjectUserAvatar);
+                DocumentTypeEnum.ProjectUserAvatar, new List<string?> { documentId });
             
             // TODO: Тут добавить запись активности пользователя по userId (кто загрузил файл).
         }

@@ -1413,7 +1413,7 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
 
     /// <inheritdoc />
     public async Task CreateProjectTaskDocumentsAsync(IEnumerable<ProjectDocumentEntity> documents,
-        DocumentTypeEnum documentType)
+        DocumentTypeEnum documentType, List<string?> mongoDocumentIds)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
         var transaction = connection.BeginTransaction();
@@ -1422,6 +1422,8 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
 
         try
         {
+            var i = 0;
+            
             foreach (var d in documents)
             {
                 var tempParameters = new DynamicParameters();
@@ -1432,14 +1434,17 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
                 tempParameters.Add("@projectId", d.ProjectId);
                 tempParameters.Add("@taskId", d.TaskId);
                 tempParameters.Add("@userId", d.UserId);
+                tempParameters.Add("@mongoDocumentId", mongoDocumentIds[i]);
 
                 parameters.Add(tempParameters);
+
+                i++;
             }
 
             var query = @"INSERT INTO documents.project_documents (document_type, document_name, document_extension,
-                                         created, project_id, task_id, user_id) 
+                                         created, project_id, task_id, user_id, mongo_document_id) 
                       VALUES (@documentType, @documentName, @documentExtension, @created, @projectId,
-                              @taskId, @userId)";
+                              @taskId, @userId, @mongoDocumentId)";
                               
             await connection.ExecuteAsync(query, parameters);
             
@@ -1462,7 +1467,7 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         parameters.Add("@projectId", projectId);
         parameters.Add("@taskId", taskId);
 
-        var query = @"SELECT document_id, document_name, document_extension 
+        var query = @"SELECT document_id, document_name, document_extension, mongo_document_id 
                       FROM documents.project_documents 
                       WHERE project_id = @projectId 
                         AND task_id = @taskId";
@@ -1534,6 +1539,21 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         var query = @"DELETE 
                       FROM documents.project_documents 
                       WHERE document_id = @documentId";
+
+        await connection.ExecuteAsync(query, parameters);
+    }
+
+    /// <inheritdoc />
+    public async Task RemoveDocumentAsync(string? mongoDocumentId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@mongoDocumentId", mongoDocumentId);
+
+        var query = @"DELETE 
+                      FROM documents.project_documents 
+                      WHERE mongo_document_id = @mongoDocumentId";
 
         await connection.ExecuteAsync(query, parameters);
     }

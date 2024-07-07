@@ -20,7 +20,8 @@ public interface IMongoDbRepository
     /// <param name="files">Файлы для отправки.</param>
     /// <param name="projectId">Id проекта.</param>
     /// <param name="taskId">Id задачи.</param>
-    Task UploadFilesAsync(IFormFileCollection files, long projectId, long taskId);
+    /// <returns>Id добавленных документов.</returns>
+    Task<IEnumerable<string?>> UploadFilesAsync(IFormFileCollection files, long projectId, long taskId);
 
     /// <summary>
     /// Метод скачивает файл из БД MongoDB.
@@ -35,5 +36,14 @@ public interface IMongoDbRepository
     /// Метод загружает файлы в БД MongoDB.
     /// </summary>
     /// <param name="files">Файлы для отправки.</param>
-    Task UploadUserAvatarFileAsync(IFormFileCollection files);
+    /// <returns>Id документа.</returns>
+    Task<string?> UploadUserAvatarFileAsync(IFormFileCollection files);
+    
+    /// <summary>
+    /// Метод удаляет файл из MongoDB
+    /// </summary>
+    /// <param name="fileName">Имя файла.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="taskId">Id задачи.</param>
+    Task RemoveFileAsync(string? documentId);
 }

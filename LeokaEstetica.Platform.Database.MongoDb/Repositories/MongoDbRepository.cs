@@ -61,11 +61,11 @@ internal sealed class MongoDbRepository : IMongoDbRepository
     }
 
     /// <inheritdoc />
-    public async Task UploadFilesAsync(IFormFileCollection files, long projectId, long taskId)
+    public async Task<IEnumerable<string?>> UploadFilesAsync(IFormFileCollection files, long projectId, long taskId)
     {
         if (!files.Any())
         {
-            return;
+            return Enumerable.Empty<string?>();
         }
 
         // Создаем коллекцию для документов проектов. Если она уже есть, то просто работаем с ней.
@@ -73,6 +73,8 @@ internal sealed class MongoDbRepository : IMongoDbRepository
         {
             BucketName = _projectFiles
         });
+
+        var documentIds = new List<string?>();
 
         // Заполняем коллекцию документов файлами задачи.
         foreach (var f in files)
@@ -84,8 +86,11 @@ internal sealed class MongoDbRepository : IMongoDbRepository
             _bucketNameBuilder.Append('_');
             _bucketNameBuilder.Append(Path.GetFileName(f.FileName));
 
-            await gridFS.UploadFromStreamAsync(_bucketNameBuilder.ToString(), stream);
+            var documentId = await gridFS.UploadFromStreamAsync(_bucketNameBuilder.ToString(), stream);
+            documentIds.Add(documentId.ToString());
         }
+
+        return documentIds;
     }
 
     /// <inheritdoc />
@@ -110,7 +115,7 @@ internal sealed class MongoDbRepository : IMongoDbRepository
     }
 
     /// <inheritdoc />
-    public async Task UploadUserAvatarFileAsync(IFormFileCollection files)
+    public async Task<string?> UploadUserAvatarFileAsync(IFormFileCollection files)
     {
         var stream = await ResizeImageFromFormFileAsync(files.First());
 
@@ -126,7 +131,20 @@ internal sealed class MongoDbRepository : IMongoDbRepository
             BucketName = _defaultProjectAvatar
         });
         
-        await gridFS.UploadFromStreamAsync(files.First().FileName, stream);
+        var documentId = await gridFS.UploadFromStreamAsync(files.First().FileName, stream);
+
+        return documentId.ToString();
+    }
+
+    /// <inheritdoc />
+    public async Task RemoveFileAsync(string? documentId)
+    {
+        var gridFS = new GridFSBucket(_mongoDb, new GridFSBucketOptions
+        {
+            BucketName = _projectFiles
+        });
+
+        await gridFS.DeleteAsync(new ObjectId(documentId));
     }
 
     #endregion
