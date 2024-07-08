@@ -106,7 +106,7 @@ internal sealed class ResumeService : IResumeService
             var result = new ResumeResultOutput
             {
                 // Приводим к выходной модели.
-                CatalogResumes = _mapper.Map<IEnumerable<ResumeOutput>>(profiles)
+                CatalogResumes = _mapper.Map<IEnumerable<UserInfoOutput>>(profiles)
             };
             
             if (!result.CatalogResumes.Any())
@@ -136,16 +136,12 @@ internal sealed class ResumeService : IResumeService
     /// </summary>
     /// <param name="resumeId">Id анкеты пользователя.</param>
     /// <returns>Данные анкеты.</returns>
-    public async Task<ResumeOutput> GetResumeAsync(long resumeId)
+    public async Task<UserInfoOutput> GetResumeAsync(long resumeId)
     {
         try
         {
-            var profile = await _resumeRepository.GetResumeAsync(resumeId);
+            var result = await _resumeRepository.GetResumeAsync(resumeId);
 
-            // Дополняем результат данными пользователя.
-
-            var result = _mapper.Map<ResumeOutput>(profile);
-            
             // Наполняем результат.
             await CreateModifyUserResult(result);
 
@@ -204,7 +200,7 @@ internal sealed class ResumeService : IResumeService
     /// </summary>
     /// <param name="resumes">Список анкет пользователей.</param>
     /// <returns>Результирующий список.</returns>
-    public async Task<IEnumerable<ResumeOutput>> SetUserCodesAsync(List<ResumeOutput> resumes)
+    public async Task<IEnumerable<UserInfoOutput>> SetUserCodesAsync(List<UserInfoOutput> resumes)
     {
         // Получаем словарь пользователей для поиска кодов, чтобы получить скорость поиска O(1).
         var userCodesDict = await _userRepository.GetUsersCodesAsync();
@@ -222,7 +218,7 @@ internal sealed class ResumeService : IResumeService
     /// </summary>
     /// <param name="vacancies">Список вакансий каталога.</param>
     /// <returns>Список вакансий каталога с проставленными тегами.</returns>
-    public async Task<IEnumerable<ResumeOutput>> SetVacanciesTagsAsync(List<ResumeOutput> vacancies)
+    public async Task<IEnumerable<UserInfoOutput>> SetVacanciesTagsAsync(List<UserInfoOutput> vacancies)
     {
         foreach (var v in vacancies)
         {
@@ -274,7 +270,7 @@ internal sealed class ResumeService : IResumeService
     /// </summary>
     /// <param name="result">Результат до наполнения.</param>
     /// <exception cref="InvalidOperationException">Если не удалось получить доп.данные о пользователе.</exception>
-    private async Task CreateModifyUserResult(ResumeOutput result)
+    private async Task CreateModifyUserResult(UserInfoOutput result)
     {
         var userId = result.UserId;
         var modifyUser = await _userRepository.GetUserPhoneEmailByUserIdAsync(userId);

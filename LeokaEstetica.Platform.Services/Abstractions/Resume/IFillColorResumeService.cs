@@ -16,6 +16,6 @@ public interface IFillColorResumeService
     /// <param name="subscriptionRepository">Сервис подписок.</param>
     /// <param name="fareRuleRepository">Сервис правил тарифов.</param>
     /// <returns>Список ризюме, с проставленным флагом IsSelectedColor.</returns>
-    public Task<IEnumerable<ResumeOutput>> SetColorBusinessResume(List<ResumeOutput> resumesList,
+    public Task<IEnumerable<UserInfoOutput>> SetColorBusinessResume(List<UserInfoOutput> resumesList,
         ISubscriptionRepository subscriptionRepository, IFareRuleRepository fareRuleRepository);
 }

@@ -1,4 +1,5 @@
 using AutoMapper;
+using Dapper;
 using LeokaEstetica.Platform.Access.Abstractions.Resume;
 using LeokaEstetica.Platform.Base;
 using LeokaEstetica.Platform.Base.Filters;
@@ -78,7 +79,7 @@ public class ResumeController : BaseController
         // TODO: В митоге надо уйти скорее всего от 2 ендпоинтов и получать единым вызовом анкеты.
         // TODO: Также надо фильтровать сначала по приоритету тарифа, затем по дате создания анкеты.
         // TODO: А то сейчас в конце новые анкеты.
-        return new ResumeResultOutput() { CatalogResumes = new List<ResumeOutput>() };
+        return new ResumeResultOutput() { CatalogResumes = new List<UserInfoOutput>() };
         var result = await _resumeService.GetProfileInfosAsync();
 
         return result;
@@ -108,33 +109,34 @@ public class ResumeController : BaseController
 
         return result;
     }
-    
+
     /// <summary>
     /// TODO: Есть лишняя логика в GetProfileInfosAsync по отображению анкет.
     /// TODO: Смотреть там todo и отрефачить.
     /// Метод пагинации резюме.
     /// </summary>
     /// <param name="page">Номер страницы.</param>
+    /// <param name="lastId">Id Последней записи из последней выборки.</param>
     /// <returns>Список резюме.</returns>
     [HttpGet]
-    [Route("pagination/{page}")]
+    [Route("pagination")]
     [ProducesResponseType(200, Type = typeof(PaginationResumeOutput))]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<PaginationResumeOutput> GetResumesPaginationAsync([FromRoute] int page)
+    public async Task<PaginationResumeOutput> GetResumesPaginationAsync([FromQuery] int page, [FromQuery] long? lastId)
     {
-        var result = await _resumePaginationService.GetResumesPaginationAsync(page);
+        var result = await _resumePaginationService.GetResumesPaginationAsync(page, lastId);
 
-        result.Resumes = await _fillColorResumeService.SetColorBusinessResume(result.Resumes, _subscriptionRepository,
-            _fareRuleRepository) as List<ResumeOutput>;
+        result.Resumes = (await _fillColorResumeService.SetColorBusinessResume(result.Resumes, _subscriptionRepository,
+            _fareRuleRepository))?.AsList();
         
         // Записываем анкетам коды пользователей.
-        result.Resumes = await _resumeService.SetUserCodesAsync(result.Resumes) as List<ResumeOutput>;
+        result.Resumes = (await _resumeService.SetUserCodesAsync(result.Resumes))?.AsList();
             
         // Записываем теги анкетам.
-        result.Resumes = await _resumeService.SetVacanciesTagsAsync(result.Resumes) as List<ResumeOutput>;
+        result.Resumes = (await _resumeService.SetVacanciesTagsAsync(result.Resumes))?.AsList();
 
         return result;
     }
@@ -146,12 +148,12 @@ public class ResumeController : BaseController
     /// <returns>Данные анкеты.</returns>
     [HttpGet]
     [Route("{resumeId}")]
-    [ProducesResponseType(200, Type = typeof(ResumeOutput))]
+    [ProducesResponseType(200, Type = typeof(UserInfoOutput))]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<ResumeOutput> GetResumeAsync([FromRoute] long resumeId)
+    public async Task<UserInfoOutput> GetResumeAsync([FromRoute] long resumeId)
     {
         var result = await _resumeService.GetResumeAsync(resumeId);
 

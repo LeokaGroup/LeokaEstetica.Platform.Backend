@@ -234,7 +234,7 @@ internal class BaseServiceTest
             new Lazy<IProjectManagementSettingsRepository>(projectManagementSettingsRepository));
         ProjectFinderService = new ProjectFinderService(null, userRepository, ProjectNotificationsService, ResumeModerationService);
 
-        var resumeRepository = new ResumeRepository(pgContext);
+        var resumeRepository = new ResumeRepository(pgContext, connectionProvider);
 
         var fillColorProjectsService = new FillColorProjectsService();
         

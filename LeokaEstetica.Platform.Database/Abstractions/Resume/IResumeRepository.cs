@@ -1,3 +1,4 @@
+using LeokaEstetica.Platform.Models.Dto.Output.Resume;
 using LeokaEstetica.Platform.Models.Entities.Profile;
 
 namespace LeokaEstetica.Platform.Database.Abstractions.Resume;
@@ -24,7 +25,7 @@ public interface IResumeRepository
     /// </summary>
     /// <param name="resumeId">Id анкеты пользователя.</param>
     /// <returns>Данные анкеты.</returns>
-    Task<ProfileInfoEntity> GetResumeAsync(long resumeId);
+    Task<UserInfoOutput> GetResumeAsync(long resumeId);
     
     /// <summary>
     /// Метод получает анкеты пользователей по Id пользователей.
@@ -40,4 +41,13 @@ public interface IResumeRepository
     /// <param name="userId">Id пользователя.</param>
     /// <returns>Признак является ли пользователь владельцем анкеты.</returns>
     Task<bool> CheckResumeOwnerAsync(long profileInfoId, long userId);
+    
+    /// <summary>
+    /// Метод получает резюме для каталога анкет применяя пагинацию.
+    /// </summary>
+    /// <param name="count">Кол-во записей, которые нужно брать.</param>
+    /// <param name="lastId">Id последней записи на странице фронта.
+    /// Используется для пагинации. Если не передали, значит выдаем первые n-записей.</param>
+    /// <returns>Список анкет.</returns>
+    Task<PaginationResumeOutput?> GetPaginationResumesAsync(long count, long? lastId);
 }

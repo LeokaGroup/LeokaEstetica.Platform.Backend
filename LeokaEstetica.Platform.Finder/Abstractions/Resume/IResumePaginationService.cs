@@ -11,6 +11,7 @@ public interface IResumePaginationService
     /// Метод пагинации резюме.
     /// </summary>
     /// <param name="page">Номер страницы.</param>
+    /// <param name="lastId">Id последней записи из последней выборки.</param>
     /// <returns>Список резюме.</returns>
-    Task<PaginationResumeOutput> GetResumesPaginationAsync(int page);
+    Task<PaginationResumeOutput> GetResumesPaginationAsync(int page, long? lastId);
 }

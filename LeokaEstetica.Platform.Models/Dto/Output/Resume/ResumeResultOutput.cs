@@ -8,7 +8,7 @@ public class ResumeResultOutput
     /// <summary>
     /// Список резюме.
     /// </summary>
-    public IEnumerable<ResumeOutput> CatalogResumes { get; set; }
+    public IEnumerable<UserInfoOutput> CatalogResumes { get; set; }
 
     /// <summary>
     /// Кол-во.
