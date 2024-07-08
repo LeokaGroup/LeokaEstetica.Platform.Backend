@@ -623,11 +623,9 @@ internal sealed class ProjectNotificationsService : IProjectNotificationsService
                 throw ex;
             }
 
+            // Принимаем приглашение в проект.
             await _projectNotificationsRepository.ApproveProjectInviteAsync(notificationId);
 
-            await SendNotificationSuccessApproveProjectInviteAsync("Все хорошо", "Приглашение в проект успешно.",
-                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);
-            
             var projectId = await _projectNotificationsRepository.GetProjectIdByNotificationIdAsync(notificationId);
             var projectName = await _projectRepository.GetProjectNameByProjectIdAsync(projectId);
             
@@ -662,6 +660,9 @@ internal sealed class ProjectNotificationsService : IProjectNotificationsService
             
             // Отправляем уведомление на почту о принятом приглашении в проект.
             await SendNotificationApproveInviteProjectAsync(notificationId, userId, projectId, projectName, account);
+            
+            await SendNotificationSuccessApproveProjectInviteAsync("Все хорошо", "Приглашение в проект успешно.",
+                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);
         }
         
         catch (Exception ex)

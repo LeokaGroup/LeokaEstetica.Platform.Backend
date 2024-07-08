@@ -87,7 +87,9 @@ internal sealed class ProjectManagmentRoleRepository : BaseRepository, IProjectM
                                          "ON pmr.organization_id = po.organization_id " +
                                          "INNER JOIN project_management.organization_projects AS op " +
                                          "ON po.organization_id = op.organization_id " +
-                                         "WHERE op.userId = @userId " +
+                                         "INNER JOIN project_management.organization_members AS om " +
+                                         "ON op.organization_id = om.organization_id " +
+                                         "WHERE om.member_id = @userId " +
                                          "GROUP BY pmr.organization_id, pmr.project_member_id, pr.role_name," +
                                          " pr.role_sys_name, op.project_id, pmr.role_id, pmr.is_enabled " +
                                          "ORDER BY pmr.role_id ";
