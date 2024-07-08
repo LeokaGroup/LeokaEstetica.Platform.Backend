@@ -1694,11 +1694,13 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         var parameters = new DynamicParameters();
         parameters.Add("@userId", userId);
         parameters.Add("@projectId", projectId);
+        parameters.Add("@documentType", new Enum(DocumentTypeEnum.ProjectUserAvatar));
 
         var query = @"SELECT document_id 
                       FROM documents.project_documents 
                       WHERE project_id = @projectId 
                         AND user_id = @userId 
+                        AND document_type = @documentType 
                         LIMIT 1";
 
         var result = await connection.QuerySingleOrDefaultAsync<long?>(query, parameters);
