@@ -678,10 +678,10 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             }
             
             // Если просматриваем историю.
-            if (taskDetailType is TaskDetailTypeEnum.History)
+            if (taskDetailType is TaskDetailTypeEnum.Story)
             {
                 // Настраиваем билдер для построения истории.
-                builder = new UserStory { BuilderData = builderData };
+                builder = new UserStoryBuilder { BuilderData = builderData };
             }
 
             if (builder is null)
@@ -1326,7 +1326,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 transitionType = TransitionTypeEnum.Epic;
             }
             
-            if (taskType == TaskDetailTypeEnum.History)
+            if (taskType == TaskDetailTypeEnum.Story)
             {
                 ifProjectHavingTask = await _projectManagmentRepository.IfProjectHavingProjectUserStoryIdAsync(
                     projectId, onlyProjectTaskId);
@@ -1621,7 +1621,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                         changeStatusId.GetProjectTaskIdFromPrefixLink(), onlyTaskId);
                     break;
             
-                case TaskDetailTypeEnum.History:
+                case TaskDetailTypeEnum.Story:
                     // Проверяем, допустимо ли менять на такой статус.
                     var ifExistsStoryStatus = await _projectManagmentRepository.IfStoryAvailableStatusAsync(
                         changeStatusId.GetProjectTaskIdFromPrefixLink());

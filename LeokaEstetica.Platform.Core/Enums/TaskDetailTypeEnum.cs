@@ -23,7 +23,7 @@ public enum TaskDetailTypeEnum
     /// <summary>
     /// История/требование.
     /// </summary>
-    History = 5,
+    Story = 2,
     
     /// <summary>
     /// Эпик.
