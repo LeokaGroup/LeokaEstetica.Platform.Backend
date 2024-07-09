@@ -1,4 +1,5 @@
 using System.Runtime.CompilerServices;
+using Dapper;
 using LeokaEstetica.Platform.Access.Enums;
 using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.FareRule;
@@ -31,7 +32,7 @@ internal sealed class FillColorResumeService : IFillColorResumeService
     /// <param name="subscriptionRepository">Сервис подписок.</param>
     /// <param name="fareRuleRepository">Сервис правил тарифов.</param>
     /// <returns>Список резюме, с проставленным флагом IsSelectedColor.</returns>
-    public async Task<IEnumerable<ResumeOutput>> SetColorBusinessResume(List<ResumeOutput> resumesList,
+    public async Task<IEnumerable<UserInfoOutput>> SetColorBusinessResume(List<UserInfoOutput> resumesList,
         ISubscriptionRepository subscriptionRepository, IFareRuleRepository fareRuleRepository)
     {
         // Получаем ИДшники пользователей.
@@ -42,7 +43,7 @@ internal sealed class FillColorResumeService : IFillColorResumeService
         
         // Получаем список тарифов.
         var fareRules = await fareRuleRepository.GetFareRulesAsync();
-        var fareRulesList = fareRules.ToList();
+        var fareRulesList = fareRules.AsList();
         
         // Получаем подписки пользователей.
         var usersSubscriptions = await subscriptionRepository.GetUsersSubscriptionsAsync(userIds);
