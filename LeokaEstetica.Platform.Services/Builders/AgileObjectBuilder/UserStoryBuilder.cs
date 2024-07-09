@@ -7,9 +7,9 @@ namespace LeokaEstetica.Platform.Services.Builders.AgileObjectBuilder;
 /// <summary>
 /// Строитель истории.
 /// </summary>
-internal class UserStory : AgileObjectBuilder
+internal class UserStoryBuilder : AgileObjectBuilder
 {
-    private const int STORY_TYPE_ID = 3;
+    private const int STORY_TYPE_ID = 2;
     
     /// <inheritdoc />
     public override async Task InitObjectAsync()

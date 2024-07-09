@@ -226,7 +226,7 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
                     "us.user_story_task_id AS project_task_id," +
                     "us.resolution_id," +
                     "us.tag_ids," +
-                    "3 AS task_type_id," +
+                    "2 AS task_type_id," +
                     "us.created_by AS executor_id," +
                     "NULL," +
                     "(SELECT \"ParamValue\"" +
@@ -239,11 +239,6 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
                     "WHERE us.project_id = @projectId;";
 
         var result = await connection.QueryAsync<ProjectTaskExtendedEntity>(query, parameters);
-
-        if (result is null)
-        {
-            result = new List<ProjectTaskExtendedEntity>();   
-        }
 
         return result;
     }
@@ -2763,7 +2758,7 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
             // Заполняем параметры Id историй.
             if (storyIds is not null
                 && storyIds.Count > 0
-                && taskType is TaskDetailTypeEnum.History)
+                && taskType is TaskDetailTypeEnum.Story)
             {
                 foreach (var x in storyIds)
                 {
@@ -2843,7 +2838,7 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
             
             // Удаляем историю.
             // Эпики истории удалятся автоматически, так как там есть каскад на удаление.
-            if (taskType is TaskDetailTypeEnum.History)
+            if (taskType is TaskDetailTypeEnum.Story)
             {
                 var removeStoryParameters = new DynamicParameters();
                 removeStoryParameters.Add("@taskIds", storyIds);
@@ -2959,7 +2954,7 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         
         if (searchStoryResult.HasValue)
         {
-            return TaskDetailTypeEnum.History;
+            return TaskDetailTypeEnum.Story;
         }
         
         // Ищем в спринтах.
