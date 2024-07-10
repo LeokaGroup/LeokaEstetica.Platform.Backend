@@ -1,0 +1,1 @@
+﻿CREATE TYPE commerce.CURRENCY_ENUM AS ENUM ('RUB');
