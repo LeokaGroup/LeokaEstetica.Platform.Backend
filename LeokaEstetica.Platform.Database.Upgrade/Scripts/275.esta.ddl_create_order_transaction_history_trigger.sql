@@ -1,4 +1,4 @@
-﻿CREATE FUNCTION order_transaction_history() RETURNS trigger
+﻿CREATE OR REPLACE FUNCTION order_transaction_history() RETURNS trigger
     LANGUAGE plpgsql
 AS
 $$
