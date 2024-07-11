@@ -10,10 +10,10 @@ public class PaginationVacancyOutput : BasePaginationInfo
     /// <summary>
     /// Список вакансий.
     /// </summary>
-    public List<CatalogVacancyOutput> Vacancies { get; set; }
+    public List<CatalogVacancyOutput>? Vacancies { get; set; }
 
     /// <summary>
     /// Кол-во всего.
     /// </summary>
-    public int Total => Vacancies.Count;
+    public int Total => Vacancies?.Count ?? 0;
 }
