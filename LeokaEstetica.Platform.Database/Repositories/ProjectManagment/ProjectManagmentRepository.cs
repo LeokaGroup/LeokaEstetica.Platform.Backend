@@ -2548,15 +2548,24 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
         
-        var parameters = new DynamicParameters();
-        parameters.Add("@projectId", projectId);
-        parameters.Add("@companyId", companyId);
-        parameters.Add("@isActive", true);
+        var projectWorkSpaceParameters = new DynamicParameters();
+        projectWorkSpaceParameters.Add("@projectId", projectId);
+        projectWorkSpaceParameters.Add("@companyId", companyId);
+        projectWorkSpaceParameters.Add("@isActive", true);
 
-        var query = "INSERT INTO project_management.organization_projects (organization_id, project_id, is_active) " +
+        var projectWorkSpaceQuery = "INSERT INTO project_management.organization_projects (organization_id, project_id, is_active) " +
                     "VALUES (@companyId, @projectId, @isActive)";
 
-        await connection.ExecuteAsync(query, parameters);
+        await connection.ExecuteAsync(projectWorkSpaceQuery, projectWorkSpaceParameters);
+
+        var parametersWorkSpace = new DynamicParameters();
+        parametersWorkSpace.Add("@projectId", projectId);
+        parametersWorkSpace.Add("@companyId", companyId);
+        
+        var WorkSpaceQuery = "INSERT INTO project_management.workspaces (project_id, organization_id) " +
+                             "VALUES (@projectId, @companyId)";
+        
+        await connection.ExecuteAsync(WorkSpaceQuery, parametersWorkSpace);
     }
 
     /// <inheritdoc/>
