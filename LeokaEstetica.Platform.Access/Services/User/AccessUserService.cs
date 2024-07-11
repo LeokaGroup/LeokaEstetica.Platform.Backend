@@ -50,10 +50,10 @@ internal sealed class AccessUserService : IAccessUserService
     {
         var profile = await _accessUserRepository.IsProfileEmptyAsync(userId);
 
-        if (string.IsNullOrEmpty(profile.UserProfile.FirstName)
-            || string.IsNullOrEmpty(profile.UserProfile.LastName)
-            || string.IsNullOrEmpty(profile.UserProfile.Job)
-            || string.IsNullOrEmpty(profile.UserProfile.Aboutme)
+        if (string.IsNullOrEmpty(profile.UserProfile?.FirstName)
+            || string.IsNullOrEmpty(profile.UserProfile?.LastName)
+            || string.IsNullOrEmpty(profile.UserProfile?.Job)
+            || string.IsNullOrEmpty(profile.UserProfile?.Aboutme)
             || !profile.UserIntents.Any()
             || !profile.UserSkills.Any())
         {
