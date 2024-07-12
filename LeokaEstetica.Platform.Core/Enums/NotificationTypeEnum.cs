@@ -10,7 +10,7 @@ public enum NotificationTypeEnum
     /// <summary>
     /// Приглашение в проект.
     /// </summary>
-    [Description("Приглашение в проект")]
+    [Description("Отклик на вступление в проект")]
     ProjectInvite = 1,
     
     /// <summary>
