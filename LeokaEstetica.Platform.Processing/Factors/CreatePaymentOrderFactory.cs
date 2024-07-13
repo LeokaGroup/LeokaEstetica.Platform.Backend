@@ -87,6 +87,7 @@ public static class CreatePaymentOrderFactory
             createPaymentOrderAggregateInput.CreateOrderInput, createPaymentOrderAggregateInput.UserId,
             responseCheckStatusOrder);
 
+        // TODO: Уже пишем в другую таблицу и через Dapper.
         // Создаем заказ в БД.
         var createdOrderResult = await commerceRepository.CreateOrderAsync(createdOrder);
 

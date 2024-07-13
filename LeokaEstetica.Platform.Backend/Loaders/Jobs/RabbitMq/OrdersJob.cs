@@ -20,7 +20,7 @@ using RabbitMQ.Client.Events;
 namespace LeokaEstetica.Platform.Backend.Loaders.Jobs.RabbitMq;
 
 /// <summary>
-/// Класс джобы консьюмера заказов кролика.
+/// Класс джобы заказов.
 /// </summary>
 [DisallowConcurrentExecution]
 internal sealed class OrdersJob : IJob
@@ -141,7 +141,7 @@ internal sealed class OrdersJob : IJob
         var consumer = new AsyncEventingBasicConsumer(_channel);
         consumer.Received += async (_, ea) =>
         {
-            var logger = _logger;
+            var logger = _logger; // Вне скоупа логгер не пишет логи, поэтому должны иметь внутренний логгер тут.
             logger.LogInformation("Начали обработку сообщения из очереди заказов...");
 
             // Если очередь не пуста, то будем парсить результат для проверки статуса заказов.
@@ -158,13 +158,11 @@ internal sealed class OrdersJob : IJob
 
                 PaymentStatusEnum newOrderStatus;
                 PaymentStatusEnum oldStatusSysName;
-                string paymentId;
 
                 try
                 {
                     // Проверяем статус платежа в ПС.
-                    paymentId = orderEvent.PaymentId;
-                    newOrderStatus = await _commerceService.CheckOrderStatusAsync(paymentId);
+                    newOrderStatus = await _commerceService.CheckOrderStatusAsync(orderEvent.PaymentId);
                 
                     // Получаем старый статус платежа до проверки в ПС.
                     oldStatusSysName = PaymentStatus.GetPaymentStatusBySysName(orderEvent.StatusSysName);
@@ -174,7 +172,7 @@ internal sealed class OrdersJob : IJob
                 {
                     logger.LogCritical(ex, "Ошибка при чтении очереди заказов.");
                         
-                    await _discordService.SendNotificationErrorAsync(ex);
+                    await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
                     throw;
                 }
 
@@ -183,15 +181,16 @@ internal sealed class OrdersJob : IJob
                 {
                     try
                     {
-                        var orderId = orderEvent.OrderId;
+                        // Обновляем статус заказа в нашей БД.
                         var updatedOrderStatus = await _commerceRepository.UpdateOrderStatusAsync(
-                            newOrderStatus.ToString(), newOrderStatus.GetEnumDescription(), paymentId, orderId);
+                            newOrderStatus.ToString(), newOrderStatus.GetEnumDescription(), orderEvent.PaymentId,
+                            orderEvent.OrderId);
 
                         if (!updatedOrderStatus)
                         {
                             var ex = new InvalidOperationException("Не удалось найти заказ для обновления статуса. " +
-                                                                   $"OrderId: {orderId}." +
-                                                                   $"PaymentId: {paymentId}");
+                                                                   $"OrderId: {orderEvent.OrderId}." +
+                                                                   $"PaymentId: {orderEvent.PaymentId}");
                             throw ex;
                         }
 
@@ -203,14 +202,14 @@ internal sealed class OrdersJob : IJob
                         {
                             // Проставляем подписку и даты подписки пользователю.
                             await _subscriptionService.SetUserSubscriptionAsync(orderEvent.UserId, publicId,
-                                orderEvent.Month, orderId, fareRule.RuleId);
+                                orderEvent.Month, orderEvent.OrderId, fareRule.RuleId);
                         }
                         
                         // Если статус платежа в ПС ожидает подтверждения, то подтверждаем его, чтобы списать ДС.
                         // Подтвердить в ПС можно только заказы в статусе waiting_for_capture.
                         if (newOrderStatus == PaymentStatusEnum.WaitingForCapture)
                         {
-                            await _commerceService.ConfirmPaymentAsync(paymentId,
+                            await _commerceService.ConfirmPaymentAsync(orderEvent.PaymentId,
                                 new Amount(orderEvent.Price, orderEvent.Currency));
                         }
                     }
@@ -219,8 +218,13 @@ internal sealed class OrdersJob : IJob
                     {
                         logger.LogCritical(ex, "Ошибка при чтении очереди заказов.");
                         
-                        await _discordService.SendNotificationErrorAsync(ex);
+                        await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
                         throw;
+                    }
+
+                    if (_channel is null)
+                    {
+                        throw new InvalidOperationException("Канал кролика был NULL.");
                     }
                     
                     // Подтверждаем сообщение, чтобы дропнуть его из очереди.
@@ -231,6 +235,12 @@ internal sealed class OrdersJob : IJob
                 else
                 {
                     logger.LogInformation("Оставили сообщение в очереди заказов...");
+                    
+                    if (_channel is null)
+                    {
+                         throw new InvalidOperationException("Канал кролика был NULL.");
+                    }
+                    
                     _channel.BasicRecoverAsync(false);
                 }
             }

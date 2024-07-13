@@ -11,7 +11,7 @@ public class CreateOrderPayMasterInput : ICreateOrderInput
     /// <summary>
     /// Модель запроса к ПС для создания заказа.
     /// </summary>
-    public CreateOrderPayMasterRequest CreateOrderRequest { get; set; }
+    public CreateOrderPayMasterRequest? CreateOrderRequest { get; set; }
 
     /// <summary>
     /// Публичный ключ тарифа.

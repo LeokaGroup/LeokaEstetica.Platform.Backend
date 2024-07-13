@@ -4,6 +4,7 @@ using LeokaEstetica.Platform.Base;
 using LeokaEstetica.Platform.Base.Filters;
 using LeokaEstetica.Platform.Controllers.Validators.Commerce;
 using LeokaEstetica.Platform.Database.Abstractions.FareRule;
+using LeokaEstetica.Platform.Integrations.Abstractions.Discord;
 using LeokaEstetica.Platform.Models.Dto.Input.Commerce;
 using LeokaEstetica.Platform.Models.Dto.Input.Commerce.PayMaster;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce;
@@ -29,23 +30,27 @@ public class CommerceController : BaseController
     private readonly IMapper _mapper;
     private readonly ILogger<CommerceController> _logger;
     private readonly ICommerceService _commerceService;
+     private readonly Lazy<IDiscordService> _discordService;
 
-    /// <summary>
-    /// Конструктор.
-    /// </summary>
-    /// <param name="fareRuleRepository">Репозиторий правил тарифов.</param>
-    /// <param name="mapper">Автомаппер.</param>
-    /// <param name="logger">Сервис логера.</param>
-    /// <param name="commerceService">Сервис коммерции.</param>
-    public CommerceController(IFareRuleRepository fareRuleRepository, 
+     /// <summary>
+     /// Конструктор.
+     /// </summary>
+     /// <param name="fareRuleRepository">Репозиторий правил тарифов.</param>
+     /// <param name="mapper">Автомаппер.</param>
+     /// <param name="logger">Сервис логера.</param>
+     /// <param name="commerceService">Сервис коммерции.</param>
+     /// <param name="discordService">Сервис уведомлений дискорда.</param>
+     public CommerceController(IFareRuleRepository fareRuleRepository, 
         IMapper mapper, 
         ILogger<CommerceController> logger, 
-        ICommerceService commerceService)
+        ICommerceService commerceService,
+         Lazy<IDiscordService> discordService)
     {
         _fareRuleRepository = fareRuleRepository;
         _mapper = mapper;
         _logger = logger;
         _commerceService = commerceService;
+        _discordService = discordService;
     }
 
     /// <summary>
@@ -60,23 +65,37 @@ public class CommerceController : BaseController
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<ICreateOrderOutput> CreateOrderAsync(
-        [FromBody] CreateOrderPayMasterInput createOrderInput)
+    public async Task<ICreateOrderOutput> CreateOrderAsync([FromBody] CreateOrderPayMasterInput createOrderInput)
     {
-        var result = new CreateOrderYandexKassaOutput { Errors = new List<ValidationFailure>() };
         var validator = await new CreateOrderValidator().ValidateAsync(createOrderInput);
 
-        if (validator.Errors.Any())
+        if (validator.Errors.Count > 0)
         {
-            result.Errors = validator.Errors;
+            // TODO: Добавить отображение ошибок фронту через сокеты.
 
-            return result;
+            var exceptions = new List<InvalidOperationException>();
+
+            foreach (var err in validator.Errors)
+            {
+                exceptions.Add(new InvalidOperationException(err.ErrorMessage));
+            }
+
+            var ex = new AggregateException("Ошибка создания заказа. " +
+                                            $"{JsonConvert.SerializeObject(createOrderInput.CreateOrderRequest)}",
+                exceptions);
+                
+            _logger.LogCritical(ex, ex.Message);
+            
+            await _discordService.Value.SendNotificationErrorAsync(ex);
+            
+            throw ex;
         }
 
-        result = await _commerceService.CreateOrderAsync(createOrderInput.PublicId, GetUserName(),
+        var result = await _commerceService.CreateOrderAsync(createOrderInput.PublicId, GetUserName(),
             GetTokenFromHeader()) as CreateOrderYandexKassaOutput;
 
-        return result;
+        return result ??
+               throw new InvalidOperationException($"Ошибка при касте к типу {nameof(CreateOrderYandexKassaOutput)}");
     }
 
     /// <summary>
@@ -133,6 +152,7 @@ public class CommerceController : BaseController
     }
 
     /// <summary>
+    /// TODO: Пока не будет у нас продуктов (услуг, пакетов) - в будущем будут, когда продумаем аналитику.
     /// Метод получает услуги и сервисы заказа из кэша.
     /// </summary>
     /// <param name="publicId">Публичный код тарифа.</param>
@@ -153,6 +173,7 @@ public class CommerceController : BaseController
     }
 
     /// <summary>
+    /// TODO: Продумать аналитику в новой версии монетизации.
     /// Метод вычисляет, есть ли остаток с прошлой подписки пользователя для учета ее как скидку при оформлении новой подписки.
     /// </summary>
     /// <param name="publicId">Публичный ключ тарифа.</param>
@@ -173,6 +194,8 @@ public class CommerceController : BaseController
     }
 
     /// <summary>
+    /// TODO: Что он здесь делает? Это должно быть в слое доступа, там вроде есть уже такое.
+    /// TODO: При оформлении заказа уже есть проверка доступа, зачем оно вообще тут?
     /// Метод проверяет заполнение анкеты пользователя.
     /// Если не заполнена, то нельзя оформить заказ.
     /// </summary>
