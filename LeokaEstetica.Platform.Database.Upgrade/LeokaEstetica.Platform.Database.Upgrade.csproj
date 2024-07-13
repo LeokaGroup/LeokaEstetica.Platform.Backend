@@ -9,6 +9,7 @@
 
     <ItemGroup>
         <EmbeddedResource Include="Scripts\*.sql" />
+        <Content Include="Scripts\282.esta.dml_insert_fare_rule_attribute_values.sql" />
     </ItemGroup>
 
     <ItemGroup>
