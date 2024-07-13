@@ -210,7 +210,7 @@ internal sealed class ProjectManagementSettingsRepository : BaseRepository, IPro
 
         var result = await connection.QueryAsync<ProjectSettingUserOutput>(query, parameters);
 
-        return result;
+        return result.OrderByDescending(user => user.IsOwner);
     }
     
     /// <inheritdoc />
