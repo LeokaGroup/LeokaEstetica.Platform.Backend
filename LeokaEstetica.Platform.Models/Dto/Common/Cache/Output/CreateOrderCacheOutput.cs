@@ -33,12 +33,12 @@ public class CreateOrderCacheOutput
     /// <summary>
     /// Список сервисов для услуг.
     /// </summary>
-    public List<string> Products { get; set; }
+    public List<string>? Products { get; set; }
 
     /// <summary>
     /// Название тарифа.
     /// </summary>
-    public string FareRuleName { get; set; }
+    public string? FareRuleName { get; set; }
 
     /// <summary>
     /// Признак успешности прохождения по лимитам.
@@ -48,7 +48,7 @@ public class CreateOrderCacheOutput
     /// <summary>
     /// Тип лимитов, по которым не прошли.
     /// </summary>
-    public string ReductionSubscriptionLimits { get; set; }
+    public string? ReductionSubscriptionLimits { get; set; }
 
     /// <summary>
     /// Кол-во на которое нужно уменьшить для прохождения по лимитам.

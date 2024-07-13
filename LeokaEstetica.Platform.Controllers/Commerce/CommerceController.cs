@@ -1,5 +1,4 @@
 using AutoMapper;
-using FluentValidation.Results;
 using LeokaEstetica.Platform.Base;
 using LeokaEstetica.Platform.Base.Filters;
 using LeokaEstetica.Platform.Controllers.Validators.Commerce;
@@ -135,17 +134,22 @@ public class CommerceController : BaseController
     {
         var validator = await new CreateOrderCacheValidator().ValidateAsync(createOrderCacheInput);
         
-        if (validator.Errors.Any())
+        if (validator.Errors.Count > 0)
         {
             var ex = new InvalidOperationException(
                 "Переданы некорректные параметры. " +
                 $"CreateOrderCacheInput: {JsonConvert.SerializeObject(createOrderCacheInput)}");
+                
+            await _discordService.Value.SendNotificationErrorAsync(ex);
+            
             _logger.LogError(ex, ex.Message);
 
             throw ex;
         }
 
         var orderFromCache = await _commerceService.CreateOrderCacheAsync(createOrderCacheInput, GetUserName());
+        
+        // TODO: Можно ли избежать каста?
         var result = _mapper.Map<OrderCacheOutput>(orderFromCache);
 
         return result;

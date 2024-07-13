@@ -121,13 +121,10 @@ internal sealed class CommerceService : ICommerceService
                 var ex = new NotFoundUserIdByAccountException(account);
                 throw ex;
             }
-
-            // Сохраняем заказ в кэш сроком на 2 часа.
-            var publicId = createOrderCacheInput.PublicId;
-
+            
             // Проверяем на понижение.
             var checkReduction = await _availableLimitsService.CheckAvailableReductionSubscriptionAsync(userId,
-                publicId, _subscriptionRepository, _fareRuleRepository);
+                createOrderCacheInput.PublicId, _subscriptionRepository, _fareRuleRepository);
 
             // Если новый тариф не вмещает по лимитам.
             if (!checkReduction.IsSuccessLimits)
@@ -142,16 +139,19 @@ internal sealed class CommerceService : ICommerceService
                 ReductionSubscriptionLimits = checkReduction.ReductionSubscriptionLimits
             };
 
-            var key = await _commerceRedisService.CreateOrderCacheKeyAsync(userId, publicId);
-            await CreateOrderCacheResult(publicId, createOrderCacheInput.PaymentMonth, userId, result.RuleId, result);
+            var key = await _commerceRedisService.CreateOrderCacheKeyAsync(userId, createOrderCacheInput.PublicId);
+            await CreateOrderCacheResult(createOrderCacheInput.PublicId, createOrderCacheInput.PaymentMonth, userId, result.RuleId, result);
+            
+            // Сохраняем заказ в кэш сроком на 2 часа.
             await _commerceRedisService.CreateOrderCacheAsync(key, result);
 
+            // TODO: Можно ли избежать каста?
             return _mapper.Map<CreateOrderCacheOutput>(result);
         }
 
         catch (Exception ex)
         {
-            _logger.LogError(ex, ex.Message);
+            _logger.LogCritical(ex, ex.Message);
             throw;
         }
     }
@@ -379,15 +379,17 @@ internal sealed class CommerceService : ICommerceService
     {
         try
         {
-            _logger.LogInformation("Начали создание заказа в ПС.");
-            
+            // Через какую ПС будем проводить оплату.
             var paymentSystemType = await _globalConfigRepository.GetValueByKeyAsync<string>(GlobalConfigKeys
                 .Integrations.PaymentSystem.COMMERCE_PAYMENT_SYSTEM_TYPE_MODE);
+            
             _logger.LogInformation($"Заказ будет создан в ПС: {paymentSystemType}.");
 
             var systemType = Enum.Parse<PaymentSystemEnum>(paymentSystemType);
             
             var paymentSystemJob = new PaymentSystemJob();
+            
+            _logger.LogInformation("Начали создание заказа в ПС.");
 
             // Создаем заказ в ПС, которая выбрана в конфиг таблице.
             var order = systemType switch
@@ -410,7 +412,7 @@ internal sealed class CommerceService : ICommerceService
 
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Ошибка при создании заказа в ПС.");
+            _logger.LogCritical(ex, ex.Message);
             throw;
         }
     }
