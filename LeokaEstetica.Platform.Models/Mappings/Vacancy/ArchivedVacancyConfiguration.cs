@@ -23,7 +23,7 @@ public partial class ArchivedVacancyConfiguration : IEntityTypeConfiguration<Arc
 
         entity.Property(e => e.DateArchived)
            .HasColumnName("DateArchived")
-           .HasColumnType("timestamp")
+           .HasColumnType("timestamp with time zone")
            .HasDefaultValue(DateTime.UtcNow)
            .IsRequired();
 
