@@ -186,7 +186,7 @@ internal sealed class ProjectManagementSettingsRepository : BaseRepository, IPro
         var parameters = new DynamicParameters();
         parameters.Add("@projectId", projectId);
 
-        var query = "WITH ordered_query AS (" +
+        var query = "WITH cte_company_project_users AS (" +
                     "SELECT pi.\"UserId\", " +
                     "pi.\"LastName\", " +
                     "pi.\"FirstName\", " +
@@ -207,11 +207,34 @@ internal sealed class ProjectManagementSettingsRepository : BaseRepository, IPro
                     "INNER JOIN dbo.\"Users\" AS u " +
                     "ON pi.\"UserId\" = u.\"UserId\" " +
                     "WHERE op.project_id = @projectId " +
-                    "AND op.is_active" +
-                    ")" +
-                    "SELECT * FROM ordered_query WHERE IsOwner = TRUE " +
-                    "UNION ALL " +
-                    "SELECT * FROM ordered_query WHERE IsOwner = FALSE";
+                    "AND op.is_active " +
+                    "LIMIT 1)" +
+                    "SELECT * " +
+                    "FROM cte_company_project_users " +
+                    "UNION " +
+                    "SELECT pi.\"UserId\", " +
+                    "pi.\"LastName\", " +
+                    "pi.\"FirstName\", " +
+                    "pi.\"Patronymic\" AS \"SecondName\", " +
+                    "u.\"Email\", " +
+                    "u.\"LastAutorization\", " +
+                    "(CASE WHEN u.\"UserId\" = (SELECT up.\"UserId\" " +
+                    "FROM \"Projects\".\"UserProjects\" AS up " +
+                    "WHERE up.\"ProjectId\" = @projectId " +
+                    "LIMIT 1) THEN TRUE " +
+                    "ELSE FALSE END) AS IsOwner, " +
+                    "COALESCE(om.member_role, 'Участник') AS Role " +
+                    "FROM project_management.organization_projects AS op " +
+                    "INNER JOIN project_management.organization_members AS om " +
+                    "ON op.organization_id = om.organization_id " +
+                    "INNER JOIN \"Profile\".\"ProfilesInfo\" AS pi " +
+                    "ON om.member_id = \"UserId\" " +
+                    "INNER JOIN dbo.\"Users\" AS u " +
+                    "ON pi.\"UserId\" = u.\"UserId\" " +
+                    "WHERE op.project_id = @projectId " +
+                    "AND op.is_active " +
+                    "AND pi.\"UserId\" IN (SELECT pi.\"UserId\" " +
+                    "FROM cte_company_project_users)";
 
         var result = await connection.QueryAsync<ProjectSettingUserOutput>(query, parameters);
 
