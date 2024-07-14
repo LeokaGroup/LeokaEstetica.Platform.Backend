@@ -1,3 +1,4 @@
+using LeokaEstetica.Platform.Models.Dto.Output.FareRule;
 using LeokaEstetica.Platform.Models.Entities.FareRule;
 
 namespace LeokaEstetica.Platform.Database.Abstractions.FareRule;
@@ -39,4 +40,20 @@ public interface IFareRuleRepository
     /// <param name="objectId">Id объекта (тарифа).</param>
     /// <returns>Данные тарифа.</returns>
     Task<FareRuleEntity> GetFareRuleDetailsByObjectIdAsync(int objectId);
+
+    /// <summary>
+    /// Метод проверяет, доступно ли на указанном тарифе указанное кол-во сотрудников проекта.
+    /// Если нет, то предлагаем сменить тариф.
+    /// </summary>
+    /// <param name="publicId">Публичный ключ тарифа.</param>
+    /// <param name="employeesCount">Кол-во сотрудников.</param>
+    /// <returns>Признак возможного создания тарифа.</returns>
+    Task<bool> CheckAvailableEmployeesCountFareRuleAsync(Guid publicId, int employeesCount);
+    
+    /// <summary>
+    /// Метод получает цены тарифа по его PublicId.
+    /// </summary>
+     /// <param name="publicId">Публичный ключ тарифа.</param>
+    /// <returns>Данные тарифа.</returns>
+    Task<FareRulePriceOutput?> GetFareRulePriceByPublicIdAsync(Guid publicId);
 }

@@ -5,6 +5,7 @@ using LeokaEstetica.Platform.Database.Abstractions.Subscription;
 namespace LeokaEstetica.Platform.Access.Abstractions.AvailableLimits;
 
 /// <summary>
+/// TODO: Выпилить этот сервис вообще.
 /// Абстракция сервиса проверки лимитов.
 /// </summary>
 public interface IAvailableLimitsService

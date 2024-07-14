@@ -5,7 +5,6 @@ namespace LeokaEstetica.Platform.Models.Dto.Common.Cache;
 /// <summary>
 /// Класс модели для хранения заказа в кэше.
 /// </summary>
-[Serializable]
 [ProtoContract]
 public class CreateOrderCache
 {
@@ -16,10 +15,11 @@ public class CreateOrderCache
     public int RuleId { get; set; }
 
     /// <summary>
+    /// TODO: Вернем, когда вернем скидки в новой версии оплат.
     /// Процент скидки.
     /// </summary>
-    [ProtoMember(2)]
-    public decimal Percent { get; set; }
+    // [ProtoMember(2)]
+    // public decimal Percent { get; set; }
 
     /// <summary>
     /// Сумма.
@@ -42,14 +42,14 @@ public class CreateOrderCache
     /// <summary>
     /// Список сервисов для услуг.
     /// </summary>
-    [ProtoMember(6)]
-    public List<string> Products { get; set; }
+    // [ProtoMember(6)]
+    // public List<string>? Products { get; set; }
 
     /// <summary>
     /// Название тарифа.
     /// </summary>
     [ProtoMember(7)]
-    public string FareRuleName { get; set; }
+    public string? FareRuleName { get; set; }
 
     /// <summary>
     /// Признак успешности прохождения по лимитам.
@@ -61,7 +61,7 @@ public class CreateOrderCache
     /// Тип лимитов, по которым не прошли.
     /// </summary>
     [ProtoIgnore]
-    public string ReductionSubscriptionLimits { get; set; }
+    public string? ReductionSubscriptionLimits { get; set; }
 
     /// <summary>
     /// Кол-во на которое нужно уменьшить для прохождения по лимитам.

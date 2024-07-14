@@ -1,9 +1,11 @@
+using FluentValidation.Results;
+
 namespace LeokaEstetica.Platform.Models.Dto.Common.Cache.Output;
 
 /// <summary>
-/// Класс выходной модели создания кэша в кэше.
+/// Класс выходной модели создания заказа в кэше.
 /// </summary>
-public class CreateOrderCacheOutput
+public class CreateOrderCacheOutput : IFrontError
 {
     /// <summary>
     /// PK.
@@ -13,7 +15,7 @@ public class CreateOrderCacheOutput
     /// <summary>
     /// Процент скидки.
     /// </summary>
-    public decimal Percent { get; set; }
+    // public decimal Percent { get; set; }
 
     /// <summary>
     /// Сумма.
@@ -33,7 +35,7 @@ public class CreateOrderCacheOutput
     /// <summary>
     /// Список сервисов для услуг.
     /// </summary>
-    public List<string>? Products { get; set; }
+    // public List<string>? Products { get; set; }
 
     /// <summary>
     /// Название тарифа.
@@ -54,4 +56,14 @@ public class CreateOrderCacheOutput
     /// Кол-во на которое нужно уменьшить для прохождения по лимитам.
     /// </summary>
     public int FareLimitsCount { get; set; }
+
+    /// <summary>
+    /// Ошибки, если они есть.
+    /// </summary>
+    public List<ValidationFailure>? Errors { get; set; }
+
+    /// <summary>
+    /// Признак необходимости ожидания действий пользователя.
+    /// </summary>
+    public bool IsNeedUserAction { get; set; }
 }
