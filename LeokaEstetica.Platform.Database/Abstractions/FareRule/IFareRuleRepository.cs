@@ -4,6 +4,7 @@ using LeokaEstetica.Platform.Models.Entities.FareRule;
 namespace LeokaEstetica.Platform.Database.Abstractions.FareRule;
 
 /// <summary>
+/// TODO: Выпилить ненужные методы.
 /// Абстракция репозитория правил тарифа.
 /// </summary>
 public interface IFareRuleRepository
@@ -36,7 +37,8 @@ public interface IFareRuleRepository
     Task<FareRuleEntity> GetByPublicIdAsync(Guid publicId);
 
     /// <summary>
-    /// Метод получает тариф по его PublicId.
+    /// TODO: Выпилим.
+    /// Метод получает тариф по его ObjectId.
     /// </summary>
     /// <param name="objectId">Id объекта (тарифа).</param>
     /// <returns>Данные тарифа.</returns>
@@ -57,4 +59,6 @@ public interface IFareRuleRepository
     /// <param name="publicId">Публичный ключ тарифа.</param>
     /// <returns>Данные тарифа.</returns>
     Task<FareRuleAttributeCompositeOutput?> GetFareRuleByPublicIdAsync(Guid publicId);
+
+    // Task<FareRuleAttributeCompositeOutput> GetUserFareRuleAsync(long userId);
 }

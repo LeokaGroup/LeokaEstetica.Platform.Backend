@@ -124,6 +124,13 @@ internal sealed class CommerceService : ICommerceService
                 var ex = new NotFoundUserIdByAccountException(account);
                 throw ex;
             }
+            
+            var subscription = await _subscriptionRepository.GetUserSubscriptionAsync(userId);
+        
+            if (subscription is null)
+            {
+                throw new InvalidOperationException($"Не удалось получить подписку. UserId: {userId}");
+            }
 
             // Получаем тариф, на который пользователь пытается перейти.
             var newFareRule = await _fareRuleRepository.GetFareRuleByPublicIdAsync(createOrderCacheInput.PublicId);
