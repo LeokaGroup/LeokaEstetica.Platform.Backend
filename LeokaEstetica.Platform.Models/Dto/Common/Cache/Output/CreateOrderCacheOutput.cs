@@ -13,11 +13,6 @@ public class CreateOrderCacheOutput : IFrontError
     public int RuleId { get; set; }
 
     /// <summary>
-    /// Процент скидки.
-    /// </summary>
-    // public decimal Percent { get; set; }
-
-    /// <summary>
     /// Сумма.
     /// </summary>
     public decimal Price { get; set; }
@@ -31,11 +26,6 @@ public class CreateOrderCacheOutput : IFrontError
     /// Id пользователя.
     /// </summary>
     public long UserId { get; set; }
-
-    /// <summary>
-    /// Список сервисов для услуг.
-    /// </summary>
-    // public List<string>? Products { get; set; }
 
     /// <summary>
     /// Название тарифа.
@@ -66,4 +56,9 @@ public class CreateOrderCacheOutput : IFrontError
     /// Признак необходимости ожидания действий пользователя.
     /// </summary>
     public bool IsNeedUserAction { get; set; }
+
+    /// <summary>
+    /// Признак необходимости сменить тариф.
+    /// </summary>
+    public bool IsNeedChangeFareRule { get; set; }
 }

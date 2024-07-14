@@ -171,7 +171,7 @@ internal class BaseServiceTest
         var accessUserRepository = new AccessUserRepository(pgContext);
         var accessUserService = new AccessUserService(accessUserRepository);
         var userRedisService = new UserRedisService(distributedCache, mapper);
-        FareRuleRepository = new FareRuleRepository(pgContext, AppConfiguration);
+        FareRuleRepository = new FareRuleRepository(pgContext, AppConfiguration, connectionProvider);
         
         var availableLimitsRepository = new AvailableLimitsRepository(pgContext);
         var globalConfigRepository = new GlobalConfigRepository(pgContext, null, AppConfiguration, connectionProvider);
@@ -254,8 +254,8 @@ internal class BaseServiceTest
             commerceRepository, accessUserService, null, commerceRedisService, rabbitMqService, mapper, null, null);
 
         CommerceService = new CommerceService(commerceRedisService, null, userRepository, FareRuleRepository,
-            commerceRepository, ordersRepository, subscriptionRepository, availableLimitsService, accessUserService,
-            null, null, PayMasterService, mapper, null);
+            commerceRepository, ordersRepository, subscriptionRepository, accessUserService,
+            null, null, PayMasterService, mapper, null, new Lazy<IDiscordService>(discordService));
 
         SubscriptionService = new SubscriptionService(null, userRepository, subscriptionRepository,
             FareRuleRepository);

@@ -28,6 +28,7 @@ public interface IFareRuleRepository
     Task<List<FareRuleEntity>> GetFareRulesNamesByIdsAsync(IEnumerable<long> fareRuleIds);
     
     /// <summary>
+    /// TODO: Выпилить его, у нас есть новый метод на Dapper.
     /// Метод получает тариф по его PublicId.
     /// </summary>
     /// <param name="publicId">Публичный ключ тарифа.</param>
@@ -49,11 +50,11 @@ public interface IFareRuleRepository
     /// <param name="employeesCount">Кол-во сотрудников.</param>
     /// <returns>Признак возможного создания тарифа.</returns>
     Task<bool> CheckAvailableEmployeesCountFareRuleAsync(Guid publicId, int employeesCount);
-    
+
     /// <summary>
-    /// Метод получает цены тарифа по его PublicId.
+    /// Метод получает тариф по его PublicId.
     /// </summary>
-     /// <param name="publicId">Публичный ключ тарифа.</param>
+    /// <param name="publicId">Публичный ключ тарифа.</param>
     /// <returns>Данные тарифа.</returns>
-    Task<FareRulePriceOutput?> GetFareRulePriceByPublicIdAsync(Guid publicId);
+    Task<FareRuleAttributeCompositeOutput?> GetFareRuleByPublicIdAsync(Guid publicId);
 }

@@ -1,7 +1,7 @@
 using System.Runtime.CompilerServices;
 using AutoMapper;
+using FluentValidation;
 using FluentValidation.Results;
-using LeokaEstetica.Platform.Access.Abstractions.AvailableLimits;
 using LeokaEstetica.Platform.Access.Abstractions.User;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.Core.Constants;
@@ -12,6 +12,7 @@ using LeokaEstetica.Platform.Database.Abstractions.Config;
 using LeokaEstetica.Platform.Database.Abstractions.FareRule;
 using LeokaEstetica.Platform.Database.Abstractions.Orders;
 using LeokaEstetica.Platform.Database.Abstractions.Subscription;
+using LeokaEstetica.Platform.Integrations.Abstractions.Discord;
 using LeokaEstetica.Platform.Models.Dto.Base.Commerce;
 using LeokaEstetica.Platform.Models.Dto.Common.Cache;
 using LeokaEstetica.Platform.Models.Dto.Common.Cache.Output;
@@ -51,6 +52,7 @@ internal sealed class CommerceService : ICommerceService
     private readonly IPayMasterService _payMasterService;
     private readonly IMapper _mapper;
     private readonly IYandexKassaService _yandexKassaService;
+    private readonly Lazy<IDiscordService> _discordService;
 
     /// <summary>
     /// Конструктор.
@@ -69,6 +71,7 @@ internal sealed class CommerceService : ICommerceService
     /// <param name="payMasterService">Сервис платежной системы PayMaster.</param>
     /// <param name="mapper">Автомаппер.</param>
     /// <param name="yandexKassaService">Сервис ЮKassa.</param>
+    /// <param name="discordService">Сервис уведомлений дискорда.</param>
     /// </summary>
     public CommerceService(ICommerceRedisService commerceRedisService,
         ILogger<CommerceService> logger,
@@ -77,13 +80,13 @@ internal sealed class CommerceService : ICommerceService
         ICommerceRepository commerceRepository,
         IOrdersRepository ordersRepository,
         ISubscriptionRepository subscriptionRepository,
-        IAvailableLimitsService availableLimitsService,
         IAccessUserService accessUserService,
         IAccessUserNotificationsService accessUserNotificationsService,
         IGlobalConfigRepository globalConfigRepository,
         IPayMasterService payMasterService,
         IMapper mapper,
-        IYandexKassaService yandexKassaService)
+        IYandexKassaService yandexKassaService,
+        Lazy<IDiscordService> discordService)
     {
         _commerceRedisService = commerceRedisService;
         _logger = logger;
@@ -98,6 +101,7 @@ internal sealed class CommerceService : ICommerceService
         _payMasterService = payMasterService;
         _mapper = mapper;
         _yandexKassaService = yandexKassaService;
+        _discordService = discordService;
     }
 
     #region Публичные методы.
@@ -120,114 +124,69 @@ internal sealed class CommerceService : ICommerceService
                 var ex = new NotFoundUserIdByAccountException(account);
                 throw ex;
             }
-            
-            // Проверяем, можно ли создать заказ.
-            // var checkReduction = await _availableLimitsService.CheckAvailableReductionSubscriptionAsync(userId,
-            //     createOrderCacheInput.PublicId, _subscriptionRepository, _fareRuleRepository);
-            //
-            // // Если новый тариф не вмещает по лимитам.
-            // if (!checkReduction.IsSuccessLimits)
-            // {
-            //     return new CreateOrderCacheOutput();
-            // }
-            
-            // Находим подписку.
-            var subscription = await _subscriptionRepository.GetUserSubscriptionAsync(userId);
-        
-            if (subscription is null)
-            {
-                throw new InvalidOperationException($"Не удалось получить подписку. UserId: {userId}");
-            }
 
-            // Находим подписку пользователя.
-            // var subscriptionId = subscription.SubscriptionId;
-            // var userSubscription = await _subscriptionRepository.GetUserSubscriptionBySubscriptionIdAsync(
-            //     subscriptionId, userId);
-            //
-            // if (userSubscription is null)
-            // {
-            //     throw new InvalidOperationException("Не удалось получить подписку пользователя." +
-            //                                         $"UserId: {userId}." +
-            //                                         $"SubscriptionId: {subscriptionId}");
-            // }
-            
-            // Получаем цену тарифа.
-            var newFareRule = await _fareRuleRepository.GetFareRulePriceByPublicIdAsync(
-                createOrderCacheInput.PublicId);
+            // Получаем тариф, на который пользователь пытается перейти.
+            var newFareRule = await _fareRuleRepository.GetFareRuleByPublicIdAsync(createOrderCacheInput.PublicId);
             
             if (newFareRule is null)
             {
                 throw new InvalidOperationException($"Не удалось получить новый тариф пользователя. UserId: {userId}");
             }
             
-            decimal orderPrice = 0;
-            
-            if (newFareRule.MinValue.HasValue && !newFareRule.MaxValue.HasValue)
+            // Обязательно должна быть минимальная цена у тарифа.
+            if (!newFareRule.MinValue.HasValue)
             {
-                orderPrice = newFareRule.MinValue.Value;
+                throw new InvalidOperationException(
+                    "У тарифа обнаружено отсутствие минимальной цены. " +
+                    "У нас у тарифов пока минимальная цена, это есть фиксированная цена тарифа. " +
+                    $"Требуется обработка кейса. Id тарифа: {newFareRule.RuleId}.");
             }
+            
+            // Логируем ошибку, но не ломаем приложение, так как мы пока не закладывали такой кейс.
+            if (newFareRule.MinValue.HasValue && newFareRule.MaxValue.HasValue)
+            {
+                var ex = new InvalidOperationException(
+                    "У тарифа обнаружен диапазон цен. Такой кейс пока не закладывали, но он сработал. " +
+                    "У нас у тарифов пока лишь минимальная цена есть. " +
+                    $"Требуется обработка кейса. Id тарифа: {newFareRule.RuleId}.");
 
+                await _discordService.Value.SendNotificationErrorAsync(ex);
+
+                _logger?.LogError(ex, ex.Message);
+            }
+            
+            var result = new CreateOrderCacheOutput
+            {
+                Errors = new List<ValidationFailure>(),
+                // Цена тарифа = минимальная цена тарифа * кол-во сотрудников * кол-во месяцев.
+                Price = newFareRule.MinValue.Value * createOrderCacheInput.EmployeesCount *
+                        createOrderCacheInput.PaymentMonth
+            };
+
+            // Если не было подтверждения действия от пользователя.
             if (!createOrderCacheInput.IsCompleteUserAction)
             {
-                // Смотрим текущий тариф.
-                var currentFareRule = await _fareRuleRepository.GetByIdAsync(subscription.ObjectId);
-
-                if (currentFareRule is null)
-                {
-                    throw new InvalidOperationException(
-                        $"Не удалось получить текущий тариф пользователя. UserId: {userId}");
-                }
-            
-                // Проверяем возможность создания заказа на текущем тарифе.
+                // Проверяем, вмещает ли тариф кол-во сотрудников, которое хочет пользователь.
                 var isCorrectEmployeesCnt = await _fareRuleRepository.CheckAvailableEmployeesCountFareRuleAsync(
                     createOrderCacheInput.PublicId, createOrderCacheInput.EmployeesCount);
 
-                var result = new CreateOrderCacheOutput
-                {
-                    Errors = new List<ValidationFailure>(),
-                    IsNeedUserAction = false
-                };
-                
+                // Предлагаем сменить тариф, так как цена выросла.
+                // Тариф не вмещает кол-во сотрудников - будет изменение цены за рамки цены тарифа.
                 if (!isCorrectEmployeesCnt)
                 {
-                    throw new InvalidOperationException(
-                        "Не прошла проверка на кол-во сотрудников текущего тарифа пользователя.");
+                    result.Errors.Add(new ValidationFailure
+                    {
+                        Severity = Severity.Warning,
+                        ErrorMessage = "Выбранный тариф не вмещает в себя указанное количество сотрудников. " +
+                                       "Выберите другой тариф."
+                    });
                 }
-                
-                // Требуются действия от пользователя.
+
                 result.IsNeedUserAction = true;
-                result.Price = orderPrice;
+                result.IsNeedChangeFareRule = true;
 
                 return result;
             }
-
-            //
-            // var result = new CreateOrderCacheOutput
-            // {
-            //     Errors = new List<ValidationFailure>()
-            // };
-            //
-            // var rule = await _fareRuleRepository.GetByPublicIdAsync(createOrderCacheInput.PublicId);
-            //
-            // if (rule is null)
-            // {
-            //     var ex = new InvalidOperationException(
-            //         $"Не удалось найти правило тарифа. PublicId: {createOrderCacheInput.PublicId}");
-            //     throw ex;
-            // }
-
-            // var discount = await GetPercentDiscountAsync(paymentMonth, DiscountTypeEnum.Service);
-           
-            // Вычисляем цену тарифа, учитывая кол-во сотрудников.
-            
-            // var discountPrice = await CalculatePercentPriceAsync(discount, servicePrice);
-
-            // TODO: Оставляем пока, будут тоже скидки в новой версии оплат.
-            // Если была применена скидка.
-            // if (discountPrice < servicePrice)
-            // {
-            //     products.Add($"Скидка на тариф {discount}");
-            // }
 
             var order = new CreateOrderCache
             {
@@ -235,19 +194,23 @@ internal sealed class CommerceService : ICommerceService
                 Month = createOrderCacheInput.PaymentMonth,
                 UserId = userId,
                 FareRuleName = newFareRule.FareRuleName,
-                Price = orderPrice
+                Price = result.Price
             };
 
             // Сохраняем заказ в кэш сроком на 2 часа.
             var key = await _commerceRedisService.CreateOrderCacheKeyAsync(userId, createOrderCacheInput.PublicId);
             await _commerceRedisService.CreateOrderCacheAsync(key, order);
-            
-            return _mapper.Map<CreateOrderCacheOutput>(order);
+
+            result = _mapper.Map<CreateOrderCacheOutput>(order);
+            result.IsNeedUserAction = false;
+            result.IsNeedChangeFareRule = false;
+
+            return result;
         }
 
         catch (Exception ex)
         {
-            _logger.LogCritical(ex, ex.Message);
+            _logger?.LogCritical(ex, ex.Message);
             throw;
         }
     }
@@ -590,6 +553,7 @@ internal sealed class CommerceService : ICommerceService
     }
 
     /// <summary>
+    /// TODO: Пока не используем, но в будущем внедрим скидки и это будет нужно.
     /// Метод вычисляет сумму с учетом скидки.
     /// Если цена null.
     /// </summary>

@@ -1,6 +1,7 @@
 namespace LeokaEstetica.Platform.Models.Dto.Output.FareRule;
 
 /// <summary>
+/// TODO: Выпилить ее, когда перейдем на новую модель оплат.
 /// Класс выходной модели правил тарифов.
 /// </summary>
 public class FareRuleOutput

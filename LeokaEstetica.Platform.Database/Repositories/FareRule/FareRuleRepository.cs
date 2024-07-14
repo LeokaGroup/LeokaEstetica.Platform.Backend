@@ -111,6 +111,7 @@ internal sealed class FareRuleRepository : BaseRepository, IFareRuleRepository
     }
 
     /// <summary>
+    /// TODO: Выпилить его, у нас есть новый метод на Dapper.
     /// Метод получает тариф по его PublicId.
     /// </summary>
     /// <param name="publicId">Публичный ключ тарифа.</param>
@@ -219,7 +220,7 @@ internal sealed class FareRuleRepository : BaseRepository, IFareRuleRepository
     }
 
     /// <inheritdoc />
-    public async Task<FareRulePriceOutput?> GetFareRulePriceByPublicIdAsync(Guid publicId)
+    public async Task<FareRuleAttributeCompositeOutput?> GetFareRuleByPublicIdAsync(Guid publicId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
 
@@ -233,7 +234,7 @@ internal sealed class FareRuleRepository : BaseRepository, IFareRuleRepository
                         WHERE av.rule_id = @ruleId
                           AND av.attribute_id = 4";
 
-        var result = await connection.QueryFirstOrDefaultAsync<FareRulePriceOutput>(query, parameters);
+        var result = await connection.QueryFirstOrDefaultAsync<FareRuleAttributeCompositeOutput>(query, parameters);
 
         return result;
     }
