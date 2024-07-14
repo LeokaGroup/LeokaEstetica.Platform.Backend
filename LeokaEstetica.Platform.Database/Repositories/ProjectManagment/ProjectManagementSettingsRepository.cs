@@ -186,7 +186,8 @@ internal sealed class ProjectManagementSettingsRepository : BaseRepository, IPro
         var parameters = new DynamicParameters();
         parameters.Add("@projectId", projectId);
 
-        var query = "SELECT pi.\"UserId\", " +
+        var query = "WITH ordered_query AS (" +
+                    "SELECT pi.\"UserId\", " +
                     "pi.\"LastName\", " +
                     "pi.\"FirstName\", " +
                     "pi.\"Patronymic\" AS \"SecondName\", " +
@@ -206,11 +207,15 @@ internal sealed class ProjectManagementSettingsRepository : BaseRepository, IPro
                     "INNER JOIN dbo.\"Users\" AS u " +
                     "ON pi.\"UserId\" = u.\"UserId\" " +
                     "WHERE op.project_id = @projectId " +
-                    "AND op.is_active";
+                    "AND op.is_active" +
+                    ")" +
+                    "SELECT * FROM ordered_query WHERE IsOwner = TRUE " +
+                    "UNION ALL " +
+                    "SELECT * FROM ordered_query WHERE IsOwner = FALSE";
 
         var result = await connection.QueryAsync<ProjectSettingUserOutput>(query, parameters);
 
-        return result.OrderByDescending(user => user.IsOwner);
+        return result;
     }
     
     /// <inheritdoc />
