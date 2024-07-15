@@ -196,30 +196,6 @@ internal sealed class FareRuleRepository : BaseRepository, IFareRuleRepository
     }
 
     /// <inheritdoc />
-    public async Task<bool> CheckAvailableEmployeesCountFareRuleAsync(Guid publicId, int employeesCount)
-    {
-        using var connection = await ConnectionProvider.GetConnectionAsync();
-
-        var parameters = new DynamicParameters();
-        parameters.Add("@publicId", publicId);
-        parameters.Add("@employeesCount", employeesCount);
-
-        var query = @"SELECT CASE
-           WHEN (SELECT max_value
-                 FROM (SELECT av.max_value
-                       FROM rules.fare_rule_attribute_values AS av
-                                INNER JOIN rules.fare_rules AS fr
-                                           ON av.rule_id = fr.rule_id
-                       WHERE av.attribute_id = 2
-                         AND fr.public_id = @publicId)) <= @employeesCount THEN TRUE
-           ELSE FALSE END";
-
-        var result = await connection.ExecuteScalarAsync<bool>(query, parameters);
-
-        return result;
-    }
-
-    /// <inheritdoc />
     public async Task<FareRuleAttributeCompositeOutput?> GetFareRuleByPublicIdAsync(Guid publicId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
@@ -235,6 +211,26 @@ internal sealed class FareRuleRepository : BaseRepository, IFareRuleRepository
                           AND av.attribute_id = 4";
 
         var result = await connection.QueryFirstOrDefaultAsync<FareRuleAttributeCompositeOutput>(query, parameters);
+
+        return result;
+    }
+
+    /// <inheritdoc />
+    public async Task<int> GetUserFareRuleIdByUserIdAsync(long userId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+        
+        var parameters = new DynamicParameters();
+        parameters.Add("@userId", userId);
+        
+        var query = @"SELECT s.rule_id
+                        FROM subscriptions.user_subscriptions AS us
+                                 INNER JOIN subscriptions.all_subscriptions AS s
+                                            ON us.subscription_id = s.subscription_id
+                        WHERE us.user_id = @userId
+                          AND us.is_active";
+                          
+        var result = await connection.QueryFirstOrDefaultAsync<int>(query, parameters);
 
         return result;
     }

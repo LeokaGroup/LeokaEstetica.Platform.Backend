@@ -8,7 +8,7 @@ namespace LeokaEstetica.Platform.Models.Dto.Common.Cache.Output;
 public class CreateOrderCacheOutput : IFrontError
 {
     /// <summary>
-    /// PK.
+    /// Id тарифа.
     /// </summary>
     public int RuleId { get; set; }
 
@@ -56,9 +56,4 @@ public class CreateOrderCacheOutput : IFrontError
     /// Признак необходимости ожидания действий пользователя.
     /// </summary>
     public bool IsNeedUserAction { get; set; }
-
-    /// <summary>
-    /// Признак необходимости сменить тариф.
-    /// </summary>
-    public bool IsNeedChangeFareRule { get; set; }
 }

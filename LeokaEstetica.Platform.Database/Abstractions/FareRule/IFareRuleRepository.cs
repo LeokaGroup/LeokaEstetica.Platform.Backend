@@ -45,20 +45,16 @@ public interface IFareRuleRepository
     Task<FareRuleEntity> GetFareRuleDetailsByObjectIdAsync(int objectId);
 
     /// <summary>
-    /// Метод проверяет, доступно ли на указанном тарифе указанное кол-во сотрудников проекта.
-    /// Если нет, то предлагаем сменить тариф.
-    /// </summary>
-    /// <param name="publicId">Публичный ключ тарифа.</param>
-    /// <param name="employeesCount">Кол-во сотрудников.</param>
-    /// <returns>Признак возможного создания тарифа.</returns>
-    Task<bool> CheckAvailableEmployeesCountFareRuleAsync(Guid publicId, int employeesCount);
-
-    /// <summary>
     /// Метод получает тариф по его PublicId.
     /// </summary>
     /// <param name="publicId">Публичный ключ тарифа.</param>
     /// <returns>Данные тарифа.</returns>
     Task<FareRuleAttributeCompositeOutput?> GetFareRuleByPublicIdAsync(Guid publicId);
 
-    // Task<FareRuleAttributeCompositeOutput> GetUserFareRuleAsync(long userId);
+    /// <summary>
+    /// Метод получает Id тарифа пользователя по Id пользователя.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Id тарифа пользователя.</returns>
+    Task<int> GetUserFareRuleIdByUserIdAsync(long userId);
 }

@@ -1,6 +1,5 @@
 using System.Runtime.CompilerServices;
 using AutoMapper;
-using FluentValidation;
 using FluentValidation.Results;
 using LeokaEstetica.Platform.Access.Abstractions.User;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
@@ -124,12 +123,10 @@ internal sealed class CommerceService : ICommerceService
                 var ex = new NotFoundUserIdByAccountException(account);
                 throw ex;
             }
-            
-            var subscription = await _subscriptionRepository.GetUserSubscriptionAsync(userId);
-        
-            if (subscription is null)
+
+            if (createOrderCacheInput.EmployeesCount <= 0)
             {
-                throw new InvalidOperationException($"Не удалось получить подписку. UserId: {userId}");
+                throw new InvalidOperationException("Не передано кол-во сотрудников для оформления тарифа.");
             }
 
             // Получаем тариф, на который пользователь пытается перейти.
@@ -173,26 +170,7 @@ internal sealed class CommerceService : ICommerceService
             // Если не было подтверждения действия от пользователя.
             if (!createOrderCacheInput.IsCompleteUserAction)
             {
-                // Проверяем, вмещает ли тариф кол-во сотрудников, которое хочет пользователь.
-                var isCorrectEmployeesCnt = await _fareRuleRepository.CheckAvailableEmployeesCountFareRuleAsync(
-                    createOrderCacheInput.PublicId, createOrderCacheInput.EmployeesCount);
-
-                // Предлагаем сменить тариф, так как цена выросла.
-                // Тариф не вмещает кол-во сотрудников - будет изменение цены за рамки цены тарифа.
-                if (!isCorrectEmployeesCnt)
-                {
-                    result.Errors.Add(new ValidationFailure
-                    {
-                        Severity = Severity.Warning,
-                        ErrorMessage = "Выбранный тариф не вмещает в себя указанное количество сотрудников. " +
-                                       "Выберите другой тариф."
-                    });
-                }
-
                 result.IsNeedUserAction = true;
-                result.IsNeedChangeFareRule = true;
-
-                return result;
             }
 
             var order = new CreateOrderCache
@@ -210,7 +188,6 @@ internal sealed class CommerceService : ICommerceService
 
             result = _mapper.Map<CreateOrderCacheOutput>(order);
             result.IsNeedUserAction = false;
-            result.IsNeedChangeFareRule = false;
 
             return result;
         }

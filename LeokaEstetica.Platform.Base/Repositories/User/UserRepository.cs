@@ -9,7 +9,6 @@ using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Models.Dto.Output.User;
 using LeokaEstetica.Platform.Models.Entities.Moderation;
 using LeokaEstetica.Platform.Models.Entities.Profile;
-using LeokaEstetica.Platform.Models.Entities.Subscription;
 using LeokaEstetica.Platform.Models.Entities.Ticket;
 using LeokaEstetica.Platform.Models.Entities.User;
 using Microsoft.EntityFrameworkCore;
@@ -27,7 +26,6 @@ internal sealed class UserRepository : BaseRepository, IUserRepository
     private readonly PgContext _pgContext;
     private readonly ILogger<UserRepository> _logger;
     private readonly IConfiguration _configuration;
-    private bool _isNew;
 
     /// <summary>
     /// Конструктор.
@@ -79,7 +77,6 @@ internal sealed class UserRepository : BaseRepository, IUserRepository
             var pgContext = CreateNewPgContextFactory.CreateNewPgContext(_configuration);
             result = await pgContext.Users
                 .FirstOrDefaultAsync(u => u.UserId == userId);
-            _isNew = true;
         }
 
         return result;
@@ -574,42 +571,6 @@ internal sealed class UserRepository : BaseRepository, IUserRepository
     }
 
     /// <summary>
-    /// Метод проставляет срок подписки пользователю.
-    /// </summary>
-    /// <param name="userId">Id пользователя.</param>
-    /// <param name="startDate">Дата начала подписки.</param>
-    /// <param name="endDate">Дата конца подписки.</param>
-    /// <returns>Признак записи подписки пользователю.</returns>
-    public async Task<bool> SetSubscriptionDatesAsync(long userId, DateTime startDate, DateTime endDate)
-    {
-        var user = await GetUserByUserIdAsync(userId);
-
-        if (user is null)
-        {
-            return false;
-        }
-        
-        user.SubscriptionStartDate = startDate;
-        user.SubscriptionEndDate = endDate;
-
-        if (_isNew)
-        {
-            var pgContext = CreateNewPgContextFactory.CreateNewPgContext(_configuration);
-            
-            pgContext.Update(user);
-            await pgContext.SaveChangesAsync();
-        }
-
-        else
-        {
-            _pgContext.Update(user);
-            await _pgContext.SaveChangesAsync();   
-        }
-
-        return true;
-    }
-
-    /// <summary>
     /// Метод восстанавливает пароль создавая новый.
     /// </summary>
     /// <param name="passwordHash">Хэш пароля.</param>
@@ -650,53 +611,49 @@ internal sealed class UserRepository : BaseRepository, IUserRepository
         await _pgContext.SaveChangesAsync();
     }
 
-    /// <summary>
-    /// Метод проставляет подписку пользователю.
-    /// </summary>
-    /// <param name="ruleId">Id тарифа, на который переходит пользователь.</param>
-    /// <param name="userId">Id пользователя.</param>
-    /// <param name="month">Кол-во месяцев, на которое оформляется подписка.</param>
-    public async Task SetSubscriptionAsync(int ruleId, long userId, int month)
+    /// <inheritdoc />
+    public async Task SetSubscriptionAsync(int ruleId, long userId, int month, int days)
     {
-        UserSubscriptionEntity userSubscription;
-        var isNew = false;
-        PgContext pgContext = null;
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+        using var transaction = connection.BeginTransaction(IsolationLevel.ReadCommitted);
         
+        var startDate = DateTime.UtcNow; // Дата начала подписки.
+        var endDate = startDate.AddDays(days); // Вычисляем дату окончания подписки.
+
         try
         {
-            userSubscription = await _pgContext.UserSubscriptions
-                .FirstOrDefaultAsync(s => s.UserId == userId);
+            // Устанавливаем срок действия подписки пользователя.
+            var setDatesParameters = new DynamicParameters();
+            setDatesParameters.Add("@userId", userId);
+            setDatesParameters.Add("@subscriptionStartDate", startDate);
+            setDatesParameters.Add("@subscriptionEndDate", endDate);
+
+            var setDatesQuery = "UPDATE dbo.\"Users\" " +
+                                "SET \"SubscriptionStartDate\" = @subscriptionStartDate, " +
+                                "\"SubscriptionEndDate\" = @subscriptionEndDate " +
+                                "WHERE \"UserId\" = @userId";
+
+            await connection.ExecuteAsync(setDatesQuery, setDatesParameters);
+
+            var parameters = new DynamicParameters();
+            parameters.Add("@ruleId", ruleId);
+            parameters.Add("@userId", userId);
+            parameters.Add("@month", month);
+
+            var query = "UPDATE subscriptions.user_subscriptions " +
+                        "SET month_count = @month, " +
+                        "subscription_id = @ruleId " +
+                        "WHERE user_id = @userId";
+        
+            await connection.ExecuteAsync(query, parameters);
+        
+            transaction.Commit();
         }
         
-        // TODO: При dispose PgContext пересоздаем датаконтекст и пробуем снова.
-        catch (ObjectDisposedException _)
+        catch
         {
-            pgContext = CreateNewPgContextFactory.CreateNewPgContext(_configuration);
-            userSubscription = await pgContext.UserSubscriptions
-                .FirstOrDefaultAsync(s => s.UserId == userId);
-            isNew = true;
-        }
-
-        if (userSubscription is null)
-        {
-            throw new InvalidOperationException("Не удалось получить подписку пользователя." +
-                                                $"UserId: {userId}." +
-                                                $"RuleId: {ruleId}.");
-        }
-
-        userSubscription.SubscriptionId = ruleId;
-        userSubscription.MonthCount = (short)month;
-
-        if (isNew)
-        {
-            pgContext.Update(userSubscription);
-            await pgContext.SaveChangesAsync();
-        }
-
-        else
-        {
-            _pgContext.Update(userSubscription);
-            await _pgContext.SaveChangesAsync();
+            transaction.Rollback();
+            throw;
         }
     }
     

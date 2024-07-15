@@ -180,8 +180,8 @@ internal sealed class YandexKassaService : IYandexKassaService
                 throw ex;
             }
 
-            var paymentOrderAggregateInput = CreatePaymentOrderAggregateInputResult(order, orderCache, createOrderInput,
-                userId, publicId, fareRuleName, account, month);
+            var paymentOrderAggregateInput = CreatePaymentOrderAggregateInputResult(order, orderCache,
+                createOrderInput, userId, publicId, fareRuleName, account, month);
 
             // TODO: Разобрать бардак, который в этой факторке. Факторка не должна выполнять логики процессинга.
             // TODO: Ее задача формирование моделей и валидации не более.
@@ -199,7 +199,7 @@ internal sealed class YandexKassaService : IYandexKassaService
         
         catch (Exception ex)
         {
-            _logger.LogError(ex, ex.Message);
+            _logger.LogCritical(ex, ex.Message);
             throw;
         }
     }
@@ -323,7 +323,7 @@ internal sealed class YandexKassaService : IYandexKassaService
     /// <param name="publicId">Публичный ключ тарифа.</param>
     /// <param name="month">Кол-во мес, на которые оплачивается тариф.</param>
     /// <returns>Модель запроса в ПС PayMaster.</returns>
-    private async Task<CreateOrderYandexKassaInput> CreateOrderRequestAsync(string fareRuleName, decimal price,
+    private async Task<CreateOrderYandexKassaInput> CreateOrderRequestAsync(string? fareRuleName, decimal price,
         int ruleId, Guid publicId, short month)
     {
         var isTestMode = await _globalConfigRepository.GetValueByKeyAsync<bool>(
@@ -360,7 +360,7 @@ internal sealed class YandexKassaService : IYandexKassaService
     /// <returns>Наполненная входная модель для создания заказа.</returns>
     private CreatePaymentOrderAggregateInput CreatePaymentOrderAggregateInputResult(CreateOrderYandexKassaOutput order,
         CreateOrderCache orderCache, CreateOrderYandexKassaInput createOrderInput, long userId, Guid publicId,
-        string fareRuleName, string account, short month)
+        string? fareRuleName, string account, short month)
     {
         var reesult = new CreatePaymentOrderAggregateInput
         {

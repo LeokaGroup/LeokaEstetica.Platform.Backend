@@ -38,7 +38,7 @@ public class OrderCacheOutput
     /// <summary>
     /// Название тарифа.
     /// </summary>
-    public string FareRuleName { get; set; }
+    public string? FareRuleName { get; set; }
     
     /// <summary>
     /// Признак успешности прохождения по лимитам.
@@ -48,7 +48,7 @@ public class OrderCacheOutput
     /// <summary>
     /// Тип лимитов, по которым не прошли.
     /// </summary>
-    public string ReductionSubscriptionLimits { get; set; }
+    public string? ReductionSubscriptionLimits { get; set; }
 
     /// <summary>
     /// Кол-во на которое нужно уменьшить для прохождения по лимитам.
