@@ -1,10 +1,12 @@
 using Autofac;
 using LeokaEstetica.Platform.Access.Abstractions.AvailableLimits;
 using LeokaEstetica.Platform.Access.Abstractions.Moderation;
+using LeokaEstetica.Platform.Access.Abstractions.ProjectManagement;
 using LeokaEstetica.Platform.Access.Abstractions.Resume;
 using LeokaEstetica.Platform.Access.Abstractions.User;
 using LeokaEstetica.Platform.Access.Services.AvailableLimits;
 using LeokaEstetica.Platform.Access.Services.Moderation;
+using LeokaEstetica.Platform.Access.Services.ProjectManagement;
 using LeokaEstetica.Platform.Access.Services.Resume;
 using LeokaEstetica.Platform.Access.Services.User;
 using LeokaEstetica.Platform.Core.Attributes;
@@ -57,13 +59,18 @@ public class AccessModule : Module
             .InstancePerLifetimeScope();
         
         // Сервис проверки блокировки пользователей.
-        builder
-            .RegisterType<AccessUserService>()
+        builder.RegisterType<AccessUserService>()
             .Named<IAccessUserService>("AccessUserService")
             .InstancePerLifetimeScope();
-        builder
-            .RegisterType<AccessUserService>()
+        builder.RegisterType<AccessUserService>()
             .As<IAccessUserService>()
+            .InstancePerLifetimeScope();
+            
+        builder.RegisterType<AccessModuleService>()
+            .Named<IAccessModuleService>("AccessModuleService")
+            .InstancePerLifetimeScope();
+        builder.RegisterType<AccessModuleService>()
+            .As<IAccessModuleService>()
             .InstancePerLifetimeScope();
     }
 }

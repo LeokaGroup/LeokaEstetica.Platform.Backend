@@ -41,11 +41,6 @@ public class Enum : IEnum
     /// Тип Enum для типа диалога нейросети.
     /// </summary>
     public const string ObjectTypeDialogAi = "object_type_dialog_ai";
-    
-    /// <summary>
-    /// Тип Enum для типов модуля, к которому проверяется доступ.
-    /// </summary>
-    public const string AccessModuleType = "access_module_type_enum";
 
     /// <summary>
     /// Конструктор по дефолту.
@@ -123,16 +118,6 @@ public class Enum : IEnum
     public Enum(DiscussionTypeEnum value)
     {
         Type = ObjectTypeDialogAi;
-        Value = value.ToString().ToSnakeCase();
-    }
-
-    /// <summary>
-    /// Конструктор.
-    /// </summary>
-    /// <param name="value">Значение типа.</param>
-    public Enum(AccessModuleTypeEnum value)
-    {
-        Type = AccessModuleType;
         Value = value.ToString().ToSnakeCase();
     }
 

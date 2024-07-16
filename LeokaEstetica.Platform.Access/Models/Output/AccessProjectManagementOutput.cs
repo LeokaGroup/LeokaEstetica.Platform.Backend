@@ -18,5 +18,10 @@ public class AccessProjectManagementOutput
     /// <summary>
     /// Описание запрета.
     /// </summary>
-    public string? ForbiddenDetails { get; set; }
+    public string? ForbiddenText { get; set; }
+
+    /// <summary>
+    /// Информация о тарифах, на которых доступна функция.
+    /// </summary>
+    public string? FareRuleText { get; set; }
 }
