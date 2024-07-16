@@ -17,7 +17,7 @@ public class CreateVacancyValidator : AbstractValidator<VacancyInput>
             .NotNull()
             .WithMessage(ValidationConst.Vacancy.EMPTY_VACANCY_NAME);
 
-        RuleFor(p => p.VacancyName)
+        RuleFor(p => p.VacancyText)
             .NotEmpty()
             .WithMessage(ValidationConst.Vacancy.EMPTY_VACANCY_TEXT)
             .NotNull()

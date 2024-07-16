@@ -220,8 +220,17 @@ internal sealed class VacancyService : IVacancyService
                 throw ex;
             }
 
-            // Получаем подписку пользователя.
-            var userSubscription = await _subscriptionRepository.GetUserSubscriptionAsync(userId);
+            //Проверяем есть ли хотя бы один проект у пользователя
+			if (!await _projectRepository.CheckExistsUserProjectAsync(userId))
+            {
+				await _vacancyNotificationsService.SendNotificationErrorCreatedUserVacancyAsync("Внимание",
+					"Нет проектов для привязки к нему вакансии. Вакансия создается для конкретного проекта.",
+					NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
+				return new VacancyOutput();
+            }
+
+			// Получаем подписку пользователя.
+			var userSubscription = await _subscriptionRepository.GetUserSubscriptionAsync(userId);
             
             if (userSubscription is null)
             {
