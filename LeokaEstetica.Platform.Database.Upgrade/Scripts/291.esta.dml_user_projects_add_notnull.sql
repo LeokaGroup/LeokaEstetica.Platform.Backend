@@ -1,2 +1,2 @@
-﻿ALTER TABLE IF EXISTS "Projects"."UserProjects"
+﻿ALTER TABLE "Projects"."UserProjects"
     ALTER COLUMN "IsPublic" SET NOT NULL;
