@@ -58,5 +58,15 @@ public enum AccessModuleComponentTypeEnum
     /// <summary>
     /// Интеграция с телеграм.
     /// </summary>
-    TelegramIntegration = 10
+    TelegramIntegration = 10,
+    
+    /// <summary>
+    /// Отчеты.
+    /// </summary>
+    Reports = 11,
+    
+    /// <summary>
+    /// Графики.
+    /// </summary>
+    Charts = 12
 }

@@ -16,6 +16,7 @@ internal sealed class AccessModuleService : IAccessModuleService
 
     private const string AVAILABLE_FARE_RULE_ALL = "Функция доступна на тарифах \"Стартовый\", \"Основной\", " +
                                                    " \"Комплекстный\".";
+    private const string AVAILABLE_FARE_RULE_MAIN = "Функция доступна на тарифах \"Основной\", \"Комплекстный\".";
 
     /// <summary>
     /// Конструктор.
@@ -87,21 +88,21 @@ internal sealed class AccessModuleService : IAccessModuleService
                             result.ForbiddenTitle = "Виртуальная доска";
                             result.ForbiddenText = "Виртуальная доска позволяет проектировать схемы разных типов, " +
                                                    "сохранять схемы, экспортировать схемы в разные форматы.";
-                            result.FareRuleText = AVAILABLE_FARE_RULE_ALL;
+                            result.FareRuleText = AVAILABLE_FARE_RULE_MAIN;
                             break;
                             
                         // TODO: Дополнить описание.
                         case AccessModuleComponentTypeEnum.CreationRecruitStaff:
                             result.ForbiddenTitle = "Создание потребности на подбор сотрудников";
                             result.ForbiddenText = "";
-                            result.FareRuleText = AVAILABLE_FARE_RULE_ALL;
+                            result.FareRuleText = AVAILABLE_FARE_RULE_MAIN;
                             break;
                         
                         case AccessModuleComponentTypeEnum.GuestAccessProjectTask:
                             result.ForbiddenTitle = "Гостевой доступ к проекту и задачам";
                             result.ForbiddenText = "Гостевой доступ предоставляет приглашенным пользователям только " +
                                                    "право на чтение.";
-                            result.FareRuleText = AVAILABLE_FARE_RULE_ALL;
+                            result.FareRuleText = AVAILABLE_FARE_RULE_MAIN;
                             break;
                         
                         case AccessModuleComponentTypeEnum.GoogleCalendarIntegration:
@@ -109,7 +110,7 @@ internal sealed class AccessModuleService : IAccessModuleService
                             result.ForbiddenText = "Интеграция с Google-календарем предлагает возможность " +
                                                    "интеграции с Google-календарем. Благодаря этому можно видеть " +
                                                    "расписание сотрудников из Google-календаря в своих календарях.";
-                            result.FareRuleText = AVAILABLE_FARE_RULE_ALL;
+                            result.FareRuleText = AVAILABLE_FARE_RULE_MAIN;
                             break;
                             
                         case AccessModuleComponentTypeEnum.TelegramIntegration:
@@ -117,7 +118,21 @@ internal sealed class AccessModuleService : IAccessModuleService
                             result.ForbiddenText = "Интеграция с Telegram предлагает возможность " +
                                                    "получать уведомления о новых задачах и ключевых действиях прямо " +
                                                    "в своем Telegram.";
-                            result.FareRuleText = AVAILABLE_FARE_RULE_ALL;
+                            result.FareRuleText = AVAILABLE_FARE_RULE_MAIN;
+                            break;
+                        
+                        case AccessModuleComponentTypeEnum.Reports:
+                            result.ForbiddenTitle = "Отчеты";
+                            result.ForbiddenText = "Доступ к отчетам по трудозатратам, аналитике и других типов " +
+                                                   "отчетов с возможностью экспорта в разные форматы.";
+                            result.FareRuleText = AVAILABLE_FARE_RULE_MAIN;
+                            break;
+                        
+                        case AccessModuleComponentTypeEnum.Charts:
+                            result.ForbiddenTitle = "Графики";
+                            result.ForbiddenText = "Доступ к отчетам по трудозатратам, аналитике и других типов " +
+                                                   "отчетов с возможностью экспорта в разные форматы.";
+                            result.FareRuleText = AVAILABLE_FARE_RULE_MAIN;
                             break;
 
                         default:
