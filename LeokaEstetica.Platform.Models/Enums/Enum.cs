@@ -43,6 +43,16 @@ public class Enum : IEnum
     public const string ObjectTypeDialogAi = "object_type_dialog_ai";
 
     /// <summary>
+    /// Тип Enum для типа модуля.
+    /// </summary>
+    public const string AccessModuleType = "access_module_type_enum";
+    
+    /// <summary>
+    /// Тип Enum для типа компонента модуля.
+    /// </summary>
+    public const string AccessModuleComponentType = "access_module_component_type_enum";
+
+    /// <summary>
     /// Конструктор по дефолту.
     /// </summary>
     /// <param name="type">Тип Enum в базе данных.</param>
@@ -119,6 +129,26 @@ public class Enum : IEnum
     {
         Type = ObjectTypeDialogAi;
         Value = value.ToString().ToSnakeCase();
+    }
+    
+    /// <summary>
+    /// Конструктор.
+    /// </summary>
+    /// <param name="value">Значение типа.</param>
+    public Enum(AccessModuleTypeEnum value)
+    {
+        Type = AccessModuleType;
+        Value = value.ToString();
+    }
+    
+    /// <summary>
+    /// Конструктор.
+    /// </summary>
+    /// <param name="value">Значение типа.</param>
+    public Enum(AccessModuleComponentTypeEnum value)
+    {
+        Type = AccessModuleComponentType;
+        Value = value.ToString();
     }
 
     /// <inheritdoc/>

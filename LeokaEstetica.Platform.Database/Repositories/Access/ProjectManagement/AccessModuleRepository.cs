@@ -3,6 +3,7 @@ using LeokaEstetica.Platform.Base.Abstractions.Connection;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.Base;
 using LeokaEstetica.Platform.Database.Access.ProjectManagement;
 using LeokaEstetica.Platform.Models.Enums;
+using Enum = LeokaEstetica.Platform.Models.Enums.Enum;
 
 namespace LeokaEstetica.Platform.Database.Repositories.Access.ProjectManagement;
 
@@ -27,19 +28,19 @@ internal sealed class AccessModuleRepository : BaseRepository, IAccessModuleRepo
 
         var parameters = new DynamicParameters();
         parameters.Add("@projectId", projectId);
-        parameters.Add("@accessModule", accessModule);
-        parameters.Add("@accessModuleComponentType", accessModuleComponentType);
+        parameters.Add("@accessModule", new Enum(accessModule).Value);
+        parameters.Add("@accessModuleComponentType", new Enum(accessModuleComponentType).Value);
 
         var query = "SELECT amc.is_access " +
                     "FROM access.access_module AS am " +
                     "INNER JOIN access.access_module_components AS amc " +
                     "ON am.module_id = amc.module_id " +
-                    "WHERE am.module_type = @accessModule " +
+                    "WHERE am.module_type = @accessModule::access.ACCESS_MODULE_TYPE_ENUM " +
                     "AND amc.object_id = @projectId " +
                     "AND am.is_access " +
-                    "AND amc.component_type = @accessModuleComponentType";
+                    "AND amc.component_type = @accessModuleComponentType::access.ACCESS_MODULE_COMPONENT_TYPE_ENUM";
         
-        var result = await connection.QueryFirstOrDefaultAsync<bool>(query, parameters);
+        var result = await connection.ExecuteScalarAsync<bool>(query, parameters);
 
         return result;
     }

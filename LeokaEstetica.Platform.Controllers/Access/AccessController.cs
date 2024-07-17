@@ -44,7 +44,7 @@ public class AccessController : BaseController
     /// <param name="projectId">Id проекта.</param>
     /// <param name="accessModule">Тип модуля.</param>
     /// <param name="accessModuleComponentType">Тип компонента, к которому проверяется доступ.</param>
-    /// <returns>Модель с результатами проверки доступа, к которому проверяется доступ..</returns>
+    /// <returns>Модель с результатами проверки доступа, к которому проверяется доступ.</returns>
     [HttpGet]
     [Route("access-module")]
     [ProducesResponseType(200, Type = typeof(AccessProjectManagementOutput))]

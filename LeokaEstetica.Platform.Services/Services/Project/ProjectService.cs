@@ -971,6 +971,7 @@ internal sealed class ProjectService : IProjectService
             // Проверяем заполнение анкеты и даем доступ либо нет.
             var isEmptyProfile = await _accessUserService.IsProfileEmptyAsync(currentUserId);
 
+            // TODO: А надо ли вообще тут проверять анкету? Просто приглашаем же.
             // Если нет доступа, то не даем оплатить платный тариф.
             if (isEmptyProfile)
             {
