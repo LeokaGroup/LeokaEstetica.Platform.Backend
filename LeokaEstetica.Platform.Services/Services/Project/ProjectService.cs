@@ -2,7 +2,7 @@ using System.Globalization;
 using System.Runtime.CompilerServices;
 using AutoMapper;
 using Dapper;
-using LeokaEstetica.Platform.Access.Abstractions.AvailableLimits;
+using LeokaEstetica.Platform.Access.Abstractions.ProjectManagement;
 using LeokaEstetica.Platform.Access.Abstractions.User;
 using LeokaEstetica.Platform.Access.Enums;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
@@ -35,7 +35,6 @@ using LeokaEstetica.Platform.Services.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Services.Builders;
 using LeokaEstetica.Platform.Services.Consts;
 using LeokaEstetica.Platform.Services.Strategies.Project.Team;
-using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.Config;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Project;
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
@@ -87,7 +86,6 @@ internal sealed class ProjectService : IProjectService
     private readonly BaseProjectsFilterChain _projectStageSearchInvestorsFilterChain =
         new ProjectStageSearchInvestorsFilterChain();
 
-    private readonly IAvailableLimitsService _availableLimitsService;
     private readonly ISubscriptionRepository _subscriptionRepository;
     private readonly IFareRuleRepository _fareRuleRepository;
     private readonly IMailingsService _mailingsService;
@@ -114,8 +112,6 @@ internal sealed class ProjectService : IProjectService
     private readonly IAccessUserNotificationsService _accessUserNotificationsService;
     private readonly IAccessUserService _accessUserService;
     private readonly IProjectModerationRepository _projectModerationRepository;
-    
-    private const string NOT_AVAILABLE_DELETE_PROJECT_ARCHIVE = "Невозможно убрать проект из архива, так как у Вас уже опубликовано максимальное количество проектов соответствующих максимальному лимиту тарифа. Добавьте в архив проекты, чтобы освободить лимиты либо перейдите на тариф, который имеет большие лимиты";
 
     private readonly IDiscordService _discordService;
     private readonly IProjectManagementSettingsRepository _projectManagementSettingsRepository;
@@ -124,6 +120,8 @@ internal sealed class ProjectService : IProjectService
     /// Id вакансий, которые будут удалены из результата.
     /// </summary>
     private readonly List<long> _removedVacancyIds = new();
+
+    private readonly IAccessModuleService _accessModuleService;
 
     /// <summary>
     /// Конструктор.
@@ -135,7 +133,6 @@ internal sealed class ProjectService : IProjectService
     /// <param name="projectNotificationsService">Сервис уведомлений.</param>
     /// <param name="vacancyService">Сервис вакансий.</param>
     /// <param name="vacancyRepository">Репозиторий вакансий.</param>
-    /// <param name="availableLimitsService">Сервис проверки лимитов.</param>
     /// <param name="vacancyModerationService">Сервис модерации вакансий проектов.</param>
     /// <param name="notificationsRepository">Репозиторий уведомлений.</param>
     /// <param name="accessUserNotificationsService">Сервис уведомлений доступа пользователя.</param>
@@ -146,6 +143,7 @@ internal sealed class ProjectService : IProjectService
     /// <param name="globalConfigRepository">Репозиторий глобал конфига.</param>
     /// <param name="projectManagmentRepository">Репозиторий модуля УП.</param>
     /// <param name="wikiTreeRepository">Репозиторий Wiki модуля УП.</param>
+    /// <param name="accessModuleService">Сервис проверки доступов.</param>
     public ProjectService(IProjectRepository projectRepository,
         ILogger<ProjectService> logger,
         IUserRepository userRepository,
@@ -153,7 +151,6 @@ internal sealed class ProjectService : IProjectService
         IProjectNotificationsService projectNotificationsService,
         IVacancyService vacancyService,
         IVacancyRepository vacancyRepository, 
-        IAvailableLimitsService availableLimitsService, 
         ISubscriptionRepository subscriptionRepository, 
         IFareRuleRepository fareRuleRepository, 
         IVacancyModerationService vacancyModerationService, 
@@ -167,7 +164,8 @@ internal sealed class ProjectService : IProjectService
         IProjectManagementSettingsRepository projectManagementSettingsRepository,
         IGlobalConfigRepository globalConfigRepository,
         IProjectManagmentRepository projectManagmentRepository,
-        IWikiTreeRepository wikiTreeRepository)
+        IWikiTreeRepository wikiTreeRepository,
+        IAccessModuleService accessModuleService)
     {
         _projectRepository = projectRepository;
         _logger = logger;
@@ -176,7 +174,6 @@ internal sealed class ProjectService : IProjectService
         _projectNotificationsService = projectNotificationsService;
         _vacancyService = vacancyService;
         _vacancyRepository = vacancyRepository;
-        _availableLimitsService = availableLimitsService;
         _subscriptionRepository = subscriptionRepository;
         _fareRuleRepository = fareRuleRepository;
         _vacancyModerationService = vacancyModerationService;
@@ -191,6 +188,7 @@ internal sealed class ProjectService : IProjectService
         _globalConfigRepository = globalConfigRepository;
         _projectManagmentRepository = projectManagmentRepository;
         _wikiTreeRepository = wikiTreeRepository;
+        _accessModuleService = accessModuleService;
 
         // Определяем обработчики цепочки фильтров.
         _dateProjectsFilterChain.Successor = _projectsVacanciesFilterChain;
@@ -953,40 +951,21 @@ internal sealed class ProjectService : IProjectService
     /// <param name="vacancyId">Id вакансии.</param>
     /// <param name="account">Аккаунт пользователя.</param>
     /// <param name="token">Токен пользователя.</param>
-    public async Task InviteProjectTeamAsync(string inviteText,
+    /// <returns>Выходная модель.</returns>
+    public async Task<InviteProjectTeamOutput> InviteProjectTeamAsync(string inviteText,
         ProjectInviteTypeEnum inviteType, long projectId, long? vacancyId, string account, string token)
     {
         try
         {
             await ValidateInviteProjectTeamParams(inviteText, inviteType, projectId, vacancyId, account, token);
             
-            var currentUserId = await _userRepository.GetUserIdByEmailAsync(account);
+            var userId = await _userRepository.GetUserIdByEmailAsync(account);
             
-            if (currentUserId <= 0)
+            if (userId <= 0)
             {
                 var ex = new NotFoundUserIdByAccountException(inviteText);
                 throw ex;
             }
-            
-            // Проверяем заполнение анкеты и даем доступ либо нет.
-            var isEmptyProfile = await _accessUserService.IsProfileEmptyAsync(currentUserId);
-
-            // TODO: А надо ли вообще тут проверять анкету? Просто приглашаем же.
-            // Если нет доступа, то не даем оплатить платный тариф.
-            if (isEmptyProfile)
-            {
-                var ex = new InvalidOperationException(
-                    $"Анкета пользователя не заполнена. UserId был: {currentUserId}");
-
-                await _accessUserNotificationsService.SendNotificationWarningEmptyUserProfileAsync("Внимание",
-                    "Для приглашения пользователей в проект должна быть заполнена информация вашей анкеты.",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
-                
-                throw ex;
-            }
-
-            // Находим Id пользователя, которого приглашаем в проект.
-            var inviteUserId = await GetUserIdAsync(inviteText, inviteType);
 
             // Проверяем нахождение проекта на модерации.
             var isProjectModeration = await _projectRepository.CheckProjectModerationAsync(projectId);
@@ -1021,10 +1000,28 @@ internal sealed class ProjectService : IProjectService
                 
                 throw ex;
             }
+            
+            // Проверяем тариф пользователя.
+            // Если бесплатный, то проверяем лимит сотрудников в команде проекта.
+            var access = await _accessModuleService.CheckAccessInviteProjectTeamMemberAsync(projectId, account);
 
+            // Не даем пригласить в команду проекта.
+            if (!access.IsAccess)
+            {
+                return new InviteProjectTeamOutput
+                {
+                    ForbiddenTitle = access.ForbiddenTitle,
+                    ForbiddenText = access.ForbiddenText,
+                    FareRuleText = access.FareRuleText,
+                    IsAccess = false
+                };
+            }
 
             // Получаем Id команды проекта.
             var teamId = await _projectRepository.GetProjectTeamIdAsync(projectId);
+            
+            // Находим Id пользователя, которого приглашаем в проект.
+            var inviteUserId = await GetUserIdAsync(inviteText, inviteType);
             
             var isInvitedUser = await _projectRepository.CheckProjectTeamMemberAsync(teamId, inviteUserId);
 
@@ -1034,7 +1031,7 @@ internal sealed class ProjectService : IProjectService
                 var ex = new InvalidOperationException("Пользователь уже был приглашен в команду проекта. " +
                                                        $"TeamId: {teamId}. " +
                                                        $"InvitedUserId: {inviteUserId}. " +
-                                                       $"CurrentUserId: {currentUserId}");
+                                                       $"UserId: {userId}");
                 
                 await _projectNotificationsService.SendNotificationWarningUserAlreadyProjectInvitedTeamAsync(
                     "Внимание",
@@ -1052,6 +1049,8 @@ internal sealed class ProjectService : IProjectService
             // Записываем уведомления о приглашении в проект.
             await _projectNotificationsRepository.AddNotificationInviteProjectAsync(projectId, vacancyId, inviteUserId,
                 projectName);
+
+            return new ProjectTeamMemberOutput { IsAccess = true };
         }
 
         catch (Exception ex)

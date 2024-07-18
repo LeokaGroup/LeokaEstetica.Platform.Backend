@@ -240,10 +240,10 @@ internal class BaseServiceTest
         
         var wikiRepository = new WikiTreeRepository(connectionProvider);
         ProjectService = new ProjectService(projectRepository, null, userRepository, mapper,
-            ProjectNotificationsService, VacancyService, vacancyRepository, availableLimitsService,
+            ProjectNotificationsService, VacancyService, vacancyRepository,
             subscriptionRepository, FareRuleRepository, VacancyModerationService, projectNotificationsRepository, null,
             accessUserService, fillColorProjectsService, null, ProjectModerationRepository, discordService, null,
-            globalConfigRepository, projectManagementRepository, wikiRepository);
+            globalConfigRepository, projectManagementRepository, wikiRepository, null);
         
         var ordersRepository = new OrdersRepository(pgContext);
         var commerceRepository = new CommerceRepository(pgContext, AppConfiguration);
