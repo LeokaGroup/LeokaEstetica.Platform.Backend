@@ -247,7 +247,7 @@ internal sealed class AccessModuleService : IAccessModuleService
                 // Смотрим, сколько уже сотрудников в команде проекта.
                 if (projectTeamMembers is not null 
                     && projectTeamMembers.Count > 0 
-                    && projectTeamMembers.Count > userFareRuleSubscription.MinValue.Value)
+                    && projectTeamMembers.Count == userFareRuleSubscription.MinValue.Value)
                 {
                     result.IsAccess = false;
                     result.ForbiddenTitle = "Превышен лимит по сотрудникам";
