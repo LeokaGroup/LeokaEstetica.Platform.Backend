@@ -41,6 +41,17 @@ public class AccessModerationService : IAccessModerationService
                 throw new NotFoundUserIdByAccountException(account);
             }
             
+            var isRole = await _accessModerationRepository.CheckAccessUserRoleModerationAsync(userId);
+            
+            // Если нет нужной роли, не пускаем к модерации.
+            if (!isRole)
+            {
+                return new ModerationRoleOutput()
+                {
+                    AccessModeration = false
+                };
+            }
+            
             var passwordHash = await _accessModerationRepository.GetPasswordHashByEmailAsync(userId);
 
             if (passwordHash is null)
@@ -48,15 +59,7 @@ public class AccessModerationService : IAccessModerationService
                 throw new InvalidOperationException("Хэш пароль не удалось получить для пользователя. " +
                                                     $"UserId: {userId}." +
                                                     $"Account: {account}");
-            }
-
-            var isRole = await _accessModerationRepository.CheckAccessUserRoleModerationAsync(userId);
-
-            // Если нет нужной роли, не пускаем к модерации.
-            if (!isRole)
-            {
-                throw new InvalidOperationException($"У пользователя нет прав на доступ к КЦ. UserId: {userId}");
-            }
+            }    
 
             var result = new ModerationRoleOutput { AccessModeration = true };
 
