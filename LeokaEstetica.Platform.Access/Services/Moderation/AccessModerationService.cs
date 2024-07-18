@@ -3,6 +3,7 @@ using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Access;
 using LeokaEstetica.Platform.CallCenter.Models.Dto.Output.Role;
+using LeokaEstetica.Platform.Integrations.Abstractions.Discord;
 using Microsoft.Extensions.Logging;
 
 namespace LeokaEstetica.Platform.Access.Services.Moderation;
@@ -15,14 +16,17 @@ public class AccessModerationService : IAccessModerationService
     private readonly ILogger<AccessModerationService> _logger;
     private readonly IAccessModerationRepository _accessModerationRepository;
     private readonly IUserRepository _userRepository;
+    private readonly IDiscordService _discordService;
 
     public AccessModerationService(ILogger<AccessModerationService> logger, 
         IAccessModerationRepository accessModerationRepository, 
-        IUserRepository userRepository)
+        IUserRepository userRepository, 
+        IDiscordService discordService)
     {
         _logger = logger;
         _accessModerationRepository = accessModerationRepository;
         _userRepository = userRepository;
+        _discordService = discordService;
     }
 
     /// <summary>
@@ -53,12 +57,15 @@ public class AccessModerationService : IAccessModerationService
             }
             
             var passwordHash = await _accessModerationRepository.GetPasswordHashByEmailAsync(userId);
-
+            
             if (passwordHash is null)
             {
-                throw new InvalidOperationException("Хэш пароль не удалось получить для пользователя. " +
+                var ex = new InvalidOperationException("У пользователя нет прав на модерацию (не удалось получить хэш пароль)." +
                                                     $"UserId: {userId}." +
                                                     $"Account: {account}");
+                
+                await _discordService.SendNotificationErrorAsync(ex);
+                throw ex;
             }    
 
             var result = new ModerationRoleOutput { AccessModeration = true };
