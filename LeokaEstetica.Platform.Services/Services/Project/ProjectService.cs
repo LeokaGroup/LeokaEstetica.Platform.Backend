@@ -547,9 +547,18 @@ internal sealed class ProjectService : IProjectService
             
             // Проверяем доступ к проекту.
             var isOwner = await _projectRepository.CheckProjectOwnerAsync(projectId, userId);
-            
-            // Нет доступа на изменение.
-            if (!isOwner && mode == ModeEnum.Edit)
+
+			//Нет доступа к проекту
+			if (!isOwner)
+			{
+				return new ProjectOutput
+				{
+					IsAccess = false,
+					ProjectRemarks = new List<ProjectRemarkOutput>()
+				};
+			}
+			// Нет доступа на изменение.
+			if (!isOwner && mode == ModeEnum.Edit)
             {
                 return new ProjectOutput
                 {
