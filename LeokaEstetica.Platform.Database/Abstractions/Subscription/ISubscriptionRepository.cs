@@ -1,5 +1,6 @@
-using LeokaEstetica.Platform.Core.Enums;
+using LeokaEstetica.Platform.Models.Dto.Output.Subscription;
 using LeokaEstetica.Platform.Models.Entities.Subscription;
+using LeokaEstetica.Platform.Models.Enums;
 
 namespace LeokaEstetica.Platform.Database.Abstractions.Subscription;
 
@@ -63,4 +64,12 @@ public interface ISubscriptionRepository
     /// </summary>
     /// <param name="userId">Id пользователя.</param>
     Task AutoDefaultUserSubscriptionAsync(long userId);
+
+    /// <summary>
+    /// Метод получает подписку пользователя по его Id.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <param name="attributeId">Id аттрибута тарифа, который проверяем.</param>
+    /// <returns>Данные подписки.</returns>
+    Task<SubscriptionFareRuleCompositeOutput?> GetUserSubscriptionFareRuleByUserIdAsync(long userId, int attributeId);
 }
