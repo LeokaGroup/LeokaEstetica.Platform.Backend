@@ -8,7 +8,9 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <Content Include="Scripts\298.esta.ddl_alter_access_module_components.sql" />
         <EmbeddedResource Include="Scripts\*.sql" />
+        <Content Include="Scripts\297.esta.ddl_create_access_module_component_type_enum.sql" />
     </ItemGroup>
 
     <ItemGroup>

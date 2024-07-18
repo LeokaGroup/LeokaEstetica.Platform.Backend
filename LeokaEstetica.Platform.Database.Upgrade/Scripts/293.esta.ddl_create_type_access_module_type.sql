@@ -1,0 +1,1 @@
+﻿CREATE TYPE access.ACCESS_MODULE_TYPE_ENUM AS ENUM ('project-management');

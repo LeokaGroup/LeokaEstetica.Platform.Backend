@@ -12,17 +12,17 @@ public class CreatePaymentOrderAggregateInput
     /// <summary>
     /// Даные выходной модели заказа.
     /// </summary>
-    public ICreateOrderOutput CreateOrderOutput { get; set; }
+    public ICreateOrderOutput? CreateOrderOutput { get; set; }
 
     /// <summary>
     /// Данные заказа из кэша.
     /// </summary>
-    public CreateOrderCache OrderCache { get; set; }
+    public CreateOrderCache? OrderCache { get; set; }
 
     /// <summary>
     /// Даные входной модели заказа.
     /// </summary>
-    public ICreateOrderInput CreateOrderInput { get; set; }
+    public ICreateOrderInput? CreateOrderInput { get; set; }
 
     /// <summary>
     /// Id пользователя.
@@ -37,12 +37,12 @@ public class CreatePaymentOrderAggregateInput
     /// <summary>
     /// Название тарифа.
     /// </summary>
-    public string FareRuleName { get; set; }
+    public string? FareRuleName { get; set; }
 
     /// <summary>
     /// Аккаунт пользователя.
     /// </summary>
-    public string Account { get; set; }
+    public string? Account { get; set; }
 
     /// <summary>
     /// Кол-во месяцев, на которое оформлен тариф.

@@ -1,0 +1,1 @@
+﻿CREATE TYPE subscriptions.SUBSCRIPTION_TYPE_ENUM AS ENUM ('FareRule');

@@ -4,7 +4,8 @@
     rule_name           VARCHAR(150)   NOT NULL,
     position INT NOT NULL DEFAULT 0,
     is_free      BOOLEAN NOT NULL DEFAULT FALSE,
-    CONSTRAINT pk_rule_id PRIMARY KEY (rule_id)
+    CONSTRAINT pk_rule_id PRIMARY KEY (rule_id),
+    fare_rules UUID NOT NULL
 );
 
 COMMENT ON TABLE rules.fare_rules IS 'Таблица тарифов.';

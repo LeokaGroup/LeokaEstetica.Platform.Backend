@@ -1,8 +1,10 @@
+using LeokaEstetica.Platform.Models.Dto.Output.FareRule;
 using LeokaEstetica.Platform.Models.Entities.FareRule;
 
 namespace LeokaEstetica.Platform.Database.Abstractions.FareRule;
 
 /// <summary>
+/// TODO: Выпилить ненужные методы.
 /// Абстракция репозитория правил тарифа.
 /// </summary>
 public interface IFareRuleRepository
@@ -27,6 +29,7 @@ public interface IFareRuleRepository
     Task<List<FareRuleEntity>> GetFareRulesNamesByIdsAsync(IEnumerable<long> fareRuleIds);
     
     /// <summary>
+    /// TODO: Выпилить его, у нас есть новый метод на Dapper.
     /// Метод получает тариф по его PublicId.
     /// </summary>
     /// <param name="publicId">Публичный ключ тарифа.</param>
@@ -34,9 +37,24 @@ public interface IFareRuleRepository
     Task<FareRuleEntity> GetByPublicIdAsync(Guid publicId);
 
     /// <summary>
-    /// Метод получает тариф по его PublicId.
+    /// TODO: Выпилим.
+    /// Метод получает тариф по его ObjectId.
     /// </summary>
     /// <param name="objectId">Id объекта (тарифа).</param>
     /// <returns>Данные тарифа.</returns>
     Task<FareRuleEntity> GetFareRuleDetailsByObjectIdAsync(int objectId);
+
+    /// <summary>
+    /// Метод получает тариф по его PublicId.
+    /// </summary>
+    /// <param name="publicId">Публичный ключ тарифа.</param>
+    /// <returns>Данные тарифа.</returns>
+    Task<FareRuleAttributeCompositeOutput?> GetFareRuleByPublicIdAsync(Guid publicId);
+
+    /// <summary>
+    /// Метод получает Id тарифа пользователя по Id пользователя.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Id тарифа пользователя.</returns>
+    Task<int> GetUserFareRuleIdByUserIdAsync(long userId);
 }

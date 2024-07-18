@@ -26,8 +26,10 @@ using LeokaEstetica.Platform.Database.Abstractions.Subscription;
 using LeokaEstetica.Platform.Database.Abstractions.Template;
 using LeokaEstetica.Platform.Database.Abstractions.Ticket;
 using LeokaEstetica.Platform.Database.Abstractions.Vacancy;
+using LeokaEstetica.Platform.Database.Access.ProjectManagement;
 using LeokaEstetica.Platform.Database.Access.Ticket;
 using LeokaEstetica.Platform.Database.Access.User;
+using LeokaEstetica.Platform.Database.Repositories.Access.ProjectManagement;
 using LeokaEstetica.Platform.Database.Repositories.Access.Ticket;
 using LeokaEstetica.Platform.Database.Repositories.Access.User;
 using LeokaEstetica.Platform.Database.Repositories.AvailableLimits;
@@ -354,5 +356,12 @@ public class RepositoriesModule : Module
             
         builder.RegisterLazy<IWikiTreeRepository, WikiTreeRepository>();
         builder.RegisterLazy<IProjectManagementSettingsRepository, ProjectManagementSettingsRepository>();
+        
+        builder.RegisterType<AccessModuleRepository>()
+            .Named<IAccessModuleRepository>("AccessModuleRepository")
+            .InstancePerLifetimeScope();
+        builder.RegisterType<AccessModuleRepository>()
+            .As<IAccessModuleRepository>()
+            .InstancePerLifetimeScope();
     }
 }

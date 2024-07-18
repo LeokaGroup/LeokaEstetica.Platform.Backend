@@ -223,15 +223,6 @@ public interface IUserRepository
     Task<(DateTime? StartDate, DateTime? EndDate)> GetUserSubscriptionUsedDateAsync(long userId);
 
     /// <summary>
-    /// Метод проставляет срок подписки пользователю.
-    /// </summary>
-    /// <param name="userId">Id пользователя.</param>
-    /// <param name="startDate">Дата начала подписки.</param>
-    /// <param name="endDate">Дата конца подписки.</param>
-    /// <returns>Признак записи подписки пользователю.</returns>
-    Task<bool> SetSubscriptionDatesAsync(long userId, DateTime startDate, DateTime endDate);
-
-    /// <summary>
     /// Метод восстанавливает пароль создавая новый.
     /// </summary>
     /// <param name="passwordHash">Хэш пароля.</param>
@@ -256,7 +247,8 @@ public interface IUserRepository
     /// <param name="ruleId">Id тарифа, на который переходит пользователь.</param>
     /// <param name="userId">Id пользователя.</param>
     /// <param name="month">Кол-во месяцев, на которое оформляется подписка.</param>
-    Task SetSubscriptionAsync(int ruleId, long userId, int month);
+    /// <param name="days">Суммируем дни от каждого месяца.</param>
+    Task SetSubscriptionAsync(int ruleId, long userId, int month, int days);
     
     /// <summary>
     /// Метод получает ФИО авторов задач по их Id.

@@ -99,9 +99,8 @@ internal sealed class YandexKassaService : IYandexKassaService
     {
         try
         {
-            using var scope = _transactionScopeFactory.CreateTransactionScope();
             var userId = await _userRepository.GetUserByEmailAsync(account);
-
+            
             // Проверяем заполнение анкеты и даем доступ либо нет.
             var isEmptyProfile = await _accessUserService.IsProfileEmptyAsync(userId);
 
@@ -120,6 +119,8 @@ internal sealed class YandexKassaService : IYandexKassaService
                 throw ex;
             }
             
+            using var scope = _transactionScopeFactory.CreateTransactionScope();
+
             // Получаем заказ из кэша.
             var key = await _commerceRedisService.CreateOrderCacheKeyAsync(userId, publicId);
             var orderCache = await _commerceRedisService.GetOrderCacheAsync(key);
@@ -145,6 +146,7 @@ internal sealed class YandexKassaService : IYandexKassaService
 
             _logger.LogInformation("Начало создания заказа.");
 
+            // TODO: Переделать на факторку HttpClientFactory.
             using var httpClient = new HttpClient().SetYandexKassaRequestAuthorizationHeader(_configuration);
 
             // Создаем платеж в ПС.
@@ -178,9 +180,11 @@ internal sealed class YandexKassaService : IYandexKassaService
                 throw ex;
             }
 
-            var paymentOrderAggregateInput = CreatePaymentOrderAggregateInputResult(order, orderCache, createOrderInput,
-                userId, publicId, fareRuleName, account, month);
+            var paymentOrderAggregateInput = CreatePaymentOrderAggregateInputResult(order, orderCache,
+                createOrderInput, userId, publicId, fareRuleName, account, month);
 
+            // TODO: Разобрать бардак, который в этой факторке. Факторка не должна выполнять логики процессинга.
+            // TODO: Ее задача формирование моделей и валидации не более.
             var result = await CreatePaymentOrderFactory.CreatePaymentOrderResultAsync(paymentOrderAggregateInput,
                     _configuration, _commerceRepository, _rabbitMqService, _globalConfigRepository, _mailingsService);
 
@@ -195,7 +199,7 @@ internal sealed class YandexKassaService : IYandexKassaService
         
         catch (Exception ex)
         {
-            _logger.LogError(ex, ex.Message);
+            _logger.LogCritical(ex, ex.Message);
             throw;
         }
     }
@@ -319,7 +323,7 @@ internal sealed class YandexKassaService : IYandexKassaService
     /// <param name="publicId">Публичный ключ тарифа.</param>
     /// <param name="month">Кол-во мес, на которые оплачивается тариф.</param>
     /// <returns>Модель запроса в ПС PayMaster.</returns>
-    private async Task<CreateOrderYandexKassaInput> CreateOrderRequestAsync(string fareRuleName, decimal price,
+    private async Task<CreateOrderYandexKassaInput> CreateOrderRequestAsync(string? fareRuleName, decimal price,
         int ruleId, Guid publicId, short month)
     {
         var isTestMode = await _globalConfigRepository.GetValueByKeyAsync<bool>(
@@ -356,7 +360,7 @@ internal sealed class YandexKassaService : IYandexKassaService
     /// <returns>Наполненная входная модель для создания заказа.</returns>
     private CreatePaymentOrderAggregateInput CreatePaymentOrderAggregateInputResult(CreateOrderYandexKassaOutput order,
         CreateOrderCache orderCache, CreateOrderYandexKassaInput createOrderInput, long userId, Guid publicId,
-        string fareRuleName, string account, short month)
+        string? fareRuleName, string account, short month)
     {
         var reesult = new CreatePaymentOrderAggregateInput
         {

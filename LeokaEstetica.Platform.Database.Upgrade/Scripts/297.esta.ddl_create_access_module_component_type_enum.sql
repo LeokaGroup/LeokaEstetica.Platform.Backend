@@ -1,0 +1,1 @@
+﻿CREATE TYPE access.ACCESS_MODULE_COMPONENT_TYPE_ENUM AS ENUM ('ProjectTemplate', 'ProjectTaskTemplate', 'ProjectTaskFilter', 'ProjectOnboarding', 'EmployeeTime', 'VirtualBoard', 'CreationRecruitStaff', 'GuestAccessProjectTask', 'GoogleCalendarIntegration', 'TelegramIntegration');

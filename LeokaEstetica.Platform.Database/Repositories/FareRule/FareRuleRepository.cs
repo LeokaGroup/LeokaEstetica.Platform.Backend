@@ -1,6 +1,10 @@
+using Dapper;
+using LeokaEstetica.Platform.Base.Abstractions.Connection;
+using LeokaEstetica.Platform.Base.Abstractions.Repositories.Base;
 using LeokaEstetica.Platform.Base.Factors;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Database.Abstractions.FareRule;
+using LeokaEstetica.Platform.Models.Dto.Output.FareRule;
 using LeokaEstetica.Platform.Models.Entities.FareRule;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -10,8 +14,9 @@ namespace LeokaEstetica.Platform.Database.Repositories.FareRule;
 /// <summary>
 /// Класс реализует методы репозитория правил тарифа.
 /// </summary>
-internal sealed class FareRuleRepository : IFareRuleRepository
+internal sealed class FareRuleRepository : BaseRepository, IFareRuleRepository
 {
+    // TODO: Выпилить датаконтекст и конфигурацию отсюда.
     private readonly PgContext _pgContext;
     private readonly IConfiguration _configuration;
     
@@ -19,8 +24,12 @@ internal sealed class FareRuleRepository : IFareRuleRepository
     /// Конструктор.
     /// </summary>
     /// <param name="pgContext">Датаконтекст.</param>
+    /// <param name="configuration">Конфигурация приложения.</param>
+    /// <param name="connectionProvider">Провайдер БД.</param>
     public FareRuleRepository(PgContext pgContext,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        IConnectionProvider connectionProvider)
+        : base(connectionProvider)
     {
         _pgContext = pgContext;
         _configuration = configuration;
@@ -102,6 +111,7 @@ internal sealed class FareRuleRepository : IFareRuleRepository
     }
 
     /// <summary>
+    /// TODO: Выпилить его, у нас есть новый метод на Dapper.
     /// Метод получает тариф по его PublicId.
     /// </summary>
     /// <param name="publicId">Публичный ключ тарифа.</param>
@@ -181,6 +191,46 @@ internal sealed class FareRuleRepository : IFareRuleRepository
                 IsPopular = fr.IsPopular
             })
             .FirstOrDefaultAsync();
+
+        return result;
+    }
+
+    /// <inheritdoc />
+    public async Task<FareRuleAttributeCompositeOutput?> GetFareRuleByPublicIdAsync(Guid publicId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@publicId", publicId);
+
+        var query = @"SELECT av.min_value, av.max_value, av.rule_id, fr.rule_name 
+                        FROM rules.fare_rule_attribute_values AS av
+                         INNER JOIN rules.fare_rules AS fr
+                            ON av.rule_id = fr.rule_id
+                        WHERE av.rule_id = @ruleId
+                          AND av.attribute_id = 4";
+
+        var result = await connection.QueryFirstOrDefaultAsync<FareRuleAttributeCompositeOutput>(query, parameters);
+
+        return result;
+    }
+
+    /// <inheritdoc />
+    public async Task<int> GetUserFareRuleIdByUserIdAsync(long userId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+        
+        var parameters = new DynamicParameters();
+        parameters.Add("@userId", userId);
+        
+        var query = @"SELECT s.rule_id
+                        FROM subscriptions.user_subscriptions AS us
+                                 INNER JOIN subscriptions.all_subscriptions AS s
+                                            ON us.subscription_id = s.subscription_id
+                        WHERE us.user_id = @userId
+                          AND us.is_active";
+                          
+        var result = await connection.QueryFirstOrDefaultAsync<int>(query, parameters);
 
         return result;
     }
