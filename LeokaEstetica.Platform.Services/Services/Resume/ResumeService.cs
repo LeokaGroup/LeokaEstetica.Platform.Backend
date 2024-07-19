@@ -136,12 +136,40 @@ internal sealed class ResumeService : IResumeService
     /// </summary>
     /// <param name="resumeId">Id анкеты пользователя.</param>
     /// <returns>Данные анкеты.</returns>
-    public async Task<UserInfoOutput> GetResumeAsync(long resumeId)
+    public async Task<UserInfoOutput> GetResumeAsync(long resumeId, string account)
     {
         try
         {
+            
             var result = await _resumeRepository.GetResumeAsync(resumeId);
+            if (result == null)
+            {
+                var ex = new NotFoundResumeByIdException(resumeId);
+                throw ex;
+            }
 
+			
+			var userId = await _userRepository.GetUserByEmailAsync(account);
+
+			if (userId <= 0)
+			{
+				var ex = new NotFoundUserIdByAccountException(account);
+				throw ex;
+			}
+
+			//Проверяем доступ к анкете
+			var isOwner = await _resumeRepository.CheckResumeOwnerAsync(result.ProfileInfoId,userId);
+
+            //Нет доступа к анкете
+            if (!isOwner)
+            {
+                return new UserInfoOutput
+                {
+                    IsAccess=false,
+                    IsSuccess=false,
+                };
+
+			}
             // Наполняем результат.
             await CreateModifyUserResult(result);
 
