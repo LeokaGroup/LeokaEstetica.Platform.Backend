@@ -394,7 +394,13 @@ internal sealed class VacancyService : IVacancyService
             var isOwner = await _vacancyRepository.CheckVacancyOwnerAsync(vacancyId, userId);
 
             var result = new VacancyOutput();
-            
+
+            //нет доступа к вакансии
+            if (!isOwner)
+            {
+                result.IsAccess = false;
+                return result;
+            }
             // Нет доступа на изменение.
             if (!isOwner && mode == ModeEnum.Edit)
             {
