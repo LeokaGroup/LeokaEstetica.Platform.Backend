@@ -399,6 +399,7 @@ internal sealed class VacancyService : IVacancyService
             if (!isOwner)
             {
                 result.IsAccess = false;
+                result.IsSuccess = false;
                 return result;
             }
             // Нет доступа на изменение.
