@@ -4,6 +4,7 @@ using LeokaEstetica.Platform.Base.Filters;
 using LeokaEstetica.Platform.Database.Abstractions.FareRule;
 using LeokaEstetica.Platform.Models.Dto.Output.FareRule;
 using LeokaEstetica.Platform.Services.Abstractions.FareRule;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LeokaEstetica.Platform.Controllers.FareRule;
@@ -39,6 +40,7 @@ public class FareRuleController : BaseController
     /// Метод получает список тарифов.
     /// </summary>
     /// <returns>Список тарифов.</returns>
+    [AllowAnonymous]
     [HttpGet]
     [Route("get-rules")]
     [ProducesResponseType(200, Type = typeof(IEnumerable<FareRuleCompositeOutput>))]
@@ -57,6 +59,7 @@ public class FareRuleController : BaseController
     /// Метод получает детали тарифа по подписке.
     /// </summary>
     /// <param name="objectId">Id объекта (тарифа).</param>
+    [AllowAnonymous]
     [HttpGet]
     [Route("details")]
     [ProducesResponseType(200, Type = typeof(FareRuleOutput))]
