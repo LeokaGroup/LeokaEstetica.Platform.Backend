@@ -2,7 +2,6 @@ using System.Runtime.CompilerServices;
 using Dapper;
 using LeokaEstetica.Platform.Database.Abstractions.FareRule;
 using LeokaEstetica.Platform.Models.Dto.Output.FareRule;
-using LeokaEstetica.Platform.Models.Entities.FareRule;
 using LeokaEstetica.Platform.Services.Abstractions.FareRule;
 using Microsoft.Extensions.Logging;
 
@@ -58,39 +57,61 @@ internal sealed class FareRuleService : IFareRuleService
             // Заполняем атрибутами каждый тариф.
             foreach (var fr in fareRules)
             {
-                var attributes = (from av in fareRuleAttributeValues
-                        join a in fareRuleAttributes
-                            on av.AttributeId equals a.AttributeId
-                        where av.RuleId == fr.RuleId
-                        select a)
-                    ?.AsList();
-
-                if (attributes is null || attributes.Count == 0)
-                {
-                    throw new InvalidOperationException("Ошибка заполнения атрибутов тарифа. " +
-                                                        $"FareRuleId: {fr.RuleId}.");
-                }
+                // Получаем значения атрибутов тарифа.
+                var attributeValues = fareRuleAttributeValues.Where(x => x.RuleId == fr.RuleId)?.AsList();
                 
-                // Заполняем значения атрибута тарифа.
-                foreach (var attr in attributes)
+                if (attributeValues is null || attributeValues.Count == 0)
                 {
-                    var attributeValues = fareRuleAttributeValues
-                        .Where(x => x.RuleId == fr.RuleId
-                                    && attr.AttributeId == x.AttributeId)
-                        ?.AsList();
-
-                    if (attributeValues is null || attributeValues.Count == 0)
-                    {
-                        throw new InvalidOperationException("Ошибка заполнения значениями атрибута тарифа. " +
-                                                            $"FareRuleId: {fr.RuleId}. " +
-                                                            $"AttributeId: {attr.AttributeId}.");
-                    }
-                    
-                    attr.FareRuleAttributeValues.AsList().AddRange(attributeValues);
+                    throw new InvalidOperationException("Ошибка заполнения значениями атрибута тарифа. " +
+                                                        $"FareRuleId: {fr.RuleId}.");
                 }
 
                 // Заполняем атрибуты тарифа.
-                fr.FareRuleAttributes.AsList().AddRange(attributes);
+                foreach (var fra in fareRuleAttributes)
+                {
+                    fra.FareRuleAttributeValues ??= new List<FareRuleAttributeValueOutput>();
+                    
+                    if (fra.AttributeId == 1 && fr.RuleId == 1)
+                    {
+                        fra.FareRuleAttributeValues.AsList().Add(new FareRuleAttributeValueOutput
+                        {
+                            RuleId = fr.RuleId,
+                            MinValue = 5,
+                            MaxValue = null,
+                            IsPrice = false,
+                            IsRange = false,
+                            AttributeId = fra.AttributeId,
+                            Content = "Бесплатный"
+                        });
+                        
+                        continue;
+                    }
+
+                    // Исключаем первый атрибут, так как он лишь у бесплатного тарифа.
+                    if (fra.AttributeId == 1)
+                    {
+                        continue;
+                    }
+
+                    // Значения атрибутов тарифа.
+                    var attrValues = attributeValues
+                        .Where(x => x.AttributeId == fra.AttributeId
+                                    && x.RuleId == fr.RuleId)
+                        ?.AsList();
+                    
+                    if (attrValues is null || attrValues.Count == 0)
+                    {
+                        throw new InvalidOperationException("Ошибка получения значений атрибутов тарифа. " +
+                                                            $"FareRuleId: {fr.RuleId}.");
+                    }
+                    
+                    fra.FareRuleAttributeValues.AsList().AddRange(attrValues);
+                }
+
+                fr.FareRuleAttributes ??= new List<FareRuleAttributeOutput>();
+                
+                // Атрибуты тарифа.
+                fr.FareRuleAttributes.AsList().AddRange(fareRuleAttributes);
 
                 // Заполняем тариф.
                 result.Add(fr);

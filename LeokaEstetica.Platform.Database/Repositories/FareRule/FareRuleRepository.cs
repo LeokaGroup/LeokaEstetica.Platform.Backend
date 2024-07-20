@@ -58,22 +58,22 @@ internal sealed class FareRuleRepository : BaseRepository, IFareRuleRepository
 
         var fareRuleAttributesQuery = "SELECT attribute_id, " +
                                       "attribute_name, " +
-                                      "attribute_details, " +
+                                      "attribute_details " +
                                       "FROM rules.fare_rule_attributes " +
                                       "ORDER BY position";
                                       
         result.FareRuleAttributes = await connection.QueryAsync<FareRuleAttributeOutput>(fareRuleAttributesQuery);
 
-        var fareRuleAttributeValuesQuery = "SELECT av.value_id, " +
-                                           "av.rule_id, " +
-                                           "av.is_price, " +
-                                           "av.attribute_id, " +
-                                           "av.measure, " +
-                                           "av.min_value, " +
-                                           "av.max_value, " +
-                                           "av.is_range, " +
-                                           "av.content_tooltip, " +
-                                           "av.content " +
+        var fareRuleAttributeValuesQuery = "SELECT value_id, " +
+                                           "rule_id, " +
+                                           "is_price, " +
+                                           "attribute_id, " +
+                                           "measure, " +
+                                           "min_value, " +
+                                           "max_value, " +
+                                           "is_range, " +
+                                           "content_tooltip, " +
+                                           "content " +
                                            "FROM rules.fare_rule_attribute_values " +
                                            "ORDER BY position";
 
