@@ -319,9 +319,10 @@ internal sealed class VacancyService : IVacancyService
 
             await DeleteIfVacancyRemarksAsync(catalogVacancies);
 
+            // TODO: Выпилить, если у нас не будет выделения цветами тарифов.
             // Выбираем пользователей, у которых есть подписка выше бизнеса. Только их выделяем цветом.
-            result.CatalogVacancies = await _fillColorVacanciesService.SetColorBusinessVacancies(catalogVacancies,
-                _subscriptionRepository, _fareRuleRepository);
+            // result.CatalogVacancies = await _fillColorVacanciesService.SetColorBusinessVacancies(catalogVacancies,
+            //     _subscriptionRepository, _fareRuleRepository);
             
             FormatCatalogVacancies(catalogVacancies);
             

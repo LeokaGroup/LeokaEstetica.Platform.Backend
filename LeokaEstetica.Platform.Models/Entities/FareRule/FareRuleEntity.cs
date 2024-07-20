@@ -1,6 +1,7 @@
 namespace LeokaEstetica.Platform.Models.Entities.FareRule;
 
 /// <summary>
+/// TODO: Выпилить, перешли на DTO.
 /// Класс сопоставляется с таблицей правил тарифа Rules.FareRules.
 /// </summary>
 public class FareRuleEntity

@@ -12,6 +12,7 @@ using LeokaEstetica.Platform.Services.Abstractions.Resume;
 namespace LeokaEstetica.Platform.Services.Services.Resume;
 
 /// <summary>
+/// TODO: Выпилить сервис, если у нас не будет выделения цветами тарифов.
 /// Сервис выделение цветом резюме пользователей.
 /// </summary>
 internal sealed class FillColorResumeService : IFillColorResumeService
@@ -32,56 +33,56 @@ internal sealed class FillColorResumeService : IFillColorResumeService
     /// <param name="subscriptionRepository">Сервис подписок.</param>
     /// <param name="fareRuleRepository">Сервис правил тарифов.</param>
     /// <returns>Список резюме, с проставленным флагом IsSelectedColor.</returns>
-    public async Task<IEnumerable<UserInfoOutput>> SetColorBusinessResume(List<UserInfoOutput> resumesList,
-        ISubscriptionRepository subscriptionRepository, IFareRuleRepository fareRuleRepository)
-    {
-        // Получаем ИДшники пользователей.
-        var userIds = resumesList.Select(resume => resume.UserId).Distinct();
-        
-        // Получаем список подписок.
-        var subscriptions = await subscriptionRepository.GetSubscriptionsAsync();
-        
-        // Получаем список тарифов.
-        var fareRules = await fareRuleRepository.GetFareRulesAsync();
-        var fareRulesList = fareRules.AsList();
-        
-        // Получаем подписки пользователей.
-        var usersSubscriptions = await subscriptionRepository.GetUsersSubscriptionsAsync(userIds);
-        
-        foreach (var resume in resumesList)
-        {
-            // Ищем подписку пользователя-владельца резюме.
-            var resumeOwnerSubscription = usersSubscriptions.Find(sub => sub.UserId == resume.UserId);
-            
-            if (resumeOwnerSubscription is null)
-            {
-                continue;
-            }
-            
-            // Получаем информацию о подписке.
-            var subscriptionId = resumeOwnerSubscription.SubscriptionId;
-            var subscriptionEntity = subscriptions.Find(sub => sub.ObjectId == subscriptionId);
-
-            if (subscriptionEntity is null)
-            {
-                continue;
-            }
-
-            // Получаем тариф подписки.
-            var fareRuleEntity = fareRulesList.Find(fr => fr.RuleId == subscriptionEntity.ObjectId);
-            
-            if (fareRuleEntity is null)
-            {
-                continue;
-            }
-            
-            // Проставляем цвета, если название тарифа пользователя находится в списке _fareRuleTypesNames.
-            if (_fareRuleTypesNames.Contains(fareRuleEntity.Name))
-            {
-                resume.IsSelectedColor = true;
-            }
-        }
-
-        return resumesList;
-    }
+    // public async Task<IEnumerable<UserInfoOutput>> SetColorBusinessResume(List<UserInfoOutput> resumesList,
+    //     ISubscriptionRepository subscriptionRepository, IFareRuleRepository fareRuleRepository)
+    // {
+    //     // Получаем ИДшники пользователей.
+    //     var userIds = resumesList.Select(resume => resume.UserId).Distinct();
+    //     
+    //     // Получаем список подписок.
+    //     var subscriptions = await subscriptionRepository.GetSubscriptionsAsync();
+    //     
+    //     // Получаем список тарифов.
+    //     var fareRules = await fareRuleRepository.GetFareRulesAsync();
+    //     var fareRulesList = fareRules.AsList();
+    //     
+    //     // Получаем подписки пользователей.
+    //     var usersSubscriptions = await subscriptionRepository.GetUsersSubscriptionsAsync(userIds);
+    //     
+    //     foreach (var resume in resumesList)
+    //     {
+    //         // Ищем подписку пользователя-владельца резюме.
+    //         var resumeOwnerSubscription = usersSubscriptions.Find(sub => sub.UserId == resume.UserId);
+    //         
+    //         if (resumeOwnerSubscription is null)
+    //         {
+    //             continue;
+    //         }
+    //         
+    //         // Получаем информацию о подписке.
+    //         var subscriptionId = resumeOwnerSubscription.SubscriptionId;
+    //         var subscriptionEntity = subscriptions.Find(sub => sub.ObjectId == subscriptionId);
+    //
+    //         if (subscriptionEntity is null)
+    //         {
+    //             continue;
+    //         }
+    //
+    //         // Получаем тариф подписки.
+    //         var fareRuleEntity = fareRulesList.Find(fr => fr.RuleId == subscriptionEntity.ObjectId);
+    //         
+    //         if (fareRuleEntity is null)
+    //         {
+    //             continue;
+    //         }
+    //         
+    //         // Проставляем цвета, если название тарифа пользователя находится в списке _fareRuleTypesNames.
+    //         if (_fareRuleTypesNames.Contains(fareRuleEntity.Name))
+    //         {
+    //             resume.IsSelectedColor = true;
+    //         }
+    //     }
+    //
+    //     return resumesList;
+    // }
 }

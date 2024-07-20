@@ -1579,9 +1579,10 @@ internal sealed class ProjectService : IProjectService
         
         await DeleteIfProjectRemarksAsync(catalogs);
             
+        // TODO: Выпилить, если у нас не будет выделения цветами тарифов.
         // Выбираем пользователей, у которых есть подписка выше бизнеса. Только их выделяем цветом.
-        projects = await _fillColorProjectsService.SetColorBusinessProjectsAsync(catalogs, _subscriptionRepository,
-            _fareRuleRepository);
+        // projects = await _fillColorProjectsService.SetColorBusinessProjectsAsync(catalogs, _subscriptionRepository,
+        //     _fareRuleRepository);
 
         // Очистка описание от тегов список проектов для каталога.
         projects = ClearCatalogVacanciesHtmlTags(projects.ToList());

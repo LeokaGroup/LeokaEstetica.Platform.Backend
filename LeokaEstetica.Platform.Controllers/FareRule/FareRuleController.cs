@@ -41,15 +41,14 @@ public class FareRuleController : BaseController
     /// <returns>Список тарифов.</returns>
     [HttpGet]
     [Route("get-rules")]
-    [ProducesResponseType(200, Type = typeof(IEnumerable<FareRuleOutput>))]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<FareRuleCompositeOutput>))]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<IEnumerable<FareRuleOutput>> GetFareRulesAsync()
+    public async Task<IEnumerable<FareRuleCompositeOutput>> GetFareRulesAsync()
     {
-        var items = await _fareRuleService.GetFareRulesAsync();
-        var result = _mapper.Map<IEnumerable<FareRuleOutput>>(items);
+        var result = await _fareRuleService.GetFareRulesAsync();
 
         return result;
     }
