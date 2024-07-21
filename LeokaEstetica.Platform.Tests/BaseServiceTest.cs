@@ -165,7 +165,7 @@ internal class BaseServiceTest
         var distributedCache = new MemoryDistributedCache(optionsForCache);
         var userRepository = new UserRepository(pgContext, null, AppConfiguration, connectionProvider);
         var profileRepository = new ProfileRepository(pgContext);
-        var subscriptionRepository = new SubscriptionRepository(pgContext);
+        var subscriptionRepository = new SubscriptionRepository(pgContext, connectionProvider);
         ChatRepository = new ChatRepository(pgContext, connectionProvider);
         var resumeModerationRepository = new ResumeModerationRepository(pgContext);
         var accessUserRepository = new AccessUserRepository(pgContext);
@@ -240,10 +240,10 @@ internal class BaseServiceTest
         
         var wikiRepository = new WikiTreeRepository(connectionProvider);
         ProjectService = new ProjectService(projectRepository, null, userRepository, mapper,
-            ProjectNotificationsService, VacancyService, vacancyRepository, availableLimitsService,
+            ProjectNotificationsService, VacancyService, vacancyRepository,
             subscriptionRepository, FareRuleRepository, VacancyModerationService, projectNotificationsRepository, null,
             accessUserService, fillColorProjectsService, null, ProjectModerationRepository, discordService, null,
-            globalConfigRepository, projectManagementRepository, wikiRepository);
+            globalConfigRepository, projectManagementRepository, wikiRepository, null);
         
         var ordersRepository = new OrdersRepository(pgContext);
         var commerceRepository = new CommerceRepository(pgContext, AppConfiguration);

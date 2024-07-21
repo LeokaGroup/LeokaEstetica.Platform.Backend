@@ -23,7 +23,7 @@ public class SubscriptionOutput
     /// <summary>
     /// Тип подписки.
     /// </summary>
-    public string SubscriptionType { get; set; }
+    public string? SubscriptionType { get; set; }
 
     /// <summary>
     /// Признак активной подписки пользователя (вычисляемое поле).
@@ -33,5 +33,5 @@ public class SubscriptionOutput
     /// <summary>
     /// Название подписки.
     /// </summary>
-    public string SubscriptionName { get; set; }
+    public string? SubscriptionName { get; set; }
 }

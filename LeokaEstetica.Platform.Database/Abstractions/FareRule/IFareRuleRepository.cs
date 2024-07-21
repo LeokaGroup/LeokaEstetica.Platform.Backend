@@ -51,11 +51,4 @@ public interface IFareRuleRepository
     /// <param name="publicId">Публичный ключ тарифа.</param>
     /// <returns>Данные тарифа.</returns>
     Task<FareRuleAttributeCompositeOutput?> GetFareRuleByPublicIdAsync(Guid publicId);
-
-    /// <summary>
-    /// Метод получает Id тарифа пользователя по Id пользователя.
-    /// </summary>
-    /// <param name="userId">Id пользователя.</param>
-    /// <returns>Id тарифа пользователя.</returns>
-    Task<int> GetUserFareRuleIdByUserIdAsync(long userId);
 }

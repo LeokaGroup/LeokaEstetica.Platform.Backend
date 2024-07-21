@@ -51,6 +51,11 @@ public class Enum : IEnum
     /// Тип Enum для типа компонента модуля.
     /// </summary>
     public const string AccessModuleComponentType = "access_module_component_type_enum";
+    
+    /// <summary>
+    /// Тип Enum для типа подписки.
+    /// </summary>
+    public const string SubscriptionType = "subscription_type_enum";
 
     /// <summary>
     /// Конструктор по дефолту.
@@ -148,6 +153,16 @@ public class Enum : IEnum
     public Enum(AccessModuleComponentTypeEnum value)
     {
         Type = AccessModuleComponentType;
+        Value = value.ToString();
+    }
+    
+    /// <summary>
+    /// Конструктор.
+    /// </summary>
+    /// <param name="value">Значение типа.</param>
+    public Enum(SubscriptionTypeEnum value)
+    {
+        Type = SubscriptionType;
         Value = value.ToString();
     }
 

@@ -1,5 +1,11 @@
-﻿using LeokaEstetica.Platform.Access.Abstractions.ProjectManagement;
+﻿using Dapper;
+using LeokaEstetica.Platform.Access.Abstractions.ProjectManagement;
 using LeokaEstetica.Platform.Access.Models.Output;
+using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
+using LeokaEstetica.Platform.Core.Exceptions;
+using LeokaEstetica.Platform.Database.Abstractions.FareRule;
+using LeokaEstetica.Platform.Database.Abstractions.Project;
+using LeokaEstetica.Platform.Database.Abstractions.Subscription;
 using LeokaEstetica.Platform.Database.Access.ProjectManagement;
 using LeokaEstetica.Platform.Models.Enums;
 using Microsoft.Extensions.Logging;
@@ -15,20 +21,39 @@ internal sealed class AccessModuleService : IAccessModuleService
     private readonly ILogger<AccessModuleService> _logger;
 
     private const string AVAILABLE_FARE_RULE_ALL = "Функция доступна на тарифах \"Стартовый\", \"Основной\", " +
-                                                   " \"Комплекстный\".";
-    private const string AVAILABLE_FARE_RULE_MAIN = "Функция доступна на тарифах \"Основной\", \"Комплекстный\".";
+                                                   " \"Комплексный\".";
+    private const string AVAILABLE_FARE_RULE_MAIN = "Функция доступна на тарифах \"Основной\", \"Комплексный\".";
+    
+    private readonly IUserRepository _userRepository;
+    private readonly IProjectRepository _projectRepository;
+    private readonly IFareRuleRepository _fareRuleRepository;
+    private readonly ISubscriptionRepository _subscriptionRepository;
 
     /// <summary>
     /// Конструктор.
     /// </summary>
     /// <param name="accessModuleRepository">Репозиторий проверки доступов к модулям.</param>
-    /// <param name="logger">Логгер..</param>
+    /// <param name="logger">Логгер.</param>
+    /// <param name="userRepository">Репозиторий пользователей.</param>
+    /// <param name="projectRepository">Репозиторий проектов.</param>
+    /// <param name="fareRuleRepository">Репозиторий тарифов.</param>
+    /// <param name="subscriptionRepository">Репозиторий подписок пользователей.</param>
     public AccessModuleService(IAccessModuleRepository accessModuleRepository,
-        ILogger<AccessModuleService> logger)
+        ILogger<AccessModuleService> logger,
+        IUserRepository userRepository,
+        IProjectRepository projectRepository,
+        IFareRuleRepository fareRuleRepository,
+        ISubscriptionRepository subscriptionRepository)
     {
         _accessModuleRepository = accessModuleRepository;
         _logger = logger;
+        _userRepository = userRepository;
+        _projectRepository = projectRepository;
+        _fareRuleRepository = fareRuleRepository;
+        _subscriptionRepository = subscriptionRepository;
     }
+
+    #region Публичные методы.
 
     /// <inheritdoc />
     public async Task<AccessProjectManagementOutput> CheckAccessProjectManagementModuleOrComponentAsync(long projectId,
@@ -157,4 +182,100 @@ internal sealed class AccessModuleService : IAccessModuleService
             throw;
         }
     }
+
+    /// <inheritdoc />
+    public async Task<AccessProjectManagementOutput> CheckAccessInviteProjectTeamMemberAsync(long projectId,
+        string account)
+    {
+        try
+        {
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+
+            var isOwner = await _projectRepository.CheckProjectOwnerAsync(projectId, userId);
+
+            if (!isOwner)
+            {
+                throw new InvalidOperationException(
+                    "Пользователь не является владельцем проекта, но пытался пригласить в команду. " +
+                    $"UserId: {userId}. " +
+                    $"ProjectId: {projectId}.");
+            }
+            
+            // Проверяем подписку на тариф пользователя.
+            var userFareRuleSubscription = await _subscriptionRepository.GetUserSubscriptionFareRuleByUserIdAsync(
+                userId, 2);
+
+            if (userFareRuleSubscription is null)
+            {
+                throw new InvalidOperationException("Не удалось проверить подписку на тариф пользователя. " +
+                                                    $"UserId: {userId}.");
+            }
+
+            var result = new AccessProjectManagementOutput();
+
+            // Если тариф бесплатный, то проверяем кол-во сотрудников в команде.
+            if (userFareRuleSubscription.IsFree)
+            {
+                // Минимальное значение атрибута всегда должно быть у тарифа.
+                if (!userFareRuleSubscription.MinValue.HasValue)
+                {
+                    throw new InvalidOperationException("У атрибутов тарифа обнаружено отсутствие " +
+                                                        "минимального значения. " +
+                                                        $"FareRuleId: {userFareRuleSubscription.RuleId}. " +
+                                                        $"IsFree: {userFareRuleSubscription.IsFree}.");
+                }
+                
+                // Получаем команду проекта.
+                var team = await _projectRepository.GetProjectTeamAsync(projectId);
+
+                if (team is null)
+                {
+                    throw new InvalidOperationException("Не удалось получить команду проекта. " +
+                                                        $"ProjectId: {projectId}.");
+                }
+                
+                // Получаем сотрудников команды проекта.
+                var projectTeamMembers = (await _projectRepository.GetProjectTeamMemberIdsAsync(team.TeamId))
+                    ?.AsList();
+
+                // Смотрим, сколько уже сотрудников в команде проекта.
+                if (projectTeamMembers is not null 
+                    && projectTeamMembers.Count > 0 
+                    && projectTeamMembers.Count == userFareRuleSubscription.MinValue.Value)
+                {
+                    result.IsAccess = false;
+                    result.ForbiddenTitle = "Превышен лимит по сотрудникам";
+                    result.ForbiddenText = "У бесплатного тарифа превышен лимит пол количеству сотрудников. " +
+                                            "Чтобы пригласить больше сотрудников, вам нужно перейти на любой" +
+                                            " платный тариф.";
+
+                    return result;
+                }
+            }
+
+            result.IsAccess = true;
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
+    #endregion
+
+    #region Приватные методы.
+
+    
+
+    #endregion
 }

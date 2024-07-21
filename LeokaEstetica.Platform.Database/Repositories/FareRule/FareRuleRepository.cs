@@ -235,24 +235,4 @@ internal sealed class FareRuleRepository : BaseRepository, IFareRuleRepository
 
         return result;
     }
-
-    /// <inheritdoc />
-    public async Task<int> GetUserFareRuleIdByUserIdAsync(long userId)
-    {
-        using var connection = await ConnectionProvider.GetConnectionAsync();
-        
-        var parameters = new DynamicParameters();
-        parameters.Add("@userId", userId);
-        
-        var query = @"SELECT s.rule_id
-                        FROM subscriptions.user_subscriptions AS us
-                                 INNER JOIN subscriptions.all_subscriptions AS s
-                                            ON us.subscription_id = s.subscription_id
-                        WHERE us.user_id = @userId
-                          AND us.is_active";
-                          
-        var result = await connection.QueryFirstOrDefaultAsync<int>(query, parameters);
-
-        return result;
-    }
 }

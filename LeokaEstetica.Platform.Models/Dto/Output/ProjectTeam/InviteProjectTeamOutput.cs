@@ -1,10 +1,10 @@
-﻿namespace LeokaEstetica.Platform.Access.Models.Output;
+﻿namespace LeokaEstetica.Platform.Models.Dto.Output.ProjectTeam;
 
 /// <summary>
-/// TODO: Дублируется с <see cref="InviteProjectTeamOutput"/>. Придумать, как их обобщить в одном слое.
-/// Класс выходной модели проверки доступа к модулям платформы.
+/// TODO: Дублируется с <see cref="AccessProjectManagementOutput"/>. Придумать, как их обобщить в одном слое.
+/// Класс выходной модели приглашения в проект.
 /// </summary>
-public class AccessProjectManagementOutput
+public class InviteProjectTeamOutput
 {
     /// <summary>
     /// Признак наличия доступа к модулю УП.

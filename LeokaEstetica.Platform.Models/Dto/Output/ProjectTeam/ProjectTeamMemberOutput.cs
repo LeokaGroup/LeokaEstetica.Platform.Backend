@@ -5,7 +5,7 @@ namespace LeokaEstetica.Platform.Models.Dto.Output.ProjectTeam;
 /// <summary>
 /// Класс выходной модели участника команды проекта.
 /// </summary>
-public class ProjectTeamMemberOutput : IFrontSuccess
+public class ProjectTeamMemberOutput : InviteProjectTeamOutput, IFrontSuccess
 {
     /// <summary>
     /// PK.
