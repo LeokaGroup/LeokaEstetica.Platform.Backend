@@ -66,52 +66,81 @@ internal sealed class FareRuleService : IFareRuleService
                                                         $"FareRuleId: {fr.RuleId}.");
                 }
 
-                // Заполняем атрибуты тарифа.
-                foreach (var fra in fareRuleAttributes)
-                {
-                    fra.FareRuleAttributeValues ??= new List<FareRuleAttributeValueOutput>();
-                    
-                    if (fra.AttributeId == 1 && fr.RuleId == 1)
-                    {
-                        fra.FareRuleAttributeValues.AsList().Add(new FareRuleAttributeValueOutput
-                        {
-                            RuleId = fr.RuleId,
-                            MinValue = 5,
-                            MaxValue = null,
-                            IsPrice = false,
-                            IsRange = false,
-                            AttributeId = fra.AttributeId,
-                            Content = "Бесплатный"
-                        });
-                        
-                        continue;
-                    }
-
-                    // Исключаем первый атрибут, так как он лишь у бесплатного тарифа.
-                    if (fra.AttributeId == 1)
-                    {
-                        continue;
-                    }
-
-                    // Значения атрибутов тарифа.
-                    var attrValues = attributeValues
-                        .Where(x => x.AttributeId == fra.AttributeId
-                                    && x.RuleId == fr.RuleId)
-                        ?.AsList();
-                    
-                    if (attrValues is null || attrValues.Count == 0)
-                    {
-                        throw new InvalidOperationException("Ошибка получения значений атрибутов тарифа. " +
-                                                            $"FareRuleId: {fr.RuleId}.");
-                    }
-                    
-                    fra.FareRuleAttributeValues.AsList().AddRange(attrValues);
-                }
+                var attributeIds = attributeValues.Select(x => x.AttributeId).Distinct();
+                var attributes = fareRuleAttributes.Where(x => attributeIds.Contains(x.AttributeId));
 
                 fr.FareRuleAttributes ??= new List<FareRuleAttributeOutput>();
                 
-                // Атрибуты тарифа.
-                fr.FareRuleAttributes.AsList().AddRange(fareRuleAttributes);
+                fr.FareRuleAttributes = attributes.Select(attr =>
+                {
+                    attr.FareRuleAttributeValues ??= new List<FareRuleAttributeValueOutput>();
+                    attr.FareRuleAttributeValues = fareRuleAttributeValues
+                        .Where(x => x.RuleId == fr.RuleId
+                                    && x.AttributeId == attr.AttributeId);
+                    
+                    return attr;
+                });
+
+                // foreach (var attr in fareRuleAttributes)
+                // {
+                //     attr.FareRuleAttributeValues ??= new List<FareRuleAttributeValueOutput>();
+                //
+                //     var attrValues = attributeValues
+                //         .Where(x => x.AttributeId == attr.AttributeId
+                //                     && x.RuleId == fr.RuleId);
+                //     
+                //     attr.FareRuleAttributeValues.AsList().AddRange(attrValues);
+                //
+                //     fr.FareRuleAttributes ??= new List<FareRuleAttributeOutput>();
+                //     fr.FareRuleAttributes.AsList().Add(attr);
+                // }
+
+                // Заполняем атрибуты тарифа.
+                // foreach (var fra in fareRuleAttributes)
+                // {
+                //     fra.FareRuleAttributeValues ??= new List<FareRuleAttributeValueOutput>();
+                //     
+                //     if (fra.AttributeId == 1 && fr.RuleId == 1)
+                //     {
+                //         fra.FareRuleAttributeValues.AsList().Add(new FareRuleAttributeValueOutput
+                //         {
+                //             RuleId = fr.RuleId,
+                //             MinValue = 5,
+                //             MaxValue = null,
+                //             IsPrice = false,
+                //             IsRange = false,
+                //             AttributeId = fra.AttributeId,
+                //             Content = "Бесплатный"
+                //         });
+                //         
+                //         continue;
+                //     }
+                //
+                //     // Исключаем первый атрибут, так как он лишь у бесплатного тарифа.
+                //     if (fra.AttributeId == 1)
+                //     {
+                //         continue;
+                //     }
+                //
+                //     // Значения атрибутов тарифа.
+                //     var attrValues = attributeValues
+                //         .Where(x => x.AttributeId == fra.AttributeId
+                //                     && x.RuleId == fr.RuleId)
+                //         ?.AsList();
+                //     
+                //     if (attrValues is null || attrValues.Count == 0)
+                //     {
+                //         throw new InvalidOperationException("Ошибка получения значений атрибутов тарифа. " +
+                //                                             $"FareRuleId: {fr.RuleId}.");
+                //     }
+                //     
+                //     fra.FareRuleAttributeValues.AsList().AddRange(attrValues);
+                // }
+                //
+                // fr.FareRuleAttributes ??= new List<FareRuleAttributeOutput>();
+                //
+                // // Атрибуты тарифа.
+                // fr.FareRuleAttributes.AsList().AddRange(fareRuleAttributes);
 
                 // Заполняем тариф.
                 result.Add(fr);
