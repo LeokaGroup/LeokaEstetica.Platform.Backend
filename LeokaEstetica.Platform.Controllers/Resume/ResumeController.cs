@@ -128,9 +128,10 @@ public class ResumeController : BaseController
     public async Task<PaginationResumeOutput> GetResumesPaginationAsync([FromQuery] int page, [FromQuery] long? lastId)
     {
         var result = await _resumePaginationService.GetResumesPaginationAsync(page, lastId);
-
-        result.Resumes = (await _fillColorResumeService.SetColorBusinessResume(result.Resumes, _subscriptionRepository,
-            _fareRuleRepository))?.AsList();
+        
+        // TODO: Выпилить, если у нас не будет выделения цветами тарифов.
+        // result.Resumes = (await _fillColorResumeService.SetColorBusinessResume(result.Resumes, _subscriptionRepository,
+        //     _fareRuleRepository))?.AsList();
         
         // Записываем анкетам коды пользователей.
         result.Resumes = (await _resumeService.SetUserCodesAsync(result.Resumes))?.AsList();

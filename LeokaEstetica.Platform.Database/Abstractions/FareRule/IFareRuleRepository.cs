@@ -13,7 +13,8 @@ public interface IFareRuleRepository
     /// Метод получает список тарифов.
     /// </summary>
     /// <returns>Список тарифов.</returns>
-    Task<IEnumerable<FareRuleEntity>> GetFareRulesAsync();
+    Task<(IEnumerable<FareRuleCompositeOutput>? FareRules, IEnumerable<FareRuleAttributeOutput>? FareRuleAttributes,
+        IEnumerable<FareRuleAttributeValueOutput>? FareRuleAttributeValues)> GetFareRulesAsync();
 
     /// <summary>
     /// Метод получает тариф по его Id.

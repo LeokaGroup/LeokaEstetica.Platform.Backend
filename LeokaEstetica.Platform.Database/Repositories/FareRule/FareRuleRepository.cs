@@ -39,26 +39,47 @@ internal sealed class FareRuleRepository : BaseRepository, IFareRuleRepository
     /// Метод получает список тарифов.
     /// </summary>
     /// <returns>Список тарифов.</returns>
-    public async Task<IEnumerable<FareRuleEntity>> GetFareRulesAsync()
+    public async Task<(IEnumerable<FareRuleCompositeOutput>? FareRules, IEnumerable<FareRuleAttributeOutput>?
+        FareRuleAttributes, IEnumerable<FareRuleAttributeValueOutput>? FareRuleAttributeValues)> GetFareRulesAsync()
     {
-        var result = await _pgContext.FareRules
-            .Select(fr => new FareRuleEntity(fr.PublicId)
-            {
-                RuleId = fr.RuleId,
-                Name = fr.Name,
-                Label = fr.Label,
-                Currency = fr.Currency,
-                Price = fr.Price,
-                FareRuleItems = _pgContext.FareRuleItems
-                    .Where(fri => fri.RuleId == fr.RuleId)
-                    .OrderBy(o => o.Position)
-                    .ToList(),
-                Position = fr.Position,
-                IsPopular = fr.IsPopular
-            })
-            .OrderBy(o => o.Position)
-            .ToListAsync();
+        (IEnumerable<FareRuleCompositeOutput>? FareRules, IEnumerable<FareRuleAttributeOutput>? FareRuleAttributes,
+            IEnumerable<FareRuleAttributeValueOutput>? FareRuleAttributeValues) result = (null, null, null);
 
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var fareRulesQuery = "SELECT rule_id, " +
+                             "rule_name, " +
+                             "is_free, " +
+                             "public_id " +
+                             "FROM rules.fare_rules " +
+                             "ORDER BY position";
+        
+        result.FareRules = await connection.QueryAsync<FareRuleCompositeOutput>(fareRulesQuery);
+
+        var fareRuleAttributesQuery = "SELECT attribute_id, " +
+                                      "attribute_name, " +
+                                      "attribute_details " +
+                                      "FROM rules.fare_rule_attributes " +
+                                      "ORDER BY position";
+                                      
+        result.FareRuleAttributes = await connection.QueryAsync<FareRuleAttributeOutput>(fareRuleAttributesQuery);
+
+        var fareRuleAttributeValuesQuery = "SELECT value_id, " +
+                                           "rule_id, " +
+                                           "is_price, " +
+                                           "attribute_id, " +
+                                           "measure, " +
+                                           "min_value, " +
+                                           "max_value, " +
+                                           "is_range, " +
+                                           "content_tooltip, " +
+                                           "content " +
+                                           "FROM rules.fare_rule_attribute_values " +
+                                           "ORDER BY position";
+
+        result.FareRuleAttributeValues = await connection.QueryAsync<FareRuleAttributeValueOutput>(
+            fareRuleAttributeValuesQuery);
+        
         return result;
     }
 

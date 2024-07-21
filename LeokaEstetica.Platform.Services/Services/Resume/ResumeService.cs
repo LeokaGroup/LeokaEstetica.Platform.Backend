@@ -114,8 +114,9 @@ internal sealed class ResumeService : IResumeService
                 return result;
             }
             
-            result.CatalogResumes = await _fillColorResumeService.SetColorBusinessResume(result.CatalogResumes.ToList(),
-                _subscriptionRepository, _fareRuleRepository);
+            // TODO: Выпилить, если у нас не будет выделения цветами тарифов.
+            // result.CatalogResumes = await _fillColorResumeService.SetColorBusinessResume(result.CatalogResumes.ToList(),
+            //     _subscriptionRepository, _fareRuleRepository);
             
             result.CatalogResumes = await SetUserCodesAsync(result.CatalogResumes.ToList());
             

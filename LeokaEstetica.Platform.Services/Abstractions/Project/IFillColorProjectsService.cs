@@ -5,6 +5,7 @@ using LeokaEstetica.Platform.Models.Dto.Output.Project;
 namespace LeokaEstetica.Platform.Services.Abstractions.Project;
 
 /// <summary>
+/// TODO: Выпилить сервис, если у нас не будет выделения цветами тарифов.
 /// Абстракция сервиса выделение цветом пользователей.
 /// </summary>
 public interface IFillColorProjectsService
@@ -16,6 +17,6 @@ public interface IFillColorProjectsService
     /// <param name="subscriptionRepository">Сервис подписок.</param>
     /// <param name="fareRuleRepository">Сервис правил тарифа.</param>
     /// <returns>Каталог проектов с выделеным цветом пользователей.</returns>
-    Task<IEnumerable<CatalogProjectOutput>> SetColorBusinessProjectsAsync(List<CatalogProjectOutput> projects,
-        ISubscriptionRepository subscriptionRepository, IFareRuleRepository fareRuleRepository);
+    // Task<IEnumerable<CatalogProjectOutput>> SetColorBusinessProjectsAsync(List<CatalogProjectOutput> projects,
+    //     ISubscriptionRepository subscriptionRepository, IFareRuleRepository fareRuleRepository);
 }
