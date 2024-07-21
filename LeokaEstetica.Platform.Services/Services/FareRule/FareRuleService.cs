@@ -71,6 +71,7 @@ internal sealed class FareRuleService : IFareRuleService
 
                 fr.FareRuleAttributes ??= new List<FareRuleAttributeOutput>();
                 
+                // Заполняем значения атрибутов тарифа.
                 fr.FareRuleAttributes = attributes.Select(attr =>
                 {
                     attr.FareRuleAttributeValues ??= new List<FareRuleAttributeValueOutput>();
