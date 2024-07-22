@@ -30,6 +30,7 @@ using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Vacancy;
 using LeokaEstetica.Platform.Models.Entities.Moderation;
 using LeokaEstetica.Platform.Services.Helpers;
 using Microsoft.Extensions.Logging;
+using LeokaEstetica.Platform.Base.Extensions.HtmlExtensions;
 
 [assembly: InternalsVisibleTo("LeokaEstetica.Platform.Tests")]
 
@@ -1052,7 +1053,11 @@ internal sealed class VacancyService : IVacancyService
         // Чистим описание вакансии от html-тегов.
         foreach (var vac in vacancies)
         {
-            vac.VacancyText = (vac.VacancyText);
+            vac.VacancyText = ClearHtmlBuilder.Clear(vac.VacancyText);
+            if (vac.VacancyText.Length > 40)
+            {
+                vac.VacancyText = string.Concat(vac.VacancyText.Substring(0, 40), "...");
+            }
         }
 
         return vacancies;
