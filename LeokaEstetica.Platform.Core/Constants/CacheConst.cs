@@ -29,5 +29,10 @@ public static class CacheConst
         /// Ключ ролей пользователя в модуле УП.
         /// </summary>
         public const string PROJECT_MANAGEMENT_USER_ROLES = "ProjectManagementRoles:";
+        
+        /// <summary>
+        /// Ключ для меню хидера.
+        /// </summary>
+        public const string HEADER_MENU_KEY = "HeaderItems";
     }
 }
