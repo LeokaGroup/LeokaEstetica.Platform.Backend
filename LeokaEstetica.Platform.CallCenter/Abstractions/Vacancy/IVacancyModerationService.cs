@@ -11,12 +11,17 @@ namespace LeokaEstetica.Platform.CallCenter.Abstractions.Vacancy;
 /// </summary>
 public interface IVacancyModerationService
 {
-    /// <summary>
-    /// Метод отправляет вакансию на модерацию. Это происходит через добавление в таблицу модерации вакансий.
-    /// Если вакансия в этой таблице, значит она не прошла еще модерацию. При прохождении модерации она удаляется из нее.
-    /// </summary>
-    /// <param name="vacancyId">Id вакансии.</param>
-    Task AddVacancyModerationAsync(long vacancyId);
+	/// <summary>
+	/// Метод получает список вакансий со всеми статусами.
+	/// </summary>
+	/// <returns>Список вакансий.</returns>
+	public Task<VacanciesModerationResult> AllVacanciesModerationAsync();
+	/// <summary>
+	/// Метод отправляет вакансию на модерацию. Это происходит через добавление в таблицу модерации вакансий.
+	/// Если вакансия в этой таблице, значит она не прошла еще модерацию. При прохождении модерации она удаляется из нее.
+	/// </summary>
+	/// <param name="vacancyId">Id вакансии.</param>
+	Task AddVacancyModerationAsync(long vacancyId);
 
     /// <summary>
     /// Метод получает вакансию для просмотра.
@@ -26,9 +31,9 @@ public interface IVacancyModerationService
     Task<UserVacancyEntity> GetVacancyModerationByVacancyIdAsync(long vacancyId);
     
     /// <summary>
-    /// Метод получает список вакансий для модерации.
+    /// Метод получает список вакансий со статусом на модерации.
     /// </summary>
-    /// <returns>Список вакансий.</returns>
+    /// <returns>Список вакансий на модерации.</returns>
     Task<VacanciesModerationResult> VacanciesModerationAsync();
     
     /// <summary>

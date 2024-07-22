@@ -111,7 +111,7 @@ public class VacancyModerationService : IVacancyModerationService
     }
 
     /// <summary>
-    /// Метод получает список вакансий для модерации.
+    /// Метод получает список вакансий со статусом на модерации.
     /// </summary>
     /// <returns>Список вакансий.</returns>
     public async Task<VacanciesModerationResult> VacanciesModerationAsync()
@@ -120,6 +120,27 @@ public class VacancyModerationService : IVacancyModerationService
         {
             var result = new VacanciesModerationResult();
             var items = await _vacancyModerationRepository.VacanciesModerationAsync();
+            result.Vacancies = CreateVacanciesModerationDatesBuilder.Create(items, _mapper);
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+	/// <summary>
+	/// Метод получает список вакансий со всеми статусами.
+	/// </summary>
+	/// <returns>Список вакансий.</returns>
+	public async Task<VacanciesModerationResult> AllVacanciesModerationAsync()
+    {
+        try
+        {
+            var result = new VacanciesModerationResult();
+            var items = await _vacancyModerationRepository.AllVacanciesModerationAsync();
             result.Vacancies = CreateVacanciesModerationDatesBuilder.Create(items, _mapper);
 
             return result;
