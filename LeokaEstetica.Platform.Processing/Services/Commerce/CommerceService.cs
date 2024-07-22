@@ -137,10 +137,10 @@ internal sealed class CommerceService : ICommerceService
                 throw new InvalidOperationException($"Не удалось получить новый тариф пользователя. UserId: {userId}");
             }
 
-            var fareRuleAttributeValues = newFareRule.FareRuleAttributeValues.FirstOrDefault(x => x.AttributeId == 4);
+            var fareRuleAttributeValues = newFareRule.FareRuleAttributeValues?.FirstOrDefault(x => x.AttributeId == 4);
             
             // Обязательно должна быть минимальная цена у тарифа.
-            if (!fareRuleAttributeValues.MinValue.HasValue)
+            if (fareRuleAttributeValues?.MinValue is null)
             {
                 throw new InvalidOperationException(
                     "У тарифа обнаружено отсутствие минимальной цены. " +
