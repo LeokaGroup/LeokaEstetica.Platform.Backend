@@ -42,5 +42,6 @@ public interface IFareRuleRepository
     /// </summary>
     /// <param name="publicId">Публичный ключ тарифа.</param>
     /// <returns>Данные тарифа.</returns>
-    Task<FareRuleAttributeCompositeOutput?> GetFareRuleByPublicIdAsync(Guid publicId);
+    Task<(FareRuleCompositeOutput? FareRule, IEnumerable<FareRuleAttributeOutput>? FareRuleAttributes,
+        IEnumerable<FareRuleAttributeValueOutput>? FareRuleAttributeValues)> GetFareRuleByPublicIdAsync(Guid publicId);
 }

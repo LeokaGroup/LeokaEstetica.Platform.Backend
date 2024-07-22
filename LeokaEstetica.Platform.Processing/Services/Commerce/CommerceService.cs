@@ -132,27 +132,29 @@ internal sealed class CommerceService : ICommerceService
             // Получаем тариф, на который пользователь пытается перейти.
             var newFareRule = await _fareRuleRepository.GetFareRuleByPublicIdAsync(createOrderCacheInput.PublicId);
             
-            if (newFareRule is null)
+            if (newFareRule.FareRule is null)
             {
                 throw new InvalidOperationException($"Не удалось получить новый тариф пользователя. UserId: {userId}");
             }
+
+            var fareRuleAttributeValues = newFareRule.FareRuleAttributeValues.FirstOrDefault(x => x.AttributeId == 4);
             
             // Обязательно должна быть минимальная цена у тарифа.
-            if (!newFareRule.MinValue.HasValue)
+            if (!fareRuleAttributeValues.MinValue.HasValue)
             {
                 throw new InvalidOperationException(
                     "У тарифа обнаружено отсутствие минимальной цены. " +
                     "У нас у тарифов пока минимальная цена, это есть фиксированная цена тарифа. " +
-                    $"Требуется обработка кейса. Id тарифа: {newFareRule.RuleId}.");
+                    $"Требуется обработка кейса. Id тарифа: {newFareRule.FareRule.RuleId}.");
             }
             
             // Логируем ошибку, но не ломаем приложение, так как мы пока не закладывали такой кейс.
-            if (newFareRule.MinValue.HasValue && newFareRule.MaxValue.HasValue)
+            if (fareRuleAttributeValues.MinValue.HasValue && fareRuleAttributeValues.MaxValue.HasValue)
             {
                 var ex = new InvalidOperationException(
                     "У тарифа обнаружен диапазон цен. Такой кейс пока не закладывали, но он сработал. " +
                     "У нас у тарифов пока лишь минимальная цена есть. " +
-                    $"Требуется обработка кейса. Id тарифа: {newFareRule.RuleId}.");
+                    $"Требуется обработка кейса. Id тарифа: {newFareRule.FareRule.RuleId}.");
 
                 await _discordService.Value.SendNotificationErrorAsync(ex);
 
@@ -163,7 +165,7 @@ internal sealed class CommerceService : ICommerceService
             {
                 Errors = new List<ValidationFailure>(),
                 // Цена тарифа = минимальная цена тарифа * кол-во сотрудников * кол-во месяцев.
-                Price = newFareRule.MinValue.Value * createOrderCacheInput.EmployeesCount *
+                Price = fareRuleAttributeValues.MinValue.Value * createOrderCacheInput.EmployeesCount *
                         createOrderCacheInput.PaymentMonth
             };
 
@@ -175,10 +177,10 @@ internal sealed class CommerceService : ICommerceService
 
             var order = new CreateOrderCache
             {
-                RuleId = newFareRule.RuleId,
+                RuleId = newFareRule.FareRule.RuleId,
                 Month = createOrderCacheInput.PaymentMonth,
                 UserId = userId,
-                FareRuleName = newFareRule.FareRuleName,
+                FareRuleName = newFareRule.FareRule.RuleName,
                 Price = result.Price
             };
 
