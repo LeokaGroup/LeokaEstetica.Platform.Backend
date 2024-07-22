@@ -515,11 +515,11 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
         using var connection = await ConnectionProvider.GetConnectionAsync();
         
         var parameters = new DynamicParameters();
-        parameters.Add("@project_id", projectId);
+        parameters.Add("@projectId", projectId);
 
         var query = @"SELECT tag_id, tag_name, tag_sys_name, tag_description, project_id, object_tag_type 
                       FROM project_management.project_tags as pt
-                      where pt.project_id = @project_id
+                      where pt.project_id = @projectId
                       ORDER BY position";
 
         var result = await connection.QueryAsync<ProjectTagEntity>(query, parameters);
