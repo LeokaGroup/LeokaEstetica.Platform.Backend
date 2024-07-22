@@ -29,12 +29,12 @@ public interface IVacancyModerationService
     /// <param name="vacancyId">Id вакансии.</param>
     /// <returns>Данные вакансии.</returns>
     Task<UserVacancyEntity> GetVacancyModerationByVacancyIdAsync(long vacancyId);
-    
-    /// <summary>
-    /// Метод получает список вакансий со статусом на модерации.
-    /// </summary>
-    /// <returns>Список вакансий на модерации.</returns>
-    Task<VacanciesModerationResult> VacanciesModerationAsync();
+
+	/// <summary>
+	/// Метод получает список вакансий со статусом на модерации.
+	/// </summary>
+	/// <returns>Список вакансий.</returns>
+	Task<VacanciesModerationResult> VacanciesModerationAsync();
     
     /// <summary>
     /// Метод одобряет вакансию на модерации.
