@@ -1,4 +1,4 @@
-using LeokaEstetica.Platform.Models.Entities.FareRule;
+using LeokaEstetica.Platform.Models.Dto.Output.FareRule;
 
 namespace LeokaEstetica.Platform.Services.Abstractions.FareRule;
 
@@ -11,5 +11,5 @@ public interface IFareRuleService
     /// Метод получает список тарифов.
     /// </summary>
     /// <returns>Список тарифов.</returns>
-    Task<IEnumerable<FareRuleEntity>> GetFareRulesAsync();
+    Task<IEnumerable<FareRuleCompositeOutput>> GetFareRulesAsync();
 }

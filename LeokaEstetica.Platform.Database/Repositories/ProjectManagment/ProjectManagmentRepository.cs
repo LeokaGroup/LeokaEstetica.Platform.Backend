@@ -5,12 +5,14 @@ using LeokaEstetica.Platform.Base.Abstractions.Connection;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.Base;
 using LeokaEstetica.Platform.Base.Extensions.StringExtensions;
 using LeokaEstetica.Platform.Core.Constants;
+using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagement.Output;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.Search.ProjectManagement;
 using LeokaEstetica.Platform.Models.Dto.Output.Template;
+using LeokaEstetica.Platform.Models.Dto.ProjectManagement.Document;
 using LeokaEstetica.Platform.Models.Dto.ProjectManagement.Output;
 using LeokaEstetica.Platform.Models.Entities.Document;
 using LeokaEstetica.Platform.Models.Entities.ProjectManagment;
@@ -224,7 +226,7 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
                     "us.user_story_task_id AS project_task_id," +
                     "us.resolution_id," +
                     "us.tag_ids," +
-                    "3 AS task_type_id," +
+                    "2 AS task_type_id," +
                     "us.created_by AS executor_id," +
                     "NULL," +
                     "(SELECT \"ParamValue\"" +
@@ -237,11 +239,6 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
                     "WHERE us.project_id = @projectId;";
 
         var result = await connection.QueryAsync<ProjectTaskExtendedEntity>(query, parameters);
-
-        if (result is null)
-        {
-            result = new List<ProjectTaskExtendedEntity>();   
-        }
 
         return result;
     }
@@ -294,7 +291,8 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
             .ToDictionary(k => k.TypeId, v => new TaskTypeOutput
             {
                 TypeName = v.TypeName,
-                TypeSysName = v.TypeSysName
+                TypeSysName = v.TypeSysName,
+                TypeId = v.TypeId
             });
 
         return result;
@@ -1410,7 +1408,7 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
 
     /// <inheritdoc />
     public async Task CreateProjectTaskDocumentsAsync(IEnumerable<ProjectDocumentEntity> documents,
-        DocumentTypeEnum documentType)
+        DocumentTypeEnum documentType, List<string?> mongoDocumentIds)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
         var transaction = connection.BeginTransaction();
@@ -1419,6 +1417,8 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
 
         try
         {
+            var i = 0;
+            
             foreach (var d in documents)
             {
                 var tempParameters = new DynamicParameters();
@@ -1429,14 +1429,17 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
                 tempParameters.Add("@projectId", d.ProjectId);
                 tempParameters.Add("@taskId", d.TaskId);
                 tempParameters.Add("@userId", d.UserId);
+                tempParameters.Add("@mongoDocumentId", mongoDocumentIds[i]);
 
                 parameters.Add(tempParameters);
+
+                i++;
             }
 
             var query = @"INSERT INTO documents.project_documents (document_type, document_name, document_extension,
-                                         created, project_id, task_id, user_id) 
+                                         created, project_id, task_id, user_id, mongo_document_id) 
                       VALUES (@documentType, @documentName, @documentExtension, @created, @projectId,
-                              @taskId, @userId)";
+                              @taskId, @userId, @mongoDocumentId)";
                               
             await connection.ExecuteAsync(query, parameters);
             
@@ -1459,7 +1462,7 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         parameters.Add("@projectId", projectId);
         parameters.Add("@taskId", taskId);
 
-        var query = @"SELECT document_id, document_name, document_extension 
+        var query = @"SELECT document_id, document_name, document_extension, mongo_document_id 
                       FROM documents.project_documents 
                       WHERE project_id = @projectId 
                         AND task_id = @taskId";
@@ -1531,6 +1534,21 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         var query = @"DELETE 
                       FROM documents.project_documents 
                       WHERE document_id = @documentId";
+
+        await connection.ExecuteAsync(query, parameters);
+    }
+
+    /// <inheritdoc />
+    public async Task RemoveDocumentAsync(string? mongoDocumentId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@mongoDocumentId", mongoDocumentId);
+
+        var query = @"DELETE 
+                      FROM documents.project_documents 
+                      WHERE mongo_document_id = @mongoDocumentId";
 
         await connection.ExecuteAsync(query, parameters);
     }
@@ -1671,11 +1689,13 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         var parameters = new DynamicParameters();
         parameters.Add("@userId", userId);
         parameters.Add("@projectId", projectId);
+        parameters.Add("@documentType", new Enum(DocumentTypeEnum.ProjectUserAvatar));
 
         var query = @"SELECT document_id 
                       FROM documents.project_documents 
                       WHERE project_id = @projectId 
                         AND user_id = @userId 
+                        AND document_type = @documentType 
                         LIMIT 1";
 
         var result = await connection.QuerySingleOrDefaultAsync<long?>(query, parameters);
@@ -2183,14 +2203,14 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         foreach (var id in projectTaskIdsItems)
         {
             var tempParameters = new DynamicParameters();
-            tempParameters.Add("@projectSprintId", sprintId);
+            tempParameters.Add("@sprintId", sprintId);
             tempParameters.Add("@projectTaskIds", id);
             
             parameters.Add(tempParameters);
         }
 
-        var query = @"INSERT INTO project_management.sprint_tasks (project_sprint_id, project_task_id) 
-                      VALUES (@projectSprintId, @projectTaskIds)";
+        var query = @"INSERT INTO project_management.sprint_tasks (sprint_id, project_task_id) 
+                      VALUES (@sprintId, @projectTaskIds)";
 
         await connection.ExecuteAsync(query, parameters);
     }
@@ -2528,15 +2548,24 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
         
-        var parameters = new DynamicParameters();
-        parameters.Add("@projectId", projectId);
-        parameters.Add("@companyId", companyId);
-        parameters.Add("@isActive", true);
+        var projectWorkSpaceParameters = new DynamicParameters();
+        projectWorkSpaceParameters.Add("@projectId", projectId);
+        projectWorkSpaceParameters.Add("@companyId", companyId);
+        projectWorkSpaceParameters.Add("@isActive", true);
 
-        var query = "INSERT INTO project_management.organization_projects (organization_id, project_id, is_active) " +
+        var projectWorkSpaceQuery = "INSERT INTO project_management.organization_projects (organization_id, project_id, is_active) " +
                     "VALUES (@companyId, @projectId, @isActive)";
 
-        await connection.ExecuteAsync(query, parameters);
+        await connection.ExecuteAsync(projectWorkSpaceQuery, projectWorkSpaceParameters);
+
+        var parametersWorkSpace = new DynamicParameters();
+        parametersWorkSpace.Add("@projectId", projectId);
+        parametersWorkSpace.Add("@companyId", companyId);
+        
+        var WorkSpaceQuery = "INSERT INTO project_management.workspaces (project_id, organization_id) " +
+                             "VALUES (@projectId, @companyId)";
+        
+        await connection.ExecuteAsync(WorkSpaceQuery, parametersWorkSpace);
     }
 
     /// <inheritdoc/>
@@ -2691,6 +2720,266 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         var result = await connection.ExecuteScalarAsync<bool>(query, parameters);
 
         return result;
+    }
+
+    /// <inheritdoc/>
+    public async Task RemoveProjectTasksAsync(long projectId, TaskDetailTypeEnum taskType, List<long>? taskIds = null,
+        List<ProjectManagementDocumentFile>? documents = null, List<long>? epicIds = null, List<long>? storyIds = null)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+        using var transaction = connection.BeginTransaction(IsolationLevel.ReadCommitted);
+        
+        try
+        {
+            // Удаляем связи, в которых участвуют удаляемые задачи.
+            var removeParameters = new List<DynamicParameters>();
+
+            // Заполняем параметры Id задач и ошибок.
+            if (taskIds is not null
+                && taskIds.Count > 0
+                && taskType is TaskDetailTypeEnum.Task or TaskDetailTypeEnum.Error)
+            {
+                foreach (var x in taskIds)
+                {
+                    var tempParameters = new DynamicParameters();
+                    tempParameters.Add("@taskIds", x);
+                    tempParameters.Add("@projectId", projectId);
+                    
+                    removeParameters.Add(tempParameters);
+                }
+            }
+            
+            // Заполняем параметры Id эпиков.
+            if (epicIds is not null
+                && epicIds.Count > 0
+                && taskType is TaskDetailTypeEnum.Epic)
+            {
+                foreach (var x in epicIds)
+                {
+                    var tempParameters = new DynamicParameters();
+                    tempParameters.Add("@taskIds", x);
+                    tempParameters.Add("@projectId", projectId);
+                    
+                    removeParameters.Add(tempParameters);
+                }
+            }
+            
+            // Заполняем параметры Id историй.
+            if (storyIds is not null
+                && storyIds.Count > 0
+                && taskType is TaskDetailTypeEnum.Story)
+            {
+                foreach (var x in storyIds)
+                {
+                    var tempParameters = new DynamicParameters();
+                    tempParameters.Add("@taskIds", x);
+                    tempParameters.Add("@projectId", projectId);
+                    
+                    removeParameters.Add(tempParameters);
+                }
+            }
+
+            var taskLinksQuery = "DELETE FROM project_management.task_links " +
+                                 "WHERE project_id = @projectId " +
+                                 "AND (parent_id = ANY(@taskIds) " +
+                                 "OR child_id = ANY(@taskIds) " +
+                                 "OR blocked_task_id = ANY(@taskIds) " +
+                                 "OR from_task_id = ANY(@taskIds) " +
+                                 "OR to_task_id = ANY(@taskIds))";
+
+            await connection.ExecuteAsync(taskLinksQuery, removeParameters);
+            
+            // Удаляем все комментарии удаляемых задач.
+            var removeTaskCommentsQuery = "DELETE FROM project_management.task_comments " +
+                                          "WHERE project_id = @projectId " +
+                                          "AND project_task_id = ANY(@taskIds)";
+            
+            await connection.ExecuteAsync(removeTaskCommentsQuery, removeParameters);
+
+            // Удаляем файлы задачи.
+            // Файлы комментариев удалятся автоматически, так как там есть каскад на удаление.
+            if (documents is not null && documents.Count > 0)
+            {
+                var documentIds = documents.Where(x => x.DocumentId.HasValue).Select(x => x.DocumentId!.Value)
+                    .AsList();
+                
+                var removeTaskFilesParameters = new DynamicParameters();
+                removeTaskFilesParameters.Add("@taskIds", taskIds);
+                removeTaskFilesParameters.Add("@projectId", projectId);
+                removeTaskFilesParameters.Add("@documentIds", documentIds);
+                
+                var removeTaskFilesQuery = "DELETE FROM documents.project_documents " +
+                                           "WHERE project_id = @projectId " +
+                                           "AND task_id = ANY(@taskIds) " +
+                                           "AND document_id = ANY(@documentIds)";
+                
+                await connection.ExecuteAsync(removeTaskFilesQuery, removeTaskFilesParameters);
+            }
+
+            // Удаляем задачу - для типов задачи "Задача", "Ошибка".
+            if (taskType is TaskDetailTypeEnum.Task or TaskDetailTypeEnum.Error)
+            {
+                var removeTaskParameters = new DynamicParameters();
+                removeTaskParameters.Add("@taskIds", taskIds);
+                removeTaskParameters.Add("@projectId", projectId);
+
+                var removeTaskQuery = "DELETE FROM project_management.project_tasks " +
+                                      "WHERE project_id = @projectId " +
+                                      "AND project_task_id = ANY(@taskIds)";
+            
+                await connection.ExecuteAsync(removeTaskQuery, removeTaskParameters);
+            }
+            
+            // Удаляем эпик.
+            // Задачи из эпика удалятся автоматически, так как там есть каскад на удаление.
+            if (taskType is TaskDetailTypeEnum.Epic)
+            {
+                var removeEpicParameters = new DynamicParameters();
+                removeEpicParameters.Add("@taskIds", epicIds);
+                removeEpicParameters.Add("@projectId", projectId);
+
+                var removeEpicQuery = "DELETE FROM project_management.epics " +
+                                      "WHERE project_id = @projectId " +
+                                      "AND project_epic_id = ANY(@taskIds)";
+            
+                await connection.ExecuteAsync(removeEpicQuery, removeEpicParameters);
+            }
+            
+            // Удаляем историю.
+            // Эпики истории удалятся автоматически, так как там есть каскад на удаление.
+            if (taskType is TaskDetailTypeEnum.Story)
+            {
+                var removeStoryParameters = new DynamicParameters();
+                removeStoryParameters.Add("@taskIds", storyIds);
+                removeStoryParameters.Add("@projectId", projectId);
+
+                var removeStoryQuery = "DELETE FROM project_management.user_stories " +
+                                       "WHERE project_id = @projectId " +
+                                       "AND user_story_task_id = ANY(@taskIds)";
+            
+                await connection.ExecuteAsync(removeStoryQuery, removeStoryParameters);
+            }
+
+            transaction.Commit();
+        }
+        
+        catch
+        {
+            transaction.Rollback();
+        }
+    }
+
+    /// <inheritdoc/>
+    public async Task<IEnumerable<ProjectManagementDocumentFile>> IfProjectTaskExistFileAsync(long projectId,
+        IEnumerable<long> taskIds)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@projectId", projectId);
+        parameters.Add("@taskIds", taskIds.AsList());
+
+        var query = "SELECT document_id, project_id, task_id, user_id " +
+                    "FROM documents.project_documents " +
+                    "WHERE project_id = @projectId " +
+                    "AND task_id = ANY(@taskIds)";
+
+        var result = await connection.QueryAsync<ProjectManagementDocumentFile>(query, parameters);
+
+        return result;
+    }
+
+    /// <inheritdoc />
+    public async Task<long> GetCompanyIdByProjectIdAsync(long projectId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@projectId", projectId);
+        
+        var query = "SELECT organization_id " +
+                    "FROM project_management.organization_projects " +
+                    "WHERE project_id = @projectId";
+
+        var result = await connection.QueryFirstOrDefaultAsync<long>(query, parameters);
+
+        return result;
+    }
+
+    /// <inheritdoc />
+    public async Task<TaskDetailTypeEnum> GetTaskTypeByProjectIdProjectTaskIdAsync(long projectId, long projectTaskId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@projectId", projectId);
+        parameters.Add("@projectTaskId", projectTaskId);
+
+        // Ищем среди задач и ошибок.
+        var searchTaskQuery = "SELECT task_type_id " +
+                              "FROM project_management.project_tasks " +
+                              "WHERE project_id = @projectId " +
+                              "AND project_task_id = @projectTaskId";
+
+        var searchTaskResult = await connection.QueryFirstOrDefaultAsync<long?>(searchTaskQuery, parameters);
+
+        if (searchTaskResult.HasValue)
+        {
+            if (searchTaskResult == 1)
+            {
+                return TaskDetailTypeEnum.Error;
+            }
+            
+            if (searchTaskResult == 3)
+            {
+                return TaskDetailTypeEnum.Task;
+            }
+
+            throw new InvalidOperationException(
+                "Поиск типа задачи по типу задачи или ошибке сработал, но что то пошло не так. " +
+                $"SearchTaskResult: {searchTaskResult}.");
+        }
+        
+        // Ищем в эпиках.
+        var searchEpicQuery = "SELECT epic_id " +
+                              "FROM project_management.epics " +
+                              "WHERE project_id = @projectId " +
+                              "AND project_epic_id = @projectTaskId";
+
+        var searchEpicResult = await connection.QueryFirstOrDefaultAsync<long?>(searchEpicQuery, parameters);
+        
+        if (searchEpicResult.HasValue)
+        {
+            return TaskDetailTypeEnum.Epic;
+        }
+        
+        // Ищем в историях.
+        var searchStoryQuery = "SELECT story_status_id " +
+                              "FROM project_management.user_stories " +
+                              "WHERE project_id = @projectId " +
+                              "AND user_story_task_id = @projectTaskId";
+
+        var searchStoryResult = await connection.QueryFirstOrDefaultAsync<long?>(searchStoryQuery, parameters);
+        
+        if (searchStoryResult.HasValue)
+        {
+            return TaskDetailTypeEnum.Story;
+        }
+        
+        // Ищем в спринтах.
+        var searchSprintQuery = "SELECT sprint_status_id " +
+                               "FROM project_management.sprints " +
+                               "WHERE project_id = @projectId " +
+                               "AND project_sprint_id = @projectTaskId";
+
+        var searchSprintResult = await connection.QueryFirstOrDefaultAsync<long?>(searchSprintQuery, parameters);
+        
+        if (searchSprintResult.HasValue)
+        {
+            return TaskDetailTypeEnum.Sprint;
+        }
+
+        return TaskDetailTypeEnum.Undefined;
     }
 
     #endregion

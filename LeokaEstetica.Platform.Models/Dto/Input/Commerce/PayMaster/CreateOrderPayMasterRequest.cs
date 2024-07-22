@@ -26,15 +26,15 @@ public class CreateOrderPayMasterRequest
     /// <summary>
     /// Детали счета.
     /// </summary>
-    public InvoicePayMaster Invoice { get; set; }
+    public InvoicePayMaster? Invoice { get; set; }
 
     /// <summary>
     /// Цена.
     /// </summary>
-    public Amount Amount { get; set; }
+    public Amount? Amount { get; set; }
 
     /// <summary>
     /// Метод оплаты.
     /// </summary>
-    public string PaymentMethod { get; set; }
+    public string? PaymentMethod { get; set; }
 }

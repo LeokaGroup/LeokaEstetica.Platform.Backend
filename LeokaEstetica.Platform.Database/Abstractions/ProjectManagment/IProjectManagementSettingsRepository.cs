@@ -73,4 +73,11 @@ public interface IProjectManagementSettingsRepository
     /// </summary>
     /// <param name="notificationId">Id уведомления.</param>
     Task CancelProjectInviteAsync(long notificationId);
+
+    /// <summary>
+    /// Метод впервые добавляет роли участнику проекта.
+    /// </summary>
+    /// <param name="organizationId">Id организации.</param>
+    /// <param name="memberId">Id участника проекта.</param>
+    Task AddProjectMemberRolesAsync(long organizationId, long memberId);
 }

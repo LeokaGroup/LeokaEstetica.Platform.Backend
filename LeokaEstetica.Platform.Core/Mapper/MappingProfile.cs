@@ -124,7 +124,7 @@ public class MappingProfile : Profile
         
         CreateMap<ProjectTeamMemberEntity, ProjectTeamMemberOutput>();
         
-        CreateMap<ProfileInfoEntity, ResumeOutput>();
+        CreateMap<ProfileInfoEntity, ProfileInfoOutput>();
         
         CreateMap<FareRuleEntity, FareRuleOutput>();
         CreateMap<FareRuleItemEntity, FareRuleItemOutput>();

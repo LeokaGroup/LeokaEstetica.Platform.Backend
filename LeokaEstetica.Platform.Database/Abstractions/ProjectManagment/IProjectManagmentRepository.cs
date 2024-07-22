@@ -1,8 +1,10 @@
-﻿using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
+﻿using LeokaEstetica.Platform.Core.Enums;
+using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagement.Output;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.Search.ProjectManagement;
 using LeokaEstetica.Platform.Models.Dto.Output.Template;
+using LeokaEstetica.Platform.Models.Dto.ProjectManagement.Document;
 using LeokaEstetica.Platform.Models.Dto.ProjectManagement.Output;
 using LeokaEstetica.Platform.Models.Entities.Document;
 using LeokaEstetica.Platform.Models.Entities.ProjectManagment;
@@ -403,7 +405,9 @@ public interface IProjectManagmentRepository
     /// </summary>
     /// <param name="documents">Список документов к созданию.</param>
     /// <param name="documentType">Тип документа.</param>
-    Task CreateProjectTaskDocumentsAsync(IEnumerable<ProjectDocumentEntity> documents, DocumentTypeEnum documentType);
+    /// <param name="mongoDocumentIds">Id документов в БД MongoDB.</param>
+    Task CreateProjectTaskDocumentsAsync(IEnumerable<ProjectDocumentEntity> documents, DocumentTypeEnum documentType,
+        List<string?> mongoDocumentIds);
 
     /// <summary>
     /// Метод получает файлы задачи.
@@ -434,6 +438,12 @@ public interface IProjectManagmentRepository
     /// </summary>
     /// <param name="documentId">Id документа.</param>
     Task RemoveDocumentAsync(long documentId);
+    
+    /// <summary>
+    /// Метод удаляет документ по его Id из MongoDB.
+    /// </summary>
+    /// <param name="mongoDocumentId">Id документа в MongoDB.</param>
+    Task RemoveDocumentAsync(string? mongoDocumentId);
 
     /// <summary>
     /// Метод фиксирует выбранную пользователем стратегию представления.
@@ -727,4 +737,43 @@ public interface IProjectManagmentRepository
     /// <param name="changeStatus">Id статуса, на который пробуют изменить.</param>
     /// <returns>Признак результата проверки.</returns>
     Task<bool> IfStoryAvailableStatusAsync(long changeStatus);
+    
+    /// <summary>
+    /// Метод удаляет задачи проекта.
+    /// Этот метод может удалять задачи, ошибки, эпики, истории.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="taskType">Тип задачи.</param>
+    /// <param name="taskIds">Id задач.</param>
+    /// <param name="documentIds">Документы к удалению.</param>
+    /// <param name="epicIds">Id эпиков.</param>
+    /// <param name="storyIds">Id историй.</param>
+    Task RemoveProjectTasksAsync(long projectId, TaskDetailTypeEnum taskType, List<long>? taskIds = null,
+        List<ProjectManagementDocumentFile>? documents = null, List<long>? epicIds = null,
+        List<long>? storyIds = null);
+    
+    /// <summary>
+    /// Метод получает булевые признаки того, есть ли у задачи файлы.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="taskIds">Id задач.</param>
+    /// <returns>Список файлов задач.</returns>
+    Task<IEnumerable<ProjectManagementDocumentFile>> IfProjectTaskExistFileAsync(long projectId,
+        IEnumerable<long> taskIds);
+
+    /// <summary>
+    /// Метод получает тип задачи по Id проекта и по Id задачи в рамках проекта.
+    /// Ищем задачу во всех таблицах задач (разных типов) поочередно.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
+    /// <returns>Тип задачи.</returns>
+    Task<TaskDetailTypeEnum> GetTaskTypeByProjectIdProjectTaskIdAsync(long projectId, long projectTaskId);
+
+    /// <summary>
+    /// Метод получает Id компании по Id проекта.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Id компании.</returns>
+    Task<long> GetCompanyIdByProjectIdAsync(long projectId);
 }

@@ -14,6 +14,7 @@ using LeokaEstetica.Platform.Database.Abstractions.Config;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Database.Abstractions.Template;
+using LeokaEstetica.Platform.Database.MongoDb.Abstractions;
 using LeokaEstetica.Platform.Integrations.Abstractions.Discord;
 using LeokaEstetica.Platform.Integrations.Abstractions.Reverso;
 using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
@@ -65,6 +66,8 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     private readonly IUserService _userService;
     private readonly Lazy<IDistributionStatusTaskService> _distributionStatusTaskService;
     private readonly IProjectManagementTemplateService _projectManagementTemplateService;
+    private readonly Lazy<IProjectManagmentRoleRepository> _projectManagmentRoleRepository;
+    private readonly IMongoDbRepository _mongoDbRepository;
 
     /// <summary>
     /// Статусы задач, которые являются самыми базовыми и никогда не меняются независимо от шаблона проекта.
@@ -92,6 +95,8 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     /// <param name="userService">Сервис пользователей.</param>
     /// <param name="distributionStatusTaskService">Сервис распределение задач по статусам.</param>
     /// <param name="projectManagementTemplateService">Сервис шаблонов проекта.</param>
+    /// <param name="projectManagmentRoleRepository">Репозиторий ролей проекта.</param>
+    /// <param name="mongoDbRepository">Репозиторий MongoDB.</param>
     /// </summary>
     public ProjectManagmentService(ILogger<ProjectManagmentService> logger,
         IProjectManagmentRepository projectManagmentRepository,
@@ -107,7 +112,9 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         Lazy<IProjectManagementNotificationService> projectManagementNotificationService,
         IUserService userService,
         Lazy<IDistributionStatusTaskService> distributionStatusTaskService,
-        IProjectManagementTemplateService projectManagementTemplateService)
+        IProjectManagementTemplateService projectManagementTemplateService,
+        Lazy<IProjectManagmentRoleRepository> projectManagmentRoleRepository,
+        IMongoDbRepository mongoDbRepository)
     {
         _logger = logger;
         _projectManagmentRepository = projectManagmentRepository;
@@ -124,6 +131,8 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         _userService = userService;
         _distributionStatusTaskService = distributionStatusTaskService;
         _projectManagementTemplateService = projectManagementTemplateService;
+        _projectManagmentRoleRepository = projectManagmentRoleRepository;
+        _mongoDbRepository = mongoDbRepository;
     }
 
     #region Публичные методы.
@@ -218,7 +227,8 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                             Label = x.ItemName,
                             Id = x.Id,
                             Disabled = x.Disabled,
-                            IsFooterItem = x.IsFooterItem
+                            IsFooterItem = x.IsFooterItem,
+                            Visible = x.Visible
                         });
 
                         result.HeaderItems.Add(new PanelResult
@@ -258,7 +268,8 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                             Label = x.ItemName,
                             Id = x.Id,
                             Disabled = x.Disabled,
-                            IsFooterItem = x.IsFooterItem
+                            IsFooterItem = x.IsFooterItem,
+                            Visible = x.Visible
                         });
 
                         result.HeaderItems.Add(new PanelResult
@@ -291,14 +302,15 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 
                     if (mapItems is not null)
                     {
-                        var filters = mapItems.Items.OrderBy(o => o.Position);
+                        var filters = mapItems.Items.Where(x => x.Visible).OrderBy(o => o.Position);
 
                         var selectedFilters = filters.Select(x => new Panel
                         {
                             Label = x.ItemName,
                             Id = x.Id,
                             Disabled = x.Disabled,
-                            IsFooterItem = x.IsFooterItem
+                            IsFooterItem = x.IsFooterItem,
+                            Visible = x.Visible
                         });
 
                         result.HeaderItems.Add(new PanelResult
@@ -338,7 +350,8 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                             Label = x.ItemName,
                             Id = x.Id,
                             Disabled = x.Disabled,
-                            IsFooterItem = x.IsFooterItem
+                            IsFooterItem = x.IsFooterItem,
+                            Visible = x.Visible
                         });
 
                         result.HeaderItems.Add(new PanelResult
@@ -378,7 +391,8 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                             Label = x.ItemName,
                             Id = x.Id,
                             Disabled = x.Disabled,
-                            IsFooterItem = x.IsFooterItem
+                            IsFooterItem = x.IsFooterItem,
+                            Visible = x.Visible
                         });
 
                         result.PanelItems.Add(new PanelResult
@@ -418,7 +432,8 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                             Label = x.ItemName,
                             Id = x.Id,
                             Disabled = x.Disabled,
-                            IsFooterItem = x.IsFooterItem
+                            IsFooterItem = x.IsFooterItem,
+                            Visible = x.Visible
                         });
 
                         result.HeaderItems.Add(new PanelResult
@@ -603,10 +618,21 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     {
         try
         {
-            if (taskDetailType == TaskDetailTypeEnum.None)
+            // Если переданный тип неизвестен ,например, если вставили просто ссылку в url - то найдем в БД тип задачи.
+            if (taskDetailType == TaskDetailTypeEnum.Undefined)
             {
-                throw new InvalidOperationException("Неизвестный тип детализации. " +
-                                                    " Заполнение Agile-объекта не будет происходить.");
+                var taskType = await _projectManagmentRepository.GetTaskTypeByProjectIdProjectTaskIdAsync(projectId,
+                        projectTaskId.GetProjectTaskIdFromPrefixLink());
+                
+                // Если все же не удалось определить тип задачи.
+                if (taskType == TaskDetailTypeEnum.Undefined)
+                {
+                    throw new InvalidOperationException("Неизвестный тип детализации. " +
+                                                        " Заполнение Agile-объекта не будет происходить. " +
+                                                        $"TaskType: {taskType}.");
+                }
+
+                taskDetailType = taskType;
             }
             
             var userId = await _userRepository.GetUserByEmailAsync(account);
@@ -652,10 +678,10 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             }
             
             // Если просматриваем историю.
-            if (taskDetailType is TaskDetailTypeEnum.History)
+            if (taskDetailType is TaskDetailTypeEnum.Story)
             {
                 // Настраиваем билдер для построения истории.
-                builder = new UserStory { BuilderData = builderData };
+                builder = new UserStoryBuilder { BuilderData = builderData };
             }
 
             if (builder is null)
@@ -1215,13 +1241,38 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     {
         try
         {
-            var detailType = Enum.Parse<TaskDetailTypeEnum>(taskDetailType);
+            TaskDetailTypeEnum taskType;
+            
+            // Если переданный тип неизвестен ,например, если вставили просто ссылку в url - то найдем в БД тип задачи.
+            if (Enum.Parse<TaskDetailTypeEnum>(taskDetailType.ToPascalCase()) == TaskDetailTypeEnum.Undefined
+                || Enum.Parse<TaskDetailTypeEnum>(taskDetailType) == TaskDetailTypeEnum.Undefined)
+            {
+                var findTaskType = await _projectManagmentRepository.GetTaskTypeByProjectIdProjectTaskIdAsync(
+                    projectId, projectTaskId.GetProjectTaskIdFromPrefixLink());
+                
+                // Если все же не удалось определить тип задачи.
+                if (findTaskType == TaskDetailTypeEnum.Undefined)
+                {
+                    throw new InvalidOperationException("Неизвестный тип детализации. " +
+                                                        " Заполнение Agile-объекта не будет происходить. " +
+                                                        $"TaskType: {findTaskType}.");
+                }
+
+                taskType = findTaskType;
+            }
+
+            // Иначе просто парсим.
+            else
+            {
+                taskType = Enum.Parse<TaskDetailTypeEnum>(taskDetailType);
+            }
+            
             var onlyProjectTaskId = projectTaskId.GetProjectTaskIdFromPrefixLink();
             bool ifProjectHavingTask;
             long currentTaskStatusId = 0;
             var transitionType = TransitionTypeEnum.None;
 
-            if (detailType is TaskDetailTypeEnum.Task or TaskDetailTypeEnum.Error)
+            if (taskType is TaskDetailTypeEnum.Task or TaskDetailTypeEnum.Error)
             {
                 ifProjectHavingTask = await _projectManagmentRepository.IfProjectHavingProjectTaskIdAsync(projectId,
                     onlyProjectTaskId);
@@ -1248,7 +1299,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 transitionType = TransitionTypeEnum.Task;
             }
 
-            if (detailType == TaskDetailTypeEnum.Epic)
+            if (taskType == TaskDetailTypeEnum.Epic)
             {
                 ifProjectHavingTask = await _projectManagmentRepository.IfProjectHavingEpicIdAsync(projectId,
                     onlyProjectTaskId);
@@ -1275,7 +1326,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 transitionType = TransitionTypeEnum.Epic;
             }
             
-            if (detailType == TaskDetailTypeEnum.History)
+            if (taskType == TaskDetailTypeEnum.Story)
             {
                 ifProjectHavingTask = await _projectManagmentRepository.IfProjectHavingProjectUserStoryIdAsync(
                     projectId, onlyProjectTaskId);
@@ -1570,7 +1621,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                         changeStatusId.GetProjectTaskIdFromPrefixLink(), onlyTaskId);
                     break;
             
-                case TaskDetailTypeEnum.History:
+                case TaskDetailTypeEnum.Story:
                     // Проверяем, допустимо ли менять на такой статус.
                     var ifExistsStoryStatus = await _projectManagmentRepository.IfStoryAvailableStatusAsync(
                         changeStatusId.GetProjectTaskIdFromPrefixLink());
@@ -1856,11 +1907,9 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             }
 
             // Создаем связь в БД.
-            // TaskFromLink - Id задачи в рамках проекта становится Id задачи.
+            // TaskFromLink - Id задачи в рамках проекта (без префикса).
             await _projectManagmentRepository.CreateTaskLinkAsync(currentTask.TaskId,
-                taskLinkInput.TaskToLink.GetProjectTaskIdFromPrefixLink(),
-                taskLinkInput.LinkType,
-                projectId,
+                taskLinkInput.TaskToLink.GetProjectTaskIdFromPrefixLink(), taskLinkInput.LinkType, projectId,
                 !string.IsNullOrWhiteSpace(taskLinkInput.ChildId)
                     ? taskLinkInput.ChildId.GetProjectTaskIdFromPrefixLink()
                     : null,
@@ -2204,8 +2253,10 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 var ex = new NotFoundUserIdByAccountException(account);
                 throw ex;
             }
-
-            await _fileManagerService.Value.UploadFilesAsync(files, projectId, taskId.GetProjectTaskIdFromPrefixLink());
+            
+            // TODO: Юзать как Lazy, когда зарегаем в автофаке.
+            var documentIds = await _mongoDbRepository.UploadFilesAsync(files, projectId,
+                taskId.GetProjectTaskIdFromPrefixLink());
 
             // TODO: Для чего вообще использовать класс сущности?
             // TODO: С Dapper не нужно все это.
@@ -2215,13 +2266,15 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             
             // Сохраняем файлы задачи проекта.
             await _projectManagmentRepository.CreateProjectTaskDocumentsAsync(projectTaskFiles,
-                DocumentTypeEnum.ProjectTask);
+                DocumentTypeEnum.ProjectTask, documentIds.AsList());
 
             // TODO: Тут добавить запись активности пользователя по userId (писать кто добавил файл).
         }
         
         catch (Exception ex)
         {
+            await _discordService.SendNotificationErrorAsync(ex);
+            
              _logger.LogError(ex, ex.Message);
             throw;
         }
@@ -2244,7 +2297,9 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 
             var documentName = await _projectManagmentRepository.GetDocumentNameByDocumentIdAsync(documentId);
             
-            var result = await _fileManagerService.Value.DownloadFileAsync(documentName, projectId, task.TaskId);
+            // TODO: Юзать как Lazy, когда зарегаем в автофаке.
+            // Скачиваем документ из MongoDB.
+            var result = await _mongoDbRepository.DownloadFileAsync(documentName, projectId, task.ProjectTaskId);
 
             return result;
         }
@@ -2262,6 +2317,23 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     {
         try
         {
+            // Если переданный тип неизвестен ,например, если вставили просто ссылку в url - то найдем в БД тип задачи.
+            if (taskDetailType == TaskDetailTypeEnum.Undefined)
+            {
+                var taskType = await _projectManagmentRepository.GetTaskTypeByProjectIdProjectTaskIdAsync(projectId,
+                    projectTaskId.GetProjectTaskIdFromPrefixLink());
+                
+                // Если все же не удалось определить тип задачи.
+                if (taskType == TaskDetailTypeEnum.Undefined)
+                {
+                    throw new InvalidOperationException("Неизвестный тип детализации. " +
+                                                        " Заполнение Agile-объекта не будет происходить. " +
+                                                        $"TaskType: {taskType}.");
+                }
+
+                taskDetailType = taskType;
+            }
+            
             long taskId = 0;
             long projectTaskIdNumber = projectTaskId.GetProjectTaskIdFromPrefixLink();
             
@@ -2277,7 +2349,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                                                         $"ProjectTaskId: {projectTaskId}.");
                 }
 
-                taskId = task.TaskId;
+                taskId = task.ProjectTaskId;
             }
 
             if (taskDetailType == TaskDetailTypeEnum.Epic)
@@ -2292,7 +2364,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                                                         $"ProjectTaskId: {projectTaskId}.");
                 }
                 
-                taskId = task.EpicId;
+                taskId = task.ProjectEpicId;
             }
 
             var result = await _projectManagmentRepository.GetProjectTaskFilesAsync(projectId, taskId);
@@ -2308,27 +2380,15 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     }
 
     /// <inheritdoc />
-    public async Task RemoveTaskFileAsync(long documentId, long projectId, string projectTaskId)
+    public async Task RemoveTaskFileAsync(string? mongoDocumentId)
     {
         try
         {
-            var task = await _projectManagmentRepository.GetTaskDetailsByTaskIdAsync(
-                projectTaskId.GetProjectTaskIdFromPrefixLink(), projectId);
+            await _projectManagmentRepository.RemoveDocumentAsync(mongoDocumentId);
             
-            if (task is null)
-            {
-                throw new InvalidOperationException("Не удалось получить задачу. " +
-                                                    $"ProjectId: {projectId}. " +
-                                                    $"ProjectTaskId: {projectTaskId}.");
-            }
-
-            var documentName = await _projectManagmentRepository.GetDocumentNameByDocumentIdAsync(documentId);
-            
-            // Удаляем файл на сервере.
-            await _fileManagerService.Value.RemoveFileAsync(documentName, projectId, task.TaskId);
-            
+            // TODO: Юзать как Lazy, когда зарегаем в автофаке.
             // Удаляем файл в БД.
-            await _projectManagmentRepository.RemoveDocumentAsync(documentId);
+            await _mongoDbRepository.RemoveFileAsync(mongoDocumentId);
             
             // TODO: Тут добавить запись активности пользователя по userId (писать кто удалил файл).
         }
@@ -2532,7 +2592,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 throw ex;
             }
             
-            await _fileManagerService.Value.UploadUserAvatarFileAsync(files, projectId, userId);
+            var documentId = await _mongoDbRepository.UploadUserAvatarFileAsync(files);
 
             // TODO: Для чего вообще использовать класс сущности?
             // TODO: С Dapper не нужно все это.
@@ -2542,7 +2602,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             
             // Сохраняем файлы проекта.
             await _projectManagmentRepository.CreateProjectTaskDocumentsAsync(userAvatarFile,
-                DocumentTypeEnum.ProjectUserAvatar);
+                DocumentTypeEnum.ProjectUserAvatar, new List<string?> { documentId });
             
             // TODO: Тут добавить запись активности пользователя по userId (кто загрузил файл).
         }
@@ -2916,6 +2976,59 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         catch (Exception ex)
         {
             _logger?.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task RemoveProjectTaskAsync(long projectId, string projectTaskId, string account,
+        TaskDetailTypeEnum taskType)
+    {
+        try
+        {
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+            
+            // Проверяем, есть ли у пользователя роль на удаление задачи.
+            var ifExistRoleRemoveTask = await _projectManagmentRoleRepository.Value
+                .GetProjectRoleByRoleSysNameAsync("ProjectRemoveTask", userId);
+            
+            if (!ifExistRoleRemoveTask)
+            {
+                var ex = new InvalidOperationException(
+                    "У пользователя нет роли \"ProjectRemoveTask\" на удаление задачи. " +
+                    $"UserId: {userId}. " +
+                    $"ProjectId: {projectId}. " +
+                    "Исключительная ситуация - пользователь не должен тогда был видеть кнопку удаления.");
+                                                    
+                await _discordService.SendNotificationErrorAsync(ex);
+
+                throw ex;
+            }
+
+            // Получаем файлы задачи.
+            var documents = (await _projectManagmentRepository.IfProjectTaskExistFileAsync(projectId,
+                new[] { projectTaskId.GetProjectTaskIdFromPrefixLink() }))?.AsList();
+
+            // Удаляем задачи и все связанные с ними данные.
+            await _projectManagmentRepository.RemoveProjectTasksAsync(projectId, taskType,
+                taskIds: new List<long> { projectTaskId.GetProjectTaskIdFromPrefixLink() }, documents);
+            
+            // Удаляем файлы задач на сервере, если они были.
+            if (documents is not null && documents.Count > 0)
+            {
+                await _fileManagerService.Value.RemoveFilesAsync(documents);
+            }
+        }
+        
+        catch (Exception ex)
+        {
+             _logger?.LogError(ex, ex.Message);
             throw;
         }
     }

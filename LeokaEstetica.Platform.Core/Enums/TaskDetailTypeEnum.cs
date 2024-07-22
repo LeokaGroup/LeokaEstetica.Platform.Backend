@@ -8,7 +8,7 @@ public enum TaskDetailTypeEnum
     /// <summary>
     /// Неизвестный тип.
     /// </summary>
-    None = 0,
+    Undefined = 0,
     
     /// <summary>
     /// Ошибка.
@@ -23,7 +23,7 @@ public enum TaskDetailTypeEnum
     /// <summary>
     /// История/требование.
     /// </summary>
-    History = 5,
+    Story = 2,
     
     /// <summary>
     /// Эпик.

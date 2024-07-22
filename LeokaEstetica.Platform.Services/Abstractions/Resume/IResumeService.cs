@@ -1,6 +1,5 @@
 using LeokaEstetica.Platform.Models.Dto.Output.Resume;
 using LeokaEstetica.Platform.Models.Entities.Moderation;
-using LeokaEstetica.Platform.Models.Entities.Profile;
 
 namespace LeokaEstetica.Platform.Services.Abstractions.Resume;
 
@@ -20,7 +19,7 @@ public interface IResumeService
     /// </summary>
     /// <param name="resumeId">Id анкеты пользователя.</param>
     /// <returns>Данные анкеты.</returns>
-    Task<ResumeOutput> GetResumeAsync(long resumeId);
+    Task<UserInfoOutput> GetResumeAsync(long resumeId);
     
     /// <summary>
     /// Метод получает список замечаний анкеты, если они есть.
@@ -34,12 +33,12 @@ public interface IResumeService
     /// </summary>
     /// <param name="resumes">Список анкет пользователей.</param>
     /// <returns>Результирующий список.</returns>
-    Task<IEnumerable<ResumeOutput>> SetUserCodesAsync(List<ResumeOutput> resumes);
+    Task<IEnumerable<UserInfoOutput>> SetUserCodesAsync(List<UserInfoOutput> resumes);
 
     /// <summary>
     /// Метод проставляет флаги вакансиям пользователя в зависимости от его подписки.
     /// </summary>
     /// <param name="vacancies">Список вакансий каталога.</param>
     /// <returns>Список вакансий каталога с проставленными тегами.</returns>
-    Task<IEnumerable<ResumeOutput>> SetVacanciesTagsAsync(List<ResumeOutput> vacancies);
+    Task<IEnumerable<UserInfoOutput>> SetVacanciesTagsAsync(List<UserInfoOutput> vacancies);
 }

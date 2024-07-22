@@ -28,6 +28,11 @@ public class ProjectManagmentHeaderCreateItems
     /// Признак элемента футера меню.
     /// </summary>
     public bool IsFooterItem { get; set; }
+    
+    /// <summary>
+    /// Признак отображения элемента.
+    /// </summary>
+    public bool Visible { get; set; }
 }
 
 public class CreateItems
@@ -58,4 +63,9 @@ public class CreateItems
     /// Признак элемента футера меню.
     /// </summary>
     public bool IsFooterItem { get; set; }
+    
+    /// <summary>
+    /// Признак отображения элемента.
+    /// </summary>
+    public bool Visible { get; set; }
 }

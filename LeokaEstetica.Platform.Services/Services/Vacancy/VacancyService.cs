@@ -1,7 +1,6 @@
 using System.Runtime.CompilerServices;
 using AutoMapper;
 using LeokaEstetica.Platform.Access.Abstractions.AvailableLimits;
-using LeokaEstetica.Platform.Access.Consts;
 using LeokaEstetica.Platform.Access.Enums;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.Core.Exceptions;
@@ -23,10 +22,8 @@ using LeokaEstetica.Platform.Redis.Models.Vacancy;
 using LeokaEstetica.Platform.Services.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Services.Builders;
 using VacancyItems = LeokaEstetica.Platform.Redis.Models.Vacancy.VacancyItems;
-using LeokaEstetica.Platform.Base.Extensions.HtmlExtensions;
 using LeokaEstetica.Platform.Base.Extensions.PriceExtensions;
 using LeokaEstetica.Platform.Core.Enums;
-using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Vacancy;
 using LeokaEstetica.Platform.Integrations.Abstractions.Discord;
 using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Vacancy;
@@ -236,28 +233,29 @@ internal sealed class VacancyService : IVacancyService
 
             var fareRuleName = fareRule.Name;
 
+            // TODO: Изменим эту логику когда реализуем платный функционал вакансий.
             // Проверяем доступо ли пользователю создание вакансии.
-            var availableCreateProjectLimit = await _availableLimitsService
-                .CheckAvailableCreateVacancyAsync(userId, fareRuleName);
+            // var availableCreateProjectLimit = await _availableLimitsService
+            //     .CheckAvailableCreateVacancyAsync(userId, fareRuleName);
 
             // Если лимит по тарифу превышен.
-            if (!availableCreateProjectLimit)
-            {
-                var ex = new Exception($"Превышен лимит вакансий по тарифу. UserId: {userId}. Тариф: {fareRuleName}");
-
-                if (!string.IsNullOrWhiteSpace(token))
-                {
-                    await _vacancyNotificationsService.SendNotificationWarningLimitFareRuleVacanciesAsync(
-                        "Что то пошло не так",
-                        "Превышен лимит вакансий по тарифу.",
-                        NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
-                }
-
-                throw ex;
-            }
+            // if (!availableCreateProjectLimit)
+            // {
+            //     var ex = new Exception($"Превышен лимит вакансий по тарифу. UserId: {userId}. Тариф: {fareRuleName}");
+            //
+            //     if (!string.IsNullOrWhiteSpace(token))
+            //     {
+            //         await _vacancyNotificationsService.SendNotificationWarningLimitFareRuleVacanciesAsync(
+            //             "Что то пошло не так",
+            //             "Превышен лимит вакансий по тарифу.",
+            //             NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
+            //     }
+            //
+            //     throw ex;
+            // }
 
             // Добавляем вакансию в таблицу вакансий пользователя.
-            var createdVacancy = await _vacancyRepository.CreateVacancyAsync(vacancyInput);
+            var createdVacancy = await _vacancyRepository.CreateVacancyAsync(vacancyInput, userId);
             var vacancyId = createdVacancy.VacancyId;
             
             // Привязываем вакансию к проекту.
@@ -321,9 +319,10 @@ internal sealed class VacancyService : IVacancyService
 
             await DeleteIfVacancyRemarksAsync(catalogVacancies);
 
+            // TODO: Выпилить, если у нас не будет выделения цветами тарифов.
             // Выбираем пользователей, у которых есть подписка выше бизнеса. Только их выделяем цветом.
-            result.CatalogVacancies = await _fillColorVacanciesService.SetColorBusinessVacancies(catalogVacancies,
-                _subscriptionRepository, _fareRuleRepository);
+            // result.CatalogVacancies = await _fillColorVacanciesService.SetColorBusinessVacancies(catalogVacancies,
+            //     _subscriptionRepository, _fareRuleRepository);
             
             FormatCatalogVacancies(catalogVacancies);
             
@@ -810,74 +809,75 @@ internal sealed class VacancyService : IVacancyService
                                                     $"Ошибка в {nameof(VacancyService)}");
             }
             
+            // TODO: Выпилим это, уходим от лимитов на проекты и вакансии.
             // Получаем тариф, на который оформлена подписка у пользователя.
-            var fareRule = await _fareRuleRepository.GetByIdAsync(userSubscription.ObjectId);
-            var fareRuleName = fareRule.Name;
+            // var fareRule = await _fareRuleRepository.GetByIdAsync(userSubscription.ObjectId);
+            // var fareRuleName = fareRule.Name;
 
             // Проверяем кол-во опубликованных вакансий пользователя.
             // Если по лимитам тарифа доступно, то разрешаем удалить вакансию из архива.
-            var vacanciesCatalogCount = await _vacancyRepository.GetUserVacanciesCatalogCountAsync(userId);
+            // var vacanciesCatalogCount = await _vacancyRepository.GetUserVacanciesCatalogCountAsync(userId);
 
             // Проверяем кол-во в зависимости от подписки.
             // Если стартовый тариф.
-            if (fareRuleName.Equals(FareRuleTypeEnum.Start.GetEnumDescription()))
-            {
-                if (vacanciesCatalogCount >= AvailableLimitsConst.AVAILABLE_VACANCY_START_COUNT)
-                {
-                    var ex = new InvalidOperationException(NOT_AVAILABLE_DELETE_VACANCY_ARCHIVE);
-                    
-                    _logger.LogError(ex, ex.Message);
-                    
-                    if (!string.IsNullOrEmpty(token))
-                    {
-                        await _vacancyNotificationsService.SendNotificationWarningDeleteVacancyArchiveAsync("Внимание",
-                            NOT_AVAILABLE_DELETE_VACANCY_ARCHIVE, NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING,
-                            token);
-                    }
-                    
-                    throw ex;
-                }
-            }
-            
-            // Если базовый тариф.
-            if (fareRuleName.Equals(FareRuleTypeEnum.Base.GetEnumDescription()))
-            {
-                if (vacanciesCatalogCount >= AvailableLimitsConst.AVAILABLE_VACANCY_BASE_COUNT)
-                {
-                    var ex = new InvalidOperationException(NOT_AVAILABLE_DELETE_VACANCY_ARCHIVE);
-                    
-                    _logger.LogError(ex, ex.Message);
-                    
-                    if (!string.IsNullOrEmpty(token))
-                    {
-                        await _vacancyNotificationsService.SendNotificationWarningDeleteVacancyArchiveAsync("Внимание",
-                            NOT_AVAILABLE_DELETE_VACANCY_ARCHIVE, NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING,
-                            token);
-                    }
-                    
-                    throw ex;
-                }
-            }
-            
-            // Если бизнес тариф.
-            if (fareRuleName.Equals(FareRuleTypeEnum.Business.GetEnumDescription()))
-            {
-                if (vacanciesCatalogCount >= AvailableLimitsConst.AVAILABLE_VACANCY_BUSINESS_COUNT)
-                {
-                    var ex = new InvalidOperationException(NOT_AVAILABLE_DELETE_VACANCY_ARCHIVE);
-                    
-                    _logger.LogError(ex, ex.Message);
-                    
-                    if (!string.IsNullOrEmpty(token))
-                    {
-                        await _vacancyNotificationsService.SendNotificationWarningDeleteVacancyArchiveAsync("Внимание",
-                            NOT_AVAILABLE_DELETE_VACANCY_ARCHIVE, NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING,
-                            token);
-                    }
-                    
-                    throw ex;
-                }
-            }
+            // if (fareRuleName.Equals(FareRuleTypeEnum.Start.GetEnumDescription()))
+            // {
+            //     if (vacanciesCatalogCount >= AvailableLimitsConst.AVAILABLE_VACANCY_START_COUNT)
+            //     {
+            //         var ex = new InvalidOperationException(NOT_AVAILABLE_DELETE_VACANCY_ARCHIVE);
+            //         
+            //         _logger.LogError(ex, ex.Message);
+            //         
+            //         if (!string.IsNullOrEmpty(token))
+            //         {
+            //             await _vacancyNotificationsService.SendNotificationWarningDeleteVacancyArchiveAsync("Внимание",
+            //                 NOT_AVAILABLE_DELETE_VACANCY_ARCHIVE, NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING,
+            //                 token);
+            //         }
+            //         
+            //         throw ex;
+            //     }
+            // }
+            //
+            // // Если базовый тариф.
+            // if (fareRuleName.Equals(FareRuleTypeEnum.Base.GetEnumDescription()))
+            // {
+            //     if (vacanciesCatalogCount >= AvailableLimitsConst.AVAILABLE_VACANCY_BASE_COUNT)
+            //     {
+            //         var ex = new InvalidOperationException(NOT_AVAILABLE_DELETE_VACANCY_ARCHIVE);
+            //         
+            //         _logger.LogError(ex, ex.Message);
+            //         
+            //         if (!string.IsNullOrEmpty(token))
+            //         {
+            //             await _vacancyNotificationsService.SendNotificationWarningDeleteVacancyArchiveAsync("Внимание",
+            //                 NOT_AVAILABLE_DELETE_VACANCY_ARCHIVE, NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING,
+            //                 token);
+            //         }
+            //         
+            //         throw ex;
+            //     }
+            // }
+            //
+            // // Если бизнес тариф.
+            // if (fareRuleName.Equals(FareRuleTypeEnum.Business.GetEnumDescription()))
+            // {
+            //     if (vacanciesCatalogCount >= AvailableLimitsConst.AVAILABLE_VACANCY_BUSINESS_COUNT)
+            //     {
+            //         var ex = new InvalidOperationException(NOT_AVAILABLE_DELETE_VACANCY_ARCHIVE);
+            //         
+            //         _logger.LogError(ex, ex.Message);
+            //         
+            //         if (!string.IsNullOrEmpty(token))
+            //         {
+            //             await _vacancyNotificationsService.SendNotificationWarningDeleteVacancyArchiveAsync("Внимание",
+            //                 NOT_AVAILABLE_DELETE_VACANCY_ARCHIVE, NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING,
+            //                 token);
+            //         }
+            //         
+            //         throw ex;
+            //     }
+            // }
 
             // Удаляем вакансию из архива.
             var isDelete = await _vacancyRepository.DeleteVacancyArchiveAsync(vacancyId, userId);

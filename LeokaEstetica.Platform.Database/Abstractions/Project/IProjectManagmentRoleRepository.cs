@@ -21,4 +21,12 @@ public interface IProjectManagmentRoleRepository
     /// </summary>
     /// <param name="roles">Список ролей к обновлению.</param>
     Task UpdateRolesAsync(IEnumerable<ProjectManagementRoleInput> roles);
+
+    /// <summary>
+    /// Метод получает роль пользователя по ее системному названию.
+    /// </summary>
+    /// <param name="roleSysName">Системное название роли.</param>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Признак нааличия роли.</returns>
+    Task<bool> GetProjectRoleByRoleSysNameAsync(string? roleSysName, long userId);
 }

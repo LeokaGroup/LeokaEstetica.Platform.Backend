@@ -31,7 +31,7 @@ namespace LeokaEstetica.Platform.Processing.Factors;
 public static class CreatePaymentOrderFactory
 {
     /// <summary>
-    /// TODO: Требуется серьезная доработка! Тут нужно передавать настройки кролика по аналогии как сделано в хабе модуля УП.
+    /// TODO: Тут нужно передавать настройки кролика по аналогии как сделано в хабе модуля УП.
     /// TODO: Но только тут иначе нужно сделать такое (из конфигов получать по цепочке выше в самом верху, а строку урл получать в базовом контроллере попробовать, это тоже в самом верху цепочки).
     /// TODO: Передавать зависимости в объекте, их уже много тут.
     /// Метод создает результат созданного заказа. Также создает заказ в БД.
@@ -50,10 +50,7 @@ public static class CreatePaymentOrderFactory
         IGlobalConfigRepository globalConfigRepository, IMailingsService mailingsService)
     {
         var paymentId = string.Empty;
-        ICreateOrderOutput result = null;
-        
-        // using var httpClient = _httpClientFactory.CreateClient();
-        // httpClient.SetHttpClientRequestAuthorizationHeader(token);
+        ICreateOrderOutput? result = null;
 
         using var httpClient = new HttpClient();
 
@@ -87,6 +84,7 @@ public static class CreatePaymentOrderFactory
             createPaymentOrderAggregateInput.CreateOrderInput, createPaymentOrderAggregateInput.UserId,
             responseCheckStatusOrder);
 
+        // TODO: Уже пишем в другую таблицу и через Dapper.
         // Создаем заказ в БД.
         var createdOrderResult = await commerceRepository.CreateOrderAsync(createdOrder);
 

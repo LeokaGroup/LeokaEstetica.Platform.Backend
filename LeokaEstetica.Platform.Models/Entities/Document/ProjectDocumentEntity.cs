@@ -67,4 +67,9 @@ public class ProjectDocumentEntity
     /// Id пользователя.
     /// </summary>
     public long? UserId { get; set; }
+    
+    /// <summary>
+    /// Id документа в MongoDB.
+    /// </summary>
+    public string? MongoDocumentId { get; set; }
 }

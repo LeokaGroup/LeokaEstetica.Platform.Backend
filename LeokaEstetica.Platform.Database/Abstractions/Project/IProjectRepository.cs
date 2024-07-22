@@ -1,5 +1,6 @@
 using LeokaEstetica.Platform.Models.Dto.Input.Project;
 using LeokaEstetica.Platform.Models.Dto.Output.Project;
+using LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
 using LeokaEstetica.Platform.Models.Entities.Configs;
 using LeokaEstetica.Platform.Models.Entities.Project;
 using LeokaEstetica.Platform.Models.Entities.ProjectTeam;
@@ -73,7 +74,7 @@ public interface IProjectRepository
     /// </summary>
     /// <param name="projectId">Id проекта, вакансии которого нужно получить.</param>
     /// <returns>Список вакансий.</returns>
-    Task<IEnumerable<ProjectVacancyEntity>> ProjectVacanciesAsync(long projectId);
+    Task<IEnumerable<ProjectVacancyOutput>> ProjectVacanciesAsync(long projectId);
 
     /// <summary>
     /// Метод прикрепляет вакансию к проекту.

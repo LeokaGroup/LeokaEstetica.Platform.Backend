@@ -7,17 +7,14 @@ namespace LeokaEstetica.Platform.Access.Enums;
 /// </summary>
 public enum ReductionSubscriptionLimitsEnum
 {
-    None = 1,
+    /// <summary>
+    /// Неизвестный тип.
+    /// </summary>
+    Undefined = 0,
     
     /// <summary>
-    /// Лимиты на проекты.
+    /// Лимиты на кол-во сотрудников в тарифе.
     /// </summary>
-    [Description("Лимиты на кол-во проектов")]
-    Project = 2,
-    
-    /// <summary>
-    /// Лимиты на вакансии.
-    /// </summary>
-    [Description("Лимиты на кол-во вакансий")]
-    Vacancy = 3
+    [Description("Лимиты на кол-во сотрудников")]
+    EmployeesCount = 2
 }

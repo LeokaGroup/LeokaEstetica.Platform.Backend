@@ -31,18 +31,18 @@ public class TaskLinkInput
     /// Id родительской задачи.
     /// Дочерней задачей при этом становится текущая задача, в которой создается связь.
     /// </summary>
-    public string ParentId { get; set; }
+    public string? ParentId { get; set; }
     
     /// <summary>
     /// Id дочерней задачи.
     /// Родительской задачей при этом становится текущая задача, в которой создается связь.
     /// </summary>
-    public string ChildId { get; set; }
+    public string? ChildId { get; set; }
 
     /// <summary>
     /// Id задачи, от которой зависит текущая.
     /// При этом указанная задача становится блокирующей текущую.
     /// У текущей выставляется "зависит от" указанной задачи.
     /// </summary>
-    public string DependId { get; set; }
+    public string? DependId { get; set; }
 }

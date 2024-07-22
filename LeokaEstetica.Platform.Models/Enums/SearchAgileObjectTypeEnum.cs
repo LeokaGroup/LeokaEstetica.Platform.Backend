@@ -24,5 +24,5 @@ public enum SearchAgileObjectTypeEnum
     /// <summary>
     /// История.
     /// </summary>
-    Story = 5
+    Story = 2
 }

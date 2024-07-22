@@ -1,3 +1,4 @@
+using LeokaEstetica.Platform.Models.Dto.ProjectManagement.Document;
 using LeokaEstetica.Platform.Models.Enums;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -34,6 +35,12 @@ public interface IFileManagerService
     /// <param name="projectId">Id проекта.</param>
     /// <param name="taskId">Id задачи.</param>
     Task RemoveFileAsync(string fileName, long projectId, long taskId);
+    
+    /// <summary>
+    /// Метод удаляет файлы с сервера по SFTP.
+    /// </summary>
+    /// <param name="documents">Документы к удалению.</param>
+    Task RemoveFilesAsync(List<ProjectManagementDocumentFile>? documents);
 
     /// <summary>
     /// Метод получает изображение аватара пользователя.
@@ -64,6 +71,7 @@ public interface IFileManagerService
 
     /// <summary>
     /// TODO: Доделаем в будущем, пока что загоняем обученные модели вручную на сервер.
+    /// TODO: Переделать на хранение в MongoDB - заведена задачка на рефач.
     /// Метод загружает на сервер модель нейросети.
     /// </summary>
     /// <param name="model">Модель нейросети (хранит опыт всех эпох нейросети).</param>
@@ -72,6 +80,7 @@ public interface IFileManagerService
     Task UploadNetworkModelAsync(ITransformer model, string version, string modelName);
     
     /// <summary>
+    /// TODO: Переделать на хранение в MongoDB - заведена задачка на рефач.
     /// Метод скачивает модель нейросети.
     /// </summary>
     /// <param name="version">Версия модели нейросети.</param>

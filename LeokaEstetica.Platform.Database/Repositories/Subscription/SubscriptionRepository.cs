@@ -1,15 +1,20 @@
+using Dapper;
+using LeokaEstetica.Platform.Base.Abstractions.Connection;
+using LeokaEstetica.Platform.Base.Abstractions.Repositories.Base;
 using LeokaEstetica.Platform.Core.Data;
-using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Database.Abstractions.Subscription;
+using LeokaEstetica.Platform.Models.Dto.Output.Subscription;
 using LeokaEstetica.Platform.Models.Entities.Subscription;
+using LeokaEstetica.Platform.Models.Enums;
 using Microsoft.EntityFrameworkCore;
+using Enum = LeokaEstetica.Platform.Models.Enums.Enum;
 
 namespace LeokaEstetica.Platform.Database.Repositories.Subscription;
 
 /// <summary>
 /// Класс реализует методы репозитория подписок.
 /// </summary>
-internal sealed class SubscriptionRepository : ISubscriptionRepository
+internal sealed class SubscriptionRepository : BaseRepository, ISubscriptionRepository
 {
     private readonly PgContext _pgContext;
     
@@ -17,7 +22,8 @@ internal sealed class SubscriptionRepository : ISubscriptionRepository
     /// Конструктор.
     /// </summary>
     /// <param name="pgContext">Датаконтекст.</param>
-    public SubscriptionRepository(PgContext pgContext)
+    public SubscriptionRepository(PgContext pgContext,
+        IConnectionProvider connectionProvider) : base(connectionProvider)
     {
         _pgContext = pgContext;
     }
@@ -178,6 +184,34 @@ internal sealed class SubscriptionRepository : ISubscriptionRepository
         userSubscription.SubscriptionId = freeSubscriptionId;
 
         await _pgContext.SaveChangesAsync();
+    }
+
+    /// <inheritdoc />
+    public async Task<SubscriptionFareRuleCompositeOutput?> GetUserSubscriptionFareRuleByUserIdAsync(long userId,
+        int attributeId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@userId", userId);
+        parameters.Add("@subscriptionType", new Enum(SubscriptionTypeEnum.FareRule));
+        parameters.Add("@attributeId", attributeId);
+
+        var query = "SELECT as.rule_id, fr.is_free, fra.is_price, fra.min_value " +
+                    "FROM subscriptions.user_subscriptions AS us " +
+                    "INNER JOIN subscriptions.all_subscriptions AS as " +
+                    "ON us.subscription_id = as.subscription_id " +
+                    "INNER JOIN rules.fare_rules AS fr " +
+                    "ON as.rule_id = fr.rule_id " +
+                    "INNER JOIN rules.fare_rule_attribute_values AS fra " +
+                    "ON fr.rule_id = fra.rule_id " +
+                    "WHERE us.user_id = @userId " +
+                    "AND as.subscription_type = @subscriptionType::subscriptions.SUBSCRIPTION_TYPE_ENUM " +
+                    "AND fra.attribute_id = @attributeId";
+
+        var result = await connection.QueryFirstOrDefaultAsync<SubscriptionFareRuleCompositeOutput>(query, parameters);
+
+        return result;
     }
 
     #endregion

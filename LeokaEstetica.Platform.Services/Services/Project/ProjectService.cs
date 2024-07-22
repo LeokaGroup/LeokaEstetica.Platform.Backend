@@ -2,11 +2,11 @@ using System.Globalization;
 using System.Runtime.CompilerServices;
 using AutoMapper;
 using Dapper;
-using LeokaEstetica.Platform.Access.Abstractions.AvailableLimits;
+using LeokaEstetica.Platform.Access.Abstractions.ProjectManagement;
 using LeokaEstetica.Platform.Access.Abstractions.User;
-using LeokaEstetica.Platform.Access.Consts;
 using LeokaEstetica.Platform.Access.Enums;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
+using LeokaEstetica.Platform.Base.Extensions.HtmlExtensions;
 using LeokaEstetica.Platform.Core.Constants;
 using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Core.Exceptions;
@@ -35,7 +35,6 @@ using LeokaEstetica.Platform.Services.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Services.Builders;
 using LeokaEstetica.Platform.Services.Consts;
 using LeokaEstetica.Platform.Services.Strategies.Project.Team;
-using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.Config;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Project;
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
@@ -87,7 +86,6 @@ internal sealed class ProjectService : IProjectService
     private readonly BaseProjectsFilterChain _projectStageSearchInvestorsFilterChain =
         new ProjectStageSearchInvestorsFilterChain();
 
-    private readonly IAvailableLimitsService _availableLimitsService;
     private readonly ISubscriptionRepository _subscriptionRepository;
     private readonly IFareRuleRepository _fareRuleRepository;
     private readonly IMailingsService _mailingsService;
@@ -114,11 +112,16 @@ internal sealed class ProjectService : IProjectService
     private readonly IAccessUserNotificationsService _accessUserNotificationsService;
     private readonly IAccessUserService _accessUserService;
     private readonly IProjectModerationRepository _projectModerationRepository;
-    
-    private const string NOT_AVAILABLE_DELETE_PROJECT_ARCHIVE = "Невозможно убрать проект из архива, так как у Вас уже опубликовано максимальное количество проектов соответствующих максимальному лимиту тарифа. Добавьте в архив проекты, чтобы освободить лимиты либо перейдите на тариф, который имеет большие лимиты";
 
     private readonly IDiscordService _discordService;
     private readonly IProjectManagementSettingsRepository _projectManagementSettingsRepository;
+
+    /// <summary>
+    /// Id вакансий, которые будут удалены из результата.
+    /// </summary>
+    private readonly List<long> _removedVacancyIds = new();
+
+    private readonly IAccessModuleService _accessModuleService;
 
     /// <summary>
     /// Конструктор.
@@ -130,7 +133,6 @@ internal sealed class ProjectService : IProjectService
     /// <param name="projectNotificationsService">Сервис уведомлений.</param>
     /// <param name="vacancyService">Сервис вакансий.</param>
     /// <param name="vacancyRepository">Репозиторий вакансий.</param>
-    /// <param name="availableLimitsService">Сервис проверки лимитов.</param>
     /// <param name="vacancyModerationService">Сервис модерации вакансий проектов.</param>
     /// <param name="notificationsRepository">Репозиторий уведомлений.</param>
     /// <param name="accessUserNotificationsService">Сервис уведомлений доступа пользователя.</param>
@@ -141,6 +143,7 @@ internal sealed class ProjectService : IProjectService
     /// <param name="globalConfigRepository">Репозиторий глобал конфига.</param>
     /// <param name="projectManagmentRepository">Репозиторий модуля УП.</param>
     /// <param name="wikiTreeRepository">Репозиторий Wiki модуля УП.</param>
+    /// <param name="accessModuleService">Сервис проверки доступов.</param>
     public ProjectService(IProjectRepository projectRepository,
         ILogger<ProjectService> logger,
         IUserRepository userRepository,
@@ -148,7 +151,6 @@ internal sealed class ProjectService : IProjectService
         IProjectNotificationsService projectNotificationsService,
         IVacancyService vacancyService,
         IVacancyRepository vacancyRepository, 
-        IAvailableLimitsService availableLimitsService, 
         ISubscriptionRepository subscriptionRepository, 
         IFareRuleRepository fareRuleRepository, 
         IVacancyModerationService vacancyModerationService, 
@@ -162,7 +164,8 @@ internal sealed class ProjectService : IProjectService
         IProjectManagementSettingsRepository projectManagementSettingsRepository,
         IGlobalConfigRepository globalConfigRepository,
         IProjectManagmentRepository projectManagmentRepository,
-        IWikiTreeRepository wikiTreeRepository)
+        IWikiTreeRepository wikiTreeRepository,
+        IAccessModuleService accessModuleService)
     {
         _projectRepository = projectRepository;
         _logger = logger;
@@ -171,7 +174,6 @@ internal sealed class ProjectService : IProjectService
         _projectNotificationsService = projectNotificationsService;
         _vacancyService = vacancyService;
         _vacancyRepository = vacancyRepository;
-        _availableLimitsService = availableLimitsService;
         _subscriptionRepository = subscriptionRepository;
         _fareRuleRepository = fareRuleRepository;
         _vacancyModerationService = vacancyModerationService;
@@ -186,6 +188,7 @@ internal sealed class ProjectService : IProjectService
         _globalConfigRepository = globalConfigRepository;
         _projectManagmentRepository = projectManagmentRepository;
         _wikiTreeRepository = wikiTreeRepository;
+        _accessModuleService = accessModuleService;
 
         // Определяем обработчики цепочки фильтров.
         _dateProjectsFilterChain.Successor = _projectsVacanciesFilterChain;
@@ -250,24 +253,25 @@ internal sealed class ProjectService : IProjectService
             // Получаем тариф, на который оформлена подписка у пользователя.
             var fareRule = await _fareRuleRepository.GetByIdAsync(userSubscription.ObjectId);
             
+            // TODO: В будущем выпилить это, так как мы убираем лимиты на проекты и вакансии.
             // Проверяем доступно ли пользователю создание проекта.
-            var availableCreateProjectLimit = await _availableLimitsService.CheckAvailableCreateProjectAsync(userId,
-                fareRule.Name);
-
-            // Если лимит по тарифу превышен.
-            if (!availableCreateProjectLimit)
-            {
-                var ex = new InvalidOperationException("Превышен лимит проектов по тарифу. " +
-                                                       $"UserId: {userId}. " +
-                                                       $"Тариф: {fareRule.Name}");
-
-                await _projectNotificationsService.SendNotificationWarningLimitFareRuleProjectsAsync(
-                    "Что то пошло не так",
-                    "Превышен лимит проектов по тарифу.",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
-
-                throw ex;
-            }
+            // var availableCreateProjectLimit = await _availableLimitsService.CheckAvailableCreateProjectAsync(userId,
+            //     fareRule.Name);
+            //
+            // // Если лимит по тарифу превышен.
+            // if (!availableCreateProjectLimit)
+            // {
+            //     var ex = new InvalidOperationException("Превышен лимит проектов по тарифу. " +
+            //                                            $"UserId: {userId}. " +
+            //                                            $"Тариф: {fareRule.Name}");
+            //
+            //     await _projectNotificationsService.SendNotificationWarningLimitFareRuleProjectsAsync(
+            //         "Что то пошло не так",
+            //         "Превышен лимит проектов по тарифу.",
+            //         NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
+            //
+            //     throw ex;
+            // }
 
             var projectName = createProjectInput.ProjectName;
 
@@ -626,25 +630,25 @@ internal sealed class ProjectService : IProjectService
             {
                 ProjectVacancies = new List<ProjectVacancyOutput>()
             };
-            
+
             // Проставляем признаки видимости кнопок вакансий проекта.
             result = await FillVisibleControlsProjectVacanciesAsync(result, projectId, userId);
-            
-            var items = await _projectRepository.ProjectVacanciesAsync(projectId);
 
-            if (items is null || !items.Any())
+            var vacancies = (await _projectRepository.ProjectVacanciesAsync(projectId))?.AsList();
+
+            if (vacancies is null || vacancies.Count == 0)
             {
                 return result;
             }
 
-            result.ProjectVacancies = _mapper.Map<IEnumerable<ProjectVacancyOutput>>(items);
-            var projectVacancies = result.ProjectVacancies.ToList();
-
             // Проставляем вакансиям статусы.
-            result.ProjectVacancies = await FillVacanciesStatusesAsync(projectVacancies, userId);
+            result.ProjectVacancies = await FillVacanciesStatusesAsync(vacancies, userId,
+                projectId);
 
-            // Чистим описания от html-тегов.
-            result.ProjectVacancies = ClearHtmlTags(projectVacancies);
+            // Удаляем вакансии, которые пользователю не нужно видеть в результате.
+            vacancies.RemoveAll(x => _removedVacancyIds.Contains(x.VacancyId));
+
+            result.ProjectVacancies = vacancies;
 
             return result;
         }
@@ -947,39 +951,21 @@ internal sealed class ProjectService : IProjectService
     /// <param name="vacancyId">Id вакансии.</param>
     /// <param name="account">Аккаунт пользователя.</param>
     /// <param name="token">Токен пользователя.</param>
-    public async Task InviteProjectTeamAsync(string inviteText,
+    /// <returns>Выходная модель.</returns>
+    public async Task<InviteProjectTeamOutput> InviteProjectTeamAsync(string inviteText,
         ProjectInviteTypeEnum inviteType, long projectId, long? vacancyId, string account, string token)
     {
         try
         {
             await ValidateInviteProjectTeamParams(inviteText, inviteType, projectId, vacancyId, account, token);
             
-            var currentUserId = await _userRepository.GetUserIdByEmailAsync(account);
+            var userId = await _userRepository.GetUserIdByEmailAsync(account);
             
-            if (currentUserId <= 0)
+            if (userId <= 0)
             {
                 var ex = new NotFoundUserIdByAccountException(inviteText);
                 throw ex;
             }
-            
-            // Проверяем заполнение анкеты и даем доступ либо нет.
-            var isEmptyProfile = await _accessUserService.IsProfileEmptyAsync(currentUserId);
-
-            // Если нет доступа, то не даем оплатить платный тариф.
-            if (isEmptyProfile)
-            {
-                var ex = new InvalidOperationException(
-                    $"Анкета пользователя не заполнена. UserId был: {currentUserId}");
-
-                await _accessUserNotificationsService.SendNotificationWarningEmptyUserProfileAsync("Внимание",
-                    "Для приглашения пользователей в проект должна быть заполнена информация вашей анкеты.",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
-                
-                throw ex;
-            }
-
-            // Находим Id пользователя, которого приглашаем в проект.
-            var inviteUserId = await GetUserIdAsync(inviteText, inviteType);
 
             // Проверяем нахождение проекта на модерации.
             var isProjectModeration = await _projectRepository.CheckProjectModerationAsync(projectId);
@@ -1014,10 +1000,28 @@ internal sealed class ProjectService : IProjectService
                 
                 throw ex;
             }
+            
+            // Проверяем тариф пользователя.
+            // Если бесплатный, то проверяем лимит сотрудников в команде проекта.
+            var access = await _accessModuleService.CheckAccessInviteProjectTeamMemberAsync(projectId, account);
 
+            // Не даем пригласить в команду проекта.
+            if (!access.IsAccess)
+            {
+                return new InviteProjectTeamOutput
+                {
+                    ForbiddenTitle = access.ForbiddenTitle,
+                    ForbiddenText = access.ForbiddenText,
+                    FareRuleText = access.FareRuleText,
+                    IsAccess = false
+                };
+            }
 
             // Получаем Id команды проекта.
             var teamId = await _projectRepository.GetProjectTeamIdAsync(projectId);
+            
+            // Находим Id пользователя, которого приглашаем в проект.
+            var inviteUserId = await GetUserIdAsync(inviteText, inviteType);
             
             var isInvitedUser = await _projectRepository.CheckProjectTeamMemberAsync(teamId, inviteUserId);
 
@@ -1027,7 +1031,7 @@ internal sealed class ProjectService : IProjectService
                 var ex = new InvalidOperationException("Пользователь уже был приглашен в команду проекта. " +
                                                        $"TeamId: {teamId}. " +
                                                        $"InvitedUserId: {inviteUserId}. " +
-                                                       $"CurrentUserId: {currentUserId}");
+                                                       $"UserId: {userId}");
                 
                 await _projectNotificationsService.SendNotificationWarningUserAlreadyProjectInvitedTeamAsync(
                     "Внимание",
@@ -1045,6 +1049,8 @@ internal sealed class ProjectService : IProjectService
             // Записываем уведомления о приглашении в проект.
             await _projectNotificationsRepository.AddNotificationInviteProjectAsync(projectId, vacancyId, inviteUserId,
                 projectName);
+
+            return new ProjectTeamMemberOutput { IsAccess = true };
         }
 
         catch (Exception ex)
@@ -1417,66 +1423,67 @@ internal sealed class ProjectService : IProjectService
             // Если по лимитам тарифа доступно, то разрешаем удалить проект из архива.
             var projectsCatalogCount = await _projectRepository.GetUserProjectsCatalogCountAsync(userId);
 
+            // TODO: В будущем выпилить это, так как мы убираем лимиты на проекты и вакансии.
             // Проверяем кол-во в зависимости от подписки.
             // Если стартовый тариф.
-            if (fareRuleName.Equals(FareRuleTypeEnum.Start.GetEnumDescription()))
-            {
-                if (projectsCatalogCount >= AvailableLimitsConst.AVAILABLE_PROJECT_START_COUNT)
-                {
-                    var ex = new InvalidOperationException(NOT_AVAILABLE_DELETE_PROJECT_ARCHIVE);
-                    
-                    _logger.LogError(ex, ex.Message);
-                    
-                    if (!string.IsNullOrEmpty(token))
-                    {
-                        await _projectNotificationsService.SendNotificationWarningDeleteProjectArchiveAsync("Внимание",
-                            NOT_AVAILABLE_DELETE_PROJECT_ARCHIVE, NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING,
-                            token);
-                    }
-                    
-                    throw ex;
-                }
-            }
-            
-            // Если базовый тариф.
-            if (fareRuleName.Equals(FareRuleTypeEnum.Base.GetEnumDescription()))
-            {
-                if (projectsCatalogCount >= AvailableLimitsConst.AVAILABLE_PROJECT_BASE_COUNT)
-                {
-                    var ex = new InvalidOperationException(NOT_AVAILABLE_DELETE_PROJECT_ARCHIVE);
-                    
-                    _logger.LogError(ex, ex.Message);
-                    
-                    if (!string.IsNullOrEmpty(token))
-                    {
-                        await _projectNotificationsService.SendNotificationWarningDeleteProjectArchiveAsync("Внимание",
-                            NOT_AVAILABLE_DELETE_PROJECT_ARCHIVE, NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING,
-                            token);
-                    }
-                    
-                    throw ex;
-                }
-            }
-            
-            // Если бизнес тариф.
-            if (fareRuleName.Equals(FareRuleTypeEnum.Business.GetEnumDescription()))
-            {
-                if (projectsCatalogCount >= AvailableLimitsConst.AVAILABLE_PROJECT_BUSINESS_COUNT)
-                {
-                    var ex = new InvalidOperationException(NOT_AVAILABLE_DELETE_PROJECT_ARCHIVE);
-                    
-                    _logger.LogError(ex, ex.Message);
-                    
-                    if (!string.IsNullOrEmpty(token))
-                    {
-                        await _projectNotificationsService.SendNotificationWarningDeleteProjectArchiveAsync("Внимание",
-                            NOT_AVAILABLE_DELETE_PROJECT_ARCHIVE, NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING,
-                            token);
-                    }
-                    
-                    throw ex;
-                }
-            }
+            // if (fareRuleName.Equals(FareRuleTypeEnum.Start.GetEnumDescription()))
+            // {
+            //     if (projectsCatalogCount >= AvailableLimitsConst.AVAILABLE_PROJECT_START_COUNT)
+            //     {
+            //         var ex = new InvalidOperationException(NOT_AVAILABLE_DELETE_PROJECT_ARCHIVE);
+            //         
+            //         _logger.LogError(ex, ex.Message);
+            //         
+            //         if (!string.IsNullOrEmpty(token))
+            //         {
+            //             await _projectNotificationsService.SendNotificationWarningDeleteProjectArchiveAsync("Внимание",
+            //                 NOT_AVAILABLE_DELETE_PROJECT_ARCHIVE, NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING,
+            //                 token);
+            //         }
+            //         
+            //         throw ex;
+            //     }
+            // }
+            //
+            // // Если базовый тариф.
+            // if (fareRuleName.Equals(FareRuleTypeEnum.Base.GetEnumDescription()))
+            // {
+            //     if (projectsCatalogCount >= AvailableLimitsConst.AVAILABLE_PROJECT_BASE_COUNT)
+            //     {
+            //         var ex = new InvalidOperationException(NOT_AVAILABLE_DELETE_PROJECT_ARCHIVE);
+            //         
+            //         _logger.LogError(ex, ex.Message);
+            //         
+            //         if (!string.IsNullOrEmpty(token))
+            //         {
+            //             await _projectNotificationsService.SendNotificationWarningDeleteProjectArchiveAsync("Внимание",
+            //                 NOT_AVAILABLE_DELETE_PROJECT_ARCHIVE, NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING,
+            //                 token);
+            //         }
+            //         
+            //         throw ex;
+            //     }
+            // }
+            //
+            // // Если бизнес тариф.
+            // if (fareRuleName.Equals(FareRuleTypeEnum.Business.GetEnumDescription()))
+            // {
+            //     if (projectsCatalogCount >= AvailableLimitsConst.AVAILABLE_PROJECT_BUSINESS_COUNT)
+            //     {
+            //         var ex = new InvalidOperationException(NOT_AVAILABLE_DELETE_PROJECT_ARCHIVE);
+            //         
+            //         _logger.LogError(ex, ex.Message);
+            //         
+            //         if (!string.IsNullOrEmpty(token))
+            //         {
+            //             await _projectNotificationsService.SendNotificationWarningDeleteProjectArchiveAsync("Внимание",
+            //                 NOT_AVAILABLE_DELETE_PROJECT_ARCHIVE, NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING,
+            //                 token);
+            //         }
+            //         
+            //         throw ex;
+            //     }
+            // }
 
             // Удаляем проект из архива.
             var isDelete = await _projectRepository.DeleteProjectArchiveAsync(projectId, userId);
@@ -1571,9 +1578,10 @@ internal sealed class ProjectService : IProjectService
         
         await DeleteIfProjectRemarksAsync(catalogs);
             
+        // TODO: Выпилить, если у нас не будет выделения цветами тарифов.
         // Выбираем пользователей, у которых есть подписка выше бизнеса. Только их выделяем цветом.
-        projects = await _fillColorProjectsService.SetColorBusinessProjectsAsync(catalogs, _subscriptionRepository,
-            _fareRuleRepository);
+        // projects = await _fillColorProjectsService.SetColorBusinessProjectsAsync(catalogs, _subscriptionRepository,
+        //     _fareRuleRepository);
 
         // Очистка описание от тегов список проектов для каталога.
         projects = ClearCatalogVacanciesHtmlTags(projects.ToList());
@@ -1735,9 +1743,10 @@ internal sealed class ProjectService : IProjectService
     /// </summary>
     /// <param name="projectVacancies">Список вакансий.</param>
     /// <param name="userId">Id пользователя.</param>
+    /// <param name="projectId">Id проекта.</param>
     /// <returns>Список вакансий.</returns>
     private async Task<IEnumerable<ProjectVacancyOutput>> FillVacanciesStatusesAsync(
-        List<ProjectVacancyOutput> projectVacancies, long userId)
+        List<ProjectVacancyOutput> projectVacancies, long userId, long projectId)
     {
         // Получаем список вакансий на модерации.
         var moderationVacancies = await _vacancyModerationService.VacanciesModerationAsync();
@@ -1746,7 +1755,7 @@ internal sealed class ProjectService : IProjectService
         var catalogVacancies = await _vacancyRepository.CatalogVacanciesAsync();
         
         // Находим вакансии в архиве.
-        var archivedVacancies = (await _vacancyRepository.GetUserVacanciesArchiveAsync(userId)).ToList();
+        var archivedVacancies = (await _vacancyRepository.GetUserVacanciesArchiveAsync(userId)).AsList();
 
         // Проставляем статусы вакансий.
         foreach (var pv in projectVacancies)
@@ -1756,7 +1765,7 @@ internal sealed class ProjectService : IProjectService
 
             if (isVacancy)
             {
-                pv.UserVacancy.VacancyStatusName = moderationVacancies.Vacancies
+                pv.VacancyStatusName = moderationVacancies.Vacancies
                     .Where(v => v.VacancyId == pv.VacancyId)
                     .Select(v => v.ModerationStatusName)
                     .FirstOrDefault();
@@ -1769,7 +1778,7 @@ internal sealed class ProjectService : IProjectService
 
                 if (isCatalogVacancy)
                 {
-                    pv.UserVacancy.VacancyStatusName = _approveVacancy;
+                    pv.VacancyStatusName = _approveVacancy;
                 }
             }
             
@@ -1778,25 +1787,27 @@ internal sealed class ProjectService : IProjectService
             
             if (isArchiveVacancy)
             {
-                pv.UserVacancy.VacancyStatusName = _archiveVacancy;
+                pv.VacancyStatusName = _archiveVacancy;
+            }
+            
+            // Только владелец проекта может удалять вакансии проекта.
+            var isOwner = await _projectRepository.CheckProjectOwnerAsync(projectId, userId);
+
+            // Если не владелец, то удаляем из результата вакансии кроме опубликованных.
+            if (!isOwner)
+            {
+                _removedVacancyIds.Add(pv.VacancyId);
+            }
+
+            if (!string.IsNullOrWhiteSpace(pv.VacancyText))
+            {
+                pv.VacancyText = ClearHtmlBuilder.Clear(pv.VacancyText);   
             }
         }
 
         return projectVacancies;
     }
 
-    /// <summary>
-    /// Метод чистит описание от тегов.
-    /// </summary>
-    /// <param name="projectVacancies">Список вакансий.</param>
-    /// <returns>Список вакансий после очистки.</returns>
-    private IEnumerable<ProjectVacancyOutput> ClearHtmlTags(List<ProjectVacancyOutput> projectVacancies)
-    {
-        
-
-        return projectVacancies;
-    }
-    
     /// <summary>
     /// Метод создает результаты проекта. 
     /// </summary>

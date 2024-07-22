@@ -15,10 +15,10 @@ public static class CreateResumesSearchResultBuilder
     /// <param name="searchResults">Результаты поиска.</param>
     /// <param name="searcher">Поисковый индекс.</param>
     /// <returns>Список резюме.</returns>
-    public static IEnumerable<ResumeOutput> CreateResumesSearchResult(ScoreDoc[] searchResults,
+    public static IEnumerable<UserInfoOutput> CreateResumesSearchResult(ScoreDoc[] searchResults,
         IndexSearcher searcher)
     {
-        var resumes = new List<ResumeOutput>(20);
+        var resumes = new List<UserInfoOutput>(20);
 
         foreach (var item in searchResults)
         {
@@ -74,7 +74,7 @@ public static class CreateResumesSearchResultBuilder
 
             var isShortFirstName = bool.Parse(document.GetField(ResumeFinderConst.IS_SHORT_FIRST_NAME).StringValue);
 
-            resumes.Add(new ResumeOutput
+            resumes.Add(new UserInfoOutput
             {
                 LastName = lastName,
                 FirstName = firstName,

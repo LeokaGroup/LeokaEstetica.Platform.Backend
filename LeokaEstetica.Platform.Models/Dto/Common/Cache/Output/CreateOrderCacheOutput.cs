@@ -1,19 +1,16 @@
+using FluentValidation.Results;
+
 namespace LeokaEstetica.Platform.Models.Dto.Common.Cache.Output;
 
 /// <summary>
-/// Класс выходной модели создания кэша в кэше.
+/// Класс выходной модели создания заказа в кэше.
 /// </summary>
-public class CreateOrderCacheOutput
+public class CreateOrderCacheOutput : IFrontError
 {
     /// <summary>
-    /// PK.
+    /// Id тарифа.
     /// </summary>
     public int RuleId { get; set; }
-
-    /// <summary>
-    /// Процент скидки.
-    /// </summary>
-    public decimal Percent { get; set; }
 
     /// <summary>
     /// Сумма.
@@ -31,14 +28,9 @@ public class CreateOrderCacheOutput
     public long UserId { get; set; }
 
     /// <summary>
-    /// Список сервисов для услуг.
-    /// </summary>
-    public List<string> Products { get; set; }
-
-    /// <summary>
     /// Название тарифа.
     /// </summary>
-    public string FareRuleName { get; set; }
+    public string? FareRuleName { get; set; }
 
     /// <summary>
     /// Признак успешности прохождения по лимитам.
@@ -48,10 +40,20 @@ public class CreateOrderCacheOutput
     /// <summary>
     /// Тип лимитов, по которым не прошли.
     /// </summary>
-    public string ReductionSubscriptionLimits { get; set; }
+    public string? ReductionSubscriptionLimits { get; set; }
 
     /// <summary>
     /// Кол-во на которое нужно уменьшить для прохождения по лимитам.
     /// </summary>
     public int FareLimitsCount { get; set; }
+
+    /// <summary>
+    /// Ошибки, если они есть.
+    /// </summary>
+    public List<ValidationFailure>? Errors { get; set; }
+
+    /// <summary>
+    /// Признак необходимости ожидания действий пользователя.
+    /// </summary>
+    public bool IsNeedUserAction { get; set; }
 }

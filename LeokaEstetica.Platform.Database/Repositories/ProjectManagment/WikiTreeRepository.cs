@@ -154,15 +154,25 @@ internal sealed class WikiTreeRepository : BaseRepository, IWikiTreeRepository
             
             await connection.ExecuteAsync(insertWikiQuery, insertWikiParameters);
             
+            var lastWikiTreeFolderQuery = "SELECT folder_id " +
+                                    "FROM project_management.wiki_tree_folders " +
+                                    "ORDER BY wiki_tree_folder_id DESC " +
+                                    "LIMIT 1";
+            
+            // Получаем последний Id дерева.
+            var lastWikiTreeFolderId = await connection.ExecuteScalarAsync<long>(lastWikiTreeFolderQuery);
+            var folderTreeId = ++lastWikiTreeFolderId;
+            
             // Заводим ознакомительную папку для wiki проекта.
             var insertWikiFolderParameters = new DynamicParameters();
             insertWikiFolderParameters.Add("@wikiTreeId", wikiTreeId);
             insertWikiFolderParameters.Add("@folderName", "Перед началом работы");
             insertWikiFolderParameters.Add("@createdBy", userId);
+            insertWikiFolderParameters.Add("@folderId", folderTreeId);
 
             var insertWikiFolderQuery = "INSERT INTO project_management.wiki_tree_folders (" +
-                                        "wiki_tree_id, folder_name, created_by) " +
-                                        "VALUES (@wikiTreeId, @folderName, @createdBy) " +
+                                        "folder_id, wiki_tree_id, folder_name, created_by) " +
+                                        "VALUES (@folderId, @wikiTreeId, @folderName, @createdBy) " +
                                         "RETURNING folder_id";
 
             var folderId = await connection.ExecuteScalarAsync<long>(insertWikiFolderQuery,
@@ -193,9 +203,9 @@ internal sealed class WikiTreeRepository : BaseRepository, IWikiTreeRepository
             updateChildFolderPageParameters.Add("@pageId", pageId);
             updateChildFolderPageParameters.Add("@folderId", folderId);
 
-            var updateChildFolderPageQuery = "UPDATE project_management.wiki_tree_folders " +
-                                             "SET child_id = @pageId " +
-                                             "WHERE folder_id = @folderId";
+            var updateChildFolderPageQuery = "UPDATE project_management.wiki_tree_pages " +
+                                             "SET folder_id = @folderId " +
+                                             "WHERE page_id = @pageId";
                                              
             await connection.ExecuteAsync(updateChildFolderPageQuery, updateChildFolderPageParameters);
 

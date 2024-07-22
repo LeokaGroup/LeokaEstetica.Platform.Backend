@@ -223,7 +223,7 @@ public class ProjectManagmentController : BaseController
     public async Task<ProjectManagmentTaskOutput> GetTaskDetailsByTaskIdAsync([FromQuery] string projectTaskId,
         [FromQuery] long projectId, [FromQuery] TaskDetailTypeEnum taskDetailType)
     {
-        var validator = await new TaskDetailValidator().ValidateAsync((projectTaskId, projectId, taskDetailType));
+        var validator = await new TaskDetailValidator().ValidateAsync((projectTaskId, projectId));
 
         if (validator.Errors.Any())
         {
@@ -1394,9 +1394,7 @@ public class ProjectManagmentController : BaseController
     /// <summary>
     /// Метод удаляет файл задачи.
     /// </summary>
-    /// <param name="documentId">Id документа.</param>
-    /// <param name="projectId">Id проекта.</param>
-    /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
+    /// <param name="mongoDocumentId">Id документа в MongoId.</param>
     [HttpDelete]
     [Route("task-file")]
     [ProducesResponseType(200)]
@@ -1404,24 +1402,12 @@ public class ProjectManagmentController : BaseController
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task RemoveTaskFileAsync([FromQuery] long documentId, [FromQuery] long projectId,
-        [FromQuery] string projectTaskId)
+    public async Task RemoveTaskFileAsync([FromQuery] string? mongoDocumentId)
     {
-        var validator = await new RemoveTaskFileValidator().ValidateAsync((documentId, projectId, projectTaskId));
-
-        if (validator.Errors.Any())
+        if (string.IsNullOrEmpty(mongoDocumentId))
         {
-            var exceptions = new List<InvalidOperationException>();
-
-            foreach (var err in validator.Errors)
-            {
-                exceptions.Add(new InvalidOperationException(err.ErrorMessage));
-            }
-
-            var ex = new AggregateException("Ошибка валидации при удалении файла задачи проекта. " +
-                                            $"ProjectId: {projectId}. " +
-                                            $"ProjectTaskId: {projectTaskId}. " +
-                                            $"DocumentId: {documentId}.", exceptions);
+            var ex = new InvalidOperationException("Ошибка валидации при удалении файла задачи проекта. " +
+                                                   $"MongoDocumentId: {mongoDocumentId}");
             _logger.LogError(ex, ex.Message);
             
             await _discordService.Value.SendNotificationErrorAsync(ex);
@@ -1429,7 +1415,7 @@ public class ProjectManagmentController : BaseController
             throw ex;
         }
 
-        await _projectManagmentService.RemoveTaskFileAsync(documentId, projectId, projectTaskId);
+        await _projectManagmentService.RemoveTaskFileAsync(mongoDocumentId);
     }
 
     /// <summary>
@@ -1889,5 +1875,25 @@ public class ProjectManagmentController : BaseController
         var result = await _projectManagmentService.GetWorkSpacesAsync(GetUserName());
 
         return result;
+    }
+
+    /// <summary>
+    /// Метод удаляет задачу проекта.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
+    /// <param name="taskType">Тип задачи.</param>
+    [HttpDelete]
+    [Route("task")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task RemoveProjectTaskAsync([FromQuery] long projectId, [FromQuery] string projectTaskId,
+        [FromQuery] string taskType)
+    {
+        await _projectManagmentService.RemoveProjectTaskAsync(projectId, projectTaskId, GetUserName(),
+            System.Enum.Parse<TaskDetailTypeEnum>(taskType));
     }
 }

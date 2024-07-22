@@ -1,6 +1,10 @@
+using Dapper;
+using LeokaEstetica.Platform.Base.Abstractions.Connection;
+using LeokaEstetica.Platform.Base.Abstractions.Repositories.Base;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Database.Abstractions.Resume;
+using LeokaEstetica.Platform.Models.Dto.Output.Resume;
 using LeokaEstetica.Platform.Models.Entities.Profile;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,7 +13,7 @@ namespace LeokaEstetica.Platform.Database.Repositories.Resume;
 /// <summary>
 /// Класс реализует методы репозитория базы резюме.
 /// </summary>
-internal sealed class ResumeRepository : IResumeRepository
+internal sealed class ResumeRepository : BaseRepository, IResumeRepository
 {
     private readonly PgContext _pgContext;
     
@@ -17,7 +21,9 @@ internal sealed class ResumeRepository : IResumeRepository
     /// Конструктор.
     /// </summary>
     /// <param name="pgContext">Датаконтекст.</param>
-    public ResumeRepository(PgContext pgContext)
+    public ResumeRepository(PgContext pgContext,
+        IConnectionProvider connectionProvider)
+        : base(connectionProvider)
     {
         _pgContext = pgContext;
     }
@@ -99,10 +105,43 @@ internal sealed class ResumeRepository : IResumeRepository
     /// </summary>
     /// <param name="resumeId">Id анкеты пользователя.</param>
     /// <returns>Данные анкеты.</returns>
-    public async Task<ProfileInfoEntity> GetResumeAsync(long resumeId)
+    public async Task<UserInfoOutput> GetResumeAsync(long resumeId)
     {
-        var result = await _pgContext.ProfilesInfo
-            .FirstOrDefaultAsync(p => p.ProfileInfoId == resumeId);
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@resumeId", resumeId);
+
+        var query = "SELECT pi.\"ProfileInfoId\", " +
+                    "pi.\"LastName\", " +
+                    "pi.\"FirstName\", " +
+                    "pi.\"Patronymic\", " +
+                    "pi.\"IsShortFirstName\", " +
+                    "pi.\"Telegram\", " +
+                    "pi.\"WhatsApp\", " +
+                    "pi.\"Vkontakte\", " +
+                    "pi.\"OtherLink\", " +
+                    "pi.\"Aboutme\", " +
+                    "pi.\"Job\", " +
+                    "pi.\"UserId\", " +
+                    "pi.\"WorkExperience\" " +
+                    "FROM \"Profile\".\"ProfilesInfo\" AS pi " +
+                    "WHERE pi.\"ProfileInfoId\" NOT IN (SELECT \"ProfileInfoId\" " +
+                    "FROM \"Moderation\".\"Resumes\" " +
+                    "WHERE \"ModerationStatusId\" IN (2, 3)) " +
+                    "AND pi.\"LastName\" <> '' " +
+                    "AND pi.\"LastName\" <> '' " +
+                    "AND pi.\"Job\" <> '' " +
+                    "AND pi.\"Aboutme\" <> '' " +
+                    "AND pi.\"UserId\" = ANY(SELECT ui.\"UserId\" " +
+                    "FROM \"Profile\".\"UserIntents\" AS ui " +
+                    "WHERE ui.\"UserId\" = pi.\"UserId\") " +
+                    "AND pi.\"UserId\" = ANY(SELECT us.\"UserId\" " +
+                    "FROM \"Profile\".\"UserSkills\" AS us " +
+                    "WHERE us.\"UserId\" = pi.\"UserId\") " +
+                    "AND pi.\"ProfileInfoId\" = @resumeId ";
+
+        var result = await connection.QueryFirstOrDefaultAsync<UserInfoOutput>(query, parameters);
 
         return result;
     }
@@ -132,6 +171,80 @@ internal sealed class ResumeRepository : IResumeRepository
         var result = await _pgContext.ProfilesInfo
             .AnyAsync(p => p.ProfileInfoId == profileInfoId
                            && p.UserId == userId);
+
+        return result;
+    }
+
+    /// <inheritdoc />
+    public async Task<PaginationResumeOutput?> GetPaginationResumesAsync(long count, long? lastId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@count", count);
+
+        var query = "SELECT pi.\"ProfileInfoId\", " +
+                    "pi.\"LastName\", " +
+                    "pi.\"FirstName\", " +
+                    "pi.\"Patronymic\", " +
+                    "pi.\"IsShortFirstName\", " +
+                    "pi.\"Telegram\", " +
+                    "pi.\"WhatsApp\", " +
+                    "pi.\"Vkontakte\", " +
+                    "pi.\"OtherLink\", " +
+                    "pi.\"Aboutme\", " +
+                    "pi.\"Job\", " +
+                    "pi.\"UserId\", " +
+                    "pi.\"WorkExperience\" " +
+                    "FROM \"Profile\".\"ProfilesInfo\" AS pi " +
+                    "WHERE pi.\"ProfileInfoId\" NOT IN (SELECT \"ProfileInfoId\" " +
+                    "FROM \"Moderation\".\"Resumes\" " +
+                    "WHERE \"ModerationStatusId\" IN (2, 3)) " +
+                    "AND pi.\"LastName\" <> '' " +
+                    "AND pi.\"LastName\" <> '' " +
+                    "AND pi.\"Job\" <> '' " +
+                    "AND pi.\"Aboutme\" <> '' " +
+                    "AND pi.\"UserId\" = ANY(SELECT ui.\"UserId\" " +
+                    "FROM \"Profile\".\"UserIntents\" AS ui " +
+                    "WHERE ui.\"UserId\" = pi.\"UserId\") " +
+                    "AND pi.\"UserId\" = ANY(SELECT us.\"UserId\" " +
+                    "FROM \"Profile\".\"UserSkills\" AS us " +
+                    "WHERE us.\"UserId\" = pi.\"UserId\") ";
+
+        if (lastId.HasValue)
+        {
+            parameters.Add("@lastId", lastId);
+            query += "AND pi.\"ProfileInfoId\" < @lastId ";
+        }
+
+        query += "ORDER BY pi.\"ProfileInfoId\" DESC " +
+                 "LIMIT @count";
+                 
+        var items = await connection.QueryAsync<UserInfoOutput>(query, parameters);
+
+        var queryTotalRows = "SELECT COUNT (pi.\"ProfileInfoId\") " +
+                             "FROM \"Profile\".\"ProfilesInfo\" AS pi " +
+                             "WHERE pi.\"ProfileInfoId\" NOT IN (SELECT \"ProfileInfoId\" " +
+                             "FROM \"Moderation\".\"Resumes\" " +
+                             "WHERE \"ModerationStatusId\" IN (2, 3)) " +
+                             "AND pi.\"LastName\" <> '' " +
+                             "AND pi.\"LastName\" <> '' " +
+                             "AND pi.\"Job\" <> '' " +
+                             "AND pi.\"Aboutme\" <> '' " +
+                             "AND pi.\"UserId\" = ANY(SELECT ui.\"UserId\" " +
+                             "FROM \"Profile\".\"UserIntents\" AS ui " +
+                             "WHERE ui.\"UserId\" = pi.\"UserId\") " +
+                             "AND pi.\"UserId\" = ANY(SELECT us.\"UserId\" " +
+                             "FROM \"Profile\".\"UserSkills\" AS us " +
+                             "WHERE us.\"UserId\" = pi.\"UserId\") ";
+
+        var totalRows = await connection.ExecuteScalarAsync<long>(queryTotalRows);
+
+        var result = new PaginationResumeOutput
+        {
+            Resumes = items.AsList(),
+            Total = totalRows
+        };
 
         return result;
     }

@@ -152,21 +152,9 @@ internal sealed class SubscriptionService : ISubscriptionService
         
         var startDate = DateTime.UtcNow; // Дата начала подписки.
         var endDate = startDate.AddDays(days); // Вычисляем дату окончания подписки.
-        
-        // Устанавливаем срок действия подписки.
-        var isSetSubscription = await _userRepository.SetSubscriptionDatesAsync(userId, startDate, endDate);
 
-        // Если не удалось проставить срок действия подписки.
-        if (!isSetSubscription)
-        {
-            throw new InvalidOperationException("Не удалось проставить срок подписки. " +
-                                                $"UserId: {userId}." +
-                                                $"StartDate: {startDate}." +
-                                                $"EndDate: {endDate}");
-        }
-        
         // Проставляем подписку пользователю.
-        await _userRepository.SetSubscriptionAsync(ruleId, userId, month);
+        await _userRepository.SetSubscriptionAsync(ruleId, userId, month, days);
     }
 
     #endregion

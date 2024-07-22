@@ -39,6 +39,7 @@ internal sealed class ProjectNotificationsService : IProjectNotificationsService
     private readonly IGlobalConfigRepository _globalConfigRepository;
     private readonly IVacancyRepository _vacancyRepository;
     private readonly IProjectManagmentRepository _projectManagmentRepository;
+    private readonly Lazy<IProjectManagementSettingsRepository> _projectManagementSettingsRepository;
 
     /// <summary>
     /// Конструктор.
@@ -50,6 +51,7 @@ internal sealed class ProjectNotificationsService : IProjectNotificationsService
     /// <param name="mapper">Автомаппер.</param>
     /// <param name="connectionService">Сервис подключений Redis.</param>
     /// <param name="projectManagmentRepository">Репозиторий модуля УП.</param>
+    /// <param name="projectManagementSettingsRepository">Репозиторий настроек модуля УП.</param>
     public ProjectNotificationsService(IHubContext<ChatHub> hubContext, 
         ILogger<ProjectNotificationsService> logger, 
         IUserRepository userRepository,
@@ -60,7 +62,8 @@ internal sealed class ProjectNotificationsService : IProjectNotificationsService
         IMailingsService mailingsService, 
         IGlobalConfigRepository globalConfigRepository, 
         IVacancyRepository vacancyRepository,
-        IProjectManagmentRepository projectManagmentRepository)
+        IProjectManagmentRepository projectManagmentRepository,
+        Lazy<IProjectManagementSettingsRepository> projectManagementSettingsRepository)
     {
         _hubContext = hubContext;
         _logger = logger;
@@ -73,6 +76,7 @@ internal sealed class ProjectNotificationsService : IProjectNotificationsService
         _globalConfigRepository = globalConfigRepository;
         _vacancyRepository = vacancyRepository;
         _projectManagmentRepository = projectManagmentRepository;
+        _projectManagementSettingsRepository = projectManagementSettingsRepository;
     }
 
     #region Публичные методы.
@@ -619,11 +623,9 @@ internal sealed class ProjectNotificationsService : IProjectNotificationsService
                 throw ex;
             }
 
+            // Принимаем приглашение в проект.
             await _projectNotificationsRepository.ApproveProjectInviteAsync(notificationId);
 
-            await SendNotificationSuccessApproveProjectInviteAsync("Все хорошо", "Приглашение в проект успешно.",
-                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);
-            
             var projectId = await _projectNotificationsRepository.GetProjectIdByNotificationIdAsync(notificationId);
             var projectName = await _projectRepository.GetProjectNameByProjectIdAsync(projectId);
             
@@ -647,11 +649,20 @@ internal sealed class ProjectNotificationsService : IProjectNotificationsService
             // Добавляем участника в раб.пространство проекта.
             await _projectManagmentRepository.AddProjectWorkSpaceMemberAsync(projectId, result.MemberId);
 
+            var organizationId = await _projectManagmentRepository.GetCompanyIdByProjectIdAsync(projectId);
+            
+            // Добавляем участнику проекта роли.
+            await _projectManagementSettingsRepository.Value.AddProjectMemberRolesAsync(organizationId,
+                result.MemberId);
+
             // Отправляем уведомление в приложении о принятом приглашении в проект.
             await AddNotificationApproveInviteProjectAsync(userId, projectId, projectName);
             
             // Отправляем уведомление на почту о принятом приглашении в проект.
             await SendNotificationApproveInviteProjectAsync(notificationId, userId, projectId, projectName, account);
+            
+            await SendNotificationSuccessApproveProjectInviteAsync("Все хорошо", "Приглашение в проект успешно.",
+                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);
         }
         
         catch (Exception ex)
