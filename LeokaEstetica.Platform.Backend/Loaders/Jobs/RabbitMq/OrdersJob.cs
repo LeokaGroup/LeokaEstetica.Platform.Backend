@@ -195,7 +195,13 @@ internal sealed class OrdersJob : IJob
                         }
 
                         var publicId = orderEvent.PublicId;
-                        var fareRule = await _fareRuleRepository.GetByPublicIdAsync(publicId);
+                        var fareRule = await _fareRuleRepository.GetFareRuleByPublicIdAsync(publicId);
+
+                        if (fareRule is null)
+                        {
+                            throw new InvalidOperationException("Ошибка получения тарифа. " +
+                                                                $"PublicId: {publicId}.");
+                        }
 
                         // Для бесплатного тарифа нет срока подписки.
                         if (!fareRule.IsFree)

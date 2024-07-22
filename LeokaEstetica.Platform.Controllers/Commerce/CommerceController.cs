@@ -104,15 +104,14 @@ public class CommerceController : BaseController
     /// <returns>Информация о тарифе.</returns>
     [HttpGet]
     [Route("fare-rule/order-form/{publicId}/info")]
-    [ProducesResponseType(200, Type = typeof(FareRuleOutput))]
+    [ProducesResponseType(200, Type = typeof(FareRuleAttributeCompositeOutput))]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<FareRuleOutput> GetFareRuleInfoAsync([FromRoute] Guid publicId)
+    public async Task<FareRuleAttributeCompositeOutput?> GetFareRuleInfoAsync([FromRoute] Guid publicId)
     {
-        var fareRule = await _fareRuleRepository.GetByPublicIdAsync(publicId);
-        var result = _mapper.Map<FareRuleOutput>(fareRule);
+        var result = await _fareRuleRepository.GetFareRuleByPublicIdAsync(publicId);
 
         return result;
     }

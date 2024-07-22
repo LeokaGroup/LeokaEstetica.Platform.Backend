@@ -1,13 +1,11 @@
 using Dapper;
 using LeokaEstetica.Platform.Base.Abstractions.Connection;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.Base;
-using LeokaEstetica.Platform.Base.Factors;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Database.Abstractions.FareRule;
 using LeokaEstetica.Platform.Models.Dto.Output.FareRule;
 using LeokaEstetica.Platform.Models.Entities.FareRule;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 
 namespace LeokaEstetica.Platform.Database.Repositories.FareRule;
 
@@ -18,21 +16,17 @@ internal sealed class FareRuleRepository : BaseRepository, IFareRuleRepository
 {
     // TODO: Выпилить датаконтекст и конфигурацию отсюда.
     private readonly PgContext _pgContext;
-    private readonly IConfiguration _configuration;
-    
+
     /// <summary>
     /// Конструктор.
     /// </summary>
     /// <param name="pgContext">Датаконтекст.</param>
-    /// <param name="configuration">Конфигурация приложения.</param>
     /// <param name="connectionProvider">Провайдер БД.</param>
     public FareRuleRepository(PgContext pgContext,
-        IConfiguration configuration,
         IConnectionProvider connectionProvider)
         : base(connectionProvider)
     {
         _pgContext = pgContext;
-        _configuration = configuration;
     }
 
     /// <summary>
@@ -129,63 +123,6 @@ internal sealed class FareRuleRepository : BaseRepository, IFareRuleRepository
             .ToListAsync();
 
         return result;
-    }
-
-    /// <summary>
-    /// TODO: Выпилить его, у нас есть новый метод на Dapper.
-    /// Метод получает тариф по его PublicId.
-    /// </summary>
-    /// <param name="publicId">Публичный ключ тарифа.</param>
-    /// <returns>Данные тарифа.</returns>
-    public async Task<FareRuleEntity> GetByPublicIdAsync(Guid publicId)
-    {
-        try
-        {
-            var result = await _pgContext.FareRules
-                .Where(fr => fr.PublicId == publicId)
-                .Select(fr => new FareRuleEntity(fr.PublicId)
-                {
-                    RuleId = fr.RuleId,
-                    Name = fr.Name,
-                    Label = fr.Label,
-                    Currency = fr.Currency,
-                    Price = fr.Price,
-                    FareRuleItems = _pgContext.FareRuleItems
-                        .Where(fri => fri.RuleId == fr.RuleId)
-                        .OrderBy(o => o.Position)
-                        .ToList(),
-                    Position = fr.Position,
-                    IsPopular = fr.IsPopular
-                })
-                .FirstOrDefaultAsync();
-            
-            return result;
-        }
-        
-        // TODO: При dispose PgContext пересоздаем датаконтекст и пробуем снова.
-        catch (ObjectDisposedException _)
-        {
-            var pgContext = CreateNewPgContextFactory.CreateNewPgContext(_configuration);
-            var result = await pgContext.FareRules
-                .Where(fr => fr.PublicId == publicId)
-                .Select(fr => new FareRuleEntity(fr.PublicId)
-                {
-                    RuleId = fr.RuleId,
-                    Name = fr.Name,
-                    Label = fr.Label,
-                    Currency = fr.Currency,
-                    Price = fr.Price,
-                    FareRuleItems = pgContext.FareRuleItems
-                        .Where(fri => fri.RuleId == fr.RuleId)
-                        .OrderBy(o => o.Position)
-                        .ToList(),
-                    Position = fr.Position,
-                    IsPopular = fr.IsPopular
-                })
-                .FirstOrDefaultAsync();
-            
-            return result;
-        }
     }
 
     /// <summary>

@@ -348,7 +348,7 @@ internal sealed class CommerceService : ICommerceService
 
             // Проверяем повышение/понижение подписки.
             // Находим тариф.
-            var fareRule = await _fareRuleRepository.GetByPublicIdAsync(publicId);
+            // var fareRule = await _fareRuleRepository.GetByPublicIdAsync(publicId);
             // var calcPrice = await CalculateServicePriceAsync(month, fareRule.Price);
 
             // Если сумма тарифа больше суммы остатка с текущей подписки пользователя,
