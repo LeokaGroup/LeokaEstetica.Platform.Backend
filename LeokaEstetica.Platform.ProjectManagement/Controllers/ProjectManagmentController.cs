@@ -343,9 +343,9 @@ public class ProjectManagmentController : BaseController
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<IEnumerable<ProjectTagOutput>> GetProjectTagsAsync()
+    public async Task<IEnumerable<ProjectTagOutput>> GetProjectTagsAsync([FromQuery] long projectId)
     {
-        var items = await _projectManagmentService.GetProjectTagsAsync();
+        var items = await _projectManagmentService.GetProjectTagsAsync(projectId);
         var result = _mapper.Map<IEnumerable<ProjectTagOutput>>(items);
 
         return result;
