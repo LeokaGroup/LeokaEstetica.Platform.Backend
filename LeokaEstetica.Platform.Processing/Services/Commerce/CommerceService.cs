@@ -1,6 +1,5 @@
 using System.Runtime.CompilerServices;
 using AutoMapper;
-using FluentValidation.Results;
 using LeokaEstetica.Platform.Access.Abstractions.User;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.Core.Constants;
@@ -18,6 +17,7 @@ using LeokaEstetica.Platform.Models.Dto.Common.Cache.Output;
 using LeokaEstetica.Platform.Models.Dto.Input.Commerce;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce.Base.Output;
+using LeokaEstetica.Platform.Models.Dto.Output.FareRule;
 using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Notifications.Consts;
 using LeokaEstetica.Platform.Processing.Abstractions.Commerce;
@@ -124,72 +124,27 @@ internal sealed class CommerceService : ICommerceService
                 throw ex;
             }
 
-            if (createOrderCacheInput.EmployeesCount <= 0)
-            {
-                throw new InvalidOperationException("Не передано кол-во сотрудников для оформления тарифа.");
-            }
-
-            // Получаем тариф, на который пользователь пытается перейти.
-            var newFareRule = await _fareRuleRepository.GetFareRuleByPublicIdAsync(createOrderCacheInput.PublicId);
+            var fareRule = await GetFareRuleAsync(userId, createOrderCacheInput.EmployeesCount,
+                createOrderCacheInput.PublicId);
             
-            if (newFareRule.FareRule is null)
-            {
-                throw new InvalidOperationException($"Не удалось получить новый тариф пользователя. UserId: {userId}");
-            }
-
-            var fareRuleAttributeValues = newFareRule.FareRuleAttributeValues?.FirstOrDefault(x => x.AttributeId == 4);
-            
-            // Обязательно должна быть минимальная цена у тарифа.
-            if (fareRuleAttributeValues?.MinValue is null)
-            {
-                throw new InvalidOperationException(
-                    "У тарифа обнаружено отсутствие минимальной цены. " +
-                    "У нас у тарифов пока минимальная цена, это есть фиксированная цена тарифа. " +
-                    $"Требуется обработка кейса. Id тарифа: {newFareRule.FareRule.RuleId}.");
-            }
-            
-            // Логируем ошибку, но не ломаем приложение, так как мы пока не закладывали такой кейс.
-            if (fareRuleAttributeValues.MinValue.HasValue && fareRuleAttributeValues.MaxValue.HasValue)
-            {
-                var ex = new InvalidOperationException(
-                    "У тарифа обнаружен диапазон цен. Такой кейс пока не закладывали, но он сработал. " +
-                    "У нас у тарифов пока лишь минимальная цена есть. " +
-                    $"Требуется обработка кейса. Id тарифа: {newFareRule.FareRule.RuleId}.");
-
-                await _discordService.Value.SendNotificationErrorAsync(ex);
-
-                _logger?.LogError(ex, ex.Message);
-            }
-            
-            var result = new CreateOrderCacheOutput
-            {
-                Errors = new List<ValidationFailure>(),
-                // Цена тарифа = минимальная цена тарифа * кол-во сотрудников * кол-во месяцев.
-                Price = fareRuleAttributeValues.MinValue.Value * createOrderCacheInput.EmployeesCount *
-                        createOrderCacheInput.PaymentMonth
-            };
-
-            // Если не было подтверждения действия от пользователя.
-            if (!createOrderCacheInput.IsCompleteUserAction)
-            {
-                result.IsNeedUserAction = true;
-            }
+            var fareRuleAttributeValues = fareRule.FareRuleAttributeValues?.FirstOrDefault(x => x.AttributeId == 4);
 
             var order = new CreateOrderCache
             {
-                RuleId = newFareRule.FareRule.RuleId,
+                RuleId = fareRule.FareRule!.RuleId,
                 Month = createOrderCacheInput.PaymentMonth,
                 UserId = userId,
-                FareRuleName = newFareRule.FareRule.RuleName,
-                Price = result.Price
+                FareRuleName = fareRule.FareRule.RuleName,
+                // Цена тарифа = минимальная цена тарифа * кол-во сотрудников * кол-во месяцев.
+                Price = fareRuleAttributeValues!.MinValue!.Value * createOrderCacheInput.EmployeesCount *
+                        createOrderCacheInput.PaymentMonth
             };
 
             // Сохраняем заказ в кэш сроком на 2 часа.
             var key = await _commerceRedisService.CreateOrderCacheKeyAsync(userId, createOrderCacheInput.PublicId);
             await _commerceRedisService.CreateOrderCacheAsync(key, order);
 
-            result = _mapper.Map<CreateOrderCacheOutput>(order);
-            result.IsNeedUserAction = false;
+            var result = _mapper.Map<CreateOrderCacheOutput>(order);
 
             return result;
         }
@@ -520,6 +475,41 @@ internal sealed class CommerceService : ICommerceService
         }
     }
 
+    /// <inheritdoc />
+    public async Task<CalculateFareRulePriceOutput> CalculateFareRulePriceAsync(Guid publicId, int selectedMonth,
+        int employeeCount, string account)
+    {
+        try
+        {
+             var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+
+            var fareRule = await GetFareRuleAsync(userId, employeeCount, publicId);
+            
+            var fareRuleAttributeValues = fareRule.FareRuleAttributeValues?.FirstOrDefault(x => x.AttributeId == 4);
+            
+            var result = new CalculateFareRulePriceOutput
+            {
+                // Цена тарифа = минимальная цена тарифа * кол-во сотрудников * кол-во месяцев.
+                Price = Math.Round(fareRuleAttributeValues!.MinValue!.Value * employeeCount * selectedMonth),
+                IsNeedUserAction = true
+            };
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
     #endregion
 
     #region Приватные методы.
@@ -555,6 +545,59 @@ internal sealed class CommerceService : ICommerceService
         }
 
         return await Task.FromResult(price - Math.Round(price * percent / 100));
+    }
+
+    /// <summary>
+    /// Метод получает детали тарифа.
+    /// Все необходимые валидации проводятся внутри.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <param name="employeesCount">Кол-во сотрудников организации.</param>
+    /// <param name="publicId">Публичный ключ тарифа.</param>
+    /// <returns>Кортеж с данными тарифа.</returns>
+    /// <exception cref="InvalidOperationException">Если не прошли валидацию.</exception>
+    private async Task<(FareRuleCompositeOutput? FareRule, IEnumerable<FareRuleAttributeOutput>? FareRuleAttributes,
+        IEnumerable<FareRuleAttributeValueOutput>? FareRuleAttributeValues)> GetFareRuleAsync(long userId,
+        int employeesCount, Guid publicId)
+    {
+        if (employeesCount <= 0)
+        {
+            throw new InvalidOperationException("Не передано кол-во сотрудников для оформления тарифа.");
+        }
+
+        // Получаем тариф, на который пользователь пытается перейти.
+        var newFareRule = await _fareRuleRepository.GetFareRuleByPublicIdAsync(publicId);
+
+        if (newFareRule.FareRule is null)
+        {
+            throw new InvalidOperationException($"Не удалось получить новый тариф пользователя. UserId: {userId}");
+        }
+
+        var fareRuleAttributeValues = newFareRule.FareRuleAttributeValues?.FirstOrDefault(x => x.AttributeId == 4);
+
+        // Обязательно должна быть минимальная цена у тарифа.
+        if (fareRuleAttributeValues?.MinValue is null)
+        {
+            throw new InvalidOperationException(
+                "У тарифа обнаружено отсутствие минимальной цены. " +
+                "У нас у тарифов пока минимальная цена, это есть фиксированная цена тарифа. " +
+                $"Требуется обработка кейса. Id тарифа: {newFareRule.FareRule.RuleId}.");
+        }
+
+        // Логируем ошибку, но не ломаем приложение, так как мы пока не закладывали такой кейс.
+        if (fareRuleAttributeValues.MinValue.HasValue && fareRuleAttributeValues.MaxValue.HasValue)
+        {
+            var ex = new InvalidOperationException(
+                "У тарифа обнаружен диапазон цен. Такой кейс пока не закладывали, но он сработал. " +
+                "У нас у тарифов пока лишь минимальная цена есть. " +
+                $"Требуется обработка кейса. Id тарифа: {newFareRule.FareRule.RuleId}.");
+
+            await _discordService.Value.SendNotificationErrorAsync(ex);
+
+            _logger?.LogError(ex, ex.Message);
+        }
+
+        return newFareRule;
     }
 
     #endregion

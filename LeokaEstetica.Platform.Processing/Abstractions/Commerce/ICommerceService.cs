@@ -4,6 +4,7 @@ using LeokaEstetica.Platform.Models.Dto.Common.Cache.Output;
 using LeokaEstetica.Platform.Models.Dto.Input.Commerce;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce.Base.Output;
+using LeokaEstetica.Platform.Models.Dto.Output.FareRule;
 using LeokaEstetica.Platform.Processing.Enums;
 
 namespace LeokaEstetica.Platform.Processing.Abstractions.Commerce;
@@ -38,6 +39,7 @@ public interface ICommerceService
     Task<decimal> CalculatePriceSubscriptionFreeDaysAsync(long userId, long orderId);
 
     /// <summary>
+    /// TODO: Выпилим, если будет не нужен.
     /// Метод вычисляет, есть ли остаток с прошлой подписки пользователя для учета ее как скидку при оформлении новой подписки.
     /// </summary>
     /// <param name="publicId">Публичный ключ тарифа.</param>
@@ -76,4 +78,15 @@ public interface ICommerceService
     /// <param name="paymentId">Id платежа.</param>
     /// <param name="amount">Данные о цене.</param>
     Task ConfirmPaymentAsync(string paymentId, Amount amount);
+
+    /// <summary>
+    /// Метод вычисляет цену тарифа исходя из параметров.
+    /// </summary>
+    /// <param name="publicId">Публичный ключ тарифа.</param>
+    /// <param name="selectedMonth">Кол-во месяцев подписки.</param>
+    /// <param name="employeeCount">Кол-во сотрудников в организации.</param>
+    /// <param name="account">Аккаунт.</param>
+    /// <returns>Выходная модель.</returns>
+    Task<CalculateFareRulePriceOutput> CalculateFareRulePriceAsync(Guid publicId, int selectedMonth,
+        int employeeCount, string account);
 }
