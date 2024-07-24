@@ -15,7 +15,7 @@ public interface IVacancyModerationService
     /// Метод получает вакансию модерации из таблицы ModerationVacancies.
     /// </summary>
     /// /// <param name="vacancyId">Id вакансии.</param>
-    public Task<ModerationVacancyEntity> GetModerationVacancyByVacancyIdAsync(long vacancyId);
+    Task<ModerationVacancyEntity> GetModerationVacancyByVacancyIdAsync(long vacancyId);
 	/// <summary>
 	/// Метод отправляет вакансию на модерацию. Это происходит через добавление в таблицу модерации вакансий.
 	/// Если вакансия в этой таблице, значит она не прошла еще модерацию. При прохождении модерации она удаляется из нее.

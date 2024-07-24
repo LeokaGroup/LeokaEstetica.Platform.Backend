@@ -12,7 +12,7 @@ public interface IVacancyModerationRepository
     /// Метод получает вакансию модерации из таблицы ModerationVacancies.
     /// </summary>
     /// /// <param name="vacancyId">Id вакансии.</param>
-    public Task<ModerationVacancyEntity> GetModerationVacancyByVacancyIdAsync(long vacancyId);
+    Task<ModerationVacancyEntity> GetModerationVacancyByVacancyIdAsync(long vacancyId);
 	/// <summary>
 	/// Метод отправляет вакансию на модерацию.
 	/// </summary>
