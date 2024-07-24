@@ -36,7 +36,7 @@ public class CommerceRedisService : ICommerceRedisService
             ProtoBufExtensions.Serialize(createOrderCache),
             new DistributedCacheEntryOptions
             {
-                AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(2)
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(4)
             });
     }
 

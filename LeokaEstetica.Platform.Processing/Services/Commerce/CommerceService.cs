@@ -140,7 +140,7 @@ internal sealed class CommerceService : ICommerceService
                         createOrderCacheInput.PaymentMonth
             };
 
-            // Сохраняем заказ в кэш сроком на 2 часа.
+            // Сохраняем заказ в кэш сроком на 4 часа.
             var key = await _commerceRedisService.CreateOrderCacheKeyAsync(userId, createOrderCacheInput.PublicId);
             await _commerceRedisService.CreateOrderCacheAsync(key, order);
 
