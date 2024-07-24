@@ -12,4 +12,11 @@ public interface IFareRuleService
     /// </summary>
     /// <returns>Список тарифов.</returns>
     Task<IEnumerable<FareRuleCompositeOutput>> GetFareRulesAsync();
+    
+    /// <summary>
+    /// Метод получает тариф по его PublicId.
+    /// </summary>
+    /// <param name="publicId">Публичный ключ тарифа.</param>
+    /// <returns>Данные тарифа.</returns>
+    Task<FareRuleCompositeOutput> GetFareRuleByPublicIdAsync(Guid publicId);
 }

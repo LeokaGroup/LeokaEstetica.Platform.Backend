@@ -74,4 +74,23 @@ public class FareRuleController : BaseController
 
         return result;
     }
+    
+    /// <summary>
+    /// Метод получает для ФЗ информацию о тарифе.
+    /// </summary>
+    /// <param name="publicId">Публичный ключ тарифа.</param>
+    /// <returns>Информация о тарифе.</returns>
+    [HttpGet]
+    [Route("fare-rule/order-form/{publicId}/info")]
+    [ProducesResponseType(200, Type = typeof(FareRuleCompositeOutput))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<FareRuleCompositeOutput?> GetFareRuleInfoAsync([FromRoute] Guid publicId)
+    {
+        var result = await _fareRuleService.GetFareRuleByPublicIdAsync(publicId);
+
+        return result;
+    }
 }

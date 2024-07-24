@@ -1,6 +1,5 @@
 using System.Runtime.CompilerServices;
 using AutoMapper;
-using LeokaEstetica.Platform.Access.Abstractions.AvailableLimits;
 using LeokaEstetica.Platform.Access.Enums;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.Core.Exceptions;
@@ -86,7 +85,6 @@ internal sealed class VacancyService : IVacancyService
 
     private readonly ISubscriptionRepository _subscriptionRepository;
     private readonly IFareRuleRepository _fareRuleRepository;
-    private readonly IAvailableLimitsService _availableLimitsService;
     private readonly IVacancyNotificationsService _vacancyNotificationsService;
     
     private static readonly string _approveVacancy = "Опубликована";
@@ -95,8 +93,6 @@ internal sealed class VacancyService : IVacancyService
     private readonly IProjectRepository _projectRepository;
     private readonly IMailingsService _mailingsService;
     private readonly IVacancyModerationRepository _vacancyModerationRepository;
-    
-    private const string NOT_AVAILABLE_DELETE_VACANCY_ARCHIVE = "Невозможно убрать вакансию из архива, так как у Вас уже опубликовано максимальное количество вакансий соответствующих максимальному лимиту тарифа. Добавьте в архив вакансии, чтобы освободить лимиты либо перейдите на тариф, который имеет большие лимиты";
 
     private readonly IDiscordService _discordService;
 
@@ -118,7 +114,6 @@ internal sealed class VacancyService : IVacancyService
         IVacancyModerationService vacancyModerationService,
         ISubscriptionRepository subscriptionRepository,
         IFareRuleRepository fareRuleRepository,
-        IAvailableLimitsService availableLimitsService,
         IVacancyNotificationsService vacancyNotificationsService, 
         IProjectRepository projectRepository,
         IFillColorVacanciesService fillColorVacanciesService, 
@@ -134,7 +129,6 @@ internal sealed class VacancyService : IVacancyService
         _vacancyModerationService = vacancyModerationService;
         _subscriptionRepository = subscriptionRepository;
         _fareRuleRepository = fareRuleRepository;
-        _availableLimitsService = availableLimitsService;
         _vacancyNotificationsService = vacancyNotificationsService;
         _projectRepository = projectRepository;
         _fillColorVacanciesService = fillColorVacanciesService;

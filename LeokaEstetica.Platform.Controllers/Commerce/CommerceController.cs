@@ -98,26 +98,6 @@ public class CommerceController : BaseController
     }
 
     /// <summary>
-    /// Метод получает для ФЗ информацию о тарифе.
-    /// </summary>
-    /// <param name="publicId">Публичный ключ тарифа.</param>
-    /// <returns>Информация о тарифе.</returns>
-    [HttpGet]
-    [Route("fare-rule/order-form/{publicId}/info")]
-    [ProducesResponseType(200, Type = typeof(FareRuleOutput))]
-    [ProducesResponseType(400)]
-    [ProducesResponseType(403)]
-    [ProducesResponseType(500)]
-    [ProducesResponseType(404)]
-    public async Task<FareRuleOutput> GetFareRuleInfoAsync([FromRoute] Guid publicId)
-    {
-        var fareRule = await _fareRuleRepository.GetByPublicIdAsync(publicId);
-        var result = _mapper.Map<FareRuleOutput>(fareRule);
-
-        return result;
-    }
-
-    /// <summary>
     /// Метод создает заказ в кэше и хранит его 2 часа.
     /// </summary>
     /// <param name="createOrderCacheInput">Входная модель.</param>
@@ -157,6 +137,7 @@ public class CommerceController : BaseController
 
     /// <summary>
     /// TODO: Пока не будет у нас продуктов (услуг, пакетов) - в будущем будут, когда продумаем аналитику.
+    /// TODO: Если задействуем, то перенести в контроллер тарифов.
     /// Метод получает услуги и сервисы заказа из кэша.
     /// </summary>
     /// <param name="publicId">Публичный код тарифа.</param>

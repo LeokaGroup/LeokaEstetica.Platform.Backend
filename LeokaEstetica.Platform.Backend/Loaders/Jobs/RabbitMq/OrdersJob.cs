@@ -195,14 +195,20 @@ internal sealed class OrdersJob : IJob
                         }
 
                         var publicId = orderEvent.PublicId;
-                        var fareRule = await _fareRuleRepository.GetByPublicIdAsync(publicId);
+                        var fareRule = await _fareRuleRepository.GetFareRuleByPublicIdAsync(publicId);
+
+                        if (fareRule.FareRule is null)
+                        {
+                            throw new InvalidOperationException("Ошибка получения тарифа. " +
+                                                                $"PublicId: {publicId}.");
+                        }
 
                         // Для бесплатного тарифа нет срока подписки.
-                        if (!fareRule.IsFree)
+                        if (!fareRule.FareRule.IsFree)
                         {
                             // Проставляем подписку и даты подписки пользователю.
                             await _subscriptionService.SetUserSubscriptionAsync(orderEvent.UserId, publicId,
-                                orderEvent.Month, orderEvent.OrderId, fareRule.RuleId);
+                                orderEvent.Month, orderEvent.OrderId, fareRule.FareRule.RuleId);
                         }
                         
                         // Если статус платежа в ПС ожидает подтверждения, то подтверждаем его, чтобы списать ДС.
