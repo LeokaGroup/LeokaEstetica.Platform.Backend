@@ -20,10 +20,4 @@ public class CreateOrderCacheInput
     /// Кол-во сотрудников.
     /// </summary>
     public int EmployeesCount { get; set; }
-
-    /// <summary>
-    /// Признак совершенного действия пользователя.
-    /// Если требуются действия от пользователя.
-    /// </summary>
-    public bool IsCompleteUserAction { get; set; }
 }
