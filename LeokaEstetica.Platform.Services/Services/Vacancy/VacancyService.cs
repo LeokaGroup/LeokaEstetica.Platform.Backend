@@ -375,6 +375,7 @@ internal sealed class VacancyService : IVacancyService
     /// <returns>Данные вакансии.</returns>
     public async Task<VacancyOutput> GetVacancyByVacancyIdAsync(long vacancyId, ModeEnum mode, string account)
     {
+        //test
         try
         {
             var userId = await _userRepository.GetUserByEmailAsync(account);
