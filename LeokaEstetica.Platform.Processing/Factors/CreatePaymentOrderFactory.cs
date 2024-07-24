@@ -95,32 +95,10 @@ public static class CreatePaymentOrderFactory
             createPaymentOrderAggregateInput.PublicId, createPaymentOrderAggregateInput.OrderCache.Month,
             createdOrderResult.Price, createdOrderResult.Currency);
 
-        // var configEnv = await httpClient.GetFromJsonAsync<ProxyConfigEnvironmentOutput>(string.Concat(apiUrl,
-        //     GlobalConfigKeys.ProjectManagementProxyApi.PROJECT_MANAGEMENT_CONFIG_ENVIRONMENT_PROXY_API));
-        //
-        // if (configEnv is null)
-        // {
-        //     throw new InvalidOperationException("Не удалось получить среду окружения из конфига модуля УП.");
-        // }
-        //
-        // var rabbitMqConfig = await httpClient.GetFromJsonAsync<ProxyConfigRabbitMqOutput>(string.Concat(apiUrl,
-        //     GlobalConfigKeys.ProjectManagementProxyApi.PROJECT_MANAGEMENT_CONFIG_RABBITMQ_PROXY_API));
-        //         
-        // if (rabbitMqConfig is null)
-        // {
-        //     throw new InvalidOperationException("Не удалось получить настройки RabbitMQ из конфига модуля УП.");
-        // }
-            
-        // var queueType = string.Empty.CreateQueueDeclareNameFactory(configEnv.Environment,
-        //     QueueTypeEnum.ScrumMasterAiMessage);
-        
         var queueType = string.Empty.CreateQueueDeclareNameFactory(configuration["Environment"],
             QueueTypeEnum.OrdersQueue);
 
-        // var scrumMasterAiMessageEvent = ScrumMasterAiMessageEventFactory.CreateScrumMasterAiMessageEvent(message,
-        //     token, userId);
-        
-        // await rabbitMqService.PublishAsync(orderEvent, queueType, rabbitMqConfig, configEnv);
+        await rabbitMqService.PublishAsync(orderEvent, queueType, configuration);
         
         var isEnabledEmailNotifications = await globalConfigRepository.GetValueByKeyAsync<bool>(
             GlobalConfigKeys.EmailNotifications.EMAIL_NOTIFICATIONS_DISABLE_MODE_ENABLED);

@@ -1,4 +1,3 @@
-using System.Net.Http.Json;
 using System.Runtime.CompilerServices;
 using Dapper;
 using LeokaEstetica.Platform.Base.Abstractions.Messaging.Chat;
@@ -9,18 +8,17 @@ using LeokaEstetica.Platform.Base.Enums;
 using LeokaEstetica.Platform.Base.Extensions;
 using LeokaEstetica.Platform.Base.Extensions.StringExtensions;
 using LeokaEstetica.Platform.Base.Factors;
-using LeokaEstetica.Platform.Core.Constants;
 using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Integrations.Abstractions.Discord;
 using LeokaEstetica.Platform.Models.Dto.Chat.Input;
 using LeokaEstetica.Platform.Models.Dto.Chat.Output;
-using LeokaEstetica.Platform.Models.Dto.Proxy.ProjectManagement;
 using LeokaEstetica.Platform.Models.Enums;
 using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.RabbitMq.Abstractions;
 using LeokaEstetica.Platform.Redis.Abstractions.Client;
 using LeokaEstetica.Platform.Redis.Abstractions.Connection;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Enum = System.Enum;
@@ -43,6 +41,7 @@ internal sealed class ProjectManagementHub : Hub, IHubService
     private readonly IClientConnectionService _clientConnectionService;
     private readonly IRabbitMqService _rabbitMqService;
     private readonly IHttpClientFactory _httpClientFactory;
+    private readonly IConfiguration _configuration;
 
     /// <summary>
     /// Конструктор.
@@ -56,6 +55,7 @@ internal sealed class ProjectManagementHub : Hub, IHubService
     /// <param name="clientConnectionService">Сервис подключений клиентов кэша.</param>
     /// <param name="clientConnectionService">Сервис брокера сообщений.</param>
     /// <param name="httpClientFactory">Факторка Http-клиентов.</param>
+    /// <param name="configuration">Конфигурация приложения.</param>
     public ProjectManagementHub(IChatRepository chatRepository,
         IUserRepository userRepository,
         ILogger<ProjectManagementHub> logger,
@@ -64,7 +64,8 @@ internal sealed class ProjectManagementHub : Hub, IHubService
         IChatService chatService,
         IClientConnectionService clientConnectionService,
         IRabbitMqService rabbitMqService,
-        IHttpClientFactory httpClientFactory)
+        IHttpClientFactory httpClientFactory,
+        IConfiguration configuration)
     {
         _chatRepository = chatRepository;
         _userRepository = userRepository;
@@ -75,6 +76,7 @@ internal sealed class ProjectManagementHub : Hub, IHubService
         _clientConnectionService = clientConnectionService;
         _rabbitMqService = rabbitMqService;
         _httpClientFactory = httpClientFactory;
+        _configuration = configuration;
     }
 
     /// <inheritdoc />
@@ -184,23 +186,7 @@ internal sealed class ProjectManagementHub : Hub, IHubService
             using var httpClient = _httpClientFactory.CreateClient();
             httpClient.SetHttpClientRequestAuthorizationHeader(token);
 
-            var configEnv = await httpClient.GetFromJsonAsync<ProxyConfigEnvironmentOutput>(string.Concat(apiUrl,
-                GlobalConfigKeys.ProjectManagementProxyApi.PROJECT_MANAGEMENT_CONFIG_ENVIRONMENT_PROXY_API));
-
-            if (configEnv is null)
-            {
-                throw new InvalidOperationException("Не удалось получить среду окружения из конфига модуля УП.");
-            }
-
-            var rabbitMqConfig = await httpClient.GetFromJsonAsync<ProxyConfigRabbitMqOutput>(string.Concat(apiUrl,
-                GlobalConfigKeys.ProjectManagementProxyApi.PROJECT_MANAGEMENT_CONFIG_RABBITMQ_PROXY_API));
-                
-            if (rabbitMqConfig is null)
-            {
-                throw new InvalidOperationException("Не удалось получить настройки RabbitMQ из конфига модуля УП.");
-            }
-            
-            var queueType = string.Empty.CreateQueueDeclareNameFactory(configEnv.Environment,
+            var queueType = string.Empty.CreateQueueDeclareNameFactory(_configuration["Environment"],
                 QueueTypeEnum.ScrumMasterAiMessage);
             
             var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
@@ -211,7 +197,7 @@ internal sealed class ProjectManagementHub : Hub, IHubService
                 connectionId, -1, ScrumMasterAiEventTypeEnum.Message, dialogId);
             
             // Отправляем событие в кролика для ответа нейросети в джобе.
-            await _rabbitMqService.PublishAsync(scrumMasterAiMessageEvent, queueType, rabbitMqConfig, configEnv);
+            await _rabbitMqService.PublishAsync(scrumMasterAiMessageEvent, queueType, _configuration);
 
             // Пишем сообщение в БД.
             await _chatService.SendMessageAsync(message, dialogId, userId, token, true, true).ConfigureAwait(false);

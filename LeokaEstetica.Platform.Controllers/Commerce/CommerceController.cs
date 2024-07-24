@@ -2,7 +2,6 @@ using AutoMapper;
 using LeokaEstetica.Platform.Base;
 using LeokaEstetica.Platform.Base.Filters;
 using LeokaEstetica.Platform.Controllers.Validators.Commerce;
-using LeokaEstetica.Platform.Database.Abstractions.FareRule;
 using LeokaEstetica.Platform.Integrations.Abstractions.Discord;
 using LeokaEstetica.Platform.Models.Dto.Input.Commerce;
 using LeokaEstetica.Platform.Models.Dto.Input.Commerce.PayMaster;
@@ -25,7 +24,6 @@ namespace LeokaEstetica.Platform.Controllers.Commerce;
 [Route("commercial")]
 public class CommerceController : BaseController
 {
-    private readonly IFareRuleRepository _fareRuleRepository;
     private readonly IMapper _mapper;
     private readonly ILogger<CommerceController> _logger;
     private readonly ICommerceService _commerceService;
@@ -34,18 +32,15 @@ public class CommerceController : BaseController
      /// <summary>
      /// Конструктор.
      /// </summary>
-     /// <param name="fareRuleRepository">Репозиторий правил тарифов.</param>
      /// <param name="mapper">Автомаппер.</param>
      /// <param name="logger">Сервис логера.</param>
      /// <param name="commerceService">Сервис коммерции.</param>
      /// <param name="discordService">Сервис уведомлений дискорда.</param>
-     public CommerceController(IFareRuleRepository fareRuleRepository, 
-        IMapper mapper, 
+     public CommerceController(IMapper mapper, 
         ILogger<CommerceController> logger, 
         ICommerceService commerceService,
          Lazy<IDiscordService> discordService)
     {
-        _fareRuleRepository = fareRuleRepository;
         _mapper = mapper;
         _logger = logger;
         _commerceService = commerceService;
@@ -195,6 +190,29 @@ public class CommerceController : BaseController
     public async Task<bool> IsProfileEmptyAsync()
     {
         var result = await _commerceService.IsProfileEmptyAsync(GetUserName(), GetTokenFromHeader());
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод вычисляет цену тарифа исходя из параметров.
+    /// </summary>
+    /// <param name="publicId">Публичный ключ тарифа.</param>
+    /// <param name="selectedMonth">Кол-во месяцев подписки.</param>
+    /// <param name="employeeCount">Кол-во сотрудников в организации.</param>
+    /// <returns>Выходная модель.</returns>
+    [HttpGet]
+    [Route("calculate-price")]
+    [ProducesResponseType(200, Type = typeof(CalculateFareRulePriceOutput))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<CalculateFareRulePriceOutput> CalculateFareRulePriceAsync([FromQuery] Guid publicId,
+        [FromQuery] int selectedMonth, [FromQuery] int employeeCount)
+    {
+        var result = await _commerceService.CalculateFareRulePriceAsync(publicId, selectedMonth, employeeCount,
+            GetUserName());
 
         return result;
     }

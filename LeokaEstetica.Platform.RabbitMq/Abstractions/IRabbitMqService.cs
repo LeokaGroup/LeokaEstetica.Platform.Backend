@@ -1,5 +1,5 @@
 using LeokaEstetica.Platform.Base.Abstractions.Messaging.EventBus;
-using LeokaEstetica.Platform.Models.Dto.Proxy.ProjectManagement;
+using Microsoft.Extensions.Configuration;
 
 namespace LeokaEstetica.Platform.RabbitMq.Abstractions;
 
@@ -13,8 +13,6 @@ public interface IRabbitMqService
     /// </summary>
     /// <param name="event">Событие.</param>
     /// <param name="queueType">Тип очереди.</param>
-    /// <param name="rabbitMqConfig">Конфиг с настройками RabbitMQ.</param>
-    /// <param name="configEnv">Конфиг со средой окружения.</param>
-    Task PublishAsync(IIntegrationEvent @event, string queueType, ProxyConfigRabbitMqOutput rabbitMqConfig,
-        ProxyConfigEnvironmentOutput configEnv);
+    /// <param name="configuration">Конфиг приложения.</param>
+    Task PublishAsync(IIntegrationEvent @event, string queueType, IConfiguration configuration);
 }
