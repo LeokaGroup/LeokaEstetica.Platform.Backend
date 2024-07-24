@@ -398,6 +398,7 @@ internal sealed class CommerceService : ICommerceService
                 PaymentSystemEnum.Yandex => await paymentSystemJob.CreateOrderAsync(
                     new YandexKassaStrategy(_yandexKassaService), publicId, account, token),
 
+                // TODO: Не используется (в будущем возможно будет).
                 PaymentSystemEnum.PayMaster => await paymentSystemJob.CreateOrderAsync(
                     new PayMasterStrategy(_payMasterService), publicId, account, token),
 
