@@ -1,7 +1,9 @@
+using System.Data;
 using System.Runtime.CompilerServices;
 using AutoMapper;
 using LeokaEstetica.Platform.Access.Abstractions.User;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
+using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.FareRule;
@@ -140,28 +142,36 @@ internal sealed class ResumeService : IResumeService
     {
         try
         {
-            
+            //Проверяем наличие резюме
             var result = await _resumeRepository.GetResumeAsync(resumeId);
+
             if (result == null)
             {
-                var ex = new NotFoundResumeByIdException(resumeId);
+                return new UserInfoOutput
+                {
+                    IsAccess = false,
+                    IsSuccess = false,
+                };
+            }
+
+            //Проверяем наличие пользователя
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
                 throw ex;
             }
 
-			
-			var userId = await _userRepository.GetUserByEmailAsync(account);
+            //Проверяем доступ к анкете
+            var isOwner = await _resumeRepository.CheckResumeOwnerAsync(result.ProfileInfoId, userId);
 
-			if (userId <= 0)
-			{
-				var ex = new NotFoundUserIdByAccountException(account);
-				throw ex;
-			}
+            var resumeModeration = await _resumeModerationRepository.GetResumeModerationByProfileInfosIdsAsync(result.ProfileInfoId);
 
-			//Проверяем доступ к анкете
-			var isOwner = await _resumeRepository.CheckResumeOwnerAsync(result.ProfileInfoId,userId);
+			//проверка, чтобы анкета не была на модерации -если ссылку вбил не владелец анкеты
 
-            //Нет доступа к анкете
-            if (!isOwner)
+			if (!isOwner && resumeModeration != null &&
+                (resumeModeration.ModerationStatusId == (int)ResumeModerationStatusEnum.ModerationResume)) 
             {
                 return new UserInfoOutput
                 {
@@ -170,6 +180,7 @@ internal sealed class ResumeService : IResumeService
                 };
 
 			}
+
             // Наполняем результат.
             await CreateModifyUserResult(result);
 
