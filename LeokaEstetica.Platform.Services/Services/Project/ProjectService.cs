@@ -548,12 +548,17 @@ internal sealed class ProjectService : IProjectService
             // Проверяем доступ к проекту.
             var isOwner = await _projectRepository.CheckProjectOwnerAsync(projectId, userId);
 
-			//Нет доступа к проекту
-			if (!isOwner)
+            var projectModeration = await _projectModerationRepository.GetProjectModerationAsync(projectId);
+
+			//Проверка, чтобы проект не был на модерации или в архиве - если ссылку вбил не владелец проекта.
+			if (!isOwner && projectModeration!=null &&
+                (projectModeration.ModerationStatusId==(int)ProjectModerationStatusEnum.ModerationProject ||
+                projectModeration.ModerationStatusId==(int)ProjectModerationStatusEnum.ArchivedProject))
 			{
 				return new ProjectOutput
 				{
 					IsAccess = false,
+					IsSuccess=false,
 					ProjectRemarks = new List<ProjectRemarkOutput>()
 				};
 			}
@@ -569,13 +574,16 @@ internal sealed class ProjectService : IProjectService
             }
 
             var prj = await _projectRepository.GetProjectAsync(projectId);
-
+            
             if (prj.UserProject is null)
             {
-                var ex = new InvalidOperationException( 
-                    $"Не удалось найти проект с ProjectId {projectId} и UserId {userId}");
-                throw ex;
-            }
+				return new ProjectOutput
+				{
+					IsAccess = false,
+					IsSuccess = false,
+					ProjectRemarks = new List<ProjectRemarkOutput>()
+				};
+			}
 
             var result = await CreateProjectResultAsync(projectId, prj, userId);
 
