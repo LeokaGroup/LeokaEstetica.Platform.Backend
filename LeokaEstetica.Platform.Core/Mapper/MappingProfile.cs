@@ -95,7 +95,14 @@ public class MappingProfile : Profile
 
         CreateMap<ProjectStageEntity, ProjectStageOutput>();
 
-        CreateMap<ProjectVacancyEntity, ProjectVacancyOutput>();
+        CreateMap<ProjectVacancyEntity, ProjectVacancyOutput>()
+            .ForMember(p => p.VacancyName,
+                p => p.MapFrom(src => src.UserVacancy.VacancyName))
+            .ForMember(p => p.VacancyText,
+                p => p.MapFrom(src => src.UserVacancy.VacancyText))
+            .ForMember(p => p.ProjectVacancyId,
+                p => p.MapFrom(src => src.ProjectVacancyId));
+        
 
         CreateMap<UserVacancyOutput, UserVacancyEntity>();
 
