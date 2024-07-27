@@ -117,7 +117,8 @@ public interface IProjectManagmentService
     /// <param name="tagDescription">Описание метки (тега).</param>
     /// <param name="projectId">Id проекта.</param>
     /// <param name="account">Аккаунт.</param>
-    Task CreateProjectTagAsync(string tagName, string tagDescription, long projectId, string account);
+    /// <param name="token">Токен.</param>
+    Task CreateProjectTagAsync(string tagName, string tagDescription, long projectId, string account, string token);
 
     /// <summary>
     /// Метод получает список статусов для выбора для создания нового статуса.
