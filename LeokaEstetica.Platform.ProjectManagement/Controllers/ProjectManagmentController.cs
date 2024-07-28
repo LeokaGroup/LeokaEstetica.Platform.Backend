@@ -471,7 +471,7 @@ public class ProjectManagmentController : BaseController
         }
 
         await _projectManagmentService.CreateProjectTagAsync(projectTagInput.TagName,
-            projectTagInput.TagDescription, projectTagInput.ProjectId, GetUserName());
+            projectTagInput.TagDescription, projectTagInput.ProjectId, GetUserName(), CreateTokenFromHeader());
     }
 
     /// <summary>

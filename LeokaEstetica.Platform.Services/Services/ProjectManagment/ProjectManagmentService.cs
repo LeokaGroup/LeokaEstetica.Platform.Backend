@@ -1050,7 +1050,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     }
 
     /// <inheritdoc />
-    public async Task CreateProjectTagAsync(string tagName, string tagDescription, long projectId, string account)
+    public async Task CreateProjectTagAsync(string tagName, string tagDescription, long projectId, string account, string token)
     {
         try
         {
@@ -1076,6 +1076,14 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             var projectTag = CreateUserTaskTagFactory.CreateProjectTag(tagName, tagDescription, tagSysName,
                     ++maxUserTagPosition, projectId);
             await _projectManagmentRepository.CreateProjectTaskTagAsync(projectTag);
+
+            if (!string.IsNullOrEmpty(token))
+            {
+                await _projectManagementNotificationService.Value.SendNotifySuccessCreateProjectTagAsync(
+                    "Все хорошо",
+                    "Метка добавлена в проект.",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);
+            }
         }
         
         catch (Exception ex)
