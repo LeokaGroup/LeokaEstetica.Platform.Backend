@@ -566,21 +566,14 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             // Получаем выбранную пользователем стратегию представления.
             var strategy = await _projectManagmentRepository.GetProjectUserStrategyAsync(projectId, userId);
 
-            var modifyStatusesTimer = new Stopwatch();
-                
             _logger?.LogInformation(
                 $"Начали получение списка задач для рабочего пространства для проекта {projectId}");
-                
-            modifyStatusesTimer.Start();
 
             // Получаем задачи пользователя, которые принадлежат проекту в рабочем пространстве.
             var projectTasks = await _projectManagmentRepository.GetProjectTasksAsync(projectId, strategy!);
-            
-            modifyStatusesTimer.Stop();
-                
+
             _logger?.LogInformation(
-                $"Закончили получение списка задач для рабочего пространства для проекта {projectId} " +
-                $"за: {modifyStatusesTimer.ElapsedMilliseconds} мсек.");
+                $"Закончили получение списка задач для рабочего пространства для проекта {projectId}.");
             
             var tasks = projectTasks?.AsList();
             
@@ -2664,8 +2657,8 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     }
 
     /// <inheritdoc />
-    public async Task IncludeTaskEpicAsync(long epicId, IEnumerable<string> projectTaskIds, string account,
-        string token)
+    public async Task IncludeTaskEpicAsync(long projectEpicId, IEnumerable<string> projectTaskIds, string account,
+        string token, long projectId)
     {
         try
         {
@@ -2679,6 +2672,9 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 
             var projectTaskIdToNumbers = projectTaskIds.Select(x => x.GetProjectTaskIdFromPrefixLink());
 
+            var epicId = await _projectManagmentRepository.GetEpicIdByProjectEpicIdAsync(projectId, projectEpicId);
+
+            // Добавляем задачу в эпик.
             await _projectManagmentRepository.IncludeTaskEpicAsync(epicId, projectTaskIdToNumbers);
             
             if (!string.IsNullOrEmpty(token))

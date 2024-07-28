@@ -776,4 +776,12 @@ public interface IProjectManagmentRepository
     /// <param name="projectId">Id проекта.</param>
     /// <returns>Id компании.</returns>
     Task<long> GetCompanyIdByProjectIdAsync(long projectId);
+
+    /// <summary>
+    /// Метод получает Id эпика по Id эпика в рамках проекта.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="projectEpicId">Id эпика в рамках проекта.</param>
+    /// <returns>Id эпика.</returns>
+    Task<long> GetEpicIdByProjectEpicIdAsync(long projectId, long projectEpicId);
 }
