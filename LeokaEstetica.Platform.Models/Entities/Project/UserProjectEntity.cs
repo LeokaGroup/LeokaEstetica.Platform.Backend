@@ -117,4 +117,9 @@ public class UserProjectEntity
     /// Префикс названия проекта для модуля УП (управление проектами).
     /// </summary>
     public string? ProjectManagementNamePrefix { get; set; }
+    
+    /// <summary>
+    /// Видимость проекта
+    /// </summary>
+    public bool IsPublic { get; set; }
 }

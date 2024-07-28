@@ -566,21 +566,14 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             // Получаем выбранную пользователем стратегию представления.
             var strategy = await _projectManagmentRepository.GetProjectUserStrategyAsync(projectId, userId);
 
-            var modifyStatusesTimer = new Stopwatch();
-                
             _logger?.LogInformation(
                 $"Начали получение списка задач для рабочего пространства для проекта {projectId}");
-                
-            modifyStatusesTimer.Start();
 
             // Получаем задачи пользователя, которые принадлежат проекту в рабочем пространстве.
             var projectTasks = await _projectManagmentRepository.GetProjectTasksAsync(projectId, strategy!);
-            
-            modifyStatusesTimer.Stop();
-                
+
             _logger?.LogInformation(
-                $"Закончили получение списка задач для рабочего пространства для проекта {projectId} " +
-                $"за: {modifyStatusesTimer.ElapsedMilliseconds} мсек.");
+                $"Закончили получение списка задач для рабочего пространства для проекта {projectId}.");
             
             var tasks = projectTasks?.AsList();
             
@@ -738,6 +731,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                         NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
                 }
                 
+                // TODO: Переделать на уведомление через хаб.
                 return new CreateProjectManagementTaskOutput
                 {
                     Errors = new List<ValidationFailure>
@@ -784,18 +778,6 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             // Если идет создание задачи или ошибки.
             if (new[] { SearchAgileObjectTypeEnum.Task, SearchAgileObjectTypeEnum.Error }.Contains(taskType))
             {
-                if (maxProjectTaskId < 0)
-                {
-                    throw new InvalidOperationException("Не удалось получить наибольший Id задачи в рамках проекта." +
-                                                        $"ProjectId: {projectId}");
-                }
-
-                // Если не было добавленной записи, то начнем с 1.
-                if (maxProjectTaskId == 0)
-                {
-                    maxProjectTaskId++;
-                }
-
                 ProjectTaskEntity addedProjectTask;
 
                 using var transactionScope = _transactionScopeFactory.CreateTransactionScope();
@@ -807,7 +789,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                     // TODO: С Dapper не нужно все это.
                     // TODO: Использовать просто классы DTO для этого, и факторки эти не нужны будут.
                     addedProjectTask = CreateProjectTaskFactory.CreateQuickProjectTask(projectManagementTaskInput,
-                        userId, maxProjectTaskId != 1 ? ++maxProjectTaskId : maxProjectTaskId);
+                        userId, ++maxProjectTaskId);
                 }
 
                 // Обычное создание задачи.
@@ -823,7 +805,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                     // TODO: С Dapper не нужно все это.
                     // TODO: Использовать просто классы DTO для этого, и факторки эти не нужны будут.
                     addedProjectTask = CreateProjectTaskFactory.CreateProjectTask(projectManagementTaskInput, userId,
-                        maxProjectTaskId != 1 ? ++maxProjectTaskId : maxProjectTaskId);
+                        ++maxProjectTaskId);
                 }
 
                 // Создаем задачу в БД.
@@ -1068,7 +1050,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     }
 
     /// <inheritdoc />
-    public async Task CreateProjectTagAsync(string tagName, string tagDescription, long projectId, string account)
+    public async Task CreateProjectTagAsync(string tagName, string tagDescription, long projectId, string account, string token)
     {
         try
         {
@@ -1094,6 +1076,14 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             var projectTag = CreateUserTaskTagFactory.CreateProjectTag(tagName, tagDescription, tagSysName,
                     ++maxUserTagPosition, projectId);
             await _projectManagmentRepository.CreateProjectTaskTagAsync(projectTag);
+
+            if (!string.IsNullOrEmpty(token))
+            {
+                await _projectManagementNotificationService.Value.SendNotifySuccessCreateProjectTagAsync(
+                    "Все хорошо",
+                    "Метка добавлена в проект.",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);
+            }
         }
         
         catch (Exception ex)
@@ -2675,8 +2665,8 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     }
 
     /// <inheritdoc />
-    public async Task IncludeTaskEpicAsync(long epicId, IEnumerable<string> projectTaskIds, string account,
-        string token)
+    public async Task IncludeTaskEpicAsync(long projectEpicId, IEnumerable<string> projectTaskIds, string account,
+        string token, long projectId)
     {
         try
         {
@@ -2690,6 +2680,9 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 
             var projectTaskIdToNumbers = projectTaskIds.Select(x => x.GetProjectTaskIdFromPrefixLink());
 
+            var epicId = await _projectManagmentRepository.GetEpicIdByProjectEpicIdAsync(projectId, projectEpicId);
+
+            // Добавляем задачу в эпик.
             await _projectManagmentRepository.IncludeTaskEpicAsync(epicId, projectTaskIdToNumbers);
             
             if (!string.IsNullOrEmpty(token))
