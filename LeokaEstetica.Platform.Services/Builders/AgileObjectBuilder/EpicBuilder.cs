@@ -1,3 +1,5 @@
+using Dapper;
+using LeokaEstetica.Platform.Core.Constants;
 using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Models.Dto.Output.Template;
 using Newtonsoft.Json;
@@ -216,5 +218,37 @@ internal class EpicBuilder : AgileObjectBuilder
     public override Task FillSprintIdAndSprintNameAsync()
     {
         throw new NotImplementedException("Функционал эпикам не нужен.");
+    }
+    
+    /// <inheritdoc />
+    public override async Task FillEpicTasksAsync()
+    {
+        // TODO: Этот код дублируется в этом сервисе. Вынести в приватный метод и кортежем вернуть нужные данные.
+        // Получаем настройки проекта.
+        var projectSettings = await BuilderData.ProjectSettingsConfigRepository
+            .GetProjectSpaceSettingsByProjectIdAsync(BuilderData.ProjectId);
+        var projectSettingsItems = projectSettings?.AsList();
+
+        if (projectSettingsItems is null
+            || !projectSettingsItems.Any()
+            || projectSettingsItems.Any(x => x is null))
+        {
+            throw new InvalidOperationException("Ошибка получения настроек проекта. " +
+                                                $"ProjectId: {BuilderData.ProjectId}.");
+        }
+
+        var template = projectSettingsItems.Find(x =>
+            x.ParamKey.Equals(GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_TEMPLATE_ID));
+        var templateId = Convert.ToInt32(template!.ParamValue);
+
+        var epicTasks = await BuilderData.ProjectManagmentRepository.GetEpicTasksAsync(BuilderData.ProjectId,
+                BuilderData.ProjectTaskId, templateId);
+
+        if (epicTasks.EpicTasks.Any())
+        {
+            ProjectManagmentTask.EpicTasks ??= new List<ProjectManagmentTaskOutput>();
+            ProjectManagmentTask.EpicTasks.AsList()
+                .AddRange(BuilderData.Mapper.Map<IEnumerable<ProjectManagmentTaskOutput>>(epicTasks.EpicTasks));
+        }
     }
 }

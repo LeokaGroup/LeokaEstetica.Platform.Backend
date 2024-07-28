@@ -2236,7 +2236,6 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
                     "INTO temp_epic_task_ids " +
                     "FROM project_management.epic_tasks " +
                     "WHERE epic_id = @epicId; " +
-                    
                     "SELECT t.task_id," +
                     "t.name," +
                     "t.project_id," +

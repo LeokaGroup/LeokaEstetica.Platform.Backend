@@ -1,5 +1,6 @@
 using AutoMapper;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
+using LeokaEstetica.Platform.Database.Abstractions.Config;
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Database.Abstractions.Template;
 using LeokaEstetica.Platform.Integrations.Abstractions.Discord;
@@ -18,6 +19,7 @@ internal class AgileObjectBuilderData
     internal IUserService UserService;
     internal IProjectManagmentTemplateRepository ProjectManagmentTemplateRepository;
     internal IMapper Mapper;
+    internal IProjectSettingsConfigRepository ProjectSettingsConfigRepository;
 
     /// <summary>
     /// Id задачи в рамках проекта.
@@ -39,6 +41,7 @@ internal class AgileObjectBuilderData
     /// <param name="projectManagmentTemplateRepository">Репозиторий шаблонов модуля УП.</param>
     /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
     /// <param name="projectId">Id проекта.</param>
+    /// <param name="projectManagementSettingsRepository">Репозиторий настроек модуля УП.</param>
     public AgileObjectBuilderData(IProjectManagmentRepository projectManagmentRepository,
         IUserRepository userRepository,
         IDiscordService discordService,
@@ -46,7 +49,8 @@ internal class AgileObjectBuilderData
         IProjectManagmentTemplateRepository projectManagmentTemplateRepository,
         IMapper mapper,
         long projectTaskId,
-        long projectId)
+        long projectId,
+        IProjectSettingsConfigRepository _projectSettingsConfigRepository)
     {
         ProjectManagmentRepository = projectManagmentRepository;
         UserRepository = userRepository;
@@ -56,5 +60,6 @@ internal class AgileObjectBuilderData
         Mapper = mapper;
         ProjectTaskId = projectTaskId;
         ProjectId = projectId;
+        ProjectSettingsConfigRepository = _projectSettingsConfigRepository;
     }
 }
