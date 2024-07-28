@@ -271,10 +271,10 @@ public class MappingProfile : Profile
         
         CreateMap<ProjectManagementRoleRedis, ProjectManagementRoleOutput>();
         CreateMap<ProjectManagementRoleOutput, ProjectManagementRoleRedis>();
-        CreateMap<ProjectManagmentTaskOutput, EpicTaskOutput>();
         CreateMap<ProjectManagmentTaskOutput, SearchAgileObjectOutput>();
         CreateMap<SearchAgileObjectOutput, ProjectManagmentTaskOutput>();
-        CreateMap<EpicTaskOutput, ProjectManagmentTaskOutput>();
+        CreateMap<EpicTaskOutput, ProjectManagmentTaskOutput>()
+            .ForMember(p => p.TaskStatusName, p => p.MapFrom(src => src.StatusName));
     }
     
     /// <summary>
