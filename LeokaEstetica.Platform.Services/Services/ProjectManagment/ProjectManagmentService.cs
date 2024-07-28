@@ -738,6 +738,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                         NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
                 }
                 
+                // TODO: Переделать на уведомление через хаб.
                 return new CreateProjectManagementTaskOutput
                 {
                     Errors = new List<ValidationFailure>
@@ -784,18 +785,6 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             // Если идет создание задачи или ошибки.
             if (new[] { SearchAgileObjectTypeEnum.Task, SearchAgileObjectTypeEnum.Error }.Contains(taskType))
             {
-                if (maxProjectTaskId < 0)
-                {
-                    throw new InvalidOperationException("Не удалось получить наибольший Id задачи в рамках проекта." +
-                                                        $"ProjectId: {projectId}");
-                }
-
-                // Если не было добавленной записи, то начнем с 1.
-                if (maxProjectTaskId == 0)
-                {
-                    maxProjectTaskId++;
-                }
-
                 ProjectTaskEntity addedProjectTask;
 
                 using var transactionScope = _transactionScopeFactory.CreateTransactionScope();
@@ -807,7 +796,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                     // TODO: С Dapper не нужно все это.
                     // TODO: Использовать просто классы DTO для этого, и факторки эти не нужны будут.
                     addedProjectTask = CreateProjectTaskFactory.CreateQuickProjectTask(projectManagementTaskInput,
-                        userId, maxProjectTaskId != 1 ? ++maxProjectTaskId : maxProjectTaskId);
+                        userId, ++maxProjectTaskId);
                 }
 
                 // Обычное создание задачи.
@@ -823,7 +812,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                     // TODO: С Dapper не нужно все это.
                     // TODO: Использовать просто классы DTO для этого, и факторки эти не нужны будут.
                     addedProjectTask = CreateProjectTaskFactory.CreateProjectTask(projectManagementTaskInput, userId,
-                        maxProjectTaskId != 1 ? ++maxProjectTaskId : maxProjectTaskId);
+                        ++maxProjectTaskId);
                 }
 
                 // Создаем задачу в БД.
