@@ -1,3 +1,5 @@
+using Dapper;
+using LeokaEstetica.Platform.Core.Constants;
 using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Models.Dto.Output.Template;
 using Newtonsoft.Json;
@@ -216,5 +218,63 @@ internal class EpicBuilder : AgileObjectBuilder
     public override Task FillSprintIdAndSprintNameAsync()
     {
         throw new NotImplementedException("Функционал эпикам не нужен.");
+    }
+    
+    /// <inheritdoc />
+    public override async Task FillEpicTasksAsync()
+    {
+        // Получаем настройки проекта.
+        var projectSettings = await BuilderData.ProjectSettingsConfigRepository
+            .GetProjectSpaceSettingsByProjectIdAsync(BuilderData.ProjectId);
+        var projectSettingsItems = projectSettings?.AsList();
+
+        if (projectSettingsItems is null
+            || !projectSettingsItems.Any()
+            || projectSettingsItems.Any(x => x is null))
+        {
+            throw new InvalidOperationException("Ошибка получения настроек проекта. " +
+                                                $"ProjectId: {BuilderData.ProjectId}.");
+        }
+
+        var template = projectSettingsItems.Find(x =>
+            x.ParamKey.Equals(GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_TEMPLATE_ID));
+        var templateId = Convert.ToInt32(template!.ParamValue);
+
+        var epicId = await BuilderData.ProjectManagmentRepository.GetEpicIdByProjectEpicIdAsync(BuilderData.ProjectId,
+            BuilderData.ProjectTaskId);
+
+        var epicTasks = await BuilderData.ProjectManagmentRepository.GetEpicTasksAsync(BuilderData.ProjectId, epicId,
+            templateId);
+
+        if (epicTasks.EpicTasks.Any())
+        {
+            ProjectManagmentTask.EpicTasks ??= new List<ProjectManagmentTaskOutput>();
+            ProjectManagmentTask.EpicTasks.AsList()
+                .AddRange(BuilderData.Mapper.Map<IEnumerable<ProjectManagmentTaskOutput>>(epicTasks.EpicTasks));
+            
+            // Заполняем название исполнителей задач эпика.
+            // Обязательно логируем такое если обнаружили, но не стопаем выполнение логики.
+            if (ProjectManagmentTask.EpicTasks.Any(x => x.ExecutorId <= 0))
+            {
+                throw new InvalidOperationException(
+                    "Найдены невалидные исполнители задачи эпика." +
+                    $" EpicTasks: {JsonConvert.SerializeObject(ProjectManagmentTask.EpicTasks)}.");
+            }
+            
+            // Получаем имена исполнителей задач.
+            var executors = await BuilderData.UserRepository.GetExecutorNamesByExecutorIdsAsync(
+                    ProjectManagmentTask.EpicTasks.Select(x => x.ExecutorId));
+
+            if (executors.Count == 0)
+            {
+                throw new InvalidOperationException("Не удалось получить исполнителей задач эпика.");
+            }
+
+            foreach (var et in ProjectManagmentTask.EpicTasks)
+            {
+                et.Executor ??= new Executor();
+                et.Executor.ExecutorName = executors.TryGet(et.ExecutorId)?.FullName;
+            }
+        }
     }
 }

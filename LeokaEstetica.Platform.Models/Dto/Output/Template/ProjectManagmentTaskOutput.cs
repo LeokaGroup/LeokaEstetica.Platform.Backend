@@ -159,12 +159,12 @@ public class ProjectManagmentTaskOutput
     /// <summary>
     /// Список задач эпика.
     /// </summary>
-    public IEnumerable<ProjectManagmentTaskOutput> EpicTasks { get; set; }
+    public IEnumerable<ProjectManagmentTaskOutput>? EpicTasks { get; set; }
 
     /// <summary>
     /// Список задач спринта.
     /// </summary>
-    public IEnumerable<ProjectManagmentTaskOutput> SprintTasks { get; set; }
+    public IEnumerable<ProjectManagmentTaskOutput>? SprintTasks { get; set; }
 
     /// <summary>
     /// Признак наличия доступа.

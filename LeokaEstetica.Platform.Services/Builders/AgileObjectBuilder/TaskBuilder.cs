@@ -245,4 +245,10 @@ internal class TaskBuilder : AgileObjectBuilder
             ProjectManagmentTask.SprintName = sprint.SprintName;
         }
     }
+
+    /// <inheritdoc />
+    public override Task FillEpicTasksAsync()
+    {
+        throw new NotImplementedException("Функционал задачам не нужен.");
+    }
 }

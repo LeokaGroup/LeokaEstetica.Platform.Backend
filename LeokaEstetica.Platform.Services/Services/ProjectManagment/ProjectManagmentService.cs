@@ -652,7 +652,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             
             var builderData = new AgileObjectBuilderData(_projectManagmentRepository, _userRepository,
                 _discordService, _userService, _projectManagmentTemplateRepository, _mapper,
-                projectTaskId.GetProjectTaskIdFromPrefixLink(), projectId);
+                projectTaskId.GetProjectTaskIdFromPrefixLink(), projectId, _projectSettingsConfigRepository);
                 
             AgileObjectBuilder? builder = null;
  
