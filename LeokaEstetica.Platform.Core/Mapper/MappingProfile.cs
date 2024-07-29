@@ -61,6 +61,12 @@ public class MappingProfile : Profile
 {
     public MappingProfile()
     {
+        CreateMap<TaskSprintExtendedOutput, TaskSprintExtendedModelOutput>()
+            .ForMember(p => p.DateStart,
+                p => p.MapFrom(src => src.DateStart.ToString()))
+            .ForMember(p => p.DateEnd,
+                p => p.MapFrom(src => src.DateEnd.ToString()));
+        
         CreateMap<HeaderEntity, HeaderOutput>();
 
         CreateMap<FonEntity, LandingStartFonOutput>();

@@ -52,7 +52,7 @@ public class SprintController : BaseController
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<IEnumerable<TaskSprintExtendedOutput>> GetSprintsAsync([FromQuery] long projectId)
+    public async Task<IEnumerable<TaskSprintExtendedModelOutput>> GetSprintsAsync([FromQuery] long projectId)
     {
         if (projectId <= 0)
         {
@@ -63,8 +63,8 @@ public class SprintController : BaseController
             await _discordService.Value.SendNotificationErrorAsync(ex);
             
             // TODO: Тут добавить уведомление через хаб для отображения на фронте.
-            
-            return Enumerable.Empty<TaskSprintExtendedOutput>();
+
+            return Enumerable.Empty < TaskSprintExtendedModelOutput>();
         }
 
         var result = await _sprintService.GetSprintsAsync(projectId);
