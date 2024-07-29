@@ -823,12 +823,16 @@ internal sealed class SprintService : ISprintService
         }
 
         IDictionary<long, ProjectTaskTypeOutput>? taskTypeAndErrorDict = null;
+        IDictionary<int, TaskPriorityOutput>? taskPriorityNamesDict = null;
 
         // Заполняем словарь задач и ошибок.
         if (taskTypeAndErrorIds.Count > 0)
         {
             taskTypeAndErrorDict = await _projectManagmentRepository.GetProjectTaskStatusesAsync(projectId,
                 taskTypeAndErrorIds, templateId);
+
+            taskPriorityNamesDict = await _projectManagmentRepository.GetPriorityNamesByPriorityIdsAsync(
+                    mapSprintTasks.Select(x => x.PriorityId));
         }
         
         IDictionary<long, ProjectTaskTypeOutput>? storyTypeDict = null;
@@ -865,6 +869,8 @@ internal sealed class SprintService : ISprintService
             {
                 st.TaskStatusName = storyTypeDict?.TryGet(st.ProjectTaskId)?.TaskStatusName;
             }
+
+            st.PriorityName = taskPriorityNamesDict?.TryGet(st.PriorityId)?.PriorityName;
         }
 
         return mapSprintTasks;
