@@ -832,11 +832,18 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 
                 transactionScope.Complete();
 
-				if (!string.IsNullOrEmpty(token))
+				if (!string.IsNullOrEmpty(token) && addedProjectTask.TaskStatusId==(int)SearchAgileObjectTypeEnum.Task)
 				{
 					await _projectManagementNotificationService.Value.SendNotifySuccessCreateProjectTaskAsync(
 					 "Все хорошо.",
-					$"Задачаа успешно создана.",
+					$"Задача успешно создана.",
+					NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);
+				}
+                else if(!string.IsNullOrEmpty(token) && addedProjectTask.TaskStatusId==(int)SearchAgileObjectTypeEnum.Error)
+                {
+					await _projectManagementNotificationService.Value.SendNotifySuccessCreateProjectTaskAsync(
+					 "Внимание.",
+					$"Задача завершена ошибкой.",
 					NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);
 				}
 
@@ -897,17 +904,6 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 
                 return result;
             }
-
-            if(taskType == SearchAgileObjectTypeEnum.Error)
-            {
-                if (!string.IsNullOrEmpty(token))
-                {
-                    await _projectManagementNotificationService.Value.SendNotifySuccessCreateProjectTaskAsync(
-                     "Внимание.",
-                    $"Задача завершена ошибкой. {projectId}.",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, token);
-                }
-			}
 
             return result;
         }
