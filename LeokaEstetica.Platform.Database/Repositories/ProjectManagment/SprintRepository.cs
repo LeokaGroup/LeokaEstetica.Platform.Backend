@@ -472,7 +472,9 @@ internal sealed class SprintRepository : BaseRepository, ISprintRepository
 
          var query = "SELECT sprint_id, project_sprint_id, project_id " +
                      "FROM project_management.sprints " +
-                     "WHERE date_end <= NOW()";
+                     "WHERE date_end <= NOW() " +
+                     "AND date_start IS NOT NULL " +
+                     "AND date_end IS NOT NULL";
 
          var result = await connection.QueryAsync<SprintEndDateOutput>(query);
 
