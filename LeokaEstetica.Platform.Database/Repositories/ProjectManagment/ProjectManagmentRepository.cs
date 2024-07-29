@@ -462,7 +462,7 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
                      WHERE pt.project_id = @projectId) 
                     SELECT UNNEST(ARRAY [max_task_id.max_project_project_task_id, max_task_id.max_epic_project_epic_id,
                                  max_task_id.max_epic_tasks_project_task_id, max_task_id.max_user_story_task_id]) AS x 
-                    INTO temp_max_table 
+                    INTO TEMP TABLE temp_max_table 
                     FROM max_task_id;
 
                     SELECT MAX(x) 
@@ -2233,7 +2233,7 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         
         var query = "DROP TABLE IF EXISTS temp_epic_task_ids; " +
                     "SELECT project_task_id " +
-                    "INTO temp_epic_task_ids " +
+                    "INTO TEMP TABLE temp_epic_task_ids " +
                     "FROM project_management.epic_tasks " +
                     "WHERE epic_id = @epicId; " +
                     "SELECT t.task_id," +
@@ -2998,6 +2998,61 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         }
 
         return TaskDetailTypeEnum.Undefined;
+    }
+    
+    /// <inheritdoc />
+    public async Task<IDictionary<long, ProjectTaskTypeOutput>> GetProjectTaskStatusesAsync(long projectId,
+        IEnumerable<long> projectTaskIds, int templateId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@projectId", projectId);
+        parameters.Add("@projectTaskIds", projectTaskIds.AsList());
+        parameters.Add("@templateId", templateId);
+
+        var query = "SELECT t.project_task_id, " +
+                    "(SELECT tpmtst.status_name " +
+                    "FROM templates.project_management_task_status_templates AS tpmtst " +
+                    "INNER JOIN templates.project_management_task_status_intermediate_templates AS tpmtsit " +
+                    "ON tpmtst.status_id = tpmtsit.status_id " +
+                    "WHERE t.task_status_id = tpmtst.status_id " +
+                    "AND tpmtsit.template_id = @templateId " +
+                    "AND NOT tpmtst.is_system_status) AS TaskStatusName " +
+                    "FROM project_management.project_tasks AS t " +
+                    "WHERE t.project_task_id = ANY(@projectTaskIds) " +
+                    "AND t.project_id = @projectId";
+
+        var result = (await connection.QueryAsync<ProjectTaskTypeOutput>(query, parameters))
+            .ToDictionary(k => k.ProjectTaskId, v => v);
+
+        return result;
+    }
+
+    /// <inheritdoc />
+    public async Task<IDictionary<long, ProjectTaskTypeOutput>> GetProjectStoryStatusesAsync(long projectId,
+        IEnumerable<long> projectTaskIds)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@projectId", projectId);
+        parameters.Add("@projectTaskIds", projectTaskIds.AsList());
+
+        var query = "SELECT us.user_story_task_id AS project_task_id, " +
+                    "(SELECT status_name " +
+                    "FROM project_management.user_story_statuses " +
+                    "WHERE status_id = us.status_id) AS TaskStatusName " +
+                    "FROM project_management.user_stories AS us " +
+                    "INNER JOIN project_management.user_story_statuses AS uss " +
+                    "ON us.status_id = uss.status_id " +
+                    "WHERE us.project_id = @projectId " +
+                    "AND us.user_story_task_id = ANY(@projectTaskIds)";
+
+        var result = (await connection.QueryAsync<ProjectTaskTypeOutput>(query, parameters))
+            .ToDictionary(k => k.ProjectTaskId, v => v);
+
+        return result;
     }
 
     #endregion
