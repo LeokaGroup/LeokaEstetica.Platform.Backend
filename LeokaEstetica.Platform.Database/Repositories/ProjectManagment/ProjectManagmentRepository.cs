@@ -2236,7 +2236,6 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
                     "INTO temp_epic_task_ids " +
                     "FROM project_management.epic_tasks " +
                     "WHERE epic_id = @epicId; " +
-                    
                     "SELECT t.task_id," +
                     "t.name," +
                     "t.project_id," +
@@ -2255,7 +2254,7 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
                     "(SELECT tpmtst.status_name " +
                     "FROM templates.project_management_task_status_templates AS tpmtst " +
                     "INNER JOIN templates.project_management_task_status_intermediate_templates AS tpmtsit " +
-                    "ON tpmtst.task_status_id = tpmtsit.status_id " +
+                    "ON tpmtst.status_id = tpmtsit.status_id " +
                     "WHERE t.task_status_id = tpmtst.task_status_id " +
                     "AND tpmtsit.template_id = @templateId " +
                     "AND NOT tpmtst.is_system_status) AS StatusName " +
@@ -2902,6 +2901,25 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
                     "WHERE project_id = @projectId";
 
         var result = await connection.QueryFirstOrDefaultAsync<long>(query, parameters);
+
+        return result;
+    }
+
+    /// <inheritdoc />
+    public async Task<long> GetEpicIdByProjectEpicIdAsync(long projectId, long projectEpicId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@projectId", projectId);
+        parameters.Add("@projectEpicId", projectEpicId);
+
+        var query = "SELECT epic_id " +
+                    "FROM project_management.epics " +
+                    "WHERE project_epic_id = @projectEpicId " +
+                    "AND project_id = @projectId";
+        
+        var result = await connection.ExecuteScalarAsync<long>(query, parameters);
 
         return result;
     }

@@ -2,6 +2,7 @@ using AutoMapper;
 using LeokaEstetica.Platform.Base;
 using LeokaEstetica.Platform.Base.Filters;
 using LeokaEstetica.Platform.Core.Enums;
+using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Database.Abstractions.Template;
 using LeokaEstetica.Platform.Integrations.Abstractions.Discord;
 using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
@@ -42,6 +43,7 @@ public class ProjectManagmentController : BaseController
     private readonly Lazy<IDiscordService> _discordService;
     private readonly Lazy<IProjectManagmentTemplateRepository> _projectManagmentTemplateRepository;
     private readonly IProjectManagementTemplateService _projectManagementTemplateService;
+    private readonly IProjectManagmentRepository _projectManagmentRepository;
 
     /// <summary>
     /// Конструктор.
@@ -54,6 +56,7 @@ public class ProjectManagmentController : BaseController
     /// <param name="discordService">Сервис дискорда.</param>
     /// <param name="projectManagmentTemplateRepository">Репозиторий шаблонов проектов.</param>
     /// <param name="projectManagementTemplateService">Сервис шаблонов проекта.</param>
+    /// <param name="projectManagmentRepository">Репозиторий модуля УП</param>
     public ProjectManagmentController(IProjectService projectService,
         IProjectManagmentService projectManagmentService,
         IMapper mapper,
@@ -61,7 +64,8 @@ public class ProjectManagmentController : BaseController
         IUserService userService,
         Lazy<IDiscordService> discordService,
         Lazy<IProjectManagmentTemplateRepository> projectManagmentTemplateRepository,
-        IProjectManagementTemplateService projectManagementTemplateService)
+        IProjectManagementTemplateService projectManagementTemplateService,
+        IProjectManagmentRepository projectManagmentRepository)
     {
         _projectService = projectService;
         _projectManagmentService = projectManagmentService;
@@ -71,6 +75,7 @@ public class ProjectManagmentController : BaseController
         _discordService = discordService;
         _projectManagmentTemplateRepository = projectManagmentTemplateRepository;
         _projectManagementTemplateService = projectManagementTemplateService;
+        _projectManagmentRepository = projectManagmentRepository;
     }
 
     /// <summary>
@@ -466,7 +471,7 @@ public class ProjectManagmentController : BaseController
         }
 
         await _projectManagmentService.CreateProjectTagAsync(projectTagInput.TagName,
-            projectTagInput.TagDescription, projectTagInput.ProjectId, GetUserName());
+            projectTagInput.TagDescription, projectTagInput.ProjectId, GetUserName(), CreateTokenFromHeader());
     }
 
     /// <summary>
@@ -1673,7 +1678,7 @@ public class ProjectManagmentController : BaseController
 
         await _projectManagmentService.IncludeTaskEpicAsync(
             includeTaskEpicInput.EpicId.GetProjectTaskIdFromPrefixLink(), includeTaskEpicInput.ProjectTaskIds,
-            GetUserName(), CreateTokenFromHeader());
+            GetUserName(), CreateTokenFromHeader(), includeTaskEpicInput.ProjectId);
     }
 
     /// <summary>
@@ -1690,7 +1695,27 @@ public class ProjectManagmentController : BaseController
     public async Task<IEnumerable<UserStoryStatusOutput>> GetUserStoryStatusesAsync()
     {
         var items = await _projectManagmentService.GetUserStoryStatusesAsync();
+        
+        // TODO: Не нужен маппинг будет когда заменим на DTO.
         var result = _mapper.Map<IEnumerable<UserStoryStatusOutput>>(items);
+
+        return result;
+    }
+    
+    /// <summary>
+    /// Метод получает список статусов эпика для выбора.
+    /// </summary>
+    /// <returns>Список статусов эпика.</returns>
+    [HttpGet]
+    [Route("epic-statuses")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<UserStoryStatusOutput>))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<IEnumerable<EpicStatusOutput>> GetEpicStatusesAsync()
+    {
+        var result = await _projectManagmentRepository.GetEpicStatusesAsync();
 
         return result;
     }

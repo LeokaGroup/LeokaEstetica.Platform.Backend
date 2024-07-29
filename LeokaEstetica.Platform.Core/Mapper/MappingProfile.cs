@@ -27,6 +27,7 @@ using LeokaEstetica.Platform.Models.Dto.Output.ProjectTeam;
 using LeokaEstetica.Platform.Models.Dto.Output.Refunds;
 using LeokaEstetica.Platform.Models.Dto.Output.Resume;
 using LeokaEstetica.Platform.Models.Dto.Output.Search.Project;
+using LeokaEstetica.Platform.Models.Dto.Output.Search.ProjectManagement;
 using LeokaEstetica.Platform.Models.Dto.Output.Subscription;
 using LeokaEstetica.Platform.Models.Dto.Output.Template;
 using LeokaEstetica.Platform.Models.Dto.Output.Ticket;
@@ -95,7 +96,14 @@ public class MappingProfile : Profile
 
         CreateMap<ProjectStageEntity, ProjectStageOutput>();
 
-        CreateMap<ProjectVacancyEntity, ProjectVacancyOutput>();
+        CreateMap<ProjectVacancyEntity, ProjectVacancyOutput>()
+            .ForMember(p => p.VacancyName,
+                p => p.MapFrom(src => src.UserVacancy.VacancyName))
+            .ForMember(p => p.VacancyText,
+                p => p.MapFrom(src => src.UserVacancy.VacancyText))
+            .ForMember(p => p.ProjectVacancyId,
+                p => p.MapFrom(src => src.ProjectVacancyId));
+        
 
         CreateMap<UserVacancyOutput, UserVacancyEntity>();
 
@@ -229,7 +237,6 @@ public class MappingProfile : Profile
             .ForMember(p => p.Created, p => p.MapFrom(src => src.CreatedAt))
             .ForMember(p => p.TaskId, p => p.MapFrom(src => src.EpicId));
         
-        // CreateMap<HistoryEntity, ProjectManagmentTaskOutput>();
         CreateMap<UserStoryOutput, ProjectManagmentTaskOutput>()
             .ForMember(p => p.Name, p => p.MapFrom(src => src.StoryName))
             .ForMember(p => p.AuthorId, p => p.MapFrom(src => src.CreatedBy))
@@ -264,6 +271,10 @@ public class MappingProfile : Profile
         
         CreateMap<ProjectManagementRoleRedis, ProjectManagementRoleOutput>();
         CreateMap<ProjectManagementRoleOutput, ProjectManagementRoleRedis>();
+        CreateMap<ProjectManagmentTaskOutput, SearchAgileObjectOutput>();
+        CreateMap<SearchAgileObjectOutput, ProjectManagmentTaskOutput>();
+        CreateMap<EpicTaskOutput, ProjectManagmentTaskOutput>()
+            .ForMember(p => p.TaskStatusName, p => p.MapFrom(src => src.StatusName));
     }
     
     /// <summary>

@@ -117,7 +117,8 @@ public interface IProjectManagmentService
     /// <param name="tagDescription">Описание метки (тега).</param>
     /// <param name="projectId">Id проекта.</param>
     /// <param name="account">Аккаунт.</param>
-    Task CreateProjectTagAsync(string tagName, string tagDescription, long projectId, string account);
+    /// <param name="token">Токен.</param>
+    Task CreateProjectTagAsync(string tagName, string tagDescription, long projectId, string account, string token);
 
     /// <summary>
     /// Метод получает список статусов для выбора для создания нового статуса.
@@ -427,11 +428,13 @@ public interface IProjectManagmentService
     /// <summary>
     /// Метод добавляет задачу в эпик.
     /// </summary>
-    /// <param name="epicId">Id эпика.</param>
+    /// <param name="projectEpicId">Id эпика в рамках проекта.</param>
     /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
     /// <param name="account">Аккаунт.</param>
     /// <param name="token">Токен.</param>
-    Task IncludeTaskEpicAsync(long epicId, IEnumerable<string> projectTaskIds, string account, string token);
+    /// <param name="projectId">Id проекта.</param>
+    Task IncludeTaskEpicAsync(long projectEpicId, IEnumerable<string> projectTaskIds, string account, string token,
+        long projectId);
 
     /// <summary>
     /// Метод получает список статусов истории для выбора.

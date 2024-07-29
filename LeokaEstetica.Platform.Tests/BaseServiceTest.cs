@@ -210,7 +210,8 @@ internal class BaseServiceTest
 
         var accessModerationRepository = new AccessModerationRepository(pgContext);
 
-        AccessModerationService = new AccessModerationService(null, accessModerationRepository, userRepository);
+        AccessModerationService = new AccessModerationService(null, accessModerationRepository, userRepository,
+            discordService);
 
         ProjectModerationRepository = new ProjectModerationRepository(pgContext);
 
