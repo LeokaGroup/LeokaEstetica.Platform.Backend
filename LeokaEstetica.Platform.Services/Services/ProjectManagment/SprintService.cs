@@ -10,6 +10,7 @@ using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Integrations.Abstractions.Discord;
 using LeokaEstetica.Platform.Models.Dto.Base.ProjectManagement;
 using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
+using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagement.Output;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.Template;
 using LeokaEstetica.Platform.Models.Enums;
@@ -120,6 +121,9 @@ internal sealed class SprintService : ISprintService
                                                     $"ProjectId: {projectId}.");
             }
             
+            // Заполняем доп.поля деталей спринта.
+            await ModificateSprintDetailsAsync(result);
+            
             var userId = await _userRepository.GetUserByEmailAsync(account);
 
             if (userId <= 0)
@@ -134,7 +138,7 @@ internal sealed class SprintService : ISprintService
                 projectId, userId);
             var projectSettingsItems = projectSettings?.AsList();
 
-            if (projectSettingsItems is null || !projectSettingsItems.Any())
+            if (projectSettingsItems is null || projectSettingsItems.Count == 0)
             {
                 throw new InvalidOperationException("Ошибка получения настроек проекта. " +
                                                     $"ProjectId: {projectId}. " +
@@ -150,7 +154,7 @@ internal sealed class SprintService : ISprintService
             var templateStatusesItems = _mapper.Map<IEnumerable<ProjectManagmentTaskTemplateResult>>(items);
             var statuses = templateStatusesItems?.AsList();
 
-            if (statuses is null || !statuses.Any())
+            if (statuses is null || statuses.Count == 0)
             {
                 throw new InvalidOperationException("Не удалось получить набор статусов шаблона." +
                                                     $" TemplateId: {templateId}." +
@@ -160,32 +164,8 @@ internal sealed class SprintService : ISprintService
             // Проставляем Id шаблона статусам.
             await _projectManagementTemplateService.SetProjectManagmentTemplateIdsAsync(statuses);
 
-            // Получаем выбранную пользователем стратегию представления.
-            var strategy = await _projectManagmentRepository.GetProjectUserStrategyAsync(projectId, userId);
-            
-            // Добавляем в результат статусы.
-            var projectManagmentTaskStatuses = statuses.First().ProjectManagmentTaskStatusTemplates.AsList();
-
-            // Получаем задачи спринта, если они есть.
-            // Это могут быть задачи, ошибки, истории, эпики - все, что может входить в спринт.
-            var sprintTasks = (await _sprintRepository.GetProjectSprintTasksAsync(projectId, projectSprintId,
-                strategy!))?.AsList();
-
-            if (sprintTasks is not null && sprintTasks.Any() && projectManagmentTaskStatuses.Any())
-            {
-                // Заполняем статусы задачами.
-                await _distributionStatusTaskService.Value.DistributionStatusTaskAsync(projectManagmentTaskStatuses,
-                    sprintTasks, ModifyTaskStatuseTypeEnum.Sprint, projectId, null, strategy!);
-
-                // Делаем плоский вид, чтобы отобразить в обычной таблице на фронте.
-                result.SprintTasks = projectManagmentTaskStatuses
-                    .SelectMany(x => (x.ProjectManagmentTasks ?? new List<ProjectManagmentTaskOutput>())
-                        .Select(y => y)
-                        .OrderBy(o => o.Created));
-            }
-            
-            // Заполняем доп.поля деталей спринта.
-            await ModificateSprintDetailsAsync(result);
+            // Получаем задачи спринта.
+            result.SprintTasks = await GetSprintTasksAsync(statuses, templateId, projectId, userId, projectSprintId);
 
             return result;
         }
@@ -771,6 +751,123 @@ internal sealed class SprintService : ISprintService
         }
 
         return sprint;
+    }
+
+    /// <summary>
+    /// Метод получает задачи спринта и наполняет результат спринта.
+    /// </summary>
+    /// <param name="statuses">Список статусов.</param>
+    /// <param name="templateId">Id шаблона проекта.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="userId">Id пользователя.</param>
+    /// <param name="projectSprintId">Id спринта в рамках проекта.</param>
+    /// <returns>Список задач спринта.</returns>
+    private async Task<IEnumerable<ProjectManagmentTaskOutput>> GetSprintTasksAsync(
+        List<ProjectManagmentTaskTemplateResult> statuses, int templateId, long projectId, long userId,
+        long projectSprintId)
+    {
+        // Получаем выбранную пользователем стратегию представления.
+        var strategy = await _projectManagmentRepository.GetProjectUserStrategyAsync(projectId, userId);
+            
+        // Добавляем в результат статусы.
+        var projectManagmentTaskStatuses = statuses.First().ProjectManagmentTaskStatusTemplates.AsList();
+
+        if (projectManagmentTaskStatuses.Count == 0)
+        {
+            return Enumerable.Empty<ProjectManagmentTaskOutput>();
+        }
+
+        // Получаем задачи спринта, если они есть.
+        // Это могут быть задачи, ошибки, истории, эпики - все, что может входить в спринт.
+        var sprintTasks = (await _sprintRepository.GetProjectSprintTasksAsync(projectId, projectSprintId,
+            strategy!, templateId))?.OrderBy(o => o.Created).AsList();
+        
+        if (sprintTasks is null || sprintTasks.Count == 0)
+        {
+            return Enumerable.Empty<ProjectManagmentTaskOutput>();
+        }
+        
+        // Заполняем статусы задачами.
+        await _distributionStatusTaskService.Value.DistributionStatusTaskAsync(projectManagmentTaskStatuses,
+            sprintTasks, ModifyTaskStatuseTypeEnum.Sprint, projectId, null, strategy!);
+
+        // Заполняем задачи спринта.
+        var mapSprintTasks = _mapper.Map<List<ProjectManagmentTaskOutput>>(sprintTasks.OrderBy(o => o.Created));
+        
+        // Готовим списки типов задач для заполнения словарей (эпик не может входить в спринт).
+        var taskTypeAndErrorIds = new List<long>();
+        var storyTypeIds = new List<long>();
+
+        // Если есть задачи с типом "Задача".
+        if (mapSprintTasks.Any(x => x.TaskTypeId == (int)ProjectTaskTypeEnum.Task))
+        {
+            taskTypeAndErrorIds.AddRange(mapSprintTasks
+                .Where(x => x.TaskTypeId == (int)ProjectTaskTypeEnum.Task)
+                .Select(x => x.ProjectTaskId));
+        }
+
+        // Если есть задачи с типом "Ошибка".
+        if (mapSprintTasks.Any(x => x.TaskTypeId == (int)ProjectTaskTypeEnum.Error))
+        {
+            taskTypeAndErrorIds.AddRange(mapSprintTasks
+                .Where(x => x.TaskTypeId == (int)ProjectTaskTypeEnum.Error)
+                .Select(x => x.ProjectTaskId));
+        }
+
+        // Если есть задачи с типом "История".
+        if (mapSprintTasks.Any(x => x.TaskTypeId == (int)ProjectTaskTypeEnum.Story))
+        {
+            storyTypeIds.AddRange(mapSprintTasks
+                .Where(x => x.TaskTypeId == (int)ProjectTaskTypeEnum.Story)
+                .Select(x => x.ProjectTaskId));
+        }
+
+        IDictionary<long, ProjectTaskTypeOutput>? taskTypeAndErrorDict = null;
+
+        // Заполняем словарь задач и ошибок.
+        if (taskTypeAndErrorIds.Count > 0)
+        {
+            taskTypeAndErrorDict = await _projectManagmentRepository.GetProjectTaskStatusesAsync(projectId,
+                taskTypeAndErrorIds, templateId);
+        }
+        
+        IDictionary<long, ProjectTaskTypeOutput>? storyTypeDict = null;
+
+        // Заполняем словарь историй.
+        if (storyTypeIds.Count > 0)
+        {
+            storyTypeDict = await _projectManagmentRepository.GetProjectStoryStatusesAsync(projectId, storyTypeIds);
+        }
+        
+        // Получаем имена исполнителей задач.
+        var executors = await _userRepository.GetExecutorNamesByExecutorIdsAsync(
+            mapSprintTasks.Select(x => x.ExecutorId));
+
+        if (executors.Count == 0)
+        {
+            throw new InvalidOperationException("Не удалось получить исполнителей задач эпика.");
+        }
+
+        // Заполняем задачи спринта доп.полями.
+        foreach (var st in mapSprintTasks)
+        {
+            // Заполняем исполнителей задач спринта.
+            st.Executor ??= new Executor();
+            st.Executor.ExecutorName = executors.TryGet(st.ExecutorId)?.FullName;
+            
+            // Заполняем статус задач спринта.
+            if (st.TaskTypeId is (int)ProjectTaskTypeEnum.Task or (int)ProjectTaskTypeEnum.Error)
+            {
+                st.TaskStatusName = taskTypeAndErrorDict?.TryGet(st.ProjectTaskId)?.TaskStatusName;
+            }
+            
+            if (st.TaskTypeId == (int)ProjectTaskTypeEnum.Story)
+            {
+                st.TaskStatusName = storyTypeDict?.TryGet(st.ProjectTaskId)?.TaskStatusName;
+            }
+        }
+
+        return mapSprintTasks;
     }
 
     #endregion
