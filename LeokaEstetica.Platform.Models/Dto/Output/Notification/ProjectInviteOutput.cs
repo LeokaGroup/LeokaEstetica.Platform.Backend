@@ -1,4 +1,6 @@
-﻿namespace LeokaEstetica.Platform.Models.Dto.Output.Notification;
+﻿using System.Globalization;
+
+namespace LeokaEstetica.Platform.Models.Dto.Output.Notification;
 
 /// <summary>
 /// Класс выходной модели приглашений в проект.
@@ -24,4 +26,9 @@ public class ProjectInviteOutput
     /// Дата отправки приглашения.
     /// </summary>
     public DateTime CreatedAt { get; set; }
+
+    /// <summary>
+    /// Отображаемая дата отправки приглашения.
+    /// </summary>
+    public string DisplayCreatedAt => CreatedAt.ToString("G", CultureInfo.GetCultureInfo("ru"));
 }
