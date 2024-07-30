@@ -2388,7 +2388,7 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         parameters.Add("@userId", userId);
 
         var query = "SELECT up.\"ProjectId\", " +
-                    "COALESCE(up.\"ProjectManagementName\", 'Без названия') AS ProjectManagementName, " +
+                    "COALESCE(up.\"ProjectManagementName\", 'Проект без названия') AS ProjectManagementName, " +
                     "pw.workspace_id " +
                     "FROM \"Projects\".\"UserProjects\" AS up " +
                     "INNER JOIN project_management.workspaces AS pw " +
