@@ -2293,26 +2293,6 @@ internal sealed class ProjectService : IProjectService
                 // Без тегов не страшно отобразить проекты.
                 return projects;
             }
-
-            // Такая подписка не дает тегов.
-            if (userSubscription.ObjectId < 3)
-            {
-                continue;
-            }
-            
-            // Если подписка бизнес.
-            if (userSubscription.ObjectId == 3)
-            {
-                p.TagColor = "warning";
-                p.TagValue = "Бизнес";
-            }
-        
-            // Если подписка профессиональный.
-            if (userSubscription.ObjectId == 4)
-            {
-                p.TagColor = "warning";
-                p.TagValue = "Профессиональный";
-            }   
         }
 
         return projects;
