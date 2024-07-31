@@ -13,9 +13,15 @@ public class UserProjectOutput
     public string ProjectName { get; set; }
 
     /// <summary>
-    /// Описание проекта.
+    /// Полное описание проекта.
     /// </summary>
-    public string ProjectDetails { get; set; }
+    public string ProjectDetailsFull { get; set; }
+
+    /// <summary>
+    /// Короткое описание проекта.
+    /// </summary>
+    public string ProjectDetailsLimited { get; set; }
+
 
     /// <summary>
     /// Изображение проекта.
