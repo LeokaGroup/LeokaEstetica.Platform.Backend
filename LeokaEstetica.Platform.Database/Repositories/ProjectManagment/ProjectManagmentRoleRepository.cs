@@ -42,7 +42,7 @@ internal sealed class ProjectManagmentRoleRepository : BaseRepository, IProjectM
 
             var queryWithParameterProjectId = "SELECT pmr.role_id, " +
                                               "pmr.organization_id," +
-                                              "pmr.project_member_id," +
+                                              "pmr.project_member_id AS organization_member_id," +
                                               "pr.role_name," +
                                               "pr.role_sys_name," +
                                               "pmr.is_enabled," +
@@ -72,7 +72,7 @@ internal sealed class ProjectManagmentRoleRepository : BaseRepository, IProjectM
 
             var queryWithParameterUser = "SELECT pmr.role_id, " +
                                          "pmr.organization_id," +
-                                         "pmr.project_member_id," +
+                                         "pmr.project_member_id AS organization_member_id," +
                                          "pr.role_name," +
                                          "pr.role_sys_name," +
                                          "pmr.is_enabled," +
