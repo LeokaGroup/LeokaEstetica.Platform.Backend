@@ -332,6 +332,10 @@ internal sealed class ProjectService : IProjectService
             // Добавляем новый проект в общее пространство компании.
             await _projectManagmentRepository.AddProjectWorkSpaceAsync(projectId, companyId);
             
+            // Заводим роли владельцу проекта.
+            // Роли участника команды проекта присваиваются при принятии приглашения в проект.
+            await _projectManagementSettingsRepository.AddProjectMemberRolesAsync(companyId, userId);
+            
             // Заводим для проекта wiki и ознакомительную страницу.
             await _wikiTreeRepository.CreateProjectWikiAsync(projectId, userId, projectName);
 
