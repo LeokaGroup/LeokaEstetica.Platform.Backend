@@ -138,6 +138,15 @@ internal sealed class ProjectModerationService : IProjectModerationService
                 var ex = new NotFoundUserIdByAccountException(account);
                 throw ex;
             }
+            
+            //Проверяем аппрувлен ли уже проект
+            if (_projectModerationRepository.IsProjectApprovedAsync(projectId).Result)
+            {
+                return new ApproveProjectOutput()
+                {
+                    IsSuccess = false   
+                };
+            }
 
             var result = new ApproveProjectOutput
             {
