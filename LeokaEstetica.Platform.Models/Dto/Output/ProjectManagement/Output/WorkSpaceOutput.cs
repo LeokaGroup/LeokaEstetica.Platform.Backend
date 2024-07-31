@@ -19,4 +19,14 @@ public class WorkSpaceOutput
     /// Название проекта из УП.
     /// </summary>
     public string? ProjectManagementName { get; set; }
+
+    /// <summary>
+    /// Признак владельца проекта.
+    /// </summary>
+    public bool IsOwner { get; set; }
+
+    /// <summary>
+    /// Признак уже настроенного названия проекта и префикса (может делать лишь владелец).
+    /// </summary>
+    public bool IsSetupProjectNameAndPrefix { get; set; }
 }
