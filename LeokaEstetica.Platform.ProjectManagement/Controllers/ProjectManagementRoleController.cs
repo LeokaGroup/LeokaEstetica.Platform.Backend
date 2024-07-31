@@ -98,7 +98,7 @@ public class ProjectManagementRoleController : BaseController
             {
                 exceptions.Add(new InvalidOperationException(err.ErrorMessage));
             }
-            
+
             var ex = new AggregateException(exceptions);
             _logger.LogError(ex, "Ошибки при обновлении ролей.");
 
