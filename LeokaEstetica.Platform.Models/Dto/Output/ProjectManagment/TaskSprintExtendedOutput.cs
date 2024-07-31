@@ -10,12 +10,12 @@ public class TaskSprintExtendedOutput : TaskSprintOutput
     /// <summary>
     /// Дата начала спринта.
     /// </summary>
-    public DateTime? DateStart { get; set; }
+    public string? DateStart { get; set; }
 
     /// <summary>
     /// Дата окончания спринта.
     /// </summary>
-    public DateTime? DateEnd { get; set; }
+    public string? DateEnd { get; set; }
 
     /// <summary>
     /// Описание спринта.
