@@ -249,29 +249,6 @@ internal sealed class ProjectService : IProjectService
                                                     "Подписка была NULL или невалидная." +
                                                     $"#1 Ошибка в {nameof(ProjectService)}");
             }
-            
-            // Получаем тариф, на который оформлена подписка у пользователя.
-            var fareRule = await _fareRuleRepository.GetByIdAsync(userSubscription.ObjectId);
-            
-            // TODO: В будущем выпилить это, так как мы убираем лимиты на проекты и вакансии.
-            // Проверяем доступно ли пользователю создание проекта.
-            // var availableCreateProjectLimit = await _availableLimitsService.CheckAvailableCreateProjectAsync(userId,
-            //     fareRule.Name);
-            //
-            // // Если лимит по тарифу превышен.
-            // if (!availableCreateProjectLimit)
-            // {
-            //     var ex = new InvalidOperationException("Превышен лимит проектов по тарифу. " +
-            //                                            $"UserId: {userId}. " +
-            //                                            $"Тариф: {fareRule.Name}");
-            //
-            //     await _projectNotificationsService.SendNotificationWarningLimitFareRuleProjectsAsync(
-            //         "Что то пошло не так",
-            //         "Превышен лимит проектов по тарифу.",
-            //         NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
-            //
-            //     throw ex;
-            // }
 
             var projectName = createProjectInput.ProjectName;
 
@@ -354,6 +331,10 @@ internal sealed class ProjectService : IProjectService
 
             // Добавляем новый проект в общее пространство компании.
             await _projectManagmentRepository.AddProjectWorkSpaceAsync(projectId, companyId);
+            
+            // Заводим роли владельцу проекта.
+            // Роли участника команды проекта присваиваются при принятии приглашения в проект.
+            await _projectManagementSettingsRepository.AddProjectMemberRolesAsync(companyId, userId);
             
             // Заводим для проекта wiki и ознакомительную страницу.
             await _wikiTreeRepository.CreateProjectWikiAsync(projectId, userId, projectName);
