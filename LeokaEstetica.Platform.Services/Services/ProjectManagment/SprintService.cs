@@ -89,15 +89,13 @@ internal sealed class SprintService : ISprintService
     #region Публичные методы
 
     /// <inheritdoc />
-    public async Task<IEnumerable<TaskSprintExtendedModelOutput>> GetSprintsAsync(long projectId)
+    public async Task<IEnumerable<TaskSprintExtendedOutput>> GetSprintsAsync(long projectId)
     {
         try
         {
-            var sprints = await _sprintRepository.GetSprintsAsync(projectId);
+            var result = await _sprintRepository.GetSprintsAsync(projectId);
 
-            var result = _mapper.Map<IEnumerable<TaskSprintExtendedModelOutput>>(sprints);
-            
-            return result ?? Enumerable.Empty<TaskSprintExtendedModelOutput>();
+            return result ?? Enumerable.Empty<TaskSprintExtendedOutput>();
         }
         
         catch (Exception ex)
