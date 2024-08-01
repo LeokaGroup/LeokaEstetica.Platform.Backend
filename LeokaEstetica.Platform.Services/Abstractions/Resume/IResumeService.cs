@@ -19,7 +19,7 @@ public interface IResumeService
     /// </summary>
     /// <param name="resumeId">Id анкеты пользователя.</param>
     /// <returns>Данные анкеты.</returns>
-    Task<UserInfoOutput> GetResumeAsync(long resumeId);
+    Task<UserInfoOutput> GetResumeAsync(long resumeId,string account);
     
     /// <summary>
     /// Метод получает список замечаний анкеты, если они есть.

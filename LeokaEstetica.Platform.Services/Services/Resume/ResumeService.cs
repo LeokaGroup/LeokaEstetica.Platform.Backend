@@ -1,7 +1,9 @@
+using System.Data;
 using System.Runtime.CompilerServices;
 using AutoMapper;
 using LeokaEstetica.Platform.Access.Abstractions.User;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
+using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.FareRule;
@@ -137,11 +139,48 @@ internal sealed class ResumeService : IResumeService
     /// </summary>
     /// <param name="resumeId">Id анкеты пользователя.</param>
     /// <returns>Данные анкеты.</returns>
-    public async Task<UserInfoOutput> GetResumeAsync(long resumeId)
+    public async Task<UserInfoOutput> GetResumeAsync(long resumeId, string account)
     {
         try
         {
+            //Проверяем наличие резюме
             var result = await _resumeRepository.GetResumeAsync(resumeId);
+
+            if (result == null)
+            {
+                return new UserInfoOutput
+                {
+                    IsAccess = false,
+                    IsSuccess = false,
+                };
+            }
+
+            //Проверяем наличие пользователя
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+
+            //Проверяем доступ к анкете
+            var isOwner = await _resumeRepository.CheckResumeOwnerAsync(result.ProfileInfoId, userId);
+
+            var resumeModeration = await _resumeModerationRepository.GetResumeModerationByProfileInfosIdsAsync(result.ProfileInfoId);
+
+			//проверка, чтобы анкета не была на модерации -если ссылку вбил не владелец анкеты
+
+			if (!isOwner && resumeModeration != null &&
+                (resumeModeration.ModerationStatusId == (int)ResumeModerationStatusEnum.ModerationResume)) 
+            {
+                return new UserInfoOutput
+                {
+                    IsAccess=false,
+                    IsSuccess=false,
+                };
+
+			}
 
             // Наполняем результат.
             await CreateModifyUserResult(result);
