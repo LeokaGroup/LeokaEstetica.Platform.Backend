@@ -106,12 +106,20 @@ internal sealed class ProjectModerationRepository : IProjectModerationRepository
         {
             throw new InvalidOperationException($"Не удалось найти проект. ProjectId = {projectId}");
         }
-
-        // Добавляем проект в каталог.
-        await _pgContext.CatalogProjects.AddAsync(new CatalogProjectEntity
+        
+        //Проверяем есть ли уже проект в таблице
+        var catalogProjects = await _pgContext.CatalogProjects
+            .Where(cpe => cpe.ProjectId == projectId)
+            .ToListAsync();
+        
+        if (catalogProjects.Count == 0)
         {
-            ProjectId = projectId
-        });
+            // Добавляем проект в каталог.
+            await _pgContext.CatalogProjects.AddAsync(new CatalogProjectEntity
+            {
+                ProjectId = projectId
+            });
+        }
 
         await _pgContext.SaveChangesAsync();
 
