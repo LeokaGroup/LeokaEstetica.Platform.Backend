@@ -29,13 +29,42 @@ internal sealed class ProjectModerationRepository : IProjectModerationRepository
         _pgContext = pgContext;
     }
 
-    #region Публичные методы.
+	#region Публичные методы.
 
-    /// <summary>
-    /// Метод получает список проектов для модерации.
-    /// </summary>
-    /// <returns>Список проектов.</returns>
-    public async Task<IEnumerable<ModerationProjectEntity>> ProjectsModerationAsync()
+	/// <summary>
+	/// Метод получает проект на модерации.
+	/// </summary>
+	/// /// <param name="projectId">Id проекта.</param>
+	public async Task<ModerationProjectEntity> GetProjectModerationAsync(long projectId)
+	{
+		var result = await _pgContext.ModerationProjects
+			.Include(up => up.UserProject)
+			.Where(x=>x.ProjectId==projectId)
+			.Select(p => new ModerationProjectEntity
+			{
+				ModerationId = p.ModerationId,
+				ProjectId = p.ProjectId,
+				UserProject = new UserProjectEntity
+				{
+					ProjectName = p.UserProject.ProjectName,
+					DateCreated = p.UserProject.DateCreated
+				},
+				DateModeration = p.DateModeration,
+                ModerationStatusId=p.ModerationStatusId,
+                ModerationStatus=p.ModerationStatus
+                
+                
+			})
+			.FirstOrDefaultAsync();
+
+		return result;
+	}
+
+	/// <summary>
+	/// Метод получает список проектов для модерации.
+	/// </summary>
+	/// <returns>Список проектов.</returns>
+	public async Task<IEnumerable<ModerationProjectEntity>> ProjectsModerationAsync()
     {
         var result = await _pgContext.ModerationProjects
             .Include(up => up.UserProject)
