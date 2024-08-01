@@ -290,7 +290,7 @@ internal sealed class ProjectManagementSettingsRepository : BaseRepository, IPro
     }
 
     /// <inheritdoc/>
-    public async Task AddProjectMemberRolesAsync(long organizationId, long memberId)
+    public async Task AddCompanyMemberRolesAsync(long organizationId, long memberId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
         
