@@ -652,7 +652,7 @@ internal sealed class ProjectNotificationsService : IProjectNotificationsService
             var organizationId = await _projectManagmentRepository.GetCompanyIdByProjectIdAsync(projectId);
             
             // Добавляем участнику проекта роли.
-            await _projectManagementSettingsRepository.Value.AddProjectMemberRolesAsync(organizationId,
+            await _projectManagementSettingsRepository.Value.AddCompanyMemberRolesAsync(organizationId,
                 result.MemberId);
 
             // Отправляем уведомление в приложении о принятом приглашении в проект.
