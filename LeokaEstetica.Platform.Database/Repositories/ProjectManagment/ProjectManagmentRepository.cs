@@ -1564,30 +1564,12 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         parameters.Add("@userId", userId);
         parameters.Add("@strategy", new Enum(strategySysName));
 
-        var existsQuery = "SELECT EXISTS (SELECT strategy_id " +
-                          "FROM settings.project_user_strategy " +
-                          "WHERE project_id = @projectId " +
-                          "AND user_id = @userId) ";
-        var existsSetting = await connection.QueryFirstOrDefaultAsync<bool>(existsQuery, parameters);
-
-        // Такой настройки нет, добавляем.
-        if (!existsSetting)
-        {
-            var queryInsert = "INSERT INTO settings.project_user_strategy (project_id, user_id, strategy) " +
-                              "VALUES (@projectId, @userId, @strategy)";
-
-            await connection.ExecuteAsync(queryInsert, parameters);
-
-            return;
-        }
-
-        // Такая настройка есть, обновляем.
-        var queryUpdate = "UPDATE settings.project_user_strategy " +
-                                 "SET project_id = @projectId, " +
-                                 "user_id = @userId, " +
-                                 "strategy = @strategy";
-                                     
-        await connection.ExecuteAsync(queryUpdate, parameters);
+        var query = "INSERT INTO settings.project_user_strategy (project_id, user_id, strategy)" +
+                    "VALUES (@projectId, @userId, @strategy)" +
+                    "ON CONFLICT (project_id, user_id) " +
+                    "DO UPDATE SET strategy = @strategy ";
+        
+        await connection.ExecuteAsync(query, parameters);
     }
 
     /// <inheritdoc />
