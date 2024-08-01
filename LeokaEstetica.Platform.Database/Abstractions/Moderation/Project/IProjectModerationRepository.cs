@@ -15,13 +15,6 @@ public interface IProjectModerationRepository
     Task<IEnumerable<ModerationProjectEntity>> ProjectsModerationAsync();
 
     /// <summary>
-    /// Метод проверяет если ли аппрув у проекта.
-    /// </summary>
-    /// <param name="projectId">Id проекта.</param>
-    /// <returns>Признак наличия аппрува.</returns>
-    Task<bool> IsProjectApprovedAsync(long projectId);
-
-    /// <summary>
     /// Метод одобряет проект на модерации.
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
