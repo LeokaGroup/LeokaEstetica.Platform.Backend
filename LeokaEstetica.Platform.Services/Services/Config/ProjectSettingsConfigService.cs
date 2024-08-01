@@ -174,6 +174,17 @@ internal sealed class ProjectSettingsConfigService : IProjectSettingsConfigServi
                                     
                 return result;
             }
+            
+            // Если не были зафиксированы настройки и владелец, то требуем заполнить настройки проекта.
+            if (isOwner)
+            {
+                result.IsCommitProjectSettings = false;
+                result.ProjectId = projectId.Value;
+                result.IsDefaultSpaceUrl = false;
+                result.ProjectManagmentSpaceUrl = string.Concat(redirectUrl, $"?projectId={projectId.Value}");
+
+                return result;
+            }
 
             throw new InvalidOperationException(
                 "Не сработал ни один из кейсов проверки фиксации настроек проекта. " +

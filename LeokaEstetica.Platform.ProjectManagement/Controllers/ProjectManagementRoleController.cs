@@ -28,8 +28,9 @@ public class ProjectManagementRoleController : BaseController
     /// <param name="projectManagmentRoleService">Сервис ролей модуля УП.</param>
     /// <param name="projectManagmentRoleRepository">Репозиторий ролей пользователей.</param>
     /// <param name="logger">Логгер.</param>
-    public ProjectManagementRoleController(IProjectManagmentRoleService projectManagmentRoleService, Lazy<IProjectManagmentRoleRepository> projectManagmentRoleRepository,
-     ILogger<ProjectManagementRoleController> logger)
+    public ProjectManagementRoleController(IProjectManagmentRoleService projectManagmentRoleService,
+        Lazy<IProjectManagmentRoleRepository> projectManagmentRoleRepository,
+        ILogger<ProjectManagementRoleController> logger)
     {
         _projectManagmentRoleService = projectManagmentRoleService;
         _projectManagmentRoleRepository = projectManagmentRoleRepository;
@@ -71,12 +72,7 @@ public class ProjectManagementRoleController : BaseController
     {
         var result = await _projectManagmentRoleRepository.Value.GetUserRolesAsync(null, projectId);
 
-        if (result is null)
-        {
-            return Enumerable.Empty<ProjectManagementRoleOutput>();
-        }
-
-        return result;
+        return result ?? Enumerable.Empty<ProjectManagementRoleOutput>();
     }
 
     /// <summary>
@@ -102,7 +98,7 @@ public class ProjectManagementRoleController : BaseController
             {
                 exceptions.Add(new InvalidOperationException(err.ErrorMessage));
             }
-            
+
             var ex = new AggregateException(exceptions);
             _logger.LogError(ex, "Ошибки при обновлении ролей.");
 

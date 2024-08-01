@@ -96,5 +96,10 @@ public interface IResumeModerationRepository
     Task<IEnumerable<ModerationResumeEntity>> GetResumesModerationByProfileInfosIdsAsync(
         IEnumerable<long> profileInfosIds);
 
+	/// <summary>
+	/// Метод получает анкету на модерации по Id анкеты пользователя.
+	/// </summary>
+	/// <param name="userIds">Id анкеты пользователей.</param>
+	public Task<ModerationResumeEntity> GetResumeModerationByProfileInfosIdsAsync(long profileInfosIds);
 
 }

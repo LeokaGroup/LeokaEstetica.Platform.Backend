@@ -208,7 +208,11 @@ internal sealed class ProjectManagementSettingsRepository : BaseRepository, IPro
                     "ON pi.\"UserId\" = u.\"UserId\" " +
                     "WHERE op.project_id = @projectId " +
                     "AND op.is_active " +
-                    "LIMIT 1)" +
+                    "AND pi.\"UserId\" = ANY (SELECT ptm.\"UserId\" " +
+                    "FROM \"Teams\".\"ProjectsTeams\" AS pt " +
+                    "INNER JOIN \"Teams\".\"ProjectsTeamsMembers\" AS ptm " +
+                    "ON pt.\"TeamId\" = ptm.\"TeamId\" " +
+                    "WHERE pt.\"ProjectId\" = @projectId))" +
                     "SELECT * " +
                     "FROM cte_company_project_users " +
                     "UNION " +
@@ -234,7 +238,12 @@ internal sealed class ProjectManagementSettingsRepository : BaseRepository, IPro
                     "WHERE op.project_id = @projectId " +
                     "AND op.is_active " +
                     "AND pi.\"UserId\" IN (SELECT pi.\"UserId\" " +
-                    "FROM cte_company_project_users)";
+                    "FROM cte_company_project_users) " +
+                    "AND pi.\"UserId\" = ANY (SELECT ptm.\"UserId\" " +
+                    "FROM \"Teams\".\"ProjectsTeams\" AS pt " +
+                    "INNER JOIN \"Teams\".\"ProjectsTeamsMembers\" AS ptm " +
+                    "ON pt.\"TeamId\" = ptm.\"TeamId\" " +
+                    "WHERE pt.\"ProjectId\" = @projectId)";
 
         var result = await connection.QueryAsync<ProjectSettingUserOutput>(query, parameters);
 

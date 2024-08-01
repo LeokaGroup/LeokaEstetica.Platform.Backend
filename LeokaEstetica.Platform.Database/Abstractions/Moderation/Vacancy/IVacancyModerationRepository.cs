@@ -9,10 +9,15 @@ namespace LeokaEstetica.Platform.Database.Abstractions.Moderation.Vacancy;
 public interface IVacancyModerationRepository
 {
     /// <summary>
-    /// Метод отправляет вакансию на модерацию.
+    /// Метод получает вакансию модерации из таблицы ModerationVacancies.
     /// </summary>
-    /// <param name="vacancyId">Id вакансии.</param>
-    Task AddVacancyModerationAsync(long vacancyId);
+    /// /// <param name="vacancyId">Id вакансии.</param>
+    Task<ModerationVacancyEntity> GetModerationVacancyByVacancyIdAsync(long vacancyId);
+	/// <summary>
+	/// Метод отправляет вакансию на модерацию.
+	/// </summary>
+	/// <param name="vacancyId">Id вакансии.</param>
+	Task AddVacancyModerationAsync(long vacancyId);
     
     /// <summary>
     /// Метод получает вакансию для просмотра.

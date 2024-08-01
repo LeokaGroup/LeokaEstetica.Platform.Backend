@@ -42,7 +42,7 @@ internal sealed class ProjectManagmentRoleRepository : BaseRepository, IProjectM
 
             var queryWithParameterProjectId = "SELECT pmr.role_id, " +
                                               "pmr.organization_id," +
-                                              "pmr.project_member_id," +
+                                              "pmr.project_member_id AS organization_member_id," +
                                               "pr.role_name," +
                                               "pr.role_sys_name," +
                                               "pmr.is_enabled," +
@@ -58,6 +58,11 @@ internal sealed class ProjectManagmentRoleRepository : BaseRepository, IProjectM
                                               "INNER JOIN project_management.organization_projects AS op " +
                                               "ON po.organization_id = op.organization_id " +
                                               "WHERE op.project_id = @projectId " +
+                                              "AND pmr.project_member_id = ANY (SELECT ptm.\"UserId\" " +
+                                              "FROM \"Teams\".\"ProjectsTeams\" AS pt " +
+                                              "INNER JOIN \"Teams\".\"ProjectsTeamsMembers\" AS ptm " +
+                                              "ON pt.\"TeamId\" = ptm.\"TeamId\" " +
+                                              "WHERE pt.\"ProjectId\" = @projectId) " +
                                               "GROUP BY pmr.organization_id, pmr.project_member_id, pr.role_name," +
                                               " pr.role_sys_name, op.project_id, pmr.role_id, pmr.is_enabled " +
                                               "ORDER BY pmr.role_id ";
@@ -72,7 +77,7 @@ internal sealed class ProjectManagmentRoleRepository : BaseRepository, IProjectM
 
             var queryWithParameterUser = "SELECT pmr.role_id, " +
                                          "pmr.organization_id," +
-                                         "pmr.project_member_id," +
+                                         "pmr.project_member_id AS organization_member_id," +
                                          "pr.role_name," +
                                          "pr.role_sys_name," +
                                          "pmr.is_enabled," +
