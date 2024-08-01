@@ -89,6 +89,7 @@ internal sealed class VacancyService : IVacancyService
     
     private static readonly string _approveVacancy = "Опубликована";
     private static readonly string _archiveVacancy = "В архиве";
+    private static readonly string _moderationVacancy = "На модерации";
 
     private readonly IProjectRepository _projectRepository;
     private readonly IMailingsService _mailingsService;
@@ -375,7 +376,9 @@ internal sealed class VacancyService : IVacancyService
         {
             var userId = await _userRepository.GetUserByEmailAsync(account);
 
-            if (userId <= 0)
+			var moderationVacancy = await _vacancyModerationService.GetModerationVacancyByVacancyIdAsync(vacancyId);
+
+			if (userId <= 0)
             {
                 var ex = new NotFoundUserIdByAccountException(account);
                 throw ex;
@@ -390,9 +393,17 @@ internal sealed class VacancyService : IVacancyService
             var isOwner = await _vacancyRepository.CheckVacancyOwnerAsync(vacancyId, userId);
 
             var result = new VacancyOutput();
-            
-            // Нет доступа на изменение.
-            if (!isOwner && mode == ModeEnum.Edit)
+
+			if (!isOwner && moderationVacancy is not null &&
+	(moderationVacancy.ModerationStatus.StatusName == _moderationVacancy || moderationVacancy.ModerationStatus.StatusName == _archiveVacancy))
+			{
+				result.IsAccess = false;
+				result.IsSuccess = false;
+
+				return result;
+			}
+			// Нет доступа на изменение.
+			if (!isOwner && mode == ModeEnum.Edit)
             {
                 result.IsSuccess = false;
                 result.IsAccess = false;
@@ -402,11 +413,14 @@ internal sealed class VacancyService : IVacancyService
 
             var vacancy = await _vacancyRepository.GetVacancyByVacancyIdAsync(vacancyId);
 
+            //Если нет вакансии в базе
             if (vacancy is null)
             {
-                throw new InvalidOperationException(
-                    $"Не удалось получить вакансию. VacancyId: {vacancyId}. UserId: {userId}");
-            }
+				result.IsSuccess = false;
+				result.IsAccess = false;
+
+                return result;
+			}
 
             result = await CreateVacancyResultAsync(vacancy, userId);
 
