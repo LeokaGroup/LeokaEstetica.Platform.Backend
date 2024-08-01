@@ -2989,7 +2989,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             
             // Проверяем, есть ли у пользователя роль на удаление задачи.
             var ifExistRoleRemoveTask = await _projectManagmentRoleRepository.Value
-                .GetProjectRoleByRoleSysNameAsync("ProjectRemoveTask", userId);
+                .CheckProjectRoleAsync("ProjectRemoveTask", userId, projectId);
             
             if (!ifExistRoleRemoveTask)
             {

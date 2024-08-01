@@ -456,7 +456,7 @@ public class ProjectManagmentSettingsController : BaseController
             throw ex;
         }
 
-        var result = await _projectManagementSettingsService.GetProjectInvitesAsync(projectId);
+        var result = await _projectManagementSettingsService.GetProjectInvitesAsync(projectId, GetUserName());
 
         return result;
     }

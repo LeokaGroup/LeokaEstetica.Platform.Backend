@@ -325,9 +325,10 @@ internal class BaseServiceTest
         ProjectManagmentRoleService = new ProjectManagmentRoleService(null,
             new Lazy<IProjectManagmentRoleRepository>(projectManagmentRoleRepository), userRepository,
             projectManagmentRoleRedisService, mapper, new Lazy<IDiscordService>(discordService), null);
-        
+
         ProjectManagementSettingsService = new ProjectManagementSettingsService(null, userRepository,
-            projectManagementSettingsRepository, projectRepository);
+            projectManagementSettingsRepository, projectRepository,
+            new Lazy<IProjectManagmentRoleRepository>(projectManagmentRoleRepository));
 
         var wikiTreeRepository = new WikiTreeRepository(connectionProvider);
         WikiTreeService = new WikiTreeService(null, wikiTreeRepository, userRepository);
