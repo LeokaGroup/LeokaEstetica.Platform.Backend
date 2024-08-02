@@ -329,6 +329,7 @@ internal sealed class ProjectNotificationsRepository : BaseRepository, IProjectN
         {
             notification.Approved = approved;
             notification.Rejected = rejected;
+            notification.IsNeedAccepted = false;
         }
 
         await _pgContext.SaveChangesAsync();

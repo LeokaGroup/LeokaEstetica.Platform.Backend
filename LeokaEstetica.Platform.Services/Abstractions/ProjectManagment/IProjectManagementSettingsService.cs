@@ -55,6 +55,7 @@ public interface IProjectManagementSettingsService
     /// Метод получает список приглашений в проект.
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
+    /// <param name="account">Аккаунт.</param>
     /// <returns>Список приглашений в проект.</returns>
-    Task<IEnumerable<ProjectInviteOutput>> GetProjectInvitesAsync(long projectId);
+    Task<IEnumerable<ProjectInviteOutput>> GetProjectInvitesAsync(long projectId, string account);
 }

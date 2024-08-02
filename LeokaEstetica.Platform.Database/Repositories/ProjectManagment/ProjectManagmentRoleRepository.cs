@@ -137,20 +137,24 @@ internal sealed class ProjectManagmentRoleRepository : BaseRepository, IProjectM
     }
 
     /// <inheritdoc />
-    public async Task<bool> GetProjectRoleByRoleSysNameAsync(string? roleSysName, long userId)
+    public async Task<bool> CheckProjectRoleAsync(string? roleSysName, long userId, long projectId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
 
         var parameters = new DynamicParameters();
         parameters.Add("@roleSysName", roleSysName);
         parameters.Add("@userId", userId);
+        parameters.Add("@projectId", projectId);
 
         var query = "SELECT pmr.is_enabled " +
                     "FROM roles.project_member_roles AS pmr " +
                     "INNER JOIN roles.project_roles AS pr " +
                     "ON pmr.role_id = pr.role_id " +
+                    "INNER JOIN project_management.organization_projects AS op " +
+                    "ON pmr.organization_id = op.organization_id " +
                     "WHERE pmr.project_member_id = @userId " +
-                    "AND pr.role_sys_name = @roleSysName";
+                    "AND pr.role_sys_name = @roleSysName " +
+                    "AND op.project_id = @projectId";
 
         var result = await connection.QueryFirstOrDefaultAsync<bool>(query, parameters);
 
