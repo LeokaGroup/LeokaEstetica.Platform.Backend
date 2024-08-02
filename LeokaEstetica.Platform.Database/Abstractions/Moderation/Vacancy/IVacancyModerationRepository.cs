@@ -18,6 +18,16 @@ public interface IVacancyModerationRepository
 	/// </summary>
 	/// <param name="vacancyId">Id вакансии.</param>
 	Task AddVacancyModerationAsync(long vacancyId);
+    /// <summary>
+    /// Метод получает вакансию модерации из таблицы ModerationVacancies.
+    /// </summary>
+    /// /// <param name="vacancyId">Id вакансии.</param>
+    Task<ModerationVacancyEntity> GetModerationVacancyByVacancyIdAsync(long vacancyId);
+	/// <summary>
+	/// Метод отправляет вакансию на модерацию.
+	/// </summary>
+	/// <param name="vacancyId">Id вакансии.</param>
+	Task AddVacancyModerationAsync(long vacancyId);
     
     /// <summary>
     /// Метод получает вакансию для просмотра.

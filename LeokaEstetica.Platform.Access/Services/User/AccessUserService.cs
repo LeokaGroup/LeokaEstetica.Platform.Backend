@@ -1,10 +1,13 @@
 using System.IdentityModel.Tokens.Jwt;
+using System.Runtime.CompilerServices;
 using System.Security.Claims;
 using LeokaEstetica.Platform.Access.Abstractions.User;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Database.Access.User;
 using LeokaEstetica.Platform.Models.Dto.Output.User;
 using Microsoft.IdentityModel.Tokens;
+
+[assembly: InternalsVisibleTo("LeokaEstetica.Platform.Tests")]
 
 namespace LeokaEstetica.Platform.Access.Services.User;
 

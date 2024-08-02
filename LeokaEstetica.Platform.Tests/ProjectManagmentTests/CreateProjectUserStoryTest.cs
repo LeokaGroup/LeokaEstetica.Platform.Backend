@@ -50,7 +50,7 @@ internal class CreateProjectUserStoryTest : BaseServiceTest
             ProjectId = 274,
             TagIds = new[] { 1, 2 },
             TaskStatusId = (int)ProjectUserStoryStatusEnum.New,
-            TaskTypeId = (int)ProjectTaskTypeEnum.History,
+            TaskTypeId = (int)ProjectTaskTypeEnum.Story,
             WatcherIds = new[] { (long)125 },
             EpicId = 8 // В БД дева есть такой эпик.
         };
@@ -73,7 +73,7 @@ internal class CreateProjectUserStoryTest : BaseServiceTest
             ProjectId = 274,
             TagIds = new[] { 1, 2 },
             TaskStatusId = (int)ProjectUserStoryStatusEnum.New,
-            TaskTypeId = (int)ProjectTaskTypeEnum.History,
+            TaskTypeId = (int)ProjectTaskTypeEnum.Story,
             WatcherIds = new[] { (long)125 },
             EpicId = 8 // В БД дева есть такой эпик.
         };

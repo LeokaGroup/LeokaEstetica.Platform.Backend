@@ -229,6 +229,7 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
                     on p.ProjectId
                     equals ups.ProjectId
                 where !archivedProjects.Contains(p.ProjectId)
+                      && p.IsPublic == true
                       && !new[]
                           {
                               (int)VacancyModerationStatusEnum.ModerationVacancy,
@@ -677,6 +678,7 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
     {
         var result = await _pgContext.CatalogProjects
             .Include(p => p.Project)
+            .Where(p=> p.Project.IsPublic == true)
             .Select(p => new CatalogProjectOutput
             {
                 ProjectId = p.Project.ProjectId,

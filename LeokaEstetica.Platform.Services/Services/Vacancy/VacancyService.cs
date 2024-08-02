@@ -1,6 +1,5 @@
 using System.Runtime.CompilerServices;
 using AutoMapper;
-using LeokaEstetica.Platform.Access.Abstractions.AvailableLimits;
 using LeokaEstetica.Platform.Access.Enums;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.Core.Exceptions;
@@ -30,6 +29,7 @@ using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Vacancy;
 using LeokaEstetica.Platform.Models.Entities.Moderation;
 using LeokaEstetica.Platform.Services.Helpers;
 using Microsoft.Extensions.Logging;
+using LeokaEstetica.Platform.Base.Extensions.HtmlExtensions;
 
 [assembly: InternalsVisibleTo("LeokaEstetica.Platform.Tests")]
 
@@ -85,17 +85,15 @@ internal sealed class VacancyService : IVacancyService
 
     private readonly ISubscriptionRepository _subscriptionRepository;
     private readonly IFareRuleRepository _fareRuleRepository;
-    private readonly IAvailableLimitsService _availableLimitsService;
     private readonly IVacancyNotificationsService _vacancyNotificationsService;
     
     private static readonly string _approveVacancy = "Опубликована";
     private static readonly string _archiveVacancy = "В архиве";
+    private static readonly string _moderationVacancy = "На модерации";
 
     private readonly IProjectRepository _projectRepository;
     private readonly IMailingsService _mailingsService;
     private readonly IVacancyModerationRepository _vacancyModerationRepository;
-    
-    private const string NOT_AVAILABLE_DELETE_VACANCY_ARCHIVE = "Невозможно убрать вакансию из архива, так как у Вас уже опубликовано максимальное количество вакансий соответствующих максимальному лимиту тарифа. Добавьте в архив вакансии, чтобы освободить лимиты либо перейдите на тариф, который имеет большие лимиты";
 
     private readonly IDiscordService _discordService;
 
@@ -117,7 +115,6 @@ internal sealed class VacancyService : IVacancyService
         IVacancyModerationService vacancyModerationService,
         ISubscriptionRepository subscriptionRepository,
         IFareRuleRepository fareRuleRepository,
-        IAvailableLimitsService availableLimitsService,
         IVacancyNotificationsService vacancyNotificationsService, 
         IProjectRepository projectRepository,
         IFillColorVacanciesService fillColorVacanciesService, 
@@ -133,7 +130,6 @@ internal sealed class VacancyService : IVacancyService
         _vacancyModerationService = vacancyModerationService;
         _subscriptionRepository = subscriptionRepository;
         _fareRuleRepository = fareRuleRepository;
-        _availableLimitsService = availableLimitsService;
         _vacancyNotificationsService = vacancyNotificationsService;
         _projectRepository = projectRepository;
         _fillColorVacanciesService = fillColorVacanciesService;
@@ -380,7 +376,9 @@ internal sealed class VacancyService : IVacancyService
         {
             var userId = await _userRepository.GetUserByEmailAsync(account);
 
-            if (userId <= 0)
+			var moderationVacancy = await _vacancyModerationService.GetModerationVacancyByVacancyIdAsync(vacancyId);
+
+			if (userId <= 0)
             {
                 var ex = new NotFoundUserIdByAccountException(account);
                 throw ex;
@@ -395,9 +393,17 @@ internal sealed class VacancyService : IVacancyService
             var isOwner = await _vacancyRepository.CheckVacancyOwnerAsync(vacancyId, userId);
 
             var result = new VacancyOutput();
-            
-            // Нет доступа на изменение.
-            if (!isOwner && mode == ModeEnum.Edit)
+
+			if (!isOwner && moderationVacancy is not null &&
+	(moderationVacancy.ModerationStatus.StatusName == _moderationVacancy || moderationVacancy.ModerationStatus.StatusName == _archiveVacancy))
+			{
+				result.IsAccess = false;
+				result.IsSuccess = false;
+
+				return result;
+			}
+			// Нет доступа на изменение.
+			if (!isOwner && mode == ModeEnum.Edit)
             {
                 result.IsSuccess = false;
                 result.IsAccess = false;
@@ -407,11 +413,14 @@ internal sealed class VacancyService : IVacancyService
 
             var vacancy = await _vacancyRepository.GetVacancyByVacancyIdAsync(vacancyId);
 
+            //Если нет вакансии в базе
             if (vacancy is null)
             {
-                throw new InvalidOperationException(
-                    $"Не удалось получить вакансию. VacancyId: {vacancyId}. UserId: {userId}");
-            }
+				result.IsSuccess = false;
+				result.IsAccess = false;
+
+                return result;
+			}
 
             result = await CreateVacancyResultAsync(vacancy, userId);
 
@@ -1052,7 +1061,11 @@ internal sealed class VacancyService : IVacancyService
         // Чистим описание вакансии от html-тегов.
         foreach (var vac in vacancies)
         {
-            vac.VacancyText = (vac.VacancyText);
+            vac.VacancyText = ClearHtmlBuilder.Clear(vac.VacancyText);
+            if (vac.VacancyText.Length > 40)
+            {
+                vac.VacancyText = string.Concat(vac.VacancyText.Substring(0, 40), "...");
+            }
         }
 
         return vacancies;

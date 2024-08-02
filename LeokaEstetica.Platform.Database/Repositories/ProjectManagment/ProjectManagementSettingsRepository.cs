@@ -208,7 +208,11 @@ internal sealed class ProjectManagementSettingsRepository : BaseRepository, IPro
                     "ON pi.\"UserId\" = u.\"UserId\" " +
                     "WHERE op.project_id = @projectId " +
                     "AND op.is_active " +
-                    "LIMIT 1)" +
+                    "AND pi.\"UserId\" = ANY (SELECT ptm.\"UserId\" " +
+                    "FROM \"Teams\".\"ProjectsTeams\" AS pt " +
+                    "INNER JOIN \"Teams\".\"ProjectsTeamsMembers\" AS ptm " +
+                    "ON pt.\"TeamId\" = ptm.\"TeamId\" " +
+                    "WHERE pt.\"ProjectId\" = @projectId))" +
                     "SELECT * " +
                     "FROM cte_company_project_users " +
                     "UNION " +
@@ -234,7 +238,12 @@ internal sealed class ProjectManagementSettingsRepository : BaseRepository, IPro
                     "WHERE op.project_id = @projectId " +
                     "AND op.is_active " +
                     "AND pi.\"UserId\" IN (SELECT pi.\"UserId\" " +
-                    "FROM cte_company_project_users)";
+                    "FROM cte_company_project_users) " +
+                    "AND pi.\"UserId\" = ANY (SELECT ptm.\"UserId\" " +
+                    "FROM \"Teams\".\"ProjectsTeams\" AS pt " +
+                    "INNER JOIN \"Teams\".\"ProjectsTeamsMembers\" AS ptm " +
+                    "ON pt.\"TeamId\" = ptm.\"TeamId\" " +
+                    "WHERE pt.\"ProjectId\" = @projectId)";
 
         var result = await connection.QueryAsync<ProjectSettingUserOutput>(query, parameters);
 
@@ -281,7 +290,7 @@ internal sealed class ProjectManagementSettingsRepository : BaseRepository, IPro
     }
 
     /// <inheritdoc/>
-    public async Task AddProjectMemberRolesAsync(long organizationId, long memberId)
+    public async Task AddCompanyMemberRolesAsync(long organizationId, long memberId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
         
@@ -324,7 +333,8 @@ internal sealed class ProjectManagementSettingsRepository : BaseRepository, IPro
                                (31, @memberId, @organizationId, TRUE),
                                (32, @memberId, @organizationId, TRUE),
                                (33, @memberId, @organizationId, TRUE),
-                               (34, @memberId, @organizationId, FALSE)";
+                               (34, @memberId, @organizationId, FALSE),
+                               (35, @memberId, @organizationId, TRUE)";
                                
         await connection.ExecuteAsync(query, parameters);
     }

@@ -37,16 +37,4 @@ public class CreateOrderCache
     /// </summary>
     [ProtoMember(5)]
     public string? FareRuleName { get; set; }
-
-    /// <summary>
-    /// Признак успешности прохождения по лимитам.
-    /// </summary>
-    [ProtoIgnore]
-    public bool IsSuccessLimits { get; set; }
-
-    /// <summary>
-    /// Тип лимитов, по которым не прошли.
-    /// </summary>
-    [ProtoIgnore]
-    public string? ReductionSubscriptionLimits { get; set; }
 }

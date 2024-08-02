@@ -776,4 +776,31 @@ public interface IProjectManagmentRepository
     /// <param name="projectId">Id проекта.</param>
     /// <returns>Id компании.</returns>
     Task<long> GetCompanyIdByProjectIdAsync(long projectId);
+
+    /// <summary>
+    /// Метод получает Id эпика по Id эпика в рамках проекта.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="projectEpicId">Id эпика в рамках проекта.</param>
+    /// <returns>Id эпика.</returns>
+    Task<long> GetEpicIdByProjectEpicIdAsync(long projectId, long projectEpicId);
+
+    /// <summary>
+    /// Метод получает статусы задач и ошибок.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="projectTaskIds">Id задач в рамках проекта.</param>
+    /// <param name="templateId">Id шаблона проекта.</param>
+    /// <returns>Словарь со статусами.</returns>
+    Task<IDictionary<long, ProjectTaskTypeOutput>> GetProjectTaskStatusesAsync(long projectId,
+        IEnumerable<long> projectTaskIds, int templateId);
+    
+    /// <summary>
+    /// Метод получает статусы историй.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="projectTaskIds">Id задач в рамках проекта.</param>
+    /// <returns>Словарь со статусами.</returns>
+    Task<IDictionary<long, ProjectTaskTypeOutput>> GetProjectStoryStatusesAsync(long projectId,
+        IEnumerable<long> projectTaskIds);
 }

@@ -20,6 +20,7 @@ internal sealed class ProjectManagementSettingsService : IProjectManagementSetti
     private readonly IUserRepository _userRepository;
     private readonly IProjectManagementSettingsRepository _projectManagementSettingsRepository;
     private readonly IProjectRepository _projectRepository;
+    private readonly Lazy<IProjectManagmentRoleRepository> _projectManagmentRoleRepository;
 
     /// <summary>
     /// Конструктор.
@@ -27,15 +28,18 @@ internal sealed class ProjectManagementSettingsService : IProjectManagementSetti
     /// <param name="logger">Логгер.</param>
     /// <param name="userRepository">Репозиторий пользователей.</param>
     /// <param name="projectRepository">Репозиторий проектов.</param>
+    /// <param name="projectManagmentRoleRepository">Репозиторий ролей.</param>
     public ProjectManagementSettingsService(ILogger<ProjectManagementSettingsService>? logger,
         IUserRepository userRepository,
         IProjectManagementSettingsRepository projectManagementSettingsRepository,
-        IProjectRepository projectRepository)
+        IProjectRepository projectRepository,
+        Lazy<IProjectManagmentRoleRepository> projectManagmentRoleRepository)
     {
         _logger = logger;
         _userRepository = userRepository;
         _projectManagementSettingsRepository = projectManagementSettingsRepository;
         _projectRepository = projectRepository;
+        _projectManagmentRoleRepository = projectManagmentRoleRepository;
     }
 
     #region Публичные методы.
@@ -174,10 +178,26 @@ internal sealed class ProjectManagementSettingsService : IProjectManagementSetti
     }
     
     /// <inheritdoc />
-    public async Task<IEnumerable<ProjectInviteOutput>> GetProjectInvitesAsync(long projectId)
+    public async Task<IEnumerable<ProjectInviteOutput>> GetProjectInvitesAsync(long projectId, string account)
     {
         try
         {
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+
+            var isInviteRole = await _projectManagmentRoleRepository.Value.CheckProjectRoleAsync("ProjectInvite",
+                userId, projectId);
+            
+            if (!isInviteRole)
+            {
+                return Enumerable.Empty<ProjectInviteOutput>();
+            }
+            
             var result = (await _projectManagementSettingsRepository.GetProjectInvitesAsync(projectId))?.AsList();
 
             if (result is null || result.Count == 0)

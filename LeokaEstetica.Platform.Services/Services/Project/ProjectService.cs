@@ -249,29 +249,6 @@ internal sealed class ProjectService : IProjectService
                                                     "Подписка была NULL или невалидная." +
                                                     $"#1 Ошибка в {nameof(ProjectService)}");
             }
-            
-            // Получаем тариф, на который оформлена подписка у пользователя.
-            var fareRule = await _fareRuleRepository.GetByIdAsync(userSubscription.ObjectId);
-            
-            // TODO: В будущем выпилить это, так как мы убираем лимиты на проекты и вакансии.
-            // Проверяем доступно ли пользователю создание проекта.
-            // var availableCreateProjectLimit = await _availableLimitsService.CheckAvailableCreateProjectAsync(userId,
-            //     fareRule.Name);
-            //
-            // // Если лимит по тарифу превышен.
-            // if (!availableCreateProjectLimit)
-            // {
-            //     var ex = new InvalidOperationException("Превышен лимит проектов по тарифу. " +
-            //                                            $"UserId: {userId}. " +
-            //                                            $"Тариф: {fareRule.Name}");
-            //
-            //     await _projectNotificationsService.SendNotificationWarningLimitFareRuleProjectsAsync(
-            //         "Что то пошло не так",
-            //         "Превышен лимит проектов по тарифу.",
-            //         NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
-            //
-            //     throw ex;
-            // }
 
             var projectName = createProjectInput.ProjectName;
 
@@ -336,6 +313,9 @@ internal sealed class ProjectService : IProjectService
                 
                 // Добавляем текущего пользователи в участники компании с ролью владельца.
                 await _projectManagmentRepository.AddCompanyMemberAsync(companyId, userId, "Владелец");
+                
+                // Заводим роли для компании.
+                await _projectManagementSettingsRepository.AddCompanyMemberRolesAsync(companyId, userId);
             }
 
             // Если компания существует, то добавляем этот проект в компанию.
@@ -354,7 +334,7 @@ internal sealed class ProjectService : IProjectService
 
             // Добавляем новый проект в общее пространство компании.
             await _projectManagmentRepository.AddProjectWorkSpaceAsync(projectId, companyId);
-            
+
             // Заводим для проекта wiki и ознакомительную страницу.
             await _wikiTreeRepository.CreateProjectWikiAsync(projectId, userId, projectName);
 
@@ -545,9 +525,23 @@ internal sealed class ProjectService : IProjectService
             
             // Проверяем доступ к проекту.
             var isOwner = await _projectRepository.CheckProjectOwnerAsync(projectId, userId);
-            
-            // Нет доступа на изменение.
-            if (!isOwner && mode == ModeEnum.Edit)
+
+            var projectModeration = await _projectModerationRepository.GetProjectModerationAsync(projectId);
+
+			//Проверка, чтобы проект не был на модерации или в архиве - если ссылку вбил не владелец проекта.
+			if (!isOwner && projectModeration!=null &&
+                (projectModeration.ModerationStatusId==(int)ProjectModerationStatusEnum.ModerationProject ||
+                projectModeration.ModerationStatusId==(int)ProjectModerationStatusEnum.ArchivedProject))
+			{
+				return new ProjectOutput
+				{
+					IsAccess = false,
+					IsSuccess=false,
+					ProjectRemarks = new List<ProjectRemarkOutput>()
+				};
+			}
+			// Нет доступа на изменение.
+			if (!isOwner && mode == ModeEnum.Edit)
             {
                 return new ProjectOutput
                 {
@@ -558,13 +552,16 @@ internal sealed class ProjectService : IProjectService
             }
 
             var prj = await _projectRepository.GetProjectAsync(projectId);
-
+            
             if (prj.UserProject is null)
             {
-                var ex = new InvalidOperationException( 
-                    $"Не удалось найти проект с ProjectId {projectId} и UserId {userId}");
-                throw ex;
-            }
+				return new ProjectOutput
+				{
+					IsAccess = false,
+					IsSuccess = false,
+					ProjectRemarks = new List<ProjectRemarkOutput>()
+				};
+			}
 
             var result = await CreateProjectResultAsync(projectId, prj, userId);
 
@@ -2293,26 +2290,6 @@ internal sealed class ProjectService : IProjectService
                 // Без тегов не страшно отобразить проекты.
                 return projects;
             }
-
-            // Такая подписка не дает тегов.
-            if (userSubscription.ObjectId < 3)
-            {
-                continue;
-            }
-            
-            // Если подписка бизнес.
-            if (userSubscription.ObjectId == 3)
-            {
-                p.TagColor = "warning";
-                p.TagValue = "Бизнес";
-            }
-        
-            // Если подписка профессиональный.
-            if (userSubscription.ObjectId == 4)
-            {
-                p.TagColor = "warning";
-                p.TagValue = "Профессиональный";
-            }   
         }
 
         return projects;

@@ -1,6 +1,5 @@
 ﻿using Autofac;
 using AutoMapper;
-using LeokaEstetica.Platform.Access.Services.AvailableLimits;
 using LeokaEstetica.Platform.Access.Services.Moderation;
 using LeokaEstetica.Platform.Access.Services.User;
 using LeokaEstetica.Platform.Base.Factors;
@@ -171,7 +170,7 @@ internal class BaseServiceTest
         var accessUserRepository = new AccessUserRepository(pgContext);
         var accessUserService = new AccessUserService(accessUserRepository);
         var userRedisService = new UserRedisService(distributedCache, mapper);
-        FareRuleRepository = new FareRuleRepository(pgContext, AppConfiguration, connectionProvider);
+        FareRuleRepository = new FareRuleRepository(pgContext, connectionProvider);
         
         var availableLimitsRepository = new AvailableLimitsRepository(pgContext);
         var globalConfigRepository = new GlobalConfigRepository(pgContext, null, AppConfiguration, connectionProvider);
@@ -192,8 +191,7 @@ internal class BaseServiceTest
         var projectManagementRepository = new ProjectManagmentRepository(connectionProvider);
         var vacancyModerationRepository = new VacancyModerationRepository(pgContext);
         var vacancyNotificationsService = new VacancyNotificationsService(null, null);
-        var availableLimitsService = new AvailableLimitsService(null, availableLimitsRepository);
-        
+
         TelegramBotService = new TelegramBotService(null, AppConfiguration, globalConfigRepository);
 
         VacancyModerationService = new VacancyModerationService(vacancyModerationRepository, null, mapper, null,
@@ -202,7 +200,7 @@ internal class BaseServiceTest
         // Тут если нужен будет ProjectService, то тут проблема с порядком следования.
         // Не получится сделать просто, VacancyService и ProjectService нужны друг другу тесно.
         VacancyService = new VacancyService(null, vacancyRepository, mapper, null, userRepository,
-            VacancyModerationService, subscriptionRepository, FareRuleRepository, availableLimitsService,
+            VacancyModerationService, subscriptionRepository, FareRuleRepository,
             vacancyNotificationsService, null, null, null, vacancyModerationRepository, discordService);
 
         var projectResponseRepository = new ProjectResponseRepository(pgContext);
@@ -212,7 +210,8 @@ internal class BaseServiceTest
 
         var accessModerationRepository = new AccessModerationRepository(pgContext);
 
-        AccessModerationService = new AccessModerationService(null, accessModerationRepository, userRepository);
+        AccessModerationService = new AccessModerationService(null, accessModerationRepository, userRepository,
+            discordService);
 
         ProjectModerationRepository = new ProjectModerationRepository(pgContext);
 
@@ -326,9 +325,10 @@ internal class BaseServiceTest
         ProjectManagmentRoleService = new ProjectManagmentRoleService(null,
             new Lazy<IProjectManagmentRoleRepository>(projectManagmentRoleRepository), userRepository,
             projectManagmentRoleRedisService, mapper, new Lazy<IDiscordService>(discordService), null);
-        
+
         ProjectManagementSettingsService = new ProjectManagementSettingsService(null, userRepository,
-            projectManagementSettingsRepository, projectRepository);
+            projectManagementSettingsRepository, projectRepository,
+            new Lazy<IProjectManagmentRoleRepository>(projectManagmentRoleRepository));
 
         var wikiTreeRepository = new WikiTreeRepository(connectionProvider);
         WikiTreeService = new WikiTreeService(null, wikiTreeRepository, userRepository);

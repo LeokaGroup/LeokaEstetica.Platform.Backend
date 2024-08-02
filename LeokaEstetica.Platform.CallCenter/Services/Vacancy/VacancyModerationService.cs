@@ -132,6 +132,25 @@ public class VacancyModerationService : IVacancyModerationService
         }
     }
 	/// <summary>
+	/// Метод получает вакансию модерации из таблицы ModerationVacancies.
+	/// </summary>
+	/// /// <param name="vacancyId">Id вакансии.</param>
+	public async Task<ModerationVacancyEntity> GetModerationVacancyByVacancyIdAsync(long vacancyId)
+	{
+        try
+        {
+            var result = await _vacancyModerationRepository.GetModerationVacancyByVacancyIdAsync(vacancyId);
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+	/// <summary>
 	/// Метод получает список вакансий со всеми статусами.
 	/// </summary>
 	/// <returns>Список вакансий.</returns>

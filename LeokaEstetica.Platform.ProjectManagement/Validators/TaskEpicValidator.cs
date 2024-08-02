@@ -27,5 +27,11 @@ public class TaskEpicValidator : AbstractValidator<IncludeTaskEpicInput>
             .WithMessage(ValidationConst.ProjectManagmentValidation.NOT_VALID_EPIC_ID)
             .NotEmpty()
             .WithMessage(ValidationConst.ProjectManagmentValidation.NOT_VALID_EPIC_ID);
+
+        RuleFor(p => p.ProjectId)
+            .NotNull()
+            .WithMessage(ValidationConst.ProjectManagmentValidation.NOT_VALID_PROJECT_ID)
+            .NotEmpty()
+            .WithMessage(ValidationConst.ProjectManagmentValidation.NOT_VALID_PROJECT_ID);
     }
 }

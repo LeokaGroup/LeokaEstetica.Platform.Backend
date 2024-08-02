@@ -101,7 +101,7 @@ public class ProjectManagmentSettingsController : BaseController
         }
 
         await _projectManagmentService.CreateProjectTagAsync(projectTagInput.TagName,
-            projectTagInput.TagDescription, projectTagInput.ProjectId, GetUserName());
+            projectTagInput.TagDescription, projectTagInput.ProjectId, GetUserName(), CreateTokenFromHeader());
     }
 
     /// <summary>
@@ -456,7 +456,7 @@ public class ProjectManagmentSettingsController : BaseController
             throw ex;
         }
 
-        var result = await _projectManagementSettingsService.GetProjectInvitesAsync(projectId);
+        var result = await _projectManagementSettingsService.GetProjectInvitesAsync(projectId, GetUserName());
 
         return result;
     }
