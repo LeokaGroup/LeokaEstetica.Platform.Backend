@@ -36,7 +36,7 @@ internal sealed class ProjectSettingsConfigRepository : BaseRepository, IProject
     public async Task CommitSpaceSettingsAsync(string strategy, int templateId, long projectId, long userId,
         bool isProjectOwner, string redirectUrl, string projectManagementName, string projectManagementNamePrefix)
     {
-        if (!Enum.TryParse("sm", true, out ProjectStrategyEnum projectStrategyEnum))
+        if (!Enum.TryParse(strategy, true, out ProjectStrategyEnum projectStrategyEnum))
         {
             throw new InvalidOperationException($"Неизвестный тип стратегии: {projectStrategyEnum}.");
         }
