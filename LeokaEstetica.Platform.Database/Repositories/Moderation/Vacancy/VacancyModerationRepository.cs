@@ -109,6 +109,7 @@ internal sealed class VacancyModerationRepository : IVacancyModerationRepository
                 ModerationStatusId = p.ModerationStatusId,
                 ModerationStatus = p.ModerationStatus
             })
+            .OrderByDescending(p => p.UserVacancy.DateCreated)
             .ToListAsync();
 
         return result;
