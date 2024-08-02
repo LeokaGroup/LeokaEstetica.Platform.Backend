@@ -19,7 +19,7 @@ namespace LeokaEstetica.Platform.ProjectManagement.Controllers;
 [ApiController]
 [Route("project-management/config")]
 public class ConfigController : BaseController
-{ 
+{
     private readonly IGlobalConfigRepository _globalConfigRepository;
     private readonly ILogger<ConfigController> _logger;
     private readonly IProjectSettingsConfigService _projectSettingsConfigService;
