@@ -334,7 +334,7 @@ public class ProjectManagmentController : BaseController
         var items = await _projectManagmentService.GetTaskTypesAsync();
         var result = _mapper.Map<IEnumerable<TaskTypeOutput>>(items);
 
-        return result;
+        return result; 
     }
 
     /// <summary>
