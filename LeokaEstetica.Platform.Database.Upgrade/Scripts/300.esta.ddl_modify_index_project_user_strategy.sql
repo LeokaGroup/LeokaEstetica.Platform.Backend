@@ -1,3 +1,0 @@
-﻿DROP INDEX settings.project_user_strategy_project_id_user_id_idx;
-
-CREATE UNIQUE INDEX project_user_strategy_project_id_user_id_idx ON settings.project_user_strategy (project_id, user_id);

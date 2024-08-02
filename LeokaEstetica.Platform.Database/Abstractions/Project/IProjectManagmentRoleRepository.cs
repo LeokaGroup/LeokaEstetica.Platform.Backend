@@ -27,6 +27,7 @@ public interface IProjectManagmentRoleRepository
     /// </summary>
     /// <param name="roleSysName">Системное название роли.</param>
     /// <param name="userId">Id пользователя.</param>
+    /// <param name="projectId">Id проекта.</param>
     /// <returns>Признак нааличия роли.</returns>
-    Task<bool> GetProjectRoleByRoleSysNameAsync(string? roleSysName, long userId);
+    Task<bool> CheckProjectRoleAsync(string? roleSysName, long userId, long projectId);
 }
