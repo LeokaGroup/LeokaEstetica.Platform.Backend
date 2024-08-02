@@ -4,9 +4,12 @@ using LeokaEstetica.Platform.Base.Abstractions.Repositories.Base;
 using LeokaEstetica.Platform.Core.Constants;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Database.Abstractions.Config;
+using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagement.Output;
 using LeokaEstetica.Platform.Models.Entities.Configs;
+using LeokaEstetica.Platform.Models.Enums;
 using Microsoft.EntityFrameworkCore;
+using Enum = System.Enum;
 
 namespace LeokaEstetica.Platform.Database.Repositories.Config;
 
@@ -14,21 +17,31 @@ namespace LeokaEstetica.Platform.Database.Repositories.Config;
 internal sealed class ProjectSettingsConfigRepository : BaseRepository, IProjectSettingsConfigRepository
 {
     private readonly PgContext _pgContext;
+    private readonly IProjectManagmentRepository _projectManagmentRepository;
 
     /// <summary>
     /// Конструктор.
     /// </summary>
     /// <param name="pgContext">Датаконтекст.</param>
-    public ProjectSettingsConfigRepository(PgContext pgContext, IConnectionProvider connectionProvider)
+    /// <param name="connectionProvider">Провайдер БД.</param>
+    /// <param name="projectManagmentRepository">Репозиторий модуля УП</param>
+    public ProjectSettingsConfigRepository(PgContext pgContext, IConnectionProvider connectionProvider, IProjectManagmentRepository projectManagmentRepository)
         : base(connectionProvider)
     {
         _pgContext = pgContext;
+        _projectManagmentRepository = projectManagmentRepository;
     }
 
     /// <inheritdoc />
     public async Task CommitSpaceSettingsAsync(string strategy, int templateId, long projectId, long userId,
         bool isProjectOwner, string redirectUrl, string projectManagementName, string projectManagementNamePrefix)
     {
+        if (!Enum.TryParse("sm", true, out ProjectStrategyEnum projectStrategyEnum))
+        {
+            throw new InvalidOperationException($"Неизвестный тип стратегии: {projectStrategyEnum}.");
+        }
+        await _projectManagmentRepository.FixationProjectViewStrategyAsync(projectStrategyEnum, projectId, userId);
+        
         var settings = new List<ConfigSpaceSettingEntity>();
 
         // Для владельца проекта запоминаем еще и выбранный шаблон проекта.
