@@ -1,6 +1,4 @@
-﻿using System.Globalization;
-
-namespace LeokaEstetica.Platform.Models.Dto.Output.ProjectManagement.Output;
+﻿namespace LeokaEstetica.Platform.Models.Dto.Output.ProjectManagement.Output;
 
 /// <summary>
 /// Класс выходной модели пользователя в настройках проекта.
@@ -40,7 +38,7 @@ public class ProjectSettingUserOutput
     /// <summary>
     /// Дата последней авторизации на платформе.
     /// </summary>
-    public DateTime LastAutorization { get; set; }
+    public string? LastAutorization { get; set; }
 
     /// <summary>
     /// Признак владельца проекта.
@@ -51,9 +49,4 @@ public class ProjectSettingUserOutput
     /// Роль пользователя.
     /// </summary>
     public string? Role { get; set; }
-
-    /// <summary>
-    /// Отображаемая дата последней авторизации на платформе.
-    /// </summary>
-    public string DisplayLastAutorization => LastAutorization.ToString("G", CultureInfo.GetCultureInfo("ru"));
 }
