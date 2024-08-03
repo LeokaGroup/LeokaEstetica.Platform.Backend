@@ -74,8 +74,8 @@ internal sealed class SprintRepository : BaseRepository, ISprintRepository
                     " s.executor_id," +
                     " s.watcher_ids," +
                     " s.created_by," +
-                    " to_char(s.created_at, 'dd.MM.yyyy HH24:MI:SS') AS CreatedAt," +
-                    " to_char(s.updated_at, 'dd.MM.yyyy HH24:MI:SS') AS UpdatedAt," +
+                    " to_char(s.created_at, 'dd.MM.yyyy HH24:MI') AS CreatedAt," +
+                    " to_char(s.updated_at, 'dd.MM.yyyy HH24:MI') AS UpdatedAt," +
                     " s.updated_by " +
                     "FROM project_management.sprints AS s " +
                     "INNER JOIN project_management.sprint_statuses AS ss " +

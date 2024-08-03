@@ -192,7 +192,7 @@ internal sealed class ProjectManagementSettingsRepository : BaseRepository, IPro
                     "pi.\"FirstName\", " +
                     "pi.\"Patronymic\" AS \"SecondName\", " +
                     "u.\"Email\", " +
-                    "u.\"LastAutorization\", " +
+                    "TO_CHAR(u.\"LastAutorization\", 'DD.MM.YYYY HH24:MI') AS LastAutorization, " +
                     "(CASE WHEN u.\"UserId\" = (SELECT up.\"UserId\" " +
                     "FROM \"Projects\".\"UserProjects\" AS up " +
                     "WHERE up.\"ProjectId\" = @projectId " +
@@ -221,7 +221,7 @@ internal sealed class ProjectManagementSettingsRepository : BaseRepository, IPro
                     "pi.\"FirstName\", " +
                     "pi.\"Patronymic\" AS \"SecondName\", " +
                     "u.\"Email\", " +
-                    "u.\"LastAutorization\", " +
+                    "TO_CHAR(u.\"LastAutorization\", 'DD.MM.YYYY HH24:MI') AS LastAutorization, " +
                     "(CASE WHEN u.\"UserId\" = (SELECT up.\"UserId\" " +
                     "FROM \"Projects\".\"UserProjects\" AS up " +
                     "WHERE up.\"ProjectId\" = @projectId " +
@@ -261,7 +261,7 @@ internal sealed class ProjectManagementSettingsRepository : BaseRepository, IPro
         var query = "SELECT n.\"NotificationId\", " +
                     "u.\"Email\", " +
                     "n.\"UserId\", " +
-                    "n.\"Created\" AS CreatedAt " +
+                    "TO_CHAR(n.\"Created\", 'DD.MM.YYYY HH24:MI') AS \"CreatedAt\" " +
                     "FROM \"Notifications\".\"Notifications\" AS n " +
                     "INNER JOIN dbo.\"Users\" AS u " +
                     "ON n.\"UserId\" = u.\"UserId\" " +
