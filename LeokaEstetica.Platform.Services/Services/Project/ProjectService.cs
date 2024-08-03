@@ -428,7 +428,14 @@ internal sealed class ProjectService : IProjectService
 
             var result = await _projectRepository.UserProjectsAsync(userId, isCreateVacancy);
 
-          
+            // Сокращаем длину строки описания проекта.
+            foreach (var prj in result.UserProjects)
+            {
+                if (prj.ProjectDetails?.Length > 40)
+                {
+                    prj.ProjectDetails = string.Concat(prj.ProjectDetails.Substring(0, 40), "...");
+                }
+            }
 
             return result;
         }

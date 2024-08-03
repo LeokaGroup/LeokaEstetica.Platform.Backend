@@ -168,8 +168,7 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
                 .Select(p => new UserProjectOutput
                 {
                     ProjectName = p.UserProject.ProjectName,
-                    ProjectDetails = p.UserProject.ProjectDetails.Substring(0, 40),
-					ProjectDetailsFull =p.UserProject.ProjectDetails,
+                    ProjectDetails = p.UserProject.ProjectDetails,
                     ProjectIcon = p.UserProject.ProjectIcon,
                     ProjectStatusName = p.ModerationStatus.StatusName,
                     ProjectStatusSysName = p.ModerationStatus.StatusSysName,
