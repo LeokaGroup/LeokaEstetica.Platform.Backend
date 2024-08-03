@@ -1,5 +1,6 @@
 using System.Runtime.CompilerServices;
 using AutoMapper;
+using Dapper;
 using LeokaEstetica.Platform.Access.Enums;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.Core.Exceptions;
@@ -7,7 +8,6 @@ using LeokaEstetica.Platform.Database.Abstractions.FareRule;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
 using LeokaEstetica.Platform.Database.Abstractions.Subscription;
 using LeokaEstetica.Platform.Database.Abstractions.Vacancy;
-using LeokaEstetica.Platform.Finder.Chains.Vacancy;
 using LeokaEstetica.Platform.Messaging.Abstractions.Mail;
 using LeokaEstetica.Platform.Models.Dto.Input.Vacancy;
 using LeokaEstetica.Platform.Models.Dto.Output.Configs;
@@ -46,43 +46,6 @@ internal sealed class VacancyService : IVacancyService
     private readonly IVacancyRedisService _vacancyRedisService;
     private readonly IUserRepository _userRepository;
     private readonly IVacancyModerationService _vacancyModerationService;
-    private readonly IFillColorVacanciesService _fillColorVacanciesService;
-
-    // Определяем всю цепочку фильтров.
-    private readonly BaseVacanciesFilterChain _salaryFilterVacanciesChain = new DateVacanciesFilterChain();
-    private readonly BaseVacanciesFilterChain _descSalaryVacanciesFilterChain = new DescSalaryVacanciesFilterChain();
-    private readonly BaseVacanciesFilterChain _ascSalaryVacanciesFilterChain = new AscSalaryVacanciesFilterChain();
-
-    private readonly BaseVacanciesFilterChain _fullEmploymentVacanciesFilterChain =
-        new FullEmploymentVacanciesFilterChain();
-
-    private readonly BaseVacanciesFilterChain _manySixExperienceVacanciesFilterChain =
-        new ManySixExperienceVacanciesFilterChain();
-
-    private readonly BaseVacanciesFilterChain _notExperienceVacanciesFilterChain =
-        new NotExperienceVacanciesFilterChain();
-
-    private readonly BaseVacanciesFilterChain _notPayVacanciesFilterChain = new NotPayVacanciesFilterChain();
-
-    private readonly BaseVacanciesFilterChain _oneThreeExperienceVacanciesFilterChain =
-        new OneThreeExperienceVacanciesFilterChain();
-
-    private readonly BaseVacanciesFilterChain _partialEmploymentVacanciesFilterChain =
-        new PartialEmploymentVacanciesFilterChain();
-
-    private readonly BaseVacanciesFilterChain _payVacanciesFilterChain = new PayVacanciesFilterChain();
-
-    private readonly BaseVacanciesFilterChain _projectWorkEmploymentVacanciesFilterChain =
-        new ProjectWorkEmploymentVacanciesFilterChain();
-
-    private readonly BaseVacanciesFilterChain _threeSixExperienceVacanciesFilterChain =
-        new ThreeSixExperienceVacanciesFilterChain();
-
-    private readonly BaseVacanciesFilterChain _unknownExperienceVacanciesFilterChain =
-        new UnknownExperienceVacanciesFilterChain();
-
-    private readonly BaseVacanciesFilterChain _unknownPayVacanciesFilterChain = new UnknownPayVacanciesFilterChain();
-
     private readonly ISubscriptionRepository _subscriptionRepository;
     private readonly IFareRuleRepository _fareRuleRepository;
     private readonly IVacancyNotificationsService _vacancyNotificationsService;
@@ -94,7 +57,6 @@ internal sealed class VacancyService : IVacancyService
     private readonly IProjectRepository _projectRepository;
     private readonly IMailingsService _mailingsService;
     private readonly IVacancyModerationRepository _vacancyModerationRepository;
-
     private readonly IDiscordService _discordService;
 
     /// <summary>
@@ -116,8 +78,7 @@ internal sealed class VacancyService : IVacancyService
         ISubscriptionRepository subscriptionRepository,
         IFareRuleRepository fareRuleRepository,
         IVacancyNotificationsService vacancyNotificationsService, 
-        IProjectRepository projectRepository,
-        IFillColorVacanciesService fillColorVacanciesService, 
+        IProjectRepository projectRepository, 
         IMailingsService mailingsService, 
         IVacancyModerationRepository vacancyModerationRepository,
         IDiscordService discordService)
@@ -132,25 +93,9 @@ internal sealed class VacancyService : IVacancyService
         _fareRuleRepository = fareRuleRepository;
         _vacancyNotificationsService = vacancyNotificationsService;
         _projectRepository = projectRepository;
-        _fillColorVacanciesService = fillColorVacanciesService;
         _mailingsService = mailingsService;
         _vacancyModerationRepository = vacancyModerationRepository;
         _discordService = discordService;
-
-        // Определяем обработчики цепочки фильтров.
-        _salaryFilterVacanciesChain.Successor = _descSalaryVacanciesFilterChain;
-        _descSalaryVacanciesFilterChain.Successor = _ascSalaryVacanciesFilterChain;
-        _ascSalaryVacanciesFilterChain.Successor = _fullEmploymentVacanciesFilterChain;
-        _fullEmploymentVacanciesFilterChain.Successor = _manySixExperienceVacanciesFilterChain;
-        _manySixExperienceVacanciesFilterChain.Successor = _notExperienceVacanciesFilterChain;
-        _notExperienceVacanciesFilterChain.Successor = _notPayVacanciesFilterChain;
-        _notPayVacanciesFilterChain.Successor = _oneThreeExperienceVacanciesFilterChain;
-        _oneThreeExperienceVacanciesFilterChain.Successor = _partialEmploymentVacanciesFilterChain;
-        _partialEmploymentVacanciesFilterChain.Successor = _payVacanciesFilterChain;
-        _payVacanciesFilterChain.Successor = _projectWorkEmploymentVacanciesFilterChain;
-        _projectWorkEmploymentVacanciesFilterChain.Successor = _threeSixExperienceVacanciesFilterChain;
-        _threeSixExperienceVacanciesFilterChain.Successor = _unknownExperienceVacanciesFilterChain;
-        _unknownExperienceVacanciesFilterChain.Successor = _unknownPayVacanciesFilterChain;
     }
 
     #region Публичные методы.
@@ -305,25 +250,27 @@ internal sealed class VacancyService : IVacancyService
     {
         try
         {
-            var catalogVacancies = await _vacancyRepository.CatalogVacanciesAsync();
-            var result = new CatalogVacancyResultOutput { CatalogVacancies = new List<CatalogVacancyOutput>() };
+            var result = new CatalogVacancyResultOutput
+            {
+                CatalogVacancies = await _vacancyRepository.CatalogVacanciesAsync()
+            };
 
-            if (!catalogVacancies.Any())
+            if (!result.CatalogVacancies.Any())
             {
                 return result;
             }
 
-            await DeleteIfVacancyRemarksAsync(catalogVacancies);
+            await DeleteIfVacancyRemarksAsync(result.CatalogVacancies.AsList());
 
             // TODO: Выпилить, если у нас не будет выделения цветами тарифов.
             // Выбираем пользователей, у которых есть подписка выше бизнеса. Только их выделяем цветом.
             // result.CatalogVacancies = await _fillColorVacanciesService.SetColorBusinessVacancies(catalogVacancies,
             //     _subscriptionRepository, _fareRuleRepository);
             
-            FormatCatalogVacancies(catalogVacancies);
+            FormatCatalogVacancies(result.CatalogVacancies.AsList());
             
             // Проставляем вакансиям теги, в зависимости от подписки владельца вакансии.
-            result.CatalogVacancies = await SetVacanciesTags(result.CatalogVacancies.ToList());
+            result.CatalogVacancies = await SetVacanciesTags(result.CatalogVacancies.AsList());
 
             return result;
         }
@@ -495,14 +442,15 @@ internal sealed class VacancyService : IVacancyService
     {
         try
         {
-            var result = new CatalogVacancyResultOutput();
+            var result = new CatalogVacancyResultOutput
+            {
+                CatalogVacancies = new List<CatalogVacancyOutput>()
+            };
 
             // Разбиваем строку занятости, так как там может приходить несколько значений в строке.
             filters.Employments = CreateEmploymentsBuilder.CreateEmploymentsResult(filters.EmploymentsValues);
-            
-            var items = await _vacancyRepository.CatalogVacanciesWithoutMemoryAsync();
-            
-            result.CatalogVacancies = await _salaryFilterVacanciesChain.FilterVacanciesAsync(filters, items);
+
+            result.CatalogVacancies = await _vacancyRepository.FilterVacanciesAsync(filters);
 
             return result;
         }
