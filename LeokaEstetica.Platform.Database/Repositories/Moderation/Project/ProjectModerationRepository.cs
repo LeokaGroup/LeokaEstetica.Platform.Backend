@@ -100,19 +100,24 @@ internal sealed class ProjectModerationRepository : IProjectModerationRepository
             return false;
         }
 
-        var project = await _pgContext.UserProjects
-            .FirstOrDefaultAsync(v => v.ProjectId == projectId);
+        var ifExistsProject = await _pgContext.UserProjects.AnyAsync(v => v.ProjectId == projectId);
 
-        if (project is null)
+        if (ifExistsProject)
         {
             throw new InvalidOperationException($"Не удалось найти проект. ProjectId = {projectId}");
         }
-
-        // Добавляем проект в каталог.
-        await _pgContext.CatalogProjects.AddAsync(new CatalogProjectEntity
+        
+        // Проверяем, есть ли уже такой проект в каталоге проектов.
+        var ifExistsCatalogProject = await _pgContext.CatalogProjects.AnyAsync(x => x.ProjectId == projectId);
+        
+        if (!ifExistsCatalogProject)
         {
-            ProjectId = projectId
-        });
+            // Добавляем проект в каталог.
+            await _pgContext.CatalogProjects.AddAsync(new CatalogProjectEntity
+            {
+                ProjectId = projectId
+            });
+        }
 
         await _pgContext.SaveChangesAsync();
 
