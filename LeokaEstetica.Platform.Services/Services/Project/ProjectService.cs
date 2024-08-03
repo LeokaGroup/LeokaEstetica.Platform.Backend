@@ -567,9 +567,8 @@ internal sealed class ProjectService : IProjectService
 
             var remarks = await _projectModerationRepository.GetProjectRemarksAsync(projectId);
             result.ProjectRemarks = _mapper.Map<IEnumerable<ProjectRemarkOutput>>(remarks);
-
-            //Очищаем теги
-            result = ClearProjectHtmlTags(result);
+            
+            await ClearProjectFieldsHtmlTagsAsync(result);
 
             return result;
         }
@@ -2047,21 +2046,17 @@ internal sealed class ProjectService : IProjectService
 
 
 	/// <summary>
-	/// Метод чистит поля textarea от тегов в проекте
+	/// Метод чистит поля проекта от html-тегов.
 	/// </summary>
-	/// <param name="projects">Список проектов.</param>
-	/// <returns>Список проектов после очистки.</returns>
-	private ProjectOutput ClearProjectHtmlTags(ProjectOutput projects)
+	/// <param name="project">Данные проекта.</param>
+	/// <returns>Данные проекта после очистки.</returns>
+	private async Task ClearProjectFieldsHtmlTagsAsync(ProjectOutput project)
     {
+        project.ProjectDetails = ClearHtmlBuilder.Clear(project.ProjectDetails);
+        project.Demands= ClearHtmlBuilder.Clear(project.Demands);
+        project.Conditions= ClearHtmlBuilder.Clear(project.Conditions);
 
-
-		projects.ProjectDetails = ClearHtmlBuilder.Clear(projects.ProjectDetails);
-
-        projects.Demands= ClearHtmlBuilder.Clear(projects.Demands);
-
-        projects.Conditions= ClearHtmlBuilder.Clear(projects.Conditions);
-
-		return projects;
+        await Task.CompletedTask;
     }
 
 	/// <summary>
