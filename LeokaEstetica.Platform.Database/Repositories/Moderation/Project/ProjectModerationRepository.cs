@@ -80,6 +80,7 @@ internal sealed class ProjectModerationRepository : IProjectModerationRepository
                 },
                 DateModeration = p.DateModeration
             })
+            .OrderByDescending(p => p.UserProject.DateCreated)
             .ToListAsync();
 
         return result;
