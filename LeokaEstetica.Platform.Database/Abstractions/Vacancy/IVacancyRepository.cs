@@ -37,12 +37,6 @@ public interface IVacancyRepository
     /// </summary>
     /// <returns>Список вакансий.</returns>
     Task<List<CatalogVacancyOutput>> CatalogVacanciesAsync();
-    
-    /// <summary>
-    /// Метод получает список вакансий для каталога (без выгрузки в память).
-    /// </summary>
-    /// <returns>Список вакансий.</returns>
-    Task<IOrderedQueryable<CatalogVacancyOutput>> CatalogVacanciesWithoutMemoryAsync();
 
     /// <summary>
     /// Метод получает названия полей для таблицы вакансий проектов пользователя.
@@ -136,11 +130,11 @@ public interface IVacancyRepository
     /// <param name="userId">Id пользователя.</param>
     /// <returns>Список архивированных вакансий.</returns>
     Task<IEnumerable<ArchivedVacancyEntity>> GetUserVacanciesArchiveAsync(long userId);
-    
+
     /// <summary>
-    /// Метод получает кол-во вакансий пользователя в каталоге.
+    /// Метод фильтрует вакансии в соответствии с фильтрами.
     /// </summary>
-    /// <param name="userId">Id пользователя.</param>
-    /// <returns>Кол-во вакансий в каталоге.</returns>
-    Task<long> GetUserVacanciesCatalogCountAsync(long userId);
+    /// <param name="filters">Фильтры.</param>
+    /// <returns>Список вакансий после фильтрации.</returns>
+    Task<IEnumerable<CatalogVacancyOutput>> FilterVacanciesAsync(FilterVacancyInput filters);
 }
