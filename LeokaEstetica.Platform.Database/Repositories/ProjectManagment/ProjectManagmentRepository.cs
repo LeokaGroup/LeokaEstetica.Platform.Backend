@@ -2380,7 +2380,7 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
                     "INNER JOIN \"Teams\".\"ProjectsTeamsMembers\" AS ptm " +
                     "ON pt.\"TeamId\" = ptm.\"TeamId\" " +
                     "WHERE ptm.\"UserId\" = @userId " +
-                    "ORDER BY pw.workspace_id";
+                    "ORDER BY pw.workspace_id DESC";
 
         var result = await connection.QueryAsync<WorkSpaceOutput>(query, parameters);
 
