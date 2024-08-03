@@ -99,20 +99,17 @@ internal sealed class ProjectModerationRepository : IProjectModerationRepository
             return false;
         }
 
-        var project = await _pgContext.UserProjects
-            .FirstOrDefaultAsync(v => v.ProjectId == projectId);
+        var ifExistsProject = await _pgContext.UserProjects.AnyAsync(v => v.ProjectId == projectId);
 
-        if (project is null)
+        if (ifExistsProject)
         {
             throw new InvalidOperationException($"Не удалось найти проект. ProjectId = {projectId}");
         }
         
-        //Проверяем есть ли уже проект в таблице
-        var catalogProjects = await _pgContext.CatalogProjects
-            .Where(cpe => cpe.ProjectId == projectId)
-            .ToListAsync();
+        // Проверяем, есть ли уже такой проект в каталоге проектов.
+        var ifExistsCatalogProject = await _pgContext.CatalogProjects.AnyAsync(x => x.ProjectId == projectId);
         
-        if (catalogProjects.Count == 0)
+        if (!ifExistsCatalogProject)
         {
             // Добавляем проект в каталог.
             await _pgContext.CatalogProjects.AddAsync(new CatalogProjectEntity
