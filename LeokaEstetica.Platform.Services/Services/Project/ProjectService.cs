@@ -574,6 +574,8 @@ internal sealed class ProjectService : IProjectService
 
             var remarks = await _projectModerationRepository.GetProjectRemarksAsync(projectId);
             result.ProjectRemarks = _mapper.Map<IEnumerable<ProjectRemarkOutput>>(remarks);
+            
+            await ClearProjectFieldsHtmlTagsAsync(result);
 
             return result;
         }
@@ -2049,12 +2051,27 @@ internal sealed class ProjectService : IProjectService
         return projects;
     }
 
-    /// <summary>
-    /// Метод отправляет пользователю уведомление на почту о приглашении его в проект.
-    /// </summary>
-    /// <param name="projectId">Id проекта.</param>
-    /// <param name="inviteUserId">Id пользователя, которого пригласили в проект.</param>
-    private async Task SendEmailNotificationInviteTeamProjectAsync(long projectId, long inviteUserId,
+
+	/// <summary>
+	/// Метод чистит поля проекта от html-тегов.
+	/// </summary>
+	/// <param name="project">Данные проекта.</param>
+	/// <returns>Данные проекта после очистки.</returns>
+	private async Task ClearProjectFieldsHtmlTagsAsync(ProjectOutput project)
+    {
+        project.ProjectDetails = ClearHtmlBuilder.Clear(project.ProjectDetails);
+        project.Demands= ClearHtmlBuilder.Clear(project.Demands);
+        project.Conditions= ClearHtmlBuilder.Clear(project.Conditions);
+
+        await Task.CompletedTask;
+    }
+
+	/// <summary>
+	/// Метод отправляет пользователю уведомление на почту о приглашении его в проект.
+	/// </summary>
+	/// <param name="projectId">Id проекта.</param>
+	/// <param name="inviteUserId">Id пользователя, которого пригласили в проект.</param>
+	private async Task SendEmailNotificationInviteTeamProjectAsync(long projectId, long inviteUserId,
         string projectName)
     {
         // Находим данные пользователя.
