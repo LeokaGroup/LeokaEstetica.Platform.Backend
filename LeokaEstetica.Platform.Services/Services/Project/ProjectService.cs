@@ -1601,16 +1601,26 @@ internal sealed class ProjectService : IProjectService
         return projects;
     }
 
-    #endregion
+	/// <summary>
+	/// Метод обновляет видимость проекта
+	/// </summary>
+	/// <param name="projectId">Id проекта.</param>
+	/// <param name="isPublic">Видимость проекта.</param>
+	public async Task UpdateVisibleProjectAsync(long projectId,bool isPublic)
+    {
+        await _projectRepository.UpdateVisibleProjectAsync(projectId, isPublic);
+	}
 
-    #region Приватные методы.
+	#endregion
 
-    /// <summary>
-    /// Метод записывает данные участников команды проекта.
-    /// </summary>
-    /// <param name="teamMembers">Список участников команды проекта.</param>
-    /// <returns>Список с изменениями.</returns>
-    private async Task<List<ProjectTeamOutput>> CreateProjectTeamResultAsync(
+	#region Приватные методы.
+
+	/// <summary>
+	/// Метод записывает данные участников команды проекта.
+	/// </summary>
+	/// <param name="teamMembers">Список участников команды проекта.</param>
+	/// <returns>Список с изменениями.</returns>
+	private async Task<List<ProjectTeamOutput>> CreateProjectTeamResultAsync(
         IEnumerable<ProjectTeamMemberEntity> teamMembers)
     {
         var result = new List<ProjectTeamOutput>();

@@ -1353,13 +1353,37 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
         await connection.ExecuteAsync(query, parameters);
     }
 
-    #region Приватные методы.
+	/// <summary>
+	/// Метод обновляет видимость проекта
+	/// </summary>
+	/// <param name="projectId">Id проекта.</param>
+	/// <param name="isPublic">Видимость проекта.</param>
+	public async Task UpdateVisibleProjectAsync(long projectId, bool isPublic)
+    {
+		using var connection = await ConnectionProvider.GetConnectionAsync();
 
-    /// Метод првоеряет, был ли уже такой проект на модерации. 
-    /// </summary>
-    /// <param name="projectId">Id проекта.</param>
-    /// <returns>Признак модерации.</returns>
-    private async Task<bool> IsModerationExistsProjectAsync(long projectId)
+		var parameters = new DynamicParameters();
+        parameters.Add("@projectId", projectId);
+        parameters.Add("@isPublic",isPublic);
+
+        var query = "UPDATE \"Projects\".\"UserProjects\"" +
+                    "SET \"IsPublic\" = @isPublic " +
+                    "WHERE \"ProjectId\" = @projectId ";
+
+        //var query = "UPDATE \"Projects\".\"UserProjects\" SET \"IsPublic\"=false WHERE \"ProjectId\"=@projectId";
+
+
+
+
+        await connection.ExecuteAsync(query,parameters);
+	}
+	#region Приватные методы.
+
+	/// Метод првоеряет, был ли уже такой проект на модерации. 
+	/// </summary>
+	/// <param name="projectId">Id проекта.</param>
+	/// <returns>Признак модерации.</returns>
+	private async Task<bool> IsModerationExistsProjectAsync(long projectId)
     {
         var result = await _pgContext.ModerationProjects
             .AnyAsync(p => p.ProjectId == projectId);

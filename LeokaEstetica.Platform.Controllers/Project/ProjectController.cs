@@ -765,4 +765,20 @@ public class ProjectController : BaseController
         await _projectService.SetProjectTeamMemberRoleAsync(teamMemberRoleInput.UserId, teamMemberRoleInput.Role,
             teamMemberRoleInput.ProjectId);
     }
+
+	/// <summary>
+	/// Метод обновляет видимость проекта
+	/// </summary>
+	/// <param name="projectId">Id проекта.</param>
+	[HttpPatch]
+	[Route("visible-project")]
+	[ProducesResponseType(200)]
+	[ProducesResponseType(400)]
+	[ProducesResponseType(403)]
+	[ProducesResponseType(500)]
+	[ProducesResponseType(404)]
+	public async Task UpdateVisibleProjectAsync([FromQuery] long projectId, [FromQuery] bool isPublic)
+	{
+        await _projectService.UpdateVisibleProjectAsync(projectId,isPublic);
+	}
 }

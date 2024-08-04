@@ -103,4 +103,9 @@ public class ProjectOutput : ProjectRemarkResult, IFrontError
     /// Префикс названия проекта для модуля УП (управление проектами).
     /// </summary>
     public string ProjectManagementNamePrefix { get; set; }
+    
+    /// <summary>
+    /// Признак видимости проекта
+    /// </summary>
+    public bool IsPublic { get; set; }
 }
