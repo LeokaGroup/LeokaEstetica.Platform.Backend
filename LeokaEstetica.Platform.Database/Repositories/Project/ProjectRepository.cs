@@ -963,10 +963,10 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
             var deleteProjectWorkSpaceParameters = new DynamicParameters();
             deleteProjectWorkSpaceParameters.Add("@projectId", projectId);
             deleteProjectWorkSpaceParameters.Add("@companyId", companyId);
-            
+
             var deleteProjectWorkSpaceQuery = "DELETE FROM project_management.workspaces " +
-                                                   "WHERE project_id = @projectId " +
-                                                   "AND organization_id = @companyId";
+                                              "WHERE project_id = @projectId " +
+                                              "AND organization_id = @companyId";
 
             await connection.ExecuteAsync(deleteProjectWorkSpaceQuery, deleteProjectWorkSpaceParameters);
 
