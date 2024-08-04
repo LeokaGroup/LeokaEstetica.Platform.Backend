@@ -750,10 +750,11 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
     /// <param name="userId">Id пользователя.</param>
-    /// <returns>Признак результата удаления, список вакансий, которые отвязаны от проекта, название проекта.</returns>
+    /// <returns>Кортеж с результатами.</returns>
     public async Task<(bool Success, List<string> RemovedVacancies, string ProjectName)> RemoveProjectAsync(
         long projectId, long userId)
     {
+        // TODO: Заменим на транзакцию от ADO.NET, когда перепишем EF Core тут на Dapper.
         await using var transaction = await _pgContext.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted);
         
         var result = (Success: false, RemovedVacancies: new List<string>(), ProjectName: string.Empty);
