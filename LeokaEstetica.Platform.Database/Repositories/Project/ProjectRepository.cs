@@ -939,6 +939,37 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
                                                     
             await connection.ExecuteAsync(deleteSprintDurationSettingsQuery, deleteSprintDurationSettingsParameters);
 
+            var companyIdParameters = new DynamicParameters();
+            companyIdParameters.Add("@projectId", projectId);
+
+            var companyIdQuery = "SELECT organization_id " +
+                                 "FROM project_management.organization_projects " +
+                                 "WHERE project_id = @projectId";
+            
+            var companyId = await connection.ExecuteScalarAsync<long>(companyIdQuery, companyIdParameters);
+
+            // Удаляем проект из проектов компании.
+            var deleteCompanyProjectParameters = new DynamicParameters();
+            deleteCompanyProjectParameters.Add("@projectId", projectId);
+            deleteCompanyProjectParameters.Add("@companyId", companyId);
+
+            var deleteCompanyProjectQuery = "DELETE FROM project_management.organization_projects " +
+                                            "WHERE project_id = @projectId " +
+                                            "AND organization_id = @companyId";
+
+            await connection.ExecuteAsync(deleteCompanyProjectQuery, deleteCompanyProjectParameters);
+            
+            // Удаляем проект из общего пространства компании.
+            var deleteProjectWorkSpaceParameters = new DynamicParameters();
+            deleteProjectWorkSpaceParameters.Add("@projectId", projectId);
+            deleteProjectWorkSpaceParameters.Add("@companyId", companyId);
+            
+            var deleteProjectWorkSpaceQuery = "DELETE FROM project_management.workspaces " +
+                                                   "WHERE project_id = @projectId " +
+                                                   "AND organization_id = @companyId";
+
+            await connection.ExecuteAsync(deleteProjectWorkSpaceQuery, deleteProjectWorkSpaceParameters);
+
             // Удаляем проект пользователя.
             var userProject = await _pgContext.UserProjects
                 .FirstOrDefaultAsync(p => p.ProjectId == projectId 
