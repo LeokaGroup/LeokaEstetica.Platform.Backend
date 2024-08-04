@@ -568,9 +568,9 @@ public class ProjectController : BaseController
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task DeleteProjectAsync([FromRoute] long projectId)
+    public async Task RemoveProjectAsync([FromRoute] long projectId)
     {
-        await _projectService.DeleteProjectAsync(projectId, GetUserName(), CreateTokenFromHeader());
+        await _projectService.RemoveProjectAsync(projectId, GetUserName(), CreateTokenFromHeader());
     }
 
     /// <summary>

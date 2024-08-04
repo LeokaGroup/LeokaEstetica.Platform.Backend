@@ -1169,7 +1169,7 @@ internal sealed class ProjectService : IProjectService
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
     /// <param name="account">Аккаунт.</param>
-    public async Task DeleteProjectAsync(long projectId, string account, string token)
+    public async Task RemoveProjectAsync(long projectId, string account, string? token)
     {
         try
         {
@@ -1199,7 +1199,7 @@ internal sealed class ProjectService : IProjectService
                 throw ex;
             }
 
-            var removedProject = await _projectRepository.DeleteProjectAsync(projectId, userId);
+            var removedProject = await _projectRepository.RemoveProjectAsync(projectId, userId);
             
             if (!removedProject.Success)
             {

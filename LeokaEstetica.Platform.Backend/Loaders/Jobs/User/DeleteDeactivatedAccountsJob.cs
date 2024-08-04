@@ -106,7 +106,7 @@ public class DeleteDeactivatedAccountsJob : BackgroundService
                     {
                         // Удаляем проект и все связанное с ним.
                         // Токен не передаем, так как уведомления показывать не надо в этом кейсе.
-                        await _projectService.DeleteProjectAsync(p.ProjectId, u.Email, null);
+                        await _projectService.RemoveProjectAsync(p.ProjectId, u.Email, null);
                     }
                 }
 

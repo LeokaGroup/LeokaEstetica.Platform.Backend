@@ -751,246 +751,76 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
     /// <param name="projectId">Id проекта.</param>
     /// <param name="userId">Id пользователя.</param>
     /// <returns>Признак результата удаления, список вакансий, которые отвязаны от проекта, название проекта.</returns>
-    public async Task<(bool Success, List<string> RemovedVacancies, string ProjectName)> DeleteProjectAsync(
+    public async Task<(bool Success, List<string> RemovedVacancies, string ProjectName)> RemoveProjectAsync(
         long projectId, long userId)
     {
-        var tran = await _pgContext.Database
-            .BeginTransactionAsync(IsolationLevel.ReadCommitted);
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+        using var transaction = connection.BeginTransaction(IsolationLevel.ReadCommitted);
         
         var result = (Success: false, RemovedVacancies: new List<string>(), ProjectName: string.Empty);
 
         try
         {
             // Удаляем вакансии проекта.
-            var projectVacancies = _pgContext.ProjectVacancies
-                .Where(v => v.ProjectId == projectId)
-                .AsQueryable();
-
-            if (await projectVacancies.AnyAsync())
-            {
-                // Записываем названия вакансий, которые будут удалены.
-                var removedVacanciesNames = projectVacancies.Select(v => v.UserVacancy.VacancyName);
-                result.RemovedVacancies.AddRange(removedVacanciesNames);
-                
-                _pgContext.ProjectVacancies.RemoveRange(projectVacancies);
-            }
+            await RemoveProjectVacanciesAsync(projectId, result);
 
             // Удаляем чат диалога и все сообщения по Id текущего пользователя.
-            var projectDialogs = await _chatRepository.GetDialogsAsync(userId);
+            await RemoveProjectChatAsync(userId, projectId);
 
-            // Если у проекта есть диалоги.
-            if (projectDialogs is not null && projectDialogs.Count > 0)
-            {
-                // Перед удалением диалога, сначала смотрим сообщения диалога.
-                foreach (var d in projectDialogs)
-                {
-                    var projectDialogMessages = await _chatRepository.GetDialogMessagesAsync(d.DialogId, false);
+            // Удаляем команду проекта.
+            await RemoveUserProjectTeamAsync(projectId);
 
-                    // Если есть сообщения, дропаем их.
-                    if (projectDialogMessages is not null && projectDialogMessages.Count > 0)
-                    {
-                        _pgContext.DialogMessages.RemoveRange(projectDialogMessages);
+            // Удаляем комментарии проекта.
+            await RemoveProjectCommentsAsync(projectId);
 
-                        // Дропаем участников диалога.
-                        var dialogMembers = await _chatRepository.GetDialogMembersByDialogIdAsync(d.DialogId);
-
-                        if (dialogMembers is not null && dialogMembers.Count > 0)
-                        {
-                            _pgContext.DialogMembers.RemoveRange(dialogMembers);
-                        }
-                    }
-                }
-            }
-            
-            // Иначе будем искать диалоги по ProjectId.
-            else
-            {
-                var prjDialogs = await _pgContext.Dialogs
-                    .Where(d => d.ProjectId == projectId)
-                    .ToListAsync();
-                
-                // Перед удалением диалога, сначала смотрим сообщения диалога.
-                foreach (var d in prjDialogs)
-                {
-                    // TODO: Если при удалении проекта надо будет также чистить сообщения нейросети, то тут доработать.
-                    var projectDialogMessages = await _chatRepository.GetDialogMessagesAsync(d.DialogId, false);
-
-                    // Если есть сообщения, дропаем их.
-                    if (projectDialogMessages is not null && projectDialogMessages.Count > 0)
-                    {
-                        _pgContext.DialogMessages.RemoveRange(projectDialogMessages);
-                    }
-                    
-                    // Дропаем участников диалога.
-                    var dialogMembers = await _chatRepository.GetDialogMembersByDialogIdAsync(d.DialogId);
-
-                    if (dialogMembers is not null && dialogMembers.Count > 0)
-                    {
-                        _pgContext.DialogMembers.RemoveRange(dialogMembers);
-                            
-                        // Применяем сохранение здесь, так как каталог проектов имеет FK на диалог и иначе не даст удалить.
-                        await _pgContext.SaveChangesAsync();
-                    }
-                }
-            }
-
-            // Смотрим команду проекта.
-            var projectTeam = await GetProjectTeamAsync(projectId);
-
-            if (projectTeam is not null)
-            {
-                _pgContext.ProjectsTeams.Remove(projectTeam);
-            }
-
-            // Получаем комментарии проекта.
-            var projectComments = await GetProjectCommentsAsync(projectId);
-
-            if (projectComments is not null && projectComments.Count > 0)
-            {
-                // Дропаем комментарии проекта из модерации.
-                var moderationProjectComments = _pgContext.ProjectCommentsModeration
-                    .Where(c => c.ProjectComment.ProjectId == projectId)
-                    .AsQueryable();
-
-                if (await moderationProjectComments.AnyAsync())
-                {
-                    _pgContext.ProjectCommentsModeration.RemoveRange(moderationProjectComments);
-                }
-
-                _pgContext.ProjectComments.RemoveRange(projectComments);
-            }
-            
             // Удаляем основную информацию диалога.
-            var mainInfoDialog = await _pgContext.Dialogs.FirstOrDefaultAsync(d => d.ProjectId == projectId);
+            await RemoveMainInfoDialogAsync(projectId);
 
-            if (mainInfoDialog is not null)
-            {
-                _pgContext.Dialogs.Remove(mainInfoDialog);
-                
-                // Применяем сохранение здесь, так как каталог проектов имеет FK на диалог и иначе не даст удалить.
-                await _pgContext.SaveChangesAsync();
-            }
-            
             // Удаляем проект из каталога.
-            var catalogProject = await _pgContext.CatalogProjects
-                .FirstOrDefaultAsync(p => p.ProjectId == projectId);
-
-            if (catalogProject is not null)
-            {
-                _pgContext.CatalogProjects.Remove(catalogProject);   
-            }
+            await RemoveProjectCatalogAsync(projectId);
 
             // Удаляем проект из статусов.
-            var projectStatus = await _pgContext.ProjectStatuses
-                .FirstOrDefaultAsync(p => p.ProjectId == projectId);
-            
-            if (projectStatus is not null)
-            {
-                _pgContext.ProjectStatuses.Remove(projectStatus);
-            }
+            await RemoveProjectStatusAsync(projectId);
 
             // Удаляем проект из модерации.
-            var moderationProject = await _pgContext.ModerationProjects
-                .FirstOrDefaultAsync(p => p.ProjectId == projectId);
-            
-            if (moderationProject is not null)
-            {
-                _pgContext.ModerationProjects.Remove(moderationProject);
-            }
-            
+            await RemoveProjectModerationAsync(projectId);
+
             // Удаляем проект из стадий.
-            var projectStage = await _pgContext.UserProjectsStages
-                .FirstOrDefaultAsync(p => p.ProjectId == projectId);
+            await RemoveProjectStagesAsync(projectId);
 
-            if (projectStage is not null)
-            {
-                _pgContext.UserProjectsStages.Remove(projectStage);
-            }
-            
-            using var connection = await ConnectionProvider.GetConnectionAsync();
+            // Удаляем настройки проекта.
+            await RemoveMoveNotCompletedTasksSettingsAsync(projectId, connection);
 
-            // Удаляем настройки проекта, так как проект имеет ссылки.
-            var deleteMoveNotCompletedTasksSettingsParameters = new DynamicParameters();
-            deleteMoveNotCompletedTasksSettingsParameters.Add("@projectId", projectId);
+            // Удаляем стратегию проекта.
+            await RemoveProjectUserStrategyAsync(projectId, connection, userId);
 
-            var deleteMoveNotCompletedTasksSettingsQuery = "DELETE FROM settings.move_not_completed_tasks_settings " +
-                                                           "WHERE project_id = @projectId";
-
-            await connection.ExecuteAsync(deleteMoveNotCompletedTasksSettingsQuery,
-                deleteMoveNotCompletedTasksSettingsParameters);
-            
-            // Удаляем стратегию проекта, так как проект имеет ссылки.
-            var deleteProjectUserStrategyParameters = new DynamicParameters();
-            deleteProjectUserStrategyParameters.Add("@projectId", projectId);
-            deleteProjectUserStrategyParameters.Add("@userId", userId);
-
-            var deleteProjectUserStrategyQuery = "DELETE FROM settings.project_user_strategy " +
-                                                 "WHERE project_id = @projectId " +
-                                                 "AND user_id = @userId";
-
-            await connection.ExecuteAsync(deleteProjectUserStrategyQuery, deleteProjectUserStrategyParameters);
-            
-            // Удаляем настройки длительности спринтов, так как проект имеет ссылки.
-            var deleteSprintDurationSettingsParameters = new DynamicParameters();
-            deleteSprintDurationSettingsParameters.Add("@projectId", projectId);
-
-            var deleteSprintDurationSettingsQuery = "DELETE FROM settings.sprint_duration_settings " +
-                                                    "WHERE project_id = @projectId";
-                                                    
-            await connection.ExecuteAsync(deleteSprintDurationSettingsQuery, deleteSprintDurationSettingsParameters);
-
-            var companyIdParameters = new DynamicParameters();
-            companyIdParameters.Add("@projectId", projectId);
-
-            var companyIdQuery = "SELECT organization_id " +
-                                 "FROM project_management.organization_projects " +
-                                 "WHERE project_id = @projectId";
-            
-            var companyId = await connection.ExecuteScalarAsync<long>(companyIdQuery, companyIdParameters);
+            // Удаляем настройки длительности спринтов.
+            await RemoveSprintDurationSettingsAsync(projectId, connection);
 
             // Удаляем проект из проектов компании.
-            var deleteCompanyProjectParameters = new DynamicParameters();
-            deleteCompanyProjectParameters.Add("@projectId", projectId);
-            deleteCompanyProjectParameters.Add("@companyId", companyId);
+            var companyId = await RemoveProjectCompanyAsync(projectId, connection);
 
-            var deleteCompanyProjectQuery = "DELETE FROM project_management.organization_projects " +
-                                            "WHERE project_id = @projectId " +
-                                            "AND organization_id = @companyId";
-
-            await connection.ExecuteAsync(deleteCompanyProjectQuery, deleteCompanyProjectParameters);
-            
             // Удаляем проект из общего пространства компании.
-            var deleteProjectWorkSpaceParameters = new DynamicParameters();
-            deleteProjectWorkSpaceParameters.Add("@projectId", projectId);
-            deleteProjectWorkSpaceParameters.Add("@companyId", companyId);
-
-            var deleteProjectWorkSpaceQuery = "DELETE FROM project_management.workspaces " +
-                                              "WHERE project_id = @projectId " +
-                                              "AND organization_id = @companyId";
-
-            await connection.ExecuteAsync(deleteProjectWorkSpaceQuery, deleteProjectWorkSpaceParameters);
+            await RemoveProjectWorkSpaceAsync(projectId, companyId, connection);
 
             // Удаляем проект пользователя.
-            var userProject = await _pgContext.UserProjects
-                .FirstOrDefaultAsync(p => p.ProjectId == projectId 
-                                          && p.UserId == userId);
-
-            if (userProject is not null)
-            {
-                // Записываем название проекта, который будет удален.
-                result.ProjectName = userProject.ProjectName;
-                
-                _pgContext.UserProjects.Remove(userProject);
-            }
+            await RemoveUserProjectAsync(projectId, userId, result);
 
             await _pgContext.SaveChangesAsync();
-            await tran.CommitAsync();
+
+            transaction.Commit();
         }
 
         catch
         {
-            await tran.RollbackAsync();
+            transaction.Rollback();
             throw;
+        }
+
+        finally
+        {
+            connection.Dispose();
+            transaction.Dispose();
         }
 
         result.Success = true;
@@ -1348,6 +1178,8 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
         prj!.ProjectManagementName = projectManagementName;
         
         await _pgContext.SaveChangesAsync();
+        
+        await Task.CompletedTask;
     }
 
     /// <inheritdoc />
@@ -1366,6 +1198,8 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
                     "AND \"TeamId\" = @teamId";
         
         await connection.ExecuteAsync(query, parameters);
+        
+        await Task.CompletedTask;
     }
 
     /// <inheritdoc />
@@ -1382,6 +1216,8 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
                     "AND \"TeamId\" = @teamId";
                     
         await connection.ExecuteAsync(query, parameters);
+        
+        await Task.CompletedTask;
     }
 
     #region Приватные методы.
@@ -1413,6 +1249,8 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
         }
         
         prj.ModerationStatusId = (int)status;
+        
+        await Task.CompletedTask;
     }
 
     /// <summary>
@@ -1441,6 +1279,365 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
         }
 
         await _pgContext.SaveChangesAsync();
+        
+        await Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Метод удаляет вакансии проекта.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="result">Кортеж результата.</param>
+    private async Task RemoveProjectVacanciesAsync(long projectId,
+        (bool Success, List<string> RemovedVacancies, string ProjectName) result)
+    {
+        // Удаляем вакансии проекта.
+        var projectVacancies = _pgContext.ProjectVacancies
+            .Where(v => v.ProjectId == projectId)
+            .AsQueryable();
+
+        if (await projectVacancies.AnyAsync())
+        {
+            // Записываем названия вакансий, которые будут удалены.
+            var removedVacanciesNames = projectVacancies.Select(v => v.UserVacancy.VacancyName);
+            result.RemovedVacancies.AddRange(removedVacanciesNames);
+                
+            _pgContext.ProjectVacancies.RemoveRange(projectVacancies);
+        }
+
+        await Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Метод удаляет чат и все сообщения в проекте.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <param name="projectId">Id проекта.</param>
+    private async Task RemoveProjectChatAsync(long userId, long projectId)
+    {
+        var projectDialogs = await _chatRepository.GetDialogsAsync(userId);
+
+        // Если у проекта есть диалоги.
+        if (projectDialogs is not null && projectDialogs.Count > 0)
+        {
+            // Перед удалением диалога, сначала смотрим сообщения диалога.
+            foreach (var d in projectDialogs)
+            {
+                var projectDialogMessages = await _chatRepository.GetDialogMessagesAsync(d.DialogId, false);
+
+                // Если есть сообщения, дропаем их.
+                if (projectDialogMessages is not null && projectDialogMessages.Count > 0)
+                {
+                    _pgContext.DialogMessages.RemoveRange(projectDialogMessages);
+
+                    // Дропаем участников диалога.
+                    var dialogMembers = await _chatRepository.GetDialogMembersByDialogIdAsync(d.DialogId);
+
+                    if (dialogMembers is not null && dialogMembers.Count > 0)
+                    {
+                        _pgContext.DialogMembers.RemoveRange(dialogMembers);
+                    }
+                }
+            }
+        }
+
+        // Иначе будем искать диалоги по ProjectId.
+        else
+        {
+            var prjDialogs = await _pgContext.Dialogs
+                .Where(d => d.ProjectId == projectId)
+                .ToListAsync();
+
+            // Перед удалением диалога, сначала смотрим сообщения диалога.
+            foreach (var d in prjDialogs)
+            {
+                // TODO: Если при удалении проекта надо будет также чистить сообщения нейросети, то тут доработать.
+                var projectDialogMessages = await _chatRepository.GetDialogMessagesAsync(d.DialogId, false);
+
+                // Если есть сообщения, дропаем их.
+                if (projectDialogMessages is not null && projectDialogMessages.Count > 0)
+                {
+                    _pgContext.DialogMessages.RemoveRange(projectDialogMessages);
+                }
+
+                // Дропаем участников диалога.
+                var dialogMembers = await _chatRepository.GetDialogMembersByDialogIdAsync(d.DialogId);
+
+                if (dialogMembers is not null && dialogMembers.Count > 0)
+                {
+                    _pgContext.DialogMembers.RemoveRange(dialogMembers);
+
+                    // Применяем сохранение здесь, так как каталог проектов имеет FK на диалог и иначе не даст удалить.
+                    await _pgContext.SaveChangesAsync();
+                }
+            }
+        }
+        
+        await Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Метод удаляет команду проекта.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    private async Task RemoveUserProjectTeamAsync(long projectId)
+    {
+        // Смотрим команду проекта.
+        var projectTeam = await GetProjectTeamAsync(projectId);
+
+        if (projectTeam is not null)
+        {
+            _pgContext.ProjectsTeams.Remove(projectTeam);
+        }
+        
+        await Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Метод удаляет комментарии проекта.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    private async Task RemoveProjectCommentsAsync(long projectId)
+    {
+        // Получаем комментарии проекта.
+        var projectComments = await GetProjectCommentsAsync(projectId);
+
+        if (projectComments is not null && projectComments.Count > 0)
+        {
+            // Дропаем комментарии проекта из модерации.
+            var moderationProjectComments = _pgContext.ProjectCommentsModeration
+                .Where(c => c.ProjectComment.ProjectId == projectId)
+                .AsQueryable();
+
+            if (await moderationProjectComments.AnyAsync())
+            {
+                _pgContext.ProjectCommentsModeration.RemoveRange(moderationProjectComments);
+            }
+
+            _pgContext.ProjectComments.RemoveRange(projectComments);
+        }
+        
+        await Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Метод удаляет основную информацию о диалоге проекта.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    private async Task RemoveMainInfoDialogAsync(long projectId)
+    {
+        var mainInfoDialog = await _pgContext.Dialogs.FirstOrDefaultAsync(d => d.ProjectId == projectId);
+
+        if (mainInfoDialog is not null)
+        {
+            _pgContext.Dialogs.Remove(mainInfoDialog);
+                
+            // Применяем сохранение здесь, так как каталог проектов имеет FK на диалог и иначе не даст удалить.
+            await _pgContext.SaveChangesAsync();
+        }
+
+        await Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Метод удаляет проект из каталога проектов.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    private async Task RemoveProjectCatalogAsync(long projectId)
+    {
+        var catalogProject = await _pgContext.CatalogProjects
+            .FirstOrDefaultAsync(p => p.ProjectId == projectId);
+
+        if (catalogProject is not null)
+        {
+            _pgContext.CatalogProjects.Remove(catalogProject);   
+        }
+        
+        await Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Метод удаляет проект из статусов проекта.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    private async Task RemoveProjectStatusAsync(long projectId)
+    {
+        var projectStatus = await _pgContext.ProjectStatuses
+            .FirstOrDefaultAsync(p => p.ProjectId == projectId);
+            
+        if (projectStatus is not null)
+        {
+            _pgContext.ProjectStatuses.Remove(projectStatus);
+        }
+        
+        await Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Метод удаляет проект из модерации проектов.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    private async Task RemoveProjectModerationAsync(long projectId)
+    {
+        var moderationProject = await _pgContext.ModerationProjects
+            .FirstOrDefaultAsync(p => p.ProjectId == projectId);
+            
+        if (moderationProject is not null)
+        {
+            _pgContext.ModerationProjects.Remove(moderationProject);
+        }
+        
+        await Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Метод удаляет проект из стадий проектов.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    private async Task RemoveProjectStagesAsync(long projectId)
+    {
+        var projectStage = await _pgContext.UserProjectsStages
+            .FirstOrDefaultAsync(p => p.ProjectId == projectId);
+
+        if (projectStage is not null)
+        {
+            _pgContext.UserProjectsStages.Remove(projectStage);
+        }
+        
+        await Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Метод удаляет настройки проекта.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="connection">Подключение к БД.</param>
+    private async Task RemoveMoveNotCompletedTasksSettingsAsync(long projectId, IDbConnection connection)
+    {
+        var deleteMoveNotCompletedTasksSettingsParameters = new DynamicParameters();
+        deleteMoveNotCompletedTasksSettingsParameters.Add("@projectId", projectId);
+
+        var deleteMoveNotCompletedTasksSettingsQuery = "DELETE FROM settings.move_not_completed_tasks_settings " +
+                                                       "WHERE project_id = @projectId";
+
+        await connection.ExecuteAsync(deleteMoveNotCompletedTasksSettingsQuery,
+            deleteMoveNotCompletedTasksSettingsParameters);
+        
+        await Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Метод удаляет стратегию проекта.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="connection">Подключение к БД.</param>
+    /// <param name="userId">Id пользователя.</param>
+    private async Task RemoveProjectUserStrategyAsync(long projectId, IDbConnection connection, long userId)
+    {
+        var deleteProjectUserStrategyParameters = new DynamicParameters();
+        deleteProjectUserStrategyParameters.Add("@projectId", projectId);
+        deleteProjectUserStrategyParameters.Add("@userId", userId);
+
+        var deleteProjectUserStrategyQuery = "DELETE FROM settings.project_user_strategy " +
+                                             "WHERE project_id = @projectId " +
+                                             "AND user_id = @userId";
+
+        await connection.ExecuteAsync(deleteProjectUserStrategyQuery, deleteProjectUserStrategyParameters);
+        
+        await Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Метод удаляет настройки длительности спринтов.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="connection">Подключение к БД.</param>
+    private async Task RemoveSprintDurationSettingsAsync(long projectId, IDbConnection connection)
+    {
+        var deleteSprintDurationSettingsParameters = new DynamicParameters();
+        deleteSprintDurationSettingsParameters.Add("@projectId", projectId);
+
+        var deleteSprintDurationSettingsQuery = "DELETE FROM settings.sprint_duration_settings " +
+                                                "WHERE project_id = @projectId";
+                                                    
+        await connection.ExecuteAsync(deleteSprintDurationSettingsQuery, deleteSprintDurationSettingsParameters);
+        
+        await Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Метод удаляет проект из проектов компании.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="connection">Подключение к БД.</param>
+    /// <returns>Id компании.</returns>
+    private async Task<long> RemoveProjectCompanyAsync(long projectId, IDbConnection connection)
+    {
+        var companyIdParameters = new DynamicParameters();
+        companyIdParameters.Add("@projectId", projectId);
+
+        var companyIdQuery = "SELECT organization_id " +
+                             "FROM project_management.organization_projects " +
+                             "WHERE project_id = @projectId";
+            
+        var companyId = await connection.ExecuteScalarAsync<long>(companyIdQuery, companyIdParameters);
+        
+        var deleteCompanyProjectParameters = new DynamicParameters();
+        deleteCompanyProjectParameters.Add("@projectId", projectId);
+        deleteCompanyProjectParameters.Add("@companyId", companyId);
+
+        var deleteCompanyProjectQuery = "DELETE FROM project_management.organization_projects " +
+                                        "WHERE project_id = @projectId " +
+                                        "AND organization_id = @companyId";
+
+        await connection.ExecuteAsync(deleteCompanyProjectQuery, deleteCompanyProjectParameters);
+
+        return companyId;
+    }
+
+    /// <summary>
+    /// Метод удаляет проект из общего пространства компании.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="companyId">Id компании.</param>
+    /// <param name="connection">Подключение к БД.</param>
+    private async Task RemoveProjectWorkSpaceAsync(long projectId, long companyId, IDbConnection connection)
+    {
+        var deleteProjectWorkSpaceParameters = new DynamicParameters();
+        deleteProjectWorkSpaceParameters.Add("@projectId", projectId);
+        deleteProjectWorkSpaceParameters.Add("@companyId", companyId);
+
+        var deleteProjectWorkSpaceQuery = "DELETE FROM project_management.workspaces " +
+                                          "WHERE project_id = @projectId " +
+                                          "AND organization_id = @companyId";
+
+        await connection.ExecuteAsync(deleteProjectWorkSpaceQuery, deleteProjectWorkSpaceParameters);
+        
+        await Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Метод удаляет проект пользователя.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="userId">Id пользователя.</param>
+    /// <param name="result">Кортеж результата.</param>
+    private async Task RemoveUserProjectAsync(long projectId, long userId,
+        (bool Success, List<string> RemovedVacancies, string ProjectName) result)
+    {
+        var userProject = await _pgContext.UserProjects
+            .FirstOrDefaultAsync(p => p.ProjectId == projectId
+                                      && p.UserId == userId);
+
+        if (userProject is not null)
+        {
+            // Записываем название проекта, который будет удален.
+            result.ProjectName = userProject.ProjectName;
+
+            _pgContext.UserProjects.Remove(userProject);
+        }
+
+        await Task.CompletedTask;
     }
 
     #endregion

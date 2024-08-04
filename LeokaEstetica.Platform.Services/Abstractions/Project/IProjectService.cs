@@ -163,7 +163,7 @@ public interface IProjectService
     /// <param name="projectId">Id проекта.</param>
     /// <param name="account">Аккаунт.</param>
     /// <param name="token">Токен пользователя.</param>
-    Task DeleteProjectAsync(long projectId, string account, string token);
+    Task RemoveProjectAsync(long projectId, string account, string? token);
 
     /// <summary>
     /// Метод получает список вакансий доступных к отклику.
