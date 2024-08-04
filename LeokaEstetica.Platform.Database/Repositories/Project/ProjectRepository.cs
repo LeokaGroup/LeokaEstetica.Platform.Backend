@@ -754,8 +754,7 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
     public async Task<(bool Success, List<string> RemovedVacancies, string ProjectName)> RemoveProjectAsync(
         long projectId, long userId)
     {
-        using var connection = await ConnectionProvider.GetConnectionAsync();
-        using var transaction = connection.BeginTransaction(IsolationLevel.ReadCommitted);
+        await using var transaction = await _pgContext.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted);
         
         var result = (Success: false, RemovedVacancies: new List<string>(), ProjectName: string.Empty);
 
@@ -787,6 +786,8 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
 
             // Удаляем проект из стадий.
             await RemoveProjectStagesAsync(projectId);
+            
+            using var connection = await ConnectionProvider.GetConnectionAsync();
 
             // Удаляем настройки проекта.
             await RemoveMoveNotCompletedTasksSettingsAsync(projectId, connection);
@@ -808,19 +809,13 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
 
             await _pgContext.SaveChangesAsync();
 
-            transaction.Commit();
+            await transaction.CommitAsync();
         }
 
         catch
         {
-            transaction.Rollback();
+            await transaction.RollbackAsync();
             throw;
-        }
-
-        finally
-        {
-            connection.Dispose();
-            transaction.Dispose();
         }
 
         result.Success = true;
