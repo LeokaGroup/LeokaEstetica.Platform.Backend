@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using System.Globalization;
+using AutoMapper;
 using Dapper;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.Core.Constants;
@@ -327,7 +328,8 @@ internal sealed class SprintService : ISprintService
             }
             
             // Проверяем даты на корректность.
-            if (!sprint.DateStart.HasValue || !sprint.DateEnd.HasValue)
+            if (!DateTime.TryParse(sprint.DateStart, out var dateStart) || 
+                !DateTime.TryParse(sprint.DateEnd, out var dateEnd))
             {
                 // Нельзя начать спринт - даты не заполнены.
                 var ex = new InvalidOperationException(
@@ -349,7 +351,7 @@ internal sealed class SprintService : ISprintService
             }
             
             // Если дата начала в прошлом, то скорректируем от сегодня.
-            if (sprint.DateStart!.Value < DateTime.UtcNow)
+            if (dateStart < DateTime.UtcNow)
             {
                 var setting = await _projectManagementSettingsRepository.GetProjectSprintDurationSettingsAsync(
                     projectId);
@@ -366,18 +368,18 @@ internal sealed class SprintService : ISprintService
                 // Корректируем длительность спринта в соответствии с настройками.
                 if (setting.SysName!.Equals("OneWeek"))
                 {
-                    sprint.DateStart = DateTime.UtcNow;
+                    sprint.DateStart = DateTime.UtcNow.ToString(CultureInfo.CurrentCulture);
                     
                     // Длительность спринта 1 неделя.
-                    sprint.DateEnd = sprint.DateStart.Value.AddDays(7);
+                    sprint.DateEnd = dateStart.AddDays(7).ToString(CultureInfo.CurrentCulture);
                 }
                 
                 if (setting.SysName!.Equals("TwoWeek"))
                 {
-                    sprint.DateStart = DateTime.UtcNow;
+                    sprint.DateStart = DateTime.UtcNow.ToString(CultureInfo.CurrentCulture);
                     
                     // Длительность спринта 2 недели.
-                    sprint.DateEnd = sprint.DateStart.Value.AddDays(14);
+                    sprint.DateEnd = dateStart.AddDays(14).ToString(CultureInfo.CurrentCulture);
                 }
             }
 
