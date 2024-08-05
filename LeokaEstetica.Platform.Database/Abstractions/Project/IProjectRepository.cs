@@ -341,10 +341,11 @@ public interface IProjectRepository
     /// </summary>
     Task RemoveUserProjectTeamAsync(long userId, long teamId);
 
-    /// <summary>
-    /// Метод обновляет видимость проекта
-    /// </summary>
-    /// <param name="projectId">Id проекта.</param>
-    /// <param name="isPublic">Видимость проекта.</param>
-    Task UpdateVisibleProjectAsync(long projectId, bool isPublic);
+	/// <summary>
+	/// Метод обновляет видимость проекта
+	/// </summary>
+	/// <param name="projectId">Id проекта.</param>
+	/// <param name="isPublic">Видимость проекта.</param>
+	/// <returns>Возращает признак видимости проекта.</returns>
+	Task<UpdateProjectOutput> UpdateVisibleProjectAsync(long projectId, bool isPublic);
 }

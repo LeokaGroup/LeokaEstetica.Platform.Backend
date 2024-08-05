@@ -777,8 +777,22 @@ public class ProjectController : BaseController
 	[ProducesResponseType(403)]
 	[ProducesResponseType(500)]
 	[ProducesResponseType(404)]
-	public async Task UpdateVisibleProjectAsync([FromQuery] long projectId, [FromQuery] bool isPublic)
+	public async Task<UpdateProjectOutput> UpdateVisibleProjectAsync([FromQuery] UpdateVisibleProjectOutput updateVisibleProjectOutput)
 	{
-        await _projectService.UpdateVisibleProjectAsync(projectId,isPublic);
+		var result = new UpdateProjectOutput();
+		var validator = await new UpdateVisibleProjectValidator().ValidateAsync(updateVisibleProjectOutput);
+
+		if (validator.Errors.Any())
+		{
+			result.Errors = await _validationExcludeErrorsService.ExcludeAsync(validator.Errors);
+
+			return result;
+		}
+
+
+        result= await _projectService.UpdateVisibleProjectAsync(updateVisibleProjectOutput.ProjectId,
+			updateVisibleProjectOutput.IsPublic);
+
+        return result;
 	}
 }

@@ -1606,9 +1606,10 @@ internal sealed class ProjectService : IProjectService
 	/// </summary>
 	/// <param name="projectId">Id проекта.</param>
 	/// <param name="isPublic">Видимость проекта.</param>
-	public async Task UpdateVisibleProjectAsync(long projectId,bool isPublic)
+	/// <returns>Возращает признак видимости проекта.</returns>
+	public async Task<UpdateProjectOutput> UpdateVisibleProjectAsync(long projectId,bool isPublic)
     {
-        await _projectRepository.UpdateVisibleProjectAsync(projectId, isPublic);
+        return await _projectRepository.UpdateVisibleProjectAsync(projectId, isPublic);
 	}
 
 	#endregion

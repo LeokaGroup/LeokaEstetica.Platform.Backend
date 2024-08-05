@@ -39,12 +39,18 @@ public static class ValidationConst
         /// Если не передали Id пользователя.
         /// </summary>
         public const string NOT_VALID_USER_ID = "Id пользователя не передан";
-    }
 
-    /// <summary>
-    /// Класс описывает ключи поиска в проектах.
-    /// </summary>
-    public static class SearchProject
+		/// <summary>
+		/// Если не выбрано ни какое булевоское значение 
+		/// </summary>
+		/// 
+		public const string EMPTY_BOOLEAN_FLAG= "Не заполнено одно из значений ";
+	}
+
+	/// <summary>
+	/// Класс описывает ключи поиска в проектах.
+	/// </summary>
+	public static class SearchProject
     {
         /// <summary>
         /// Если не заполнена поисковая строка.
