@@ -8,6 +8,16 @@ namespace LeokaEstetica.Platform.Database.Abstractions.Moderation.Vacancy;
 /// </summary>
 public interface IVacancyModerationRepository
 {
+	/// <summary>
+	/// Метод получает список вакансий со всеми статусами.
+	/// </summary>
+	/// <returns>Список вакансий.</returns>
+	public Task<IEnumerable<ModerationVacancyEntity>> AllVacanciesModerationAsync();
+	/// <summary>
+	/// Метод отправляет вакансию на модерацию.
+	/// </summary>
+	/// <param name="vacancyId">Id вакансии.</param>
+	Task AddVacancyModerationAsync(long vacancyId);
     /// <summary>
     /// Метод получает вакансию модерации из таблицы ModerationVacancies.
     /// </summary>
@@ -25,12 +35,12 @@ public interface IVacancyModerationRepository
     /// <param name="vacancyId">Id вакансии.</param>
     /// <returns>Данные вакансии.</returns>
     Task<UserVacancyEntity> GetVacancyModerationByVacancyIdAsync(long vacancyId);
-    
-    /// <summary>
-    /// Метод получает список вакансий для модерации.
-    /// </summary>
-    /// <returns>Список вакансий.</returns>
-    Task<IEnumerable<ModerationVacancyEntity>> VacanciesModerationAsync();
+
+	/// <summary>
+	/// Метод получает список вакансий со статусом "на модерации".
+	/// </summary>
+	/// <returns>Список вакансий.</returns>
+	Task<IEnumerable<ModerationVacancyEntity>> VacanciesModerationAsync();
     
     /// <summary>
     /// Метод одобряет вакансию на модерации.
