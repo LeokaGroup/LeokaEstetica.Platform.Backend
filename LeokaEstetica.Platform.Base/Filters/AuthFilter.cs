@@ -27,7 +27,7 @@ public class AuthFilter : Attribute, IAuthorizationFilter
         "RestoreUserPassword", // Восстановление пароля.
         "SendCodeRestorePassword", // Восстановление пароля.
         "CheckRestorePassword", // Восстановление пароля.
-        "CheckConnectionIdCacheAsync"
+        "CheckConnectionIdCache"
     };
     
     /// <summary>

@@ -44,24 +44,28 @@ internal sealed class ConnectionService : IConnectionService
     {
         var connection = await _redisCache.GetStringAsync(key);
 
-        if (string.IsNullOrEmpty(connection))
+        if (connection is not null)
         {
-            throw new InvalidOperationException("Ошибка проверки подключения в кэше. " +
-                                                $"UserCode: {key}.");
+            var result = ProtoBufExtensions.Deserialize<UserConnection>(connection);
+
+            if (result is null)
+            {
+                throw new InvalidOperationException("Ошибка каста к результату из кэша. " +
+                                                    $"UserCode: {key}.");
+            }
+            
+            // Данные нашли, продлеваем время жизни ключа.
+            await _redisCache.RefreshAsync(key);
+            
+            result.IsCacheExists = true;
+            
+            return result;
         }
         
-        var result = ProtoBufExtensions.Deserialize<UserConnection>(connection);
-
-        if (result is null)
+        return new UserConnection
         {
-            throw new InvalidOperationException("Ошибка каста к результату из кэша. " +
-                                                $"UserCode: {key}.");
-        }
-            
-        // Данные нашли, продлеваем время жизни ключа.
-        await _redisCache.RefreshAsync(key);
-
-        return result;
+            IsCacheExists = false
+        };
     }
 
     /// <inheritdoc/>
@@ -91,14 +95,23 @@ internal sealed class ConnectionService : IConnectionService
     }
 
     /// <inheritdoc/>
-    public async Task<UserConnection> CheckConnectionIdCacheAsync(string userCode, UserConnectionModuleEnum module)
+    public async Task<UserConnection> CheckConnectionIdCacheAsync(Guid userCode, UserConnectionModuleEnum module)
     {
         var connection = await GetConnectionIdCacheAsync(string.Concat(userCode + "_", module.ToString()));
 
-        if (connection is null)
+        if (connection is not null && !string.IsNullOrEmpty(connection.ConnectionId))
         {
-            throw new InvalidOperationException("Ошибка проверки подключения в кэше. " +
-                                                $"UserCode: {userCode}.");
+            connection.Module = module;
+            connection.IsCacheExists = true;
+        }
+
+        else
+        {
+            connection = new UserConnection
+            {
+                Module = module,
+                IsCacheExists = false
+            };
         }
 
         return connection;

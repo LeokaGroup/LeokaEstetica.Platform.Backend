@@ -44,5 +44,5 @@ public interface IConnectionService
     /// <param name="userCode">Код пользователя.</param>
     /// <param name="module">Модуль приложения.</param>
     /// <returns>Выходная модель.</returns>
-    Task<UserConnection> CheckConnectionIdCacheAsync(string userCode, UserConnectionModuleEnum module);
+    Task<UserConnection> CheckConnectionIdCacheAsync(Guid userCode, UserConnectionModuleEnum module);
 }

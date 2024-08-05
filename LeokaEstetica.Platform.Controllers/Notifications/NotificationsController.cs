@@ -98,7 +98,7 @@ public class NotificationsController : BaseController
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<UserConnection> CheckConnectionIdCacheAsync([FromQuery] string userCode,
+    public async Task<UserConnection> CheckConnectionIdCacheAsync([FromQuery] Guid userCode,
         [FromQuery] UserConnectionModuleEnum module)
     {
         var result = await _connectionService.CheckConnectionIdCacheAsync(userCode, module);

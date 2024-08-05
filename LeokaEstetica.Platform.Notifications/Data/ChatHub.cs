@@ -72,13 +72,13 @@ internal sealed class ChatHub : Hub, IHubService
         var userCode = Context.GetHttpContext().Request.Query["userCode"].ToString();
         var module = Enum.Parse<UserConnectionModuleEnum>(Context.GetHttpContext().Request.Query["module"].ToString());
 
-        if (string.IsNullOrEmpty(userCode))
-        {
-            Task.Run(async () =>
-            {
-                await _connectionService.AddConnectionIdCacheAsync(userCode, Context.ConnectionId, module);
-            }, new CancellationToken(default));
-        }
+        // if (string.IsNullOrEmpty(userCode))
+        // {
+        //     Task.Run(async () =>
+        //     {
+        //         await _connectionService.AddConnectionIdCacheAsync(userCode, Context.ConnectionId, module);
+        //     }, new CancellationToken(default));
+        // }
         
         return base.OnConnectedAsync();
     }

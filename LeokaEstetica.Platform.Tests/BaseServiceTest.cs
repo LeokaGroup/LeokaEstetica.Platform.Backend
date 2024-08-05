@@ -182,8 +182,8 @@ internal class BaseServiceTest
             subscriptionRepository, resumeModerationRepository, accessUserService, userRedisService,
             FareRuleRepository, availableLimitsRepository, globalConfigRepository, discordService, null,
             ProjectManagmentRepository);
-        ProfileService = new ProfileService(null, profileRepository, userRepository, mapper, null, null,
-            accessUserService, resumeModerationRepository, discordService);
+        ProfileService = new ProfileService(null, profileRepository, userRepository, mapper, null,
+            accessUserService, resumeModerationRepository, discordService, null);
 
         var projectRepository = new ProjectRepository(pgContext, ChatRepository, connectionProvider);
         var projectNotificationsRepository = new ProjectNotificationsRepository(pgContext, connectionProvider);

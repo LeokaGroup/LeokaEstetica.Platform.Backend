@@ -20,7 +20,7 @@ var configuration = builder.Configuration;
 
 builder.Services.AddControllers(opt =>
     {
-        opt.Filters.Add(typeof(DiscordLogExceptionFilter));
+        // opt.Filters.Add(typeof(DiscordLogExceptionFilter));
     })
     .AddNewtonsoftJson()
     .AddControllersAsServices();

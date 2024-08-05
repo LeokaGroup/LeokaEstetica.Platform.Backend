@@ -16,4 +16,9 @@ public class UserConnection
     /// Модуль.
     /// </summary>
     public UserConnectionModuleEnum Module { get; set; }
+
+    /// <summary>
+    /// Признак наличия в кэше.
+    /// </summary>
+    public bool IsCacheExists { get; set; }
 }
