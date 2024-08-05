@@ -148,6 +148,31 @@ internal sealed class VacancyModerationRepository : IVacancyModerationRepository
     /// <returns>Признак подтверждения вакансии.</returns>
     public async Task<bool> ApproveVacancyAsync(long vacancyId)
     {
+        var projectVacancies = await _pgContext.ProjectVacancies
+            .FirstOrDefaultAsync(v => v.VacancyId == vacancyId).;
+
+        if (projectVacancies is null)
+        {
+            throw new InvalidOperationException($"Не удалось найти проект с вакансией. VacancyId = {vacancyId}");
+        }
+
+        var moderationStatuses = await _pgContext.ModerationStatuses
+            .FirstOrDefaultAsync(v => v.StatusSysName == "ModerationVacancy");
+
+        if (moderationStatuses is null)
+        {
+            throw new InvalidOperationException($"Не удалось найти статуса моредарции.");
+        }
+
+        var userProjectsStages = await _pgContext.UserProjectsStages
+            .FirstOrDefaultAsync(v => v.ProjectId == projectVacancies.ProjectId);
+
+
+        if (userProjectsStages is null || userProjectsStages.StageId == moderationStatuses.StatusId)
+        {
+            return false;
+        }
+
         var isSuccessSetStatus = await SetVacancyStatus(vacancyId, VacancyModerationStatusEnum.ApproveVacancy);
 
         if (!isSuccessSetStatus)
