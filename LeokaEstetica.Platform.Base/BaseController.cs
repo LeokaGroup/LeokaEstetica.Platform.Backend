@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using LeokaEstetica.Platform.Core.Extensions;
+﻿using LeokaEstetica.Platform.Core.Extensions;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LeokaEstetica.Platform.Base;
@@ -9,14 +8,6 @@ namespace LeokaEstetica.Platform.Base;
 /// </summary>
 public class BaseController : ControllerBase
 {
-    public BaseController()
-    {
-        // TODO: Тут добавлять проверки на разные локали, если решим переводить приложение на разные языки.
-        // Записываем текущему потоку нужную локаль.
-        CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("ru");
-        CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo("ru");
-    }
-
     /// <summary>
     /// Метод получит имя текущего пользователя.
     /// </summary>

@@ -1,6 +1,8 @@
 using LeokaEstetica.Platform.Redis.Abstractions.Connection;
+using LeokaEstetica.Platform.Redis.Enums;
 using LeokaEstetica.Platform.Redis.Extensions;
 using LeokaEstetica.Platform.Redis.Models.Chat;
+using LeokaEstetica.Platform.Redis.Models.Common.Connection;
 using Microsoft.Extensions.Caching.Distributed;
 
 namespace LeokaEstetica.Platform.Redis.Services.Connection;
@@ -22,41 +24,44 @@ internal sealed class ConnectionService : IConnectionService
     }
     
     /// <inheritdoc/>
-    public async Task AddConnectionIdCacheAsync(string connectionId, string token)
+    public async Task AddConnectionIdCacheAsync(string userCode, string connectionId, UserConnectionModuleEnum module)
     {
-        await _redisCache.SetStringAsync(token, ProtoBufExtensions.Serialize(connectionId),
+        await _redisCache.SetStringAsync(string.Concat(userCode + "_", module.ToString()),
+            ProtoBufExtensions.Serialize(new UserConnection
+            {
+                ConnectionId = connectionId,
+                Module = module
+            }),
             new DistributedCacheEntryOptions
             {
-                AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(1)
+                // При разлогине мы удаляем из кэша запись о пользователе, иначе живет 1 раб.день.
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(8)
             });
     }
 
     /// <inheritdoc/>
-    public async Task<string> GetConnectionIdCacheAsync(string key)
+    public async Task<UserConnection?> GetConnectionIdCacheAsync(string key)
     {
-        var connectionId = await _redisCache.GetStringAsync(key);
+        var connection = await _redisCache.GetStringAsync(key);
 
-        if (!string.IsNullOrEmpty(connectionId))
+        if (string.IsNullOrEmpty(connection))
         {
-            var newConnectionId = ProtoBufExtensions.Deserialize<string>(connectionId);
-            
-            // Данные нашли, продлеваем время жизни ключа.
-            await _redisCache.RefreshAsync(key);
-
-            return newConnectionId;
+            throw new InvalidOperationException("Ошибка проверки подключения в кэше. " +
+                                                $"UserCode: {key}.");
         }
+        
+        var result = ProtoBufExtensions.Deserialize<UserConnection>(connection);
 
-        // В кэше нет ключа, добавляем.
-        await _redisCache.SetStringAsync(key, ProtoBufExtensions.Serialize(key),
-            new DistributedCacheEntryOptions
-            {
-                AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(1)
-            });
+        if (result is null)
+        {
+            throw new InvalidOperationException("Ошибка каста к результату из кэша. " +
+                                                $"UserCode: {key}.");
+        }
+            
+        // Данные нашли, продлеваем время жизни ключа.
+        await _redisCache.RefreshAsync(key);
 
-        var addedConnectionId = await _redisCache.GetStringAsync(key);
-        connectionId = ProtoBufExtensions.Deserialize<string>(addedConnectionId);
-
-        return connectionId;
+        return result;
     }
 
     /// <inheritdoc/>
@@ -83,5 +88,19 @@ internal sealed class ConnectionService : IConnectionService
         }
 
         return null;
+    }
+
+    /// <inheritdoc/>
+    public async Task<UserConnection> CheckConnectionIdCacheAsync(string userCode, UserConnectionModuleEnum module)
+    {
+        var connection = await GetConnectionIdCacheAsync(string.Concat(userCode + "_", module.ToString()));
+
+        if (connection is null)
+        {
+            throw new InvalidOperationException("Ошибка проверки подключения в кэше. " +
+                                                $"UserCode: {userCode}.");
+        }
+
+        return connection;
     }
 }

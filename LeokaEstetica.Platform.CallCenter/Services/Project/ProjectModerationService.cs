@@ -2,7 +2,6 @@ using AutoMapper;
 using FluentValidation.Results;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.Base.Enums;
-using LeokaEstetica.Platform.Base.Extensions.HtmlExtensions;
 using LeokaEstetica.Platform.CallCenter.Abstractions.Messaging.Mail;
 using LeokaEstetica.Platform.CallCenter.Abstractions.Project;
 using LeokaEstetica.Platform.CallCenter.Builders;
@@ -21,6 +20,7 @@ using LeokaEstetica.Platform.Models.Entities.Moderation;
 using LeokaEstetica.Platform.Models.Entities.Project;
 using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Notifications.Consts;
+using LeokaEstetica.Platform.Redis.Enums;
 using Microsoft.Extensions.Logging;
 
 namespace LeokaEstetica.Platform.CallCenter.Services.Project;
@@ -36,9 +36,9 @@ internal sealed class ProjectModerationService : IProjectModerationService
     private readonly IModerationMailingsService _moderationMailingsService;
     private readonly IUserRepository _userRepository;
     private readonly IProjectRepository _projectRepository;
-    private readonly IProjectModerationNotificationService _projectModerationNotificationService;
     private readonly IDiscordService _discordService;
     private readonly ITelegramBotService _telegramBotService;
+    private readonly Lazy<IHubNotificationService> _hubNotificationService;
 
     /// <summary>
     /// Конструктор.
@@ -49,18 +49,18 @@ internal sealed class ProjectModerationService : IProjectModerationService
     /// <param name="moderationMailingsService">Сервис уведомлений модерации на почту.</param>
     /// <param name="userRepository">Репозиторий пользователя.</param>
     /// <param name="projectRepository">Репозиторий проектов.</param>
-    /// <param name="projectModerationNotificationService">Сервис уведомлений модерации проектов.</param>
     /// <param name="pachcaService">Сервис дискорда.</param>
     /// <param name="telegramService">Сервис бота телеграма.</param>
+    /// <param name="hubNotificationService">Сервис уведомлений хабов.</param>
     public ProjectModerationService(IProjectModerationRepository projectModerationRepository,
         ILogger<ProjectModerationService> logger,
         IMapper mapper, 
         IModerationMailingsService moderationMailingsService, 
         IUserRepository userRepository, 
-        IProjectRepository projectRepository, 
-        IProjectModerationNotificationService projectModerationNotificationService,
+        IProjectRepository projectRepository,
         IDiscordService discordService,
-        ITelegramBotService telegramBotService)
+        ITelegramBotService telegramBotService,
+        Lazy<IHubNotificationService> hubNotificationService)
     {
         _projectModerationRepository = projectModerationRepository;
         _logger = logger;
@@ -68,9 +68,9 @@ internal sealed class ProjectModerationService : IProjectModerationService
         _moderationMailingsService = moderationMailingsService;
         _userRepository = userRepository;
         _projectRepository = projectRepository;
-        _projectModerationNotificationService = projectModerationNotificationService;
         _discordService = discordService;
         _telegramBotService = telegramBotService;
+        _hubNotificationService = hubNotificationService;
     }
 
     #region Публичные методы.
@@ -229,10 +229,9 @@ internal sealed class ProjectModerationService : IProjectModerationService
     /// </summary>
     /// <param name="createProjectRemarkInput">Входная модель.</param>
     /// <param name="account">Аккаунт.</param>
-    /// <param name="token">Токен.</param>
     /// <returns>Список замечаний проекта.</returns>
     public async Task<IEnumerable<ProjectRemarkEntity>> CreateProjectRemarksAsync(
-        CreateProjectRemarkInput createProjectRemarkInput, string account, string token)
+        CreateProjectRemarkInput createProjectRemarkInput, string account)
     {
         try
         {
@@ -318,14 +317,13 @@ internal sealed class ProjectModerationService : IProjectModerationService
             }
 
             var result = addProjectRemarks.Union(updateProjectRemarks);
+            
+            var userCode = await _userRepository.GetUserCodeByUserIdAsync(userId);
 
-            if (!string.IsNullOrEmpty(token))
-            {
-                // Отправляем уведомление о сохранении замечаний проекта.
-                await _projectModerationNotificationService.SendNotificationSuccessCreateProjectRemarksAsync(
-                    "Все хорошо", "Замечания успешно внесены. Теперь вы можете их отправить.",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);
-            }
+            await _hubNotificationService.Value.SendNotificationAsync("Все хорошо",
+                "Замечания успешно внесены. Теперь вы можете их отправить.",
+                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, "SendNotificationSuccessCreateProjectRemarks",
+                userCode, UserConnectionModuleEnum.Main);
 
             return result;
         }
@@ -342,9 +340,8 @@ internal sealed class ProjectModerationService : IProjectModerationService
     /// Отправка замечаний проекту подразумевает просто изменение статуса замечаниям проекта.
     /// <param name="projectId">Id проекта.</param>
     /// <param name="account">Аккаунт.</param>
-    /// <param name="token">Токен.</param>
     /// </summary>
-    public async Task SendProjectRemarksAsync(long projectId, string account, string token)
+    public async Task SendProjectRemarksAsync(long projectId, string account)
     {
         try
         {
@@ -356,6 +353,16 @@ internal sealed class ProjectModerationService : IProjectModerationService
             
             // Проверяем, были ли внесены замечания проекта.
             var isExists = await _projectModerationRepository.CheckExistsProjectRemarksAsync(projectId);
+            
+            var userId = await _userRepository.GetUserIdByEmailOrLoginAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+            
+            var userCode = await _userRepository.GetUserCodeByUserIdAsync(userId);
 
             if (!isExists)
             {
@@ -363,13 +370,10 @@ internal sealed class ProjectModerationService : IProjectModerationService
                                                        $" ProjectId: {projectId}");
                 _logger.LogWarning(ex, ex.Message);
 
-                if (!string.IsNullOrEmpty(token))
-                {
-                    // Отправляем уведомление о предупреждении, что замечания проекта не были внесены.
-                    await _projectModerationNotificationService.SendNotificationWarningSendProjectRemarksAsync(
-                        "Внимание", RemarkConst.SEND_PROJECT_REMARKS_WARNING,
-                        NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
-                }
+                await _hubNotificationService.Value.SendNotificationAsync("Внимание",
+                    RemarkConst.SEND_PROJECT_REMARKS_WARNING,
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, "SendNotificationWarningSendProjectRemarks",
+                    userCode, UserConnectionModuleEnum.Main);
 
                 return;
             }
@@ -379,14 +383,10 @@ internal sealed class ProjectModerationService : IProjectModerationService
             var projectName = await _projectModerationRepository.GetProjectNameAsync(projectId);
             var remarks = await _projectModerationRepository.GetProjectRemarksAsync(projectId);
             await _moderationMailingsService.SendNotificationAboutRemarkAsync(account, projectName, remarks);
-            
-            if (!string.IsNullOrEmpty(token))
-            {
-                // Отправляем уведомление об отправке замечаний проекта.
-                await _projectModerationNotificationService.SendNotificationSuccessSendProjectRemarksAsync(
-                    "Все хорошо", "Замечания успешно отправлены.",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);
-            }
+
+            await _hubNotificationService.Value.SendNotificationAsync("Все хорошо", "Замечания успешно отправлены.",
+                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, "SendNotificationSuccessSendProjectRemarks",
+                userCode, UserConnectionModuleEnum.Main);
         }
         
         catch (Exception ex)

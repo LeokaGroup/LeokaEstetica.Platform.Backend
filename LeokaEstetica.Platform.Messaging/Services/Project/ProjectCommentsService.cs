@@ -7,6 +7,7 @@ using LeokaEstetica.Platform.Messaging.Abstractions.Project;
 using LeokaEstetica.Platform.Models.Entities.Communication;
 using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Notifications.Consts;
+using LeokaEstetica.Platform.Redis.Enums;
 using Microsoft.Extensions.Logging;
 
 [assembly: InternalsVisibleTo("LeokaEstetica.Platform.Tests")]
@@ -22,22 +23,27 @@ internal sealed class ProjectCommentsService : IProjectCommentsService
     private readonly IUserRepository _userRepository;
     private readonly IProjectCommentsRepository _projectCommentsRepository;
     private readonly IAccessUserService _accessUserService;
-    private readonly IAccessUserNotificationsService _accessUserNotificationsService;
-    private readonly ICommentNotificationsService _commentNotificationsService;
+    private readonly Lazy<IHubNotificationService> _hubNotificationService;
 
+    /// <summary>
+    /// Конструктор.
+    /// </summary>
+    /// <param name="logger">Логгер.</param>
+    /// <param name="userRepository">Репозиторий пользователей.</param>
+    /// <param name="projectCommentsRepository">Репозиторий комментариев проекта.</param>
+    /// <param name="accessUserService">Сервис доступов.</param>
+    /// <param name="hubNotificationService">Сервис уведомлений хабов.</param>
     public ProjectCommentsService(ILogger<ProjectCommentsService> logger, 
         IUserRepository userRepository, 
         IProjectCommentsRepository projectCommentsRepository, 
-        IAccessUserService accessUserService, 
-        IAccessUserNotificationsService accessUserNotificationsService,
-        ICommentNotificationsService commentNotificationsService)
+        IAccessUserService accessUserService,
+        Lazy<IHubNotificationService> hubNotificationService)
     {
         _logger = logger;
         _userRepository = userRepository;
         _projectCommentsRepository = projectCommentsRepository;
         _accessUserService = accessUserService;
-        _accessUserNotificationsService = accessUserNotificationsService;
-        _commentNotificationsService = commentNotificationsService;
+        _hubNotificationService = hubNotificationService;
     }
 
     /// <summary>
@@ -46,8 +52,7 @@ internal sealed class ProjectCommentsService : IProjectCommentsService
     /// <param name="projectId">Id проекта.</param>
     /// <param name="comment">Текст комментария.</param>
     /// <param name="account">Аккаунт.</param>
-    /// <param name="token">Токен пользователя.</param>
-    public async Task CreateProjectCommentAsync(long projectId, string comment, string account, string token)
+    public async Task CreateProjectCommentAsync(long projectId, string comment, string account)
     {
         try
         {
@@ -61,16 +66,18 @@ internal sealed class ProjectCommentsService : IProjectCommentsService
             
             // Проверяем заполнение анкеты и даем доступ либо нет.
             var isEmptyProfile = await _accessUserService.IsProfileEmptyAsync(userId);
+            var userCode = await _userRepository.GetUserCodeByUserIdAsync(userId);
 
             // Если нет доступа, то не даем оплатить платный тариф.
             if (isEmptyProfile)
             {
                 var ex = new InvalidOperationException($"Анкета пользователя не заполнена. UserId был: {userId}");
 
-                await _accessUserNotificationsService.SendNotificationWarningEmptyUserProfileAsync("Внимание",
+                await _hubNotificationService.Value.SendNotificationAsync("Внимание",
                     "Для оставления комментария к проекту должна быть заполнена информация вашей анкеты.",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
-                
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, "SendNotificationWarningEmptyUserProfile",
+                    userCode, UserConnectionModuleEnum.Main);
+
                 throw ex;
             }
 
@@ -80,21 +87,21 @@ internal sealed class ProjectCommentsService : IProjectCommentsService
                 var ex = new InvalidOperationException("Комментарий к проекту не может быть пустым." +
                     $"ProjectId: {projectId}");
 
-                await _commentNotificationsService.SendNotificationCommentProjectIsNotEmptyAsync("Внимание",
+                await _hubNotificationService.Value.SendNotificationAsync("Внимание",
                     "Комментарий к проекту не может быть пустым.",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, "SendNotificationCommentProjectIsNotEmpty",
+                    userCode, UserConnectionModuleEnum.Main);
 
                 throw ex;
             }
             
             await _projectCommentsRepository.CreateProjectCommentAsync(projectId, comment, userId);
 
-            if (!string.IsNullOrEmpty(token))
-            {
-                await _commentNotificationsService.SendNotificationSuccessCreatedCommentProjectAsync("Все хорошо",
-                    "Комментарий к проекту успешно записан. Он появится в списке комментариев проекта после одобрения модератором.",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);
-            }
+            await _hubNotificationService.Value.SendNotificationAsync("Все хорошо",
+                "Комментарий к проекту успешно записан. " +
+                "Он появится в списке комментариев проекта после одобрения модератором.",
+                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, "SendNotificationSuccessCreatedCommentProject",
+                userCode, UserConnectionModuleEnum.Main);
         }
         
         catch (Exception ex)

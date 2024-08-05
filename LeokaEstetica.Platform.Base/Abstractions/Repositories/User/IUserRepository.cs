@@ -277,4 +277,11 @@ public interface IUserRepository
     /// <param name="userIds">Id пользователей.</param>
     /// <returns>Данные профиля пользователей.</returns>
     Task<IEnumerable<ProfileInfoEntity>> GetProfileInfoByUserIdsAsync(IEnumerable<long> userIds);
+
+    /// <summary>
+    /// Метод получает код пользователя по Id пользователя.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Код пользователя.</returns>
+    Task<Guid> GetUserCodeByUserIdAsync(long userId);
 }
