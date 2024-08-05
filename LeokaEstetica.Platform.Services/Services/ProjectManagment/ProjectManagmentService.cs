@@ -505,7 +505,9 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     {
         try
         {
-            var userId = await _userRepository.GetUserByEmailAsync(account);
+            var result = new ProjectManagmentWorkspaceResult();
+
+			var userId = await _userRepository.GetUserByEmailAsync(account);
 
             if (userId <= 0)
             {
@@ -528,9 +530,20 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 return new ProjectManagmentWorkspaceResult { IsAccess = false };
             }
 
-            // TODO: Этот код дублируется в этом сервисе. Вынести в приватный метод и кортежем вернуть нужные данные.
-            // Получаем настройки проекта.
-            var projectSettings = await _projectSettingsConfigRepository.GetProjectSpaceSettingsByProjectIdAsync(
+			// Проверка, является ли пользователь владельцем проекта, либо является участником команды этого проекта
+			var isOnwer = await _projectRepository.CheckProjectOwnerAsync(projectId, userId);
+
+			if (!isOnwer || !ifProjectMember)
+			{
+				result.IsAccess = false;
+
+				return result;
+
+			}
+
+			// TODO: Этот код дублируется в этом сервисе. Вынести в приватный метод и кортежем вернуть нужные данные.
+			// Получаем настройки проекта.
+			var projectSettings = await _projectSettingsConfigRepository.GetProjectSpaceSettingsByProjectIdAsync(
                 projectId, userId);
             var projectSettingsItems = projectSettings?.AsList();
 
@@ -576,13 +589,11 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 $"Закончили получение списка задач для рабочего пространства для проекта {projectId}.");
             
             var tasks = projectTasks?.AsList();
-            
-            var result = new ProjectManagmentWorkspaceResult
-            {
-                ProjectManagmentTaskStatuses = statuses.First().ProjectManagmentTaskStatusTemplates
-                    .Where(x => x.TemplateId == templateId),
-                Strategy = strategy!
-            };
+
+            result.ProjectManagmentTaskStatuses = statuses.First().ProjectManagmentTaskStatusTemplates
+                    .Where(x => x.TemplateId == templateId);
+
+            result.Strategy = strategy!;
 
             // Если задачи есть, то модифицируем выходные данные.
             if (tasks is not null && tasks.Any())
