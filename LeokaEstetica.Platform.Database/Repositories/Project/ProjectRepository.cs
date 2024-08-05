@@ -1377,9 +1377,9 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
 
 		var result = new UpdateProjectOutput
 		{
-			ProjectId=projectId,
+			ProjectId = projectId,
 			IsPublic = isPublic,
-			ProjectRemarks= new List<ProjectRemarkOutput>(),
+			ProjectRemarks = new List<ProjectRemarkOutput>(),
 
 		};
 
