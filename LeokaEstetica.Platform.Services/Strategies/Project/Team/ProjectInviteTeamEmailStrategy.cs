@@ -1,4 +1,6 @@
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
+using LeokaEstetica.Platform.Core.Exceptions;
+using LeokaEstetica.Platform.Models.Enums;
 using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Notifications.Consts;
 
@@ -9,31 +11,35 @@ namespace LeokaEstetica.Platform.Services.Strategies.Project.Team;
 /// </summary>
 internal sealed class ProjectInviteTeamEmailStrategy : BaseProjectInviteTeamStrategy
 {
-    /// <summary>
-    /// Конструктор.
-    /// </summary>
-    /// <param name="userRepository">Репозиторий пользователя.</param>
+    /// <inheritdoc />
     public ProjectInviteTeamEmailStrategy(IUserRepository userRepository,
-        IProjectNotificationsService projectNotificationsService) : base(userRepository, projectNotificationsService)
+        IProjectNotificationsService projectNotificationsService,
+        Lazy<IHubNotificationService> hubNotificationService)
+        : base(userRepository, projectNotificationsService, hubNotificationService)
     {
     }
 
-    /// <summary>
-    /// Метод находит Id пользователя по его Email.
-    /// </summary>
-    /// <param name="inviteText">Поисковый параметр.</param>
-    /// <param name="token">Токен пользователя.></param>
-    /// <returns>Токен пользователя.</returns>
-    public override async Task<long> GetUserId(string inviteText, string token)
+    /// <inheritdoc />
+    public override async Task<long> GetUserIdAsync(string inviteText, string? account)
     {
         var result = await UserRepository.GetUserIdByEmailAsync(inviteText);
         
         if (result <= 0)
         {
-            await ProjectNotificationsService.SendNotificationErrorProjectInviteTeamByEmailAsync(
-                "Внимание",
+            var userId = await UserRepository.GetUserByEmailAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+            
+            var userCode = await UserRepository.GetUserCodeByUserIdAsync(userId);
+
+            await HubNotificationService.Value.SendNotificationAsync("Внимание",
                 "Не удалось пригласить пользователя по Email. Проверьте корректность Email пользователя.",
-                NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
+                NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, "SendNotificationErrorProjectInviteTeamByEmail",
+                userCode, UserConnectionModuleEnum.ProjectManagement);
         }
 
         return result;

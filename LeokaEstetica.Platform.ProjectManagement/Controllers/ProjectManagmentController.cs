@@ -293,8 +293,7 @@ public class ProjectManagmentController : BaseController
             return new CreateProjectManagementTaskOutput { Errors = validator.Errors };
         }
 
-        var result = await _projectManagmentService.CreateProjectTaskAsync(projectManagementTaskInput, GetUserName(),
-            CreateTokenFromHeader());
+        var result = await _projectManagmentService.CreateProjectTaskAsync(projectManagementTaskInput, GetUserName());
 
         return result;
     }
@@ -471,7 +470,7 @@ public class ProjectManagmentController : BaseController
         }
 
         await _projectManagmentService.CreateProjectTagAsync(projectTagInput.TagName,
-            projectTagInput.TagDescription, projectTagInput.ProjectId, GetUserName(), CreateTokenFromHeader());
+            projectTagInput.TagDescription, projectTagInput.ProjectId, GetUserName());
     }
 
     /// <summary>
@@ -1678,7 +1677,7 @@ public class ProjectManagmentController : BaseController
 
         await _projectManagmentService.IncludeTaskEpicAsync(
             includeTaskEpicInput.EpicId.GetProjectTaskIdFromPrefixLink(), includeTaskEpicInput.ProjectTaskIds,
-            GetUserName(), CreateTokenFromHeader(), includeTaskEpicInput.ProjectId);
+            GetUserName(), includeTaskEpicInput.ProjectId);
     }
 
     /// <summary>

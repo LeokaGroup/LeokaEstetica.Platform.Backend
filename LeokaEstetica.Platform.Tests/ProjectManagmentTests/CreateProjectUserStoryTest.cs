@@ -16,7 +16,7 @@ internal class CreateProjectUserStoryTest : BaseServiceTest
         var request = CreateProjectTaskRequestWithOptionalParams();
         
         Assert.DoesNotThrowAsync(async () =>
-            await ProjectManagmentService.CreateProjectTaskAsync(request, "sierra_93@mail.ru", null));
+            await ProjectManagmentService.CreateProjectTaskAsync(request, "sierra_93@mail.ru"));
         
         await Task.CompletedTask;
     }
@@ -30,7 +30,7 @@ internal class CreateProjectUserStoryTest : BaseServiceTest
         var request = CreateProjectTaskRequestWithoutOptionalParams();
         
         Assert.DoesNotThrowAsync(async () =>
-            await ProjectManagmentService.CreateProjectTaskAsync(request, "sierra_93@mail.ru", null));
+            await ProjectManagmentService.CreateProjectTaskAsync(request, "sierra_93@mail.ru"));
             
         await Task.CompletedTask;
     }

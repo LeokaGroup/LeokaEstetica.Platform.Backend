@@ -55,18 +55,17 @@ public interface IVacancyModerationService
     /// </summary>
     /// <param name="createVacancyRemarkInput">Входная модель.</param>
     /// <param name="account">Аккаунт.</param>
-    /// <param name="token">Токен.</param>
     /// <returns>Список замечаний вакансии.</returns>
     Task<IEnumerable<VacancyRemarkEntity>> CreateVacancyRemarksAsync(
-        CreateVacancyRemarkInput createVacancyRemarkInput, string account, string token);
+        CreateVacancyRemarkInput createVacancyRemarkInput, string account);
     
     /// <summary>
     /// Метод отправляет замечания вакансии владельцу вакансии.
     /// Отправка замечаний вакансии подразумевает просто изменение статуса замечаниям вакансии.
     /// <param name="vacancyId">Id вакансии.</param>
-    /// <param name="token">Токен.</param>
+    /// <param name="account">Аккаунт.</param>
     /// </summary>
-    Task SendVacancyRemarksAsync(long vacancyId, string token);
+    Task SendVacancyRemarksAsync(long vacancyId, string account);
     
     /// <summary>
     /// Метод получает список замечаний вакансии (не отправленные), если они есть.

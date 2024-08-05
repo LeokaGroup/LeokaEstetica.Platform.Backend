@@ -28,11 +28,10 @@ internal class PayMasterStrategy : BasePaymentSystemStrategy
     /// </summary>
     /// <param name="publicId">Публичный ключ тарифа.</param>
     /// <param name="account">Аккаунт.</param>
-    /// <param name="token">Токен пользователя.</param>
     /// <returns>Данные платежа.</returns>
-    public override async Task<ICreateOrderOutput> CreateOrderAsync(Guid publicId, string account, string token)
+    public override async Task<ICreateOrderOutput> CreateOrderAsync(Guid publicId, string account)
     {
-        var result = await _payMasterService.CreateOrderAsync(publicId, account, token);
+        var result = await _payMasterService.CreateOrderAsync(publicId, account);
 
         return result;
     }

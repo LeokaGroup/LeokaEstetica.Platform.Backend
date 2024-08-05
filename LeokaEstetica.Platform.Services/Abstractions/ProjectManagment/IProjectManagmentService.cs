@@ -77,10 +77,9 @@ public interface IProjectManagmentService
     /// </summary>
     /// <param name="projectManagementTaskInput">Входная модель.</param>
     /// <param name="account">Аккаунт.</param>
-    /// <param name="token">Токен.</param>
     /// <returns>Выходная модель.</returns>
     Task<CreateProjectManagementTaskOutput> CreateProjectTaskAsync(
-        CreateProjectManagementTaskInput projectManagementTaskInput, string account, string? token);
+        CreateProjectManagementTaskInput projectManagementTaskInput, string account);
 
     /// <summary>
     /// Метод получает список приоритетов задачи.
@@ -117,8 +116,7 @@ public interface IProjectManagmentService
     /// <param name="tagDescription">Описание метки (тега).</param>
     /// <param name="projectId">Id проекта.</param>
     /// <param name="account">Аккаунт.</param>
-    /// <param name="token">Токен.</param>
-    Task CreateProjectTagAsync(string tagName, string tagDescription, long projectId, string account, string token);
+    Task CreateProjectTagAsync(string tagName, string tagDescription, long projectId, string account);
 
     /// <summary>
     /// Метод получает список статусов для выбора для создания нового статуса.
@@ -157,9 +155,9 @@ public interface IProjectManagmentService
     /// <param name="changeStatusId">Id статуса задачи, на который нужно изменить.</param>
     /// <param name="taskId">Id задачи (здесь имеется в виду Id задачи в рамках проекта).</param>
     /// <param name="taskDetailType">Тип детализации.</param>
-    /// <param name="token">Токен.</param>
+    /// <param name="account">Аккаунт.</param>
     Task ChangeTaskStatusAsync(long projectId, string changeStatusId, string taskId, string taskDetailType,
-        string token);
+        string account);
     
     /// <summary>
     /// Метод обновления описание задачи.
@@ -431,10 +429,8 @@ public interface IProjectManagmentService
     /// <param name="projectEpicId">Id эпика в рамках проекта.</param>
     /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
     /// <param name="account">Аккаунт.</param>
-    /// <param name="token">Токен.</param>
     /// <param name="projectId">Id проекта.</param>
-    Task IncludeTaskEpicAsync(long projectEpicId, IEnumerable<string> projectTaskIds, string account, string token,
-        long projectId);
+    Task IncludeTaskEpicAsync(long projectEpicId, IEnumerable<string> projectTaskIds, string account, long projectId);
 
     /// <summary>
     /// Метод получает список статусов истории для выбора.
@@ -448,8 +444,7 @@ public interface IProjectManagmentService
     /// </summary>
     /// <param name="planingSprintInput">Входная модель.</param>
     /// <param name="account">Аккаунт.</param>
-    /// <param name="token">Токен.</param>
-    Task PlaningSprintAsync(PlaningSprintInput planingSprintInput, string account, string token);
+    Task PlaningSprintAsync(PlaningSprintInput planingSprintInput, string account);
 
     /// <summary>
     /// Метод получает задачи эпика.
