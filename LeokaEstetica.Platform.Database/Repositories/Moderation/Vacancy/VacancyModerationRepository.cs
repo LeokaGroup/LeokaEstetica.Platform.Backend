@@ -1,8 +1,13 @@
 using System.Data;
+using Dapper;
+using LeokaEstetica.Platform.Base.Abstractions.Connection;
+using LeokaEstetica.Platform.Base.Abstractions.Repositories.Base;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Vacancy;
+using LeokaEstetica.Platform.Database.Abstractions.Search;
+using LeokaEstetica.Platform.Models.Dto.Output.Search.ProjectManagement;
 using LeokaEstetica.Platform.Models.Entities.Moderation;
 using LeokaEstetica.Platform.Models.Entities.Notification;
 using LeokaEstetica.Platform.Models.Entities.Vacancy;
@@ -13,7 +18,7 @@ namespace LeokaEstetica.Platform.Database.Repositories.Moderation.Vacancy;
 /// <summary>
 /// Класс реализует методы репозитория модерации вакансий.
 /// </summary>
-internal sealed class VacancyModerationRepository : IVacancyModerationRepository
+internal sealed class VacancyModerationRepository : BaseRepository, ISearchProjectManagementRepository, IVacancyModerationRepository
 {
     private readonly PgContext _pgContext;
     
@@ -21,7 +26,9 @@ internal sealed class VacancyModerationRepository : IVacancyModerationRepository
     /// Конструктор.
     /// </summary>
     /// <param name="pgContext">Датаконтекст.</param>
-    public VacancyModerationRepository(PgContext pgContext)
+    /// <param name="connectionProvider">Провайдер БД.</param>
+    public VacancyModerationRepository(PgContext pgContext, IConnectionProvider connectionProvider)
+        : base(connectionProvider)
     {
         _pgContext = pgContext;
     }
@@ -148,8 +155,42 @@ internal sealed class VacancyModerationRepository : IVacancyModerationRepository
     /// <returns>Признак подтверждения вакансии.</returns>
     public async Task<bool> ApproveVacancyAsync(long vacancyId)
     {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+        var parameters = new DynamicParameters();
+        parameters.Add("@vacancyId", vacancyId);
+
+        var query = "SELECT " +
+                    "CASE " +
+                    "WHEN \"ModerationStatusId\" = 2 THEN false " +
+                    "ELSE true " +
+                    "END AS \"ModerationStatusId\" " +
+                    /*"CASE " +
+                    "WHEN \"ModerationStatusId\" = (" +
+                    "SELECT \"StatusId\" " +
+                    "FROM \"Moderation\".\"ModerationStatuses\" " +
+                    "WHERE \"StatusSysName\" = 'ModerationProject' " +
+                    "ORDER BY \"StatusId\" ASC " +
+                    "LIMIT 1 " +
+                    ") THEN 'true' " +
+                    "ELSE 'false' " +
+                    "END AS \"StageCheck\" " +*/
+                    "FROM \"Moderation\".\"Projects\" " +
+                    "WHERE \"ProjectId\" = (" +
+                    "SELECT \"ProjectId\" " +
+                    "FROM \"Projects\".\"ProjectVacancies\" " +
+                    "WHERE \"VacancyId\" = @vacancyId " +
+                    "LIMIT 1 " +
+                    ");";
+
+        var result = await connection.QueryAsync<bool>(query, parameters);
+        
+        if (!result.FirstOrDefault())
+        {
+            return false;
+        }
+
         var projectVacancies = await _pgContext.ProjectVacancies
-            .FirstOrDefaultAsync(v => v.VacancyId == vacancyId).;
+            .FirstOrDefaultAsync(v => v.VacancyId == vacancyId);
 
         if (projectVacancies is null)
         {
@@ -524,6 +565,11 @@ internal sealed class VacancyModerationRepository : IVacancyModerationRepository
         var result = await _pgContext.CatalogVacancies.FirstOrDefaultAsync(v => v.VacancyId == vacancyId);
 
         return result;
+    }
+
+    public Task<IEnumerable<SearchAgileObjectOutput>> SearchTaskAsync(string searchText, IEnumerable<long> projectIds, bool isById, bool isByName, bool isByDescription, long? projectTaskId = null)
+    {
+        throw new NotImplementedException();
     }
 
     #endregion
