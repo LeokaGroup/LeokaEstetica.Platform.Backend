@@ -2,6 +2,7 @@
 using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Notifications.Data;
 using LeokaEstetica.Platform.Notifications.Models.Output;
+using LeokaEstetica.Platform.Redis.Abstractions.Connection;
 using LeokaEstetica.Platform.Redis.Enums;
 using Microsoft.AspNetCore.SignalR;
 
@@ -14,6 +15,7 @@ internal sealed class HubNotificationService : IHubNotificationService
 {
     private readonly IHubContext<ChatHub> _mainHubContext;
     private readonly IHubContext<ProjectManagementHub> _projectManagementHub;
+    private readonly IConnectionService _connectionService;
 
     /// <summary>
     /// Конструктор.
@@ -21,23 +23,25 @@ internal sealed class HubNotificationService : IHubNotificationService
     /// <param name="mainHubContext">Хаб основного модуля.</param>
     /// <param name="projectManagementHub">Хаб модуля УП.</param>
     public HubNotificationService(IHubContext<ChatHub> mainHubContext,
-        IHubContext<ProjectManagementHub> projectManagementHub)
+        IHubContext<ProjectManagementHub> projectManagementHub,
+        IConnectionService connectionService)
     {
         _mainHubContext = mainHubContext;
         _projectManagementHub = projectManagementHub;
+        _connectionService = connectionService;
     }
 
     /// <inheritdoc />
     public async Task SendNotificationAsync(string title, string notifyText, string notificationLevel, string function,
         Guid userCode, UserConnectionModuleEnum module)
     {
-        var key = userCode + "_" + module;
+        var connection = await _connectionService.GetConnectionIdCacheAsync(userCode + "_" + module);
 
         switch (module)
         {
             // Отправляем уведомления в хаб основного модуля.
             case UserConnectionModuleEnum.Main:
-                await _mainHubContext.Clients.Client(key).SendAsync(function, new NotificationOutput
+                await _mainHubContext.Clients.Client(connection.ConnectionId).SendAsync(function, new NotificationOutput
                 {
                     Title = title,
                     NotificationLevel = notificationLevel,
@@ -47,7 +51,7 @@ internal sealed class HubNotificationService : IHubNotificationService
 
             // Отправляем уведомления в хаб модуля УП.
             case UserConnectionModuleEnum.ProjectManagement:
-                await _projectManagementHub.Clients.Client(key).SendAsync(function, new NotificationOutput
+                await _projectManagementHub.Clients.Client(connection.ConnectionId).SendAsync(function, new NotificationOutput
                 {
                     Title = title,
                     NotificationLevel = notificationLevel,
