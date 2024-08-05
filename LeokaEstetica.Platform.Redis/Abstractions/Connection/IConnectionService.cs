@@ -1,6 +1,6 @@
-using LeokaEstetica.Platform.Redis.Enums;
+using LeokaEstetica.Platform.Models.Dto.Common.Cache.Output;
+using LeokaEstetica.Platform.Models.Enums;
 using LeokaEstetica.Platform.Redis.Models.Chat;
-using LeokaEstetica.Platform.Redis.Models.Common.Connection;
 
 namespace LeokaEstetica.Platform.Redis.Abstractions.Connection;
 
@@ -22,7 +22,7 @@ public interface IConnectionService
     /// </summary>
     /// <param name="key">Ключ поиска.</param>
     /// <returns>Выходная модель.</returns>
-    Task<UserConnection?> GetConnectionIdCacheAsync(string key);
+    Task<UserConnectionOutput?> GetConnectionIdCacheAsync(string key);
 
     /// <summary>
     /// Метод сохраняет список ConnectionId подключений SignalR в кэш.
@@ -44,5 +44,5 @@ public interface IConnectionService
     /// <param name="userCode">Код пользователя.</param>
     /// <param name="module">Модуль приложения.</param>
     /// <returns>Выходная модель.</returns>
-    Task<UserConnection> CheckConnectionIdCacheAsync(Guid userCode, UserConnectionModuleEnum module);
+    Task<UserConnectionOutput> CheckConnectionIdCacheAsync(Guid userCode, UserConnectionModuleEnum module);
 }

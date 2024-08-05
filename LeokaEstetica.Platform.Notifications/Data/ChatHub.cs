@@ -12,7 +12,6 @@ using LeokaEstetica.Platform.Models.Enums;
 using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Redis.Abstractions.Client;
 using LeokaEstetica.Platform.Redis.Abstractions.Connection;
-using LeokaEstetica.Platform.Redis.Enums;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -74,11 +73,8 @@ internal sealed class ChatHub : Hub, IHubService
 
         if (!string.IsNullOrEmpty(userCode))
         {
-            _connectionService.AddConnectionIdCacheAsync(userCode, Context.ConnectionId, module).ConfigureAwait(false);
-            // Task.Run(async () =>
-            // {
-            //     await _connectionService.AddConnectionIdCacheAsync(userCode, Context.ConnectionId, module);
-            // }, new CancellationToken(default));
+            _connectionService.AddConnectionIdCacheAsync(userCode, Context.ConnectionId, module)
+                .ConfigureAwait(false);
         }
         
         return base.OnConnectedAsync();

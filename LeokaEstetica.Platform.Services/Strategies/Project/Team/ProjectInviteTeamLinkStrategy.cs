@@ -1,8 +1,8 @@
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.Core.Exceptions;
+using LeokaEstetica.Platform.Models.Enums;
 using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Notifications.Consts;
-using LeokaEstetica.Platform.Redis.Enums;
 
 namespace LeokaEstetica.Platform.Services.Strategies.Project.Team;
 

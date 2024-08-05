@@ -1,4 +1,4 @@
-﻿namespace LeokaEstetica.Platform.Redis.Enums;
+﻿namespace LeokaEstetica.Platform.Models.Enums;
 
 /// <summary>
 /// Перечисление модулей приложения.

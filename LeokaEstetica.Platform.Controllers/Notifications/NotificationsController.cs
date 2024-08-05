@@ -1,11 +1,11 @@
 using LeokaEstetica.Platform.Base;
 using LeokaEstetica.Platform.Base.Filters;
+using LeokaEstetica.Platform.Models.Dto.Common.Cache.Output;
 using LeokaEstetica.Platform.Models.Dto.Input.Notification;
 using LeokaEstetica.Platform.Models.Dto.Output.Notification;
+using LeokaEstetica.Platform.Models.Enums;
 using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Redis.Abstractions.Connection;
-using LeokaEstetica.Platform.Redis.Enums;
-using LeokaEstetica.Platform.Redis.Models.Common.Connection;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LeokaEstetica.Platform.Controllers.Notifications;
@@ -98,7 +98,7 @@ public class NotificationsController : BaseController
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<UserConnection> CheckConnectionIdCacheAsync([FromQuery] Guid userCode,
+    public async Task<UserConnectionOutput> CheckConnectionIdCacheAsync([FromQuery] Guid userCode,
         [FromQuery] UserConnectionModuleEnum module)
     {
         var result = await _connectionService.CheckConnectionIdCacheAsync(userCode, module);

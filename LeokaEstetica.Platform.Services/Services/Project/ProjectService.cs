@@ -40,7 +40,7 @@ using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Integrations.Abstractions.Discord;
 using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Project;
 using LeokaEstetica.Platform.Models.Entities.Moderation;
-using LeokaEstetica.Platform.Redis.Enums;
+using LeokaEstetica.Platform.Models.Enums;
 using LeokaEstetica.Platform.Services.Helpers;
 using Microsoft.Extensions.Logging;
 

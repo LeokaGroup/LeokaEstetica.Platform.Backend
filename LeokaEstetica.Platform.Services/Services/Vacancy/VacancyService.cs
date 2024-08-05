@@ -28,8 +28,8 @@ using LeokaEstetica.Platform.Models.Entities.Moderation;
 using LeokaEstetica.Platform.Services.Helpers;
 using Microsoft.Extensions.Logging;
 using LeokaEstetica.Platform.Base.Extensions.HtmlExtensions;
+using LeokaEstetica.Platform.Models.Enums;
 using LeokaEstetica.Platform.Notifications.Abstractions;
-using LeokaEstetica.Platform.Redis.Enums;
 
 [assembly: InternalsVisibleTo("LeokaEstetica.Platform.Tests")]
 

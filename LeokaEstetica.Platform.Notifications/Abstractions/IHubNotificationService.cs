@@ -1,4 +1,4 @@
-﻿using LeokaEstetica.Platform.Redis.Enums;
+﻿using LeokaEstetica.Platform.Models.Enums;
 
 namespace LeokaEstetica.Platform.Notifications.Abstractions;
 

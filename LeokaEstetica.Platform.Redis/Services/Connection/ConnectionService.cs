@@ -1,9 +1,11 @@
+using LeokaEstetica.Platform.Models.Dto.Common.Cache.Output;
+using LeokaEstetica.Platform.Models.Enums;
 using LeokaEstetica.Platform.Redis.Abstractions.Connection;
-using LeokaEstetica.Platform.Redis.Enums;
 using LeokaEstetica.Platform.Redis.Extensions;
 using LeokaEstetica.Platform.Redis.Models.Chat;
 using LeokaEstetica.Platform.Redis.Models.Common.Connection;
 using Microsoft.Extensions.Caching.Distributed;
+using Newtonsoft.Json;
 
 namespace LeokaEstetica.Platform.Redis.Services.Connection;
 
@@ -18,6 +20,7 @@ internal sealed class ConnectionService : IConnectionService
     /// Конструктор.
     /// </summary>
     /// <param name="redisCache">Кэш редиса.</param>
+    /// <param name="mapper">Маппер.</param>
     public ConnectionService(IDistributedCache redisCache)
     {
         _redisCache = redisCache;
@@ -27,7 +30,7 @@ internal sealed class ConnectionService : IConnectionService
     public async Task AddConnectionIdCacheAsync(string userCode, string connectionId, UserConnectionModuleEnum module)
     {
         await _redisCache.SetStringAsync(string.Concat(userCode + "_", module.ToString()),
-            ProtoBufExtensions.Serialize(new UserConnection
+            ProtoBufExtensions.Serialize(new UserConnectionRedis
             {
                 ConnectionId = connectionId,
                 Module = module
@@ -40,29 +43,37 @@ internal sealed class ConnectionService : IConnectionService
     }
 
     /// <inheritdoc/>
-    public async Task<UserConnection?> GetConnectionIdCacheAsync(string key)
+    public async Task<UserConnectionOutput?> GetConnectionIdCacheAsync(string key)
     {
         var connection = await _redisCache.GetStringAsync(key);
 
         if (connection is not null)
         {
-            var result = ProtoBufExtensions.Deserialize<UserConnection>(connection);
+            var cache = ProtoBufExtensions.Deserialize<UserConnectionRedis>(connection);
 
-            if (result is null)
+            if (cache is null)
             {
                 throw new InvalidOperationException("Ошибка каста к результату из кэша. " +
-                                                    $"UserCode: {key}.");
+                                                    $"Key: {key}.");
             }
             
             // Данные нашли, продлеваем время жизни ключа.
             await _redisCache.RefreshAsync(key);
+
+            var cacheJson = JsonConvert.SerializeObject(cache);
+            var result = JsonConvert.DeserializeObject<UserConnectionOutput>(cacheJson);
+
+            if (result is null)
+            {
+                throw new InvalidOperationException("Ошибка десериализации результата из кэша.");
+            }
             
             result.IsCacheExists = true;
             
             return result;
         }
         
-        return new UserConnection
+        return new UserConnectionOutput
         {
             IsCacheExists = false
         };
@@ -95,7 +106,7 @@ internal sealed class ConnectionService : IConnectionService
     }
 
     /// <inheritdoc/>
-    public async Task<UserConnection> CheckConnectionIdCacheAsync(Guid userCode, UserConnectionModuleEnum module)
+    public async Task<UserConnectionOutput> CheckConnectionIdCacheAsync(Guid userCode, UserConnectionModuleEnum module)
     {
         var connection = await GetConnectionIdCacheAsync(string.Concat(userCode + "_", module.ToString()));
 
@@ -107,7 +118,7 @@ internal sealed class ConnectionService : IConnectionService
 
         else
         {
-            connection = new UserConnection
+            connection = new UserConnectionOutput
             {
                 Module = module,
                 IsCacheExists = false

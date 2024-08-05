@@ -1,13 +1,13 @@
-﻿using LeokaEstetica.Platform.Redis.Enums;
+﻿using LeokaEstetica.Platform.Models.Enums;
 using ProtoBuf;
 
 namespace LeokaEstetica.Platform.Redis.Models.Common.Connection;
 
 /// <summary>
-/// Класс подключения пользователя для всех хабов.
+/// Класс подключения пользователя для всех хабов для хранения в кэше.
 /// </summary>
 [ProtoContract]
-public class UserConnection
+public class UserConnectionRedis
 {
     /// <summary>
     /// Id подключения.

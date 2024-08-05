@@ -1,9 +1,9 @@
 ﻿using LeokaEstetica.Platform.Core.Enums;
+using LeokaEstetica.Platform.Models.Enums;
 using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Notifications.Data;
 using LeokaEstetica.Platform.Notifications.Models.Output;
 using LeokaEstetica.Platform.Redis.Abstractions.Connection;
-using LeokaEstetica.Platform.Redis.Enums;
 using Microsoft.AspNetCore.SignalR;
 
 namespace LeokaEstetica.Platform.Notifications.Services;
@@ -37,26 +37,33 @@ internal sealed class HubNotificationService : IHubNotificationService
     {
         var connection = await _connectionService.GetConnectionIdCacheAsync(userCode + "_" + module);
 
+        if (string.IsNullOrEmpty(connection?.ConnectionId))
+        {
+            throw new InvalidOperationException("Ошибка получения ConnectionId из кэша.");
+        }
+
         switch (module)
         {
             // Отправляем уведомления в хаб основного модуля.
             case UserConnectionModuleEnum.Main:
-                await _mainHubContext.Clients.Client(connection.ConnectionId).SendAsync(function, new NotificationOutput
-                {
-                    Title = title,
-                    NotificationLevel = notificationLevel,
-                    Message = notifyText
-                });
+                await _mainHubContext.Clients.Client(connection.ConnectionId).SendAsync(function,
+                    new NotificationOutput
+                    {
+                        Title = title,
+                        NotificationLevel = notificationLevel,
+                        Message = notifyText
+                    });
                 break;
 
             // Отправляем уведомления в хаб модуля УП.
             case UserConnectionModuleEnum.ProjectManagement:
-                await _projectManagementHub.Clients.Client(connection.ConnectionId).SendAsync(function, new NotificationOutput
-                {
-                    Title = title,
-                    NotificationLevel = notificationLevel,
-                    Message = notifyText
-                });
+                await _projectManagementHub.Clients.Client(connection.ConnectionId).SendAsync(function,
+                    new NotificationOutput
+                    {
+                        Title = title,
+                        NotificationLevel = notificationLevel,
+                        Message = notifyText
+                    });
                 break;
 
             default:
