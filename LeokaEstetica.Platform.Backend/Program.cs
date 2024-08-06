@@ -14,7 +14,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using NLog.Web;
 using Quartz;
-
+ 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
 
