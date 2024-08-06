@@ -441,8 +441,12 @@ internal sealed class ProjectService : IProjectService
             // Получаем список проектов для каталога.
             var projects = await _projectRepository.CatalogProjectsAsync();
 
-            result.CatalogProjects = await ExecuteCatalogConditionsAsync(projects);
+            foreach (var vac in projects)
+            {
+                vac.ProjectDetails = ClearHtmlBuilder.Clear(vac.ProjectDetails);
+            }
 
+            result.CatalogProjects = await ExecuteCatalogConditionsAsync(projects);
             return result;
         }
 

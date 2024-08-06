@@ -3,7 +3,6 @@ using Dapper;
 using LeokaEstetica.Platform.Base.Abstractions.Connection;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.Base;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.Chat;
-using LeokaEstetica.Platform.Base.Extensions.HtmlExtensions;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Core.Exceptions;
@@ -244,7 +243,7 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
                     ProjectName = p.ProjectName,
                     DateCreated = p.DateCreated,
                     ProjectIcon = p.ProjectIcon,
-                    ProjectDetails = ClearHtmlBuilder.Clear(p.ProjectDetails),
+                    ProjectDetails = p.ProjectDetails,
                     UserId = p.UserId,
                     ProjectStageSysName = _pgContext.ProjectStages.AsNoTracking()
                         .FirstOrDefault(x => x.StageId == ups.StageId).StageSysName
