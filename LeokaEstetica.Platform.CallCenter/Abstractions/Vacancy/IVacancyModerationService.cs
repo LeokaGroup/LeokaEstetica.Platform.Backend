@@ -40,8 +40,9 @@ public interface IVacancyModerationService
     /// Метод одобряет вакансию на модерации.
     /// </summary>
     /// <param name="projectId">Id вакансии.</param>
+    /// <param name="account">Аккаунт.</param>
     /// <returns>Выходная модель модерации.</returns>
-    Task<ApproveVacancyOutput> ApproveVacancyAsync(long vacancyId);
+    Task<ApproveVacancyOutput> ApproveVacancyAsync(long vacancyId, string account);
     
     /// <summary>
     /// Метод отклоняет вакансию на модерации.

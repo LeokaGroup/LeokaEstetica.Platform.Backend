@@ -21,6 +21,7 @@ using LeokaEstetica.Platform.Models.Enums;
 using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Notifications.Consts;
 using Microsoft.Extensions.Logging;
+using Telegram.Bot.Types;
 
 namespace LeokaEstetica.Platform.CallCenter.Services.Vacancy;
 
@@ -155,8 +156,9 @@ public class VacancyModerationService : IVacancyModerationService
     /// Метод одобряет вакансию на модерации.
     /// </summary>
     /// <param name="projectId">Id вакансии.</param>
+    /// <param name="account">Аккаунт.</param>
     /// <returns>Выходная модель модерации.</returns>
-    public async Task<ApproveVacancyOutput> ApproveVacancyAsync(long vacancyId)
+    public async Task<ApproveVacancyOutput> ApproveVacancyAsync(long vacancyId, string account)
     {
         try
         {
@@ -167,6 +169,14 @@ public class VacancyModerationService : IVacancyModerationService
 
             if (!result.IsSuccess)
             {
+                var userId = await _userRepository.GetUserIdByEmailOrLoginAsync(account);
+                var userCode = await _userRepository.GetUserCodeByUserIdAsync(userId);
+                
+                await _hubNotificationService.Value.SendNotificationAsync("Внимание",
+                    "Для одобрения вакансии проект которому она пренадлежит должен пройти модерацию первым.",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, "SendNotificationWarningVacancyProjectOnModeration",
+                    userCode, UserConnectionModuleEnum.Main);
+                
                 var ex = new InvalidOperationException($"Ошибка при одобрении вакансии. VacancyId: {vacancyId}");
                 throw ex;
             }
@@ -177,7 +187,7 @@ public class VacancyModerationService : IVacancyModerationService
             var projectId = await _projectRepository.GetProjectIdByVacancyIdAsync(vacancyId);
             var vacancyName = vacancy.VacancyName;
             
-            // Отправляем уведомление на почту владельца вакансии.
+            /*// Отправляем уведомление на почту владельца вакансии.
             await _moderationMailingsService.SendNotificationApproveVacancyAsync(user.Email, vacancyName, vacancyId);
             
             // Отправляем уведомление в приложении об одобрении вакансии модератором.
@@ -188,13 +198,14 @@ public class VacancyModerationService : IVacancyModerationService
             
             var vacancyText = (vacancy.VacancyText);
             await _telegramBotService.SendNotificationCreatedObjectAsync(ObjectTypeEnum.Vacancy, vacancyName,
-                vacancyText, vacancyId);
+                vacancyText, vacancyId);*/
 
             return result;
         }
         
         catch (Exception ex)
         {
+            Console.WriteLine(ex);
             _logger.LogError(ex, $"Ошибка при одобрении вакансии при модерации. VacancyId = {vacancyId}");
             throw;
         }

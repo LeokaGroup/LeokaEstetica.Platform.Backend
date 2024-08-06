@@ -164,16 +164,6 @@ internal sealed class VacancyModerationRepository : BaseRepository, ISearchProje
                     "WHEN \"ModerationStatusId\" = 2 THEN false " +
                     "ELSE true " +
                     "END AS \"ModerationStatusId\" " +
-                    /*"CASE " +
-                    "WHEN \"ModerationStatusId\" = (" +
-                    "SELECT \"StatusId\" " +
-                    "FROM \"Moderation\".\"ModerationStatuses\" " +
-                    "WHERE \"StatusSysName\" = 'ModerationProject' " +
-                    "ORDER BY \"StatusId\" ASC " +
-                    "LIMIT 1 " +
-                    ") THEN 'true' " +
-                    "ELSE 'false' " +
-                    "END AS \"StageCheck\" " +*/
                     "FROM \"Moderation\".\"Projects\" " +
                     "WHERE \"ProjectId\" = (" +
                     "SELECT \"ProjectId\" " +
@@ -185,31 +175,6 @@ internal sealed class VacancyModerationRepository : BaseRepository, ISearchProje
         var result = await connection.QueryAsync<bool>(query, parameters);
         
         if (!result.FirstOrDefault())
-        {
-            return false;
-        }
-
-        var projectVacancies = await _pgContext.ProjectVacancies
-            .FirstOrDefaultAsync(v => v.VacancyId == vacancyId);
-
-        if (projectVacancies is null)
-        {
-            throw new InvalidOperationException($"Не удалось найти проект с вакансией. VacancyId = {vacancyId}");
-        }
-
-        var moderationStatuses = await _pgContext.ModerationStatuses
-            .FirstOrDefaultAsync(v => v.StatusSysName == "ModerationVacancy");
-
-        if (moderationStatuses is null)
-        {
-            throw new InvalidOperationException($"Не удалось найти статуса моредарции.");
-        }
-
-        var userProjectsStages = await _pgContext.UserProjectsStages
-            .FirstOrDefaultAsync(v => v.ProjectId == projectVacancies.ProjectId);
-
-
-        if (userProjectsStages is null || userProjectsStages.StageId == moderationStatuses.StatusId)
         {
             return false;
         }
