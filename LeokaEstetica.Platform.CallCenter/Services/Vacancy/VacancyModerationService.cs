@@ -170,10 +170,17 @@ public class VacancyModerationService : IVacancyModerationService
             if (!result.IsSuccess)
             {
                 var userId = await _userRepository.GetUserIdByEmailOrLoginAsync(account);
+
+                if (userId <= 0)
+                {
+                    var exp = new NotFoundUserIdByAccountException(account);
+                    throw exp;
+                }
+
                 var userCode = await _userRepository.GetUserCodeByUserIdAsync(userId);
                 
                 await _hubNotificationService.Value.SendNotificationAsync("Внимание",
-                    "Для одобрения вакансии проект которому она пренадлежит должен пройти модерацию первым.",
+                    "Проект еще находится на модерации. Нельзя одобрить вакансию, пока проект не пройдет модерацию.",
                     NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, "SendNotificationWarningVacancyProjectOnModeration",
                     userCode, UserConnectionModuleEnum.Main);
                 
@@ -186,26 +193,25 @@ public class VacancyModerationService : IVacancyModerationService
             var vacancy = await _vacancyRepository.GetVacancyByVacancyIdAsync(vacancyId);
             var projectId = await _projectRepository.GetProjectIdByVacancyIdAsync(vacancyId);
             var vacancyName = vacancy.VacancyName;
-            
-            /*// Отправляем уведомление на почту владельца вакансии.
+
+            // Отправляем уведомление на почту владельца вакансии.
             await _moderationMailingsService.SendNotificationApproveVacancyAsync(user.Email, vacancyName, vacancyId);
-            
+
             // Отправляем уведомление в приложении об одобрении вакансии модератором.
             await _vacancyModerationRepository.AddNotificationApproveVacancyAsync(vacancyId, vacancyOwnerId,
                 vacancyName, projectId);
-            
+
             await _discordService.SendNotificationCreatedObjectAsync(ObjectTypeEnum.Vacancy, vacancyName);
-            
+
             var vacancyText = (vacancy.VacancyText);
             await _telegramBotService.SendNotificationCreatedObjectAsync(ObjectTypeEnum.Vacancy, vacancyName,
-                vacancyText, vacancyId);*/
+                vacancyText, vacancyId);
 
             return result;
         }
         
         catch (Exception ex)
         {
-            Console.WriteLine(ex);
             _logger.LogError(ex, $"Ошибка при одобрении вакансии при модерации. VacancyId = {vacancyId}");
             throw;
         }

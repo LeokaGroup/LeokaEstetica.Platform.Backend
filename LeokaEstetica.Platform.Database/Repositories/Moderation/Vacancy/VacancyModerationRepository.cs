@@ -6,8 +6,6 @@ using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Vacancy;
-using LeokaEstetica.Platform.Database.Abstractions.Search;
-using LeokaEstetica.Platform.Models.Dto.Output.Search.ProjectManagement;
 using LeokaEstetica.Platform.Models.Entities.Moderation;
 using LeokaEstetica.Platform.Models.Entities.Notification;
 using LeokaEstetica.Platform.Models.Entities.Vacancy;
@@ -18,7 +16,7 @@ namespace LeokaEstetica.Platform.Database.Repositories.Moderation.Vacancy;
 /// <summary>
 /// Класс реализует методы репозитория модерации вакансий.
 /// </summary>
-internal sealed class VacancyModerationRepository : BaseRepository, ISearchProjectManagementRepository, IVacancyModerationRepository
+internal sealed class VacancyModerationRepository : BaseRepository, IVacancyModerationRepository
 {
     private readonly PgContext _pgContext;
     
@@ -169,12 +167,11 @@ internal sealed class VacancyModerationRepository : BaseRepository, ISearchProje
                     "SELECT \"ProjectId\" " +
                     "FROM \"Projects\".\"ProjectVacancies\" " +
                     "WHERE \"VacancyId\" = @vacancyId " +
-                    "LIMIT 1 " +
                     ");";
 
-        var result = await connection.QueryAsync<bool>(query, parameters);
-        
-        if (!result.FirstOrDefault())
+        var result = await connection.ExecuteScalarAsync<bool>(query, parameters);
+
+        if (!result)
         {
             return false;
         }
@@ -530,11 +527,6 @@ internal sealed class VacancyModerationRepository : BaseRepository, ISearchProje
         var result = await _pgContext.CatalogVacancies.FirstOrDefaultAsync(v => v.VacancyId == vacancyId);
 
         return result;
-    }
-
-    public Task<IEnumerable<SearchAgileObjectOutput>> SearchTaskAsync(string searchText, IEnumerable<long> projectIds, bool isById, bool isByName, bool isByDescription, long? projectTaskId = null)
-    {
-        throw new NotImplementedException();
     }
 
     #endregion
