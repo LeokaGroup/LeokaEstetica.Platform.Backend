@@ -616,7 +616,7 @@ internal sealed class VacancyRepository : BaseRepository, IVacancyRepository
             
             // Исключаем без оплаты, так как это помешает сортировке по цене.
             query += " AND \"Payment\" <> 'Без оплаты' " +
-                     "ORDER BY REPLACE(\"Payment\", ' ', '')::NUMERIC(15, 2) DESC";
+                     "ORDER BY REPLACE(\"Payment\", ' ', '')::NUMERIC(12, 2) DESC";
         }
 
         var result = await connection.QueryAsync<CatalogVacancyOutput>(query, parameters);
