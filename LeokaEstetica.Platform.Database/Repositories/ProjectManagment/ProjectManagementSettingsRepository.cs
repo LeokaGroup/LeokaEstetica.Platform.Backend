@@ -1,6 +1,7 @@
 ﻿using Dapper;
 using LeokaEstetica.Platform.Base.Abstractions.Connection;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.Base;
+using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.Notification;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagement.Output;
@@ -257,6 +258,7 @@ internal sealed class ProjectManagementSettingsRepository : BaseRepository, IPro
 
         var parameters = new DynamicParameters();
         parameters.Add("@projectId", projectId);
+        parameters.Add("@inviteType", NotificationTypeEnum.ProjectInvite.ToString());
         
         var query = "SELECT n.\"NotificationId\", " +
                     "u.\"Email\", " +
@@ -268,7 +270,9 @@ internal sealed class ProjectManagementSettingsRepository : BaseRepository, IPro
                     "WHERE n.\"ProjectId\" = @projectId " +
                     "AND n.\"IsNeedAccepted\" " +
                     "AND NOT n.\"Approved\" " +
-                    "AND NOT n.\"Rejected\"";
+                    "AND NOT n.\"Rejected\" " +
+                    "AND n.\"NotificationType\" = @inviteType " +
+                    "AND n.\"NotificationType\" NOT IN ('ApproveInviteProject', 'RejectInviteProject')";
 
         var result = await connection.QueryAsync<ProjectInviteOutput>(query, parameters);
 
