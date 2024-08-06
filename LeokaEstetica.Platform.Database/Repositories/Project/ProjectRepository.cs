@@ -81,13 +81,11 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
             "        WHERE a.\"ProjectId\" = u.\"ProjectId\")) AND u.\"IsPublic\") " +
             "  AND (p.\"ModerationStatusId\" NOT IN (2, 3) OR ((p.\"ModerationStatusId\" IS NULL))) ";
         
-        //TODO: В будущем завести в БД енамки и передавать сразу в виде энамок, а не стингов
-        
-        
         if (filters.ProjectStages != null && 
             filters.ProjectStages.Count != 0 && 
             !filters.ProjectStages.Contains(FilterProjectStageTypeEnum.None))
         {
+            //TODO: В будущем завести в БД енамки и передавать сразу в виде энамок, а не стингов
             var stageList = filters.ProjectStages?.Select(e => e.ToString()).ToList();
             parameters.Add("@stageList", stageList);
             query += " AND p0.\"StageSysName\" = ANY(@stageList) ";
