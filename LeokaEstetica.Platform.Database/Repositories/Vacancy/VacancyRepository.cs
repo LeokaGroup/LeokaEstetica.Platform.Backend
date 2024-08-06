@@ -494,7 +494,7 @@ internal sealed class VacancyRepository : BaseRepository, IVacancyRepository
                      FilterEmploymentTypeEnum.ProjectWork
                  }) is not null
             ? "uv.\"Payment\", "
-            : "TO_CHAR(REPLACE(\"Payment\", ' ', '')::NUMERIC(15, 2), '99 999 999 999 999 990D99'), ";
+            : "TO_CHAR(REPLACE(\"Payment\", ' ', '')::NUMERIC(12, 2), '99 999 999 999 999 990D99'), ";
 
         query += "uv.\"VacancyId\", " +
                  "uv.\"VacancyText\", " +
@@ -579,7 +579,7 @@ internal sealed class VacancyRepository : BaseRepository, IVacancyRepository
         if (Enum.Parse<FilterPayTypeEnum>(filters.Pay ?? string.Empty) == FilterPayTypeEnum.Pay)
         {
             query += " AND \"Payment\" <> 'Без оплаты' " +
-                     "AND REPLACE(\"Payment\", ' ', '')::NUMERIC(15, 2) > 0";
+                     "AND REPLACE(\"Payment\", ' ', '')::NUMERIC(12, 2) > 0";
         }
         
         // Если фильтр не имеет тип оплаты (не имеет значения), то передаем следующему по цепочке.
@@ -605,7 +605,7 @@ internal sealed class VacancyRepository : BaseRepository, IVacancyRepository
             
             // Исключаем без оплаты, так как это помешает сортировке по цене.
             query += " AND \"Payment\" <> 'Без оплаты' " +
-                     "ORDER BY REPLACE(\"Payment\", ' ', '')::NUMERIC(15, 2)";
+                     "ORDER BY REPLACE(\"Payment\", ' ', '')::NUMERIC(12, 2)";
         }
         
         // Если фильтр по возрастанию зарплаты.
@@ -616,7 +616,7 @@ internal sealed class VacancyRepository : BaseRepository, IVacancyRepository
             
             // Исключаем без оплаты, так как это помешает сортировке по цене.
             query += " AND \"Payment\" <> 'Без оплаты' " +
-                     "ORDER BY REPLACE(\"Payment\", ' ', '')::NUMERIC(15, 2) DESC";
+                     "ORDER BY REPLACE(\"Payment\", ' ', '')::NUMERIC(12, 2) DESC";
         }
 
         var result = await connection.QueryAsync<CatalogVacancyOutput>(query, parameters);
