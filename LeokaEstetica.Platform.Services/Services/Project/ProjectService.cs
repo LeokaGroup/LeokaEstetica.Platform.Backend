@@ -1977,9 +1977,20 @@ internal sealed class ProjectService : IProjectService
 	/// <returns>Данные проекта после очистки.</returns>
 	private async Task ClearProjectFieldsHtmlTagsAsync(ProjectOutput project)
     {
-        project.ProjectDetails = ClearHtmlBuilder.Clear(project.ProjectDetails);
-        project.Demands= ClearHtmlBuilder.Clear(project.Demands);
-        project.Conditions= ClearHtmlBuilder.Clear(project.Conditions);
+        if (!string.IsNullOrWhiteSpace(project.ProjectDetails))
+        {
+            project.ProjectDetails = ClearHtmlBuilder.Clear(project.ProjectDetails).Trim();
+        }
+        
+        if (!string.IsNullOrWhiteSpace(project.Demands))
+        {
+             project.Demands= ClearHtmlBuilder.Clear(project.Demands).Trim();
+        }
+        
+        if (!string.IsNullOrWhiteSpace(project.Conditions))
+        {
+            project.Conditions= ClearHtmlBuilder.Clear(project.Conditions).Trim();
+        }
 
         await Task.CompletedTask;
     }
