@@ -78,6 +78,25 @@ internal sealed class ProjectManagementHub : Hub, IHubService
         _httpClientFactory = httpClientFactory;
         _configuration = configuration;
     }
+    
+    public override Task OnConnectedAsync()
+    {
+        var userCode = Context.GetHttpContext().Request.Query["userCode"].ToString();
+        var module = Enum.Parse<UserConnectionModuleEnum>(Context.GetHttpContext().Request.Query["module"].ToString());
+
+        if (!string.IsNullOrEmpty(userCode))
+        {
+            _connectionService.AddConnectionIdCacheAsync(userCode, Context.ConnectionId, module)
+                .ConfigureAwait(false);
+        }
+        
+        return base.OnConnectedAsync();
+    }
+    
+    public override Task OnDisconnectedAsync(Exception exception)
+    {
+        return Task.CompletedTask;
+    }
 
     /// <inheritdoc />
     public async Task GetDialogsAsync(string account, string token, long? objectId = null)
