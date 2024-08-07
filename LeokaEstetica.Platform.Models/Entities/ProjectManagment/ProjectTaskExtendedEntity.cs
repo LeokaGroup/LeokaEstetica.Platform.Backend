@@ -9,4 +9,9 @@ public class ProjectTaskExtendedEntity : ProjectTaskEntity
     /// Префикс номера задачи.
     /// </summary>
     public string TaskIdPrefix { get; set; }
+    
+    /// <summary>
+    /// Полное название задачи.
+    /// </summary>
+    public string NameTooltip { get; set; }
 }
