@@ -14,6 +14,7 @@ public interface IUserService
     /// </summary>
     /// <param name="password">Пароль. Он не хранится в БД. Хранится только его хэш.</param>
     /// <param name="email">Почта пользователя.</param>
+    /// <param name="account">Аккаунт.</param>
     /// <returns>Данные пользователя.</returns>
     Task<UserSignUpOutput> CreateUserAsync(string password, string email);
 
