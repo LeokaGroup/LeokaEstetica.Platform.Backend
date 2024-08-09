@@ -163,10 +163,11 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
                     "t.task_status_id," +
                     "t.author_id," +
                     "t.watcher_ids," +
-                    "CASE " +
+                     "CASE " +
                     "WHEN @strategy = 'sm' THEN LEFT(t.name, 40) " +
                     "WHEN @strategy = 'kn' THEN LEFT(t.name, 100) " +
-                    "END AS name," +
+                     "END AS name," +
+                    "t.name as NameTooltip,"+
                     "t.details AS details," +
                     "t.created," +
                     "t.updated," +
@@ -192,6 +193,7 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
                     "WHEN @strategy = 'sm' THEN LEFT(e.epic_name, 40) " +
                     "WHEN @strategy = 'kn'THEN LEFT(e.epic_name, 100) " +
                     "END AS name," +
+                    "e.epic_name as NameTooltip,"+
                     "e.epic_description AS details," +
                     "e.created_at AS created," +
                     "e.updated_at AS updated," +
@@ -219,6 +221,7 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
                     " WHEN @strategy = 'sm' THEN LEFT(us.story_name, 40) " +
                     "WHEN @strategy = 'kn' THEN LEFT(us.story_name, 100) " +
                     "END AS name," +
+                    "us.story_name as NameTooltip,"+
                     "us.story_description AS details," +
                     "us.created_at AS created," +
                     "us.updated_at AS updated," +
