@@ -73,7 +73,8 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
                 ProjectCode = Guid.NewGuid(),
                 DateCreated = DateTime.UtcNow,
                 Conditions = createProjectInput.Conditions?? "Не указано",
-                Demands = createProjectInput.Demands?? "Не указано"
+                Demands = createProjectInput.Demands?? "Не указано",
+                IsPublic = true
             };
             await _pgContext.UserProjects.AddAsync(project);
 
