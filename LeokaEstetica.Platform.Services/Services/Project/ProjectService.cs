@@ -653,7 +653,7 @@ internal sealed class ProjectService : IProjectService
                 throw ex;
             }
 
-            // Создаем вакансию.
+            // Создаем вакансию и привязываем ее к проекту.
             var createdVacancy = await _vacancyService.CreateVacancyAsync(
                 new VacancyInput(createProjectVacancyInput.VacancyName, createProjectVacancyInput.VacancyText, null,
                     createProjectVacancyInput.ProjectId, null)
@@ -663,10 +663,6 @@ internal sealed class ProjectService : IProjectService
                     Payment = createProjectVacancyInput.Payment,
                     Account = createProjectVacancyInput.Account
                 });
-
-            // Автоматически привязываем вакансию к проекту.
-            await AttachProjectVacancyAsync(createProjectVacancyInput.ProjectId, createdVacancy.VacancyId,
-                createProjectVacancyInput.Account);
 
             return createdVacancy;
         }
