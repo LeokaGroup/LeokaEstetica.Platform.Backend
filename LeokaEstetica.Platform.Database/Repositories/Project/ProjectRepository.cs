@@ -360,6 +360,16 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
             {
                 await UpdateModerationProjectStatusAsync(projectId.Value, ProjectModerationStatusEnum.ModerationProject);
             }
+            
+            var stageEntity = await _pgContext.ProjectStages.AsNoTracking()
+                .Where(ps => ps.StageId == stage.StageId)
+                .Select(ps => new ProjectStageEntity
+                {
+                    StageName = ps.StageName,
+                    StageSysName = ps.StageSysName,
+                    StageId = ps.StageId
+                })
+                .FirstOrDefaultAsync();
 
             var result = new UpdateProjectOutput
             {
@@ -367,7 +377,12 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
                 ProjectName = project.ProjectName,
                 ProjectDetails = project.ProjectDetails,
                 ProjectIcon = project.ProjectIcon,
-                ProjectId = projectId.Value
+                ProjectId = projectId.Value,
+                Conditions = project.Conditions,
+                Demands = project.Demands,
+                StageId = stage.StageId,
+                StageName = stageEntity.StageName,
+                StageSysName = stageEntity.StageSysName
             };
 
             await _pgContext.SaveChangesAsync();
