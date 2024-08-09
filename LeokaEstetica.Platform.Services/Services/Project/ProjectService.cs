@@ -395,7 +395,6 @@ internal sealed class ProjectService : IProjectService
     }
 
     /// <summary>
-    /// TODO: Подумать, давать ли всем пользователям возможность просматривать каталог проектов или только тем, у кого есть подписка.
     /// Метод получает список проектов для каталога.
     /// </summary>
     /// <returns>Список проектов.</returns>
@@ -403,12 +402,12 @@ internal sealed class ProjectService : IProjectService
     {
         try
         {
-            var result = new CatalogProjectResultOutput { CatalogProjects = new List<CatalogProjectOutput>() };
-            
-            // Получаем список проектов для каталога.
-            var projects = await _projectRepository.CatalogProjectsAsync();
+            var result = new CatalogProjectResultOutput
+            {
+                CatalogProjects = await _projectRepository.CatalogProjectsAsync()
+            };
 
-            result.CatalogProjects = await ExecuteCatalogConditionsAsync(projects);
+            result.CatalogProjects = await ExecuteCatalogConditionsAsync(result.CatalogProjects.AsList());
 
             return result;
         }
@@ -1040,7 +1039,7 @@ internal sealed class ProjectService : IProjectService
 
             var result = await _projectRepository.FilterProjectsAsync(filters);
 
-            var resultProjects = await ExecuteCatalogConditionsAsync(result);
+            var resultProjects = await ExecuteCatalogConditionsAsync(result.AsList());
 
             return resultProjects;
         }
@@ -1436,36 +1435,23 @@ internal sealed class ProjectService : IProjectService
     }
 
     /// <summary>
-    /// Метод запускает првоерки на разные условия прежде чем вывести проекты в каталог.
+    /// Метод запускает проверки на разные условия прежде чем вывести проекты в каталог.
     /// Проекты могут быть отсеяны, если не проходят по условиям.
     /// </summary>
     /// <param name="projects">Список проектов до проверки условий.</param>
     /// <returns>Список проектов после проверки условий.</returns>
-    public async Task<IEnumerable<CatalogProjectOutput>> ExecuteCatalogConditionsAsync(
-        IEnumerable<CatalogProjectOutput> projects)
+    private async Task<IEnumerable<CatalogProjectOutput>> ExecuteCatalogConditionsAsync(
+        List<CatalogProjectOutput> projects)
     {
-        var catalogs = projects.ToList();
-        
-        if (!catalogs.Any())
+        if (projects.Count == 0)
         {
             return Enumerable.Empty<CatalogProjectOutput>();
         }
         
-        await DeleteIfProjectRemarksAsync(catalogs);
-            
-        // TODO: Выпилить, если у нас не будет выделения цветами тарифов.
-        // Выбираем пользователей, у которых есть подписка выше бизнеса. Только их выделяем цветом.
-        // projects = await _fillColorProjectsService.SetColorBusinessProjectsAsync(catalogs, _subscriptionRepository,
-        //     _fareRuleRepository);
+        await DeleteIfProjectRemarksAsync(projects);
 
-        // Очистка описание от тегов список проектов для каталога.
-        projects = ClearCatalogVacanciesHtmlTags(projects.ToList());
-
-        // Проставляем проектам теги, в зависимости от подписки владельца проекта.
-        projects = await SetProjectsTagsAsync(projects.ToList());
-        
-        // Исключаем проекты на модерации и архивные.
-        // catalogs.ToList().RemoveAll(p => p.IsModeration || p.IsArchived);
+        // Очистка описания от тегов список проектов для каталога.
+        await ClearCatalogVacanciesHtmlTagsAsync(projects.ToList());
 
         return projects;
     }
@@ -1919,15 +1905,15 @@ internal sealed class ProjectService : IProjectService
     /// </summary>
     /// <param name="projects">Список проектов.</param>
     /// <returns>Список проектов после очистки.</returns>
-    private IEnumerable<CatalogProjectOutput> ClearCatalogVacanciesHtmlTags(List<CatalogProjectOutput> projects)
+    private async Task ClearCatalogVacanciesHtmlTagsAsync(List<CatalogProjectOutput> projects)
     {
         // Чистим описание проекта от html-тегов.
         foreach (var prj in projects)
         {
-            
+            prj.ProjectDetails = ClearHtmlBuilder.Clear(prj.ProjectDetails);
         }
 
-        return projects;
+        await Task.CompletedTask;
     }
 
 
@@ -2169,38 +2155,6 @@ internal sealed class ProjectService : IProjectService
         var result = await _projectModerationRepository.GetProjectRemarksAsync(projectId);
 
         return result;
-    }
-
-    /// <summary>
-    /// Метод проставляет флаги проектам пользователя в зависимости от его подписки.
-    /// </summary>
-    /// <param name="projects">Список проектов каталога.</param>
-    /// <returns>Список проектов каталога с проставленными тегами.</returns>
-    private async Task<IEnumerable<CatalogProjectOutput>> SetProjectsTagsAsync(List<CatalogProjectOutput> projects)
-    {
-        foreach (var p in projects)
-        {
-            var userId = p.UserId;
-            
-            // Получаем подписку пользователя.
-            var userSubscription = await _subscriptionRepository.GetUserSubscriptionAsync(userId);
-
-            if (userSubscription is null)
-            {
-                var ex = new InvalidOperationException("Найдена невалидная подписка пользователя. " +
-                                                    $"UserId: {userId}. " +
-                                                    "Подписка была NULL или невалидная." +
-                                                    $"#3 Ошибка в {nameof(ProjectService)}");
-                // Отправляем ивент в пачку.
-                await _discordService.SendNotificationErrorAsync(ex);
-                
-                // Если ошибка, то не стопаем выполнение логики, а вернем проекты, пока будем разбираться с ошибкой.
-                // Без тегов не страшно отобразить проекты.
-                return projects;
-            }
-        }
-
-        return projects;
     }
 
     /// <summary>
