@@ -21,6 +21,7 @@ using LeokaEstetica.Platform.Models.Enums;
 using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Notifications.Consts;
 using Microsoft.Extensions.Logging;
+using Telegram.Bot.Types;
 
 namespace LeokaEstetica.Platform.CallCenter.Services.Vacancy;
 
@@ -155,8 +156,9 @@ public class VacancyModerationService : IVacancyModerationService
     /// Метод одобряет вакансию на модерации.
     /// </summary>
     /// <param name="projectId">Id вакансии.</param>
+    /// <param name="account">Аккаунт.</param>
     /// <returns>Выходная модель модерации.</returns>
-    public async Task<ApproveVacancyOutput> ApproveVacancyAsync(long vacancyId)
+    public async Task<ApproveVacancyOutput> ApproveVacancyAsync(long vacancyId, string account)
     {
         try
         {
@@ -167,6 +169,21 @@ public class VacancyModerationService : IVacancyModerationService
 
             if (!result.IsSuccess)
             {
+                var userId = await _userRepository.GetUserIdByEmailOrLoginAsync(account);
+
+                if (userId <= 0)
+                {
+                    var exp = new NotFoundUserIdByAccountException(account);
+                    throw exp;
+                }
+
+                var userCode = await _userRepository.GetUserCodeByUserIdAsync(userId);
+                
+                await _hubNotificationService.Value.SendNotificationAsync("Внимание",
+                    "Проект еще находится на модерации. Нельзя одобрить вакансию, пока проект не пройдет модерацию.",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, "SendNotificationWarningVacancyProjectOnModeration",
+                    userCode, UserConnectionModuleEnum.Main);
+                
                 var ex = new InvalidOperationException($"Ошибка при одобрении вакансии. VacancyId: {vacancyId}");
                 throw ex;
             }
@@ -176,16 +193,16 @@ public class VacancyModerationService : IVacancyModerationService
             var vacancy = await _vacancyRepository.GetVacancyByVacancyIdAsync(vacancyId);
             var projectId = await _projectRepository.GetProjectIdByVacancyIdAsync(vacancyId);
             var vacancyName = vacancy.VacancyName;
-            
+
             // Отправляем уведомление на почту владельца вакансии.
             await _moderationMailingsService.SendNotificationApproveVacancyAsync(user.Email, vacancyName, vacancyId);
-            
+
             // Отправляем уведомление в приложении об одобрении вакансии модератором.
             await _vacancyModerationRepository.AddNotificationApproveVacancyAsync(vacancyId, vacancyOwnerId,
                 vacancyName, projectId);
-            
+
             await _discordService.SendNotificationCreatedObjectAsync(ObjectTypeEnum.Vacancy, vacancyName);
-            
+
             var vacancyText = (vacancy.VacancyText);
             await _telegramBotService.SendNotificationCreatedObjectAsync(ObjectTypeEnum.Vacancy, vacancyName,
                 vacancyText, vacancyId);

@@ -1,4 +1,7 @@
 using System.Data;
+using Dapper;
+using LeokaEstetica.Platform.Base.Abstractions.Connection;
+using LeokaEstetica.Platform.Base.Abstractions.Repositories.Base;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Core.Extensions;
@@ -13,7 +16,7 @@ namespace LeokaEstetica.Platform.Database.Repositories.Moderation.Vacancy;
 /// <summary>
 /// Класс реализует методы репозитория модерации вакансий.
 /// </summary>
-internal sealed class VacancyModerationRepository : IVacancyModerationRepository
+internal sealed class VacancyModerationRepository : BaseRepository, IVacancyModerationRepository
 {
     private readonly PgContext _pgContext;
     
@@ -21,7 +24,9 @@ internal sealed class VacancyModerationRepository : IVacancyModerationRepository
     /// Конструктор.
     /// </summary>
     /// <param name="pgContext">Датаконтекст.</param>
-    public VacancyModerationRepository(PgContext pgContext)
+    /// <param name="connectionProvider">Провайдер БД.</param>
+    public VacancyModerationRepository(PgContext pgContext, IConnectionProvider connectionProvider)
+        : base(connectionProvider)
     {
         _pgContext = pgContext;
     }
@@ -148,6 +153,29 @@ internal sealed class VacancyModerationRepository : IVacancyModerationRepository
     /// <returns>Признак подтверждения вакансии.</returns>
     public async Task<bool> ApproveVacancyAsync(long vacancyId)
     {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+        var parameters = new DynamicParameters();
+        parameters.Add("@vacancyId", vacancyId);
+
+        var query = "SELECT " +
+                    "CASE " +
+                    "WHEN \"ModerationStatusId\" = 2 THEN false " +
+                    "ELSE true " +
+                    "END AS \"ModerationStatusId\" " +
+                    "FROM \"Moderation\".\"Projects\" " +
+                    "WHERE \"ProjectId\" = (" +
+                    "SELECT \"ProjectId\" " +
+                    "FROM \"Projects\".\"ProjectVacancies\" " +
+                    "WHERE \"VacancyId\" = @vacancyId " +
+                    ");";
+
+        var result = await connection.ExecuteScalarAsync<bool>(query, parameters);
+
+        if (!result)
+        {
+            return false;
+        }
+
         var isSuccessSetStatus = await SetVacancyStatus(vacancyId, VacancyModerationStatusEnum.ApproveVacancy);
 
         if (!isSuccessSetStatus)
