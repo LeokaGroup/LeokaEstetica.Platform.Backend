@@ -1675,6 +1675,8 @@ internal sealed class ProjectService : IProjectService
         // Находим вакансии в архиве.
         var archivedVacancies = (await _vacancyRepository.GetUserVacanciesArchiveAsync(userId)).AsList();
 
+        // TODO: Когда перепишем на Dapper, то не надо работать с лишними данными, а сразу в запросе отсекать их.
+        // TODO: Тогда и список _removedVacancyIds не нужен будет.
         // Проставляем статусы вакансий.
         foreach (var pv in projectVacancies)
         {
