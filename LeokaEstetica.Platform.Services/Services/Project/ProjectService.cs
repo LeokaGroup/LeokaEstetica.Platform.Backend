@@ -408,9 +408,14 @@ internal sealed class ProjectService : IProjectService
             // Сокращаем длину строки описания проекта.
             foreach (var prj in result.UserProjects)
             {
-                if (prj.ProjectDetails?.Length > 40)
+                // Полное описание проекта для тултипа.
+                prj.ProjectDetailsTooltip = prj.ProjectDetails;
+
+                // Чистим описание проекта от html-тегов и урезаем строку, если она более 40 символов.
+                if (prj.ProjectDetails?.Trim().Length > 40)
                 {
-                    prj.ProjectDetails = string.Concat(prj.ProjectDetails.Substring(0, 40), "...");
+                    prj.ProjectDetails = string.Concat(prj.ProjectDetails[..40], "...");
+                    prj.ProjectDetails = ClearHtmlBuilder.Clear(prj.ProjectDetails);
                 }
             }
 
