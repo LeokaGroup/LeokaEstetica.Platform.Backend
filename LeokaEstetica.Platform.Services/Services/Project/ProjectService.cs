@@ -1638,6 +1638,8 @@ internal sealed class ProjectService : IProjectService
         
         // Находим вакансии в архиве.
         var archivedVacancies = (await _vacancyRepository.GetUserVacanciesArchiveAsync(userId)).AsList();
+        
+        var isOwner = await _projectRepository.CheckProjectOwnerAsync(projectId, userId);
 
         // TODO: Когда перепишем на Dapper, то не надо работать с лишними данными, а сразу в запросе отсекать их.
         // TODO: Тогда и список _removedVacancyIds не нужен будет.
@@ -1653,9 +1655,7 @@ internal sealed class ProjectService : IProjectService
                     .Where(v => v.VacancyId == pv.VacancyId)
                     .Select(v => v.ModerationStatusName)
                     .FirstOrDefault();
-                
-                var isOwner = await _projectRepository.CheckProjectOwnerAsync(projectId, userId);
-                
+
                 // Если не владелец, то удаляем из результата вакансии кроме опубликованных.
                 if (!isOwner)
                 { 
