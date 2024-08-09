@@ -1,5 +1,6 @@
 using System.Runtime.CompilerServices;
 using AutoMapper;
+using Dapper;
 using LeokaEstetica.Platform.Access.Abstractions.User;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.Core.Enums;
@@ -420,7 +421,7 @@ internal sealed class ProfileService : IProfileService
                         Label = i.Label,
                         Url = i.Url,
                     })
-                    .ToList()
+                    .AsList()
             }))
         };
 
