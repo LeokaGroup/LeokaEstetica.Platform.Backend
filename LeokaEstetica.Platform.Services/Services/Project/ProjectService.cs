@@ -401,7 +401,7 @@ internal sealed class ProjectService : IProjectService
     public async Task<CatalogProjectResultOutput> CatalogProjectsAsync()
     {
         try
-        {
+        { 
             var result = new CatalogProjectResultOutput
             {
                 CatalogProjects = await _projectRepository.CatalogProjectsAsync()
