@@ -1687,6 +1687,14 @@ internal sealed class ProjectService : IProjectService
                     .Where(v => v.VacancyId == pv.VacancyId)
                     .Select(v => v.ModerationStatusName)
                     .FirstOrDefault();
+                
+                var isOwner = await _projectRepository.CheckProjectOwnerAsync(projectId, userId);
+                
+                // Если не владелец, то удаляем из результата вакансии кроме опубликованных.
+                if (!isOwner)
+                { 
+                    _removedVacancyIds.Add(pv.VacancyId);
+                }
             }
                 
             // Ищем вакансию в каталоге вакансий.
@@ -1706,15 +1714,6 @@ internal sealed class ProjectService : IProjectService
             if (isArchiveVacancy)
             {
                 pv.VacancyStatusName = _archiveVacancy;
-            }
-            
-            // Только владелец проекта может удалять вакансии проекта.
-            var isOwner = await _projectRepository.CheckProjectOwnerAsync(projectId, userId);
-
-            // Если не владелец, то удаляем из результата вакансии кроме опубликованных.
-            if (!isOwner)
-            {
-                _removedVacancyIds.Add(pv.VacancyId);
             }
 
             if (!string.IsNullOrWhiteSpace(pv.VacancyText))
