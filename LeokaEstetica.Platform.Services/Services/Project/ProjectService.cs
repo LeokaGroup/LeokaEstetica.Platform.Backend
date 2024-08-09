@@ -14,7 +14,6 @@ using LeokaEstetica.Platform.Database.Abstractions.Notification;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
 using LeokaEstetica.Platform.Database.Abstractions.Subscription;
 using LeokaEstetica.Platform.Database.Abstractions.Vacancy;
-using LeokaEstetica.Platform.Finder.Chains.Project;
 using LeokaEstetica.Platform.Messaging.Abstractions.Mail;
 using LeokaEstetica.Platform.Models.Dto.Input.Project;
 using LeokaEstetica.Platform.Models.Dto.Input.Vacancy;
@@ -60,29 +59,6 @@ internal sealed class ProjectService : IProjectService
     private readonly IProjectNotificationsService _projectNotificationsService;
     private readonly IVacancyService _vacancyService;
     private readonly IVacancyRepository _vacancyRepository;
-
-    // Определяем всю цепочку фильтров.
-    private readonly BaseProjectsFilterChain _dateProjectsFilterChain = new DateProjectsFilterChain();
-    private readonly BaseProjectsFilterChain _projectsVacanciesFilterChain = new ProjectsVacanciesFilterChain();
-    private readonly BaseProjectsFilterChain _projectStageConceptFilterChain = new ProjectStageConceptFilterChain();
-
-    private readonly BaseProjectsFilterChain _projectStageSearchTeamFilterChain =
-        new ProjectStageSearchTeamFilterChain();
-
-    private readonly BaseProjectsFilterChain _projectStageTestingFilterChain = new ProjectStageTestingFilterChain();
-
-    private readonly BaseProjectsFilterChain _projectStageDevelopmentFilterChain =
-        new ProjectStageDevelopmentFilterChain();
-
-    private readonly BaseProjectsFilterChain _projectStageProjectingFilterChain =
-        new ProjectStageProjectingFilterChain();
-
-    private readonly BaseProjectsFilterChain _projectStageSupportFilterChain = new ProjectStageSupportFilterChain();
-
-    private readonly BaseProjectsFilterChain _projectStageStartFilterChain = new ProjectStageStartFilterChain();
-
-    private readonly BaseProjectsFilterChain _projectStageSearchInvestorsFilterChain =
-        new ProjectStageSearchInvestorsFilterChain();
 
     private readonly ISubscriptionRepository _subscriptionRepository;
     private readonly IMailingsService _mailingsService;
@@ -182,17 +158,6 @@ internal sealed class ProjectService : IProjectService
         _wikiTreeRepository = wikiTreeRepository;
         _accessModuleService = accessModuleService;
         _hubNotificationService = hubNotificationService;
-
-        // Определяем обработчики цепочки фильтров.
-        _dateProjectsFilterChain.Successor = _projectsVacanciesFilterChain;
-        _projectsVacanciesFilterChain.Successor = _projectStageConceptFilterChain;
-        _projectStageConceptFilterChain.Successor = _projectStageSearchTeamFilterChain;
-        _projectStageSearchTeamFilterChain.Successor = _projectStageTestingFilterChain;
-        _projectStageTestingFilterChain.Successor = _projectStageDevelopmentFilterChain;
-        _projectStageDevelopmentFilterChain.Successor = _projectStageProjectingFilterChain;
-        _projectStageProjectingFilterChain.Successor = _projectStageSupportFilterChain;
-        _projectStageSupportFilterChain.Successor = _projectStageStartFilterChain;
-        _projectStageStartFilterChain.Successor = _projectStageSearchInvestorsFilterChain;
     }
 
     #region Публичные методы.
@@ -408,9 +373,14 @@ internal sealed class ProjectService : IProjectService
             // Сокращаем длину строки описания проекта.
             foreach (var prj in result.UserProjects)
             {
-                if (prj.ProjectDetails?.Length > 40)
+                // Полное описание проекта для тултипа.
+                prj.ProjectDetailsTooltip = prj.ProjectDetails;
+
+                // Чистим описание проекта от html-тегов и урезаем строку, если она более 40 символов.
+                if (prj.ProjectDetails?.Trim().Length > 40)
                 {
-                    prj.ProjectDetails = string.Concat(prj.ProjectDetails.Substring(0, 40), "...");
+                    prj.ProjectDetails = string.Concat(prj.ProjectDetails[..40], "...");
+                    prj.ProjectDetails = ClearHtmlBuilder.Clear(prj.ProjectDetails);
                 }
             }
 
@@ -1071,14 +1041,8 @@ internal sealed class ProjectService : IProjectService
         {
             // Разбиваем строку стадий проекта, так как там может приходить несколько значений в строке.
             filters.ProjectStages = CreateProjectStagesBuilder.CreateProjectStagesResult(filters.StageValues);
-           
-            // Получаем список проектов для каталога.
-            var projects = (await _projectRepository.CatalogProjectsAsync()).ToList();
 
-            // Логгируем проект, у которого не удалось получить стадию проекта, но не ломаем систему.
-            await ValidateProjectStages(projects);
-
-            var result = await _dateProjectsFilterChain.FilterProjectsAsync(filters, projects);
+            var result = await _projectRepository.FilterProjectsAsync(filters);
 
             var resultProjects = await ExecuteCatalogConditionsAsync(result);
 
