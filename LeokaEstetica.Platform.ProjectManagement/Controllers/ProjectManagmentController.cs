@@ -1900,6 +1900,25 @@ public class ProjectManagmentController : BaseController
 
         return result;
     }
+    
+    /// <summary>
+    /// Метод получает раб.пространство проекта.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Раб.пространство проекта.</returns>
+    [HttpGet]
+    [Route("workspace")]
+    [ProducesResponseType(200, Type = typeof(WorkSpaceOutput))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<WorkSpaceOutput> GetWorkSpaceByProjectIdAsync([FromQuery] long projectId)
+    {
+        var result = await _projectManagmentService.GetWorkSpaceByProjectIdAsync(projectId, GetUserName());
+
+        return result;
+    }
 
     /// <summary>
     /// Метод удаляет задачу проекта.

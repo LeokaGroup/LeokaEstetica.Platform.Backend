@@ -85,7 +85,8 @@ internal sealed class ProjectSettingsConfigService : IProjectSettingsConfigServi
     }
 
     /// <inheritdoc />
-    public async Task<ConfigSpaceSettingOutput> GetBuildProjectSpaceSettingsAsync(string account, long? projectId)
+    public async Task<ConfigSpaceSettingOutput> GetBuildProjectSpaceSettingsAsync(string account, long? projectId,
+        long? companyId)
     {
         try
         {
@@ -93,7 +94,7 @@ internal sealed class ProjectSettingsConfigService : IProjectSettingsConfigServi
             
             var userId = await _userRepository.GetUserByEmailAsync(account);
 
-            if (!projectId.HasValue)
+            if (!projectId.HasValue && !companyId.HasValue)
             {
                 // Автоматически редиректим в общее пространство.
                 result.IsDefaultSpaceUrl = true;
@@ -138,7 +139,8 @@ internal sealed class ProjectSettingsConfigService : IProjectSettingsConfigServi
                 // Настройки проекта были зафиксированы пользователем, делаем переход в раб.пространство этого проекта.
                 result.ProjectId = projectId.Value;
                 result.IsDefaultSpaceUrl = false;
-                result.ProjectManagmentSpaceUrl = string.Concat(redirectUrl, $"?projectId={projectId.Value}");
+                result.ProjectManagmentSpaceUrl = string.Concat(redirectUrl,
+                    $"?projectId={projectId.Value}&companyId={companyId.Value}");
                 result.IsCommitProjectSettings = true;
                
 
@@ -170,7 +172,8 @@ internal sealed class ProjectSettingsConfigService : IProjectSettingsConfigServi
 
                 result.ProjectId = projectId.Value;
                 result.IsDefaultSpaceUrl = false;
-                result.ProjectManagmentSpaceUrl = string.Concat(redirectUrl, $"?projectId={projectId.Value}");
+                result.ProjectManagmentSpaceUrl = string.Concat(redirectUrl,
+                    $"?projectId={projectId.Value}&companyId={companyId.Value}");
                                     
                 return result;
             }
@@ -181,7 +184,8 @@ internal sealed class ProjectSettingsConfigService : IProjectSettingsConfigServi
                 result.IsCommitProjectSettings = false;
                 result.ProjectId = projectId.Value;
                 result.IsDefaultSpaceUrl = false;
-                result.ProjectManagmentSpaceUrl = string.Concat(redirectUrl, $"?projectId={projectId.Value}");
+                result.ProjectManagmentSpaceUrl = string.Concat(redirectUrl,
+                    $"?projectId={projectId.Value}&companyId={companyId.Value}");
 
                 return result;
             }
