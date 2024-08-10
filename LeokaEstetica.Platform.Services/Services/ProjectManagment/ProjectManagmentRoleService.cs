@@ -112,7 +112,8 @@ internal sealed class ProjectManagmentRoleService : IProjectManagmentRoleService
 
             var exBuilder = new InvalidOperationException("Не удалось определить роли пользователя для модуля УП. " +
                                                           $"UserId: {userId}. " +
-                                                          $"ProjectId: {projectId}.");
+                                                          $"ProjectId: {projectId}. " +
+                                                          $"CompanyId: {companyId}.");
 
             _logger?.LogInformation($"Не нашли роли пользователя: {userId} ни в кэше Redis, ни в БД...");
 
