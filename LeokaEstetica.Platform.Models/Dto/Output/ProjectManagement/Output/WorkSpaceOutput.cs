@@ -29,4 +29,9 @@ public class WorkSpaceOutput
     /// Признак уже настроенного названия проекта и префикса (может делать лишь владелец).
     /// </summary>
     public bool IsSetupProjectNameAndPrefix { get; set; }
+
+    /// <summary>
+    /// Id компании.
+    /// </summary>
+    public long CompanyId { get; set; }
 }

@@ -28,7 +28,7 @@ internal sealed class ProjectManagmentRoleRepository : BaseRepository, IProjectM
 
     /// <inheritdoc />
     public async Task<IEnumerable<ProjectManagementRoleOutput>?> GetUserRolesAsync(long? userId,
-        long? projectId = null)
+        long? projectId, long? companyId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
 
@@ -68,12 +68,18 @@ internal sealed class ProjectManagmentRoleRepository : BaseRepository, IProjectM
                                               "ORDER BY pmr.role_id ";
                                               
             result = await connection.QueryAsync<ProjectManagementRoleOutput>(queryWithParameterProjectId, parameters);
+            
+            return result;
         }
 
         // Получаем роли пользователя.
-        else
+        if (companyId.HasValue
+            && userId.HasValue
+            && projectId.HasValue)
         {
             parameters.Add("@userId", userId);
+            parameters.Add("@projectId", projectId);
+            parameters.Add("@companyId", companyId);
 
             var queryWithParameterUser = "SELECT pmr.role_id, " +
                                          "pmr.organization_id," +
@@ -94,21 +100,22 @@ internal sealed class ProjectManagmentRoleRepository : BaseRepository, IProjectM
                                          "ON po.organization_id = op.organization_id " +
                                          "INNER JOIN project_management.organization_members AS om " +
                                          "ON op.organization_id = om.organization_id " +
-                                         "WHERE om.member_id = @userId " +
+                                         "WHERE pmr.project_member_id = @userId " +
+                                         "AND op.project_id = @projectId " +
+                                         "AND op.organization_id = @companyId " +
                                          "GROUP BY pmr.organization_id, pmr.project_member_id, pr.role_name," +
                                          " pr.role_sys_name, op.project_id, pmr.role_id, pmr.is_enabled " +
                                          "ORDER BY pmr.role_id ";
 
-            if (projectId.HasValue)
-            {
-                parameters.Add("@projectId", projectId);
-                queryWithParameterUser += "AND op.project_id = @projectId";
-            }
-
             result = await connection.QueryAsync<ProjectManagementRoleOutput>(queryWithParameterUser, parameters);
+
+            return result;
         }
 
-        return result;
+        throw new InvalidOperationException("Ошибка получения ролей. " +
+                                            $"ProjectId: {projectId}. " +
+                                            $"UserId: {userId}. " +
+                                            $"CompanyId: {companyId}.");
     }
 
     /// <inheritdoc />

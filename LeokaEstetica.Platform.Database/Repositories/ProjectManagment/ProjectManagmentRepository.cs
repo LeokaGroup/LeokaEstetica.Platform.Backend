@@ -2374,7 +2374,8 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
 
         var query = "SELECT up.\"ProjectId\", " +
                     "COALESCE(up.\"ProjectManagementName\", 'Проект без названия') AS ProjectManagementName, " +
-                    "pw.workspace_id " +
+                    "pw.workspace_id," +
+                    "pw.organization_id AS company_id " +
                     "FROM \"Projects\".\"UserProjects\" AS up " +
                     "INNER JOIN project_management.workspaces AS pw " +
                     "ON up.\"ProjectId\" = pw.project_id " +
@@ -3036,6 +3037,35 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
 
         var result = (await connection.QueryAsync<ProjectTaskTypeOutput>(query, parameters))
             .ToDictionary(k => k.ProjectTaskId, v => v);
+
+        return result;
+    }
+
+    /// <inheritdoc />
+    public async Task<WorkSpaceOutput> GetWorkSpaceByProjectIdAsync(long projectId, long userId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+        
+        var parameters = new DynamicParameters();
+        parameters.Add("@userId", userId);
+        parameters.Add("@projectId", projectId);
+
+        var query = "SELECT up.\"ProjectId\", " +
+                    "COALESCE(up.\"ProjectManagementName\", 'Проект без названия') AS ProjectManagementName, " +
+                    "pw.workspace_id," +
+                    "pw.organization_id AS company_id " +
+                    "FROM \"Projects\".\"UserProjects\" AS up " +
+                    "INNER JOIN project_management.workspaces AS pw " +
+                    "ON up.\"ProjectId\" = pw.project_id " +
+                    "INNER JOIN \"Teams\".\"ProjectsTeams\" AS pt " +
+                    "ON up.\"ProjectId\" = pt.\"ProjectId\" " +
+                    "INNER JOIN \"Teams\".\"ProjectsTeamsMembers\" AS ptm " +
+                    "ON pt.\"TeamId\" = ptm.\"TeamId\" " +
+                    "WHERE ptm.\"UserId\" = @userId " +
+                    "AND pw.project_id = @projectId " +
+                    "ORDER BY pw.workspace_id DESC";
+
+        var result = await connection.QueryFirstOrDefaultAsync<WorkSpaceOutput>(query, parameters);
 
         return result;
     }

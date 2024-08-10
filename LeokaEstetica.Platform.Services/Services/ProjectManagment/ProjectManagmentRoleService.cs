@@ -65,7 +65,7 @@ internal sealed class ProjectManagmentRoleService : IProjectManagmentRoleService
 
     /// <inheritdoc />
     public async Task<IEnumerable<ProjectManagementRoleOutput>> GetUserRolesAsync(string account,
-        long? projectId = null)
+        long projectId, long companyId)
     {
         try
         {
@@ -95,7 +95,7 @@ internal sealed class ProjectManagmentRoleService : IProjectManagmentRoleService
             _logger?.LogInformation($"Не нашли роли пользователя: {userId} в кэше Redis...");
             _logger?.LogInformation($"Проверяем роли пользователя: {userId} в БД...");
 
-            var userRoles = (await _projectManagmentRoleRepository.Value.GetUserRolesAsync(userId, projectId))
+            var userRoles = (await _projectManagmentRoleRepository.Value.GetUserRolesAsync(userId, projectId, companyId))
                 ?.AsList();
 
             // Нашли в БД - отдаем.
@@ -110,13 +110,9 @@ internal sealed class ProjectManagmentRoleService : IProjectManagmentRoleService
                 return userRoles;
             }
 
-            var exBuilder = new StringBuilder("Не удалось определить роли пользователя для модуля УП. " +
-                                              $"UserId: {userId}.");
-
-            if (projectId.HasValue)
-            {
-                exBuilder.AppendLine($"ProjectId: {projectId}");
-            }
+            var exBuilder = new InvalidOperationException("Не удалось определить роли пользователя для модуля УП. " +
+                                                          $"UserId: {userId}. " +
+                                                          $"ProjectId: {projectId}.");
 
             _logger?.LogInformation($"Не нашли роли пользователя: {userId} ни в кэше Redis, ни в БД...");
 
@@ -139,6 +135,7 @@ internal sealed class ProjectManagmentRoleService : IProjectManagmentRoleService
             var projectManagementRoles = roles.AsList();
             await _projectManagmentRoleRepository.Value.UpdateRolesAsync(projectManagementRoles);
 
+            // TODO: Также нужно обновлять роли в БД, а не ио
             // Обновляем роли в кэше.
             foreach (var r in projectManagementRoles)
             {
@@ -158,8 +155,8 @@ internal sealed class ProjectManagmentRoleService : IProjectManagmentRoleService
                 // Иначе ищем в БД роли.
                 else
                 {
-                    var userRoles = (await _projectManagmentRoleRepository.Value.GetUserRolesAsync(r.UserId))
-                        ?.AsList();
+                    var userRoles = (await _projectManagmentRoleRepository.Value.GetUserRolesAsync(r.UserId, null,
+                        null))?.AsList();
 
                     if (userRoles is null || userRoles.Count <= 0)
                     {

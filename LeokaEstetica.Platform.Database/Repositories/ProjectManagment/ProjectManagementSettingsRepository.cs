@@ -338,7 +338,8 @@ internal sealed class ProjectManagementSettingsRepository : BaseRepository, IPro
                                (32, @memberId, @organizationId, TRUE),
                                (33, @memberId, @organizationId, TRUE),
                                (34, @memberId, @organizationId, FALSE),
-                               (35, @memberId, @organizationId, TRUE)";
+                               (35, @memberId, @organizationId, TRUE),
+                               (36, @memberId, @organizationId, TRUE)";
                                
         await connection.ExecuteAsync(query, parameters);
     }
