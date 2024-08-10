@@ -2386,7 +2386,7 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
                     "WHERE ptm.\"UserId\" = @userId " +
                     "AND NOT pw.project_id = ANY (SELECT \"ProjectId\" " +
                     "FROM \"Moderation\".\"Projects\" " +
-                    "WHERE \"ModerationStatusId\" = 2) " +
+                    "WHERE \"ModerationStatusId\" IN (2, 6, 7)) " +
                     "ORDER BY pw.workspace_id DESC";
 
         var result = await connection.QueryAsync<WorkSpaceOutput>(query, parameters);
