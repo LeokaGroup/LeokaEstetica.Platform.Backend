@@ -194,11 +194,11 @@ internal sealed class ProjectManagementSettingsRepository : BaseRepository, IPro
                     "pi.\"Patronymic\" AS \"SecondName\", " +
                     "u.\"Email\", " +
                     "TO_CHAR(u.\"LastAutorization\", 'DD.MM.YYYY HH24:MI') AS LastAutorization, " +
-                    "(CASE WHEN u.\"UserId\" = (SELECT up.\"UserId\" " +
+                    "(CASE WHEN u.\"UserId\" <> (SELECT up.\"UserId\" " +
                     "FROM \"Projects\".\"UserProjects\" AS up " +
-                    "WHERE up.\"ProjectId\" = @projectId " +
-                    "LIMIT 1) THEN TRUE " +
-                    "ELSE FALSE END) AS IsOwner, " +
+                    "WHERE up.\"ProjectId\" <> @projectId " +
+                    "LIMIT 1) THEN FALSE " +
+                    "ELSE TRUE END) AS IsOwner, " +
                     "COALESCE(om.member_role, 'Участник') AS Role " +
                     "FROM project_management.organization_projects AS op " +
                     "INNER JOIN project_management.organization_members AS om " +
@@ -223,11 +223,11 @@ internal sealed class ProjectManagementSettingsRepository : BaseRepository, IPro
                     "pi.\"Patronymic\" AS \"SecondName\", " +
                     "u.\"Email\", " +
                     "TO_CHAR(u.\"LastAutorization\", 'DD.MM.YYYY HH24:MI') AS LastAutorization, " +
-                    "(CASE WHEN u.\"UserId\" = (SELECT up.\"UserId\" " +
+                    "(CASE WHEN u.\"UserId\" <> (SELECT up.\"UserId\" " +
                     "FROM \"Projects\".\"UserProjects\" AS up " +
                     "WHERE up.\"ProjectId\" = @projectId " +
-                    "LIMIT 1) THEN TRUE " +
-                    "ELSE FALSE END) AS IsOwner, " +
+                    "LIMIT 1) THEN FALSE " +
+                    "ELSE TRUE END) AS IsOwner, " +
                     "COALESCE(om.member_role, 'Участник') AS Role " +
                     "FROM project_management.organization_projects AS op " +
                     "INNER JOIN project_management.organization_members AS om " +
