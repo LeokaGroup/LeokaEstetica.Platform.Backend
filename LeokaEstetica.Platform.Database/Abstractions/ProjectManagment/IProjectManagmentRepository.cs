@@ -811,4 +811,11 @@ public interface IProjectManagmentRepository
     /// <param name="userId">Id пользователя.</param>
     /// <returns>Раб.пространство проекта.</returns>
     Task<WorkSpaceOutput> GetWorkSpaceByProjectIdAsync(long projectId, long userId);
+
+    /// <summary>
+    /// Метод получает список Id документов по Id проекта, которые в MongoDB.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>список Id документов в MongoDB.</returns>
+    Task<IEnumerable<string>> GetProjectMongoDocumentIdsByProjectIdAsync(long projectId);
 }
