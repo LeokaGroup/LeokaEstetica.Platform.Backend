@@ -762,10 +762,19 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
         try
         {
             // Удаляем вакансии проекта.
-            await RemoveProjectVacanciesAsync(projectId, result);
+            result = await RemoveProjectVacanciesAsync(projectId, result);
 
             // Удаляем чат диалога и все сообщения по Id текущего пользователя.
             await RemoveProjectChatAsync(userId, projectId);
+            
+            using var connection = await ConnectionProvider.GetConnectionAsync();
+            
+            // Удаляем участников команды проекта.
+            await RemoveProjectTeamMembersAsync(projectId, connection);
+            
+            // Удаляем вакансии участников проекта (фактически мы не трогаем вакансии проекта,
+            // а удаляем их из таблицы вакансий, на которые были приглашены участники).
+            await RemoveProjectTeamMemberProjectVacanciesAsync(projectId, connection);
 
             // Удаляем команду проекта.
             await RemoveUserProjectTeamAsync(projectId);
@@ -787,8 +796,6 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
 
             // Удаляем проект из стадий.
             await RemoveProjectStagesAsync(projectId);
-            
-            using var connection = await ConnectionProvider.GetConnectionAsync();
 
             // Удаляем настройки проекта.
             await RemoveMoveNotCompletedTasksSettingsAsync(projectId, connection);
@@ -806,7 +813,19 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
             await RemoveProjectWorkSpaceAsync(projectId, companyId, connection);
 
             // Удаляем проект пользователя.
-            await RemoveUserProjectAsync(projectId, userId, result);
+            result = await RemoveUserProjectAsync(projectId, userId, result);
+            
+            // Удаляем все приглашения в проект.
+            await RemoveProjectNotificationsAsync(projectId, connection);
+            
+            // Удаляем все роли участников проекта (удаляем участников).
+            await RemoveProjectTeamMemberRolesAsync(projectId, connection);
+            
+            // Удаляем wiki проекта.
+            await RemoveProjectWikiAsync(projectId, connection);
+            
+            // Удаляем настройки проекта.
+            await RemoveProjectSettingsAsync(projectId, connection);
 
             await _pgContext.SaveChangesAsync();
 
@@ -1284,8 +1303,8 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
     /// <param name="result">Кортеж результата.</param>
-    private async Task RemoveProjectVacanciesAsync(long projectId,
-        (bool Success, List<string> RemovedVacancies, string ProjectName) result)
+    private async Task<(bool Success, List<string> RemovedVacancies, string ProjectName)> RemoveProjectVacanciesAsync(
+        long projectId, (bool Success, List<string> RemovedVacancies, string ProjectName) result)
     {
         // Удаляем вакансии проекта.
         var projectVacancies = _pgContext.ProjectVacancies
@@ -1297,11 +1316,11 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
             // Записываем названия вакансий, которые будут удалены.
             var removedVacanciesNames = projectVacancies.Select(v => v.UserVacancy.VacancyName);
             result.RemovedVacancies.AddRange(removedVacanciesNames);
-                
+
             _pgContext.ProjectVacancies.RemoveRange(projectVacancies);
         }
 
-        await Task.CompletedTask;
+        return await Task.FromResult(result);
     }
 
     /// <summary>
@@ -1618,8 +1637,8 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
     /// <param name="projectId">Id проекта.</param>
     /// <param name="userId">Id пользователя.</param>
     /// <param name="result">Кортеж результата.</param>
-    private async Task RemoveUserProjectAsync(long projectId, long userId,
-        (bool Success, List<string> RemovedVacancies, string ProjectName) result)
+    private async Task<(bool Success, List<string> RemovedVacancies, string ProjectName)> RemoveUserProjectAsync(
+        long projectId, long userId, (bool Success, List<string> RemovedVacancies, string ProjectName) result)
     {
         var userProject = await _pgContext.UserProjects
             .FirstOrDefaultAsync(p => p.ProjectId == projectId
@@ -1633,6 +1652,212 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
             _pgContext.UserProjects.Remove(userProject);
         }
 
+        return await Task.FromResult(result);
+    }
+
+    /// <summary>
+    /// Метод удаляет все приглашения в проект.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    private async Task RemoveProjectNotificationsAsync(long projectId, IDbConnection connection)
+    {
+        var parameters = new DynamicParameters();
+        parameters.Add("@projectId", projectId);
+
+        var query = "DELETE FROM \"Notifications\".\"Notifications\"" +
+                    "WHERE \"ProjectId\" = @projectId ";
+
+        await connection.ExecuteAsync(query, parameters);
+        
+        await Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Метод удаляет участников команды проекта.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="connection">Подключение к БД.</param>
+    private async Task RemoveProjectTeamMembersAsync(long projectId, IDbConnection connection)
+    {
+        var parameters = new DynamicParameters();
+        parameters.Add("@projectId", projectId);
+
+        var query = "DELETE " +
+                    "FROM \"Teams\".\"ProjectsTeamsMembers\" " +
+                    "WHERE \"UserId\" = ANY (SELECT ptm.\"UserId\" " +
+                    "FROM \"Teams\".\"ProjectsTeams\" AS pt " +
+                    "INNER JOIN \"Teams\".\"ProjectsTeamsMembers\" AS ptm " +
+                    "ON pt.\"TeamI\" = ptm.\"TeamId\" " +
+                    "WHERE pt.\"ProjectId\" = @projectId)";
+                    
+        await connection.ExecuteAsync(query, parameters);
+        
+        await Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Метод удаляет вакансии участников проекта (фактически мы не трогаем вакансии проекта,
+    // а удаляем их из таблицы вакансий, на которые были приглашены участники).
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="connection">Подключение к БД.</param>
+    private async Task RemoveProjectTeamMemberProjectVacanciesAsync(long projectId, IDbConnection connection)
+    {
+        var parameters = new DynamicParameters();
+        parameters.Add("@projectId", projectId);
+
+        var query = "DELETE " +
+                    "FROM \"Teams\".\"ProjectsTeamsVacancies\" AS ptv " +
+                    "WHERE \"TeamId\" = (SELECT pt.\"TeamId\"" +
+                    "FROM \"Teams\".\"ProjectsTeams\" AS pt " +
+                    "INNER JOIN \"Teams\".\"ProjectsTeamsMembers\" AS ptm " +
+                    "ON pt.\"TeamId\" = ptm.\"TeamId\"" +
+                    "LEFT JOIN \"Vacancies\".\"UserVacancies\" AS uv" +
+                    "ON (ptv.\"VacancyId\" = uv.\"VacancyId\" OR uv.\"VacancyId\" IS NULL " +
+                    "LIMIT 1) " +
+                    "WHERE pt.\"ProjectId\" = @projectId)";
+        
+        await connection.ExecuteAsync(query, parameters);
+        
+        await Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Метод удаляет все роли участников проекта (удаляем участников).
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="connection">Подключение к БД.</param>
+    private async Task RemoveProjectTeamMemberRolesAsync(long projectId, IDbConnection connection)
+    {
+        var parameters = new DynamicParameters();
+        parameters.Add("@projectId", projectId);
+
+        var query = "DELETE " +
+                    "FROM roles.project_member_roles AS pmr " +
+                    "WHERE project_member_id = ANY (SELECT ptm.\"UserId\" " +
+                    "FROM \"Teams\".\"ProjectsTeams\" AS pt " +
+                    "INNER JOIN \"Teams\".\"ProjectsTeamsMembers\" AS ptm " +
+                    "ON pt.\"TeamId\" = ptm.\"TeamId\" " +
+                    "WHERE pt.\"ProjectId\" = @projectId)";
+                    
+        await connection.ExecuteAsync(query, parameters);
+        
+        await Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Метод удаляет дерево wiki проекта.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="connection">Подключение к БД.</param>
+    /// <exception cref="InvalidOperationException">Если нет дерева проекта.</exception>
+    private async Task RemoveProjectWikiAsync(long projectId, IDbConnection connection)
+    {
+        var parameters = new DynamicParameters();
+        parameters.Add("@projectId", projectId);
+
+        var projectWikiTreeIdQuery = "SELECT wiki_tree_id " +
+                                     "FROM project_management.wiki_tree " +
+                                     "WHERE project_id = @projectId";
+        
+        var projectTreeId = await connection.ExecuteScalarAsync<long>(projectWikiTreeIdQuery, parameters);
+
+        if (projectTreeId <= 0)
+        {
+            throw new InvalidOperationException($"Ошибка получения дерева Wiki проекта {projectId}.");
+        }
+        
+        var folderIdsParameters = new DynamicParameters();
+        folderIdsParameters.Add("@projectTreeId", projectTreeId);
+
+        var folderIdsQuery = "SELECT folder_id " +
+                             "FROM project_management.wiki_tree_folders " +
+                             "WHERE wiki_tree_id = @projectTreeId";
+
+        var folderIds = (await connection.QueryAsync<long>(folderIdsQuery, folderIdsParameters))?.AsList();
+
+        if (folderIds is not null && folderIds.Count > 0)
+        {
+            // Удаляем связи между папками.
+            var removeFolderRelationsParameters = new DynamicParameters();
+            removeFolderRelationsParameters.Add("@folderIds", folderIds);
+            
+            var removeFolderRelationsQuery = "DELETE " +
+                                             "FROM project_management.wiki_tree_folder_relations " +
+                                             "WHERE folder_id = ANY (@folderIds)";
+
+            await connection.ExecuteAsync(removeFolderRelationsQuery, removeFolderRelationsParameters);
+            
+            // Удаляем папки.
+            var foldersParameters = new DynamicParameters();
+            foldersParameters.Add("@folderIds", folderIds);
+            foldersParameters.Add("@projectTreeId", projectTreeId);
+
+            var removeFoldersQuery = "DELETE " +
+                                     "FROM project_management.wiki_tree_folders " +
+                                     "WHERE folder_id = ANY (@folderIds) " +
+                                     "AND wiki_tree_id = @projectTreeId";
+                                     
+            await connection.ExecuteAsync(removeFoldersQuery, foldersParameters);
+            
+            // Удаляем страницы.
+            var removePagesQuery = "DELETE " +
+                                   "FROM project_management.wiki_tree_pages " +
+                                   "WHERE folder_id = ANY (@folderIds) " +
+                                   "AND wiki_tree_id = @projectTreeId";
+            
+            await connection.ExecuteAsync(removePagesQuery, foldersParameters);
+        }
+        
+        // Удаляем дерево.
+        var removeTreeParameters = new DynamicParameters();
+        removeTreeParameters.Add("@projectId", projectId);
+        removeTreeParameters.Add("@projectTreeId", projectTreeId);
+
+        var removeTreeQuery = "DELETE " +
+                              "FROM project_management.wiki_tree " +
+                              "WHERE wiki_tree_id = @projectTreeId " +
+                              "AND project_id = @projectId";
+        
+        await connection.ExecuteAsync(removeTreeQuery, removeTreeParameters);
+        
+        await Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Метод удаляет настройки проекта.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="connection">Подключение к БД.</param>
+    private async Task RemoveProjectSettingsAsync(long projectId, IDbConnection connection)
+    {
+        var projectParameters = new DynamicParameters();
+        projectParameters.Add("@projectId", projectId);
+
+        var removeProjectManagmentProjectSettingsQuery = "DELETE " +
+                                                         "FROM \"Configs\".\"ProjectManagmentProjectSettings\" " +
+                                                         "WHERE \"ProjectId\" = @projectId";
+        
+        await connection.ExecuteAsync(removeProjectManagmentProjectSettingsQuery, projectParameters);
+
+        var removeMoveNotCompletedTasksSettingsQuery = "DELETE " +
+                                                       "FROM settings.move_not_completed_tasks_settings " +
+                                                       "WHERE project_id = @projectId";
+                                                       
+        await connection.ExecuteAsync(removeMoveNotCompletedTasksSettingsQuery, projectParameters);
+
+        var removeProjectUserStrategyQuery = "DELETE " +
+                                             "FROM settings.project_user_strategy " +
+                                             "WHERE project_id = @projectId";
+                                                       
+        await connection.ExecuteAsync(removeProjectUserStrategyQuery, projectParameters);
+        
+        var removeSprintDurationSettingsQuery = "DELETE " +
+                                             "FROM settings.project_user_strategy " +
+                                             "WHERE project_id = @projectId";
+                                                       
+        await connection.ExecuteAsync(removeSprintDurationSettingsQuery, projectParameters);
+        
         await Task.CompletedTask;
     }
 
