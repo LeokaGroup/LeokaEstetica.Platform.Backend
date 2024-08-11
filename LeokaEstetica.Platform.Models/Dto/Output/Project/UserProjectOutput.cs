@@ -46,4 +46,9 @@ public class UserProjectOutput
     /// Список замечаний проекта.
     /// </summary>
     public IEnumerable<ProjectRemarkOutput>? ProjectRemarks { get; set; }
+
+    /// <summary>
+    /// Полное описание проекта для тултипа.
+    /// </summary>
+    public string? ProjectDetailsTooltip { get; set; }
 }

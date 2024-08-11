@@ -66,8 +66,7 @@ public interface IVacancyService
     /// </summary>
     /// <param name="vacancyId">Id вакансии.</param>
     /// <param name="account">Аккаунт.</param>
-    /// <param name="token">Токен пользователя.</param>
-    Task DeleteVacancyAsync(long vacancyId, string account, string token);
+    Task DeleteVacancyAsync(long vacancyId, string account);
 
     /// <summary>
     /// Метод получает список вакансий пользователя.
@@ -80,8 +79,7 @@ public interface IVacancyService
     /// </summary>
     /// <param name="vacancyId">Id вакансии.</param>
     /// <param name="account">Аккаунт.</param>
-    /// <param name="token">Токен пользователя.</param>
-    Task AddVacancyArchiveAsync(long vacancyId, string account, string token);
+    Task AddVacancyArchiveAsync(long vacancyId, string account);
 
     /// <summary>
     /// Метод получает список замечаний вакансии, если они есть.
@@ -96,8 +94,7 @@ public interface IVacancyService
     /// </summary>
     /// <param name="vacancyId">Id вакансии.</param>
     /// <param name="account">Аккаунт.</param>
-    /// <param name="token">Токен пользователя.</param>
-    Task DeleteVacancyArchiveAsync(long vacancyId, string account, string token);
+    Task DeleteVacancyArchiveAsync(long vacancyId, string account);
 
     /// <summary>
     /// Метод получает список вакансий пользователя из архива.

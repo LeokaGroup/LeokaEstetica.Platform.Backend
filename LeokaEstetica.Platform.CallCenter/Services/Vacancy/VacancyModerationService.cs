@@ -1,7 +1,6 @@
 using AutoMapper;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.Base.Enums;
-using LeokaEstetica.Platform.Base.Extensions.HtmlExtensions;
 using LeokaEstetica.Platform.CallCenter.Abstractions.Messaging.Mail;
 using LeokaEstetica.Platform.CallCenter.Abstractions.Vacancy;
 using LeokaEstetica.Platform.CallCenter.Builders;
@@ -18,6 +17,7 @@ using LeokaEstetica.Platform.Models.Dto.Input.Moderation;
 using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Vacancy;
 using LeokaEstetica.Platform.Models.Entities.Moderation;
 using LeokaEstetica.Platform.Models.Entities.Vacancy;
+using LeokaEstetica.Platform.Models.Enums;
 using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Notifications.Consts;
 using Microsoft.Extensions.Logging;
@@ -36,9 +36,9 @@ public class VacancyModerationService : IVacancyModerationService
     private readonly IVacancyRepository _vacancyRepository;
     private readonly IUserRepository _userRepository;
     private readonly IProjectRepository _projectRepository;
-    private readonly IVacancyModerationNotificationService _vacancyModerationNotificationService;
     private readonly IDiscordService _discordService;
     private readonly ITelegramBotService _telegramBotService;
+    private readonly Lazy<IHubNotificationService> _hubNotificationService;
 
     /// <summary>
     /// Конструктор.
@@ -50,19 +50,19 @@ public class VacancyModerationService : IVacancyModerationService
     /// <param name="vacancyRepository">Репозиторий вакансий.</param>
     /// <param name="userRepository">Репозиторий пользователя.</param>
     /// <param name="projectRepository">Репозиторий проектов.</param>
-    /// <param name="vacancyModerationNotificationService">Сервис уведомлений модерации вакансий.</param>
     /// <param name="pachcaService">Сервис пачки.</param>
     /// <param name="telegramBotService">Сервис бота телеграма.</param>
+    /// <param name="hubNotificationService">Сервис уведомлений хабов.</param>
     public VacancyModerationService(IVacancyModerationRepository vacancyModerationRepository,
         ILogger<VacancyModerationService> logger, 
         IMapper mapper, 
         IModerationMailingsService moderationMailingsService, 
         IVacancyRepository vacancyRepository, 
         IUserRepository userRepository, 
-        IProjectRepository projectRepository, 
-        IVacancyModerationNotificationService vacancyModerationNotificationService,
+        IProjectRepository projectRepository,
         IDiscordService discordService,
-        ITelegramBotService telegramBotService)
+        ITelegramBotService telegramBotService,
+        Lazy<IHubNotificationService> hubNotificationService)
     {
         _vacancyModerationRepository = vacancyModerationRepository;
         _logger = logger;
@@ -71,9 +71,9 @@ public class VacancyModerationService : IVacancyModerationService
         _vacancyRepository = vacancyRepository;
         _userRepository = userRepository;
         _projectRepository = projectRepository;
-        _vacancyModerationNotificationService = vacancyModerationNotificationService;
         _discordService = discordService;
         _telegramBotService = telegramBotService;
+        _hubNotificationService = hubNotificationService;
     }
 
     #region Публичные методы.
@@ -244,10 +244,9 @@ public class VacancyModerationService : IVacancyModerationService
     /// </summary>
     /// <param name="createVacancyRemarkInput">Входная модель.</param>
     /// <param name="account">Аккаунт.</param>
-    /// <param name="token">Токен.</param>
     /// <returns>Список замечаний вакансии.</returns>
     public async Task<IEnumerable<VacancyRemarkEntity>> CreateVacancyRemarksAsync(
-        CreateVacancyRemarkInput createVacancyRemarkInput, string account, string token)
+        CreateVacancyRemarkInput createVacancyRemarkInput, string account)
     {
         try
         {
@@ -333,14 +332,13 @@ public class VacancyModerationService : IVacancyModerationService
             }
 
             var result = addVacancyRemarks.Union(updateVacancyRemarks);
+            
+            var userCode = await _userRepository.GetUserCodeByUserIdAsync(userId);
 
-            if (!string.IsNullOrEmpty(token))
-            {
-                // Отправляем уведомление о сохранении замечаний вакансии.
-                await _vacancyModerationNotificationService.SendNotificationSuccessCreateVacancyRemarksAsync(
-                    "Все хорошо", "Замечания успешно внесены. Теперь вы можете их отправить.",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);
-            }
+            await _hubNotificationService.Value.SendNotificationAsync("Все хорошо",
+                "Замечания успешно внесены. Теперь вы можете их отправить.",
+                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, "SendNotificationSuccessCreateVacancyRemarks",
+                userCode, UserConnectionModuleEnum.Main);
 
             return result;
         }
@@ -352,13 +350,8 @@ public class VacancyModerationService : IVacancyModerationService
         }
     }
 
-    /// <summary>
-    /// Метод отправляет замечания вакансии владельцу вакансии.
-    /// Отправка замечаний вакансии подразумевает просто изменение статуса замечаниям вакансии.
-    /// <param name="vacancyId">Id вакансии.</param>
-    /// <param name="token">Токен.</param>
-    /// </summary>
-    public async Task SendVacancyRemarksAsync(long vacancyId, string token)
+    /// <inheritdoc />
+    public async Task SendVacancyRemarksAsync(long vacancyId, string account)
     {
         try
         {
@@ -370,20 +363,27 @@ public class VacancyModerationService : IVacancyModerationService
             
             // Проверяем, были ли внесены замечания вакансии.
             var isExists = await _vacancyModerationRepository.CheckVacancyRemarksAsync(vacancyId);
+            
+            var userId = await _userRepository.GetUserIdByEmailOrLoginAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+            
+            var userCode = await _userRepository.GetUserCodeByUserIdAsync(userId);
 
             if (!isExists)
             {
                 var ex = new InvalidOperationException(RemarkConst.SEND_PROJECT_REMARKS_WARNING +
                                                        $" VacancyId: {vacancyId}");
                 _logger.LogWarning(ex, ex.Message);
-                
-                if (!string.IsNullOrEmpty(token))
-                {
-                    // Отправляем уведомление о предупреждении, что замечания вакансии не были внесены.
-                    await _vacancyModerationNotificationService.SendNotificationWarningSendVacancyRemarksAsync(
-                        "Внимание", RemarkConst.SEND_PROJECT_REMARKS_WARNING,
-                        NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
-                }
+
+                await _hubNotificationService.Value.SendNotificationAsync("Внимание",
+                    RemarkConst.SEND_PROJECT_REMARKS_WARNING,
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, "SendNotificationWarningSendVacancyRemarks",
+                    userCode, UserConnectionModuleEnum.Main);
 
                 return;
             }
@@ -403,14 +403,10 @@ public class VacancyModerationService : IVacancyModerationService
                 await _moderationMailingsService.SendNotificationVacancyRemarksAsync(vacancyOwner.Email, vacancyId,
                     vacancyName, vacancyRemarksText);
             }
-            
-            if (!string.IsNullOrEmpty(token))
-            {
-                // Отправляем уведомление об отправке замечаний вакансии.
-                await _vacancyModerationNotificationService.SendNotificationSuccessSendVacancyRemarksAsync(
-                    "Все хорошо", "Замечания успешно отправлены.",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);
-            }
+
+            await _hubNotificationService.Value.SendNotificationAsync("Все хорошо", "Замечания успешно отправлены.",
+                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, "SendNotificationSuccessSendVacancyRemarks",
+                userCode, UserConnectionModuleEnum.Main);
         }
         
         catch (Exception ex)

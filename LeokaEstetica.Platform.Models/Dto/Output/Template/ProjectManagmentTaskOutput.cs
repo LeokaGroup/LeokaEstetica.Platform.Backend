@@ -125,6 +125,11 @@ public class ProjectManagmentTaskOutput
     /// Префикс номера задачи.
     /// </summary>
     public string? TaskIdPrefix { get; set; }
+    
+    /// <summary>
+    /// Полное название задачи.
+    /// </summary>
+    public string NameTooltip { get; set; }
 
     /// <summary>
     /// Id задачи в рамках проекта вместе с префиксом.

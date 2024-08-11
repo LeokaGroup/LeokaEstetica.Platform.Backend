@@ -10,12 +10,10 @@ using LeokaEstetica.Platform.Base.Extensions.HtmlExtensions;
 using LeokaEstetica.Platform.Core.Constants;
 using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Core.Exceptions;
-using LeokaEstetica.Platform.Database.Abstractions.FareRule;
 using LeokaEstetica.Platform.Database.Abstractions.Notification;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
 using LeokaEstetica.Platform.Database.Abstractions.Subscription;
 using LeokaEstetica.Platform.Database.Abstractions.Vacancy;
-using LeokaEstetica.Platform.Finder.Chains.Project;
 using LeokaEstetica.Platform.Messaging.Abstractions.Mail;
 using LeokaEstetica.Platform.Models.Dto.Input.Project;
 using LeokaEstetica.Platform.Models.Dto.Input.Vacancy;
@@ -41,9 +39,9 @@ using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Integrations.Abstractions.Discord;
 using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Project;
 using LeokaEstetica.Platform.Models.Entities.Moderation;
+using LeokaEstetica.Platform.Models.Enums;
 using LeokaEstetica.Platform.Services.Helpers;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 
 [assembly: InternalsVisibleTo("LeokaEstetica.Platform.Tests")]
 
@@ -61,39 +59,14 @@ internal sealed class ProjectService : IProjectService
     private readonly IProjectNotificationsService _projectNotificationsService;
     private readonly IVacancyService _vacancyService;
     private readonly IVacancyRepository _vacancyRepository;
-    private readonly IFillColorProjectsService _fillColorProjectsService;
-
-    // Определяем всю цепочку фильтров.
-    private readonly BaseProjectsFilterChain _dateProjectsFilterChain = new DateProjectsFilterChain();
-    private readonly BaseProjectsFilterChain _projectsVacanciesFilterChain = new ProjectsVacanciesFilterChain();
-    private readonly BaseProjectsFilterChain _projectStageConceptFilterChain = new ProjectStageConceptFilterChain();
-
-    private readonly BaseProjectsFilterChain _projectStageSearchTeamFilterChain =
-        new ProjectStageSearchTeamFilterChain();
-
-    private readonly BaseProjectsFilterChain _projectStageTestingFilterChain = new ProjectStageTestingFilterChain();
-
-    private readonly BaseProjectsFilterChain _projectStageDevelopmentFilterChain =
-        new ProjectStageDevelopmentFilterChain();
-
-    private readonly BaseProjectsFilterChain _projectStageProjectingFilterChain =
-        new ProjectStageProjectingFilterChain();
-
-    private readonly BaseProjectsFilterChain _projectStageSupportFilterChain = new ProjectStageSupportFilterChain();
-
-    private readonly BaseProjectsFilterChain _projectStageStartFilterChain = new ProjectStageStartFilterChain();
-
-    private readonly BaseProjectsFilterChain _projectStageSearchInvestorsFilterChain =
-        new ProjectStageSearchInvestorsFilterChain();
 
     private readonly ISubscriptionRepository _subscriptionRepository;
-    private readonly IFareRuleRepository _fareRuleRepository;
     private readonly IMailingsService _mailingsService;
     private static readonly string _archiveVacancy = "В архиве";
     private readonly IGlobalConfigRepository _globalConfigRepository;
     private readonly IProjectManagmentRepository _projectManagmentRepository;
     private readonly IWikiTreeRepository _wikiTreeRepository;
-
+    
     /// <summary>
     /// Список типов приглашений в проект.
     /// </summary>
@@ -109,7 +82,6 @@ internal sealed class ProjectService : IProjectService
     private static readonly string _approveVacancy = "Опубликована";
 
     private readonly IProjectNotificationsRepository _projectNotificationsRepository;
-    private readonly IAccessUserNotificationsService _accessUserNotificationsService;
     private readonly IAccessUserService _accessUserService;
     private readonly IProjectModerationRepository _projectModerationRepository;
 
@@ -122,6 +94,7 @@ internal sealed class ProjectService : IProjectService
     private readonly List<long> _removedVacancyIds = new();
 
     private readonly IAccessModuleService _accessModuleService;
+    private readonly Lazy<IHubNotificationService> _hubNotificationService;
 
     /// <summary>
     /// Конструктор.
@@ -135,7 +108,6 @@ internal sealed class ProjectService : IProjectService
     /// <param name="vacancyRepository">Репозиторий вакансий.</param>
     /// <param name="vacancyModerationService">Сервис модерации вакансий проектов.</param>
     /// <param name="notificationsRepository">Репозиторий уведомлений.</param>
-    /// <param name="accessUserNotificationsService">Сервис уведомлений доступа пользователя.</param>
     /// <param name="accessUserService">Сервис доступа пользователя.</param>
     /// <param name="projectModerationRepository">Репозиторий модерации проектов.</param>
     /// <param name="discordService">Сервис уведомлений дискорда.</param>
@@ -144,6 +116,7 @@ internal sealed class ProjectService : IProjectService
     /// <param name="projectManagmentRepository">Репозиторий модуля УП.</param>
     /// <param name="wikiTreeRepository">Репозиторий Wiki модуля УП.</param>
     /// <param name="accessModuleService">Сервис проверки доступов.</param>
+    /// <param name="hubNotificationService">Сервис уведомлений хабов.</param>
     public ProjectService(IProjectRepository projectRepository,
         ILogger<ProjectService> logger,
         IUserRepository userRepository,
@@ -152,12 +125,9 @@ internal sealed class ProjectService : IProjectService
         IVacancyService vacancyService,
         IVacancyRepository vacancyRepository, 
         ISubscriptionRepository subscriptionRepository, 
-        IFareRuleRepository fareRuleRepository, 
         IVacancyModerationService vacancyModerationService, 
         IProjectNotificationsRepository projectNotificationsRepository, 
-        IAccessUserNotificationsService accessUserNotificationsService, 
-        IAccessUserService accessUserService,
-        IFillColorProjectsService fillColorProjectsService, 
+        IAccessUserService accessUserService, 
         IMailingsService mailingsService, 
         IProjectModerationRepository projectModerationRepository,
         IDiscordService discordService,
@@ -165,7 +135,8 @@ internal sealed class ProjectService : IProjectService
         IGlobalConfigRepository globalConfigRepository,
         IProjectManagmentRepository projectManagmentRepository,
         IWikiTreeRepository wikiTreeRepository,
-        IAccessModuleService accessModuleService)
+        IAccessModuleService accessModuleService,
+        Lazy<IHubNotificationService> hubNotificationService)
     {
         _projectRepository = projectRepository;
         _logger = logger;
@@ -175,12 +146,9 @@ internal sealed class ProjectService : IProjectService
         _vacancyService = vacancyService;
         _vacancyRepository = vacancyRepository;
         _subscriptionRepository = subscriptionRepository;
-        _fareRuleRepository = fareRuleRepository;
         _vacancyModerationService = vacancyModerationService;
         _projectNotificationsRepository = projectNotificationsRepository;
-        _accessUserNotificationsService = accessUserNotificationsService;
         _accessUserService = accessUserService;
-        _fillColorProjectsService = fillColorProjectsService;
         _mailingsService = mailingsService;
         _projectModerationRepository = projectModerationRepository;
         _discordService = discordService;
@@ -189,17 +157,7 @@ internal sealed class ProjectService : IProjectService
         _projectManagmentRepository = projectManagmentRepository;
         _wikiTreeRepository = wikiTreeRepository;
         _accessModuleService = accessModuleService;
-
-        // Определяем обработчики цепочки фильтров.
-        _dateProjectsFilterChain.Successor = _projectsVacanciesFilterChain;
-        _projectsVacanciesFilterChain.Successor = _projectStageConceptFilterChain;
-        _projectStageConceptFilterChain.Successor = _projectStageSearchTeamFilterChain;
-        _projectStageSearchTeamFilterChain.Successor = _projectStageTestingFilterChain;
-        _projectStageTestingFilterChain.Successor = _projectStageDevelopmentFilterChain;
-        _projectStageDevelopmentFilterChain.Successor = _projectStageProjectingFilterChain;
-        _projectStageProjectingFilterChain.Successor = _projectStageSupportFilterChain;
-        _projectStageSupportFilterChain.Successor = _projectStageStartFilterChain;
-        _projectStageStartFilterChain.Successor = _projectStageSearchInvestorsFilterChain;
+        _hubNotificationService = hubNotificationService;
     }
 
     #region Публичные методы.
@@ -224,18 +182,19 @@ internal sealed class ProjectService : IProjectService
             
             // Проверяем заполнение анкеты и даем доступ либо нет.
             var isEmptyProfile = await _accessUserService.IsProfileEmptyAsync(userId);
-
-            var token = createProjectInput.Token;
+            
+            var userCode = await _userRepository.GetUserCodeByUserIdAsync(userId);
 
             // Если нет доступа, то не даем оплатить платный тариф.
             if (isEmptyProfile)
             {
                 var ex = new InvalidOperationException($"Анкета пользователя не заполнена. UserId был: {userId}");
 
-                await _accessUserNotificationsService.SendNotificationWarningEmptyUserProfileAsync("Внимание",
+                await _hubNotificationService.Value.SendNotificationAsync("Внимание",
                     "Для создания проекта должна быть заполнена информация вашей анкеты.",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
-                
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, "SendNotificationWarningEmptyUserProfile",
+                    userCode, UserConnectionModuleEnum.Main);
+
                 throw ex;
             }
             
@@ -259,10 +218,11 @@ internal sealed class ProjectService : IProjectService
             if (isCreatedProject)
             {
                 var ex = new InvalidOperationException($"Попытка создать дубликат проекта. UserId: {userId}");
-                
-                await _projectNotificationsService
-                    .SendNotificationWarningDublicateUserProjectAsync("Увы...", "Такой проект у вас уже существует.",
-                        NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
+
+                await _hubNotificationService.Value.SendNotificationAsync("Увы...",
+                    "Такой проект у вас уже существует.",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, "SendNotificationWarningDublicateUserProject",
+                    userCode, UserConnectionModuleEnum.Main);
 
                 throw ex;
             }
@@ -278,10 +238,11 @@ internal sealed class ProjectService : IProjectService
             {
                 var ex = new InvalidOperationException("Ошибка при создании проекта.");
                 _logger.LogError(ex, ex.Message);
-                
-                await _projectNotificationsService.SendNotificationErrorCreatedUserProjectAsync("Что то пошло не так",
+
+                await _hubNotificationService.Value.SendNotificationAsync("Что то пошло не так",
                     "Ошибка при создании проекта. Мы уже знаем о проблеме и уже занимаемся ей.",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, token);
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, "SendNotificationErrorCreatedUserProject",
+                    userCode, UserConnectionModuleEnum.Main);
 
                 throw ex;
             }
@@ -337,11 +298,12 @@ internal sealed class ProjectService : IProjectService
 
             // Заводим для проекта wiki и ознакомительную страницу.
             await _wikiTreeRepository.CreateProjectWikiAsync(projectId, userId, projectName);
-
+            
             // Отправляем уведомление об успешном создании проекта.
-            await _projectNotificationsService.SendNotificationSuccessCreatedUserProjectAsync("Все хорошо",
+            await _hubNotificationService.Value.SendNotificationAsync("Все хорошо",
                 "Данные успешно сохранены. Проект отправлен на модерацию.",
-                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);
+                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, "SendNotificationSuccessCreatedUserProject",
+                userCode, UserConnectionModuleEnum.Main);
 
             var user = await _userRepository.GetUserPhoneEmailByUserIdAsync(userId);
             
@@ -411,9 +373,14 @@ internal sealed class ProjectService : IProjectService
             // Сокращаем длину строки описания проекта.
             foreach (var prj in result.UserProjects)
             {
-                if (prj.ProjectDetails?.Length > 40)
+                // Полное описание проекта для тултипа.
+                prj.ProjectDetailsTooltip = prj.ProjectDetails;
+
+                // Чистим описание проекта от html-тегов и урезаем строку, если она более 40 символов.
+                if (prj.ProjectDetails?.Trim().Length > 40)
                 {
-                    prj.ProjectDetails = string.Concat(prj.ProjectDetails.Substring(0, 40), "...");
+                    prj.ProjectDetails = string.Concat(prj.ProjectDetails[..40], "...");
+                    prj.ProjectDetails = ClearHtmlBuilder.Clear(prj.ProjectDetails);
                 }
             }
 
@@ -428,20 +395,19 @@ internal sealed class ProjectService : IProjectService
     }
 
     /// <summary>
-    /// TODO: Подумать, давать ли всем пользователям возможность просматривать каталог проектов или только тем, у кого есть подписка.
     /// Метод получает список проектов для каталога.
     /// </summary>
     /// <returns>Список проектов.</returns>
     public async Task<CatalogProjectResultOutput> CatalogProjectsAsync()
     {
         try
-        {
-            var result = new CatalogProjectResultOutput { CatalogProjects = new List<CatalogProjectOutput>() };
-            
-            // Получаем список проектов для каталога.
-            var projects = await _projectRepository.CatalogProjectsAsync();
+        { 
+            var result = new CatalogProjectResultOutput
+            {
+                CatalogProjects = await _projectRepository.CatalogProjectsAsync()
+            };
 
-            result.CatalogProjects = await ExecuteCatalogConditionsAsync(projects);
+            result.CatalogProjects = await ExecuteCatalogConditionsAsync(result.CatalogProjects.AsList());
 
             return result;
         }
@@ -463,15 +429,16 @@ internal sealed class ProjectService : IProjectService
         try
         {
             var account = updateProjectInput.Account;
-            var token = updateProjectInput.Token;
             var userId = await _userRepository.GetUserByEmailAsync(account);
+            var userCode = await _userRepository.GetUserCodeByUserIdAsync(userId);
 
             if (userId <= 0)
             {
                 var ex = new NotFoundUserIdByAccountException(account);
-                await _projectNotificationsService.SendNotificationErrorUpdatedUserProjectAsync("Что то не так...",
+                await _hubNotificationService.Value.SendNotificationAsync("Что то не так...",
                     "Ошибка при обновлении проекта. Мы уже знаем о проблеме и уже занимаемся ей.",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, token);
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, "SendNotificationErrorUpdatedUserProject",
+                    userCode, UserConnectionModuleEnum.Main);
                 throw ex;
             }
 
@@ -479,18 +446,19 @@ internal sealed class ProjectService : IProjectService
 
             if (projectId <= 0)
             {
-                await ValidateProjectIdAsync(projectId.Value, token);
+                await ValidateProjectIdAsync(projectId.Value, userCode);
             }
             
             updateProjectInput.UserId = userId;
 
             // Изменяем проект в БД.
             var result = await _projectRepository.UpdateProjectAsync(updateProjectInput);
-            
-            await _projectNotificationsService.SendNotificationSuccessUpdatedUserProjectAsync("Все хорошо",
+
+            await _hubNotificationService.Value.SendNotificationAsync("Все хорошо",
                 "Данные успешно изменены. Проект отправлен на модерацию.",
-                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);
-            
+                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, "SendNotificationSuccessUpdatedUserProject",
+                userCode, UserConnectionModuleEnum.Main);
+
             // Проверяем наличие неисправленных замечаний.
             await CheckAwaitingCorrectionRemarksAsync(projectId.Value);
 
@@ -613,9 +581,8 @@ internal sealed class ProjectService : IProjectService
     /// </summary>
     /// <param name="projectId">Id проекта, вакансии которого нужно получить.</param>
     /// <param name="account">Аккаунт пользователя.</param>
-    /// <param name="token">Токен пользователя.</param>
     /// <returns>Список вакансий.</returns>
-    public async Task<ProjectVacancyResultOutput> ProjectVacanciesAsync(long projectId, string account, string token)
+    public async Task<ProjectVacancyResultOutput> ProjectVacanciesAsync(long projectId, string account)
     {
         try
         {
@@ -627,9 +594,11 @@ internal sealed class ProjectService : IProjectService
                 throw ex;
             }
             
+            var userCode = await _userRepository.GetUserCodeByUserIdAsync(userId);
+            
             if (projectId <= 0)
             {
-                await ValidateProjectIdAsync(projectId, token);
+                await ValidateProjectIdAsync(projectId, userCode);
             }
 
             var result = new ProjectVacancyResultOutput
@@ -683,17 +652,7 @@ internal sealed class ProjectService : IProjectService
                 throw ex;
             }
 
-            var token = createProjectVacancyInput.Token;
-
-            if (string.IsNullOrEmpty(token))
-            {
-                var ex = new ArgumentException(
-                    "Невалидный токен при создании вакансии проекта. " +
-                    $"Данные вакансии проекта был {JsonConvert.SerializeObject(createProjectVacancyInput)}");
-                throw ex;
-            }
-
-            // Создаем вакансию.
+            // Создаем вакансию и привязываем ее к проекту.
             var createdVacancy = await _vacancyService.CreateVacancyAsync(
                 new VacancyInput(createProjectVacancyInput.VacancyName, createProjectVacancyInput.VacancyText, null,
                     createProjectVacancyInput.ProjectId, null)
@@ -701,13 +660,8 @@ internal sealed class ProjectService : IProjectService
                     WorkExperience = createProjectVacancyInput.WorkExperience,
                     Employment = createProjectVacancyInput.Employment,
                     Payment = createProjectVacancyInput.Payment,
-                    Account = createProjectVacancyInput.Account,
-                    Token = token
+                    Account = createProjectVacancyInput.Account
                 });
-
-            // Автоматически привязываем вакансию к проекту.
-            await AttachProjectVacancyAsync(createProjectVacancyInput.ProjectId, createdVacancy.VacancyId,
-                createProjectVacancyInput.Account, token);
 
             return createdVacancy;
         }
@@ -759,8 +713,7 @@ internal sealed class ProjectService : IProjectService
     /// <param name="projectId">Id проекта.</param>
     /// <param name="vacancyId">Id вакансии.</param>
     /// <param name="account">Аккаунт пользователя.</param>
-    /// <param name="token">Токен пользователя.</param>
-    public async Task AttachProjectVacancyAsync(long projectId, long vacancyId, string account, string token)
+    public async Task AttachProjectVacancyAsync(long projectId, long vacancyId, string account)
     {
         try
         {
@@ -773,22 +726,23 @@ internal sealed class ProjectService : IProjectService
                 var ex = new NotFoundUserIdByAccountException(account);
                 throw ex;
             }
+            
+            var userCode = await _userRepository.GetUserCodeByUserIdAsync(userId);
 
             if (isDublicate)
             {
                 var ex = new DublicateProjectVacancyException();
-                await _projectNotificationsService.SendNotificationErrorDublicateAttachProjectVacancyAsync(
-                    "Что то не так...",
+                await _hubNotificationService.Value.SendNotificationAsync("Что то не так...",
                     ValidationConst.ProjectVacancy.DUBLICATE_PROJECT_VACANCY,
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, token);
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR,
+                    "SendNotificationErrorDublicateAttachProjectVacancy", userCode, UserConnectionModuleEnum.Main);
                 throw ex;
             }
 
-            await _projectNotificationsService.SendNotificationSuccessAttachProjectVacancyAsync(
-                "Все хорошо",
+            await _hubNotificationService.Value.SendNotificationAsync("Все хорошо",
                 "Вакансия успешно привязана к проекту.",
-                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS,
-                token);
+                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, "SendNotificationSuccessAttachProjectVacancy",
+                userCode, UserConnectionModuleEnum.Main);
         }
 
         catch (Exception ex)
@@ -806,21 +760,21 @@ internal sealed class ProjectService : IProjectService
     /// <param name="projectId">Id проекта.</param>
     /// <param name="vacancyId">Id вакансии.</param>
     /// <param name="account">Аккаунт пользователя.</param>
-    /// <param name="token">Токен пользователя.</param>
     /// <returns>Выходная модель с записанным откликом.</returns>
-    public async Task<ProjectResponseEntity> WriteProjectResponseAsync(long projectId, long? vacancyId, string account,
-        string token)
+    public async Task<ProjectResponseEntity> WriteProjectResponseAsync(long projectId, long? vacancyId, string account)
     {
+        var userId = await _userRepository.GetUserByEmailAsync(account);
+
+        if (userId <= 0)
+        {
+            var ex = new NotFoundUserIdByAccountException(account);
+            throw ex;
+        }
+        
+        var userCode = await _userRepository.GetUserCodeByUserIdAsync(userId);
+        
         try
         {
-            var userId = await _userRepository.GetUserByEmailAsync(account);
-
-            if (userId <= 0)
-            {
-                var ex = new NotFoundUserIdByAccountException(account);
-                throw ex;
-            }
-            
             // Проверяем заполнение анкеты и даем доступ либо нет.
             var isEmptyProfile = await _accessUserService.IsProfileEmptyAsync(userId);
 
@@ -829,17 +783,18 @@ internal sealed class ProjectService : IProjectService
             {
                 var ex = new InvalidOperationException($"Анкета пользователя не заполнена. UserId был: {userId}");
 
-                await _accessUserNotificationsService.SendNotificationWarningEmptyUserProfileAsync("Внимание",
+                await _hubNotificationService.Value.SendNotificationAsync("Внимание",
                     "Для отклика на проект должна быть заполнена информация вашей анкеты.",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
-                
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, "SendNotificationWarningEmptyUserProfile",
+                    userCode, UserConnectionModuleEnum.Main);
+
                 throw ex;
             }
 
             var result = await _projectRepository.WriteProjectResponseAsync(projectId, vacancyId, userId);
 
             // Показываем уведомления.
-            await DisplayNotificationsAfterResponseProjectAsync(vacancyId, result.ResponseId, token);
+            await DisplayNotificationsAfterResponseProjectAsync(vacancyId, result.ResponseId, userCode);
 
             var projectName = await _projectRepository.GetProjectNameByProjectIdAsync(projectId);
 
@@ -870,11 +825,11 @@ internal sealed class ProjectService : IProjectService
 
         catch (DublicateProjectResponseException ex)
         {
-            await _projectNotificationsService.SendNotificationWarningProjectResponseAsync(
-                "Внимание",
+            await _hubNotificationService.Value.SendNotificationAsync("Внимание",
                 "Вы уже откликались на этот проект.",
-                NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
-            
+                NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, "SendNotificationWarningProjectResponse", userCode,
+                UserConnectionModuleEnum.Main);
+
             _logger.LogError(ex, ex.Message);
             throw;
         }
@@ -956,14 +911,13 @@ internal sealed class ProjectService : IProjectService
     /// <param name="projectId">Id проекта.</param>
     /// <param name="vacancyId">Id вакансии.</param>
     /// <param name="account">Аккаунт пользователя.</param>
-    /// <param name="token">Токен пользователя.</param>
     /// <returns>Выходная модель.</returns>
     public async Task<InviteProjectTeamOutput> InviteProjectTeamAsync(string inviteText,
-        ProjectInviteTypeEnum inviteType, long projectId, long? vacancyId, string account, string token)
+        ProjectInviteTypeEnum inviteType, long projectId, long? vacancyId, string account)
     {
         try
         {
-            await ValidateInviteProjectTeamParams(inviteText, inviteType, projectId, vacancyId, account, token);
+            await ValidateInviteProjectTeamParams(inviteText, inviteType, projectId, vacancyId, account);
             
             var userId = await _userRepository.GetUserIdByEmailAsync(account);
             
@@ -975,18 +929,19 @@ internal sealed class ProjectService : IProjectService
 
             // Проверяем нахождение проекта на модерации.
             var isProjectModeration = await _projectRepository.CheckProjectModerationAsync(projectId);
+            var userCode = await _userRepository.GetUserCodeByUserIdAsync(userId);
 
             // Если он там есть, то не даем пригласить в него.
             if (isProjectModeration)
             {
                 var ex = new InvalidOperationException(
                     "Проект еще на модерации. Нельзя пригласить пользователей, пока проект не пройдет модерацию.");
-                
-                await _projectNotificationsService.SendNotificationWarningProjectInviteTeamAsync(
-                    "Внимание",
+
+                await _hubNotificationService.Value.SendNotificationAsync("Внимание",
                     "Проект еще на модерации. Нельзя пригласить пользователей, пока проект не пройдет модерацию.",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
-                
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, "SendNotificationWarningProjectInviteTeam",
+                    userCode, UserConnectionModuleEnum.Main);
+
                 throw ex;
             }
             
@@ -998,12 +953,12 @@ internal sealed class ProjectService : IProjectService
             {
                 var ex = new InvalidOperationException(
                     "Проект в архиве. Нельзя пригласить пользователей, если проект в архиве.");
-                
-                await _projectNotificationsService.SendNotificationWarningProjectInviteTeamAsync(
-                    "Внимание",
+
+                await _hubNotificationService.Value.SendNotificationAsync("Внимание",
                     "Проект в архиве. Нельзя пригласить пользователей, если проект в архиве.",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
-                
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, "SendNotificationWarningProjectInviteTeam",
+                    userCode, UserConnectionModuleEnum.Main);
+
                 throw ex;
             }
             
@@ -1038,12 +993,12 @@ internal sealed class ProjectService : IProjectService
                                                        $"TeamId: {teamId}. " +
                                                        $"InvitedUserId: {inviteUserId}. " +
                                                        $"UserId: {userId}");
-                
-                await _projectNotificationsService.SendNotificationWarningUserAlreadyProjectInvitedTeamAsync(
-                    "Внимание",
+
+                await _hubNotificationService.Value.SendNotificationAsync("Внимание",
                     "Пользователь уже был добавлен в команду проекта.",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
-                
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING,
+                    "SendNotificationWarningUserAlreadyProjectInvitedTeam", userCode, UserConnectionModuleEnum.Main);
+
                 throw ex;
             }
 
@@ -1081,16 +1036,10 @@ internal sealed class ProjectService : IProjectService
         {
             // Разбиваем строку стадий проекта, так как там может приходить несколько значений в строке.
             filters.ProjectStages = CreateProjectStagesBuilder.CreateProjectStagesResult(filters.StageValues);
-           
-            // Получаем список проектов для каталога.
-            var projects = (await _projectRepository.CatalogProjectsAsync()).ToList();
 
-            // Логгируем проект, у которого не удалось получить стадию проекта, но не ломаем систему.
-            await ValidateProjectStages(projects);
+            var result = await _projectRepository.FilterProjectsAsync(filters);
 
-            var result = await _dateProjectsFilterChain.FilterProjectsAsync(filters, projects);
-
-            var resultProjects = await ExecuteCatalogConditionsAsync(result);
+            var resultProjects = await ExecuteCatalogConditionsAsync(result.AsList());
 
             return resultProjects;
         }
@@ -1108,8 +1057,7 @@ internal sealed class ProjectService : IProjectService
     /// <param name="vacancyId">Id вакансии.</param>
     /// <param name="projectId">Id проекта.</param>
     /// <param name="account">Аккаунт.</param>
-    /// <param name="token">Токен пользователя.</param>
-    public async Task DeleteProjectVacancyAsync(long vacancyId, long projectId, string account, string token)
+    public async Task DeleteProjectVacancyAsync(long vacancyId, long projectId, string account)
     {
         try
         {
@@ -1135,6 +1083,8 @@ internal sealed class ProjectService : IProjectService
             }
 
             var isRemoved = await _projectRepository.DeleteProjectVacancyByIdAsync(vacancyId, projectId);
+            
+            var userCode = await _userRepository.GetUserCodeByUserIdAsync(userId);
 
             if (!isRemoved)
             {
@@ -1143,18 +1093,19 @@ internal sealed class ProjectService : IProjectService
                     $"VacancyId: {vacancyId}. " +
                     $"ProjectId: {projectId}. " +
                     $"UserId: {userId}");
-            
-                await _projectNotificationsService.SendNotificationErrorDeleteProjectVacancyAsync(
-                    "Ошибка",
+
+                await _hubNotificationService.Value.SendNotificationAsync("Ошибка",
                     "Ошибка при удалении вакансии проекта.",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, token);
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, "SendNotificationErrorDeleteProjectVacancy",
+                    userCode, UserConnectionModuleEnum.Main);
+                
                 throw ex;
             }
-        
-            await _projectNotificationsService.SendNotificationSuccessDeleteProjectVacancyAsync(
-                "Все хорошо",
+
+            await _hubNotificationService.Value.SendNotificationAsync("Все хорошо",
                 "Вакансия успешно удалена из проекта.",
-                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);
+                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, "SendNotificationSuccessDeleteProjectVacancy",
+                userCode, UserConnectionModuleEnum.Main);
         }
         
         catch (Exception ex)
@@ -1168,8 +1119,7 @@ internal sealed class ProjectService : IProjectService
     /// Метод удаляет проект и все, что с ним связано.
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
-    /// <param name="account">Аккаунт.</param>
-    public async Task RemoveProjectAsync(long projectId, string account, string? token)
+    public async Task DeleteProjectAsync(long projectId, string account)
     {
         try
         {
@@ -1199,7 +1149,8 @@ internal sealed class ProjectService : IProjectService
                 throw ex;
             }
 
-            var removedProject = await _projectRepository.RemoveProjectAsync(projectId, userId);
+            var removedProject = await _projectRepository.DeleteProjectAsync(projectId, userId);
+            var userCode = await _userRepository.GetUserCodeByUserIdAsync(userId);
             
             if (!removedProject.Success)
             {
@@ -1208,24 +1159,18 @@ internal sealed class ProjectService : IProjectService
                     $"ProjectId: {projectId}. " +
                     $"UserId: {userId}");
 
-                if (!string.IsNullOrEmpty(token))
-                {
-                    await _projectNotificationsService.SendNotificationErrorDeleteProjectAsync(
-                        "Ошибка",
-                        "Ошибка при удалении проекта.",
-                        NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, token);    
-                }
+                await _hubNotificationService.Value.SendNotificationAsync("Ошибка",
+                    "Ошибка при удалении проекта.",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, "SendNotificationErrorDeleteProject",
+                    userCode, UserConnectionModuleEnum.Main);
                 
                 throw ex;
             }
-        
-            if (!string.IsNullOrEmpty(token))
-            {
-                await _projectNotificationsService.SendNotificationSuccessDeleteProjectAsync(
-                    "Все хорошо",
-                    "Проект успешно удален.",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);  
-            }
+
+            await _hubNotificationService.Value.SendNotificationAsync("Все хорошо",
+                "Проект успешно удален.",
+                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, "SendNotificationSuccessDeleteProject", userCode,
+                UserConnectionModuleEnum.Main);
 
             var user = await _userRepository.GetUserPhoneEmailByUserIdAsync(userId);
 
@@ -1296,9 +1241,18 @@ internal sealed class ProjectService : IProjectService
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
     /// <param name="account">Аккаунт пользователя.</param>
-    /// <param name="token">Токен.</param>
-    public async Task AddProjectArchiveAsync(long projectId, string account, string token)
+    public async Task AddProjectArchiveAsync(long projectId, string account)
     {
+        var userId = await _userRepository.GetUserIdByEmailOrLoginAsync(account);
+        
+        if (userId <= 0)
+        {
+            var ex = new NotFoundUserIdByAccountException(account);
+            throw ex;
+        }
+        
+        var userCode = await _userRepository.GetUserCodeByUserIdAsync(userId);
+        
         try
         {
             if (projectId <= 0)
@@ -1306,15 +1260,7 @@ internal sealed class ProjectService : IProjectService
                 var ex = new InvalidOperationException($"Id проекта не может быть <= 0. ProjectId: {projectId}");
                 throw ex;
             }
-            
-            var userId = await _userRepository.GetUserIdByEmailOrLoginAsync(account);
 
-            if (userId <= 0)
-            {
-                var ex = new NotFoundUserIdByAccountException(account);
-                throw ex;
-            }
-            
             // Проверяем, является ли текущий пользователь владельцем проекта.
             var isOwner = await _projectRepository.CheckProjectOwnerAsync(projectId, userId);
 
@@ -1329,30 +1275,26 @@ internal sealed class ProjectService : IProjectService
             
             // Проверяем, есть ли уже такой проект в архиве.
             var isExists = await _projectRepository.CheckProjectArchiveAsync(projectId);
-            
+
             if (isExists)
             {
                 _logger.LogWarning($"Такой проект уже добавлен в архив. ProjectId: {projectId}. UserId: {userId}");
 
-                if (!string.IsNullOrEmpty(token))
-                {
-                    await _projectNotificationsService.SendNotificationWarningAddProjectArchiveAsync("Внимание",
-                        "Такой проект уже добавлен в архив.",
-                        NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
-                }
+                await _hubNotificationService.Value.SendNotificationAsync("Внимание",
+                    "Такой проект уже добавлен в архив.",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, "SendNotificationWarningAddProjectArchive",
+                    userCode, UserConnectionModuleEnum.Main);
                 
                 return;
             }
 
             await _projectRepository.AddProjectArchiveAsync(projectId, userId);
-            
-            if (!string.IsNullOrEmpty(token))
-            {
-                await _projectNotificationsService.SendNotificationSuccessAddProjectArchiveAsync("Все хорошо",
-                    "Проект успешно добавлен в архив.",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);
-            }
-            
+
+            await _hubNotificationService.Value.SendNotificationAsync("Все хорошо",
+                "Проект успешно добавлен в архив.",
+                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, "SendNotificationSuccessAddProjectArchive",
+                userCode, UserConnectionModuleEnum.Main);
+
             var projectName = await _projectRepository.GetProjectNameByProjectIdAsync(projectId);
 
             // Отправляем уведомление на почту.
@@ -1362,13 +1304,11 @@ internal sealed class ProjectService : IProjectService
         catch (Exception ex)
         {
             _logger.LogError(ex, ex.Message);
-            
-            if (!string.IsNullOrEmpty(token))
-            {
-                await _projectNotificationsService.SendNotificationErrorAddProjectArchiveAsync("Что то не так...",
-                    "Ошибка при добавлении проекта в архив. Мы уже знаем о проблеме и уже занимаемся ей.",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, token);
-            }
+
+            await _hubNotificationService.Value.SendNotificationAsync("Что то не так...",
+                "Ошибка при добавлении проекта в архив. Мы уже знаем о проблеме и уже занимаемся ей.",
+                NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, "SendNotificationErrorAddProjectArchive", userCode,
+                UserConnectionModuleEnum.Main);
             
             throw;
         }
@@ -1379,9 +1319,18 @@ internal sealed class ProjectService : IProjectService
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
     /// <param name="account">Аккаунт пользователя.</param>
-    /// <param name="token">Токен.</param>
-    public async Task DeleteProjectArchiveAsync(long projectId, string account, string token)
+    public async Task DeleteProjectArchiveAsync(long projectId, string account)
     {
+        var userId = await _userRepository.GetUserIdByEmailOrLoginAsync(account);
+
+        if (userId <= 0)
+        {
+            var ex = new NotFoundUserIdByAccountException(account);
+            throw ex;
+        }
+        
+        var userCode = await _userRepository.GetUserCodeByUserIdAsync(userId);
+        
         try
         {
             if (projectId <= 0)
@@ -1389,15 +1338,7 @@ internal sealed class ProjectService : IProjectService
                 var ex = new InvalidOperationException($"Id проекта не может быть <= 0. ProjectId: {projectId}");
                 throw ex;
             }
-            
-            var userId = await _userRepository.GetUserIdByEmailOrLoginAsync(account);
 
-            if (userId <= 0)
-            {
-                var ex = new NotFoundUserIdByAccountException(account);
-                throw ex;
-            }
-            
             // Проверяем, является ли текущий пользователь владельцем проекта.
             var isOwner = await _projectRepository.CheckProjectOwnerAsync(projectId, userId);
 
@@ -1420,111 +1361,38 @@ internal sealed class ProjectService : IProjectService
                                                     "Подписка была NULL или невалидная." +
                                                     $"#2 Ошибка в {nameof(ProjectService)}");
             }
-            
-            // Получаем тариф, на который оформлена подписка у пользователя.
-            var fareRule = await _fareRuleRepository.GetByIdAsync(userSubscription.ObjectId);
-            var fareRuleName = fareRule.Name;
-
-            // Проверяем кол-во опубликованных проектов пользователя.
-            // Если по лимитам тарифа доступно, то разрешаем удалить проект из архива.
-            var projectsCatalogCount = await _projectRepository.GetUserProjectsCatalogCountAsync(userId);
-
-            // TODO: В будущем выпилить это, так как мы убираем лимиты на проекты и вакансии.
-            // Проверяем кол-во в зависимости от подписки.
-            // Если стартовый тариф.
-            // if (fareRuleName.Equals(FareRuleTypeEnum.Start.GetEnumDescription()))
-            // {
-            //     if (projectsCatalogCount >= AvailableLimitsConst.AVAILABLE_PROJECT_START_COUNT)
-            //     {
-            //         var ex = new InvalidOperationException(NOT_AVAILABLE_DELETE_PROJECT_ARCHIVE);
-            //         
-            //         _logger.LogError(ex, ex.Message);
-            //         
-            //         if (!string.IsNullOrEmpty(token))
-            //         {
-            //             await _projectNotificationsService.SendNotificationWarningDeleteProjectArchiveAsync("Внимание",
-            //                 NOT_AVAILABLE_DELETE_PROJECT_ARCHIVE, NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING,
-            //                 token);
-            //         }
-            //         
-            //         throw ex;
-            //     }
-            // }
-            //
-            // // Если базовый тариф.
-            // if (fareRuleName.Equals(FareRuleTypeEnum.Base.GetEnumDescription()))
-            // {
-            //     if (projectsCatalogCount >= AvailableLimitsConst.AVAILABLE_PROJECT_BASE_COUNT)
-            //     {
-            //         var ex = new InvalidOperationException(NOT_AVAILABLE_DELETE_PROJECT_ARCHIVE);
-            //         
-            //         _logger.LogError(ex, ex.Message);
-            //         
-            //         if (!string.IsNullOrEmpty(token))
-            //         {
-            //             await _projectNotificationsService.SendNotificationWarningDeleteProjectArchiveAsync("Внимание",
-            //                 NOT_AVAILABLE_DELETE_PROJECT_ARCHIVE, NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING,
-            //                 token);
-            //         }
-            //         
-            //         throw ex;
-            //     }
-            // }
-            //
-            // // Если бизнес тариф.
-            // if (fareRuleName.Equals(FareRuleTypeEnum.Business.GetEnumDescription()))
-            // {
-            //     if (projectsCatalogCount >= AvailableLimitsConst.AVAILABLE_PROJECT_BUSINESS_COUNT)
-            //     {
-            //         var ex = new InvalidOperationException(NOT_AVAILABLE_DELETE_PROJECT_ARCHIVE);
-            //         
-            //         _logger.LogError(ex, ex.Message);
-            //         
-            //         if (!string.IsNullOrEmpty(token))
-            //         {
-            //             await _projectNotificationsService.SendNotificationWarningDeleteProjectArchiveAsync("Внимание",
-            //                 NOT_AVAILABLE_DELETE_PROJECT_ARCHIVE, NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING,
-            //                 token);
-            //         }
-            //         
-            //         throw ex;
-            //     }
-            // }
 
             // Удаляем проект из архива.
             var isDelete = await _projectRepository.DeleteProjectArchiveAsync(projectId, userId);
 
-            if (!isDelete && !string.IsNullOrEmpty(token))
+            if (!isDelete)
             {
-                await _projectNotificationsService.SendNotificationErrorDeleteProjectArchiveAsync("Что то не так...",
+                await _hubNotificationService.Value.SendNotificationAsync("Что то не так...",
                     "Ошибка при удалении проекта из архива. Мы уже знаем о проблеме и уже занимаемся ей.",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, token);
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, "SendNotificationErrorDeleteProjectArchive",
+                    userCode, UserConnectionModuleEnum.Main);
 
                 return;
             }
             
             // Отправляем проект на модерацию.
             await _projectModerationRepository.AddProjectModerationAsync(projectId);
-            
-            if (!string.IsNullOrEmpty(token))
-            {
-                await _projectNotificationsService.SendNotificationSuccessDeleteProjectArchiveAsync("Все хорошо",
-                    "Проект успешно удален из архива.",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);
-            }
+
+            await _hubNotificationService.Value.SendNotificationAsync("Все хорошо",
+                "Проект успешно удален из архива.",
+                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, "SendNotificationSuccessDeleteProjectArchive",
+                userCode, UserConnectionModuleEnum.Main);
         }
         
         catch (Exception ex)
         {
             _logger.LogError(ex, ex.Message);
-            
-            if (!string.IsNullOrEmpty(token))
-            {
-                await _projectNotificationsService.SendNotificationErrorDeleteProjectArchiveAsync("Что то не так...",
-                    "Ошибка при удалении проекта из архива. Мы уже знаем о проблеме и уже занимаемся ей.",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, token);
-            }
-            
+
+            await _hubNotificationService.Value.SendNotificationAsync("Что то не так...",
+                "Ошибка при удалении проекта из архива. Мы уже знаем о проблеме и уже занимаемся ей.",
+                NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, "SendNotificationErrorDeleteProjectArchive", userCode,
+                UserConnectionModuleEnum.Main);
+
             throw;
         }
     }
@@ -1567,36 +1435,23 @@ internal sealed class ProjectService : IProjectService
     }
 
     /// <summary>
-    /// Метод запускает првоерки на разные условия прежде чем вывести проекты в каталог.
+    /// Метод запускает проверки на разные условия прежде чем вывести проекты в каталог.
     /// Проекты могут быть отсеяны, если не проходят по условиям.
     /// </summary>
     /// <param name="projects">Список проектов до проверки условий.</param>
     /// <returns>Список проектов после проверки условий.</returns>
-    public async Task<IEnumerable<CatalogProjectOutput>> ExecuteCatalogConditionsAsync(
-        IEnumerable<CatalogProjectOutput> projects)
+    private async Task<IEnumerable<CatalogProjectOutput>> ExecuteCatalogConditionsAsync(
+        List<CatalogProjectOutput> projects)
     {
-        var catalogs = projects.ToList();
-        
-        if (!catalogs.Any())
+        if (projects.Count == 0)
         {
             return Enumerable.Empty<CatalogProjectOutput>();
         }
         
-        await DeleteIfProjectRemarksAsync(catalogs);
-            
-        // TODO: Выпилить, если у нас не будет выделения цветами тарифов.
-        // Выбираем пользователей, у которых есть подписка выше бизнеса. Только их выделяем цветом.
-        // projects = await _fillColorProjectsService.SetColorBusinessProjectsAsync(catalogs, _subscriptionRepository,
-        //     _fareRuleRepository);
+        await DeleteIfProjectRemarksAsync(projects);
 
-        // Очистка описание от тегов список проектов для каталога.
-        projects = ClearCatalogVacanciesHtmlTags(projects.ToList());
-
-        // Проставляем проектам теги, в зависимости от подписки владельца проекта.
-        projects = await SetProjectsTagsAsync(projects.ToList());
-        
-        // Исключаем проекты на модерации и архивные.
-        // catalogs.ToList().RemoveAll(p => p.IsModeration || p.IsArchived);
+        // Очистка описания от тегов список проектов для каталога.
+        await ClearCatalogVacanciesHtmlTagsAsync(projects.ToList());
 
         return projects;
     }
@@ -1676,9 +1531,8 @@ internal sealed class ProjectService : IProjectService
     /// <param name="projectId">Id проекта.</param>
     /// <param name="vacancyId">Id вакансии.</param>
     /// <param name="account">Аккаунт пользователя.</param>
-    /// <param name="token">Токен пользователя.</param>
     private async Task ValidateInviteProjectTeamParams(string inviteText, ProjectInviteTypeEnum inviteType,
-        long projectId, long? vacancyId, string account, string token)
+        long projectId, long? vacancyId, string account)
     {
         var isError = false;
 
@@ -1717,14 +1571,17 @@ internal sealed class ProjectService : IProjectService
             var ex = new NotFoundUserIdByAccountException(account);
             throw ex;
         }
+        
+        var userCode = await _userRepository.GetUserCodeByUserIdAsync(userId);
 
         // Если была ошибка, то покажем уведомление юзеру и генерим исключение.
         if (isError)
         {
-            await _projectNotificationsService.SendNotificationErrorInviteProjectTeamMembersAsync("Ошибка",
+            await _hubNotificationService.Value.SendNotificationAsync("Ошибка",
                 "Ошибка при добавлении пользователя в команду проекта. Мы уже знаем о ней и разбираемся. " +
                 "А пока, попробуйте еще раз.",
-                NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, token);
+                NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, "SendNotificationErrorInviteProjectTeamMembers",
+                userCode, UserConnectionModuleEnum.Main);
         }
     }
     
@@ -1732,15 +1589,16 @@ internal sealed class ProjectService : IProjectService
     /// Метод валидирует Id проекта. Выбрасываем исклчюение, если он невалидный.
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
-    /// <param name="token">Токен пользователя.</param>
-    private async Task ValidateProjectIdAsync(long projectId, string token)
+    /// <param name="userCode">Код пользователя.</param>
+    private async Task ValidateProjectIdAsync(long projectId, Guid userCode)
     {
         var ex = new ArgumentNullException(string.Concat(ValidationConsts.NOT_VALID_PROJECT_ID, projectId));
         _logger.LogError(ex, ex.Message);
-        
-        await _projectNotificationsService.SendNotificationErrorUpdatedUserProjectAsync("Что то не так...",
+
+        await _hubNotificationService.Value.SendNotificationAsync("Что то не так...",
             "Ошибка при обновлении проекта. Мы уже знаем о проблеме и уже занимаемся ей.",
-            NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, token);
+            NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, "SendNotificationErrorUpdatedUserProject", userCode,
+            UserConnectionModuleEnum.Main);
         throw ex;
     }
 
@@ -1762,7 +1620,11 @@ internal sealed class ProjectService : IProjectService
         
         // Находим вакансии в архиве.
         var archivedVacancies = (await _vacancyRepository.GetUserVacanciesArchiveAsync(userId)).AsList();
+        
+        var isOwner = await _projectRepository.CheckProjectOwnerAsync(projectId, userId);
 
+        // TODO: Когда перепишем на Dapper, то не надо работать с лишними данными, а сразу в запросе отсекать их.
+        // TODO: Тогда и список _removedVacancyIds не нужен будет.
         // Проставляем статусы вакансий.
         foreach (var pv in projectVacancies)
         {
@@ -1775,6 +1637,12 @@ internal sealed class ProjectService : IProjectService
                     .Where(v => v.VacancyId == pv.VacancyId)
                     .Select(v => v.ModerationStatusName)
                     .FirstOrDefault();
+
+                // Если не владелец, то удаляем из результата вакансии кроме опубликованных.
+                if (!isOwner)
+                { 
+                    _removedVacancyIds.Add(pv.VacancyId);
+                }
             }
                 
             // Ищем вакансию в каталоге вакансий.
@@ -1794,15 +1662,6 @@ internal sealed class ProjectService : IProjectService
             if (isArchiveVacancy)
             {
                 pv.VacancyStatusName = _archiveVacancy;
-            }
-            
-            // Только владелец проекта может удалять вакансии проекта.
-            var isOwner = await _projectRepository.CheckProjectOwnerAsync(projectId, userId);
-
-            // Если не владелец, то удаляем из результата вакансии кроме опубликованных.
-            if (!isOwner)
-            {
-                _removedVacancyIds.Add(pv.VacancyId);
             }
 
             if (!string.IsNullOrWhiteSpace(pv.VacancyText))
@@ -1949,33 +1808,35 @@ internal sealed class ProjectService : IProjectService
     /// Метод отправляет уведомления после отклика на проект.
     /// </summary>
     /// <param name="vacancyId">Id вакансии.</param>
-    /// <param name="token">Токен пользователя.</param>
-    private async Task DisplayNotificationsAfterResponseProjectAsync(long? vacancyId, long responseId, string token)
+    /// <param name="responseId">Id отклика.</param>
+    /// <param name="userCode">Код пользователя.</param>
+    private async Task DisplayNotificationsAfterResponseProjectAsync(long? vacancyId, long responseId, Guid userCode)
     {
         if (responseId > 0)
         {
-            await _projectNotificationsService.SendNotificationSuccessProjectResponseAsync(
-                "Все хорошо",
+            await _hubNotificationService.Value.SendNotificationAsync("Все хорошо",
                 "Отклик на проект успешно оставлен. Вы получите уведомление о решении владельца проекта.",
-                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);
+                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, "SendNotificationSuccessProjectResponse", userCode, UserConnectionModuleEnum.Main);
         }
 
         else
         {
             if (vacancyId > 0)
             {
-                await _projectNotificationsService.SendNotificationErrorProjectResponseAsync("Ошибка",
+                await _hubNotificationService.Value.SendNotificationAsync("Ошибка",
                     "Ошибка при отклике на проект с указанием вакансии. Мы уже знаем о ней и разбираемся. " +
                     "А пока, попробуйте еще раз.",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, token);
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, "SendNotificationErrorProjectResponse", userCode,
+                    UserConnectionModuleEnum.Main);
             }
 
             else
             {
-                await _projectNotificationsService.SendNotificationErrorProjectResponseAsync("Ошибка",
+                await _hubNotificationService.Value.SendNotificationAsync("Ошибка",
                     "Ошибка при отклике на проект без указания вакансии. Мы уже знаем о ней и разбираемся. " +
                     "А пока, попробуйте еще раз.",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, token);
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, "SendNotificationErrorProjectResponse", userCode,
+                    UserConnectionModuleEnum.Main);
             }
         }
     }
@@ -1993,16 +1854,20 @@ internal sealed class ProjectService : IProjectService
         var userId = inviteType switch
         {
             ProjectInviteTypeEnum.Link => await projectInviteTeamJob.GetUserIdAsync(
-                new ProjectInviteTeamLinkStrategy(_userRepository, _projectNotificationsService), inviteText),
+                new ProjectInviteTeamLinkStrategy(_userRepository, _projectNotificationsService,
+                    _hubNotificationService), inviteText),
 
             ProjectInviteTypeEnum.Email => await projectInviteTeamJob.GetUserIdAsync(
-                new ProjectInviteTeamEmailStrategy(_userRepository, _projectNotificationsService), inviteText),
+                new ProjectInviteTeamEmailStrategy(_userRepository, _projectNotificationsService,
+                    _hubNotificationService), inviteText),
 
             ProjectInviteTypeEnum.PhoneNumber => await projectInviteTeamJob.GetUserIdAsync(
-                new ProjectInviteTeamPhoneNumberStrategy(_userRepository, _projectNotificationsService), inviteText),
+                new ProjectInviteTeamPhoneNumberStrategy(_userRepository, _projectNotificationsService,
+                    _hubNotificationService), inviteText),
 
             ProjectInviteTypeEnum.Login => await projectInviteTeamJob.GetUserIdAsync(
-                new ProjectInviteTeamLoginStrategy(_userRepository, _projectNotificationsService), inviteText),
+                new ProjectInviteTeamLoginStrategy(_userRepository, _projectNotificationsService,
+                    _hubNotificationService), inviteText),
 
             _ => 0
         };
@@ -2040,15 +1905,15 @@ internal sealed class ProjectService : IProjectService
     /// </summary>
     /// <param name="projects">Список проектов.</param>
     /// <returns>Список проектов после очистки.</returns>
-    private IEnumerable<CatalogProjectOutput> ClearCatalogVacanciesHtmlTags(List<CatalogProjectOutput> projects)
+    private async Task ClearCatalogVacanciesHtmlTagsAsync(List<CatalogProjectOutput> projects)
     {
         // Чистим описание проекта от html-тегов.
         foreach (var prj in projects)
         {
-            
+            prj.ProjectDetails = ClearHtmlBuilder.Clear(prj.ProjectDetails);
         }
 
-        return projects;
+        await Task.CompletedTask;
     }
 
 
@@ -2059,9 +1924,20 @@ internal sealed class ProjectService : IProjectService
 	/// <returns>Данные проекта после очистки.</returns>
 	private async Task ClearProjectFieldsHtmlTagsAsync(ProjectOutput project)
     {
-        project.ProjectDetails = ClearHtmlBuilder.Clear(project.ProjectDetails);
-        project.Demands= ClearHtmlBuilder.Clear(project.Demands);
-        project.Conditions= ClearHtmlBuilder.Clear(project.Conditions);
+        if (!string.IsNullOrWhiteSpace(project.ProjectDetails))
+        {
+            project.ProjectDetails = ClearHtmlBuilder.Clear(project.ProjectDetails).Trim();
+        }
+        
+        if (!string.IsNullOrWhiteSpace(project.Demands))
+        {
+             project.Demands= ClearHtmlBuilder.Clear(project.Demands).Trim();
+        }
+        
+        if (!string.IsNullOrWhiteSpace(project.Conditions))
+        {
+            project.Conditions= ClearHtmlBuilder.Clear(project.Conditions).Trim();
+        }
 
         await Task.CompletedTask;
     }
@@ -2135,9 +2011,16 @@ internal sealed class ProjectService : IProjectService
     /// </summary>
     /// <param name="projectId">Id проекта</param>
     /// <param name="userId">Id пользователя, которого будем удалять из команды</param>
-    /// <param name="token">Токен.</param>
-    public async Task DeleteProjectTeamMemberAsync(long projectId, long userId, string token)
+    public async Task DeleteProjectTeamMemberAsync(long projectId, long userId)
     {
+        if (userId <= 0)
+        {
+            throw new ArgumentNullException(
+                $"Не передан Id пользователя для удаления из команды. UserId: {userId}");
+        }
+        
+        var userCode = await _userRepository.GetUserCodeByUserIdAsync(userId);
+        
         try
         {
             if (projectId <= 0)
@@ -2146,25 +2029,17 @@ internal sealed class ProjectService : IProjectService
                     $"Не передан Id проекта для удаления из команды. ProjectId: {projectId}");
             }
 
-            if (userId <= 0)
-            {
-                throw new ArgumentNullException(
-                    $"Не передан Id пользователя для удаления из команды. UserId: {userId}");
-            }
-
             // Находим Id команды проекта.
             var projectTeamId = await _projectRepository.GetProjectTeamIdAsync(projectId);
             
             // Удаляем участника команды проекта.
             await _projectRepository.DeleteProjectTeamMemberAsync(userId, projectTeamId);
 
-            if (!string.IsNullOrEmpty(token))
-            {
-                await _projectNotificationsService.SendNotificationSuccessDeleteProjectTeamMemberAsync("Все хорошо",
-                    "Пользователь исключен из команды проекта.",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);
-            }
-            
+            await _hubNotificationService.Value.SendNotificationAsync("Все хорошо",
+                "Пользователь исключен из команды проекта.",
+                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, "SendNotificationSuccessDeleteProjectTeamMember",
+                userCode, UserConnectionModuleEnum.Main);
+
             var projectName = await _projectRepository.GetProjectNameByProjectIdAsync(projectId);
             
             // Записываем уведомления о исключении из команды проекта.
@@ -2181,14 +2056,12 @@ internal sealed class ProjectService : IProjectService
         
         catch (Exception ex)
         {
-            if (!string.IsNullOrEmpty(token))
-            {
-                await _projectNotificationsService.SendNotificationErrorInviteProjectTeamMembersAsync("Ошибка",
-                    "Ошибка при удалении пользователя из команды проекта. Мы уже знаем о ней и разбираемся. " +
-                    "А пока, попробуйте еще раз.",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, token);
-            }
-
+            await _hubNotificationService.Value.SendNotificationAsync("Ошибка",
+                "Ошибка при удалении пользователя из команды проекта. Мы уже знаем о ней и разбираемся. " +
+                "А пока, попробуйте еще раз.",
+                NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, "SendNotificationErrorInviteProjectTeamMembers",
+                userCode, UserConnectionModuleEnum.Main);
+           
             _logger.LogError(ex, ex.Message);
             throw;
         }
@@ -2199,9 +2072,18 @@ internal sealed class ProjectService : IProjectService
     /// </summary>
     /// <param name="projectId">Id проекта</param>
     /// <param name="account">Аккаунт пользователя.</param>
-    /// <param name="token">Токен.</param>
-    public async Task LeaveProjectTeamAsync(long projectId, string account, string token)
+    public async Task LeaveProjectTeamAsync(long projectId, string account)
     {
+        var userId = await _userRepository.GetUserIdByEmailAsync(account);
+            
+        if (userId <= 0)
+        {
+            var ex = new NotFoundUserIdByAccountException(account);
+            throw ex;
+        }
+        
+        var userCode = await _userRepository.GetUserCodeByUserIdAsync(userId);
+        
         try
         {
             if (projectId <= 0)
@@ -2210,26 +2092,16 @@ internal sealed class ProjectService : IProjectService
                     $"Не передан Id проекта для удаления из команды. ProjectId: {projectId}");
             }
 
-            var userId = await _userRepository.GetUserIdByEmailAsync(account);
-            
-            if (userId <= 0)
-            {
-                var ex = new NotFoundUserIdByAccountException(account);
-                throw ex;
-            }
-
             // Находим Id команды проекта.
             var projectTeamId = await _projectRepository.GetProjectTeamIdAsync(projectId);
 
             // Удаляем участника команды проекта.
             await _projectRepository.LeaveProjectTeamAsync(userId, projectTeamId);
 
-            if (!string.IsNullOrEmpty(token))
-            {
-                await _projectNotificationsService.SendNotificationSuccessDeleteProjectTeamMemberAsync("Все хорошо",
-                    "Вы успешно покинули проект.",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);
-            }
+            await _hubNotificationService.Value.SendNotificationAsync("Все хорошо",
+                "Вы успешно покинули проект.",
+                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, "SendNotificationSuccessDeleteProjectTeamMember",
+                userCode, UserConnectionModuleEnum.Main);
 
             var projectName = await _projectRepository.GetProjectNameByProjectIdAsync(projectId);
 
@@ -2240,14 +2112,12 @@ internal sealed class ProjectService : IProjectService
         
         catch (Exception ex)
         {
-            if (!string.IsNullOrEmpty(token))
-            {
-                await _projectNotificationsService.SendNotificationErrorInviteProjectTeamMembersAsync("Ошибка",
-                    "Ошибка при покидании проекта. Мы уже знаем о ней и разбираемся. " +
-                    "А пока, попробуйте еще раз.",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, token);
-            }
-            
+            await _hubNotificationService.Value.SendNotificationAsync("Ошибка",
+                "Ошибка при покидании проекта. Мы уже знаем о ней и разбираемся. " +
+                "А пока, попробуйте еще раз.",
+                NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, "SendNotificationErrorInviteProjectTeamMembers",
+                userCode, UserConnectionModuleEnum.Main);
+
             _logger.LogError(ex, ex.Message);
             throw;
         }
@@ -2285,38 +2155,6 @@ internal sealed class ProjectService : IProjectService
         var result = await _projectModerationRepository.GetProjectRemarksAsync(projectId);
 
         return result;
-    }
-
-    /// <summary>
-    /// Метод проставляет флаги проектам пользователя в зависимости от его подписки.
-    /// </summary>
-    /// <param name="projects">Список проектов каталога.</param>
-    /// <returns>Список проектов каталога с проставленными тегами.</returns>
-    private async Task<IEnumerable<CatalogProjectOutput>> SetProjectsTagsAsync(List<CatalogProjectOutput> projects)
-    {
-        foreach (var p in projects)
-        {
-            var userId = p.UserId;
-            
-            // Получаем подписку пользователя.
-            var userSubscription = await _subscriptionRepository.GetUserSubscriptionAsync(userId);
-
-            if (userSubscription is null)
-            {
-                var ex = new InvalidOperationException("Найдена невалидная подписка пользователя. " +
-                                                    $"UserId: {userId}. " +
-                                                    "Подписка была NULL или невалидная." +
-                                                    $"#3 Ошибка в {nameof(ProjectService)}");
-                // Отправляем ивент в пачку.
-                await _discordService.SendNotificationErrorAsync(ex);
-                
-                // Если ошибка, то не стопаем выполнение логики, а вернем проекты, пока будем разбираться с ошибкой.
-                // Без тегов не страшно отобразить проекты.
-                return projects;
-            }
-        }
-
-        return projects;
     }
 
     /// <summary>

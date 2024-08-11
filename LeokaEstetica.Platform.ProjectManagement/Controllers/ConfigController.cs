@@ -109,6 +109,7 @@ public class ConfigController : BaseController
     /// Необходимо для построения ссылки в рабочее пространство проекта.
     /// </summary>
     /// <param name="projectId">Id проекта. Если не передан, то будет переход в общее пространство.</param>
+    /// <param name="companyId">Id компании. Если не передан, то будет переход в общее пространство.</param>
     /// <returns>Выходная модель.</returns>
     [HttpGet]
     [Route("build-project-space")]
@@ -117,9 +118,11 @@ public class ConfigController : BaseController
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<ConfigSpaceSettingOutput> GetBuildProjectSpaceSettingsAsync([FromQuery] long? projectId)
+    public async Task<ConfigSpaceSettingOutput> GetBuildProjectSpaceSettingsAsync([FromQuery] long? projectId,
+        [FromQuery] long? companyId)
     {
-        var result = await _projectSettingsConfigService.GetBuildProjectSpaceSettingsAsync(GetUserName(), projectId);
+        var result = await _projectSettingsConfigService.GetBuildProjectSpaceSettingsAsync(GetUserName(), projectId,
+            companyId);
 
         return result;
     }

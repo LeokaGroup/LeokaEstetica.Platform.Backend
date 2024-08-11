@@ -72,9 +72,8 @@ public interface IProjectService
     /// </summary>
     /// <param name="projectId">Id проекта, вакансии которого нужно получить.</param>
     /// <param name="account">Аккаунт пользователя.</param>
-    /// <param name="token">Токен пользователя.</param>
     /// <returns>Список вакансий.</returns>
-    Task<ProjectVacancyResultOutput> ProjectVacanciesAsync(long projectId, string account, string token);
+    Task<ProjectVacancyResultOutput> ProjectVacanciesAsync(long projectId, string account);
 
     /// <summary>
     /// Метод создает вакансию проекта. При этом автоматически происходит привязка к проекту.
@@ -99,8 +98,7 @@ public interface IProjectService
     /// <param name="projectId">Id проекта.</param>
     /// <param name="vacancyId">Id вакансии.</param>
     /// <param name="account">Аккаунт пользователя.</param>
-    /// <param name="token">Токен пользователя.</param>
-    Task AttachProjectVacancyAsync(long projectId, long vacancyId, string account, string token);
+    Task AttachProjectVacancyAsync(long projectId, long vacancyId, string account);
 
     /// <summary>
     /// Метод записывает отклик на проект.
@@ -110,10 +108,8 @@ public interface IProjectService
     /// <param name="projectId">Id проекта.</param>
     /// <param name="vacancyId">Id вакансии.</param>
     /// <param name="account">Аккаунт пользователя.</param>
-    /// <param name="token">Токен пользователя.</param>
     /// <returns>Выходная модель с записанным откликом.</returns>
-    Task<ProjectResponseEntity> WriteProjectResponseAsync(long projectId, long? vacancyId, string account,
-        string token);
+    Task<ProjectResponseEntity> WriteProjectResponseAsync(long projectId, long? vacancyId, string account);
 
     /// <summary>
     /// Метод получает команду проекта.
@@ -136,10 +132,9 @@ public interface IProjectService
     /// <param name="projectId">Id проекта.</param>
     /// <param name="vacancyId">Id вакансии.</param>
     /// <param name="account">Аккаунт пользователя.</param>
-    /// <param name="token">Токен пользователя.</param>
     /// <returns>Выходная модель.</returns>
     Task<InviteProjectTeamOutput> InviteProjectTeamAsync(string inviteText, ProjectInviteTypeEnum inviteType,
-        long projectId, long? vacancyId, string account, string token);
+        long projectId, long? vacancyId, string account);
 
     /// <summary>
     /// Метод фильтрации проектов в зависимости от параметров фильтров.
@@ -154,16 +149,14 @@ public interface IProjectService
     /// <param name="vacancyId">Id вакансии.</param>
     /// <param name="projectId">Id проекта.</param>
     /// <param name="account">Аккаунт.</param>
-    /// <param name="token">Токен пользователя.</param>
-    Task DeleteProjectVacancyAsync(long vacancyId, long projectId, string account, string token);
+    Task DeleteProjectVacancyAsync(long vacancyId, long projectId, string account);
 
     /// <summary>
     /// Метод удаляет проект и все, что с ним связано.
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
     /// <param name="account">Аккаунт.</param>
-    /// <param name="token">Токен пользователя.</param>
-    Task RemoveProjectAsync(long projectId, string account, string? token);
+    Task DeleteProjectAsync(long projectId, string account);
 
     /// <summary>
     /// Метод получает список вакансий доступных к отклику.
@@ -186,16 +179,14 @@ public interface IProjectService
     /// </summary>
     /// <param name="projectId">Id проекта</param>
     /// <param name="userId">Id пользователя, которого будем удалять из команды</param>
-    /// <param name="token">Токен.</param>
-    Task DeleteProjectTeamMemberAsync(long projectId, long userId, string token);
+    Task DeleteProjectTeamMemberAsync(long projectId, long userId);
 
     /// <summary>
     /// Метод покидания команды проекта.
     /// </summary>
     /// <param name="projectId">Id проекта</param>
     /// <param name="account">Аккаунт пользователя.</param>
-    /// <param name="token">Токен.</param>
-    Task LeaveProjectTeamAsync(long projectId, string account, string token);
+    Task LeaveProjectTeamAsync(long projectId, string account);
 
     /// <summary>
     /// Метод получает список замечаний проекта, если они есть.
@@ -210,16 +201,14 @@ public interface IProjectService
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
     /// <param name="account">Аккаунт пользователя.</param>
-    /// <param name="token">Токен.</param>
-    Task AddProjectArchiveAsync(long projectId, string account, string token);
+    Task AddProjectArchiveAsync(long projectId, string account);
 
     /// <summary>
     /// Метод удаляет из архива проект. Идет смена статуса, фактического удаления не происходит.
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
     /// <param name="account">Аккаунт пользователя.</param>
-    /// <param name="token">Токен.</param>
-    Task DeleteProjectArchiveAsync(long projectId, string account, string token);
+    Task DeleteProjectArchiveAsync(long projectId, string account);
 
     /// <summary>
     /// Метод назначает участнику команды проекта роль.

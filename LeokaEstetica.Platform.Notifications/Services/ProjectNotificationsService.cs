@@ -10,13 +10,10 @@ using LeokaEstetica.Platform.Database.Abstractions.Project;
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Database.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Models.Dto.Output.Notification;
+using LeokaEstetica.Platform.Models.Enums;
 using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Notifications.Consts;
-using LeokaEstetica.Platform.Notifications.Data;
-using LeokaEstetica.Platform.Redis.Abstractions.Connection;
-using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
-using NotificationOutput = LeokaEstetica.Platform.Notifications.Models.Output.NotificationOutput;
 using NotificationProjectOutput = LeokaEstetica.Platform.Models.Dto.Output.Notification.NotificationOutput;
 
 [assembly: InternalsVisibleTo("LeokaEstetica.Platform.Tests")]
@@ -28,467 +25,55 @@ namespace LeokaEstetica.Platform.Notifications.Services;
 /// </summary>
 internal sealed class ProjectNotificationsService : IProjectNotificationsService
 {
-    private readonly IHubContext<ChatHub> _hubContext;
     private readonly ILogger<ProjectNotificationsService> _logger;
     private readonly IUserRepository _userRepository;
     private readonly IProjectNotificationsRepository _projectNotificationsRepository;
     private readonly IMapper _mapper;
-    private readonly IConnectionService _connectionService;
     private readonly IProjectRepository _projectRepository;
     private readonly IMailingsService _mailingsService;
     private readonly IGlobalConfigRepository _globalConfigRepository;
     private readonly IVacancyRepository _vacancyRepository;
     private readonly IProjectManagmentRepository _projectManagmentRepository;
     private readonly Lazy<IProjectManagementSettingsRepository> _projectManagementSettingsRepository;
+    private readonly Lazy<IHubNotificationService> _hubNotificationService;
 
     /// <summary>
     /// Конструктор.
     /// </summary>
-    /// <param name="hubContext">Контекст хаба.</param>
     /// <param name="logService">Сервис логера.</param>
     /// <param name="userRepository">Репозиторий пользователя.</param>
     /// <param name="projectNotificationsRepository">Репозиторий уведомлений проектов.</param>
     /// <param name="mapper">Автомаппер.</param>
-    /// <param name="connectionService">Сервис подключений Redis.</param>
     /// <param name="projectManagmentRepository">Репозиторий модуля УП.</param>
     /// <param name="projectManagementSettingsRepository">Репозиторий настроек модуля УП.</param>
-    public ProjectNotificationsService(IHubContext<ChatHub> hubContext, 
-        ILogger<ProjectNotificationsService> logger, 
+    /// <param name="hubNotificationService">Автомаппер.</param>
+    public ProjectNotificationsService(ILogger<ProjectNotificationsService> logger, 
         IUserRepository userRepository,
         IMapper mapper, 
         IProjectNotificationsRepository projectNotificationsRepository, 
-        IConnectionService connectionService, 
         IProjectRepository projectRepository, 
         IMailingsService mailingsService, 
         IGlobalConfigRepository globalConfigRepository, 
         IVacancyRepository vacancyRepository,
         IProjectManagmentRepository projectManagmentRepository,
-        Lazy<IProjectManagementSettingsRepository> projectManagementSettingsRepository)
+        Lazy<IProjectManagementSettingsRepository> projectManagementSettingsRepository,
+        Lazy<IHubNotificationService> hubNotificationService)
     {
-        _hubContext = hubContext;
         _logger = logger;
         _userRepository = userRepository;
         _mapper = mapper;
         _projectNotificationsRepository = projectNotificationsRepository;
-        _connectionService = connectionService;
         _projectRepository = projectRepository;
         _mailingsService = mailingsService;
         _globalConfigRepository = globalConfigRepository;
         _vacancyRepository = vacancyRepository;
         _projectManagmentRepository = projectManagmentRepository;
         _projectManagementSettingsRepository = projectManagementSettingsRepository;
+        _hubNotificationService = hubNotificationService;
     }
 
     #region Публичные методы.
 
-    /// <summary>
-    /// Метод отправляет уведомление об успешном создании проекта пользователя.
-    /// </summary>
-    /// <param name="title">Заголовок уведомления.</param>
-    /// <param name="notifyText">Текст уведомления.</param>
-    /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="token">Токен пользователя.</param>
-    public async Task SendNotificationSuccessCreatedUserProjectAsync(string title, string notifyText,
-        string notificationLevel, string token)
-    {
-        var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
-
-        await _hubContext.Clients
-            .Client(connectionId)
-            .SendAsync("SendNotificationSuccessCreatedUserProject", new NotificationOutput
-            {
-                Title = title,
-                Message = notifyText,
-                NotificationLevel = notificationLevel
-            });
-    }
-
-    /// <summary>
-    /// Метод отправляет уведомление об ошибке при создании проекта пользователя.
-    /// </summary>
-    /// <param name="title">Заголовок уведомления.</param>
-    /// <param name="notifyText">Текст уведомления.</param>
-    /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="token">Токен пользователя.</param>
-    public async Task SendNotificationErrorCreatedUserProjectAsync(string title, string notifyText,
-        string notificationLevel, string token)
-    {
-        var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
-
-        await _hubContext.Clients
-            .Client(connectionId)
-            .SendAsync("SendNotificationErrorCreatedUserProject", new NotificationOutput
-            {
-                Title = title,
-                Message = notifyText,
-                NotificationLevel = notificationLevel
-            });
-    }
-
-    /// <summary>
-    /// Метод отправляет уведомление о дубликате проекта пользователя.
-    /// </summary>
-    /// <param name="title">Заголовок уведомления.</param>
-    /// <param name="notifyText">Текст уведомления.</param>
-    /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="token">Токен пользователя.</param>
-    public async Task SendNotificationWarningDublicateUserProjectAsync(string title, string notifyText,
-        string notificationLevel, string token)
-    {
-        var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
-
-        await _hubContext.Clients
-            .Client(connectionId)
-            .SendAsync("SendNotificationWarningDublicateUserProject", new NotificationOutput
-            {
-                Title = title,
-                Message = notifyText,
-                NotificationLevel = notificationLevel
-            });
-    }
-
-    /// <summary>
-    /// Метод отправляет уведомление об успехе при изменении проекта пользователя.
-    /// </summary>
-    /// <param name="title">Заголовок уведомления.</param>
-    /// <param name="notifyText">Текст уведомления.</param>
-    /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="token">Токен пользователя.</param>
-    public async Task SendNotificationSuccessUpdatedUserProjectAsync(string title, string notifyText,
-        string notificationLevel, string token)
-    {
-        var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
-
-        await _hubContext.Clients
-            .Client(connectionId)
-            .SendAsync("SendNotificationSuccessUpdatedUserProject", new NotificationOutput
-            {
-                Title = title,
-                Message = notifyText,
-                NotificationLevel = notificationLevel
-            });
-    }
-
-    /// <summary>
-    /// Метод отправляет уведомление об ошибке при изменении проекта пользователя.
-    /// </summary>
-    /// <param name="title">Заголовок уведомления.</param>
-    /// <param name="notifyText">Текст уведомления.</param>
-    /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="token">Токен пользователя.</param>
-    public async Task SendNotificationErrorUpdatedUserProjectAsync(string title, string notifyText,
-        string notificationLevel, string token)
-    {
-        var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
-
-        await _hubContext.Clients
-            .Client(connectionId)
-            .SendAsync("SendNotificationErrorUpdatedUserProject", new NotificationOutput
-            {
-                Title = title,
-                Message = notifyText,
-                NotificationLevel = notificationLevel
-            });
-    }
-
-    /// <summary>
-    /// Метод отправляет уведомление об успешной привязке вакансии к проекту.
-    /// </summary>
-    /// <param name="title">Заголовок уведомления.</param>
-    /// <param name="notifyText">Текст уведомления.</param>
-    /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="token">Токен пользователя.</param>
-    public async Task SendNotificationSuccessAttachProjectVacancyAsync(string title, string notifyText,
-        string notificationLevel, string token)
-    {
-        var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
-
-        await _hubContext.Clients
-            .Client(connectionId)
-            .SendAsync("SendNotificationSuccessAttachProjectVacancy", new NotificationOutput
-            {
-                Title = title,
-                Message = notifyText,
-                NotificationLevel = notificationLevel
-            });
-    }
-
-    /// <summary>
-    /// Метод отправляет уведомление об дубликате при привязке вакансии к проекту.
-    /// </summary>
-    /// <param name="title">Заголовок уведомления.</param>
-    /// <param name="notifyText">Текст уведомления.</param>
-    /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="token">Токен пользователя.</param>
-    public async Task SendNotificationErrorDublicateAttachProjectVacancyAsync(string title, string notifyText,
-        string notificationLevel, string token)
-    {
-        var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
-        
-        await _hubContext.Clients
-            .Client(connectionId)
-            .SendAsync("SendNotificationErrorDublicateAttachProjectVacancy",
-            new NotificationOutput
-            {
-                Title = title,
-                Message = notifyText,
-                NotificationLevel = notificationLevel
-            });
-    }
-
-    /// <summary>
-    /// Метод отправляет уведомление об отклике на проект.
-    /// </summary>
-    /// <param name="title">Заголовок уведомления.</param>
-    /// <param name="notifyText">Текст уведомления.</param>
-    /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="token">Токен пользователя.</param>
-    public async Task SendNotificationSuccessProjectResponseAsync(string title, string notifyText,
-        string notificationLevel, string token)
-    {
-        var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
-
-        await _hubContext.Clients
-            .Client(connectionId)
-            .SendAsync("SendNotificationSuccessProjectResponse",
-                new NotificationOutput
-                {
-                    Title = title,
-                    Message = notifyText,
-                    NotificationLevel = notificationLevel
-                });
-    }
-
-    /// <summary>
-    /// Метод отправляет уведомление предупреждения об отклике на проект.
-    /// </summary>
-    /// <param name="title">Заголовок уведомления.</param>
-    /// <param name="notifyText">Текст уведомления.</param>
-    /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="token">Токен пользователя.</param>
-    public async Task SendNotificationWarningProjectResponseAsync(string title, string notifyText,
-        string notificationLevel, string token)
-    {
-        var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
-
-        await _hubContext.Clients
-            .Client(connectionId)
-            .SendAsync("SendNotificationWarningProjectResponse",
-                new NotificationOutput
-                {
-                    Title = title,
-                    Message = notifyText,
-                    NotificationLevel = notificationLevel
-                });
-    }
-
-    /// <summary>
-    /// Метод отправляет уведомление предупреждения о не найденных пользователях по поисковому запросу.
-    /// </summary>
-    /// <param name="title">Заголовок уведомления.</param>
-    /// <param name="notifyText">Текст уведомления.</param>
-    /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="token">Токен пользователя.</param>
-    public async Task SendNotificationWarningSearchProjectTeamMemberAsync(string title, string notifyText,
-        string notificationLevel, string token)
-    {
-        var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
-
-        await _hubContext.Clients
-            .Client(connectionId)
-            .SendAsync("SendNotificationWarningSearchProjectTeamMember",
-                new NotificationOutput
-                {
-                    Title = title,
-                    Message = notifyText,
-                    NotificationLevel = notificationLevel
-                });
-    }
-
-    /// <summary>
-    /// Метод отправляет уведомление предупреждения об ошибке при добавлении пользователей в команду проекта.
-    /// </summary>
-    /// <param name="title">Заголовок уведомления.</param>
-    /// <param name="notifyText">Текст уведомления.</param>
-    /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="token">Токен пользователя.</param>
-    public async Task SendNotificationWarningInviteProjectTeamMembersAsync(string title, string notifyText,
-        string notificationLevel, string token)
-    {
-        var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
-
-        await _hubContext.Clients
-            .Client(connectionId)
-            .SendAsync("SendNotificationWarningInviteProjectTeamMembers",
-                new NotificationOutput
-                {
-                    Title = title,
-                    Message = notifyText,
-                    NotificationLevel = notificationLevel
-                });
-    }
-
-    /// <summary>
-    /// Метод отправляет уведомление ошибки об ошибке при добавлении пользователей в команду проекта.
-    /// </summary>
-    /// <param name="title">Заголовок уведомления.</param>
-    /// <param name="notifyText">Текст уведомления.</param>
-    /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="token">Токен пользователя.</param>
-    public async Task SendNotificationErrorInviteProjectTeamMembersAsync(string title, string notifyText,
-        string notificationLevel, string token)
-    {
-        var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
-
-        await _hubContext.Clients
-            .Client(connectionId)
-            .SendAsync("SendNotificationErrorInviteProjectTeamMembers",
-                new NotificationOutput
-                {
-                    Title = title,
-                    Message = notifyText,
-                    NotificationLevel = notificationLevel
-                });
-    }
-
-    /// <summary>
-    /// Метод отправляет уведомление об предупреждении лимите проектов по тарифу.
-    /// </summary>
-    /// <param name="title">Заголовок уведомления.</param>
-    /// <param name="notifyText">Текст уведомления.</param>
-    /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="token">Токен пользователя.</param>
-    public async Task SendNotificationWarningLimitFareRuleProjectsAsync(string title, string notifyText,
-        string notificationLevel, string token)
-    {
-        var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
-
-        await _hubContext.Clients
-            .Client(connectionId)
-            .SendAsync("SendNotificationWarningLimitFareRuleProjects",
-                new NotificationOutput
-                {
-                    Title = title,
-                    Message = notifyText,
-                    NotificationLevel = notificationLevel
-                });
-    }
-
-    /// <summary>
-    /// Метод отправляет уведомление об ошибке при удалении вакансии проекта.
-    /// </summary>
-    /// <param name="title">Заголовок уведомления.</param>
-    /// <param name="notifyText">Текст уведомления.</param>
-    /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="token">Токен пользователя.</param>
-    public async Task SendNotificationErrorDeleteProjectVacancyAsync(string title, string notifyText,
-        string notificationLevel, string token)
-    {
-        var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
-
-        await _hubContext.Clients
-            .Client(connectionId)
-            .SendAsync("SendNotificationErrorDeleteProjectVacancy",
-                new NotificationOutput
-                {
-                    Title = title,
-                    Message = notifyText,
-                    NotificationLevel = notificationLevel
-                });
-    }
-
-    /// <summary>
-    /// Метод отправляет уведомление об успехе при удалении вакансии проекта.
-    /// </summary>
-    /// <param name="title">Заголовок уведомления.</param>
-    /// <param name="notifyText">Текст уведомления.</param>
-    /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="token">Токен пользователя.</param>
-    public async Task SendNotificationSuccessDeleteProjectVacancyAsync(string title, string notifyText,
-        string notificationLevel, string token)
-    {
-        var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
-
-        await _hubContext.Clients
-            .Client(connectionId)
-            .SendAsync("SendNotificationSuccessDeleteProjectVacancy",
-                new NotificationOutput
-                {
-                    Title = title,
-                    Message = notifyText,
-                    NotificationLevel = notificationLevel
-                });
-    }
-
-    /// <summary>
-    /// Метод отправляет уведомление об ошибке при удалении проекта.
-    /// </summary>
-    /// <param name="title">Заголовок уведомления.</param>
-    /// <param name="notifyText">Текст уведомления.</param>
-    /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="token">Токен пользователя.</param>
-    public async Task SendNotificationErrorDeleteProjectAsync(string title, string notifyText, 
-        string notificationLevel, string token)
-    {
-        var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
-
-        await _hubContext.Clients
-            .Client(connectionId)
-            .SendAsync("SendNotificationErrorDeleteProject",
-                new NotificationOutput
-                {
-                    Title = title,
-                    Message = notifyText,
-                    NotificationLevel = notificationLevel
-                });
-    }
-
-    /// <summary>
-    /// Метод отправляет уведомление об успехе при удалении проекта.
-    /// </summary>
-    /// <param name="title">Заголовок уведомления.</param>
-    /// <param name="notifyText">Текст уведомления.</param>
-    /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="token">Токен пользователя.</param>
-    public async Task SendNotificationSuccessDeleteProjectAsync(string title, string notifyText,
-        string notificationLevel, string userId)
-    {
-        var connectionId = await _connectionService.GetConnectionIdCacheAsync(userId);
-
-        await _hubContext.Clients
-            .Client(connectionId)
-            .SendAsync("SendNotificationSuccessDeleteProject",
-                new NotificationOutput
-                {
-                    Title = title,
-                    Message = notifyText,
-                    NotificationLevel = notificationLevel
-                });
-    }
-
-    /// <summary>
-    /// Метод отправляет уведомление об ошибке при отклике на проект.
-    /// </summary>
-    /// <param name="title">Заголовок уведомления.</param>
-    /// <param name="notifyText">Текст уведомления.</param>
-    /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="token">Токен пользователя.</param>
-    public async Task SendNotificationErrorProjectResponseAsync(string title, string notifyText,
-        string notificationLevel, string token)
-    {
-        var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
-
-        await _hubContext.Clients
-            .Client(connectionId)
-            .SendAsync("SendNotificationErrorProjectResponse",
-                new NotificationOutput
-                {
-                    Title = title,
-                    Message = notifyText,
-                    NotificationLevel = notificationLevel
-                });
-    }
-    
     /// <summary>
     /// Метод получает список уведомлений в проекты пользователя.
     /// </summary>
@@ -587,8 +172,7 @@ internal sealed class ProjectNotificationsService : IProjectNotificationsService
     /// </summary>
     /// <param name="notificationId">Id уведомления.</param>
     /// <param name="account">Аккаунт.</param>
-    /// <param name="token">Токен пользователя.</param>
-    public async Task ApproveProjectInviteAsync(long notificationId, string account, string token)
+    public async Task ApproveProjectInviteAsync(long notificationId, string account)
     {
         try
         {
@@ -610,16 +194,19 @@ internal sealed class ProjectNotificationsService : IProjectNotificationsService
                 throw ex;
             }
 
+            var userCode = await _userRepository.GetUserCodeByUserIdAsync(userId);
+
             if (!isExistsNotification)
             {
                 var ex = new InvalidOperationException(
                     $"Уведомления с NotificationId: {notificationId} не существует.");
 
-                await SendNotificationErrorApproveProjectInviteAsync("Ошибка",
+                await _hubNotificationService.Value.SendNotificationAsync("Ошибка",
                     "Ошибка при подтверждении приглашения в проект. Мы уже знаем о ней и разбираемся. " +
                     "А пока, попробуйте еще раз.",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, token);
-                
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, "SendNotificationErrorApproveProjectInvite",
+                    userCode, UserConnectionModuleEnum.ProjectManagement);
+
                 throw ex;
             }
 
@@ -660,9 +247,10 @@ internal sealed class ProjectNotificationsService : IProjectNotificationsService
             
             // Отправляем уведомление на почту о принятом приглашении в проект.
             await SendNotificationApproveInviteProjectAsync(notificationId, userId, projectId, projectName, account);
-            
-            await SendNotificationSuccessApproveProjectInviteAsync("Все хорошо", "Приглашение в проект успешно.",
-                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);
+
+            await _hubNotificationService.Value.SendNotificationAsync("Все хорошо", "Приглашение в проект успешно.",
+                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, "SendNotificationSuccessApproveProjectInvite",
+                userCode, UserConnectionModuleEnum.Main);
         }
         
         catch (Exception ex)
@@ -678,7 +266,7 @@ internal sealed class ProjectNotificationsService : IProjectNotificationsService
     /// <param name="notificationId">Id уведомления.</param>
     /// <param name="account">Аккаунт.</param>
     /// <param name="token">Токен пользователя.</param>
-    public async Task RejectProjectInviteAsync(long notificationId, string account, string token)
+    public async Task RejectProjectInviteAsync(long notificationId, string account)
     {
         try
         {
@@ -699,26 +287,29 @@ internal sealed class ProjectNotificationsService : IProjectNotificationsService
                 var ex = new NotFoundUserIdByAccountException(account);
                 throw ex;
             }
+            
+            var userCode = await _userRepository.GetUserCodeByUserIdAsync(userId);
 
             if (!isExistsNotification)
             {
                 var ex = new InvalidOperationException(
                     $"Уведомления с NotificationId: {notificationId} не существует.");
 
-                await SendNotificationErrorRejectProjectInviteAsync("Ошибка",
+                await _hubNotificationService.Value.SendNotificationAsync("Ошибка",
                     "Ошибка при отклонении приглашения в проект. Мы уже знаем о ней и разбираемся. " +
                     "А пока, попробуйте еще раз.",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, token);
-                
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, "SendNotificationErrorRejectProjectInvite",
+                    userCode, UserConnectionModuleEnum.Main);
+
                 throw ex;
             }
 
             await _projectNotificationsRepository.RejectProjectInviteAsync(notificationId);
 
-            await SendNotificationSuccessRejectProjectInviteAsync("Все хорошо",
-                "Отклонение приглашения в проект успешно.",
-                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);
-            
+            await _hubNotificationService.Value.SendNotificationAsync("Все хорошо",
+                "Отклонение приглашения в проект успешно.", NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS,
+                "SendNotificationSuccessRejectProjectInvite", userCode, UserConnectionModuleEnum.Main);
+
             var projectId = await _projectNotificationsRepository.GetProjectIdByNotificationIdAsync(notificationId);
             var projectName = await _projectRepository.GetProjectNameByProjectIdAsync(projectId);
 
@@ -734,401 +325,9 @@ internal sealed class ProjectNotificationsService : IProjectNotificationsService
         }
     }
 
-    /// <summary>
-    /// Метод отправляет уведомление об ошибке при приглашении в проект по ссылке.
-    /// </summary>
-    /// <param name="title">Заголовок уведомления.</param>
-    /// <param name="notifyText">Текст уведомления.</param>
-    /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="token">Токен пользователя.</param>
-    public async Task SendNotificationErrorProjectInviteTeamByLinkAsync(string title, string notifyText,
-        string notificationLevel, string token)
-    {
-        var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
-
-        await _hubContext.Clients
-            .Client(connectionId)
-            .SendAsync("SendNotificationErrorProjectInviteTeamByLink",
-                new NotificationOutput
-                {
-                    Title = title,
-                    Message = notifyText,
-                    NotificationLevel = notificationLevel
-                });
-    }
-
-    /// <summary>
-    /// Метод отправляет уведомление об ошибке при приглашении в проект по логину.
-    /// </summary>
-    /// <param name="title">Заголовок уведомления.</param>
-    /// <param name="notifyText">Текст уведомления.</param>
-    /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="token">Токен пользователя.</param>
-    public async Task SendNotificationErrorProjectInviteTeamByLoginAsync(string title, string notifyText,
-        string notificationLevel, string token)
-    {
-        var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
-
-        await _hubContext.Clients
-            .Client(connectionId)
-            .SendAsync("SendNotificationErrorProjectInviteTeamByLogin",
-                new NotificationOutput
-                {
-                    Title = title,
-                    Message = notifyText,
-                    NotificationLevel = notificationLevel
-                });
-    }
-
-    /// <summary>
-    /// Метод отправляет уведомление об ошибке при приглашении в проект по почте.
-    /// </summary>
-    /// <param name="title">Заголовок уведомления.</param>
-    /// <param name="notifyText">Текст уведомления.</param>
-    /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="token">Токен пользователя.</param>
-    public async Task SendNotificationErrorProjectInviteTeamByEmailAsync(string title, string notifyText,
-        string notificationLevel, string token)
-    {
-        var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
-
-        await _hubContext.Clients
-            .Client(connectionId)
-            .SendAsync("SendNotificationErrorProjectInviteTeamByEmail",
-                new NotificationOutput
-                {
-                    Title = title,
-                    Message = notifyText,
-                    NotificationLevel = notificationLevel
-                });
-    }
-
-    /// <summary>
-    /// Метод отправляет уведомление об ошибке при приглашении в проект по номеру телефону.
-    /// </summary>
-    /// <param name="title">Заголовок уведомления.</param>
-    /// <param name="notifyText">Текст уведомления.</param>
-    /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="token">Токен пользователя.</param>
-    public async Task SendNotificationErrorProjectInviteTeamByPhoneNumberAsync(string title, string notifyText,
-        string notificationLevel, string token)
-    {
-        var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
-
-        await _hubContext.Clients
-            .Client(connectionId)
-            .SendAsync("SendNotificationErrorProjectInviteTeamByPhoneNumber",
-                new NotificationOutput
-                {
-                    Title = title,
-                    Message = notifyText,
-                    NotificationLevel = notificationLevel
-                });
-    }
-
-    /// <summary>
-    /// Метод отправляет уведомление предупреждения об при инвайте в проект, который находится на модерации.
-    /// </summary>
-    /// <param name="title">Заголовок уведомления.</param>
-    /// <param name="notifyText">Текст уведомления.</param>
-    /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="token">Токен пользователя.</param>
-    public async Task SendNotificationWarningProjectInviteTeamAsync(string title, string notifyText,
-        string notificationLevel, string token)
-    {
-        var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
-
-        await _hubContext.Clients
-            .Client(connectionId)
-            .SendAsync("SendNotificationWarningProjectInviteTeam",
-                new NotificationOutput
-                {
-                    Title = title,
-                    Message = notifyText,
-                    NotificationLevel = notificationLevel
-                });
-    }
-
-    /// <summary>
-    /// Метод отправляет уведомление предупреждения о приглашенном пользователе в команде проекта.
-    /// Повторно нельзя приглашать для избежания дублей.
-    /// </summary>
-    /// <param name="title">Заголовок уведомления.</param>
-    /// <param name="notifyText">Текст уведомления.</param>
-    /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="token">Токен пользователя.</param>
-    public async Task SendNotificationWarningUserAlreadyProjectInvitedTeamAsync(string title, string notifyText,
-        string notificationLevel, string token)
-    {
-        var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
-
-        await _hubContext.Clients
-            .Client(connectionId)
-            .SendAsync("SendNotificationWarningUserAlreadyProjectInvitedTeam",
-                new NotificationOutput
-                {
-                    Title = title,
-                    Message = notifyText,
-                    NotificationLevel = notificationLevel
-                });
-    }
-
-    /// <summary>
-    /// Метод отправляет уведомление об успешном исключения пользователя из команды проекта.
-    /// </summary>
-    /// <param name="title">Заголовок уведомления.</param>
-    /// <param name="notifyText">Текст уведомления.</param>
-    /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="token">Токен пользователя.</param>
-    public async Task SendNotificationSuccessDeleteProjectTeamMemberAsync(string title, string notifyText,
-        string notificationLevel, string token)
-    {
-        var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
-
-        await _hubContext.Clients
-            .Client(connectionId)
-            .SendAsync("SendNotificationSuccessDeleteProjectTeamMember",
-                new NotificationOutput
-                {
-                    Title = title,
-                    Message = notifyText,
-                    NotificationLevel = notificationLevel
-                });
-    }
-
-    /// <summary>
-    /// Метод отправляет уведомление об успехе при добавлении проекта в архив.
-    /// </summary>
-    /// <param name="title">Заголовок уведомления.</param>
-    /// <param name="notifyText">Текст уведомления.</param>
-    /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="token">Токен пользователя.</param>
-    public async Task SendNotificationSuccessAddProjectArchiveAsync(string title, string notifyText,
-        string notificationLevel, string token)
-    {
-        var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
-
-        await _hubContext.Clients
-            .Client(connectionId)
-            .SendAsync("SendNotificationSuccessAddProjectArchive",
-                new NotificationOutput
-                {
-                    Title = title,
-                    Message = notifyText,
-                    NotificationLevel = notificationLevel
-                });
-    }
-
-    /// <summary>
-    /// Метод отправляет уведомление об ошибке при добавлении проекта в архив.
-    /// </summary>
-    /// <param name="title">Заголовок уведомления.</param>
-    /// <param name="notifyText">Текст уведомления.</param>
-    /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="token">Токен пользователя.</param>
-    public async Task SendNotificationErrorAddProjectArchiveAsync(string title, string notifyText,
-        string notificationLevel, string token)
-    {
-        var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
-
-        await _hubContext.Clients
-            .Client(connectionId)
-            .SendAsync("SendNotificationErrorAddProjectArchive",
-                new NotificationOutput
-                {
-                    Title = title,
-                    Message = notifyText,
-                    NotificationLevel = notificationLevel
-                });
-    }
-
-    /// <summary>
-    /// Метод отправляет уведомление предупреждения о дубле при добавлении проекта в архив.
-    /// </summary>
-    /// <param name="title">Заголовок уведомления.</param>
-    /// <param name="notifyText">Текст уведомления.</param>
-    /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="token">Токен пользователя.</param>
-    public async Task SendNotificationWarningAddProjectArchiveAsync(string title, string notifyText,
-        string notificationLevel, string token)
-    {
-        var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
-
-        await _hubContext.Clients
-            .Client(connectionId)
-            .SendAsync("SendNotificationWarningAddProjectArchive",
-                new NotificationOutput
-                {
-                    Title = title,
-                    Message = notifyText,
-                    NotificationLevel = notificationLevel
-                });
-    }
-
-    /// <summary>
-    /// Метод отправляет уведомление об ошибке при удалении проекта из архива.
-    /// </summary>
-    /// <param name="title">Заголовок уведомления.</param>
-    /// <param name="notifyText">Текст уведомления.</param>
-    /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="token">Токен пользователя.</param>
-    public async Task SendNotificationErrorDeleteProjectArchiveAsync(string title, string notifyText,
-        string notificationLevel, string token)
-    {
-        var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
-
-        await _hubContext.Clients
-            .Client(connectionId)
-            .SendAsync("SendNotificationErrorDeleteProjectArchive",
-                new NotificationOutput
-                {
-                    Title = title,
-                    Message = notifyText,
-                    NotificationLevel = notificationLevel
-                });
-    }
-
-    /// <summary>
-    /// Метод отправляет уведомление об успехе при удалении проекта из архива.
-    /// </summary>
-    /// <param name="title">Заголовок уведомления.</param>
-    /// <param name="notifyText">Текст уведомления.</param>
-    /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="token">Токен пользователя.</param>
-    public async Task SendNotificationSuccessDeleteProjectArchiveAsync(string title, string notifyText,
-        string notificationLevel, string token)
-    {
-        var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
-
-        await _hubContext.Clients
-            .Client(connectionId)
-            .SendAsync("SendNotificationSuccessDeleteProjectArchive",
-                new NotificationOutput
-                {
-                    Title = title,
-                    Message = notifyText,
-                    NotificationLevel = notificationLevel
-                });
-    }
-
-    /// <summary>
-    /// Метод отправляет уведомление предупреждения при удалении проекта из архива.
-    /// </summary>
-    /// <param name="title">Заголовок уведомления.</param>
-    /// <param name="notifyText">Текст уведомления.</param>
-    /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="token">Токен пользователя.</param>
-    public async Task SendNotificationWarningDeleteProjectArchiveAsync(string title, string notifyText,
-        string notificationLevel, string token)
-    {
-        var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
-
-        await _hubContext.Clients
-            .Client(connectionId)
-            .SendAsync("SendNotificationWarningDeleteProjectArchive",
-                new NotificationOutput
-                {
-                    Title = title,
-                    Message = notifyText,
-                    NotificationLevel = notificationLevel
-                });
-    }
-
     #endregion
 
     #region Приватные методы.
-
-    /// <summary>
-    /// Метод отправляет уведомление об ошибке при апруве приглашения в проект.
-    /// </summary>
-    /// <param name="title">Заголовок уведомления.</param>
-    /// <param name="notifyText">Текст уведомления.</param>
-    /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="token">Токен пользователя.</param>
-    private async Task SendNotificationErrorApproveProjectInviteAsync(string title, string notifyText,
-        string notificationLevel, string token)
-    {
-        var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
-
-        await _hubContext.Clients
-            .Client(connectionId)
-            .SendAsync("SendNotificationErrorApproveProjectInvite",
-                new NotificationOutput
-                {
-                    Title = title,
-                    Message = notifyText,
-                    NotificationLevel = notificationLevel
-                });
-    }
-    
-    /// <summary>
-    /// Метод отправляет уведомление об успехе при приглашении в проект.
-    /// </summary>
-    /// <param name="title">Заголовок уведомления.</param>
-    /// <param name="notifyText">Текст уведомления.</param>
-    /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="token">Токен пользователя.</param>
-    private async Task SendNotificationSuccessApproveProjectInviteAsync(string title, string notifyText,
-        string notificationLevel, string token)
-    {
-        var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
-
-        await _hubContext.Clients
-            .Client(connectionId)
-            .SendAsync("SendNotificationSuccessApproveProjectInvite",
-                new NotificationOutput
-                {
-                    Title = title,
-                    Message = notifyText,
-                    NotificationLevel = notificationLevel
-                });
-    }
-    
-    /// <summary>
-    /// Метод отправляет уведомление об ошибке при реджекте приглашения в проект.
-    /// </summary>
-    /// <param name="title">Заголовок уведомления.</param>
-    /// <param name="notifyText">Текст уведомления.</param>
-    /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="token">Токен пользователя.</param>
-    private async Task SendNotificationErrorRejectProjectInviteAsync(string title, string notifyText,
-        string notificationLevel, string token)
-    {
-        var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
-
-        await _hubContext.Clients
-            .Client(connectionId)
-            .SendAsync("SendNotificationErrorRejectProjectInvite",
-                new NotificationOutput
-                {
-                    Title = title,
-                    Message = notifyText,
-                    NotificationLevel = notificationLevel
-                });
-    }
-    
-    /// <summary>
-    /// Метод отправляет уведомление об успехе при реджекте в проект.
-    /// </summary>
-    /// <param name="title">Заголовок уведомления.</param>
-    /// <param name="notifyText">Текст уведомления.</param>
-    /// <param name="notificationLevel">Уровень уведомления.</param>
-    /// <param name="token">Токен пользователя.</param>
-    private async Task SendNotificationSuccessRejectProjectInviteAsync(string title, string notifyText,
-        string notificationLevel, string token)
-    {
-        var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
-
-        await _hubContext.Clients
-            .Client(connectionId)
-            .SendAsync("SendNotificationSuccessRejectProjectInvite",
-                new NotificationOutput
-                {
-                    Title = title,
-                    Message = notifyText,
-                    NotificationLevel = notificationLevel
-                });
-    }
 
     /// <summary>
     /// Метод отправляет уведомление в приложении о принятом приглашении в проект.

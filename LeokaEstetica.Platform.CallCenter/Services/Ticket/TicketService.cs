@@ -9,6 +9,7 @@ using LeokaEstetica.Platform.Database.Abstractions.Ticket;
 using LeokaEstetica.Platform.Database.Access.Ticket;
 using LeokaEstetica.Platform.Models.Dto.Output.Ticket;
 using LeokaEstetica.Platform.Models.Entities.Ticket;
+using LeokaEstetica.Platform.Models.Enums;
 using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Notifications.Consts;
 using Microsoft.Extensions.Logging;
@@ -27,7 +28,7 @@ internal sealed class TicketService : ITicketService
     private readonly IUserRepository _userRepository;
     private readonly IMapper _mapper;
     private readonly IAccessTicketRepository _accessTicketRepository;
-    private readonly ITicketNotificationService _ticketNotificationService;
+    private readonly Lazy<IHubNotificationService> _hubNotificationService;
 
     /// <summary>
     /// Конструктор.
@@ -37,20 +38,20 @@ internal sealed class TicketService : ITicketService
     /// <param name="userRepository">Репозиторий пользователя.</param>
     /// <param name="mapper">Автомаппер.</param>
     /// <param name="accessTicketRepository">Репозиторий доступа к тикетам.</param>
-    /// <param name="ticketNotificationService">Сервис уведомлений тикетов.</param>
+    /// <param name="hubNotificationService">Сервис уведомлений хабов.</param>
     public TicketService(ITicketRepository ticketRepository,
         ILogger<TicketService> logger,
         IUserRepository userRepository,
         IMapper mapper,
         IAccessTicketRepository accessTicketRepository,
-        ITicketNotificationService ticketNotificationService)
+        Lazy<IHubNotificationService> hubNotificationService)
     {
         _ticketRepository = ticketRepository;
         _logger = logger;
         _userRepository = userRepository;
         _mapper = mapper;
         _accessTicketRepository = accessTicketRepository;
-        _ticketNotificationService = ticketNotificationService;
+        _hubNotificationService = hubNotificationService;
     }
 
     #region Публичные методы.
@@ -315,12 +316,8 @@ internal sealed class TicketService : ITicketService
         }
     }
 
-    /// <summary>
-    /// Метод закрывает тикет (идет проставление статуса тикета "Закрыт").
-    /// </summary>
-    /// <param name="closeTicketInput">Входная модель.</param>
-    /// <param name="token">Токен.</param>
-    public async Task CloseTicketAsync(long ticketId, string account, string token)
+    /// <inheritdoc />
+    public async Task CloseTicketAsync(long ticketId, string account)
     {
         try
         {
@@ -350,13 +347,12 @@ internal sealed class TicketService : ITicketService
 
             if (!isClosed)
             {
-                if (!string.IsNullOrEmpty(token))
-                {
-                    await _ticketNotificationService.SendNotificationErrorCloseTicketAsync("Ошибка",
-                        "У Вас нет прав не закрытие тикета. Если Вы уверены, что это ошибка, то напишите в тех.поддержкую" +
-                        $"Id тикета: {ticketId}",
-                        NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, token);   
-                }
+                var userCode = await _userRepository.GetUserCodeByUserIdAsync(userId);
+                await _hubNotificationService.Value.SendNotificationAsync("Ошибка",
+                    "У Вас нет прав не закрытие тикета. Если Вы уверены, что это ошибка, то напишите в тех.поддержкую" +
+                    $"Id тикета: {ticketId}",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, "SendNotificationErrorCloseTicket", userCode,
+                    UserConnectionModuleEnum.Main);
 
                 var ex = new InvalidOperationException("Ошибка при закрытии тикета. " +
                                                        $"TicketId: {ticketId}. " +

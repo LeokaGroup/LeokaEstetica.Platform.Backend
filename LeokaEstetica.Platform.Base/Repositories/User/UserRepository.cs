@@ -739,6 +739,23 @@ internal sealed class UserRepository : BaseRepository, IUserRepository
         return result;
     }
 
+    /// <inheritdoc />
+    public async Task<Guid> GetUserCodeByUserIdAsync(long userId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@userId", userId);
+
+        var query = "SELECT \"UserCode\" " +
+                    "FROM dbo.\"Users\" " +
+                    "WHERE \"UserId\" = @userId";
+
+        var result = await connection.QueryFirstOrDefaultAsync<Guid>(query, parameters);
+
+        return result;
+    }
+
     #endregion
 
     #region Приватные методы.
