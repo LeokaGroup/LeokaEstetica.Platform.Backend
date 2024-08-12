@@ -256,9 +256,11 @@ internal class EpicBuilder : AgileObjectBuilder
             // Обязательно логируем такое если обнаружили, но не стопаем выполнение логики.
             if (ProjectManagmentTask.EpicTasks.Any(x => x.ExecutorId <= 0))
             {
-                throw new InvalidOperationException(
+                var ex = new InvalidOperationException(
                     "Найдены невалидные исполнители задачи эпика." +
                     $" EpicTasks: {JsonConvert.SerializeObject(ProjectManagmentTask.EpicTasks)}.");
+
+                await BuilderData.DiscordService.SendNotificationErrorAsync(ex);
             }
             
             // Получаем имена исполнителей задач.

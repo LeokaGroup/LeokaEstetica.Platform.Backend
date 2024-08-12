@@ -9,6 +9,7 @@ using LeokaEstetica.Platform.Integrations.Abstractions.Discord;
 using LeokaEstetica.Platform.Models.Dto.Common.Cache;
 using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagement;
+using LeokaEstetica.Platform.Models.Enums;
 using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Notifications.Consts;
 using LeokaEstetica.Platform.Redis.Abstractions.ProjectManagement;
@@ -31,7 +32,7 @@ internal sealed class ProjectManagmentRoleService : IProjectManagmentRoleService
     private readonly IProjectManagmentRoleRedisService _projectManagmentRoleRedisService;
     private readonly IMapper _mapper;
     private readonly Lazy<IDiscordService> _discordService;
-    private readonly Lazy<IProjectManagementNotificationService> _projectManagementNotificationService;
+    private readonly Lazy<IHubNotificationService> _hubNotificationService;
 
     /// <summary>
     /// Конструктор.
@@ -42,14 +43,14 @@ internal sealed class ProjectManagmentRoleService : IProjectManagmentRoleService
     /// <param name="projectManagmentRoleRedisService">Сервис ролей кэша.</param>
     /// <param name="mapper">Маппер.</param>
     /// <param name="discordService">Сервис уведомлений дискорда.</param>
-    /// <param name="projectManagementNotificationService">Сервис уведомлений модуля УП.</param>
+    /// <param name="discordService">Сервис уведомлений хабов.</param>
     public ProjectManagmentRoleService(ILogger<ProjectManagmentRoleService>? logger,
         Lazy<IProjectManagmentRoleRepository> projectManagmentRoleRepository,
         IUserRepository userRepository,
         IProjectManagmentRoleRedisService projectManagmentRoleRedisService,
         IMapper mapper,
         Lazy<IDiscordService> discordService,
-        Lazy<IProjectManagementNotificationService> projectManagementNotificationService)
+         Lazy<IHubNotificationService> hubNotificationService)
     {
         _logger = logger;
         _projectManagmentRoleRepository = projectManagmentRoleRepository;
@@ -57,14 +58,14 @@ internal sealed class ProjectManagmentRoleService : IProjectManagmentRoleService
         _projectManagmentRoleRedisService = projectManagmentRoleRedisService;
         _mapper = mapper;
         _discordService = discordService;
-        _projectManagementNotificationService = projectManagementNotificationService;
+        _hubNotificationService = hubNotificationService;
     }
 
     #region Публичные методы.
 
     /// <inheritdoc />
     public async Task<IEnumerable<ProjectManagementRoleOutput>> GetUserRolesAsync(string account,
-        long? projectId = null)
+        long projectId, long companyId)
     {
         try
         {
@@ -94,7 +95,7 @@ internal sealed class ProjectManagmentRoleService : IProjectManagmentRoleService
             _logger?.LogInformation($"Не нашли роли пользователя: {userId} в кэше Redis...");
             _logger?.LogInformation($"Проверяем роли пользователя: {userId} в БД...");
 
-            var userRoles = (await _projectManagmentRoleRepository.Value.GetUserRolesAsync(userId, projectId))
+            var userRoles = (await _projectManagmentRoleRepository.Value.GetUserRolesAsync(userId, projectId, companyId))
                 ?.AsList();
 
             // Нашли в БД - отдаем.
@@ -109,13 +110,10 @@ internal sealed class ProjectManagmentRoleService : IProjectManagmentRoleService
                 return userRoles;
             }
 
-            var exBuilder = new StringBuilder("Не удалось определить роли пользователя для модуля УП. " +
-                                              $"UserId: {userId}.");
-
-            if (projectId.HasValue)
-            {
-                exBuilder.AppendLine($"ProjectId: {projectId}");
-            }
+            var exBuilder = new InvalidOperationException("Не удалось определить роли пользователя для модуля УП. " +
+                                                          $"UserId: {userId}. " +
+                                                          $"ProjectId: {projectId}. " +
+                                                          $"CompanyId: {companyId}.");
 
             _logger?.LogInformation($"Не нашли роли пользователя: {userId} ни в кэше Redis, ни в БД...");
 
@@ -130,7 +128,7 @@ internal sealed class ProjectManagmentRoleService : IProjectManagmentRoleService
     }
 
     /// <inheritdoc />
-    public async Task UpdateRolesAsync(IEnumerable<ProjectManagementRoleInput> roles, string? token)
+    public async Task UpdateRolesAsync(IEnumerable<ProjectManagementRoleInput> roles, string account)
     {
         try
         {
@@ -138,6 +136,7 @@ internal sealed class ProjectManagmentRoleService : IProjectManagmentRoleService
             var projectManagementRoles = roles.AsList();
             await _projectManagmentRoleRepository.Value.UpdateRolesAsync(projectManagementRoles);
 
+            // TODO: Также нужно обновлять роли в БД, а не ио
             // Обновляем роли в кэше.
             foreach (var r in projectManagementRoles)
             {
@@ -157,8 +156,8 @@ internal sealed class ProjectManagmentRoleService : IProjectManagmentRoleService
                 // Иначе ищем в БД роли.
                 else
                 {
-                    var userRoles = (await _projectManagmentRoleRepository.Value.GetUserRolesAsync(r.UserId))
-                        ?.AsList();
+                    var userRoles = (await _projectManagmentRoleRepository.Value.GetUserRolesAsync(r.UserId, null,
+                        null))?.AsList();
 
                     if (userRoles is null || userRoles.Count <= 0)
                     {
@@ -179,12 +178,19 @@ internal sealed class ProjectManagmentRoleService : IProjectManagmentRoleService
                 }
             }
             
-            if (!string.IsNullOrEmpty(token))
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId <= 0)
             {
-                // Отправляем уведомление об изменении ролей фронту.
-                await _projectManagementNotificationService.Value.SendNotifySuccessUpdateRolesAsync("Все хорошо",
-                    "Роли успешно сохранены.", NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);   
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
             }
+            
+            var userCode = await _userRepository.GetUserCodeByUserIdAsync(userId);
+
+            await _hubNotificationService.Value.SendNotificationAsync("Все хорошо",
+                "Роли успешно сохранены.", NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS,
+                "SendNotifySuccessUpdateRoles", userCode, UserConnectionModuleEnum.ProjectManagement);
         }
         
         catch (Exception ex)

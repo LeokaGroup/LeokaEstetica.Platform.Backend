@@ -38,7 +38,7 @@ public class ProjectSettingUserOutput
     /// <summary>
     /// Дата последней авторизации на платформе.
     /// </summary>
-    public DateTime LastAutorization { get; set; }
+    public string? LastAutorization { get; set; }
 
     /// <summary>
     /// Признак владельца проекта.

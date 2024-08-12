@@ -23,5 +23,5 @@ public class ProjectInviteOutput
     /// <summary>
     /// Дата отправки приглашения.
     /// </summary>
-    public DateTime CreatedAt { get; set; }
+    public string? CreatedAt { get; set; }
 }

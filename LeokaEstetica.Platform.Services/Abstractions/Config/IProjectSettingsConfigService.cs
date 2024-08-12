@@ -22,8 +22,9 @@ public interface IProjectSettingsConfigService
 
     /// <summary>
     /// <param name="projectId">Id проекта. Если не передан, то будет перход в общее пространство.</param>
+    /// <param name="companyId">Id компании. Если не передан, то будет перход в общее пространство.</param>
     /// Необходимо для построения ссылки в рабочее пространство проекта.
     /// </summary>
     /// <returns>Выходная модель.</returns>
-    Task<ConfigSpaceSettingOutput> GetBuildProjectSpaceSettingsAsync(string account, long? projectId);
+    Task<ConfigSpaceSettingOutput> GetBuildProjectSpaceSettingsAsync(string account, long? projectId, long? companyId);
 }

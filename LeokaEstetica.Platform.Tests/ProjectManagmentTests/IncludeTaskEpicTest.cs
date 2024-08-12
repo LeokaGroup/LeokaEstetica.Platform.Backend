@@ -9,7 +9,7 @@ internal class IncludeTaskEpicTest : BaseServiceTest
     public async Task IncludeTaskEpicAsyncTest()
     {
         Assert.DoesNotThrowAsync(async () =>
-            await ProjectManagmentService.IncludeTaskEpicAsync(2, new[] { "TE-5" }, "sierra_93@mail.ru", string.Empty, 274));
+            await ProjectManagmentService.IncludeTaskEpicAsync(2, new[] { "TE-5" }, "sierra_93@mail.ru", 274));
 
         await Task.CompletedTask;
     }
