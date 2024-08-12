@@ -765,7 +765,7 @@ public class ProjectController : BaseController
 	/// <summary>
 	/// Метод обновляет видимость проекта
 	/// </summary>
-	/// <param name="projectId">Id проекта.</param>
+	/// <param name="UpdateVisibleProjectOutput">Входная модель.</param>
 	[HttpPatch]
 	[Route("visible-project")]
 	[ProducesResponseType(200)]

@@ -36,15 +36,12 @@ using LeokaEstetica.Platform.Services.Consts;
 using LeokaEstetica.Platform.Services.Strategies.Project.Team;
 using LeokaEstetica.Platform.Database.Abstractions.Config;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Project;
-using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Database.MongoDb.Abstractions;
 using LeokaEstetica.Platform.Integrations.Abstractions.Discord;
-using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Project;
-using LeokaEstetica.Platform.Models.Entities.Moderation;
 using LeokaEstetica.Platform.Models.Enums;
 using LeokaEstetica.Platform.Services.Helpers;
-using LeokaEstetica.Platform.Services.Strategies.Project.Team;
 using Microsoft.Extensions.Logging;
+using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo("LeokaEstetica.Platform.Tests")]
 
