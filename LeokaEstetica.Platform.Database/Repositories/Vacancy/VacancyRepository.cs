@@ -1,3 +1,6 @@
+using Dapper;
+using LeokaEstetica.Platform.Base.Abstractions.Connection;
+using LeokaEstetica.Platform.Base.Abstractions.Repositories.Base;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Core.Extensions;
@@ -7,7 +10,9 @@ using LeokaEstetica.Platform.Models.Dto.Input.Vacancy;
 using LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
 using LeokaEstetica.Platform.Models.Entities.Configs;
 using LeokaEstetica.Platform.Models.Entities.Vacancy;
+using LeokaEstetica.Platform.Models.Enums;
 using Microsoft.EntityFrameworkCore;
+using Enum = System.Enum;
 using IsolationLevel = System.Data.IsolationLevel;
 
 namespace LeokaEstetica.Platform.Database.Repositories.Vacancy;
@@ -15,7 +20,7 @@ namespace LeokaEstetica.Platform.Database.Repositories.Vacancy;
 /// <summary>
 /// Класс реализует методы репозитория вакансий. 
 /// </summary>
-internal sealed class VacancyRepository : IVacancyRepository
+internal sealed class VacancyRepository : BaseRepository, IVacancyRepository
 {
     private readonly PgContext _pgContext;
 
@@ -23,7 +28,8 @@ internal sealed class VacancyRepository : IVacancyRepository
     /// Конструктор.
     /// </summary>
     /// <param name="pgContext">Датаконтекст.</param>
-    public VacancyRepository(PgContext pgContext)
+    public VacancyRepository(PgContext pgContext,
+        IConnectionProvider connectionProvider) : base(connectionProvider)
     {
         _pgContext = pgContext;
     }
@@ -125,51 +131,6 @@ internal sealed class VacancyRepository : IVacancyRepository
                     UserId = cv.Vacancy.UserId
                 })
             .ToListAsync();
-
-        return result;
-    }
-    
-    /// <summary>
-    /// Метод получает список вакансий для каталога (без выгрузки в память).
-    /// </summary>
-    /// <returns>Список вакансий.</returns>
-    public async Task<IOrderedQueryable<CatalogVacancyOutput>> CatalogVacanciesWithoutMemoryAsync()
-    {
-        var result = (IOrderedQueryable<CatalogVacancyOutput>)(from cv in _pgContext.CatalogVacancies
-                join mv in _pgContext.ModerationVacancies
-                    on cv.VacancyId
-                    equals mv.VacancyId
-                    into table
-                from tbl in table.DefaultIfEmpty()
-                join v in _pgContext.UserVacancies
-                    on tbl.UserVacancy.VacancyId
-                    equals v.VacancyId
-                join us in _pgContext.UserSubscriptions
-                    on tbl.UserVacancy.UserId
-                    equals us.UserId
-                join s in _pgContext.Subscriptions
-                    on us.SubscriptionId
-                    equals s.ObjectId
-                where v.ArchivedVacancies.All(a => a.VacancyId != v.VacancyId)
-                      && !new[]
-                          {
-                              (int)VacancyModerationStatusEnum.ModerationVacancy,
-                              (int)VacancyModerationStatusEnum.RejectedVacancy
-                          }
-                          .Contains(tbl.ModerationStatusId)
-                orderby cv.Vacancy.DateCreated descending, s.ObjectId descending
-                select new CatalogVacancyOutput
-                {
-                    VacancyName = cv.Vacancy.VacancyName,
-                    DateCreated = cv.Vacancy.DateCreated,
-                    Employment = cv.Vacancy.Employment,
-                    Payment = cv.Vacancy.Payment,
-                    VacancyId = cv.Vacancy.VacancyId,
-                    VacancyText = cv.Vacancy.VacancyText,
-                    WorkExperience = cv.Vacancy.WorkExperience,
-                    UserId = cv.Vacancy.UserId
-                })
-            .AsQueryable();
 
         return result;
     }
@@ -506,15 +467,159 @@ internal sealed class VacancyRepository : IVacancyRepository
         return result;
     }
 
-    /// <summary>
-    /// Метод получает кол-во вакансий пользователя в каталоге.
-    /// </summary>
-    /// <param name="userId">Id пользователя.</param>
-    /// <returns>Кол-во вакансий в каталоге.</returns>
-    public async Task<long> GetUserVacanciesCatalogCountAsync(long userId)
+    /// <inheritdoc />
+    public async Task<IEnumerable<CatalogVacancyOutput>> FilterVacanciesAsync(FilterVacancyInput filters)
     {
-        var result = await _pgContext.CatalogVacancies
-            .CountAsync(p => p.Vacancy.UserId == userId);
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        // Если передали любой из фильтров сортировки.
+        var isNeedOrder = false;
+
+        var parameters = new DynamicParameters();
+
+        var query = "WITH cte_excluded_vacancies AS (SELECT \"VacancyId\" " +
+                    "FROM \"Moderation\".\"Vacancies\" " +
+                    "WHERE \"ModerationStatusId\" IN (2, 3, 7)), " +
+                    "cte_archived_vacancies AS (SELECT \"VacancyId\" " +
+                    "FROM \"Vacancies\".\"ArchivedVacancies\") " +
+                    "SELECT uv.\"VacancyName\", " +
+                    "uv.\"DateCreated\", " +
+                    "uv.\"Employment\", ";
+
+        query += Enum.Parse<FilterPayTypeEnum>(filters.Pay ?? string.Empty) == FilterPayTypeEnum.NotPay
+                 || filters.Employments?.Intersect(new List<FilterEmploymentTypeEnum>
+                 {
+                     FilterEmploymentTypeEnum.Full,
+                     FilterEmploymentTypeEnum.Partial,
+                     FilterEmploymentTypeEnum.ProjectWork
+                 }) is not null
+            ? "uv.\"Payment\", "
+            : "TO_CHAR(REPLACE(\"Payment\", ' ', '')::NUMERIC(12, 2), '99 999 999 999 999 990D99'), ";
+
+        query += "uv.\"VacancyId\", " +
+                 "uv.\"VacancyText\", " +
+                 "uv.\"WorkExperience\", " +
+                 "uv.\"UserId\" " +
+                 "FROM \"Vacancies\".\"CatalogVacancies\" AS cv " +
+                 "INNER JOIN \"Vacancies\".\"UserVacancies\" AS uv " +
+                 "ON cv.\"VacancyId\" = uv.\"VacancyId\" " +
+                 "WHERE NOT uv.\"VacancyId\" = ANY (SELECT \"VacancyId\" FROM cte_excluded_vacancies) " +
+                 "AND NOT uv.\"VacancyId\" = ANY (SELECT \"VacancyId\" FROM cte_archived_vacancies)";
+
+        // Если фильтр занятости = полная занятость.
+        if ((filters.Employments ?? new List<FilterEmploymentTypeEnum>()).Contains(FilterEmploymentTypeEnum.Full))
+        {
+            parameters.Add("@employment", FilterEmploymentTypeEnum.Full.GetEnumDescription());
+            query += " AND \"Employment\" = @employment";
+        }
+        
+        // Если фильтр занятости = частичная занятость.
+        if ((filters.Employments ?? new List<FilterEmploymentTypeEnum>()).Contains(FilterEmploymentTypeEnum.Partial))
+        {
+            parameters.Add("@employment", FilterEmploymentTypeEnum.Partial.GetEnumDescription());
+            query += " AND \"Employment\" = @employment";
+        }
+        
+        // Если фильтр занятости = проектная занятость.
+        if ((filters.Employments ?? new List<FilterEmploymentTypeEnum>()).Contains(FilterEmploymentTypeEnum
+                .ProjectWork))
+        {
+            parameters.Add("@employment", FilterEmploymentTypeEnum.ProjectWork.GetEnumDescription());
+            query += " AND \"Employment\" = @employment";
+        }
+        
+        // Если фильтр опыта работы более 6 лет.
+        if (Enum.Parse<FilterExperienceTypeEnum>(filters.Experience ?? string.Empty) ==
+            FilterExperienceTypeEnum.ManySix)
+        {
+            parameters.Add("@workExperience", FilterExperienceTypeEnum.ManySix.GetEnumDescription());
+            query += " AND \"WorkExperience\" = @workExperience";
+        }
+        
+        // Если фильтр опыта работы = нет опыта.
+        if (Enum.Parse<FilterExperienceTypeEnum>(filters.Experience ?? string.Empty) ==
+            FilterExperienceTypeEnum.NotExperience)
+        {
+            parameters.Add("@workExperience", FilterExperienceTypeEnum.NotExperience.GetEnumDescription());
+            query += " AND \"WorkExperience\" = @workExperience";
+        }
+        
+        // Если фильтр имеет тип оплаты = от 1 года до 3 лет.
+        if (Enum.Parse<FilterExperienceTypeEnum>(filters.Experience ?? string.Empty) ==
+            FilterExperienceTypeEnum.OneThree)
+        {
+            parameters.Add("@workExperience", FilterExperienceTypeEnum.OneThree.GetEnumDescription());
+            query += " AND \"WorkExperience\" = @workExperience";
+        }
+        
+        // Если фильтр опыта работы = от 3 до 6 лет.
+        if (Enum.Parse<FilterExperienceTypeEnum>(filters.Experience ?? string.Empty) ==
+            FilterExperienceTypeEnum.ThreeSix)
+        {
+            parameters.Add("@workExperience", FilterExperienceTypeEnum.ThreeSix.GetEnumDescription());
+            query += " AND \"WorkExperience\" = @workExperience";
+        }
+        
+        // Если фильтр опыта работы = не имеет значения.
+        if (Enum.Parse<FilterExperienceTypeEnum>(filters.Experience ?? string.Empty) ==
+            FilterExperienceTypeEnum.UnknownExperience)
+        {
+            parameters.Add("@workExperience", FilterExperienceTypeEnum.UnknownExperience.GetEnumDescription());
+            query += " AND \"WorkExperience\" = @workExperience";
+        }
+        
+        // Если фильтр имеет тип оплаты = без оплаты.
+        if (Enum.Parse<FilterPayTypeEnum>(filters.Pay ?? string.Empty) == FilterPayTypeEnum.NotPay)
+        {
+            parameters.Add("@payment", FilterPayTypeEnum.NotPay.GetEnumDescription());
+            query += " AND \"Payment\" = @payment";
+        }
+        
+        // Если фильтр имеет тип оплаты = есть оплата.
+        if (Enum.Parse<FilterPayTypeEnum>(filters.Pay ?? string.Empty) == FilterPayTypeEnum.Pay)
+        {
+            query += " AND \"Payment\" <> 'Без оплаты' " +
+                     "AND REPLACE(\"Payment\", ' ', '')::NUMERIC(12, 2) > 0";
+        }
+        
+        // Если фильтр не имеет тип оплаты (не имеет значения), то передаем следующему по цепочке.
+        if (Enum.Parse<FilterPayTypeEnum>(filters.Pay ?? string.Empty) == FilterPayTypeEnum.UnknownPay)
+        {
+            parameters.Add("@payment", FilterPayTypeEnum.UnknownPay.GetEnumDescription());
+            query += " AND \"Payment\" = @payment";
+        }
+
+        // Если фильтр по дате.
+        if (!isNeedOrder && Enum.Parse<FilterSalaryTypeEnum>(filters.Salary ?? string.Empty) ==
+            FilterSalaryTypeEnum.Date)
+        {
+            isNeedOrder = true;
+            query += " ORDER BY \"DateCreated\" DESC";
+        }
+        
+        // Если фильтр по возрастанию зарплаты.
+        if (!isNeedOrder && Enum.Parse<FilterSalaryTypeEnum>(filters.Salary ?? string.Empty) ==
+            FilterSalaryTypeEnum.AscSalary)
+        {
+            isNeedOrder = true;
+            
+            // Исключаем без оплаты, так как это помешает сортировке по цене.
+            query += " AND \"Payment\" <> 'Без оплаты' " +
+                     "ORDER BY REPLACE(\"Payment\", ' ', '')::NUMERIC(12, 2)";
+        }
+        
+        // Если фильтр по возрастанию зарплаты.
+        if (!isNeedOrder && Enum.Parse<FilterSalaryTypeEnum>(filters.Salary ?? string.Empty) ==
+            FilterSalaryTypeEnum.DescSalary)
+        {
+            isNeedOrder = true;
+            
+            // Исключаем без оплаты, так как это помешает сортировке по цене.
+            query += " AND \"Payment\" <> 'Без оплаты' " +
+                     "ORDER BY REPLACE(\"Payment\", ' ', '')::NUMERIC(12, 2) DESC";
+        }
+
+        var result = await connection.QueryAsync<CatalogVacancyOutput>(query, parameters);
 
         return result;
     }

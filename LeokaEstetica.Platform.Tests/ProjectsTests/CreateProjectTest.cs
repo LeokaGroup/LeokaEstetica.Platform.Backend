@@ -19,10 +19,10 @@ internal class CreateProjectTest : BaseServiceTest
 
     private CreateProjectInput CreateProjectInputFactory()
     {
-        var result = new CreateProjectInput("Тестовый проект 3", "Это просто тестовый проект", null, ProjectStageEnum.Concept.ToString(), null)
+        var result = new CreateProjectInput("Тестовый проект 3", "Это просто тестовый проект", null,
+            ProjectStageEnum.Concept.ToString(), null)
         {
             Account = "sierra_93@mail.ru",
-            Token = string.Empty,
             Conditions = "Тестовые требования",
             Demands = "Тестовые условия"
         };

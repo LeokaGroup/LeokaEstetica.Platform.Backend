@@ -219,7 +219,7 @@ public class TicketController : BaseController
             return;
         }
 
-        await _ticketService.CloseTicketAsync(ticketId, GetUserName(), GetTokenFromHeader());
+        await _ticketService.CloseTicketAsync(ticketId, GetUserName());
     }
 
     /// <summary>

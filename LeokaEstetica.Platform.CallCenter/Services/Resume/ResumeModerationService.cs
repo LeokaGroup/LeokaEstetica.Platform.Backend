@@ -9,6 +9,7 @@ using LeokaEstetica.Platform.Database.Abstractions.Moderation.Resume;
 using LeokaEstetica.Platform.Models.Dto.Input.Moderation;
 using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Resume;
 using LeokaEstetica.Platform.Models.Entities.Moderation;
+using LeokaEstetica.Platform.Models.Enums;
 using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Notifications.Consts;
 using Microsoft.Extensions.Logging;
@@ -24,7 +25,7 @@ public class ResumeModerationService : IResumeModerationService
     private readonly IResumeModerationRepository _resumeModerationRepository;
     private readonly IMapper _mapper;
     private readonly IUserRepository _userRepository;
-    private readonly IResumeModerationNotificationService _resumeModerationNotificationService;
+    private readonly Lazy<IHubNotificationService> _hubNotificationService;
 
     /// <summary>
     /// Конструктор.
@@ -32,18 +33,18 @@ public class ResumeModerationService : IResumeModerationService
     /// <param name="logger">Сервис логера.</param>
     /// <param name="resumeModerationRepository">Репозиторий анкет.</param>
     /// <param name="mapper">Автомаппер.</param>
-    /// <param name="userRepository">Репозиторий пользователя..</param>
+    /// <param name="hubNotificationService">Сервис уведомлений хабов.</param>
     public ResumeModerationService(ILogger<ResumeModerationService> logger, 
         IResumeModerationRepository resumeModerationRepository, 
         IMapper mapper, 
-        IUserRepository userRepository, 
-        IResumeModerationNotificationService resumeModerationNotificationService)
+        IUserRepository userRepository,
+        Lazy<IHubNotificationService> hubNotificationService)
     {
         _logger = logger;
         _resumeModerationRepository = resumeModerationRepository;
         _mapper = mapper;
         _userRepository = userRepository;
-        _resumeModerationNotificationService = resumeModerationNotificationService;
+        _hubNotificationService = hubNotificationService;
     }
 
     #region Публичные методы.
@@ -115,10 +116,9 @@ public class ResumeModerationService : IResumeModerationService
     /// </summary>
     /// <param name="createResumeRemarkInput">Входная модель.</param>
     /// <param name="account">Аккаунт.</param>
-    /// <param name="token">Токен.</param>
     /// <returns>Список замечаний анкет.</returns>
     public async Task<IEnumerable<ResumeRemarkEntity>> CreateResumeRemarksAsync(
-        CreateResumeRemarkInput createResumeRemarkInput, string account, string token)
+        CreateResumeRemarkInput createResumeRemarkInput, string account)
     {
         try
         {
@@ -204,14 +204,13 @@ public class ResumeModerationService : IResumeModerationService
             }
 
             var result = addResumeRemarks.Union(updateResumeRemarks);
+            
+            var userCode = await _userRepository.GetUserCodeByUserIdAsync(userId);
 
-            if (!string.IsNullOrEmpty(token))
-            {
-                // Отправляем уведомление о сохранении замечаний анкеты.
-                await _resumeModerationNotificationService.SendNotificationSuccessCreateResumeRemarksAsync(
-                    "Все хорошо", "Замечания успешно внесены. Теперь вы можете их отправить.",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);
-            }
+            await _hubNotificationService.Value.SendNotificationAsync("Все хорошо",
+                "Замечания успешно внесены. Теперь вы можете их отправить.",
+                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, "SendNotificationSuccessCreateResumeRemarks",
+                userCode, UserConnectionModuleEnum.Main);
 
             return result;
         }
@@ -227,9 +226,8 @@ public class ResumeModerationService : IResumeModerationService
     /// Метод отправляет замечания вакансии владельцу анкеты.
     /// Отправка замечаний вакансии подразумевает просто изменение статуса замечаниям анкеты.
     /// <param name="profileInfoId">Id анкеты.</param>
-    /// <param name="token">Токен.</param>
     /// </summary>
-    public async Task SendResumeRemarksAsync(long profileInfoId, string token)
+    public async Task SendResumeRemarksAsync(long profileInfoId, string? account)
     {
         try
         {
@@ -241,33 +239,36 @@ public class ResumeModerationService : IResumeModerationService
             
             // Проверяем, были ли внесены замечания анкеты.
             var isExists = await _resumeModerationRepository.CheckResumeRemarksAsync(profileInfoId);
+            
+            var userId = await _userRepository.GetUserIdByEmailOrLoginAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+            
+            var userCode = await _userRepository.GetUserCodeByUserIdAsync(userId);
 
             if (!isExists)
             {
                 var ex = new InvalidOperationException(RemarkConst.SEND_PROJECT_REMARKS_WARNING +
                                                        $" ProfileInfoId: {profileInfoId}");
                 _logger.LogWarning(ex, ex.Message);
-                
-                if (!string.IsNullOrEmpty(token))
-                {
-                    // Отправляем уведомление о предупреждении, что замечания анкеты не были внесены.
-                    await _resumeModerationNotificationService.SendNotificationWarningSendResumeRemarksAsync(
-                        "Внимание", RemarkConst.SEND_PROJECT_REMARKS_WARNING,
-                        NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
-                }
+
+                await _hubNotificationService.Value.SendNotificationAsync("Внимание",
+                    RemarkConst.SEND_PROJECT_REMARKS_WARNING,
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, "SendNotificationWarningSendResumeRemarks",
+                    userCode, UserConnectionModuleEnum.Main);
 
                 return;
             }
 
-            await _resumeModerationRepository.SendResumeRemarksAsync(profileInfoId);   
-            
-            if (!string.IsNullOrEmpty(token))
-            {
-                // Отправляем уведомление об отправке замечаний анкеты.
-                await _resumeModerationNotificationService.SendNotificationSuccessSendResumeRemarksAsync(
-                    "Все хорошо", "Замечания успешно отправлены.",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);
-            }
+            await _resumeModerationRepository.SendResumeRemarksAsync(profileInfoId);
+
+            await _hubNotificationService.Value.SendNotificationAsync("Все хорошо", "Замечания успешно отправлены.",
+                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, "SendNotificationSuccessSendResumeRemarks",
+                userCode, UserConnectionModuleEnum.Main);
         }
         
         catch (Exception ex)

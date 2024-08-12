@@ -23,6 +23,7 @@ public class DatabaseMigrator
                 s => s.StartsWith(string.Join('.', assemblyName, "Scripts"),
                     StringComparison.InvariantCultureIgnoreCase))
             .JournalToPostgresqlTable("public", "schemaversions")
+            .WithVariablesDisabled()
             .LogToConsole()
             .Build();
 

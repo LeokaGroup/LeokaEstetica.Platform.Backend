@@ -18,6 +18,7 @@ using LeokaEstetica.Platform.Models.Dto.Input.Commerce;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce.Base.Output;
 using LeokaEstetica.Platform.Models.Dto.Output.FareRule;
+using LeokaEstetica.Platform.Models.Enums;
 using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Notifications.Consts;
 using LeokaEstetica.Platform.Processing.Abstractions.Commerce;
@@ -28,6 +29,7 @@ using LeokaEstetica.Platform.Processing.Strategies.PaymentSystem;
 using LeokaEstetica.Platform.Redis.Abstractions.Commerce;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using Enum = System.Enum;
 
 [assembly: InternalsVisibleTo("LeokaEstetica.Platform.Tests")]
 
@@ -46,12 +48,12 @@ internal sealed class CommerceService : ICommerceService
     private readonly IOrdersRepository _ordersRepository;
     private readonly ISubscriptionRepository _subscriptionRepository;
     private readonly IAccessUserService _accessUserService;
-    private readonly IAccessUserNotificationsService _accessUserNotificationsService;
     private readonly IGlobalConfigRepository _globalConfigRepository;
     private readonly IPayMasterService _payMasterService;
     private readonly IMapper _mapper;
     private readonly IYandexKassaService _yandexKassaService;
     private readonly Lazy<IDiscordService> _discordService;
+    private readonly Lazy<IHubNotificationService> _hubNotificationService;
 
     /// <summary>
     /// Конструктор.
@@ -65,12 +67,12 @@ internal sealed class CommerceService : ICommerceService
     /// <param name="commerceService">Сервис коммерции.</param>
     /// <param name="commerceService">Сервис проверки лимитов.</param>
     /// <param name="accessUserService">Сервис доступа пользователей.</param>
-    /// <param name="accessUserNotificationsService">Сервис уведомлений доступа пользователей.</param>
     /// <param name="globalConfigRepository">Репозиторий глобал конфига.</param>
     /// <param name="payMasterService">Сервис платежной системы PayMaster.</param>
     /// <param name="mapper">Автомаппер.</param>
     /// <param name="yandexKassaService">Сервис ЮKassa.</param>
     /// <param name="discordService">Сервис уведомлений дискорда.</param>
+    /// <param name="hubNotificationService">Сервис уведомлений хабов.</param>
     /// </summary>
     public CommerceService(ICommerceRedisService commerceRedisService,
         ILogger<CommerceService> logger,
@@ -80,12 +82,12 @@ internal sealed class CommerceService : ICommerceService
         IOrdersRepository ordersRepository,
         ISubscriptionRepository subscriptionRepository,
         IAccessUserService accessUserService,
-        IAccessUserNotificationsService accessUserNotificationsService,
         IGlobalConfigRepository globalConfigRepository,
         IPayMasterService payMasterService,
         IMapper mapper,
         IYandexKassaService yandexKassaService,
-        Lazy<IDiscordService> discordService)
+        Lazy<IDiscordService> discordService,
+        Lazy<IHubNotificationService> hubNotificationService)
     {
         _commerceRedisService = commerceRedisService;
         _logger = logger;
@@ -95,12 +97,12 @@ internal sealed class CommerceService : ICommerceService
         _ordersRepository = ordersRepository;
         _subscriptionRepository = subscriptionRepository;
         _accessUserService = accessUserService;
-        _accessUserNotificationsService = accessUserNotificationsService;
         _globalConfigRepository = globalConfigRepository;
         _payMasterService = payMasterService;
         _mapper = mapper;
         _yandexKassaService = yandexKassaService;
         _discordService = discordService;
+        _hubNotificationService = hubNotificationService;
     }
 
     #region Публичные методы.
@@ -332,9 +334,8 @@ internal sealed class CommerceService : ICommerceService
     /// Если не заполнена, то нельзя оформить заказ.
     /// </summary>
     /// <param name="account">Аккаунт пользователя.</param>
-    /// <param name="token">Токен пользователя.</param>
     /// <returns>Признак результата проверки. False - Анкета заполнена. True - не заполнена.</returns>
-    public async Task<bool> IsProfileEmptyAsync(string account, string token)
+    public async Task<bool> IsProfileEmptyAsync(string account)
     {
         var userId = await _userRepository.GetUserByEmailAsync(account);
 
@@ -352,9 +353,11 @@ internal sealed class CommerceService : ICommerceService
             // Если не заполнена, то не даем оформить платный тариф.
             if (isEmptyProfile)
             {
-                await _accessUserNotificationsService.SendNotificationWarningEmptyUserProfileAsync("Внимание",
+                var userCode = await _userRepository.GetUserCodeByUserIdAsync(userId);
+                await _hubNotificationService.Value.SendNotificationAsync("Внимание",
                     "Для оформления тарифа должна быть заполнена информация вашей анкеты.",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, "SendNotificationWarningEmptyUserProfile",
+                    userCode, UserConnectionModuleEnum.Processing);
 
                 return true;
             }
@@ -374,9 +377,8 @@ internal sealed class CommerceService : ICommerceService
     /// </summary>
     /// <param name="publicId">Публичный ключ тарифа.</param>
     /// <param name="account">Аккаунт.</param>
-    /// <param name="token">Токен пользователя.</param>
     /// <returns>Данные платежа.</returns>
-    public async Task<ICreateOrderOutput> CreateOrderAsync(Guid publicId, string account, string token)
+    public async Task<ICreateOrderOutput> CreateOrderAsync(Guid publicId, string account)
     {
         try
         {
@@ -396,11 +398,11 @@ internal sealed class CommerceService : ICommerceService
             var order = systemType switch
             {
                 PaymentSystemEnum.Yandex => await paymentSystemJob.CreateOrderAsync(
-                    new YandexKassaStrategy(_yandexKassaService), publicId, account, token),
+                    new YandexKassaStrategy(_yandexKassaService), publicId, account),
 
                 // TODO: Не используется (в будущем возможно будет).
                 PaymentSystemEnum.PayMaster => await paymentSystemJob.CreateOrderAsync(
-                    new PayMasterStrategy(_payMasterService), publicId, account, token),
+                    new PayMasterStrategy(_payMasterService), publicId, account),
 
                 _ => throw new InvalidOperationException("Неизвестный тип платежной системы.")
             };
