@@ -85,8 +85,8 @@ public class CommerceController : BaseController
             throw ex;
         }
 
-        var result = await _commerceService.CreateOrderAsync(createOrderInput.PublicId, GetUserName(),
-            GetTokenFromHeader()) as CreateOrderYandexKassaOutput;
+        var result = await _commerceService.CreateOrderAsync(createOrderInput.PublicId, GetUserName())
+            as CreateOrderYandexKassaOutput;
 
         return result ??
                throw new InvalidOperationException($"Ошибка при касте к типу {nameof(CreateOrderYandexKassaOutput)}");
@@ -189,7 +189,7 @@ public class CommerceController : BaseController
     [ProducesResponseType(404)]
     public async Task<bool> IsProfileEmptyAsync()
     {
-        var result = await _commerceService.IsProfileEmptyAsync(GetUserName(), GetTokenFromHeader());
+        var result = await _commerceService.IsProfileEmptyAsync(GetUserName());
 
         return result;
     }

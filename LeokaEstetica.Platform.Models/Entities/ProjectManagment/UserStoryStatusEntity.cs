@@ -1,6 +1,7 @@
 namespace LeokaEstetica.Platform.Models.Entities.ProjectManagment;
 
 /// <summary>
+/// TODO: Выпилить и заменить на DTO.
 /// Класс сопоставляется с табюлицей статусов историй.
 /// </summary>
 public class UserStoryStatusEntity

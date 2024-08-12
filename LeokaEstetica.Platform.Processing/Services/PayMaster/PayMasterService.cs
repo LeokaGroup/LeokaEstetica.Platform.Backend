@@ -18,8 +18,6 @@ using LeokaEstetica.Platform.Models.Dto.Input.Commerce.PayMaster;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce.Base.Output;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce.PayMaster;
 using LeokaEstetica.Platform.Models.Dto.Output.Refunds;
-using LeokaEstetica.Platform.Notifications.Abstractions;
-using LeokaEstetica.Platform.Notifications.Consts;
 using LeokaEstetica.Platform.Processing.Abstractions.PayMaster;
 using LeokaEstetica.Platform.Processing.Consts;
 using LeokaEstetica.Platform.Processing.Enums;
@@ -46,7 +44,6 @@ internal sealed class PayMasterService : IPayMasterService
     private readonly IUserRepository _userRepository;
     private readonly ICommerceRepository _commerceRepository;
     private readonly IAccessUserService _accessUserService;
-    private readonly IAccessUserNotificationsService _accessUserNotificationsService;
     private readonly ICommerceRedisService _commerceRedisService;
     private readonly IRabbitMqService _rabbitMqService;
     private readonly IMapper _mapper;
@@ -71,8 +68,7 @@ internal sealed class PayMasterService : IPayMasterService
         IConfiguration configuration,
         IUserRepository userRepository,
         ICommerceRepository commerceRepository, 
-        IAccessUserService accessUserService, 
-        IAccessUserNotificationsService accessUserNotificationsService, 
+        IAccessUserService accessUserService,
         ICommerceRedisService commerceRedisService, 
         IRabbitMqService rabbitMqService, 
         IMapper mapper,
@@ -84,7 +80,6 @@ internal sealed class PayMasterService : IPayMasterService
         _userRepository = userRepository;
         _commerceRepository = commerceRepository;
         _accessUserService = accessUserService;
-        _accessUserNotificationsService = accessUserNotificationsService;
         _commerceRedisService = commerceRedisService;
         _rabbitMqService = rabbitMqService;
         _mapper = mapper;
@@ -99,9 +94,8 @@ internal sealed class PayMasterService : IPayMasterService
     /// </summary>
     /// <param name="publicId">Публичный ключ тарифа.</param>
     /// <param name="account">Аккаунт.</param>
-    /// <param name="token">Токен пользователя.</param>
     /// <returns>Данные платежа.</returns>
-    public async Task<ICreateOrderOutput> CreateOrderAsync(Guid publicId, string account, string token)
+    public async Task<ICreateOrderOutput> CreateOrderAsync(Guid publicId, string account)
     {
         try
         {
@@ -115,12 +109,12 @@ internal sealed class PayMasterService : IPayMasterService
             {
                 var ex = new InvalidOperationException($"Анкета пользователя не заполнена. UserId был: {userId}");
 
-                if (!string.IsNullOrEmpty(token))
-                {
-                    await _accessUserNotificationsService.SendNotificationWarningEmptyUserProfileAsync("Внимание",
-                        "Для покупки тарифа должна быть заполнена информация вашей анкеты.",
-                        NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);   
-                }
+                // if (!string.IsNullOrEmpty(token))
+                // {
+                //     await _accessUserNotificationsService.SendNotificationWarningEmptyUserProfileAsync("Внимание",
+                //         "Для покупки тарифа должна быть заполнена информация вашей анкеты.",
+                //         NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);   
+                // }
 
                 throw ex;
             }

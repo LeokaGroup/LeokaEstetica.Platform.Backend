@@ -1,5 +1,6 @@
 using System.Runtime.CompilerServices;
 using AutoMapper;
+using Dapper;
 using LeokaEstetica.Platform.Access.Abstractions.User;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.Core.Enums;
@@ -11,6 +12,7 @@ using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Resume;
 using LeokaEstetica.Platform.Models.Dto.Output.Profile;
 using LeokaEstetica.Platform.Models.Entities.Moderation;
 using LeokaEstetica.Platform.Models.Entities.Profile;
+using LeokaEstetica.Platform.Models.Enums;
 using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Notifications.Consts;
 using LeokaEstetica.Platform.Redis.Abstractions.Profile;
@@ -34,10 +36,10 @@ internal sealed class ProfileService : IProfileService
     private readonly IUserRepository _userRepository;
     private readonly IMapper _mapper;
     private readonly IProfileRedisService _profileRedisService;
-    private readonly INotificationsService _notificationsService;
     private readonly IAccessUserService _accessUserService;
     private readonly IResumeModerationRepository _resumeModerationRepository;
     private readonly IDiscordService _discordService;
+    private readonly Lazy<IHubNotificationService> _hubNotificationService;
 
     /// <summary>
     /// Конструктор.
@@ -47,29 +49,29 @@ internal sealed class ProfileService : IProfileService
     /// <param name="userRepository">Репозиторий пользователя.</param>
     /// <param name="mapper">Автомаппер.</param>
     /// <param name="profileRedisService">Сервис кэша.</param>
-    /// <param name="notificationsService">Сервис уведомлений.</param>
     /// <param name="accessUserService">Сервис доступа пользователей.</param>
     /// <param name="resumeModerationRepository">Репозиторий модерации анкет.</param>
     /// <param name="discordService">Сервис уведомлений дискорда.</param>
+    /// <param name="hubNotificationService">Сервис уведомлений хабов.</param>
     public ProfileService(ILogger<ProfileService> logger,
         IProfileRepository profileRepository,
         IUserRepository userRepository,
         IMapper mapper,
         IProfileRedisService profileRedisService,
-        INotificationsService notificationsService,
         IAccessUserService accessUserService,
         IResumeModerationRepository resumeModerationRepository,
-        IDiscordService discordService)
+        IDiscordService discordService,
+        Lazy<IHubNotificationService> hubNotificationService)
     {
         _logger = logger;
         _profileRepository = profileRepository;
         _userRepository = userRepository;
         _mapper = mapper;
         _profileRedisService = profileRedisService;
-        _notificationsService = notificationsService;
         _accessUserService = accessUserService;
         _resumeModerationRepository = resumeModerationRepository;
         _discordService = discordService;
+        _hubNotificationService = hubNotificationService;
     }
 
     /// <summary>
@@ -238,10 +240,8 @@ internal sealed class ProfileService : IProfileService
     /// </summary>
     /// <param name="profileInfoInput">Входная модель.</param>
     /// <param name="account">ккаунт пользователя.</param>
-    /// <param name="token">Токен пользователя.</param>
     /// <returns>Сохраненные данные.</returns>
-    public async Task<ProfileInfoOutput> SaveProfileInfoAsync(ProfileInfoInput profileInfoInput, string account,
-        string token)
+    public async Task<ProfileInfoOutput> SaveProfileInfoAsync(ProfileInfoInput profileInfoInput, string account)
     {
         try
         {
@@ -285,13 +285,11 @@ internal sealed class ProfileService : IProfileService
             
             // Сохраняем выбранные цели пользователя.
             await SaveUserIntentsAsync(profileInfoInput, userId);
-
-            if (!string.IsNullOrEmpty(token))
-            {
-                // Отправляем уведомление о сохранении фронту.
-                await _notificationsService.SendNotifySuccessSaveAsync("Все хорошо", "Данные успешно сохранены.",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);   
-            }
+            
+            var userCode = await _userRepository.GetUserCodeByUserIdAsync(userId);
+            await _hubNotificationService.Value.SendNotificationAsync("Все хорошо", "Данные успешно сохранены.",
+                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, "SendNotifySuccessSave", userCode,
+                UserConnectionModuleEnum.Main);
 
             // Снова логиним юзера, так как почта изменилась а значит и токен надо менять.
             if (savedProfileInfoData.IsEmailChanged)
@@ -423,7 +421,7 @@ internal sealed class ProfileService : IProfileService
                         Label = i.Label,
                         Url = i.Url,
                     })
-                    .ToList()
+                    .AsList()
             }))
         };
 
