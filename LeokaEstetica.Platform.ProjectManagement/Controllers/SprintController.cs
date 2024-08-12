@@ -149,7 +149,7 @@ public class SprintController : BaseController
             throw ex;
         }
 
-        await _projectManagmentService.PlaningSprintAsync(planingSprintInput, GetUserName(), CreateTokenFromHeader());
+        await _projectManagmentService.PlaningSprintAsync(planingSprintInput, GetUserName());
     }
 
     /// <summary>
@@ -348,8 +348,7 @@ public class SprintController : BaseController
             throw ex;
         }
 
-        await _sprintService.StartSprintAsync(sprintInput.ProjectSprintId, sprintInput.ProjectId, GetUserName(),
-            CreateTokenFromHeader());
+        await _sprintService.StartSprintAsync(sprintInput.ProjectSprintId, sprintInput.ProjectId, GetUserName());
     }
 
     /// <summary>
@@ -388,8 +387,7 @@ public class SprintController : BaseController
             throw ex;
         }
 
-        var result = await _sprintService.ManualCompleteSprintAsync(sprintInput, GetUserName(),
-            CreateTokenFromHeader());
+        var result = await _sprintService.ManualCompleteSprintAsync(sprintInput, GetUserName());
 
         return result;
     }

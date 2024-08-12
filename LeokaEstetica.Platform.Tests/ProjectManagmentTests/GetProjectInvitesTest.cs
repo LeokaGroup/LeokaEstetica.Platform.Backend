@@ -8,7 +8,7 @@ internal class GetProjectInvitesTest : BaseServiceTest
     [Test]
     public async Task GetProjectInvitesAsyncTest()
     {
-        var result = await ProjectManagementSettingsService.GetProjectInvitesAsync(274);
+        var result = await ProjectManagementSettingsService.GetProjectInvitesAsync(274, "sierra_93@mail.ru");
         
         Assert.NotNull(result);
     }

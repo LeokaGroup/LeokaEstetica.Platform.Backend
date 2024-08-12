@@ -8,7 +8,7 @@ internal class WriteProjectResponseTest : BaseServiceTest
     [Test]
     public async Task WriteProjectResponseAsyncTest()
     {
-        var result = await ProjectService.WriteProjectResponseAsync(55, 2, "sierra_93@mail.ru", string.Empty);
+        var result = await ProjectService.WriteProjectResponseAsync(55, 2, "sierra_93@mail.ru");
 
         Assert.NotNull(result);
     }

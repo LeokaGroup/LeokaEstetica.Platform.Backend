@@ -45,7 +45,7 @@ public class RefundsController : BaseController
     [ProducesResponseType(404)]
     public async Task<CalculateRefundOutput> CalculateRefundAsync()
     {
-        var result = await _refundsService.CalculateRefundAsync(GetUserName(), CreateTokenFromHeader());
+        var result = await _refundsService.CalculateRefundAsync(GetUserName());
 
         return result;
     }
@@ -65,7 +65,7 @@ public class RefundsController : BaseController
     public async Task<RefundOutput> CreateRefundAsync([FromBody] CreateRefundInput createRefundInput)
     {
         var refund = await _refundsService.CreateRefundAsync(createRefundInput.OrderId, createRefundInput.Price,
-            GetUserName(), CreateTokenFromHeader());
+            GetUserName());
         
         var result = _mapper.Map<RefundOutput>(refund);
 
