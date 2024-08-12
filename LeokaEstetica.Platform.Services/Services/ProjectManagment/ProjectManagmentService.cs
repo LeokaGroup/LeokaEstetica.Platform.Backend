@@ -811,7 +811,22 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 await _projectManagmentRepository.CreateProjectTaskAsync(addedProjectTask);
 
                 transactionScope.Complete();
-                
+
+                // Уведомление об успешном создании/ошибки задачи
+                if (addedProjectTask.TaskStatusId == (int)SearchAgileObjectTypeEnum.Task)
+                {
+					await _hubNotificationService.Value.SendNotificationAsync("Все хорошо",
+				        $"Задача успешно создана.",
+				        NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, "SendNotifySuccessProjectTask",
+				        userCode, UserConnectionModuleEnum.ProjectManagement);
+				}
+                else if (addedProjectTask.TaskStatusId == (int)SearchAgileObjectTypeEnum.Error)
+                {
+					await _hubNotificationService.Value.SendNotificationAsync("Внимание",
+						$"Ошибка в задаче",
+						NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, "SendNotifyErroreProjectTask",
+						userCode, UserConnectionModuleEnum.ProjectManagement);
+				}
                 return result;
             }
             
@@ -830,8 +845,14 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 await _projectManagmentRepository.CreateProjectEpicAsync(addedProjectEpic);
                 
                 transactionScope.Complete();
-                
-                return result;
+
+				// Уведомление об успешном создании эпика
+				await _hubNotificationService.Value.SendNotificationAsync("Все хорошо",
+						$"Эпик успешно создан.",
+						NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, "SendNotifySuccessProjectEpic",
+						userCode, UserConnectionModuleEnum.ProjectManagement);
+
+				return result;
             }
             
             // Если идет создание истории/требования.
@@ -849,8 +870,14 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 await _projectManagmentRepository.CreateProjectUserStoryAsync(addedProjectUserStory);
                 
                 transactionScope.Complete();
-                
-                return result;
+
+
+				// Уведомление об успешном создании истории
+				await _hubNotificationService.Value.SendNotificationAsync("Все хорошо",
+						$"История успешно создан.",
+						NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, "SendNotifySuccessProjectStory",
+						userCode, UserConnectionModuleEnum.ProjectManagement);
+				return result;
             }
 
             return result;
