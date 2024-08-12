@@ -57,8 +57,7 @@ public interface ITicketService
     /// Метод закрывает тикет (идет проставление статуса тикета "Закрыт").
     /// </summary>
     /// <param name="closeTicketInput">Входная модель.</param>
-    /// <param name="token">Токен.</param>
-    Task CloseTicketAsync(long ticketId, string account, string token);
+    Task CloseTicketAsync(long ticketId, string account);
 
     /// <summary>
     /// Метод создает предложение/пожелание.

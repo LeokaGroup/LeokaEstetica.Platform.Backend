@@ -803,4 +803,19 @@ public interface IProjectManagmentRepository
     /// <returns>Словарь со статусами.</returns>
     Task<IDictionary<long, ProjectTaskTypeOutput>> GetProjectStoryStatusesAsync(long projectId,
         IEnumerable<long> projectTaskIds);
+    
+    /// <summary>
+    /// Метод получает раб.пространство проекта.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Раб.пространство проекта.</returns>
+    Task<WorkSpaceOutput> GetWorkSpaceByProjectIdAsync(long projectId, long userId);
+
+    /// <summary>
+    /// Метод получает список Id документов по Id проекта, которые в MongoDB.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>список Id документов в MongoDB.</returns>
+    Task<IEnumerable<string>> GetProjectMongoDocumentIdsByProjectIdAsync(long projectId);
 }

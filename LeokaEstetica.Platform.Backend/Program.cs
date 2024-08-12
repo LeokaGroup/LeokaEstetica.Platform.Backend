@@ -12,9 +12,10 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using MongoDB.Driver;
 using NLog.Web;
 using Quartz;
-
+ 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
 
@@ -172,6 +173,9 @@ builder.Host.UseNLog();
 
 // Регистрируем IHttpClientFactory.
 builder.Services.AddHttpClient();
+
+builder.Services.AddSingleton(new MongoClient(configuration["MongoDb:FullHost"])
+    .GetDatabase(configuration["MongoDb:DatabaseName"]));
 
 // builder.Services.AddProblemDetails();
 

@@ -12,14 +12,15 @@ public interface IProjectManagmentRoleService
     /// Метод получает список ролей пользователя.
     /// </summary>
     /// <param name="account">Аккаунт.</param>
-    /// <param name="projectId">Id проекта, если передали.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="companyId">Id компании.</param>
     /// <returns>Список ролей.</returns>
-    Task<IEnumerable<ProjectManagementRoleOutput>> GetUserRolesAsync(string account, long? projectId = null);
+    Task<IEnumerable<ProjectManagementRoleOutput>> GetUserRolesAsync(string account, long projectId, long companyId);
 
     /// <summary>
     /// Метод обновляет роли пользователей.
     /// </summary>
     /// <param name="roles">Список ролей к обновлению.</param>
-    /// <param name="token">Токен.</param>
-    Task UpdateRolesAsync(IEnumerable<ProjectManagementRoleInput> roles, string? token);
+    /// <param name="account">Аккаунт.</param>
+    Task UpdateRolesAsync(IEnumerable<ProjectManagementRoleInput> roles, string account);
 }

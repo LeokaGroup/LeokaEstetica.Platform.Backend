@@ -109,11 +109,10 @@ public class ProjectController : BaseController
 		{
 			result.Errors = await _validationExcludeErrorsService.ExcludeAsync(validator.Errors);
 
-			return result;
-		}
-
-		createProjectInput.Account = GetUserName();
-		createProjectInput.Token = CreateTokenFromHeader();
+            return result;
+        }
+        
+        createProjectInput.Account = GetUserName();
 
 		var project = await _projectService.CreateProjectAsync(createProjectInput);
 
@@ -184,8 +183,7 @@ public class ProjectController : BaseController
 			return result;
 		}
 
-		updateProjectInput.Account = GetUserName();
-		updateProjectInput.Token = CreateTokenFromHeader();
+        updateProjectInput.Account = GetUserName();
 
 		result = await _projectService.UpdateProjectAsync(updateProjectInput);
 
@@ -240,21 +238,21 @@ public class ProjectController : BaseController
 		return result;
 	}
 
-	/// <summary>
-	/// Метод получает список вакансий проекта. Список вакансий, которые принадлежат владельцу проекта.
-	/// </summary>
-	/// <param name="projectId">Id проекта, вакансии которого нужно получить.</param>
-	/// <returns>Список вакансий.</returns>
-	[HttpGet]
-	[Route("vacancies")]
-	[ProducesResponseType(200, Type = typeof(ProjectVacancyResultOutput))]
-	[ProducesResponseType(400)]
-	[ProducesResponseType(403)]
-	[ProducesResponseType(500)]
-	[ProducesResponseType(404)]
-	public async Task<ProjectVacancyResultOutput> ProjectVacanciesAsync([FromQuery] long projectId)
-	{
-		var result = await _projectService.ProjectVacanciesAsync(projectId, GetUserName(), CreateTokenFromHeader());
+    /// <summary>
+    /// Метод получает список вакансий проекта. Список вакансий, которые принадлежат владельцу проекта.
+    /// </summary>
+    /// <param name="projectId">Id проекта, вакансии которого нужно получить.</param>
+    /// <returns>Список вакансий.</returns>
+    [HttpGet]
+    [Route("vacancies")]
+    [ProducesResponseType(200, Type = typeof(ProjectVacancyResultOutput))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<ProjectVacancyResultOutput> ProjectVacanciesAsync([FromQuery] long projectId)
+    {
+        var result = await _projectService.ProjectVacanciesAsync(projectId, GetUserName());
 
 		return result;
 	}
@@ -284,8 +282,7 @@ public class ProjectController : BaseController
 			return result;
 		}
 
-		createProjectVacancyInput.Account = GetUserName();
-		createProjectVacancyInput.Token = CreateTokenFromHeader();
+        createProjectVacancyInput.Account = GetUserName();
 
 		var createdVacancy = await _projectService.CreateProjectVacancyAsync(createProjectVacancyInput);
 
@@ -294,23 +291,23 @@ public class ProjectController : BaseController
 		return result;
 	}
 
-	/// <summary>
-	/// Метод прикрепляет вакансию к проекту.
-	/// </summary>
-	/// <param name="attachProjectVacancyInput">Входная модель.</param>
-	/// <returns>Выходная модель.</returns>
-	[HttpPost]
-	[Route("attach-vacancy")]
-	[ProducesResponseType(200, Type = typeof(AttachProjectVacancyOutput))]
-	[ProducesResponseType(400)]
-	[ProducesResponseType(403)]
-	[ProducesResponseType(500)]
-	[ProducesResponseType(404)]
-	public async Task AttachProjectVacancyAsync([FromBody] AttachProjectVacancyInput attachProjectVacancyInput)
-	{
-		await _projectService.AttachProjectVacancyAsync(attachProjectVacancyInput.ProjectId,
-			attachProjectVacancyInput.VacancyId, GetUserName(), CreateTokenFromHeader());
-	}
+    /// <summary>
+    /// Метод прикрепляет вакансию к проекту.
+    /// </summary>
+    /// <param name="attachProjectVacancyInput">Входная модель.</param>
+    /// <returns>Выходная модель.</returns>
+    [HttpPost]
+    [Route("attach-vacancy")]
+    [ProducesResponseType(200, Type = typeof(AttachProjectVacancyOutput))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task AttachProjectVacancyAsync([FromBody] AttachProjectVacancyInput attachProjectVacancyInput)
+    {
+        await _projectService.AttachProjectVacancyAsync(attachProjectVacancyInput.ProjectId,
+            attachProjectVacancyInput.VacancyId, GetUserName());
+    }
 
 	/// <summary>
 	/// Метод получает список вакансий проекта, которые могут быть прикреплены к проекту пользователя.
@@ -333,47 +330,47 @@ public class ProjectController : BaseController
 		return result;
 	}
 
-	/// <summary>
-	/// Метод записывает отклик на проект.
-	/// Отклик может быть с указанием вакансии, на которую идет отклик (если указана VacancyId).
-	/// Отклик может быть без указаниея вакансии, на которую идет отклик (если не указана VacancyId).
-	/// </summary>
-	/// <param name="projectResponseInput">Входная модель.</param>
-	/// <returns>Выходная модель с записанным откликом.</returns>
-	[HttpPost]
-	[Route("response")]
-	[ProducesResponseType(200, Type = typeof(ProjectResponseOutput))]
-	[ProducesResponseType(400)]
-	[ProducesResponseType(403)]
-	[ProducesResponseType(500)]
-	[ProducesResponseType(404)]
-	public async Task<ProjectResponseOutput> WriteProjectResponseAsync(
-		[FromBody] ProjectResponseInput projectResponseInput)
-	{
-		var projectResponse = await _projectService.WriteProjectResponseAsync(projectResponseInput.ProjectId,
-			projectResponseInput.VacancyId, GetUserName(), CreateTokenFromHeader());
-
-		var result = _mapper.Map<ProjectResponseOutput>(projectResponse);
+    /// <summary>
+    /// Метод записывает отклик на проект.
+    /// Отклик может быть с указанием вакансии, на которую идет отклик (если указана VacancyId).
+    /// Отклик может быть без указаниея вакансии, на которую идет отклик (если не указана VacancyId).
+    /// </summary>
+    /// <param name="projectResponseInput">Входная модель.</param>
+    /// <returns>Выходная модель с записанным откликом.</returns>
+    [HttpPost]
+    [Route("response")]
+    [ProducesResponseType(200, Type = typeof(ProjectResponseOutput))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<ProjectResponseOutput> WriteProjectResponseAsync(
+        [FromBody] ProjectResponseInput projectResponseInput)
+    {
+        var projectResponse = await _projectService.WriteProjectResponseAsync(projectResponseInput.ProjectId,
+            projectResponseInput.VacancyId, GetUserName());
+        
+        var result = _mapper.Map<ProjectResponseOutput>(projectResponse);
 
 		return result;
 	}
 
-	/// <summary>
-	/// Метод создает комментарий к проекту.
-	/// </summary>
-	/// <param name="projectCommentInput">Входная модель.</param>
-	[HttpPost]
-	[Route("project/comment")]
-	[ProducesResponseType(200)]
-	[ProducesResponseType(400)]
-	[ProducesResponseType(403)]
-	[ProducesResponseType(500)]
-	[ProducesResponseType(404)]
-	public async Task CreateProjectCommentAsync([FromBody] ProjectCommentInput projectCommentInput)
-	{
-		await _projectCommentsService.CreateProjectCommentAsync(projectCommentInput.ProjectId,
-			projectCommentInput.Comment, GetUserName(), CreateTokenFromHeader());
-	}
+    /// <summary>
+    /// Метод создает комментарий к проекту.
+    /// </summary>
+    /// <param name="projectCommentInput">Входная модель.</param>
+    [HttpPost]
+    [Route("project/comment")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task CreateProjectCommentAsync([FromBody] ProjectCommentInput projectCommentInput)
+    {
+        await _projectCommentsService.CreateProjectCommentAsync(projectCommentInput.ProjectId,
+            projectCommentInput.Comment, GetUserName());
+    }
 
 	/// <summary>
 	/// Метод получает список комментариев проекта.
@@ -434,24 +431,24 @@ public class ProjectController : BaseController
 		return result;
 	}
 
-	/// <summary>
-	/// Метод добавляет в команду проекта пользователя выбранным способом.
-	/// </summary>
-	/// <param name="inviteProjectMemberInput">Входная модель.</param>
-	/// <returns>Добавленный пользователь.</returns>s
-	[HttpPost]
-	[Route("invite-project-team")]
-	[ProducesResponseType(200, Type = typeof(ProjectTeamMemberOutput))]
-	[ProducesResponseType(400)]
-	[ProducesResponseType(403)]
-	[ProducesResponseType(500)]
-	[ProducesResponseType(404)]
-	public async Task<ProjectTeamMemberOutput> InviteProjectTeamAsync(
-		[FromBody] InviteProjectMemberInput inviteProjectMemberInput)
-	{
-		var result = await _projectService.InviteProjectTeamAsync(inviteProjectMemberInput.InviteText,
-			Enum.Parse<ProjectInviteTypeEnum>(inviteProjectMemberInput.InviteType), inviteProjectMemberInput.ProjectId,
-			inviteProjectMemberInput.VacancyId, GetUserName(), CreateTokenFromHeader());
+    /// <summary>
+    /// Метод добавляет в команду проекта пользователя выбранным способом.
+    /// </summary>
+    /// <param name="inviteProjectMemberInput">Входная модель.</param>
+    /// <returns>Добавленный пользователь.</returns>s
+    [HttpPost]
+    [Route("invite-project-team")]
+    [ProducesResponseType(200, Type = typeof(ProjectTeamMemberOutput))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<ProjectTeamMemberOutput> InviteProjectTeamAsync(
+        [FromBody] InviteProjectMemberInput inviteProjectMemberInput)
+    {
+        var result = await _projectService.InviteProjectTeamAsync(inviteProjectMemberInput.InviteText,
+            Enum.Parse<ProjectInviteTypeEnum>(inviteProjectMemberInput.InviteType), inviteProjectMemberInput.ProjectId,
+            inviteProjectMemberInput.VacancyId, GetUserName());
 
 		return new ProjectTeamMemberOutput
 		{
@@ -554,24 +551,24 @@ public class ProjectController : BaseController
 			_logger.LogError(ex, ex.Message);
 		}
 
-		await _projectService.DeleteProjectVacancyAsync(vacancyId, projectId, GetUserName(), CreateTokenFromHeader());
-	}
+        await _projectService.DeleteProjectVacancyAsync(vacancyId, projectId, GetUserName());
+    }
 
-	/// <summary>
-	/// Метод удаляет проект и все, что с ним связано.
-	/// </summary>
-	/// <param name="projectId">Id проекта.</param>
-	[HttpDelete]
-	[Route("{projectId}")]
-	[ProducesResponseType(200)]
-	[ProducesResponseType(400)]
-	[ProducesResponseType(403)]
-	[ProducesResponseType(500)]
-	[ProducesResponseType(404)]
-	public async Task DeleteProjectAsync([FromRoute] long projectId)
-	{
-		await _projectService.DeleteProjectAsync(projectId, GetUserName(), CreateTokenFromHeader());
-	}
+    /// <summary>
+    /// Метод удаляет проект и все, что с ним связано.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    [HttpDelete]
+    [Route("{projectId}")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task DeleteProjectAsync([FromRoute] long projectId)
+    {
+        await _projectService.DeleteProjectAsync(projectId, GetUserName());
+    }
 
 	/// <summary>
 	/// Метод получает список вакансий доступных к отклику.
@@ -618,38 +615,38 @@ public class ProjectController : BaseController
 		return result;
 	}
 
-	/// <summary>
-	/// Метод удаляет участника проекта из команды.
-	/// </summary>
-	/// <param name="projectId">Id проекта</param>
-	/// <param name="userId">Id пользователя, которого будем удалять из команды</param>
-	[HttpDelete]
-	[Route("{projectId}/team-member/{userId}")]
-	[ProducesResponseType(200)]
-	[ProducesResponseType(400)]
-	[ProducesResponseType(403)]
-	[ProducesResponseType(500)]
-	[ProducesResponseType(404)]
-	public async Task DeleteProjectTeamMemberAsync([FromRoute] long projectId, [FromRoute] long userId)
-	{
-		await _projectService.DeleteProjectTeamMemberAsync(projectId, userId, CreateTokenFromHeader());
-	}
+    /// <summary>
+    /// Метод удаляет участника проекта из команды.
+    /// </summary>
+    /// <param name="projectId">Id проекта</param>
+    /// <param name="userId">Id пользователя, которого будем удалять из команды</param>
+    [HttpDelete]
+    [Route("{projectId}/team-member/{userId}")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task DeleteProjectTeamMemberAsync([FromRoute] long projectId, [FromRoute] long userId)
+    {
+        await _projectService.DeleteProjectTeamMemberAsync(projectId, userId);
+    }
 
-	/// <summary>
-	/// Метод покидания команды проекта.
-	/// </summary>
-	/// <param name="projectId">Id проекта</param>
-	[HttpDelete]
-	[Route("team-leave/{projectId}")]
-	[ProducesResponseType(200)]
-	[ProducesResponseType(400)]
-	[ProducesResponseType(403)]
-	[ProducesResponseType(500)]
-	[ProducesResponseType(404)]
-	public async Task LeaveProjectTeamAsync([FromRoute] long projectId)
-	{
-		await _projectService.LeaveProjectTeamAsync(projectId, GetUserName(), CreateTokenFromHeader());
-	}
+    /// <summary>
+    /// Метод покидания команды проекта.
+    /// </summary>
+    /// <param name="projectId">Id проекта</param>
+    [HttpDelete]
+    [Route("team-leave/{projectId}")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task LeaveProjectTeamAsync([FromRoute] long projectId)
+    {
+        await _projectService.LeaveProjectTeamAsync(projectId, GetUserName());
+    }
 
 	/// <summary>
 	/// Метод получает список замечаний проекта, если они есть.
@@ -671,56 +668,55 @@ public class ProjectController : BaseController
 		return result;
 	}
 
-	/// <summary>
-	/// Метод добавляет проект в архив.
-	/// </summary>
-	/// <param name="projectArchiveInput">Входная модель.</param>
-	[HttpPost]
-	[Route("archive")]
-	[ProducesResponseType(200)]
-	[ProducesResponseType(400)]
-	[ProducesResponseType(403)]
-	[ProducesResponseType(500)]
-	[ProducesResponseType(404)]
-	public async Task AddProjectArchiveAsync([FromBody] ProjectArchiveInput projectArchiveInput)
-	{
-		await _projectService.AddProjectArchiveAsync(projectArchiveInput.ProjectId, GetUserName(),
-			GetTokenFromHeader());
-	}
+    /// <summary>
+    /// Метод добавляет проект в архив.
+    /// </summary>
+    /// <param name="projectArchiveInput">Входная модель.</param>
+    [HttpPost]
+    [Route("archive")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task AddProjectArchiveAsync([FromBody] ProjectArchiveInput projectArchiveInput)
+    {
+        await _projectService.AddProjectArchiveAsync(projectArchiveInput.ProjectId, GetUserName());
+    }
 
-	/// <summary>
-	/// Метод удаляет из архива проект.
-	/// </summary>
-	/// <param name="projectId">Id проекта.</param>
-	[HttpDelete]
-	[Route("archive")]
-	[ProducesResponseType(200)]
-	[ProducesResponseType(400)]
-	[ProducesResponseType(403)]
-	[ProducesResponseType(500)]
-	[ProducesResponseType(404)]
-	public async Task DeleteProjectArchiveAsync([FromQuery] long projectId)
-	{
-		await _projectService.DeleteProjectArchiveAsync(projectId, GetUserName(), GetTokenFromHeader());
-	}
-
-	/// <summary>
-	/// Метод получает список вакансий проекта, по которым можно пригласить пользователя в проект.
-	/// </summary>
-	/// <param name="projectId">Id проекта, для которого получить список вакансий.</param>
-	/// <returns>Список вакансий проекта.</returns>
-	[HttpGet]
-	[Route("available-invite-vacancies")]
-	[ProducesResponseType(200, Type = typeof(ProjectVacancyResultOutput))]
-	[ProducesResponseType(400)]
-	[ProducesResponseType(403)]
-	[ProducesResponseType(500)]
-	[ProducesResponseType(404)]
-	public async Task<ProjectVacancyResultOutput> ProjectVacanciesAvailableInviteAsync([FromQuery] long projectId)
-	{
-		var result = new ProjectVacancyResultOutput();
-		var items = await _projectService.ProjectVacanciesAvailableAttachAsync(projectId, GetUserName(), true);
-		result.ProjectVacancies = _mapper.Map<IEnumerable<ProjectVacancyOutput>>(items);
+    /// <summary>
+    /// Метод удаляет из архива проект.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    [HttpDelete]
+    [Route("archive")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task DeleteProjectArchiveAsync([FromQuery] long projectId)
+    {
+        await _projectService.DeleteProjectArchiveAsync(projectId, GetUserName());
+    }
+    
+    /// <summary>
+    /// Метод получает список вакансий проекта, по которым можно пригласить пользователя в проект.
+    /// </summary>
+    /// <param name="projectId">Id проекта, для которого получить список вакансий.</param>
+    /// <returns>Список вакансий проекта.</returns>
+    [HttpGet]
+    [Route("available-invite-vacancies")]
+    [ProducesResponseType(200, Type = typeof(ProjectVacancyResultOutput))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<ProjectVacancyResultOutput> ProjectVacanciesAvailableInviteAsync([FromQuery] long projectId)
+    {
+        var result = new ProjectVacancyResultOutput();
+        var items = await _projectService.ProjectVacanciesAvailableAttachAsync(projectId, GetUserName(), true);
+        result.ProjectVacancies = _mapper.Map<IEnumerable<ProjectVacancyOutput>>(items);
 
 		return result;
 	}

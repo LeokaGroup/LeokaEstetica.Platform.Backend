@@ -163,10 +163,11 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
                     "t.task_status_id," +
                     "t.author_id," +
                     "t.watcher_ids," +
-                    "CASE " +
+                     "CASE " +
                     "WHEN @strategy = 'sm' THEN LEFT(t.name, 40) " +
                     "WHEN @strategy = 'kn' THEN LEFT(t.name, 100) " +
-                    "END AS name," +
+                     "END AS name," +
+                    "t.name as NameTooltip,"+
                     "t.details AS details," +
                     "t.created," +
                     "t.updated," +
@@ -192,6 +193,7 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
                     "WHEN @strategy = 'sm' THEN LEFT(e.epic_name, 40) " +
                     "WHEN @strategy = 'kn'THEN LEFT(e.epic_name, 100) " +
                     "END AS name," +
+                    "e.epic_name as NameTooltip,"+
                     "e.epic_description AS details," +
                     "e.created_at AS created," +
                     "e.updated_at AS updated," +
@@ -219,6 +221,7 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
                     " WHEN @strategy = 'sm' THEN LEFT(us.story_name, 40) " +
                     "WHEN @strategy = 'kn' THEN LEFT(us.story_name, 100) " +
                     "END AS name," +
+                    "us.story_name as NameTooltip,"+
                     "us.story_description AS details," +
                     "us.created_at AS created," +
                     "us.updated_at AS updated," +
@@ -2371,7 +2374,8 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
 
         var query = "SELECT up.\"ProjectId\", " +
                     "COALESCE(up.\"ProjectManagementName\", 'Проект без названия') AS ProjectManagementName, " +
-                    "pw.workspace_id " +
+                    "pw.workspace_id," +
+                    "pw.organization_id AS company_id " +
                     "FROM \"Projects\".\"UserProjects\" AS up " +
                     "INNER JOIN project_management.workspaces AS pw " +
                     "ON up.\"ProjectId\" = pw.project_id " +
@@ -2380,7 +2384,10 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
                     "INNER JOIN \"Teams\".\"ProjectsTeamsMembers\" AS ptm " +
                     "ON pt.\"TeamId\" = ptm.\"TeamId\" " +
                     "WHERE ptm.\"UserId\" = @userId " +
-                    "ORDER BY pw.workspace_id";
+                    "AND NOT pw.project_id = ANY (SELECT \"ProjectId\" " +
+                    "FROM \"Moderation\".\"Projects\" " +
+                    "WHERE \"ModerationStatusId\" IN (2, 6, 7)) " +
+                    "ORDER BY pw.workspace_id DESC";
 
         var result = await connection.QueryAsync<WorkSpaceOutput>(query, parameters);
 
@@ -3033,6 +3040,52 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
 
         var result = (await connection.QueryAsync<ProjectTaskTypeOutput>(query, parameters))
             .ToDictionary(k => k.ProjectTaskId, v => v);
+
+        return result;
+    }
+
+    /// <inheritdoc />
+    public async Task<WorkSpaceOutput> GetWorkSpaceByProjectIdAsync(long projectId, long userId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+        
+        var parameters = new DynamicParameters();
+        parameters.Add("@userId", userId);
+        parameters.Add("@projectId", projectId);
+
+        var query = "SELECT up.\"ProjectId\", " +
+                    "COALESCE(up.\"ProjectManagementName\", 'Проект без названия') AS ProjectManagementName, " +
+                    "pw.workspace_id," +
+                    "pw.organization_id AS company_id " +
+                    "FROM \"Projects\".\"UserProjects\" AS up " +
+                    "INNER JOIN project_management.workspaces AS pw " +
+                    "ON up.\"ProjectId\" = pw.project_id " +
+                    "INNER JOIN \"Teams\".\"ProjectsTeams\" AS pt " +
+                    "ON up.\"ProjectId\" = pt.\"ProjectId\" " +
+                    "INNER JOIN \"Teams\".\"ProjectsTeamsMembers\" AS ptm " +
+                    "ON pt.\"TeamId\" = ptm.\"TeamId\" " +
+                    "WHERE ptm.\"UserId\" = @userId " +
+                    "AND pw.project_id = @projectId " +
+                    "ORDER BY pw.workspace_id DESC";
+
+        var result = await connection.QueryFirstOrDefaultAsync<WorkSpaceOutput>(query, parameters);
+
+        return result;
+    }
+
+    /// <inheritdoc />
+    public async Task<IEnumerable<string>> GetProjectMongoDocumentIdsByProjectIdAsync(long projectId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+        
+        var parameters = new DynamicParameters();
+        parameters.Add("@projectId", projectId);
+        
+        var query = "SELECT mongo_document_id " +
+                    "FROM documents.project_documents " +
+                    "WHERE project_id = @projectId";
+
+        var result = await connection.QueryAsync<string>(query, parameters);
 
         return result;
     }

@@ -40,7 +40,8 @@ public class ProjectManagementRoleController : BaseController
     /// <summary>
     /// Метод получает список ролей пользователя.
     /// </summary>
-    /// <param name="projectId">Id проекта, если передали.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="companyId">Id компании.</param>
     /// <returns>Список ролей.</returns>
     [HttpGet]
     [Route("user-roles")]
@@ -49,9 +50,10 @@ public class ProjectManagementRoleController : BaseController
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<IEnumerable<ProjectManagementRoleOutput>> GetUserRolesAsync([FromQuery] long? projectId = null)
+    public async Task<IEnumerable<ProjectManagementRoleOutput>> GetUserRolesAsync([FromQuery] long projectId,
+        [FromQuery] long companyId)
     {
-        var result = await _projectManagmentRoleService.GetUserRolesAsync(GetUserName(), projectId);
+        var result = await _projectManagmentRoleService.GetUserRolesAsync(GetUserName(), projectId, companyId);
 
         return result;
     }
@@ -70,7 +72,7 @@ public class ProjectManagementRoleController : BaseController
     [ProducesResponseType(404)]
     public async Task<IEnumerable<ProjectManagementRoleOutput>> GetRolesAsync([FromQuery] long? projectId = null)
     {
-        var result = await _projectManagmentRoleRepository.Value.GetUserRolesAsync(null, projectId);
+        var result = await _projectManagmentRoleRepository.Value.GetUserRolesAsync(null, projectId, null);
 
         return result ?? Enumerable.Empty<ProjectManagementRoleOutput>();
     }
@@ -105,6 +107,6 @@ public class ProjectManagementRoleController : BaseController
             throw ex;
         }
 
-        await _projectManagmentRoleService.UpdateRolesAsync(updatedRoles, CreateTokenFromHeader());
+        await _projectManagmentRoleService.UpdateRolesAsync(updatedRoles, GetUserName());
     }
 }

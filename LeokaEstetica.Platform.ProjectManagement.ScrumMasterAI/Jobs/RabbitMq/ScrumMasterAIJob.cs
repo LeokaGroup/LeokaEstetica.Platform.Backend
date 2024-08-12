@@ -34,7 +34,6 @@ internal sealed class ScrumMasterAIJob : IJob
     private readonly ILogger<ScrumMasterAIJob> _logger;
     private readonly IGlobalConfigRepository _globalConfigRepository;
     private readonly IDiscordService _discordService;
-    private readonly IProjectManagementNotificationService _projectManagementNotificationService;
     private readonly IFileManagerService _fileManagerService;
     private readonly IScrumMasterAiRepository _scrumMasterAiRepository;
     private readonly IChatService _chatService;
@@ -58,6 +57,8 @@ internal sealed class ScrumMasterAIJob : IJob
     /// Счетчик кол-ва подключений во избежание дублей подключений.
     /// </summary>
     private static uint _counterAnalysisQueue;
+    
+    private readonly Lazy<IHubNotificationService> _hubNotificationService;
 
     /// <summary>
     /// Конструктор.
@@ -65,25 +66,25 @@ internal sealed class ScrumMasterAIJob : IJob
     /// <param name="logger">Сервис логов.</param>
     /// <param name="globalConfigRepository">Репозиторий глобал конфигов.</param>
     /// <param name="discordService">Сервис дискорд.</param>
-    /// <param name="projectManagementNotificationService">Сервис уведомлений модуля УП.</param>
     /// <param name="fileManagerService">Сервис работы с файлами.</param>
     /// <param name="scrumMasterAiRepository">Репозиторий нейросети Scrum Master AI.</param>
     /// <param name="chatService">Сервис чата.</param>
+    /// <param name="hubNotificationService">Сервис уведомлений хабов.</param>
     public ScrumMasterAIJob(ILogger<ScrumMasterAIJob> logger,
         IGlobalConfigRepository globalConfigRepository,
         IDiscordService discordService,
-        IProjectManagementNotificationService projectManagementNotificationService,
         IFileManagerService fileManagerService,
         IScrumMasterAiRepository scrumMasterAiRepository,
-         IChatService chatService)
+        IChatService chatService,
+        Lazy<IHubNotificationService> hubNotificationService)
     {
         _logger = logger;
         _globalConfigRepository = globalConfigRepository;
         _discordService = discordService;
-        _projectManagementNotificationService = projectManagementNotificationService;
         _fileManagerService = fileManagerService;
         _scrumMasterAiRepository = scrumMasterAiRepository;
         _chatService = chatService;
+        _hubNotificationService = hubNotificationService;
     }
 
     #region Публичные методы.
@@ -336,7 +337,7 @@ internal sealed class ScrumMasterAIJob : IJob
                                 @event.ConnectionId, true, true).ConfigureAwait(false);
 
                             // Отправляем результат классификации ответа нейросети на фронт.
-                            await _projectManagementNotificationService
+                            await _hubNotificationService.Value
                                 .SendClassificationNetworkMessageResultAsync(prediction.Message, @event.ConnectionId,
                                     @event.DialogId)
                                 .ConfigureAwait(false);

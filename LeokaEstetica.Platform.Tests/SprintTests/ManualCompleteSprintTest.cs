@@ -13,7 +13,7 @@ internal class ManualCompleteSprintTest : BaseServiceTest
         {
             ProjectSprintId = 3,
             ProjectId = 274
-        }, "sierra_93@mail.ru", null);
+        }, "sierra_93@mail.ru");
         
         Assert.NotNull(result);
     }

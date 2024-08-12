@@ -13,6 +13,13 @@ namespace LeokaEstetica.Platform.Database.Abstractions.Project;
 public interface IProjectRepository
 {
     /// <summary>
+    /// Метод фильтрует проекты в зависимости от фильтров.
+    /// </summary>
+    /// <param name="filters">Фильтры.</param>
+    /// <returns>Список проектов после фильтрации.</returns>
+    Task<IEnumerable<CatalogProjectOutput>> FilterProjectsAsync(FilterProjectInput filters);
+    
+    /// <summary>
     /// Метод создает новый проект пользователя.
     /// </summary>
     /// <param name="createProjectInput">Входная модель.</param>
@@ -178,7 +185,7 @@ public interface IProjectRepository
     /// <param name="projectId">Id проекта.</param>
     /// <param name="userId">Id пользователя.</param>
     /// <returns>Признак результата удаления, список вакансий, которые отвязаны от проекта, название проекта.</returns>
-    Task<(bool Success, List<string> RemovedVacancies, string ProjectName)> DeleteProjectAsync(long projectId,
+    Task<(bool Success, List<string> RemovedVacancies, string ProjectName)> RemoveProjectAsync(long projectId,
         long userId);
 
     /// <summary>

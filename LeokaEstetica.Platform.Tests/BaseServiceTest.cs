@@ -182,26 +182,25 @@ internal class BaseServiceTest
             subscriptionRepository, resumeModerationRepository, accessUserService, userRedisService,
             FareRuleRepository, availableLimitsRepository, globalConfigRepository, discordService, null,
             ProjectManagmentRepository);
-        ProfileService = new ProfileService(null, profileRepository, userRepository, mapper, null, null,
-            accessUserService, resumeModerationRepository, discordService);
+        ProfileService = new ProfileService(null, profileRepository, userRepository, mapper, null,
+            accessUserService, resumeModerationRepository, discordService, null);
 
         var projectRepository = new ProjectRepository(pgContext, ChatRepository, connectionProvider);
         var projectNotificationsRepository = new ProjectNotificationsRepository(pgContext, connectionProvider);
         var vacancyRepository = new VacancyRepository(pgContext, connectionProvider);
         var projectManagementRepository = new ProjectManagmentRepository(connectionProvider);
         var vacancyModerationRepository = new VacancyModerationRepository(pgContext);
-        var vacancyNotificationsService = new VacancyNotificationsService(null, null);
 
         TelegramBotService = new TelegramBotService(null, AppConfiguration, globalConfigRepository);
 
         VacancyModerationService = new VacancyModerationService(vacancyModerationRepository, null, mapper, null,
-            vacancyRepository, userRepository, projectRepository, null, null, TelegramBotService);
+            vacancyRepository, userRepository, projectRepository, null, TelegramBotService, null);
         
         // Тут если нужен будет ProjectService, то тут проблема с порядком следования.
         // Не получится сделать просто, VacancyService и ProjectService нужны друг другу тесно.
         VacancyService = new VacancyService(null, vacancyRepository, mapper, null, userRepository,
-            VacancyModerationService, subscriptionRepository, FareRuleRepository,
-            vacancyNotificationsService, null, null, vacancyModerationRepository, discordService);
+            VacancyModerationService, subscriptionRepository,
+            null, null, vacancyModerationRepository, discordService, null);
 
         var projectResponseRepository = new ProjectResponseRepository(pgContext);
 
@@ -216,45 +215,42 @@ internal class BaseServiceTest
         ProjectModerationRepository = new ProjectModerationRepository(pgContext);
 
         ProjectModerationService = new ProjectModerationService(ProjectModerationRepository, null, mapper, null, 
-            userRepository, projectRepository, null, null, TelegramBotService);
+            userRepository, projectRepository, null, TelegramBotService, null);
 
         var projectCommentsRepository = new ProjectCommentsRepository(pgContext);
 
-        ProjectCommentsService = new ProjectCommentsService(null, userRepository, projectCommentsRepository, null, null,
+        ProjectCommentsService = new ProjectCommentsService(null, userRepository, projectCommentsRepository, null,
             null);
         ResumeModerationService = new ResumeModerationService(null, resumeModerationRepository, mapper,
             userRepository, null);
         var projectManagementNotificationsRepository = new ProjectNotificationsRepository(pgContext, connectionProvider);
         var projectManagementSettingsRepository = new ProjectManagementSettingsRepository(connectionProvider);
 
-        ProjectNotificationsService = new ProjectNotificationsService(null, null, userRepository, mapper,
-            projectManagementNotificationsRepository, null, projectRepository, null, globalConfigRepository,
+        ProjectNotificationsService = new ProjectNotificationsService(null, userRepository, mapper,
+            projectManagementNotificationsRepository, projectRepository, null, globalConfigRepository,
             vacancyRepository, projectManagementRepository,
-            new Lazy<IProjectManagementSettingsRepository>(projectManagementSettingsRepository));
+            new Lazy<IProjectManagementSettingsRepository>(projectManagementSettingsRepository), null);
         ProjectFinderService = new ProjectFinderService(null, userRepository, ProjectNotificationsService, ResumeModerationService);
 
         var resumeRepository = new ResumeRepository(pgContext, connectionProvider);
-
-        var fillColorProjectsService = new FillColorProjectsService();
-        
         var wikiRepository = new WikiTreeRepository(connectionProvider);
         ProjectService = new ProjectService(projectRepository, null, userRepository, mapper,
             ProjectNotificationsService, VacancyService, vacancyRepository,
-            subscriptionRepository, FareRuleRepository, VacancyModerationService, projectNotificationsRepository, null,
-            accessUserService, fillColorProjectsService, null, ProjectModerationRepository, discordService, null,
-            globalConfigRepository, projectManagementRepository, wikiRepository, null);
+            subscriptionRepository, VacancyModerationService, projectNotificationsRepository,
+            accessUserService, null, ProjectModerationRepository, discordService, null,
+            globalConfigRepository, projectManagementRepository, wikiRepository, null, null, null);
         
         var ordersRepository = new OrdersRepository(pgContext);
         var commerceRepository = new CommerceRepository(pgContext, AppConfiguration);
         var commerceRedisService = new CommerceRedisService(distributedCache);
         var rabbitMqService = new RabbitMqService();
         
-        PayMasterService = new PayMasterService(null, AppConfiguration, userRepository,
-            commerceRepository, accessUserService, null, commerceRedisService, rabbitMqService, mapper, null, null);
+        // PayMasterService = new PayMasterService(null, AppConfiguration, userRepository,
+        //     commerceRepository, accessUserService, null, commerceRedisService, rabbitMqService, mapper, null, null);
 
         CommerceService = new CommerceService(commerceRedisService, null, userRepository, FareRuleRepository,
             commerceRepository, ordersRepository, subscriptionRepository, accessUserService,
-            null, null, PayMasterService, mapper, null, new Lazy<IDiscordService>(discordService));
+            null, null, mapper, null, new Lazy<IDiscordService>(discordService), null);
 
         SubscriptionService = new SubscriptionService(null, userRepository, subscriptionRepository,
             FareRuleRepository);
@@ -283,7 +279,7 @@ internal class BaseServiceTest
         var userMetricsRepository = new UserMetricsRepository(pgContext);
         UserMetricsService = new UserMetricsService(null, userMetricsRepository, userRepository);
         RefundsService = new RefundsService(null, null, subscriptionRepository, userRepository, ordersRepository, null,
-            PayMasterService, null, CommerceService, commerceRepository, mapper);
+            null, CommerceService, commerceRepository, mapper, null);
 
         var ticketRepository = new TicketRepository(pgContext, null);
         var accessTicketRepository = new AccessTicketRepository(pgContext);
@@ -300,15 +296,16 @@ internal class BaseServiceTest
         var transactionScopeFactory = new TransactionScopeFactory();
         
         var projectManagmentTemplateRepository = new ProjectManagmentTemplateRepository(connectionProvider);
-        var projectSettingsConfigRepository = new ProjectSettingsConfigRepository(pgContext, connectionProvider);
+        var projectSettingsConfigRepository = new ProjectSettingsConfigRepository(
+            pgContext, connectionProvider, ProjectManagmentRepository);
         ReversoService = new ReversoService(null);
         ProjectManagementTemplateService = new ProjectManagementTemplateService(ProjectManagmentRepository, mapper, null);
         var projectManagmentRoleRepository = new ProjectManagmentRoleRepository(connectionProvider);
         ProjectManagmentService = new ProjectManagmentService(null, ProjectManagmentRepository, mapper, userRepository,
             projectRepository, discordService, projectManagmentTemplateRepository, transactionScopeFactory,
-            projectSettingsConfigRepository, new Lazy<IReversoService>(ReversoService), null, null, UserService, null,
+            projectSettingsConfigRepository, new Lazy<IReversoService>(ReversoService), null, UserService, null,
             ProjectManagementTemplateService,
-            new Lazy<IProjectManagmentRoleRepository>(projectManagmentRoleRepository), null);
+            new Lazy<IProjectManagmentRoleRepository>(projectManagmentRoleRepository), null, null);
 
         var searchProjectManagementRepository = new SearchProjectManagementRepository(connectionProvider);
         SearchProjectManagementService = new SearchProjectManagementService(null,
