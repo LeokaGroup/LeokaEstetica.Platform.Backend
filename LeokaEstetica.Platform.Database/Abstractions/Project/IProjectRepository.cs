@@ -347,4 +347,12 @@ public interface IProjectRepository
     /// <param name="teamId">Id команды проекта.</param>
     /// </summary>
     Task RemoveUserProjectTeamAsync(long userId, long teamId);
+
+	/// <summary>
+	/// Метод обновляет видимость проекта
+	/// </summary>
+	/// <param name="projectId">Id проекта.</param>
+	/// <param name="isPublic">Видимость проекта.</param>
+	/// <returns>Возращает признак видимости проекта.</returns>
+	Task<UpdateProjectOutput> UpdateVisibleProjectAsync(long projectId, bool isPublic);
 }
