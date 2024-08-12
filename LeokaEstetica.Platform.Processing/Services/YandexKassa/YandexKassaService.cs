@@ -15,6 +15,7 @@ using LeokaEstetica.Platform.Models.Dto.Input.Commerce.YandexKassa;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce.Base.Output;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce.PayMaster;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce.YandexKassa;
+using LeokaEstetica.Platform.Models.Enums;
 using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Notifications.Consts;
 using LeokaEstetica.Platform.Processing.Abstractions.YandexKassa;
@@ -38,7 +39,6 @@ internal sealed class YandexKassaService : IYandexKassaService
     private readonly ILogger<YandexKassaService> _logger;
     private readonly IUserRepository _userRepository;
     private readonly IAccessUserService _accessUserService;
-    private readonly IAccessUserNotificationsService _accessUserNotificationsService;
     private readonly ICommerceRedisService _commerceRedisService;
     private readonly IConfiguration _configuration;
     private readonly IGlobalConfigRepository _globalConfigRepository;
@@ -46,6 +46,7 @@ internal sealed class YandexKassaService : IYandexKassaService
     private readonly IRabbitMqService _rabbitMqService;
     private readonly IMailingsService _mailingsService;
     private readonly ITransactionScopeFactory _transactionScopeFactory;
+    private readonly Lazy<IHubNotificationService> _hubNotificationService;
 
     /// <summary>
     /// Конструктор.
@@ -53,30 +54,29 @@ internal sealed class YandexKassaService : IYandexKassaService
     /// <param name="logger">Логгер.</param>
     /// <param name="userRepository">Репозиторий пользователей.</param>
     /// <param name="userRepository">Сервис доступов пользователей.</param>
-    /// <param name="accessUserNotificationsService">Сервис уведомлений доступов пользователей.</param>
     /// <param name="commerceRedisService">Сервис кэша коммерции.</param>
     /// <param name="configuration">Конфигурация приложения.</param>
     /// <param name="globalConfigRepository">Репозиторий глобал конфига.</param>
     /// <param name="commerceRepository">Репозиторий коммерции.</param>
     /// <param name="rabbitMqService">Сервис кролика.</param>
     /// <param name="mailingsService">Сервис email.</param>
-    /// <param name="transactionScopeFactory">Факторка транзакций.</param> 
+    /// <param name="transactionScopeFactory">Факторка транзакций.</param>
+    /// <param name="hubNotificationService">Сервис уведомлений хабов.</param> 
     public YandexKassaService(ILogger<YandexKassaService> logger,
         IUserRepository userRepository,
         IAccessUserService accessUserService,
-        IAccessUserNotificationsService accessUserNotificationsService,
         ICommerceRedisService commerceRedisService,
         IConfiguration configuration,
         IGlobalConfigRepository globalConfigRepository,
         ICommerceRepository commerceRepository,
         IRabbitMqService rabbitMqService,
         IMailingsService mailingsService,
-        ITransactionScopeFactory transactionScopeFactory)
+        ITransactionScopeFactory transactionScopeFactory,
+        Lazy<IHubNotificationService> hubNotificationService)
     {
         _logger = logger;
         _userRepository = userRepository;
         _accessUserService = accessUserService;
-        _accessUserNotificationsService = accessUserNotificationsService;
         _commerceRedisService = commerceRedisService;
         _configuration = configuration;
         _globalConfigRepository = globalConfigRepository;
@@ -84,6 +84,7 @@ internal sealed class YandexKassaService : IYandexKassaService
         _rabbitMqService = rabbitMqService;
         _mailingsService = mailingsService;
         _transactionScopeFactory = transactionScopeFactory;
+        _hubNotificationService = hubNotificationService;
     }
 
     #region Публичные методы.
@@ -93,9 +94,8 @@ internal sealed class YandexKassaService : IYandexKassaService
     /// </summary>
     /// <param name="publicId">Публичный ключ тарифа.</param>
     /// <param name="account">Аккаунт.</param>
-    /// <param name="token">Токен пользователя.</param>
     /// <returns>Данные платежа.</returns>
-    public async Task<ICreateOrderOutput> CreateOrderAsync(Guid publicId, string account, string token)
+    public async Task<ICreateOrderOutput> CreateOrderAsync(Guid publicId, string account)
     {
         try
         {
@@ -103,18 +103,17 @@ internal sealed class YandexKassaService : IYandexKassaService
             
             // Проверяем заполнение анкеты и даем доступ либо нет.
             var isEmptyProfile = await _accessUserService.IsProfileEmptyAsync(userId);
+            var userCode = await _userRepository.GetUserCodeByUserIdAsync(userId);
 
             // Если нет доступа, то не даем оплатить платный тариф.
             if (isEmptyProfile)
             {
                 var ex = new InvalidOperationException($"Анкета пользователя не заполнена. UserId был: {userId}");
 
-                if (!string.IsNullOrEmpty(token))
-                {
-                    await _accessUserNotificationsService.SendNotificationWarningEmptyUserProfileAsync("Внимание",
-                        "Для покупки тарифа должна быть заполнена информация вашей анкеты.",
-                        NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);   
-                }
+                await _hubNotificationService.Value.SendNotificationAsync("Внимание",
+                    "Для покупки тарифа должна быть заполнена информация вашей анкеты.",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, "SendNotificationWarningEmptyUserProfile",
+                    userCode, UserConnectionModuleEnum.Processing);
 
                 throw ex;
             }

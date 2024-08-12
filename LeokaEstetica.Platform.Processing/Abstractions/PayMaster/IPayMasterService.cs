@@ -17,9 +17,8 @@ public interface IPayMasterService
     /// </summary>
     /// <param name="publicId">Публичный ключ тарифа.</param>
     /// <param name="account">Аккаунт.</param>
-    /// <param name="token">Токен пользователя.</param>
     /// <returns>Данные платежа.</returns>
-    Task<ICreateOrderOutput> CreateOrderAsync(Guid publicId, string account, string token);
+    Task<ICreateOrderOutput> CreateOrderAsync(Guid publicId, string account);
     
     /// <summary>
     /// Метод проверяет статус платежа в ПС.

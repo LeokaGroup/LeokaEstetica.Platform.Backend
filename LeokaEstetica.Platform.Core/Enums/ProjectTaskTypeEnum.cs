@@ -16,9 +16,9 @@ public enum ProjectTaskTypeEnum
     Error = 2,
     
     /// <summary>
-    /// История/требование.
+    /// История.
     /// </summary>
-    History = 3,
+    Story = 3,
     
     /// <summary>
     /// Эпик.

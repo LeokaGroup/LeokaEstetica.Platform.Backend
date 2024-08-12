@@ -125,6 +125,11 @@ public class ProjectManagmentTaskOutput
     /// Префикс номера задачи.
     /// </summary>
     public string? TaskIdPrefix { get; set; }
+    
+    /// <summary>
+    /// Полное название задачи.
+    /// </summary>
+    public string NameTooltip { get; set; }
 
     /// <summary>
     /// Id задачи в рамках проекта вместе с префиксом.
@@ -159,12 +164,12 @@ public class ProjectManagmentTaskOutput
     /// <summary>
     /// Список задач эпика.
     /// </summary>
-    public IEnumerable<ProjectManagmentTaskOutput> EpicTasks { get; set; }
+    public IEnumerable<ProjectManagmentTaskOutput>? EpicTasks { get; set; }
 
     /// <summary>
     /// Список задач спринта.
     /// </summary>
-    public IEnumerable<ProjectManagmentTaskOutput> SprintTasks { get; set; }
+    public IEnumerable<ProjectManagmentTaskOutput>? SprintTasks { get; set; }
 
     /// <summary>
     /// Признак наличия доступа.

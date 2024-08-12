@@ -362,7 +362,7 @@ public class CallCenterController : BaseController
         [FromBody] CreateProjectRemarkInput createProjectRemarkInput)
     {
         var projectRemarks = await _projectModerationService.CreateProjectRemarksAsync(createProjectRemarkInput, 
-            GetUserName(), GetTokenFromHeader());
+            GetUserName());
         
         var result = new ProjectRemarkResult
         {
@@ -386,8 +386,7 @@ public class CallCenterController : BaseController
     [ProducesResponseType(404)]
     public async Task SendProjectRemarksAsync([FromBody] SendProjectRemarkInput sendProjectRemarkInput)
     {
-        await _projectModerationService.SendProjectRemarksAsync(sendProjectRemarkInput.ProjectId, GetUserName(),
-            GetTokenFromHeader());
+        await _projectModerationService.SendProjectRemarksAsync(sendProjectRemarkInput.ProjectId, GetUserName());
     }
     
     /// <summary>
@@ -406,7 +405,7 @@ public class CallCenterController : BaseController
         [FromBody] CreateVacancyRemarkInput createVacancyRemarkInput)
     {
         var vacancyRemarks = await _vacancyModerationService.CreateVacancyRemarksAsync(createVacancyRemarkInput, 
-            GetUserName(), GetTokenFromHeader());
+            GetUserName());
         
         var result = new VacancyRemarkResult
         {
@@ -452,7 +451,7 @@ public class CallCenterController : BaseController
         [FromBody] CreateResumeRemarkInput createResumeRemarkInput)
     {
         var vacancyRemarks = await _resumeModerationService.CreateResumeRemarksAsync(createResumeRemarkInput, 
-            GetUserName(), GetTokenFromHeader());
+            GetUserName());
         
         var result = new ResumeRemarkResult
         {
@@ -477,7 +476,7 @@ public class CallCenterController : BaseController
     public async Task SendResumeRemarksAsync([FromBody] SendResumeRemarkInput sendResumeRemarkInput)
     {
         await _resumeModerationService.SendResumeRemarksAsync(sendResumeRemarkInput.ProfileInfoId,
-            GetTokenFromHeader());
+            GetUserName());
     }
 
     /// <summary>

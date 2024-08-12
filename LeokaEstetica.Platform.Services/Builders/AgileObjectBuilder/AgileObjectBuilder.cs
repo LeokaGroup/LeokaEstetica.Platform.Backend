@@ -93,4 +93,9 @@ internal abstract class AgileObjectBuilder
     /// Метод записывает Id спринта и название спринта.
     /// </summary>
     public abstract Task FillSprintIdAndSprintNameAsync();
+
+    /// <summary>
+    /// Метод заполняет эпик входящими в него задачами.
+    /// </summary>
+    public abstract Task FillEpicTasksAsync();
 }

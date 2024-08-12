@@ -28,8 +28,9 @@ public class ProjectManagementRoleController : BaseController
     /// <param name="projectManagmentRoleService">Сервис ролей модуля УП.</param>
     /// <param name="projectManagmentRoleRepository">Репозиторий ролей пользователей.</param>
     /// <param name="logger">Логгер.</param>
-    public ProjectManagementRoleController(IProjectManagmentRoleService projectManagmentRoleService, Lazy<IProjectManagmentRoleRepository> projectManagmentRoleRepository,
-     ILogger<ProjectManagementRoleController> logger)
+    public ProjectManagementRoleController(IProjectManagmentRoleService projectManagmentRoleService,
+        Lazy<IProjectManagmentRoleRepository> projectManagmentRoleRepository,
+        ILogger<ProjectManagementRoleController> logger)
     {
         _projectManagmentRoleService = projectManagmentRoleService;
         _projectManagmentRoleRepository = projectManagmentRoleRepository;
@@ -39,7 +40,8 @@ public class ProjectManagementRoleController : BaseController
     /// <summary>
     /// Метод получает список ролей пользователя.
     /// </summary>
-    /// <param name="projectId">Id проекта, если передали.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="companyId">Id компании.</param>
     /// <returns>Список ролей.</returns>
     [HttpGet]
     [Route("user-roles")]
@@ -48,9 +50,10 @@ public class ProjectManagementRoleController : BaseController
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<IEnumerable<ProjectManagementRoleOutput>> GetUserRolesAsync([FromQuery] long? projectId = null)
+    public async Task<IEnumerable<ProjectManagementRoleOutput>> GetUserRolesAsync([FromQuery] long projectId,
+        [FromQuery] long companyId)
     {
-        var result = await _projectManagmentRoleService.GetUserRolesAsync(GetUserName(), projectId);
+        var result = await _projectManagmentRoleService.GetUserRolesAsync(GetUserName(), projectId, companyId);
 
         return result;
     }
@@ -69,14 +72,9 @@ public class ProjectManagementRoleController : BaseController
     [ProducesResponseType(404)]
     public async Task<IEnumerable<ProjectManagementRoleOutput>> GetRolesAsync([FromQuery] long? projectId = null)
     {
-        var result = await _projectManagmentRoleRepository.Value.GetUserRolesAsync(null, projectId);
+        var result = await _projectManagmentRoleRepository.Value.GetUserRolesAsync(null, projectId, null);
 
-        if (result is null)
-        {
-            return Enumerable.Empty<ProjectManagementRoleOutput>();
-        }
-
-        return result;
+        return result ?? Enumerable.Empty<ProjectManagementRoleOutput>();
     }
 
     /// <summary>
@@ -102,13 +100,13 @@ public class ProjectManagementRoleController : BaseController
             {
                 exceptions.Add(new InvalidOperationException(err.ErrorMessage));
             }
-            
+
             var ex = new AggregateException(exceptions);
             _logger.LogError(ex, "Ошибки при обновлении ролей.");
 
             throw ex;
         }
 
-        await _projectManagmentRoleService.UpdateRolesAsync(updatedRoles, CreateTokenFromHeader());
+        await _projectManagmentRoleService.UpdateRolesAsync(updatedRoles, GetUserName());
     }
 }

@@ -31,7 +31,6 @@ internal class UpdateProjectTest : BaseServiceTest
             ProjectStageEnum.Concept.ToString(), null)
         {
             Account = "sierra_93@mail.ru",
-            Token = string.Empty,
             Conditions = "Тестовые условия тест",
             Demands = "Тестовые требования тест"
         };

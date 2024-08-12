@@ -11,6 +11,7 @@ using LeokaEstetica.Platform.Models.Dto.Base.Commerce;
 using LeokaEstetica.Platform.Models.Dto.Input.Commerce.PayMaster;
 using LeokaEstetica.Platform.Models.Dto.Output.Refunds;
 using LeokaEstetica.Platform.Models.Entities.Commerce;
+using LeokaEstetica.Platform.Models.Enums;
 using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Notifications.Consts;
 using LeokaEstetica.Platform.Processing.Abstractions.Commerce;
@@ -35,12 +36,12 @@ internal sealed class RefundsService : IRefundsService
     private readonly ISubscriptionRepository _subscriptionRepository;
     private readonly IUserRepository _userRepository;
     private readonly IOrdersRepository _ordersRepository;
-    private readonly IRefundsNotificationService _refundsNotificationService;
     private readonly IPayMasterService _payMasterService;
     private readonly IGlobalConfigRepository _globalConfigRepository;
     private readonly ICommerceService _commerceService;
     private readonly ICommerceRepository _commerceRepository;
     private readonly IMapper _mapper;
+    private readonly Lazy<IHubNotificationService> _hubNotificationService;
 
     /// <summary>
     /// Конструктор.
@@ -49,35 +50,35 @@ internal sealed class RefundsService : IRefundsService
     /// <param name="subscriptionRepository">Репозиторий подписок.</param>
     /// <param name="userRepository">Репозиторий пользователя.</param>
     /// <param name="ordersRepository">Репозиторий заказов.</param>
-    /// <param name="refundsNotificationService">Сервис уведомлений возвратов.</param>
     /// <param name="payMasterService">Сервис возвратов в ПС.</param>
     /// <param name="globalConfigRepository">Репозиторий глобал конфига.</param>
     /// <param name="commerceService">Сервис коммерции.</param>
     /// <param name="commerceRepository">Репозиторий коммерции.</param>
     /// <param name="mapper">Маппер.</param>
+    /// <param name="hubNotificationService">Сервис уведомлений хабов.</param>
     public RefundsService(ILogger<RefundsService> logger,
         ILogger<BaseCalculateRefundStrategy> loggerStrategy,
         ISubscriptionRepository subscriptionRepository,
         IUserRepository userRepository,
         IOrdersRepository ordersRepository,
-        IRefundsNotificationService refundsNotificationService,
         IPayMasterService payMasterService,
-        IGlobalConfigRepository globalConfigRepository, 
+        IGlobalConfigRepository globalConfigRepository,
         ICommerceService commerceService,
         ICommerceRepository commerceRepository,
-        IMapper mapper)
+        IMapper mapper,
+        Lazy<IHubNotificationService> hubNotificationService)
     {
         _logger = logger;
         _loggerStrategy = loggerStrategy;
         _subscriptionRepository = subscriptionRepository;
         _userRepository = userRepository;
         _ordersRepository = ordersRepository;
-        _refundsNotificationService = refundsNotificationService;
         _payMasterService = payMasterService;
         _globalConfigRepository = globalConfigRepository;
         _commerceService = commerceService;
         _commerceRepository = commerceRepository;
         _mapper = mapper;
+        _hubNotificationService = hubNotificationService;
     }
 
     #region Публичные методы.
@@ -87,20 +88,21 @@ internal sealed class RefundsService : IRefundsService
     /// Возврат делается только за неиспользованный период подписки.
     /// <param name="orderId">Id заказа.</param>
     /// <param name="account">Аккаунт.</param>
-    /// <param name="token">Токен.</param>
     /// </summary>
     /// <returns>Выходная модель.</returns>
-    public async Task<CalculateRefundOutput> CalculateRefundAsync(string account, string token)
+    public async Task<CalculateRefundOutput> CalculateRefundAsync(string account)
     {
+        var userId = await _userRepository.GetUserByEmailAsync(account);
+
+        if (userId <= 0)
+        {
+            throw new NotFoundUserIdByAccountException(account);
+        }
+        
+        var userCode = await _userRepository.GetUserCodeByUserIdAsync(userId);
+        
         try
         {
-            var userId = await _userRepository.GetUserByEmailAsync(account);
-
-            if (userId <= 0)
-            {
-                throw new NotFoundUserIdByAccountException(account);
-            }
-
             // Получаем подписку.
             var currentSubscription = await _subscriptionRepository.GetUserSubscriptionAsync(userId);
             
@@ -131,13 +133,11 @@ internal sealed class RefundsService : IRefundsService
 
             if (result is null)
             {
-                if (!string.IsNullOrEmpty(token))
-                {
-                    await _refundsNotificationService.SendNotificationErrorCalculateRefundAsync("Что то пошло не так",
-                        "Ошибка при вычислении суммы возврата. Мы уже знаем о проблеме и уже занимаемся ей. " +
-                        $"Вы можете обратиться в тех.поддержку. ID вашего заказа {orderId}",
-                        NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, token);
-                }
+                await _hubNotificationService.Value.SendNotificationAsync("Что то пошло не так",
+                    "Ошибка при вычислении суммы возврата. Мы уже знаем о проблеме и уже занимаемся ей. " +
+                    $"Вы можете обратиться в тех.поддержку. ID вашего заказа {orderId}",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, "SendNotificationErrorCalculateRefund", userCode,
+                    UserConnectionModuleEnum.Processing);
 
                 throw new InvalidOperationException("Не удалось вычислить сумму возврата. " +
                                                     $"OrderId: {orderId}. " +
@@ -148,14 +148,12 @@ internal sealed class RefundsService : IRefundsService
 
             if (price <= 0)
             {
-                if (!string.IsNullOrEmpty(token))
-                {
-                    await _refundsNotificationService.SendNotificationErrorCalculateRefundAsync("Что то пошло не так",
-                        "Ошибка при вычислении суммы возврата. Мы уже знаем о проблеме и уже занимаемся ей. " +
-                        $"Вы можете обратиться в тех.поддержку. ID вашего заказа {orderId}",
-                        NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, token);
-                }
-                
+                await _hubNotificationService.Value.SendNotificationAsync("Что то пошло не так",
+                    "Ошибка при вычислении суммы возврата. Мы уже знаем о проблеме и уже занимаемся ей. " +
+                    $"Вы можете обратиться в тех.поддержку. ID вашего заказа {orderId}",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, "SendNotificationErrorCalculateRefund", userCode,
+                    UserConnectionModuleEnum.Processing);
+
                 throw new InvalidOperationException("Сумма возврата не может быть отрицательной." +
                                                     $"Price: {price}" +
                                                     $"OrderId: {orderId}. " +
@@ -167,13 +165,11 @@ internal sealed class RefundsService : IRefundsService
 
         catch (Exception ex)
         {
-            if (!string.IsNullOrEmpty(token))
-            {
-                await _refundsNotificationService.SendNotificationErrorCalculateRefundAsync("Что то пошло не так",
-                    "Ошибка при вычислении суммы возврата. Мы уже знаем о проблеме и уже занимаемся ей. ",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, token);
-            }
-            
+            await _hubNotificationService.Value.SendNotificationAsync("Что то пошло не так",
+                "Ошибка при вычислении суммы возврата. Мы уже знаем о проблеме и уже занимаемся ей. ",
+                NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, "SendNotificationErrorCalculateRefund", userCode,
+                UserConnectionModuleEnum.Processing);
+
             _logger.LogError(ex.Message, ex);
             throw;
         }
@@ -185,19 +181,20 @@ internal sealed class RefundsService : IRefundsService
     /// <param name="orderId">Id заказа.</param>
     /// <param name="price">Сумма возврата.</param>
     /// <param name="account">Аккаунт.</param>
-    /// <param name="token">Токен.</param>
     /// <returns>Выходная модель.</returns>
-    public async Task<CreateRefundOutput> CreateRefundAsync(long orderId, decimal price, string account, string token)
+    public async Task<CreateRefundOutput> CreateRefundAsync(long orderId, decimal price, string account)
     {
+        var userId = await _userRepository.GetUserByEmailAsync(account);
+
+        if (userId <= 0)
+        {
+            throw new NotFoundUserIdByAccountException(account);
+        }
+        
+        var userCode = await _userRepository.GetUserCodeByUserIdAsync(userId);
+        
         try
         {
-            var userId = await _userRepository.GetUserByEmailAsync(account);
-
-            if (userId <= 0)
-            {
-                throw new NotFoundUserIdByAccountException(account);
-            }
-
             // Получаем данные для возврата из заказа.
             var order = await _ordersRepository.GetOrderDetailsAsync(orderId, userId);
 
@@ -240,14 +237,12 @@ internal sealed class RefundsService : IRefundsService
 
                 if (isExists)
                 {
-                    if (!string.IsNullOrEmpty(token))
-                    {
-                        await _refundsNotificationService.SendNotificationWarningManualRefundAsync("Внимание",
-                            "Такой возврат уже создан. Нельзя создать возврат повторно." +
-                            $"ID вашего заказа по которому сделан возврат {orderId}",
-                            NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
-                    }
-                    
+                    await _hubNotificationService.Value.SendNotificationAsync("Внимание",
+                        "Такой возврат уже создан. Нельзя создать возврат повторно." +
+                        $"ID вашего заказа по которому сделан возврат {orderId}",
+                        NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, "SendNotificationWarningManualRefund",
+                        userCode, UserConnectionModuleEnum.Processing);
+
                     return null;
                 }
                 
@@ -265,15 +260,13 @@ internal sealed class RefundsService : IRefundsService
                                        $" Данные заказа для возврата: {JsonConvert.SerializeObject(order)}");
                 _logger.LogInformation($"Заказ {orderId} ожидает ручной обработки возврата.");
             }
-            
-            if (!string.IsNullOrEmpty(token))
-            {
-                await _refundsNotificationService.SendNotificationSuccessManualRefundAsync("Все хорошо",
-                    "Возврат записан и будет обработан. Как только мы обработаем возврат," +
-                    " Вы получите уведомление об этом на почту. " +
-                    $"ID вашего заказа по которому будет возврат {orderId}",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);
-            }
+
+            await _hubNotificationService.Value.SendNotificationAsync("Все хорошо",
+                "Возврат записан и будет обработан. Как только мы обработаем возврат," +
+                " Вы получите уведомление об этом на почту. " +
+                $"ID вашего заказа по которому будет возврат {orderId}",
+                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, "SendNotificationSuccessManualRefund", userCode,
+                UserConnectionModuleEnum.Processing);
 
             return refund;
         }
@@ -282,13 +275,11 @@ internal sealed class RefundsService : IRefundsService
         {
             _logger?.LogCritical(ex.Message, ex);
 
-            if (!string.IsNullOrEmpty(token))
-            {
-                await _refundsNotificationService.SendNotificationErrorRefundAsync("Что то пошло не так",
-                    "Ошибка при возврате. Мы уже знаем о проблеме и уже занимаемся ей. " +
-                    $"Вы можете обратиться в тех.поддержку. ID вашего заказа {orderId}",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, token);
-            }
+            await _hubNotificationService.Value.SendNotificationAsync("Что то пошло не так",
+                "Ошибка при возврате. Мы уже знаем о проблеме и уже занимаемся ей. " +
+                $"Вы можете обратиться в тех.поддержку. ID вашего заказа {orderId}",
+                NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, "SendNotificationErrorRefund", userCode,
+                UserConnectionModuleEnum.Processing);
 
             throw;
         }

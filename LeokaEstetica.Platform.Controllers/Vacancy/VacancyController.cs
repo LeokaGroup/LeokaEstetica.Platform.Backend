@@ -107,8 +107,7 @@ public class VacancyController : BaseController
 
             return result;
         }
-
-        vacancyInput.Token = CreateTokenFromHeader();
+        
         vacancyInput.Account = GetUserName();
         
         var createdVacancy = await _vacancyService.CreateVacancyAsync(vacancyInput);
@@ -191,7 +190,6 @@ public class VacancyController : BaseController
         }
 
         vacancyInput.Account = GetUserName();
-        vacancyInput.Token = CreateTokenFromHeader();
 
         var createdVacancy = await _vacancyService.UpdateVacancyAsync(vacancyInput);
         
@@ -278,7 +276,7 @@ public class VacancyController : BaseController
     [ProducesResponseType(404)]
     public async Task DeleteVacancyAsync([FromRoute] long vacancyId)
     {
-        await _vacancyService.DeleteVacancyAsync(vacancyId, GetUserName(), CreateTokenFromHeader());
+        await _vacancyService.DeleteVacancyAsync(vacancyId, GetUserName());
     }
 
     /// <summary>
@@ -312,7 +310,7 @@ public class VacancyController : BaseController
     [ProducesResponseType(404)]
     public async Task AddVacancyArchiveAsync([FromBody] VacancyArchiveInput vacancy)
     {
-        await _vacancyService.AddVacancyArchiveAsync(vacancy.VacancyId, GetUserName(), GetTokenFromHeader());
+        await _vacancyService.AddVacancyArchiveAsync(vacancy.VacancyId, GetUserName());
     }
     
     /// <summary>
@@ -348,7 +346,7 @@ public class VacancyController : BaseController
     [ProducesResponseType(404)]
     public async Task DeleteVacancyArchiveAsync([FromQuery] long vacancyId)
     {
-        await _vacancyService.DeleteVacancyArchiveAsync(vacancyId, GetUserName(), GetTokenFromHeader());
+        await _vacancyService.DeleteVacancyArchiveAsync(vacancyId, GetUserName());
     }
     
     /// <summary>

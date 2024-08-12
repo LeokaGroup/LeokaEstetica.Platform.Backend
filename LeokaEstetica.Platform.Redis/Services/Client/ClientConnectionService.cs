@@ -26,7 +26,7 @@ internal sealed class ClientConnectionService : IClientConnectionService
         var dialogRedis = await _connectionService.GetDialogMembersConnectionIdsCacheAsync(
             dialogId.GetValueOrDefault().ToString());
         
-        var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
+        var connection = await _connectionService.GetConnectionIdCacheAsync(token);
 
         // В кэше нет данных, будем добавлять текущего пользователя как первого.
         if (dialogRedis is null || !dialogRedis.Any())
@@ -37,7 +37,7 @@ internal sealed class ClientConnectionService : IClientConnectionService
                 new()
                 {
                     Token = token,
-                    ConnectionId = connectionId,
+                    ConnectionId = connection.ConnectionId,
                     UserId = userId
                 }
             };
@@ -49,7 +49,7 @@ internal sealed class ClientConnectionService : IClientConnectionService
         // Нашли в кэше, будем проверять актуальность ConnectionId.
         else
         {
-            var isActual = dialogRedis.Any(x => x.ConnectionId.Equals(connectionId));
+            var isActual = dialogRedis.Any(x => x.ConnectionId.Equals(connection.ConnectionId));
 
             // Не актуален, обновим ConnectionId текущего пользователя.
             if (!isActual)
@@ -63,7 +63,7 @@ internal sealed class ClientConnectionService : IClientConnectionService
                         dialogRedis.Add(new DialogRedis
                         {
                             Token = token,
-                            ConnectionId = connectionId,
+                            ConnectionId = connection.ConnectionId,
                             UserId = userId
                         });
                     }
@@ -76,7 +76,7 @@ internal sealed class ClientConnectionService : IClientConnectionService
                             new()
                             {
                                 Token = token,
-                                ConnectionId = connectionId,
+                                ConnectionId = connection.ConnectionId,
                                 UserId = userId
                             }
                         };
@@ -89,9 +89,9 @@ internal sealed class ClientConnectionService : IClientConnectionService
                 else
                 {
                     // Если не актуален ConnectionId, то обновим на актуальный.
-                    if (!client.ConnectionId.Equals(connectionId))
+                    if (!client.ConnectionId.Equals(connection.ConnectionId))
                     {
-                        client.ConnectionId = connectionId;
+                        client.ConnectionId = connection.ConnectionId;
                     }
 
                     await _connectionService.AddDialogMembersConnectionIdsCacheAsync(dialogId.GetValueOrDefault(),

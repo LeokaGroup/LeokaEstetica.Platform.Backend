@@ -68,18 +68,15 @@ public interface ISprintService
     /// <param name="projectSprintId">Id спринта в рамках проекта.</param>
     /// <param name="projectId">Id проекта.</param>
     /// <param name="account">Аккаунт.</param>
-    /// <param name="token">Токен.</param>
-    Task StartSprintAsync(long projectSprintId, long projectId, string account, string token);
+    Task StartSprintAsync(long projectSprintId, long projectId, string account);
 
     /// <summary>
     /// Метод завершает спринт (ручное завершение).
     /// </summary>
     /// <param name="sprintInput">Входная модель.</param>
     /// <param name="account">Аккаунт.</param>
-    /// <param name="token">Токен.</param>
     /// <returns>Выходная модель после завершения спринта.</returns>
-    Task<ManualCompleteSprintOutput> ManualCompleteSprintAsync(ManualCompleteSprintInput sprintInput, string account,
-        string? token);
+    Task<ManualCompleteSprintOutput> ManualCompleteSprintAsync(ManualCompleteSprintInput sprintInput, string account);
     
     /// <summary>
     /// Метод получает список спринтов доступных для переноса незавершенных задач в один из них.

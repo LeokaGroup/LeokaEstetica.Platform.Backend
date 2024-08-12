@@ -78,6 +78,25 @@ internal sealed class ProjectManagementHub : Hub, IHubService
         _httpClientFactory = httpClientFactory;
         _configuration = configuration;
     }
+    
+    public override Task OnConnectedAsync()
+    {
+        var userCode = Context.GetHttpContext().Request.Query["userCode"].ToString();
+        var module = Enum.Parse<UserConnectionModuleEnum>(Context.GetHttpContext().Request.Query["module"].ToString());
+
+        if (!string.IsNullOrEmpty(userCode))
+        {
+            _connectionService.AddConnectionIdCacheAsync(userCode, Context.ConnectionId, module)
+                .ConfigureAwait(false);
+        }
+        
+        return base.OnConnectedAsync();
+    }
+    
+    public override Task OnDisconnectedAsync(Exception exception)
+    {
+        return Task.CompletedTask;
+    }
 
     /// <inheritdoc />
     public async Task GetDialogsAsync(string account, string token, long? objectId = null)
@@ -102,10 +121,12 @@ internal sealed class ProjectManagementHub : Hub, IHubService
             result.Dialogs = await CreateDialogMessagesBuilder.CreateDialogAsync(dialogs,
                 _chatRepository, _userRepository, userId, account);
             
-            var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
+            var userCode = await _userRepository.GetUserCodeByUserIdAsync(userId);
+            var key = userCode + "_" + UserConnectionModuleEnum.Main;
+            var connection = await _connectionService.GetConnectionIdCacheAsync(key);
             
             await Clients
-                .Client(connectionId)
+                .Client(connection.ConnectionId)
                 .SendAsync("listenGetDialogs", result)
                 .ConfigureAwait(false);
         }
@@ -188,13 +209,16 @@ internal sealed class ProjectManagementHub : Hub, IHubService
 
             var queueType = string.Empty.CreateQueueDeclareNameFactory(_configuration["Environment"],
                 QueueTypeEnum.ScrumMasterAiMessage);
+                
+            var userCode = await _userRepository.GetUserCodeByUserIdAsync(userId);
             
-            var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
-            
+            var key = userCode + "_" + UserConnectionModuleEnum.Main;
+            var connection = await _connectionService.GetConnectionIdCacheAsync(key);
+
             // TODO: - 1 это Id нейросети. Пока хардкодим, если нейросетей станет несколько,
             // TODO: то будем получать из БД.
             var scrumMasterAiMessageEvent = ScrumMasterAiMessageEventFactory.CreateScrumMasterAiMessageEvent(message,
-                connectionId, -1, ScrumMasterAiEventTypeEnum.Message, dialogId);
+                connection.ConnectionId, -1, ScrumMasterAiEventTypeEnum.Message, dialogId);
             
             // Отправляем событие в кролика для ответа нейросети в джобе.
             await _rabbitMqService.PublishAsync(scrumMasterAiMessageEvent, queueType, _configuration);
