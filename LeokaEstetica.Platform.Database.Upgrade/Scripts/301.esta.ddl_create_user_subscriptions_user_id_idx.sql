@@ -1,0 +1,1 @@
+﻿CREATE UNIQUE INDEX user_subscriptions_user_id_idx ON subscriptions.user_subscriptions (user_id);

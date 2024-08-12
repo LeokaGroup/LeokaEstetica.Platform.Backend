@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 using AutoMapper;
 using Dapper;
 using FluentValidation.Results;
@@ -62,7 +61,6 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     private readonly IProjectSettingsConfigRepository _projectSettingsConfigRepository;
     private readonly Lazy<IReversoService> _reversoService;
     private readonly Lazy<IFileManagerService> _fileManagerService;
-    private readonly Lazy<IProjectManagementNotificationService> _projectManagementNotificationService;
     private readonly IUserService _userService;
     private readonly Lazy<IDistributionStatusTaskService> _distributionStatusTaskService;
     private readonly IProjectManagementTemplateService _projectManagementTemplateService;
@@ -77,6 +75,8 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     {
         "New", "InWork", "InDevelopment", "Completed"
     };
+    
+    private readonly Lazy<IHubNotificationService> _hubNotificationService;
 
     /// <summary>
     /// Конструктор.
@@ -91,12 +91,12 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     /// <param name="projectSettingsConfigRepository">Репозиторий настроек проектов.</param>
     /// <param name="projectSettingsConfigRepository">Сервис транслитера.</param>
     /// <param name="fileManagerService">Сервис менеджера файлов.</param>
-    /// <param name="projectManagementNotificationService">Сервис уведомлений модуля УП.</param>
     /// <param name="userService">Сервис пользователей.</param>
     /// <param name="distributionStatusTaskService">Сервис распределение задач по статусам.</param>
     /// <param name="projectManagementTemplateService">Сервис шаблонов проекта.</param>
     /// <param name="projectManagmentRoleRepository">Репозиторий ролей проекта.</param>
     /// <param name="mongoDbRepository">Репозиторий MongoDB.</param>
+    /// <param name="hubNotificationService">Сервис уведомлений хабов.</param>
     /// </summary>
     public ProjectManagmentService(ILogger<ProjectManagmentService> logger,
         IProjectManagmentRepository projectManagmentRepository,
@@ -109,12 +109,12 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         IProjectSettingsConfigRepository projectSettingsConfigRepository,
         Lazy<IReversoService> reversoService,
         Lazy<IFileManagerService> fileManagerService,
-        Lazy<IProjectManagementNotificationService> projectManagementNotificationService,
         IUserService userService,
         Lazy<IDistributionStatusTaskService> distributionStatusTaskService,
         IProjectManagementTemplateService projectManagementTemplateService,
         Lazy<IProjectManagmentRoleRepository> projectManagmentRoleRepository,
-        IMongoDbRepository mongoDbRepository)
+        IMongoDbRepository mongoDbRepository,
+         Lazy<IHubNotificationService> hubNotificationService)
     {
         _logger = logger;
         _projectManagmentRepository = projectManagmentRepository;
@@ -127,12 +127,12 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         _projectSettingsConfigRepository = projectSettingsConfigRepository;
         _reversoService = reversoService;
         _fileManagerService = fileManagerService;
-        _projectManagementNotificationService = projectManagementNotificationService;
         _userService = userService;
         _distributionStatusTaskService = distributionStatusTaskService;
         _projectManagementTemplateService = projectManagementTemplateService;
         _projectManagmentRoleRepository = projectManagmentRoleRepository;
         _mongoDbRepository = mongoDbRepository;
+        _hubNotificationService = hubNotificationService;
     }
 
     #region Публичные методы.
@@ -702,7 +702,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     
     /// <inheritdoc />
     public async Task<CreateProjectManagementTaskOutput> CreateProjectTaskAsync(
-        CreateProjectManagementTaskInput projectManagementTaskInput, string account, string? token)
+        CreateProjectManagementTaskInput projectManagementTaskInput, string account)
     {
         try
         {
@@ -720,17 +720,16 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             // Проверка на дубли идет по совпадению типа задачи и названия задачи.
             var ifExists = await _projectManagmentRepository.IfExistsProjectTaskAsync(projectManagementTaskInput.Name,
                 projectManagementTaskInput.TaskTypeId, projectId);
+                
+            var userCode = await _userRepository.GetUserCodeByUserIdAsync(userId);
 
             if (ifExists)
             {
-                if (!string.IsNullOrEmpty(token))
-                {
-                    await _projectManagementNotificationService.Value.SendNotifyWarningDublicateProjectTaskAsync(
-                        "Внимание",
-                        $"Такая задача уже заведена в проекте {projectId}.",
-                        NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
-                }
-                
+                await _hubNotificationService.Value.SendNotificationAsync("Внимание",
+                    $"Такая задача уже заведена в проекте {projectId}.",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, "SendNotifyWarningDublicateProjectTask",
+                    userCode, UserConnectionModuleEnum.ProjectManagement);
+
                 // TODO: Переделать на уведомление через хаб.
                 return new CreateProjectManagementTaskOutput
                 {
@@ -1050,7 +1049,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     }
 
     /// <inheritdoc />
-    public async Task CreateProjectTagAsync(string tagName, string tagDescription, long projectId, string account, string token)
+    public async Task CreateProjectTagAsync(string tagName, string tagDescription, long projectId, string account)
     {
         try
         {
@@ -1076,14 +1075,13 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             var projectTag = CreateUserTaskTagFactory.CreateProjectTag(tagName, tagDescription, tagSysName,
                     ++maxUserTagPosition, projectId);
             await _projectManagmentRepository.CreateProjectTaskTagAsync(projectTag);
+            
+            var userCode = await _userRepository.GetUserCodeByUserIdAsync(userId);
 
-            if (!string.IsNullOrEmpty(token))
-            {
-                await _projectManagementNotificationService.Value.SendNotifySuccessCreateProjectTagAsync(
-                    "Все хорошо",
-                    "Метка добавлена в проект.",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);
-            }
+            await _hubNotificationService.Value.SendNotificationAsync("Все хорошо",
+                "Метка добавлена в проект.",
+                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, "SendNotifySuccessCreateProjectTag", userCode,
+                UserConnectionModuleEnum.ProjectManagement);
         }
         
         catch (Exception ex)
@@ -1574,12 +1572,22 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 
     /// <inheritdoc />
     public async Task ChangeTaskStatusAsync(long projectId, string changeStatusId, string taskId,
-        string taskDetailType, string token)
+        string taskDetailType, string account)
     {
         try
         {
             var detailType = Enum.Parse<TaskDetailTypeEnum>(taskDetailType);
             var onlyTaskId = taskId.GetProjectTaskIdFromPrefixLink();
+            
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+            
+            var userCode = await _userRepository.GetUserCodeByUserIdAsync(userId);
         
             switch (detailType)
             {
@@ -1596,14 +1604,11 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                     // Недопустимо, стопаем выполнение логики и уведомляем фронт.
                     if (!ifExistsEpicStatus)
                     {
-                        if (!string.IsNullOrEmpty(token))
-                        {
-                            await _projectManagementNotificationService.Value.SendNotifyWarningChangeEpicStatusAsync(
-                                "Внимание",
-                                "Нельзя перевести эпик в указанный статус.",
-                                NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);   
-                        }
-                        
+                        await _hubNotificationService.Value.SendNotificationAsync("Внимание",
+                            "Нельзя перевести эпик в указанный статус.",
+                            NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, "SendNotifyWarningChangeEpicStatus",
+                            userCode, UserConnectionModuleEnum.ProjectManagement);
+
                         break;
                     }
                     
@@ -1619,14 +1624,11 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                     // Недопустимо, стопаем выполнение логики и уведомляем фронт.
                     if (!ifExistsStoryStatus)
                     {
-                        if (!string.IsNullOrEmpty(token))
-                        {
-                            await _projectManagementNotificationService.Value.SendNotifyWarningChangeStoryStatusAsync(
-                                "Внимание",
-                                "Нельзя перевести историю в указанный статус.",
-                                NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);   
-                        }
-                        
+                        await _hubNotificationService.Value.SendNotificationAsync("Внимание",
+                            "Нельзя перевести историю в указанный статус.",
+                            NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, "SendNotifyWarningChangeStoryStatus",
+                            userCode, UserConnectionModuleEnum.ProjectManagement);
+
                         break;
                     }
                     
@@ -2666,32 +2668,31 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 
     /// <inheritdoc />
     public async Task IncludeTaskEpicAsync(long projectEpicId, IEnumerable<string> projectTaskIds, string account,
-        string token, long projectId)
+        long projectId)
     {
+        var userId = await _userRepository.GetUserByEmailAsync(account);
+
+        if (userId <= 0)
+        {
+            var ex = new NotFoundUserIdByAccountException(account);
+            throw ex;
+        }
+        
+        var userCode = await _userRepository.GetUserCodeByUserIdAsync(userId);
+        
         try
         {
-            var userId = await _userRepository.GetUserByEmailAsync(account);
-
-            if (userId <= 0)
-            {
-                var ex = new NotFoundUserIdByAccountException(account);
-                throw ex;
-            }
-
             var projectTaskIdToNumbers = projectTaskIds.Select(x => x.GetProjectTaskIdFromPrefixLink());
 
             var epicId = await _projectManagmentRepository.GetEpicIdByProjectEpicIdAsync(projectId, projectEpicId);
 
             // Добавляем задачу в эпик.
             await _projectManagmentRepository.IncludeTaskEpicAsync(epicId, projectTaskIdToNumbers);
-            
-            if (!string.IsNullOrEmpty(token))
-            {
-                await _projectManagementNotificationService.Value.SendNotifySuccessIncludeEpicTaskAsync(
-                    "Все хорошо",
-                    "Задачи успешно добавлены в эпик.",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);   
-            }
+
+            await _hubNotificationService.Value.SendNotificationAsync("Все хорошо",
+                "Задачи успешно добавлены в эпик.",
+                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, "SendNotifySuccessIncludeEpicTask", userCode,
+                UserConnectionModuleEnum.ProjectManagement);
 
             // TODO: Тут добавить запись активности пользователя по userId (кто добавил задачу в эпик).
         }
@@ -2700,13 +2701,10 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         {
             _logger?.LogError(ex, ex.Message);
 
-            if (!string.IsNullOrEmpty(token))
-            {
-                await _projectManagementNotificationService.Value.SendNotifyErrorIncludeEpicTaskAsync(
-                    "Что то пошло не так",
-                    "Ошибка при добавлении задач в эпик. Мы уже знаем о проблеме и уже занимаемся ей.",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, token);
-            }
+            await _hubNotificationService.Value.SendNotificationAsync("Что то пошло не так",
+                "Ошибка при добавлении задач в эпик. Мы уже знаем о проблеме и уже занимаемся ей.",
+                NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, "SendNotifyErrorIncludeEpicTask", userCode,
+                UserConnectionModuleEnum.ProjectManagement);
 
             throw;
         }
@@ -2721,7 +2719,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     }
 
     /// <inheritdoc />
-    public async Task PlaningSprintAsync(PlaningSprintInput planingSprintInput, string account, string token)
+    public async Task PlaningSprintAsync(PlaningSprintInput planingSprintInput, string account)
     {
         try
         {
@@ -2827,6 +2825,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 
                 using var transactionScope = _transactionScopeFactory.CreateTransactionScope();
                 var addedSprintId = await _projectManagmentRepository.PlaningSprintAsync(planingSprintInput, userId);
+                var userCode = await _userRepository.GetUserCodeByUserIdAsync(userId);
                 
                 // Добавляем задачи в спринт, если их включили в спринт.
                 if (projectTaskIds is not null && projectTaskIds.Any())
@@ -2836,13 +2835,10 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 
                 if (planingSprintInput.DateStart.HasValue && planingSprintInput.DateEnd.HasValue)
                 {
-                    if (!string.IsNullOrEmpty(token))
-                    {
-                        await _projectManagementNotificationService.Value.SendNotifySuccessPlaningSprintAsync(
-                            "Все хорошо",
-                            "Спринт успешно спланирован. Теперь его можно начать.",
-                            NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);   
-                    }
+                    await _hubNotificationService.Value.SendNotificationAsync("Все хорошо",
+                        "Спринт успешно спланирован. Теперь его можно начать.",
+                        NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, "SendNotifySuccessPlaningSprint", userCode,
+                        UserConnectionModuleEnum.ProjectManagement);
                 }
                 
                 // TODO: Тут добавить запись активности пользователя по userId (кто спланировал спринт).
@@ -2989,7 +2985,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             
             // Проверяем, есть ли у пользователя роль на удаление задачи.
             var ifExistRoleRemoveTask = await _projectManagmentRoleRepository.Value
-                .GetProjectRoleByRoleSysNameAsync("ProjectRemoveTask", userId);
+                .CheckProjectRoleAsync("ProjectRemoveTask", userId, projectId);
             
             if (!ifExistRoleRemoveTask)
             {
@@ -3022,6 +3018,31 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         catch (Exception ex)
         {
              _logger?.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task<WorkSpaceOutput> GetWorkSpaceByProjectIdAsync(long projectId, string account)
+    {
+        try
+        {
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+
+            var result = await _projectManagmentRepository.GetWorkSpaceByProjectIdAsync(projectId, userId);
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, ex.Message);
             throw;
         }
     }

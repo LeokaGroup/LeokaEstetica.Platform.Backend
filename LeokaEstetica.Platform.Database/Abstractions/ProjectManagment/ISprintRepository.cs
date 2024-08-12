@@ -30,9 +30,10 @@ public interface ISprintRepository
     /// <param name="projectId">Id проекта.</param>
     /// <param name="projectSprintId">Id спринта проекта.</param>
     /// <param name="strategy">Стратегия пользователя.</param>
+    /// <param name="templateId">Id шаблона.</param>
     /// <returns>Задачи проекта.</returns>
     Task<IEnumerable<ProjectTaskExtendedEntity>?> GetProjectSprintTasksAsync(long projectId, long projectSprintId,
-        string strategy);
+        string strategy, int templateId);
     
     /// <summary>
     /// Метод обновляет название спринта.

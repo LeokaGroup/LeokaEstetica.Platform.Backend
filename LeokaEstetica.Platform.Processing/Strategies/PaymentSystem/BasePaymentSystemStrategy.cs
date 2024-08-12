@@ -16,7 +16,7 @@ internal abstract class BasePaymentSystemStrategy
     /// <param name="account">Аккаунт.</param>
     /// <param name="token">Токен пользователя.</param>
     /// <returns>Данные платежа.</returns>
-    public abstract Task<ICreateOrderOutput> CreateOrderAsync(Guid publicId, string account, string token);
+    public abstract Task<ICreateOrderOutput> CreateOrderAsync(Guid publicId, string account);
     
     /// <summary>
     /// Метод проверяет статус платежа в ПС.

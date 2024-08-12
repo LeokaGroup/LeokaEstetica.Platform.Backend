@@ -99,4 +99,14 @@ public class UserInfoOutput
     /// Телефон пользователя.
     /// </summary>
     public string? PhoneNumber { get; set; }
+
+	/// <summary>
+	/// Признак доступа.
+	/// </summary>
+	public bool IsAccess { get; set; }
+
+	/// <summary>
+	/// Успешное ли сохранение.
+	/// </summary>
+	public bool IsSuccess { get; set; }
 }

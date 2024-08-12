@@ -1,6 +1,7 @@
 ﻿using Dapper;
 using LeokaEstetica.Platform.Base.Abstractions.Connection;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.Base;
+using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.Notification;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagement.Output;
@@ -192,12 +193,12 @@ internal sealed class ProjectManagementSettingsRepository : BaseRepository, IPro
                     "pi.\"FirstName\", " +
                     "pi.\"Patronymic\" AS \"SecondName\", " +
                     "u.\"Email\", " +
-                    "u.\"LastAutorization\", " +
-                    "(CASE WHEN u.\"UserId\" = (SELECT up.\"UserId\" " +
+                    "TO_CHAR(u.\"LastAutorization\", 'DD.MM.YYYY HH24:MI') AS LastAutorization, " +
+                    "(CASE WHEN u.\"UserId\" <> (SELECT up.\"UserId\" " +
                     "FROM \"Projects\".\"UserProjects\" AS up " +
-                    "WHERE up.\"ProjectId\" = @projectId " +
-                    "LIMIT 1) THEN TRUE " +
-                    "ELSE FALSE END) AS IsOwner, " +
+                    "WHERE up.\"ProjectId\" <> @projectId " +
+                    "LIMIT 1) THEN FALSE " +
+                    "ELSE TRUE END) AS IsOwner, " +
                     "COALESCE(om.member_role, 'Участник') AS Role " +
                     "FROM project_management.organization_projects AS op " +
                     "INNER JOIN project_management.organization_members AS om " +
@@ -208,7 +209,11 @@ internal sealed class ProjectManagementSettingsRepository : BaseRepository, IPro
                     "ON pi.\"UserId\" = u.\"UserId\" " +
                     "WHERE op.project_id = @projectId " +
                     "AND op.is_active " +
-                    "LIMIT 1)" +
+                    "AND pi.\"UserId\" = ANY (SELECT ptm.\"UserId\" " +
+                    "FROM \"Teams\".\"ProjectsTeams\" AS pt " +
+                    "INNER JOIN \"Teams\".\"ProjectsTeamsMembers\" AS ptm " +
+                    "ON pt.\"TeamId\" = ptm.\"TeamId\" " +
+                    "WHERE pt.\"ProjectId\" = @projectId))" +
                     "SELECT * " +
                     "FROM cte_company_project_users " +
                     "UNION " +
@@ -217,12 +222,12 @@ internal sealed class ProjectManagementSettingsRepository : BaseRepository, IPro
                     "pi.\"FirstName\", " +
                     "pi.\"Patronymic\" AS \"SecondName\", " +
                     "u.\"Email\", " +
-                    "u.\"LastAutorization\", " +
-                    "(CASE WHEN u.\"UserId\" = (SELECT up.\"UserId\" " +
+                    "TO_CHAR(u.\"LastAutorization\", 'DD.MM.YYYY HH24:MI') AS LastAutorization, " +
+                    "(CASE WHEN u.\"UserId\" <> (SELECT up.\"UserId\" " +
                     "FROM \"Projects\".\"UserProjects\" AS up " +
                     "WHERE up.\"ProjectId\" = @projectId " +
-                    "LIMIT 1) THEN TRUE " +
-                    "ELSE FALSE END) AS IsOwner, " +
+                    "LIMIT 1) THEN FALSE " +
+                    "ELSE TRUE END) AS IsOwner, " +
                     "COALESCE(om.member_role, 'Участник') AS Role " +
                     "FROM project_management.organization_projects AS op " +
                     "INNER JOIN project_management.organization_members AS om " +
@@ -234,7 +239,12 @@ internal sealed class ProjectManagementSettingsRepository : BaseRepository, IPro
                     "WHERE op.project_id = @projectId " +
                     "AND op.is_active " +
                     "AND pi.\"UserId\" IN (SELECT pi.\"UserId\" " +
-                    "FROM cte_company_project_users)";
+                    "FROM cte_company_project_users) " +
+                    "AND pi.\"UserId\" = ANY (SELECT ptm.\"UserId\" " +
+                    "FROM \"Teams\".\"ProjectsTeams\" AS pt " +
+                    "INNER JOIN \"Teams\".\"ProjectsTeamsMembers\" AS ptm " +
+                    "ON pt.\"TeamId\" = ptm.\"TeamId\" " +
+                    "WHERE pt.\"ProjectId\" = @projectId)";
 
         var result = await connection.QueryAsync<ProjectSettingUserOutput>(query, parameters);
 
@@ -248,18 +258,21 @@ internal sealed class ProjectManagementSettingsRepository : BaseRepository, IPro
 
         var parameters = new DynamicParameters();
         parameters.Add("@projectId", projectId);
+        parameters.Add("@inviteType", NotificationTypeEnum.ProjectInvite.ToString());
         
         var query = "SELECT n.\"NotificationId\", " +
                     "u.\"Email\", " +
                     "n.\"UserId\", " +
-                    "n.\"Created\" AS CreatedAt " +
+                    "TO_CHAR(n.\"Created\", 'DD.MM.YYYY HH24:MI') AS \"CreatedAt\" " +
                     "FROM \"Notifications\".\"Notifications\" AS n " +
                     "INNER JOIN dbo.\"Users\" AS u " +
                     "ON n.\"UserId\" = u.\"UserId\" " +
                     "WHERE n.\"ProjectId\" = @projectId " +
                     "AND n.\"IsNeedAccepted\" " +
                     "AND NOT n.\"Approved\" " +
-                    "AND NOT n.\"Rejected\"";
+                    "AND NOT n.\"Rejected\" " +
+                    "AND n.\"NotificationType\" = @inviteType " +
+                    "AND n.\"NotificationType\" NOT IN ('ApproveInviteProject', 'RejectInviteProject')";
 
         var result = await connection.QueryAsync<ProjectInviteOutput>(query, parameters);
 
@@ -281,7 +294,7 @@ internal sealed class ProjectManagementSettingsRepository : BaseRepository, IPro
     }
 
     /// <inheritdoc/>
-    public async Task AddProjectMemberRolesAsync(long organizationId, long memberId)
+    public async Task AddCompanyMemberRolesAsync(long organizationId, long memberId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
         
@@ -324,7 +337,9 @@ internal sealed class ProjectManagementSettingsRepository : BaseRepository, IPro
                                (31, @memberId, @organizationId, TRUE),
                                (32, @memberId, @organizationId, TRUE),
                                (33, @memberId, @organizationId, TRUE),
-                               (34, @memberId, @organizationId, FALSE)";
+                               (34, @memberId, @organizationId, FALSE),
+                               (35, @memberId, @organizationId, TRUE),
+                               (36, @memberId, @organizationId, TRUE)";
                                
         await connection.ExecuteAsync(query, parameters);
     }

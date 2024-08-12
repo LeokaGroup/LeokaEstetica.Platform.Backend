@@ -8,11 +8,18 @@ namespace LeokaEstetica.Platform.Database.Abstractions.Moderation.Project;
 /// </summary>
 public interface IProjectModerationRepository
 {
+
     /// <summary>
-    /// Метод получает список проектов для модерации.
+    /// Метод получает проект на модерации.
     /// </summary>
-    /// <returns>Список проектов.</returns>
-    Task<IEnumerable<ModerationProjectEntity>> ProjectsModerationAsync();
+    /// /// <param name="projectId">Id проекта.</param>
+    Task<ModerationProjectEntity> GetProjectModerationAsync(long projectId);
+
+	/// <summary>
+	/// Метод получает список проектов для модерации.
+	/// </summary>
+	/// <returns>Список проектов.</returns>
+	Task<IEnumerable<ModerationProjectEntity>> ProjectsModerationAsync();
 
     /// <summary>
     /// Метод одобряет проект на модерации.

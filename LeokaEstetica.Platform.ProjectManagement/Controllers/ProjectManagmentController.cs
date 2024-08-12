@@ -293,8 +293,7 @@ public class ProjectManagmentController : BaseController
             return new CreateProjectManagementTaskOutput { Errors = validator.Errors };
         }
 
-        var result = await _projectManagmentService.CreateProjectTaskAsync(projectManagementTaskInput, GetUserName(),
-            CreateTokenFromHeader());
+        var result = await _projectManagmentService.CreateProjectTaskAsync(projectManagementTaskInput, GetUserName());
 
         return result;
     }
@@ -471,7 +470,7 @@ public class ProjectManagmentController : BaseController
         }
 
         await _projectManagmentService.CreateProjectTagAsync(projectTagInput.TagName,
-            projectTagInput.TagDescription, projectTagInput.ProjectId, GetUserName(), CreateTokenFromHeader());
+            projectTagInput.TagDescription, projectTagInput.ProjectId, GetUserName());
     }
 
     /// <summary>
@@ -1678,7 +1677,7 @@ public class ProjectManagmentController : BaseController
 
         await _projectManagmentService.IncludeTaskEpicAsync(
             includeTaskEpicInput.EpicId.GetProjectTaskIdFromPrefixLink(), includeTaskEpicInput.ProjectTaskIds,
-            GetUserName(), CreateTokenFromHeader(), includeTaskEpicInput.ProjectId);
+            GetUserName(), includeTaskEpicInput.ProjectId);
     }
 
     /// <summary>
@@ -1898,6 +1897,25 @@ public class ProjectManagmentController : BaseController
     public async Task<IEnumerable<WorkSpaceOutput>> GetWorkSpacesAsync()
     {
         var result = await _projectManagmentService.GetWorkSpacesAsync(GetUserName());
+
+        return result;
+    }
+    
+    /// <summary>
+    /// Метод получает раб.пространство проекта.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Раб.пространство проекта.</returns>
+    [HttpGet]
+    [Route("workspace")]
+    [ProducesResponseType(200, Type = typeof(WorkSpaceOutput))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<WorkSpaceOutput> GetWorkSpaceByProjectIdAsync([FromQuery] long projectId)
+    {
+        var result = await _projectManagmentService.GetWorkSpaceByProjectIdAsync(projectId, GetUserName());
 
         return result;
     }

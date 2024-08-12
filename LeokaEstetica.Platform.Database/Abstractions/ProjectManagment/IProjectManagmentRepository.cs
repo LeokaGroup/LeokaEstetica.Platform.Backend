@@ -784,4 +784,38 @@ public interface IProjectManagmentRepository
     /// <param name="projectEpicId">Id эпика в рамках проекта.</param>
     /// <returns>Id эпика.</returns>
     Task<long> GetEpicIdByProjectEpicIdAsync(long projectId, long projectEpicId);
+
+    /// <summary>
+    /// Метод получает статусы задач и ошибок.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="projectTaskIds">Id задач в рамках проекта.</param>
+    /// <param name="templateId">Id шаблона проекта.</param>
+    /// <returns>Словарь со статусами.</returns>
+    Task<IDictionary<long, ProjectTaskTypeOutput>> GetProjectTaskStatusesAsync(long projectId,
+        IEnumerable<long> projectTaskIds, int templateId);
+    
+    /// <summary>
+    /// Метод получает статусы историй.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="projectTaskIds">Id задач в рамках проекта.</param>
+    /// <returns>Словарь со статусами.</returns>
+    Task<IDictionary<long, ProjectTaskTypeOutput>> GetProjectStoryStatusesAsync(long projectId,
+        IEnumerable<long> projectTaskIds);
+    
+    /// <summary>
+    /// Метод получает раб.пространство проекта.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Раб.пространство проекта.</returns>
+    Task<WorkSpaceOutput> GetWorkSpaceByProjectIdAsync(long projectId, long userId);
+
+    /// <summary>
+    /// Метод получает список Id документов по Id проекта, которые в MongoDB.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>список Id документов в MongoDB.</returns>
+    Task<IEnumerable<string>> GetProjectMongoDocumentIdsByProjectIdAsync(long projectId);
 }
