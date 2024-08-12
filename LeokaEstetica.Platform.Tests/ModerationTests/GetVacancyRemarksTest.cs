@@ -11,7 +11,7 @@ internal class GetVacancyRemarksTest : BaseServiceTest
 
     public GetVacancyRemarksTest()
     {
-        _vacancyModerationRepository = new VacancyModerationRepository(PgContext);
+        _vacancyModerationRepository = new VacancyModerationRepository(PgContext, null);
     }
 
     [Test]

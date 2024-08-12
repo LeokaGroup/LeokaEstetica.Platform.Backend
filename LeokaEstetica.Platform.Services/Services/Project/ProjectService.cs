@@ -1,3 +1,4 @@
+using System.Globalization;
 using AutoMapper;
 using Dapper;
 using LeokaEstetica.Platform.Access.Abstractions.ProjectManagement;
@@ -1797,16 +1798,6 @@ internal sealed class ProjectService : IProjectService
 	}
 
 	/// <summary>
-	/// Метод форматирует дату к нужному виду.
-	/// </summary>
-	/// <param name="date">Дата, которую нужно форматировать.</param>
-	/// <returns>Дата в нужном виде.</returns>
-	private string CreateDateResult(DateTime date)
-	{
-		return date.ToString("dd/MM/yyyy", CultureInfo.GetCultureInfo("ru"));
-	}
-
-	/// <summary>
 	/// Метод создает результат команды проекта.
 	/// </summary>
 	/// <param name="vacancyName">Название вакансии.</param>
@@ -1820,7 +1811,7 @@ internal sealed class ProjectService : IProjectService
 		{
 			VacancyName = vacancyName,
 			Member = FillProjectTeamMemberAsync(user), // Заполняем участника команды проекта.
-			Joined = CreateDateResult(member.Joined), // Форматируем даты.
+			Joined = member.Joined.ToString("d"),
 			UserId = member.UserId,
 			Role = member.Role
 		};

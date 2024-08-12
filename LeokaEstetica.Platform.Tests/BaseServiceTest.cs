@@ -189,7 +189,7 @@ internal class BaseServiceTest
         var projectNotificationsRepository = new ProjectNotificationsRepository(pgContext, connectionProvider);
         var vacancyRepository = new VacancyRepository(pgContext, connectionProvider);
         var projectManagementRepository = new ProjectManagmentRepository(connectionProvider);
-        var vacancyModerationRepository = new VacancyModerationRepository(pgContext);
+        var vacancyModerationRepository = new VacancyModerationRepository(pgContext, connectionProvider);
 
         TelegramBotService = new TelegramBotService(null, AppConfiguration, globalConfigRepository);
 
