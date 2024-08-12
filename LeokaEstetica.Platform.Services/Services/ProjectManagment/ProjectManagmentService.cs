@@ -829,18 +829,9 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 // Создаем задачу в БД.
                 await _projectManagmentRepository.CreateProjectTaskAsync(addedProjectTask);
 
-
                 transactionScope.Complete();
-
-				if (!string.IsNullOrEmpty(token))
-				{
-					await _projectManagementNotificationService.Value.SendNotifySuccessCreateProjectTaskAsync(
-					 "Все хорошо.",
-					$"Задачаа успешно создана.",
-					NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);
-				}
-
-				return result;
+                
+                return result;
             }
             
             // Если идет создание эпика.
@@ -856,17 +847,8 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 
                 // Создаем эпик в БД.
                 await _projectManagmentRepository.CreateProjectEpicAsync(addedProjectEpic);
-
-
-				transactionScope.Complete();
-
-				if (!string.IsNullOrEmpty(token))
-				{
-					await _projectManagementNotificationService.Value.SendNotifySuccessCreateProjectTaskAsync(
-					 "Все хорошо.",
-					$"Эпик успешно создан.",
-					NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);
-				}
+                
+                transactionScope.Complete();
                 
                 return result;
             }
@@ -884,30 +866,11 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 
                 // Создаем историю в БД.
                 await _projectManagmentRepository.CreateProjectUserStoryAsync(addedProjectUserStory);
-
-				transactionScope.Complete();
-
-				if (!string.IsNullOrEmpty(token))
-				{
-					await _projectManagementNotificationService.Value.SendNotifySuccessCreateProjectTaskAsync(
-					 "Все хорошо.",
-					$"История успешно создана.",
-					NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);
-				}
+                
+                transactionScope.Complete();
                 
                 return result;
             }
-
-            if(taskType == SearchAgileObjectTypeEnum.Error)
-            {
-                if (!string.IsNullOrEmpty(token))
-                {
-                    await _projectManagementNotificationService.Value.SendNotifySuccessCreateProjectTaskAsync(
-                     "Внимание.",
-                    $"Задача завершена ошибкой. {projectId}.",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, token);
-                }
-			}
 
             return result;
         }
