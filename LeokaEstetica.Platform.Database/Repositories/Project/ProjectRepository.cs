@@ -1755,7 +1755,7 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
                     "WHERE \"UserId\" = ANY (SELECT ptm.\"UserId\" " +
                     "FROM \"Teams\".\"ProjectsTeams\" AS pt " +
                     "INNER JOIN \"Teams\".\"ProjectsTeamsMembers\" AS ptm " +
-                    "ON pt.\"TeamI\" = ptm.\"TeamId\" " +
+                    "ON pt.\"TeamId\" = ptm.\"TeamId\" " +
                     "WHERE pt.\"ProjectId\" = @projectId)";
                     
         await connection.ExecuteAsync(query, parameters);
@@ -1776,14 +1776,14 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
 
         var query = "DELETE " +
                     "FROM \"Teams\".\"ProjectsTeamsVacancies\" AS ptv " +
-                    "WHERE \"TeamId\" = (SELECT pt.\"TeamId\"" +
+                    "WHERE \"TeamId\" = (SELECT pt.\"TeamId\" " +
                     "FROM \"Teams\".\"ProjectsTeams\" AS pt " +
                     "INNER JOIN \"Teams\".\"ProjectsTeamsMembers\" AS ptm " +
-                    "ON pt.\"TeamId\" = ptm.\"TeamId\"" +
-                    "LEFT JOIN \"Vacancies\".\"UserVacancies\" AS uv" +
-                    "ON (ptv.\"VacancyId\" = uv.\"VacancyId\" OR uv.\"VacancyId\" IS NULL " +
-                    "LIMIT 1) " +
-                    "WHERE pt.\"ProjectId\" = @projectId)";
+                    "ON pt.\"TeamId\" = ptm.\"TeamId\" " +
+                    "LEFT JOIN \"Vacancies\".\"UserVacancies\" AS uv " +
+                    "ON (ptv.\"VacancyId\" = uv.\"VacancyId\" OR uv.\"VacancyId\" IS NULL) " +
+                    "WHERE pt.\"ProjectId\" = @projectId " +
+                    "LIMIT 1)";
         
         await connection.ExecuteAsync(query, parameters);
         
@@ -1828,9 +1828,9 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
                                      "FROM project_management.wiki_tree " +
                                      "WHERE project_id = @projectId";
         
-        var projectTreeId = await connection.ExecuteScalarAsync<long>(projectWikiTreeIdQuery, parameters);
+        var projectTreeId = await connection.ExecuteScalarAsync<long?>(projectWikiTreeIdQuery, parameters);
 
-        if (projectTreeId <= 0)
+        if (!projectTreeId.HasValue)
         {
             throw new InvalidOperationException($"Ошибка получения дерева Wiki проекта {projectId}.");
         }
