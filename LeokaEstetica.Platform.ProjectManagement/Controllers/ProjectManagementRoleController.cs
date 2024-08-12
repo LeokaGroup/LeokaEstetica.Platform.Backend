@@ -24,7 +24,7 @@ public class ProjectManagementRoleController : BaseController
 
     /// <summary>
     /// Конструктор.
-    /// </summary>
+    /// </summary> 
     /// <param name="projectManagmentRoleService">Сервис ролей модуля УП.</param>
     /// <param name="projectManagmentRoleRepository">Репозиторий ролей пользователей.</param>
     /// <param name="logger">Логгер.</param>
