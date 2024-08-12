@@ -19,11 +19,11 @@ namespace LeokaEstetica.Platform.ProjectManagement.Controllers;
 [ApiController]
 [Route("project-management/config")]
 public class ConfigController : BaseController
-{
+{ 
     private readonly IGlobalConfigRepository _globalConfigRepository;
     private readonly ILogger<ConfigController> _logger;
     private readonly IProjectSettingsConfigService _projectSettingsConfigService;
-
+ 
     /// <summary>
     /// Конструктор.
     /// </summary>
@@ -108,7 +108,8 @@ public class ConfigController : BaseController
     /// Метод получает Id проекта, который был ранее выбран пользователем для перехода к управлению проектом.
     /// Необходимо для построения ссылки в рабочее пространство проекта.
     /// </summary>
-    /// <param name="projectId">Id проекта. Если не передан, то будет перход в общее пространство.</param>
+    /// <param name="projectId">Id проекта. Если не передан, то будет переход в общее пространство.</param>
+    /// <param name="companyId">Id компании. Если не передан, то будет переход в общее пространство.</param>
     /// <returns>Выходная модель.</returns>
     [HttpGet]
     [Route("build-project-space")]
@@ -117,9 +118,11 @@ public class ConfigController : BaseController
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<ConfigSpaceSettingOutput> GetBuildProjectSpaceSettingsAsync([FromQuery] long? projectId)
+    public async Task<ConfigSpaceSettingOutput> GetBuildProjectSpaceSettingsAsync([FromQuery] long? projectId,
+        [FromQuery] long? companyId)
     {
-        var result = await _projectSettingsConfigService.GetBuildProjectSpaceSettingsAsync(GetUserName(), projectId);
+        var result = await _projectSettingsConfigService.GetBuildProjectSpaceSettingsAsync(GetUserName(), projectId,
+            companyId);
 
         return result;
     }

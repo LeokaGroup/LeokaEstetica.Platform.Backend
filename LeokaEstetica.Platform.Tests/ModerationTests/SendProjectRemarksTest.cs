@@ -9,7 +9,7 @@ internal class SendProjectRemarksTest : BaseServiceTest
     public Task SendProjectRemarksAsyncTest()
     {
         Assert.DoesNotThrowAsync(async () => await ProjectModerationService.SendProjectRemarksAsync(213,
-            "sierra_93@mail.ru", null));
+            "sierra_93@mail.ru"));
         
         return Task.CompletedTask;
     }

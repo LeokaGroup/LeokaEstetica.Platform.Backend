@@ -197,16 +197,16 @@ internal sealed class SubscriptionRepository : BaseRepository, ISubscriptionRepo
         parameters.Add("@subscriptionType", new Enum(SubscriptionTypeEnum.FareRule));
         parameters.Add("@attributeId", attributeId);
 
-        var query = "SELECT as.rule_id, fr.is_free, fra.is_price, fra.min_value " +
+        var query = "SELECT asub.rule_id, fr.is_free, fra.is_price, fra.min_value " +
                     "FROM subscriptions.user_subscriptions AS us " +
-                    "INNER JOIN subscriptions.all_subscriptions AS as " +
-                    "ON us.subscription_id = as.subscription_id " +
+                    "INNER JOIN subscriptions.all_subscriptions AS asub " +
+                    "ON us.subscription_id = asub.subscription_id " +
                     "INNER JOIN rules.fare_rules AS fr " +
-                    "ON as.rule_id = fr.rule_id " +
+                    "ON asub.rule_id = fr.rule_id " +
                     "INNER JOIN rules.fare_rule_attribute_values AS fra " +
                     "ON fr.rule_id = fra.rule_id " +
                     "WHERE us.user_id = @userId " +
-                    "AND as.subscription_type = @subscriptionType::subscriptions.SUBSCRIPTION_TYPE_ENUM " +
+                    "AND asub.subscription_type = @subscriptionType::subscriptions.SUBSCRIPTION_TYPE_ENUM " +
                     "AND fra.attribute_id = @attributeId";
 
         var result = await connection.QueryFirstOrDefaultAsync<SubscriptionFareRuleCompositeOutput>(query, parameters);

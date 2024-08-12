@@ -14,7 +14,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using NLog.Web;
 using Quartz;
-
+ 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
 
@@ -26,8 +26,8 @@ builder.Services.AddControllers(opt =>
     .AddControllersAsServices();
 
 builder.Services.AddCors(options => options.AddPolicy("ApiCorsPolicy", b =>
-{
-    b.WithOrigins(configuration.GetSection("CorsUrls:Urls").Get<string[]>())
+{ 
+    b.WithOrigins(configuration.GetSection("CorsUrls:Urls").Get<string[]>()) 
         .AllowAnyHeader()
         .AllowAnyMethod()
         .AllowCredentials();

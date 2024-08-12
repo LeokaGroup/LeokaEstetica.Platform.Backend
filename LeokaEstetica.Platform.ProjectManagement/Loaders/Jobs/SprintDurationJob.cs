@@ -72,7 +72,7 @@ internal sealed class SprintDurationJob : IJob
     {
         try
         {
-            _logger?.LogInformation("Начинаем проверять активные спринты проектов...");
+            _logger?.LogInformation("Начинаем проверять активные спринты проектов.");
 
             var sprints = (await _sprintRepository.GetSprintEndDatesAsync())?.AsList();
 
@@ -144,7 +144,7 @@ internal sealed class SprintDurationJob : IJob
                 await _sprintRepository.AutoCompleteSprintAsync(s.ProjectSprintId, s.ProjectId);
             }
 
-            _logger?.LogInformation("Закончили проверять активные спринты проектов...");
+            _logger?.LogInformation("Закончили проверять активные спринты проектов.");
         }
         
         catch (Exception ex)

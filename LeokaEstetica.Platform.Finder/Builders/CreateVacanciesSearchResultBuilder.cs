@@ -35,33 +35,33 @@ public static class CreateVacanciesSearchResultBuilder
             var employment = string.Empty;
             var payment = string.Empty;
             var workExperience = string.Empty;
-
-            if (!string.IsNullOrEmpty(document.GetField(VacancyFinderConst.VACANCY_NAME).ToString()))
+            
+            if (!string.IsNullOrEmpty(document.GetField(VacancyFinderConst.VACANCY_NAME)?.ToString()))
             {
                 vacancyName = document.GetField(VacancyFinderConst.VACANCY_NAME).StringValue;
             }
-
-            if (!string.IsNullOrEmpty(document.GetField(VacancyFinderConst.VACANCY_TEXT).ToString()))
+            
+            if (!string.IsNullOrEmpty(document.GetField(VacancyFinderConst.VACANCY_TEXT)?.ToString()))
             {
                 vacancyText = document.GetField(VacancyFinderConst.VACANCY_TEXT).StringValue;
             }
 
-            if (!string.IsNullOrEmpty(document.GetField(VacancyFinderConst.DATE_CREATED).ToString()))
+            if (!string.IsNullOrEmpty(document.GetField(VacancyFinderConst.DATE_CREATED)?.ToString()))
             {
                 dateCreated = document.GetField(VacancyFinderConst.DATE_CREATED).StringValue;
             }
 
-            if (!string.IsNullOrEmpty(document.GetField(VacancyFinderConst.EMPLOYMENT).ToString()))
+            if (!string.IsNullOrEmpty(document.GetField(VacancyFinderConst.EMPLOYMENT)?.ToString()))
             {
                 employment = document.GetField(VacancyFinderConst.EMPLOYMENT).StringValue;
             }
 
-            if (!string.IsNullOrEmpty(document.GetField(VacancyFinderConst.PAYMENT).ToString()))
+            if (!string.IsNullOrEmpty(document.GetField(VacancyFinderConst.PAYMENT)?.ToString()))
             {
                 payment = document.GetField(VacancyFinderConst.PAYMENT).StringValue;
             }
 
-            if (!string.IsNullOrEmpty(document.GetField(VacancyFinderConst.WORK_EXPERIENCE).ToString()))
+            if (!string.IsNullOrEmpty(document.GetField(VacancyFinderConst.WORK_EXPERIENCE)?.ToString()))
             {
                 workExperience = document.GetField(VacancyFinderConst.WORK_EXPERIENCE).StringValue;
             }

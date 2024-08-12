@@ -234,4 +234,10 @@ internal class UserStoryBuilder : AgileObjectBuilder
     {
         throw new NotImplementedException();
     }
+    
+    /// <inheritdoc />
+    public override Task FillEpicTasksAsync()
+    {
+        throw new NotImplementedException("Функционал историям не нужен.");
+    }
 }

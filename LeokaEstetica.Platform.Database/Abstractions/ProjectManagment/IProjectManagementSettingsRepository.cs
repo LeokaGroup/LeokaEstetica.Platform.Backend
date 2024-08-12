@@ -75,9 +75,9 @@ public interface IProjectManagementSettingsRepository
     Task CancelProjectInviteAsync(long notificationId);
 
     /// <summary>
-    /// Метод впервые добавляет роли участнику проекта.
+    /// Метод заводит роли для организации.
     /// </summary>
     /// <param name="organizationId">Id организации.</param>
     /// <param name="memberId">Id участника проекта.</param>
-    Task AddProjectMemberRolesAsync(long organizationId, long memberId);
+    Task AddCompanyMemberRolesAsync(long organizationId, long memberId);
 }

@@ -44,7 +44,11 @@ internal sealed class ProfileRepository : IProfileRepository
             UserId = userId,
             IsShortFirstName = false,
             Aboutme = string.Empty,
-            Job = string.Empty
+            Job = string.Empty,
+            Telegram = "Не указан",
+            WhatsApp = "Не указан",
+            Vkontakte = "Не указана",
+            OtherLink = "Не указана"
         };
         await _pgContext.ProfilesInfo.AddAsync(userInfo);
         await _pgContext.SaveChangesAsync();

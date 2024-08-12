@@ -19,7 +19,7 @@ internal class CreateOrderTest : BaseServiceTest
         }, "sierra_93@mail.ru"));
         
         var result = await PayMasterService.CreateOrderAsync(new Guid("0f9e23c8-338d-47fc-8a0f-3e539d98615c"),
-            "sierra_93@mail.ru", string.Empty);
+            "sierra_93@mail.ru");
 
         NotNull(result);
         
