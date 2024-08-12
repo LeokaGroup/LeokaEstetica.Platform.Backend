@@ -74,8 +74,8 @@ internal sealed class SprintRepository : BaseRepository, ISprintRepository
                     " s.executor_id," +
                     " s.watcher_ids," +
                     " s.created_by," +
-                    " to_char(s.created_at, 'dd.MM.yyyy HH24:MI:SS') AS CreatedAt," +
-                    " to_char(s.updated_at, 'dd.MM.yyyy HH24:MI:SS') AS UpdatedAt," +
+                    " to_char(s.created_at, 'dd.MM.yyyy HH24:MI') AS CreatedAt," +
+                    " to_char(s.updated_at, 'dd.MM.yyyy HH24:MI') AS UpdatedAt," +
                     " s.updated_by " +
                     "FROM project_management.sprints AS s " +
                     "INNER JOIN project_management.sprint_statuses AS ss " +
@@ -92,7 +92,7 @@ internal sealed class SprintRepository : BaseRepository, ISprintRepository
 
     /// <inheritdoc/>
     public async Task<IEnumerable<ProjectTaskExtendedEntity>?> GetProjectSprintTasksAsync(long projectId,
-        long projectSprintId, string strategy)
+        long projectSprintId, string strategy, int templateId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
         
@@ -101,6 +101,7 @@ internal sealed class SprintRepository : BaseRepository, ISprintRepository
         parameters.Add("@prefix", GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_PROJECT_NAME_PREFIX);
         parameters.Add("@strategy", strategy);
         parameters.Add("@projectSprintId", projectSprintId);
+        parameters.Add("@templateId", templateId);
 
         var query = "SELECT t.task_id," +
                     "t.task_status_id," +
@@ -123,7 +124,14 @@ internal sealed class SprintRepository : BaseRepository, ISprintRepository
                     "(SELECT \"ParamValue\" " +
                     "FROM \"Configs\".\"ProjectManagmentProjectSettings\" AS ps " +
                     "WHERE ps.\"ProjectId\" = @projectId " +
-                    "AND ps.\"ParamKey\" = @prefix) AS TaskIdPrefix " +
+                    "AND ps.\"ParamKey\" = @prefix) AS TaskIdPrefix, " +
+                    "(SELECT tpmtst.status_name " +
+                    "FROM templates.project_management_task_status_templates AS tpmtst " +
+                    "INNER JOIN templates.project_management_task_status_intermediate_templates AS tpmtsit " +
+                    "ON tpmtst.status_id = tpmtsit.status_id " +
+                    "WHERE t.task_status_id = tpmtst.task_status_id " +
+                    "AND tpmtsit.template_id = @templateId " +
+                    "AND NOT tpmtst.is_system_status) AS StatusName " +
                     "FROM project_management.project_tasks AS t " +
                     "INNER JOIN project_management.sprint_tasks AS st " +
                     "ON st.project_task_id = t.project_task_id " +
@@ -151,7 +159,10 @@ internal sealed class SprintRepository : BaseRepository, ISprintRepository
                     "(SELECT \"ParamValue\"" +
                     "FROM \"Configs\".\"ProjectManagmentProjectSettings\" AS ps " +
                     "WHERE ps.\"ProjectId\" = @projectId " +
-                    "AND ps.\"ParamKey\" = @prefix) AS TaskIdPrefix " +
+                    "AND ps.\"ParamKey\" = @prefix) AS TaskIdPrefix, " +
+                    "(SELECT status_name " +
+                    "FROM project_management.epic_statuses " +
+                    "WHERE status_id = e.status_id) AS StatusName " +
                     "FROM project_management.epics AS e " +
                     "INNER JOIN project_management.epic_statuses AS es " +
                     "ON e.status_id = es.status_id " +
@@ -181,7 +192,10 @@ internal sealed class SprintRepository : BaseRepository, ISprintRepository
                     "(SELECT \"ParamValue\"" +
                     "FROM \"Configs\".\"ProjectManagmentProjectSettings\" AS ps " +
                     "WHERE ps.\"ProjectId\" = @projectId " +
-                    "AND ps.\"ParamKey\" = @prefix) AS TaskIdPrefix " +
+                    "AND ps.\"ParamKey\" = @prefix) AS TaskIdPrefix, " +
+                    "(SELECT status_name " +
+                    "FROM project_management.user_story_statuses " +
+                    "WHERE status_id = us.status_id) AS StatusName " +
                     "FROM project_management.user_stories AS us " +
                     "INNER JOIN project_management.user_story_statuses AS uss " +
                     "ON us.status_id = uss.status_id " +
@@ -472,7 +486,9 @@ internal sealed class SprintRepository : BaseRepository, ISprintRepository
 
          var query = "SELECT sprint_id, project_sprint_id, project_id " +
                      "FROM project_management.sprints " +
-                     "WHERE date_end <= NOW()";
+                     "WHERE date_end <= NOW() " +
+                     "AND date_start IS NOT NULL " +
+                     "AND date_end IS NOT NULL";
 
          var result = await connection.QueryAsync<SprintEndDateOutput>(query);
 

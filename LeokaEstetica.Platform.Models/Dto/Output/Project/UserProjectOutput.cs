@@ -10,27 +10,27 @@ public class UserProjectOutput
     /// <summary>
     /// Название проекта.
     /// </summary>
-    public string ProjectName { get; set; }
+    public string? ProjectName { get; set; }
 
-    /// <summary>
-    /// Описание проекта.
-    /// </summary>
-    public string ProjectDetails { get; set; }
-
-    /// <summary>
+	/// <summary>
+	/// Краткое описание проекта.
+	/// </summary>
+	public string? ProjectDetails { get; set; }
+	
+	/// <summary>
     /// Изображение проекта.
     /// </summary>
-    public string ProjectIcon { get; set; }
+    public string? ProjectIcon { get; set; }
 
     /// <summary>
     /// Название статуса проекта.
     /// </summary>
-    public string ProjectStatusName { get; set; }
+    public string? ProjectStatusName { get; set; }
     
     /// <summary>
     /// Системное название статуса проекта.
     /// </summary>
-    public string ProjectStatusSysName { get; set; }
+    public string? ProjectStatusSysName { get; set; }
 
     /// <summary>
     /// Код проекта.
@@ -45,5 +45,10 @@ public class UserProjectOutput
     /// <summary>
     /// Список замечаний проекта.
     /// </summary>
-    public IEnumerable<ProjectRemarkOutput> ProjectRemarks { get; set; }
+    public IEnumerable<ProjectRemarkOutput>? ProjectRemarks { get; set; }
+
+    /// <summary>
+    /// Полное описание проекта для тултипа.
+    /// </summary>
+    public string? ProjectDetailsTooltip { get; set; }
 }

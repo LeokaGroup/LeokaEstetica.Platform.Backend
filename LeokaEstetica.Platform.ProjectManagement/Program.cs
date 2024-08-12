@@ -14,7 +14,7 @@ using Microsoft.OpenApi.Models;
 using MongoDB.Driver;
 using NLog.Web;
 using Quartz;
-
+ 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
 

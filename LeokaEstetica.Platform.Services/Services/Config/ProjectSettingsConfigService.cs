@@ -5,9 +5,9 @@ using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.Config;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
 using LeokaEstetica.Platform.Models.Dto.Output.Configs;
+using LeokaEstetica.Platform.Models.Entities.Configs;
 using LeokaEstetica.Platform.Services.Abstractions.Config;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 
 namespace LeokaEstetica.Platform.Services.Services.Config;
 
@@ -40,6 +40,8 @@ internal sealed class ProjectSettingsConfigService : IProjectSettingsConfigServi
         _projectRepository = projectRepository;
         _globalConfigRepository = globalConfigRepository;
     }
+
+    #region Публичные методы.
 
     /// <inheritdoc />
     public async Task<ConfigSpaceSettingOutput> CommitSpaceSettingsAsync(string strategy, int templateId,
@@ -83,21 +85,31 @@ internal sealed class ProjectSettingsConfigService : IProjectSettingsConfigServi
     }
 
     /// <inheritdoc />
-    public async Task<ConfigSpaceSettingOutput> GetBuildProjectSpaceSettingsAsync(string account, long? projectId)
+    public async Task<ConfigSpaceSettingOutput> GetBuildProjectSpaceSettingsAsync(string account, long? projectId,
+        long? companyId)
     {
         try
         {
+            var result = new ConfigSpaceSettingOutput();
+            
             var userId = await _userRepository.GetUserByEmailAsync(account);
 
-            if (userId <= 0)
+            if (!projectId.HasValue && !companyId.HasValue)
             {
-                var ex = new NotFoundUserIdByAccountException(account);
-                throw ex;
+                // Автоматически редиректим в общее пространство.
+                result.IsDefaultSpaceUrl = true;
+                result.IsCommitProjectSettings = false;
+                
+                return result;
             }
 
-            var settings = (await _projectSettingsConfigRepository.GetBuildProjectSpaceSettingsAsync(userId))
+            var projectOwnerId = await _projectRepository.GetProjectOwnerIdAsync(projectId.Value);
+
+            // Для получения настроек проекта Id пользователя = Id владельца проекта.
+            var settings = (await _projectSettingsConfigRepository.GetBuildProjectSpaceSettingsAsync(projectOwnerId))
+                ?.Where(x => x?.ParamKey is not null)
+                ?.Distinct()
                 ?.AsList();
-            var result = new ConfigSpaceSettingOutput();
 
             // Если нет настроек, то это будет переход в общее пространство.
             if (settings is null || settings.Count == 0)
@@ -106,120 +118,82 @@ internal sealed class ProjectSettingsConfigService : IProjectSettingsConfigServi
                 
                 // Редиректим в общее пространство.
                 result.IsDefaultSpaceUrl = true;
+                result.ProjectId = projectId.Value;
                 
                 return result;
             }
 
-            var projectIds = (settings.Count > 0
-                    ? settings.Select(x => x.ProjectId)
-                    : new List<long>())
-                .Distinct()
-                .AsList();
-                
-            if (projectId.HasValue && projectIds.Contains(projectId.Value))
-            {
-                var findSetting = settings.Find(x => x.ProjectId == projectId.Value);
+            var findSettings = await FindProjectSettingsAsync(settings, projectId.Value, projectOwnerId);
 
-                if (findSetting is not null && string.IsNullOrWhiteSpace(findSetting.ParamKey))
-                {
-                    result.IsCommitProjectSettings = false;
-                
-                    // Редиректим в общее пространство.
-                    result.IsDefaultSpaceUrl = true;
-                
-                    return result;
-                }
-
-                var spaceUrl = settings.Find(x =>
-                        x.ParamKey.Equals(GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_SPACE_URL)
-                        && x.ProjectId == projectId.Value)
-                    ?.ParamValue;
-
-                result.IsCommitProjectSettings = true;
-                result.ProjectManagmentSpaceUrl = string.Concat(spaceUrl, $"?projectId={projectId.Value}");
-                result.ProjectId = projectId.Value;
-            }
-
-            // Если нашли невалидный Id проекта.
-            if (!projectIds.All(x => x > 0))
-            {
-                throw new InvalidOperationException("Найдены невалидные Id проекта при получении настроек проекта. " +
-                                                    $"ProjectIds: {JsonConvert.SerializeObject(projectIds)}");
-            }
+            var isOwner = await _projectRepository.CheckProjectOwnerAsync(projectId.Value, userId);
+            
+            var redirectUrl = await _globalConfigRepository.GetValueByKeyAsync<string>(
+                GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_SPACE_URL);
 
             // Если все настройки были заполнены пользователем, то разрешаем генерацию ссылки в раб.пространство.
-            if (projectIds.Count is > 0 and 1 && projectIds.First() > 0)
+            if (findSettings.TemplateId > 0
+                && !string.IsNullOrEmpty(findSettings.Strategy)
+                && !string.IsNullOrEmpty(findSettings.ProjectManagementName)
+                && !string.IsNullOrEmpty(findSettings.ProjectManagementNamePrefix))
             {
-                var templateId = Convert.ToInt32(settings.Find(x =>
-                    x.ParamKey.Equals(GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_TEMPLATE_ID))?.ParamValue);
+                // Настройки проекта были зафиксированы пользователем, делаем переход в раб.пространство этого проекта.
+                result.ProjectId = projectId.Value;
+                result.IsDefaultSpaceUrl = false;
+                result.ProjectManagmentSpaceUrl = string.Concat(redirectUrl,
+                    $"?projectId={projectId.Value}&companyId={companyId.Value}");
+                result.IsCommitProjectSettings = true;
+               
 
-                var strategy = settings.Find(x =>
-                    x.ParamKey.Equals(GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_STRATEGY))?.ParamValue;
-                
-                var projectManagementName = settings.Find(x =>
-                    x.ParamKey.Equals(GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_PROJECT_NAME))?.ParamValue;
+                return result;
+            }
+            
+            // Для не владельца просто фиксируем ему стратегию представления,
+            // остальные настройки оставляем как задано владельцем проекта.
+            if (!isOwner)
+            {
+                var notOwnerSettings = await FindProjectSettingsAsync(settings, projectId.Value, userId);
 
-                var projectManagementNamePrefix = settings.Find(x =>
-                        x.ParamKey.Equals(GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_PROJECT_NAME_PREFIX))
-                    ?.ParamValue;
-
-                if (templateId > 0
-                    && !string.IsNullOrEmpty(strategy)
-                    && !string.IsNullOrEmpty(projectManagementName)
-                    && !string.IsNullOrEmpty(projectManagementNamePrefix))
+                // Фиксируемм настройки проекта новому пользователю команды проекта.
+                // Отталкиваемся от настроек проекта, которые задал владелец проекта.
+                // По дефолту проставляем стратегию канбана.
+                if (string.IsNullOrWhiteSpace(notOwnerSettings.Strategy))
                 {
-                    // Настройки проекта были зафиксированы пользователем, делаем переход в раб.пространство этого проекта.
+                    await _projectSettingsConfigRepository.CommitSpaceSettingsAsync("kn", findSettings.TemplateId,
+                        projectId.Value, userId, false, redirectUrl, findSettings.ProjectManagementName!,
+                        findSettings.ProjectManagementNamePrefix!);
+                        
                     result.IsCommitProjectSettings = true;
                 }
-            }
 
-            // Не все настройки были зафиксированы, требуем от пользователя заполнить их все.
-            // Заполнение настроек последнего проекта, который был выбран пользователем.
-            if (projectIds.Count is > 0 and 1 
-                && projectIds.First() > 0
-                && !result.IsCommitProjectSettings)
-            {
-                var spaceUrl = settings.Find(x =>
-                        x.ParamKey.Equals(GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_SPACE_URL)
-                        && x.ProjectId == projectIds.First())
-                    ?.ParamValue;
-                
-                result.ProjectManagmentSpaceUrl = spaceUrl;
-                result.ProjectId = projectIds.First();
-                
+                else
+                {
+                    result.IsCommitProjectSettings = false;
+                }
+
+                result.ProjectId = projectId.Value;
+                result.IsDefaultSpaceUrl = false;
+                result.ProjectManagmentSpaceUrl = string.Concat(redirectUrl,
+                    $"?projectId={projectId.Value}&companyId={companyId.Value}");
+                                    
                 return result;
             }
-
-            // TODO: Подумать, можем ли запоминать как то, какой последний проект выбирал пользователь?
-            // TODO: Пока редиректим в общее пространство просто.
-            if (projectIds.Count is > 0 and > 1)
+            
+            // Если не были зафиксированы настройки и владелец, то требуем заполнить настройки проекта.
+            if (isOwner)
             {
-                // Не сработал ни один кейс при получении настроек проекта.
-                // Автоматически редиректим в общее пространство.
-                result.IsDefaultSpaceUrl = true;
+                result.IsCommitProjectSettings = false;
+                result.ProjectId = projectId.Value;
+                result.IsDefaultSpaceUrl = false;
+                result.ProjectManagmentSpaceUrl = string.Concat(redirectUrl,
+                    $"?projectId={projectId.Value}&companyId={companyId.Value}");
 
                 return result;
             }
 
-            // Настройки были зафиксированы, переходим к проекту.
-            if (result.IsCommitProjectSettings)
-            {
-                var spaceUrl = settings.Find(x =>
-                        x.ParamKey.Equals(GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_SPACE_URL)
-                        && x.ProjectId == projectIds.First())
-                    ?.ParamValue;
-                
-                result.ProjectManagmentSpaceUrl = string.Concat(spaceUrl, $"?projectId={projectIds.First()}");
-                result.ProjectId = projectIds.First();
-                
-                return result;
-            }
-
-            // Не сработал ни один кейс при получении настроек проекта.
-            // Автоматически редиректим в общее пространство.
-            result.IsDefaultSpaceUrl = true;
-
-            return result;
+            throw new InvalidOperationException(
+                "Не сработал ни один из кейсов проверки фиксации настроек проекта. " +
+                $"ProjectId: {projectId}. " +
+                $"UserId: {userId}.");
         }
         
         catch (Exception ex)
@@ -228,4 +202,45 @@ internal sealed class ProjectSettingsConfigService : IProjectSettingsConfigServi
             throw;
         }
     }
+
+    #endregion
+
+    #region Приватные методы.
+
+    /// <summary>
+    /// Метод находит в настройках проекта варианты для конкретного пользователя.
+    /// </summary>
+    /// <param name="settings">Настройки проекта.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Найденные настройки.</returns>
+    private async Task<(int TemplateId, string? Strategy, string? ProjectManagementName,
+        string? ProjectManagementNamePrefix)> FindProjectSettingsAsync(List<ConfigSpaceSettingEntity> settings,
+        long projectId, long userId)
+    {
+        var templateId = Convert.ToInt32(settings.Find(x =>
+                x.ParamKey.Equals(GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_TEMPLATE_ID)
+                && x.ProjectId == projectId)
+            ?.ParamValue);
+
+        var strategy = settings.Find(x =>
+                x.ParamKey.Equals(GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_STRATEGY)
+                && x.ProjectId == projectId
+                && x.UserId == userId)
+            ?.ParamValue;
+
+        var projectManagementName = settings.Find(x =>
+                x.ParamKey.Equals(GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_PROJECT_NAME)
+                && x.ProjectId == projectId)
+            ?.ParamValue;
+
+        var projectManagementNamePrefix = settings.Find(x =>
+                x.ParamKey.Equals(GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_PROJECT_NAME_PREFIX)
+                && x.ProjectId == projectId)
+            ?.ParamValue;
+        
+        return await Task.FromResult((templateId, strategy, projectManagementName, projectManagementNamePrefix));
+    }
+
+    #endregion
 }

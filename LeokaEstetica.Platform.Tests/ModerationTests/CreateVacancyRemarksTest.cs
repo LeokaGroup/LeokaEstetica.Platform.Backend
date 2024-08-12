@@ -11,8 +11,7 @@ internal class CreateVacancyRemarksTest : BaseServiceTest
     public async Task CreateVacancyRemarksAsyncTest()
     {
         var vacancyRemarks = CreateVacancyRemarksRequest();
-        var result = await VacancyModerationService.CreateVacancyRemarksAsync(vacancyRemarks, "sierra_93@mail.ru", 
-            null);
+        var result = await VacancyModerationService.CreateVacancyRemarksAsync(vacancyRemarks, "sierra_93@mail.ru");
 
         var items = result.ToList();
         

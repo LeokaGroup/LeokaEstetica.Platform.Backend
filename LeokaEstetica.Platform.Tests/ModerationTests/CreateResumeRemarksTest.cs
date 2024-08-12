@@ -11,7 +11,7 @@ internal class CreateResumeRemarksTest : BaseServiceTest
     public async Task CreateResumeRemarksAsyncTest()
     {
         var resumeRemarks = CreateResumeRemarksRequest();
-        var result = await ResumeModerationService.CreateResumeRemarksAsync(resumeRemarks, "sierra_93@mail.ru", null);
+        var result = await ResumeModerationService.CreateResumeRemarksAsync(resumeRemarks, "sierra_93@mail.ru");
         var items = result.ToList();
         
         IsNotEmpty(items);

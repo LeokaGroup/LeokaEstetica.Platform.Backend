@@ -272,13 +272,7 @@ internal sealed class UserRepository : BaseRepository, IUserRepository
                     "u.\"Login\" " +
                     "FROM dbo.\"Users\" AS u " +
                     "WHERE (u.\"Email\" ILIKE @searchText ||'%' " +
-                    "OR u.\"Login\" ILIKE @searchText || '%') " +
-                    "AND \"UserId\" NOT IN (SELECT ptm.\"UserId\" " +
-                    "FROM \"Projects\".\"UserProjects\" AS up " +
-                    "INNER JOIN project_management.workspaces AS pw ON up.\"ProjectId\" = pw.project_id " +
-                    "INNER JOIN \"Teams\".\"ProjectsTeams\" AS pt ON up.\"ProjectId\" = pt.\"ProjectId\" " +
-                    "INNER JOIN \"Teams\".\"ProjectsTeamsMembers\" AS ptm ON pt.\"TeamId\" = ptm.\"TeamId\" " +
-                    "WHERE ptm.\"UserId\" = u.\"UserId\")";
+                    "OR u.\"Login\" ILIKE @searchText || '%')";
 
         var result = (await connection.QueryAsync<UserEntity>(query, parameters))?.AsList();
 
@@ -741,6 +735,23 @@ internal sealed class UserRepository : BaseRepository, IUserRepository
                 Patronymic = p.Patronymic
             })
             .ToListAsync();
+
+        return result;
+    }
+
+    /// <inheritdoc />
+    public async Task<Guid> GetUserCodeByUserIdAsync(long userId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@userId", userId);
+
+        var query = "SELECT \"UserCode\" " +
+                    "FROM dbo.\"Users\" " +
+                    "WHERE \"UserId\" = @userId";
+
+        var result = await connection.QueryFirstOrDefaultAsync<Guid>(query, parameters);
 
         return result;
     }

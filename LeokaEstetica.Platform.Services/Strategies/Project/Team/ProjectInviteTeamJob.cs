@@ -15,7 +15,7 @@ internal sealed class ProjectInviteTeamJob
     {
         if (strategy is not null)
         {
-            return await strategy.GetUserId(inviteText, string.Empty);
+            return await strategy.GetUserIdAsync(inviteText, string.Empty);
         }
 
         return 0;

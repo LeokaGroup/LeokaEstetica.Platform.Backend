@@ -32,18 +32,17 @@ public interface IResumeModerationService
     /// </summary>
     /// <param name="createResumeRemarkInput">Входная модель.</param>
     /// <param name="account">Аккаунт.</param>
-    /// <param name="token">Токен.</param>
     /// <returns>Список замечаний анкет.</returns>
     Task<IEnumerable<ResumeRemarkEntity>> CreateResumeRemarksAsync(
-        CreateResumeRemarkInput createResumeRemarkInput, string account, string token);
+        CreateResumeRemarkInput createResumeRemarkInput, string account);
     
     /// <summary>
     /// Метод отправляет замечания вакансии владельцу анкеты.
     /// Отправка замечаний вакансии подразумевает просто изменение статуса замечаниям анкеты.
     /// <param name="profileInfoId">Id анкеты.</param>
-    /// <param name="token">Токен.</param>
+    /// <param name="account">Аккаунт.</param>
     /// </summary>
-    Task SendResumeRemarksAsync(long profileInfoId, string token);
+    Task SendResumeRemarksAsync(long profileInfoId, string? account);
     
     /// <summary>
     /// Метод получает список замечаний анкеты (не отправленные), если они есть.

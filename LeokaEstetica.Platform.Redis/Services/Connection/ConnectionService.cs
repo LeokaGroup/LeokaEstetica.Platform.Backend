@@ -1,7 +1,11 @@
+using LeokaEstetica.Platform.Models.Dto.Common.Cache.Output;
+using LeokaEstetica.Platform.Models.Enums;
 using LeokaEstetica.Platform.Redis.Abstractions.Connection;
 using LeokaEstetica.Platform.Redis.Extensions;
 using LeokaEstetica.Platform.Redis.Models.Chat;
+using LeokaEstetica.Platform.Redis.Models.Common.Connection;
 using Microsoft.Extensions.Caching.Distributed;
+using Newtonsoft.Json;
 
 namespace LeokaEstetica.Platform.Redis.Services.Connection;
 
@@ -16,47 +20,63 @@ internal sealed class ConnectionService : IConnectionService
     /// Конструктор.
     /// </summary>
     /// <param name="redisCache">Кэш редиса.</param>
+    /// <param name="mapper">Маппер.</param>
     public ConnectionService(IDistributedCache redisCache)
     {
         _redisCache = redisCache;
     }
     
     /// <inheritdoc/>
-    public async Task AddConnectionIdCacheAsync(string connectionId, string token)
+    public async Task AddConnectionIdCacheAsync(string userCode, string connectionId, UserConnectionModuleEnum module)
     {
-        await _redisCache.SetStringAsync(token, ProtoBufExtensions.Serialize(connectionId),
+        await _redisCache.SetStringAsync(string.Concat(userCode + "_", module.ToString()),
+            ProtoBufExtensions.Serialize(new UserConnectionRedis
+            {
+                ConnectionId = connectionId,
+                Module = module
+            }),
             new DistributedCacheEntryOptions
             {
-                AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(1)
+                // При разлогине мы удаляем из кэша запись о пользователе, иначе живет 1 раб.день.
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(8)
             });
     }
 
     /// <inheritdoc/>
-    public async Task<string> GetConnectionIdCacheAsync(string key)
+    public async Task<UserConnectionOutput?> GetConnectionIdCacheAsync(string key)
     {
-        var connectionId = await _redisCache.GetStringAsync(key);
+        var connection = await _redisCache.GetStringAsync(key);
 
-        if (!string.IsNullOrEmpty(connectionId))
+        if (connection is not null)
         {
-            var newConnectionId = ProtoBufExtensions.Deserialize<string>(connectionId);
+            var cache = ProtoBufExtensions.Deserialize<UserConnectionRedis>(connection);
+
+            if (cache is null)
+            {
+                throw new InvalidOperationException("Ошибка каста к результату из кэша. " +
+                                                    $"Key: {key}.");
+            }
             
             // Данные нашли, продлеваем время жизни ключа.
             await _redisCache.RefreshAsync(key);
 
-            return newConnectionId;
-        }
+            var cacheJson = JsonConvert.SerializeObject(cache);
+            var result = JsonConvert.DeserializeObject<UserConnectionOutput>(cacheJson);
 
-        // В кэше нет ключа, добавляем.
-        await _redisCache.SetStringAsync(key, ProtoBufExtensions.Serialize(key),
-            new DistributedCacheEntryOptions
+            if (result is null)
             {
-                AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(1)
-            });
-
-        var addedConnectionId = await _redisCache.GetStringAsync(key);
-        connectionId = ProtoBufExtensions.Deserialize<string>(addedConnectionId);
-
-        return connectionId;
+                throw new InvalidOperationException("Ошибка десериализации результата из кэша.");
+            }
+            
+            result.IsCacheExists = true;
+            
+            return result;
+        }
+        
+        return new UserConnectionOutput
+        {
+            IsCacheExists = false
+        };
     }
 
     /// <inheritdoc/>
@@ -83,5 +103,28 @@ internal sealed class ConnectionService : IConnectionService
         }
 
         return null;
+    }
+
+    /// <inheritdoc/>
+    public async Task<UserConnectionOutput> CheckConnectionIdCacheAsync(Guid userCode, UserConnectionModuleEnum module)
+    {
+        var connection = await GetConnectionIdCacheAsync(string.Concat(userCode + "_", module.ToString()));
+
+        if (connection is not null && !string.IsNullOrEmpty(connection.ConnectionId))
+        {
+            connection.Module = module;
+            connection.IsCacheExists = true;
+        }
+
+        else
+        {
+            connection = new UserConnectionOutput
+            {
+                Module = module,
+                IsCacheExists = false
+            };
+        }
+
+        return connection;
     }
 }

@@ -53,6 +53,58 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
     }
 
     /// <summary>
+    /// Метод фильтрует проекты в зависимости от фильтров.
+    /// </summary>
+    /// <param name="filters">Фильтры.</param>
+    /// <returns>Список проектов после фильтрации.</returns>
+    public async Task<IEnumerable<CatalogProjectOutput>> FilterProjectsAsync(FilterProjectInput filters)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+        
+        var parameters = new DynamicParameters();
+
+        var query =
+            "SELECT u.\"ProjectId\", u.\"ProjectName\", u.\"DateCreated\", u.\"ProjectIcon\", u.\"ProjectDetails\"," + 
+            " u.\"UserId\", p0.\"StageSysName\" AS \"ProjectStageSysName\" " +
+            "FROM \"Projects\".\"CatalogProjects\" AS c " +
+            "         INNER JOIN \"Projects\".\"UserProjects\" AS u ON c.\"ProjectId\" = u.\"ProjectId\" " +
+            "         LEFT JOIN \"Moderation\".\"Projects\" AS p ON u.\"ProjectId\" = p.\"ProjectId\" " +
+            "         INNER JOIN \"Subscriptions\".\"UserSubscriptions\" AS u0 ON u.\"UserId\" = u0.\"UserId\" " +
+            "         INNER JOIN \"Subscriptions\".\"Subscriptions\" AS s ON u0.\"SubscriptionId\" = s.\"ObjectId\" " +
+            "         INNER JOIN \"Projects\".\"UserProjectsStages\" AS u1 ON u.\"ProjectId\" = u1.\"ProjectId\" " +
+            "         INNER JOIN \"Projects\".\"UserProjects\" AS u2 ON c.\"ProjectId\" = u2.\"ProjectId\" " +
+            "         INNER JOIN \"Projects\".\"ProjectStages\" AS p0 ON p0.\"StageId\" = u1.\"StageId\" " +
+            "WHERE " +
+            "    (NOT (EXISTS ( " +
+            "        SELECT 1 " +
+            "        FROM \"Projects\".\"ArchivedProjects\" AS a " +
+            "        WHERE a.\"ProjectId\" = u.\"ProjectId\")) AND u.\"IsPublic\") " +
+            "  AND (p.\"ModerationStatusId\" NOT IN (2, 3) OR ((p.\"ModerationStatusId\" IS NULL))) ";
+        
+        if (filters.ProjectStages != null && 
+            filters.ProjectStages.Count != 0 && 
+            !filters.ProjectStages.Contains(FilterProjectStageTypeEnum.None))
+        {
+            //TODO: В будущем завести в БД енамки и передавать сразу в виде энамок, а не стингов
+            var stageList = filters.ProjectStages?.Select(e => e.ToString()).ToList();
+            parameters.Add("@stageList", stageList);
+            query += " AND p0.\"StageSysName\" = ANY(@stageList) ";
+        }
+
+        if (filters.IsAnyVacancies)
+            query += "  AND EXISTS ( " +
+                     "    SELECT 1 " +
+                     "    FROM \"Projects\".\"ProjectVacancies\" AS ppv " +
+                     "    WHERE ppv.\"ProjectId\" = u.\"ProjectId\") ";
+        
+        query += "ORDER BY u2.\"DateCreated\" DESC, s.\"ObjectId\" DESC ";
+
+        var result = await connection.QueryAsync<CatalogProjectOutput>(query, parameters);
+
+        return result;
+    }
+
+    /// <summary>
     /// Метод создает новый проект пользователя.
     /// Если не указано, то выводится текст  в бд "не указано".
     /// </summary>
@@ -73,7 +125,8 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
                 ProjectCode = Guid.NewGuid(),
                 DateCreated = DateTime.UtcNow,
                 Conditions = createProjectInput.Conditions?? "Не указано",
-                Demands = createProjectInput.Demands?? "Не указано"
+                Demands = createProjectInput.Demands?? "Не указано",
+                IsPublic = true
             };
             await _pgContext.UserProjects.AddAsync(project);
 
@@ -307,6 +360,16 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
             {
                 await UpdateModerationProjectStatusAsync(projectId.Value, ProjectModerationStatusEnum.ModerationProject);
             }
+            
+            var stageEntity = await _pgContext.ProjectStages.AsNoTracking()
+                .Where(ps => ps.StageId == stage.StageId)
+                .Select(ps => new ProjectStageEntity
+                {
+                    StageName = ps.StageName,
+                    StageSysName = ps.StageSysName,
+                    StageId = ps.StageId
+                })
+                .FirstOrDefaultAsync();
 
             var result = new UpdateProjectOutput
             {
@@ -314,7 +377,12 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
                 ProjectName = project.ProjectName,
                 ProjectDetails = project.ProjectDetails,
                 ProjectIcon = project.ProjectIcon,
-                ProjectId = projectId.Value
+                ProjectId = projectId.Value,
+                Conditions = project.Conditions,
+                Demands = project.Demands,
+                StageId = stage.StageId,
+                StageName = stageEntity.StageName,
+                StageSysName = stageEntity.StageSysName
             };
 
             await _pgContext.SaveChangesAsync();
