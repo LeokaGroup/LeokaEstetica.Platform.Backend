@@ -74,12 +74,12 @@ internal sealed class VacancyModerationRepository : IVacancyModerationRepository
         }
     }
 
-    /// <summary>
-    /// Метод получает вакансию для просмотра.
-    /// </summary>
-    /// <param name="vacancyId">Id вакансии.</param>
-    /// <returns>Данные вакансии.</returns>
-    public async Task<UserVacancyEntity> GetVacancyModerationByVacancyIdAsync(long vacancyId)
+	/// <summary>
+	/// Метод получает вакансию для просмотра из таблицы UserVacancies.
+	/// </summary>
+	/// <param name="vacancyId">Id вакансии.</param>
+	/// <returns>Данные вакансии.</returns>
+	public async Task<UserVacancyEntity> GetVacancyModerationByVacancyIdAsync(long vacancyId)
     {
         var result = await _pgContext.UserVacancies
             .FirstOrDefaultAsync(v => v.VacancyId == vacancyId);
@@ -109,7 +109,34 @@ internal sealed class VacancyModerationRepository : IVacancyModerationRepository
                 ModerationStatusId = p.ModerationStatusId,
                 ModerationStatus = p.ModerationStatus
             })
+            .OrderByDescending(p => p.UserVacancy.DateCreated)
             .ToListAsync();
+
+        return result;
+    }
+	/// <summary>
+	/// Метод получает вакансию модерации из таблицы ModerationVacancies.
+	/// </summary>
+	/// /// <param name="vacancyId">Id вакансии.</param>
+	public async Task<ModerationVacancyEntity> GetModerationVacancyByVacancyIdAsync(long vacancyId)
+    {
+        var result = await _pgContext.ModerationVacancies
+            .Include(up => up.UserVacancy)
+            .Where(v => v.VacancyId==vacancyId)
+            .Select(p => new ModerationVacancyEntity
+            {
+                ModerationId = p.ModerationId,
+                VacancyId = p.VacancyId,
+                UserVacancy = new UserVacancyEntity
+                {
+                    VacancyName = p.UserVacancy.VacancyName,
+                    DateCreated = p.UserVacancy.DateCreated
+                },
+                DateModeration = p.DateModeration,
+                ModerationStatusId = p.ModerationStatusId,
+                ModerationStatus = p.ModerationStatus
+            })
+            .FirstOrDefaultAsync();
 
         return result;
     }

@@ -77,11 +77,6 @@ public class VacancyInput
     public string? Account { get; set; }
 
     /// <summary>
-    /// Токен пользователя.
-    /// </summary>
-    public string? Token { get; set; }
-    
-    /// <summary>
     /// Требования.
     /// </summary>
     public string? Demands { get; set; }

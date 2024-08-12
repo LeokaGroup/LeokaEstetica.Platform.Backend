@@ -1,3 +1,5 @@
+using LeokaEstetica.Platform.Models.Dto.Common.Cache.Output;
+using LeokaEstetica.Platform.Models.Enums;
 using LeokaEstetica.Platform.Redis.Models.Chat;
 
 namespace LeokaEstetica.Platform.Redis.Abstractions.Connection;
@@ -10,16 +12,17 @@ public interface IConnectionService
     /// <summary>
     /// Метод сохраняет ConnectionId подключения SignalR в кэш.
     /// </summary>
+    /// <param name="userCode">Код пользователя.</param>
     /// <param name="connectionId">Id подключения, который создает SignalR.</param>
-    /// <param name="token">Токен пользователя.</param>
-    Task AddConnectionIdCacheAsync(string connectionId, string token);
+    /// <param name="module">Модуль приложения.</param>
+    Task AddConnectionIdCacheAsync(string userCode, string connectionId, UserConnectionModuleEnum module);
     
     /// <summary>
     /// Метод получает ConnectionId подключения для SignalR.
     /// </summary>
     /// <param name="key">Ключ поиска.</param>
-    /// <returns>ConnectionId.</returns>
-    Task<string> GetConnectionIdCacheAsync(string key);
+    /// <returns>Выходная модель.</returns>
+    Task<UserConnectionOutput?> GetConnectionIdCacheAsync(string key);
 
     /// <summary>
     /// Метод сохраняет список ConnectionId подключений SignalR в кэш.
@@ -34,4 +37,12 @@ public interface IConnectionService
     /// <param name="key">Ключ поиска.</param>
     /// <returns>Список ConnectionId.</returns>
     Task<List<DialogRedis>?> GetDialogMembersConnectionIdsCacheAsync(string key);
+    
+    /// <summary>
+    /// Метод проверяет, есть ли в Redis такой код пользователя.
+    /// </summary>
+    /// <param name="userCode">Код пользователя.</param>
+    /// <param name="module">Модуль приложения.</param>
+    /// <returns>Выходная модель.</returns>
+    Task<UserConnectionOutput> CheckConnectionIdCacheAsync(Guid userCode, UserConnectionModuleEnum module);
 }

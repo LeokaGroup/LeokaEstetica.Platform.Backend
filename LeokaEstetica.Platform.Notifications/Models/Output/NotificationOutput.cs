@@ -8,15 +8,15 @@ public class NotificationOutput
     /// <summary>
     /// Заголовок уведомления.
     /// </summary>
-    public string Title { get; set; }
+    public string? Title { get; set; }
 
     /// <summary>
     /// Сообщение.
     /// </summary>
-    public string Message { get; set; }
+    public string? Message { get; set; }
 
     /// <summary>
     /// Уровень уведомления.
     /// </summary>
-    public string NotificationLevel { get; set; }
+    public string? NotificationLevel { get; set; }
 }

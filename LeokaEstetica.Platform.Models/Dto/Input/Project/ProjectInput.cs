@@ -74,11 +74,6 @@ public class ProjectInput
     public string? Account { get; set; }
 
     /// <summary>
-    /// Токен.
-    /// </summary>
-    public string? Token { get; set; }
-
-    /// <summary>
     /// Стадия проекта в виде перечисления.
     /// </summary>
     public ProjectStageEnum ProjectStageEnum => Enum.Parse<ProjectStageEnum>(ProjectStage);

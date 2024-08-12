@@ -14,14 +14,13 @@ internal class PaymentSystemJob
     /// </summary>
     /// <param name="publicId">Публичный ключ тарифа.</param>
     /// <param name="account">Аккаунт.</param>
-    /// <param name="token">Токен пользователя.</param>
     /// <returns>Данные платежа.</returns>
     internal async Task<ICreateOrderOutput> CreateOrderAsync(BasePaymentSystemStrategy strategy, Guid publicId,
-        string account, string token)
+        string account)
     {
         if (strategy is not null)
         {
-            return await strategy.CreateOrderAsync(publicId, account, token);
+            return await strategy.CreateOrderAsync(publicId, account);
         }
 
         return null;

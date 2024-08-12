@@ -65,6 +65,25 @@ internal sealed class ChatHub : Hub, IHubService
         _discordService = discordService;
         _clientConnectionService = clientConnectionService;
     }
+    
+    public override Task OnConnectedAsync()
+    {
+        var userCode = Context.GetHttpContext().Request.Query["userCode"].ToString();
+        var module = Enum.Parse<UserConnectionModuleEnum>(Context.GetHttpContext().Request.Query["module"].ToString());
+
+        if (!string.IsNullOrEmpty(userCode))
+        {
+            _connectionService.AddConnectionIdCacheAsync(userCode, Context.ConnectionId, module)
+                .ConfigureAwait(false);
+        }
+        
+        return base.OnConnectedAsync();
+    }
+    
+    public override Task OnDisconnectedAsync(Exception exception)
+    {
+        return Task.CompletedTask;
+    }
 
     #region Публичные методы
 
@@ -92,10 +111,10 @@ internal sealed class ChatHub : Hub, IHubService
             result.Dialogs = await CreateDialogMessagesBuilder.CreateDialogAsync((dialogs, mapDialogs),
                 _chatRepository, _userRepository, userId, _mapper, account);
 
-            var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
+            var connection = await _connectionService.GetConnectionIdCacheAsync(token);
 
             await Clients
-                .Client(connectionId)
+                .Client(connection.ConnectionId)
                 .SendAsync("listenGetProjectDialogs", result)
                 .ConfigureAwait(false);
         }
@@ -214,10 +233,10 @@ internal sealed class ChatHub : Hub, IHubService
                 Dialogs = await _chatService.GetProfileDialogsAsync(account)
             };
 
-            var connectionId = await _connectionService.GetConnectionIdCacheAsync(token);
+            var connection = await _connectionService.GetConnectionIdCacheAsync(token);
 
             await Clients
-                .Client(connectionId)
+                .Client(connection.ConnectionId)
                 .SendAsync("listenProfileDialogs", result)
                 .ConfigureAwait(false);
         }

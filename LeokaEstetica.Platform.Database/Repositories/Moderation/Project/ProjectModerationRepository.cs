@@ -29,13 +29,42 @@ internal sealed class ProjectModerationRepository : IProjectModerationRepository
         _pgContext = pgContext;
     }
 
-    #region Публичные методы.
+	#region Публичные методы.
 
-    /// <summary>
-    /// Метод получает список проектов для модерации.
-    /// </summary>
-    /// <returns>Список проектов.</returns>
-    public async Task<IEnumerable<ModerationProjectEntity>> ProjectsModerationAsync()
+	/// <summary>
+	/// Метод получает проект на модерации.
+	/// </summary>
+	/// /// <param name="projectId">Id проекта.</param>
+	public async Task<ModerationProjectEntity> GetProjectModerationAsync(long projectId)
+	{
+		var result = await _pgContext.ModerationProjects
+			.Include(up => up.UserProject)
+			.Where(x=>x.ProjectId==projectId)
+			.Select(p => new ModerationProjectEntity
+			{
+				ModerationId = p.ModerationId,
+				ProjectId = p.ProjectId,
+				UserProject = new UserProjectEntity
+				{
+					ProjectName = p.UserProject.ProjectName,
+					DateCreated = p.UserProject.DateCreated
+				},
+				DateModeration = p.DateModeration,
+                ModerationStatusId=p.ModerationStatusId,
+                ModerationStatus=p.ModerationStatus
+                
+                
+			})
+			.FirstOrDefaultAsync();
+
+		return result;
+	}
+
+	/// <summary>
+	/// Метод получает список проектов для модерации.
+	/// </summary>
+	/// <returns>Список проектов.</returns>
+	public async Task<IEnumerable<ModerationProjectEntity>> ProjectsModerationAsync()
     {
         var result = await _pgContext.ModerationProjects
             .Include(up => up.UserProject)
@@ -51,6 +80,7 @@ internal sealed class ProjectModerationRepository : IProjectModerationRepository
                 },
                 DateModeration = p.DateModeration
             })
+            .OrderByDescending(p => p.UserProject.DateCreated)
             .ToListAsync();
 
         return result;
@@ -70,19 +100,24 @@ internal sealed class ProjectModerationRepository : IProjectModerationRepository
             return false;
         }
 
-        var project = await _pgContext.UserProjects
-            .FirstOrDefaultAsync(v => v.ProjectId == projectId);
+        var isProjectExists = await _pgContext.UserProjects.AnyAsync(v => v.ProjectId == projectId);
 
-        if (project is null)
+        if (!isProjectExists)
         {
             throw new InvalidOperationException($"Не удалось найти проект. ProjectId = {projectId}");
         }
-
-        // Добавляем проект в каталог.
-        await _pgContext.CatalogProjects.AddAsync(new CatalogProjectEntity
+        
+        // Проверяем, есть ли уже такой проект в каталоге проектов.
+        var isExistsInCatalogProject = await _pgContext.CatalogProjects.AnyAsync(x => x.ProjectId == projectId);
+        
+        if (!isExistsInCatalogProject)
         {
-            ProjectId = projectId
-        });
+            // Добавляем проект в каталог.
+            await _pgContext.CatalogProjects.AddAsync(new CatalogProjectEntity
+            {
+                ProjectId = projectId
+            });
+        }
 
         await _pgContext.SaveChangesAsync();
 

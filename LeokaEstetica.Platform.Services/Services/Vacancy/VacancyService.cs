@@ -1,20 +1,18 @@
 using System.Runtime.CompilerServices;
 using AutoMapper;
+using Dapper;
 using LeokaEstetica.Platform.Access.Enums;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.Core.Exceptions;
-using LeokaEstetica.Platform.Database.Abstractions.FareRule;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
 using LeokaEstetica.Platform.Database.Abstractions.Subscription;
 using LeokaEstetica.Platform.Database.Abstractions.Vacancy;
-using LeokaEstetica.Platform.Finder.Chains.Vacancy;
 using LeokaEstetica.Platform.Messaging.Abstractions.Mail;
 using LeokaEstetica.Platform.Models.Dto.Input.Vacancy;
 using LeokaEstetica.Platform.Models.Dto.Output.Configs;
 using LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
 using LeokaEstetica.Platform.Models.Entities.Vacancy;
 using LeokaEstetica.Platform.CallCenter.Abstractions.Vacancy;
-using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Notifications.Consts;
 using LeokaEstetica.Platform.Redis.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Redis.Models.Vacancy;
@@ -30,6 +28,8 @@ using LeokaEstetica.Platform.Models.Entities.Moderation;
 using LeokaEstetica.Platform.Services.Helpers;
 using Microsoft.Extensions.Logging;
 using LeokaEstetica.Platform.Base.Extensions.HtmlExtensions;
+using LeokaEstetica.Platform.Models.Enums;
+using LeokaEstetica.Platform.Notifications.Abstractions;
 
 [assembly: InternalsVisibleTo("LeokaEstetica.Platform.Tests")]
 
@@ -46,55 +46,17 @@ internal sealed class VacancyService : IVacancyService
     private readonly IVacancyRedisService _vacancyRedisService;
     private readonly IUserRepository _userRepository;
     private readonly IVacancyModerationService _vacancyModerationService;
-    private readonly IFillColorVacanciesService _fillColorVacanciesService;
-
-    // Определяем всю цепочку фильтров.
-    private readonly BaseVacanciesFilterChain _salaryFilterVacanciesChain = new DateVacanciesFilterChain();
-    private readonly BaseVacanciesFilterChain _descSalaryVacanciesFilterChain = new DescSalaryVacanciesFilterChain();
-    private readonly BaseVacanciesFilterChain _ascSalaryVacanciesFilterChain = new AscSalaryVacanciesFilterChain();
-
-    private readonly BaseVacanciesFilterChain _fullEmploymentVacanciesFilterChain =
-        new FullEmploymentVacanciesFilterChain();
-
-    private readonly BaseVacanciesFilterChain _manySixExperienceVacanciesFilterChain =
-        new ManySixExperienceVacanciesFilterChain();
-
-    private readonly BaseVacanciesFilterChain _notExperienceVacanciesFilterChain =
-        new NotExperienceVacanciesFilterChain();
-
-    private readonly BaseVacanciesFilterChain _notPayVacanciesFilterChain = new NotPayVacanciesFilterChain();
-
-    private readonly BaseVacanciesFilterChain _oneThreeExperienceVacanciesFilterChain =
-        new OneThreeExperienceVacanciesFilterChain();
-
-    private readonly BaseVacanciesFilterChain _partialEmploymentVacanciesFilterChain =
-        new PartialEmploymentVacanciesFilterChain();
-
-    private readonly BaseVacanciesFilterChain _payVacanciesFilterChain = new PayVacanciesFilterChain();
-
-    private readonly BaseVacanciesFilterChain _projectWorkEmploymentVacanciesFilterChain =
-        new ProjectWorkEmploymentVacanciesFilterChain();
-
-    private readonly BaseVacanciesFilterChain _threeSixExperienceVacanciesFilterChain =
-        new ThreeSixExperienceVacanciesFilterChain();
-
-    private readonly BaseVacanciesFilterChain _unknownExperienceVacanciesFilterChain =
-        new UnknownExperienceVacanciesFilterChain();
-
-    private readonly BaseVacanciesFilterChain _unknownPayVacanciesFilterChain = new UnknownPayVacanciesFilterChain();
-
     private readonly ISubscriptionRepository _subscriptionRepository;
-    private readonly IFareRuleRepository _fareRuleRepository;
-    private readonly IVacancyNotificationsService _vacancyNotificationsService;
-    
+
     private static readonly string _approveVacancy = "Опубликована";
     private static readonly string _archiveVacancy = "В архиве";
+    private static readonly string _moderationVacancy = "На модерации";
 
     private readonly IProjectRepository _projectRepository;
     private readonly IMailingsService _mailingsService;
     private readonly IVacancyModerationRepository _vacancyModerationRepository;
-
     private readonly IDiscordService _discordService;
+    private readonly Lazy<IHubNotificationService> _hubNotificationService;
 
     /// <summary>
     /// Конструктор.
@@ -106,6 +68,7 @@ internal sealed class VacancyService : IVacancyService
     /// <param name="userRepository">Репозиторий пользователя.</param>
     /// <param name="vacancyModerationService">Сервис модерации вакансий.</param>
     /// <param name="discordService">Сервис уведомления дискорда.</param>
+    /// <param name="hubNotificationService">Сервис уведомлений хабов.</param>
     public VacancyService(ILogger<VacancyService> logger,
         IVacancyRepository vacancyRepository,
         IMapper mapper,
@@ -113,13 +76,11 @@ internal sealed class VacancyService : IVacancyService
         IUserRepository userRepository,
         IVacancyModerationService vacancyModerationService,
         ISubscriptionRepository subscriptionRepository,
-        IFareRuleRepository fareRuleRepository,
-        IVacancyNotificationsService vacancyNotificationsService, 
-        IProjectRepository projectRepository,
-        IFillColorVacanciesService fillColorVacanciesService, 
+        IProjectRepository projectRepository, 
         IMailingsService mailingsService, 
         IVacancyModerationRepository vacancyModerationRepository,
-        IDiscordService discordService)
+        IDiscordService discordService,
+         Lazy<IHubNotificationService> hubNotificationService)
     {
         _logger = logger;
         _vacancyRepository = vacancyRepository;
@@ -128,28 +89,12 @@ internal sealed class VacancyService : IVacancyService
         _userRepository = userRepository;
         _vacancyModerationService = vacancyModerationService;
         _subscriptionRepository = subscriptionRepository;
-        _fareRuleRepository = fareRuleRepository;
-        _vacancyNotificationsService = vacancyNotificationsService;
+
         _projectRepository = projectRepository;
-        _fillColorVacanciesService = fillColorVacanciesService;
         _mailingsService = mailingsService;
         _vacancyModerationRepository = vacancyModerationRepository;
         _discordService = discordService;
-
-        // Определяем обработчики цепочки фильтров.
-        _salaryFilterVacanciesChain.Successor = _descSalaryVacanciesFilterChain;
-        _descSalaryVacanciesFilterChain.Successor = _ascSalaryVacanciesFilterChain;
-        _ascSalaryVacanciesFilterChain.Successor = _fullEmploymentVacanciesFilterChain;
-        _fullEmploymentVacanciesFilterChain.Successor = _manySixExperienceVacanciesFilterChain;
-        _manySixExperienceVacanciesFilterChain.Successor = _notExperienceVacanciesFilterChain;
-        _notExperienceVacanciesFilterChain.Successor = _notPayVacanciesFilterChain;
-        _notPayVacanciesFilterChain.Successor = _oneThreeExperienceVacanciesFilterChain;
-        _oneThreeExperienceVacanciesFilterChain.Successor = _partialEmploymentVacanciesFilterChain;
-        _partialEmploymentVacanciesFilterChain.Successor = _payVacanciesFilterChain;
-        _payVacanciesFilterChain.Successor = _projectWorkEmploymentVacanciesFilterChain;
-        _projectWorkEmploymentVacanciesFilterChain.Successor = _threeSixExperienceVacanciesFilterChain;
-        _threeSixExperienceVacanciesFilterChain.Successor = _unknownExperienceVacanciesFilterChain;
-        _unknownExperienceVacanciesFilterChain.Successor = _unknownPayVacanciesFilterChain;
+        _hubNotificationService = hubNotificationService;
     }
 
     #region Публичные методы.
@@ -186,18 +131,18 @@ internal sealed class VacancyService : IVacancyService
     /// <returns>Данные созданной вакансии.</returns>
     public async Task<VacancyOutput> CreateVacancyAsync(VacancyInput vacancyInput)
     {
-        var token = vacancyInput.Token;
+        var userId = await _userRepository.GetUserByEmailAsync(vacancyInput.Account!);
+
+        if (userId <= 0)
+        {
+            var ex = new NotFoundUserIdByAccountException(vacancyInput.Account!);
+            throw ex;
+        }
+        
+        var userCode = await _userRepository.GetUserCodeByUserIdAsync(userId);
         
         try
         {
-            var userId = await _userRepository.GetUserByEmailAsync(vacancyInput.Account!);
-
-            if (userId <= 0)
-            {
-                var ex = new NotFoundUserIdByAccountException(vacancyInput.Account!);
-                throw ex;
-            }
-            
             var isProjectOwner = await _projectRepository.CheckProjectOwnerAsync(vacancyInput.ProjectId, userId);
 
             if (!isProjectOwner)
@@ -223,32 +168,6 @@ internal sealed class VacancyService : IVacancyService
                                                     $"#1 Ошибка в {nameof(VacancyService)}");
             }
 
-            // Получаем тариф, на который оформлена подписка у пользователя.
-            var fareRule = await _fareRuleRepository.GetByIdAsync(userSubscription.ObjectId);
-
-            var fareRuleName = fareRule.Name;
-
-            // TODO: Изменим эту логику когда реализуем платный функционал вакансий.
-            // Проверяем доступо ли пользователю создание вакансии.
-            // var availableCreateProjectLimit = await _availableLimitsService
-            //     .CheckAvailableCreateVacancyAsync(userId, fareRuleName);
-
-            // Если лимит по тарифу превышен.
-            // if (!availableCreateProjectLimit)
-            // {
-            //     var ex = new Exception($"Превышен лимит вакансий по тарифу. UserId: {userId}. Тариф: {fareRuleName}");
-            //
-            //     if (!string.IsNullOrWhiteSpace(token))
-            //     {
-            //         await _vacancyNotificationsService.SendNotificationWarningLimitFareRuleVacanciesAsync(
-            //             "Что то пошло не так",
-            //             "Превышен лимит вакансий по тарифу.",
-            //             NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
-            //     }
-            //
-            //     throw ex;
-            // }
-
             // Добавляем вакансию в таблицу вакансий пользователя.
             var createdVacancy = await _vacancyRepository.CreateVacancyAsync(vacancyInput, userId);
             var vacancyId = createdVacancy.VacancyId;
@@ -259,13 +178,11 @@ internal sealed class VacancyService : IVacancyService
             // Отправляем вакансию на модерацию.
             await _vacancyModerationService.AddVacancyModerationAsync(vacancyId);
 
-            if (!string.IsNullOrWhiteSpace(token))
-            {
-                // Отправляем уведомление об успешном создании вакансии и отправки ее на модерацию.
-                await _vacancyNotificationsService.SendNotificationSuccessCreatedUserVacancyAsync("Все хорошо",
-                    "Данные успешно сохранены. Вакансия отправлена на модерацию.",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);
-            }
+            // Отправляем уведомление об успешном создании вакансии и отправки ее на модерацию.
+            await _hubNotificationService.Value.SendNotificationAsync("Все хорошо",
+                "Данные успешно сохранены. Вакансия отправлена на модерацию.",
+                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, "SendNotificationSuccessCreatedUserVacancy",
+                userCode, UserConnectionModuleEnum.Main);
 
             var user = await _userRepository.GetUserPhoneEmailByUserIdAsync(userId);
             
@@ -283,13 +200,11 @@ internal sealed class VacancyService : IVacancyService
 
         catch (Exception ex)
         {
-            if (!string.IsNullOrWhiteSpace(token))
-            {
-                await _vacancyNotificationsService.SendNotificationErrorCreatedUserVacancyAsync("Ошибка",
-                    "Ошибка при создании вакансии. Мы уже знаем о ней и разбираемся. " +
-                    "А пока, попробуйте еще раз.",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, token);
-            }
+            await _hubNotificationService.Value.SendNotificationAsync("Ошибка",
+                "Ошибка при создании вакансии. Мы уже знаем о ней и разбираемся. " +
+                "А пока, попробуйте еще раз.",
+                NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, "SendNotificationErrorCreatedUserVacancy", userCode,
+                UserConnectionModuleEnum.Main);
 
             _logger.LogError(ex, ex.Message);
             throw;
@@ -304,25 +219,27 @@ internal sealed class VacancyService : IVacancyService
     {
         try
         {
-            var catalogVacancies = await _vacancyRepository.CatalogVacanciesAsync();
-            var result = new CatalogVacancyResultOutput { CatalogVacancies = new List<CatalogVacancyOutput>() };
+            var result = new CatalogVacancyResultOutput
+            {
+                CatalogVacancies = await _vacancyRepository.CatalogVacanciesAsync()
+            };
 
-            if (!catalogVacancies.Any())
+            if (!result.CatalogVacancies.Any())
             {
                 return result;
             }
 
-            await DeleteIfVacancyRemarksAsync(catalogVacancies);
+            await DeleteIfVacancyRemarksAsync(result.CatalogVacancies.AsList());
 
             // TODO: Выпилить, если у нас не будет выделения цветами тарифов.
             // Выбираем пользователей, у которых есть подписка выше бизнеса. Только их выделяем цветом.
             // result.CatalogVacancies = await _fillColorVacanciesService.SetColorBusinessVacancies(catalogVacancies,
             //     _subscriptionRepository, _fareRuleRepository);
             
-            FormatCatalogVacancies(catalogVacancies);
+            FormatCatalogVacancies(result.CatalogVacancies.AsList());
             
             // Проставляем вакансиям теги, в зависимости от подписки владельца вакансии.
-            result.CatalogVacancies = await SetVacanciesTags(result.CatalogVacancies.ToList());
+            result.CatalogVacancies = await SetVacanciesTags(result.CatalogVacancies.AsList());
 
             return result;
         }
@@ -375,7 +292,9 @@ internal sealed class VacancyService : IVacancyService
         {
             var userId = await _userRepository.GetUserByEmailAsync(account);
 
-            if (userId <= 0)
+			var moderationVacancy = await _vacancyModerationService.GetModerationVacancyByVacancyIdAsync(vacancyId);
+
+			if (userId <= 0)
             {
                 var ex = new NotFoundUserIdByAccountException(account);
                 throw ex;
@@ -390,9 +309,17 @@ internal sealed class VacancyService : IVacancyService
             var isOwner = await _vacancyRepository.CheckVacancyOwnerAsync(vacancyId, userId);
 
             var result = new VacancyOutput();
-            
-            // Нет доступа на изменение.
-            if (!isOwner && mode == ModeEnum.Edit)
+
+			if (!isOwner && moderationVacancy is not null &&
+	(moderationVacancy.ModerationStatus.StatusName == _moderationVacancy || moderationVacancy.ModerationStatus.StatusName == _archiveVacancy))
+			{
+				result.IsAccess = false;
+				result.IsSuccess = false;
+
+				return result;
+			}
+			// Нет доступа на изменение.
+			if (!isOwner && mode == ModeEnum.Edit)
             {
                 result.IsSuccess = false;
                 result.IsAccess = false;
@@ -402,11 +329,14 @@ internal sealed class VacancyService : IVacancyService
 
             var vacancy = await _vacancyRepository.GetVacancyByVacancyIdAsync(vacancyId);
 
+            //Если нет вакансии в базе
             if (vacancy is null)
             {
-                throw new InvalidOperationException(
-                    $"Не удалось получить вакансию. VacancyId: {vacancyId}. UserId: {userId}");
-            }
+				result.IsSuccess = false;
+				result.IsAccess = false;
+
+                return result;
+			}
 
             result = await CreateVacancyResultAsync(vacancy, userId);
 
@@ -453,11 +383,14 @@ internal sealed class VacancyService : IVacancyService
 
             // Отправляем вакансию на модерацию.
             await _vacancyModerationService.AddVacancyModerationAsync(vacancyId.GetValueOrDefault());
-
+            
+            var userCode = await _userRepository.GetUserCodeByUserIdAsync(userId);
+            
             // Отправляем уведомление об успешном изменении вакансии и отправки ее на модерацию.
-            await _vacancyNotificationsService.SendNotificationSuccessCreatedUserVacancyAsync("Все хорошо",
+            await _hubNotificationService.Value.SendNotificationAsync("Все хорошо",
                 "Данные успешно сохранены. Вакансия отправлена на модерацию.",
-                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, vacancyInput.Token);
+                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, "SendNotificationSuccessCreatedUserVacancy",
+                userCode, UserConnectionModuleEnum.Main);
 
             // Проверяем наличие неисправленных замечаний.
             await CheckAwaitingCorrectionRemarksAsync(vacancyId.GetValueOrDefault());
@@ -481,14 +414,15 @@ internal sealed class VacancyService : IVacancyService
     {
         try
         {
-            var result = new CatalogVacancyResultOutput();
+            var result = new CatalogVacancyResultOutput
+            {
+                CatalogVacancies = new List<CatalogVacancyOutput>()
+            };
 
             // Разбиваем строку занятости, так как там может приходить несколько значений в строке.
             filters.Employments = CreateEmploymentsBuilder.CreateEmploymentsResult(filters.EmploymentsValues);
-            
-            var items = await _vacancyRepository.CatalogVacanciesWithoutMemoryAsync();
-            
-            result.CatalogVacancies = await _salaryFilterVacanciesChain.FilterVacanciesAsync(filters, items);
+
+            result.CatalogVacancies = await _vacancyRepository.FilterVacanciesAsync(filters);
 
             return result;
         }
@@ -505,8 +439,7 @@ internal sealed class VacancyService : IVacancyService
     /// </summary>
     /// <param name="vacancyId">Id вакансии.</param>
     /// <param name="account">Аккаунт.</param>
-    /// <param name="token">Токен пользователя.</param>
-    public async Task DeleteVacancyAsync(long vacancyId, string account, string token)
+    public async Task DeleteVacancyAsync(long vacancyId, string account)
     {
         try
         {
@@ -518,14 +451,17 @@ internal sealed class VacancyService : IVacancyService
                 throw ex;
             }
             
+            var userCode = await _userRepository.GetUserCodeByUserIdAsync(userId);
+
             if (vacancyId <= 0)
             {
                 var ex = new ArgumentNullException($"Id вакансии не может быть пустым. VacancyId: {vacancyId}");
-                
-                await _vacancyNotificationsService.SendNotificationErrorDeleteVacancyAsync("Что то пошло не так",
+
+                await _hubNotificationService.Value.SendNotificationAsync("Что то пошло не так",
                     "Ошибка при удалении вакансии. Мы уже знаем о проблеме и уже занимаемся ей.",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, token);
-                
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, "SendNotificationErrorDeleteVacancy", userCode,
+                    UserConnectionModuleEnum.Main);
+
                 throw ex;
             }
 
@@ -551,19 +487,19 @@ internal sealed class VacancyService : IVacancyService
                     "Ошибка удаления вакансии. " +
                     $"VacancyId: {vacancyId}. " +
                     $"UserId: {userId}");
-            
-                await _vacancyNotificationsService.SendNotificationErrorDeleteVacancyAsync(
-                    "Ошибка",
+
+                await _hubNotificationService.Value.SendNotificationAsync("Ошибка",
                     "Ошибка при удалении вакансии.",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, token);
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, "SendNotificationErrorDeleteVacancy", userCode,
+                    UserConnectionModuleEnum.Main);
                 throw ex;
             }
-        
-            await _vacancyNotificationsService.SendNotificationSuccessDeleteVacancyAsync(
-                "Все хорошо",
+
+            await _hubNotificationService.Value.SendNotificationAsync("Все хорошо",
                 "Вакансия успешно удалена.",
-                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);
-            
+                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, "SendNotificationSuccessDeleteVacancy", userCode,
+                UserConnectionModuleEnum.Main);
+
             var user = await _userRepository.GetUserPhoneEmailByUserIdAsync(userId);
             
             // Отправляем уведомление на почту владельцу вакансии.
@@ -633,23 +569,23 @@ internal sealed class VacancyService : IVacancyService
     /// </summary>
     /// <param name="vacancyId">Id вакансии.</param>
     /// <param name="account">Аккаунт.</param>
-    /// <param name="token">Токен пользователя.</param>
-    public async Task AddVacancyArchiveAsync(long vacancyId, string account, string token)
+    public async Task AddVacancyArchiveAsync(long vacancyId, string account)
     {
+        var userId = await _userRepository.GetUserIdByEmailOrLoginAsync(account);
+
+        if (userId <= 0)
+        {
+            var ex = new NotFoundUserIdByAccountException(account);
+            throw ex;
+        }
+        
+        var userCode = await _userRepository.GetUserCodeByUserIdAsync(userId);
+        
         try
         {
             if (vacancyId <= 0)
             {
                 var ex = new InvalidOperationException($"Id вакансии не может быть <= 0. VacancyId: {vacancyId}");
-                throw ex;
-            }
-
-            //Получаем id пользователя
-            var userId = await _userRepository.GetUserIdByEmailOrLoginAsync(account);
-
-            if (userId <= 0)
-            {
-                var ex = new NotFoundUserIdByAccountException(account);
                 throw ex;
             }
 
@@ -672,26 +608,22 @@ internal sealed class VacancyService : IVacancyService
             {
                 _logger.LogWarning($"Такая вакансия уже добавлена в архив. VacancyId: {vacancyId}. UserId: {userId}");
 
-                if (!string.IsNullOrEmpty(token))
-                {
-                    await _vacancyNotificationsService.SendNotificationWarningAddVacancyArchiveAsync("Внимание",
-                        "Такая вакансия уже добавлена в архив.",
-                        NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, token);
-                }
-                
+                await _hubNotificationService.Value.SendNotificationAsync("Внимание",
+                    "Такая вакансия уже добавлена в архив.",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, "SendNotificationWarningAddVacancyArchive",
+                    userCode, UserConnectionModuleEnum.Main);
+
                 return;
             }
 
             // Добавляем вакансию в архив.
             await _vacancyRepository.AddVacancyArchiveAsync(vacancyId, userId);
-            
-            if (!string.IsNullOrEmpty(token))
-            {
-                await _vacancyNotificationsService.SendNotificationSuccessAddVacancyArchiveAsync("Все хорошо",
-                    "Вакансия успешно добавлена в архив.",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);
-            }
-            
+
+            await _hubNotificationService.Value.SendNotificationAsync("Все хорошо",
+                "Вакансия успешно добавлена в архив.",
+                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, "SendNotificationSuccessAddVacancyArchive",
+                userCode, UserConnectionModuleEnum.Main);
+
             var vacancyName = await _vacancyRepository.GetVacancyNameByIdAsync(vacancyId);
 
             // Отправляем уведомление на почту.
@@ -701,14 +633,12 @@ internal sealed class VacancyService : IVacancyService
         catch (Exception ex)
         {
             _logger.LogError(ex, ex.Message);
-            
-            if (!string.IsNullOrEmpty(token))
-            {
-                await _vacancyNotificationsService.SendNotificationErrorAddVacancyArchiveAsync("Что то не так...",
-                    "Ошибка при добавлении вакансии в архив. Мы уже знаем о проблеме и уже занимаемся ей.",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, token);
-            }
-            
+
+            await _hubNotificationService.Value.SendNotificationAsync("Что то не так...",
+                "Ошибка при добавлении вакансии в архив. Мы уже знаем о проблеме и уже занимаемся ей.",
+                NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, "SendNotificationErrorAddVacancyArchive", userCode,
+                UserConnectionModuleEnum.Main);
+
             throw;
         }
     }
@@ -762,9 +692,18 @@ internal sealed class VacancyService : IVacancyService
     /// </summary>
     /// <param name="vacancyId">Id вакансии.</param>
     /// <param name="account">Аккаунт.</param>
-    /// <param name="token">Токен пользователя.</param>
-    public async Task DeleteVacancyArchiveAsync(long vacancyId, string account, string token)
+    public async Task DeleteVacancyArchiveAsync(long vacancyId, string account)
     {
+        var userId = await _userRepository.GetUserIdByEmailOrLoginAsync(account);
+
+        if (userId <= 0)
+        {
+            var ex = new NotFoundUserIdByAccountException(account);
+            throw ex;
+        }
+        
+        var userCode = await _userRepository.GetUserCodeByUserIdAsync(userId);
+        
         try
         {
             if (vacancyId <= 0)
@@ -772,15 +711,7 @@ internal sealed class VacancyService : IVacancyService
                 var ex = new InvalidOperationException($"Id проекта не может быть <= 0. ProjectId: {vacancyId}");
                 throw ex;
             }
-            
-            var userId = await _userRepository.GetUserIdByEmailOrLoginAsync(account);
 
-            if (userId <= 0)
-            {
-                var ex = new NotFoundUserIdByAccountException(account);
-                throw ex;
-            }
-            
             // Проверяем, является ли текущий пользователь владельцем вакансии.
             var isOwner = await _vacancyRepository.CheckVacancyOwnerAsync(vacancyId, userId);
 
@@ -804,110 +735,37 @@ internal sealed class VacancyService : IVacancyService
                                                     $"Ошибка в {nameof(VacancyService)}");
             }
             
-            // TODO: Выпилим это, уходим от лимитов на проекты и вакансии.
-            // Получаем тариф, на который оформлена подписка у пользователя.
-            // var fareRule = await _fareRuleRepository.GetByIdAsync(userSubscription.ObjectId);
-            // var fareRuleName = fareRule.Name;
-
-            // Проверяем кол-во опубликованных вакансий пользователя.
-            // Если по лимитам тарифа доступно, то разрешаем удалить вакансию из архива.
-            // var vacanciesCatalogCount = await _vacancyRepository.GetUserVacanciesCatalogCountAsync(userId);
-
-            // Проверяем кол-во в зависимости от подписки.
-            // Если стартовый тариф.
-            // if (fareRuleName.Equals(FareRuleTypeEnum.Start.GetEnumDescription()))
-            // {
-            //     if (vacanciesCatalogCount >= AvailableLimitsConst.AVAILABLE_VACANCY_START_COUNT)
-            //     {
-            //         var ex = new InvalidOperationException(NOT_AVAILABLE_DELETE_VACANCY_ARCHIVE);
-            //         
-            //         _logger.LogError(ex, ex.Message);
-            //         
-            //         if (!string.IsNullOrEmpty(token))
-            //         {
-            //             await _vacancyNotificationsService.SendNotificationWarningDeleteVacancyArchiveAsync("Внимание",
-            //                 NOT_AVAILABLE_DELETE_VACANCY_ARCHIVE, NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING,
-            //                 token);
-            //         }
-            //         
-            //         throw ex;
-            //     }
-            // }
-            //
-            // // Если базовый тариф.
-            // if (fareRuleName.Equals(FareRuleTypeEnum.Base.GetEnumDescription()))
-            // {
-            //     if (vacanciesCatalogCount >= AvailableLimitsConst.AVAILABLE_VACANCY_BASE_COUNT)
-            //     {
-            //         var ex = new InvalidOperationException(NOT_AVAILABLE_DELETE_VACANCY_ARCHIVE);
-            //         
-            //         _logger.LogError(ex, ex.Message);
-            //         
-            //         if (!string.IsNullOrEmpty(token))
-            //         {
-            //             await _vacancyNotificationsService.SendNotificationWarningDeleteVacancyArchiveAsync("Внимание",
-            //                 NOT_AVAILABLE_DELETE_VACANCY_ARCHIVE, NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING,
-            //                 token);
-            //         }
-            //         
-            //         throw ex;
-            //     }
-            // }
-            //
-            // // Если бизнес тариф.
-            // if (fareRuleName.Equals(FareRuleTypeEnum.Business.GetEnumDescription()))
-            // {
-            //     if (vacanciesCatalogCount >= AvailableLimitsConst.AVAILABLE_VACANCY_BUSINESS_COUNT)
-            //     {
-            //         var ex = new InvalidOperationException(NOT_AVAILABLE_DELETE_VACANCY_ARCHIVE);
-            //         
-            //         _logger.LogError(ex, ex.Message);
-            //         
-            //         if (!string.IsNullOrEmpty(token))
-            //         {
-            //             await _vacancyNotificationsService.SendNotificationWarningDeleteVacancyArchiveAsync("Внимание",
-            //                 NOT_AVAILABLE_DELETE_VACANCY_ARCHIVE, NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING,
-            //                 token);
-            //         }
-            //         
-            //         throw ex;
-            //     }
-            // }
-
             // Удаляем вакансию из архива.
             var isDelete = await _vacancyRepository.DeleteVacancyArchiveAsync(vacancyId, userId);
 
-            if (!isDelete && !string.IsNullOrEmpty(token))
+            if (!isDelete)
             {
-                await _vacancyNotificationsService.SendNotificationErrorDeleteVacancyArchiveAsync("Что то не так...",
+                await _hubNotificationService.Value.SendNotificationAsync("Что то не так...",
                     "Ошибка при удалении вакансии из архива. Мы уже знаем о проблеме и уже занимаемся ей.",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, token);
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, "SendNotificationErrorDeleteVacancyArchive", userCode,
+                    UserConnectionModuleEnum.Main);
 
                 return;
             }
             
             // Отправляем вакансию на модерацию.
             await _vacancyModerationRepository.AddVacancyModerationAsync(vacancyId);
-            
-            if (!string.IsNullOrEmpty(token))
-            {
-                await _vacancyNotificationsService.SendNotificationSuccessDeleteVacancyArchiveAsync("Все хорошо",
-                    "Вакансия успешно удалена из архива.",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, token);
-            }
+
+            await _hubNotificationService.Value.SendNotificationAsync("Все хорошо",
+                "Вакансия успешно удалена из архива.",
+                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, "SendNotificationSuccessDeleteVacancyArchive",
+                userCode, UserConnectionModuleEnum.Main);
         }
         
         catch (Exception ex)
         {
             _logger.LogError(ex, ex.Message);
-            
-            if (!string.IsNullOrEmpty(token))
-            {
-                await _vacancyNotificationsService.SendNotificationErrorDeleteVacancyArchiveAsync("Что то не так...",
-                    "Ошибка при удалении вакансии из архива. Мы уже знаем о проблеме и уже занимаемся ей.",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, token);
-            }
-            
+
+            await _hubNotificationService.Value.SendNotificationAsync("Что то не так...",
+                "Ошибка при удалении вакансии из архива. Мы уже знаем о проблеме и уже занимаемся ей.",
+                NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, "SendNotificationErrorDeleteVacancyArchive",
+                userCode, UserConnectionModuleEnum.Main);
+
             throw;
         }
     }

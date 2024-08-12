@@ -26,7 +26,8 @@ public class AuthFilter : Attribute, IAuthorizationFilter
         "GetAuthProviderConfig", // Получение конфига аутентификации провайдеров.
         "RestoreUserPassword", // Восстановление пароля.
         "SendCodeRestorePassword", // Восстановление пароля.
-        "CheckRestorePassword" // Восстановление пароля.
+        "CheckRestorePassword", // Восстановление пароля.
+        "CheckConnectionIdCache"
     };
     
     /// <summary>

@@ -156,7 +156,7 @@ public class ResumeController : BaseController
     [ProducesResponseType(404)]
     public async Task<UserInfoOutput> GetResumeAsync([FromRoute] long resumeId)
     {
-        var result = await _resumeService.GetResumeAsync(resumeId);
+        var result = await _resumeService.GetResumeAsync(resumeId,GetUserName());
 
         return result;
     }
