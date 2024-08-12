@@ -36,6 +36,7 @@ using LeokaEstetica.Platform.Services.Strategies.Project.Team;
 using LeokaEstetica.Platform.Database.Abstractions.Config;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Project;
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
+using LeokaEstetica.Platform.Database.MongoDb.Abstractions;
 using LeokaEstetica.Platform.Integrations.Abstractions.Discord;
 using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Project;
 using LeokaEstetica.Platform.Models.Entities.Moderation;
@@ -66,7 +67,7 @@ internal sealed class ProjectService : IProjectService
     private readonly IGlobalConfigRepository _globalConfigRepository;
     private readonly IProjectManagmentRepository _projectManagmentRepository;
     private readonly IWikiTreeRepository _wikiTreeRepository;
-    
+
     /// <summary>
     /// Список типов приглашений в проект.
     /// </summary>
@@ -95,6 +96,7 @@ internal sealed class ProjectService : IProjectService
 
     private readonly IAccessModuleService _accessModuleService;
     private readonly Lazy<IHubNotificationService> _hubNotificationService;
+    private readonly IMongoDbRepository _mongoDbRepository;
 
     /// <summary>
     /// Конструктор.
@@ -117,6 +119,7 @@ internal sealed class ProjectService : IProjectService
     /// <param name="wikiTreeRepository">Репозиторий Wiki модуля УП.</param>
     /// <param name="accessModuleService">Сервис проверки доступов.</param>
     /// <param name="hubNotificationService">Сервис уведомлений хабов.</param>
+    /// <param name="mongoDbRepository">Репозиторий MongoDB.</param>
     public ProjectService(IProjectRepository projectRepository,
         ILogger<ProjectService> logger,
         IUserRepository userRepository,
@@ -136,7 +139,8 @@ internal sealed class ProjectService : IProjectService
         IProjectManagmentRepository projectManagmentRepository,
         IWikiTreeRepository wikiTreeRepository,
         IAccessModuleService accessModuleService,
-        Lazy<IHubNotificationService> hubNotificationService)
+        Lazy<IHubNotificationService> hubNotificationService,
+         IMongoDbRepository mongoDbRepository)
     {
         _projectRepository = projectRepository;
         _logger = logger;
@@ -158,6 +162,7 @@ internal sealed class ProjectService : IProjectService
         _wikiTreeRepository = wikiTreeRepository;
         _accessModuleService = accessModuleService;
         _hubNotificationService = hubNotificationService;
+        _mongoDbRepository = mongoDbRepository;
     }
 
     #region Публичные методы.
@@ -1149,7 +1154,7 @@ internal sealed class ProjectService : IProjectService
                 throw ex;
             }
 
-            var removedProject = await _projectRepository.DeleteProjectAsync(projectId, userId);
+            var removedProject = await _projectRepository.RemoveProjectAsync(projectId, userId);
             var userCode = await _userRepository.GetUserCodeByUserIdAsync(userId);
             
             if (!removedProject.Success)
@@ -1165,6 +1170,15 @@ internal sealed class ProjectService : IProjectService
                     userCode, UserConnectionModuleEnum.Main);
                 
                 throw ex;
+            }
+            
+            // Удаляем документы проекта.
+            var mongoDocumentIds = await _projectManagmentRepository.GetProjectMongoDocumentIdsByProjectIdAsync(
+                projectId);
+
+            foreach (var did in mongoDocumentIds)
+            {
+                await _mongoDbRepository.RemoveFileAsync(did);
             }
 
             await _hubNotificationService.Value.SendNotificationAsync("Все хорошо",

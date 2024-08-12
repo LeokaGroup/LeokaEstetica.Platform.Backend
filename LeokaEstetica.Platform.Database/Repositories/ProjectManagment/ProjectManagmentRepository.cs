@@ -3073,6 +3073,23 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         return result;
     }
 
+    /// <inheritdoc />
+    public async Task<IEnumerable<string>> GetProjectMongoDocumentIdsByProjectIdAsync(long projectId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+        
+        var parameters = new DynamicParameters();
+        parameters.Add("@projectId", projectId);
+        
+        var query = "SELECT mongo_document_id " +
+                    "FROM documents.project_documents " +
+                    "WHERE project_id = @projectId";
+
+        var result = await connection.QueryAsync<string>(query, parameters);
+
+        return result;
+    }
+
     #endregion
 
     #region Приватные методы.

@@ -238,7 +238,7 @@ internal class BaseServiceTest
             ProjectNotificationsService, VacancyService, vacancyRepository,
             subscriptionRepository, VacancyModerationService, projectNotificationsRepository,
             accessUserService, null, ProjectModerationRepository, discordService, null,
-            globalConfigRepository, projectManagementRepository, wikiRepository, null, null);
+            globalConfigRepository, projectManagementRepository, wikiRepository, null, null, null);
         
         var ordersRepository = new OrdersRepository(pgContext);
         var commerceRepository = new CommerceRepository(pgContext, AppConfiguration);
