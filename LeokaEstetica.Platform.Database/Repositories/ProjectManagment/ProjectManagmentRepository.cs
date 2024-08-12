@@ -513,15 +513,19 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<ProjectTagEntity>> GetProjectTagsAsync()
+    public async Task<IEnumerable<ProjectTagEntity>> GetProjectTagsAsync(long projectId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
+        
+        var parameters = new DynamicParameters();
+        parameters.Add("@projectId", projectId);
 
         var query = @"SELECT tag_id, tag_name, tag_sys_name, tag_description, project_id, object_tag_type 
-                      FROM project_management.project_tags 
+                      FROM project_management.project_tags as pt
+                      where pt.project_id = @projectId
                       ORDER BY position";
 
-        var result = await connection.QueryAsync<ProjectTagEntity>(query);
+        var result = await connection.QueryAsync<ProjectTagEntity>(query, parameters);
 
         return result;
     }

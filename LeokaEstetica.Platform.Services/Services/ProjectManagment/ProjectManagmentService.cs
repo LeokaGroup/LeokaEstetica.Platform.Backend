@@ -904,11 +904,11 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<ProjectTagEntity>> GetProjectTagsAsync()
+    public async Task<IEnumerable<ProjectTagEntity>> GetProjectTagsAsync(long projectId)
     {
         try
         {
-            var result = await _projectManagmentRepository.GetProjectTagsAsync();
+            var result = await _projectManagmentRepository.GetProjectTagsAsync(projectId);
 
             return result;
         }

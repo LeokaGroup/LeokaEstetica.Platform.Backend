@@ -91,7 +91,7 @@ public interface IProjectManagmentService
     /// Метод получает список тегов проекта для выбора в задаче.
     /// </summary>
     /// <returns>Список тегов.</returns>
-    Task<IEnumerable<ProjectTagEntity>> GetProjectTagsAsync();
+    Task<IEnumerable<ProjectTagEntity>> GetProjectTagsAsync(long projectId);
 
     /// <summary>
     /// Метод получает список статусов задачи для выбора.
