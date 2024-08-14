@@ -168,7 +168,7 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
                     "WHEN @strategy = 'kn' THEN LEFT(t.name, 100) " +
                      "END AS name," +
 					 "CASE " +
-                     "WHEN LENGTH(t.name)<=40 THEN 'null'"+
+                     "WHEN LENGTH(t.name)<=40 THEN 'null' "+
 					 "ELSE t.name " +
                      "END AS NameTooltip," +
 					"t.details AS details," +
