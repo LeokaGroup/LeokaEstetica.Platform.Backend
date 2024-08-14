@@ -147,7 +147,7 @@ internal sealed class VacancyService : IVacancyService
             {
                 await _hubNotificationService.Value.SendNotificationAsync("Ошибка",
                     "Невозможно создать вакансию без проекта.",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, "SendNotificationErrorCreatedUserVacancy",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, "SendNotificationErrorCreatedUserVacancy",
                     userCode, UserConnectionModuleEnum.Main);
                 
                 var ex = new InvalidOperationException(
