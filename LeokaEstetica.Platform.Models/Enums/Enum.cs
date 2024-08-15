@@ -56,6 +56,11 @@ public class Enum : IEnum
     /// Тип Enum для типа подписки.
     /// </summary>
     public const string SubscriptionType = "subscription_type_enum";
+    
+    /// <summary>
+    /// Тип Enum для типа заказа.
+    /// </summary>
+    public const string OrderType = "order_type_enum";
 
     /// <summary>
     /// Конструктор по дефолту.
@@ -163,6 +168,16 @@ public class Enum : IEnum
     public Enum(SubscriptionTypeEnum value)
     {
         Type = SubscriptionType;
+        Value = value.ToString();
+    }
+    
+    /// <summary>
+    /// Конструктор.
+    /// </summary>
+    /// <param name="value">Значение типа.</param>
+    public Enum(OrderTypeEnum value)
+    {
+        Type = OrderType;
         Value = value.ToString();
     }
 

@@ -27,7 +27,7 @@ public class CreatePaymentOrderAggregateInput
     /// <summary>
     /// Id пользователя.
     /// </summary>
-    public long UserId { get; set; }
+    public long CreatedBy { get; set; }
 
     /// <summary>
     /// Публичный ключ тарифа.
@@ -47,5 +47,5 @@ public class CreatePaymentOrderAggregateInput
     /// <summary>
     /// Кол-во месяцев, на которое оформлен тариф.
     /// </summary>
-    public short Month { get; set; }
+    public short? Month { get; set; }
 }

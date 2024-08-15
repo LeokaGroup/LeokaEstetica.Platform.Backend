@@ -207,7 +207,7 @@ internal sealed class OrdersJob : IJob
                         if (!fareRule.FareRule.IsFree)
                         {
                             // Проставляем подписку и даты подписки пользователю.
-                            await _subscriptionService.SetUserSubscriptionAsync(orderEvent.UserId, publicId,
+                            await _subscriptionService.SetUserSubscriptionAsync(orderEvent.CreatedBy, publicId,
                                 orderEvent.Month, orderEvent.OrderId, fareRule.FareRule.RuleId);
                         }
                         

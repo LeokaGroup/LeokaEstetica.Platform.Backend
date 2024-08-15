@@ -654,7 +654,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 _discordService, _userService, _projectManagmentTemplateRepository, _mapper,
                 projectTaskId.GetProjectTaskIdFromPrefixLink(), projectId, _projectSettingsConfigRepository);
                 
-            AgileObjectBuilder? builder = null;
+            BaseAgileObjectBuilder? builder = null;
  
             // Если просматриваем задачу.
             if (taskDetailType is TaskDetailTypeEnum.Task or TaskDetailTypeEnum.Error)

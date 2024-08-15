@@ -81,17 +81,22 @@ public static class CreatePaymentOrderFactory
         }
 
         var createdOrder = await CreatePaymentOrderAsync(paymentId, createPaymentOrderAggregateInput.OrderCache,
-            createPaymentOrderAggregateInput.CreateOrderInput, createPaymentOrderAggregateInput.UserId,
+            createPaymentOrderAggregateInput.CreateOrderInput, createPaymentOrderAggregateInput.CreatedBy,
             responseCheckStatusOrder);
-
-        // TODO: Уже пишем в другую таблицу и через Dapper.
+        
         // Создаем заказ в БД.
         var createdOrderResult = await commerceRepository.CreateOrderAsync(createdOrder);
+
+        if (createdOrderResult is null)
+        {
+            throw new InvalidOperationException("Ошибка создания заказа в БД. " +
+                                                $"СreatedOrder: {JsonConvert.SerializeObject(createdOrder)}.");
+        }
 
         /// TODO: Засунуть все параметры в модель. Их слишком много уже тут.
         // Отправляем заказ в очередь для отслеживания его статуса.
         var orderEvent = OrderEventFactory.CreateOrderEvent(createdOrderResult.OrderId,
-            createdOrderResult.StatusSysName, paymentId, createPaymentOrderAggregateInput.UserId,
+            createdOrderResult.PaymentStatusSysName, paymentId, createPaymentOrderAggregateInput.CreatedBy,
             createPaymentOrderAggregateInput.PublicId, createPaymentOrderAggregateInput.OrderCache.Month,
             createdOrderResult.Price, createdOrderResult.Currency);
 

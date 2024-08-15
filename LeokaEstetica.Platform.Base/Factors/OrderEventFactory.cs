@@ -19,14 +19,14 @@ public static class OrderEventFactory
     /// <param name="month">Кол-во месяцев подписки.</param>
     /// <returns>Результирующая модель.</returns>
     public static OrderEvent CreateOrderEvent(long orderId, string statusSysName, string paymentId, long userId,
-        Guid publicId, short month, decimal price, string currency)
+        Guid publicId, short? month, decimal price, string currency)
     {
         return new OrderEvent
         {
             OrderId = orderId,
             StatusSysName = statusSysName,
             PaymentId = paymentId,
-            UserId = userId,
+            CreatedBy = userId,
             PublicId = publicId,
             Month = month,
             Price = price,

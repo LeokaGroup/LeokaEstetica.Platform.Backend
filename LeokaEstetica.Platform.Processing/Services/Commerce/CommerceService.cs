@@ -13,7 +13,6 @@ using LeokaEstetica.Platform.Database.Abstractions.Subscription;
 using LeokaEstetica.Platform.Integrations.Abstractions.Discord;
 using LeokaEstetica.Platform.Models.Dto.Base.Commerce;
 using LeokaEstetica.Platform.Models.Dto.Common.Cache;
-using LeokaEstetica.Platform.Models.Dto.Common.Cache.Output;
 using LeokaEstetica.Platform.Models.Dto.Input.Commerce;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce.Base.Output;
@@ -24,6 +23,8 @@ using LeokaEstetica.Platform.Notifications.Consts;
 using LeokaEstetica.Platform.Processing.Abstractions.Commerce;
 using LeokaEstetica.Platform.Processing.Abstractions.PayMaster;
 using LeokaEstetica.Platform.Processing.Abstractions.YandexKassa;
+using LeokaEstetica.Platform.Processing.BuilderData;
+using LeokaEstetica.Platform.Processing.Builders.Order;
 using LeokaEstetica.Platform.Processing.Enums;
 using LeokaEstetica.Platform.Processing.Strategies.PaymentSystem;
 using LeokaEstetica.Platform.Redis.Abstractions.Commerce;
@@ -113,7 +114,7 @@ internal sealed class CommerceService : ICommerceService
     /// <param name="createOrderCache">Модель заказа для хранения в кэше.</param>
     /// <param name="account">Аккаунт.</param>
     /// <returns>Данные заказа добавленного в кэш.</returns>
-    public async Task<CreateOrderCacheOutput> CreateOrderCacheAsync(CreateOrderCacheInput createOrderCacheInput,
+    public async Task<CreateOrderCache> CreateOrderCacheAsync(CreateOrderCacheInput createOrderCacheInput,
         string account)
     {
         try
@@ -131,24 +132,63 @@ internal sealed class CommerceService : ICommerceService
             
             var fareRuleAttributeValues = fareRule.FareRuleAttributeValues?.FirstOrDefault(x => x.AttributeId == 4);
 
-            var order = new CreateOrderCache
+            var orderBuilder = new OrderBuilder();
+            BaseOrderBuilder? builder = null;
+
+            switch (createOrderCacheInput.OrderType)
             {
-                RuleId = fareRule.FareRule!.RuleId,
-                Month = createOrderCacheInput.PaymentMonth,
-                UserId = userId,
-                FareRuleName = fareRule.FareRule.RuleName,
-                // Цена тарифа = минимальная цена тарифа * кол-во сотрудников * кол-во месяцев.
-                Price = fareRuleAttributeValues!.MinValue!.Value * createOrderCacheInput.EmployeesCount *
-                        createOrderCacheInput.PaymentMonth
-            };
+                case OrderTypeEnum.Undefined:
+                    throw new InvalidOperationException(
+                        "Неизвестный тип заказа. " +
+                        $"CreateOrderCacheInput: {JsonConvert.SerializeObject(createOrderCacheInput)}.");
+
+                // Создаем заказ на подписку тарифа.
+                case OrderTypeEnum.FareRule:
+                    builder = new FareRuleOrderBuilder
+                    {
+                        OrderData = new OrderData
+                        {
+                            FareRuleAttributeValues = fareRuleAttributeValues,
+                            FareRuleName = fareRule.FareRule!.RuleName,
+                            CreatedBy = userId,
+                            RuleId = fareRule.FareRule.RuleId,
+                            OrderType = createOrderCacheInput.OrderType,
+                            Month = createOrderCacheInput.PaymentMonth
+                        }
+                    };
+                    
+                    await orderBuilder.BuildAsync(builder);
+                    break;
+                
+                case OrderTypeEnum.CreateVacancy:
+                    break;
+                
+                case OrderTypeEnum.OpenResume:
+                    break;
+                
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+
+            if (builder is null)
+            {
+                throw new InvalidOperationException(
+                    "Ошибка создания билдера заказов. " +
+                    $"CreateOrderCacheInput: {JsonConvert.SerializeObject(createOrderCacheInput)}.");
+            }
+
+            if (builder.OrderCache is null)
+            {
+                throw new InvalidOperationException(
+                    "Ошибка создания модели заказа для сохранения его в кэше. " +
+                    $"CreateOrderCacheInput: {JsonConvert.SerializeObject(createOrderCacheInput)}.");
+            }
 
             // Сохраняем заказ в кэш сроком на 4 часа.
             var key = await _commerceRedisService.CreateOrderCacheKeyAsync(userId, createOrderCacheInput.PublicId);
-            await _commerceRedisService.CreateOrderCacheAsync(key, order);
+            await _commerceRedisService.CreateOrderCacheAsync(key, builder.OrderCache);
 
-            var result = _mapper.Map<CreateOrderCacheOutput>(order);
-
-            return result;
+            return builder.OrderCache;
         }
 
         catch (Exception ex)

@@ -8,17 +8,17 @@ public class CreatePaymentOrderInput
     /// <summary>
     /// Id платежа в ПС.
     /// </summary>
-    public string PaymentId { get; set; }
+    public string? PaymentId { get; set; }
 
     /// <summary>
     /// Названия платежа.
     /// </summary>
-    public string Name { get; set; }
+    public string? Name { get; set; }
     
     /// <summary>
     /// Описание платежа.
     /// </summary>
-    public string Description { get; set; }
+    public string? Description { get; set; }
 
     /// <summary>
     /// Id пользователя.
@@ -33,17 +33,17 @@ public class CreatePaymentOrderInput
     /// <summary>
     /// Кол-во месяцев, на которые приобрели тариф.
     /// </summary>
-    public short PaymentMonth { get; set; }
+    public short? PaymentMonth { get; set; }
 
     /// <summary>
     /// Системное название статуса платежа в ПС.
     /// </summary>
-    public string PaymentStatusSysName { get; set; }
+    public string? PaymentStatusSysName { get; set; }
 
     /// <summary>
     /// Название статуса платежа в ПС.
     /// </summary>
-    public string PaymentStatusName { get; set; }
+    public string? PaymentStatusName { get; set; }
 
     /// <summary>
     /// Дата создания платежа в ПС.
@@ -53,5 +53,30 @@ public class CreatePaymentOrderInput
     /// <summary>
     /// Валюта.
     /// </summary>
-    public string Currency { get; set; }
+    public string? Currency { get; set; }
+
+    /// <summary>
+    /// Ставка НДС в %.
+    /// </summary>
+    public int? VatRate { get; set; }
+
+    /// <summary>
+    /// Цена с НДС (цена без НДС + НДС).
+    /// </summary>
+    public decimal? PriceVat { get; set; }
+
+    /// <summary>
+    /// % скидки.
+    /// </summary>
+    public int? Discount { get; set; }
+
+    /// <summary>
+    /// Цена со скидкой.
+    /// </summary>
+    public decimal? DiscountPrice { get; set; }
+
+    /// <summary>
+    /// Общая сумма заказа (вместе со скидками и НДС - если они были).
+    /// </summary>
+    public decimal TotalPrice { get; set; }
 }

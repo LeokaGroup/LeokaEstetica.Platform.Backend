@@ -9,7 +9,7 @@ namespace LeokaEstetica.Platform.Services.Builders.AgileObjectBuilder;
 /// TODO: Например через паттерн шаблонный метод или еще + паттерн адаптер, так как наследование от нескольких классов невозможно.
 /// Строитель задачи.
 /// </summary>
-internal class TaskBuilder : AgileObjectBuilder
+internal class TaskBuilder : BaseAgileObjectBuilder
 {
     /// <inheritdoc />
     public override async Task InitObjectAsync()

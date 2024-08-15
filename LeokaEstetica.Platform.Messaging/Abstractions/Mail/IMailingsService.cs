@@ -112,5 +112,5 @@ public interface IMailingsService
     /// <param name="isEmailNotificationsDisableModeEnabled">Признак уведомлений на почту.</param>
     /// <param name="month">Кол-во мес-в подписки.</param>
     Task SendNotificationCreatedOrderAsync(string mailTo, string orderName,
-        bool isEmailNotificationsDisableModeEnabled, int month);
+        bool isEmailNotificationsDisableModeEnabled, int? month);
 }

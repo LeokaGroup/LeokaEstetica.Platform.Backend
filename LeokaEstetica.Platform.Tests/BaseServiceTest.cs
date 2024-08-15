@@ -241,7 +241,7 @@ internal class BaseServiceTest
             globalConfigRepository, projectManagementRepository, wikiRepository, null, null, null);
         
         var ordersRepository = new OrdersRepository(pgContext);
-        var commerceRepository = new CommerceRepository(pgContext, AppConfiguration);
+        var commerceRepository = new CommerceRepository(pgContext, AppConfiguration, connectionProvider);
         var commerceRedisService = new CommerceRedisService(distributedCache);
         var rabbitMqService = new RabbitMqService();
         

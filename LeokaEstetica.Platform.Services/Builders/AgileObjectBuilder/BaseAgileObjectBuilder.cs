@@ -7,7 +7,7 @@ namespace LeokaEstetica.Platform.Services.Builders.AgileObjectBuilder;
 /// Абстрактный класс строителя объекта Agile.
 /// Объект Agile - это может быть задача, эпик, история, ошибка. Смотря что будет создаваться строителем.
 /// </summary>
-internal abstract class AgileObjectBuilder
+internal abstract class BaseAgileObjectBuilder
 {
     /// <summary>
     /// Данные необходимые для работы строителей. Зависимости и тд.

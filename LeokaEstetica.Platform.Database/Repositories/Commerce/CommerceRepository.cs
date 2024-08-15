@@ -1,19 +1,24 @@
+using Dapper;
+using LeokaEstetica.Platform.Base.Abstractions.Connection;
+using LeokaEstetica.Platform.Base.Abstractions.Repositories.Base;
 using LeokaEstetica.Platform.Base.Factors;
 using LeokaEstetica.Platform.Base.Models.Input.Processing;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Database.Abstractions.Commerce;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce.PayMaster;
+using LeokaEstetica.Platform.Models.Dto.Output.Orders;
 using LeokaEstetica.Platform.Models.Entities.Commerce;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using IsolationLevel = System.Data.IsolationLevel;
 
 namespace LeokaEstetica.Platform.Database.Repositories.Commerce;
 
 /// <summary>
 /// Класс реализует методы репозитория коммерции.
 /// </summary>
-internal sealed class CommerceRepository : ICommerceRepository
+internal sealed class CommerceRepository : BaseRepository, ICommerceRepository
 {
     private readonly PgContext _pgContext;
     private readonly IConfiguration _configuration;
@@ -22,8 +27,10 @@ internal sealed class CommerceRepository : ICommerceRepository
     /// Конструктор.
     /// </summary>
     /// <param name="pgContext">Датаконтекст.</param>
+    /// <param name="connectionProvider">Провайдер к БД.</param>
     public CommerceRepository(PgContext pgContext,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        IConnectionProvider connectionProvider) : base(connectionProvider)
     {
         _pgContext = pgContext;
         _configuration = configuration;
@@ -36,25 +43,52 @@ internal sealed class CommerceRepository : ICommerceRepository
     /// </summary>
     /// <param name="createPaymentOrderInput">Входная модель.</param>
     /// <returns>Данные заказа.</returns>
-    public async Task<OrderEntity> CreateOrderAsync(CreatePaymentOrderInput createPaymentOrderInput)
+    public async Task<OrderOutput?> CreateOrderAsync(CreatePaymentOrderInput createPaymentOrderInput)
     {
-        var order = new OrderEntity
-        {
-            UserId = createPaymentOrderInput.UserId,
-            PaymentId = createPaymentOrderInput.PaymentId,
-            OrderName = createPaymentOrderInput.Name,
-            OrderDetails = createPaymentOrderInput.Description,
-            Price = createPaymentOrderInput.Price,
-            Currency = createPaymentOrderInput.Currency,
-            DateCreated = createPaymentOrderInput.Created,
-            PaymentMonth = createPaymentOrderInput.PaymentMonth,
-            StatusName = createPaymentOrderInput.PaymentStatusName,
-            StatusSysName = createPaymentOrderInput.PaymentStatusSysName
-        };
-        await _pgContext.Orders.AddAsync(order);
-        await _pgContext.SaveChangesAsync();
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+        using var transaction = connection.BeginTransaction(IsolationLevel.ReadCommitted);
 
-        return order;
+        try
+        {
+            var orderParameters = new DynamicParameters();
+            orderParameters.Add("@createdBy", createPaymentOrderInput.UserId);
+            orderParameters.Add("@paymentId", createPaymentOrderInput.PaymentId);
+            orderParameters.Add("@orderName", createPaymentOrderInput.Name);
+            orderParameters.Add("@orderDetails", createPaymentOrderInput.Description);
+            orderParameters.Add("@price", createPaymentOrderInput.Price);
+            orderParameters.Add("@currency", createPaymentOrderInput.Currency);
+            orderParameters.Add("@createdAt", createPaymentOrderInput.Created);
+            orderParameters.Add("@paymentMonth", createPaymentOrderInput.PaymentMonth);
+            orderParameters.Add("@statusName", createPaymentOrderInput.PaymentStatusName);
+            orderParameters.Add("@statusSysName", createPaymentOrderInput.PaymentStatusSysName);
+
+            var orderQuery = "INSERT INTO commerce.orders (order_name, order_details, created_at, created_by," +
+                             " status_name, status_sys_name, price, currency, payment_month) " +
+                             "VALUES (@orderName, @orderDetails, @createdAt, @createdBy, @statusName," +
+                             " @statusSysName, @price, @currency, @paymentMonth) " +
+                             "RETURNING order_id";
+
+            var orderId = await connection.ExecuteScalarAsync<long>(orderQuery, orderParameters);
+
+            var resultParameters = new DynamicParameters();
+            resultParameters.Add("@orderId", orderId);
+
+            var resultQuery = "SELECT order_id, order_name, order_details, created_at, created_by, status_name," +
+                              " status_sys_name, price, vat_rate, price_vat, discount, discount_price, total_price," +
+                              " currency, payment_month, payment_id, order_type " +
+                              "FROM commerce.orders " +
+                              "WHERE order_id = @orderId";
+
+            var result = await connection.QueryFirstOrDefaultAsync<OrderOutput?>(resultQuery, resultParameters);
+
+            return result;
+        }
+        
+        catch
+        {
+            transaction.Rollback();
+            throw;
+        }
     }
 
     /// <summary>

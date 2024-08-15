@@ -460,11 +460,16 @@ internal sealed class MailingsService : IMailingsService
     /// <param name="isEmailNotificationsDisableModeEnabled">Признак уведомлений на почту.</param>
     /// <param name="month">Кол-во мес-в подписки.</param>
     public async Task SendNotificationCreatedOrderAsync(string mailTo, string orderName,
-        bool isEmailNotificationsDisableModeEnabled, int month)
+        bool isEmailNotificationsDisableModeEnabled, int? month)
     {
         if (isEmailNotificationsDisableModeEnabled)
         {
-            var text = $"Заказ: \"{orderName}\" успешно оформлен на срок {month} мес." +
+            var builder = new StringBuilder();
+            builder.Append(month.HasValue
+                ? $"Заказ: \"{orderName}\" успешно оформлен на срок {month} мес."
+                : $"Заказ: \"{orderName}\" успешно оформлен.");
+            
+            var text = $"{builder}" +
                        "<br/>" +
                        "<br/>" +
                        "<br/>" +

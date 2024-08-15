@@ -13,7 +13,7 @@ internal class AgileObject
     /// <param name="builder">Строитель, который занимается построением нужного объекта.</param>
     /// <param name="taskDetailType">Тип детализации.</param>
     /// <returns>Результирующая модель.</returns>
-    public async Task BuildAsync(AgileObjectBuilder builder, TaskDetailTypeEnum taskDetailType)
+    public async Task BuildAsync(BaseAgileObjectBuilder builder, TaskDetailTypeEnum taskDetailType)
     {
         await builder.CreateProjectManagmentTaskAsync();
         await builder.InitObjectAsync();

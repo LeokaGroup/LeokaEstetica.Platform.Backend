@@ -1,9 +1,10 @@
+using LeokaEstetica.Platform.Models.Enums;
+
 namespace LeokaEstetica.Platform.Models.Dto.Input.Commerce;
 
 /// <summary>
 /// Класс входной модели создания заказа в кэше.
 /// </summary>
-[Serializable]
 public class CreateOrderCacheInput
 {
     /// <summary>
@@ -20,4 +21,9 @@ public class CreateOrderCacheInput
     /// Кол-во сотрудников.
     /// </summary>
     public int EmployeesCount { get; set; }
+    
+    /// <summary>
+    /// Тип заказа.
+    /// </summary>
+    public OrderTypeEnum OrderType { get; set; }
 }

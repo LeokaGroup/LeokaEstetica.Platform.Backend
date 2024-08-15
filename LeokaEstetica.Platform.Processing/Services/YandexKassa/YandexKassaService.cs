@@ -159,7 +159,7 @@ internal sealed class YandexKassaService : IYandexKassaService
             // Если ошибка при создании платежа в ПС.
             if (!responseCreateOrder.IsSuccessStatusCode)
             {
-                var responseErrorDetails = responseCreateOrder.Content.ReadAsStringAsync().Result;
+                var responseErrorDetails = await responseCreateOrder.Content.ReadAsStringAsync();
                 var ex = new InvalidOperationException(
                     "Ошибка создания платежа в ПС." +
                     $" Данные платежа: {JsonConvert.SerializeObject(createOrderInput.CreateOrderRequest)}." +
@@ -179,6 +179,7 @@ internal sealed class YandexKassaService : IYandexKassaService
                 throw ex;
             }
 
+            // TODO: Зачем несколько факторок нам, надо бы как то отрефачить поудобнее все это.
             var paymentOrderAggregateInput = CreatePaymentOrderAggregateInputResult(order, orderCache,
                 createOrderInput, userId, publicId, fareRuleName, account, month);
 
@@ -323,7 +324,7 @@ internal sealed class YandexKassaService : IYandexKassaService
     /// <param name="month">Кол-во мес, на которые оплачивается тариф.</param>
     /// <returns>Модель запроса в ПС PayMaster.</returns>
     private async Task<CreateOrderYandexKassaInput> CreateOrderRequestAsync(string? fareRuleName, decimal price,
-        int ruleId, Guid publicId, short month)
+        int ruleId, Guid publicId, short? month)
     {
         var isTestMode = await _globalConfigRepository.GetValueByKeyAsync<bool>(
             GlobalConfigKeys.Integrations.PaymentSystem.COMMERCE_TEST_MODE_ENABLED);
@@ -346,6 +347,7 @@ internal sealed class YandexKassaService : IYandexKassaService
     }
 
     /// <summary>
+    /// TODO: Засунуть параметры в одну модель - их уже слишком много тут.
     /// Метод создает входную модель для создания заказа.
     /// </summary>
     /// <param name="order">Данные заказа.</param>
@@ -359,14 +361,14 @@ internal sealed class YandexKassaService : IYandexKassaService
     /// <returns>Наполненная входная модель для создания заказа.</returns>
     private CreatePaymentOrderAggregateInput CreatePaymentOrderAggregateInputResult(CreateOrderYandexKassaOutput order,
         CreateOrderCache orderCache, CreateOrderYandexKassaInput createOrderInput, long userId, Guid publicId,
-        string? fareRuleName, string account, short month)
+        string? fareRuleName, string account, short? month)
     {
         var reesult = new CreatePaymentOrderAggregateInput
         {
             CreateOrderOutput = order,
             CreateOrderInput = createOrderInput,
             OrderCache = orderCache,
-            UserId = userId,
+            CreatedBy = userId,
             PublicId = publicId,
             FareRuleName = fareRuleName,
             Account = account,

@@ -399,7 +399,7 @@ internal sealed class PayMasterService : IPayMasterService
     /// <param name="month">Кол-во мес, на которые оплачивается тариф.</param>
     /// <returns>Модель запроса в ПС PayMaster.</returns>
     private async Task<CreateOrderPayMasterInput> CreateOrderRequestAsync(string fareRuleName, decimal price,
-        int ruleId, Guid publicId, short month)
+        int ruleId, Guid publicId, short? month)
     {
         var isTestMode = await _globalConfigRepository.GetValueByKeyAsync<bool>(
                     GlobalConfigKeys.Integrations.PaymentSystem.COMMERCE_TEST_MODE_ENABLED);
@@ -509,6 +509,7 @@ internal sealed class PayMasterService : IPayMasterService
     }
 
     /// <summary>
+    /// TODO: Засунуть параметры в одну модель - их уже слишком много тут.
     /// Метод создает входную модель для создания заказа.
     /// </summary>
     /// <param name="order">Данные заказа.</param>
@@ -523,14 +524,14 @@ internal sealed class PayMasterService : IPayMasterService
     /// <returns>Наполненная входная модель для создания заказа.</returns>
     private CreatePaymentOrderAggregateInput CreatePaymentOrderAggregateInputResult(CreateOrderPayMasterOutput order,
         CreateOrderCache orderCache, CreateOrderPayMasterInput createOrderInput, long userId, HttpClient httpClient,
-        Guid publicId, string fareRuleName, string account, short month)
+        Guid publicId, string fareRuleName, string account, short? month)
     {
         var reesult = new CreatePaymentOrderAggregateInput
         {
             CreateOrderOutput = order,
             CreateOrderInput = createOrderInput,
             OrderCache = orderCache,
-            UserId = userId,
+            CreatedBy = userId,
             PublicId = publicId,
             FareRuleName = fareRuleName,
             Account = account,

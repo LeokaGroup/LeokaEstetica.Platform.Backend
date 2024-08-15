@@ -7,7 +7,7 @@ namespace LeokaEstetica.Platform.Services.Builders.AgileObjectBuilder;
 /// <summary>
 /// Строитель истории.
 /// </summary>
-internal class UserStoryBuilder : AgileObjectBuilder
+internal class UserStoryBuilder : BaseAgileObjectBuilder
 {
     private const int STORY_TYPE_ID = 2;
     
