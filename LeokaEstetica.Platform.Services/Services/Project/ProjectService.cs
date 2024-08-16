@@ -1774,7 +1774,7 @@ internal sealed class ProjectService : IProjectService
 	}
 
 	/// <summary>
-	/// Метод записывает участника команды проекта.
+	/// Метод записывает участника команды проекта. 
 	/// </summary>
 	/// <param name="user">Данные пользователя.</param>
 	/// <returns>Участник.</returns>

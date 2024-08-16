@@ -71,7 +71,7 @@ internal sealed class ProjectManagmentRoleService : IProjectManagmentRoleService
         {
             var userId = await _userRepository.GetUserByEmailAsync(account);
 
-            if (userId <= 0)
+            if (userId <= 0) 
             {
                 var ex = new NotFoundUserIdByAccountException(account);
                 throw ex;
