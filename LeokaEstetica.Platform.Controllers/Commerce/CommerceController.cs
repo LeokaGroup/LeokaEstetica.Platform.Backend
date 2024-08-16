@@ -124,7 +124,6 @@ public class CommerceController : BaseController
 
         var orderFromCache = await _commerceService.CreateOrderCacheAsync(createOrderCacheInput, GetUserName());
         
-        // TODO: Можно ли избежать каста?
         var result = _mapper.Map<OrderCacheOutput>(orderFromCache);
 
         return result;
@@ -137,20 +136,20 @@ public class CommerceController : BaseController
     /// </summary>
     /// <param name="publicId">Публичный код тарифа.</param>
     /// <returns>Услуги и сервисы заказа.</returns>
-    [HttpGet]
-    [Route("fare-rule/order-form/products")]
-    [ProducesResponseType(200, Type = typeof(OrderCacheOutput))]
-    [ProducesResponseType(400)]
-    [ProducesResponseType(403)]
-    [ProducesResponseType(500)]
-    [ProducesResponseType(404)]
-    public async Task<OrderCacheOutput> GetOrderProductsCacheAsync([FromQuery] Guid publicId)
-    {
-        var orderFromCache = await _commerceService.GetOrderProductsCacheAsync(publicId, GetUserName());
-        var result = _mapper.Map<OrderCacheOutput>(orderFromCache);
-
-        return result;
-    }
+    // [HttpGet]
+    // [Route("fare-rule/order-form/products")]
+    // [ProducesResponseType(200, Type = typeof(OrderCacheOutput))]
+    // [ProducesResponseType(400)]
+    // [ProducesResponseType(403)]
+    // [ProducesResponseType(500)]
+    // [ProducesResponseType(404)]
+    // public async Task<OrderCacheOutput> GetOrderProductsCacheAsync([FromQuery] Guid publicId)
+    // {
+    //     var orderFromCache = await _commerceService.GetOrderProductsCacheAsync(publicId, GetUserName());
+    //     var result = _mapper.Map<OrderCacheOutput>(orderFromCache);
+    //
+    //     return result;
+    // }
 
     /// <summary>
     /// TODO: Продумать аналитику в новой версии монетизации.

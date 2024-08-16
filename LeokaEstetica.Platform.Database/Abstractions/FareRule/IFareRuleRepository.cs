@@ -44,4 +44,13 @@ public interface IFareRuleRepository
     /// <returns>Данные тарифа.</returns>
     Task<(FareRuleCompositeOutput? FareRule, IEnumerable<FareRuleAttributeOutput>? FareRuleAttributes,
         IEnumerable<FareRuleAttributeValueOutput>? FareRuleAttributeValues)> GetFareRuleByPublicIdAsync(Guid publicId);
+    
+    /// <summary>
+    /// Метод получает тариф по Id компании.
+    /// </summary>
+    /// <param name="companyId">Id компании.</param>
+    /// <returns>Данные тарифа.</returns>
+    Task<(FareRuleCompositeOutput? FareRule, IEnumerable<FareRuleAttributeOutput>? FareRuleAttributes,
+        IEnumerable<FareRuleAttributeValueOutput>? FareRuleAttributeValues)> GetFareRuleByCompanyIdAsync(
+        long companyId);
 }

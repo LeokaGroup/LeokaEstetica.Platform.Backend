@@ -1,3 +1,4 @@
+using LeokaEstetica.Platform.Models.Dto.Input.Commerce.Vacancy;
 using LeokaEstetica.Platform.Models.Enums;
 
 namespace LeokaEstetica.Platform.Models.Dto.Input.Commerce;
@@ -8,22 +9,17 @@ namespace LeokaEstetica.Platform.Models.Dto.Input.Commerce;
 public class CreateOrderCacheInput
 {
     /// <summary>
-    /// Публичный ключ тарифа.
-    /// </summary>
-    public Guid PublicId { get; set; }
-
-    /// <summary>
-    /// Кол-во месяцев, на которые оформляется подписка на тариф.
-    /// </summary>
-    public short PaymentMonth { get; set; }
-
-    /// <summary>
-    /// Кол-во сотрудников.
-    /// </summary>
-    public int EmployeesCount { get; set; }
-    
-    /// <summary>
     /// Тип заказа.
     /// </summary>
     public OrderTypeEnum OrderType { get; set; }
+
+    /// <summary>
+    /// Входная модель заказа тарифа.
+    /// </summary>
+    public FareRuleCacheInput? FareRuleCache { get; set; }
+
+    /// <summary>
+    /// Входная модель заказа на платное размещение вакансии.
+    /// </summary>
+    public OrderVacancyCacheInput? VacancyCache { get; set; }
 }

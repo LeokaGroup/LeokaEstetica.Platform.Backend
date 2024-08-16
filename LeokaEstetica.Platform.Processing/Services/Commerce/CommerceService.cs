@@ -1,5 +1,4 @@
 using System.Runtime.CompilerServices;
-using AutoMapper;
 using LeokaEstetica.Platform.Access.Abstractions.User;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.Core.Constants;
@@ -51,7 +50,6 @@ internal sealed class CommerceService : ICommerceService
     private readonly IAccessUserService _accessUserService;
     private readonly IGlobalConfigRepository _globalConfigRepository;
     private readonly IPayMasterService _payMasterService;
-    private readonly IMapper _mapper;
     private readonly IYandexKassaService _yandexKassaService;
     private readonly Lazy<IDiscordService> _discordService;
     private readonly Lazy<IHubNotificationService> _hubNotificationService;
@@ -70,7 +68,6 @@ internal sealed class CommerceService : ICommerceService
     /// <param name="accessUserService">Сервис доступа пользователей.</param>
     /// <param name="globalConfigRepository">Репозиторий глобал конфига.</param>
     /// <param name="payMasterService">Сервис платежной системы PayMaster.</param>
-    /// <param name="mapper">Автомаппер.</param>
     /// <param name="yandexKassaService">Сервис ЮKassa.</param>
     /// <param name="discordService">Сервис уведомлений дискорда.</param>
     /// <param name="hubNotificationService">Сервис уведомлений хабов.</param>
@@ -85,7 +82,6 @@ internal sealed class CommerceService : ICommerceService
         IAccessUserService accessUserService,
         IGlobalConfigRepository globalConfigRepository,
         IPayMasterService payMasterService,
-        IMapper mapper,
         IYandexKassaService yandexKassaService,
         Lazy<IDiscordService> discordService,
         Lazy<IHubNotificationService> hubNotificationService)
@@ -100,7 +96,6 @@ internal sealed class CommerceService : ICommerceService
         _accessUserService = accessUserService;
         _globalConfigRepository = globalConfigRepository;
         _payMasterService = payMasterService;
-        _mapper = mapper;
         _yandexKassaService = yandexKassaService;
         _discordService = discordService;
         _hubNotificationService = hubNotificationService;
@@ -126,9 +121,11 @@ internal sealed class CommerceService : ICommerceService
                 var ex = new NotFoundUserIdByAccountException(account);
                 throw ex;
             }
+            
+            var fareRule = await _fareRuleRepository.get
 
-            var fareRule = await GetFareRuleAsync(userId, createOrderCacheInput.EmployeesCount,
-                createOrderCacheInput.PublicId);
+            // var fareRule = await GetFareRuleAsync(userId, createOrderCacheInput.FareRuleCache.EmployeesCount,
+            //     createOrderCacheInput.FareRuleCache.PublicId);
             
             var fareRuleAttributeValues = fareRule.FareRuleAttributeValues?.FirstOrDefault(x => x.AttributeId == 4);
 
@@ -532,7 +529,7 @@ internal sealed class CommerceService : ICommerceService
                 throw ex;
             }
 
-            var fareRule = await GetFareRuleAsync(userId, employeeCount, publicId);
+            var fareRule = await GetFareRuleAsync(userId, publicId);
             
             var fareRuleAttributeValues = fareRule.FareRuleAttributeValues?.FirstOrDefault(x => x.AttributeId == 4);
             
@@ -601,13 +598,8 @@ internal sealed class CommerceService : ICommerceService
     /// <exception cref="InvalidOperationException">Если не прошли валидацию.</exception>
     private async Task<(FareRuleCompositeOutput? FareRule, IEnumerable<FareRuleAttributeOutput>? FareRuleAttributes,
         IEnumerable<FareRuleAttributeValueOutput>? FareRuleAttributeValues)> GetFareRuleAsync(long userId,
-        int employeesCount, Guid publicId)
+        Guid publicId)
     {
-        if (employeesCount <= 0)
-        {
-            throw new InvalidOperationException("Не передано кол-во сотрудников для оформления тарифа.");
-        }
-
         // Получаем тариф, на который пользователь пытается перейти.
         var newFareRule = await _fareRuleRepository.GetFareRuleByPublicIdAsync(publicId);
 
