@@ -2448,7 +2448,7 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         var query = "WITH cte_sprint_tasks AS ( " +
                     "SELECT project_task_id " +
                     "FROM project_management.sprint_tasks) " +
-                    "SELECT sprint_id, sprint_name " +
+                    "SELECT sprint_id, sprint_name, project_sprint_id " +
                     "FROM project_management.sprints " +
                     "WHERE project_id = @projectId " +
                     "AND @projectTaskId <> ANY (SELECT * FROM cte_sprint_tasks)";
