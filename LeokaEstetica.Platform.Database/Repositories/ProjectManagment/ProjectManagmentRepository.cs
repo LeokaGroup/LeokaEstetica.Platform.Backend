@@ -168,8 +168,11 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
                     "WHEN @strategy = 'sm' THEN LEFT(t.name, 40) " +
                     "WHEN @strategy = 'kn' THEN LEFT(t.name, 100) " +
                      "END AS name," +
-                    "t.name as NameTooltip,"+
-                    "t.details AS details," +
+		    "CASE " +
+                    "WHEN LENGTH(t.name)<=40 THEN 'null'"+
+		    "ELSE t.name " +
+                    "END AS NameTooltip," +
+		    "t.details AS details," +
                     "t.created," +
                     "t.updated," +
                     "t.project_id," +
@@ -194,7 +197,10 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
                     "WHEN @strategy = 'sm' THEN LEFT(e.epic_name, 40) " +
                     "WHEN @strategy = 'kn'THEN LEFT(e.epic_name, 100) " +
                     "END AS name," +
-                    "e.epic_name as NameTooltip,"+
+		    "CASE " +
+		    "WHEN LENGTH(e.epic_name)<=40 THEN 'null'" +
+		    "ELSE e.epic_name " +
+		    "END AS NameTooltip," +
                     "e.epic_description AS details," +
                     "e.created_at AS created," +
                     "e.updated_at AS updated," +
@@ -222,8 +228,11 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
                     " WHEN @strategy = 'sm' THEN LEFT(us.story_name, 40) " +
                     "WHEN @strategy = 'kn' THEN LEFT(us.story_name, 100) " +
                     "END AS name," +
-                    "us.story_name as NameTooltip,"+
-                    "us.story_description AS details," +
+		    "CASE " +
+		    "WHEN LENGTH(us.story_name)<=40 THEN 'null'" +
+		    "ELSE us.story_name " +
+		    "END AS NameTooltip," +
+		    "us.story_description AS details," +
                     "us.created_at AS created," +
                     "us.updated_at AS updated," +
                     "us.project_id," +
