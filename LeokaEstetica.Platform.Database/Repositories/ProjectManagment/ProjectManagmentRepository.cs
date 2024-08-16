@@ -21,6 +21,7 @@ using LeokaEstetica.Platform.Models.Enums;
 using SqlKata;
 using SqlKata.Compilers;
 using Enum = LeokaEstetica.Platform.Models.Enums.Enum;
+using SearchAgileObjectTypeEnum = LeokaEstetica.Platform.Models.Enums.SearchAgileObjectTypeEnum;
 
 namespace LeokaEstetica.Platform.Database.Repositories.ProjectManagment;
 
@@ -443,37 +444,42 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
     }
 
     /// <inheritdoc />
-    public async Task<long> GetLastProjectTaskIdAsync(long projectId)
+    public async Task<long> GetLastProjectTaskIdAsync(long projectId, SearchAgileObjectTypeEnum agileObjectType)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
         var parameters = new DynamicParameters();
         parameters.Add("@projectId", projectId);
 
-        // Скрипт учитывает все таблицы, где есть айдишники задач в рамках проекта (эпики, истории, задачи, ошибки).
-        var query = @"DROP TABLE IF EXISTS temp_max_table;
-                    WITH max_task_id AS (SELECT MAX(COALESCE(pt.project_task_id, 0)) AS max_project_project_task_id,
-                            MAX(COALESCE(e.project_epic_id, 0))     AS max_epic_project_epic_id,
-                            MAX(COALESCE(et.project_task_id, 0))    AS max_epic_tasks_project_task_id,
-                            MAX(COALESCE(us.user_story_task_id, 0)) AS max_user_story_task_id 
-                     FROM project_management.project_tasks AS pt 
-                              LEFT JOIN project_management.epics AS e 
-                                        ON pt.project_id = e.project_id 
-                              LEFT JOIN project_management.epic_tasks AS et 
-                                        ON et.epic_id = e.epic_id 
-                              LEFT JOIN project_management.user_stories AS us 
-                                        ON pt.project_id = us.project_id 
-                     WHERE pt.project_id = @projectId) 
-                    SELECT UNNEST(ARRAY [max_task_id.max_project_project_task_id, max_task_id.max_epic_project_epic_id,
-                                 max_task_id.max_epic_tasks_project_task_id, max_task_id.max_user_story_task_id]) AS x 
-                    INTO TEMP TABLE temp_max_table 
-                    FROM max_task_id;
+        long lastProjectTaskId = 0;
 
-                    SELECT MAX(x) 
-                    FROM temp_max_table;";
+        switch (agileObjectType)
+        {
+            case SearchAgileObjectTypeEnum.Task or SearchAgileObjectTypeEnum.Error:
+                var taskAndErorQuery = "SELECT MAX (project_task_id) " +
+                                       "FROM project_management.project_tasks " +
+                                       "WHERE project_id = @projectId";
 
-        var result = await connection.ExecuteScalarAsync<long>(query, parameters);
+                lastProjectTaskId = await connection.QueryFirstOrDefaultAsync<long>(taskAndErorQuery, parameters);
+                break;
 
-        return result;
+            case SearchAgileObjectTypeEnum.Epic:
+                var epicQuery = "SELECT MAX (project_epic_id) " +
+                                "FROM project_management.epics " +
+                                "WHERE project_id = @projectId";
+
+                lastProjectTaskId = await connection.QueryFirstOrDefaultAsync<long>(epicQuery, parameters);
+                break;
+
+            case SearchAgileObjectTypeEnum.Story:
+                var storyQuery = "SELECT MAX (user_story_task_id) " +
+                                 "FROM project_management.user_stories " +
+                                 "WHERE project_id = @projectId";
+
+                lastProjectTaskId = await connection.QueryFirstOrDefaultAsync<long>(storyQuery, parameters);
+                break;
+        }
+
+        return lastProjectTaskId;
     }
 
     /// <summary>
