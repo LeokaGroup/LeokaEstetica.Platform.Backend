@@ -1084,6 +1084,30 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 UserConnectionModuleEnum.ProjectManagement);
         }
         
+        catch (Npgsql.PostgresException postgresEx)
+        {
+            if (postgresEx.SqlState.Equals("23505"))
+            {
+                var userId = await _userRepository.GetUserByEmailAsync(account);
+
+                if (userId <= 0)
+                {
+                    var ex = new NotFoundUserIdByAccountException(account);
+                    throw ex;
+                }
+                var userCode = await _userRepository.GetUserCodeByUserIdAsync(userId);
+
+                await _hubNotificationService.Value.SendNotificationAsync("Внимание",
+                    "Проект уже имеет метку с таким именем.",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, "SendNotifyErrorCreateProjectTag", userCode,
+                    UserConnectionModuleEnum.ProjectManagement);
+            }
+            
+            Exception exception = postgresEx;
+            _logger.LogError(exception.Message, exception);
+            throw;
+        }
+
         catch (Exception ex)
         {
             _logger.LogError(ex.Message, ex);
