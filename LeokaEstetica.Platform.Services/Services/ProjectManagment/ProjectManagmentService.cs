@@ -1097,9 +1097,9 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 }
                 var userCode = await _userRepository.GetUserCodeByUserIdAsync(userId);
 
-                await _hubNotificationService.Value.SendNotificationAsync("Ошибка",
+                await _hubNotificationService.Value.SendNotificationAsync("Внимание",
                     "Проект уже имеет метку с таким именем.",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, "SendNotifyErrorCreateProjectTag", userCode,
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, "SendNotifyErrorCreateProjectTag", userCode,
                     UserConnectionModuleEnum.ProjectManagement);
             }
             
