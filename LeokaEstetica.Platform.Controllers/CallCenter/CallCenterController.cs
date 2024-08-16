@@ -717,7 +717,7 @@ public class CallCenterController : BaseController
     /// <param name="commentId">Id комментария.</param>
     /// <returns>Данные комментария.</returns>
     [HttpGet]
-    [Route("project/{commentId}/preview")]
+    [Route("project-comment/{commentId}/preview")]
     [ProducesResponseType(200, Type = typeof(ProjectCommentModerationOutput))]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]
