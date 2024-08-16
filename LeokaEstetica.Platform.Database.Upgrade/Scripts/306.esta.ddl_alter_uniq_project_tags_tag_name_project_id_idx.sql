@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX uniq_project_tags_tag_name_project_id_idx ON project_management.project_tags (tag_name, project_id);
