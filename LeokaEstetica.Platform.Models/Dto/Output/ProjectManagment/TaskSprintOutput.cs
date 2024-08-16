@@ -13,7 +13,7 @@ public class TaskSprintOutput
     /// <summary>
     /// Id спринта в проекте.
     /// </summary>
-    public long projectSprintId { get; set; }
+    public long ProjectSprintId { get; set; }
 
     /// <summary>
     /// Название спринта.
