@@ -1,0 +1,1 @@
+﻿CREATE TYPE search.action_type_enum AS ENUM ('Search', 'Filter', 'Init');

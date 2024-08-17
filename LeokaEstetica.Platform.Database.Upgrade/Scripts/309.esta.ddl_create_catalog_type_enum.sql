@@ -1,0 +1,1 @@
+﻿CREATE TYPE search.CATALOG_TYPE_ENUM AS ENUM ('Project', 'Vacancy', 'Resume');
