@@ -770,16 +770,13 @@ internal sealed class SprintService : ISprintService
         {
             return Enumerable.Empty<ProjectManagmentTaskOutput>();
         }
-        
-        // Заполняем статусы задачами.
-        await _distributionStatusTaskService.Value.DistributionStatusTaskAsync(projectManagmentTaskStatuses,
-            sprintTasks, ModifyTaskStatuseTypeEnum.Sprint, projectId, null, strategy!);
 
         // Заполняем задачи спринта.
-        var mapSprintTasks = _mapper.Map<List<ProjectManagmentTaskOutput>>(sprintTasks.OrderBy(o => o.Created));
-        
-        // Готовим списки типов задач для заполнения словарей (эпик не может входить в спринт).
-        var taskTypeAndErrorIds = new List<long>();
+        var mapSprintTasks = await _distributionStatusTaskService.Value.DistributionStatusTaskAsync(projectManagmentTaskStatuses,
+			sprintTasks, ModifyTaskStatuseTypeEnum.Sprint, projectId, null, strategy!);
+
+		// Готовим списки типов задач для заполнения словарей (эпик не может входить в спринт).
+		var taskTypeAndErrorIds = new List<long>();
         var storyTypeIds = new List<long>();
 
         // Если есть задачи с типом "Задача".
@@ -836,22 +833,23 @@ internal sealed class SprintService : ISprintService
             throw new InvalidOperationException("Не удалось получить исполнителей задач эпика.");
         }
 
-        // Заполняем задачи спринта доп.полями.
-        foreach (var st in mapSprintTasks)
+		//TODO Код дублируется, заполнение типов задачи происходит до этого 
+		// Заполняем задачи спринта доп.полями.
+		foreach (var st in mapSprintTasks)
         {
             // Заполняем исполнителей задач спринта.
             st.Executor ??= new Executor();
             st.Executor.ExecutorName = executors.TryGet(st.ExecutorId)?.FullName;
-            
-            // Заполняем статус задач спринта.
+
+            // Заполняем типы задач спринта.
             if (st.TaskTypeId is (int)ProjectTaskTypeEnum.Task or (int)ProjectTaskTypeEnum.Error)
             {
-                st.TaskStatusName = taskTypeAndErrorDict?.TryGet(st.ProjectTaskId)?.TaskStatusName;
+                st.TaskTypeName = taskTypeAndErrorDict?.TryGet(st.ProjectTaskId)?.TaskStatusName;
             }
             
             if (st.TaskTypeId == (int)ProjectTaskTypeEnum.Story)
             {
-                st.TaskStatusName = storyTypeDict?.TryGet(st.ProjectTaskId)?.TaskStatusName;
+                st.TaskTypeName = storyTypeDict?.TryGet(st.ProjectTaskId)?.TaskStatusName;
             }
 
             st.PriorityName = taskPriorityNamesDict?.TryGet(st.PriorityId)?.PriorityName;

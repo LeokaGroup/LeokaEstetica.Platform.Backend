@@ -66,7 +66,7 @@ internal class DistributionStatusTaskService : IDistributionStatusTaskService
     }
 
     /// <inheritdoc />
-    public async Task DistributionStatusTaskAsync(
+    public async Task<IEnumerable<ProjectManagmentTaskOutput>> DistributionStatusTaskAsync(
         IEnumerable<ProjectManagmentTaskStatusTemplateOutput> projectManagmentTaskStatusTemplates,
         List<ProjectTaskExtendedEntity> tasks, ModifyTaskStatuseTypeEnum modifyTaskStatuseType, long projectId,
         int? paginatorStatusId, string strategy, int page = 1)
@@ -180,8 +180,10 @@ internal class DistributionStatusTaskService : IDistributionStatusTaskService
         {
             watchers = await _userRepository.GetWatcherNamesByWatcherIdsAsync(watcherIds);
         }
-        
-        foreach (var ps in projectManagmentTaskStatusTemplates)
+
+        List<ProjectManagmentTaskOutput> mapTasks=null;
+
+		foreach (var ps in projectManagmentTaskStatusTemplates)
         {
             var tasksByStatus = tasks
                 .Where(s => s.TaskStatusId == ps.TaskStatusId)
@@ -193,7 +195,7 @@ internal class DistributionStatusTaskService : IDistributionStatusTaskService
                 continue;
             }
 
-            var mapTasks = _mapper.Map<List<ProjectManagmentTaskOutput>>(tasksByStatus);
+			mapTasks = _mapper.Map<List<ProjectManagmentTaskOutput>>(tasksByStatus);
 
             // Добавляем задачи статуса, если есть что добавлять.
             if (mapTasks.Any())
@@ -373,6 +375,13 @@ internal class DistributionStatusTaskService : IDistributionStatusTaskService
                 // Кол-во задач в статусе.
                 ps.Total = statusTasksCount;
             }
-        }
-    }
+		}
+
+		if (mapTasks == null)
+		{
+			throw new InvalidOperationException("Не удалось распределить задачи по статусам шаблона проекта.");
+		}
+
+		return mapTasks;
+	}
 }
