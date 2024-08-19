@@ -3010,23 +3010,23 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
     
     /// <inheritdoc />
     public async Task<IDictionary<long, ProjectTaskTypeOutput>> GetProjectTaskStatusesAsync(long projectId,
-        IEnumerable<long> projectTaskIds, int templateId)
+        IEnumerable<long> projectTaskIds)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
 
         var parameters = new DynamicParameters();
         parameters.Add("@projectId", projectId);
         parameters.Add("@projectTaskIds", projectTaskIds.AsList());
-        parameters.Add("@templateId", templateId);
 
         var query = "SELECT t.project_task_id, " +
+                    "t.task_type_id," +
+                    "(CASE WHEN t.task_type_id = 1 THEN 'Задача' " +
+                    "ELSE 'Ошибка' END) AS TaskTypeName, " +
                     "(SELECT tpmtst.status_name " +
                     "FROM templates.project_management_task_status_templates AS tpmtst " +
                     "INNER JOIN templates.project_management_task_status_intermediate_templates AS tpmtsit " +
                     "ON tpmtst.status_id = tpmtsit.status_id " +
-                    "WHERE t.task_status_id = tpmtst.status_id " +
-                    "AND tpmtsit.template_id = @templateId " +
-                    "AND NOT tpmtst.is_system_status) AS TaskStatusName " +
+                    "WHERE t.task_status_id = tpmtst.status_id) AS TaskStatusName " +
                     "FROM project_management.project_tasks AS t " +
                     "WHERE t.project_task_id = ANY(@projectTaskIds) " +
                     "AND t.project_id = @projectId";
@@ -3050,7 +3050,8 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         var query = "SELECT us.user_story_task_id AS project_task_id, " +
                     "(SELECT status_name " +
                     "FROM project_management.user_story_statuses " +
-                    "WHERE status_id = us.status_id) AS TaskStatusName " +
+                    "WHERE status_id = us.status_id) AS TaskStatusName," +
+                    "'История' AS TaskTypeName " +
                     "FROM project_management.user_stories AS us " +
                     "INNER JOIN project_management.user_story_statuses AS uss " +
                     "ON us.status_id = uss.status_id " +
@@ -3105,6 +3106,32 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
                     "WHERE project_id = @projectId";
 
         var result = await connection.QueryAsync<string>(query, parameters);
+
+        return result;
+    }
+
+    /// <inheritdoc />
+    public async Task<IDictionary<long, ProjectTaskTypeOutput>> GetProjectEpicStatusesAsync(long projectId,
+        IEnumerable<long> projectTaskIds)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@projectId", projectId);
+        parameters.Add("@projectTaskIds", projectTaskIds.AsList());
+
+        var query = "SELECT e.project_epic_id AS ProjectTaskId, " +
+                    "es.status_name AS TaskStatusName," +
+                    "4 AS TaskTypeId," +
+                    "'Эпик' AS TaskTypeName " +
+                    "FROM project_management.epics AS e " +
+                    "INNER JOIN project_management.epic_statuses AS es " +
+                    "ON e.status_id = es.status_id " +
+                    "WHERE e.project_id = @projectId " +
+                    "AND project_epic_id = ANY (@projectTaskIds)";
+
+        var result = (await connection.QueryAsync<ProjectTaskTypeOutput>(query, parameters))
+            .ToDictionary(k => k.ProjectTaskId, v => v);
 
         return result;
     }
