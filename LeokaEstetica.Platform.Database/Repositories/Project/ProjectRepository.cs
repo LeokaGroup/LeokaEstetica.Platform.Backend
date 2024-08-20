@@ -20,7 +20,6 @@ using LeokaEstetica.Platform.Models.Entities.Vacancy;
 using LeokaEstetica.Platform.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 using System.Data;
-using LeokaEstetica.Platform.Core.Extensions;
 
 namespace LeokaEstetica.Platform.Database.Repositories.Project;
 
@@ -316,18 +315,24 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
 	        query += "AND c.\"CatalogProjectId\" > @lastId ";
         }
         
+        // TODO: Передавать с фронта будем кол-во строк, при настройке пагинации пользователем.
         parameters.Add("@countRows", 20);
 
         // Фильтр по дате.
-        // query += !string.IsNullOrWhiteSpace(catalogProjectInput.Date) && !catalogProjectInput.Date.Equals("None")
-        //  ? "ORDER BY u2.\"DateCreated\" DESC "
-        //  : "ORDER BY u2.\"DateCreated\" ";
         query += "ORDER BY c.\"CatalogProjectId\", u2.\"DateCreated\" ";
-        // query += "ORDER BY c.\"CatalogProjectId\" ";
-        
         query += "LIMIT @countRows";
 
         var items = (await connection.QueryAsync<CatalogProjectOutput>(query, parameters))?.AsList();
+
+        if (items is null || items.Count == 0)
+        {
+	        return new CatalogProjectResultOutput
+	        {
+		        CatalogProjects = new List<CatalogProjectOutput>(),
+		        LastId = null,
+		        Total = 0
+	        };
+        }
 
         var calcCountQuery = "SELECT COUNT (c.\"CatalogProjectId\") " +
                              "FROM \"Projects\".\"CatalogProjects\" AS c " +
@@ -351,13 +356,12 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
 
         var result = new CatalogProjectResultOutput
         {
-	        CatalogProjects = items,
+	        CatalogProjects = !string.IsNullOrWhiteSpace(catalogProjectInput.Date)
+	                          && !catalogProjectInput.Date.Equals("None")
+		        ? items.OrderByDescending(o => o.DateCreated)
+		        : items.OrderBy(o => o.DateCreated),
 	        Total = calcCount,
-	        // LastId = !string.IsNullOrWhiteSpace(catalogProjectInput.Date) && !catalogProjectInput.Date.Equals("None")
-		       //  ? items?.LastOrDefault()?.CatalogProjectId
-		       //  : items?.FirstOrDefault()?.CatalogProjectId
-		       // LastId =  items?.FirstOrDefault()?.CatalogProjectId
-		       LastId =  items?.LastOrDefault()?.CatalogProjectId
+	        LastId = items.LastOrDefault()?.CatalogProjectId
         };
 
         return result;
