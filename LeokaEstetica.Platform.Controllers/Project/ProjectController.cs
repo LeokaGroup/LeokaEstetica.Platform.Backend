@@ -69,20 +69,21 @@ public class ProjectController : BaseController
 	}
 
 	/// <summary>
-	/// TODO: Подумать, давать ли всем пользователям возможность просматривать каталог проектов или только тем, у кого есть подписка.
 	/// Метод получает список проектов для каталога.
 	/// </summary>
-	/// <returns>Список проектов.</returns>
-	[HttpGet]
+	/// <param name="catalogProjectInput">Входная модель.</param>
+	/// <returns>Список результатов.</returns>
+	[HttpPost]
 	[Route("catalog")]
 	[ProducesResponseType(200, Type = typeof(CatalogProjectResultOutput))]
 	[ProducesResponseType(400)]
 	[ProducesResponseType(403)]
 	[ProducesResponseType(500)]
 	[ProducesResponseType(404)]
-	public async Task<CatalogProjectResultOutput> CatalogProjectsAsync()
+	public async Task<CatalogProjectResultOutput> GetCatalogProjectsAsync(
+		[FromBody] CatalogProjectInput catalogProjectInput)
 	{
-		var result = await _projectService.CatalogProjectsAsync();
+		var result = await _projectService.GetCatalogProjectsAsync(catalogProjectInput);
 
 		return result;
 	}

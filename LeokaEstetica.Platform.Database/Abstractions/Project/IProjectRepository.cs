@@ -50,11 +50,10 @@ public interface IProjectRepository
     Task<UserProjectResultOutput> UserProjectsAsync(long userId, bool isCreateVacancy);
 
     /// <summary>
-    /// TODO: Подумать, давать ли всем пользователям возможность просматривать каталог проектов или только тем, у кого есть подписка.
     /// Метод получает список проектов для каталога.
     /// </summary>
     /// <returns>Список проектов.</returns>
-    Task<IEnumerable<CatalogProjectOutput>> CatalogProjectsAsync();
+    Task<CatalogProjectResultOutput> GetCatalogProjectsAsync(CatalogProjectInput catalogProjectInput);
 
     /// <summary>
     /// Метод обновляет проект пользователя.

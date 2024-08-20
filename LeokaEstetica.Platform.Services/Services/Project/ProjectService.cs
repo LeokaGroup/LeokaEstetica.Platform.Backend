@@ -399,18 +399,16 @@ internal sealed class ProjectService : IProjectService
 		}
 	}
 
-    /// <summary>
-    /// Метод получает список проектов для каталога.
-    /// </summary>
-    /// <returns>Список проектов.</returns>
-    public async Task<CatalogProjectResultOutput> CatalogProjectsAsync()
+	/// <inheritdoc />
+    public async Task<CatalogProjectResultOutput> GetCatalogProjectsAsync(CatalogProjectInput catalogProjectInput)
     {
         try
         { 
-            var result = new CatalogProjectResultOutput
-            {
-                CatalogProjects = await _projectRepository.CatalogProjectsAsync()
-            };
+	        // Разбиваем строку стадий проекта, так как там может приходить несколько значений в строке.
+	        catalogProjectInput.ProjectStages = CreateProjectStagesBuilder.CreateProjectStagesResult(
+		        catalogProjectInput.StageValues);
+
+	        var result = await _projectRepository.GetCatalogProjectsAsync(catalogProjectInput);
 
             result.CatalogProjects = await ExecuteCatalogConditionsAsync(result.CatalogProjects.AsList());
 

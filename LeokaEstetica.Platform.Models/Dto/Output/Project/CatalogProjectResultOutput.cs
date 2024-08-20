@@ -8,10 +8,15 @@ public class CatalogProjectResultOutput
     /// <summary>
     /// Список проектов.
     /// </summary>
-    public IEnumerable<CatalogProjectOutput> CatalogProjects { get; set; }
+    public IEnumerable<CatalogProjectOutput>? CatalogProjects { get; set; }
 
     /// <summary>
-    /// Кол-во проектов.
+    /// Кол-во найденных записей (несмотря на пагинацию).
     /// </summary>
-    public int Total => CatalogProjects.Count();
+    public long Total { get; set; }
+
+    /// <summary>
+    /// Id последней записи выборки (подсказка фронту для пагинации).
+    /// </summary>
+    public long? LastId { get; set; }
 }

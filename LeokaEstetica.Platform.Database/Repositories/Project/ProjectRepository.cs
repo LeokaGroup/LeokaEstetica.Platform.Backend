@@ -20,6 +20,7 @@ using LeokaEstetica.Platform.Models.Entities.Vacancy;
 using LeokaEstetica.Platform.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 using System.Data;
+using LeokaEstetica.Platform.Core.Extensions;
 
 namespace LeokaEstetica.Platform.Database.Repositories.Project;
 
@@ -256,55 +257,110 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
 		return result;
 	}
 
-	/// <summary>
-	/// Метод получает список проектов для каталога.
-	/// </summary>
-	/// <returns>Список проектов.</returns>
-	public async Task<IEnumerable<CatalogProjectOutput>> CatalogProjectsAsync()
+	/// <inheritdoc />
+	public async Task<CatalogProjectResultOutput> GetCatalogProjectsAsync(CatalogProjectInput catalogProjectInput)
 	{
-		var archivedProjects = _pgContext.ArchivedProjects.Select(x => x.ProjectId).AsQueryable();
+		using var connection = await ConnectionProvider.GetConnectionAsync();
+        
+        var parameters = new DynamicParameters();
 
-		var result = await (from cp in _pgContext.CatalogProjects.AsNoTracking()
-							join p in _pgContext.UserProjects.AsNoTracking()
-								on cp.ProjectId
-								equals p.ProjectId
-							join mp in _pgContext.ModerationProjects.AsNoTracking()
-								on p.ProjectId
-								equals mp.ProjectId
-								into table
-							from tbl in table.DefaultIfEmpty()
-							join us in _pgContext.UserSubscriptions.AsNoTracking()
-								on p.UserId
-								equals us.UserId
-							join s in _pgContext.Subscriptions.AsNoTracking()
-								on us.SubscriptionId
-								equals s.ObjectId
-							join ups in _pgContext.UserProjectsStages.AsNoTracking()
-								on p.ProjectId
-								equals ups.ProjectId
-							where !archivedProjects.Contains(p.ProjectId)
-								  && p.IsPublic == true
-								  && !new[]
-									  {
-							  (int)VacancyModerationStatusEnum.ModerationVacancy,
-							  (int)VacancyModerationStatusEnum.RejectedVacancy
-									  }
-									  .Contains(tbl.ModerationStatusId)
-							orderby cp.Project.DateCreated descending, s.ObjectId descending
-							select new CatalogProjectOutput
-							{
-								ProjectId = p.ProjectId,
-								ProjectName = p.ProjectName,
-								DateCreated = p.DateCreated,
-								ProjectIcon = p.ProjectIcon,
-								ProjectDetails = p.ProjectDetails,
-								UserId = p.UserId,
-								ProjectStageSysName = _pgContext.ProjectStages.AsNoTracking()
-									.FirstOrDefault(x => x.StageId == ups.StageId).StageSysName
-							})
-			.ToListAsync();
+        var query = "SELECT c.\"CatalogProjectId\"," +
+                    "u.\"ProjectId\"," +
+                    " u.\"ProjectName\"," +
+                    " u.\"DateCreated\"," +
+                    " u.\"ProjectIcon\"," +
+                    " u.\"ProjectDetails\"," +
+                    " u.\"UserId\"," +
+                    " p0.\"StageSysName\" AS \"ProjectStageSysName\" " +
+                    "FROM \"Projects\".\"CatalogProjects\" AS c " +
+                    "INNER JOIN \"Projects\".\"UserProjects\" AS u ON c.\"ProjectId\" = u.\"ProjectId\" " +
+                    "LEFT JOIN \"Moderation\".\"Projects\" AS p ON u.\"ProjectId\" = p.\"ProjectId\" " +
+                    "INNER JOIN \"Subscriptions\".\"UserSubscriptions\" AS u0 ON u.\"UserId\" = u0.\"UserId\" " +
+                    "INNER JOIN \"Subscriptions\".\"Subscriptions\" AS s ON u0.\"SubscriptionId\" = s.\"ObjectId\" " +
+                    "INNER JOIN \"Projects\".\"UserProjectsStages\" AS u1 ON u.\"ProjectId\" = u1.\"ProjectId\" " +
+                    "INNER JOIN \"Projects\".\"UserProjects\" AS u2 ON c.\"ProjectId\" = u2.\"ProjectId\" " +
+                    "INNER JOIN \"Projects\".\"ProjectStages\" AS p0 ON p0.\"StageId\" = u1.\"StageId\" " +
+                    "WHERE " +
+                    "(NOT (EXISTS ( " +
+                    "SELECT 1 " +
+                    "FROM \"Projects\".\"ArchivedProjects\" AS a " +
+                    "WHERE a.\"ProjectId\" = u.\"ProjectId\")) " +
+                    "AND u.\"IsPublic\") " +
+                    "AND (p.\"ModerationStatusId\" NOT IN (2, 3, 6, 7) " +
+                    "AND (p.\"ModerationStatusId\" IS NOT NULL)) ";
 
-		return result;
+        // Фильтр по стадиям проекта.
+        if (catalogProjectInput.ProjectStages is not null && 
+            catalogProjectInput.ProjectStages.Count > 0 && 
+            !catalogProjectInput.ProjectStages.Contains(FilterProjectStageTypeEnum.None))
+        {
+	        var stageList = catalogProjectInput.ProjectStages?.Select(e => e.ToString()).AsList();
+            parameters.Add("@stageList", stageList);
+            query += " AND p0.\"StageSysName\" = ANY (@stageList) ";
+        }
+
+        // Фильтр с наличием вакансий.
+        if (catalogProjectInput.IsAnyVacancies)
+        {
+	        query += "  AND EXISTS ( " +
+	                 "    SELECT 1 " +
+	                 "    FROM \"Projects\".\"ProjectVacancies\" AS ppv " +
+	                 "    WHERE ppv.\"ProjectId\" = u.\"ProjectId\") ";
+        }
+
+        if (catalogProjectInput.LastId.HasValue)
+        {
+	        parameters.Add("@lastId", catalogProjectInput.LastId);
+	        
+	        // Применяем пагинацию.
+	        query += "AND c.\"CatalogProjectId\" > @lastId ";
+        }
+        
+        parameters.Add("@countRows", 20);
+
+        // Фильтр по дате.
+        // query += !string.IsNullOrWhiteSpace(catalogProjectInput.Date) && !catalogProjectInput.Date.Equals("None")
+        //  ? "ORDER BY u2.\"DateCreated\" DESC "
+        //  : "ORDER BY u2.\"DateCreated\" ";
+        // query += "ORDER BY u2.\"DateCreated\" ";
+        query += "ORDER BY c.\"CatalogProjectId\" ";
+        
+        query += "LIMIT @countRows";
+
+        var items = (await connection.QueryAsync<CatalogProjectOutput>(query, parameters))?.AsList();
+
+        var calcCountQuery = "SELECT COUNT (c.\"CatalogProjectId\") " +
+                             "FROM \"Projects\".\"CatalogProjects\" AS c " +
+                             "INNER JOIN \"Projects\".\"UserProjects\" AS u ON c.\"ProjectId\" = u.\"ProjectId\" " +
+                             "LEFT JOIN \"Moderation\".\"Projects\" AS p ON u.\"ProjectId\" = p.\"ProjectId\" " +
+                             "INNER JOIN \"Subscriptions\".\"UserSubscriptions\" AS u0 ON u.\"UserId\" = u0.\"UserId\" " +
+                             "INNER JOIN \"Subscriptions\".\"Subscriptions\" AS s ON u0.\"SubscriptionId\" = s.\"ObjectId\" " +
+                             "INNER JOIN \"Projects\".\"UserProjectsStages\" AS u1 ON u.\"ProjectId\" = u1.\"ProjectId\" " +
+                             "INNER JOIN \"Projects\".\"UserProjects\" AS u2 ON c.\"ProjectId\" = u2.\"ProjectId\" " +
+                             "INNER JOIN \"Projects\".\"ProjectStages\" AS p0 ON p0.\"StageId\" = u1.\"StageId\" " +
+                             "WHERE " +
+                             "(NOT (EXISTS ( " +
+                             "SELECT 1 " +
+                             "FROM \"Projects\".\"ArchivedProjects\" AS a " +
+                             "WHERE a.\"ProjectId\" = u.\"ProjectId\")) " +
+                             "AND u.\"IsPublic\") " +
+                             "AND (p.\"ModerationStatusId\" NOT IN (2, 3, 6, 7) " +
+                             "AND (p.\"ModerationStatusId\" IS NOT NULL)) ";
+        
+        var calcCount = await connection.ExecuteScalarAsync<long>(calcCountQuery);
+
+        var result = new CatalogProjectResultOutput
+        {
+	        CatalogProjects = items,
+	        Total = calcCount,
+	        // LastId = !string.IsNullOrWhiteSpace(catalogProjectInput.Date) && !catalogProjectInput.Date.Equals("None")
+		       //  ? items?.LastOrDefault()?.CatalogProjectId
+		       //  : items?.FirstOrDefault()?.CatalogProjectId
+		       // LastId =  items?.FirstOrDefault()?.CatalogProjectId
+		       LastId =  items?.LastOrDefault()?.CatalogProjectId
+        };
+
+        return result;
 	}
 
 	/// <summary>
