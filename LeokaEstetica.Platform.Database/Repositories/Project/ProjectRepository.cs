@@ -322,8 +322,8 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
         // query += !string.IsNullOrWhiteSpace(catalogProjectInput.Date) && !catalogProjectInput.Date.Equals("None")
         //  ? "ORDER BY u2.\"DateCreated\" DESC "
         //  : "ORDER BY u2.\"DateCreated\" ";
-        // query += "ORDER BY u2.\"DateCreated\" ";
-        query += "ORDER BY c.\"CatalogProjectId\" ";
+        query += "ORDER BY c.\"CatalogProjectId\", u2.\"DateCreated\" ";
+        // query += "ORDER BY c.\"CatalogProjectId\" ";
         
         query += "LIMIT @countRows";
 
