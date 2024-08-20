@@ -8,17 +8,13 @@ namespace LeokaEstetica.Platform.Models.Dto.Input.Project;
 public class CatalogProjectInput
 {
     /// <summary>
-    /// Список действий каталога.
-    /// </summary>
-    public List<CatalogActionTypeEnum>? CatalogActions { get; set; }
-
-    /// <summary>
     /// Id последней записи на фронте. Применяется дял пагинации.
     /// Если NULL, то отдаем 1 страницу каталога.
     /// </summary>
     public long? LastId { get; set; }
 
     /// <summary>
+    /// TODO: Будет передаваться с фронта, не убирать пока.
     /// Кол-во записей в выборке.
     /// По дефолту 20.
     /// </summary>

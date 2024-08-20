@@ -137,13 +137,6 @@ public interface IProjectService
         long projectId, long? vacancyId, string account);
 
     /// <summary>
-    /// Метод фильтрации проектов в зависимости от параметров фильтров.
-    /// </summary>
-    /// <param name="filterProjectInput">Входная модель.</param>
-    /// <returns>Список проектов после фильтрации.</returns>
-    Task<IEnumerable<CatalogProjectOutput>> FilterProjectsAsync(FilterProjectInput filterProjectInput);
-
-    /// <summary>
     /// Метод удаляет вакансию проекта.
     /// </summary>
     /// <param name="vacancyId">Id вакансии.</param>

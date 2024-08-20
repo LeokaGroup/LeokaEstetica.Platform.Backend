@@ -461,28 +461,7 @@ public class ProjectController : BaseController
 		};
 	}
 
-	/// <summary>
-	/// TODO: Это должно находится в контроллере поиска. Перенести.
-	/// Метод фильтрации проектов в зависимости от параметров фильтров.
-	/// </summary>
-	/// <param name="filterProjectInput">Входная модель.</param>
-	/// <returns>Список проектов после фильтрации.</returns>
-	[HttpGet]
-	[Route("filter")]
-	[ProducesResponseType(200, Type = typeof(IEnumerable<CatalogProjectOutput>))]
-	[ProducesResponseType(400)]
-	[ProducesResponseType(403)]
-	[ProducesResponseType(500)]
-	[ProducesResponseType(404)]
-	public async Task<IEnumerable<CatalogProjectOutput>> FilterProjectsAsync(
-		[FromQuery] FilterProjectInput filterProjectInput)
-	{
-		var result = await _projectService.FilterProjectsAsync(filterProjectInput);
-
-		return result;
-	}
-
-	/// <summary>
+    /// <summary>
 	/// TODO: Это должно находится в контроллере поиска. Перенести.
 	/// Метод находит проекты по поисковому запросу.
 	/// </summary>

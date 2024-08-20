@@ -12,14 +12,7 @@ namespace LeokaEstetica.Platform.Database.Abstractions.Project;
 /// </summary>
 public interface IProjectRepository
 {
-    /// <summary>
-    /// Метод фильтрует проекты в зависимости от фильтров.
-    /// </summary>
-    /// <param name="filters">Фильтры.</param>
-    /// <returns>Список проектов после фильтрации.</returns>
-    Task<IEnumerable<CatalogProjectOutput>> FilterProjectsAsync(FilterProjectInput filters);
-    
-    /// <summary>
+	/// <summary>
     /// Метод создает новый проект пользователя.
     /// </summary>
     /// <param name="createProjectInput">Входная модель.</param>

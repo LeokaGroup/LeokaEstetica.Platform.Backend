@@ -1,4 +1,3 @@
-using System.Globalization;
 using AutoMapper;
 using Dapper;
 using LeokaEstetica.Platform.Access.Abstractions.ProjectManagement;
@@ -1024,32 +1023,6 @@ internal sealed class ProjectService : IProjectService
 								 $"InviteType был {inviteType}. " +
 								 $"ProjectId был {projectId}. " +
 								 $"VacancyId был {vacancyId}");
-			throw;
-		}
-	}
-
-    /// <summary>
-    /// Метод фильтрации проектов в зависимости от параметров фильтров.
-    /// </summary>
-    /// <param name="filterProjectInput">Входная модель.</param>
-    /// <returns>Список проектов после фильтрации.</returns>
-    public async Task<IEnumerable<CatalogProjectOutput>> FilterProjectsAsync(FilterProjectInput filters)
-    {
-        try
-        {
-            // Разбиваем строку стадий проекта, так как там может приходить несколько значений в строке.
-            filters.ProjectStages = CreateProjectStagesBuilder.CreateProjectStagesResult(filters.StageValues);
-
-            var result = await _projectRepository.FilterProjectsAsync(filters);
-
-            var resultProjects = await ExecuteCatalogConditionsAsync(result.AsList());
-
-            return resultProjects;
-        }
-
-		catch (Exception ex)
-		{
-			_logger.LogError(ex, ex.Message);
 			throw;
 		}
 	}
