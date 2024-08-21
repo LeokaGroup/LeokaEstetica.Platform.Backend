@@ -78,4 +78,14 @@ public class CatalogProjectOutput
     /// Признак проекта в архиве.
     /// </summary>
     public bool IsArchived { get; set; }
+
+    /// <summary>
+    /// Кол-во записей (без учета пагинации).
+    /// </summary>
+    public long Total { get; set; }
+
+    /// <summary>
+    /// Id проекта в каталоге.
+    /// </summary>
+    public long CatalogProjectId { get; set; }
 }

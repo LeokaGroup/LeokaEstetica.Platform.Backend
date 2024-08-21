@@ -12,14 +12,7 @@ namespace LeokaEstetica.Platform.Database.Abstractions.Project;
 /// </summary>
 public interface IProjectRepository
 {
-    /// <summary>
-    /// Метод фильтрует проекты в зависимости от фильтров.
-    /// </summary>
-    /// <param name="filters">Фильтры.</param>
-    /// <returns>Список проектов после фильтрации.</returns>
-    Task<IEnumerable<CatalogProjectOutput>> FilterProjectsAsync(FilterProjectInput filters);
-    
-    /// <summary>
+	/// <summary>
     /// Метод создает новый проект пользователя.
     /// </summary>
     /// <param name="createProjectInput">Входная модель.</param>
@@ -50,11 +43,10 @@ public interface IProjectRepository
     Task<UserProjectResultOutput> UserProjectsAsync(long userId, bool isCreateVacancy);
 
     /// <summary>
-    /// TODO: Подумать, давать ли всем пользователям возможность просматривать каталог проектов или только тем, у кого есть подписка.
     /// Метод получает список проектов для каталога.
     /// </summary>
     /// <returns>Список проектов.</returns>
-    Task<IEnumerable<CatalogProjectOutput>> CatalogProjectsAsync();
+    Task<CatalogProjectResultOutput> GetCatalogProjectsAsync(CatalogProjectInput catalogProjectInput);
 
     /// <summary>
     /// Метод обновляет проект пользователя.

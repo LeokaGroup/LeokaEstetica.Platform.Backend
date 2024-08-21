@@ -39,11 +39,11 @@ public interface IProjectService
     Task<UserProjectResultOutput> UserProjectsAsync(string account, bool isCreateVacancy);
 
     /// <summary>
-    /// TODO: Подумать, давать ли всем пользователям возможность просматривать каталог проектов или только тем, у кого есть подписка.
     /// Метод получает список проектов для каталога.
     /// </summary>
-    /// <returns>Список проектов.</returns>
-    Task<CatalogProjectResultOutput> CatalogProjectsAsync();
+    /// <param name="catalogProjectInput">Входная модель.</param>
+    /// <returns>Список результатов.</returns>
+    Task<CatalogProjectResultOutput> GetCatalogProjectsAsync(CatalogProjectInput catalogProjectInput);
 
     /// <summary>
     /// Метод обновляет проект пользователя.
@@ -135,13 +135,6 @@ public interface IProjectService
     /// <returns>Выходная модель.</returns>
     Task<InviteProjectTeamOutput> InviteProjectTeamAsync(string inviteText, ProjectInviteTypeEnum inviteType,
         long projectId, long? vacancyId, string account);
-
-    /// <summary>
-    /// Метод фильтрации проектов в зависимости от параметров фильтров.
-    /// </summary>
-    /// <param name="filterProjectInput">Входная модель.</param>
-    /// <returns>Список проектов после фильтрации.</returns>
-    Task<IEnumerable<CatalogProjectOutput>> FilterProjectsAsync(FilterProjectInput filterProjectInput);
 
     /// <summary>
     /// Метод удаляет вакансию проекта.

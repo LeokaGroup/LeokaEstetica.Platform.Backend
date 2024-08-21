@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿using LeokaEstetica.Platform.Models.Dto.Input.Project;
+using NUnit.Framework;
 using Microsoft.EntityFrameworkCore;
 using LeokaEstetica.Platform.Models.Entities.Project;
 
@@ -11,7 +12,7 @@ internal class CatalogProjectTest : BaseServiceTest
     public async Task GetCatalogProjectAsyncTest()
     {
         await AddProjectInArchiveForTestAsync();
-        var catalog = await ProjectService.CatalogProjectsAsync();
+        var catalog = await ProjectService.GetCatalogProjectsAsync(new CatalogProjectInput());
 
         var result = catalog.CatalogProjects.FirstOrDefault(c => c.ProjectId == 223);
 
