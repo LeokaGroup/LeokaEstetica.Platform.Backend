@@ -10,7 +10,6 @@ using LeokaEstetica.Platform.Models.Entities.Document;
 using LeokaEstetica.Platform.Models.Entities.ProjectManagment;
 using LeokaEstetica.Platform.Models.Entities.Template;
 using LeokaEstetica.Platform.Models.Enums;
-using SearchAgileObjectTypeEnum = LeokaEstetica.Platform.Models.Enums.SearchAgileObjectTypeEnum;
 
 namespace LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 
@@ -113,9 +112,8 @@ public interface IProjectManagmentRepository
     /// Метод получает последний Id задачи в рамках проекта.
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
-    /// <param name="agileObjectType">Тип Agile-объекта.</param>
     /// <returns>Последний Id задачи в рамках проекта.</returns>
-    Task<long> GetLastProjectTaskIdAsync(long projectId, SearchAgileObjectTypeEnum agileObjectType);
+    Task<long> GetLastProjectTaskIdAsync(long projectId);
 
     /// <summary>
     /// Метод получает список приоритетов задачи.

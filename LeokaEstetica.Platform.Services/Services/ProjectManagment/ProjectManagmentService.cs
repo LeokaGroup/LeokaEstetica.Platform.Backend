@@ -772,7 +772,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 3. Писать project_task_id в нужную таблицу с этим значением (оно и будет самым актуальным Id задачи
             в рамках проекта).
             */
-            var maxProjectTaskId = await _projectManagmentRepository.GetLastProjectTaskIdAsync(projectId, taskType);
+            var maxProjectTaskId = await _projectManagmentRepository.GetLastProjectTaskIdAsync(projectId);
 
             // Если идет создание задачи или ошибки.
             if (new[] { SearchAgileObjectTypeEnum.Task, SearchAgileObjectTypeEnum.Error }.Contains(taskType))
