@@ -792,10 +792,9 @@ public interface IProjectManagmentRepository
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
     /// <param name="projectTaskIds">Id задач в рамках проекта.</param>
-    /// <param name="templateId">Id шаблона проекта.</param>
     /// <returns>Словарь со статусами.</returns>
     Task<IDictionary<long, ProjectTaskTypeOutput>> GetProjectTaskStatusesAsync(long projectId,
-        IEnumerable<long> projectTaskIds, int templateId);
+        IEnumerable<long> projectTaskIds);
     
     /// <summary>
     /// Метод получает статусы историй.
@@ -820,4 +819,13 @@ public interface IProjectManagmentRepository
     /// <param name="projectId">Id проекта.</param>
     /// <returns>список Id документов в MongoDB.</returns>
     Task<IEnumerable<string>> GetProjectMongoDocumentIdsByProjectIdAsync(long projectId);
+    
+    /// <summary>
+    /// Метод получает статусы эпиков.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="projectTaskIds">Id задач в рамках проекта.</param>
+    /// <returns>Словарь со статусами.</returns>
+    Task<IDictionary<long, ProjectTaskTypeOutput>> GetProjectEpicStatusesAsync(long projectId,
+        IEnumerable<long> projectTaskIds);
 }
