@@ -21,7 +21,6 @@ using LeokaEstetica.Platform.Models.Enums;
 using SqlKata;
 using SqlKata.Compilers;
 using Enum = LeokaEstetica.Platform.Models.Enums.Enum;
-using SearchAgileObjectTypeEnum = LeokaEstetica.Platform.Models.Enums.SearchAgileObjectTypeEnum;
 
 namespace LeokaEstetica.Platform.Database.Repositories.ProjectManagment;
 
@@ -453,40 +452,28 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
     }
 
     /// <inheritdoc />
-    public async Task<long> GetLastProjectTaskIdAsync(long projectId, SearchAgileObjectTypeEnum agileObjectType)
+    public async Task<long> GetLastProjectTaskIdAsync(long projectId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
         var parameters = new DynamicParameters();
         parameters.Add("@projectId", projectId);
+        
+        // Скрипт учитывает все таблицы, где есть айдишники задач в рамках проекта (эпики, истории, задачи, ошибки).
+        var query = "WITH max_project_task_id_cte AS (SELECT pt.project_task_id " +
+                    "FROM project_management.project_tasks AS pt " +
+                    "WHERE pt.project_id = @projectId " +
+                    "UNION " +
+                    "SELECT e.project_epic_id AS project_task_id " +
+                    "FROM project_management.epics AS e " +
+                    "WHERE e.project_id = @projectId " +
+                    "UNION " +
+                    "SELECT us.user_story_task_id AS project_task_id " +
+                    "FROM project_management.user_stories AS us " +
+                    "WHERE us.project_id = @projectId) " +
+                    "SELECT MAX(project_task_id) " +
+                    "FROM max_project_task_id_cte";
 
-        long lastProjectTaskId = 0;
-
-        switch (agileObjectType)
-        {
-            case SearchAgileObjectTypeEnum.Task or SearchAgileObjectTypeEnum.Error:
-                var taskAndErorQuery = "SELECT MAX (project_task_id) " +
-                                       "FROM project_management.project_tasks " +
-                                       "WHERE project_id = @projectId";
-
-                lastProjectTaskId = await connection.QueryFirstOrDefaultAsync<long>(taskAndErorQuery, parameters);
-                break;
-
-            case SearchAgileObjectTypeEnum.Epic:
-                var epicQuery = "SELECT MAX (project_epic_id) " +
-                                "FROM project_management.epics " +
-                                "WHERE project_id = @projectId";
-
-                lastProjectTaskId = await connection.QueryFirstOrDefaultAsync<long>(epicQuery, parameters);
-                break;
-
-            case SearchAgileObjectTypeEnum.Story:
-                var storyQuery = "SELECT MAX (user_story_task_id) " +
-                                 "FROM project_management.user_stories " +
-                                 "WHERE project_id = @projectId";
-
-                lastProjectTaskId = await connection.QueryFirstOrDefaultAsync<long>(storyQuery, parameters);
-                break;
-        }
+        var lastProjectTaskId = await connection.QueryFirstOrDefaultAsync<long>(query, parameters);
 
         return lastProjectTaskId;
     }
