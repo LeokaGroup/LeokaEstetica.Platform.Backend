@@ -310,6 +310,29 @@ internal sealed class ProjectNotificationsRepository : BaseRepository, IProjectN
         return result;
     }
 
+    /// <inheritdoc />
+    public async Task<bool> CheckSendedInviteProjectTeamAsync(long userId, long projectId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@userId", userId);
+        parameters.Add("@projectId", projectId);
+
+        var query = "SELECT EXISTS (SELECT \"NotificationId\" " +
+                    "FROM \"Notifications\".\"Notifications\" " +
+                    "WHERE \"IsNeedAccepted\" " +
+                    "AND NOT \"Approved\" " +
+                    "AND NOT \"Rejected\" " +
+                    "AND \"NotificationType\" = 'ProjectInvite' " +
+                    "AND \"UserId\" = @userId " +
+                    "AND \"ProjectId\" = @projectId)";
+
+        var result = await connection.ExecuteScalarAsync<bool>(query, parameters);
+
+        return result;
+    }
+
     #endregion
 
     #region Приватные методы.
