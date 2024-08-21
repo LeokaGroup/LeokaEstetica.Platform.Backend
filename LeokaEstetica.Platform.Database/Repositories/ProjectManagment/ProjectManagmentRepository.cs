@@ -248,7 +248,8 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
                     "FROM project_management.user_stories AS us " +
                     "INNER JOIN project_management.user_story_statuses AS uss " +
                     "ON us.status_id = uss.status_id " +
-                    "WHERE us.project_id = @projectId;";
+                    "WHERE us.project_id = @projectId "+
+                    "ORDER BY Created DESC";
 
         var result = await connection.QueryAsync<ProjectTaskExtendedEntity>(query, parameters);
 
