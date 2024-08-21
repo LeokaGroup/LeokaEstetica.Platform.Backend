@@ -234,13 +234,12 @@ internal sealed class ProjectNotificationsService : IProjectNotificationsService
                 notification.VacancyId, teamId, "Участник");
             
             // Добавляем участника в раб.пространство проекта.
-            await _projectManagmentRepository.AddProjectWorkSpaceMemberAsync(projectId, result.MemberId);
+            await _projectManagmentRepository.AddProjectWorkSpaceMemberAsync(projectId, userId);
 
             var organizationId = await _projectManagmentRepository.GetCompanyIdByProjectIdAsync(projectId);
             
             // Добавляем участнику проекта роли.
-            await _projectManagementSettingsRepository.Value.AddCompanyMemberRolesAsync(organizationId,
-                result.MemberId);
+            await _projectManagementSettingsRepository.Value.AddCompanyMemberRolesAsync(organizationId, userId);
 
             // Отправляем уведомление в приложении о принятом приглашении в проект.
             await AddNotificationApproveInviteProjectAsync(userId, projectId, projectName);
