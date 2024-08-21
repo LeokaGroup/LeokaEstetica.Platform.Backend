@@ -3060,6 +3060,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             }
 
             var result = await _projectManagmentRepository.GetWorkSpaceByProjectIdAsync(projectId, userId);
+            result.IsOwner = await _projectRepository.CheckProjectOwnerAsync(projectId, userId); 
 
             return result;
         }
