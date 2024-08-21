@@ -643,7 +643,7 @@ public class ProjectManagmentController : BaseController
 
         await _projectManagmentService.ChangeTaskStatusAsync(changeTaskStatusInput.ProjectId,
             changeTaskStatusInput.ChangeStatusId, changeTaskStatusInput.TaskId, changeTaskStatusInput.TaskDetailType,
-            CreateTokenFromHeader());
+            GetUserName());
     }
 
     /// <summary>
