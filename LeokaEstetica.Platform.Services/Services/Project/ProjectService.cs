@@ -1413,7 +1413,18 @@ internal sealed class ProjectService : IProjectService
 			// Находим Id команды проекта.
 			var teamId = await _projectRepository.GetProjectTeamIdAsync(projectId);
 
-			await _projectRepository.RemoveUserProjectTeamAsync(userId, teamId);
+			var isExcludeOwner = await _projectRepository.CheckProjectOwnerAsync(projectId, userId);
+
+			if (isExcludeOwner)
+			{
+				throw new InvalidOperationException("Попытка исключить владельца проекта. " +
+				                                    "Пользователь не знает, что произошло. " +
+				                                    "Возможно, показали ему кнопку исключения владельца. " +
+				                                    "Срочно разобраться и поправить. " +
+				                                    "Исключить владельца невозможно. Прервали пользователя.");
+			}
+
+			await _projectRepository.RemoveUserProjectTeamAsync(userId, teamId, projectId);
 		}
 
 		catch (Exception ex)

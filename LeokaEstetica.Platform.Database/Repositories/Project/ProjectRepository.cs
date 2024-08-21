@@ -20,6 +20,7 @@ using LeokaEstetica.Platform.Models.Entities.Vacancy;
 using LeokaEstetica.Platform.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 using System.Data;
+using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 
 namespace LeokaEstetica.Platform.Database.Repositories.Project;
 
@@ -30,6 +31,7 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
 {
 	private readonly PgContext _pgContext;
 	private readonly IChatRepository _chatRepository;
+	private readonly IProjectManagmentRepository _projectManagmentRepository;
 
 	/// <summary>
 	/// Список статусов вакансий, которые надо исключать при атаче вакансий к проекту.
@@ -45,12 +47,16 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
 	/// </summary>
 	/// <param name="pgContext">Датаконтекст.</param>
 	/// <param name="chatRepository">Репозиторий чата.</param>
+	/// <param name="projectManagmentRepository">Репозиторий модуля УП.</param>
 	public ProjectRepository(PgContext pgContext,
 		IChatRepository chatRepository,
-		IConnectionProvider connectionProvider) : base(connectionProvider)
+		IConnectionProvider connectionProvider,
+		IProjectManagmentRepository projectManagmentRepository) 
+		: base(connectionProvider)
 	{
 		_pgContext = pgContext;
 		_chatRepository = chatRepository;
+		_projectManagmentRepository = projectManagmentRepository;
 	}
 
 	/// <summary>
@@ -1306,7 +1312,7 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
     }
 
 	/// <inheritdoc />
-	public async Task RemoveUserProjectTeamAsync(long userId, long teamId)
+	public async Task RemoveUserProjectTeamAsync(long userId, long teamId, long projectId)
 	{
 		using var connection = await ConnectionProvider.GetConnectionAsync();
 
@@ -1314,11 +1320,23 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
 		parameters.Add("@userId", userId);
 		parameters.Add("@teamId", teamId);
 
-        var query = "DELETE FROM \"Teams\".\"ProjectsTeamsMembers\" " +
-                    "WHERE \"UserId\" = @userId " +
-                    "AND \"TeamId\" = @teamId";
-                    
-        await connection.ExecuteAsync(query, parameters);
+		var excludeProjectTeamQuery = "DELETE FROM \"Teams\".\"ProjectsTeamsMembers\" " +
+		                              "WHERE \"UserId\" = @userId " +
+		                              "AND \"TeamId\" = @teamId";
+
+		await connection.ExecuteAsync(excludeProjectTeamQuery, parameters);
+
+		var companyId = await _projectManagmentRepository.GetCompanyIdByProjectIdAsync(projectId);
+
+		var removeCompanyMembersParameters = new DynamicParameters();
+		removeCompanyMembersParameters.Add("@userId", userId);
+		removeCompanyMembersParameters.Add("@companyId", companyId);
+
+		var removeCompanyMembersQuery = "DELETE FROM project_management.organization_members " +
+		                                "WHERE member_id = @userId " +
+		                                "AND organization_id = @companyId";
+
+		await connection.ExecuteAsync(removeCompanyMembersQuery, removeCompanyMembersParameters);
         
         await Task.CompletedTask;
     }

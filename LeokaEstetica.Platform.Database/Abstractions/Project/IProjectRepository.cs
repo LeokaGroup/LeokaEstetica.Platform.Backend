@@ -337,8 +337,9 @@ public interface IProjectRepository
     /// Метод исключает пользователя из команды проекта.
     /// <param name="userId">Id пользователя.</param>
     /// <param name="teamId">Id команды проекта.</param>
+    /// <param name="projectId">Id проекта.</param>
     /// </summary>
-    Task RemoveUserProjectTeamAsync(long userId, long teamId);
+    Task RemoveUserProjectTeamAsync(long userId, long teamId, long projectId);
 
 	/// <summary>
 	/// Метод обновляет видимость проекта
