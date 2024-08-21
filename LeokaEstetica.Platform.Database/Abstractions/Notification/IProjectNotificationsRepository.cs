@@ -104,4 +104,12 @@ public interface IProjectNotificationsRepository
     /// <param name="notificationId">Id уведомления.</param>
     /// <returns>Данные приглашения.</returns>
     Task<ProjectInviteNotificationOutput?> GetProjectInviteNotificationAsync(long notificationId);
+
+    /// <summary>
+    /// Метод првоеряет, отправляли ли уже приглашение в проект.
+    /// </summary>
+    /// <param name="userId">Id пользователя, которому отправляли приглашение.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Признак проверки.</returns>
+    Task<bool> CheckSendedInviteProjectTeamAsync(long userId, long projectId);
 }

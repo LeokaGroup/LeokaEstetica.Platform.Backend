@@ -1,4 +1,3 @@
-using System.Globalization;
 using AutoMapper;
 using Dapper;
 using LeokaEstetica.Platform.Access.Abstractions.ProjectManagement;
@@ -990,9 +989,13 @@ internal sealed class ProjectService : IProjectService
 			var inviteUserId = await GetUserIdAsync(inviteText, inviteType);
 
 			var isInvitedUser = await _projectRepository.CheckProjectTeamMemberAsync(teamId, inviteUserId);
+			
+			// Проверяем, не отправляли ли уже приглашение, чтобы не плодить дубликаты.
+			var isSendedInvite = await _projectNotificationsRepository.CheckSendedInviteProjectTeamAsync(inviteUserId,
+				projectId);
 
             // Проверяем, не приглашали ли уже пользователя в команду проекта. Если да, то не даем пригласить повторно.
-            if (isInvitedUser)
+            if (isInvitedUser || isSendedInvite)
             {
                 var ex = new InvalidOperationException("Пользователь уже был приглашен в команду проекта. " +
                                                        $"TeamId: {teamId}. " +
@@ -1007,7 +1010,7 @@ internal sealed class ProjectService : IProjectService
                 throw ex;
             }
 
-			// Находим название проекта.
+            // Находим название проекта.
 			var projectName = await _projectRepository.GetProjectNameByProjectIdAsync(projectId);
 
 			await SendEmailNotificationInviteTeamProjectAsync(projectId, inviteUserId, projectName);
