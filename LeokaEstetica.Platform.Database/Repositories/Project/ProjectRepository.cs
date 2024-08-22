@@ -1426,21 +1426,77 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
     private async Task<(bool Success, List<string> RemovedVacancies, string ProjectName)> RemoveProjectVacanciesAsync(
         long projectId, (bool Success, List<string> RemovedVacancies, string ProjectName) result)
     {
-        // Удаляем вакансии проекта.
-        var projectVacancies = _pgContext.ProjectVacancies
-            .Where(v => v.ProjectId == projectId)
-            .AsQueryable();
 
-        if (await projectVacancies.AnyAsync())
-        {
-            // Записываем названия вакансий, которые будут удалены.
-            var removedVacanciesNames = projectVacancies.Select(v => v.UserVacancy.VacancyName);
-            result.RemovedVacancies.AddRange(removedVacanciesNames);
+		using var connection = await ConnectionProvider.GetConnectionAsync();
+		var parameters = new DynamicParameters();
+		parameters.Add("@projectId", projectId);
 
-            _pgContext.ProjectVacancies.RemoveRange(projectVacancies);
-        }
+		//Вакансии для удаления
+		var vacanciesForRemovalQuery =
+			"SELECT \"VacancyId\" " +
+			"FROM \"Projects\".\"ProjectVacancies\" " +
+			"WHERE \"ProjectId\"=@projectId";
 
-        return await Task.FromResult(result);
+		var vacanciesForRemoval =await connection.QueryAsync<long>(vacanciesForRemovalQuery, parameters);
+		var vacanciesforremovel= await connection.QueryAsync<ProjectVacancyEntity>(vacanciesForRemovalQuery, parameters);
+
+		parameters.Add("@vacancies", vacanciesForRemoval);
+
+		// Удаляем вакансии проекта.
+		var deleteProjectVacanciesQuery =
+			"DELETE FROM \"Projects\".\"ProjectVacancies\" "+
+			"WHERE \"VacancyId\"=" +
+			"ANY (@vacancies)";
+
+		await connection.ExecuteAsync(deleteProjectVacanciesQuery, parameters);
+
+		//Удаляем вакансии из каталога
+		var deleteVacanciesCatalogQuery =
+			"DELETE FROM \"Vacancies\".\"CatalogVacancies\" " +
+			"WHERE \"VacancyId\"=" +
+			"ANY (@vacancies)";
+
+		await connection.ExecuteAsync(deleteVacanciesCatalogQuery, parameters);
+
+		// Удаляем вакансии из статусов.
+		var deleteVacanciesStatusesQuery =
+			"DELETE FROM \"Vacancies\".\"VacancyStatuses\"" +
+			"WHERE \"VacancyId\"=" +
+			"ANY (@vacancies)";
+
+		await connection.ExecuteAsync(deleteVacanciesStatusesQuery, parameters);
+
+		// Удаляем вакансии из модерации.
+		var deleteVacanciesModerationQuery =
+			"DELETE FROM \"Moderation\".\"Vacancies\" " +
+			"WHERE \"VacancyId\"=" +
+			"ANY (@vacancies)";
+
+		await connection.ExecuteAsync(deleteVacanciesModerationQuery, parameters);
+
+		// Удаляем вакансии пользователя.
+
+		var vacanciesUserQuery =
+			"SELECT * FROM \"Vacancies\".\"UserVacancies\" " +
+			"WHERE \"VacancyId\"=ANY (@vacancies)";
+
+		var vacanciesUser=await connection.QueryAsync<UserVacancyEntity>(vacanciesUserQuery, parameters);
+
+		if (vacanciesUser.Any())
+		{
+			// Записываем названия вакансий, которые будут удалены.
+			var removedVacanciesNames = vacanciesUser.Select(v => v.VacancyName);
+
+			var deleteVacanciesUserQuery =
+			"DELETE FROM \"Vacancies\".\"UserVacancies\" " +
+			"WHERE \"VacancyId\"=" +
+			"ANY (@vacancies)";
+
+			await connection.ExecuteAsync(deleteVacanciesUserQuery, parameters);
+		}
+
+
+		return await Task.FromResult(result);
     }
 
     /// <summary>
