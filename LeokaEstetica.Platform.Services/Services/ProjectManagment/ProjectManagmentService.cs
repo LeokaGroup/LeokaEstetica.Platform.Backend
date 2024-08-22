@@ -67,6 +67,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     private readonly IProjectManagementTemplateService _projectManagementTemplateService;
     private readonly Lazy<IProjectManagmentRoleRepository> _projectManagmentRoleRepository;
     private readonly IMongoDbRepository _mongoDbRepository;
+    private readonly ISprintRepository _sprintRepository;
 
     /// <summary>
     /// Статусы задач, которые являются самыми базовыми и никогда не меняются независимо от шаблона проекта.
@@ -98,6 +99,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
     /// <param name="projectManagmentRoleRepository">Репозиторий ролей проекта.</param>
     /// <param name="mongoDbRepository">Репозиторий MongoDB.</param>
     /// <param name="hubNotificationService">Сервис уведомлений хабов.</param>
+    /// <param name="hubNotificationService">Репозиторий спринтов.</param>
     /// </summary>
     public ProjectManagmentService(ILogger<ProjectManagmentService> logger,
         IProjectManagmentRepository projectManagmentRepository,
@@ -115,7 +117,8 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         IProjectManagementTemplateService projectManagementTemplateService,
         Lazy<IProjectManagmentRoleRepository> projectManagmentRoleRepository,
         IMongoDbRepository mongoDbRepository,
-         Lazy<IHubNotificationService> hubNotificationService)
+         Lazy<IHubNotificationService> hubNotificationService,
+          ISprintRepository sprintRepository)
     {
         _logger = logger;
         _projectManagmentRepository = projectManagmentRepository;
@@ -134,6 +137,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
         _projectManagmentRoleRepository = projectManagmentRoleRepository;
         _mongoDbRepository = mongoDbRepository;
         _hubNotificationService = hubNotificationService;
+        _sprintRepository = sprintRepository;
     }
 
     #region Публичные методы.
@@ -650,10 +654,11 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 
                 return new ProjectManagmentTaskOutput { IsAccess = false };
             }
-            
+
             var builderData = new AgileObjectBuilderData(_projectManagmentRepository, _userRepository,
                 _discordService, _userService, _projectManagmentTemplateRepository, _mapper,
-                projectTaskId.GetProjectTaskIdFromPrefixLink(), projectId, _projectSettingsConfigRepository);
+                projectTaskId.GetProjectTaskIdFromPrefixLink(), projectId, _projectSettingsConfigRepository,
+                _sprintRepository);
                 
             AgileObjectBuilder? builder = null;
  

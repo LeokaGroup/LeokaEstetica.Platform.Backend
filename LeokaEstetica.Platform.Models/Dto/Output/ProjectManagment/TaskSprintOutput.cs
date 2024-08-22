@@ -19,4 +19,14 @@ public class TaskSprintOutput
     /// Название спринта.
     /// </summary>
     public string? SprintName { get; set; }
+    
+    /// <summary>
+    /// Id задачи в рамках проекта вместе с префиксом.
+    /// </summary>
+    public string FullProjectTaskId => string.Concat(TaskIdPrefix + "-", ProjectSprintId);
+    
+    /// <summary>
+    /// Префикс номера задачи.
+    /// </summary>
+    public string? TaskIdPrefix { get; set; }
 }

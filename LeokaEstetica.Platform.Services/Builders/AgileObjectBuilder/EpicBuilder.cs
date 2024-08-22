@@ -211,13 +211,31 @@ internal class EpicBuilder : AgileObjectBuilder
     /// <inheritdoc />
     public override Task FillEpicIdAndEpicNameAsync()
     {
-        throw new NotImplementedException("Функционал эпикам не нужен.");
+        throw new NotImplementedException("Эпик не может включать сам себя. Поэтому не реализуем.");
     }
 
     /// <inheritdoc />
-    public override Task FillSprintIdAndSprintNameAsync()
+    public override async Task FillSprintIdAndSprintNameAsync()
     {
-        throw new NotImplementedException("Функционал эпикам не нужен.");
+        var epicProjectSprintId = await BuilderData.SprintRepository.GetSprintIdByProjectTaskIdProjectIdAsync(
+            BuilderData.ProjectTaskId, BuilderData.ProjectId);
+
+        if (!epicProjectSprintId.HasValue)
+        {
+            return;
+        }
+
+        var sprint = await BuilderData.SprintRepository.GetSprintAsync(epicProjectSprintId.Value,
+            BuilderData.ProjectId);
+
+        if (sprint is null)
+        {
+            throw new InvalidOperationException("Ошибка получения данных спринта, в который входит эпик. " +
+                                                $"ProjectTaskId: {BuilderData.ProjectTaskId}. " +
+                                                $"ProjectId: {BuilderData.ProjectId}.");
+        }
+        
+        ProjectManagmentTask.SprintName = sprint.SprintName;
     }
     
     /// <inheritdoc />
