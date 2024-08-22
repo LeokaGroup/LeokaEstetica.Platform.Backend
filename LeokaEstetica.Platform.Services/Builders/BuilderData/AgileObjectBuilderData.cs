@@ -20,6 +20,7 @@ internal class AgileObjectBuilderData
     internal IProjectManagmentTemplateRepository ProjectManagmentTemplateRepository;
     internal IMapper Mapper;
     internal IProjectSettingsConfigRepository ProjectSettingsConfigRepository;
+    internal ISprintRepository SprintRepository;
 
     /// <summary>
     /// Id задачи в рамках проекта.
@@ -42,6 +43,7 @@ internal class AgileObjectBuilderData
     /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
     /// <param name="projectId">Id проекта.</param>
     /// <param name="projectManagementSettingsRepository">Репозиторий настроек модуля УП.</param>
+    /// <param name="sprintRepository">Репозиторий спринтов.</param>
     public AgileObjectBuilderData(IProjectManagmentRepository projectManagmentRepository,
         IUserRepository userRepository,
         IDiscordService discordService,
@@ -50,7 +52,8 @@ internal class AgileObjectBuilderData
         IMapper mapper,
         long projectTaskId,
         long projectId,
-        IProjectSettingsConfigRepository _projectSettingsConfigRepository)
+        IProjectSettingsConfigRepository _projectSettingsConfigRepository,
+        ISprintRepository sprintRepository)
     {
         ProjectManagmentRepository = projectManagmentRepository;
         UserRepository = userRepository;
@@ -61,5 +64,6 @@ internal class AgileObjectBuilderData
         ProjectTaskId = projectTaskId;
         ProjectId = projectId;
         ProjectSettingsConfigRepository = _projectSettingsConfigRepository;
+        SprintRepository = sprintRepository;
     }
 }

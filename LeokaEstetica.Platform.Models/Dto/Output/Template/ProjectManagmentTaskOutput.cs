@@ -137,6 +137,11 @@ public class ProjectManagmentTaskOutput
     public string FullProjectTaskId => string.Concat(TaskIdPrefix + "-", ProjectTaskId);
     
     /// <summary>
+    /// Id спринта в рамках проекта вместе с префиксом.
+    /// </summary>
+    public string? FullProjectSprintId { get; set; }
+    
+    /// <summary>
     /// Id задачи вместе с префиксом.
     /// </summary>
     public string FullTaskId => string.Concat(TaskIdPrefix + "-", TaskId);
