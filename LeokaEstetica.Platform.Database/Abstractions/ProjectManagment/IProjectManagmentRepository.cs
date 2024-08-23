@@ -826,4 +826,10 @@ public interface IProjectManagmentRepository
     /// <returns>Словарь со статусами.</returns>
     Task<IDictionary<long, ProjectTaskTypeOutput>> GetProjectEpicStatusesAsync(long projectId,
         IEnumerable<long> projectTaskIds);
+    
+    /// <summary>
+    /// Метод получает статусы историй.
+    /// </summary>
+    /// <returns>Статусы эпиков.</returns>
+    Task<IEnumerable<StoryStatusOutput>> GetStoryStatusesAsync();
 }

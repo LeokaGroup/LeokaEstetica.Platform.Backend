@@ -133,9 +133,16 @@ internal class DistributionStatusTaskService : IDistributionStatusTaskService
         var typeIds = tasks.Select(x => x.TaskTypeId);
         var types = await _projectManagmentRepository.GetTypeNamesByTypeIdsAsync(typeIds);
 
-        var statusIds = tasks.Select(x => x.TaskStatusId);
+        var statusIds = tasks
+            .Where(x => x.TaskStatusId > 0)
+            .Select(x => x.TaskStatusId)
+            .Distinct();
+        
         var statuseNames = (await _projectManagmentTemplateRepository.GetTaskTemplateStatusesAsync(statusIds))
             .AsList();
+
+        var epicStatuses = (await _projectManagmentRepository.GetEpicStatusesAsync())?.AsList();
+        var storyStatuses = (await _projectManagmentRepository.GetStoryStatusesAsync())?.AsList();
 
         var resolutionIds = tasks
             .Where(x => x.ResolutionId is not null)
@@ -233,11 +240,28 @@ internal class DistributionStatusTaskService : IDistributionStatusTaskService
                         ts.Executor.Avatar = avatarFiles.TryGet(ts.ExecutorId);
                     }
 
-                    var taskStatusName = statuseNames.Find(x => x.StatusId == ts.TaskStatusId)?.StatusName;
+                    string? taskStatusName = null;
+
+                    if (new[] { (long)ProjectTaskTypeEnum.Task, (long)ProjectTaskTypeEnum.Error }
+                        .Contains(ts.TaskTypeId))
+                    {
+                        taskStatusName = statuseNames.Find(x => x.StatusId == ts.TaskStatusId)?.StatusName;
+                    }
+                    
+                    else if (ts.TaskTypeId == (long)ProjectTaskTypeEnum.Story && storyStatuses?.Count > 0)
+                    {
+                        taskStatusName = storyStatuses.Find(x => x.StatusId == ts.TaskStatusId)?.StatusName;
+                    }
+                    
+                    else if (ts.TaskTypeId == (long)ProjectTaskTypeEnum.Epic && epicStatuses?.Count > 0)
+                    {
+                        taskStatusName = epicStatuses.Find(x => x.StatusId == ts.TaskStatusId)?.StatusName;
+                    }
 
                     if (string.IsNullOrEmpty(taskStatusName))
                     {
-                        throw new InvalidOperationException($"Не удалось получить TaskStatusName: {ts.TaskStatusId}.");
+                        throw new InvalidOperationException($"Не удалось определить TaskStatusId: {ts.TaskStatusId}. " +
+                                                            $"Данные заадчи были: {JsonConvert.SerializeObject(ts)}.");
                     }
 
                     // Название статуса.
