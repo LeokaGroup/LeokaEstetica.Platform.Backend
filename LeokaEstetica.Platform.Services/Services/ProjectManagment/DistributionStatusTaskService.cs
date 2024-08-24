@@ -115,9 +115,14 @@ internal class DistributionStatusTaskService : IDistributionStatusTaskService
         var executorIds = tasks.Where(x => x.ExecutorId > 0).Select(x => x.ExecutorId);
         var executors = await _userRepository.GetExecutorNamesByExecutorIdsAsync(executorIds);
 
+        // Обязательно логируем такое если обнаружили, но не стопаем выполнение логики.
         if (executors.Count == 0)
         {
-            throw new InvalidOperationException("Не удалось получить исполнителей задач.");
+            var ex = new InvalidOperationException("Не удалось получить исполнителей задач.");
+            
+            _logger.LogError(ex, ex.Message);
+            
+            await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
         }
 
         IDictionary<int, ProjectTagOutput>? tags = null;
@@ -152,7 +157,7 @@ internal class DistributionStatusTaskService : IDistributionStatusTaskService
 
         // Если есть резолюции задач, пойдем получать их.
         // Если каких то нет, не страшно, значит они не заполнены у задач.
-        if (resolutionIds.Any())
+        if (resolutionIds.Count > 0)
         {
             resolutions = await _projectManagmentRepository.GetResolutionNamesByResolutionIdsAsync(
                 resolutionIds);
@@ -167,7 +172,7 @@ internal class DistributionStatusTaskService : IDistributionStatusTaskService
         
         // Если есть приоритеты задач, пойдем получать их.
         // Если каких то нет, не страшно, значит они не заполнены у задач.
-        if (priorityIds.Any())
+        if (priorityIds.Count > 0)
         {
             priorities = await _projectManagmentRepository.GetPriorityNamesByPriorityIdsAsync(
                 priorityIds);
@@ -182,13 +187,15 @@ internal class DistributionStatusTaskService : IDistributionStatusTaskService
 
         // Если есть наблюдатели, пойдем получать их.
         // Если каких то нет, не страшно, значит они не заполнены у задач.
-        if (watcherIds.Any())
+        if (watcherIds.Count > 0)
         {
             watchers = await _userRepository.GetWatcherNamesByWatcherIdsAsync(watcherIds);
         }
         
+        // Распределяем задачи по статусам.
         foreach (var ps in projectManagmentTaskStatusTemplates)
         {
+            // Получаем задачи статуса.
             var tasksByStatus = tasks
                 .Where(s => s.TaskStatusId == ps.TaskStatusId)
                 .OrderByDescending(o => o.Created); // Новые задачи статуса будут выше.
@@ -202,7 +209,7 @@ internal class DistributionStatusTaskService : IDistributionStatusTaskService
             var mapTasks = _mapper.Map<List<ProjectManagmentTaskOutput>>(tasksByStatus);
 
             // Добавляем задачи статуса, если есть что добавлять.
-            if (mapTasks.Any())
+            if (mapTasks.Count > 0)
             {
                 // TODO: Можно ли вынести вне цикла все обращения к БД?
                 var userEmails = await _userRepository.GetUserEmailByUserIdsAsync(mapTasks.Select(x => x.ExecutorId));

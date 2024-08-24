@@ -590,7 +590,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             };
 
             // Если задачи есть, то модифицируем выходные данные.
-            if (tasks is not null && tasks.Any())
+            if (tasks is not null && tasks.Count > 0)
             {
                 // Распределяем задачи по статусам и модифицируем выходные результаты.
                 await _distributionStatusTaskService.Value.DistributionStatusTaskAsync(
