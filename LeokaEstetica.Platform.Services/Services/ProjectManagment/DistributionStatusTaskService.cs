@@ -107,9 +107,8 @@ internal class DistributionStatusTaskService : IDistributionStatusTaskService
                 $" ProjectId: {projectId}");
 
             _logger.LogError(ex, ex.Message);
-
-            // Отправляем ивент в пачку.
-            await _discordService.SendNotificationErrorAsync(ex);
+            
+            await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
         }
 
         // Получаем имена исполнителей задач.
@@ -205,6 +204,7 @@ internal class DistributionStatusTaskService : IDistributionStatusTaskService
             // Добавляем задачи статуса, если есть что добавлять.
             if (mapTasks.Any())
             {
+                // TODO: Можно ли вынести вне цикла все обращения к БД?
                 var userEmails = await _userRepository.GetUserEmailByUserIdsAsync(mapTasks.Select(x => x.ExecutorId));
                 var avatarFiles = await _userService.GetUserAvatarFilesAsync(projectId, userEmails);
                 
@@ -242,6 +242,7 @@ internal class DistributionStatusTaskService : IDistributionStatusTaskService
 
                     string? taskStatusName = null;
 
+                    // TODO: эпик и история из другой таблицы получаем другие статусы.
                     if (new[] { (long)ProjectTaskTypeEnum.Task, (long)ProjectTaskTypeEnum.Error }
                         .Contains(ts.TaskTypeId))
                     {
@@ -258,10 +259,18 @@ internal class DistributionStatusTaskService : IDistributionStatusTaskService
                         taskStatusName = epicStatuses.Find(x => x.StatusId == ts.TaskStatusId)?.StatusName;
                     }
 
+                    // В таком кейсе логируем такое на разбор, но не ломаем приложение.
                     if (string.IsNullOrEmpty(taskStatusName))
                     {
-                        throw new InvalidOperationException($"Не удалось определить TaskStatusId: {ts.TaskStatusId}. " +
-                                                            $"Данные заадчи были: {JsonConvert.SerializeObject(ts)}.");
+                        var ex = new InvalidOperationException(
+                            $"Не удалось определить TaskStatusId: {ts.TaskStatusId}. " +
+                            $"Данные заадчи были: {JsonConvert.SerializeObject(ts)}.");
+                            
+                        await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
+                        
+                        _logger.LogError(ex, ex.Message);
+                        
+                        continue;
                     }
 
                     // Название статуса.
@@ -302,9 +311,11 @@ internal class DistributionStatusTaskService : IDistributionStatusTaskService
                             // Просто логируем такое.
                             if (watcher is null)
                             {
-                                var ex = new InvalidOperationException("Обнаружен наблюдатель с NULL. " +
+                                var ex = new InvalidOperationException("Не найден наблюдатель задачи. " +
                                                                        $"WatcherId: {w}");
-                                await _discordService.SendNotificationErrorAsync(ex);
+                                
+                                await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
+                                
                                 _logger.LogError(ex, ex.Message);
                                 
                                 continue;
@@ -319,7 +330,7 @@ internal class DistributionStatusTaskService : IDistributionStatusTaskService
                         }
                     }
                     
-                    // Название приорита задачи.
+                    // Название приоритета задачи.
                     if (priorities is not null && priorities.Count > 0)
                     {
                         var priorityName = priorities.TryGet(ts.PriorityId);
@@ -346,12 +357,14 @@ internal class DistributionStatusTaskService : IDistributionStatusTaskService
                         {
                             ps.ProjectManagmentTasks = new List<ProjectManagmentTaskOutput>(statusTasksCount);
                             
-                            // TODO: Надо переделать на IQueryable, чтобы не работать со всем массивом данных.
+                            // TODO: Надо переделать на Dapper и получать нужное кол-во с базы,
+                            // TODO: чтобы не работать со всем массивом данных.
                             // Разбиваем пагинатором следующие 10 задач, которые будем докидывать в список.
                             var appendedTasks = mapTasks
                                 .Skip((page - 1) * _scrumPageSize)
                                 .Take(_scrumPageSize)
                                 .AsList();
+                                
                             var appendedTaskIds = appendedTasks.Select(x => x.TaskId).AsList();
 
                             foreach (var t in mapTasks)
@@ -371,7 +384,8 @@ internal class DistributionStatusTaskService : IDistributionStatusTaskService
                         // Иначе применить пагинатор для всех статусов шаблона.
                         else if (!paginatorStatusId.HasValue)
                         {
-                            // TODO: Надо переделать на IQueryable, чтобы не работать со всем массивом данных.
+                            // TODO: Надо переделать на Dapper и получать нужное кол-во с базы,
+                            // TODO: чтобы не работать со всем массивом данных.
                             mapTasks = mapTasks
                                 .Skip((page - 1) * _scrumPageSize)
                                 .Take(_scrumPageSize)
@@ -383,11 +397,12 @@ internal class DistributionStatusTaskService : IDistributionStatusTaskService
                 // Заполняем модель пагинатора для фронта, чтобы он кидал последующие запросы с параметрами страниц.
                 ps.Paginator = new Paginator(statusTasksCount, page, _scrumPageSize);
 
+                ps.ProjectManagmentTasks ??= new List<ProjectManagmentTaskOutput>(statusTasksCount);
+
                 // Если задачи уже докидывались, не добавляем снова.
                 if (!isAppended)
                 {
                     // Добавляем задачи статуса.
-                    ps.ProjectManagmentTasks = new List<ProjectManagmentTaskOutput>(statusTasksCount);
                     ps.ProjectManagmentTasks.AddRange(mapTasks);
                 }
                 
