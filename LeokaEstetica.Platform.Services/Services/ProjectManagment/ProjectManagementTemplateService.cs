@@ -82,25 +82,33 @@ internal class ProjectManagementTemplateService : IProjectManagementTemplateServ
 
             // Находим в БД все статусы по их Id.
             var templateStatusIds = templateStatuses
-                .SelectMany(x => x.ProjectManagmentTaskStatusTemplates
+                .SelectMany(x =>
+                    (x.ProjectManagmentTaskStatusTemplates ?? new List<ProjectManagmentTaskStatusTemplateOutput>())
                     .Select(y => y.StatusId));
+
             var items = templateStatuses
-                .SelectMany(x => x.ProjectManagmentTaskStatusTemplates
+                .SelectMany(x =>
+                    (x.ProjectManagmentTaskStatusTemplates ?? new List<ProjectManagmentTaskStatusTemplateOutput>())
                     .Select(y => y));
 
             var statuses = (await _projectManagmentRepository.GetTemplateStatusIdsByStatusIdsAsync(templateStatusIds))
-                .ToList();
+                .AsList();
 
             foreach (var ts in items)
             {
-                var statusId = ts.StatusId;
-                var templateData = statuses.Find(x => x.StatusId == statusId);
+                // Пропускаем сейчас системные статусы, их получим позже.
+                if (ts.IsSystemStatus && !ts.TemplateId.HasValue)
+                {
+                    continue;
+                }
+                
+                var templateData = statuses.Find(x => x.StatusId == ts.StatusId);
 
                 // Если не нашли такого статуса в таблице маппинга многие-ко-многим.
                 if (templateData is null || templateData.StatusId <= 0 || templateData.TemplateId <= 0)
                 {
                     throw new InvalidOperationException(
-                        $"Не удалось получить шаблон, к которому принадлежит статус. Id статуса был: {statusId}");
+                        $"Не удалось получить шаблон, к которому принадлежит статус. Id статуса был: {ts.StatusId}");
                 }
 
                 ts.TemplateId = templateData.TemplateId;

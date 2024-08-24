@@ -10,10 +10,15 @@ public class ProjectManagmentTaskTemplateEntityResult : ProjectManagmentTaskStat
     /// <summary>
     /// Название шаблона.
     /// </summary>
-    public string TemplateName { get; set; }
+    public string? TemplateName { get; set; }
 
     /// <summary>
     /// Id шаблона.
     /// </summary>
-    public long TemplateId { get; set; }
+    public long? TemplateId { get; set; }
+    
+    /// <summary>
+    /// Признак системного статуса. У него TemplateId всегда NULL.
+    /// </summary>
+    public bool IsSystemStatus { get; set; }
 }

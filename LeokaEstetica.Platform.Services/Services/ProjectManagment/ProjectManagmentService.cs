@@ -558,7 +558,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             var templateStatusesItems = _mapper.Map<IEnumerable<ProjectManagmentTaskTemplateResult>>(items);
             var statuses = templateStatusesItems?.AsList();
 
-            if (statuses is null || !statuses.Any())
+            if (statuses is null || statuses.Count == 0)
             {
                 throw new InvalidOperationException("Не удалось получить набор статусов шаблона." +
                                                     $" TemplateId: {templateId}." +

@@ -350,6 +350,8 @@ internal class DistributionStatusTaskService : IDistributionStatusTaskService
                 
                 var statusTasksCount = mapTasks.Count; // Всего задач у статуса.
                 var isAppended = false;
+                
+                ps.ProjectManagmentTasks ??= new List<ProjectManagmentTaskOutput>(statusTasksCount);
 
                 // Действия с задачами, если стратегия представления Scrum.
                 if (strategy.Equals("sm"))
@@ -360,8 +362,6 @@ internal class DistributionStatusTaskService : IDistributionStatusTaskService
                         // статуса следующие 10.
                         if (paginatorStatusId.HasValue && paginatorStatusId == ps.TaskStatusId)
                         {
-                            ps.ProjectManagmentTasks = new List<ProjectManagmentTaskOutput>(statusTasksCount);
-                            
                             // TODO: Надо переделать на Dapper и получать нужное кол-во с базы,
                             // TODO: чтобы не работать со всем массивом данных.
                             // Разбиваем пагинатором следующие 10 задач, которые будем докидывать в список.
@@ -402,8 +402,6 @@ internal class DistributionStatusTaskService : IDistributionStatusTaskService
                 
                 // Заполняем модель пагинатора для фронта, чтобы он кидал последующие запросы с параметрами страниц.
                 ps.Paginator = new Paginator(statusTasksCount, page, _scrumPageSize);
-
-                ps.ProjectManagmentTasks ??= new List<ProjectManagmentTaskOutput>(statusTasksCount);
 
                 // Если задачи уже докидывались, не добавляем снова.
                 if (!isAppended)
