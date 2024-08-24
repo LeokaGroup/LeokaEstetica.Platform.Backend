@@ -11,6 +11,7 @@ public interface IDistributionStatusTaskService
 {
     /// <summary>
     /// Метод распределяет задачи по статусам шаблона проекта.
+    /// Системные статусы также учитываются.
     /// </summary>
     /// <param name="projectManagmentTaskStatusTemplates">Статуса шаблона.</param>
     /// <param name="tasks">Список задач до модификации данных.</param>

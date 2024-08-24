@@ -553,7 +553,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             var templateId = Convert.ToInt32(template!.ParamValue);
 
             // Получаем набор статусов, которые входят в выбранный шаблон.
-            // Получаем список шаблонов задач, которые пользователь может выбрать перед переходом в рабочее пространство.
+            // Также получаем системные статусы - они будут в любом шаблоне.
             var items = await _projectManagementTemplateService.GetProjectManagmentTemplatesAsync(templateId);
             var templateStatusesItems = _mapper.Map<IEnumerable<ProjectManagmentTaskTemplateResult>>(items);
             var statuses = templateStatusesItems?.AsList();
@@ -590,7 +590,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             };
 
             // Если задачи есть, то модифицируем выходные данные.
-            if (tasks is not null && tasks.Any())
+            if (tasks is not null && tasks.Count > 0)
             {
                 // Распределяем задачи по статусам и модифицируем выходные результаты.
                 await _distributionStatusTaskService.Value.DistributionStatusTaskAsync(

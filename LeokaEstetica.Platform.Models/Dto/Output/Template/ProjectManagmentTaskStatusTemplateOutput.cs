@@ -15,17 +15,18 @@ public class ProjectManagmentTaskStatusTemplateOutput
     /// <summary>
     /// Название статуса.
     /// </summary>
-    public string StatusName { get; set; }
+    public string? StatusName { get; set; }
 
     /// <summary>
     /// Системное название статуса.
     /// </summary>
-    public string StatusSysName { get; set; }
+    public string? StatusSysName { get; set; }
 
     /// <summary>
     /// Id шаблона.
+    /// Может быть NULL, например, для системных статусов (они в любом шаблоне).
     /// </summary>
-    public int TemplateId { get; set; }
+    public int? TemplateId { get; set; }
     
     /// <summary>
     /// Id статуса, который маппится на статус задачи.
