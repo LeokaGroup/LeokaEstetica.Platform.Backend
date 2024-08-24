@@ -471,7 +471,7 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
                     "SELECT us.user_story_task_id AS project_task_id " +
                     "FROM project_management.user_stories AS us " +
                     "WHERE us.project_id = @projectId) " +
-                    "SELECT MAX(project_task_id) " +
+                    "SELECT COALESCE(MAX(project_task_id), 0) " +
                     "FROM max_project_task_id_cte";
 
         var lastProjectTaskId = await connection.QueryFirstOrDefaultAsync<long>(query, parameters);
