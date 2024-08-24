@@ -196,9 +196,7 @@ internal class DistributionStatusTaskService : IDistributionStatusTaskService
         foreach (var ps in projectManagmentTaskStatusTemplates)
         {
             // Получаем задачи статуса.
-            var tasksByStatus = tasks
-                .Where(s => s.TaskStatusId == ps.TaskStatusId)
-                .OrderByDescending(o => o.Created); // Новые задачи статуса будут выше.
+            var tasksByStatus = tasks.Where(s => s.TaskStatusId == ps.TaskStatusId);
 
             // Для этого статуса нет задач, пропускаем.
             if (!tasksByStatus.Any())
@@ -374,6 +372,7 @@ internal class DistributionStatusTaskService : IDistributionStatusTaskService
                                 
                             var appendedTaskIds = appendedTasks.Select(x => x.TaskId).AsList();
 
+                            // TODO: Зачем лишние аллокации? Попробовать в основном цикле выше все это делать.
                             foreach (var t in mapTasks)
                             {
                                 // Наполняем уже существующий список определенного статуса.
