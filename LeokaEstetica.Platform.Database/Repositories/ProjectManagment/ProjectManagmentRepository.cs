@@ -3138,6 +3138,26 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         return result;
     }
 
+    /// <inheritdoc />
+    public async Task<IEnumerable<StoryAndEpicSystemStatusOutput>> GetEpicAndStorySystemStatusesAsync()
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+        
+        var query = "SELECT status_id, " +
+                    "status_name, " +
+                    "status_sys_name, " +
+                    "task_status_id, " +
+                    "is_system_status " +
+                    "FROM templates.project_management_task_status_templates " +
+                    "WHERE NOT status_id = ANY (SELECT status_id " +
+                    "FROM templates.project_management_task_status_intermediate_templates) " +
+                    "AND is_system_status";
+
+        var result = await connection.QueryAsync<StoryAndEpicSystemStatusOutput>(query);
+
+        return result;
+    }
+
     #endregion
 
     #region Приватные методы.

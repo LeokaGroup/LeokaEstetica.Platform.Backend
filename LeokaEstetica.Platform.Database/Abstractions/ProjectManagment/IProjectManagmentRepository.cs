@@ -832,4 +832,12 @@ public interface IProjectManagmentRepository
     /// </summary>
     /// <returns>Статусы эпиков.</returns>
     Task<IEnumerable<StoryStatusOutput>> GetStoryStatusesAsync();
+
+    /// <summary>
+    /// Метод получает системные статусы эпиков и историй.
+    /// Склонения нам не важны, так как отличить их можно по TaskStatusId
+    /// когда их распределяем по статусам в раб.пространстве.
+    /// </summary>
+    /// <returns>Системные статусы эпиков.</returns>
+    Task<IEnumerable<StoryAndEpicSystemStatusOutput>> GetEpicAndStorySystemStatusesAsync();
 }
