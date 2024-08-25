@@ -1315,6 +1315,22 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 
                 transitionType = TransitionTypeEnum.Task;
             }
+            
+            // TODO: Этот код дублируется в этом сервисе. Вынести в приватный метод и кортежем вернуть нужные данные.
+            // Получаем настройки проекта.
+            var projectSettings = await _projectSettingsConfigRepository.GetProjectSpaceSettingsByProjectIdAsync(
+                projectId);
+            var projectSettingsItems = projectSettings?.AsList();
+
+            if (projectSettingsItems is null || !projectSettingsItems.Any())
+            {
+                throw new InvalidOperationException("Ошибка получения настроек проекта. " +
+                                                    $"ProjectId: {projectId}.");
+            }
+            
+            var template = projectSettingsItems.Find(x =>
+                x.ParamKey.Equals(GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_TEMPLATE_ID));
+            var templateId = Convert.ToInt32(template!.ParamValue);
 
             if (taskType == TaskDetailTypeEnum.Epic)
             {
@@ -1369,30 +1385,17 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 
                 transitionType = TransitionTypeEnum.History;
             }
-            
-            // TODO: Этот код дублируется в этом сервисе. Вынести в приватный метод и кортежем вернуть нужные данные.
-            // Получаем настройки проекта.
-            var projectSettings = await _projectSettingsConfigRepository.GetProjectSpaceSettingsByProjectIdAsync(
-                projectId);
-            var projectSettingsItems = projectSettings?.AsList();
 
-            if (projectSettingsItems is null || !projectSettingsItems.Any())
-            {
-                throw new InvalidOperationException("Ошибка получения настроек проекта. " +
-                                                    $"ProjectId: {projectId}.");
-            }
-
-            var template = projectSettingsItems.Find(x =>
-                x.ParamKey.Equals(GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_TEMPLATE_ID));
-            var templateId = Convert.ToInt32(template!.ParamValue);
-
+            // TODO: Когда внедрим кастомные статусы эпиков и историй, то уже надо будет учитывать, а системные не учитывать.
+            // Для эпиков и историй не нужно учитывать шаблон проекта, так как у них пока лишь системные статусы.
+            // Системные статусы не привязываются ни к какому шаблону проекта.
             // Получаем все переходы из промежуточной таблицы отталкиваясь от текущего статуса задачи (конкретного типа).
             var statusIds = (await _projectManagmentRepository
                     .GetProjectManagementTransitionIntermediateTemplatesAsync(currentTaskStatusId, transitionType,
-                        templateId))
+                        null))
                 ?.AsList();
 
-            if (statusIds is null || !statusIds.Any())
+            if (statusIds is null || statusIds.Count == 0)
             {
                 throw new InvalidOperationException(
                     $"Не удалось получить доступные переходы для статуса {currentTaskStatusId}. " +
@@ -1404,7 +1407,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             var transitionStatuses = (await _projectManagmentRepository.GetTaskStatusIntermediateTemplatesAsync(
                 statusIds))?.AsList();
 
-            if (transitionStatuses is null || !transitionStatuses.Any())
+            if (transitionStatuses is null || transitionStatuses.Count == 0)
             {
                 throw new InvalidOperationException(
                     $"Не удалось получить статусы переходов: {JsonConvert.SerializeObject(transitionStatuses)}. " +

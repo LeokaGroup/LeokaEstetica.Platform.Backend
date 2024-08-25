@@ -217,10 +217,10 @@ public interface IProjectManagmentRepository
     /// </summary>
     /// <param name="currentTaskStatusId">Id текущего статуса задачи.</param>
     /// <param name="transitionType">Тип перехода.</param>
-    /// <param name="templateId">Id шаблона проекта.</param>
+    /// <param name="templateId">Id шаблона проекта. Может быть NULL у системных статусов.</param>
     /// <returns>Список переходов.</returns>
     Task<IEnumerable<long>> GetProjectManagementTransitionIntermediateTemplatesAsync(long currentTaskStatusId,
-        TransitionTypeEnum transitionType, int templateId);
+        TransitionTypeEnum transitionType, int? templateId);
 
     /// <summary>
     /// Метод получает статусы из таблицы связей многие-многие, чтобы дальше работать с
