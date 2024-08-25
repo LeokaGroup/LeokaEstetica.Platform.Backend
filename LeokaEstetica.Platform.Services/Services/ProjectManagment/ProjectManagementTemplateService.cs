@@ -45,16 +45,21 @@ internal class ProjectManagementTemplateService : IProjectManagementTemplateServ
             var templateIds = items.Select(x => x.TemplateId).Distinct().AsList();
             var result = new List<ProjectManagmentTaskTemplateResult>();
 
-            foreach (var tid in templateIds)
+            foreach (var _ in templateIds)
             {
                 // Выбираем все статусы определенного шаблона и добавляем в результат. 
-                var templateStatuses = items.Where(x => x.TemplateId == tid);
+                // Системные статусы тут не учитываем, с ними работаем позже при распределении уже.
+                // var templateStatuses = items.Where(x => x.TemplateId == tid);
+                
+                var templateTaskStatuses = _mapper.Map<IEnumerable<ProjectManagmentTaskStatusTemplateOutput>>(
+                    items);
+                
                 var resultItem = new ProjectManagmentTaskTemplateResult
                 {
-                    TemplateName = templateStatuses.First().TemplateName,
-                    ProjectManagmentTaskStatusTemplates =
-                        _mapper.Map<IEnumerable<ProjectManagmentTaskStatusTemplateOutput>>(templateStatuses)
+                    TemplateName = items.FirstOrDefault()?.TemplateName,
+                    ProjectManagmentTaskStatusTemplates = templateTaskStatuses
                 };
+                
                 result.Add(resultItem);
             }
 

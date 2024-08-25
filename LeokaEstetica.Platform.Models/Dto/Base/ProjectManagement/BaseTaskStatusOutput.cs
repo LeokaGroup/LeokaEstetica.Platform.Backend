@@ -8,7 +8,7 @@ public class BaseTaskStatusOutput
     /// <summary>
     /// Id статуса.
     /// </summary>
-    public long StatusId { get; set; }
+    public int StatusId { get; set; }
     
     /// <summary>
     /// Id статуса, который маппится на статус задачи.

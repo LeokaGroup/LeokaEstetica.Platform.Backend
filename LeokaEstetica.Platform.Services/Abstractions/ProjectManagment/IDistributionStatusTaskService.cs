@@ -20,8 +20,9 @@ public interface IDistributionStatusTaskService
     /// <param name="paginatorStatusId">Id статуса пагинации.</param>
     /// <param name="strategy">Выбранная стратегия представления.</param>
     /// <param name="page">Страница.</param>
-    Task DistributionStatusTaskAsync(
-        IEnumerable<ProjectManagmentTaskStatusTemplateOutput> projectManagmentTaskStatusTemplates,
-        List<ProjectTaskExtendedEntity> tasks, ModifyTaskStatuseTypeEnum modifyTaskStatuseType, long projectId,
-        int? paginatorStatusId, string strategy, int page = 1);
+    Task<List<ProjectManagmentTaskStatusTemplateOutput>> DistributionStatusTaskAsync(
+        List<ProjectManagmentTaskStatusTemplateOutput> projectManagmentTaskStatusTemplates,
+        List<ProjectTaskExtendedEntity> tasks,
+        ModifyTaskStatuseTypeEnum modifyTaskStatuseType, long projectId, int? paginatorStatusId, string strategy,
+        int page = 1);
 }
