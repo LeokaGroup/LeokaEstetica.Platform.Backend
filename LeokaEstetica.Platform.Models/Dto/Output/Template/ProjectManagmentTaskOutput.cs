@@ -180,6 +180,21 @@ public class ProjectManagmentTaskOutput
     /// Признак наличия доступа.
     /// </summary>
     public bool IsAccess { get; set; }
+
+    /// <summary>
+    /// Признак системного статуса.
+    /// </summary>
+    public bool IsSystemStatus { get; set; }
+    
+    /// <summary>
+    /// Признак кастомного статуса.
+    /// </summary>
+    public bool IsCustomStatus { get; set; }
+    
+    /// <summary>
+    /// Признак статуса шаблона (если статус принадлежит какому-либо шаблону).
+    /// </summary>
+    public bool IsTemplateStatus { get; set; }
 }
 
 /// <summary>

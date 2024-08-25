@@ -98,7 +98,8 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
                       tst.status_name, 
                       tst.status_sys_name,
                       tst.task_status_id,
-                      ptt.template_name 
+                      ptt.template_name,
+                      tst.is_system_status AS IsSystemStatus
                       FROM templates.project_management_task_status_intermediate_templates AS tsit 
                       INNER JOIN templates.project_management_task_status_templates AS tst 
                         ON tsit.status_id = tst.status_id 
@@ -130,7 +131,7 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
     /// <param name="templateStatusIds">Список Id статусов.</param>
     /// <returns>Словарь с Id шаблонов и статусов.</returns>
     public async Task<IEnumerable<GetTemplateStatusIdByStatusIdOutput>> GetTemplateStatusIdsByStatusIdsAsync(
-        IEnumerable<long> templateStatusIds)
+        IEnumerable<int> templateStatusIds)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
         var compiler = new PostgresCompiler();
@@ -3135,6 +3136,72 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         var result = await connection.QueryAsync<StoryStatusOutput>(query);
 
         return result;
+    }
+
+    /// <inheritdoc />
+    public async Task<IEnumerable<StoryAndEpicSystemStatusOutput>> GetEpicAndStorySystemStatusesAsync()
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+        
+        var query = "SELECT status_id, " +
+                    "status_name, " +
+                    "status_sys_name, " +
+                    "task_status_id, " +
+                    "is_system_status " +
+                    "FROM templates.project_management_task_status_templates " +
+                    "WHERE NOT status_id = ANY (SELECT status_id " +
+                    "FROM templates.project_management_task_status_intermediate_templates) " +
+                    "AND is_system_status";
+
+        var result = await connection.QueryAsync<StoryAndEpicSystemStatusOutput>(query);
+
+        return result;
+    }
+
+    /// <inheritdoc />
+    public async Task<IDictionary<long, StoryAndEpicSystemStatusOutput>> GetEpicStatusesDictionaryAsync(
+        IEnumerable<long> epicIds)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@epicIds", epicIds.AsList());
+
+        var query = "SELECT es.status_id, " +
+                    "es.status_name, " +
+                    "es.status_sys_name," +
+                    "e.epic_id AS StoryEpicId " +
+                    "FROM project_management.epic_statuses AS es " +
+                    "INNER JOIN project_management.epics AS e " +
+                    "ON es.status_id = e.status_id " +
+                    "AND e.epic_id = ANY (@epicIds)";
+        
+        var result = await connection.QueryAsync<StoryAndEpicSystemStatusOutput>(query, parameters);
+
+        return result.ToDictionary(k => k.StoryEpicId, v => v);
+    }
+
+    /// <inheritdoc />
+    public async Task<IDictionary<long, StoryAndEpicSystemStatusOutput>> GetStoryStatusesDictionaryAsync(
+        IEnumerable<long> storyIds)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@storyIds", storyIds.AsList());
+
+        var query = "SELECT uss.status_id, " +
+                    "uss.status_name, " +
+                    "uss.status_sys_name," +
+                    "us.story_id AS StoryEpicId " +
+                    "FROM project_management.user_story_statuses AS uss " +
+                    "INNER JOIN project_management.user_stories AS us " +
+                    "ON uss.status_id = us.story_status_id " +
+                    "AND us.story_id = ANY (@storyIds)";
+        
+        var result = await connection.QueryAsync<StoryAndEpicSystemStatusOutput>(query, parameters);
+
+        return result.ToDictionary(k => k.StoryEpicId, v => v);
     }
 
     #endregion

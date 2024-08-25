@@ -558,7 +558,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             var templateStatusesItems = _mapper.Map<IEnumerable<ProjectManagmentTaskTemplateResult>>(items);
             var statuses = templateStatusesItems?.AsList();
 
-            if (statuses is null || !statuses.Any())
+            if (statuses is null || statuses.Count == 0)
             {
                 throw new InvalidOperationException("Не удалось получить набор статусов шаблона." +
                                                     $" TemplateId: {templateId}." +
@@ -584,8 +584,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             
             var result = new ProjectManagmentWorkspaceResult
             {
-                ProjectManagmentTaskStatuses = statuses.First().ProjectManagmentTaskStatusTemplates
-                    .Where(x => x.TemplateId == templateId),
+                ProjectManagmentTaskStatuses = statuses.First().ProjectManagmentTaskStatusTemplates,
                 Strategy = strategy!
             };
 
@@ -593,9 +592,9 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             if (tasks is not null && tasks.Count > 0)
             {
                 // Распределяем задачи по статусам и модифицируем выходные результаты.
-                await _distributionStatusTaskService.Value.DistributionStatusTaskAsync(
-                    result.ProjectManagmentTaskStatuses, tasks, modifyTaskStatuseType, projectId, paginatorStatusId,
-                    result.Strategy, page);
+                result.ProjectManagmentTaskStatuses = await _distributionStatusTaskService.Value
+                    .DistributionStatusTaskAsync(result.ProjectManagmentTaskStatuses.AsList(),
+                        tasks, modifyTaskStatuseType, projectId, paginatorStatusId, result.Strategy, page);
             }
 
             result.IsAccess = true;

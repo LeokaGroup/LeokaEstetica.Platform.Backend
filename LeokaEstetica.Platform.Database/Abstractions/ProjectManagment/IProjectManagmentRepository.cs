@@ -45,7 +45,7 @@ public interface IProjectManagmentRepository
     /// <param name="templateStatusIds">Список Id статусов.</param>
     /// <returns>Словарь с Id шаблонов и статусов.</returns>
     Task<IEnumerable<GetTemplateStatusIdByStatusIdOutput>> GetTemplateStatusIdsByStatusIdsAsync(
-        IEnumerable<long> templateStatusIds);
+        IEnumerable<int> templateStatusIds);
 
     /// <summary>
     /// Метод получает задачи проекта для рабочего пространства.
@@ -832,4 +832,27 @@ public interface IProjectManagmentRepository
     /// </summary>
     /// <returns>Статусы эпиков.</returns>
     Task<IEnumerable<StoryStatusOutput>> GetStoryStatusesAsync();
+
+    /// <summary>
+    /// Метод получает системные статусы эпиков и историй.
+    /// Склонения нам не важны, так как отличить их можно по TaskStatusId
+    /// когда их распределяем по статусам в раб.пространстве.
+    /// </summary>
+    /// <returns>Системные статусы эпиков.</returns>
+    Task<IEnumerable<StoryAndEpicSystemStatusOutput>> GetEpicAndStorySystemStatusesAsync();
+
+    /// <summary>
+    /// Метод получает словарь со статусами эпиков.
+    /// </summary>
+    /// <param name="epicIds">Id эпиков (не в рамках проекта).</param>
+    /// <returns>Словарь со статусами эпиков.</returns>
+    Task<IDictionary<long, StoryAndEpicSystemStatusOutput>> GetEpicStatusesDictionaryAsync(IEnumerable<long> epicIds);
+    
+    /// <summary>
+    /// Метод получает словарь со статусами историй.
+    /// </summary>
+    /// <param name="epicIds">Id историй (не в рамках проекта).</param>
+    /// <returns>Словарь со статусами историй.</returns>
+    Task<IDictionary<long, StoryAndEpicSystemStatusOutput>> GetStoryStatusesDictionaryAsync(
+        IEnumerable<long> storyIds);
 }
