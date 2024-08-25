@@ -782,24 +782,28 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
 
     /// <inheritdoc />
     public async Task<IEnumerable<long>> GetProjectManagementTransitionIntermediateTemplatesAsync(
-        long currentTaskStatusId, TransitionTypeEnum transitionType, int templateId)
+        long currentTaskStatusId, TransitionTypeEnum transitionType, int? templateId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
 
         var parameters = new DynamicParameters();
         parameters.Add("@currentTaskStatusId", currentTaskStatusId);
         parameters.Add("@transitionType", new Enum(transitionType));
-        parameters.Add("@templateId", templateId);
 
         var query = "SELECT tit.to_status_id " +
                     "FROM templates.project_management_transition_intermediate_templates AS tit " +
-                    "INNER JOIN templates.project_management_task_status_intermediate_templates AS pmtsit " +
+                    "LEFT JOIN templates.project_management_task_status_intermediate_templates AS pmtsit " +
                     "ON tit.to_status_id = pmtsit.status_id " +
-                    "INNER JOIN templates.project_management_task_status_templates AS pmtst " +
+                    "LEFT JOIN templates.project_management_task_status_templates AS pmtst " +
                     "ON pmtsit.status_id = pmtst.status_id " +
                     "WHERE tit.from_status_id = @currentTaskStatusId " +
-                    "AND tit.transition_type = @transitionType " +
-                    "AND pmtsit.template_id = @templateId";
+                    "AND tit.transition_type = @transitionType ";
+
+        if (templateId.HasValue)
+        {
+            parameters.Add("@templateId", templateId);
+            query += "AND pmtsit.template_id = @templateId";
+        }
 
         var result = await connection.QueryAsync<long>(query, parameters);
 
