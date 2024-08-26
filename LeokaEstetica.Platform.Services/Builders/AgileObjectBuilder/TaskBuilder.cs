@@ -236,13 +236,14 @@ internal class TaskBuilder : AgileObjectBuilder
     public override async Task FillSprintIdAndSprintNameAsync()
     {
         // Получаем спринт, в который входит задача.
-        var sprint = await BuilderData.ProjectManagmentRepository.GetSprintTaskAsync(BuilderData.ProjectId,
-            BuilderData.ProjectTaskId);
+        var sprint = await BuilderData.SprintRepository.GetTaskSprintByProjectTaskIdAsync(BuilderData.ProjectTaskId,
+                BuilderData.ProjectId);
 
         if (sprint is not null)
         {
             ProjectManagmentTask.SprintId = sprint.SprintId;
             ProjectManagmentTask.SprintName = sprint.SprintName;
+            ProjectManagmentTask.FullProjectSprintId = sprint.FullProjectTaskId;
         }
     }
 

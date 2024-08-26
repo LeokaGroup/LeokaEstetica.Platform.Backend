@@ -25,6 +25,14 @@ public interface ISprintRepository
     Task<TaskSprintExtendedOutput?> GetSprintAsync(long projectSprintId, long projectId);
     
     /// <summary>
+    /// Метод получает детали спринта, в который входит задача.
+    /// </summary>
+    /// <param name="projectSprintId">Id спринта в рамках проекта.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Детали спринта.</returns>
+    Task<TaskSprintExtendedOutput?> GetTaskSprintByProjectTaskIdAsync(long projectTaskId, long projectId);
+    
+    /// <summary>
     /// Метод получает задачи спринта проекта.
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
@@ -154,4 +162,12 @@ public interface ISprintRepository
     /// <param name="projectId">Id проекта.</param>
     /// <returns>Id спринта проекта следующего за активным.</returns>
     Task<long?> GetNextSprintAsync(long projectSprintId, long projectId);
+
+    /// <summary>
+    /// Метод получает Id спринта (не в рамках проекта) и Id проекта,
+    /// в который входит переданный Id задачи в рамках проекта.
+    /// </summary>
+    /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
+    /// <returns>Id спринта.</returns>
+    Task<long?> GetSprintIdByProjectTaskIdProjectIdAsync(long projectTaskId, long projectId);
 }

@@ -3,6 +3,7 @@ using AutoMapper;
 using Dapper;
 using FluentValidation.Results;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
+using LeokaEstetica.Platform.Base.Extensions.HtmlExtensions;
 using LeokaEstetica.Platform.Base.Extensions.StringExtensions;
 using LeokaEstetica.Platform.Base.Factors;
 using LeokaEstetica.Platform.Core.Constants;
@@ -50,22 +51,23 @@ namespace LeokaEstetica.Platform.Services.Services.ProjectManagment;
 /// </summary>
 internal sealed class ProjectManagmentService : IProjectManagmentService
 {
-	private readonly ILogger<ProjectManagmentService> _logger;
-	private readonly IProjectManagmentRepository _projectManagmentRepository;
-	private readonly IMapper _mapper;
-	private readonly IUserRepository _userRepository;
-	private readonly IProjectRepository _projectRepository;
-	private readonly IDiscordService _discordService;
-	private readonly IProjectManagmentTemplateRepository _projectManagmentTemplateRepository;
-	private readonly ITransactionScopeFactory _transactionScopeFactory;
-	private readonly IProjectSettingsConfigRepository _projectSettingsConfigRepository;
-	private readonly Lazy<IReversoService> _reversoService;
-	private readonly Lazy<IFileManagerService> _fileManagerService;
-	private readonly IUserService _userService;
-	private readonly Lazy<IDistributionStatusTaskService> _distributionStatusTaskService;
-	private readonly IProjectManagementTemplateService _projectManagementTemplateService;
-	private readonly Lazy<IProjectManagmentRoleRepository> _projectManagmentRoleRepository;
-	private readonly IMongoDbRepository _mongoDbRepository;
+    private readonly ILogger<ProjectManagmentService> _logger;
+    private readonly IProjectManagmentRepository _projectManagmentRepository;
+    private readonly IMapper _mapper;
+    private readonly IUserRepository _userRepository;
+    private readonly IProjectRepository _projectRepository;
+    private readonly IDiscordService _discordService;
+    private readonly IProjectManagmentTemplateRepository _projectManagmentTemplateRepository;
+    private readonly ITransactionScopeFactory _transactionScopeFactory;
+    private readonly IProjectSettingsConfigRepository _projectSettingsConfigRepository;
+    private readonly Lazy<IReversoService> _reversoService;
+    private readonly Lazy<IFileManagerService> _fileManagerService;
+    private readonly IUserService _userService;
+    private readonly Lazy<IDistributionStatusTaskService> _distributionStatusTaskService;
+    private readonly IProjectManagementTemplateService _projectManagementTemplateService;
+    private readonly Lazy<IProjectManagmentRoleRepository> _projectManagmentRoleRepository;
+    private readonly IMongoDbRepository _mongoDbRepository;
+    private readonly ISprintRepository _sprintRepository;
 
 	/// <summary>
 	/// Статусы задач, которые являются самыми базовыми и никогда не меняются независимо от шаблона проекта.
@@ -78,62 +80,65 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 
 	private readonly Lazy<IHubNotificationService> _hubNotificationService;
 
-	/// <summary>
-	/// Конструктор.
-	/// <param name="logger">Логгер.</param>
-	/// <param name="projectManagmentRepository">Репозиторий управления проектами.</param>
-	/// <param name="mapper">Маппер.</param>
-	/// <param name="mapper">Репозиторий пользователей.</param>
-	/// <param name="projectRepository">Репозиторий проектов.</param>
-	/// <param name="discordService">Сервис уведомлений дискорда.</param>
-	/// <param name="projectManagmentTemplateRepository">Репозиторий шаблонов проектов.</param>
-	/// <param name="transactionScopeFactory">Факторка транзакций.</param>
-	/// <param name="projectSettingsConfigRepository">Репозиторий настроек проектов.</param>
-	/// <param name="projectSettingsConfigRepository">Сервис транслитера.</param>
-	/// <param name="fileManagerService">Сервис менеджера файлов.</param>
-	/// <param name="userService">Сервис пользователей.</param>
-	/// <param name="distributionStatusTaskService">Сервис распределение задач по статусам.</param>
-	/// <param name="projectManagementTemplateService">Сервис шаблонов проекта.</param>
-	/// <param name="projectManagmentRoleRepository">Репозиторий ролей проекта.</param>
-	/// <param name="mongoDbRepository">Репозиторий MongoDB.</param>
-	/// <param name="hubNotificationService">Сервис уведомлений хабов.</param>
-	/// </summary>
-	public ProjectManagmentService(ILogger<ProjectManagmentService> logger,
-		IProjectManagmentRepository projectManagmentRepository,
-		IMapper mapper,
-		IUserRepository userRepository,
-		IProjectRepository projectRepository,
-		IDiscordService discordService,
-		IProjectManagmentTemplateRepository projectManagmentTemplateRepository,
-		ITransactionScopeFactory transactionScopeFactory,
-		IProjectSettingsConfigRepository projectSettingsConfigRepository,
-		Lazy<IReversoService> reversoService,
-		Lazy<IFileManagerService> fileManagerService,
-		IUserService userService,
-		Lazy<IDistributionStatusTaskService> distributionStatusTaskService,
-		IProjectManagementTemplateService projectManagementTemplateService,
-		Lazy<IProjectManagmentRoleRepository> projectManagmentRoleRepository,
-		IMongoDbRepository mongoDbRepository,
-		 Lazy<IHubNotificationService> hubNotificationService)
-	{
-		_logger = logger;
-		_projectManagmentRepository = projectManagmentRepository;
-		_mapper = mapper;
-		_userRepository = userRepository;
-		_projectRepository = projectRepository;
-		_discordService = discordService;
-		_projectManagmentTemplateRepository = projectManagmentTemplateRepository;
-		_transactionScopeFactory = transactionScopeFactory;
-		_projectSettingsConfigRepository = projectSettingsConfigRepository;
-		_reversoService = reversoService;
-		_fileManagerService = fileManagerService;
-		_userService = userService;
-		_distributionStatusTaskService = distributionStatusTaskService;
-		_projectManagementTemplateService = projectManagementTemplateService;
-		_projectManagmentRoleRepository = projectManagmentRoleRepository;
-		_mongoDbRepository = mongoDbRepository;
-		_hubNotificationService = hubNotificationService;
-	}
+    /// <summary>
+    /// Конструктор.
+    /// <param name="logger">Логгер.</param>
+    /// <param name="projectManagmentRepository">Репозиторий управления проектами.</param>
+    /// <param name="mapper">Маппер.</param>
+    /// <param name="mapper">Репозиторий пользователей.</param>
+    /// <param name="projectRepository">Репозиторий проектов.</param>
+    /// <param name="discordService">Сервис уведомлений дискорда.</param>
+    /// <param name="projectManagmentTemplateRepository">Репозиторий шаблонов проектов.</param>
+    /// <param name="transactionScopeFactory">Факторка транзакций.</param>
+    /// <param name="projectSettingsConfigRepository">Репозиторий настроек проектов.</param>
+    /// <param name="projectSettingsConfigRepository">Сервис транслитера.</param>
+    /// <param name="fileManagerService">Сервис менеджера файлов.</param>
+    /// <param name="userService">Сервис пользователей.</param>
+    /// <param name="distributionStatusTaskService">Сервис распределение задач по статусам.</param>
+    /// <param name="projectManagementTemplateService">Сервис шаблонов проекта.</param>
+    /// <param name="projectManagmentRoleRepository">Репозиторий ролей проекта.</param>
+    /// <param name="mongoDbRepository">Репозиторий MongoDB.</param>
+    /// <param name="hubNotificationService">Сервис уведомлений хабов.</param>
+    /// <param name="hubNotificationService">Репозиторий спринтов.</param>
+    /// </summary>
+    public ProjectManagmentService(ILogger<ProjectManagmentService> logger,
+        IProjectManagmentRepository projectManagmentRepository,
+        IMapper mapper,
+        IUserRepository userRepository,
+        IProjectRepository projectRepository,
+        IDiscordService discordService,
+        IProjectManagmentTemplateRepository projectManagmentTemplateRepository,
+        ITransactionScopeFactory transactionScopeFactory,
+        IProjectSettingsConfigRepository projectSettingsConfigRepository,
+        Lazy<IReversoService> reversoService,
+        Lazy<IFileManagerService> fileManagerService,
+        IUserService userService,
+        Lazy<IDistributionStatusTaskService> distributionStatusTaskService,
+        IProjectManagementTemplateService projectManagementTemplateService,
+        Lazy<IProjectManagmentRoleRepository> projectManagmentRoleRepository,
+        IMongoDbRepository mongoDbRepository,
+         Lazy<IHubNotificationService> hubNotificationService,
+          ISprintRepository sprintRepository)
+    {
+        _logger = logger;
+        _projectManagmentRepository = projectManagmentRepository;
+        _mapper = mapper;
+        _userRepository = userRepository;
+        _projectRepository = projectRepository;
+        _discordService = discordService;
+        _projectManagmentTemplateRepository = projectManagmentTemplateRepository;
+        _transactionScopeFactory = transactionScopeFactory;
+        _projectSettingsConfigRepository = projectSettingsConfigRepository;
+        _reversoService = reversoService;
+        _fileManagerService = fileManagerService;
+        _userService = userService;
+        _distributionStatusTaskService = distributionStatusTaskService;
+        _projectManagementTemplateService = projectManagementTemplateService;
+        _projectManagmentRoleRepository = projectManagmentRoleRepository;
+        _mongoDbRepository = mongoDbRepository;
+        _hubNotificationService = hubNotificationService;
+        _sprintRepository = sprintRepository;
+    }
 
 	#region Публичные методы.
 
@@ -547,18 +552,18 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 				x.ParamKey.Equals(GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_TEMPLATE_ID));
 			var templateId = Convert.ToInt32(template!.ParamValue);
 
-			// Получаем набор статусов, которые входят в выбранный шаблон.
-			// Получаем список шаблонов задач, которые пользователь может выбрать перед переходом в рабочее пространство.
-			var items = await _projectManagementTemplateService.GetProjectManagmentTemplatesAsync(templateId);
-			var templateStatusesItems = _mapper.Map<IEnumerable<ProjectManagmentTaskTemplateResult>>(items);
-			var statuses = templateStatusesItems?.AsList();
+            // Получаем набор статусов, которые входят в выбранный шаблон.
+            // Также получаем системные статусы - они будут в любом шаблоне.
+            var items = await _projectManagementTemplateService.GetProjectManagmentTemplatesAsync(templateId);
+            var templateStatusesItems = _mapper.Map<IEnumerable<ProjectManagmentTaskTemplateResult>>(items);
+            var statuses = templateStatusesItems?.AsList();
 
-			if (statuses is null || !statuses.Any())
-			{
-				throw new InvalidOperationException("Не удалось получить набор статусов шаблона." +
-													$" TemplateId: {templateId}." +
-													$"ProjectId: {projectId}.");
-			}
+            if (statuses is null || statuses.Count == 0)
+            {
+                throw new InvalidOperationException("Не удалось получить набор статусов шаблона." +
+                                                    $" TemplateId: {templateId}." +
+                                                    $"ProjectId: {projectId}.");
+            }
 
 			// Проставляем Id шаблона статусам.
 			await _projectManagementTemplateService.SetProjectManagmentTemplateIdsAsync(statuses);
@@ -572,26 +577,25 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 			// Получаем задачи пользователя, которые принадлежат проекту в рабочем пространстве.
 			var projectTasks = await _projectManagmentRepository.GetProjectTasksAsync(projectId, strategy!);
 
-			_logger?.LogInformation(
-				$"Закончили получение списка задач для рабочего пространства для проекта {projectId}.");
+            _logger?.LogInformation(
+                $"Закончили получение списка задач для рабочего пространства для проекта {projectId}.");
+            
+            var tasks = projectTasks?.AsList();
+            
+            var result = new ProjectManagmentWorkspaceResult
+            {
+                ProjectManagmentTaskStatuses = statuses.First().ProjectManagmentTaskStatusTemplates,
+                Strategy = strategy!
+            };
 
-			var tasks = projectTasks?.AsList();
-
-			var result = new ProjectManagmentWorkspaceResult
-			{
-				ProjectManagmentTaskStatuses = statuses.First().ProjectManagmentTaskStatusTemplates
-					.Where(x => x.TemplateId == templateId),
-				Strategy = strategy!
-			};
-
-			// Если задачи есть, то модифицируем выходные данные.
-			if (tasks is not null && tasks.Any())
-			{
-				// Распределяем задачи по статусам и модифицируем выходные результаты.
-				await _distributionStatusTaskService.Value.DistributionStatusTaskAsync(
-					result.ProjectManagmentTaskStatuses, tasks, modifyTaskStatuseType, projectId, paginatorStatusId,
-					result.Strategy, page);
-			}
+            // Если задачи есть, то модифицируем выходные данные.
+            if (tasks is not null && tasks.Count > 0)
+            {
+                // Распределяем задачи по статусам и модифицируем выходные результаты.
+                result.ProjectManagmentTaskStatuses = await _distributionStatusTaskService.Value
+                    .DistributionStatusTaskAsync(result.ProjectManagmentTaskStatuses.AsList(),
+                        tasks, modifyTaskStatuseType, projectId, paginatorStatusId, result.Strategy, page);
+            }
 
 			result.IsAccess = true;
 
@@ -638,44 +642,45 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 
 			var ifProjectMember = await _projectRepository.CheckExistsProjectTeamMemberAsync(projectId, userId);
 
-			if (!ifProjectMember)
-			{
-				var ex = new InvalidOperationException("Была попытка просмотра задачи без наличия доступа. " +
-													   "Сработала система запрета доступа. " +
-													   $"UserId: {userId} не имеет доступа. " +
-													   $"ProjectId: {projectId}");
+            if (!ifProjectMember)
+            {
+                var ex = new InvalidOperationException("Была попытка просмотра задачи без наличия доступа. " +
+                                                       "Сработала система запрета доступа. " +
+                                                       $"UserId: {userId} не имеет доступа. " +
+                                                       $"ProjectId: {projectId}");
+                
+                await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
+                
+                return new ProjectManagmentTaskOutput { IsAccess = false };
+            }
 
-				await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
-
-				return new ProjectManagmentTaskOutput { IsAccess = false };
-			}
-
-			var builderData = new AgileObjectBuilderData(_projectManagmentRepository, _userRepository,
-				_discordService, _userService, _projectManagmentTemplateRepository, _mapper,
-				projectTaskId.GetProjectTaskIdFromPrefixLink(), projectId, _projectSettingsConfigRepository);
-
-			AgileObjectBuilder? builder = null;
-
-			// Если просматриваем задачу.
-			if (taskDetailType is TaskDetailTypeEnum.Task or TaskDetailTypeEnum.Error)
-			{
-				// Настраиваем билдер для построения задачи.
-				builder = new TaskBuilder { BuilderData = builderData };
-			}
-
-			// Если просматриваем эпик.
-			if (taskDetailType is TaskDetailTypeEnum.Epic)
-			{
-				// Настраиваем билдер для построения эпика.
-				builder = new EpicBuilder { BuilderData = builderData };
-			}
-
-			// Если просматриваем историю.
-			if (taskDetailType is TaskDetailTypeEnum.Story)
-			{
-				// Настраиваем билдер для построения истории.
-				builder = new UserStoryBuilder { BuilderData = builderData };
-			}
+            var builderData = new AgileObjectBuilderData(_projectManagmentRepository, _userRepository,
+                _discordService, _userService, _projectManagmentTemplateRepository, _mapper,
+                projectTaskId.GetProjectTaskIdFromPrefixLink(), projectId, _projectSettingsConfigRepository,
+                _sprintRepository);
+                
+            AgileObjectBuilder? builder = null;
+ 
+            // Если просматриваем задачу.
+            if (taskDetailType is TaskDetailTypeEnum.Task or TaskDetailTypeEnum.Error)
+            { 
+                // Настраиваем билдер для построения задачи.
+                builder = new TaskBuilder { BuilderData = builderData };
+            }
+            
+            // Если просматриваем эпик.
+            if (taskDetailType is TaskDetailTypeEnum.Epic)
+            {
+                // Настраиваем билдер для построения эпика.
+                builder = new EpicBuilder { BuilderData = builderData };
+            }
+            
+            // Если просматриваем историю.
+            if (taskDetailType is TaskDetailTypeEnum.Story)
+            {
+                // Настраиваем билдер для построения истории.
+                builder = new UserStoryBuilder { BuilderData = builderData };
+            }
 
 			if (builder is null)
 			{
@@ -755,13 +760,16 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 			var redirectUrl = projectSettingsItems.Find(x =>
 				x.ParamKey.Equals(GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_SPACE_URL));
 
-			var result = new CreateProjectManagementTaskOutput
-			{
-				RedirectUrl = string.Concat(redirectUrl!.ParamValue, $"?projectId={projectId}")
-			};
+            var result = new CreateProjectManagementTaskOutput
+            {
+                RedirectUrl = string.Concat(redirectUrl!.ParamValue, $"?projectId={projectId}")
+            };
+            
+            var parseTaskType = Enum.GetName((SearchAgileObjectTypeEnum)projectManagementTaskInput.TaskTypeId);
+            var taskType = Enum.Parse<SearchAgileObjectTypeEnum>(parseTaskType!);
 
-			// Находим наибольший Id задачи в рамках проекта и увеличиваем его.
-			/*
+            // Находим наибольший Id задачи в рамках проекта и увеличиваем его.
+            /*
             Описание алгоритма:
                 1. При создании задачи, вне зависимости от ее типа, идти брать максимальное значение поля
                  project_task_id  из всех этих таблиц project_tasks, epics, user_stories.
@@ -769,15 +777,12 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 3. Писать project_task_id в нужную таблицу с этим значением (оно и будет самым актуальным Id задачи
             в рамках проекта).
             */
-			var maxProjectTaskId = await _projectManagmentRepository.GetLastProjectTaskIdAsync(projectId);
+            var maxProjectTaskId = await _projectManagmentRepository.GetLastProjectTaskIdAsync(projectId);
 
-			var parseTaskType = Enum.GetName((SearchAgileObjectTypeEnum)projectManagementTaskInput.TaskTypeId);
-			var taskType = Enum.Parse<SearchAgileObjectTypeEnum>(parseTaskType!);
-
-			// Если идет создание задачи или ошибки.
-			if (new[] { SearchAgileObjectTypeEnum.Task, SearchAgileObjectTypeEnum.Error }.Contains(taskType))
-			{
-				ProjectTaskEntity addedProjectTask;
+            // Если идет создание задачи или ошибки.
+            if (new[] { SearchAgileObjectTypeEnum.Task, SearchAgileObjectTypeEnum.Error }.Contains(taskType))
+            {
+                ProjectTaskEntity addedProjectTask;
 
 				using var transactionScope = _transactionScopeFactory.CreateTransactionScope();
 
@@ -845,14 +850,8 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 await _projectManagmentRepository.CreateProjectEpicAsync(addedProjectEpic);
                 
                 transactionScope.Complete();
-
-				// Уведомление об успешном создании эпика
-				await _hubNotificationService.Value.SendNotificationAsync("Все хорошо",
-						$"Эпик успешно создан.",
-						NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, "SendNotifySuccessProjectEpic",
-						userCode, UserConnectionModuleEnum.ProjectManagement);
-
-				return result;
+                
+                return result;
             }
             
             // Если идет создание истории/требования.
@@ -930,12 +929,12 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 		}
 	}
 
-	/// <inheritdoc/>
-	public async Task<IEnumerable<ProjectTagEntity>> GetProjectTagsAsync()
-	{
-		try
-		{
-			var result = await _projectManagmentRepository.GetProjectTagsAsync();
+    /// <inheritdoc/>
+    public async Task<IEnumerable<ProjectTagEntity>> GetProjectTagsAsync(long projectId)
+    {
+        try
+        {
+            var result = await _projectManagmentRepository.GetProjectTagsAsync(projectId);
 
 			return result;
 		}
@@ -1105,18 +1104,42 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 
 			var userCode = await _userRepository.GetUserCodeByUserIdAsync(userId);
 
-			await _hubNotificationService.Value.SendNotificationAsync("Все хорошо",
-				"Метка добавлена в проект.",
-				NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, "SendNotifySuccessCreateProjectTag", userCode,
-				UserConnectionModuleEnum.ProjectManagement);
-		}
+            await _hubNotificationService.Value.SendNotificationAsync("Все хорошо",
+                "Метка добавлена в проект.",
+                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, "SendNotifySuccessCreateProjectTag", userCode,
+                UserConnectionModuleEnum.ProjectManagement);
+        }
+        
+        catch (Npgsql.PostgresException postgresEx)
+        {
+            if (postgresEx.SqlState.Equals("23505"))
+            {
+                var userId = await _userRepository.GetUserByEmailAsync(account);
 
-		catch (Exception ex)
-		{
-			_logger.LogError(ex.Message, ex);
-			throw;
-		}
-	}
+                if (userId <= 0)
+                {
+                    var ex = new NotFoundUserIdByAccountException(account);
+                    throw ex;
+                }
+                var userCode = await _userRepository.GetUserCodeByUserIdAsync(userId);
+
+                await _hubNotificationService.Value.SendNotificationAsync("Внимание",
+                    "Проект уже имеет метку с таким именем.",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, "SendNotifyErrorCreateProjectTag", userCode,
+                    UserConnectionModuleEnum.ProjectManagement);
+            }
+            
+            Exception exception = postgresEx;
+            _logger.LogError(exception.Message, exception);
+            throw;
+        }
+
+        catch (Exception ex)
+        {
+            _logger.LogError(ex.Message, ex);
+            throw;
+        }
+    }
 
 	/// <inheritdoc />
 	public async Task<IEnumerable<ProjectManagmentTaskStatusTemplateEntity>> GetSelectableTaskStatusesAsync(
@@ -1311,13 +1334,29 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 														$"ProjectTaskId: {projectTaskId}");
 				}
 
-				transitionType = TransitionTypeEnum.Task;
-			}
+                transitionType = TransitionTypeEnum.Task;
+            }
+            
+            // TODO: Этот код дублируется в этом сервисе. Вынести в приватный метод и кортежем вернуть нужные данные.
+            // Получаем настройки проекта.
+            var projectSettings = await _projectSettingsConfigRepository.GetProjectSpaceSettingsByProjectIdAsync(
+                projectId);
+            var projectSettingsItems = projectSettings?.AsList();
 
-			if (taskType == TaskDetailTypeEnum.Epic)
-			{
-				ifProjectHavingTask = await _projectManagmentRepository.IfProjectHavingEpicIdAsync(projectId,
-					onlyProjectTaskId);
+            if (projectSettingsItems is null || !projectSettingsItems.Any())
+            {
+                throw new InvalidOperationException("Ошибка получения настроек проекта. " +
+                                                    $"ProjectId: {projectId}.");
+            }
+            
+            var template = projectSettingsItems.Find(x =>
+                x.ParamKey.Equals(GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_TEMPLATE_ID));
+            var templateId = Convert.ToInt32(template!.ParamValue);
+
+            if (taskType == TaskDetailTypeEnum.Epic)
+            {
+                ifProjectHavingTask = await _projectManagmentRepository.IfProjectHavingEpicIdAsync(projectId,
+                    onlyProjectTaskId);
 
 				// Если эпик не принадлежит проекту.
 				if (!ifProjectHavingTask)
@@ -1358,85 +1397,72 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 				currentTaskStatusId = await _projectManagmentRepository
 					.GetProjectUserStoryStatusIdByUserStoryIdAsync(projectId, onlyProjectTaskId);
 
-				if (currentTaskStatusId <= 0)
-				{
-					throw new InvalidOperationException("Не удалось получить текущий статус истории. " +
-														$"ProjectId: {projectId}. " +
-														$"ProjectEpicId: {projectTaskId}");
-				}
+                if (currentTaskStatusId <= 0)
+                {
+                    throw new InvalidOperationException("Не удалось получить текущий статус истории. " +
+                                                        $"ProjectId: {projectId}. " +
+                                                        $"ProjectEpicId: {projectTaskId}");
+                }
+                
+                transitionType = TransitionTypeEnum.History;
+            }
 
-				transitionType = TransitionTypeEnum.History;
-			}
+            // TODO: Когда внедрим кастомные статусы эпиков и историй, то уже надо будет учитывать, а системные не учитывать.
+            // Для эпиков и историй не нужно учитывать шаблон проекта, так как у них пока лишь системные статусы.
+            // Системные статусы не привязываются ни к какому шаблону проекта.
+            // Получаем все переходы из промежуточной таблицы отталкиваясь от текущего статуса задачи (конкретного типа).
+            var statusIds = (await _projectManagmentRepository
+                    .GetProjectManagementTransitionIntermediateTemplatesAsync(currentTaskStatusId, transitionType,
+                        null))
+                ?.AsList();
 
-			// TODO: Этот код дублируется в этом сервисе. Вынести в приватный метод и кортежем вернуть нужные данные.
-			// Получаем настройки проекта.
-			var projectSettings = await _projectSettingsConfigRepository.GetProjectSpaceSettingsByProjectIdAsync(
-				projectId);
-			var projectSettingsItems = projectSettings?.AsList();
-
-			if (projectSettingsItems is null || !projectSettingsItems.Any())
-			{
-				throw new InvalidOperationException("Ошибка получения настроек проекта. " +
-													$"ProjectId: {projectId}.");
-			}
-
-			var template = projectSettingsItems.Find(x =>
-				x.ParamKey.Equals(GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_TEMPLATE_ID));
-			var templateId = Convert.ToInt32(template!.ParamValue);
-
-			// Получаем все переходы из промежуточной таблицы отталкиваясь от текущего статуса задачи (конкретного типа).
-			var statusIds = (await _projectManagmentRepository
-					.GetProjectManagementTransitionIntermediateTemplatesAsync(currentTaskStatusId, transitionType,
-						templateId))
-				?.AsList();
-
-			if (statusIds is null || !statusIds.Any())
-			{
-				throw new InvalidOperationException(
-					$"Не удалось получить доступные переходы для статуса {currentTaskStatusId}. " +
-					$"ProjectId: {projectId}. " +
-					$"ProjectTaskId: {projectTaskId}.");
-			}
+            if (statusIds is null || statusIds.Count == 0)
+            {
+                throw new InvalidOperationException(
+                    $"Не удалось получить доступные переходы для статуса {currentTaskStatusId}. " +
+                    $"ProjectId: {projectId}. " +
+                    $"ProjectTaskId: {projectTaskId}.");
+            }
 
 			// Получаем все статусы по переходам.
 			var transitionStatuses = (await _projectManagmentRepository.GetTaskStatusIntermediateTemplatesAsync(
 				statusIds))?.AsList();
 
-			if (transitionStatuses is null || !transitionStatuses.Any())
-			{
-				throw new InvalidOperationException(
-					$"Не удалось получить статусы переходов: {JsonConvert.SerializeObject(transitionStatuses)}. " +
-					$"Id статусов были: {JsonConvert.SerializeObject(statusIds)} " +
-					$"ProjectId: {projectId}. " +
-					$"ProjectTaskId: {projectTaskId}. " +
-					$"Id текущего статуса задачи: {currentTaskStatusId}.");
-			}
-
-			// Получаем названия статусов у таких переходов.
-			// Опираемся на признаки кастомности промежуточных таблиц переходов и статусов
-			// IsCustomTransition и IsCustomStatus.
-			var commonStatuses = await _projectManagmentRepository.GetTaskStatusTemplatesAsync();
-
-			// Если нету общих статусов, но среди переходов был минимум 1 общий,
-			// то это ошибка и опасно продолжать дальше. Это может нарушить целостность переходов.
-			// TODO: Почему это может нарушить целостность переходов? Точно ли нужна эта проверка?
-			if (commonStatuses is null)
-			{
-				throw new InvalidOperationException(
-					"Не удалось получить кастомные статусы пользователя," +
-					" хотя был минимум 1 кастомный статус среди: " +
-					$"{JsonConvert.SerializeObject(transitionStatuses)}.");
-			}
-
-			var userStatuses = await _projectManagmentRepository.GetUserTaskStatusTemplatesAsync();
-
-			if (userStatuses is null)
-			{
-				throw new InvalidOperationException(
-					"Не удалось получить кастомные статусы пользователя," +
-					" хотя был минимум 1 кастомный статус среди: " +
-					$"{JsonConvert.SerializeObject(transitionStatuses)}.");
-			}
+            if (transitionStatuses is null || transitionStatuses.Count == 0)
+            {
+                throw new InvalidOperationException(
+                    $"Не удалось получить статусы переходов: {JsonConvert.SerializeObject(transitionStatuses)}. " +
+                    $"Id статусов были: {JsonConvert.SerializeObject(statusIds)} " +
+                    $"ProjectId: {projectId}. " +
+                    $"ProjectTaskId: {projectTaskId}. " +
+                    $"Id текущего статуса задачи: {currentTaskStatusId}.");
+            }
+            
+            // Получаем названия статусов у таких переходов.
+            // Опираемся на признаки кастомности промежуточных таблиц переходов и статусов
+            // IsCustomTransition и IsCustomStatus.
+            var commonStatuses = await _projectManagmentRepository.GetTaskStatusTemplatesAsync();
+            
+            // Если нету общих статусов, но среди переходов был минимум 1 общий,
+            // то это ошибка и опасно продолжать дальше. Это может нарушить целостность переходов.
+            // TODO: Почему это может нарушить целостность переходов? Точно ли нужна эта проверка?
+            if (commonStatuses is null)
+            {
+                throw new InvalidOperationException(
+                    "Не удалось получить кастомные статусы пользователя," +
+                    " хотя был минимум 1 кастомный статус среди: " +
+                    $"{JsonConvert.SerializeObject(transitionStatuses)}.");
+            }
+            
+            var userStatuses = await _projectManagmentRepository.GetUserTaskStatusTemplatesAsync();
+            
+            if (userStatuses is null)
+            {
+                throw new InvalidOperationException(
+                    "Не удалось получить кастомные статусы пользователя," +
+                    " хотя был минимум 1 кастомный статус среди: " +
+                    $"{JsonConvert.SerializeObject(transitionStatuses)}.");
+            }
 
 			// Получаем все Id статусов, которые входят в шаблон текущего проекта.
 			// Получаем все статусы, которые входят в шаблон текущего проекта.
@@ -2505,15 +2531,20 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 
 			var result = _mapper.Map<IEnumerable<TaskCommentOutput>>(items);
 
-			return result;
-		}
+            foreach (var elemnt in result)
+            {
+                elemnt.Comment = ClearHtmlBuilder.Clear(elemnt.Comment);
+            }
 
-		catch (Exception ex)
-		{
-			_logger.LogError(ex, ex.Message);
-			throw;
-		}
-	}
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+             _logger.LogError(ex, ex.Message);
+            throw;
+        }
+    }
 
 	/// <inheritdoc />
 	public async Task UpdateTaskCommentAsync(string projectTaskId, long projectId, long commentId, string comment,
@@ -3062,7 +3093,8 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 				throw ex;
 			}
 
-			var result = await _projectManagmentRepository.GetWorkSpaceByProjectIdAsync(projectId, userId);
+            var result = await _projectManagmentRepository.GetWorkSpaceByProjectIdAsync(projectId, userId);
+            result.IsOwner = await _projectRepository.CheckProjectOwnerAsync(projectId, userId); 
 
 			return result;
 		}

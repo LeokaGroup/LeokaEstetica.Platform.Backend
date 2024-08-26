@@ -1,0 +1,2 @@
+﻿DROP INDEX project_management.uniq_idx_project_tasks_project_id_project_epic_id;
+CREATE UNIQUE INDEX uniq_idx_project_tasks_project_id_project_epic_id on project_management.epics (project_id, project_epic_id);

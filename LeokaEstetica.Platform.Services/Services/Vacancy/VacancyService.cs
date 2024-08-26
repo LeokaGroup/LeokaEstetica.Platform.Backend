@@ -346,6 +346,10 @@ internal sealed class VacancyService : IVacancyService
             result.IsSuccess = true;
             result.IsAccess = true;
 
+            result.Conditions = ClearHtmlBuilder.Clear(result.Conditions);
+            result.Demands = ClearHtmlBuilder.Clear(result.Demands);
+            result.VacancyText = ClearHtmlBuilder.Clear(result.VacancyText);
+            
             return result;
         }
 

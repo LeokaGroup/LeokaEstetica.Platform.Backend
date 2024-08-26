@@ -184,12 +184,15 @@ internal class BaseServiceTest
             ProjectManagmentRepository);
         ProfileService = new ProfileService(null, profileRepository, userRepository, mapper, null,
             accessUserService, resumeModerationRepository, discordService, null);
+            
+        SprintRepository = new SprintRepository(connectionProvider);
+        var projectManagementRepository = new ProjectManagmentRepository(connectionProvider);
 
-        var projectRepository = new ProjectRepository(pgContext, ChatRepository, connectionProvider);
+        var projectRepository = new ProjectRepository(pgContext, ChatRepository, connectionProvider,
+            projectManagementRepository);
         var projectNotificationsRepository = new ProjectNotificationsRepository(pgContext, connectionProvider);
         var vacancyRepository = new VacancyRepository(pgContext, connectionProvider);
-        var projectManagementRepository = new ProjectManagmentRepository(connectionProvider);
-        var vacancyModerationRepository = new VacancyModerationRepository(pgContext);
+        var vacancyModerationRepository = new VacancyModerationRepository(pgContext, connectionProvider);
 
         TelegramBotService = new TelegramBotService(null, AppConfiguration, globalConfigRepository);
 
@@ -301,11 +304,14 @@ internal class BaseServiceTest
         ReversoService = new ReversoService(null);
         ProjectManagementTemplateService = new ProjectManagementTemplateService(ProjectManagmentRepository, mapper, null);
         var projectManagmentRoleRepository = new ProjectManagmentRoleRepository(connectionProvider);
+        
+      
+        
         ProjectManagmentService = new ProjectManagmentService(null, ProjectManagmentRepository, mapper, userRepository,
             projectRepository, discordService, projectManagmentTemplateRepository, transactionScopeFactory,
             projectSettingsConfigRepository, new Lazy<IReversoService>(ReversoService), null, UserService, null,
             ProjectManagementTemplateService,
-            new Lazy<IProjectManagmentRoleRepository>(projectManagmentRoleRepository), null, null);
+            new Lazy<IProjectManagmentRoleRepository>(projectManagmentRoleRepository), null, null, SprintRepository);
 
         var searchProjectManagementRepository = new SearchProjectManagementRepository(connectionProvider);
         SearchProjectManagementService = new SearchProjectManagementService(null,
@@ -313,8 +319,7 @@ internal class BaseServiceTest
             userRepository, new Lazy<IDiscordService>(discordService));
 
         BaseSearchSprintTaskAlgorithm = new BaseSearchAgileObjectAlgorithm();
-
-        SprintRepository = new SprintRepository(connectionProvider);
+        
         SprintService = new SprintService(null, SprintRepository, null, userRepository, projectSettingsConfigRepository,
             mapper, null, null, discordService, null, null);
         

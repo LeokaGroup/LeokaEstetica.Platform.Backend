@@ -778,31 +778,42 @@ internal sealed class SprintService : ISprintService
         // Заполняем задачи спринта.
         var mapSprintTasks = _mapper.Map<List<ProjectManagmentTaskOutput>>(sprintTasks.OrderBy(o => o.Created));
         
-        // Готовим списки типов задач для заполнения словарей (эпик не может входить в спринт).
-        var taskTypeAndErrorIds = new List<long>();
-        var storyTypeIds = new List<long>();
+        // Готовим списки задач для заполнения словарей.
+        var taskAndErrorIds = new List<long>();
+        var storyIds = new List<long>();
+        var epicIds = new List<long>();
 
-        // Если есть задачи с типом "Задача".
-        if (mapSprintTasks.Any(x => x.TaskTypeId == (int)ProjectTaskTypeEnum.Task))
+        // Если есть задачи с типом "Задача" или "Ошибка".
+        if (mapSprintTasks.Any(x =>
+                new[]
+                    {
+                        (int)ProjectTaskTypeEnum.Task,
+                        (int)ProjectTaskTypeEnum.Error
+                    }
+                    .Contains(x.TaskTypeId)))
         {
-            taskTypeAndErrorIds.AddRange(mapSprintTasks
-                .Where(x => x.TaskTypeId == (int)ProjectTaskTypeEnum.Task)
-                .Select(x => x.ProjectTaskId));
-        }
-
-        // Если есть задачи с типом "Ошибка".
-        if (mapSprintTasks.Any(x => x.TaskTypeId == (int)ProjectTaskTypeEnum.Error))
-        {
-            taskTypeAndErrorIds.AddRange(mapSprintTasks
-                .Where(x => x.TaskTypeId == (int)ProjectTaskTypeEnum.Error)
+            taskAndErrorIds.AddRange(mapSprintTasks
+                .Where(x => new[]
+                {
+                    (int)ProjectTaskTypeEnum.Task,
+                    (int)ProjectTaskTypeEnum.Error
+                }.Contains(x.TaskTypeId))
                 .Select(x => x.ProjectTaskId));
         }
 
         // Если есть задачи с типом "История".
         if (mapSprintTasks.Any(x => x.TaskTypeId == (int)ProjectTaskTypeEnum.Story))
         {
-            storyTypeIds.AddRange(mapSprintTasks
+            storyIds.AddRange(mapSprintTasks
                 .Where(x => x.TaskTypeId == (int)ProjectTaskTypeEnum.Story)
+                .Select(x => x.ProjectTaskId));
+        }
+
+        // Если есть задачи с типом "Эпик".
+        if (mapSprintTasks.Any(x => x.TaskTypeId == (int)ProjectTaskTypeEnum.Epic))
+        {
+            epicIds.AddRange(mapSprintTasks
+                .Where(x => x.TaskTypeId == (int)ProjectTaskTypeEnum.Epic)
                 .Select(x => x.ProjectTaskId));
         }
 
@@ -810,21 +821,28 @@ internal sealed class SprintService : ISprintService
         IDictionary<int, TaskPriorityOutput>? taskPriorityNamesDict = null;
 
         // Заполняем словарь задач и ошибок.
-        if (taskTypeAndErrorIds.Count > 0)
+        if (taskAndErrorIds.Count > 0)
         {
             taskTypeAndErrorDict = await _projectManagmentRepository.GetProjectTaskStatusesAsync(projectId,
-                taskTypeAndErrorIds, templateId);
+                taskAndErrorIds);
 
             taskPriorityNamesDict = await _projectManagmentRepository.GetPriorityNamesByPriorityIdsAsync(
                     mapSprintTasks.Select(x => x.PriorityId));
         }
         
         IDictionary<long, ProjectTaskTypeOutput>? storyTypeDict = null;
+        IDictionary<long, ProjectTaskTypeOutput>? epicTypeDict = null;
 
         // Заполняем словарь историй.
-        if (storyTypeIds.Count > 0)
+        if (storyIds.Count > 0)
         {
-            storyTypeDict = await _projectManagmentRepository.GetProjectStoryStatusesAsync(projectId, storyTypeIds);
+            storyTypeDict = await _projectManagmentRepository.GetProjectStoryStatusesAsync(projectId, storyIds);
+        }
+        
+        // Заполняем словарь эпиков.
+        if (epicIds.Count > 0)
+        {
+            epicTypeDict = await _projectManagmentRepository.GetProjectEpicStatusesAsync(projectId, epicIds);
         }
         
         // Получаем имена исполнителей задач.
@@ -847,11 +865,19 @@ internal sealed class SprintService : ISprintService
             if (st.TaskTypeId is (int)ProjectTaskTypeEnum.Task or (int)ProjectTaskTypeEnum.Error)
             {
                 st.TaskStatusName = taskTypeAndErrorDict?.TryGet(st.ProjectTaskId)?.TaskStatusName;
+                st.TaskTypeName = taskTypeAndErrorDict?.TryGet(st.ProjectTaskId)?.TaskTypeName;
             }
             
             if (st.TaskTypeId == (int)ProjectTaskTypeEnum.Story)
             {
                 st.TaskStatusName = storyTypeDict?.TryGet(st.ProjectTaskId)?.TaskStatusName;
+                st.TaskTypeName = storyTypeDict?.TryGet(st.ProjectTaskId)?.TaskTypeName;
+            }
+            
+            if (st.TaskTypeId == (int)ProjectTaskTypeEnum.Epic)
+            {
+                st.TaskStatusName = epicTypeDict?.TryGet(st.ProjectTaskId)?.TaskStatusName;
+                st.TaskTypeName = epicTypeDict?.TryGet(st.ProjectTaskId)?.TaskTypeName;
             }
 
             st.PriorityName = taskPriorityNamesDict?.TryGet(st.PriorityId)?.PriorityName;

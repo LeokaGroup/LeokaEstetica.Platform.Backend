@@ -1,0 +1,1 @@
+﻿DROP INDEX templates.project_management_transition_from_status_id_to_status_id__idx1;

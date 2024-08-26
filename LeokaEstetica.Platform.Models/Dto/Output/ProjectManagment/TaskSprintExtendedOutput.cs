@@ -38,11 +38,6 @@ public class TaskSprintExtendedOutput : TaskSprintOutput
     public long ProjectId { get; set; }
 
     /// <summary>
-    /// Id спринта в рамках проекта.
-    /// </summary>
-    public long ProjectSprintId { get; set; }
-
-    /// <summary>
     /// Задачи спринта, если они есть.
     /// </summary>
     public IEnumerable<ProjectManagmentTaskOutput>? SprintTasks { get; set; }

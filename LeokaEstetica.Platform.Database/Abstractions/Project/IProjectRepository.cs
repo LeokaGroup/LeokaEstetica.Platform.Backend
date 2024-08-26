@@ -12,14 +12,7 @@ namespace LeokaEstetica.Platform.Database.Abstractions.Project;
 /// </summary>
 public interface IProjectRepository
 {
-    /// <summary>
-    /// Метод фильтрует проекты в зависимости от фильтров.
-    /// </summary>
-    /// <param name="filters">Фильтры.</param>
-    /// <returns>Список проектов после фильтрации.</returns>
-    Task<IEnumerable<CatalogProjectOutput>> FilterProjectsAsync(FilterProjectInput filters);
-    
-    /// <summary>
+	/// <summary>
     /// Метод создает новый проект пользователя.
     /// </summary>
     /// <param name="createProjectInput">Входная модель.</param>
@@ -50,11 +43,10 @@ public interface IProjectRepository
     Task<UserProjectResultOutput> UserProjectsAsync(long userId, bool isCreateVacancy);
 
     /// <summary>
-    /// TODO: Подумать, давать ли всем пользователям возможность просматривать каталог проектов или только тем, у кого есть подписка.
     /// Метод получает список проектов для каталога.
     /// </summary>
     /// <returns>Список проектов.</returns>
-    Task<IEnumerable<CatalogProjectOutput>> CatalogProjectsAsync();
+    Task<CatalogProjectResultOutput> GetCatalogProjectsAsync(CatalogProjectInput catalogProjectInput);
 
     /// <summary>
     /// Метод обновляет проект пользователя.
@@ -345,6 +337,15 @@ public interface IProjectRepository
     /// Метод исключает пользователя из команды проекта.
     /// <param name="userId">Id пользователя.</param>
     /// <param name="teamId">Id команды проекта.</param>
+    /// <param name="projectId">Id проекта.</param>
     /// </summary>
-    Task RemoveUserProjectTeamAsync(long userId, long teamId);
+    Task RemoveUserProjectTeamAsync(long userId, long teamId, long projectId);
+
+	/// <summary>
+	/// Метод обновляет видимость проекта
+	/// </summary>
+	/// <param name="projectId">Id проекта.</param>
+	/// <param name="isPublic">Видимость проекта.</param>
+	/// <returns>Возращает признак видимости проекта.</returns>
+	Task<UpdateProjectOutput> UpdateVisibleProjectAsync(long projectId, bool isPublic);
 }
