@@ -234,6 +234,16 @@ internal class DistributionStatusTaskService : IDistributionStatusTaskService
 
         var userEmails = await _userRepository.GetUserEmailByUserIdsAsync(executorIds);
         var avatarFilesDict = await _userService.GetUserAvatarFilesAsync(projectId, userEmails);
+        
+        // Работаем с эпиками и историями.
+        // Распределение задач происходит без учета шаблона проекта.
+        // Распределяем системные статусы - они не привязаны к шаблонам.
+        var tasksWithStoryAndEpic = tasks.Where(x =>
+                new[] { (int)ProjectTaskTypeEnum.Epic, (int)ProjectTaskTypeEnum.Story }
+                    .Contains(x.TaskTypeId))
+            ?.AsList();
+
+        tasks.RemoveAll(x => tasksWithStoryAndEpic.Select(y => y.TaskId).Contains(x.TaskId));
 
         // Работаем с задачами и ошибками. Распределяем задачи и ошибки по статусам.
         // Распределение задач происходит на основе шаблона проекта.
@@ -254,14 +264,6 @@ internal class DistributionStatusTaskService : IDistributionStatusTaskService
                 priorities, watchers, authors, statuseNames, executors, ps,
                 strategy, paginatorStatusId, epicStatusesDict, storyStatusesDict, avatarFilesDict);
         }
-
-        // Работаем с эпиками и историями.
-        // Распределение задач происходит без учета шаблона проекта.
-        // Распределяем системные статусы - они не привязаны к шаблонам.
-        var tasksWithStoryAndEpic = tasks.Where(x =>
-                new[] { (int)ProjectTaskTypeEnum.Epic, (int)ProjectTaskTypeEnum.Story }
-                    .Contains(x.TaskTypeId))
-            ?.AsList();
 
         if (tasksWithStoryAndEpic is null || tasksWithStoryAndEpic.Count == 0)
         {
