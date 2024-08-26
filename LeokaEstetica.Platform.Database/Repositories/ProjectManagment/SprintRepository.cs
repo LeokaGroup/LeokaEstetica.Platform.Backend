@@ -32,9 +32,10 @@ internal sealed class SprintRepository : BaseRepository, ISprintRepository
 
         var parameters = new DynamicParameters();
         parameters.Add("@projectId", projectId);
-
+        
         var query = "SELECT s.sprint_id," +
-                    " s.date_start, s.date_end," +
+                    " to_char(s.date_start, 'dd.MM.yyyy HH24:MI:SS') AS DateStart," +
+                    " to_char(s.date_end, 'dd.MM.yyyy HH24:MI:SS') AS DateEnd," +
                     " s.sprint_goal," +
                     " s.sprint_status_id," +
                     " s.project_id," +
@@ -63,7 +64,8 @@ internal sealed class SprintRepository : BaseRepository, ISprintRepository
         parameters.Add("@prefix", GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_PROJECT_NAME_PREFIX);
 
         var query = "SELECT s.sprint_id," +
-                    " s.date_start, s.date_end," +
+                    " to_char(s.date_start, 'dd.MM.yyyy HH24:MI:SS') AS DateStart," +
+                    " to_char(s.date_end, 'dd.MM.yyyy HH24:MI:SS') AS DateEnd," +
                     " s.sprint_goal," +
                     " s.sprint_status_id," +
                     " s.project_id," +
