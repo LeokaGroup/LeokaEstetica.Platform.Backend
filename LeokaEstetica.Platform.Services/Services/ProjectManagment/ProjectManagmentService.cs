@@ -829,7 +829,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 {
 					await _hubNotificationService.Value.SendNotificationAsync("Все хорошо",
 						$"Ошибка успешно создана",
-						NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, "SendNotifyErroreProjectTask",
+						NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, "SendNotifyErrorProjectTask",
 						userCode, UserConnectionModuleEnum.ProjectManagement);
 				}
                 return result;
