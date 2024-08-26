@@ -243,7 +243,12 @@ internal class DistributionStatusTaskService : IDistributionStatusTaskService
                     .Contains(x.TaskTypeId))
             ?.AsList();
 
-        tasks.RemoveAll(x => tasksWithStoryAndEpic.Select(y => y.TaskId).Contains(x.TaskId));
+        // Удаляем все кроме эпиков и историй, так как следующим этапом работаем только с ними.
+        // Иначе раскидает не по тем статусам на фронте.
+        if (tasksWithStoryAndEpic is not null && tasksWithStoryAndEpic.Count > 0)
+        {
+            tasks.RemoveAll(x => tasksWithStoryAndEpic.Select(y => y.TaskId).Contains(x.TaskId));
+        }
 
         // Работаем с задачами и ошибками. Распределяем задачи и ошибки по статусам.
         // Распределение задач происходит на основе шаблона проекта.
