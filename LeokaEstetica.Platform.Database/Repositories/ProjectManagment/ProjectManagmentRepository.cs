@@ -3147,6 +3147,7 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
         
+        // Хоть статус InWork и принадлежит некоторым шаблонам, он также является системным.
         var query = "SELECT status_id, " +
                     "status_name, " +
                     "status_sys_name, " +
@@ -3155,7 +3156,8 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
                     "FROM templates.project_management_task_status_templates " +
                     "WHERE NOT status_id = ANY (SELECT status_id " +
                     "FROM templates.project_management_task_status_intermediate_templates) " +
-                    "AND is_system_status";
+                    "AND is_system_status " +
+                    "OR status_sys_name = 'InWork'";
 
         var result = await connection.QueryAsync<StoryAndEpicSystemStatusOutput>(query);
 
