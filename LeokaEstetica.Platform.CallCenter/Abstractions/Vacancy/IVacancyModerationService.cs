@@ -22,6 +22,17 @@ public interface IVacancyModerationService
 	/// </summary>
 	/// <param name="vacancyId">Id вакансии.</param>
 	Task AddVacancyModerationAsync(long vacancyId);
+	/// <summary>
+	/// Метод получает список вакансий со всеми статусами.
+	/// </summary>
+	/// <returns>Список вакансий.</returns>
+	Task<VacanciesModerationResult> AllVacanciesModerationAsync();
+	/// <summary>
+	/// Метод отправляет вакансию на модерацию. Это происходит через добавление в таблицу модерации вакансий.
+	/// Если вакансия в этой таблице, значит она не прошла еще модерацию. При прохождении модерации она удаляется из нее.
+	/// </summary>
+	/// <param name="vacancyId">Id вакансии.</param>
+	Task AddVacancyModerationAsync(long vacancyId);
 
     /// <summary>
     /// Метод получает вакансию для просмотра.
@@ -29,12 +40,12 @@ public interface IVacancyModerationService
     /// <param name="vacancyId">Id вакансии.</param>
     /// <returns>Данные вакансии.</returns>
     Task<UserVacancyEntity> GetVacancyModerationByVacancyIdAsync(long vacancyId);
-    
-    /// <summary>
-    /// Метод получает список вакансий для модерации.
-    /// </summary>
-    /// <returns>Список вакансий.</returns>
-    Task<VacanciesModerationResult> VacanciesModerationAsync();
+
+	/// <summary>
+	/// Метод получает список вакансий со статусом на модерации.
+	/// </summary>
+	/// <returns>Список вакансий.</returns>
+	Task<VacanciesModerationResult> VacanciesModerationAsync();
     
     /// <summary>
     /// Метод одобряет вакансию на модерации.
