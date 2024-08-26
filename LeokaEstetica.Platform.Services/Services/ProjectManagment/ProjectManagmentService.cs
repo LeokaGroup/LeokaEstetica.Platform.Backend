@@ -850,8 +850,13 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 await _projectManagmentRepository.CreateProjectEpicAsync(addedProjectEpic);
                 
                 transactionScope.Complete();
-                
-                return result;
+
+				await _hubNotificationService.Value.SendNotificationAsync("Все хорошо",
+						$"Эпик успешно создан.",
+						NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, "SendNotifySuccessProjectEpic",
+						userCode, UserConnectionModuleEnum.ProjectManagement);
+
+				return result;
             }
             
             // Если идет создание истории/требования.
