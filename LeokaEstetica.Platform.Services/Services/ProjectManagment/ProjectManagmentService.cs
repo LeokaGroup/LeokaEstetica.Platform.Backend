@@ -827,8 +827,8 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 				}
                 else if (addedProjectTask.TaskStatusId == (int)SearchAgileObjectTypeEnum.Error)
                 {
-					await _hubNotificationService.Value.SendNotificationAsync("Внимание",
-						$"Ошибка в задаче",
+					await _hubNotificationService.Value.SendNotificationAsync("Все хорошо",
+						$"Ошибка успешно создана",
 						NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, "SendNotifyErroreProjectTask",
 						userCode, UserConnectionModuleEnum.ProjectManagement);
 				}
