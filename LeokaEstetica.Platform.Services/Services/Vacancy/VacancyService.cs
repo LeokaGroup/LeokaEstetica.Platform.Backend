@@ -143,6 +143,22 @@ internal sealed class VacancyService : IVacancyService
         
         try
         {
+            if (vacancyInput.ProjectId == 0)
+            {
+                await _hubNotificationService.Value.SendNotificationAsync("Ошибка",
+                    "Невозможно создать вакансию без проекта.",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, "SendNotificationErrorCreatedUserVacancy",
+                    userCode, UserConnectionModuleEnum.Main);
+                
+                var ex = new InvalidOperationException(
+                    "Попытка создать вакансию при отсутствии проектов у пользователя. " +
+                    $"UserId: {userId}. ");
+
+                await _discordService.SendNotificationErrorAsync(ex);
+
+                throw ex;
+            }
+
             var isProjectOwner = await _projectRepository.CheckProjectOwnerAsync(vacancyInput.ProjectId, userId);
 
             if (!isProjectOwner)
