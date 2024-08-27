@@ -3,7 +3,6 @@ using LeokaEstetica.Platform.Models.Entities.Moderation;
 using LeokaEstetica.Platform.Models.Entities.ProjectTeam;
 using LeokaEstetica.Platform.Models.Entities.Role;
 using LeokaEstetica.Platform.Models.Entities.Ticket;
-using LeokaEstetica.Platform.Models.Enums;
 
 namespace LeokaEstetica.Platform.Models.Entities.User;
 
@@ -217,9 +216,4 @@ public class UserEntity
     /// Роли пользователя тикета.
     /// </summary>
     public ICollection<UserTicketRoleEntity> UserTicketRoles { get; set; }
-
-    /// <summary>
-    /// Компонентная роль пользователя.
-    /// </summary>
-    public ComponentRoleEnum ComponentRole { get; set; }
 }

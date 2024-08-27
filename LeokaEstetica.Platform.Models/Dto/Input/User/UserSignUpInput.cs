@@ -1,5 +1,3 @@
-using LeokaEstetica.Platform.Models.Enums;
-
 namespace LeokaEstetica.Platform.Models.Dto.Input.User;
 
 /// <summary>
@@ -18,7 +16,7 @@ public class UserSignUpInput
     public string? Password { get; set; }
     
     /// <summary>
-    /// Компонентная роль пользователя.
+    /// Список компонентных ролей пользователя.
     /// </summary>
-    public string? ComponentRole { get; set; }
+    public IEnumerable<int>? ComponentRoles { get; set; }
 }

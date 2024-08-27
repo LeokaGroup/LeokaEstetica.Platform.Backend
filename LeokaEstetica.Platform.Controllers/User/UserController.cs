@@ -71,7 +71,7 @@ public class UserController : BaseController
         }
 
         result = await _userService.CreateUserAsync(userSignUpInput.Password, userSignUpInput.Email,
-            userSignUpInput.ComponentRole);
+            userSignUpInput.ComponentRoles);
 
         return result;
     }

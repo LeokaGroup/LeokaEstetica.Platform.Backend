@@ -29,7 +29,8 @@ public class CreateUserValidator : AbstractValidator<UserSignUpInput>
             .NotEmpty()
             .WithMessage(ValidationConsts.EMPTY_PASSWORD_ERROR);
 
-        RuleFor(x => x.ComponentRole).IsEnumName(typeof(ComponentRoleEnum))
+        RuleFor(x => x.ComponentRoles)
+            .Must(x => x is not null && x.Any())
             .WithMessage(ValidationConsts.NOT_VALID_COMPONENT_ROLE);
     }
 }

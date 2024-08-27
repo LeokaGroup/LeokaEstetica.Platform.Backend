@@ -123,7 +123,8 @@ internal sealed class UserService : IUserService
     #region Публичные методы.
 
     /// <inheritdoc />
-    public async Task<UserSignUpOutput> CreateUserAsync(string? password, string? email, string? componentRole)
+    public async Task<UserSignUpOutput> CreateUserAsync(string? password, string? email,
+        IEnumerable<int>? componentRoles)
     {
         var tran = await _pgContext.Database
             .BeginTransactionAsync(IsolationLevel.ReadCommitted);
@@ -142,7 +143,7 @@ internal sealed class UserService : IUserService
                 return result;
             }
 
-            var userModel = CreateSignUpUserModel(password, email, Enum.Parse<ComponentRoleEnum>(componentRole));
+            var userModel = CreateSignUpUserModel(password, email);
             
             var userId = await _userRepository.AddUserAsync(userModel);
             ValidateUserId(result, userId);
@@ -178,6 +179,9 @@ internal sealed class UserService : IUserService
             
             // Отправляем анкету на модерацию.
             await _resumeModerationRepository.AddResumeModerationAsync(profileInfoId);
+            
+            // Добавляем пользователю компонентные роли, что он выбрал при регистрации.
+            await _userRepository.AddComponentUserRolesAsync(addedUser.UserId, componentRoles);
             
             result = _mapper.Map<UserSignUpOutput>(addedUser);
             
@@ -929,17 +933,15 @@ internal sealed class UserService : IUserService
     /// </summary>
     /// <param name="password">Пароль./param>
     /// <param name="email">Почта.</param>
-    /// <param name="email">Почта.</param>
     /// <returns>Модель с данными.</returns>
-    private UserEntity CreateSignUpUserModel(string password, string email, ComponentRoleEnum componentRole)
+    private UserEntity CreateSignUpUserModel(string password, string email)
     {
         var model = new UserEntity
         {
             PasswordHash = HashHelper.HashPassword(password),
             Email = email,
             DateRegister = DateTime.UtcNow,
-            UserCode = Guid.NewGuid(),
-            ComponentRole = componentRole
+            UserCode = Guid.NewGuid()
         };
 
         return model;
