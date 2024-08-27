@@ -1,6 +1,7 @@
 using System.Text.RegularExpressions;
 using FluentValidation;
 using LeokaEstetica.Platform.Models.Dto.Input.User;
+using LeokaEstetica.Platform.Models.Enums;
 using LeokaEstetica.Platform.Services.Consts;
 
 namespace LeokaEstetica.Platform.Controllers.Validators.User;
@@ -10,6 +11,9 @@ namespace LeokaEstetica.Platform.Controllers.Validators.User;
 /// </summary>
 public class CreateUserValidator : AbstractValidator<UserSignUpInput>
 {
+    /// <summary>
+    /// Конструктор.
+    /// </summary>
     public CreateUserValidator()
     {
         RuleFor(p => p.Email)
@@ -24,5 +28,8 @@ public class CreateUserValidator : AbstractValidator<UserSignUpInput>
             .WithMessage(ValidationConsts.EMPTY_PASSWORD_ERROR)
             .NotEmpty()
             .WithMessage(ValidationConsts.EMPTY_PASSWORD_ERROR);
+
+        RuleFor(x => x.ComponentRole).IsEnumName(typeof(ComponentRoleEnum))
+            .WithMessage(ValidationConsts.NOT_VALID_COMPONENT_ROLE);
     }
 }

@@ -178,7 +178,7 @@ public class Enum : IEnum
     public Enum(ComponentRoleEnum value)
     {
         Type = ComponentRole;
-        Value = value.ToString();
+        Value = value.ToString().ToSnakeCase();
     }
 
     /// <inheritdoc/>

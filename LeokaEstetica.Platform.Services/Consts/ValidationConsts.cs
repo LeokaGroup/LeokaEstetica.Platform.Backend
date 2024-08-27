@@ -99,6 +99,11 @@ public static class ValidationConsts
     public const string NOT_VALID_EMAIL = "Пользователь с почтой {0} не существует в системе.";
 
     /// <summary>
+    /// Если передали невалидную компонентную роль.
+    /// </summary>
+    public const string NOT_VALID_COMPONENT_ROLE = "Если передали невалидную компонентную роль.";
+
+    /// <summary>
     /// Класс описывает константы валидации Google.
     /// </summary>
     public static class Google
