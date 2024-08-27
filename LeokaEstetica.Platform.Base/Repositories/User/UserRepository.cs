@@ -3,6 +3,7 @@ using Dapper;
 using LeokaEstetica.Platform.Base.Abstractions.Connection;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.Base;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
+using LeokaEstetica.Platform.Base.Extensions.StringExtensions;
 using LeokaEstetica.Platform.Base.Factors;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Exceptions;
@@ -768,7 +769,12 @@ internal sealed class UserRepository : BaseRepository, IUserRepository
                     "FROM roles.component_roles " +
                     "ORDER BY position";
 
-        var result = await connection.QueryAsync<ComponentRoleOutput>(query);
+        var result = (await connection.QueryAsync<ComponentRoleOutput>(query)).Select(x =>
+        {
+            x.ComponentRoleSysName = x.ComponentRoleSysName!.ToPascalCaseFromSnakeCase();
+
+            return x;
+        });
 
         return result;
     }

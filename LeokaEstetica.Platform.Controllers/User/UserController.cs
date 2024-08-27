@@ -329,6 +329,7 @@ public class UserController : BaseController
     /// Метод получает компонентные роли для выбора.
     /// </summary>
     /// <returns>Список компонентных ролей.</returns>
+    [AllowAnonymous]
     [HttpGet]
     [Route("component-roles")]
     [ProducesResponseType(200, Type = typeof(IEnumerable<ComponentRoleOutput>))]
