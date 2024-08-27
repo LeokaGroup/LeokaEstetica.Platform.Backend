@@ -1,3 +1,4 @@
+using LeokaEstetica.Platform.Models.Dto.Output.Roles;
 using LeokaEstetica.Platform.Models.Dto.Output.User;
 using LeokaEstetica.Platform.Models.Entities.Moderation;
 using LeokaEstetica.Platform.Models.Entities.Profile;
@@ -292,4 +293,10 @@ public interface IUserRepository
     /// <param name="userId">Id пользователя.</param>
     /// <param name="componentRoles">Список компонентных ролей пользователя.</param>
     Task AddComponentUserRolesAsync(long userId, IEnumerable<int>? componentRoles);
+
+    /// <summary>
+    /// Метод получает компонентные роли для выбора.
+    /// </summary>
+    /// <returns>Список компонентных ролей.</returns>
+    Task<IEnumerable<ComponentRoleOutput>> GetComponentRolesAsync();
 }
