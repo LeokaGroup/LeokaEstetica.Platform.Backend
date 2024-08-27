@@ -6,6 +6,7 @@ using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.Base.Factors;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Exceptions;
+using LeokaEstetica.Platform.Models.Dto.Output.Roles;
 using LeokaEstetica.Platform.Models.Dto.Output.User;
 using LeokaEstetica.Platform.Models.Entities.Moderation;
 using LeokaEstetica.Platform.Models.Entities.Profile;
@@ -752,6 +753,22 @@ internal sealed class UserRepository : BaseRepository, IUserRepository
                     "WHERE \"UserId\" = @userId";
 
         var result = await connection.QueryFirstOrDefaultAsync<Guid>(query, parameters);
+
+        return result;
+    }
+
+    /// <inheritdoc />
+    public async Task<IEnumerable<ComponentRoleOutput>> GetComponentRolesAsync()
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var query = "SELECT component_role_id, " +
+                    "component_role_name, " +
+                    "component_role_sys_name " +
+                    "FROM roles.component_roles " +
+                    "ORDER BY position";
+
+        var result = await connection.QueryAsync<ComponentRoleOutput>(query);
 
         return result;
     }
