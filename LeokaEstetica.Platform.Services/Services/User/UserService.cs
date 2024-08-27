@@ -25,8 +25,6 @@ using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.User;
 using LeokaEstetica.Platform.Models.Entities.User;
 using LeokaEstetica.Platform.Models.Enums;
-using LeokaEstetica.Platform.Notifications.Abstractions;
-using LeokaEstetica.Platform.Notifications.Consts;
 using LeokaEstetica.Platform.ProjectManagment.Documents.Abstractions;
 using LeokaEstetica.Platform.Redis.Abstractions.User;
 using LeokaEstetica.Platform.Services.Abstractions.User;
@@ -35,7 +33,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using Enum = System.Enum;
 using ValidationFailure = FluentValidation.Results.ValidationFailure;
 
 [assembly: InternalsVisibleTo("LeokaEstetica.Platform.Tests")]
@@ -63,7 +60,6 @@ internal sealed class UserService : IUserService
     private readonly IDiscordService _discordService;
     private readonly Lazy<IFileManagerService> _fileManagerService;
     private readonly IProjectManagmentRepository _projectManagmentRepository;
-    private readonly Lazy<IHubNotificationService> _hubNotificationService;
 
     /// <summary>
     /// Конструктор.
@@ -82,7 +78,6 @@ internal sealed class UserService : IUserService
     /// <param name="discordService">Сервис дискорда.</param>
     /// <param name="fileManagerService">Сервис менеджера файлов.</param>
     /// <param name="projectManagmentRepository">Репозиторий модуля УП.</param>
-    /// <param name="hubNotificationService">Сервис уведомлений хабов.</param>
     public UserService(ILogger<UserService> logger, 
         IUserRepository userRepository, 
         IMapper mapper, 
@@ -98,8 +93,7 @@ internal sealed class UserService : IUserService
         IGlobalConfigRepository globalConfigRepository,
         IDiscordService discordService,
         Lazy<IFileManagerService> fileManagerService,
-        IProjectManagmentRepository projectManagmentRepository,
-         Lazy<IHubNotificationService> hubNotificationService)
+        IProjectManagmentRepository projectManagmentRepository)
     {
         _logger = logger;
         _userRepository = userRepository;
@@ -117,7 +111,6 @@ internal sealed class UserService : IUserService
         _discordService = discordService;
         _fileManagerService = fileManagerService;
         _projectManagmentRepository = projectManagmentRepository;
-        _hubNotificationService = hubNotificationService;
     }
 
     #region Публичные методы.
@@ -192,20 +185,11 @@ internal sealed class UserService : IUserService
 
             await tran.CommitAsync();
 
-
-            var userCode = await _userRepository.GetUserCodeByUserIdAsync(userId);
-
-            await _hubNotificationService.Value.SendNotificationAsync("Все хорошо",
-                "Учётная запись успешно дов архив.",
-                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, "SendNotificationSuccessCreateUser",
-                userCode, UserConnectionModuleEnum.Main);
-
             return result;
         }
 
         catch (Exception ex)
         {
-            await tran.RollbackAsync();
             _logger.LogError(ex, ex.Message);
             throw;
         }

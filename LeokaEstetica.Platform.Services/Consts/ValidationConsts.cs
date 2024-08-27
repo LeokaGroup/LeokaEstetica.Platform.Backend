@@ -101,7 +101,7 @@ public static class ValidationConsts
     /// <summary>
     /// Если передали невалидную компонентную роль.
     /// </summary>
-    public const string NOT_VALID_COMPONENT_ROLE = "Если передали невалидную компонентную роль.";
+    public const string NOT_VALID_COMPONENT_ROLE = "Заполните минимум одну роль.";
 
     /// <summary>
     /// Класс описывает константы валидации Google.

@@ -797,7 +797,7 @@ internal sealed class UserRepository : BaseRepository, IUserRepository
         }
 
         var query = "INSERT INTO roles.component_user_roles (component_role_id, user_id) " +
-                    "VALUE (@componentRoles, @userId)";
+                    "VALUES (@componentRoles, @userId)";
 
         await connection.ExecuteAsync(query, parameters);
     }
