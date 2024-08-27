@@ -756,6 +756,29 @@ internal sealed class UserRepository : BaseRepository, IUserRepository
         return result;
     }
 
+    /// <inheritdoc />
+    public async Task AddComponentUserRolesAsync(long userId, IEnumerable<int>? componentRoles)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new List<DynamicParameters>();
+        var compRoles = componentRoles.AsList();
+
+        foreach (var cr in compRoles)
+        {
+            var tempParameters = new DynamicParameters();
+            tempParameters.Add("@userId", userId);
+            tempParameters.Add("@componentRoles", cr);
+            
+            parameters.Add(tempParameters);
+        }
+
+        var query = "INSERT INTO roles.component_user_roles (component_role_id, user_id) " +
+                    "VALUE (@componentRoles, @userId)";
+
+        await connection.ExecuteAsync(query, parameters);
+    }
+
     #endregion
 
     #region Приватные методы.

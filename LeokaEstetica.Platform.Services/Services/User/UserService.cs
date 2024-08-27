@@ -35,6 +35,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using Enum = System.Enum;
 using ValidationFailure = FluentValidation.Results.ValidationFailure;
 
 [assembly: InternalsVisibleTo("LeokaEstetica.Platform.Tests")]
@@ -121,13 +122,9 @@ internal sealed class UserService : IUserService
 
     #region Публичные методы.
 
-    /// <summary>
-    /// Метод создает нового пользователя.
-    /// </summary>
-    /// <param name="password">Пароль. Он не хранится в БД. Хранится только его хэш.</param>
-    /// <param name="email">Почта пользователя.</param>
-    /// <returns>Данные пользователя.</returns>
-    public async Task<UserSignUpOutput> CreateUserAsync(string password, string email)
+    /// <inheritdoc />
+    public async Task<UserSignUpOutput> CreateUserAsync(string? password, string? email,
+        IEnumerable<int>? componentRoles)
     {
         var tran = await _pgContext.Database
             .BeginTransactionAsync(IsolationLevel.ReadCommitted);
@@ -182,6 +179,9 @@ internal sealed class UserService : IUserService
             
             // Отправляем анкету на модерацию.
             await _resumeModerationRepository.AddResumeModerationAsync(profileInfoId);
+            
+            // Добавляем пользователю компонентные роли, что он выбрал при регистрации.
+            await _userRepository.AddComponentUserRolesAsync(addedUser.UserId, componentRoles);
             
             result = _mapper.Map<UserSignUpOutput>(addedUser);
             

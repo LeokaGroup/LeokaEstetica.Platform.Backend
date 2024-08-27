@@ -3,6 +3,7 @@ using LeokaEstetica.Platform.Models.Entities.Moderation;
 using LeokaEstetica.Platform.Models.Entities.Profile;
 using LeokaEstetica.Platform.Models.Entities.Ticket;
 using LeokaEstetica.Platform.Models.Entities.User;
+using LeokaEstetica.Platform.Models.Enums;
 
 namespace LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 
@@ -284,4 +285,11 @@ public interface IUserRepository
     /// <param name="userId">Id пользователя.</param>
     /// <returns>Код пользователя.</returns>
     Task<Guid> GetUserCodeByUserIdAsync(long userId);
+
+    /// <summary>
+    /// Метод добавляет пользователю компонентные роли.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <param name="componentRoles">Список компонентных ролей пользователя.</param>
+    Task AddComponentUserRolesAsync(long userId, IEnumerable<int>? componentRoles);
 }
