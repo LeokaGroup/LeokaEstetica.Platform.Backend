@@ -1,0 +1,1 @@
+﻿CREATE TYPE roles.component_role_enum AS ENUM ('job_seeker', 'owner', 'recruitment_or_outsourcing_agency');
