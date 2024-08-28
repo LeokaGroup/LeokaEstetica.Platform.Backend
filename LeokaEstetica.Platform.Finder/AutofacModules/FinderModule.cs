@@ -44,16 +44,6 @@ public class FinderModule : Module
             .As<IResumeFinderService>()
             .InstancePerLifetimeScope();
         
-        // Сервис пагинации вакансий.
-        builder
-            .RegisterType<VacancyPaginationService>()
-            .Named<IVacancyPaginationService>("VacancyPaginationService")
-            .InstancePerLifetimeScope();
-        builder
-            .RegisterType<VacancyPaginationService>()
-            .As<IVacancyPaginationService>()
-            .InstancePerLifetimeScope();
-        
         builder
             .RegisterType<ProjectPaginationService>()
             .Named<IProjectPaginationService>("ProjectPaginationService")
