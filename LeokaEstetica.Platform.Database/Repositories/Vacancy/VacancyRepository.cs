@@ -468,7 +468,7 @@ internal sealed class VacancyRepository : BaseRepository, IVacancyRepository
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<CatalogVacancyOutput>> GetCatalogVacanciesAsync(VacancyCatalogInput VacancyCatalogInput)
+    public async Task<IEnumerable<CatalogVacancyOutput>> GetCatalogVacanciesAsync(VacancyCatalogInput vacancyCatalogInput)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
 
@@ -486,8 +486,8 @@ internal sealed class VacancyRepository : BaseRepository, IVacancyRepository
                     "uv.\"DateCreated\", " +
                     "uv.\"Employment\", ";
 
-        query += Enum.Parse<FilterPayTypeEnum>(VacancyCatalogInput.Filters.Pay ?? string.Empty) == FilterPayTypeEnum.NotPay
-                 || VacancyCatalogInput.Filters.Employments?.Intersect(new List<FilterEmploymentTypeEnum>
+        query += Enum.Parse<FilterPayTypeEnum>(vacancyCatalogInput.Filters.Pay ?? string.Empty) == FilterPayTypeEnum.NotPay
+                 || vacancyCatalogInput.Filters.Employments?.Intersect(new List<FilterEmploymentTypeEnum>
                  {
                      FilterEmploymentTypeEnum.Full,
                      FilterEmploymentTypeEnum.Partial,
@@ -507,21 +507,21 @@ internal sealed class VacancyRepository : BaseRepository, IVacancyRepository
                  "AND NOT uv.\"VacancyId\" = ANY (SELECT \"VacancyId\" FROM cte_archived_vacancies)";
 
         // Если фильтр занятости = полная занятость.
-        if ((VacancyCatalogInput.Filters.Employments ?? new List<FilterEmploymentTypeEnum>()).Contains(FilterEmploymentTypeEnum.Full))
+        if ((vacancyCatalogInput.Filters.Employments ?? new List<FilterEmploymentTypeEnum>()).Contains(FilterEmploymentTypeEnum.Full))
         {
             parameters.Add("@employment", FilterEmploymentTypeEnum.Full.GetEnumDescription());
             query += " AND \"Employment\" = @employment";
         }
         
         // Если фильтр занятости = частичная занятость.
-        if ((VacancyCatalogInput.Filters.Employments ?? new List<FilterEmploymentTypeEnum>()).Contains(FilterEmploymentTypeEnum.Partial))
+        if ((vacancyCatalogInput.Filters.Employments ?? new List<FilterEmploymentTypeEnum>()).Contains(FilterEmploymentTypeEnum.Partial))
         {
             parameters.Add("@employment", FilterEmploymentTypeEnum.Partial.GetEnumDescription());
             query += " AND \"Employment\" = @employment";
         }
         
         // Если фильтр занятости = проектная занятость.
-        if ((VacancyCatalogInput.Filters.Employments ?? new List<FilterEmploymentTypeEnum>()).Contains(FilterEmploymentTypeEnum
+        if ((vacancyCatalogInput.Filters.Employments ?? new List<FilterEmploymentTypeEnum>()).Contains(FilterEmploymentTypeEnum
                 .ProjectWork))
         {
             parameters.Add("@employment", FilterEmploymentTypeEnum.ProjectWork.GetEnumDescription());
@@ -529,7 +529,7 @@ internal sealed class VacancyRepository : BaseRepository, IVacancyRepository
         }
         
         // Если фильтр опыта работы более 6 лет.
-        if (Enum.Parse<FilterExperienceTypeEnum>(VacancyCatalogInput.Filters.Experience ?? string.Empty) ==
+        if (Enum.Parse<FilterExperienceTypeEnum>(vacancyCatalogInput.Filters.Experience ?? string.Empty) ==
             FilterExperienceTypeEnum.ManySix)
         {
             parameters.Add("@workExperience", FilterExperienceTypeEnum.ManySix.GetEnumDescription());
@@ -537,7 +537,7 @@ internal sealed class VacancyRepository : BaseRepository, IVacancyRepository
         }
         
         // Если фильтр опыта работы = нет опыта.
-        if (Enum.Parse<FilterExperienceTypeEnum>(VacancyCatalogInput.Filters.Experience ?? string.Empty) ==
+        if (Enum.Parse<FilterExperienceTypeEnum>(vacancyCatalogInput.Filters.Experience ?? string.Empty) ==
             FilterExperienceTypeEnum.NotExperience)
         {
             parameters.Add("@workExperience", FilterExperienceTypeEnum.NotExperience.GetEnumDescription());
@@ -545,7 +545,7 @@ internal sealed class VacancyRepository : BaseRepository, IVacancyRepository
         }
         
         // Если фильтр имеет тип оплаты = от 1 года до 3 лет.
-        if (Enum.Parse<FilterExperienceTypeEnum>(VacancyCatalogInput.Filters.Experience ?? string.Empty) ==
+        if (Enum.Parse<FilterExperienceTypeEnum>(vacancyCatalogInput.Filters.Experience ?? string.Empty) ==
             FilterExperienceTypeEnum.OneThree)
         {
             parameters.Add("@workExperience", FilterExperienceTypeEnum.OneThree.GetEnumDescription());
@@ -553,7 +553,7 @@ internal sealed class VacancyRepository : BaseRepository, IVacancyRepository
         }
         
         // Если фильтр опыта работы = от 3 до 6 лет.
-        if (Enum.Parse<FilterExperienceTypeEnum>(VacancyCatalogInput.Filters.Experience ?? string.Empty) ==
+        if (Enum.Parse<FilterExperienceTypeEnum>(vacancyCatalogInput.Filters.Experience ?? string.Empty) ==
             FilterExperienceTypeEnum.ThreeSix)
         {
             parameters.Add("@workExperience", FilterExperienceTypeEnum.ThreeSix.GetEnumDescription());
@@ -561,7 +561,7 @@ internal sealed class VacancyRepository : BaseRepository, IVacancyRepository
         }
         
         // Если фильтр опыта работы = не имеет значения.
-        if (Enum.Parse<FilterExperienceTypeEnum>(VacancyCatalogInput.Filters.Experience ?? string.Empty) ==
+        if (Enum.Parse<FilterExperienceTypeEnum>(vacancyCatalogInput.Filters.Experience ?? string.Empty) ==
             FilterExperienceTypeEnum.UnknownExperience)
         {
             parameters.Add("@workExperience", FilterExperienceTypeEnum.UnknownExperience.GetEnumDescription());
@@ -569,28 +569,28 @@ internal sealed class VacancyRepository : BaseRepository, IVacancyRepository
         }
         
         // Если фильтр имеет тип оплаты = без оплаты.
-        if (Enum.Parse<FilterPayTypeEnum>(VacancyCatalogInput.Filters.Pay ?? string.Empty) == FilterPayTypeEnum.NotPay)
+        if (Enum.Parse<FilterPayTypeEnum>(vacancyCatalogInput.Filters.Pay ?? string.Empty) == FilterPayTypeEnum.NotPay)
         {
             parameters.Add("@payment", FilterPayTypeEnum.NotPay.GetEnumDescription());
             query += " AND \"Payment\" = @payment";
         }
         
         // Если фильтр имеет тип оплаты = есть оплата.
-        if (Enum.Parse<FilterPayTypeEnum>(VacancyCatalogInput.Filters.Pay ?? string.Empty) == FilterPayTypeEnum.Pay)
+        if (Enum.Parse<FilterPayTypeEnum>(vacancyCatalogInput.Filters.Pay ?? string.Empty) == FilterPayTypeEnum.Pay)
         {
             query += " AND \"Payment\" <> 'Без оплаты' " +
                      "AND REPLACE(\"Payment\", ' ', '')::NUMERIC(12, 2) > 0";
         }
         
         // Если фильтр не имеет тип оплаты (не имеет значения), то передаем следующему по цепочке.
-        if (Enum.Parse<FilterPayTypeEnum>(VacancyCatalogInput.Filters.Pay ?? string.Empty) == FilterPayTypeEnum.UnknownPay)
+        if (Enum.Parse<FilterPayTypeEnum>(vacancyCatalogInput.Filters.Pay ?? string.Empty) == FilterPayTypeEnum.UnknownPay)
         {
             parameters.Add("@payment", FilterPayTypeEnum.UnknownPay.GetEnumDescription());
             query += " AND \"Payment\" = @payment";
         }
 
         // Если фильтр по дате.
-        if (!isNeedOrder && Enum.Parse<FilterSalaryTypeEnum>(VacancyCatalogInput.Filters.Salary ?? string.Empty) ==
+        if (!isNeedOrder && Enum.Parse<FilterSalaryTypeEnum>(vacancyCatalogInput.Filters.Salary ?? string.Empty) ==
             FilterSalaryTypeEnum.Date)
         {
             isNeedOrder = true;
@@ -598,7 +598,7 @@ internal sealed class VacancyRepository : BaseRepository, IVacancyRepository
         }
         
         // Если фильтр по возрастанию зарплаты.
-        if (!isNeedOrder && Enum.Parse<FilterSalaryTypeEnum>(VacancyCatalogInput.Filters.Salary ?? string.Empty) ==
+        if (!isNeedOrder && Enum.Parse<FilterSalaryTypeEnum>(vacancyCatalogInput.Filters.Salary ?? string.Empty) ==
             FilterSalaryTypeEnum.AscSalary)
         {
             isNeedOrder = true;
@@ -609,7 +609,7 @@ internal sealed class VacancyRepository : BaseRepository, IVacancyRepository
         }
         
         // Если фильтр по возрастанию зарплаты.
-        if (!isNeedOrder && Enum.Parse<FilterSalaryTypeEnum>(VacancyCatalogInput.Filters.Salary ?? string.Empty) ==
+        if (!isNeedOrder && Enum.Parse<FilterSalaryTypeEnum>(vacancyCatalogInput.Filters.Salary ?? string.Empty) ==
             FilterSalaryTypeEnum.DescSalary)
         {
             isNeedOrder = true;
@@ -619,16 +619,16 @@ internal sealed class VacancyRepository : BaseRepository, IVacancyRepository
                      "ORDER BY REPLACE(\"Payment\", ' ', '')::NUMERIC(12, 2) DESC";
 		}
 
-		if (VacancyCatalogInput.LastId.HasValue)
+		if (vacancyCatalogInput.LastId.HasValue)
 		{
-			parameters.Add("@lastId", VacancyCatalogInput.LastId);
+			parameters.Add("@lastId", vacancyCatalogInput.LastId);
 
 			// Применяем пагинацию.
-			query += " AND cv.\"VacancyId\">@lastId ";
+			query += " AND cv.\"VacancyId\" > @lastId ";
 		}
 
 		// TODO: Передавать с фронта будем кол-во строк, при настройке пагинации пользователем.
-		parameters.Add("@countRows", VacancyCatalogInput.PaginationRows);
+		parameters.Add("@countRows", 20);
 
 		query += "LIMIT @countRows";
 

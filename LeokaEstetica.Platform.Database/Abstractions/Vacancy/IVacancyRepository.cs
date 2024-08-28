@@ -136,5 +136,5 @@ public interface IVacancyRepository
 	/// </summary>
 	/// <param name="VacancyCatalogInput">Фильтры с пагинацией.</param>
 	/// <returns>Каталог вакансий после фильтрации и пагинации.</returns>
-	Task<IEnumerable<CatalogVacancyOutput>> GetCatalogVacanciesAsync(VacancyCatalogInput VacancyCatalogInput);
+	Task<IEnumerable<CatalogVacancyOutput>> GetCatalogVacanciesAsync(VacancyCatalogInput vacancyCatalogInput);
 }

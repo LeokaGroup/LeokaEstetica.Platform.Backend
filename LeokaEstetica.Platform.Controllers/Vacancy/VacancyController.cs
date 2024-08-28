@@ -25,7 +25,6 @@ public class VacancyController : BaseController
     private readonly IMapper _mapper;
     private readonly IValidationExcludeErrorsService _validationExcludeErrorsService;
     private readonly IVacancyFinderService _vacancyFinderService;
-    private readonly IVacancyPaginationService _vacancyPaginationService;
 
     /// <summary>
     /// Конструктор.
@@ -38,14 +37,12 @@ public class VacancyController : BaseController
     public VacancyController(IVacancyService vacancyService,
         IMapper mapper,
         IValidationExcludeErrorsService validationExcludeErrorsService, 
-        IVacancyFinderService vacancyFinderService, 
-        IVacancyPaginationService vacancyPaginationService)
+        IVacancyFinderService vacancyFinderService)
     {
         _vacancyService = vacancyService;
         _mapper = mapper;
         _validationExcludeErrorsService = validationExcludeErrorsService;
         _vacancyFinderService = vacancyFinderService;
-        _vacancyPaginationService = vacancyPaginationService;
     }
 
     /// <summary>
@@ -60,7 +57,7 @@ public class VacancyController : BaseController
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
     public async Task<CatalogVacancyResultOutput> CatalogVacanciesAsync(
-        [FromQuery] VacancyCatalogInput vacancyCatalogInput)
+        [FromBody] VacancyCatalogInput vacancyCatalogInput)
     {
 		var result = await _vacancyService.GetCatalogVacanciesAsync(vacancyCatalogInput);
 

@@ -23,7 +23,6 @@ namespace LeokaEstetica.Platform.Models.Dto.Input.Vacancy
 		/// Кол-во записей в выборке.
 		/// По дефолту 20.
 		/// </summary>
-		[DefaultValue(20)]
 		public short PaginationRows { get; set; }
 	}
 }
