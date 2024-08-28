@@ -212,46 +212,6 @@ internal sealed class VacancyService : IVacancyService
     }
 
     /// <summary>
-    /// Метод получает список вакансий для каталога.
-    /// </summary>
-    /// <returns>Список вакансий.</returns>
-    public async Task<CatalogVacancyResultOutput> CatalogVacanciesAsync()
-    {
-        try
-        {
-            var result = new CatalogVacancyResultOutput
-            {
-                CatalogVacancies = await _vacancyRepository.CatalogVacanciesAsync()
-            };
-
-            if (!result.CatalogVacancies.Any())
-            {
-                return result;
-            }
-
-            await DeleteIfVacancyRemarksAsync(result.CatalogVacancies.AsList());
-
-            // TODO: Выпилить, если у нас не будет выделения цветами тарифов.
-            // Выбираем пользователей, у которых есть подписка выше бизнеса. Только их выделяем цветом.
-            // result.CatalogVacancies = await _fillColorVacanciesService.SetColorBusinessVacancies(catalogVacancies,
-            //     _subscriptionRepository, _fareRuleRepository);
-            
-            FormatCatalogVacancies(result.CatalogVacancies.AsList());
-            
-            // Проставляем вакансиям теги, в зависимости от подписки владельца вакансии.
-            result.CatalogVacancies = await SetVacanciesTags(result.CatalogVacancies.AsList());
-
-            return result;
-        }
-
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, ex.Message);
-            throw;
-        }
-    }
-
-    /// <summary>
     /// Метод получает названия полей для таблицы вакансий проектов пользователя.
     /// Все названия столбцов этой таблицы одинаковые у всех пользователей.
     /// </summary>
@@ -409,12 +369,12 @@ internal sealed class VacancyService : IVacancyService
         }
     }
 
-    /// <summary>
-    /// Метод фильтрации вакансий в зависимости от параметров фильтров.
-    /// </summary>
-    /// <param name="filters">Фильтры.</param>
-    /// <returns>Список вакансий после фильтрации.</returns>
-    public async Task<CatalogVacancyResultOutput> FilterVacanciesAsync(FilterVacancyInput filters)
+	/// <summary>
+	/// Метод получает каталог вакансий с учетом фильтров и пагинации
+	/// </summary>
+	/// <param name="vacancyCatalogInput">Фильтры с пагинацией.</param>
+	/// <returns>Каталог вакансий после фильтрации и пагинации.</returns>
+	public async Task<CatalogVacancyResultOutput> GetCatalogVacanciesAsync(VacancyCatalogInput vacancyCatalogInput)
     {
         try
         {
@@ -423,10 +383,10 @@ internal sealed class VacancyService : IVacancyService
                 CatalogVacancies = new List<CatalogVacancyOutput>()
             };
 
-            // Разбиваем строку занятости, так как там может приходить несколько значений в строке.
-            filters.Employments = CreateEmploymentsBuilder.CreateEmploymentsResult(filters.EmploymentsValues);
+			// Разбиваем строку занятости, так как там может приходить несколько значений в строке.
+			vacancyCatalogInput.Filters.Employments = CreateEmploymentsBuilder.CreateEmploymentsResult(vacancyCatalogInput.Filters.EmploymentsValues);
 
-            result.CatalogVacancies = await _vacancyRepository.FilterVacanciesAsync(filters);
+            result.CatalogVacancies = await _vacancyRepository.GetCatalogVacanciesAsync(vacancyCatalogInput);
 
             return result;
         }

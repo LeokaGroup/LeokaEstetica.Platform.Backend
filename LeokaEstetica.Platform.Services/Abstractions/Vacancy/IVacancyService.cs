@@ -33,12 +33,6 @@ public interface IVacancyService
     Task<UserVacancyEntity> UpdateVacancyAsync(VacancyInput vacancyInput);
 
     /// <summary>
-    /// Метод получает список вакансий для каталога.
-    /// </summary>
-    /// <returns>Список вакансий.</returns>
-    Task<CatalogVacancyResultOutput> CatalogVacanciesAsync();
-
-    /// <summary>
     /// Метод получает названия полей для таблицы вакансий проектов пользователя.
     /// Все названия столбцов этой таблицы одинаковые у всех пользователей.
     /// </summary>
@@ -54,12 +48,12 @@ public interface IVacancyService
     /// <returns>Данные вакансии.</returns>
     Task<VacancyOutput> GetVacancyByVacancyIdAsync(long vacancyId, ModeEnum mode, string account);
 
-    /// <summary>
-    /// Метод фильтрации вакансий в зависимости от параметров фильтров.
-    /// </summary>
-    /// <param name="filters">Фильтры.</param>
-    /// <returns>Список вакансий после фильтрации.</returns>
-    Task<CatalogVacancyResultOutput> FilterVacanciesAsync(FilterVacancyInput filters);
+	/// <summary>
+	/// Метод получает каталог вакансий после фильтрации и пагинации.
+	/// </summary>
+	/// <param name="VacancyCatalogInput">Фильтры с пагинацией.</param>
+	/// <returns>Каталог вакансий после фильтрации и пагинации.</returns>
+	Task<CatalogVacancyResultOutput> GetCatalogVacanciesAsync(VacancyCatalogInput VacancyCatalogInput);
 
     /// <summary>
     /// Метод удаляет вакансию.

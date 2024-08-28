@@ -59,11 +59,12 @@ public class VacancyController : BaseController
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<CatalogVacancyResultOutput> CatalogVacanciesAsync()
+    public async Task<CatalogVacancyResultOutput> CatalogVacanciesAsync(
+        [FromQuery] VacancyCatalogInput vacancyCatalogInput)
     {
-        var result = await _vacancyService.CatalogVacanciesAsync();
+		var result = await _vacancyService.GetCatalogVacanciesAsync(vacancyCatalogInput);
 
-        return result;
+		return result;
     }
 
     /// <summary>
@@ -197,30 +198,7 @@ public class VacancyController : BaseController
 
         return result;
     }
-
-    /// <summary>
-    /// TODO: Это должно находится в контроллере поиска. Перенести.
-    /// Метод фильтрации вакансий в зависимости от параметров фильтров.
-    /// </summary>
-    /// <param name="filterVacancyInput">Входная модель.</param>
-    /// <returns>Список вакансий после фильтрации.</returns>
-    [HttpGet]
-    [Route("filter")]
-    [ProducesResponseType(200, Type = typeof(CatalogVacancyResultOutput))]
-    [ProducesResponseType(400)]
-    [ProducesResponseType(403)]
-    [ProducesResponseType(500)]
-    [ProducesResponseType(404)]
-    public async Task<CatalogVacancyResultOutput> FilterVacanciesAsync(
-        [FromQuery] FilterVacancyInput filterVacancyInput)
-    {
-        var result = await _vacancyService.FilterVacanciesAsync(filterVacancyInput);
-
-        return result;
-    }
-    
-    /// <summary>
-    /// TODO: Это должно находится в контроллере поиска. Перенести.
+  
     /// Метод находит вакансии по поисковому запросу.
     /// </summary>
     /// <param name="searchText">Строка поиска.</param>
@@ -244,26 +222,7 @@ public class VacancyController : BaseController
         return result;
     }
 
-    /// <summary>
-    /// Метод пагинации вакансий.
-    /// </summary>
-    /// <param name="page">Номер страницы.</param>
-    /// <returns>Список вакансий.</returns>
-    [HttpGet]
-    [Route("pagination/{page}")]
-    [ProducesResponseType(200, Type = typeof(PaginationVacancyOutput))]
-    [ProducesResponseType(400)]
-    [ProducesResponseType(403)]
-    [ProducesResponseType(500)]
-    [ProducesResponseType(404)]
-    public async Task<PaginationVacancyOutput> GetVacanciesPaginationAsync([FromRoute] int page)
-    {
-        var result = await _vacancyPaginationService.GetVacanciesPaginationAsync(page);
 
-        return result;
-    }
-
-    /// <summary>
     /// Метод удаляет вакансию.
     /// </summary>
     /// <param name="vacancyId">Id вакансии.</param>
