@@ -3,7 +3,7 @@ using LeokaEstetica.Platform.Models.Extensions;
 namespace LeokaEstetica.Platform.Models.Enums;
 
 /// <summary>
-/// Класс для преставления типа SQL Enums в Postgres.
+/// Класс для маппинга типов SQL Enums в Postgres.
 /// </summary>
 public class Enum : IEnum
 {
@@ -61,6 +61,16 @@ public class Enum : IEnum
     /// Тип Enum для компонентной роли.
     /// </summary>
     public const string ComponentRole = "component_role_enum";
+
+    /// <summary>
+    /// Тип Enum для типа валюты.
+    /// </summary>
+    public const string CurrencyType = "currency_enum";
+    
+    /// <summary>
+    /// Тип Enum для типа заказа.
+    /// </summary>
+    public const string OrderType = "order_type_enum";
 
     /// <summary>
     /// Конструктор по дефолту.
@@ -180,10 +190,42 @@ public class Enum : IEnum
         Type = ComponentRole;
         Value = value.ToString().ToSnakeCase();
     }
+    
+    /// <summary>
+    /// Конструктор.
+    /// </summary>
+    /// <param name="value">Значение типа.</param>
+    public Enum(CurrencyTypeEnum value)
+    {
+        Type = CurrencyType;
+        Value = value.ToString();
+    }
+    
+    /// <summary>
+    /// Конструктор.
+    /// </summary>
+    /// <param name="value">Значение типа.</param>
+    public Enum(OrderTypeEnum value)
+    {
+        Type = OrderType;
+        Value = value.ToString();
+    }
 
     /// <inheritdoc/>
     public string Value { get; set; }
 
     /// <inheritdoc/>
     public string Type { get; }
+    
+    /// <summary>
+    /// Получает новое значение типа TEnum из строки.
+    /// </summary>
+    /// <typeparam name="TEnum"> Тип данных. </typeparam>
+    /// <param name="stringValue"> Строковое предстваление данных. </param>
+    /// <returns> Значение TEnum. </returns>
+    public static TEnum FromString<TEnum>(string stringValue)
+        where TEnum : struct
+    {
+        return System.Enum.Parse<TEnum>(stringValue.ToPascalCase());
+    }
 }

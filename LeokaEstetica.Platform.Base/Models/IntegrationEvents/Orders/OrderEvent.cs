@@ -1,4 +1,5 @@
 using LeokaEstetica.Platform.Base.Models.Dto;
+using LeokaEstetica.Platform.Models.Enums;
 
 namespace LeokaEstetica.Platform.Base.Models.IntegrationEvents.Orders;
 
@@ -45,5 +46,5 @@ public class OrderEvent : BaseEventMessage
     /// <summary>
     /// Валюта.
     /// </summary>
-    public string Currency { get; set; }
+    public CurrencyTypeEnum Currency { get; set; }
 }

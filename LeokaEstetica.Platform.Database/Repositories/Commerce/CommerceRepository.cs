@@ -1,32 +1,35 @@
-using LeokaEstetica.Platform.Base.Factors;
+using Dapper;
+using LeokaEstetica.Platform.Base.Abstractions.Connection;
+using LeokaEstetica.Platform.Base.Abstractions.Repositories.Base;
 using LeokaEstetica.Platform.Base.Models.Input.Processing;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Database.Abstractions.Commerce;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce.PayMaster;
+using LeokaEstetica.Platform.Models.Dto.Output.Orders;
 using LeokaEstetica.Platform.Models.Entities.Commerce;
+using LeokaEstetica.Platform.Models.Enums;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
+using Enum = LeokaEstetica.Platform.Models.Enums.Enum;
 
 namespace LeokaEstetica.Platform.Database.Repositories.Commerce;
 
 /// <summary>
 /// Класс реализует методы репозитория коммерции.
 /// </summary>
-internal sealed class CommerceRepository : ICommerceRepository
+internal sealed class CommerceRepository : BaseRepository, ICommerceRepository
 {
     private readonly PgContext _pgContext;
-    private readonly IConfiguration _configuration;
 
     /// <summary>
     /// Конструктор.
     /// </summary>
     /// <param name="pgContext">Датаконтекст.</param>
+    /// <param name="connectionProvider">Провайдер к БД.</param>
     public CommerceRepository(PgContext pgContext,
-        IConfiguration configuration)
+        IConnectionProvider connectionProvider) : base(connectionProvider)
     {
         _pgContext = pgContext;
-        _configuration = configuration;
     }
 
     #region Публичные методы.
@@ -36,25 +39,74 @@ internal sealed class CommerceRepository : ICommerceRepository
     /// </summary>
     /// <param name="createPaymentOrderInput">Входная модель.</param>
     /// <returns>Данные заказа.</returns>
-    public async Task<OrderEntity> CreateOrderAsync(CreatePaymentOrderInput createPaymentOrderInput)
+    public async Task<OrderOutput> CreateOrderAsync(CreatePaymentOrderInput createPaymentOrderInput)
     {
-        var order = new OrderEntity
-        {
-            UserId = createPaymentOrderInput.UserId,
-            PaymentId = createPaymentOrderInput.PaymentId,
-            OrderName = createPaymentOrderInput.Name,
-            OrderDetails = createPaymentOrderInput.Description,
-            Price = createPaymentOrderInput.Price,
-            Currency = createPaymentOrderInput.Currency,
-            DateCreated = createPaymentOrderInput.Created,
-            PaymentMonth = createPaymentOrderInput.PaymentMonth,
-            StatusName = createPaymentOrderInput.PaymentStatusName,
-            StatusSysName = createPaymentOrderInput.PaymentStatusSysName
-        };
-        await _pgContext.Orders.AddAsync(order);
-        await _pgContext.SaveChangesAsync();
+        using var connection = await ConnectionProvider.GetConnectionAsync();
 
-        return order;
+        var parameters = new DynamicParameters();
+        parameters.Add("@createdBy", createPaymentOrderInput.UserId);
+        parameters.Add("@orderName", createPaymentOrderInput.Name);
+        parameters.Add("@orderDetails", createPaymentOrderInput.Description);
+        parameters.Add("@paymentId", createPaymentOrderInput.PaymentId);
+        parameters.Add("@statusName", createPaymentOrderInput.PaymentStatusName);
+        parameters.Add("@statusSysName", createPaymentOrderInput.PaymentStatusSysName);
+        parameters.Add("@currency", new Enum(CurrencyTypeEnum.RUB));
+        parameters.Add("@price", createPaymentOrderInput.Price);
+        parameters.Add("@paymentMonth", createPaymentOrderInput.Price);
+        parameters.Add("@totalPrice", createPaymentOrderInput.Price);
+        
+        //TODO: Передавать в этот метод тип заказа, не хардкодить.
+        parameters.Add("@orderType", new Enum(OrderTypeEnum.FareRule));
+
+        var query = "INSERT INTO commerce.orders (" +
+                    "order_name, " +
+                    "order_details, " +
+                    "created_by, " +
+                    "status_name, " +
+                    "status_sys_name, " +
+                    "price, " +
+                    "total_price, " +
+                    "currency, " +
+                    "payment_month, " +
+                    "payment_id, " +
+                    "order_type) " +
+                    "VALUES (" +
+                    "@orderName, " +
+                    "@orderDetails, " +
+                    "@createdBy, " +
+                    "@statusName, " +
+                    "@statusSysName, " +
+                    "@price, " +
+                    "@totalPrice, " +
+                    "@currency, " +
+                    "@paymentMonth, " +
+                    "@paymentId, " +
+                    "@orderType) " +
+                    "RETURNING order_id";
+
+        var orderId = await connection.QuerySingleOrDefaultAsync<long>(query, parameters);
+
+        var orderParameters = new DynamicParameters();
+        orderParameters.Add("@orderId", orderId);
+
+        var orderQuery = "SELECT order_id, " +
+                         "order_name, " +
+                         "order_details, " +
+                         "created_by, " +
+                         "status_name, " +
+                         "status_sys_name, " +
+                         "price, " +
+                         "total_price, " +
+                         "currency, " +
+                         "payment_month, " +
+                         "payment_id, " +
+                         "order_type " +
+                         "FROM commerce.orders " +
+                         "WHERE order_id = @orderId";
+        
+        var result = await connection.QuerySingleOrDefaultAsync<OrderOutput>(orderQuery, orderParameters);
+
+        return result;
     }
 
     /// <summary>
@@ -84,44 +136,37 @@ internal sealed class CommerceRepository : ICommerceRepository
     public async Task<bool> UpdateOrderStatusAsync(string paymentStatusSysName, string paymentStatusName,
         string paymentId, long orderId)
     {
-        OrderEntity updateOrder;
-        var isNew = false;
-        PgContext pgContext = null;
+        using var connection = await ConnectionProvider.GetConnectionAsync();
 
-        try
-        {
-            updateOrder = await _pgContext.Orders
-                .FirstOrDefaultAsync(o => o.OrderId == orderId 
-                                          && o.PaymentId.Equals(paymentId));
-        }
-        
-        // TODO: При dispose PgContext пересоздаем датаконтекст и пробуем снова.
-        catch (ObjectDisposedException _)
-        {
-            pgContext = CreateNewPgContextFactory.CreateNewPgContext(_configuration);
-            updateOrder = await pgContext.Orders
-                .FirstOrDefaultAsync(o => o.OrderId == orderId 
-                                          && o.PaymentId.Equals(paymentId));
-            isNew = true;
-        }
-        
-        if (updateOrder is null)
+        var checkExistsParameters = new DynamicParameters();
+        checkExistsParameters.Add("@paymentId", paymentId);
+        checkExistsParameters.Add("@orderId", orderId);
+
+        var checkExistsQuery = "SELECT EXISTS (" +
+                               "SELECT order_id " +
+                               "FROM commerce.orders " +
+                               "WHERE order_id = @orderId " +
+                               "AND payment_id = @paymentId)";
+
+        var ifExists = await connection.ExecuteScalarAsync<bool>(checkExistsQuery, checkExistsParameters);
+
+        if (!ifExists)
         {
             return false;
         }
 
-        updateOrder.StatusSysName = paymentStatusSysName;
-        updateOrder.StatusName = paymentStatusName;
+        var updateOrderParameters = new DynamicParameters();
+        updateOrderParameters.Add("@paymentStatusSysName", paymentStatusSysName);
+        updateOrderParameters.Add("@paymentStatusName", paymentStatusName);
+        updateOrderParameters.Add("@paymentId", paymentId);
+        updateOrderParameters.Add("@orderId", orderId);
 
-        if (isNew)
-        {
-            await pgContext.SaveChangesAsync();
-        }
+        var updateOrderQuery = "UPDATE commerce.orders " +
+                               "SET status_name = @paymentStatusName, " +
+                               "status_sys_name = @paymentStatusSysName " +
+                               "WHERE order_id = @orderId";
 
-        else
-        {
-            await _pgContext.SaveChangesAsync();
-        }
+        await connection.ExecuteAsync(updateOrderQuery, updateOrderParameters);
 
         return true;
     }
@@ -135,40 +180,19 @@ internal sealed class CommerceRepository : ICommerceRepository
     public async Task SetStatusConfirmByPaymentIdAsync(string paymentId, string paymentStatusSysName,
         string paymentStatusName)
     {
-        OrderEntity order;
-        var isNew = false;
-        PgContext pgContext = null;
+        using var connection = await ConnectionProvider.GetConnectionAsync();
         
-        try
-        {
-            order = await _pgContext.Orders.FirstOrDefaultAsync(o => o.PaymentId.Equals(paymentId));
-        }
-        
-        // TODO: При dispose PgContext пересоздаем датаконтекст и пробуем снова.
-        catch (ObjectDisposedException _)
-        {
-            pgContext = CreateNewPgContextFactory.CreateNewPgContext(_configuration);
-            order = await pgContext.Orders.FirstOrDefaultAsync(o => o.PaymentId.Equals(paymentId));
-            isNew = true;
-        }
+        var parameters = new DynamicParameters();
+        parameters.Add("@paymentId", paymentId);
+        parameters.Add("@paymentStatusSysName", paymentStatusSysName);
+        parameters.Add("@paymentStatusName", paymentStatusName);
 
-        if (order is null)
-        {
-            throw new InvalidOperationException($"Не удалось получить заказ по PaymentId: {paymentId}");
-        }
+        var query = "UPDATE commerce.orders " +
+                    "SET status_name = @paymentStatusName, " +
+                    "status_sys_name = @paymentStatusSysName " +
+                    "WHERE payment_id = @paymentId";
 
-        order.StatusName = paymentStatusName;
-        order.StatusSysName = paymentStatusSysName;
-
-        if (isNew)
-        {
-            await pgContext.SaveChangesAsync();
-        }
-
-        else
-        {
-            await _pgContext.SaveChangesAsync();   
-        }
+        await connection.ExecuteAsync(query, parameters);
     }
 
     /// <summary>

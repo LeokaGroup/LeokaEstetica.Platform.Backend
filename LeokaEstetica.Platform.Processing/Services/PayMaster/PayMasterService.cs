@@ -18,6 +18,7 @@ using LeokaEstetica.Platform.Models.Dto.Input.Commerce.PayMaster;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce.Base.Output;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce.PayMaster;
 using LeokaEstetica.Platform.Models.Dto.Output.Refunds;
+using LeokaEstetica.Platform.Models.Enums;
 using LeokaEstetica.Platform.Processing.Abstractions.PayMaster;
 using LeokaEstetica.Platform.Processing.Consts;
 using LeokaEstetica.Platform.Processing.Enums;
@@ -240,7 +241,7 @@ internal sealed class PayMasterService : IPayMasterService
     /// <param name="price">Сумма возврата.</param>
     /// <param name="currency">Валюта.</param>
     /// <returns>Выходная модель.</returns>
-    public async Task<CreateRefundOutput> CreateRefundAsync(string paymentId, decimal price, string currency)
+    public async Task<CreateRefundOutput> CreateRefundAsync(string paymentId, decimal price, string? currency)
     {
         var request = await CreateRefundRequestAsync(paymentId, price, currency);
 
@@ -415,7 +416,7 @@ internal sealed class PayMasterService : IPayMasterService
                 {
                     Description = "Оплата тарифа: " + fareRuleName + $" (на {month} мес.)"
                 },
-                Amount = new Amount(price, PaymentCurrencyEnum.RUB.ToString()),
+                Amount = new Amount(price, CurrencyTypeEnum.RUB.ToString()),
                 PaymentMethod = "BankCard",
                 FareRuleId = ruleId
             },
@@ -445,7 +446,7 @@ internal sealed class PayMasterService : IPayMasterService
     /// <param name="currency">Валюта.</param>
     /// <returns>Заполненная модель запроса.</returns>
     private async Task<CreateRefundInput> CreateRefundRequestAsync(string paymentId, decimal price,
-        string currency)
+        string? currency)
     {
         var request = new CreateRefundInput
         {

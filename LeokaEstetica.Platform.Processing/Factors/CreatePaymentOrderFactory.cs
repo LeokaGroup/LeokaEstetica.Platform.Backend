@@ -15,6 +15,7 @@ using LeokaEstetica.Platform.Models.Dto.Input.Commerce.YandexKassa;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce.Base.Output;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce.PayMaster;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce.YandexKassa;
+using LeokaEstetica.Platform.Models.Enums;
 using LeokaEstetica.Platform.Processing.Consts;
 using LeokaEstetica.Platform.Processing.Enums;
 using LeokaEstetica.Platform.Processing.Models.Input;
@@ -83,8 +84,7 @@ public static class CreatePaymentOrderFactory
         var createdOrder = await CreatePaymentOrderAsync(paymentId, createPaymentOrderAggregateInput.OrderCache,
             createPaymentOrderAggregateInput.CreateOrderInput, createPaymentOrderAggregateInput.UserId,
             responseCheckStatusOrder);
-
-        // TODO: Уже пишем в другую таблицу и через Dapper.
+        
         // Создаем заказ в БД.
         var createdOrderResult = await commerceRepository.CreateOrderAsync(createdOrder);
 
@@ -93,7 +93,7 @@ public static class CreatePaymentOrderFactory
         var orderEvent = OrderEventFactory.CreateOrderEvent(createdOrderResult.OrderId,
             createdOrderResult.StatusSysName, paymentId, createPaymentOrderAggregateInput.UserId,
             createPaymentOrderAggregateInput.PublicId, createPaymentOrderAggregateInput.OrderCache.Month,
-            createdOrderResult.Price, createdOrderResult.Currency);
+            createdOrderResult.Price, createdOrderResult.CurrencyValue);
 
         var queueType = string.Empty.CreateQueueDeclareNameFactory(configuration["Environment"],
             QueueTypeEnum.OrdersQueue);
@@ -113,6 +113,7 @@ public static class CreatePaymentOrderFactory
     }
 
     /// <summary>
+    /// TODO: Передават тип заказа в orderCache.
     /// Метод парсит результат для сохранения заказа в БД.
     /// </summary>
     /// <param name="paymentId">Id платежа в ПС.</param>
@@ -132,7 +133,7 @@ public static class CreatePaymentOrderFactory
             Name = orderCache.FareRuleName,
             UserId = userId,
             PaymentMonth = orderCache.Month,
-            Currency = PaymentCurrencyEnum.RUB.ToString(),
+            CurrencyType = CurrencyTypeEnum.RUB,
             Created = DateTime.Parse(createOrder!.Created),
             PaymentStatusSysName = createOrder.OrderStatus,
             PaymentStatusName = PaymentStatusEnum.Pending.GetEnumDescription()

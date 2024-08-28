@@ -1,3 +1,5 @@
+using LeokaEstetica.Platform.Models.Enums;
+
 namespace LeokaEstetica.Platform.Base.Models.Input.Processing;
 
 /// <summary>
@@ -8,17 +10,17 @@ public class CreatePaymentOrderInput
     /// <summary>
     /// Id платежа в ПС.
     /// </summary>
-    public string PaymentId { get; set; }
+    public string? PaymentId { get; set; }
 
     /// <summary>
     /// Названия платежа.
     /// </summary>
-    public string Name { get; set; }
+    public string? Name { get; set; }
     
     /// <summary>
     /// Описание платежа.
     /// </summary>
-    public string Description { get; set; }
+    public string? Description { get; set; }
 
     /// <summary>
     /// Id пользователя.
@@ -38,12 +40,12 @@ public class CreatePaymentOrderInput
     /// <summary>
     /// Системное название статуса платежа в ПС.
     /// </summary>
-    public string PaymentStatusSysName { get; set; }
+    public string? PaymentStatusSysName { get; set; }
 
     /// <summary>
     /// Название статуса платежа в ПС.
     /// </summary>
-    public string PaymentStatusName { get; set; }
+    public string? PaymentStatusName { get; set; }
 
     /// <summary>
     /// Дата создания платежа в ПС.
@@ -51,7 +53,12 @@ public class CreatePaymentOrderInput
     public DateTime Created { get; set; }
 
     /// <summary>
-    /// Валюта.
+    /// Тип валюты.
     /// </summary>
-    public string Currency { get; set; }
+    public CurrencyTypeEnum CurrencyType { get; set; }
+
+    /// <summary>
+    /// Тип заказа.
+    /// </summary>
+    public OrderTypeEnum OrderType { get; set; }
 }
